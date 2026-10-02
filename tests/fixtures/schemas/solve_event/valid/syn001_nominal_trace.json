@@ -1,0 +1,213 @@
+[
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 158,
+   "factorizations": 0,
+   "jacobian_calls": 0,
+   "property_calls": 92,
+   "requested_evaluations": 250,
+   "residual_calls": 0
+  },
+  "iteration": 0,
+  "kind": "plan_built",
+  "merit": null,
+  "message": "SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+  "residual_inf_unscaled": null,
+  "sequence": 0,
+  "signature": [],
+  "state_sha256": ""
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 253,
+   "factorizations": 0,
+   "jacobian_calls": 0,
+   "property_calls": 92,
+   "requested_evaluations": 345,
+   "residual_calls": 0
+  },
+  "iteration": 0,
+  "kind": "attempt_opened",
+  "merit": null,
+  "message": "initial",
+  "residual_inf_unscaled": null,
+  "sequence": 1,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "7e1f88b7b4be0bcd7792087cdfc1cba30aef6f989d2377f2802716434765d6f8"
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 433,
+   "factorizations": 0,
+   "jacobian_calls": 1,
+   "property_calls": 92,
+   "requested_evaluations": 525,
+   "residual_calls": 1
+  },
+  "inner_consistency": {
+   "eta": 2.1373125491663813e-16,
+   "eta_max": 1e-10,
+   "rows_checked": 46
+  },
+  "iteration": 0,
+  "kind": "jacobian",
+  "merit": 0.003539142498346755,
+  "message": "",
+  "residual_inf_unscaled": 0.19875430998017962,
+  "sequence": 2,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "7e1f88b7b4be0bcd7792087cdfc1cba30aef6f989d2377f2802716434765d6f8"
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 433,
+   "factorizations": 1,
+   "jacobian_calls": 1,
+   "property_calls": 92,
+   "requested_evaluations": 525,
+   "residual_calls": 1
+  },
+  "iteration": 0,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 114,
+   "nnz_U": 173,
+   "residual_normalized": 1.1924613753902245e-16,
+   "u_diag_max_abs": 1.7089965294872949,
+   "u_diag_min_abs": 0.06819573999172272
+  },
+  "merit": 0.003539142498346755,
+  "message": "assembling the derivative: 44x44",
+  "residual_inf_unscaled": 0.19875430998017962,
+  "sequence": 3,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "7e1f88b7b4be0bcd7792087cdfc1cba30aef6f989d2377f2802716434765d6f8"
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 433,
+   "factorizations": 2,
+   "jacobian_calls": 1,
+   "property_calls": 92,
+   "requested_evaluations": 525,
+   "residual_calls": 1
+  },
+  "iteration": 0,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 6,
+   "nnz_U": 6,
+   "residual_normalized": 6.707905523226713e-17,
+   "u_diag_max_abs": 1.0613778337830189,
+   "u_diag_min_abs": 0.4710857755695475
+  },
+  "merit": 0.003539142498346755,
+  "message": "",
+  "residual_inf_unscaled": 0.19875430998017962,
+  "sequence": 4,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "7e1f88b7b4be0bcd7792087cdfc1cba30aef6f989d2377f2802716434765d6f8"
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 445,
+   "factorizations": 2,
+   "jacobian_calls": 1,
+   "property_calls": 154,
+   "requested_evaluations": 599,
+   "residual_calls": 2
+  },
+  "iteration": 0,
+  "kind": "step_accepted",
+  "merit": 6.847750913376838e-34,
+  "message": "",
+  "residual_inf_unscaled": 1.1102230246251565e-16,
+  "sequence": 5,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "13c05f70f2f7f10752ae3d97491419a0e6a905c77156eb644a70efee28e5926f",
+  "step_inf_scaled": 0.13250287332011984,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 445,
+   "factorizations": 2,
+   "jacobian_calls": 1,
+   "property_calls": 154,
+   "requested_evaluations": 599,
+   "residual_calls": 2
+  },
+  "iteration": 1,
+  "kind": "attempt_closed",
+  "merit": 6.847750913376838e-34,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": 1.1102230246251565e-16,
+  "sequence": 6,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "13c05f70f2f7f10752ae3d97491419a0e6a905c77156eb644a70efee28e5926f"
+ },
+ {
+  "attempt": 1,
+  "counters": {
+   "cache_hits": 445,
+   "factorizations": 2,
+   "jacobian_calls": 1,
+   "property_calls": 154,
+   "requested_evaluations": 599,
+   "residual_calls": 2
+  },
+  "iteration": 1,
+  "kind": "solve_closed",
+  "merit": 6.847750913376838e-34,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": 1.1102230246251565e-16,
+  "sequence": 7,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "13c05f70f2f7f10752ae3d97491419a0e6a905c77156eb644a70efee28e5926f"
+ }
+]

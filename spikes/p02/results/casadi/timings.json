@@ -1,0 +1,239 @@
+{
+ "compile": {
+  "compile_L_ms": {
+   "median_ms": 5.376244,
+   "min_ms": 5.371604,
+   "samples": 5
+  },
+  "compile_I_ms": {
+   "median_ms": 2.241982,
+   "min_ms": 2.213398,
+   "samples": 5
+  },
+  "first_residual_ms": {
+   "median_ms": 0.104898,
+   "min_ms": 0.097102,
+   "samples": 5
+  },
+  "first_jacobian_ms": {
+   "median_ms": 0.220305,
+   "min_ms": 0.216347,
+   "samples": 5
+  }
+ },
+ "evaluation": {
+  "L": {
+   "backend_residual": {
+    "median_us": 74.63,
+    "min_us": 59.151,
+    "repetitions": 200.0
+   },
+   "backend_jacobian": {
+    "median_us": 178.466,
+    "min_us": 175.751,
+    "repetitions": 200.0
+   },
+   "boundary_residual": {
+    "median_us": 119.375,
+    "min_us": 117.01,
+    "repetitions": 200.0
+   },
+   "boundary_jacobian": {
+    "median_us": 238.76,
+    "min_us": 235.153,
+    "repetitions": 200.0
+   },
+   "note": "backend_* includes constructing the DM from the NumPy state vector; boundary_* adds the named-entry extraction and canonical CSC assembly the judge reads"
+  },
+  "I": {
+   "backend_residual": {
+    "median_us": 60.534,
+    "min_us": 59.783,
+    "repetitions": 200.0
+   },
+   "backend_jacobian": {
+    "median_us": 175.961,
+    "min_us": 173.557,
+    "repetitions": 200.0
+   },
+   "boundary_residual": {
+    "median_us": 98.285,
+    "min_us": 97.533,
+    "repetitions": 200.0
+   },
+   "boundary_jacobian": {
+    "median_us": 217.5,
+    "min_us": 213.532,
+    "repetitions": 200.0
+   },
+   "note": "backend_* includes constructing the DM from the NumPy state vector; boundary_* adds the named-entry extraction and canonical CSC assembly the judge reads"
+  }
+ },
+ "samples": [
+  {
+   "numpy_version": "2.2.4",
+   "rss_after_numpy_mib": 53.2265625,
+   "rss_after_backend_import_mib": 53.2265625,
+   "compile_phase_counters_L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "compile_phase_counters_I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "timings_ms": {
+    "compile_L_ms": 5.397735,
+    "compile_I_ms": 2.250648,
+    "first_residual_ms": 0.104898,
+    "first_jacobian_ms": 0.220305
+   },
+   "tracemalloc_peak_compile_mib": 0.08733367919921875,
+   "rss_after_compile_mib": 53.2265625
+  },
+  {
+   "numpy_version": "2.2.4",
+   "rss_after_numpy_mib": 53.2265625,
+   "rss_after_backend_import_mib": 53.2265625,
+   "compile_phase_counters_L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "compile_phase_counters_I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "timings_ms": {
+    "compile_L_ms": 5.376244,
+    "compile_I_ms": 2.237914,
+    "first_residual_ms": 0.106541,
+    "first_jacobian_ms": 0.216347
+   },
+   "tracemalloc_peak_compile_mib": 0.08575439453125,
+   "rss_after_compile_mib": 53.2265625
+  },
+  {
+   "numpy_version": "2.2.4",
+   "rss_after_numpy_mib": 53.2265625,
+   "rss_after_backend_import_mib": 53.2265625,
+   "compile_phase_counters_L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "compile_phase_counters_I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "timings_ms": {
+    "compile_L_ms": 5.371604,
+    "compile_I_ms": 2.213398,
+    "first_residual_ms": 0.097102,
+    "first_jacobian_ms": 0.237027
+   },
+   "tracemalloc_peak_compile_mib": 0.0851736068725586,
+   "rss_after_compile_mib": 53.2265625
+  },
+  {
+   "numpy_version": "2.2.4",
+   "rss_after_numpy_mib": 53.2265625,
+   "rss_after_backend_import_mib": 53.2265625,
+   "compile_phase_counters_L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "compile_phase_counters_I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "timings_ms": {
+    "compile_L_ms": 5.373218,
+    "compile_I_ms": 2.242533,
+    "first_residual_ms": 0.099628,
+    "first_jacobian_ms": 0.216688
+   },
+   "tracemalloc_peak_compile_mib": 0.08874702453613281,
+   "rss_after_compile_mib": 53.2265625
+  },
+  {
+   "numpy_version": "2.2.4",
+   "rss_after_numpy_mib": 53.2265625,
+   "rss_after_backend_import_mib": 53.2265625,
+   "compile_phase_counters_L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "compile_phase_counters_I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "timings_ms": {
+    "compile_L_ms": 5.675919,
+    "compile_I_ms": 2.241982,
+    "first_residual_ms": 0.10657,
+    "first_jacobian_ms": 0.239431
+   },
+   "tracemalloc_peak_compile_mib": 0.08300399780273438,
+   "rss_after_compile_mib": 53.2265625
+  }
+ ]
+}

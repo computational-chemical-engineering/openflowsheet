@@ -1,0 +1,3 @@
+# T08.A43: the sdist carries the package, its runtime data, LICENSE, NOTICE and metadata only.
+# setuptools adds `tests/test*.py` to an sdist by default; the suite is not part of the release.
+prune tests

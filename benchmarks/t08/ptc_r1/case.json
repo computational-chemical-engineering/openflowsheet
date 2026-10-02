@@ -1,0 +1,33 @@
+{
+  "format": "t08-ptc-r1-case-v1",
+  "case": "PTC-R1",
+  "specification": "docs/derivations/T08-build-first-spec.md \u00a7A4.6 as amended by Amendment 1 (\u00a7Am1.1); ADR 0023 D5 (Amendment 1)",
+  "git_order": {
+    "C_reg": "9f5f29d7063ae5102c535d94d5f18f20db6480c2",
+    "C_A1": "30243f9c9956fb7ec6970f62156f864cd35d0aa0"
+  },
+  "reference": {
+    "path": "benchmarks/t08/build_first_reference.yaml",
+    "sha256": "98b3a43e12234c41138482dde96e8ffced22af66d30396bbd49d58aefd5198ad"
+  },
+  "starts": {
+    "count": 441,
+    "sha256_of_compact_json": "0262bebcb9c5af890d770663d1e5a7cd059159bf0eb6f58bd40c04641c49a17c"
+  },
+  "revision": {
+    "path": "benchmarks/t08/ptc_r1/revision.json",
+    "revision_id": "SYN-001-T08-PTC-R1-r1",
+    "content_sha256": "1a85dfd95c7b381bae43625c29b82bd298f010c5b95fc58d12dac1cbc4b0b796"
+  },
+  "policies": {
+    "T08-PTC-R1-newton": "c75e35320bfd216bef9904ee286f1be38fffa05a1d44312f3f8a288ca3ef4625",
+    "T08-PTC-R1-ptc": "11be2aee0a1e39025a3d405f009ebc6c3790af8298fe17722dd27b323266d9c9",
+    "T08-ptc-v1": "aa0f1257a830645dbd09f680577e92ddfd0d8f327423d849f2adb64124a7045c",
+    "T08-warm-v1": "32f484a150f61e2f62357e62c7daa4b4c1c450788abce1967da938fe7ad55795"
+  },
+  "arms": {
+    "newton": "T08-PTC-R1-newton",
+    "ptc": "T08-PTC-R1-ptc"
+  },
+  "harness": "benchmarks/t08/ptc_r1/compare.py"
+}

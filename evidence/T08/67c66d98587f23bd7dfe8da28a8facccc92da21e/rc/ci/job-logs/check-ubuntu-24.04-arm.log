@@ -1,0 +1,867 @@
+check (ubuntu-24.04-arm)	Set up job	﻿2026-10-02T12:40:23.2492182Z Current runner version: '2.337.0'
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2539824Z ##[group]Runner Image Provisioner
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2540794Z Hosted Compute Agent
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2541445Z Version: 20260901.588
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2542233Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2542978Z Build Date: 2026-09-01T19:56:44Z
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2543767Z Worker ID: {37a88e98-2311-4325-ad60-ce0cc22f5985}
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2544536Z Azure Region: westcentralus
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2545229Z ##[endgroup]
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2567408Z ##[group]Operating System
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2568187Z Ubuntu
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2568805Z 24.04.5
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2569318Z LTS
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2569850Z ##[endgroup]
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2570476Z ##[group]Runner Image
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2571082Z Image: ubuntu-24.04-arm
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2571730Z Version: 20260927.135.1
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2572944Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24-arm64/20260927.135/images/ubuntu/Ubuntu2404-Arm64-Readme.md
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2574825Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24-arm64%2F20260927.135
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2575832Z ##[endgroup]
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2579437Z ##[group]GITHUB_TOKEN Permissions
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2582138Z Actions: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2582933Z ArtifactMetadata: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2583608Z Attestations: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2584165Z Checks: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2584786Z CodeQuality: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2585358Z Contents: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2585991Z CopilotRequests: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2607228Z Deployments: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2607942Z Discussions: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2608646Z Drives: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2609208Z Issues: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2609756Z Metadata: read
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2610495Z Models: read
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2611095Z Packages: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2611714Z Pages: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2612328Z PullRequests: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2612920Z RepositoryProjects: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2613655Z SecurityEvents: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2614298Z Statuses: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2614948Z VulnerabilityAlerts: read
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2615576Z ##[endgroup]
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2618184Z Secret source: Actions
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2619360Z Cache mode: write
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.2620303Z Prepare workflow directory
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.3074804Z Prepare all required actions
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.3123247Z Getting action download info
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.6740895Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.8322020Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:23.9492391Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+check (ubuntu-24.04-arm)	Set up job	2026-10-02T12:40:24.1692852Z Complete job name: check (ubuntu-24.04-arm)
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	﻿2026-10-02T12:40:24.2610543Z ##[group]Run actions/checkout@v4
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2611924Z with:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2612708Z   fetch-depth: 0
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2613461Z   repository: computational-chemical-engineering/openflowsheet
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2618177Z   token: ***
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2618767Z   ssh-strict: true
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2619314Z   ssh-user: git
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2620055Z   persist-credentials: true
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2620639Z   clean: true
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2621334Z   sparse-checkout-cone-mode: true
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2622010Z   fetch-tags: false
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2622594Z   show-progress: true
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2623196Z   lfs: false
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2623715Z   submodules: false
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2625076Z   set-safe-directory: true
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2625917Z   allow-unsafe-pr-checkout: false
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2627294Z env:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2628044Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2628671Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2629289Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.2629957Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3807257Z Syncing repository: computational-chemical-engineering/openflowsheet
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3811013Z ##[group]Getting Git version info
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3812579Z Working directory is '/home/runner/work/openflowsheet/openflowsheet'
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3814436Z [command]/usr/bin/git version
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3815410Z git version 2.55.0
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3818848Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3825263Z Temporarily overriding HOME='/home/runner/work/_temp/26261ff3-2acc-478f-a2f5-7fcb74be51fc' before making global git config changes
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3827640Z Adding repository directory to the temporary git global config as a safe directory
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3829391Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3833098Z Deleting the contents of '/home/runner/work/openflowsheet/openflowsheet'
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3834922Z ##[group]Initializing the repository
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3839089Z [command]/usr/bin/git init /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3840607Z hint: Using 'master' as the name for the initial branch. This default branch name
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3842089Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3843409Z hint: to use in all of your new repositories, which will suppress this warning,
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3844491Z hint: call:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3845269Z hint:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3846712Z hint: 	git config --global init.defaultBranch <name>
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3847805Z hint:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3848917Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3850203Z hint: 'development'. The just-created branch can be renamed via this command:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3851282Z hint:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3852018Z hint: 	git branch -m <name>
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3852751Z hint:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3853779Z hint: Disable this message with "git config set advice.defaultBranchName false"
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3855237Z Initialized empty Git repository in /home/runner/work/openflowsheet/openflowsheet/.git/
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3858382Z [command]/usr/bin/git remote add origin https://github.com/computational-chemical-engineering/openflowsheet
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3861127Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3862396Z ##[group]Disabling automatic garbage collection
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3863371Z [command]/usr/bin/git config --local gc.auto 0
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3866351Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3867628Z ##[group]Setting up auth
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3868667Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.3877826Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.4147370Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.4177408Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.4404131Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.4414500Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.4591787Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.4626357Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.4628309Z ##[group]Fetching the repository
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:24.4636586Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9361770Z From https://github.com/computational-chemical-engineering/openflowsheet
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9373451Z  * [new branch]      main               -> origin/main
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9381401Z  * [new branch]      study/openidaes450 -> origin/study/openidaes450
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9382382Z  * [new branch]      wp/K03             -> origin/wp/K03
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9383287Z  * [new branch]      wp/T02             -> origin/wp/T02
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9384021Z  * [new branch]      wp/T03             -> origin/wp/T03
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9384786Z  * [new branch]      wp/T04             -> origin/wp/T04
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9385452Z  * [new branch]      wp/T05             -> origin/wp/T05
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9388841Z  * [new branch]      wp/T05b            -> origin/wp/T05b
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9389995Z  * [new branch]      wp/T06             -> origin/wp/T06
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9390732Z  * [new branch]      wp/T06-refs        -> origin/wp/T06-refs
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9391603Z  * [new branch]      wp/T07             -> origin/wp/T07
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9392340Z  * [new branch]      wp/T08             -> origin/wp/T08
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9393065Z  * [new tag]         v0.0.0             -> v0.0.0
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9395783Z [command]/usr/bin/git branch --list --remote origin/wp/T08
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9399261Z   origin/wp/T08
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9405452Z [command]/usr/bin/git rev-parse refs/remotes/origin/wp/T08
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9425361Z 67c66d98587f23bd7dfe8da28a8facccc92da21e
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9444237Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9445085Z ##[group]Determining the checkout info
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9445995Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9446934Z [command]/usr/bin/git sparse-checkout disable
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9480451Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9505242Z ##[group]Checking out the ref
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:26.9509668Z [command]/usr/bin/git checkout --progress --force -B wp/T08 refs/remotes/origin/wp/T08
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:27.1258618Z Switched to a new branch 'wp/T08'
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:27.1259892Z branch 'wp/T08' set up to track 'origin/wp/T08'.
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:27.1276613Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:27.1311117Z [command]/usr/bin/git log -1 --format=%H
+check (ubuntu-24.04-arm)	Run actions/checkout@v4	2026-10-02T12:40:27.1332011Z 67c66d98587f23bd7dfe8da28a8facccc92da21e
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	﻿2026-10-02T12:40:27.1588210Z ##[group]Run actions/setup-python@v5
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1588803Z with:
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1589138Z   python-version: 3.13
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1589440Z   check-latest: false
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1592052Z   token: ***
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1592374Z   update-environment: true
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1592760Z   allow-prereleases: false
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1593098Z   freethreaded: false
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1593379Z env:
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1593704Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1594015Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1594354Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.1594659Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.2698769Z ##[group]Installed versions
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.2773081Z (node:2097) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.2774387Z Successfully set up CPython (3.13.15)
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.2775163Z (Use `node --trace-deprecation ...` to show where the warning was created)
+check (ubuntu-24.04-arm)	Run actions/setup-python@v5	2026-10-02T12:40:27.2795348Z ##[endgroup]
+check (ubuntu-24.04-arm)	Install locked dependencies	﻿2026-10-02T12:40:27.2911737Z ##[group]Run python -m pip install --upgrade pip
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.2912398Z ^[[36;1mpython -m pip install --upgrade pip^[[0m
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.2912962Z ^[[36;1mpython -m pip install -r requirements.lock^[[0m
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3015581Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3016366Z env:
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3016697Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3017202Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3017491Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3017914Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3018476Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3018985Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3019531Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3020331Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3020949Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.3021452Z ##[endgroup]
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:27.8332275Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (26.2.1)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.4365657Z Collecting annotated-types==0.8.0 (from -r requirements.lock (line 5))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.5356404Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.5764045Z Collecting anyio==4.15.1 (from -r requirements.lock (line 6))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.5956991Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.6256445Z Collecting attrs==26.1.0 (from -r requirements.lock (line 7))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.6442367Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.7235482Z Collecting casadi==3.8.0 (from -r requirements.lock (line 8))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.7421941Z   Downloading casadi-3.8.0-cp311-abi3-manylinux_2_28_aarch64.whl.metadata (2.2 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.7706542Z Collecting certifi==2026.7.22 (from -r requirements.lock (line 9))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.7890706Z   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.9051096Z Collecting cffi==2.1.1 (from -r requirements.lock (line 10))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.9242884Z   Downloading cffi-2.1.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (2.5 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.9524591Z Collecting click==8.5.0 (from -r requirements.lock (line 11))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:28.9712475Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.1331837Z Collecting cryptography==50.0.1 (from -r requirements.lock (line 12))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.1522079Z   Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_aarch64.whl.metadata (4.3 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.1778088Z Collecting h11==0.16.0 (from -r requirements.lock (line 13))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.1964895Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.2285026Z Collecting httpcore==1.0.9 (from -r requirements.lock (line 14))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.2473488Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.2837311Z Collecting httpx==0.28.1 (from -r requirements.lock (line 15))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.3026980Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.3289291Z Collecting httpx-sse==0.4.3 (from -r requirements.lock (line 16))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.3474650Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.3767922Z Collecting idna==3.20 (from -r requirements.lock (line 17))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.3953538Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.4218657Z Collecting iniconfig==2.3.0 (from -r requirements.lock (line 18))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.4404226Z   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.4714594Z Collecting jsonschema==4.26.0 (from -r requirements.lock (line 19))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.4902393Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.5184876Z Collecting jsonschema-specifications==2025.9.1 (from -r requirements.lock (line 20))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.5374330Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.5663859Z Collecting mcp==1.30.0 (from -r requirements.lock (line 21))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.5853167Z   Downloading mcp-1.30.0-py3-none-any.whl.metadata (9.3 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.6136589Z Collecting mpmath==1.3.0 (from -r requirements.lock (line 22))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.6321133Z   Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.7223978Z Collecting mypy==1.15.0 (from -r requirements.lock (line 23))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.7433142Z   Downloading mypy-1.15.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_28_aarch64.whl.metadata (2.1 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.7686742Z Collecting mypy_extensions==1.1.0 (from -r requirements.lock (line 24))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.7871175Z   Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.9431661Z Collecting numpy==2.2.4 (from -r requirements.lock (line 25))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:29.9629318Z   Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (63 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.0184523Z Collecting packaging==26.3 (from -r requirements.lock (line 26))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.0370769Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.0636783Z Collecting pluggy==1.6.0 (from -r requirements.lock (line 27))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.0825318Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.1086503Z Collecting pycparser==3.0 (from -r requirements.lock (line 28))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.1270704Z   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.2151763Z Collecting pydantic==2.13.5 (from -r requirements.lock (line 29))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.2341941Z   Downloading pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.2847301Z Collecting pydantic-settings==2.15.0 (from -r requirements.lock (line 30))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.3035588Z   Downloading pydantic_settings-2.15.0-py3-none-any.whl.metadata (3.9 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.7949670Z Collecting pydantic_core==2.46.5 (from -r requirements.lock (line 31))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.8147308Z   Downloading pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (6.6 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.8430245Z Collecting PyJWT==2.15.0 (from -r requirements.lock (line 32))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.8612968Z   Downloading pyjwt-2.15.0-py3-none-any.whl.metadata (3.5 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.8966446Z Collecting pytest==8.3.5 (from -r requirements.lock (line 33))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.9154720Z   Downloading pytest-8.3.5-py3-none-any.whl.metadata (7.6 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.9439585Z Collecting python-dotenv==1.2.3 (from -r requirements.lock (line 34))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.9624587Z   Downloading python_dotenv-1.2.3-py3-none-any.whl.metadata (29 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:30.9903204Z Collecting python-multipart==0.0.32 (from -r requirements.lock (line 35))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.0093898Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.0507172Z Collecting PyYAML==6.0.2 (from -r requirements.lock (line 36))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.0712765Z   Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (2.1 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.1048319Z Collecting referencing==0.37.0 (from -r requirements.lock (line 37))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.1233033Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.3130068Z Collecting rpds-py==2026.6.3 (from -r requirements.lock (line 38))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.3325677Z   Downloading rpds_py-2026.6.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (4.1 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.5701551Z Collecting ruff==0.12.11 (from -r requirements.lock (line 39))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.5902333Z   Downloading ruff-0.12.11-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (25 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.6934269Z Collecting scipy==1.15.3 (from -r requirements.lock (line 40))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.7135706Z   Downloading scipy-1.15.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (61 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.7554190Z Collecting sse-starlette==3.4.11 (from -r requirements.lock (line 41))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.7736959Z   Downloading sse_starlette-3.4.11-py3-none-any.whl.metadata (15 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.8091819Z Collecting starlette==1.7.0 (from -r requirements.lock (line 42))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.8277120Z   Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.8597759Z Collecting types-jsonschema==4.26.0.20260518 (from -r requirements.lock (line 43))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.8785433Z   Downloading types_jsonschema-4.26.0.20260518-py3-none-any.whl.metadata (1.8 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.9068024Z Collecting types-PyYAML==6.0.12.20260906 (from -r requirements.lock (line 44))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.9298353Z   Downloading types_pyyaml-6.0.12.20260906-py3-none-any.whl.metadata (1.8 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.9552896Z Collecting typing-inspection==0.4.4 (from -r requirements.lock (line 45))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:31.9748656Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:32.0021231Z Collecting typing_extensions==4.16.0 (from -r requirements.lock (line 46))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:32.0210415Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:32.0538816Z Collecting uvicorn==0.54.0 (from -r requirements.lock (line 47))
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:32.0725681Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:32.1373712Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:32.1585199Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:32.1862713Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:32.2107306Z Downloading casadi-3.8.0-cp311-abi3-manylinux_2_28_aarch64.whl (55.6 MB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.0550476Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 55.6/55.6 MB 67.3 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.0736831Z Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.0977529Z Downloading cffi-2.1.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (222 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.1188079Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.1410850Z Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_aarch64.whl (4.7 MB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.1823514Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 115.0 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.2011327Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.2218215Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.2434075Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.2648351Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.2857214Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.3073183Z Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.3274993Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.3487175Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.3692928Z Downloading mcp-1.30.0-py3-none-any.whl (234 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.3916494Z Downloading pydantic-2.13.5-py3-none-any.whl (472 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.4155533Z Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.4238898Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 48.7 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.4429814Z Downloading mypy-1.15.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_28_aarch64.whl (11.4 MB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.5827988Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.4/11.4 MB 81.5 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.6016467Z Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.6241473Z Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (14.1 MB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.7874572Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.1/14.1 MB 86.0 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.8062544Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.8274065Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.8481583Z Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.8692737Z Downloading pydantic_settings-2.15.0-py3-none-any.whl (69 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.8905472Z Downloading pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (2.0 MB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.9111348Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 95.4 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.9292463Z Downloading pyjwt-2.15.0-py3-none-any.whl (33 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.9508436Z Downloading pytest-8.3.5-py3-none-any.whl (343 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.9750915Z Downloading python_dotenv-1.2.3-py3-none-any.whl (22 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:33.9969898Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:34.0197062Z Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (733 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:34.0300890Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 733.4/733.4 kB 64.3 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:34.1800640Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:34.2498422Z Downloading rpds_py-2026.6.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (367 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:34.2756516Z Downloading ruff-0.12.11-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (12.2 MB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:34.4129306Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.2/12.2 MB 89.3 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:34.4454398Z Downloading scipy-1.15.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (35.2 MB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:35.0187412Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.2/35.2 MB 62.9 MB/s  0:00:00
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:35.0362626Z Downloading sse_starlette-3.4.11-py3-none-any.whl (17 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:35.2477391Z Downloading starlette-1.7.0-py3-none-any.whl (78 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:35.3130057Z Downloading types_jsonschema-4.26.0.20260518-py3-none-any.whl (16 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:35.4307588Z Downloading types_pyyaml-6.0.12.20260906-py3-none-any.whl (21 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:35.4843931Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:35.6602387Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:35.7208575Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:36.1028361Z Installing collected packages: mpmath, typing_extensions, types-PyYAML, ruff, rpds-py, PyYAML, python-multipart, python-dotenv, PyJWT, pycparser, pluggy, packaging, numpy, mypy_extensions, iniconfig, idna, httpx-sse, h11, click, certifi, attrs, annotated-types, uvicorn, typing-inspection, scipy, referencing, pytest, pydantic_core, mypy, httpcore, cffi, casadi, anyio, types-jsonschema, starlette, pydantic, jsonschema-specifications, httpx, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:46.6267019Z 
+check (ubuntu-24.04-arm)	Install locked dependencies	2026-10-02T12:40:46.6295502Z Successfully installed PyJWT-2.15.0 PyYAML-6.0.2 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 casadi-3.8.0 certifi-2026.7.22 cffi-2.1.1 click-8.5.0 cryptography-50.0.1 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 iniconfig-2.3.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 mcp-1.30.0 mpmath-1.3.0 mypy-1.15.0 mypy_extensions-1.1.0 numpy-2.2.4 packaging-26.3 pluggy-1.6.0 pycparser-3.0 pydantic-2.13.5 pydantic-settings-2.15.0 pydantic_core-2.46.5 pytest-8.3.5 python-dotenv-1.2.3 python-multipart-0.0.32 referencing-0.37.0 rpds-py-2026.6.3 ruff-0.12.11 scipy-1.15.3 sse-starlette-3.4.11 starlette-1.7.0 types-PyYAML-6.0.12.20260906 types-jsonschema-4.26.0.20260518 typing-inspection-0.4.4 typing_extensions-4.16.0 uvicorn-0.54.0
+check (ubuntu-24.04-arm)	Install project	﻿2026-10-02T12:40:46.7610246Z ##[group]Run python -m pip install -e .
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7610746Z ^[[36;1mpython -m pip install -e .^[[0m
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7645953Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7646499Z env:
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7646846Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7647103Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7647384Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7647702Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7648173Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7648656Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7649086Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7649516Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7649957Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:46.7650351Z ##[endgroup]
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:47.0392454Z Obtaining file:///home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:47.0407095Z   Installing build dependencies: started
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:47.8761185Z   Installing build dependencies: finished with status 'done'
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:47.8762075Z   Checking if build backend supports build_editable: started
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.1314309Z   Checking if build backend supports build_editable: finished with status 'done'
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.1315425Z   Getting requirements to build editable: started
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.4161115Z   Getting requirements to build editable: finished with status 'done'
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.4169287Z   Preparing editable metadata (pyproject.toml): started
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5888660Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5952806Z Requirement already satisfied: numpy==2.2.4 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (2.2.4)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5959144Z Requirement already satisfied: scipy==1.15.3 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (1.15.3)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5965065Z Requirement already satisfied: pyyaml==6.0.2 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (6.0.2)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5970902Z Requirement already satisfied: jsonschema==4.26.0 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (4.26.0)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5980028Z Requirement already satisfied: casadi==3.8.0 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (3.8.0)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5992575Z Requirement already satisfied: attrs>=22.2.0 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.1.0rc1) (26.1.0)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5996478Z Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.1.0rc1) (2025.9.1)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.5999996Z Requirement already satisfied: referencing>=0.28.4 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.1.0rc1) (0.37.0)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.6003600Z Requirement already satisfied: rpds-py>=0.25.0 in /opt/hostedtoolcache/Python/3.13.15/arm64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.1.0rc1) (2026.6.3)
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.6103319Z Building wheels for collected packages: openflowsheet
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.6109736Z   Building editable for openflowsheet (pyproject.toml): started
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.8161936Z   Building editable for openflowsheet (pyproject.toml): finished with status 'done'
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.8163417Z   Created wheel for openflowsheet: filename=openflowsheet-0.1.0rc1-0.editable-py3-none-any.whl size=9111 sha256=dc4ef8dd1bd632b8c57e76e27e97f44eadcacd0c12ae58658451b0cdbf4de1a8
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.8165980Z   Stored in directory: /tmp/pip-ephem-wheel-cache-0lxh2wa6/wheels/a7/db/0c/5f8b449f4c702dd78421b0a446805b4c04aac2a354d996fc33
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.8167166Z Successfully built openflowsheet
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.8516764Z Installing collected packages: openflowsheet
+check (ubuntu-24.04-arm)	Install project	2026-10-02T12:40:48.8631754Z Successfully installed openflowsheet-0.1.0rc1
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	﻿2026-10-02T12:40:48.9221162Z ##[group]Run python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9221909Z ^[[36;1mpython -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"^[[0m
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9222386Z ^[[36;1mpython scripts/t07_licence_inventory.py^[[0m
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9257478Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9257880Z env:
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9258113Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9258417Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9258701Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9259016Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9259697Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9260155Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9260565Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9261036Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9261522Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:48.9261912Z ##[endgroup]
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8906684Z annotated-types 0.8.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8907403Z anyio 4.15.1: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8930147Z attrs 26.1.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8956754Z certifi 2026.7.22: MPL-2.0 (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8966675Z cffi 2.1.1: MIT-0 (compiled) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8986688Z click 8.5.0: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8987250Z cryptography 50.0.1: Apache-2.0 OR BSD-3-Clause (compiled) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8987663Z h11 0.16.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8988001Z httpcore 1.0.9: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8988347Z httpx 0.28.1: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8988637Z httpx-sse 0.4.3: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8988948Z idna 3.20: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8989241Z jsonschema 4.26.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8989549Z jsonschema-specifications 2025.9.1: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8989956Z mcp 1.30.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8990224Z pycparser 3.0: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8990574Z pydantic 2.13.5: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8990851Z pydantic-core 2.46.5: MIT (compiled) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8991151Z pydantic-settings 2.15.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8991504Z pyjwt 2.15.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.8991869Z python-dotenv 1.2.3: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9017096Z python-multipart 0.0.32: Apache-2.0 (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9017688Z referencing 0.37.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9018161Z rpds-py 2026.6.3: MIT (compiled) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9018716Z sse-starlette 3.4.11: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9019154Z starlette 1.7.0: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9019665Z typing-extensions 4.16.0: PSF-2.0 (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9020126Z typing-inspection 0.4.4: MIT (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9020595Z uvicorn 0.54.0: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	The server extra and its licences (G19)	2026-10-02T12:40:49.9021169Z G19: 29 distributions, no GPL-family, unresolved or unlisted licence
+check (ubuntu-24.04-arm)	Run checks	﻿2026-10-02T12:40:49.9858088Z ##[group]Run ./scripts/check.sh
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9858669Z ^[[36;1m./scripts/check.sh^[[0m
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9892245Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9892556Z env:
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9893082Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9893423Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9893686Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9894056Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9894515Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9894988Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9895440Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9895857Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9896616Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:49.9896985Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:50.0216963Z === ruff check: ruff check . ===
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:50.2639559Z All checks passed!
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:50.2657562Z --- ruff check: exit 0
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:50.2661294Z === ruff format: ruff format --check . ===
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:50.7319287Z 489 files already formatted
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:50.7343037Z --- ruff format: exit 0
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:40:50.7343604Z === mypy: mypy ===
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:09.5855612Z Success: no issues found in 146 source files
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:09.6016448Z --- mypy: exit 0
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:09.6027056Z === pytest: pytest -q ===
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:36.2151931Z ........................................................................ [  1%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:36.3001402Z ........................................................................ [  2%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:37.3178665Z ........................................................................ [  3%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:37.4387532Z ........................................................................ [  4%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:37.6683969Z .................s...................................................... [  5%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:37.8833404Z ........................................................................ [  6%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:38.1475311Z ........................................................................ [  7%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:38.3601558Z ........................................................................ [  8%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:38.4793267Z ........................................................................ [  9%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:38.6415508Z ........................................................................ [ 10%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:39.8071065Z ........................................................................ [ 11%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:41.3789281Z ........................................................................ [ 12%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:41:43.6735941Z ........................................................................ [ 13%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:42:48.3051933Z ........................................................................ [ 14%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:42:48.8740573Z ........................................................................ [ 15%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:42:54.1743052Z ........................................................................ [ 16%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:28.9121442Z ...........................s............................................ [ 17%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:29.6245368Z ........................................................................ [ 19%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:32.9753970Z ........................................................................ [ 20%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:33.9251821Z ........................................................................ [ 21%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:33.9645718Z ........................................................................ [ 22%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:34.0449911Z ........................................................................ [ 23%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:36.5685614Z ........................................................................ [ 24%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:42.3463679Z ........................................................................ [ 25%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:45.2333863Z ........................................................................ [ 26%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:43:59.3164578Z ........................................................................ [ 27%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:09.8624814Z ........................................................................ [ 28%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:26.3204894Z ........................................................................ [ 29%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:31.5548005Z ........................................................................ [ 30%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:40.6845559Z ........................................................................ [ 31%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:41.1248957Z ........................................................................ [ 32%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:42.9274274Z ........................................................................ [ 33%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:43.0333977Z ........................................................................ [ 34%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:43.2923666Z ........................................................................ [ 35%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:43.4189640Z ........................................................................ [ 36%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:45.6733110Z ........................................................................ [ 38%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:46.3090789Z ........................................................................ [ 39%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:47.5980076Z ........................................................................ [ 40%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:48.4727676Z ........................................................................ [ 41%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:44:50.3019902Z ........................................................................ [ 42%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:05.7237819Z ........................................................................ [ 43%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:10.4469216Z ........................................................................ [ 44%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:16.0624000Z ........................................................................ [ 45%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:19.2453855Z ........................................................................ [ 46%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:21.2434441Z ........................................................................ [ 47%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:29.7417091Z ........................................................................ [ 48%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:40.8639681Z ........................................................................ [ 49%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:41.0048883Z ........................................................................ [ 50%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:43.6816990Z ........................................................................ [ 51%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:47.3618519Z ss...................................................................... [ 52%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:53.6587436Z ........................................................................ [ 53%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:56.1011965Z ........................................................................ [ 54%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:45:59.8531993Z .s...................................................................... [ 55%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:46:03.0116707Z ........................................................................ [ 57%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:46:11.8196952Z ........................................................................ [ 58%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:46:17.0264765Z ........................................................................ [ 59%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:46:20.5072115Z ........................................................................ [ 60%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:46:24.5480441Z ........................................................................ [ 61%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:46:25.9436358Z ........................................................................ [ 62%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:46:27.8182125Z ........................................................................ [ 63%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:46:37.5028161Z ........................................................................ [ 64%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:47:09.3567606Z ........................................................................ [ 65%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:47:40.3636553Z ........................................................................ [ 66%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:49:52.3478581Z ........................................................................ [ 67%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:50:04.4852051Z ........................................................................ [ 68%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:52:08.5599533Z ........................................................................ [ 69%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:52:15.2707851Z ........................................................................ [ 70%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:52:15.3594134Z ........................................................................ [ 71%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:53:16.1787656Z ........................................................................ [ 72%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:53:16.2168228Z ........................................................................ [ 73%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:53:18.9804875Z ........................................................................ [ 74%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:53:24.1690197Z ........................................................................ [ 76%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:53:30.0954038Z ........................................................................ [ 77%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:53:50.9607165Z ........................................................................ [ 78%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:53:58.6374518Z ........................................................................ [ 79%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:54:04.8281893Z ........................................................................ [ 80%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:54:13.8803262Z ........................................................................ [ 81%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:54:20.7788655Z ........................................................................ [ 82%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:54:25.3013307Z ........................................................................ [ 83%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:54:43.9853887Z ........................................................................ [ 84%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:55:07.9894661Z ........................................................................ [ 85%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:27.8107280Z ........................................................................ [ 86%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:30.4725363Z ........................................................................ [ 87%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:31.5181315Z ........................................................................ [ 88%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:45.7333411Z ........................................................................ [ 89%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:45.7753405Z ........................................................................ [ 90%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:49.9774927Z ........................................................................ [ 91%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:52.1423184Z ........................................................................ [ 92%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:56.6833020Z ........................................................................ [ 93%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:56:57.2718485Z ........................................................................ [ 95%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:58:14.4903321Z ........................................................................ [ 96%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:58:24.6284503Z ....sss................................................................. [ 97%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:58:51.1174965Z ........................................................................ [ 98%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:58:51.6143257Z ........................................................................ [ 99%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:58:59.7362629Z ....................................................                     [100%]
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:58:59.7363685Z 6812 passed, 8 skipped in 1069.77s (0:17:49)
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:59:01.4097976Z --- pytest: exit 0
+check (ubuntu-24.04-arm)	Run checks	2026-10-02T12:59:01.4101612Z === check.sh: PASSED ===
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	﻿2026-10-02T12:59:01.4141049Z ##[group]Run PYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4141790Z ^[[36;1mPYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json^[[0m
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4178771Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4179224Z env:
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4179464Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4179757Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4180004Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4180338Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4180856Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4181314Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4181773Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4182199Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4182641Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:01.4183109Z ##[endgroup]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1445792Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1456501Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1598382Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1616786Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1623260Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1624104Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1624818Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1626279Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1626690Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1627064Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1627388Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1627704Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1628331Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1629091Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1629731Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 52.11447523132472 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1630341Z Function H_S3_vapor (0xab29ff2ec820)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1630740Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 52.1145, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1631150Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1631806Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1632498Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1632893Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1633539Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1634209Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1634861Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1635496Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1635823Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1636528Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1636897Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1637199Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1637798Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1638510Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1639127Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 231.05723761566236 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1639723Z Function H_S3_vapor (0xab29ff2ec820)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1640095Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 231.057, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1640974Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1641677Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1642347Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1642740Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1643387Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1644032Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1644699Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1645333Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1645667Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1646251Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1646599Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1646922Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1647520Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1648249Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1648868Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 52.11447523132472 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1649468Z Function H_S3_vapor (0xab29ff2ec820)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1649867Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 52.1145, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1650271Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1650912Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1651588Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1652279Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1652978Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1653629Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1654299Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1654937Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1655262Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1655619Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1655923Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1656355Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1656941Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1657660Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1658410Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 219.87331496664126 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1659067Z Function H_S3_vapor (0xab29ff2ec820)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:04.1659450Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 219.873, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0315429Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0318897Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0319701Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0320224Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0321015Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0321739Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0325853Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0326771Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0327100Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0327473Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0327765Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0328060Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0328749Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0330165Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0332803Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132858 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0333463Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0333866Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0334341Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0335110Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0335819Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0338031Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0338790Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0339459Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0340138Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0340782Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0341111Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0341475Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0341782Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0342091Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0342669Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0343379Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0344003Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132858 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0345043Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0345457Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0345880Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0349258Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0349932Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0350349Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0351131Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0354771Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0355639Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0356520Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0358925Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0359352Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0359684Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0359988Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0360576Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0361290Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0361909Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132858 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0362493Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0362878Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0363340Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0364029Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0364705Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0365116Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0365852Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0370827Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0371791Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0372860Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0384858Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0385395Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0385727Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0386209Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0386851Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0387582Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0388214Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132847 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0388879Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0389303Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0389712Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0390362Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0391049Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0391462Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0392126Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0392769Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0393424Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0394049Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0394375Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0394732Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0395034Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0395726Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0396572Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0397327Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0397963Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132847 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0398566Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0398977Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0399430Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0400088Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0400765Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0401171Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0401816Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0402466Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0403114Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0403753Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0404083Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0404445Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0404758Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0405067Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0405645Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0406545Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0407145Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.0791140413283 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0407723Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0408094Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0408528Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0409144Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0409787Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0410561Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0411218Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0411872Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0412522Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0413150Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0413480Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0413838Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0414145Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0414457Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0415037Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0415738Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0416565Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132807 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0417168Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0417556Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0418343Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0422242Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0422883Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0423272Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0424067Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0425101Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0430243Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0430940Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0431287Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0431654Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0432040Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0432352Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0432920Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0433615Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0434231Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132767 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0434817Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0435196Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0435647Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0436928Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0437548Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0437947Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0438601Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0439360Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0441882Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0442574Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0442910Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0443280Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0443607Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0443918Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0444494Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0445215Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0445840Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132665 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0446943Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0447315Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0447732Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0451080Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0451728Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0452106Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0452745Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0453350Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0453976Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0454598Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0454897Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0455239Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0455520Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0455806Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0456461Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0457167Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0457770Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132477 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0458356Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0458733Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0461728Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0465624Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0466350Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0469162Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0469971Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0470604Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0471230Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0471837Z     return _unwrap(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0472136Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0472463Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0472742Z         self._block_id,
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0473020Z     )
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0473564Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0474253Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0474853Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132102 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0475442Z Function H_S3_vapor (0xab29ff0b08d0)
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:06.0475830Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:32.0532406Z structural_sha256 = ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+check (ubuntu-24.04-arm)	Emit the R0 structural identity	2026-10-02T12:59:32.0533080Z events = 8, checks = 136
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	﻿2026-10-02T12:59:32.2392732Z ##[group]Run PYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2393421Z ^[[36;1mPYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json^[[0m
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2430522Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2430784Z env:
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2430966Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2431173Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2431384Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2431645Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2432078Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2432485Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2432848Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2433219Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2433588Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib
+check (ubuntu-24.04-arm)	Emit T02's R1/R2 floats	2026-10-02T12:59:32.2433969Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	﻿2026-10-02T12:59:33.3316846Z ##[group]Run actions/upload-artifact@v4
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3317168Z with:
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3317382Z   name: structural-identity-ubuntu-24.04-arm
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3317677Z   path: identity.json
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	t02-floats.json
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3317930Z   if-no-files-found: error
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3318146Z   compression-level: 6
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3318346Z   overwrite: false
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3318566Z   include-hidden-files: false
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3318784Z env:
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3318954Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3319158Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3319347Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3319606Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3320009Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3320419Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3320783Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3321149Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/arm64
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3321584Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/arm64/lib
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.3321889Z ##[endgroup]
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.4810254Z (node:4551) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.4811732Z (Use `node --trace-deprecation ...` to show where the warning was created)
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.4863873Z Multiple search paths detected. Calculating the least common ancestor of all paths
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.4871508Z The least common ancestor is /home/runner/work/openflowsheet/openflowsheet. This will be the root directory of the artifact
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.4872254Z With the provided path, there will be 2 files uploaded
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.4875517Z Artifact name is valid!
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.4877340Z Root directory input is valid!
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.7933017Z Beginning upload of artifact content to blob storage
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:33.8441924Z (node:4551) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:34.1848622Z Uploaded bytes 190001
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:34.2432221Z Finished uploading artifact content to blob storage!
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:34.2433235Z SHA256 digest of uploaded artifact zip is aa6a9029d52c5cad3cf75fd1eee46518385fbd0baa487e2a836201705cfed30c
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:34.2435130Z Finalizing artifact upload
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:34.5023600Z Artifact structural-identity-ubuntu-24.04-arm.zip successfully finalized. Artifact ID 11227487017
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:34.5024502Z Artifact structural-identity-ubuntu-24.04-arm has been successfully uploaded! Final size is 190001 bytes. Artifact ID is 11227487017
+check (ubuntu-24.04-arm)	Run actions/upload-artifact@v4	2026-10-02T12:59:34.5025492Z Artifact download URL: https://github.com/computational-chemical-engineering/openflowsheet/actions/runs/37008077757/artifacts/11227487017
+check (ubuntu-24.04-arm)	Post Run actions/setup-python@v5	﻿2026-10-02T12:59:34.5193839Z Post job cleanup.
+check (ubuntu-24.04-arm)	Post Run actions/setup-python@v5	2026-10-02T12:59:34.6257198Z (node:4563) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+check (ubuntu-24.04-arm)	Post Run actions/setup-python@v5	2026-10-02T12:59:34.6257934Z (Use `node --trace-deprecation ...` to show where the warning was created)
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	﻿2026-10-02T12:59:34.6391439Z Post job cleanup.
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7131029Z [command]/usr/bin/git version
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7172389Z git version 2.55.0
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7207855Z Temporarily overriding HOME='/home/runner/work/_temp/69924593-22da-4e5d-b895-3caf199d7a79' before making global git config changes
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7208744Z Adding repository directory to the temporary git global config as a safe directory
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7216205Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7259167Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7301863Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7501897Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7527422Z http.https://github.com/.extraheader
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7538810Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7583986Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7798062Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (ubuntu-24.04-arm)	Post Run actions/checkout@v4	2026-10-02T12:59:34.7824516Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check (ubuntu-24.04-arm)	Complete job	﻿2026-10-02T12:59:34.8181251Z Cleaning up orphan processes
+check (ubuntu-24.04-arm)	Complete job	2026-10-02T12:59:34.8496773Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

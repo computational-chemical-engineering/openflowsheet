@@ -1,0 +1,254 @@
+# T06 ProcessRevision: SYN-001-T06-REF07
+#
+# SYN-001-T06-REF07: reference comparison REF-07, conversion reactor.
+#
+# Written to docs/derivations/T06-corpus-spec.md §9.2 and docs/design/T05-generalization.md
+# §1.3 (the revision encoding R1-R6): instances in flow order, feeds first (the declaration
+# order); material connections in the specification's stream order (the stream allocation
+# order). Every model instance and pin is copied from a registered case with only its id, target
+# and stated value changed. Validates against schemas/process-revision.schema.json; binds by
+# application.revision_binding. `content_hash` is absent, as in every registered revision.
+schema_version: 1
+revision_id: SYN-001-T06-REF07-r1
+parent_revision: null
+title: 'SYN-001-T06-REF07: reference comparison REF-07, conversion reactor.'
+description: Feed (1.2, 0.9, 0.3) mol/s at 300 K and P_r, liquid -> conversion reactor (2A + B -> 3C,
+  X_A = 0.5, 315 K) -> sink. T06 spec §9.2 (REF-07); compared quantities in benchmarks/t06/reference_values.yaml
+  closed_form.reference_fixtures.REF-07.
+component_set:
+  record_source: benchmarks/syn001/components.yaml
+  components:
+  - A
+  - B
+  - C
+instances:
+- id: U-FEED
+  model:
+    id: syn001.feed_source
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: feed
+  parameters: {}
+  policy:
+    fidelity: boundary condition; the fresh feed state is fully specified
+    validity: SYN-001 declared domain 280-440 K, 50000-200000 Pa
+- id: U-RX
+  model:
+    id: syn001.conversion_reactor
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: reactor
+  parameters:
+    nu.A:
+      value: -2.0
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Stoichiometric coefficient of A in the one reaction 2A + B -> 3C (T05 spec §6.4)
+      role: fixed
+    nu.B:
+      value: -1.0
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Stoichiometric coefficient of B in the one reaction 2A + B -> 3C (T05 spec §6.4)
+      role: fixed
+    nu.C:
+      value: 3.0
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Stoichiometric coefficient of C in the one reaction 2A + B -> 3C (T05 spec §6.4)
+      role: fixed
+    conversion.A:
+      value: 0.5
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Conversion X of the key reactant A (the key is the name's suffix, design note §1.3)
+      role: fixed
+      bounds:
+        lower: 0.0
+        upper: 1.0
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the reactor; zero here, imposed as an equation P_out = P_in
+        rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: one reaction at a specified conversion of the key reactant and a specified outlet temperature;
+      duty calculated (T05 spec §6, ADR 0011 D2)
+    validity: SYN-001 declared domain; lifted outlet
+- id: U-SINK
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+connections:
+- id: S1
+  kind: material
+  from:
+    instance: U-FEED
+    port: outlet
+  to:
+    instance: U-RX
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Feed: (1.2, 0.9, 0.3) mol/s at 300 K and P_r, liquid.'
+- id: S2
+  kind: material
+  from:
+    instance: U-RX
+    port: outlet
+  to:
+    instance: U-SINK
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor_liquid
+  notes: Reactor outlet at 315 K, lifted.
+specifications:
+- id: SPEC-S1-n-A
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: A
+  kind: molar_flow
+  unit: mol/s
+  value: 1.2
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-n-B
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: B
+  kind: molar_flow
+  unit: mol/s
+  value: 0.9
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-n-C
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: C
+  kind: molar_flow
+  unit: mol/s
+  value: 0.3
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-T
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 300.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed temperature.
+- id: SPEC-S1-P
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed pressure.
+- id: SPEC-reactor-outlet-T
+  target:
+    object_type: connection
+    object_id: S2
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 315.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Reactor outlet temperature (the reactor's energy specification); the duty is calculated.
+provenance:
+  actor: Opus 5.5 (T06 M1, build lane, from the design-lane specification)
+  operation: create
+  timestamp: '2026-09-25T00:00:00Z'
+  source_references:
+  - docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  - docs/design/T05-generalization.md §1.3
+  - benchmarks/t06/reference_values.yaml closed_form.reference_fixtures
+  notes: Hand-specified fixture input. No solver has run on this revision.

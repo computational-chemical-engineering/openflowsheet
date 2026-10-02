@@ -1,0 +1,779 @@
+{
+  "models": [
+    {
+      "choices": [],
+      "model_id": "syn001.adiabatic_mixer",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": "many",
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        }
+      ],
+      "required": [],
+      "zero": [
+        "pressure_drop"
+      ]
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.component_separator",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "top"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "bottom"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "duty"
+        }
+      ],
+      "required": [
+        "split.{component}"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [
+        {
+          "name": "energy_specification",
+          "options": [
+            {
+              "name": "outlet_temperature",
+              "port": "outlet",
+              "quantity": "temperature",
+              "specifications": [
+                {
+                  "component": null,
+                  "fixes": [
+                    "outlet_temperature"
+                  ],
+                  "kind": "temperature",
+                  "object_id": "{connection:outlet}",
+                  "object_type": "connection",
+                  "path": "state.T",
+                  "si_unit": "K"
+                }
+              ]
+            },
+            {
+              "name": "duty",
+              "port": null,
+              "quantity": "duty",
+              "specifications": [
+                {
+                  "component": null,
+                  "fixes": [
+                    "duty"
+                  ],
+                  "kind": "heat_rate",
+                  "object_id": "{instance}",
+                  "object_type": "instance",
+                  "path": "duty.Q",
+                  "si_unit": "W"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "model_id": "syn001.conversion_reactor",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "duty"
+        }
+      ],
+      "required": [
+        "nu.{component}",
+        "conversion.{key}",
+        "pressure_drop"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.feed_source",
+      "pins": [
+        {
+          "name": "flows",
+          "port": "outlet",
+          "quantity": "flow",
+          "specifications": [
+            {
+              "component": "{component}",
+              "fixes": [
+                "flows"
+              ],
+              "kind": "molar_flow",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.n",
+              "si_unit": "mol/s"
+            }
+          ]
+        },
+        {
+          "name": "temperature",
+          "port": "outlet",
+          "quantity": "temperature",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "temperature"
+              ],
+              "kind": "temperature",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.T",
+              "si_unit": "K"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "temperature"
+              ],
+              "kind": "temperature",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.T",
+              "si_unit": "K"
+            }
+          ]
+        },
+        {
+          "name": "pressure",
+          "port": "outlet",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        }
+      ],
+      "required": [],
+      "zero": []
+    },
+    {
+      "choices": [
+        {
+          "name": "specification",
+          "options": [
+            {
+              "name": "hot_outlet_temperature",
+              "port": "hot_outlet",
+              "quantity": "temperature",
+              "specifications": [
+                {
+                  "component": null,
+                  "fixes": [
+                    "hot_outlet_temperature"
+                  ],
+                  "kind": "temperature",
+                  "object_id": "{connection:hot_outlet}",
+                  "object_type": "connection",
+                  "path": "state.T",
+                  "si_unit": "K"
+                }
+              ]
+            },
+            {
+              "name": "cold_outlet_temperature",
+              "port": "cold_outlet",
+              "quantity": "temperature",
+              "specifications": [
+                {
+                  "component": null,
+                  "fixes": [
+                    "cold_outlet_temperature"
+                  ],
+                  "kind": "temperature",
+                  "object_id": "{connection:cold_outlet}",
+                  "object_type": "connection",
+                  "path": "state.T",
+                  "si_unit": "K"
+                }
+              ]
+            },
+            {
+              "name": "duty",
+              "port": null,
+              "quantity": "duty",
+              "specifications": [
+                {
+                  "component": null,
+                  "fixes": [
+                    "duty"
+                  ],
+                  "kind": "heat_rate",
+                  "object_id": "{instance}",
+                  "object_type": "instance",
+                  "path": "duty.Q",
+                  "si_unit": "W"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "model_id": "syn001.heat_exchanger",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "hot_inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "hot_outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "cold_inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "cold_outlet"
+        }
+      ],
+      "required": [],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.kinetic_cstr",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "duty"
+        }
+      ],
+      "required": [
+        "nu.{component}",
+        "damkohler.{key}",
+        "T_ref",
+        "T_scale",
+        "coolant_flow",
+        "coolant_cp",
+        "T_coolant",
+        "pressure_drop"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.liquid_pump",
+      "pins": [
+        {
+          "name": "outlet_pressure",
+          "port": "outlet",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "work"
+        }
+      ],
+      "required": [
+        "efficiency"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.ph_flash",
+      "pins": [
+        {
+          "name": "duty",
+          "port": null,
+          "quantity": "duty",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "duty"
+              ],
+              "kind": "heat_rate",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "duty.Q",
+              "si_unit": "W"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "vapor"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "liquid"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "duty"
+        }
+      ],
+      "required": [
+        "pressure_drop"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.product_sink",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        }
+      ],
+      "required": [],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.stream_splitter",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "recycle"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "purge"
+        }
+      ],
+      "required": [
+        "split_fraction"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.tp_flash",
+      "pins": [
+        {
+          "name": "temperature",
+          "port": "vapor",
+          "quantity": "temperature",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "temperature"
+              ],
+              "kind": "temperature",
+              "object_id": "{connection:vapor}",
+              "object_type": "connection",
+              "path": "state.T",
+              "si_unit": "K"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "temperature",
+                "liquid_temperature"
+              ],
+              "kind": "temperature",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.T",
+              "si_unit": "K"
+            }
+          ]
+        },
+        {
+          "name": "pressure",
+          "port": "vapor",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:vapor}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "pressure",
+                "liquid_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        },
+        {
+          "name": "liquid_temperature",
+          "port": "liquid",
+          "quantity": "temperature",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "liquid_temperature"
+              ],
+              "kind": "temperature",
+              "object_id": "{connection:liquid}",
+              "object_type": "connection",
+              "path": "state.T",
+              "si_unit": "K"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "liquid_temperature",
+                "temperature"
+              ],
+              "kind": "temperature",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.T",
+              "si_unit": "K"
+            }
+          ]
+        },
+        {
+          "name": "liquid_pressure",
+          "port": "liquid",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "liquid_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:liquid}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "liquid_pressure",
+                "pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "vapor"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "liquid"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "duty"
+        }
+      ],
+      "required": [],
+      "zero": [
+        "pressure_drop"
+      ]
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.tp_heater",
+      "pins": [
+        {
+          "name": "outlet_temperature",
+          "port": "outlet",
+          "quantity": "temperature",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "outlet_temperature"
+              ],
+              "kind": "temperature",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.T",
+              "si_unit": "K"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "outlet_temperature"
+              ],
+              "kind": "temperature",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.T",
+              "si_unit": "K"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "duty"
+        }
+      ],
+      "required": [],
+      "zero": [
+        "pressure_drop"
+      ]
+    },
+    {
+      "choices": [],
+      "model_id": "syn001.valve",
+      "pins": [
+        {
+          "name": "outlet_pressure",
+          "port": "outlet",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        }
+      ],
+      "required": [],
+      "zero": []
+    }
+  ]
+}

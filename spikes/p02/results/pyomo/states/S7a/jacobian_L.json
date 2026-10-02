@@ -1,0 +1,32 @@
+{
+ "status": "invalid_trial_state",
+ "message": "T = 450.0 K is outside the closed domain [280.0, 440.0] K",
+ "phase_signature": null,
+ "model_version": "P02-L-form-v1",
+ "constants_sha256": "0d91ffeeed88e9b9c03be1b62a4827927764fb6d9d49d2e06b59aeada29bdccc",
+ "state_sha256": "1759ff299b3edab85673fb051a41386f31d4aec963d663b3b51526b92ff916a7",
+ "counters": {
+  "K": {
+   "value_calls": 0,
+   "jacobian_calls": 1
+  },
+  "H": {
+   "value_calls": 0,
+   "jacobian_calls": 0
+  }
+ },
+ "accuracy": "exact-double",
+ "pattern_provenance": "backend-declared",
+ "source_map": [],
+ "format": "csc",
+ "row_ids": [],
+ "col_ids": [],
+ "indptr": [],
+ "indices": [],
+ "data": [],
+ "nnz": 0,
+ "raw_shape": [
+  17,
+  17
+ ]
+}

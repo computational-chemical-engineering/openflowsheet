@@ -1,0 +1,39 @@
+{
+  "job_id": "job-000001",
+  "operation": "solve",
+  "request": {
+    "operation": "solve",
+    "idempotency_key": "fixture-cancelled-while-queued",
+    "budgets": {
+      "wall_time_s": null
+    },
+    "body": {
+      "revision_id": "syn001-nominal",
+      "policy_id": "default",
+      "check_tolerances": {},
+      "max_property_calls": null
+    }
+  },
+  "request_sha256": "d8444e92a64ba33b165d8b3f86449cb148635251919d031aec6c17686849d0d2",
+  "principal_id": "local-owner",
+  "capability_id": "local-owner",
+  "policy_sha256": "a3603643f8038f01b2890e15a180fce2ba9e25a3c56362da72b7c058109f6e78",
+  "status": "cancelled",
+  "outputs": [],
+  "progress": null,
+  "effective_budgets": {
+    "wall_time_s": null,
+    "max_property_calls": 10000
+  },
+  "cancel_requested": true,
+  "event_count": 3,
+  "created_at": "2026-09-27T11:59:54.889920Z",
+  "started_at": null,
+  "ended_at": "2026-09-27T11:59:54.897227Z",
+  "ending": {
+    "status": "cancelled",
+    "reason": "cancel_requested",
+    "interruption": null
+  },
+  "error": null
+}

@@ -1,0 +1,23 @@
+# Invalid Specification: both a fixed value and bounds.
+#
+# A target is either pinned or bounded. Carrying both leaves it ambiguous whether the
+# quantity is eliminated as fixed or retained as free, which changes the degree-of-freedom
+# count that validation reports.
+expect_error: is not valid under any of the given schemas
+document:
+  id: SPEC-flash-T-ambiguous
+  target:
+    object_type: instance
+    object_id: flash
+    path: outlet.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 360.0
+  bounds:
+    lower: 350.0
+    upper: 370.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: deliberately malformed fixture

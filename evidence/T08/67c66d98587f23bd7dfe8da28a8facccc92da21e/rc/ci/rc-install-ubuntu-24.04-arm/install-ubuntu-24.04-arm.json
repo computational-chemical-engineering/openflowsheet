@@ -1,0 +1,73 @@
+{
+ "checks": [
+  {
+   "cwd": "/home/runner/work/_temp/outside",
+   "id": "a44.outside_the_tree",
+   "package": "/home/runner/work/_temp/clean/lib/python3.13/site-packages/openflowsheet/__init__.py",
+   "result": "pass"
+  },
+  {
+   "id": "a44.wheel_version",
+   "result": "pass",
+   "version": "0.1.0rc1"
+  },
+  {
+   "id": "a44.versions_are_the_locks",
+   "installed": 9,
+   "off_lock": [],
+   "result": "pass"
+  },
+  {
+   "id": "a44.pip_check",
+   "output": "No broken requirements found.",
+   "result": "pass"
+  },
+  {
+   "expected": "7a243303038920a021f9378886301fd25440730425c85b6c5432c614fb3d122d",
+   "found": "7a243303038920a021f9378886301fd25440730425c85b6c5432c614fb3d122d",
+   "id": "a44.casadi_files_equal_a30",
+   "result": "pass",
+   "summary": "docs/t08-a30/t08-a30-aarch64.json"
+  },
+  {
+   "id": "a44.cli_solve_exit",
+   "result": "pass",
+   "stderr": "",
+   "stdout": "case              SYN-001-nominal\noutcome           CONVERGED\nverification      VERIFIED\nstructural sha256 16ae2bd4ab03810597147f4daa3894fb123ead2bb0e36548ef75fd28b3ce773b\nbundle            /tmp/tmpd5f45m5j/bundle\n"
+  },
+  {
+   "id": "a44.converged_verified",
+   "outcome": "CONVERGED",
+   "result": "pass",
+   "verdict": "VERIFIED"
+  },
+  {
+   "id": "a44.registered_checks",
+   "n": 136,
+   "result": "pass"
+  },
+  {
+   "differences": [],
+   "id": "a44.certificate_within_policy",
+   "registered": "tests/fixtures/schemas/solution_certificate/valid/syn001_nominal_verified.json",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "machine": "aarch64",
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "python": "3.13.15",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "install-check"
+}

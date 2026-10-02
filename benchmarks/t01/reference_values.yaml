@@ -1,0 +1,3009 @@
+generated_by: Fable 5.1, docs/derivations/scripts/t01_reference.py, from the SYN-001 equations (derivation
+  §4, lifted form of ADR 0001 D2.5) transcribed by hand, the plan §3.2 topology, and the definitions of
+  T01-structural-spec.md; every algorithm written from its definition
+specification: docs/derivations/T01-structural-spec.md
+independence: closed-form structural expectations; no compiler, graph-layer, solver, oracle or process_runtime
+  code was used. The `measured` block is observation from a probe of main@f603e9b, labelled as such and
+  never an expectation.
+declaration:
+  variable_ids:
+  - S1.n.A
+  - S1.n.B
+  - S1.n.C
+  - S1.T
+  - S1.P
+  - S2.n.A
+  - S2.n.B
+  - S2.n.C
+  - S2.T
+  - S2.P
+  - S3.n.A
+  - S3.n.B
+  - S3.n.C
+  - S3.T
+  - S3.P
+  - S4.n.A
+  - S4.n.B
+  - S4.n.C
+  - S4.T
+  - S4.P
+  - S5.n.A
+  - S5.n.B
+  - S5.n.C
+  - S5.T
+  - S5.P
+  - S6.n.A
+  - S6.n.B
+  - S6.n.C
+  - S6.T
+  - S6.P
+  - S7.n.A
+  - S7.n.B
+  - S7.n.C
+  - S7.T
+  - S7.P
+  - U-HEAT.Q
+  - S3.vap.A
+  - S3.vap.B
+  - S3.vap.C
+  - S3.liq.A
+  - S3.liq.B
+  - S3.liq.C
+  - S3.V
+  - S3.L
+  - U-FLASH.Q
+  - S4.N
+  - S5.N
+  variable_kinds:
+    S1.n.A: molar_flow
+    S1.n.B: molar_flow
+    S1.n.C: molar_flow
+    S1.T: temperature
+    S1.P: pressure
+    S2.n.A: molar_flow
+    S2.n.B: molar_flow
+    S2.n.C: molar_flow
+    S2.T: temperature
+    S2.P: pressure
+    S3.n.A: molar_flow
+    S3.n.B: molar_flow
+    S3.n.C: molar_flow
+    S3.T: temperature
+    S3.P: pressure
+    S4.n.A: molar_flow
+    S4.n.B: molar_flow
+    S4.n.C: molar_flow
+    S4.T: temperature
+    S4.P: pressure
+    S5.n.A: molar_flow
+    S5.n.B: molar_flow
+    S5.n.C: molar_flow
+    S5.T: temperature
+    S5.P: pressure
+    S6.n.A: molar_flow
+    S6.n.B: molar_flow
+    S6.n.C: molar_flow
+    S6.T: temperature
+    S6.P: pressure
+    S7.n.A: molar_flow
+    S7.n.B: molar_flow
+    S7.n.C: molar_flow
+    S7.T: temperature
+    S7.P: pressure
+    U-HEAT.Q: heat_rate
+    U-FLASH.Q: heat_rate
+    S3.V: molar_flow
+    S3.L: molar_flow
+    S4.N: molar_flow
+    S5.N: molar_flow
+    S3.vap.A: molar_flow
+    S3.liq.A: molar_flow
+    S3.vap.B: molar_flow
+    S3.liq.B: molar_flow
+    S3.vap.C: molar_flow
+    S3.liq.C: molar_flow
+  equation_ids:
+  - U-FEED:FEED-n:A
+  - U-FEED:FEED-n:B
+  - U-FEED:FEED-n:C
+  - U-FEED:FEED-T
+  - U-FEED:FEED-P
+  - U-MIX:MIX-mole:A
+  - U-MIX:MIX-mole:B
+  - U-MIX:MIX-mole:C
+  - U-MIX:MIX-energy
+  - U-MIX:MIX-pressure:0
+  - U-MIX:MIX-pressure:1
+  - U-HEAT:HEAT-mole:A
+  - U-HEAT:HEAT-mole:B
+  - U-HEAT:HEAT-mole:C
+  - U-HEAT:HEAT-T
+  - U-HEAT:HEAT-pressure
+  - U-HEAT:HEAT-duty
+  - U-HEAT:HEAT-equilibrium:A
+  - U-HEAT:split:A
+  - U-HEAT:HEAT-equilibrium:B
+  - U-HEAT:split:B
+  - U-HEAT:HEAT-equilibrium:C
+  - U-HEAT:split:C
+  - U-HEAT:Vdef
+  - U-HEAT:Ldef
+  - U-FLASH:FLASH-mole:A
+  - U-FLASH:FLASH-equilibrium:A
+  - U-FLASH:FLASH-mole:B
+  - U-FLASH:FLASH-equilibrium:B
+  - U-FLASH:FLASH-mole:C
+  - U-FLASH:FLASH-equilibrium:C
+  - U-FLASH:FLASH-T:vapor
+  - U-FLASH:FLASH-T:liquid
+  - U-FLASH:FLASH-P:vapor
+  - U-FLASH:FLASH-P:liquid
+  - U-FLASH:FLASH-P:inlet
+  - U-FLASH:FLASH-duty
+  - U-FLASH:Ndef:vapor
+  - U-FLASH:Ndef:liquid
+  - U-SPLIT:SPLIT-recycle:A
+  - U-SPLIT:SPLIT-purge:A
+  - U-SPLIT:SPLIT-recycle:B
+  - U-SPLIT:SPLIT-purge:B
+  - U-SPLIT:SPLIT-recycle:C
+  - U-SPLIT:SPLIT-purge:C
+  - U-SPLIT:SPLIT-T:recycle
+  - U-SPLIT:SPLIT-T:purge
+  - U-SPLIT:SPLIT-P:recycle
+  - U-SPLIT:SPLIT-P:purge
+  row_kinds:
+    U-FEED:FEED-n:A: molar_flow
+    U-FEED:FEED-n:B: molar_flow
+    U-FEED:FEED-n:C: molar_flow
+    U-FEED:FEED-T: temperature
+    U-FEED:FEED-P: pressure
+    U-MIX:MIX-mole:A: molar_flow
+    U-MIX:MIX-mole:B: molar_flow
+    U-MIX:MIX-mole:C: molar_flow
+    U-MIX:MIX-energy: heat_rate
+    U-MIX:MIX-pressure:0: pressure
+    U-MIX:MIX-pressure:1: pressure
+    U-HEAT:HEAT-mole:A: molar_flow
+    U-HEAT:HEAT-mole:B: molar_flow
+    U-HEAT:HEAT-mole:C: molar_flow
+    U-HEAT:HEAT-T: temperature
+    U-HEAT:HEAT-pressure: pressure
+    U-HEAT:HEAT-duty: heat_rate
+    U-HEAT:HEAT-equilibrium:A: molar_flow_squared
+    U-HEAT:split:A: molar_flow
+    U-HEAT:HEAT-equilibrium:B: molar_flow_squared
+    U-HEAT:split:B: molar_flow
+    U-HEAT:HEAT-equilibrium:C: molar_flow_squared
+    U-HEAT:split:C: molar_flow
+    U-HEAT:Vdef: molar_flow
+    U-HEAT:Ldef: molar_flow
+    U-FLASH:FLASH-mole:A: molar_flow
+    U-FLASH:FLASH-equilibrium:A: molar_flow_squared
+    U-FLASH:FLASH-mole:B: molar_flow
+    U-FLASH:FLASH-equilibrium:B: molar_flow_squared
+    U-FLASH:FLASH-mole:C: molar_flow
+    U-FLASH:FLASH-equilibrium:C: molar_flow_squared
+    U-FLASH:FLASH-T:vapor: temperature
+    U-FLASH:FLASH-T:liquid: temperature
+    U-FLASH:FLASH-P:vapor: pressure
+    U-FLASH:FLASH-P:liquid: pressure
+    U-FLASH:FLASH-P:inlet: pressure
+    U-FLASH:FLASH-duty: heat_rate
+    U-FLASH:Ndef:vapor: molar_flow
+    U-FLASH:Ndef:liquid: molar_flow
+    U-SPLIT:SPLIT-recycle:A: molar_flow
+    U-SPLIT:SPLIT-purge:A: molar_flow
+    U-SPLIT:SPLIT-recycle:B: molar_flow
+    U-SPLIT:SPLIT-purge:B: molar_flow
+    U-SPLIT:SPLIT-recycle:C: molar_flow
+    U-SPLIT:SPLIT-purge:C: molar_flow
+    U-SPLIT:SPLIT-T:recycle: temperature
+    U-SPLIT:SPLIT-T:purge: temperature
+    U-SPLIT:SPLIT-P:recycle: pressure
+    U-SPLIT:SPLIT-P:purge: pressure
+  row_unit:
+    U-FEED:FEED-n:A: U-FEED
+    U-FEED:FEED-n:B: U-FEED
+    U-FEED:FEED-n:C: U-FEED
+    U-FEED:FEED-T: U-FEED
+    U-FEED:FEED-P: U-FEED
+    U-MIX:MIX-mole:A: U-MIX
+    U-MIX:MIX-mole:B: U-MIX
+    U-MIX:MIX-mole:C: U-MIX
+    U-MIX:MIX-energy: U-MIX
+    U-MIX:MIX-pressure:0: U-MIX
+    U-MIX:MIX-pressure:1: U-MIX
+    U-HEAT:HEAT-mole:A: U-HEAT
+    U-HEAT:HEAT-mole:B: U-HEAT
+    U-HEAT:HEAT-mole:C: U-HEAT
+    U-HEAT:HEAT-T: U-HEAT
+    U-HEAT:HEAT-pressure: U-HEAT
+    U-HEAT:HEAT-duty: U-HEAT
+    U-HEAT:HEAT-equilibrium:A: U-HEAT
+    U-HEAT:split:A: U-HEAT
+    U-HEAT:HEAT-equilibrium:B: U-HEAT
+    U-HEAT:split:B: U-HEAT
+    U-HEAT:HEAT-equilibrium:C: U-HEAT
+    U-HEAT:split:C: U-HEAT
+    U-HEAT:Vdef: U-HEAT
+    U-HEAT:Ldef: U-HEAT
+    U-FLASH:FLASH-mole:A: U-FLASH
+    U-FLASH:FLASH-equilibrium:A: U-FLASH
+    U-FLASH:FLASH-mole:B: U-FLASH
+    U-FLASH:FLASH-equilibrium:B: U-FLASH
+    U-FLASH:FLASH-mole:C: U-FLASH
+    U-FLASH:FLASH-equilibrium:C: U-FLASH
+    U-FLASH:FLASH-T:vapor: U-FLASH
+    U-FLASH:FLASH-T:liquid: U-FLASH
+    U-FLASH:FLASH-P:vapor: U-FLASH
+    U-FLASH:FLASH-P:liquid: U-FLASH
+    U-FLASH:FLASH-P:inlet: U-FLASH
+    U-FLASH:FLASH-duty: U-FLASH
+    U-FLASH:Ndef:vapor: U-FLASH
+    U-FLASH:Ndef:liquid: U-FLASH
+    U-SPLIT:SPLIT-recycle:A: U-SPLIT
+    U-SPLIT:SPLIT-purge:A: U-SPLIT
+    U-SPLIT:SPLIT-recycle:B: U-SPLIT
+    U-SPLIT:SPLIT-purge:B: U-SPLIT
+    U-SPLIT:SPLIT-recycle:C: U-SPLIT
+    U-SPLIT:SPLIT-purge:C: U-SPLIT
+    U-SPLIT:SPLIT-T:recycle: U-SPLIT
+    U-SPLIT:SPLIT-T:purge: U-SPLIT
+    U-SPLIT:SPLIT-P:recycle: U-SPLIT
+    U-SPLIT:SPLIT-P:purge: U-SPLIT
+  row_specification:
+    U-FEED:FEED-n:A: SPEC-feed-n-A
+    U-FEED:FEED-n:B: SPEC-feed-n-B
+    U-FEED:FEED-n:C: SPEC-feed-n-C
+    U-FEED:FEED-T: SPEC-feed-T
+    U-FEED:FEED-P: SPEC-feed-P
+    U-HEAT:HEAT-T: SPEC-heater-outlet-T
+    U-FLASH:FLASH-T:vapor: SPEC-flash-T
+    U-FLASH:FLASH-T:liquid: SPEC-flash-T
+    U-FLASH:FLASH-P:vapor: SPEC-flash-P
+    U-FLASH:FLASH-P:liquid: SPEC-flash-P
+    U-FLASH:FLASH-P:inlet: SPEC-flash-P
+  incidence:
+    U-FEED:FEED-n:A:
+    - S1.n.A
+    U-FEED:FEED-n:B:
+    - S1.n.B
+    U-FEED:FEED-n:C:
+    - S1.n.C
+    U-FEED:FEED-T:
+    - S1.T
+    U-FEED:FEED-P:
+    - S1.P
+    U-MIX:MIX-mole:A:
+    - S1.n.A
+    - S6.n.A
+    - S2.n.A
+    U-MIX:MIX-mole:B:
+    - S1.n.B
+    - S6.n.B
+    - S2.n.B
+    U-MIX:MIX-mole:C:
+    - S1.n.C
+    - S6.n.C
+    - S2.n.C
+    U-MIX:MIX-energy:
+    - S1.n.A
+    - S1.n.B
+    - S1.n.C
+    - S1.T
+    - S1.P
+    - S6.n.A
+    - S6.n.B
+    - S6.n.C
+    - S6.T
+    - S6.P
+    - S2.n.A
+    - S2.n.B
+    - S2.n.C
+    - S2.T
+    - S2.P
+    U-MIX:MIX-pressure:0:
+    - S1.P
+    - S2.P
+    U-MIX:MIX-pressure:1:
+    - S6.P
+    - S2.P
+    U-HEAT:HEAT-mole:A:
+    - S2.n.A
+    - S3.n.A
+    U-HEAT:HEAT-mole:B:
+    - S2.n.B
+    - S3.n.B
+    U-HEAT:HEAT-mole:C:
+    - S2.n.C
+    - S3.n.C
+    U-HEAT:HEAT-T:
+    - S3.T
+    U-HEAT:HEAT-pressure:
+    - S3.P
+    - S2.P
+    U-HEAT:HEAT-duty:
+    - S2.n.A
+    - S2.n.B
+    - S2.n.C
+    - S2.T
+    - S2.P
+    - S3.T
+    - S3.P
+    - S3.vap.A
+    - S3.vap.B
+    - S3.vap.C
+    - S3.liq.A
+    - S3.liq.B
+    - S3.liq.C
+    - U-HEAT.Q
+    U-HEAT:HEAT-equilibrium:A:
+    - S3.vap.A
+    - S3.L
+    - S3.liq.A
+    - S3.V
+    - S3.T
+    - S3.P
+    U-HEAT:split:A:
+    - S3.n.A
+    - S3.vap.A
+    - S3.liq.A
+    U-HEAT:HEAT-equilibrium:B:
+    - S3.vap.B
+    - S3.L
+    - S3.liq.B
+    - S3.V
+    - S3.T
+    - S3.P
+    U-HEAT:split:B:
+    - S3.n.B
+    - S3.vap.B
+    - S3.liq.B
+    U-HEAT:HEAT-equilibrium:C:
+    - S3.vap.C
+    - S3.L
+    - S3.liq.C
+    - S3.V
+    - S3.T
+    - S3.P
+    U-HEAT:split:C:
+    - S3.n.C
+    - S3.vap.C
+    - S3.liq.C
+    U-HEAT:Vdef:
+    - S3.V
+    - S3.vap.A
+    - S3.vap.B
+    - S3.vap.C
+    U-HEAT:Ldef:
+    - S3.L
+    - S3.liq.A
+    - S3.liq.B
+    - S3.liq.C
+    U-FLASH:FLASH-mole:A:
+    - S3.n.A
+    - S4.n.A
+    - S5.n.A
+    U-FLASH:FLASH-equilibrium:A:
+    - S4.n.A
+    - S5.N
+    - S5.n.A
+    - S4.N
+    - S4.T
+    - S4.P
+    U-FLASH:FLASH-mole:B:
+    - S3.n.B
+    - S4.n.B
+    - S5.n.B
+    U-FLASH:FLASH-equilibrium:B:
+    - S4.n.B
+    - S5.N
+    - S5.n.B
+    - S4.N
+    - S4.T
+    - S4.P
+    U-FLASH:FLASH-mole:C:
+    - S3.n.C
+    - S4.n.C
+    - S5.n.C
+    U-FLASH:FLASH-equilibrium:C:
+    - S4.n.C
+    - S5.N
+    - S5.n.C
+    - S4.N
+    - S4.T
+    - S4.P
+    U-FLASH:FLASH-T:vapor:
+    - S4.T
+    U-FLASH:FLASH-T:liquid:
+    - S5.T
+    U-FLASH:FLASH-P:vapor:
+    - S4.P
+    U-FLASH:FLASH-P:liquid:
+    - S5.P
+    U-FLASH:FLASH-P:inlet:
+    - S3.P
+    U-FLASH:FLASH-duty:
+    - S3.T
+    - S3.P
+    - S3.vap.A
+    - S3.vap.B
+    - S3.vap.C
+    - S3.liq.A
+    - S3.liq.B
+    - S3.liq.C
+    - S4.n.A
+    - S4.n.B
+    - S4.n.C
+    - S4.T
+    - S4.P
+    - S5.n.A
+    - S5.n.B
+    - S5.n.C
+    - S5.T
+    - S5.P
+    - U-FLASH.Q
+    U-FLASH:Ndef:vapor:
+    - S4.N
+    - S4.n.A
+    - S4.n.B
+    - S4.n.C
+    U-FLASH:Ndef:liquid:
+    - S5.N
+    - S5.n.A
+    - S5.n.B
+    - S5.n.C
+    U-SPLIT:SPLIT-recycle:A:
+    - S6.n.A
+    - S5.n.A
+    U-SPLIT:SPLIT-purge:A:
+    - S7.n.A
+    - S5.n.A
+    U-SPLIT:SPLIT-recycle:B:
+    - S6.n.B
+    - S5.n.B
+    U-SPLIT:SPLIT-purge:B:
+    - S7.n.B
+    - S5.n.B
+    U-SPLIT:SPLIT-recycle:C:
+    - S6.n.C
+    - S5.n.C
+    U-SPLIT:SPLIT-purge:C:
+    - S7.n.C
+    - S5.n.C
+    U-SPLIT:SPLIT-T:recycle:
+    - S6.T
+    - S5.T
+    U-SPLIT:SPLIT-T:purge:
+    - S7.T
+    - S5.T
+    U-SPLIT:SPLIT-P:recycle:
+    - S6.P
+    - S5.P
+    U-SPLIT:SPLIT-P:purge:
+    - S7.P
+    - S5.P
+  affine_rows:
+    U-FEED:FEED-n:A:
+      coefficients:
+        S1.n.A: 1
+      constant:
+      - - -1
+        - U-FEED.n_spec.A
+    U-FEED:FEED-n:B:
+      coefficients:
+        S1.n.B: 1
+      constant:
+      - - -1
+        - U-FEED.n_spec.B
+    U-FEED:FEED-n:C:
+      coefficients:
+        S1.n.C: 1
+      constant:
+      - - -1
+        - U-FEED.n_spec.C
+    U-FEED:FEED-T:
+      coefficients:
+        S1.T: 1
+      constant:
+      - - -1
+        - U-FEED.T_spec
+    U-FEED:FEED-P:
+      coefficients:
+        S1.P: 1
+      constant:
+      - - -1
+        - U-FEED.P_spec
+    U-MIX:MIX-mole:A:
+      coefficients:
+        S1.n.A: 1
+        S6.n.A: 1
+        S2.n.A: -1
+      constant: []
+    U-MIX:MIX-mole:B:
+      coefficients:
+        S1.n.B: 1
+        S6.n.B: 1
+        S2.n.B: -1
+      constant: []
+    U-MIX:MIX-mole:C:
+      coefficients:
+        S1.n.C: 1
+        S6.n.C: 1
+        S2.n.C: -1
+      constant: []
+    U-MIX:MIX-pressure:0:
+      coefficients:
+        S1.P: 1
+        S2.P: -1
+      constant: []
+    U-MIX:MIX-pressure:1:
+      coefficients:
+        S6.P: 1
+        S2.P: -1
+      constant: []
+    U-HEAT:HEAT-mole:A:
+      coefficients:
+        S2.n.A: 1
+        S3.n.A: -1
+      constant: []
+    U-HEAT:HEAT-mole:B:
+      coefficients:
+        S2.n.B: 1
+        S3.n.B: -1
+      constant: []
+    U-HEAT:HEAT-mole:C:
+      coefficients:
+        S2.n.C: 1
+        S3.n.C: -1
+      constant: []
+    U-HEAT:HEAT-T:
+      coefficients:
+        S3.T: 1
+      constant:
+      - - -1
+        - U-HEAT.T_spec
+    U-HEAT:HEAT-pressure:
+      coefficients:
+        S3.P: 1
+        S2.P: -1
+      constant:
+      - - -1
+        - U-HEAT.pressure_drop
+    U-HEAT:split:A:
+      coefficients:
+        S3.n.A: 1
+        S3.vap.A: -1
+        S3.liq.A: -1
+      constant: []
+    U-HEAT:split:B:
+      coefficients:
+        S3.n.B: 1
+        S3.vap.B: -1
+        S3.liq.B: -1
+      constant: []
+    U-HEAT:split:C:
+      coefficients:
+        S3.n.C: 1
+        S3.vap.C: -1
+        S3.liq.C: -1
+      constant: []
+    U-HEAT:Vdef:
+      coefficients:
+        S3.V: 1
+        S3.vap.A: -1
+        S3.vap.B: -1
+        S3.vap.C: -1
+      constant: []
+    U-HEAT:Ldef:
+      coefficients:
+        S3.L: 1
+        S3.liq.A: -1
+        S3.liq.B: -1
+        S3.liq.C: -1
+      constant: []
+    U-FLASH:FLASH-mole:A:
+      coefficients:
+        S3.n.A: 1
+        S4.n.A: -1
+        S5.n.A: -1
+      constant: []
+    U-FLASH:FLASH-mole:B:
+      coefficients:
+        S3.n.B: 1
+        S4.n.B: -1
+        S5.n.B: -1
+      constant: []
+    U-FLASH:FLASH-mole:C:
+      coefficients:
+        S3.n.C: 1
+        S4.n.C: -1
+        S5.n.C: -1
+      constant: []
+    U-FLASH:FLASH-T:vapor:
+      coefficients:
+        S4.T: 1
+      constant:
+      - - -1
+        - U-FLASH.T_spec
+    U-FLASH:FLASH-T:liquid:
+      coefficients:
+        S5.T: 1
+      constant:
+      - - -1
+        - U-FLASH.T_spec
+    U-FLASH:FLASH-P:vapor:
+      coefficients:
+        S4.P: 1
+      constant:
+      - - -1
+        - U-FLASH.P_spec
+    U-FLASH:FLASH-P:liquid:
+      coefficients:
+        S5.P: 1
+      constant:
+      - - -1
+        - U-FLASH.P_spec
+    U-FLASH:FLASH-P:inlet:
+      coefficients:
+        S3.P: 1
+      constant:
+      - - -1
+        - U-FLASH.P_spec
+    U-FLASH:Ndef:vapor:
+      coefficients:
+        S4.N: 1
+        S4.n.A: -1
+        S4.n.B: -1
+        S4.n.C: -1
+      constant: []
+    U-FLASH:Ndef:liquid:
+      coefficients:
+        S5.N: 1
+        S5.n.A: -1
+        S5.n.B: -1
+        S5.n.C: -1
+      constant: []
+    U-SPLIT:SPLIT-T:recycle:
+      coefficients:
+        S6.T: 1
+        S5.T: -1
+      constant: []
+    U-SPLIT:SPLIT-T:purge:
+      coefficients:
+        S7.T: 1
+        S5.T: -1
+      constant: []
+    U-SPLIT:SPLIT-P:recycle:
+      coefficients:
+        S6.P: 1
+        S5.P: -1
+      constant: []
+    U-SPLIT:SPLIT-P:purge:
+      coefficients:
+        S7.P: 1
+        S5.P: -1
+      constant: []
+  parameters_nominal:
+    U-FEED.n_spec.A: 1.0
+    U-FEED.n_spec.B: 1.0
+    U-FEED.n_spec.C: 1.0
+    U-FEED.T_spec: 300.0
+    U-FEED.P_spec: 100000.0
+    U-HEAT.T_spec: 350.0
+    U-HEAT.pressure_drop: 0.0
+    U-FLASH.T_spec: 360.0
+    U-FLASH.P_spec: 100000.0
+    U-SPLIT.split_fraction: 0.5
+  variant_parameters:
+    SYN-001-nominal:
+      U-FEED.n_spec.A: 1.0
+      U-FEED.n_spec.B: 1.0
+      U-FEED.n_spec.C: 1.0
+      U-FEED.T_spec: 300.0
+      U-FEED.P_spec: 100000.0
+      U-HEAT.T_spec: 350.0
+      U-HEAT.pressure_drop: 0.0
+      U-FLASH.T_spec: 360.0
+      U-FLASH.P_spec: 100000.0
+      U-SPLIT.split_fraction: 0.5
+    SYN-001-once-through:
+      U-FEED.n_spec.A: 1.0
+      U-FEED.n_spec.B: 1.0
+      U-FEED.n_spec.C: 1.0
+      U-FEED.T_spec: 300.0
+      U-FEED.P_spec: 100000.0
+      U-HEAT.T_spec: 350.0
+      U-HEAT.pressure_drop: 0.0
+      U-FLASH.T_spec: 360.0
+      U-FLASH.P_spec: 100000.0
+      U-SPLIT.split_fraction: 0.0
+    SYN-001-high-recycle:
+      U-FEED.n_spec.A: 1.0
+      U-FEED.n_spec.B: 1.0
+      U-FEED.n_spec.C: 1.0
+      U-FEED.T_spec: 300.0
+      U-FEED.P_spec: 100000.0
+      U-HEAT.T_spec: 350.0
+      U-HEAT.pressure_drop: 0.0
+      U-FLASH.T_spec: 360.0
+      U-FLASH.P_spec: 100000.0
+      U-SPLIT.split_fraction: 0.95
+    SYN-001-all-liquid-310K:
+      U-FEED.n_spec.A: 1.0
+      U-FEED.n_spec.B: 1.0
+      U-FEED.n_spec.C: 1.0
+      U-FEED.T_spec: 300.0
+      U-FEED.P_spec: 100000.0
+      U-HEAT.T_spec: 350.0
+      U-HEAT.pressure_drop: 0.0
+      U-FLASH.T_spec: 310.0
+      U-FLASH.P_spec: 100000.0
+      U-SPLIT.split_fraction: 0.5
+    SYN-001-all-vapor-420K:
+      U-FEED.n_spec.A: 1.0
+      U-FEED.n_spec.B: 1.0
+      U-FEED.n_spec.C: 1.0
+      U-FEED.T_spec: 300.0
+      U-FEED.P_spec: 100000.0
+      U-HEAT.T_spec: 350.0
+      U-HEAT.pressure_drop: 0.0
+      U-FLASH.T_spec: 420.0
+      U-FLASH.P_spec: 100000.0
+      U-SPLIT.split_fraction: 0.5
+  connections:
+  - - S1
+    - U-FEED
+    - U-MIX
+  - - S2
+    - U-MIX
+    - U-HEAT
+  - - S3
+    - U-HEAT
+    - U-FLASH
+  - - S4
+    - U-FLASH
+    - U-PRODUCT
+  - - S5
+    - U-FLASH
+    - U-SPLIT
+  - - S6
+    - U-SPLIT
+    - U-MIX
+  - - S7
+    - U-SPLIT
+    - U-PURGE
+  boundary_units:
+  - U-FEED
+  phase_selecting_units:
+  - U-HEAT
+  - U-FLASH
+  conflicting_row:
+    row_id: SPEC:SPEC-heater-duty
+    unit: U-HEAT
+    kind: heat_rate
+    columns:
+    - U-HEAT.Q
+    specification: SPEC-heater-duty
+    parameter: SPEC-heater-duty.value
+    value: 50000.0
+kind_tolerances:
+  pressure: 0.01
+  temperature: 1.0e-06
+cases:
+  SYN-001-nominal:
+    structural_counts:
+      free_variables: 47
+      equations: 49
+      matched: 47
+      unmatched: 2
+    nnz: 170
+    finding: STRUCTURALLY_CLOSED
+    dm_full:
+      over_rows:
+      - U-FEED:FEED-P
+      - U-MIX:MIX-pressure:0
+      - U-MIX:MIX-pressure:1
+      - U-HEAT:HEAT-pressure
+      - U-FLASH:FLASH-P:liquid
+      - U-FLASH:FLASH-P:inlet
+      - U-SPLIT:SPLIT-P:recycle
+      over_cols:
+      - S1.P
+      - S2.P
+      - S3.P
+      - S5.P
+      - S6.P
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-MIX:MIX-mole:A
+      - U-MIX:MIX-mole:B
+      - U-MIX:MIX-mole:C
+      - U-MIX:MIX-energy
+      - U-HEAT:HEAT-mole:A
+      - U-HEAT:HEAT-mole:B
+      - U-HEAT:HEAT-mole:C
+      - U-HEAT:HEAT-T
+      - U-HEAT:HEAT-duty
+      - U-HEAT:HEAT-equilibrium:A
+      - U-HEAT:split:A
+      - U-HEAT:HEAT-equilibrium:B
+      - U-HEAT:split:B
+      - U-HEAT:HEAT-equilibrium:C
+      - U-HEAT:split:C
+      - U-HEAT:Vdef
+      - U-HEAT:Ldef
+      - U-FLASH:FLASH-mole:A
+      - U-FLASH:FLASH-equilibrium:A
+      - U-FLASH:FLASH-mole:B
+      - U-FLASH:FLASH-equilibrium:B
+      - U-FLASH:FLASH-mole:C
+      - U-FLASH:FLASH-equilibrium:C
+      - U-FLASH:FLASH-T:vapor
+      - U-FLASH:FLASH-T:liquid
+      - U-FLASH:FLASH-P:vapor
+      - U-FLASH:FLASH-duty
+      - U-FLASH:Ndef:vapor
+      - U-FLASH:Ndef:liquid
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-purge:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-purge:B
+      - U-SPLIT:SPLIT-recycle:C
+      - U-SPLIT:SPLIT-purge:C
+      - U-SPLIT:SPLIT-T:recycle
+      - U-SPLIT:SPLIT-T:purge
+      - U-SPLIT:SPLIT-P:purge
+      square_cols:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S7.n.A
+      - S7.n.B
+      - S7.n.C
+      - S7.T
+      - S7.P
+      - U-HEAT.Q
+      - S3.vap.A
+      - S3.vap.B
+      - S3.vap.C
+      - S3.liq.A
+      - S3.liq.B
+      - S3.liq.C
+      - S3.V
+      - S3.L
+      - U-FLASH.Q
+      - S4.N
+      - S5.N
+    certified_rows:
+    - U-FLASH:FLASH-P:inlet
+    - U-SPLIT:SPLIT-P:recycle
+    certificates:
+    - row_id: U-FLASH:FLASH-P:inlet
+      equals:
+      - - U-HEAT:HEAT-pressure
+        - 1
+      - - U-MIX:MIX-pressure:0
+        - -1
+      - - U-FEED:FEED-P
+        - 1
+      constant_mismatch: 0.0
+      tolerance: 0.01
+      consistent: true
+    - row_id: U-SPLIT:SPLIT-P:recycle
+      equals:
+      - - U-MIX:MIX-pressure:1
+        - 1
+      - - U-MIX:MIX-pressure:0
+        - -1
+      - - U-FEED:FEED-P
+        - 1
+      - - U-FLASH:FLASH-P:liquid
+        - -1
+      constant_mismatch: 0.0
+      tolerance: 0.01
+      consistent: true
+    uncertified_affine_rows: []
+    dm_after_certificates:
+      over_rows: []
+      over_cols: []
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-MIX:MIX-mole:A
+      - U-MIX:MIX-mole:B
+      - U-MIX:MIX-mole:C
+      - U-MIX:MIX-energy
+      - U-MIX:MIX-pressure:0
+      - U-MIX:MIX-pressure:1
+      - U-HEAT:HEAT-mole:A
+      - U-HEAT:HEAT-mole:B
+      - U-HEAT:HEAT-mole:C
+      - U-HEAT:HEAT-T
+      - U-HEAT:HEAT-pressure
+      - U-HEAT:HEAT-duty
+      - U-HEAT:HEAT-equilibrium:A
+      - U-HEAT:split:A
+      - U-HEAT:HEAT-equilibrium:B
+      - U-HEAT:split:B
+      - U-HEAT:HEAT-equilibrium:C
+      - U-HEAT:split:C
+      - U-HEAT:Vdef
+      - U-HEAT:Ldef
+      - U-FLASH:FLASH-mole:A
+      - U-FLASH:FLASH-equilibrium:A
+      - U-FLASH:FLASH-mole:B
+      - U-FLASH:FLASH-equilibrium:B
+      - U-FLASH:FLASH-mole:C
+      - U-FLASH:FLASH-equilibrium:C
+      - U-FLASH:FLASH-T:vapor
+      - U-FLASH:FLASH-T:liquid
+      - U-FLASH:FLASH-P:vapor
+      - U-FLASH:FLASH-P:liquid
+      - U-FLASH:FLASH-duty
+      - U-FLASH:Ndef:vapor
+      - U-FLASH:Ndef:liquid
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-purge:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-purge:B
+      - U-SPLIT:SPLIT-recycle:C
+      - U-SPLIT:SPLIT-purge:C
+      - U-SPLIT:SPLIT-T:recycle
+      - U-SPLIT:SPLIT-T:purge
+      - U-SPLIT:SPLIT-P:purge
+      square_cols:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S5.P
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S6.P
+      - S7.n.A
+      - S7.n.B
+      - S7.n.C
+      - S7.T
+      - S7.P
+      - U-HEAT.Q
+      - S3.vap.A
+      - S3.vap.B
+      - S3.vap.C
+      - S3.liq.A
+      - S3.liq.B
+      - S3.liq.C
+      - S3.V
+      - S3.L
+      - U-FLASH.Q
+      - S4.N
+      - S5.N
+    excess: 0
+    deficit: 0
+    candidate_specification_rows: []
+    candidate_specifications: []
+    unit_degrees_of_freedom:
+      U-FEED:
+        columns: 5
+        model_rows: 0
+        model_rank: 0
+        dof: 5
+        specifications:
+        - SPEC-feed-n-A
+        - SPEC-feed-n-B
+        - SPEC-feed-n-C
+        - SPEC-feed-T
+        - SPEC-feed-P
+        specification_rows:
+        - U-FEED:FEED-n:A
+        - U-FEED:FEED-n:B
+        - U-FEED:FEED-n:C
+        - U-FEED:FEED-T
+        - U-FEED:FEED-P
+        over_specified: false
+        local_excess_rows: []
+      U-MIX:
+        columns: 5
+        model_rows: 6
+        model_rank: 5
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows:
+        - U-MIX:MIX-pressure:0
+        - U-MIX:MIX-pressure:1
+      U-HEAT:
+        columns: 14
+        model_rows: 13
+        model_rank: 13
+        dof: 1
+        specifications:
+        - SPEC-heater-outlet-T
+        specification_rows:
+        - U-HEAT:HEAT-T
+        over_specified: false
+        local_excess_rows: []
+      U-FLASH:
+        columns: 13
+        model_rows: 9
+        model_rank: 9
+        dof: 4
+        specifications:
+        - SPEC-flash-T
+        - SPEC-flash-T
+        - SPEC-flash-P
+        - SPEC-flash-P
+        specification_rows:
+        - U-FLASH:FLASH-T:vapor
+        - U-FLASH:FLASH-T:liquid
+        - U-FLASH:FLASH-P:vapor
+        - U-FLASH:FLASH-P:liquid
+        over_specified: false
+        local_excess_rows: []
+      U-PRODUCT:
+        columns: 0
+        model_rows: 0
+        model_rank: 0
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+      U-SPLIT:
+        columns: 10
+        model_rows: 9
+        model_rank: 9
+        dof: 1
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+      U-PURGE:
+        columns: 0
+        model_rows: 0
+        model_rank: 0
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+    over_specified_units: []
+    implicated_objects: []
+    canonical_matching:
+      S1.n.A: U-FEED:FEED-n:A
+      S1.n.B: U-FEED:FEED-n:B
+      S1.n.C: U-FEED:FEED-n:C
+      S1.T: U-FEED:FEED-T
+      S1.P: U-FEED:FEED-P
+      S2.n.A: U-MIX:MIX-mole:A
+      S2.n.B: U-MIX:MIX-mole:B
+      S2.n.C: U-MIX:MIX-mole:C
+      S2.T: U-MIX:MIX-energy
+      S2.P: U-MIX:MIX-pressure:0
+      S3.n.A: U-HEAT:HEAT-mole:A
+      S3.n.B: U-HEAT:HEAT-mole:B
+      S3.n.C: U-HEAT:HEAT-mole:C
+      S3.T: U-HEAT:HEAT-T
+      S3.P: U-HEAT:HEAT-pressure
+      S4.n.A: U-FLASH:FLASH-mole:A
+      S4.n.B: U-FLASH:FLASH-mole:B
+      S4.n.C: U-FLASH:FLASH-mole:C
+      S4.T: U-FLASH:FLASH-T:vapor
+      S4.P: U-FLASH:FLASH-P:vapor
+      S5.n.A: U-FLASH:FLASH-equilibrium:A
+      S5.n.B: U-FLASH:FLASH-equilibrium:B
+      S5.n.C: U-FLASH:FLASH-equilibrium:C
+      S5.T: U-FLASH:FLASH-T:liquid
+      S5.P: U-FLASH:FLASH-P:liquid
+      S6.n.A: U-SPLIT:SPLIT-recycle:A
+      S6.n.B: U-SPLIT:SPLIT-recycle:B
+      S6.n.C: U-SPLIT:SPLIT-recycle:C
+      S6.T: U-SPLIT:SPLIT-T:recycle
+      S6.P: U-MIX:MIX-pressure:1
+      S7.n.A: U-SPLIT:SPLIT-purge:A
+      S7.n.B: U-SPLIT:SPLIT-purge:B
+      S7.n.C: U-SPLIT:SPLIT-purge:C
+      S7.T: U-SPLIT:SPLIT-T:purge
+      S7.P: U-SPLIT:SPLIT-P:purge
+      U-HEAT.Q: U-HEAT:HEAT-duty
+      S3.vap.A: U-HEAT:HEAT-equilibrium:A
+      S3.vap.B: U-HEAT:HEAT-equilibrium:B
+      S3.vap.C: U-HEAT:HEAT-equilibrium:C
+      S3.liq.A: U-HEAT:split:A
+      S3.liq.B: U-HEAT:split:B
+      S3.liq.C: U-HEAT:split:C
+      S3.V: U-HEAT:Vdef
+      S3.L: U-HEAT:Ldef
+      U-FLASH.Q: U-FLASH:FLASH-duty
+      S4.N: U-FLASH:Ndef:vapor
+      S5.N: U-FLASH:Ndef:liquid
+    unmatched_rows_canonical:
+    - U-FLASH:FLASH-P:inlet
+    - U-SPLIT:SPLIT-P:recycle
+  SYN-001-conflicting-heater-spec:
+    structural_counts:
+      free_variables: 47
+      equations: 50
+      matched: 47
+      unmatched: 3
+    nnz: 171
+    finding: STRUCTURAL_OVER_SPECIFICATION
+    dm_full:
+      over_rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-MIX:MIX-mole:A
+      - U-MIX:MIX-mole:B
+      - U-MIX:MIX-mole:C
+      - U-MIX:MIX-energy
+      - U-MIX:MIX-pressure:0
+      - U-MIX:MIX-pressure:1
+      - U-HEAT:HEAT-mole:A
+      - U-HEAT:HEAT-mole:B
+      - U-HEAT:HEAT-mole:C
+      - U-HEAT:HEAT-T
+      - U-HEAT:HEAT-pressure
+      - U-HEAT:HEAT-duty
+      - U-HEAT:HEAT-equilibrium:A
+      - U-HEAT:split:A
+      - U-HEAT:HEAT-equilibrium:B
+      - U-HEAT:split:B
+      - U-HEAT:HEAT-equilibrium:C
+      - U-HEAT:split:C
+      - U-HEAT:Vdef
+      - U-HEAT:Ldef
+      - U-FLASH:FLASH-mole:A
+      - U-FLASH:FLASH-equilibrium:A
+      - U-FLASH:FLASH-mole:B
+      - U-FLASH:FLASH-equilibrium:B
+      - U-FLASH:FLASH-mole:C
+      - U-FLASH:FLASH-equilibrium:C
+      - U-FLASH:FLASH-T:vapor
+      - U-FLASH:FLASH-T:liquid
+      - U-FLASH:FLASH-P:vapor
+      - U-FLASH:FLASH-P:liquid
+      - U-FLASH:FLASH-P:inlet
+      - U-FLASH:Ndef:vapor
+      - U-FLASH:Ndef:liquid
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-recycle:C
+      - U-SPLIT:SPLIT-T:recycle
+      - U-SPLIT:SPLIT-P:recycle
+      - SPEC:SPEC-heater-duty
+      over_cols:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S5.P
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S6.P
+      - U-HEAT.Q
+      - S3.vap.A
+      - S3.vap.B
+      - S3.vap.C
+      - S3.liq.A
+      - S3.liq.B
+      - S3.liq.C
+      - S3.V
+      - S3.L
+      - S4.N
+      - S5.N
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - U-FLASH:FLASH-duty
+      - U-SPLIT:SPLIT-purge:A
+      - U-SPLIT:SPLIT-purge:B
+      - U-SPLIT:SPLIT-purge:C
+      - U-SPLIT:SPLIT-T:purge
+      - U-SPLIT:SPLIT-P:purge
+      square_cols:
+      - S7.n.A
+      - S7.n.B
+      - S7.n.C
+      - S7.T
+      - S7.P
+      - U-FLASH.Q
+    certified_rows:
+    - U-FLASH:FLASH-P:inlet
+    - U-SPLIT:SPLIT-P:recycle
+    certificates:
+    - row_id: U-FLASH:FLASH-P:inlet
+      equals:
+      - - U-HEAT:HEAT-pressure
+        - 1
+      - - U-MIX:MIX-pressure:0
+        - -1
+      - - U-FEED:FEED-P
+        - 1
+      constant_mismatch: 0.0
+      tolerance: 0.01
+      consistent: true
+    - row_id: U-SPLIT:SPLIT-P:recycle
+      equals:
+      - - U-MIX:MIX-pressure:1
+        - 1
+      - - U-MIX:MIX-pressure:0
+        - -1
+      - - U-FEED:FEED-P
+        - 1
+      - - U-FLASH:FLASH-P:liquid
+        - -1
+      constant_mismatch: 0.0
+      tolerance: 0.01
+      consistent: true
+    uncertified_affine_rows: []
+    dm_after_certificates:
+      over_rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-MIX:MIX-mole:A
+      - U-MIX:MIX-mole:B
+      - U-MIX:MIX-mole:C
+      - U-MIX:MIX-energy
+      - U-MIX:MIX-pressure:0
+      - U-MIX:MIX-pressure:1
+      - U-HEAT:HEAT-mole:A
+      - U-HEAT:HEAT-mole:B
+      - U-HEAT:HEAT-mole:C
+      - U-HEAT:HEAT-T
+      - U-HEAT:HEAT-pressure
+      - U-HEAT:HEAT-duty
+      - U-HEAT:HEAT-equilibrium:A
+      - U-HEAT:split:A
+      - U-HEAT:HEAT-equilibrium:B
+      - U-HEAT:split:B
+      - U-HEAT:HEAT-equilibrium:C
+      - U-HEAT:split:C
+      - U-HEAT:Vdef
+      - U-HEAT:Ldef
+      - U-FLASH:FLASH-mole:A
+      - U-FLASH:FLASH-equilibrium:A
+      - U-FLASH:FLASH-mole:B
+      - U-FLASH:FLASH-equilibrium:B
+      - U-FLASH:FLASH-mole:C
+      - U-FLASH:FLASH-equilibrium:C
+      - U-FLASH:FLASH-T:vapor
+      - U-FLASH:FLASH-T:liquid
+      - U-FLASH:FLASH-P:vapor
+      - U-FLASH:Ndef:vapor
+      - U-FLASH:Ndef:liquid
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-recycle:C
+      - U-SPLIT:SPLIT-T:recycle
+      - SPEC:SPEC-heater-duty
+      over_cols:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S6.P
+      - U-HEAT.Q
+      - S3.vap.A
+      - S3.vap.B
+      - S3.vap.C
+      - S3.liq.A
+      - S3.liq.B
+      - S3.liq.C
+      - S3.V
+      - S3.L
+      - S4.N
+      - S5.N
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - U-FLASH:FLASH-P:liquid
+      - U-FLASH:FLASH-duty
+      - U-SPLIT:SPLIT-purge:A
+      - U-SPLIT:SPLIT-purge:B
+      - U-SPLIT:SPLIT-purge:C
+      - U-SPLIT:SPLIT-T:purge
+      - U-SPLIT:SPLIT-P:purge
+      square_cols:
+      - S5.P
+      - S7.n.A
+      - S7.n.B
+      - S7.n.C
+      - S7.T
+      - S7.P
+      - U-FLASH.Q
+    excess: 1
+    deficit: 0
+    candidate_specification_rows:
+    - U-FEED:FEED-n:A
+    - U-FEED:FEED-n:B
+    - U-FEED:FEED-n:C
+    - U-FEED:FEED-T
+    - U-FEED:FEED-P
+    - U-HEAT:HEAT-T
+    - U-FLASH:FLASH-T:vapor
+    - U-FLASH:FLASH-T:liquid
+    - U-FLASH:FLASH-P:vapor
+    - SPEC:SPEC-heater-duty
+    candidate_specifications:
+    - SPEC-feed-P
+    - SPEC-feed-T
+    - SPEC-feed-n-A
+    - SPEC-feed-n-B
+    - SPEC-feed-n-C
+    - SPEC-flash-P
+    - SPEC-flash-T
+    - SPEC-heater-duty
+    - SPEC-heater-outlet-T
+    unit_degrees_of_freedom:
+      U-FEED:
+        columns: 5
+        model_rows: 0
+        model_rank: 0
+        dof: 5
+        specifications:
+        - SPEC-feed-n-A
+        - SPEC-feed-n-B
+        - SPEC-feed-n-C
+        - SPEC-feed-T
+        - SPEC-feed-P
+        specification_rows:
+        - U-FEED:FEED-n:A
+        - U-FEED:FEED-n:B
+        - U-FEED:FEED-n:C
+        - U-FEED:FEED-T
+        - U-FEED:FEED-P
+        over_specified: false
+        local_excess_rows: []
+      U-MIX:
+        columns: 5
+        model_rows: 6
+        model_rank: 5
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows:
+        - U-MIX:MIX-pressure:0
+        - U-MIX:MIX-pressure:1
+      U-HEAT:
+        columns: 14
+        model_rows: 13
+        model_rank: 13
+        dof: 1
+        specifications:
+        - SPEC-heater-outlet-T
+        - SPEC-heater-duty
+        specification_rows:
+        - U-HEAT:HEAT-T
+        - SPEC:SPEC-heater-duty
+        over_specified: true
+        local_excess_rows: []
+      U-FLASH:
+        columns: 13
+        model_rows: 9
+        model_rank: 9
+        dof: 4
+        specifications:
+        - SPEC-flash-T
+        - SPEC-flash-T
+        - SPEC-flash-P
+        - SPEC-flash-P
+        specification_rows:
+        - U-FLASH:FLASH-T:vapor
+        - U-FLASH:FLASH-T:liquid
+        - U-FLASH:FLASH-P:vapor
+        - U-FLASH:FLASH-P:liquid
+        over_specified: false
+        local_excess_rows: []
+      U-PRODUCT:
+        columns: 0
+        model_rows: 0
+        model_rank: 0
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+      U-SPLIT:
+        columns: 10
+        model_rows: 9
+        model_rank: 9
+        dof: 1
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+      U-PURGE:
+        columns: 0
+        model_rows: 0
+        model_rank: 0
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+    over_specified_units:
+    - U-HEAT
+    implicated_objects:
+    - SPEC-heater-duty
+    - SPEC-heater-outlet-T
+    - U-HEAT
+    canonical_matching:
+      S1.n.A: U-FEED:FEED-n:A
+      S1.n.B: U-FEED:FEED-n:B
+      S1.n.C: U-FEED:FEED-n:C
+      S1.T: U-FEED:FEED-T
+      S1.P: U-FEED:FEED-P
+      S2.n.A: U-MIX:MIX-mole:A
+      S2.n.B: U-MIX:MIX-mole:B
+      S2.n.C: U-MIX:MIX-mole:C
+      S2.T: U-MIX:MIX-energy
+      S2.P: U-MIX:MIX-pressure:0
+      S3.n.A: U-HEAT:HEAT-mole:A
+      S3.n.B: U-HEAT:HEAT-mole:B
+      S3.n.C: U-HEAT:HEAT-mole:C
+      S3.T: U-HEAT:HEAT-T
+      S3.P: U-HEAT:HEAT-pressure
+      S4.n.A: U-FLASH:FLASH-mole:A
+      S4.n.B: U-FLASH:FLASH-mole:B
+      S4.n.C: U-FLASH:FLASH-mole:C
+      S4.T: U-FLASH:FLASH-T:vapor
+      S4.P: U-FLASH:FLASH-P:vapor
+      S5.n.A: U-FLASH:FLASH-equilibrium:A
+      S5.n.B: U-FLASH:FLASH-equilibrium:B
+      S5.n.C: U-FLASH:FLASH-equilibrium:C
+      S5.T: U-FLASH:FLASH-T:liquid
+      S5.P: U-FLASH:FLASH-P:liquid
+      S6.n.A: U-SPLIT:SPLIT-recycle:A
+      S6.n.B: U-SPLIT:SPLIT-recycle:B
+      S6.n.C: U-SPLIT:SPLIT-recycle:C
+      S6.T: U-SPLIT:SPLIT-T:recycle
+      S6.P: U-MIX:MIX-pressure:1
+      S7.n.A: U-SPLIT:SPLIT-purge:A
+      S7.n.B: U-SPLIT:SPLIT-purge:B
+      S7.n.C: U-SPLIT:SPLIT-purge:C
+      S7.T: U-SPLIT:SPLIT-T:purge
+      S7.P: U-SPLIT:SPLIT-P:purge
+      U-HEAT.Q: U-HEAT:HEAT-duty
+      S3.vap.A: U-HEAT:HEAT-equilibrium:A
+      S3.vap.B: U-HEAT:HEAT-equilibrium:B
+      S3.vap.C: U-HEAT:HEAT-equilibrium:C
+      S3.liq.A: U-HEAT:split:A
+      S3.liq.B: U-HEAT:split:B
+      S3.liq.C: U-HEAT:split:C
+      S3.V: U-HEAT:Vdef
+      S3.L: U-HEAT:Ldef
+      U-FLASH.Q: U-FLASH:FLASH-duty
+      S4.N: U-FLASH:Ndef:vapor
+      S5.N: U-FLASH:Ndef:liquid
+    unmatched_rows_canonical:
+    - U-FLASH:FLASH-P:inlet
+    - U-SPLIT:SPLIT-P:recycle
+    - SPEC:SPEC-heater-duty
+  SYN-001-flash-150kPa:
+    structural_counts:
+      free_variables: 47
+      equations: 49
+      matched: 47
+      unmatched: 2
+    nnz: 170
+    finding: SPECIFICATION_CONFLICT
+    dm_full:
+      over_rows:
+      - U-FEED:FEED-P
+      - U-MIX:MIX-pressure:0
+      - U-MIX:MIX-pressure:1
+      - U-HEAT:HEAT-pressure
+      - U-FLASH:FLASH-P:liquid
+      - U-FLASH:FLASH-P:inlet
+      - U-SPLIT:SPLIT-P:recycle
+      over_cols:
+      - S1.P
+      - S2.P
+      - S3.P
+      - S5.P
+      - S6.P
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-MIX:MIX-mole:A
+      - U-MIX:MIX-mole:B
+      - U-MIX:MIX-mole:C
+      - U-MIX:MIX-energy
+      - U-HEAT:HEAT-mole:A
+      - U-HEAT:HEAT-mole:B
+      - U-HEAT:HEAT-mole:C
+      - U-HEAT:HEAT-T
+      - U-HEAT:HEAT-duty
+      - U-HEAT:HEAT-equilibrium:A
+      - U-HEAT:split:A
+      - U-HEAT:HEAT-equilibrium:B
+      - U-HEAT:split:B
+      - U-HEAT:HEAT-equilibrium:C
+      - U-HEAT:split:C
+      - U-HEAT:Vdef
+      - U-HEAT:Ldef
+      - U-FLASH:FLASH-mole:A
+      - U-FLASH:FLASH-equilibrium:A
+      - U-FLASH:FLASH-mole:B
+      - U-FLASH:FLASH-equilibrium:B
+      - U-FLASH:FLASH-mole:C
+      - U-FLASH:FLASH-equilibrium:C
+      - U-FLASH:FLASH-T:vapor
+      - U-FLASH:FLASH-T:liquid
+      - U-FLASH:FLASH-P:vapor
+      - U-FLASH:FLASH-duty
+      - U-FLASH:Ndef:vapor
+      - U-FLASH:Ndef:liquid
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-purge:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-purge:B
+      - U-SPLIT:SPLIT-recycle:C
+      - U-SPLIT:SPLIT-purge:C
+      - U-SPLIT:SPLIT-T:recycle
+      - U-SPLIT:SPLIT-T:purge
+      - U-SPLIT:SPLIT-P:purge
+      square_cols:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S7.n.A
+      - S7.n.B
+      - S7.n.C
+      - S7.T
+      - S7.P
+      - U-HEAT.Q
+      - S3.vap.A
+      - S3.vap.B
+      - S3.vap.C
+      - S3.liq.A
+      - S3.liq.B
+      - S3.liq.C
+      - S3.V
+      - S3.L
+      - U-FLASH.Q
+      - S4.N
+      - S5.N
+    certified_rows: []
+    certificates:
+    - row_id: U-FLASH:FLASH-P:inlet
+      equals:
+      - - U-HEAT:HEAT-pressure
+        - 1
+      - - U-MIX:MIX-pressure:0
+        - -1
+      - - U-FEED:FEED-P
+        - 1
+      constant_mismatch: -50000.0
+      tolerance: 0.01
+      consistent: false
+    - row_id: U-SPLIT:SPLIT-P:recycle
+      equals:
+      - - U-MIX:MIX-pressure:1
+        - 1
+      - - U-MIX:MIX-pressure:0
+        - -1
+      - - U-FEED:FEED-P
+        - 1
+      - - U-FLASH:FLASH-P:liquid
+        - -1
+      constant_mismatch: -50000.0
+      tolerance: 0.01
+      consistent: false
+    uncertified_affine_rows: []
+    dm_after_certificates:
+      over_rows:
+      - U-FEED:FEED-P
+      - U-MIX:MIX-pressure:0
+      - U-MIX:MIX-pressure:1
+      - U-HEAT:HEAT-pressure
+      - U-FLASH:FLASH-P:liquid
+      - U-FLASH:FLASH-P:inlet
+      - U-SPLIT:SPLIT-P:recycle
+      over_cols:
+      - S1.P
+      - S2.P
+      - S3.P
+      - S5.P
+      - S6.P
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-MIX:MIX-mole:A
+      - U-MIX:MIX-mole:B
+      - U-MIX:MIX-mole:C
+      - U-MIX:MIX-energy
+      - U-HEAT:HEAT-mole:A
+      - U-HEAT:HEAT-mole:B
+      - U-HEAT:HEAT-mole:C
+      - U-HEAT:HEAT-T
+      - U-HEAT:HEAT-duty
+      - U-HEAT:HEAT-equilibrium:A
+      - U-HEAT:split:A
+      - U-HEAT:HEAT-equilibrium:B
+      - U-HEAT:split:B
+      - U-HEAT:HEAT-equilibrium:C
+      - U-HEAT:split:C
+      - U-HEAT:Vdef
+      - U-HEAT:Ldef
+      - U-FLASH:FLASH-mole:A
+      - U-FLASH:FLASH-equilibrium:A
+      - U-FLASH:FLASH-mole:B
+      - U-FLASH:FLASH-equilibrium:B
+      - U-FLASH:FLASH-mole:C
+      - U-FLASH:FLASH-equilibrium:C
+      - U-FLASH:FLASH-T:vapor
+      - U-FLASH:FLASH-T:liquid
+      - U-FLASH:FLASH-P:vapor
+      - U-FLASH:FLASH-duty
+      - U-FLASH:Ndef:vapor
+      - U-FLASH:Ndef:liquid
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-purge:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-purge:B
+      - U-SPLIT:SPLIT-recycle:C
+      - U-SPLIT:SPLIT-purge:C
+      - U-SPLIT:SPLIT-T:recycle
+      - U-SPLIT:SPLIT-T:purge
+      - U-SPLIT:SPLIT-P:purge
+      square_cols:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S7.n.A
+      - S7.n.B
+      - S7.n.C
+      - S7.T
+      - S7.P
+      - U-HEAT.Q
+      - S3.vap.A
+      - S3.vap.B
+      - S3.vap.C
+      - S3.liq.A
+      - S3.liq.B
+      - S3.liq.C
+      - S3.V
+      - S3.L
+      - U-FLASH.Q
+      - S4.N
+      - S5.N
+    excess: 2
+    deficit: 0
+    candidate_specification_rows:
+    - U-FEED:FEED-P
+    - U-FLASH:FLASH-P:liquid
+    - U-FLASH:FLASH-P:inlet
+    candidate_specifications:
+    - SPEC-feed-P
+    - SPEC-flash-P
+    unit_degrees_of_freedom:
+      U-FEED:
+        columns: 5
+        model_rows: 0
+        model_rank: 0
+        dof: 5
+        specifications:
+        - SPEC-feed-n-A
+        - SPEC-feed-n-B
+        - SPEC-feed-n-C
+        - SPEC-feed-T
+        - SPEC-feed-P
+        specification_rows:
+        - U-FEED:FEED-n:A
+        - U-FEED:FEED-n:B
+        - U-FEED:FEED-n:C
+        - U-FEED:FEED-T
+        - U-FEED:FEED-P
+        over_specified: false
+        local_excess_rows: []
+      U-MIX:
+        columns: 5
+        model_rows: 6
+        model_rank: 5
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows:
+        - U-MIX:MIX-pressure:0
+        - U-MIX:MIX-pressure:1
+      U-HEAT:
+        columns: 14
+        model_rows: 13
+        model_rank: 13
+        dof: 1
+        specifications:
+        - SPEC-heater-outlet-T
+        - SPEC-flash-P
+        specification_rows:
+        - U-HEAT:HEAT-T
+        - U-FLASH:FLASH-P:inlet
+        over_specified: true
+        local_excess_rows: []
+      U-FLASH:
+        columns: 13
+        model_rows: 9
+        model_rank: 9
+        dof: 4
+        specifications:
+        - SPEC-flash-T
+        - SPEC-flash-T
+        - SPEC-flash-P
+        - SPEC-flash-P
+        specification_rows:
+        - U-FLASH:FLASH-T:vapor
+        - U-FLASH:FLASH-T:liquid
+        - U-FLASH:FLASH-P:vapor
+        - U-FLASH:FLASH-P:liquid
+        over_specified: false
+        local_excess_rows: []
+      U-PRODUCT:
+        columns: 0
+        model_rows: 0
+        model_rank: 0
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+      U-SPLIT:
+        columns: 10
+        model_rows: 10
+        model_rank: 10
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+      U-PURGE:
+        columns: 0
+        model_rows: 0
+        model_rank: 0
+        dof: 0
+        specifications: []
+        specification_rows: []
+        over_specified: false
+        local_excess_rows: []
+    over_specified_units:
+    - U-HEAT
+    implicated_objects:
+    - SPEC-flash-P
+    - SPEC-heater-outlet-T
+    - U-HEAT
+    canonical_matching:
+      S1.n.A: U-FEED:FEED-n:A
+      S1.n.B: U-FEED:FEED-n:B
+      S1.n.C: U-FEED:FEED-n:C
+      S1.T: U-FEED:FEED-T
+      S1.P: U-FEED:FEED-P
+      S2.n.A: U-MIX:MIX-mole:A
+      S2.n.B: U-MIX:MIX-mole:B
+      S2.n.C: U-MIX:MIX-mole:C
+      S2.T: U-MIX:MIX-energy
+      S2.P: U-MIX:MIX-pressure:0
+      S3.n.A: U-HEAT:HEAT-mole:A
+      S3.n.B: U-HEAT:HEAT-mole:B
+      S3.n.C: U-HEAT:HEAT-mole:C
+      S3.T: U-HEAT:HEAT-T
+      S3.P: U-HEAT:HEAT-pressure
+      S4.n.A: U-FLASH:FLASH-mole:A
+      S4.n.B: U-FLASH:FLASH-mole:B
+      S4.n.C: U-FLASH:FLASH-mole:C
+      S4.T: U-FLASH:FLASH-T:vapor
+      S4.P: U-FLASH:FLASH-P:vapor
+      S5.n.A: U-FLASH:FLASH-equilibrium:A
+      S5.n.B: U-FLASH:FLASH-equilibrium:B
+      S5.n.C: U-FLASH:FLASH-equilibrium:C
+      S5.T: U-FLASH:FLASH-T:liquid
+      S5.P: U-FLASH:FLASH-P:liquid
+      S6.n.A: U-SPLIT:SPLIT-recycle:A
+      S6.n.B: U-SPLIT:SPLIT-recycle:B
+      S6.n.C: U-SPLIT:SPLIT-recycle:C
+      S6.T: U-SPLIT:SPLIT-T:recycle
+      S6.P: U-MIX:MIX-pressure:1
+      S7.n.A: U-SPLIT:SPLIT-purge:A
+      S7.n.B: U-SPLIT:SPLIT-purge:B
+      S7.n.C: U-SPLIT:SPLIT-purge:C
+      S7.T: U-SPLIT:SPLIT-T:purge
+      S7.P: U-SPLIT:SPLIT-P:purge
+      U-HEAT.Q: U-HEAT:HEAT-duty
+      S3.vap.A: U-HEAT:HEAT-equilibrium:A
+      S3.vap.B: U-HEAT:HEAT-equilibrium:B
+      S3.vap.C: U-HEAT:HEAT-equilibrium:C
+      S3.liq.A: U-HEAT:split:A
+      S3.liq.B: U-HEAT:split:B
+      S3.liq.C: U-HEAT:split:C
+      S3.V: U-HEAT:Vdef
+      S3.L: U-HEAT:Ldef
+      U-FLASH.Q: U-FLASH:FLASH-duty
+      S4.N: U-FLASH:Ndef:vapor
+      S5.N: U-FLASH:Ndef:liquid
+    unmatched_rows_canonical:
+    - U-FLASH:FLASH-P:inlet
+    - U-SPLIT:SPLIT-P:recycle
+state_free:
+  identical_across:
+  - SYN-001-nominal
+  - SYN-001-once-through
+  - SYN-001-high-recycle
+  - SYN-001-all-liquid-310K
+  - SYN-001-all-vapor-420K
+block_triangular_form:
+  square_system: the 47 rows after the two certified rows are removed, over the 47 columns
+  blocks:
+  - rows:
+    - U-FEED:FEED-n:A
+    cols:
+    - S1.n.A
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FEED:FEED-n:B
+    cols:
+    - S1.n.B
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FEED:FEED-n:C
+    cols:
+    - S1.n.C
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FEED:FEED-T
+    cols:
+    - S1.T
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FEED:FEED-P
+    cols:
+    - S1.P
+    size: 1
+    depends_on: []
+  - rows:
+    - U-MIX:MIX-pressure:0
+    cols:
+    - S2.P
+    size: 1
+    depends_on:
+    - 4
+  - rows:
+    - U-MIX:MIX-pressure:1
+    cols:
+    - S6.P
+    size: 1
+    depends_on:
+    - 5
+  - rows:
+    - U-HEAT:HEAT-T
+    cols:
+    - S3.T
+    size: 1
+    depends_on: []
+  - rows:
+    - U-HEAT:HEAT-pressure
+    cols:
+    - S3.P
+    size: 1
+    depends_on:
+    - 5
+  - rows:
+    - U-FLASH:FLASH-T:vapor
+    cols:
+    - S4.T
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FLASH:FLASH-T:liquid
+    cols:
+    - S5.T
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FLASH:FLASH-P:vapor
+    cols:
+    - S4.P
+    size: 1
+    depends_on: []
+  - rows:
+    - U-MIX:MIX-mole:A
+    - U-MIX:MIX-mole:B
+    - U-MIX:MIX-mole:C
+    - U-HEAT:HEAT-mole:A
+    - U-HEAT:HEAT-mole:B
+    - U-HEAT:HEAT-mole:C
+    - U-FLASH:FLASH-mole:A
+    - U-FLASH:FLASH-equilibrium:A
+    - U-FLASH:FLASH-mole:B
+    - U-FLASH:FLASH-equilibrium:B
+    - U-FLASH:FLASH-mole:C
+    - U-FLASH:FLASH-equilibrium:C
+    - U-FLASH:Ndef:vapor
+    - U-FLASH:Ndef:liquid
+    - U-SPLIT:SPLIT-recycle:A
+    - U-SPLIT:SPLIT-recycle:B
+    - U-SPLIT:SPLIT-recycle:C
+    cols:
+    - S2.n.A
+    - S2.n.B
+    - S2.n.C
+    - S3.n.A
+    - S3.n.B
+    - S3.n.C
+    - S4.n.A
+    - S4.n.B
+    - S4.n.C
+    - S5.n.A
+    - S5.n.B
+    - S5.n.C
+    - S6.n.A
+    - S6.n.B
+    - S6.n.C
+    - S4.N
+    - S5.N
+    size: 17
+    depends_on:
+    - 0
+    - 1
+    - 2
+    - 9
+    - 11
+  - rows:
+    - U-HEAT:HEAT-equilibrium:A
+    - U-HEAT:split:A
+    - U-HEAT:HEAT-equilibrium:B
+    - U-HEAT:split:B
+    - U-HEAT:HEAT-equilibrium:C
+    - U-HEAT:split:C
+    - U-HEAT:Vdef
+    - U-HEAT:Ldef
+    cols:
+    - S3.vap.A
+    - S3.vap.B
+    - S3.vap.C
+    - S3.liq.A
+    - S3.liq.B
+    - S3.liq.C
+    - S3.V
+    - S3.L
+    size: 8
+    depends_on:
+    - 7
+    - 8
+    - 12
+  - rows:
+    - U-FLASH:FLASH-P:liquid
+    cols:
+    - S5.P
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FLASH:FLASH-duty
+    cols:
+    - U-FLASH.Q
+    size: 1
+    depends_on:
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+  - rows:
+    - U-SPLIT:SPLIT-purge:A
+    cols:
+    - S7.n.A
+    size: 1
+    depends_on:
+    - 12
+  - rows:
+    - U-SPLIT:SPLIT-purge:B
+    cols:
+    - S7.n.B
+    size: 1
+    depends_on:
+    - 12
+  - rows:
+    - U-SPLIT:SPLIT-purge:C
+    cols:
+    - S7.n.C
+    size: 1
+    depends_on:
+    - 12
+  - rows:
+    - U-SPLIT:SPLIT-T:recycle
+    cols:
+    - S6.T
+    size: 1
+    depends_on:
+    - 10
+  - rows:
+    - U-MIX:MIX-energy
+    cols:
+    - S2.T
+    size: 1
+    depends_on:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 12
+    - 19
+  - rows:
+    - U-HEAT:HEAT-duty
+    cols:
+    - U-HEAT.Q
+    size: 1
+    depends_on:
+    - 5
+    - 7
+    - 8
+    - 12
+    - 13
+    - 20
+  - rows:
+    - U-SPLIT:SPLIT-T:purge
+    cols:
+    - S7.T
+    size: 1
+    depends_on:
+    - 10
+  - rows:
+    - U-SPLIT:SPLIT-P:purge
+    cols:
+    - S7.P
+    size: 1
+    depends_on:
+    - 14
+  block_sizes_sorted:
+  - 17
+  - 8
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  block_count: 24
+  largest_block_fraction:
+    rational: 17/47
+    double: 0.3617021276595745
+tear:
+  process_loops:
+  - - U-MIX
+    - U-HEAT
+    - U-FLASH
+    - U-SPLIT
+  loop:
+    units:
+    - U-MIX
+    - U-HEAT
+    - U-FLASH
+    - U-SPLIT
+    cycle_edges:
+    - S2
+    - S3
+    - S5
+    - S6
+    candidates:
+    - stream: S2
+      producer: U-MIX
+      consumer: U-HEAT
+      breaks_loop: true
+      dimension: 3
+      torn_variables:
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      not_torn:
+      - S2.T
+      - S2.P
+      consumer_boundary_distance: 2
+    - stream: S3
+      producer: U-HEAT
+      consumer: U-FLASH
+      breaks_loop: true
+      dimension: 3
+      torn_variables:
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      not_torn:
+      - S3.T
+      - S3.P
+      consumer_boundary_distance: 3
+    - stream: S5
+      producer: U-FLASH
+      consumer: U-SPLIT
+      breaks_loop: true
+      dimension: 3
+      torn_variables:
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      not_torn:
+      - S5.T
+      - S5.P
+      consumer_boundary_distance: 4
+    - stream: S6
+      producer: U-SPLIT
+      consumer: U-MIX
+      breaks_loop: true
+      dimension: 3
+      torn_variables:
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      not_torn:
+      - S6.T
+      - S6.P
+      consumer_boundary_distance: 1
+    chosen_stream: S6
+    tie_break_used: boundary_distance
+    tear_variables:
+    - S6.n.A
+    - S6.n.B
+    - S6.n.C
+    tear_rows:
+    - U-SPLIT:SPLIT-recycle:A
+    - U-SPLIT:SPLIT-recycle:B
+    - U-SPLIT:SPLIT-recycle:C
+    inner_rows: 44
+    inner_cols: 44
+    inner_closed: true
+  inner_blocks:
+  - rows:
+    - U-FEED:FEED-n:A
+    cols:
+    - S1.n.A
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FEED:FEED-n:B
+    cols:
+    - S1.n.B
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FEED:FEED-n:C
+    cols:
+    - S1.n.C
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FEED:FEED-T
+    cols:
+    - S1.T
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FEED:FEED-P
+    cols:
+    - S1.P
+    size: 1
+    depends_on: []
+  - rows:
+    - U-MIX:MIX-mole:A
+    cols:
+    - S2.n.A
+    size: 1
+    depends_on:
+    - 0
+  - rows:
+    - U-MIX:MIX-mole:B
+    cols:
+    - S2.n.B
+    size: 1
+    depends_on:
+    - 1
+  - rows:
+    - U-MIX:MIX-mole:C
+    cols:
+    - S2.n.C
+    size: 1
+    depends_on:
+    - 2
+  - rows:
+    - U-MIX:MIX-pressure:0
+    cols:
+    - S2.P
+    size: 1
+    depends_on:
+    - 4
+  - rows:
+    - U-MIX:MIX-pressure:1
+    cols:
+    - S6.P
+    size: 1
+    depends_on:
+    - 8
+  - rows:
+    - U-HEAT:HEAT-mole:A
+    cols:
+    - S3.n.A
+    size: 1
+    depends_on:
+    - 5
+  - rows:
+    - U-HEAT:HEAT-mole:B
+    cols:
+    - S3.n.B
+    size: 1
+    depends_on:
+    - 6
+  - rows:
+    - U-HEAT:HEAT-mole:C
+    cols:
+    - S3.n.C
+    size: 1
+    depends_on:
+    - 7
+  - rows:
+    - U-HEAT:HEAT-T
+    cols:
+    - S3.T
+    size: 1
+    depends_on: []
+  - rows:
+    - U-HEAT:HEAT-pressure
+    cols:
+    - S3.P
+    size: 1
+    depends_on:
+    - 8
+  - rows:
+    - U-HEAT:HEAT-equilibrium:A
+    - U-HEAT:split:A
+    - U-HEAT:HEAT-equilibrium:B
+    - U-HEAT:split:B
+    - U-HEAT:HEAT-equilibrium:C
+    - U-HEAT:split:C
+    - U-HEAT:Vdef
+    - U-HEAT:Ldef
+    cols:
+    - S3.vap.A
+    - S3.vap.B
+    - S3.vap.C
+    - S3.liq.A
+    - S3.liq.B
+    - S3.liq.C
+    - S3.V
+    - S3.L
+    size: 8
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+  - rows:
+    - U-FLASH:FLASH-T:vapor
+    cols:
+    - S4.T
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FLASH:FLASH-T:liquid
+    cols:
+    - S5.T
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FLASH:FLASH-P:vapor
+    cols:
+    - S4.P
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FLASH:FLASH-mole:A
+    - U-FLASH:FLASH-equilibrium:A
+    - U-FLASH:FLASH-mole:B
+    - U-FLASH:FLASH-equilibrium:B
+    - U-FLASH:FLASH-mole:C
+    - U-FLASH:FLASH-equilibrium:C
+    - U-FLASH:Ndef:vapor
+    - U-FLASH:Ndef:liquid
+    cols:
+    - S4.n.A
+    - S4.n.B
+    - S4.n.C
+    - S5.n.A
+    - S5.n.B
+    - S5.n.C
+    - S4.N
+    - S5.N
+    size: 8
+    depends_on:
+    - 10
+    - 11
+    - 12
+    - 16
+    - 18
+  - rows:
+    - U-FLASH:FLASH-P:liquid
+    cols:
+    - S5.P
+    size: 1
+    depends_on: []
+  - rows:
+    - U-FLASH:FLASH-duty
+    cols:
+    - U-FLASH.Q
+    size: 1
+    depends_on:
+    - 13
+    - 14
+    - 15
+    - 16
+    - 17
+    - 18
+    - 19
+    - 20
+  - rows:
+    - U-SPLIT:SPLIT-purge:A
+    cols:
+    - S7.n.A
+    size: 1
+    depends_on:
+    - 19
+  - rows:
+    - U-SPLIT:SPLIT-purge:B
+    cols:
+    - S7.n.B
+    size: 1
+    depends_on:
+    - 19
+  - rows:
+    - U-SPLIT:SPLIT-purge:C
+    cols:
+    - S7.n.C
+    size: 1
+    depends_on:
+    - 19
+  - rows:
+    - U-SPLIT:SPLIT-T:recycle
+    cols:
+    - S6.T
+    size: 1
+    depends_on:
+    - 17
+  - rows:
+    - U-MIX:MIX-energy
+    cols:
+    - S2.T
+    size: 1
+    depends_on:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 25
+  - rows:
+    - U-HEAT:HEAT-duty
+    cols:
+    - U-HEAT.Q
+    size: 1
+    depends_on:
+    - 5
+    - 6
+    - 7
+    - 8
+    - 13
+    - 14
+    - 15
+    - 26
+  - rows:
+    - U-SPLIT:SPLIT-T:purge
+    cols:
+    - S7.T
+    size: 1
+    depends_on:
+    - 17
+  - rows:
+    - U-SPLIT:SPLIT-P:purge
+    cols:
+    - S7.P
+    size: 1
+    depends_on:
+    - 20
+  inner_block_sizes_sorted:
+  - 8
+  - 8
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  signature:
+    ancestor_blocks_of_tear_rows:
+    - 0
+    - 1
+    - 2
+    - 5
+    - 6
+    - 7
+    - 10
+    - 11
+    - 12
+    - 16
+    - 18
+    - 19
+    phase_selecting:
+    - unit: U-HEAT
+      lifted_blocks:
+      - 15
+      upstream_of_tear: false
+    - unit: U-FLASH
+      lifted_blocks:
+      - 19
+      upstream_of_tear: true
+    signature_units:
+    - U-FLASH
+synthetic:
+  SQ-1:
+    rows:
+    - r1
+    - r2
+    - r3
+    cols:
+    - x1
+    - x2
+    - x3
+    incidence:
+      r1:
+      - x1
+      r2:
+      - x1
+      r3:
+      - x2
+      - x3
+    structural_rank: 2
+    canonical_matching:
+      x1: r1
+      x2: r3
+    dm:
+      over_rows:
+      - r1
+      - r2
+      over_cols:
+      - x1
+      under_rows:
+      - r3
+      under_cols:
+      - x2
+      - x3
+      square_rows: []
+      square_cols: []
+    structural_counts:
+      free_variables: 3
+      equations: 3
+      matched: 2
+      unmatched: 2
+    finding: STRUCTURAL_UNDER_SPECIFICATION
+    also_over: true
+    why: 'equations == variables, no perfect matching: a count-based validator passes it'
+  SQ-2:
+    rows:
+    - r1
+    - r2
+    cols:
+    - x1
+    - x2
+    incidence:
+      r1:
+      - x1
+      - x2
+      r2:
+      - x1
+      - x2
+    structural_rank: 2
+    canonical_matching:
+      x1: r1
+      x2: r2
+    dm:
+      over_rows: []
+      over_cols: []
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - r1
+      - r2
+      square_cols:
+      - x1
+      - x2
+    structural_counts:
+      free_variables: 2
+      equations: 2
+      matched: 2
+      unmatched: 0
+    finding: STRUCTURALLY_CLOSED
+    numerical_matrix:
+    - - 1
+      - 1
+    - - 2
+      - 2
+    why: 'structurally closed and numerically singular: the rank verdict is K04 [A08]''s'
+  UND-1:
+    rows:
+    - r1
+    - r2
+    cols:
+    - x1
+    - x2
+    - x3
+    incidence:
+      r1:
+      - x1
+      - x2
+      r2:
+      - x2
+      - x3
+    structural_rank: 2
+    canonical_matching:
+      x1: r1
+      x2: r2
+    dm:
+      over_rows: []
+      over_cols: []
+      under_rows:
+      - r1
+      - r2
+      under_cols:
+      - x1
+      - x2
+      - x3
+      square_rows: []
+      square_cols: []
+    structural_counts:
+      free_variables: 3
+      equations: 2
+      matched: 2
+      unmatched: 1
+    finding: STRUCTURAL_UNDER_SPECIFICATION
+  OVR-1:
+    rows:
+    - r1
+    - r2
+    - r3
+    cols:
+    - x1
+    - x2
+    incidence:
+      r1:
+      - x1
+      r2:
+      - x1
+      r3:
+      - x1
+      - x2
+    structural_rank: 2
+    canonical_matching:
+      x1: r1
+      x2: r3
+    dm:
+      over_rows:
+      - r1
+      - r2
+      over_cols:
+      - x1
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - r3
+      square_cols:
+      - x2
+    structural_counts:
+      free_variables: 2
+      equations: 3
+      matched: 2
+      unmatched: 1
+    finding: STRUCTURAL_OVER_SPECIFICATION
+    why: 'a 2x1 over-determined block: small, and a genuine over-specification; a size threshold would
+      pass it'
+  TIE-1:
+    rows:
+    - r1
+    - r2
+    cols:
+    - x1
+    - x2
+    incidence:
+      r1:
+      - x1
+      - x2
+      r2:
+      - x1
+    structural_rank: 2
+    canonical_matching:
+      x1: r2
+      x2: r1
+    dm:
+      over_rows: []
+      over_cols: []
+      under_rows: []
+      under_cols: []
+      square_rows:
+      - r1
+      - r2
+      square_cols:
+      - x1
+      - x2
+    structural_counts:
+      free_variables: 2
+      equations: 2
+      matched: 2
+      unmatched: 0
+    greedy_by_row_would_give:
+      x1: r1
+      x2: null
+  BTF-1:
+    rows:
+    - a
+    - b
+    - c
+    - d
+    cols:
+    - xa
+    - xb
+    - xc
+    - xd
+    incidence:
+      a:
+      - xa
+      b:
+      - xb
+      c:
+      - xa
+      - xb
+      - xc
+      d:
+      - xd
+    block_order:
+    - - a
+    - - b
+    - - c
+    - - d
+    why: d has no predecessor but a larger row index than c; a plain Kahn queue would place d third
+  UNC-1:
+    rows:
+    - p1
+    - p2
+    - p3
+    - p4
+    cols:
+    - P1
+    - P2
+    - P3
+    incidence:
+      p1:
+      - P1
+      p2:
+      - P2
+      - P1
+      p3:
+      - P3
+      - P2
+      p4:
+      - P1
+      - P2
+      - P3
+    certified: []
+    uncertified_affine_rows:
+    - p4
+    finding: STRUCTURAL_OVER_SPECIFICATION
+    consistency: not_established
+  LOOP-3:
+    connections:
+    - - s_in
+      - FEED
+      - C
+    - - s_ab
+      - A
+      - B
+    - - s_bc
+      - B
+      - C
+    - - s_ca
+      - C
+      - A
+    boundary:
+    - FEED
+    expected_tear_stream: s_bc
+    consumer_boundary_distances:
+      s_ab: 3
+      s_bc: 1
+      s_ca: 2
+measured:
+  backend_pattern_nnz:
+    SYN-001-nominal: 170
+    SYN-001-once-through: 167
+    SYN-001-high-recycle: 170
+    SYN-001-all-liquid-310K: 170
+    SYN-001-all-vapor-420K: 170
+    SYN-001-conflicting-heater-spec: 171
+  backend_entries_absent_at_r0:
+  - - U-SPLIT:SPLIT-recycle:A
+    - S5.n.A
+  - - U-SPLIT:SPLIT-recycle:B
+    - S5.n.B
+  - - U-SPLIT:SPLIT-recycle:C
+    - S5.n.C
+  numerically_zero_declared_entries_at_initializer_state:
+    SYN-001-nominal: 4
+    SYN-001-once-through: 12
+    SYN-001-high-recycle: 16
+    SYN-001-all-liquid-310K: 17
+    SYN-001-all-vapor-420K: 26
+  nominal_zero_entries:
+  - - U-MIX:MIX-energy
+    - S1.n.A
+  - - U-MIX:MIX-energy
+    - S1.n.B
+  - - U-MIX:MIX-energy
+    - S1.n.C
+  - - U-FLASH:FLASH-duty
+    - S4.P
+  scipy_hopcroft_karp_unmatched_rows_nominal:
+  - U-FLASH:FLASH-P:inlet
+  - U-SPLIT:SPLIT-P:recycle
+  k03_solve_plan_inner_block:
+  - 44
+  - 44
+  k03_constant_mismatch_floor_pa: 1.0e-11
+checks_passed:
+- 'ids: 47 columns, 49 rows, all ASCII, no duplicates'
+- every affine row's coefficient keys are exactly its columns
+- 'counts: 49 equations, 47 free variables, nnz 170, rank 47, unmatched 2'
+- 'DM: over-determined part is 7 pressure rows x 5 pressure columns, nothing under-determined'
+- certified rows are exactly K03 §7.2's two, in that order
+- certificate paths equal K03 §7.2's table as signed-row sets
+- both mismatches exactly 0.0 at nominal; closed form P_spec - P_f
+- no uncertified affine rows in SYN-001
+- 'nominal: STRUCTURALLY_CLOSED after certificates; excess 0, deficit 0'
+- 'excess of the full DM equals the certified rows inside it: |R+| - |C+| == |E ∩ R+|'
+- canonical matching's unmatched rows coincide with the certified rows (SYN-001 observation, not a rule)
+- 'SYN-001-nominal: structural results identical to nominal (state-free, parameter-free)'
+- 'SYN-001-once-through: structural results identical to nominal (state-free, parameter-free)'
+- 'SYN-001-high-recycle: structural results identical to nominal (state-free, parameter-free)'
+- 'SYN-001-all-liquid-310K: structural results identical to nominal (state-free, parameter-free)'
+- 'SYN-001-all-vapor-420K: structural results identical to nominal (state-free, parameter-free)'
+- 'flash at 150 kPa: SPECIFICATION_CONFLICT naming both certified rows, m_e = -50000.0 exactly'
+- 'conflicting: 50 rows, nnz 171, rank 47, unmatched 3'
+- 'conflicting: full DM over-determined part 44 rows x 41 columns (brief §3.2)'
+- 'conflicting: certified rows unchanged; after certificates 41 rows x 40 columns, excess 1'
+- 'conflicting: STRUCTURAL_OVER_SPECIFICATION; 10 candidate specification rows over 9 specifications'
+- 'nominal unit DOF: feed 5/5, mixer 0/0, heater 1/1, flash 4/4, splitter 1/0; none over-specified'
+- 'mixer local excess: both pressure-equality rows over S2.P (ADR 0001 D4.5)'
+- 'conflicting: heater 1 dof, 2 specifications; implicated objects as the registry expects'
+- 'SYN-001-nominal: Σspecs + Σlocal_excess − Σdof == excess − deficit'
+- 'SYN-001-conflicting-heater-spec: Σspecs + Σlocal_excess − Σdof == excess − deficit'
+- 'BTF of the 47x47: 24 blocks, sizes [17, 8, 1 x 22], largest fraction 17/47'
+- 'the 17-block is the recycle: component flows of S2..S6 and the flash totals'
+- the 8-block is the heater's lifted split and depends on the recycle block
+- one process loop {MIX, HEAT, FLASH, SPLIT}; cycle edges S2, S3, S5, S6
+- every cycle edge breaks the loop and has dimension 3; distances 2, 3, 4, 1
+- dimension ties; boundary distance decides; S6 chosen; T and P of every candidate stay untorn
+- tear variables S6.n.{A,B,C}; tear rows SPLIT-recycle:{A,B,C}; inner 44x44 closed
+- 'inner BTF: 30 blocks, sizes [8, 8, 1 x 28]'
+- 'signature rule: the flash block is upstream of the tear rows, the heater''s lifted block is not'
+- 'under 20 seeded row/column permutations: same DM sets, certified count and closure, block sizes, tear
+  set, signature'
+- under those permutations the identity of the certified rows changes (order-canonical, not invariant)
+- 'SQ-1: rank 2, over {r1,r2}x{x1}, under {r3}x{x2,x3}, unmatched 2'
+- SQ-2 closed; UND-1 deficit 1; OVR-1 excess 1 over a 2x1 block
+- 'TIE-1: canonical matching x1->r2, x2->r1'
+- 'BTF-1: block order a, b, c, d'
+- 'UNC-1: three-column row is uncertified and retained; nothing certified'

@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "ends_job": false,
+      "job_id": "job-000001",
+      "kind": "accepted",
+      "recorded_at": "2026-09-27T13:48:27.978729Z",
+      "sequence": 0
+    },
+    {
+      "ends_job": false,
+      "job_id": "job-000001",
+      "kind": "started",
+      "recorded_at": "2026-09-27T13:48:27.979804Z",
+      "sequence": 1
+    },
+    {
+      "ends_job": false,
+      "job_id": "job-000001",
+      "kind": "progress",
+      "progress": {
+        "completed": 0,
+        "stage": "resolve",
+        "total": 6
+      },
+      "recorded_at": "2026-09-27T13:48:27.981374Z",
+      "sequence": 2
+    }
+  ],
+  "next_cursor": "2"
+}

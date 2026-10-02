@@ -1,0 +1,786 @@
+{
+  "record": "t08-v19-c1-idaes",
+  "version": 1,
+  "assertions": [
+    "T08.A62",
+    "T08.A63",
+    "Q7"
+  ],
+  "status": "measured",
+  "judged": false,
+  "comparison_claimed": false,
+  "environment": {
+    "kind": "separate venv outside this repository, from spikes/references/idaes-requirements.lock (--require-hashes), never the project .venv",
+    "lock_sha256": "74762cd1b27c4644c7daf81a1eda4daebcc2b041bc108d4a9d86a8f205c54035",
+    "python": "3.13.5",
+    "platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+    "packages": {
+      "idaes-pse": "2.13.0",
+      "pyomo": "6.10.1",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1"
+    },
+    "ipopt_version": "3.13.2.0",
+    "idaes_extensions": "3.4.2 ubuntu2204 (idaes get-extensions)",
+    "idaes_extension_sha256": {
+      "idaes-lib-ubuntu2204-x86_64.tar.gz": "341470b4b0b9d67758cfde6f3246ed3a3d08000e2306908186435262d5751184",
+      "idaes-solvers-ubuntu2204-x86_64.tar.gz": "f370fa258cc457cd84fd9fe4298bde55dfc03374b607e68aa4d38f24ad9730e5"
+    }
+  },
+  "property_route": {
+    "method": "Peng-Robinson cubic EoS in both phases (IDAES modular Cubic, CubicType.PR), log-fugacity phase equilibrium, SmoothVLE, LogBubbleDew, FTPx",
+    "components": [
+      "H2",
+      "N2",
+      "NH3",
+      "Ar",
+      "CH4"
+    ],
+    "group_repository_commit": "a6ee9efc85aee199b51e849467845b59bd5b1800",
+    "sources": {
+      "H2": {
+        "source": "group repository src/reactor/data/properties_database.json at a6ee9ef",
+        "values": {
+          "Mw": 0.002015,
+          "Tc": 33.19,
+          "Pc": 1313000.0,
+          "omega": -0.215993,
+          "dH_f": 0.0,
+          "c_p_C1": 27617.0,
+          "c_p_C2": 9560.0,
+          "c_p_C3": 2466.0,
+          "c_p_C4": 3760.0,
+          "c_p_C5": 567.6
+        },
+        "cp_method": "DIPPR-107 (the group's form), user method in this script"
+      },
+      "N2": {
+        "source": "group repository src/reactor/data/properties_database.json at a6ee9ef",
+        "values": {
+          "Mw": 0.028,
+          "Tc": 126.2,
+          "Pc": 3400000.0,
+          "omega": 0.0377215,
+          "dH_f": 0.0,
+          "c_p_C1": 29105.0,
+          "c_p_C2": 8615.0,
+          "c_p_C3": 1701.6,
+          "c_p_C4": 103.0,
+          "c_p_C5": 909.79
+        },
+        "cp_method": "DIPPR-107 (the group's form), user method in this script"
+      },
+      "NH3": {
+        "source": "group repository src/reactor/data/properties_database.json at a6ee9ef",
+        "values": {
+          "Mw": 0.017021,
+          "Tc": 405.65,
+          "Pc": 11280000.0,
+          "omega": 0.252608,
+          "dH_f": -46120.0,
+          "c_p_C1": 33427.0,
+          "c_p_C2": 48980.0,
+          "c_p_C3": 2036.0,
+          "c_p_C4": 22560.0,
+          "c_p_C5": 882.0
+        },
+        "cp_method": "DIPPR-107 (the group's form), user method in this script"
+      },
+      "Ar": {
+        "source": "idaes-pse 2.13.0 idaes/models/properties/modular_properties/examples/ASU_PR.py, component 'argon'",
+        "values": {
+          "mw": 0.039948,
+          "pressure_crit": 4898000.0,
+          "temperature_crit": 150.86,
+          "omega": 0.001,
+          "enth_mol_form_vap_comp_ref": 0.0,
+          "cp_mol_ig_comp_coeff": {
+            "A": 20.5,
+            "B": 0.0,
+            "C": 0.0,
+            "D": 0.0
+          }
+        },
+        "cp_method": "RPP4"
+      },
+      "CH4": {
+        "source": "idaes-pse 2.13.0 idaes/models/properties/modular_properties/examples/HC_PR.py, component 'methane'",
+        "values": {
+          "mw": 0.016043,
+          "pressure_crit": 4600000.0,
+          "temperature_crit": 190.4,
+          "omega": 0.011,
+          "enth_mol_form_vap_comp_ref": -74600.0,
+          "cp_mol_ig_comp_coeff": {
+            "A": 19.25,
+            "B": 0.05213,
+            "C": 1.197e-05,
+            "D": -1.132e-08
+          }
+        },
+        "cp_method": "RPP4"
+      },
+      "binary_interaction": {
+        "PR_kappa": "0 for every pair (no source; stated limitation)"
+      },
+      "pressure_sat_comp": "Wilson estimate from Tc, Pc, omega, used by IDAES only to initialize bubble/dew temperatures; see pr_flash.*.psat_independence",
+      "phase_representation": "H2, N2, Ar, CH4 vapour-only; NH3 in both phases; SmoothVLE"
+    }
+  },
+  "pr_flash": {
+    "full_vle_all_components_both_phases": {
+      "phase_representation": "all five components in both phases; SmoothVLE",
+      "reactor_inlet": {
+        "spec": {
+          "expect": "single-phase vapour",
+          "T_K": 673.15,
+          "P_Pa": 10000000.0,
+          "z": {
+            "H2": 0.7,
+            "N2": 0.235,
+            "NH3": 0.03,
+            "Ar": 0.015,
+            "CH4": 0.02
+          }
+        },
+        "degrees_of_freedom": 0,
+        "initialization": "ok",
+        "solver_status": "ok",
+        "termination_condition": "optimal",
+        "heat_duty_W": 0.0,
+        "phase_fraction": {
+          "Vap": 0.8720002076900221,
+          "Liq": 0.12799979230997782
+        },
+        "x_liquid": {
+          "H2": 0.6999999998059365,
+          "N2": 0.23500000005673427,
+          "NH3": 0.030000000013752096,
+          "Ar": 0.015000000075051558,
+          "CH4": 0.020000000051440713
+        },
+        "y_vapour": {
+          "H2": 0.6999999999464074,
+          "N2": 0.23499999998951387,
+          "NH3": 0.029999999963097764,
+          "Ar": 0.015000000070043993,
+          "CH4": 0.020000000033852126
+        },
+        "single_phase": false,
+        "K_value": {
+          "H2": 1.0000000002006726,
+          "N2": 0.9999999997139558,
+          "NH3": 0.9999999983115223,
+          "Ar": 0.9999999996661623,
+          "CH4": 0.9999999991205707
+        },
+        "T_equilibrium_K": 51.37411388360172,
+        "trivial_solution": true,
+        "fug_coeff_vapour": {
+          "H2": 1.0231195844242922,
+          "N2": 1.0352856638511607,
+          "NH3": 0.996324249919521,
+          "Ar": 1.0218361142938308,
+          "CH4": 1.0237770070123169
+        },
+        "fug_coeff_liquid": {
+          "H2": 179338520.0775902,
+          "N2": 86305753.88716713,
+          "NH3": 205706130648.35013,
+          "Ar": 517960036.5750242,
+          "CH4": 1623749144.7474117
+        }
+      },
+      "separator": {
+        "spec": {
+          "expect": "two-phase (vapour + NH3-rich liquid)",
+          "T_K": 268.15,
+          "P_Pa": 10000000.0,
+          "z": {
+            "H2": 0.6,
+            "N2": 0.2,
+            "NH3": 0.165,
+            "Ar": 0.015,
+            "CH4": 0.02
+          }
+        },
+        "degrees_of_freedom": 0,
+        "initialization": "OverflowError: math range error",
+        "solver_status": "warning",
+        "termination_condition": "unbounded",
+        "heat_duty_W": 0.0,
+        "phase_fraction": {
+          "Vap": 0.5,
+          "Liq": 0.5
+        },
+        "x_liquid": {
+          "H2": 0.2,
+          "N2": 0.2,
+          "NH3": 0.2,
+          "Ar": 0.2,
+          "CH4": 0.2
+        },
+        "y_vapour": {
+          "H2": 0.2,
+          "N2": 0.2,
+          "NH3": 0.2,
+          "Ar": 0.2,
+          "CH4": 0.2
+        },
+        "single_phase": false,
+        "K_value": {
+          "H2": 1.0,
+          "N2": 1.0,
+          "NH3": 1.0,
+          "Ar": 1.0,
+          "CH4": 1.0
+        },
+        "T_equilibrium_K": 300,
+        "trivial_solution": true,
+        "fug_coeff_vapour": {
+          "H2": 1.219182242086975,
+          "N2": 0.9770481044822198,
+          "NH3": 0.4148811952587433,
+          "Ar": 0.9009232704296312,
+          "CH4": 0.7537457359484863
+        },
+        "fug_coeff_liquid": {
+          "H2": 1.219182242086975,
+          "N2": 0.9770481044822198,
+          "NH3": 0.4148811952587433,
+          "Ar": 0.9009232704296312,
+          "CH4": 0.7537457359484863
+        }
+      }
+    },
+    "light_gases_vapour_only": {
+      "phase_representation": "H2, N2, Ar, CH4 vapour-only; NH3 in both phases; SmoothVLE",
+      "reactor_inlet": {
+        "spec": {
+          "expect": "single-phase vapour",
+          "T_K": 673.15,
+          "P_Pa": 10000000.0,
+          "z": {
+            "H2": 0.7,
+            "N2": 0.235,
+            "NH3": 0.03,
+            "Ar": 0.015,
+            "CH4": 0.02
+          }
+        },
+        "degrees_of_freedom": 0,
+        "initialization": "ok",
+        "solver_status": "ok",
+        "termination_condition": "optimal",
+        "heat_duty_W": 3.0616111844110743e-13,
+        "phase_fraction": {
+          "Vap": 0.9999999999998128,
+          "Liq": 1.8710902237252767e-13
+        },
+        "x_liquid": {
+          "H2": 0.0,
+          "N2": 0.0,
+          "NH3": 0.9999999999999999,
+          "Ar": 0.0,
+          "CH4": 0.0
+        },
+        "y_vapour": {
+          "H2": 0.700000000000131,
+          "N2": 0.23500000000004398,
+          "NH3": 0.02999999999981842,
+          "Ar": 0.015000000000002806,
+          "CH4": 0.020000000000003744
+        },
+        "single_phase": true,
+        "K_value": {
+          "H2": null,
+          "N2": null,
+          "NH3": null,
+          "Ar": null,
+          "CH4": null
+        },
+        "T_equilibrium_K": 249.37738832924998,
+        "trivial_solution": false,
+        "fug_coeff_vapour": {
+          "H2": 1.0231195844243257,
+          "N2": 1.035285663851167,
+          "NH3": 0.9963242499189272,
+          "Ar": 1.021836114293739,
+          "CH4": 1.0237770070120562
+        },
+        "fug_coeff_liquid": {
+          "NH3": 0.9554936340152801
+        },
+        "psat_independence": {
+          "rerun_with_psat_estimate_scaled_by": 0.5,
+          "termination_condition": "optimal",
+          "abs_diff_vapour_fraction": 2.220446049250313e-16,
+          "max_abs_diff_y_vapour": 1.1102230246251565e-16
+        }
+      },
+      "separator": {
+        "spec": {
+          "expect": "two-phase (vapour + NH3-rich liquid)",
+          "T_K": 268.15,
+          "P_Pa": 10000000.0,
+          "z": {
+            "H2": 0.6,
+            "N2": 0.2,
+            "NH3": 0.165,
+            "Ar": 0.015,
+            "CH4": 0.02
+          }
+        },
+        "degrees_of_freedom": 0,
+        "initialization": "ok",
+        "solver_status": "ok",
+        "termination_condition": "optimal",
+        "heat_duty_W": -1.4728909345897261e-12,
+        "phase_fraction": {
+          "Vap": 0.8897035261028327,
+          "Liq": 0.11029647389716743
+        },
+        "x_liquid": {
+          "H2": 0.0,
+          "N2": 0.0,
+          "NH3": 1.0000000000000084,
+          "Ar": 0.0,
+          "CH4": 0.0
+        },
+        "y_vapour": {
+          "H2": 0.6743819512868283,
+          "N2": 0.22479398376227613,
+          "NH3": 0.061485117792505664,
+          "Ar": 0.01685954878217071,
+          "CH4": 0.022479398376227616
+        },
+        "single_phase": false,
+        "K_value": {
+          "H2": null,
+          "N2": null,
+          "NH3": 0.061485117792505144,
+          "Ar": null,
+          "CH4": null
+        },
+        "T_equilibrium_K": 268.1499999979987,
+        "trivial_solution": false,
+        "fug_coeff_vapour": {
+          "H2": 1.0448825157321124,
+          "N2": 0.9489565300371288,
+          "NH3": 0.6255448445900851,
+          "Ar": 0.9069211481890195,
+          "CH4": 0.8400547604931274
+        },
+        "fug_coeff_liquid": {
+          "NH3": 0.03846169845662208
+        },
+        "psat_independence": {
+          "rerun_with_psat_estimate_scaled_by": 0.5,
+          "termination_condition": "optimal",
+          "abs_diff_vapour_fraction": 1.1102230246251565e-16,
+          "max_abs_diff_y_vapour": 1.1102230246251565e-16
+        }
+      }
+    },
+    "light_gases_vapour_only_CubicComplementarityVLE": {
+      "phase_representation": "H2, N2, Ar, CH4 vapour-only; NH3 in both phases; CubicComplementarityVLE",
+      "reactor_inlet": {
+        "spec": {
+          "expect": "single-phase vapour",
+          "T_K": 673.15,
+          "P_Pa": 10000000.0,
+          "z": {
+            "H2": 0.7,
+            "N2": 0.235,
+            "NH3": 0.03,
+            "Ar": 0.015,
+            "CH4": 0.02
+          }
+        },
+        "degrees_of_freedom": 0,
+        "initialization": "InitializationError: fs.flash.control_volume.properties_in failed to initialize successfully. Please check the output logs for more information.",
+        "solver_status": "warning",
+        "termination_condition": "infeasible",
+        "heat_duty_W": -3523.2383308918843,
+        "phase_fraction": {
+          "Vap": 0.4931269575791525,
+          "Liq": 0.5092111769067665
+        },
+        "x_liquid": {
+          "H2": 0.0,
+          "N2": 0.0,
+          "NH3": 0.030912223826121958,
+          "Ar": 0.0,
+          "CH4": 0.0
+        },
+        "y_vapour": {
+          "H2": 0.0008533143896277071,
+          "N2": 0.0005686053226681563,
+          "NH3": 0.02867393171910421,
+          "Ar": 0.00040697896983751407,
+          "CH4": 0.0004093934248909453
+        },
+        "single_phase": false,
+        "K_value": {
+          "H2": null,
+          "N2": null,
+          "NH3": 0.9275920063335492,
+          "Ar": null,
+          "CH4": null
+        },
+        "T_equilibrium_K": 677.8153548110996,
+        "trivial_solution": false,
+        "fug_coeff_vapour": {
+          "H2": 1.028223852283622,
+          "N2": 1.0421783494767813,
+          "NH3": 1.0369794012079983,
+          "Ar": 1.0340157325972767,
+          "CH4": 1.0456608613846265
+        },
+        "fug_coeff_liquid": {
+          "NH3": 1.194282929829696
+        }
+      },
+      "separator": {
+        "spec": {
+          "expect": "two-phase (vapour + NH3-rich liquid)",
+          "T_K": 268.15,
+          "P_Pa": 10000000.0,
+          "z": {
+            "H2": 0.6,
+            "N2": 0.2,
+            "NH3": 0.165,
+            "Ar": 0.015,
+            "CH4": 0.02
+          }
+        },
+        "degrees_of_freedom": 0,
+        "initialization": "ok",
+        "solver_status": "ok",
+        "termination_condition": "optimal",
+        "heat_duty_W": -2.3807365014941077e-12,
+        "phase_fraction": {
+          "Vap": 0.8858896313920865,
+          "Liq": 0.11411036860791343
+        },
+        "x_liquid": {
+          "H2": 0.0,
+          "N2": 0.0,
+          "NH3": 1.0,
+          "Ar": 0.0,
+          "CH4": 0.0
+        },
+        "y_vapour": {
+          "H2": 0.6772852720451453,
+          "N2": 0.22576175734838178,
+          "NH3": 0.0574446630705061,
+          "Ar": 0.016932131801128635,
+          "CH4": 0.022576175734838177
+        },
+        "single_phase": false,
+        "K_value": {
+          "H2": null,
+          "N2": null,
+          "NH3": 0.0574446630705061,
+          "Ar": null,
+          "CH4": null
+        },
+        "T_equilibrium_K": 266.24134081367646,
+        "trivial_solution": false,
+        "fug_coeff_vapour": {
+          "H2": 1.04407503786229,
+          "N2": 0.9495566888434909,
+          "NH3": 0.6288749699087504,
+          "Ar": 0.9078056006554794,
+          "CH4": 0.8418408906039714
+        },
+        "fug_coeff_liquid": {
+          "NH3": 0.038461698456622055
+        }
+      }
+    }
+  },
+  "loop_skeleton": {
+    "degrees_of_freedom": {
+      "specified": 0,
+      "after_unfixing_tear_guess": 0
+    },
+    "solver_status": "ok",
+    "termination_condition": "optimal",
+    "specification": {
+      "fresh_feed": {
+        "flow_mol": 1.0,
+        "z": {
+          "H2": 0.7425,
+          "N2": 0.2475,
+          "NH3": 0.0001,
+          "Ar": 0.005,
+          "CH4": 0.0049
+        }
+      },
+      "pressure_Pa_everywhere": 10000000.0,
+      "reactor_inlet_T_K": 673.15,
+      "reactor_outlet_T_K": 673.15,
+      "reactor": "StoichiometricReactor, extent = 0.25 x N2 inlet flow (per-pass N2 conversion)",
+      "cooler_outlet_T_K": 268.15,
+      "flash": "adiabatic, dP = 0",
+      "purge_split_fraction": 0.1,
+      "tear_guess": {
+        "flow_mol": 3.0,
+        "T_K": 268.15,
+        "z": {
+          "H2": 0.62,
+          "N2": 0.21,
+          "NH3": 0.02,
+          "Ar": 0.07,
+          "CH4": 0.08
+        }
+      }
+    },
+    "streams": {
+      "fresh_feed": {
+        "flow_mol": 1.0,
+        "T_K": 673.15,
+        "P_Pa": 10000000.0,
+        "z": {
+          "H2": 0.7425,
+          "N2": 0.2475,
+          "NH3": 0.0001,
+          "Ar": 0.005,
+          "CH4": 0.0049
+        }
+      },
+      "reactor_inlet": {
+        "flow_mol": 3.28563853025936,
+        "T_K": 673.15,
+        "P_Pa": 10000000.0,
+        "z": {
+          "H2": 0.695333758964026,
+          "N2": 0.231777918974545,
+          "NH3": 0.0427571912070685,
+          "Ar": 0.01521774262217436,
+          "CH4": 0.014913388254914638
+        }
+      },
+      "reactor_outlet": {
+        "flow_mol": 2.904869299862437,
+        "T_K": 673.15,
+        "P_Pa": 10000000.0,
+        "z": {
+          "H2": 0.5898583954039014,
+          "N2": 0.1966194643612543,
+          "NH3": 0.17944143146942837,
+          "Ar": 0.01721247889357546,
+          "CH4": 0.016868229868902285
+        }
+      },
+      "liquid_product": {
+        "flow_mol": 0.36527093333742383,
+        "T_K": 268.1500000018831,
+        "P_Pa": 10000000.0,
+        "z": {
+          "H2": 9.962861405049412e-09,
+          "N2": 9.99541167420139e-09,
+          "NH3": 1.0000000000179377,
+          "Ar": 1.0009069018820782e-08,
+          "CH4": 1.0024389588988473e-08
+        }
+      },
+      "purge": {
+        "flow_mol": 0.25395983667111405,
+        "T_K": 268.1500000018831,
+        "P_Pa": 10000000.0,
+        "z": {
+          "H2": 0.6746978445911826,
+          "N2": 0.22489928060922454,
+          "NH3": 0.06142033091065549,
+          "Ar": 0.019688153146238254,
+          "CH4": 0.01929439074270423
+        }
+      },
+      "recycle": {
+        "flow_mol": 2.2856385300643587,
+        "T_K": 268.1500000018831,
+        "P_Pa": 10000000.0,
+        "z": {
+          "H2": 0.6746978445893372,
+          "N2": 0.22489928060563963,
+          "NH3": 0.06142033091022525,
+          "Ar": 0.01968815314812012,
+          "CH4": 0.019294390746660343
+        }
+      }
+    },
+    "separator_phase_split": {
+      "phase_fraction": {
+        "Vap": 0.8742556391966382,
+        "Liq": 0.12574436080392196
+      },
+      "x_liquid": {
+        "H2": 0.0,
+        "N2": 0.0,
+        "NH3": 1.0000000000224505,
+        "Ar": 0.0,
+        "CH4": 0.0
+      },
+      "y_vapour": {
+        "H2": 0.6746978446171094,
+        "N2": 0.2248992806269833,
+        "NH3": 0.06142033091092405,
+        "Ar": 0.01968815314063524,
+        "CH4": 0.019294390730719077
+      },
+      "single_phase": false,
+      "K_value": {
+        "H2": null,
+        "N2": null,
+        "NH3": 0.06142033090954513,
+        "Ar": null,
+        "CH4": null
+      },
+      "T_equilibrium_K": 268.1500000000588,
+      "trivial_solution": false,
+      "fug_coeff_vapour": {
+        "H2": 1.0447199266978637,
+        "N2": 0.9490742249616361,
+        "NH3": 0.6262046766662804,
+        "Ar": 0.9070953586816495,
+        "CH4": 0.8404082885433626
+      },
+      "fug_coeff_liquid": {
+        "NH3": 0.038461698459335246
+      }
+    },
+    "duties_W": {
+      "heater": 28772.084291134703,
+      "reactor": -20314.97934378744,
+      "cooler": -45983.45754220214
+    },
+    "reaction_extent_mol_s": 0.19038461525929387,
+    "reactor_duty_per_extent_J_mol": -106704.94207801142,
+    "element_balance_in_minus_out_mol_s": {
+      "H": -2.369195728491036e-08,
+      "N": -6.994337942156648e-09,
+      "Ar": -3.813396529973867e-09,
+      "C": -3.983303962715179e-09
+    },
+    "element_flows_in_mol_s": {
+      "H": 1.5049000000000001,
+      "N": 0.4951,
+      "Ar": 0.005,
+      "C": 0.0049
+    }
+  },
+  "kinetic_reactor_q7": {
+    "unit": "idaes.models.unit_models.CSTR, isothermal, dP = 0",
+    "rate_form": "user class transcribing the group's AmmoniaSynthesisKinetics rate law; activities = PR vapour fugacities in bar (not the group's correlations)",
+    "catalyst_fraction_rho_b_over_rho_c": 0.19999999999999998,
+    "volume_m3": 0.001,
+    "inlet": {
+      "expect": "single-phase vapour",
+      "T_K": 673.15,
+      "P_Pa": 10000000.0,
+      "z": {
+        "H2": 0.7,
+        "N2": 0.235,
+        "NH3": 0.03,
+        "Ar": 0.015,
+        "CH4": 0.02
+      }
+    },
+    "degrees_of_freedom": 0,
+    "initialization": "ok",
+    "solver_status": "ok",
+    "termination_condition": "optimal",
+    "extent_mol_s": 0.0034010297512494293,
+    "N2_conversion": 0.014472467026593317,
+    "outlet_y_NH3": 0.03705410372081963,
+    "outlet_vapour_fraction": 0.9999999999997744
+  },
+  "representability": [
+    {
+      "unit": "fresh feed",
+      "idaes_model_and_method": "Feed",
+      "reaction_form": "-",
+      "representable": "Y",
+      "reason": "built and solved in loop_skeleton"
+    },
+    {
+      "unit": "recycle mixer",
+      "idaes_model_and_method": "Mixer, MomentumMixingType.none, outlet pressure fixed",
+      "reaction_form": "-",
+      "representable": "Y",
+      "reason": "zero-dP loop convention (no compressor); built and solved in loop_skeleton"
+    },
+    {
+      "unit": "reactor preheater",
+      "idaes_model_and_method": "Heater, outlet T, dP = 0",
+      "reaction_form": "-",
+      "representable": "Y",
+      "reason": "loop_skeleton"
+    },
+    {
+      "unit": "reactor (stoichiometric)",
+      "idaes_model_and_method": "StoichiometricReactor + user constraint extent = X * N2 inlet",
+      "reaction_form": "N2 + 3 H2 -> 2 NH3, fixed per-pass conversion; heat of reaction from formation enthalpies",
+      "representable": "Y",
+      "reason": "loop_skeleton; see reactor_duty_per_extent_J_mol"
+    },
+    {
+      "unit": "reactor (kinetic, the group's rate law)",
+      "idaes_model_and_method": "CSTR + user rate_form class (GenericReactionParameterBlock)",
+      "reaction_form": "Rossetti-type rate as in the group's AmmoniaSynthesisKinetics; activities = PR vapour fugacities",
+      "representable": "Y",
+      "reason": "kinetic_reactor_q7: built and solved once (CSTR only; a PFR was not built; the activities are IDAES's PR fugacities, not the group's correlations)"
+    },
+    {
+      "unit": "reactor (equilibrium)",
+      "idaes_model_and_method": "EquilibriumReactor",
+      "reaction_form": "K_a of the group's kinetics (log10 form)",
+      "representable": "not_built",
+      "reason": "not built in this smoke: IDAES's built-in equilibrium-constant forms do not include this K_a expression, so it would need a user equilibrium_constant class (the same mechanism as the rate form above)"
+    },
+    {
+      "unit": "cooler",
+      "idaes_model_and_method": "Heater, outlet T, dP = 0",
+      "reaction_form": "-",
+      "representable": "Y",
+      "reason": "loop_skeleton"
+    },
+    {
+      "unit": "HP separator, PR, light gases vapour-only",
+      "idaes_model_and_method": "Flash, adiabatic, SmoothVLE; H2/N2/Ar/CH4 vapour-only (IDAES HC_PR convention)",
+      "reaction_form": "-",
+      "representable": "Y",
+      "reason": "pr_flash.light_gases_vapour_only (both states) and loop_skeleton; no gas solubility in the liquid"
+    },
+    {
+      "unit": "HP separator, full PR VLE (gases dissolve in liquid NH3)",
+      "idaes_model_and_method": "Flash, SmoothVLE; all five components in both phases",
+      "reaction_form": "-",
+      "representable": "N",
+      "reason": "pr_flash.full_vle_all_components_both_phases: with IDAES's default initialization the reactor-inlet state ends on the trivial solution (all K = 1) and the separator state ends unbounded on the trivial solution; not resolved in this smoke"
+    },
+    {
+      "unit": "purge",
+      "idaes_model_and_method": "Separator, total-flow split, purge fraction fixed",
+      "reaction_form": "-",
+      "representable": "Y",
+      "reason": "loop_skeleton"
+    },
+    {
+      "unit": "recycle closure",
+      "idaes_model_and_method": "Arcs, simultaneous (EO) solve after sequential initialization from a tear guess",
+      "reaction_form": "-",
+      "representable": "Y",
+      "reason": "loop_skeleton"
+    },
+    {
+      "unit": "recycle compressor",
+      "idaes_model_and_method": "PressureChanger (compressor)",
+      "reaction_form": "-",
+      "representable": "not_built",
+      "reason": "the skeleton uses the zero-dP loop convention; not built here"
+    }
+  ]
+}

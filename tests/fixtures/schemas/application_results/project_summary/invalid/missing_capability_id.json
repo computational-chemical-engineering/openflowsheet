@@ -1,0 +1,54 @@
+{
+  "expect_error": "'capability_id' is a required property",
+  "document": {
+    "default_policy_id": "default",
+    "head": "syn001-edited",
+    "job_counts": {
+      "cancelled": 0,
+      "completed": 1,
+      "failed": 0,
+      "queued": 0,
+      "running": 0,
+      "timed_out": 0
+    },
+    "limits": {
+      "default_wall_time_s": null,
+      "max_active_jobs": null,
+      "max_wall_time_s": null
+    },
+    "principal_id": "local-owner",
+    "project_id": "t07-results",
+    "revision_count": 2,
+    "rights": [
+      "draft",
+      "execute",
+      "install",
+      "policy",
+      "publish",
+      "read"
+    ],
+    "server": {
+      "git_commit": null,
+      "package_version": "0.1.0",
+      "store_schema": "t07-store-v1"
+    },
+    "solve_policies": [
+      {
+        "policy_id": "T04-W12",
+        "policy_sha256": "1f7d11723fa25d19970a506a8429f55b8365f32c4881f0c4a1e39fcd9d10b6f5"
+      },
+      {
+        "policy_id": "T06-revision-v2",
+        "policy_sha256": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab"
+      },
+      {
+        "policy_id": "T08-ptc-v1",
+        "policy_sha256": "aa0f1257a830645dbd09f680577e92ddfd0d8f327423d849f2adb64124a7045c"
+      },
+      {
+        "policy_id": "T08-warm-v1",
+        "policy_sha256": "32f484a150f61e2f62357e62c7daa4b4c1c450788abce1967da938fe7ad55795"
+      }
+    ]
+  }
+}

@@ -1,0 +1,203 @@
+# Declared ModelManifest: SYN-001 heater with a TP-state outlet
+#
+# `status: declared` and `implementation_artifact.state: not_implemented` mean this document
+# states intended behavior for work package K02. No code implements it, no test exercises it,
+# and it is not evidence that the model works. Every derivative is declared `unavailable`
+# because none exists yet (blueprint §5.2).
+# ADR 0008 D3.3: HEAT-mole is written inflow minus outflow, like every other balance row.
+id: syn001.tp_heater
+version: 0.0.0-declared
+status: declared
+title: SYN-001 heater with a TP-state outlet
+description: Brings a stream to a specified outlet temperature; duty is calculated.
+introduced_by_package: K02
+ports:
+- name: inlet
+  kind: material
+  direction: inlet
+  multiplicity: 1
+  component_mapping: revision_component_set
+  state_definition: nTP-v1
+  phase_capabilities:
+  - liquid
+  - vapor
+  - vapor_liquid
+- name: outlet
+  kind: material
+  direction: outlet
+  multiplicity: 1
+  component_mapping: revision_component_set
+  state_definition: nTP-v1
+  phase_capabilities:
+  - liquid
+  - vapor
+  - vapor_liquid
+- name: duty
+  kind: energy
+  direction: inlet
+  multiplicity: 1
+  component_mapping: null
+  state_definition: null
+  phase_capabilities: []
+mathematics:
+  equations:
+  - id: HEAT-mole
+    statement: n_in,i - n_out,i = 0 for every component i
+    dependencies:
+    - inlet.state.n
+    - outlet.state.n
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - 0
+    - 0
+    - -1
+    - 0
+    - 1
+    - 0
+    - 0
+    accumulation:
+      kind: holdup_balance
+      holdup:
+        symbol: N_i
+        quantity: component moles held in the heater
+        dimension:
+        - 0
+        - 0
+        - 0
+        - 0
+        - 1
+        - 0
+        - 0
+  - id: HEAT-T
+    statement: T_out - T_spec = 0
+    dependencies:
+    - specifications.SPEC-heater-outlet-T
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - 0
+    - 0
+    - 0
+    - 1
+    - 0
+    - 0
+    - 0
+    accumulation:
+      kind: algebraic
+  - id: HEAT-pressure
+    statement: P_out - P_in + dP = 0 with dP = 0 declared
+    dependencies:
+    - inlet.state.P
+    - outlet.state.P
+    - parameters.pressure_drop
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - -1
+    - 1
+    - -2
+    - 0
+    - 0
+    - 0
+    - 0
+    accumulation:
+      kind: algebraic
+  - id: HEAT-equilibrium
+    statement: 'the outlet is the TP flash result at (T_out, P_out): y_i = K_i(T,P) x_i for each flowing
+      phase'
+    dependencies:
+    - outlet.state
+    conditional_class: phase_conditional
+    source: docs/derivations/SYN-001.md §4
+    accumulation:
+      kind: algebraic
+  - id: HEAT-duty
+    statement: Q - (Hdot_out - Hdot_in) = 0, Q positive into the unit
+    dependencies:
+    - inlet.state
+    - outlet.state
+    - duty.Q
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - 2
+    - 1
+    - -3
+    - 0
+    - 0
+    - 0
+    - 0
+    accumulation:
+      kind: holdup_balance
+      holdup:
+        symbol: U
+        quantity: internal energy of the heater contents
+        dimension:
+        - 2
+        - 1
+        - -2
+        - 0
+        - 0
+        - 0
+        - 0
+derivatives:
+- output: outlet.state
+  with_respect_to:
+  - inlet.state
+  - specifications
+  method: unavailable
+  regime: all
+  notes: 'Nothing is implemented in P01, so no derivative exists. Declared `unavailable` rather than
+    guessed: a missing derivative is reported as absent, never replaced with zeros (blueprint §5.2).
+    K02 implements the model and K01 supplies the derivative route.'
+- output: duty.Q
+  with_respect_to:
+  - inlet.state
+  - specifications
+  method: unavailable
+  regime: all
+  notes: 'Nothing is implemented in P01, so no derivative exists. Declared `unavailable` rather than
+    guessed: a missing derivative is reported as absent, never replaced with zeros (blueprint §5.2).
+    K02 implements the model and K01 supplies the derivative route.'
+initialization:
+  strategy: local_initializer
+  registered_initializer: null
+  notes: The TP flash kernel initializes its own Rachford-Rice bracket from the K-values at the specified
+    outlet state; no guess is carried across units.
+validity:
+  domain:
+    temperature_K:
+      min: 280.0
+      max: 440.0
+    pressure_Pa:
+      min: 50000.0
+      max: 200000.0
+    components:
+    - A
+    - B
+    - C
+    phases:
+    - liquid
+    - vapor
+    - vapor_liquid
+    - zero_flow
+  limitations:
+  - 'The duty may be negative: at r = 0.95 the mixer outlet is above the setpoint and the unit removes
+    about 16144.6 W. An implementation asserting Q >= 0 fails the registered SYN-001-high-recycle
+    variant (ADR 0001 D4.2).'
+  - A two-phase outlet is a supported result and occurs in three of the five registered variants (derivation
+    §7 finding 2).
+  - A dormant inlet gives a dormant outlet and exactly zero duty (ADR 0001 D3.4).
+  - Shares one TP-state kernel with the flash. No PH flash in v0.0.
+implementation_artifact:
+  state: not_implemented
+  module: null
+  artifact_hash: null
+  planned_package: K02
+execution_requirements:
+  execution_class: native_equation
+  thread_safety: unknown
+  evaluation_cost_class: unknown
+  property_provider: syn001
+  reference_convention: SYN-001-ref-v1

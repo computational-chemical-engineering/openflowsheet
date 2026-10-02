@@ -1,0 +1,372 @@
+{
+ "work_package": "K04",
+ "commit": "bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29",
+ "requirements": [
+  "D14",
+  "D05",
+  "A08",
+  "A09"
+ ],
+ "status": "reviewed",
+ "inputs": {
+  "case_id": "SYN-001 verified at all five registered variants, plus the registered injections INJ-1, INJ-3, INJ-6 and INJ-7 with their below-threshold twins, the trivial root of \u00a79.2, and the constructed regularity fixtures TRI-16/32/64, DIM-2001, SQ-0, SQ-1 and SQ-2",
+  "case_hash": "abb2753143f25c20646f8535dec5786159b6536b0ceded6be02803999228989d",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "1ec573e0e4e07e341e3311900b9e2f2e62b9940e5ee114243fb087953f47ad32"
+  }
+ ],
+ "checks": [
+  {
+   "id": "K04.A15.verdicts",
+   "description": "\u00a76 and \u00a78: every registered variant certifies. All checks pass, none is unsupported, the regularity status is clean, there are no limitations at all, and a dormant stream's checks are recorded `not_applicable` rather than skipped \u2014 S6 at once-through, S4 at 310 K, S5/S6/S7 at 420 K.",
+   "result": "pass",
+   "value": {
+    "SYN-001-nominal": {
+     "verdict": "VERIFIED",
+     "checks": 136,
+     "failing": [],
+     "unsupported": [],
+     "not_applicable": [],
+     "limitations": [],
+     "regularity": "NO_RANK_LOSS_DETECTED",
+     "rcond_1": 0.0011612638121767359,
+     "inverse_one_norm": 144.8155534676199,
+     "solution_error_bound_scaled": 2.1437008237811606e-14
+    },
+    "SYN-001-once-through": {
+     "verdict": "VERIFIED",
+     "checks": 137,
+     "failing": [],
+     "unsupported": [],
+     "not_applicable": [
+      "S6"
+     ],
+     "limitations": [],
+     "regularity": "NO_RANK_LOSS_DETECTED",
+     "rcond_1": 0.001850767510406016,
+     "inverse_one_norm": 101.97282109600047,
+     "solution_error_bound_scaled": 5.03166994963385e-14
+    },
+    "SYN-001-high-recycle": {
+     "verdict": "VERIFIED",
+     "checks": 136,
+     "failing": [],
+     "unsupported": [],
+     "not_applicable": [],
+     "limitations": [],
+     "regularity": "NO_RANK_LOSS_DETECTED",
+     "rcond_1": 0.00013310255542532665,
+     "inverse_one_norm": 476.06270016814494,
+     "solution_error_bound_scaled": 7.620386461857698e-13
+    },
+    "SYN-001-all-liquid-310K": {
+     "verdict": "VERIFIED",
+     "checks": 137,
+     "failing": [],
+     "unsupported": [],
+     "not_applicable": [
+      "S4"
+     ],
+     "limitations": [],
+     "regularity": "NO_RANK_LOSS_DETECTED",
+     "rcond_1": 0.0020187630191823716,
+     "inverse_one_norm": 79.93091115770572,
+     "solution_error_bound_scaled": 1.5776202301609372e-13
+    },
+    "SYN-001-all-vapor-420K": {
+     "verdict": "VERIFIED",
+     "checks": 139,
+     "failing": [],
+     "unsupported": [],
+     "not_applicable": [
+      "S5",
+      "S6",
+      "S7"
+     ],
+     "limitations": [],
+     "regularity": "NO_RANK_LOSS_DETECTED",
+     "rcond_1": 0.0007705208089216418,
+     "inverse_one_norm": 101.97282109600047,
+     "solution_error_bound_scaled": 5.03166994963385e-14
+    }
+   },
+   "expected": "VERIFIED at all five, no limitation"
+  },
+  {
+   "id": "K04.A18.injected_false_success",
+   "description": "\u00a79.2 and gate **G04**'s false-success clause. The trivial root: S3's lifted split forced all-liquid at the once-through variant with both duties closed. Every equation the solver knows about is satisfied \u2014 all 49 assembled rows, every material balance, the alias certificates, the overall energy envelope, and the regularity screen. It is caught only by the checks that do not read the lifted split: a fresh flash of every stream, and comparing the split against one. K02 measured this state's duty error independently at 8237.85 W through the code; Fable's closed form gives 8237.8503930694530451.",
+   "result": "pass",
+   "value": {
+    "verdict": "FAILED",
+    "false_success_detected": true,
+    "residual_rows_passing": 49,
+    "residual_rows": 49,
+    "worst_residual": 8.767528925091028e-10,
+    "material_all_pass": true,
+    "energy_envelope": "pass",
+    "regularity": "NO_RANK_LOSS_DETECTED",
+    "failing": {
+     "energy_heater_W": -8237.850393069453,
+     "energy_flash_W": 8237.850393069451,
+     "sum_xK_minus_one": 0.07031421908077462,
+     "split_total_mol_per_s": -0.30410617028015113
+    }
+   },
+   "expected": "FAILED with false_success_detected; 49/49 residual rows passing; the energy envelope passing as the registered blind spot; heater and flash at -/+8237.8503930694530451 W; sum(x K) - 1 = 0.0703142190807741552; split gap 0.30410617028018327955 mol/s"
+  },
+  {
+   "id": "K04.A17_A27_A28.injections_and_twins",
+   "description": "\u00a79.1, \u00a79.6, \u00a79.7, each with the twin just below its threshold (\u00a71 invariant 3). Without the twin, 'the verifier rejects this' is satisfied by a verifier that rejects everything. The bound is recorded at every twin and decides nothing (\u00a77.4 as amended).",
+   "result": "pass",
+   "value": {
+    "INJ-1": {
+     "above": {
+      "delta": 1.0,
+      "verdict": "FAILED",
+      "failing": [
+       "energy_balance.envelope",
+       "energy_balance.heater",
+       "residual.U-HEAT:HEAT-duty"
+      ],
+      "solution_error_bound_scaled": 0.0014481555346761992
+     },
+     "below": {
+      "delta": 0.0005,
+      "verdict": "VERIFIED",
+      "failing": [],
+      "solution_error_bound_scaled": 7.240777701197931e-07
+     }
+    },
+    "INJ-6": {
+     "above": {
+      "delta": 1e-06,
+      "verdict": "FAILED",
+      "failing": [
+       "energy_balance.mixer",
+       "energy_balance.splitter",
+       "material_balance.mixer.A",
+       "material_balance.ratio.A",
+       "material_balance.splitter.A",
+       "residual.U-MIX:MIX-energy",
+       "residual.U-MIX:MIX-mole:A",
+       "residual.U-SPLIT:SPLIT-recycle:A"
+      ],
+      "solution_error_bound_scaled": 4.8271851154581765e-05
+     },
+     "below": {
+      "delta": 1e-08,
+      "verdict": "VERIFIED",
+      "failing": [],
+      "solution_error_bound_scaled": 4.827185113046514e-07
+     }
+    },
+    "INJ-7": {
+     "above": {
+      "delta": 1e-05,
+      "verdict": "FAILED",
+      "failing": [
+       "energy_balance.flash",
+       "energy_balance.heater",
+       "residual.U-FLASH:FLASH-duty",
+       "residual.U-HEAT:HEAT-T",
+       "residual.U-HEAT:HEAT-duty",
+       "specification.S3.T"
+      ],
+      "solution_error_bound_scaled": 1.4481657226004619e-05
+     },
+     "below": {
+      "delta": 1e-07,
+      "verdict": "VERIFIED",
+      "failing": [],
+      "solution_error_bound_scaled": 1.4481559622075403e-07
+     }
+    }
+   },
+   "expected": "FAILED above the threshold, VERIFIED below it, for all three"
+  },
+  {
+   "id": "K04.A16.supplied_policy",
+   "description": "\u00a79.4 (VER-05): a loosened policy is an input with a hash, is recorded by check id with the registered and applied tolerances, and yields `RELAXED` \u2014 never `VERIFIED`. The same state under a *tightened* policy is `FAILED`.",
+   "result": "pass",
+   "value": {
+    "registered": {
+     "verdict": "FAILED",
+     "policy_sha256": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
+     "relaxations": []
+    },
+    "loosened": {
+     "verdict": "RELAXED",
+     "policy_sha256": "37e447b2b128fffe8f1ad30609e97a76000cf844312c90ddc003325f545d6706",
+     "relaxations": [
+      {
+       "check": "residual.molar_flow",
+       "registered": 3.1000000000000006e-08,
+       "applied": 1e-06
+      }
+     ]
+    },
+    "tightened": {
+     "verdict": "FAILED",
+     "policy_sha256": "c7169f30f4ac649b3a8c3ab6db980e44ed772eaa06d77cafc909f78e5c0137e8",
+     "relaxations": []
+    }
+   },
+   "expected": "FAILED / RELAXED / FAILED with differing policy hashes"
+  },
+  {
+   "id": "K04.A23_A24_A25_A26_A34.regularity_fixtures",
+   "description": "\u00a77.6: one triangular family at three sizes produces all three decidable statuses while `min|U_ii|/max|U_ii|` is exactly 1.0 at every one \u2014 so a screen that consulted the U-diagonal would report the same thing for a well-conditioned, an ill-conditioned and a rank-deficient matrix ([A08], ADR 0004 D3.4). Plus the SVD budget, the exactly-singular path, and the `x^2 = 0` seed at two tolerances: at 1e-8 the absolute limit passes and the verdict is VERIFIED with the bound recorded; at 1e-12 it trips.",
+   "result": "pass",
+   "value": {
+    "TRI-16": {
+     "status": "NO_RANK_LOSS_DETECTED",
+     "rcond_1": 1.9073486328125e-06,
+     "rcond_1_exact": 1.9073486328125e-06,
+     "u_diagonal_ratio": 1.0,
+     "svd_rank": null
+    },
+    "TRI-32": {
+     "status": "ILL_CONDITIONED",
+     "rcond_1": 1.4551915228366852e-11,
+     "rcond_1_exact": 1.4551915228366852e-11,
+     "u_diagonal_ratio": 1.0,
+     "svd_rank": 32
+    },
+    "TRI-64": {
+     "status": "RANK_DEFICIENT",
+     "rcond_1": 1.6940658945086007e-21,
+     "rcond_1_exact": 1.6940658945086007e-21,
+     "u_diagonal_ratio": 1.0,
+     "svd_rank": 63
+    },
+    "DIM-2001": {
+     "status": "INCONCLUSIVE",
+     "reason": "svd_budget"
+    },
+    "SQ-0": {
+     "status": "RANK_DEFICIENT",
+     "rank": 0
+    },
+    "SQ-1": {
+     "status": "NO_RANK_LOSS_DETECTED",
+     "inverse_one_norm": 8192.0,
+     "threshold": 45035996.27370496
+    },
+    "SQ-2": {
+     "status": "ILL_CONDITIONED",
+     "reason": "absolute",
+     "inverse_one_norm": 524288.0,
+     "threshold": 4503.599627370496
+    }
+   },
+   "expected": "the registered status at each fixture; U-diagonal ratio 1.0 at all three"
+  },
+  {
+   "id": "K04.A20_A21.failure_bundle",
+   "description": "\u00a710 and blueprint \u00a78.2. A bundle carries **no verdict word** \u2014 not even `UNVERIFIED`, which would read as a judgement on a state nobody judged \u2014 and **no infeasibility claim** (\u00a77.7): a solver may report that it failed, never that no answer exists. Both are constructor refusals, not conventions.",
+   "result": "pass",
+   "value": {
+    "outcome": "BUDGET_EXHAUSTED",
+    "taxonomy": "budget/cancellation outcomes",
+    "property_calls": 20,
+    "checkpoint": null,
+    "actions": [
+     "increase_budget"
+    ],
+    "carries_no_verdict_word": true,
+    "carries_no_infeasibility_claim": true
+   },
+   "expected": "BUDGET_EXHAUSTED at exactly 20 calls, no checkpoint, no verdict word"
+  },
+  {
+   "id": "K04.A31_A32.interfaces",
+   "description": "Plan \u00a72.2's K04 row: three schemas with fixtures emitted by real verifier runs rather than written by hand (R-015), and ADR 0007 D2's float classification made executable \u2014 a schema float with no classification fails the test.",
+   "result": "pass",
+   "value": [
+    "solution-certificate",
+    "regularity-evidence",
+    "failure-bundle"
+   ],
+   "expected": "three schemas, each with at least one generated fixture"
+  },
+  {
+   "id": "K04.A22.structural_over_specification",
+   "description": "Gate G04's 'bad spec' has two registered inputs and only one is reachable here. STR-03, the conflicting heater temperature-and-duty specification, is a *validation* rejection and **no validator exists** before K06 \u2014 `process_runtime.application` is empty. G04's bad-specification clause is served by the 150 kPa `SPECIFICATION_CONFLICT`, which is a bad specification detected with a proof. Recording STR-03 as unsupported is the point: silence would read as coverage.",
+   "result": "unsupported",
+   "value": {
+    "case": "SYN-001-conflicting-heater-spec",
+    "owner": "K06"
+   },
+   "expected": "a validator that rejects structural over-specification"
+  },
+  {
+   "id": "K04.A12.oracle_cross_check",
+   "description": "The verifier uses the *provider* in production, because `process_runtime` may not import `benchmarks/`; the oracle is the test-side second witness. They are two transcriptions of one algebra and agree to 0.0 J/mol, so this is code independence and not data independence \u2014 and [A09] means the energy checks are bookkeeping rather than thermodynamic validation either way.",
+   "result": "not_applicable",
+   "value": "tests only; production must not import benchmarks/",
+   "expected": "out of scope for a production path"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "src/process_runtime/verify/__init__.py",
+   "sha256": "faf35bf566551a7e953a9c8b3a00a28cab984834c81ca3cb79bf402f92ba83cd",
+   "description": "The verifier's types and the promise."
+  },
+  {
+   "path": "src/process_runtime/verify/checks.py",
+   "sha256": "94406ab9a42ac7386bf784e03ee45738c66eb56dabd97b6b0be69f7faae48790",
+   "description": "\u00a74's check set."
+  },
+  {
+   "path": "src/process_runtime/verify/regularity.py",
+   "sha256": "0940e84e224d3ef77ca447d99f148f3de47399a4c927286f55402f4b1d87e84a",
+   "description": "The [A08] screen and the bound."
+  },
+  {
+   "path": "src/process_runtime/verify/certificate.py",
+   "sha256": "6cf7d4320f65f8219cd17973a39e3e83f534f329c4229a986696971db1ffcdf3",
+   "description": "The verdict and the certificate."
+  },
+  {
+   "path": "src/process_runtime/verify/failure.py",
+   "sha256": "6fd475241e1be903a16b3188492c70f98002743e9cda4dce1c9215dd3442ccaa",
+   "description": "The structured failure."
+  },
+  {
+   "path": "docs/derivations/K04-certificate-spec.md",
+   "sha256": "73e1599335b723696d79ffeb6e4bd8b0aa629874321fb23f01c4246aa4d760c1",
+   "description": "The Fable specification."
+  },
+  {
+   "path": "docs/adr/0007-reproducibility-certificate-policy.md",
+   "sha256": "96144c6e048378bad05b9eab33cb0c4fd665fa59dff285f1bdc30f918c06eec8",
+   "description": "The companion ADR."
+  },
+  {
+   "path": "benchmarks/k04/reference_values.yaml",
+   "sha256": "abb2753143f25c20646f8535dec5786159b6536b0ceded6be02803999228989d",
+   "description": "40-digit closed forms, mpmath."
+  }
+ ],
+ "limitations": [
+  "SYN-001 is synthetic. Nothing here is empirical validation of any thermodynamic model; the components are pseudo-components with invented constants.",
+  "Every energy and phase check shares the property package with the solver ([A09]). The oracle cross-check is code independence, not data independence, and the certificate says so on every affected check.",
+  "A certificate certifies **residual** accuracy at the registered tolerances. The first-order solution-error bound is recorded and disclosed, never promised (\u00a77.4 as amended 2026-09-22; Frank's ruling on F3). On this flowsheet ||J^-1||_1 is 80 to 476, so a state converged to tolerance rather than to roundoff has a bound one to two orders above the scaled tolerance; that is the disclosure, not a defect.",
+  "The regularity screen and the bound are local evidence at one state. They say nothing about other roots, which are T03's, and nothing about sensitivities beyond first order.",
+  "The check set is written for the SYN-001 topology. A general assembler comes from T01's incidence graph; \u00a75.2's equilibrium-row tolerance is registered for this lifted form by derivation from the flow rule, and ADR 0001 D6 does not yet carry it.",
+  "No validator for structural over-specification exists before K06, so STR-03 is recorded `unsupported` above rather than as a pass.",
+  "Reuse of a solver factorization is not implemented: K03 never factorizes the 47x47 matrix, so nothing could belong to the final Jacobian. The refusal path for a mismatched identity exists and is tested before anyone needs it.",
+  "Human numerical and process-modeling review remain `pending`, and no agent may set them."
+ ],
+ "review": {
+  "numerical": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more.",
+  "process_model": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more."
+ }
+}

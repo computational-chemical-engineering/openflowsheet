@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/replay-report.schema.json",
+  "title": "ReplayReport",
+  "description": "K05 and ADR 0007 D4. The **mode** is decided from the environment before anything runs; the **verdict** is what the rerun found. Both are reported and neither stands for the other. A changed dependency therefore never produces a silent pass: the mode becomes `inspected_archived_results` and the verdict `NOT_RUN`, which is gate G05's first clause. `verdict_changed_near_threshold` is the one case where MATCH and 'same verdict' part company (D2.4), and it is listed rather than hidden.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mode",
+    "verdict",
+    "integrity",
+    "recorded_environment",
+    "current_environment",
+    "reasons",
+    "differences",
+    "bitwise_floats",
+    "verdict_changed_near_threshold"
+  ],
+  "properties": {
+    "mode": {
+      "enum": [
+        "exact_replay",
+        "compatible_reproduction",
+        "inspected_archived_results"
+      ]
+    },
+    "verdict": {
+      "enum": [
+        "MATCH",
+        "MISMATCH",
+        "NOT_RUN"
+      ]
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "missing",
+        "tampered",
+        "unexpected"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tampered": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unexpected": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "recorded_environment": {
+      "type": "object"
+    },
+    "current_environment": {
+      "type": "object"
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "differences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "bitwise_floats": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Observed, never promised (ADR 0007 D3, Frank's F1 ruling of 2026-09-22). `null` when no rerun happened."
+    },
+    "verdict_changed_near_threshold": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

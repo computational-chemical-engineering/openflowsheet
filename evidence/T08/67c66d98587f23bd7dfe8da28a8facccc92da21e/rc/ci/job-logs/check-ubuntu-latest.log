@@ -1,0 +1,867 @@
+check (ubuntu-latest)	Set up job	﻿2026-10-02T12:40:20.9509371Z Current runner version: '2.337.0'
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9548224Z ##[group]Runner Image Provisioner
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9549652Z Hosted Compute Agent
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9550780Z Version: 20260901.588
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9551887Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9553559Z Build Date: 2026-09-01T19:56:44Z
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9555039Z Worker ID: {511090ef-3f0d-4afe-a34a-8bc4d21dbf49}
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9556368Z Azure Region: westus
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9557676Z ##[endgroup]
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9560243Z ##[group]Operating System
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9561408Z Ubuntu
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9562527Z 24.04.5
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9563938Z LTS
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9564971Z ##[endgroup]
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9565936Z ##[group]Runner Image
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9566928Z Image: ubuntu-24.04
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9568069Z Version: 20260927.320.1
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9569951Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9572997Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9575007Z ##[endgroup]
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9581519Z ##[group]GITHUB_TOKEN Permissions
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9585384Z Actions: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9586553Z ArtifactMetadata: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9587635Z Attestations: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9588624Z Checks: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9589568Z CodeQuality: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9590508Z Contents: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9591582Z CopilotRequests: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9592656Z Deployments: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9594056Z Discussions: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9595070Z Drives: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9596064Z Issues: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9597167Z Metadata: read
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9598312Z Models: read
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9599254Z Packages: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9600398Z Pages: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9601351Z PullRequests: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9602509Z RepositoryProjects: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9604121Z SecurityEvents: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9605125Z Statuses: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9606218Z VulnerabilityAlerts: read
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9607249Z ##[endgroup]
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9610315Z Secret source: Actions
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9611998Z Cache mode: write
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:20.9613969Z Prepare workflow directory
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:21.0226894Z Prepare all required actions
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:21.0300476Z Getting action download info
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:21.4878959Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:21.6078177Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:21.6955517Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+check (ubuntu-latest)	Set up job	2026-10-02T12:40:21.9202933Z Complete job name: check (ubuntu-latest)
+check (ubuntu-latest)	Run actions/checkout@v4	﻿2026-10-02T12:40:21.9985185Z ##[group]Run actions/checkout@v4
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9986083Z with:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9986538Z   fetch-depth: 0
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9987136Z   repository: computational-chemical-engineering/openflowsheet
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9990964Z   token: ***
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9991390Z   ssh-strict: true
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9991830Z   ssh-user: git
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9992271Z   persist-credentials: true
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9992749Z   clean: true
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9993372Z   sparse-checkout-cone-mode: true
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9993906Z   fetch-tags: false
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9994349Z   show-progress: true
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9994799Z   lfs: false
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9995214Z   submodules: false
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9995666Z   set-safe-directory: true
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9996178Z   allow-unsafe-pr-checkout: false
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9996936Z env:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9997360Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9997831Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9998275Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:21.9998812Z ##[endgroup]
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1193400Z Syncing repository: computational-chemical-engineering/openflowsheet
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1196372Z ##[group]Getting Git version info
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1197236Z Working directory is '/home/runner/work/openflowsheet/openflowsheet'
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1198330Z [command]/usr/bin/git version
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1274373Z git version 2.55.0
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1289573Z ##[endgroup]
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1304089Z Temporarily overriding HOME='/home/runner/work/_temp/4f8538fc-fc0d-4baf-b41b-61de72b25bf2' before making global git config changes
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1306700Z Adding repository directory to the temporary git global config as a safe directory
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1309735Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1367750Z Deleting the contents of '/home/runner/work/openflowsheet/openflowsheet'
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1373590Z ##[group]Initializing the repository
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1378650Z [command]/usr/bin/git init /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1484469Z hint: Using 'master' as the name for the initial branch. This default branch name
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1490801Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1492956Z hint: to use in all of your new repositories, which will suppress this warning,
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1494989Z hint: call:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1496094Z hint:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1497328Z hint: 	git config --global init.defaultBranch <name>
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1498793Z hint:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1500133Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1501962Z hint: 'development'. The just-created branch can be renamed via this command:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1503891Z hint:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1504985Z hint: 	git branch -m <name>
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1506534Z hint:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1508097Z hint: Disable this message with "git config set advice.defaultBranchName false"
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1510261Z Initialized empty Git repository in /home/runner/work/openflowsheet/openflowsheet/.git/
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1514812Z [command]/usr/bin/git remote add origin https://github.com/computational-chemical-engineering/openflowsheet
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1560122Z ##[endgroup]
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1561679Z ##[group]Disabling automatic garbage collection
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1566504Z [command]/usr/bin/git config --local gc.auto 0
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1602223Z ##[endgroup]
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1604340Z ##[group]Setting up auth
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1612069Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.1648123Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.2044190Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.2088122Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.2334528Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.2362654Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.2605657Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.2648915Z ##[endgroup]
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.2650898Z ##[group]Fetching the repository
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:22.2661313Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4504445Z From https://github.com/computational-chemical-engineering/openflowsheet
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4524152Z  * [new branch]      main               -> origin/main
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4525529Z  * [new branch]      study/openidaes450 -> origin/study/openidaes450
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4526505Z  * [new branch]      wp/K03             -> origin/wp/K03
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4527350Z  * [new branch]      wp/T02             -> origin/wp/T02
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4528206Z  * [new branch]      wp/T03             -> origin/wp/T03
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4529061Z  * [new branch]      wp/T04             -> origin/wp/T04
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4529960Z  * [new branch]      wp/T05             -> origin/wp/T05
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4530952Z  * [new branch]      wp/T05b            -> origin/wp/T05b
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4531880Z  * [new branch]      wp/T06             -> origin/wp/T06
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4532855Z  * [new branch]      wp/T06-refs        -> origin/wp/T06-refs
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4534211Z  * [new branch]      wp/T07             -> origin/wp/T07
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4535046Z  * [new branch]      wp/T08             -> origin/wp/T08
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4535914Z  * [new tag]         v0.0.0             -> v0.0.0
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4538294Z [command]/usr/bin/git branch --list --remote origin/wp/T08
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4547090Z   origin/wp/T08
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4560362Z [command]/usr/bin/git rev-parse refs/remotes/origin/wp/T08
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4585179Z 67c66d98587f23bd7dfe8da28a8facccc92da21e
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4592643Z ##[endgroup]
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4594803Z ##[group]Determining the checkout info
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4596682Z ##[endgroup]
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4599105Z [command]/usr/bin/git sparse-checkout disable
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4652494Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4685037Z ##[group]Checking out the ref
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.4688472Z [command]/usr/bin/git checkout --progress --force -B wp/T08 refs/remotes/origin/wp/T08
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.7347925Z Switched to a new branch 'wp/T08'
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.7355013Z branch 'wp/T08' set up to track 'origin/wp/T08'.
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.7389250Z ##[endgroup]
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.7434958Z [command]/usr/bin/git log -1 --format=%H
+check (ubuntu-latest)	Run actions/checkout@v4	2026-10-02T12:40:24.7461896Z 67c66d98587f23bd7dfe8da28a8facccc92da21e
+check (ubuntu-latest)	Run actions/setup-python@v5	﻿2026-10-02T12:40:24.7804934Z ##[group]Run actions/setup-python@v5
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7805333Z with:
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7805584Z   python-version: 3.13
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7805854Z   check-latest: false
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7808567Z   token: ***
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7808833Z   update-environment: true
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7809132Z   allow-prereleases: false
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7809420Z   freethreaded: false
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7809670Z env:
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7809908Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7810187Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7810438Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.7810688Z ##[endgroup]
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.9194532Z ##[group]Installed versions
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.9324462Z (node:2137) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.9326207Z Successfully set up CPython (3.13.15)
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.9330005Z (Use `node --trace-deprecation ...` to show where the warning was created)
+check (ubuntu-latest)	Run actions/setup-python@v5	2026-10-02T12:40:24.9331166Z ##[endgroup]
+check (ubuntu-latest)	Install locked dependencies	﻿2026-10-02T12:40:24.9458205Z ##[group]Run python -m pip install --upgrade pip
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:24.9458783Z ^[[36;1mpython -m pip install --upgrade pip^[[0m
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:24.9459214Z ^[[36;1mpython -m pip install -r requirements.lock^[[0m
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0008739Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0009088Z env:
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0009340Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0009631Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0009888Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0010226Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0010756Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0011261Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0011737Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0012415Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0012880Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:25.0013535Z ##[endgroup]
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:28.6389722Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (26.2.1)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.3664323Z Collecting annotated-types==0.8.0 (from -r requirements.lock (line 5))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.4137672Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.4319468Z Collecting anyio==4.15.1 (from -r requirements.lock (line 6))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.4345179Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.4500378Z Collecting attrs==26.1.0 (from -r requirements.lock (line 7))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.4518849Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.5067250Z Collecting casadi==3.8.0 (from -r requirements.lock (line 8))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.5110227Z   Downloading casadi-3.8.0-cp311-abi3-manylinux_2_28_x86_64.whl.metadata (2.2 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.5261931Z Collecting certifi==2026.7.22 (from -r requirements.lock (line 9))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.5289582Z   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.6279593Z Collecting cffi==2.1.1 (from -r requirements.lock (line 10))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.6312459Z   Downloading cffi-2.1.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.6464532Z Collecting click==8.5.0 (from -r requirements.lock (line 11))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.6492386Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8270726Z Collecting cryptography==50.0.1 (from -r requirements.lock (line 12))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8302026Z   Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.3 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8406832Z Collecting h11==0.16.0 (from -r requirements.lock (line 13))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8435564Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8577368Z Collecting httpcore==1.0.9 (from -r requirements.lock (line 14))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8603617Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8781191Z Collecting httpx==0.28.1 (from -r requirements.lock (line 15))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8809204Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8910139Z Collecting httpx-sse==0.4.3 (from -r requirements.lock (line 16))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.8937365Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9068677Z Collecting idna==3.20 (from -r requirements.lock (line 17))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9099385Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9200152Z Collecting iniconfig==2.3.0 (from -r requirements.lock (line 18))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9231204Z   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9441260Z Collecting jsonschema==4.26.0 (from -r requirements.lock (line 19))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9484039Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9674270Z Collecting jsonschema-specifications==2025.9.1 (from -r requirements.lock (line 20))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9701429Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9844321Z Collecting mcp==1.30.0 (from -r requirements.lock (line 21))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:29.9871215Z   Downloading mcp-1.30.0-py3-none-any.whl.metadata (9.3 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.0009098Z Collecting mpmath==1.3.0 (from -r requirements.lock (line 22))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.0035387Z   Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.1031395Z Collecting mypy==1.15.0 (from -r requirements.lock (line 23))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.1072137Z   Downloading mypy-1.15.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl.metadata (2.1 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.1174429Z Collecting mypy_extensions==1.1.0 (from -r requirements.lock (line 24))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.1200767Z   Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.3285564Z Collecting numpy==2.2.4 (from -r requirements.lock (line 25))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.3325919Z   Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.3570745Z Collecting packaging==26.3 (from -r requirements.lock (line 26))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.3607006Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.3714908Z Collecting pluggy==1.6.0 (from -r requirements.lock (line 27))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.3742257Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.3845191Z Collecting pycparser==3.0 (from -r requirements.lock (line 28))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.3870822Z   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.4849650Z Collecting pydantic==2.13.5 (from -r requirements.lock (line 29))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.4879925Z   Downloading pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.5058239Z Collecting pydantic-settings==2.15.0 (from -r requirements.lock (line 30))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:30.5086557Z   Downloading pydantic_settings-2.15.0-py3-none-any.whl.metadata (3.9 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.1758601Z Collecting pydantic_core==2.46.5 (from -r requirements.lock (line 31))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.1790100Z   Downloading pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.1936854Z Collecting PyJWT==2.15.0 (from -r requirements.lock (line 32))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.1962069Z   Downloading pyjwt-2.15.0-py3-none-any.whl.metadata (3.5 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.2197534Z Collecting pytest==8.3.5 (from -r requirements.lock (line 33))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.2226633Z   Downloading pytest-8.3.5-py3-none-any.whl.metadata (7.6 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.2383988Z Collecting python-dotenv==1.2.3 (from -r requirements.lock (line 34))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.2413308Z   Downloading python_dotenv-1.2.3-py3-none-any.whl.metadata (29 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.2548090Z Collecting python-multipart==0.0.32 (from -r requirements.lock (line 35))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.2580994Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.2908736Z Collecting PyYAML==6.0.2 (from -r requirements.lock (line 36))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.2941528Z   Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.3118532Z Collecting referencing==0.37.0 (from -r requirements.lock (line 37))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.3149702Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.5735733Z Collecting rpds-py==2026.6.3 (from -r requirements.lock (line 38))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.5765175Z   Downloading rpds_py-2026.6.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.8872806Z Collecting ruff==0.12.11 (from -r requirements.lock (line 39))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:31.8919894Z   Downloading ruff-0.12.11-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (25 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.0168865Z Collecting scipy==1.15.3 (from -r requirements.lock (line 40))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.0233936Z   Downloading scipy-1.15.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (61 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.0518001Z Collecting sse-starlette==3.4.11 (from -r requirements.lock (line 41))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.0547251Z   Downloading sse_starlette-3.4.11-py3-none-any.whl.metadata (15 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.0764048Z Collecting starlette==1.7.0 (from -r requirements.lock (line 42))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.0791226Z   Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.0951623Z Collecting types-jsonschema==4.26.0.20260518 (from -r requirements.lock (line 43))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1007155Z   Downloading types_jsonschema-4.26.0.20260518-py3-none-any.whl.metadata (1.8 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1141369Z Collecting types-PyYAML==6.0.12.20260906 (from -r requirements.lock (line 44))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1167332Z   Downloading types_pyyaml-6.0.12.20260906-py3-none-any.whl.metadata (1.8 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1260008Z Collecting typing-inspection==0.4.4 (from -r requirements.lock (line 45))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1285750Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1419183Z Collecting typing_extensions==4.16.0 (from -r requirements.lock (line 46))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1447624Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1654603Z Collecting uvicorn==0.54.0 (from -r requirements.lock (line 47))
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.1683361Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.2253399Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.2302171Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.2351644Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.2433022Z Downloading casadi-3.8.0-cp311-abi3-manylinux_2_28_x86_64.whl (90.1 MB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.8399978Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.1/90.1 MB 151.4 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.8432714Z Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.8492497Z Downloading cffi-2.1.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.8551314Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.8610775Z Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl (4.7 MB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.8950066Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 144.0 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.8976624Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9034121Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9081228Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9133820Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9179995Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9226711Z Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9271701Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9321270Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9371706Z Downloading mcp-1.30.0-py3-none-any.whl (234 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9432912Z Downloading pydantic-2.13.5-py3-none-any.whl (472 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9490245Z Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9539791Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 107.8 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:32.9597280Z Downloading mypy-1.15.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl (12.4 MB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.0243827Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 195.1 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.0272176Z Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.0352515Z Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.1 MB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1184622Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.1/16.1 MB 197.7 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1217321Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1269479Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1316554Z Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1366236Z Downloading pydantic_settings-2.15.0-py3-none-any.whl (69 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1416455Z Downloading pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1517372Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 257.7 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1548565Z Downloading pyjwt-2.15.0-py3-none-any.whl (33 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1596390Z Downloading pytest-8.3.5-py3-none-any.whl (343 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1651865Z Downloading python_dotenv-1.2.3-py3-none-any.whl (22 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1703868Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1757890Z Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (759 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1813081Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 759.5/759.5 kB 162.3 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1842158Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1892429Z Downloading rpds_py-2026.6.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (365 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.1994862Z Downloading ruff-0.12.11-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (13.2 MB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.2673682Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.2/13.2 MB 210.6 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.2734847Z Downloading scipy-1.15.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (37.3 MB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.4614405Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 37.3/37.3 MB 199.3 MB/s  0:00:00
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.4648007Z Downloading sse_starlette-3.4.11-py3-none-any.whl (17 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.4698170Z Downloading starlette-1.7.0-py3-none-any.whl (78 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.4747447Z Downloading types_jsonschema-4.26.0.20260518-py3-none-any.whl (16 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.4798060Z Downloading types_pyyaml-6.0.12.20260906-py3-none-any.whl (21 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.4846668Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.4897196Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.4949108Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:33.8887348Z Installing collected packages: mpmath, typing_extensions, types-PyYAML, ruff, rpds-py, PyYAML, python-multipart, python-dotenv, PyJWT, pycparser, pluggy, packaging, numpy, mypy_extensions, iniconfig, idna, httpx-sse, h11, click, certifi, attrs, annotated-types, uvicorn, typing-inspection, scipy, referencing, pytest, pydantic_core, mypy, httpcore, cffi, casadi, anyio, types-jsonschema, starlette, pydantic, jsonschema-specifications, httpx, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:44.9436320Z 
+check (ubuntu-latest)	Install locked dependencies	2026-10-02T12:40:44.9487944Z Successfully installed PyJWT-2.15.0 PyYAML-6.0.2 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 casadi-3.8.0 certifi-2026.7.22 cffi-2.1.1 click-8.5.0 cryptography-50.0.1 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 iniconfig-2.3.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 mcp-1.30.0 mpmath-1.3.0 mypy-1.15.0 mypy_extensions-1.1.0 numpy-2.2.4 packaging-26.3 pluggy-1.6.0 pycparser-3.0 pydantic-2.13.5 pydantic-settings-2.15.0 pydantic_core-2.46.5 pytest-8.3.5 python-dotenv-1.2.3 python-multipart-0.0.32 referencing-0.37.0 rpds-py-2026.6.3 ruff-0.12.11 scipy-1.15.3 sse-starlette-3.4.11 starlette-1.7.0 types-PyYAML-6.0.12.20260906 types-jsonschema-4.26.0.20260518 typing-inspection-0.4.4 typing_extensions-4.16.0 uvicorn-0.54.0
+check (ubuntu-latest)	Install project	﻿2026-10-02T12:40:45.1238383Z ##[group]Run python -m pip install -e .
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1238792Z ^[[36;1mpython -m pip install -e .^[[0m
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1303030Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1303564Z env:
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1303772Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1304012Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1304230Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1304515Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1304982Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1305441Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1305871Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1306275Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1306671Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.1307004Z ##[endgroup]
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.4905425Z Obtaining file:///home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-latest)	Install project	2026-10-02T12:40:45.4939118Z   Installing build dependencies: started
+check (ubuntu-latest)	Install project	2026-10-02T12:40:46.2497983Z   Installing build dependencies: finished with status 'done'
+check (ubuntu-latest)	Install project	2026-10-02T12:40:46.2498740Z   Checking if build backend supports build_editable: started
+check (ubuntu-latest)	Install project	2026-10-02T12:40:46.7875592Z   Checking if build backend supports build_editable: finished with status 'done'
+check (ubuntu-latest)	Install project	2026-10-02T12:40:46.7876828Z   Getting requirements to build editable: started
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.2007680Z   Getting requirements to build editable: finished with status 'done'
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.2010871Z   Preparing editable metadata (pyproject.toml): started
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4094567Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4171367Z Requirement already satisfied: numpy==2.2.4 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (2.2.4)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4177444Z Requirement already satisfied: scipy==1.15.3 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (1.15.3)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4184959Z Requirement already satisfied: pyyaml==6.0.2 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (6.0.2)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4205160Z Requirement already satisfied: jsonschema==4.26.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (4.26.0)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4207610Z Requirement already satisfied: casadi==3.8.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from openflowsheet==0.1.0rc1) (3.8.0)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4212029Z Requirement already satisfied: attrs>=22.2.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.1.0rc1) (26.1.0)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4218581Z Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.1.0rc1) (2025.9.1)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4224498Z Requirement already satisfied: referencing>=0.28.4 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.1.0rc1) (0.37.0)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4230498Z Requirement already satisfied: rpds-py>=0.25.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.1.0rc1) (2026.6.3)
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4356913Z Building wheels for collected packages: openflowsheet
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.4365922Z   Building editable for openflowsheet (pyproject.toml): started
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.7234738Z   Building editable for openflowsheet (pyproject.toml): finished with status 'done'
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.7236821Z   Created wheel for openflowsheet: filename=openflowsheet-0.1.0rc1-0.editable-py3-none-any.whl size=9111 sha256=def50f16d902f13c1834236f75bda0f6bdee8b6013aba7fce76af0598e2b9a64
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.7238482Z   Stored in directory: /tmp/pip-ephem-wheel-cache-dyxu7f6t/wheels/a7/db/0c/5f8b449f4c702dd78421b0a446805b4c04aac2a354d996fc33
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.7255600Z Successfully built openflowsheet
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.7687225Z Installing collected packages: openflowsheet
+check (ubuntu-latest)	Install project	2026-10-02T12:40:47.7805106Z Successfully installed openflowsheet-0.1.0rc1
+check (ubuntu-latest)	The server extra and its licences (G19)	﻿2026-10-02T12:40:47.8413641Z ##[group]Run python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8414369Z ^[[36;1mpython -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"^[[0m
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8414866Z ^[[36;1mpython scripts/t07_licence_inventory.py^[[0m
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8476188Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8476439Z env:
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8476635Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8476874Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8477080Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8477360Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8477823Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8478452Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8478848Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8479241Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8479640Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:47.8480033Z ##[endgroup]
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8656316Z annotated-types 0.8.0: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8657169Z anyio 4.15.1: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8657920Z attrs 26.1.0: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8658551Z certifi 2026.7.22: MPL-2.0 (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8659146Z cffi 2.1.1: MIT-0 (compiled) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8659788Z click 8.5.0: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8660506Z cryptography 50.0.1: Apache-2.0 OR BSD-3-Clause (compiled) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8661254Z h11 0.16.0: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8661807Z httpcore 1.0.9: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8662612Z httpx 0.28.1: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8671580Z httpx-sse 0.4.3: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8672240Z idna 3.20: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8672857Z jsonschema 4.26.0: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8673765Z jsonschema-specifications 2025.9.1: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8674473Z mcp 1.30.0: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8675036Z pycparser 3.0: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8675646Z pydantic 2.13.5: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8676223Z pydantic-core 2.46.5: MIT (compiled) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8676854Z pydantic-settings 2.15.0: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8677468Z pyjwt 2.15.0: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8678059Z python-dotenv 1.2.3: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8678732Z python-multipart 0.0.32: Apache-2.0 (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8679389Z referencing 0.37.0: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8679991Z rpds-py 2026.6.3: MIT (compiled) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8680613Z sse-starlette 3.4.11: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8681276Z starlette 1.7.0: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8681926Z typing-extensions 4.16.0: PSF-2.0 (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8682611Z typing-inspection 0.4.4: MIT (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8683444Z uvicorn 0.54.0: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	The server extra and its licences (G19)	2026-10-02T12:40:50.8684235Z G19: 29 distributions, no GPL-family, unresolved or unlisted licence
+check (ubuntu-latest)	Run checks	﻿2026-10-02T12:40:50.8854484Z ##[group]Run ./scripts/check.sh
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8855029Z ^[[36;1m./scripts/check.sh^[[0m
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8946754Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8947204Z env:
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8947560Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8948072Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8948447Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8948963Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8949811Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8969441Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8970308Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8971113Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8971830Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.8972423Z ##[endgroup]
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:50.9127719Z === ruff check: ruff check . ===
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:51.3842906Z All checks passed!
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:51.3853759Z --- ruff check: exit 0
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:51.3854433Z === ruff format: ruff format --check . ===
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:51.9155780Z 489 files already formatted
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:51.9172556Z --- ruff format: exit 0
+check (ubuntu-latest)	Run checks	2026-10-02T12:40:51.9173527Z === mypy: mypy ===
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:16.0174459Z Success: no issues found in 146 source files
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:16.0419540Z --- mypy: exit 0
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:16.0420262Z === pytest: pytest -q ===
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:49.5198463Z ........................................................................ [  1%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:49.6585550Z ........................................................................ [  2%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:50.8897172Z ........................................................................ [  3%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:51.0403634Z ........................................................................ [  4%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:51.7074525Z ........................................................................ [  5%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:51.9595527Z ........................................................................ [  6%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:52.2694856Z ........................................................................ [  7%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:52.5331032Z ........................................................................ [  8%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:52.6721321Z ........................................................................ [  9%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:52.8899017Z ........................................................................ [ 10%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:54.3927125Z ........................................................................ [ 11%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:56.4143639Z ........................................................................ [ 12%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:41:59.3715521Z ........................................................................ [ 13%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:43:21.1648394Z ........................................................................ [ 14%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:43:21.6108314Z ........................................................................ [ 15%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:43:28.2567575Z ........................................................................ [ 16%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:13.6352052Z ...........................s............................................ [ 17%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:14.7922109Z ........................................................................ [ 19%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:18.9497636Z ........................................................................ [ 20%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:20.3521846Z ........................................................................ [ 21%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:20.4022905Z ........................................................................ [ 22%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:20.5044645Z ........................................................................ [ 23%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:23.7431266Z ........................................................................ [ 24%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:31.2411151Z ........................................................................ [ 25%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:34.7335446Z ........................................................................ [ 26%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:44:52.5416081Z ........................................................................ [ 27%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:05.7551361Z ........................................................................ [ 28%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:25.9987673Z ........................................................................ [ 29%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:32.7793079Z ........................................................................ [ 30%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:44.2624931Z ........................................................................ [ 31%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:44.7934589Z ........................................................................ [ 32%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:46.9591307Z ........................................................................ [ 33%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:47.0920703Z ........................................................................ [ 34%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:47.3890252Z ........................................................................ [ 35%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:47.5541247Z ........................................................................ [ 36%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:51.0093779Z ........................................................................ [ 38%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:51.5551440Z ........................................................................ [ 39%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:53.1438880Z ........................................................................ [ 40%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:54.2099063Z ........................................................................ [ 41%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:45:56.7069869Z ........................................................................ [ 42%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:46:16.4106595Z ........................................................................ [ 43%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:46:22.3209189Z ........................................................................ [ 44%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:46:28.9772654Z ........................................................................ [ 45%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:46:32.9437062Z ........................................................................ [ 46%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:46:35.4435381Z ........................................................................ [ 47%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:46:46.8646860Z ........................................................................ [ 48%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:00.9894277Z ........................................................................ [ 49%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:01.1649840Z ........................................................................ [ 50%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:04.5324074Z ........................................................................ [ 51%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:09.1662939Z ........................................................................ [ 52%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:17.1691106Z ........................................................................ [ 53%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:20.5927042Z ........................................................................ [ 54%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:25.0974603Z .s...................................................................... [ 55%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:29.5159063Z ........................................................................ [ 57%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:40.7128769Z ........................................................................ [ 58%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:47.4011856Z ........................................................................ [ 59%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:51.9766612Z ........................................................................ [ 60%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:57.2106822Z ........................................................................ [ 61%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:47:59.0175584Z ........................................................................ [ 62%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:48:01.3280120Z ........................................................................ [ 63%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:48:13.3334486Z ........................................................................ [ 64%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:48:55.1372500Z ........................................................................ [ 65%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:49:33.6373989Z ........................................................................ [ 66%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:52:18.2412126Z ........................................................................ [ 67%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:52:36.9344244Z ........................................................................ [ 68%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:55:21.7571481Z ........................................................................ [ 69%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:55:30.5245025Z ........................................................................ [ 70%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:55:30.6396747Z ........................................................................ [ 71%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:56:49.8396086Z ........................................................................ [ 72%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:56:49.8860221Z ........................................................................ [ 73%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:56:53.0886501Z ........................................................................ [ 74%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:56:59.8881798Z ........................................................................ [ 76%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:57:07.6513939Z ........................................................................ [ 77%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:57:33.8955969Z ........................................................................ [ 78%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:57:43.6224472Z ........................................................................ [ 79%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:57:51.6625858Z ........................................................................ [ 80%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:58:03.2508563Z ........................................................................ [ 81%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:58:12.1411867Z ........................................................................ [ 82%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:58:18.3298521Z ........................................................................ [ 83%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:58:41.3048323Z ........................................................................ [ 84%]
+check (ubuntu-latest)	Run checks	2026-10-02T12:59:11.7064563Z ........................................................................ [ 85%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:00:59.0308100Z ........................................................................ [ 86%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:01:02.4605067Z ........................................................................ [ 87%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:01:03.8159505Z ........................................................................ [ 88%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:01:20.2321547Z ........................................................................ [ 89%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:01:20.2826226Z ........................................................................ [ 90%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:01:24.9493597Z ........................................................................ [ 91%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:01:27.4868933Z ........................................................................ [ 92%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:01:31.9208392Z ........................................................................ [ 93%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:01:32.6581329Z ........................................................................ [ 95%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:03:06.4602448Z ............ssssss...................................................... [ 96%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:03:18.8157924Z ....sss................................................................. [ 97%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:03:52.6160242Z ........................................................................ [ 98%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:03:53.2339974Z ........................................................................ [ 99%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:04:02.0204670Z ....................................................                     [100%]
+check (ubuntu-latest)	Run checks	2026-10-02T13:04:02.0205750Z 6809 passed, 11 skipped in 1364.85s (0:22:44)
+check (ubuntu-latest)	Run checks	2026-10-02T13:04:03.4513962Z --- pytest: exit 0
+check (ubuntu-latest)	Run checks	2026-10-02T13:04:03.4514856Z === check.sh: PASSED ===
+check (ubuntu-latest)	Emit the R0 structural identity	﻿2026-10-02T13:04:03.4552297Z ##[group]Run PYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4552968Z ^[[36;1mPYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json^[[0m
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4614050Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4614302Z env:
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4614497Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4614775Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4614985Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4615260Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4615748Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4616207Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4616605Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4617006Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4617427Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:03.4617796Z ##[endgroup]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9821950Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9839054Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9840562Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9841529Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9842875Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9844536Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9845935Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9847278Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9847898Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9849051Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9849646Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9850240Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9851463Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9853000Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9854593Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 52.114475231324604 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9855879Z Function H_S3_vapor (0x5622aa21c610)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9856655Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 52.1145, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9857480Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9858826Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9860259Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9861055Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9862427Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9864078Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9865446Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9866797Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9867401Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9868072Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9868617Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9869164Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9870318Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9871752Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9873026Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 231.0572376156623 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9874592Z Function H_S3_vapor (0x5622aa21c610)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9875409Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 231.057, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9942005Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9948681Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9950113Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9950879Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9952249Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9953803Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9955118Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9956398Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9956962Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9957588Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9958086Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9958580Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9959733Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9961189Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9962430Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 52.11447523132466 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9963881Z Function H_S3_vapor (0x5622aa21c610)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9964578Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 52.1145, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9965338Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9967022Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9968479Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9969252Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9970685Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9972257Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9973873Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9975175Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9975780Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9976414Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9976965Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9977483Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9978641Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9980346Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9981695Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 219.87331496664123 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9982978Z Function H_S3_vapor (0x5622aa21c610)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:06.9983939Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 219.873, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3169530Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3177482Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3179050Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3180218Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3181923Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3184279Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3189710Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3191579Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3192347Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3193588Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3194421Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3195181Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3196792Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3201055Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3202631Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3204470Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3205434Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3206654Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3208381Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3210150Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3213393Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3215097Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3216816Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3218457Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3220069Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3220928Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3221854Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3222667Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3223627Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3225312Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3226800Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3228102Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3229386Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3230112Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3231381Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3233405Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3235517Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3240014Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3241972Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3247153Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3249169Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3252688Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3254011Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3254964Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3255744Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3256763Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3258199Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3260082Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3261625Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3263748Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3264966Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3266008Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3267739Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3269471Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3270636Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3272408Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3274323Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3276191Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3278099Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3294039Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3298916Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3299784Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3300784Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3302228Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3304481Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3306090Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3307605Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3308776Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3309850Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3311634Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3313599Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3314714Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3316456Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3318079Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3319887Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3321580Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3322429Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3323877Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3324749Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3325708Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3327217Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3329327Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3331048Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3332605Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3334078Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3335119Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3336702Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3338547Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3339601Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3341241Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3342836Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3344985Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3346673Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3347558Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3348610Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3349445Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3350204Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3351893Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3353944Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3355640Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132858 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3357141Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3358136Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3359384Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3361033Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3362812Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3364491Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3366061Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3367862Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3369462Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3371136Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3372042Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3372976Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3374285Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3375185Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3376711Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3378503Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3380046Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132864 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3381798Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3382902Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3384509Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3386130Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3387981Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3389028Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3391010Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3404019Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3407276Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3409316Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3410267Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3411320Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3412353Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3413486Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3415120Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3416838Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3418386Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132875 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3420052Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3421112Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3422250Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3424348Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3425940Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3427160Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3428829Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3430887Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3434930Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3436555Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3437604Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3438582Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3439480Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3440404Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3441811Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3443991Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3445707Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132909 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3447529Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3448639Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3449598Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3451008Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3452516Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3453643Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3455062Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3456462Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3457807Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3459122Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3459726Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3460406Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3460957Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3461529Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3462695Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3464451Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3465709Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132972 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3466921Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3467697Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3468504Z Traceback (most recent call last):
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3470073Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3473673Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3474622Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3475997Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3477232Z     result = self._request(state, ())
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3478582Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3479875Z     return _unwrap(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3480494Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3481157Z     ...<8 lines>...
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3481730Z         self._block_id,
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3482331Z     )
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3483735Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3485205Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3486489Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404133097 K outside [280.0, 440.0] K
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3487710Z Function H_S3_vapor (0x5622aa7230b0)
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:09.3488477Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:41.7786421Z structural_sha256 = ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+check (ubuntu-latest)	Emit the R0 structural identity	2026-10-02T13:04:41.7789530Z events = 8, checks = 136
+check (ubuntu-latest)	Emit T02's R1/R2 floats	﻿2026-10-02T13:04:41.9097485Z ##[group]Run PYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9098688Z ^[[36;1mPYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json^[[0m
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9184401Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9184667Z env:
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9184867Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9185105Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9185313Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9185588Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9186065Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9186506Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9186901Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9187303Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9187713Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+check (ubuntu-latest)	Emit T02's R1/R2 floats	2026-10-02T13:04:41.9188051Z ##[endgroup]
+check (ubuntu-latest)	Run actions/upload-artifact@v4	﻿2026-10-02T13:04:43.2554815Z ##[group]Run actions/upload-artifact@v4
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2555146Z with:
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2555386Z   name: structural-identity-ubuntu-latest
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2555721Z   path: identity.json
+check (ubuntu-latest)	Run actions/upload-artifact@v4	t02-floats.json
+check (ubuntu-latest)	Run actions/upload-artifact@v4	
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2556003Z   if-no-files-found: error
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2556236Z   compression-level: 6
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2556451Z   overwrite: false
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2556668Z   include-hidden-files: false
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2556896Z env:
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2557080Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2557312Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2557511Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2557782Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2558219Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2558649Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2559035Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2559421Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2559854Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.2560179Z ##[endgroup]
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.4326101Z (node:4661) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.4327777Z (Use `node --trace-deprecation ...` to show where the warning was created)
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.4397693Z Multiple search paths detected. Calculating the least common ancestor of all paths
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.4401106Z The least common ancestor is /home/runner/work/openflowsheet/openflowsheet. This will be the root directory of the artifact
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.4402610Z With the provided path, there will be 2 files uploaded
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.4407288Z Artifact name is valid!
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.4408368Z Root directory input is valid!
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.8381219Z Beginning upload of artifact content to blob storage
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:43.8965371Z (node:4661) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:44.3361806Z Uploaded bytes 190002
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:44.4076813Z Finished uploading artifact content to blob storage!
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:44.4078414Z SHA256 digest of uploaded artifact zip is 01b1ce9c4b6d7573929fefd310e456a0f8c0dcef7fef5601b3b97f19da00a719
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:44.4079725Z Finalizing artifact upload
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:44.7014190Z Artifact structural-identity-ubuntu-latest.zip successfully finalized. Artifact ID 11227263743
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:44.7016191Z Artifact structural-identity-ubuntu-latest has been successfully uploaded! Final size is 190002 bytes. Artifact ID is 11227263743
+check (ubuntu-latest)	Run actions/upload-artifact@v4	2026-10-02T13:04:44.7024885Z Artifact download URL: https://github.com/computational-chemical-engineering/openflowsheet/actions/runs/37008077757/artifacts/11227263743
+check (ubuntu-latest)	Post Run actions/setup-python@v5	﻿2026-10-02T13:04:44.7214209Z Post job cleanup.
+check (ubuntu-latest)	Post Run actions/setup-python@v5	2026-10-02T13:04:44.8518345Z (node:4673) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+check (ubuntu-latest)	Post Run actions/setup-python@v5	2026-10-02T13:04:44.8520096Z (Use `node --trace-deprecation ...` to show where the warning was created)
+check (ubuntu-latest)	Post Run actions/checkout@v4	﻿2026-10-02T13:04:44.8666270Z Post job cleanup.
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:44.9598235Z [command]/usr/bin/git version
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:44.9641371Z git version 2.55.0
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:44.9686050Z Temporarily overriding HOME='/home/runner/work/_temp/dfc9c40a-4e84-4b8d-ba14-3c5302a9e0ce' before making global git config changes
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:44.9687913Z Adding repository directory to the temporary git global config as a safe directory
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:44.9691095Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:44.9735613Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:44.9776126Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:45.0029080Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:45.0057702Z http.https://github.com/.extraheader
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:45.0071309Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:45.0109522Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:45.0472586Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (ubuntu-latest)	Post Run actions/checkout@v4	2026-10-02T13:04:45.0523967Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check (ubuntu-latest)	Complete job	﻿2026-10-02T13:04:45.1107460Z Cleaning up orphan processes
+check (ubuntu-latest)	Complete job	2026-10-02T13:04:45.1389331Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

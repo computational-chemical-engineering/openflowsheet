@@ -1,0 +1,1359 @@
+generated_by: 'docs/derivations/scripts/t03_reference.py (design lane, T03): closed forms of SYN-001 through syn001_reference.py
+  and t02_reference.py, and the T03 phase-attempt contract simulated at 40 digits from its statement in T03-phase-controller-spec.md
+  §4'
+specification: docs/derivations/T03-phase-controller-spec.md
+independence: no solver, graph-layer, oracle or process_runtime code was used. `closed_form` values are expectations;
+  `policy_simulation` values are definition-level references (the same contract, derived a second time); `measured`
+  is labelled and never an expectation.
+constants:
+  admissibility_epsilon: '1.00e-12'
+  phase_wall_patience: 2
+  stagnation_window: 5
+  max_attempts: 5
+  step_halvings_max: 20
+  provider_temperature_domain_K:
+  - 280
+  - 440
+  delta_root_scaled_inf: '0.000100'
+closed_form:
+  S3_n_mol_per_s:
+  - '1.2977767139305139477'
+  - '1.5463969769256161225'
+  - '1.7950172399207182972'
+  S3_bubble_point_K: '351.44416909142989639'
+  S3_dew_point_K: '377.52906060550727364'
+  Q_flash_spec_W:
+    T_heater=340K: '47616.451308297223966'
+    T_heater=355K: '24681.106068625242185'
+    T_heater=360K: '0.0'
+  branch_roots:
+    T_heater=340K:
+      liquid_branch_T_K: '340.00000000000000000'
+      vapor_branch_T_K: '34.640870214120075835'
+    T_heater=355K:
+      liquid_branch_T_K: '389.43824382720842205'
+      vapor_branch_T_K: '84.079114041328497889'
+    T_heater=360K:
+      liquid_branch_T_K: '442.63955939473197442'
+      vapor_branch_T_K: '137.28042960885205026'
+  region_shapes_rows_by_columns:
+    U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE:
+    - 42
+    - 42
+    U-HEAT:LIQUID,U-FLASH:TWO_PHASE:
+    - 38
+    - 38
+    U-HEAT:VAPOR,U-FLASH:TWO_PHASE:
+    - 38
+    - 38
+policy_simulation:
+  cases:
+    SYN-001-A02-355-liquid-guess:
+      id: PHS-01
+      Q_flash_spec_W: '24681.106068625242185'
+      guess_S3_T_K: 350
+      outcome: CONVERGED
+      attempts:
+      - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        opening_source: initializer
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '350.00000000000000000'
+        opening_beta: '0.0'
+        opening_screen_value: '0.96231656003527667518'
+        core_outcome: PHASE_UPDATE_REQUIRED
+        core_iterations: 2
+        decision: restart
+        cause: phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE)
+        end_S3_T_K: '351.38168652080185756'
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '389.43824382720842205'
+          verdict: phase_update_required
+          reported_heater_regime: VAPOR
+          screen_value: '2.4959938386228986075'
+        - iteration: 0
+          halving: 1
+          alpha: '0.50000000000000000000'
+          S3_T_K: '369.71912191360421103'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.5869905337831504861'
+        - iteration: 0
+          halving: 2
+          alpha: '0.25000000000000000000'
+          S3_T_K: '359.85956095680210551'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.2437174911069583571'
+        - iteration: 0
+          halving: 3
+          alpha: '0.12500000000000000000'
+          S3_T_K: '354.92978047840105276'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0958256106659739451'
+        - iteration: 0
+          halving: 4
+          alpha: '0.062500000000000000000'
+          S3_T_K: '352.46489023920052638'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0273388959627446511'
+        - iteration: 0
+          halving: 5
+          alpha: '0.031250000000000000000'
+          S3_T_K: '351.23244511960026319'
+          verdict: accepted
+          screen_value: '0.99440275105776404544'
+        - iteration: 1
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '389.43824382720842205'
+          verdict: phase_update_required
+          reported_heater_regime: VAPOR
+          screen_value: '2.4959938386228986075'
+        - iteration: 1
+          halving: 1
+          alpha: '0.50000000000000000000'
+          S3_T_K: '370.33534447340434262'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.6107031456347690410'
+        - iteration: 1
+          halving: 2
+          alpha: '0.25000000000000000000'
+          S3_T_K: '360.78389479650230291'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.2731350849256852034'
+        - iteration: 1
+          halving: 3
+          alpha: '0.12500000000000000000'
+          S3_T_K: '356.00816995805128305'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.1269112366378008159'
+        - iteration: 1
+          halving: 4
+          alpha: '0.062500000000000000000'
+          S3_T_K: '353.62030753882577312'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0590027789422688922'
+        - iteration: 1
+          halving: 5
+          alpha: '0.031250000000000000000'
+          S3_T_K: '352.42637632921301815'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0262966163863713627'
+        - iteration: 1
+          halving: 6
+          alpha: '0.015625000000000000000'
+          S3_T_K: '351.82941072440664067'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0102490646064560573'
+        - iteration: 1
+          halving: 7
+          alpha: '0.0078125000000000000000'
+          S3_T_K: '351.53092792200345193'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0023008673308772499'
+        - iteration: 1
+          halving: 8
+          alpha: '0.0039062500000000000000'
+          S3_T_K: '351.38168652080185756'
+          verdict: accepted
+          screen_value: '0.99834556332384494331'
+        phase_rejections: 13
+        invalid_trials: 0
+      - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        opening_source: phase_rejected_trial
+        opening_trial:
+          iteration: 1
+          halving: 1
+        opening_alpha: '0.50000000000000000000'
+        opening_S3_T_K: '370.33534447340434262'
+        opening_beta: '0.66471103912214510449'
+        opening_screen_value: null
+        core_outcome: CONVERGED
+        core_iterations: 5
+        decision: converged
+        cause: ''
+        end_S3_T_K: '354.99999999522575535'
+        landings:
+        - iteration: 0
+          alpha_max: '0.68300554057393632880'
+          variables:
+          - S3.vap.C
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '0.68300554057393632880'
+          S3_T_K: '361.51994532744579646'
+          verdict: accepted
+        - iteration: 1
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '352.27778095166024323'
+          verdict: accepted
+        - iteration: 2
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '354.77635109197712164'
+          verdict: accepted
+        - iteration: 3
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '354.99941524562486424'
+          verdict: accepted
+        - iteration: 4
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '354.99999999522575535'
+          verdict: accepted
+        phase_rejections: 0
+        invalid_trials: 0
+      final:
+        S3_T_K: '354.99999999522575535'
+        U_HEAT_Q_W: '31656.963378118285046'
+        U_FLASH_Q_W: '24681.106068625242185'
+        beta: '0.12480410924908432476'
+        S3_vapor_mol_per_s:
+        - '0.34361564406805785750'
+        - '0.17038758498381464016'
+        - '0.064986862700162481091'
+        S3_liquid_mol_per_s:
+        - '0.95416106986245609017'
+        - '1.3760093919418014823'
+        - '1.7300303772205558161'
+        branch_found: TWO_PHASE
+      refused: ''
+      margins:
+        screen_min_abs_sum_minus_1: '0.00165444'
+        domain_min_K: '50.5618'
+        phase_boundary_min_K: '0.0867588'
+        armijo_min_relative: '0.00779647'
+        convergence_min_factor: '289.133'
+    SYN-001-A02-360-liquid-guess:
+      id: PHS-02
+      Q_flash_spec_W: '0.0'
+      guess_S3_T_K: 350
+      outcome: CONVERGED
+      attempts:
+      - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        opening_source: initializer
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '350.00000000000000000'
+        opening_beta: '0.0'
+        opening_screen_value: '0.96231656003527667518'
+        core_outcome: PHASE_UPDATE_REQUIRED
+        core_iterations: 2
+        decision: restart
+        cause: phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE)
+        end_S3_T_K: '351.44183884556009848'
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '442.63955939473197442'
+          verdict: invalid_trial
+        - iteration: 0
+          halving: 1
+          alpha: '0.50000000000000000000'
+          S3_T_K: '396.31977969736598721'
+          verdict: phase_update_required
+          reported_heater_regime: VAPOR
+          screen_value: '2.8944965828638616029'
+        - iteration: 0
+          halving: 2
+          alpha: '0.25000000000000000000'
+          S3_T_K: '373.15988984868299361'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.7230013888004323868'
+        - iteration: 0
+          halving: 3
+          alpha: '0.12500000000000000000'
+          S3_T_K: '361.57994492434149680'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.2989109578108188504'
+        - iteration: 0
+          halving: 4
+          alpha: '0.062500000000000000000'
+          S3_T_K: '355.78997246217074840'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.1205654187434199959'
+        - iteration: 0
+          halving: 5
+          alpha: '0.031250000000000000000'
+          S3_T_K: '352.89498623108537420'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0390359057897712875'
+        - iteration: 0
+          halving: 6
+          alpha: '0.015625000000000000000'
+          S3_T_K: '351.44749311554268710'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0000880761237990375'
+        - iteration: 0
+          halving: 7
+          alpha: '0.0078125000000000000000'
+          S3_T_K: '350.72374655777134355'
+          verdict: accepted
+          screen_value: '0.98105690165950175341'
+        - iteration: 1
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '442.63955939473197442'
+          verdict: invalid_trial
+        - iteration: 1
+          halving: 1
+          alpha: '0.50000000000000000000'
+          S3_T_K: '396.68165297625165899'
+          verdict: phase_update_required
+          reported_heater_regime: VAPOR
+          screen_value: '2.9167435977447395803'
+        - iteration: 1
+          halving: 2
+          alpha: '0.25000000000000000000'
+          S3_T_K: '373.70269976701150127'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.7452730158072238981'
+        - iteration: 1
+          halving: 3
+          alpha: '0.12500000000000000000'
+          S3_T_K: '362.21322316239142241'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.3197110734882379950'
+        - iteration: 1
+          halving: 4
+          alpha: '0.062500000000000000000'
+          S3_T_K: '356.46848486008138298'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.1403925350385177520'
+        - iteration: 1
+          halving: 5
+          alpha: '0.031250000000000000000'
+          S3_T_K: '353.59611570892636326'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0583319165163454026'
+        - iteration: 1
+          halving: 6
+          alpha: '0.015625000000000000000'
+          S3_T_K: '352.15993113334885341'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0191090891439692187'
+        - iteration: 1
+          halving: 7
+          alpha: '0.0078125000000000000000'
+          S3_T_K: '351.44183884556009848'
+          verdict: accepted
+          screen_value: '0.99993825955429096750'
+        phase_rejections: 12
+        invalid_trials: 2
+      - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        opening_source: phase_rejected_trial
+        opening_trial:
+          iteration: 1
+          halving: 2
+        opening_alpha: '0.25000000000000000000'
+        opening_S3_T_K: '373.70269976701150127'
+        opening_beta: '0.80785485327178810928'
+        opening_screen_value: null
+        core_outcome: CONVERGED
+        core_iterations: 4
+        decision: converged
+        cause: ''
+        end_S3_T_K: '359.99999945711419197'
+        landings:
+        - iteration: 0
+          alpha_max: '0.84805850413758937871'
+          variables:
+          - S3.vap.C
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '0.84805850413758937871'
+          S3_T_K: '364.39752529566081847'
+          verdict: accepted
+        - iteration: 1
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '358.33894809860472052'
+          verdict: accepted
+        - iteration: 2
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '360.00637302014670967'
+          verdict: accepted
+        - iteration: 3
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '359.99999945711419197'
+          verdict: accepted
+        phase_rejections: 0
+        invalid_trials: 0
+      final:
+        S3_T_K: '359.99999945711419197'
+        U_HEAT_Q_W: '56338.069446743527231'
+        U_FLASH_Q_W: '0.0'
+        beta: '0.29332896498115025815'
+        S3_vapor_mol_per_s:
+        - '0.70222327559988565210'
+        - '0.45360302760348909084'
+        - '0.20498277087133728316'
+        S3_liquid_mol_per_s:
+        - '0.59555343833062829557'
+        - '1.0927939493221270316'
+        - '1.5900344690493810141'
+        branch_found: TWO_PHASE
+      refused: ''
+      margins:
+        screen_min_abs_sum_minus_1: '6.17404e-5'
+        domain_min_K: '2.63956'
+        phase_boundary_min_K: '0.00332402'
+        armijo_min_relative: '0.0155624'
+        convergence_min_factor: '1.61986'
+    SYN-001-A02-360-vapor-guess:
+      id: PHS-03
+      Q_flash_spec_W: '0.0'
+      guess_S3_T_K: 400
+      outcome: CONVERGED
+      attempts:
+      - signature: U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        opening_source: initializer
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '400.00000000000000000'
+        opening_beta: '1.0000000000000000000'
+        opening_screen_value: '0.55199076721882074398'
+        core_outcome: PHASE_UPDATE_REQUIRED
+        core_iterations: 2
+        decision: restart
+        cause: phase_wall(patience, U-HEAT:VAPOR->TWO_PHASE)
+        end_S3_T_K: '379.73159564365167185'
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '137.28042960885205026'
+          verdict: invalid_trial
+        - iteration: 0
+          halving: 1
+          alpha: '0.50000000000000000000'
+          S3_T_K: '268.64021480442602513'
+          verdict: invalid_trial
+        - iteration: 0
+          halving: 2
+          alpha: '0.25000000000000000000'
+          S3_T_K: '334.32010740221301256'
+          verdict: phase_update_required
+          reported_heater_regime: LIQUID
+          screen_value: '3.9655069391674131232'
+        - iteration: 0
+          halving: 3
+          alpha: '0.12500000000000000000'
+          S3_T_K: '367.16005370110650628'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.3496230857905219420'
+        - iteration: 0
+          halving: 4
+          alpha: '0.062500000000000000000'
+          S3_T_K: '383.58002685055325314'
+          verdict: accepted
+          screen_value: '0.84606187426033181456'
+        - iteration: 1
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '137.28042960885205026'
+          verdict: invalid_trial
+        - iteration: 1
+          halving: 1
+          alpha: '0.50000000000000000000'
+          S3_T_K: '260.43022822970265170'
+          verdict: invalid_trial
+        - iteration: 1
+          halving: 2
+          alpha: '0.25000000000000000000'
+          S3_T_K: '322.00512754012795242'
+          verdict: phase_update_required
+          reported_heater_regime: LIQUID
+          screen_value: '6.3021287026620043363'
+        - iteration: 1
+          halving: 3
+          alpha: '0.12500000000000000000'
+          S3_T_K: '352.79257719534060278'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '2.1078555495772855087'
+        - iteration: 1
+          halving: 4
+          alpha: '0.062500000000000000000'
+          S3_T_K: '368.18630202294692796'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.3091336698648762481'
+        - iteration: 1
+          halving: 5
+          alpha: '0.031250000000000000000'
+          S3_T_K: '375.88316443675009055'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.0475359338082261468'
+        - iteration: 1
+          halving: 6
+          alpha: '0.015625000000000000000'
+          S3_T_K: '379.73159564365167185'
+          verdict: accepted
+          screen_value: '0.94036227229735631791'
+        phase_rejections: 6
+        invalid_trials: 4
+      - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        opening_source: phase_rejected_trial
+        opening_trial:
+          iteration: 1
+          halving: 3
+        opening_alpha: '0.12500000000000000000'
+        opening_S3_T_K: '352.79257719534060278'
+        opening_beta: '0.048273238691828364992'
+        opening_screen_value: null
+        core_outcome: CONVERGED
+        core_iterations: 4
+        decision: converged
+        cause: ''
+        end_S3_T_K: '360.00000000000056032'
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '359.95146482264053977'
+          verdict: accepted
+        - iteration: 1
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '359.93217992806928297'
+          verdict: accepted
+        - iteration: 2
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '360.00001632275095814'
+          verdict: accepted
+        - iteration: 3
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '360.00000000000056032'
+          verdict: accepted
+        phase_rejections: 0
+        invalid_trials: 0
+      final:
+        S3_T_K: '360.00000000000056032'
+        U_HEAT_Q_W: '56338.069446743527231'
+        U_FLASH_Q_W: '0.0'
+        beta: '0.29332896393536953062'
+        S3_vapor_mol_per_s:
+        - '0.70222328606943581909'
+        - '0.45360302307442381955'
+        - '0.20498276007927592075'
+        S3_liquid_mol_per_s:
+        - '0.59555342786107812858'
+        - '1.0927939538511923029'
+        - '1.5900344798414423765'
+        branch_found: TWO_PHASE
+      refused: ''
+      margins:
+        screen_min_abs_sum_minus_1: '0.0475359'
+        domain_min_K: '11.3598'
+        phase_boundary_min_K: '1.34841'
+        armijo_min_relative: '0.0310028'
+        convergence_min_factor: '39.4170'
+    SYN-001-A02-340-two-phase-guess:
+      id: PHS-04
+      Q_flash_spec_W: '47616.451308297223966'
+      guess_S3_T_K: 360
+      outcome: CONVERGED
+      attempts:
+      - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        opening_source: initializer
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '360.00000000000000000'
+        opening_beta: '0.29332896393537299529'
+        opening_screen_value: null
+        core_outcome: BOUND_BLOCKED
+        core_iterations: 1
+        decision: restart
+        cause: phase_disappeared(U-HEAT, vapor, S3.vap.C)
+        end_S3_T_K: '354.20843973228223898'
+        blocked_by:
+        - S3.vap.C
+        landings:
+        - iteration: 0
+          alpha_max: '0.61157119445276734290'
+          variables:
+          - S3.vap.C
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '0.61157119445276734290'
+          S3_T_K: '354.20843973228223898'
+          verdict: accepted
+        phase_rejections: 0
+        invalid_trials: 0
+      - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        opening_source: pinned_iterate
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '354.20843973228223898'
+        opening_beta: '0.0'
+        opening_screen_value: '1.0754170122929334780'
+        core_outcome: CONVERGED
+        core_iterations: 1
+        decision: converged
+        cause: ''
+        end_S3_T_K: '340.00000000000000000'
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '340.00000000000000000'
+          verdict: accepted
+          screen_value: '0.73144628275662044484'
+        phase_rejections: 0
+        invalid_trials: 0
+      final:
+        S3_T_K: '340.00000000000000000'
+        U_HEAT_Q_W: '8721.6181384463032653'
+        U_FLASH_Q_W: '47616.451308297223966'
+        beta: '0.0'
+        S3_vapor_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        S3_liquid_mol_per_s:
+        - '1.2977767139305139477'
+        - '1.5463969769256161225'
+        - '1.7950172399207182972'
+        branch_found: LIQUID
+      refused: ''
+      margins:
+        screen_min_abs_sum_minus_1: '0.268554'
+        domain_min_K: '60.0000'
+        phase_boundary_min_K: null
+        armijo_min_relative: '0.835870'
+        convergence_min_factor: '1.83125e+7'
+    SYN-001-A02-355-dew-guess:
+      id: PHS-05
+      Q_flash_spec_W: '24681.106068625242185'
+      guess_S3_T_K: 375
+      outcome: ACTIVE_SET_CYCLING
+      attempts:
+      - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        opening_source: initializer
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '375.00000000000000000'
+        opening_beta: '0.86864788723982536777'
+        opening_screen_value: null
+        core_outcome: BOUND_BLOCKED
+        core_iterations: 1
+        decision: restart
+        cause: phase_disappeared(U-HEAT, vapor, S3.vap.C)
+        end_S3_T_K: '365.57240050939517035'
+        blocked_by:
+        - S3.vap.C
+        landings:
+        - iteration: 0
+          alpha_max: '0.64230946126927131862'
+          variables:
+          - S3.vap.C
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '0.64230946126927131862'
+          S3_T_K: '365.57240050939517035'
+          verdict: accepted
+        phase_rejections: 0
+        invalid_trials: 0
+      - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        opening_source: pinned_iterate
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '365.57240050939517035'
+        opening_beta: '0.0'
+        opening_screen_value: '1.4345106264669364331'
+        core_outcome: LINE_SEARCH_FAILED
+        core_iterations: 0
+        decision: restart
+        cause: phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)
+        end_S3_T_K: '365.57240050939517035'
+        trials:
+        - iteration: 0
+          halving: 0
+          alpha: '1.0000000000000000000'
+          S3_T_K: '389.43824382720842205'
+          verdict: phase_update_required
+          reported_heater_regime: VAPOR
+          screen_value: '2.4959938386228986075'
+        - iteration: 0
+          halving: 1
+          alpha: '0.50000000000000000000'
+          S3_T_K: '377.50532216830179620'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.9077364490811198888'
+        - iteration: 0
+          halving: 2
+          alpha: '0.25000000000000000000'
+          S3_T_K: '371.53886133884848328'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.6578224310503562296'
+        - iteration: 0
+          halving: 3
+          alpha: '0.12500000000000000000'
+          S3_T_K: '368.55563092412182681'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.5429718509313347325'
+        - iteration: 0
+          halving: 4
+          alpha: '0.062500000000000000000'
+          S3_T_K: '367.06401571675849858'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4879586266514919524'
+        - iteration: 0
+          halving: 5
+          alpha: '0.031250000000000000000'
+          S3_T_K: '366.31820811307683447'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4610409637344421781'
+        - iteration: 0
+          halving: 6
+          alpha: '0.015625000000000000000'
+          S3_T_K: '365.94530431123600241'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4477276270977885213'
+        - iteration: 0
+          halving: 7
+          alpha: '0.0078125000000000000000'
+          S3_T_K: '365.75885241031558638'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4411071156774127717'
+        - iteration: 0
+          halving: 8
+          alpha: '0.0039062500000000000000'
+          S3_T_K: '365.66562645985537836'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4378058721537052146'
+        - iteration: 0
+          halving: 9
+          alpha: '0.0019531250000000000000'
+          S3_T_K: '365.61901348462527436'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4361575000626614924'
+        - iteration: 0
+          halving: 10
+          alpha: '0.00097656250000000000000'
+          S3_T_K: '365.59570699701022235'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4353338760131124373'
+        - iteration: 0
+          halving: 11
+          alpha: '0.00048828125000000000000'
+          S3_T_K: '365.58405375320269635'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4349222044346303143'
+        - iteration: 0
+          halving: 12
+          alpha: '0.00024414062500000000000'
+          S3_T_K: '365.57822713129893335'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4347164037503757180'
+        - iteration: 0
+          halving: 13
+          alpha: '0.00012207031250000000000'
+          S3_T_K: '365.57531382034705185'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4346135121836717669'
+        - iteration: 0
+          halving: 14
+          alpha: '0.000061035156250000000000'
+          S3_T_K: '365.57385716487111110'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4345620685940727232'
+        - iteration: 0
+          halving: 15
+          alpha: '0.000030517578125000000000'
+          S3_T_K: '365.57312883713314073'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4345363473476985715'
+        - iteration: 0
+          halving: 16
+          alpha: '0.000015258789062500000000'
+          S3_T_K: '365.57276467326415554'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4345234868616162303'
+        - iteration: 0
+          halving: 17
+          alpha: '7.6293945312500000000e-6'
+          S3_T_K: '365.57258259132966294'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4345170566528510424'
+        - iteration: 0
+          halving: 18
+          alpha: '3.8146972656250000000e-6'
+          S3_T_K: '365.57249155036241665'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4345138415570374190'
+        - iteration: 0
+          halving: 19
+          alpha: '1.9073486328125000000e-6'
+          S3_T_K: '365.57244602987879350'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4345122340112728468'
+        - iteration: 0
+          halving: 20
+          alpha: '9.5367431640625000000e-7'
+          S3_T_K: '365.57242326963698192'
+          verdict: phase_update_required
+          reported_heater_regime: TWO_PHASE
+          screen_value: '1.4345114302389261202'
+        phase_rejections: 21
+        invalid_trials: 0
+      final: null
+      refused: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE; phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)
+      margins:
+        screen_min_abs_sum_minus_1: '0.434511'
+        domain_min_K: '50.5618'
+        phase_boundary_min_K: '0.0237384'
+        armijo_min_relative: '0.832578'
+        convergence_min_factor: null
+  ablations:
+    no per-trial screen (T02 §6.3.4):
+      SYN-001-A02-355-liquid-guess:
+        outcome: ACTIVE_SET_CYCLING
+        signatures:
+        - LIQUID
+        - VAPOR
+      SYN-001-A02-360-liquid-guess:
+        outcome: ACTIVE_SET_CYCLING
+        signatures:
+        - LIQUID
+        - VAPOR
+    largest alpha without adjacency (K03 v0.0 §9.3):
+      SYN-001-A02-355-liquid-guess:
+        outcome: ACTIVE_SET_CYCLING
+        signatures:
+        - LIQUID
+        - VAPOR
+      SYN-001-A02-360-liquid-guess:
+        outcome: ACTIVE_SET_CYCLING
+        signatures:
+        - LIQUID
+        - VAPOR
+    disappearance on a landing (T02 §6.3.3 as written):
+      SYN-001-A02-355-liquid-guess:
+        outcome: ACTIVE_SET_CYCLING
+        signatures:
+        - LIQUID
+        - TWO_PHASE
+      SYN-001-A02-360-liquid-guess:
+        outcome: ACTIVE_SET_CYCLING
+        signatures:
+        - LIQUID
+        - TWO_PHASE
+    PHS-05 under a recurrence rule (T03 §7):
+      count:
+        outcome: ATTEMPTS_EXHAUSTED
+        signatures:
+        - TWO_PHASE
+        - LIQUID
+        - TWO_PHASE
+        - LIQUID
+        - TWO_PHASE
+        opening_S3_T_K:
+        - '375.00000'
+        - '365.57240'
+        - '377.50532'
+        - '367.95924'
+        - '373.32899'
+        opening_merit:
+        - '0.659220'
+        - '0.356232'
+        - '1.35246'
+        - '0.0329640'
+        - '0.937317'
+      merit:
+        outcome: ACTIVE_SET_CYCLING
+        signatures:
+        - TWO_PHASE
+        - LIQUID
+        opening_S3_T_K:
+        - '375.00000'
+        - '365.57240'
+        opening_merit:
+        - '0.659220'
+        - '0.356232'
+  t02_rules_cross_check:
+    SYN-001-A02-355-liquid-guess:
+      outcome: ACTIVE_SET_CYCLING
+      attempts:
+      - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        opening_source: initializer
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '350.00000000000000000'
+        opening_beta: '0.0'
+        opening_screen_value: '0.96231656003527667518'
+        core_outcome: CONVERGED
+        core_iterations: 1
+        decision: restart
+        cause: inadmissible(S3, all_liquid, 2.4959938386228986075)
+        end_S3_T_K: '389.43824382720842205'
+        phase_rejections: 0
+        invalid_trials: 0
+      - signature: U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        opening_source: closure_projection
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '389.43824382720842205'
+        opening_beta: '1.0000000000000000000'
+        opening_screen_value: '0.72336546922786885943'
+        core_outcome: STAGNATION
+        core_iterations: 8
+        decision: restart
+        cause: kernel_disagrees(U-HEAT, LIQUID)
+        end_S3_T_K: '280.01806847373610820'
+        phase_rejections: 0
+        invalid_trials: 64
+    SYN-001-A02-360-liquid-guess:
+      outcome: ACTIVE_SET_CYCLING
+      attempts:
+      - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        opening_source: initializer
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '350.00000000000000000'
+        opening_beta: '0.0'
+        opening_screen_value: '0.96231656003527667518'
+        core_outcome: STAGNATION
+        core_iterations: 13
+        decision: restart
+        cause: kernel_disagrees(U-HEAT, VAPOR)
+        end_S3_T_K: '439.99999970524527077'
+        phase_rejections: 0
+        invalid_trials: 90
+      - signature: U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        opening_source: closure_projection
+        opening_trial: null
+        opening_alpha: null
+        opening_S3_T_K: '439.99999970524527077'
+        opening_beta: '1.0000000000000000000'
+        opening_screen_value: '0.22409145250010753964'
+        core_outcome: STAGNATION
+        core_iterations: 9
+        decision: restart
+        cause: kernel_disagrees(U-HEAT, LIQUID)
+        end_S3_T_K: '280.00002176610114902'
+        phase_rejections: 0
+        invalid_trials: 84
+    T02_measured_for_comparison:
+      360_attempt_1: STAGNATION at iteration 13 at 439.999 999 7 K (T02 §7.6, measured)
+      360_attempt_2: STAGNATION at iteration 9 at 280.000 02 K (T02 §7.6, measured)
+  basin_margin:
+    T_heater=355K,guess=345K:
+      outcome: CONVERGED
+      signatures:
+      - LIQUID
+      - TWO_PHASE
+    T_heater=355K,guess=351K:
+      outcome: CONVERGED
+      signatures:
+      - LIQUID
+      - TWO_PHASE
+    T_heater=360K,guess=345K:
+      outcome: CONVERGED
+      signatures:
+      - LIQUID
+      - TWO_PHASE
+    T_heater=360K,guess=351K:
+      outcome: CONVERGED
+      signatures:
+      - LIQUID
+      - TWO_PHASE
+    T_heater=360K,guess=380K:
+      outcome: CONVERGED
+      signatures:
+      - VAPOR
+      - TWO_PHASE
+    T_heater=360K,guess=430K:
+      outcome: CONVERGED
+      signatures:
+      - VAPOR
+      - TWO_PHASE
+    T_heater=355K,guess=377K:
+      outcome: ACTIVE_SET_CYCLING
+      signatures:
+      - TWO_PHASE
+      - LIQUID
+  family_scan:
+    largest_adjacent (registered):
+      runs: 75
+      failures:
+      - 'T_heater=355K,guess=375K: ACTIVE_SET_CYCLING'
+      - 'T_heater=355K,guess=377K: ACTIVE_SET_CYCLING'
+    smallest alpha (rejected):
+      runs: 75
+      failures:
+      - 'T_heater=355K,guess=375K: ACTIVE_SET_CYCLING'
+      - 'T_heater=355K,guess=377K: ACTIVE_SET_CYCLING'
+      - 'T_heater=355K,guess=380K: ACTIVE_SET_CYCLING'
+      - 'T_heater=355K,guess=400K: ACTIVE_SET_CYCLING'
+      - 'T_heater=355K,guess=430K: ACTIVE_SET_CYCLING'
+  synthetic_tear_seeds:
+    PHS-SYN-1:
+      outcome: CONVERGED
+      x: '3.0000000000000000000'
+      attempts:
+      - signature: LIQUID
+        opening_x: '0.0'
+        iterations:
+        - - alpha: '1.0000000000000000000'
+            x: '3.0000000000000000000'
+            reported: VAPOR
+          - alpha: '0.50000000000000000000'
+            x: '1.5000000000000000000'
+            reported: TWO_PHASE
+          - alpha: '0.25000000000000000000'
+            x: '0.75000000000000000000'
+            verdict: accepted
+        - - alpha: '1.0000000000000000000'
+            x: '3.0000000000000000000'
+            reported: VAPOR
+          - alpha: '0.50000000000000000000'
+            x: '1.8750000000000000000'
+            reported: TWO_PHASE
+          - alpha: '0.25000000000000000000'
+            x: '1.3125000000000000000'
+            reported: TWO_PHASE
+          - alpha: '0.12500000000000000000'
+            x: '1.0312500000000000000'
+            reported: TWO_PHASE
+          - alpha: '0.062500000000000000000'
+            x: '0.89062500000000000000'
+            verdict: accepted
+        core_outcome: PHASE_UPDATE_REQUIRED
+        core_iterations: 2
+        restart:
+          alpha: '0.50000000000000000000'
+          x: '1.8750000000000000000'
+          signature: TWO_PHASE
+      - signature: TWO_PHASE
+        opening_x: '1.8750000000000000000'
+        iterations:
+        - - alpha: '1.0000000000000000000'
+            x: '3.0000000000000000000'
+            reported: VAPOR
+          - alpha: '0.50000000000000000000'
+            x: '2.4375000000000000000'
+            reported: VAPOR
+          - alpha: '0.25000000000000000000'
+            x: '2.1562500000000000000'
+            reported: VAPOR
+          - alpha: '0.12500000000000000000'
+            x: '2.0156250000000000000'
+            reported: VAPOR
+          - alpha: '0.062500000000000000000'
+            x: '1.9453125000000000000'
+            verdict: accepted
+        - - alpha: '1.0000000000000000000'
+            x: '3.0000000000000000000'
+            reported: VAPOR
+          - alpha: '0.50000000000000000000'
+            x: '2.4726562500000000000'
+            reported: VAPOR
+          - alpha: '0.25000000000000000000'
+            x: '2.2089843750000000000'
+            reported: VAPOR
+          - alpha: '0.12500000000000000000'
+            x: '2.0771484375000000000'
+            reported: VAPOR
+          - alpha: '0.062500000000000000000'
+            x: '2.0112304687500000000'
+            reported: VAPOR
+          - alpha: '0.031250000000000000000'
+            x: '1.9782714843750000000'
+            verdict: accepted
+        core_outcome: PHASE_UPDATE_REQUIRED
+        core_iterations: 2
+        restart:
+          alpha: '1.0000000000000000000'
+          x: '3.0000000000000000000'
+          signature: VAPOR
+      - signature: VAPOR
+        opening_x: '3.0000000000000000000'
+        iterations: []
+        core_outcome: CONVERGED
+        core_iterations: 0
+    PHS-SYN-2:
+      outcome: CONVERGED
+      x: '3.0000000000000000000'
+      attempts:
+      - signature: LIQUID
+        opening_x: '0.0'
+        iterations:
+        - - alpha: '1.0000000000000000000'
+            x: '3.0000000000000000000'
+            reported: VAPOR
+          - alpha: '0.50000000000000000000'
+            x: '1.5000000000000000000'
+            reported: VAPOR
+          - alpha: '0.25000000000000000000'
+            x: '0.75000000000000000000'
+            verdict: accepted
+        - - alpha: '1.0000000000000000000'
+            x: '3.0000000000000000000'
+            reported: VAPOR
+          - alpha: '0.50000000000000000000'
+            x: '1.8750000000000000000'
+            reported: VAPOR
+          - alpha: '0.25000000000000000000'
+            x: '1.3125000000000000000'
+            reported: VAPOR
+          - alpha: '0.12500000000000000000'
+            x: '1.0312500000000000000'
+            reported: VAPOR
+          - alpha: '0.062500000000000000000'
+            x: '0.89062500000000000000'
+            verdict: accepted
+        core_outcome: PHASE_UPDATE_REQUIRED
+        core_iterations: 2
+        restart:
+          alpha: '1.0000000000000000000'
+          x: '3.0000000000000000000'
+          signature: VAPOR
+      - signature: VAPOR
+        opening_x: '3.0000000000000000000'
+        iterations: []
+        core_outcome: CONVERGED
+        core_iterations: 0
+t02_successes_under_the_contract:
+  SYN-001-A02-355 (guess 358 K):
+    outcome: CONVERGED
+    attempts: 1
+    core_iterations: 3
+    t02_measured_iterations: 3
+    landings: 0
+  SYN-001-A02-360 (guess 358 K):
+    outcome: CONVERGED
+    attempts: 1
+    core_iterations: 3
+    t02_measured_iterations: 3
+    landings: 0
+  SYN-001-A02-365 (guess 358 K):
+    outcome: CONVERGED
+    attempts: 1
+    core_iterations: 4
+    t02_measured_iterations: 4
+    landings: 0
+multiple_roots:
+  REC-05 gamma=0.1:
+    t_star:
+    - '1.0000000000000000000'
+    - '2.0000000000000000000'
+    - '3.0000000000000000000'
+    S1:
+    - '3.8887360535087802344'
+    - '2.5768926452254679125'
+    - '3.1110993722177906032'
+    scaled_separation: '0.96291201783626007813'
+    first_order_solution_error_bound_scaled:
+      t*: '6.4066667e-7'
+      S1: '6.1793029e-7'
+    MR-A:
+      method: anderson
+      start: 1.1 t*
+      outcome: CONVERGED
+      iterations: 9
+      lands_on: S1
+      final_t:
+      - '3.8887372867544633303'
+      - '2.5768928915129930267'
+      - '3.1110994196651438463'
+    MR-B:
+      method: anderson
+      start: t*
+      outcome: CONVERGED
+      iterations: 0
+      lands_on: t*
+    MR-C:
+      method: anderson depth_max = 0, then the merge edge (T02 §4.4)
+      start: 1.1 t*
+      loop_outcome: RECYCLE_STAGNATION
+      loop_iterations: 20
+      best_iterate_index: 5
+      merge_outcome: CONVERGED
+      merge_newton_iterations: 3
+      lands_on: S1
+      final_t:
+      - '3.8887360567065718047'
+      - '2.5768926458640810575'
+      - '3.1110993723407802212'
+  fingerprint:
+    policy: T03-root-fingerprint-v1
+    delta_scaled_inf: '0.000100'
+    t02_state_allowance_scaled_max: '1.00000e-6'
+measured:
+  note: The registered contract simulated again with mp.prec = 53 (binary64-like), compared with the 40-digit run.
+    A floor of the algorithm, not of the implementation; labelled, never an expectation.
+  SYN-001-A02-355-liquid-guess:
+    same_outcome_attempts_and_counts: true
+    worst_relative_trial_T_difference: '1.49e-16'
+    final_T_difference_K: '2.27e-14'
+  SYN-001-A02-360-liquid-guess:
+    same_outcome_attempts_and_counts: true
+    worst_relative_trial_T_difference: '9.85e-17'
+    final_T_difference_K: '7.72e-15'
+checks_passed:
+- bubble point of S3.n inside (351, 352) K
+- dew point of S3.n inside (377, 378) K
+- Q_flash(360 K) is exactly the registered zero to 1e-25 W
+- Q_flash(355 K) equals T02's registered sweep value to 1e-20 W
+- Q_flash(340 K) equals T02's registered sweep value to 1e-20 W
+- the 355 K liquid-branch root equals T02's 389.438 K and lies inside the domain
+- the 360 K liquid-branch root lies above the domain, the vapour-branch root below it
+- the 340 K root is on the liquid branch (below the bubble point) and inside the domain
+- the block's closed-form Jacobian equals its 40-digit derivative to 1e-25
+- the block is square under every regime (T02 §6.3.1)
+- 'SYN-001-A02-355-liquid-guess: CONVERGED in exactly 2 attempts'
+- 'SYN-001-A02-355-liquid-guess: attempt 1 is LIQUID and closes on the wall''s patience at core iteration 2'
+- 'SYN-001-A02-355-liquid-guess: attempt 2 opens TWO_PHASE from a phase-rejected trial of iteration 1'
+- 'SYN-001-A02-355-liquid-guess: a far (VAPOR) candidate exists and is not the one chosen'
+- 'SYN-001-A02-355-liquid-guess: attempt 2 lands S3.vap.C at iteration 0 and does not close on it'
+- 'SYN-001-A02-355-liquid-guess: after the landing the direction on S3.vap.C points inward (> 0)'
+- 'SYN-001-A02-355-liquid-guess: the converged state is the 355 K sweep row (T within 1e-6 K)'
+- 'SYN-001-A02-360-liquid-guess: CONVERGED in exactly 2 attempts'
+- 'SYN-001-A02-360-liquid-guess: attempt 1 is LIQUID and closes on the wall''s patience at core iteration 2'
+- 'SYN-001-A02-360-liquid-guess: attempt 2 opens TWO_PHASE from a phase-rejected trial of iteration 1'
+- 'SYN-001-A02-360-liquid-guess: a far (VAPOR) candidate exists and is not the one chosen'
+- 'SYN-001-A02-360-liquid-guess: attempt 2 lands S3.vap.C at iteration 0 and does not close on it'
+- 'SYN-001-A02-360-liquid-guess: after the landing the direction on S3.vap.C points inward (> 0)'
+- 'SYN-001-A02-360-liquid-guess: the converged state is the 360 K sweep row (T within 1e-6 K)'
+- PHS-01 attempt 2 converges at core iteration 5
+- PHS-02 attempt 2 converges at core iteration 4
+- PHS-02 attempt 1's full step is refused by the provider domain (442.64 K), not by phase
+- 'PHS-03: VAPOR then TWO_PHASE, CONVERGED at 360 K'
+- 'PHS-03: attempt 1 reports a far (LIQUID) candidate that is skipped'
+- 'PHS-04: TWO_PHASE then LIQUID, CONVERGED at 340 K on the liquid branch'
+- 'PHS-04: attempt 1 lands S3.vap.C at iteration 0, then is BOUND_BLOCKED on it alone at 1'
+- 'PHS-04: the disappearance restart opens LIQUID where the screen would refuse a trial (the opening point is not
+  screened)'
+- 'PHS-04: attempt 2 converges at core iteration 1 (the liquid block is affine)'
+- 'PHS-05: TWO_PHASE, then LIQUID, then ACTIVE_SET_CYCLING'
+- 'PHS-05: attempt 1 is BOUND_BLOCKED on S3.vap.C alone at iteration 1'
+- 'PHS-05: the LIQUID attempt fails its first line search with 21 phase rejections'
+- 'PHS-05: the pinned LIQUID opening is deep inside the two-phase band'
+- 'SYN-001-A02-355-liquid-guess: every screen decision is >= 1e-6 from 1 + eps'
+- 'SYN-001-A02-355-liquid-guess: every trial is >= 1e-3 K from the provider domain''s edges'
+- 'SYN-001-A02-355-liquid-guess: every phase-rejected trial is >= 1e-3 K from the bubble and dew point'
+- 'SYN-001-A02-355-liquid-guess: every Armijo decision is >= 1e-6 (relative) from its bound'
+- 'SYN-001-A02-355-liquid-guess: the convergence iteration is decided by a factor >= 1.5 on both sides'
+- 'SYN-001-A02-360-liquid-guess: every screen decision is >= 1e-6 from 1 + eps'
+- 'SYN-001-A02-360-liquid-guess: every trial is >= 1e-3 K from the provider domain''s edges'
+- 'SYN-001-A02-360-liquid-guess: every phase-rejected trial is >= 1e-3 K from the bubble and dew point'
+- 'SYN-001-A02-360-liquid-guess: every Armijo decision is >= 1e-6 (relative) from its bound'
+- 'SYN-001-A02-360-liquid-guess: the convergence iteration is decided by a factor >= 1.5 on both sides'
+- 'SYN-001-A02-360-vapor-guess: every screen decision is >= 1e-6 from 1 + eps'
+- 'SYN-001-A02-360-vapor-guess: every trial is >= 1e-3 K from the provider domain''s edges'
+- 'SYN-001-A02-360-vapor-guess: every phase-rejected trial is >= 1e-3 K from the bubble and dew point'
+- 'SYN-001-A02-360-vapor-guess: every Armijo decision is >= 1e-6 (relative) from its bound'
+- 'SYN-001-A02-360-vapor-guess: the convergence iteration is decided by a factor >= 1.5 on both sides'
+- 'SYN-001-A02-340-two-phase-guess: every screen decision is >= 1e-6 from 1 + eps'
+- 'SYN-001-A02-340-two-phase-guess: every trial is >= 1e-3 K from the provider domain''s edges'
+- 'SYN-001-A02-340-two-phase-guess: every Armijo decision is >= 1e-6 (relative) from its bound'
+- 'SYN-001-A02-340-two-phase-guess: the convergence iteration is decided by a factor >= 1.5 on both sides'
+- 'SYN-001-A02-355-dew-guess: every screen decision is >= 1e-6 from 1 + eps'
+- 'SYN-001-A02-355-dew-guess: every trial is >= 1e-3 K from the provider domain''s edges'
+- 'SYN-001-A02-355-dew-guess: every phase-rejected trial is >= 1e-3 K from the bubble and dew point'
+- 'SYN-001-A02-355-dew-guess: every Armijo decision is >= 1e-6 (relative) from its bound'
+- 'SYN-001-A02-340-two-phase-guess: the landing variable is decided by a ratio gap >= 1e-3'
+- ablation 'no per-trial screen (T02 §6.3.4)' breaks SYN-001-A02-355-liquid-guess
+- ablation 'no per-trial screen (T02 §6.3.4)' breaks SYN-001-A02-360-liquid-guess
+- ablation 'largest alpha without adjacency (K03 v0.0 §9.3)' breaks SYN-001-A02-355-liquid-guess
+- ablation 'largest alpha without adjacency (K03 v0.0 §9.3)' breaks SYN-001-A02-360-liquid-guess
+- ablation 'disappearance on a landing (T02 §6.3.3 as written)' breaks SYN-001-A02-355-liquid-guess
+- ablation 'disappearance on a landing (T02 §6.3.3 as written)' breaks SYN-001-A02-360-liquid-guess
+- PHS-05 with recurrence 'count' ends ATTEMPTS_EXHAUSTED, not CONVERGED
+- PHS-05 with recurrence 'merit' ends ACTIVE_SET_CYCLING, not CONVERGED
+- 'T02 rules, 355 liquid guess: attempt 1 converges in 1 iteration to the 389.438 K root'
+- 'T02 rules, 355 liquid guess: VAPOR next, then ACTIVE_SET_CYCLING (T02 A30)'
+- 'T02 rules, 360 liquid guess: the twin reproduces T02''s measured stagnation iterations 13 and 9 (T02 §7.6)'
+- 'T02 rules, 360 liquid guess: LIQUID stagnates above 439.99 K, VAPOR stagnates below 280.01 K, ACTIVE_SET_CYCLING
+  (T02 A31)'
+- 'basin margin: Q(355 K) from 345 K converges to 355 K'
+- 'basin margin: Q(355 K) from 351 K converges to 355 K'
+- 'basin margin: Q(360 K) from 345 K converges to 360 K'
+- 'basin margin: Q(360 K) from 351 K converges to 360 K'
+- 'basin margin: Q(360 K) from 380 K converges to 360 K'
+- 'basin margin: Q(360 K) from 430 K converges to 360 K'
+- 'basin margin: PHS-05''s failure is not a knife edge (377 K fails the same way)'
+- 'family scan: the registered contract fails exactly 355 K from 375 and 377 K (2 of 75)'
+- 'family scan: the nearest-the-wall selection fails 5 of 75'
+- 'PHS-SYN-1: LIQUID -> TWO_PHASE -> VAPOR, CONVERGED at x = 3'
+- 'PHS-SYN-1: attempt 1 restarts from alpha = 1/2 (x = 1.875), not from the VAPOR trial at 1'
+- 'PHS-SYN-2: no adjacent candidate exists, the largest alpha (VAPOR, x = 3) is taken'
+- the region is 38 x 38 under a single-phase heater and 42 x 42 two-phase
+- 'REC-05: S1 is a fixed point to 1e-30'
+- 'MR-A: Anderson from 1.1 t* lands within DELTA_ROOT of S1'
+- 'MR-B: from t* the solve converges at iteration 0 on t*'
+- 'MR-C: substitution from 1.1 t* stagnates at 20 and the merge''s Newton lands on S1'
+- DELTA_ROOT >= 10 x twice the largest first-order solution-error bound (REC-05)
+- DELTA_ROOT <= 1e-2 x the scaled separation of t* and S1
+- DELTA_ROOT >= 10 x twice T02 §6.4's largest scaled state allowance (SYN-001 roots)
+- 'T02 A28/A29 under the contract: Q(355 K) from 358 K converges in one attempt'
+- 'T02 A28/A29 under the contract: Q(355 K) from 358 K lands nothing on a bound'
+- the twin reproduces the implementation's measured count for Q(355 K) from 358 K
+- 'T02 A28/A29 under the contract: Q(360 K) from 358 K converges in one attempt'
+- 'T02 A28/A29 under the contract: Q(360 K) from 358 K lands nothing on a bound'
+- the twin reproduces the implementation's measured count for Q(360 K) from 358 K
+- 'T02 A28/A29 under the contract: Q(365 K) from 358 K converges in one attempt'
+- 'T02 A28/A29 under the contract: Q(365 K) from 358 K lands nothing on a bound'
+- the twin reproduces the implementation's measured count for Q(365 K) from 358 K
+- the three A02-360 routes (358 K, PHS-02, PHS-03) meet at one root within DELTA_ROOT
+- 'SYN-001-A02-355-liquid-guess: 53-bit arithmetic reproduces the attempts and counts'
+- 'SYN-001-A02-355-liquid-guess: 53-bit trial temperatures agree to 1e-12 relative (1e-9 registered)'
+- 'SYN-001-A02-360-liquid-guess: 53-bit arithmetic reproduces the attempts and counts'
+- 'SYN-001-A02-360-liquid-guess: 53-bit trial temperatures agree to 1e-12 relative (1e-9 registered)'

@@ -1,0 +1,57 @@
+{
+ "status": "ok",
+ "message": "",
+ "phase_signature": null,
+ "model_version": "P02-L-form-v1",
+ "constants_sha256": "0d91ffeeed88e9b9c03be1b62a4827927764fb6d9d49d2e06b59aeada29bdccc",
+ "state_sha256": "44c0c5a23ce89825f8706cd10effd4ae9f5dc8efdf304cd24632e0370a70e188",
+ "equation_ids": [
+  "bal_A",
+  "bal_B",
+  "bal_C",
+  "Vdef",
+  "Ldef",
+  "eq_A",
+  "eq_B",
+  "eq_C",
+  "kdef_A",
+  "kdef_B",
+  "kdef_C",
+  "hdef_A",
+  "hdef_B",
+  "hdef_C",
+  "energy",
+  "tspec",
+  "pspec"
+ ],
+ "values": [
+  0.050000000000000044,
+  0.050000000000000044,
+  0.050000000000000044,
+  -0.10886472553785209,
+  -0.04917572792330538,
+  -0.06286794603108992,
+  -0.040609719073539385,
+  -0.018351492115989076,
+  0.03421106672461871,
+  0.011328198565804679,
+  -0.011554669593008882,
+  -424.488150125796,
+  -778.9025505318891,
+  -1133.3169509379823,
+  1056.0563959801802,
+  5.0,
+  5000.0
+ ],
+ "counters": {
+  "blockK": {
+   "value_calls": 1,
+   "jacobian_calls": 0
+  },
+  "blockH": {
+   "value_calls": 1,
+   "jacobian_calls": 0
+  }
+ },
+ "accuracy": "exact-double"
+}

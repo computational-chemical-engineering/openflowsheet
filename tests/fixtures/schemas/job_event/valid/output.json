@@ -1,0 +1,14 @@
+{
+  "job_id": "job-000002",
+  "sequence": 8,
+  "kind": "output",
+  "ends_job": false,
+  "recorded_at": "2026-09-27T11:59:55.055136Z",
+  "output": {
+    "kind": "solution_certificate",
+    "artifact_id": "job-000002:bundle/solution-certificate.json",
+    "sha256": "dc7715f3f63b7f648e5c9874b05d3a4c5b0b342b4d2be827473cdc217a6a68b8",
+    "size_bytes": 56443,
+    "name": "solution-certificate.json"
+  }
+}

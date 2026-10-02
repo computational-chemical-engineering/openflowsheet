@@ -1,0 +1,43 @@
+# Declared ValidationReport: the registered rejection of the conflicting heater case.
+#
+# Fixing a heater's outlet temperature and its duty over-specifies the unit (ADR 0001
+# D4.4). The check is labeled `structural`: it names the objects in the conflict but does
+# not claim to be a verified minimal conflict set (blueprint §4.3).
+revision_id: SYN-001-conflicting-heater-spec-r1
+task: simulation
+status: INVALID
+checks:
+- id: SCHEMA-01
+  stage: schema
+  result: PASS
+  message: Each specification is individually well-formed; the conflict is in the set, not in any
+    one document.
+  implicated_objects: []
+  evidence_class: structural
+- id: DIM-01
+  stage: dimensions
+  result: PASS
+  message: Every embedded Quantity passes check_quantity.
+  implicated_objects: []
+  evidence_class: structural
+- id: STR-03
+  stage: structural_analysis
+  result: FAIL
+  message: 'STRUCTURAL_OVER_SPECIFICATION: the heater''s outlet temperature and its duty are both
+    fixed. A TP-state heater has one specification and a calculated duty; fixing both leaves the unit
+    with more specifications than degrees of freedom.'
+  implicated_objects:
+  - SPEC-heater-outlet-T
+  - SPEC-heater-duty
+  - heater
+  evidence_class: structural
+structural_counts: null
+structural_counts_absent_reason: The structural analysis that would produce the counts is T01. The
+  expected verdict is recorded here; the counts that justify it are not invented.
+provenance:
+  produced_by: hand-authored expectation document; no validator implementation exists
+  actor: Opus 5 (P01)
+  timestamp: '2026-09-07T00:00:00Z'
+  notes: 'Hand-authored expectation document (P01). No validator exists yet: the application validate()
+    entry point is K06 and structural analysis is T01. This document records what the validator must
+    conclude, and is not a verdict any code has produced.'

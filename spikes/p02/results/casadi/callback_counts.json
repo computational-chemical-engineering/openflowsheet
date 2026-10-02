@@ -1,0 +1,607 @@
+{
+ "per_state": [
+  {
+   "state_id": "S1",
+   "form": "L",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 60
+  },
+  {
+   "state_id": "S1",
+   "form": "I",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 43
+  },
+  {
+   "state_id": "S2",
+   "form": "L",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 60
+  },
+  {
+   "state_id": "S2",
+   "form": "I",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 43
+  },
+  {
+   "state_id": "S3",
+   "form": "L",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 60
+  },
+  {
+   "state_id": "S3",
+   "form": "I",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 43
+  },
+  {
+   "state_id": "S4",
+   "form": "L",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 60
+  },
+  {
+   "state_id": "S4",
+   "form": "I",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 43
+  },
+  {
+   "state_id": "S5",
+   "form": "L",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 60
+  },
+  {
+   "state_id": "S5",
+   "form": "I",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 43
+  },
+  {
+   "state_id": "S6",
+   "form": "L",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 60
+  },
+  {
+   "state_id": "S6",
+   "form": "I",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 43
+  },
+  {
+   "state_id": "S1p",
+   "form": "L",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 60
+  },
+  {
+   "state_id": "S1p",
+   "form": "I",
+   "residual_status": "ok",
+   "jacobian_status": "ok",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 1
+    }
+   },
+   "nnz": 43
+  },
+  {
+   "state_id": "S7a",
+   "form": "L",
+   "residual_status": "invalid_trial_state",
+   "jacobian_status": "invalid_trial_state",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "nnz": 0
+  },
+  {
+   "state_id": "S7a",
+   "form": "I",
+   "residual_status": "invalid_trial_state",
+   "jacobian_status": "invalid_trial_state",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "nnz": 0
+  },
+  {
+   "state_id": "S7b",
+   "form": "L",
+   "residual_status": "invalid_trial_state",
+   "jacobian_status": "invalid_trial_state",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "nnz": 0
+  },
+  {
+   "state_id": "S7b",
+   "form": "I",
+   "residual_status": "invalid_trial_state",
+   "jacobian_status": "invalid_trial_state",
+   "residual_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian_counters": {
+    "blockK": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "nnz": 0
+  }
+ ],
+ "compile_phase": [
+  {
+   "sample": 0,
+   "L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   }
+  },
+  {
+   "sample": 1,
+   "L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   }
+  },
+  {
+   "sample": 2,
+   "L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   }
+  },
+  {
+   "sample": 3,
+   "L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   }
+  },
+  {
+   "sample": 4,
+   "L": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "I": {
+    "blockK": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    },
+    "blockH": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   }
+  }
+ ]
+}

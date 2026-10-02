@@ -1,0 +1,5 @@
+A98: run2r on ci-x86-64 (6018ebccbe99a3e9d19cf4f966d10dc292195170) against /home/runner/work/clearsheet/clearsheet/benchmarks/t06/ensemble/runs/run2-ci-x86-64.json
+440 starts; S 434 vs run 2 434; S^first 370 vs 370
+refinements {'fired': 17, 'kept': 17, 'reverted': 0, 'abandoned': 0, 'abandoned_budget': 0, 'abandoned_by_reason': {}} (reported; no expectation on this class)
+final states differing bitwise (reported): 0
+0 discrepancies

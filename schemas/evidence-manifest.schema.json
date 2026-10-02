@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/evidence-manifest.schema.json",
+  "title": "Evidence manifest",
+  "description": "Structure of evidence/<package>/<commit>/manifest.json, per implementation plan §7. Angle-bracket text in the plan's example is a schema placeholder and is never a valid value; the accompanying test rejects it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "work_package",
+    "commit",
+    "requirements",
+    "status",
+    "inputs",
+    "commands",
+    "checks",
+    "artifacts",
+    "limitations",
+    "review"
+  ],
+  "properties": {
+    "work_package": {
+      "type": "string",
+      "pattern": "^[PKTMSR][0-9]{2}[a-z]?$"
+    },
+    "commit": {
+      "description": "Hash of the code commit the evidence was produced from. The manifest itself is committed in the following commit.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "requirements": {
+      "description": "Requirement IDs this package supplies evidence for; empty is allowed only when the package maps to no D/A requirement, which must then be stated in limitations.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[DA][0-9]{2}$" }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "implemented",
+        "tested",
+        "reviewed",
+        "released",
+        "BLOCKED"
+      ]
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_id", "case_hash", "environment_lock_hash"],
+      "properties": {
+        "case_id": { "type": "string", "minLength": 1 },
+        "case_hash": { "type": "string", "minLength": 1 },
+        "environment_lock_hash": { "type": "string", "minLength": 1 }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cmd", "cwd", "exit_code"],
+        "properties": {
+          "cmd": { "type": "string", "minLength": 1 },
+          "cwd": { "type": "string", "minLength": 1 },
+          "exit_code": { "type": "integer" },
+          "stdout_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "result"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "result": {
+            "type": "string",
+            "enum": ["pass", "fail", "unsupported", "not_applicable"]
+          },
+          "value": {},
+          "expected": {},
+          "tolerance": {}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "description"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "description": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "review": {
+      "description": "Never set by the package's own lead model. `pending`, or a reviewer identity and date.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["numerical", "process_model"],
+      "properties": {
+        "numerical": { "type": "string", "minLength": 1 },
+        "process_model": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

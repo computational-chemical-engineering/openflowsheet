@@ -1,0 +1,4013 @@
+{
+ "work_package": "T06",
+ "commit": "ebec629d63e32fb1984b56ad31372c960cd0ae2f",
+ "requirements": [
+  "D05",
+  "D11",
+  "D14",
+  "D19",
+  "D20",
+  "A04",
+  "A08",
+  "A09"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "T06's registered corpus (49 cases, benchmarks/registry.yaml `corpus`), the robustness ensemble (22 cases \u00d7 20 published starts, `ensemble`; runs 1, 2 and 2r) and the holdout (`ensemble.holdout`, start indices 20\u202639), and the eight reference fixtures with PC-1/PC-2 (`reference_fixtures`); judged against benchmarks/t06/reference_values.yaml (e97f61ce4a7d13c3cd22edccb2fba637dbebf59fd990fd64ad32ccde970cd2d4) and docs/derivations/T06-corpus-spec.md (4de4d238331f524e7d1f5d6aede4813cdc9afc63230f9d91d1a944c51e32edd1) as amended through Amendment 5",
+  "case_hash": "fc06649f757855419914645a8335ca98be42302b58eeb1bc56096a29a9423613",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "496391a45ae56fc9ee7270b4fc2af10a9cd55dd4a09b4b3ff5e0961256e1a0b2"
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/t06_evidence_manifest.py GATE_STDOUT --commit ebec629d63e32fb1984b56ad31372c960cd0ae2f --ci CI_DIR",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "GitHub Actions workflow `ci` run 36270294833 (workflow_dispatch, head f636452adc39f2f3d4b2a0164f0b071b65672891): ensemble (ubuntu-24.04-arm) success, check (ubuntu-24.04-arm) failure, check (ubuntu-latest) success, ensemble (ubuntu-latest) success, ensemble-compare success, identity skipped",
+   "cwd": ".",
+   "exit_code": 1
+  },
+  {
+   "cmd": "GitHub Actions workflow `ci` run 36277919626 (push, head 327d4d2101ac1dae31c51d9020acec7bef81cee0): check (ubuntu-24.04-arm) success, check (ubuntu-latest) success, ensemble skipped, ensemble-compare skipped, identity success",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "GitHub Actions workflow `ci` run 36278604955 (workflow_dispatch, head 6018ebccbe99a3e9d19cf4f966d10dc292195170): ensemble (ubuntu-latest) success, check (ubuntu-24.04-arm) failure, check (ubuntu-latest) success, ensemble (ubuntu-24.04-arm) success, ensemble-compare success, identity skipped",
+   "cwd": ".",
+   "exit_code": 1
+  }
+ ],
+ "checks": [
+  {
+   "id": "T06.A01",
+   "description": "`ref.corpus` is transcribed into the registry: 49 cases, each with id, class, fixture, expected kind, path, eligibility and denominator flag (30 in the denominator), equal to the twin's table.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w4_registry.py::test_a01_the_corpus_is_the_twins_table",
+      "tests/test_t06_w4_registry.py::test_a01_the_counts_are_the_twins_and_the_spec"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "cases": 49,
+     "in_success_denominator": 30
+    }
+   }
+  },
+  {
+   "id": "T06.A02",
+   "description": "Every `verified_at_reference` case (27: the 22 eligible, THM-04, NUM-04, ADV-01, STA-03, STA-04) reaches `CONVERGED`, `VERIFIED` and S3 at T02 \u00a76.4's allowances from its registered start under its registered policy (the revision path under `T06-revision-v2`, the tear path under `SYN-001-K03`, NET-05 under its A02 policy).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k03_attempts.py::test_g00_the_solved_flowsheet_reproduces_the_registered_products_and_duties",
+      "tests/test_k03_tear.py::test_the_tear_converges_to_the_twenty_digit_recycle",
+      "tests/test_k04_checks.py::test_a03_to_a08_every_check_passes_at_the_registered_solutions",
+      "tests/test_t02_a02.py::test_a28_a29_the_specified_duty_is_met_at_the_registered_heater_temperature",
+      "tests/test_t02_region.py::test_a23_the_region_solves_the_same_function_as_the_tear",
+      "tests/test_t04_certificate.py::test_a30_the_registered_states_are_verified_on_the_bound_declaration",
+      "tests/test_t04_edge3.py::test_a04_a08_edge_3_takes_the_registered_path",
+      "tests/test_t04_edge3.py::test_a09_hom_n_with_the_edge_off_phs_05_cycles_exactly_as_t03_a12",
+      "tests/test_t06_f4_edge3.py::test_g1_net02_is_solved_through_the_restart_and_certified",
+      "tests/test_t06_f4_edge3.py::test_g2_the_edge_off_control_is_unchanged",
+      "tests/test_t06_w1a_units.py::test_a55_the_tear_solve_and_certificate_are_nominals",
+      "tests/test_t06_w1a_units.py::test_a55_validation_records_the_conversion",
+      "tests/test_t06_w1a_units.py::test_a56_the_revision_solve_and_certificate_are_nominals",
+      "tests/test_t06_w1a_units.py::test_a57_an_unconverted_unit_or_kind_is_refused",
+      "tests/test_t06_w1b_order.py::test_a59_sta04_solves_and_certifies_as_c2",
+      "tests/test_t06_w1b_order.py::test_a60_every_order_of_c2_is_c2",
+      "tests/test_t06_w2_verifier.py::test_a39_net11_is_verified_at_the_twin",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root",
+      "tests/test_t06_w5_corpus.py::test_a02_net02_takes_its_registered_items",
+      "tests/test_t06_w5_corpus.py::test_a02_num04_the_region_at_the_tear_root_converges_at_iteration_0_and_is_verified",
+      "tests/test_t06_w5_corpus.py::test_a11_sta02s_absent_component_is_positive_zero_everywhere",
+      "tests/test_t06_w5_corpus.py::test_a63_net02s_control_meets_its_registration"
+     ],
+     "nodes": 83,
+     "outcomes": {
+      "passed": 83
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A03",
+   "description": "NUM-01, NUM-02 and NET-04 (`converged_to_closed_form`) meet their K03/T02 registrations.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k03_newton.py::test_bnd01_first_iterate_is_positive_zero_bit_for_bit",
+      "tests/test_k03_newton.py::test_bnd01_lands_on_its_bound_exactly_and_then_converges",
+      "tests/test_k03_newton.py::test_num02_converges_in_exactly_one_step_to_the_analytic_answer",
+      "tests/test_t02_recycle.py::test_a07_linear_variants_terminate_at_exactly_iteration_4",
+      "tests/test_t02_recycle.py::test_a08_nonlinear_variants_follow_the_twin",
+      "tests/test_t02_recycle.py::test_a09_rec_01_substitution_detects_oscillation_and_damps"
+     ],
+     "nodes": 15,
+     "outcomes": {
+      "passed": 15
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A04",
+   "description": "STR-02 is `DRAFT`, STR-01\u202605 `NOT_RUN`, message and implicated as \u00a73.2; never compiled or solved.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w5_corpus.py::test_a04_a08_a_diagnosed_case_is_never_compiled_or_solved",
+      "tests/test_t06_w5_corpus.py::test_a04_str02_is_a_draft_that_names_the_missing_specification"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A05",
+   "description": "STR-03 as T01 A09.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t01_structural.py::test_a09_the_conflicting_heater_revision_is_rejected_at_validation"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A06",
+   "description": "STR-04 as T01 A18.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t01_structural.py::test_a18_sq_1_is_square_by_totals_and_defective_in_both_directions"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A07",
+   "description": "STR-05: CH-UP `STRUCTURALLY_CLOSED`, `CONVERGED`, `UNVERIFIED`, `RANK_DEFICIENT` rank 30 of 31, no `fail`; CH-UP-DP `VERIFIED`, `NO_RANK_LOSS_DETECTED`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t05b_openings.py::test_b31b_leaving_zero_flow_downstream_converges",
+      "tests/test_t05b_openings.py::test_b31b_the_certificate_is_unverified_at_the_dew_point",
+      "tests/test_t05b_openings.py::test_b31i_off_the_dew_point_the_restart_certifies"
+     ],
+     "nodes": 10,
+     "outcomes": {
+      "passed": 10
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A08",
+   "description": "STR-06: `INVALID`, `COMP-03 FAIL` implicated `SPEC-feed-n-B`, the message names `D`; no compile, no solve (spy).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w1a_units.py::test_str06_component_references_are_checked",
+      "tests/test_t06_w5_corpus.py::test_a04_a08_a_diagnosed_case_is_never_compiled_or_solved"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A09",
+   "description": "STA-03 before Amendment 1 (`INVALID`, `DIM-01 FAIL`) \u2014 superseded by A55\u2013A57.",
+   "result": "not_applicable",
+   "value": {
+    "reason": "superseded by Amendment 1: STA-03 is a solved case; A55\u2013A57 carry it (T06 spec \u00a713, A09's row)"
+   }
+  },
+  {
+   "id": "T06.A10",
+   "description": "STA-04 before Amendment 1 (`components_unsupported`) \u2014 superseded by A59\u2013A60.",
+   "result": "not_applicable",
+   "value": {
+    "reason": "superseded by Amendment 1: STA-04 is a solved case; A59\u2013A60 carry it (T06 spec \u00a713, A10's row)"
+   }
+  },
+  {
+   "id": "T06.A11",
+   "description": "STA-02: every B coordinate of the certified state is `+0.0`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root",
+      "tests/test_t06_w5_corpus.py::test_a11_sta02s_absent_component_is_positive_zero_everywhere"
+     ],
+     "nodes": 24,
+     "outcomes": {
+      "passed": 24
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A12",
+   "description": "THM-05: `reference_convention_not_reaction_consistent(SYN-001-ref-v0)`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t05_reactor.py::test_reactor_construction_refusal"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A13",
+   "description": "THM-06: K02's cache tests pass unchanged.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k02_cache.py::test_a_negative_zero_component_hits_because_it_is_the_same_state",
+      "tests/test_k02_cache.py::test_a_one_ulp_change_of_temperature_misses",
+      "tests/test_k02_heater_flash.py::test_the_cache_changes_nothing_a_unit_reports"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A14",
+   "description": "ADV-01: the contract's cycling trigger and edge 3's three \u03bb-trials; `VERIFIED` at A02-355's root; HOM-N `ACTIVE_SET_CYCLING`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t04_certificate.py::test_a30_the_registered_states_are_verified_on_the_bound_declaration",
+      "tests/test_t04_edge3.py::test_a04_a08_edge_3_takes_the_registered_path",
+      "tests/test_t04_edge3.py::test_a09_hom_n_with_the_edge_off_phs_05_cycles_exactly_as_t03_a12"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A15",
+   "description": "ADV-02\u2026ADV-05 as T04 A06/A07, A14 and T03 A19.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t03_roots.py::test_a19_rec_05_three_routes_two_roots",
+      "tests/test_t04_homotopy.py::test_a03_a_stall_leaves_a_partial_checkpoint_at_its_level_and_no_certificate",
+      "tests/test_t04_ptc_region.py::test_a14_an_invalid_mapping_is_refused_before_anything_runs"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A16",
+   "description": "ADV-06 H: no `VERIFIED` or `RELAXED`; a typed outcome or a `FAILED`/`UNVERIFIED` certificate.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w7_adv06.py::test_a16_h_fails_in_the_initializer_as_m4_measured",
+      "tests/test_t06_w7_adv06.py::test_a16_h_is_never_verified_or_relaxed",
+      "tests/test_t06_w7_adv06.py::test_a17_m_converges_unverified_on_the_witness_alone",
+      "tests/test_t06_w7_adv06.py::test_a18_l_converges_verified",
+      "tests/test_t06_w7_adv06.py::test_the_double_is_bound_under_every_compiled_evaluation"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A17",
+   "description": "ADV-06 M: `CONVERGED`, `UNVERIFIED`, `limitations` exactly `[derivative_limitation]`, every \u00a74.1\u2013\u00a74.7 check `pass`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w7_adv06.py::test_a16_h_is_never_verified_or_relaxed",
+      "tests/test_t06_w7_adv06.py::test_a17_m_converges_unverified_on_the_witness_alone",
+      "tests/test_t06_w7_adv06.py::test_a18_l_converges_verified",
+      "tests/test_t06_w7_adv06.py::test_the_double_is_bound_under_every_compiled_evaluation"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A18",
+   "description": "ADV-06 L: `VERIFIED`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w7_adv06.py::test_a16_h_is_never_verified_or_relaxed",
+      "tests/test_t06_w7_adv06.py::test_a17_m_converges_unverified_on_the_witness_alone",
+      "tests/test_t06_w7_adv06.py::test_a18_l_converges_verified",
+      "tests/test_t06_w7_adv06.py::test_the_double_is_bound_under_every_compiled_evaluation"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A19",
+   "description": "VER-01\u2026VER-05 as K04 \u00a79 and \u00a77.6; VER-02/VER-03 `INCONCLUSIVE(identity_mismatch)` through A82.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k04_injections.py::test_a16_inj4_a_relaxed_policy_is_never_verified",
+      "tests/test_k04_injections.py::test_a17_inj1_wrong_energy_bookkeeping",
+      "tests/test_k04_regularity.py::test_a24_an_exactly_singular_matrix_is_rank_deficient_not_a_crash",
+      "tests/test_k04_regularity.py::test_a25_the_bound_is_recorded_and_the_verdict_is_verified",
+      "tests/test_k04_regularity.py::test_a34_a_tolerance_tight_enough_trips_the_absolute_limit",
+      "tests/test_t04_certificate.py::test_a31_iii_a_state_that_is_not_the_fingerprinted_one_is_refused",
+      "tests/test_t05_w12_injections.py::test_inj_t1_the_valves_trivial_root_is_caught_by_the_fresh_flash_and_the_split",
+      "tests/test_t06_w14_identity.py::test_a82_ver03_a_stale_jacobian_is_refused",
+      "tests/test_t06_w5_corpus.py::test_a19_ver02_ver03_a_regularized_matrix_with_a_stale_identity_is_refused"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A20",
+   "description": "No case of a kind other than `verified_at_reference` ends `VERIFIED`, except the registered sub-fixtures (STR-05's twin, ADV-06 L, VER-01's twin, VER-04's SQ-1).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k03_newton.py::test_num05_a_residual_with_no_root_stagnates_and_claims_nothing",
+      "tests/test_k03_newton.py::test_num06_exhausts_the_line_search_on_an_evaluator_domain",
+      "tests/test_t06_w5_corpus.py::test_a20_no_other_kind_is_registered_to_end_verified"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A21",
+   "description": "The draw reproduces every KAT: `k53` equal; `u`, `\u03b4` equal to the hex known answers, `\u03b4 = (2u \u2212 1)/5`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_generator.py::test_a21_no_fixture_or_coordinate_id_contains_the_key_separator",
+      "tests/test_t06_w6_generator.py::test_a21_the_draw_reproduces_every_known_answer_bit_for_bit",
+      "tests/test_t06_w6_generator.py::test_a21_the_key_is_the_registered_spelling"
+     ],
+     "nodes": 12,
+     "outcomes": {
+      "passed": 12
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A22",
+   "description": "The selected coordinates per case follow \u00a76.2 (pins, splits and absent components excluded), equal to the list the starts file records.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_generator.py::test_a22_the_selected_coordinates_are_the_rule_applied_to_the_binding"
+     ],
+     "nodes": 22,
+     "outcomes": {
+      "passed": 22
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A23",
+   "description": "Every accepted coordinate lies in its box; every joint start assembled without refusal.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w30_holdout.py::test_a23_a80_every_holdout_start_is_its_draws_recomputed_bit_for_bit",
+      "tests/test_t06_w6_generator.py::test_a23_a80_every_start_is_its_draws_recomputed_bit_for_bit"
+     ],
+     "nodes": 44,
+     "outcomes": {
+      "passed": 44
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A24",
+   "description": "Absent components are `+0.0` in every start.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w30_holdout.py::test_a24_absent_components_are_held_at_positive_zero_in_the_holdout",
+      "tests/test_t06_w6_generator.py::test_a24_absent_components_are_held_at_positive_zero"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A25",
+   "description": "The starts file regenerates byte-identically on `ref-x86-64` with the live provider's block; its SHA-256 equals the registry's (`3a7bd49c\u2026`).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_generator.py::test_a25_the_starts_regenerate_byte_for_byte_on_the_reference_machine_class"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "starts_sha256": "3a7bd49c66493744753d1eac554101317c931e0ef51d9154d6f7cab3124fef82",
+     "registry_starts_sha256": "3a7bd49c66493744753d1eac554101317c931e0ef51d9154d6f7cab3124fef82",
+     "holdout_sha256": "debbbdc5228f564b64cea0cdce14e3dced6a755f34ce62776b09fb7cb37831de",
+     "registry_holdout_sha256": "debbbdc5228f564b64cea0cdce14e3dced6a755f34ce62776b09fb7cb37831de"
+    }
+   }
+  },
+  {
+   "id": "T06.A26",
+   "description": "Generation completes before any solve, and the manifest records its time and counts.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w30_holdout.py::test_a26_the_holdouts_counts_recompute_from_its_records",
+      "tests/test_t06_w6_generator.py::test_a26_the_recorded_counts_recompute_from_the_records"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "nominal": {
+      "file": "benchmarks/t06/ensemble/starts-nominal-v1.json",
+      "written_by": [
+       {
+        "commit": "9ecba79593be7fa218c9ed67ce3cc7d4b1f900cc",
+        "committed_at": "2026-09-26T14:13:46+02:00"
+       },
+       {
+        "commit": "99d838431b5cf9c86cd79447f21834d840eae05f",
+        "committed_at": "2026-09-26T15:05:21+02:00"
+       }
+      ],
+      "precedes_every_scoring_commit": {
+       "6018ebc": true,
+       "dfa7d09": true,
+       "f636452": true
+      },
+      "counts": {
+       "cases": 22,
+       "coordinate_rejections": 1161,
+       "generation_failures": 0,
+       "joint_rejection_reasons": {
+        "traversal_refused(:unsupported)": 73
+       },
+       "joint_rejections": 73,
+       "starts_accepted": 440
+      }
+     },
+     "holdout1": {
+      "file": "benchmarks/t06/ensemble/starts-nominal-holdout1.json",
+      "written_by": [
+       {
+        "commit": "15d59e7205bacae2579dbe06da38a5707ed35702",
+        "committed_at": "2026-09-27T00:57:12+02:00"
+       }
+      ],
+      "precedes_every_scoring_commit": {
+       "6018ebc": true
+      },
+      "counts": {
+       "cases": 22,
+       "coordinate_rejections": 1151,
+       "generation_failures": 0,
+       "joint_rejection_reasons": {
+        "traversal_refused(:unsupported)": 53
+       },
+       "joint_rejections": 53,
+       "starts_accepted": 440
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A27",
+   "description": "440 records, one per (case, start); the classification per \u00a77.1\u2013\u00a77.2 is a pure function of the record.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_ensemble.py::test_a27_every_non_converged_outcome_has_exactly_one_class",
+      "tests/test_t06_w6_ensemble.py::test_a27_the_classification_is_first_match_on_the_record"
+     ],
+     "nodes": 15,
+     "outcomes": {
+      "passed": 15
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "run1@ref-x86-64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "run2@ref-x86-64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "run2@ci-x86-64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "run2@ci-aarch64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "run2r@ref-x86-64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "run2r@ci-x86-64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "run2r@ci-aarch64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "holdout1@ref-x86-64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "holdout1@ci-x86-64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     },
+     "holdout1@ci-aarch64": {
+      "records": 440,
+      "distinct": 440,
+      "pure": true
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A28",
+   "description": "Zero `F-CRASH`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_ensemble.py::test_a_run_restores_every_entry_point_and_records_a_crash_rather_than_raising"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "F-CRASH": {
+      "run1@ref-x86-64": [],
+      "run2@ref-x86-64": [],
+      "run2@ci-x86-64": [],
+      "run2@ci-aarch64": [],
+      "run2r@ref-x86-64": [],
+      "run2r@ci-x86-64": [],
+      "run2r@ci-aarch64": [],
+      "holdout1@ref-x86-64": [],
+      "holdout1@ci-x86-64": [],
+      "holdout1@ci-aarch64": []
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A29",
+   "description": "Zero unexplained `F-OTHER-ROOT` \u2014 judged on run 2, the gate's run (\u00a77.3 (A5)); run 1's four are carried as recorded.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "judged_on": [
+      "run2@ref-x86-64",
+      "run2@ci-x86-64",
+      "run2@ci-aarch64"
+     ],
+     "F-OTHER-ROOT": {
+      "run1@ref-x86-64": [
+       "THM-09/01",
+       "THM-09/02",
+       "THM-09/05",
+       "THM-09/10"
+      ],
+      "run2@ref-x86-64": [],
+      "run2@ci-x86-64": [],
+      "run2@ci-aarch64": [],
+      "run2r@ref-x86-64": [],
+      "run2r@ci-x86-64": [],
+      "run2r@ci-aarch64": [],
+      "holdout1@ref-x86-64": [],
+      "holdout1@ci-x86-64": [],
+      "holdout1@ci-aarch64": []
+     },
+     "run1_worst_s3_ratio": {
+      "THM-09/01": [
+       1.005085937322292,
+       "S4.T"
+      ],
+      "THM-09/02": [
+       3.4471745323116916,
+       "S4.T"
+      ],
+      "THM-09/05": [
+       1.009910226912325,
+       "S4.T"
+      ],
+      "THM-09/10": [
+       1.428701165195889,
+       "S4.T"
+      ]
+     },
+     "run1_diagnosis": "spec Amendment 4: the registered root stopped inside THM-09's row-tolerance window (1.005\u20133.447 allowances), not a second root; not explained under \u00a77.2, so run 1's gate term fails and stands (R-087)"
+    }
+   }
+  },
+  {
+   "id": "T06.A30",
+   "description": "Gate: `S \u2265 418` of 440, no `F-CRASH`, no unexplained `F-OTHER-ROOT`, on `ref-x86-64` and on `ci-aarch64` \u2014 judged on run 2 (\u00a77.3 (A5)); run 1's FAIL stands.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w29_runs.py::test_a97e_each_headline_recomputes_from_its_records",
+      "tests/test_t06_w6_ensemble.py::test_a30_the_gate_is_s_at_least_418_of_440_with_no_crash_and_no_other_root"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "run1@ref-x86-64": {
+      "S": 431,
+      "S_first": 367,
+      "S_rescued": 64,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 3,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "F-OTHER-ROOT": 4,
+       "SUCCESS": 431
+      },
+      "cp_lower": 0.9645781736174642,
+      "cp_lower_first": 0.8021259217177437,
+      "gate_rule_applied": "FAIL",
+      "commit": "dfa7d09"
+     },
+     "run2@ref-x86-64": {
+      "S": 434,
+      "S_first": 370,
+      "S_rescued": 64,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 3,
+       "F-FALSE-SUCCESS-CAUGHT": 3,
+       "SUCCESS": 434
+      },
+      "cp_lower": 0.9732639029561057,
+      "cp_lower_first": 0.8093946169612515,
+      "gate_rule_applied": "PASS",
+      "commit": "f636452"
+     },
+     "run2@ci-x86-64": {
+      "S": 434,
+      "S_first": 370,
+      "S_rescued": 64,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 3,
+       "F-FALSE-SUCCESS-CAUGHT": 3,
+       "SUCCESS": 434
+      },
+      "cp_lower": 0.9732639029561057,
+      "cp_lower_first": 0.8093946169612515,
+      "gate_rule_applied": "PASS",
+      "commit": "f636452",
+      "ci_run": 36270294833
+     },
+     "run2@ci-aarch64": {
+      "S": 434,
+      "S_first": 367,
+      "S_rescued": 67,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 4,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "SUCCESS": 434
+      },
+      "cp_lower": 0.9732639029561057,
+      "cp_lower_first": 0.8021259217177437,
+      "gate_rule_applied": "PASS",
+      "commit": "f636452",
+      "ci_run": 36270294833
+     },
+     "run2r@ref-x86-64": {
+      "S": 434,
+      "S_first": 370,
+      "S_rescued": 64,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 3,
+       "F-FALSE-SUCCESS-CAUGHT": 3,
+       "SUCCESS": 434
+      },
+      "cp_lower": 0.9732639029561057,
+      "cp_lower_first": 0.8093946169612515,
+      "gate_rule_applied": "PASS",
+      "commit": "6018ebc"
+     },
+     "run2r@ci-x86-64": {
+      "S": 434,
+      "S_first": 370,
+      "S_rescued": 64,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 3,
+       "F-FALSE-SUCCESS-CAUGHT": 3,
+       "SUCCESS": 434
+      },
+      "cp_lower": 0.9732639029561057,
+      "cp_lower_first": 0.8093946169612515,
+      "gate_rule_applied": "PASS",
+      "commit": "6018ebc",
+      "ci_run": 36278604955
+     },
+     "run2r@ci-aarch64": {
+      "S": 434,
+      "S_first": 367,
+      "S_rescued": 67,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 4,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "SUCCESS": 434
+      },
+      "cp_lower": 0.9732639029561057,
+      "cp_lower_first": 0.8021259217177437,
+      "gate_rule_applied": "PASS",
+      "commit": "6018ebc",
+      "ci_run": 36278604955
+     },
+     "holdout1@ref-x86-64": {
+      "S": 436,
+      "S_first": 364,
+      "S_rescued": 72,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 2,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "SUCCESS": 436
+      },
+      "cp_lower": 0.97931814450125,
+      "cp_lower_first": 0.7948746670673872,
+      "gate_rule_applied": "PASS",
+      "commit": "6018ebc"
+     },
+     "holdout1@ci-x86-64": {
+      "S": 436,
+      "S_first": 364,
+      "S_rescued": 72,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 2,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "SUCCESS": 436
+      },
+      "cp_lower": 0.97931814450125,
+      "cp_lower_first": 0.7948746670673872,
+      "gate_rule_applied": "PASS",
+      "commit": "6018ebc",
+      "ci_run": 36278604955
+     },
+     "holdout1@ci-aarch64": {
+      "S": 436,
+      "S_first": 367,
+      "S_rescued": 69,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 2,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "SUCCESS": 436
+      },
+      "cp_lower": 0.97931814450125,
+      "cp_lower_first": 0.8021259217177437,
+      "gate_rule_applied": "PASS",
+      "commit": "6018ebc",
+      "ci_run": 36278604955
+     },
+     "gate": {
+      "judged_on": "run 2 (spec \u00a77.3 (A5)); run 2r is a reproduction and holdout1 is never gated, so neither is a gate result",
+      "S_min": 418,
+      "classes": {
+       "ref-x86-64": "PASS",
+       "ci-aarch64": "PASS"
+      },
+      "run1": "FAIL (S = 431 clears 418; four unexplained F-OTHER-ROOT fail the gate term); the record stands (R-087)"
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A31",
+   "description": "Per-case rates, classes, branch census, Clopper\u2013Pearson bounds, numerical and cost reports exist and recompute from the records.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w31_runs.py::test_a99c_a31_every_committed_report_recomputes_byte_for_byte",
+      "tests/test_t06_w6_ensemble.py::test_a31_a66_per_case_counts_and_both_bounds_recompute_from_the_records",
+      "tests/test_t06_w6_ensemble.py::test_a31_the_clopper_pearson_bound_is_the_twins_table"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "benchmarks/t06/ensemble/runs/run2r-ref-x86-64.report.txt": {
+      "recomputes_byte_for_byte": true
+     },
+     "benchmarks/t06/ensemble/runs/run2r-ci-x86-64.report.txt": {
+      "recomputes_byte_for_byte": true
+     },
+     "benchmarks/t06/ensemble/runs/run2r-ci-aarch64.report.txt": {
+      "recomputes_byte_for_byte": true
+     },
+     "benchmarks/t06/ensemble/runs/holdout1-ref-x86-64.report.txt": {
+      "recomputes_byte_for_byte": true
+     },
+     "benchmarks/t06/ensemble/runs/holdout1-ci-x86-64.report.txt": {
+      "recomputes_byte_for_byte": true
+     },
+     "benchmarks/t06/ensemble/runs/holdout1-ci-aarch64.report.txt": {
+      "recomputes_byte_for_byte": true
+     },
+     "benchmarks/t06/ensemble/runs/judged/run2-ref-x86-64.report.txt": {
+      "recomputes_byte_for_byte": true,
+      "a90_line_appended_since": true
+     },
+     "per_case_sums": {
+      "run1@ref-x86-64": true,
+      "run2@ref-x86-64": true,
+      "run2@ci-x86-64": true,
+      "run2@ci-aarch64": true,
+      "run2r@ref-x86-64": true,
+      "run2r@ci-x86-64": true,
+      "run2r@ci-aarch64": true,
+      "holdout1@ref-x86-64": true,
+      "holdout1@ci-x86-64": true,
+      "holdout1@ci-aarch64": true
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A32",
+   "description": "At every certified ensemble state and every certificate the corpus issues, the estimate is at most the exact `\u2016\u0134\u207b\u00b9\u2016\u2081` \u00d7 (1 + 1e-12), and the status decided with the exact norm equals the recorded one.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_a32.py::test_a32_the_estimate_is_a_lower_bound_and_the_exact_norm_decides_alike",
+      "tests/test_t06_w6_ensemble.py::test_a36_a32_a33_a_smoke_start_records_its_times_counters_and_checks"
+     ],
+     "nodes": 51,
+     "outcomes": {
+      "passed": 51
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "run1@ref-x86-64": {
+      "matrices": 437,
+      "ratio": {
+       "median": 1.0,
+       "p95": 1.0000000000000029,
+       "max": 1.0000000000000098,
+       "n": 437
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "run2@ref-x86-64": {
+      "matrices": 437,
+      "ratio": {
+       "median": 0.9999999999999999,
+       "p95": 1.0000000000000029,
+       "max": 1.0000000000000098,
+       "n": 437
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "run2@ci-x86-64": {
+      "matrices": 437,
+      "ratio": {
+       "median": 0.9999999999999999,
+       "p95": 1.0000000000000029,
+       "max": 1.0000000000000098,
+       "n": 437
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "run2@ci-aarch64": {
+      "matrices": 436,
+      "ratio": {
+       "median": 1.0,
+       "p95": 1.0000000000000018,
+       "max": 1.000000000000012,
+       "n": 436
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "run2r@ref-x86-64": {
+      "matrices": 437,
+      "ratio": {
+       "median": 0.9999999999999999,
+       "p95": 1.0000000000000029,
+       "max": 1.0000000000000098,
+       "n": 437
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "run2r@ci-x86-64": {
+      "matrices": 437,
+      "ratio": {
+       "median": 0.9999999999999999,
+       "p95": 1.0000000000000029,
+       "max": 1.0000000000000098,
+       "n": 437
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "run2r@ci-aarch64": {
+      "matrices": 436,
+      "ratio": {
+       "median": 1.0,
+       "p95": 1.0000000000000018,
+       "max": 1.000000000000012,
+       "n": 436
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "holdout1@ref-x86-64": {
+      "matrices": 438,
+      "ratio": {
+       "median": 0.9999999999999999,
+       "p95": 1.0000000000000022,
+       "max": 1.000000000000014,
+       "n": 438
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "holdout1@ci-x86-64": {
+      "matrices": 438,
+      "ratio": {
+       "median": 0.9999999999999999,
+       "p95": 1.0000000000000022,
+       "max": 1.000000000000014,
+       "n": 438
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     },
+     "holdout1@ci-aarch64": {
+      "matrices": 438,
+      "ratio": {
+       "median": 1.0,
+       "p95": 1.0000000000000013,
+       "max": 1.0000000000000118,
+       "n": 438
+      },
+      "not_lower": 0,
+      "disagreements": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A33",
+   "description": "Every certificate in the corpus and the ensemble carries the three statements and the shared-provider qualification on exactly the prefixed checks whose result is `pass` or `fail`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w22_a33.py::test_a33_a4_fails_an_entry_on_a_not_applicable_check",
+      "tests/test_t06_w22_a33.py::test_a33_a4_fails_an_evaluated_prefixed_check_without_an_entry",
+      "tests/test_t06_w22_a33.py::test_a33_a4_holds_where_a_prefixed_check_does_not_apply",
+      "tests/test_t06_w6_ensemble.py::test_a36_a32_a33_a_smoke_start_records_its_times_counters_and_checks"
+     ],
+     "nodes": 10,
+     "outcomes": {
+      "passed": 10
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "a33_failures": {
+      "run1@ref-x86-64": 137,
+      "run2@ref-x86-64": 0,
+      "run2@ci-x86-64": 0,
+      "run2@ci-aarch64": 0,
+      "run2r@ref-x86-64": 0,
+      "run2r@ci-x86-64": 0,
+      "run2r@ci-aarch64": 0,
+      "holdout1@ref-x86-64": 0,
+      "holdout1@ci-x86-64": 0,
+      "holdout1@ci-aarch64": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A34",
+   "description": "Replay of the first start of every case and of every retained failure on the same machine class: `MATCH` on every field.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w31_runs.py::test_a98d_a34_every_replay_matches_and_covers_the_first_starts_and_failures",
+      "tests/test_t06_w6_ensemble.py::test_a34_a_replayed_start_matches_its_record"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "benchmarks/t06/ensemble/runs/judged/run2-ref-x86-64.replay.txt": {
+      "replayed": 28,
+      "all_match": true,
+      "first_starts_and_failures": true,
+      "other_lines": 340
+     },
+     "benchmarks/t06/ensemble/runs/run2r-ref-x86-64.replay.txt": {
+      "replayed": 28,
+      "all_match": true,
+      "first_starts_and_failures": true,
+      "other_lines": 0
+     },
+     "benchmarks/t06/ensemble/runs/run2r-ci-x86-64.replay.txt": {
+      "replayed": 28,
+      "all_match": true,
+      "first_starts_and_failures": true,
+      "other_lines": 0
+     },
+     "benchmarks/t06/ensemble/runs/run2r-ci-aarch64.replay.txt": {
+      "replayed": 28,
+      "all_match": true,
+      "first_starts_and_failures": true,
+      "other_lines": 0
+     },
+     "benchmarks/t06/ensemble/runs/holdout1-ref-x86-64.replay.txt": {
+      "replayed": 26,
+      "all_match": true,
+      "first_starts_and_failures": true,
+      "other_lines": 0
+     },
+     "benchmarks/t06/ensemble/runs/holdout1-ci-x86-64.replay.txt": {
+      "replayed": 26,
+      "all_match": true,
+      "first_starts_and_failures": true,
+      "other_lines": 0
+     },
+     "benchmarks/t06/ensemble/runs/holdout1-ci-aarch64.replay.txt": {
+      "replayed": 26,
+      "all_match": true,
+      "first_starts_and_failures": true,
+      "other_lines": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A35",
+   "description": "Cross-platform per-start classification disagreements are counted and listed (reported).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w31_runs.py::test_a99c_a35_the_committed_comparison_recomputes"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "run2@ref-x86-64 vs run2@ci-x86-64": {
+      "classification": [],
+      "rescue_status": [],
+      "final_states_differing_bitwise": 0
+     },
+     "run2@ref-x86-64 vs run2@ci-aarch64": {
+      "classification": [
+       "THM-09 03: F-FALSE-SUCCESS-CAUGHT vs F-BUDGET"
+      ],
+      "rescue_status": [
+       "STA-02 00",
+       "STA-02 02",
+       "STA-02 17"
+      ],
+      "final_states_differing_bitwise": 216
+     },
+     "run2@ci-x86-64 vs run2@ci-aarch64": {
+      "classification": [
+       "THM-09 03: F-FALSE-SUCCESS-CAUGHT vs F-BUDGET"
+      ],
+      "rescue_status": [
+       "STA-02 00",
+       "STA-02 02",
+       "STA-02 17"
+      ],
+      "final_states_differing_bitwise": 216
+     },
+     "run2r@ref-x86-64 vs run2r@ci-x86-64": {
+      "classification": [],
+      "rescue_status": [],
+      "final_states_differing_bitwise": 0
+     },
+     "run2r@ref-x86-64 vs run2r@ci-aarch64": {
+      "classification": [
+       "THM-09 03: F-FALSE-SUCCESS-CAUGHT vs F-BUDGET"
+      ],
+      "rescue_status": [
+       "STA-02 00",
+       "STA-02 02",
+       "STA-02 17"
+      ],
+      "final_states_differing_bitwise": 216
+     },
+     "run2r@ci-x86-64 vs run2r@ci-aarch64": {
+      "classification": [
+       "THM-09 03: F-FALSE-SUCCESS-CAUGHT vs F-BUDGET"
+      ],
+      "rescue_status": [
+       "STA-02 00",
+       "STA-02 02",
+       "STA-02 17"
+      ],
+      "final_states_differing_bitwise": 216
+     },
+     "run2r.compare.txt recomputes": true,
+     "holdout1@ref-x86-64 vs holdout1@ci-x86-64": {
+      "classification": [],
+      "rescue_status": [],
+      "final_states_differing_bitwise": 0
+     },
+     "holdout1@ref-x86-64 vs holdout1@ci-aarch64": {
+      "classification": [
+       "THM-09 31: F-FALSE-SUCCESS-CAUGHT vs SUCCESS",
+       "THM-09 34: SUCCESS vs F-BUDGET",
+       "THM-09 35: F-BUDGET vs SUCCESS",
+       "THM-09 37: SUCCESS vs F-FALSE-SUCCESS-CAUGHT"
+      ],
+      "rescue_status": [
+       "STA-01 22",
+       "STA-02 22",
+       "STA-02 27",
+       "STA-02 30",
+       "STA-02 38"
+      ],
+      "final_states_differing_bitwise": 212
+     },
+     "holdout1@ci-x86-64 vs holdout1@ci-aarch64": {
+      "classification": [
+       "THM-09 31: F-FALSE-SUCCESS-CAUGHT vs SUCCESS",
+       "THM-09 34: SUCCESS vs F-BUDGET",
+       "THM-09 35: F-BUDGET vs SUCCESS",
+       "THM-09 37: SUCCESS vs F-FALSE-SUCCESS-CAUGHT"
+      ],
+      "rescue_status": [
+       "STA-01 22",
+       "STA-02 22",
+       "STA-02 27",
+       "STA-02 30",
+       "STA-02 38"
+      ],
+      "final_states_differing_bitwise": 212
+     },
+     "holdout1.compare.txt recomputes": true
+    }
+   }
+  },
+  {
+   "id": "T06.A36",
+   "description": "Every start's four wall times and counters are recorded; the ceiling is 60 s.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_ensemble.py::test_a36_a32_a33_a_smoke_start_records_its_times_counters_and_checks"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "run1@ref-x86-64": {
+      "recorded": true,
+      "max_total_s": 0.38097890093922615
+     },
+     "run2@ref-x86-64": {
+      "recorded": true,
+      "max_total_s": 0.3630453459918499
+     },
+     "run2@ci-x86-64": {
+      "recorded": true,
+      "max_total_s": 0.6607516520000161
+     },
+     "run2@ci-aarch64": {
+      "recorded": true,
+      "max_total_s": 0.5016874320000113
+     },
+     "run2r@ref-x86-64": {
+      "recorded": true,
+      "max_total_s": 0.5750704389065504
+     },
+     "run2r@ci-x86-64": {
+      "recorded": true,
+      "max_total_s": 0.6930927209999709
+     },
+     "run2r@ci-aarch64": {
+      "recorded": true,
+      "max_total_s": 0.5127292699999941
+     },
+     "holdout1@ref-x86-64": {
+      "recorded": true,
+      "max_total_s": 0.5629440322518349
+     },
+     "holdout1@ci-x86-64": {
+      "recorded": true,
+      "max_total_s": 0.7457933250000224
+     },
+     "holdout1@ci-aarch64": {
+      "recorded": true,
+      "max_total_s": 0.5576622439999994
+     },
+     "ceiling_s": 60.0
+    }
+   }
+  },
+  {
+   "id": "T06.A37",
+   "description": "Two screens of one matrix with arbitrary `np.random` use between them give bit-identical `rcond\u2081` and `b`; the global state is restored.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w3_regularity.py::test_a37_a38_a_certificate_is_a_function_of_its_solve_alone",
+      "tests/test_t06_w3_regularity.py::test_a37_the_bound_is_the_same_estimate_times_the_residual",
+      "tests/test_t06_w3_regularity.py::test_a37_the_callers_random_state_is_unchanged",
+      "tests/test_t06_w3_regularity.py::test_a37_two_screens_with_random_use_between_them_agree_bit_for_bit"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A38",
+   "description": "After W3 every registered certificate's verdict, regularity status and check ids are unchanged; `rcond\u2081` and `b` within M5's 20-seed spread.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w3_regularity.py::test_a37_a38_a_certificate_is_a_function_of_its_solve_alone"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "record": "the 20-seed spread is M5's (`docs/t06-measurements.md`); the gate's test re-derives the certificate as a function of its solve alone"
+   }
+  },
+  {
+   "id": "T06.A39",
+   "description": "NET-11 after W2: `VERIFIED` at the twin (S3's allowances).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w2_verifier.py::test_a39_net11_is_verified_at_the_twin",
+      "tests/test_t06_w2_verifier.py::test_a39_only_s4p_moves_down_and_its_alias_certificate_passes",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root"
+     ],
+     "nodes": 25,
+     "outcomes": {
+      "passed": 25
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A40",
+   "description": "A constructed state where both pressure shifts leave the domain: alias certificate `unsupported(pressure_shift_outside_domain)`, `UNVERIFIED`, no exception.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w2_verifier.py::test_a40_both_directions_out_is_unsupported_and_unverified",
+      "tests/test_t06_w2_verifier.py::test_a40_distinct_pressures_that_coincide_after_the_shift_are_not_generic",
+      "tests/test_t06_w2_verifier.py::test_a40_the_construction_puts_a_pressure_out_of_reach_both_ways"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A41",
+   "description": "After W2 every registered certificate is bit-identical (the shift is up at every registered pressure column).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k03_schemas.py::test_the_fixtures_are_what_the_code_emits_today",
+      "tests/test_k04_schemas.py::test_a31_the_fixtures_are_what_the_verifier_emits_today",
+      "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_are_what_the_code_emits_today"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "record": "W2's inertness (every registered certificate bit-identical) is the W2 commit's own measurement, recorded in its message; here the registered certificate fixtures are what the verifier emits today"
+   }
+  },
+  {
+   "id": "T06.A42",
+   "description": "A witness stencil point outside the domain: `derivative_witness` `unsupported`, `UNVERIFIED`, no exception.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w2_verifier.py::test_a42_a_stencil_outside_the_domain_is_unsupported_and_unverified",
+      "tests/test_t06_w2_verifier.py::test_a42_the_stencil_leaves_the_domain"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A43",
+   "description": "`DIM-01` and `COMP-03` pass on every registered revision; every registered revision's status unchanged.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w1a_units.py::test_comp03_reads_component_keyed_parameter_names",
+      "tests/test_t06_w1a_units.py::test_str06_component_references_are_checked"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "benchmarks/syn001/cases/SYN-001-A02-340-two-phase-guess.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-352-vapor-guess-410.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-355-dew-guess-377.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-355-dew-guess.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-355-liquid-guess.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-355.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-360-liquid-guess.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-360-no-guess.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-360-vapor-guess.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-360.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-A02-365.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-all-liquid-310K.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-all-vapor-420K.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-conflicting-heater-spec.yaml": {
+      "status": "INVALID",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-high-recycle.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-nominal.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/syn001/cases/SYN-001-once-through.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t05/cases/SYN-001-UL-C1.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t05/cases/SYN-001-UL-C2.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t05/cases/SYN-001-UL-C3.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t05/cases/SYN-001-UL-C3X.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-NET02.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-NET03.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-NET06.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-NET09.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-NET10.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-NET11.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-PC2.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-REF01.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-REF02.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-REF03.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-REF04.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-REF05.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-REF06.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-REF07.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-STA02.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-STA03-degC.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-STA03-kgs.yaml": {
+      "status": "READY_FOR_SIMULATION",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-STA04.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-STR02.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-STR06.yaml": {
+      "status": "INVALID",
+      "DIM-01": "PASS",
+      "COMP-03": "FAIL"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-THM01.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-THM02.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "benchmarks/t06/cases/SYN-001-T06-THM10.yaml": {
+      "status": "DRAFT",
+      "DIM-01": "PASS",
+      "COMP-03": "PASS"
+     },
+     "statuses_asserted": {
+      "SYN-001-nominal.yaml": "READY_FOR_SIMULATION",
+      "SYN-001-conflicting-heater-spec.yaml": "INVALID",
+      "SYN-001-T06-STR02.yaml": "DRAFT",
+      "SYN-001-T06-STR06.yaml": "INVALID",
+      "SYN-001-T06-STA03-kgs.yaml": "READY_FOR_SIMULATION",
+      "SYN-001-T06-STA03-degC.yaml": "READY_FOR_SIMULATION",
+      "SYN-001-T06-STA04.yaml": "DRAFT"
+     },
+     "statuses_recorded_only": "every other file's status is recorded, not compared: the pre-W1 baseline (spec \u00a72, M3) covers the corpus cases only"
+    }
+   }
+  },
+  {
+   "id": "T06.A44",
+   "description": "The `t02`\u2026`t05b` identity keys and the structural hash unchanged since ADR 0017's re-baseline (which moved them by substitution only, A78\u2013A79).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k03_schemas.py::test_the_fixtures_are_what_the_code_emits_today",
+      "tests/test_k04_schemas.py::test_a31_the_fixtures_are_what_the_verifier_emits_today",
+      "tests/test_k05_schemas.py::test_the_fixtures_are_what_a_real_run_emits_today",
+      "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_are_what_the_code_emits_today"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "measured": {
+      "t02": "0b75311abed11b504fbac422a7851459d7c90a499e86c7fd3d409e1afc1fcf8d",
+      "t03": "1b8a5b2e8b60637c39f1cd81ccded92b6112f5574b6d0ffee0c15f53e293e666",
+      "t04": "c0b9bee7a1961175af052153b115d98413d100bde71d4031ba0dc6ec4ed9b142",
+      "t05": "24199c7efe863ae3b17d3033b29ca8da54e76e4bac6a6540931596aab0c5be1f",
+      "t05b": "3f2feee21d5b241743c6f237ffee09a34e4d7fd229be5c972a9619ee5511be47",
+      "t06": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d",
+      "structural_sha256": "915c97e82551c75c588ec4a4e41b060241d75e037366c099c285493165a97e27",
+      "artifact_r0_sha256": "77508d4ac3373f523f87c89ba83841173f94ba12c608deb3c8ab83053576471d",
+      "document_without_t06": "00ff5a9ab5f3d7431ae5d553a8305ea1d4edd2d9ddb70bb7dfa31c6b751bd475",
+      "document": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc"
+     },
+     "equal_to_the_registered": {
+      "t02": true,
+      "t03": true,
+      "t04": true,
+      "t05": true,
+      "t05b": true,
+      "structural_sha256": true,
+      "artifact_r0_sha256": true,
+      "document_without_t06": true
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A45",
+   "description": "The `t06` identity key is equal on x86-64 and aarch64.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_identity.py::test_the_ensemble_definition_is_the_registered_one",
+      "tests/test_t06_identity.py::test_the_key_carries_the_registered_records",
+      "tests/test_t06_identity.py::test_the_key_is_floats_free_and_deterministic"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "ci_run": 36277919626,
+     "ci_head": "327d4d2101ac1dae31c51d9020acec7bef81cee0",
+     "ci_identity_job": "success",
+     "src_changed_since_ci_head": [],
+     "platforms": [
+      "structural-identity-ubuntu-24.04-arm",
+      "structural-identity-ubuntu-latest"
+     ],
+     "document": {
+      "structural-identity-ubuntu-24.04-arm": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc",
+      "structural-identity-ubuntu-latest": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc"
+     },
+     "t06_key": {
+      "structural-identity-ubuntu-24.04-arm": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d",
+      "structural-identity-ubuntu-latest": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d"
+     },
+     "local_document": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc",
+     "local_t06_key": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d",
+     "all_equal": true,
+     "t06_key_registered_at_w18": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d"
+    }
+   }
+  },
+  {
+   "id": "T06.A46",
+   "description": "TRI-16/32/64 and SQ-0/1/2 unchanged after W3, as K04 \u00a77.6.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k04_regularity.py::test_a23_one_construction_three_statuses_and_a_useless_u_diagonal",
+      "tests/test_k04_regularity.py::test_a24_an_exactly_singular_matrix_is_rank_deficient_not_a_crash",
+      "tests/test_k04_regularity.py::test_a25_the_bound_is_recorded_and_the_verdict_is_verified",
+      "tests/test_k04_regularity.py::test_a34_a_tolerance_tight_enough_trips_the_absolute_limit"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "record": "K04 \u00a77.6's registrations, asserted by K04's tests, run here"
+   }
+  },
+  {
+   "id": "T06.A47",
+   "description": "Our side of REF-01\u2026REF-08: `VERIFIED` at the twin within \u00a79.4's tolerance / 10.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a47_our_side_is_verified_at_the_twin_within_a_tenth_of_the_tolerance"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "worst_ours_vs_twin_ratio": {
+      "REF-01": 0.0,
+      "REF-02": 1.6597510373443984e-10,
+      "REF-03": 3.935990944936534e-08,
+      "REF-04": 2.4296740416304005e-10,
+      "REF-05": 2.4815616369570674e-09,
+      "REF-06": 8.602476558493292e-11,
+      "REF-07": 1.0989010989010989e-10,
+      "REF-08": 7.52039080889362e-10
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A48",
+   "description": "The tool environments reproduce `docs/reference-environments.md` \u00a73's fingerprints.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a48_every_record_ran_in_the_documented_environment",
+      "tests/test_t06_w8_references.py::test_a48_the_expected_fingerprint_is_the_documented_one"
+     ],
+     "nodes": 21,
+     "outcomes": {
+      "passed": 21
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A49",
+   "description": "Every tool record carries \u00a79.3's settings and mappings (IDAES `constr_viol_tol`, `mumps`, SmoothVLE \u03b5 = 1e-8 K; DWSIM `LegacyMode`; REF-08's guess).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a49_dwsim_settings_and_mappings_are_the_registered_ones",
+      "tests/test_t06_w8_references.py::test_a49_idaes_settings_are_the_registered_ones",
+      "tests/test_t06_w8_references.py::test_a49_the_recycle_guess_and_the_pc2_feed_are_the_registered_ones"
+     ],
+     "nodes": 21,
+     "outcomes": {
+      "passed": 21
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A50",
+   "description": "(a) `comparison.json` recomputes byte for byte from the committed tool and our-side records and the twin; (b) each committed `ours-*.json` equals a live solve: non-floats exact, floats to 1e-12 relative, no field exempt, no `certificate_sha256`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a50_adding_or_editing_any_field_of_a_committed_record_fails",
+      "tests/test_t06_w8_references.py::test_a50_our_committed_record_is_what_a_live_solve_produces",
+      "tests/test_t06_w8_references.py::test_a50_the_committed_files_are_the_hashed_ones",
+      "tests/test_t06_w8_references.py::test_a50_the_table_recomputes_identically_from_the_committed_json",
+      "tests/test_t06_w8_references.py::test_a50s_roundoff_bound_still_catches_a_real_change"
+     ],
+     "nodes": 17,
+     "outcomes": {
+      "passed": 17
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A51",
+   "description": "PC-1 (DWSIM) and PC-2 (DWSIM, IDAES) classify `DISAGREE`; (PC-1, IDAES) `not_applicable`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a51_each_control_moves_its_quantity_by_the_predicted_effect",
+      "tests/test_t06_w8_references.py::test_a51_the_positive_controls_disagree"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "classifications": {
+      "PC-1/DWSIM": "DISAGREE",
+      "PC-1/IDAES": "not_applicable",
+      "PC-2/DWSIM": "DISAGREE",
+      "PC-2/IDAES": "DISAGREE"
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A52",
+   "description": "The tool scripts import neither `process_runtime` nor the twin's output.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a52_the_tool_scripts_read_neither_our_results_nor_the_twin"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A53",
+   "description": "V16's two counts computed from the verdicts.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a53_v16_counts_are_computed_from_the_classifications"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "compared_by_at_least_one_tool": 8,
+     "compared_by_both_tools": 8,
+     "of": 8,
+     "committed_v16_counts_equal": true
+    }
+   }
+  },
+  {
+   "id": "T06.A54",
+   "description": "Every verdict carries its reason; every `NOT_COMPARABLE` names access or science.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a54_every_classification_carries_its_reason"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "rows": 29,
+     "without_reason": [],
+     "not_comparable_unnamed": [],
+     "categories": [
+      "semantics"
+     ]
+    }
+   }
+  },
+  {
+   "id": "T06.A55",
+   "description": "STA-03 on the legacy path, each variant: `READY_FOR_SIMULATION`, the conversion recorded, the bound flowsheet and the tear solve and certificate byte-identical to SYN-001-nominal's.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w1a_units.py::test_a55_the_legacy_binding_reads_nominal_bit_for_bit",
+      "tests/test_t06_w1a_units.py::test_a55_the_tear_solve_and_certificate_are_nominals",
+      "tests/test_t06_w1a_units.py::test_a55_validation_records_the_conversion",
+      "tests/test_t06_w1a_units.py::test_a56_the_revision_solve_and_certificate_are_nominals",
+      "tests/test_t06_w1a_units.py::test_a57_an_unconverted_unit_or_kind_is_refused",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root"
+     ],
+     "nodes": 34,
+     "outcomes": {
+      "passed": 34
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A56",
+   "description": "STA-03 on the revision path and `verify_bound`'s read: binding, trace and certificate byte-identical to SYN-001-nominal's; the R3 control.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w1a_units.py::test_a55_the_tear_solve_and_certificate_are_nominals",
+      "tests/test_t06_w1a_units.py::test_a55_validation_records_the_conversion",
+      "tests/test_t06_w1a_units.py::test_a56_control_verify_bound_reads_the_converted_values",
+      "tests/test_t06_w1a_units.py::test_a56_the_revision_binding_reads_nominal_bit_for_bit",
+      "tests/test_t06_w1a_units.py::test_a56_the_revision_solve_and_certificate_are_nominals",
+      "tests/test_t06_w1a_units.py::test_a57_an_unconverted_unit_or_kind_is_refused",
+      "tests/test_t06_w1a_units.py::test_sta03_and_the_a56_control_take_v1s_values_under_v2",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root"
+     ],
+     "nodes": 36,
+     "outcomes": {
+      "passed": 36
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A57",
+   "description": "STA-03's negative and alternate encodings: unconverted units and kinds refused typed; `mass_flow` converts as A55.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w1a_units.py::test_a55_the_tear_solve_and_certificate_are_nominals",
+      "tests/test_t06_w1a_units.py::test_a55_validation_records_the_conversion",
+      "tests/test_t06_w1a_units.py::test_a56_the_revision_solve_and_certificate_are_nominals",
+      "tests/test_t06_w1a_units.py::test_a57_an_unconverted_unit_or_kind_is_refused",
+      "tests/test_t06_w1a_units.py::test_a57_the_mass_flow_kind_converts_exactly_as_the_fixture",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root"
+     ],
+     "nodes": 33,
+     "outcomes": {
+      "passed": 33
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A58",
+   "description": "`unit-conversion-v1`'s known answers \u2014 superseded by A67 (W12 replaced v1).",
+   "result": "not_applicable",
+   "value": {
+    "reason": "superseded by A67 when W12 replaced `unit-conversion-v1` with `unit-conversion-v2` (T06 spec \u00a713, A58's row; ADR 0016); v1's known answers are A67's `v1_known_answers_under_v2`"
+   }
+  },
+  {
+   "id": "T06.A59",
+   "description": "STA-04 binds and solves byte-identically to C2 under `T05b-v2` and `T06-revision-v1`; `VERIFIED`; `validate()` `DRAFT`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w1b_order.py::test_a59_sta04_binds_as_c2",
+      "tests/test_t06_w1b_order.py::test_a59_sta04_solves_and_certifies_as_c2",
+      "tests/test_t06_w1b_order.py::test_a59_sta04_validation_is_unchanged",
+      "tests/test_t06_w1b_order.py::test_a60_every_order_of_c2_is_c2",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root"
+     ],
+     "nodes": 32,
+     "outcomes": {
+      "passed": 32
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A60",
+   "description": "All six orders of C2's components solve byte-identically to C2; malformed lists refused `components_unsupported`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w1b_order.py::test_a59_sta04_solves_and_certifies_as_c2",
+      "tests/test_t06_w1b_order.py::test_a60_a_non_permutation_is_refused_by_both_bindings",
+      "tests/test_t06_w1b_order.py::test_a60_every_order_of_c2_is_c2",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root"
+     ],
+     "nodes": 34,
+     "outcomes": {
+      "passed": 34
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A61",
+   "description": "Legacy permutation: SYN-001-nominal with `[C, A, B]` and `[B, A, C]` validates, binds, solves and certifies byte-identically to nominal's.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w1b_order.py::test_a61_a_permuted_syn001_revision_solves_as_nominal"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A62",
+   "description": "\u00a78.7: SYN-001-nominal's feed at 450, 279 and 400 K: `INITIALIZATION_FAILED`, typed message, no exception.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w11_initializer.py::test_a62_the_tear_path_returns_initialization_failed"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A63",
+   "description": "NET-02's edge-off control under `T05b-v2` and `T05-W13`: `BOUND_BLOCKED` at iteration 1, `eo_recovery: unsupported`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_f4_edge3.py::test_g1_net02_is_solved_through_the_restart_and_certified",
+      "tests/test_t06_f4_edge3.py::test_g2_the_edge_off_control_is_unchanged",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root",
+      "tests/test_t06_w5_corpus.py::test_a02_net02_takes_its_registered_items",
+      "tests/test_t06_w5_corpus.py::test_a63_net02s_control_meets_its_registration"
+     ],
+     "nodes": 30,
+     "outcomes": {
+      "passed": 30
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A64",
+   "description": "NET-02 under the revision policy: `CONVERGED` through the restart, `VERIFIED`, within S3's allowances.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_f4_edge3.py::test_g1_net02_is_solved_through_the_restart_and_certified",
+      "tests/test_t06_f4_edge3.py::test_g2_the_edge_off_control_is_unchanged",
+      "tests/test_t06_w5_corpus.py::test_a02_every_revision_case_is_verified_at_its_registered_root",
+      "tests/test_t06_w5_corpus.py::test_a02_net02_takes_its_registered_items",
+      "tests/test_t06_w5_corpus.py::test_a63_net02s_control_meets_its_registration"
+     ],
+     "nodes": 30,
+     "outcomes": {
+      "passed": 30
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A65",
+   "description": "`T06-revision-v1` differs from `T05b-v2` in exactly `policy_id` and `globalization.eo_recovery`; its hash is in the manifest and the `t06` key.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_f4_policy.py::test_wo6_the_revision_policy_differs_from_t05b_v2_in_exactly_two_fields",
+      "tests/test_t06_f4_policy.py::test_wo6_the_revision_policy_document_is_schema_valid_and_differs_in_two_values",
+      "tests/test_t06_w4_registry.py::test_every_registered_policy_is_the_constructed_one"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A66",
+   "description": "Rescued starts: per case `s_first + s_rescued = s`, rescued iff `eo_recovery: taken` with the restart's provenance; both counts and both bounds reported.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_ensemble.py::test_a31_a66_per_case_counts_and_both_bounds_recompute_from_the_records",
+      "tests/test_t06_w6_ensemble.py::test_a66_a_start_is_rescued_iff_the_edge_was_taken_and_the_restart_opened_an_item"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "run1@ref-x86-64": {
+      "S_rescued": 64,
+      "recounted": 64,
+      "sums": true
+     },
+     "run2@ref-x86-64": {
+      "S_rescued": 64,
+      "recounted": 64,
+      "sums": true
+     },
+     "run2@ci-x86-64": {
+      "S_rescued": 64,
+      "recounted": 64,
+      "sums": true
+     },
+     "run2@ci-aarch64": {
+      "S_rescued": 67,
+      "recounted": 67,
+      "sums": true
+     },
+     "run2r@ref-x86-64": {
+      "S_rescued": 64,
+      "recounted": 64,
+      "sums": true
+     },
+     "run2r@ci-x86-64": {
+      "S_rescued": 64,
+      "recounted": 64,
+      "sums": true
+     },
+     "run2r@ci-aarch64": {
+      "S_rescued": 67,
+      "recounted": 67,
+      "sums": true
+     },
+     "holdout1@ref-x86-64": {
+      "S_rescued": 72,
+      "recounted": 72,
+      "sums": true
+     },
+     "holdout1@ci-x86-64": {
+      "S_rescued": 72,
+      "recounted": 72,
+      "sums": true
+     },
+     "holdout1@ci-aarch64": {
+      "S_rescued": 69,
+      "recounted": 69,
+      "sums": true
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A67",
+   "description": "`unit-conversion-v2`'s known answers, bit for bit.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w12_units_v2.py::test_a67_a_negative_zero_converts_to_positive_zero",
+      "tests/test_t06_w12_units_v2.py::test_a67_every_row_known_answer",
+      "tests/test_t06_w12_units_v2.py::test_a67_every_spelling_of_one_quantity_binds_to_one_double",
+      "tests/test_t06_w12_units_v2.py::test_a67_the_synthetic_masses_separate_the_components",
+      "tests/test_t06_w12_units_v2.py::test_a67_the_table_is_the_registered_one",
+      "tests/test_t06_w12_units_v2.py::test_a67_v1_known_answers_take_the_decimals_value"
+     ],
+     "nodes": 40,
+     "outcomes": {
+      "passed": 40
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A68",
+   "description": "Unit, kind and value refusals, typed through `validate()` and both bindings; no compile, no solve.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w12_units_v2.py::test_a68_a_refusal_through_every_reader",
+      "tests/test_t06_w12_units_v2.py::test_a68_every_registered_refusal_in_the_pure_function",
+      "tests/test_t06_w12_units_v2.py::test_a68_percent_on_a_stoichiometric_coefficient_is_refused"
+     ],
+     "nodes": 33,
+     "outcomes": {
+      "passed": 33
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A69",
+   "description": "Metamorphic pairs on the tear path bind to SYN-001-nominal bit for bit; the solves and certificates byte-identical; the R3 control.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w12_units_v2.py::test_a69_control_verify_bound_reads_the_converted_value",
+      "tests/test_t06_w12_units_v2.py::test_a69_the_legacy_binding_reads_nominal_bit_for_bit",
+      "tests/test_t06_w12_units_v2.py::test_a69_the_tear_solve_and_certificate_are_nominals"
+     ],
+     "nodes": 13,
+     "outcomes": {
+      "passed": 13
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A70",
+   "description": "Metamorphic pairs on the revision path bind to their SI twins bit for bit; the exactly five differing twins; the C3 `61 %` and C1 `180 kPa` solves.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w12_units_v2.py::test_a70_each_of_the_five_si_twins_moves_constants_sha256",
+      "tests/test_t06_w12_units_v2.py::test_a70_the_binary_reading_would_break_a_pair",
+      "tests/test_t06_w12_units_v2.py::test_a70_the_revision_binding_reads_the_twin_bit_for_bit",
+      "tests/test_t06_w12_units_v2.py::test_a70_the_revision_solve_and_certificate_are_the_twins"
+     ],
+     "nodes": 19,
+     "outcomes": {
+      "passed": 19
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A71",
+   "description": "A nonzero pressure drop: (a) C2 binds; (b) C2 refused at planning; (c) NET-06 solves with `S3.P = S4.P = S5.P = 97 500 Pa`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w12_units_v2.py::test_a71a_a_nonzero_pressure_drop_in_kpa_binds_as_its_pa_twin",
+      "tests/test_t06_w12_units_v2.py::test_a71b_c2_refuses_any_nonzero_reactor_drop_before_a_solve",
+      "tests/test_t06_w12_units_v2.py::test_a71c_a_nonzero_flash_drop_in_a_recycle_binds_alike_in_either_unit",
+      "tests/test_t06_w12_units_v2.py::test_a71c_the_drop_is_solved_and_certified_alike_in_either_unit"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A72",
+   "description": "Reader rules: STR-06's diagnosis in mass units; C3's specification conflict; converted bounds.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w12_units_v2.py::test_a72a_a_component_outside_the_set_is_judged_before_the_unit",
+      "tests/test_t06_w12_units_v2.py::test_a72b_a_parameter_pinned_twice_is_compared_on_converted_values",
+      "tests/test_t06_w12_units_v2.py::test_a72c_a_parameter_is_checked_as_its_si_twin"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A73",
+   "description": "T05's refusal test after W12: eight cases, eight codes, re-pointed mutations.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w12_units_v2.py::test_a73_a_bar_pin_binds_at_1e10_pa",
+      "tests/test_t06_w12_units_v2.py::test_a73_a_kpa_drop_binds_with_one_record",
+      "tests/test_t06_w12_units_v2.py::test_a73_a_percent_split_now_conflicts"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A74",
+   "description": "`DIM-01`'s message and its record order.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w12_units_v2.py::test_a74_parameters_are_ordered_by_name_not_by_key_order",
+      "tests/test_t06_w12_units_v2.py::test_a74_the_message_lists_specifications_then_parameters"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A75",
+   "description": "ADR 0017: `flash` at the registered saturated states returns the single phase; D1's branch decides.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w13_f6.py::test_a75_a_registered_saturated_state_returns_its_single_phase",
+      "tests/test_t06_w13_f6.py::test_a75_control_d1s_branch_decides_the_registered_states"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A76",
+   "description": "ADR 0017: the seeded re-flash probe (10 000 feeds) returns only `ok`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w13_f6.py::test_a76_every_product_of_a_two_phase_flash_re_flashes_ok"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A77",
+   "description": "ADR 0017: F4's registrations \u2014 C3's restart keeps eight passes; G6 converges for every cyclic case.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_f4_g6.py::test_g6_the_cyclic_registered_cases_are_the_listed_ones",
+      "tests/test_t06_f4_g6.py::test_g6_the_restart_start_converges_to_the_registered_root",
+      "tests/test_t06_f4_restart.py::test_wo3_c3_keeps_all_eight_passes"
+     ],
+     "nodes": 26,
+     "outcomes": {
+      "passed": 26
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A78",
+   "description": "ADR 0017 D3 (1): with the old implementation hash, every identity document is byte-identical to the pre-commit one.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "protocol": "the K05 identity document emitted with `thermo.syn001._implementation_sha256` returning 75c9d5ba\u2026 (A78's hook), compared with A78's table (docs/t06-measurements.md, W13): the pre-ADR-0017 document minus the `t06` key T06 W9 added later",
+     "measured": {
+      "t02": "6a9120139859d763e6cd23b82581089b9e28a1e8bcba5b265d86e90b2093cb28",
+      "t03": "12bdbcdbd92f4209980b21ab3efbe0dda6d4d23c3f12d017586f28114a715d6e",
+      "t04": "bdb5d94aacc9b3d13f868a7340a14936a6e4949e65df454f19fd861c38d541d3",
+      "t05": "ddbd0f7135ee5310a1ce65865fab69b69cafe542851a038086941740360687a3",
+      "t05b": "4f29500e31139133cd2304d848390665ec9c298d55a2a952321df3da11e89c54",
+      "t06": "099e0113f4b97fbbbcb07b41b7515756f5afe485e32cd5072747185168f6ac6b",
+      "structural_sha256": "4ce030cab1e4b4a2402897f480e5194961a1dbe9b8705316ddd4776cbd2d0082",
+      "artifact_r0_sha256": "9285e860c94b605e0b21c5a877ea490107a551110095bdf6ae3b1451c882f6f4",
+      "document_without_t06": "91fac60822ddcebe1a34205fbfca54ab391dba833ef9b2e91671c4efba5cdf06",
+      "document": "60b50a648d314084fc2676a3bb64506f68fa9c27a9b0ba19a0974a02ca189832"
+     },
+     "equal_to_the_registered": {
+      "t02": true,
+      "t03": true,
+      "t04": true,
+      "t05": true,
+      "t05b": true,
+      "structural_sha256": true,
+      "artifact_r0_sha256": true,
+      "document_without_t06": true,
+      "document_without_t06_suffix": true
+     },
+     "not_re_measured": "A78's suite-level half (the full suite under the old hash: 3 678 of 3 681, the three failures F6's own; 662 certificates identical) is the W13 record at `9ede861`"
+    }
+   }
+  },
+  {
+   "id": "T06.A79",
+   "description": "ADR 0017 D3 (2)\u2013(3): with the real hash, every moved value differs only by the substitution; the new digests recorded; the CI identity job equal on x86-64 and aarch64.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k03_schemas.py::test_the_fixtures_are_what_the_code_emits_today",
+      "tests/test_k04_schemas.py::test_a31_the_fixtures_are_what_the_verifier_emits_today",
+      "tests/test_k05_schemas.py::test_the_fixtures_are_what_a_real_run_emits_today",
+      "tests/test_k05_schemas.py::test_the_manifest_fixtures_certificate_hash_is_the_emitted_one",
+      "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_are_what_the_code_emits_today"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "leaves": 57550,
+     "label_occurrences_substituted": 346,
+     "differing_after_substitution": [
+      "/artifact_r0_sha256",
+      "/structural_sha256"
+     ],
+     "digests_equal_to_a79": true,
+     "model_version": "SYN001-fs1-syn001-67e472816d4d-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "ci": {
+      "ci_run": 36277919626,
+      "ci_head": "327d4d2101ac1dae31c51d9020acec7bef81cee0",
+      "ci_identity_job": "success",
+      "src_changed_since_ci_head": [],
+      "platforms": [
+       "structural-identity-ubuntu-24.04-arm",
+       "structural-identity-ubuntu-latest"
+      ],
+      "document": {
+       "structural-identity-ubuntu-24.04-arm": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc",
+       "structural-identity-ubuntu-latest": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc"
+      },
+      "t06_key": {
+       "structural-identity-ubuntu-24.04-arm": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d",
+       "structural-identity-ubuntu-latest": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d"
+      },
+      "local_document": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc",
+      "local_t06_key": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d",
+      "all_equal": true
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A80",
+   "description": "Start arithmetic: every recorded start coordinate equals `x_init + S\u00b7\u03b4` recomputed bit for bit.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w30_holdout.py::test_a23_a80_every_holdout_start_is_its_draws_recomputed_bit_for_bit",
+      "tests/test_t06_w6_generator.py::test_a23_a80_every_start_is_its_draws_recomputed_bit_for_bit"
+     ],
+     "nodes": 44,
+     "outcomes": {
+      "passed": 44
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A81",
+   "description": "R-015: the K03 fixture regeneration's registered difference; the K05 run-manifest fixture regenerates identically.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k03_schemas.py::test_the_fixtures_are_what_the_code_emits_today",
+      "tests/test_k03_schemas.py::test_the_property_counters_are_measurably_not_reproducible",
+      "tests/test_k05_schemas.py::test_the_fixtures_are_what_a_real_run_emits_today",
+      "tests/test_k05_schemas.py::test_the_manifest_fixtures_certificate_hash_is_the_emitted_one"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "record": "(a)'s 44-value difference is W15's record at `b3d9c95` (spec A81 (A3)); (b) is the K05 fixture test, run here"
+   }
+  },
+  {
+   "id": "T06.A82",
+   "description": "VER-02/VER-03: a stale or mismatched identity is refused `INCONCLUSIVE(identity_mismatch)`; the certificate is `UNVERIFIED`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w14_identity.py::test_a82_a_difference_in_any_of_the_four_fields_is_refused",
+      "tests/test_t06_w14_identity.py::test_a82_a_missing_or_incomplete_identity_is_refused",
+      "tests/test_t06_w14_identity.py::test_a82_a_target_identity_without_its_four_fields_is_an_error",
+      "tests/test_t06_w14_identity.py::test_a82_the_certificate_screens_against_the_residuals_identity",
+      "tests/test_t06_w14_identity.py::test_a82_the_refusal_decides_not_the_matrix",
+      "tests/test_t06_w14_identity.py::test_a82_the_refusal_overrides_every_status_the_matrix_would_have",
+      "tests/test_t06_w14_identity.py::test_a82_ver03_a_stale_jacobian_is_refused"
+     ],
+     "nodes": 12,
+     "outcomes": {
+      "passed": 12
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A83",
+   "description": "IDAES SmoothVLE: \u03b5 = 1e-8 K on every block; rule 2b's shift \u2264 1e-7 K; the default-\u03b5 records retained as `NOT_COMPARABLE(semantics)`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w8_references.py::test_a83_every_smooth_vle_block_carries_the_registered_eps",
+      "tests/test_t06_w8_references.py::test_a83_no_committed_row_counts_a_default_eps_record",
+      "tests/test_t06_w8_references.py::test_a83_rule_2b_on_a_saturated_stream_is_eps1_over_2",
+      "tests/test_t06_w8_references.py::test_a83_rule_2b_recomputed_from_each_record_is_within_the_bound",
+      "tests/test_t06_w8_references.py::test_a83_the_default_eps_records_are_retained",
+      "tests/test_t06_w8_references.py::test_a83_the_default_eps_records_keep_the_table_they_produced",
+      "tests/test_t06_w8_references.py::test_a83_the_registered_smoothing_is_the_tool_script_input"
+     ],
+     "nodes": 23,
+     "outcomes": {
+      "passed": 23
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A84",
+   "description": "The report carries \u00a77.4's statement verbatim and the acyclic sentence with 10 cases; `s_first/20` beside `s/20`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w6_ensemble.py::test_a84_a_count_other_than_the_texts_is_reported_as_a_finding",
+      "tests/test_t06_w6_ensemble.py::test_a84_the_report_carries_the_wording_and_the_acyclic_census_from_the_plans",
+      "tests/test_t06_w6_ensemble.py::test_a84_the_statements_are_the_specs_verbatim"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "acyclic": [
+      "STR-01",
+      "STA-01",
+      "STA-05",
+      "NUM-03",
+      "THM-01",
+      "THM-02",
+      "THM-07",
+      "THM-08",
+      "THM-09",
+      "THM-10"
+     ],
+     "benchmarks/t06/ensemble/runs/run2r-ref-x86-64.report.txt": true,
+     "benchmarks/t06/ensemble/runs/run2r-ci-x86-64.report.txt": true,
+     "benchmarks/t06/ensemble/runs/run2r-ci-aarch64.report.txt": true,
+     "benchmarks/t06/ensemble/runs/holdout1-ref-x86-64.report.txt": true,
+     "benchmarks/t06/ensemble/runs/holdout1-ci-x86-64.report.txt": true,
+     "benchmarks/t06/ensemble/runs/holdout1-ci-aarch64.report.txt": true,
+     "benchmarks/t06/ensemble/runs/judged/run2-ref-x86-64.report.txt": true
+    }
+   }
+  },
+  {
+   "id": "T06.A85",
+   "description": "Step 5 at a perturbed start: (a) the premise, (b) the rule, (c) zero perturbation, (d) the regime census.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w30_holdout.py::test_a85a_the_holdouts_margins_are_reported",
+      "tests/test_t06_w30_holdout.py::test_a85b_every_holdout_split_column_is_the_rule_applied_to_its_stream",
+      "tests/test_t06_w6_a85.py::test_a85a_every_published_outlet_stream_is_flowing_and_outside_the_window",
+      "tests/test_t06_w6_a85.py::test_a85a_the_margins_are_the_measured_ones",
+      "tests/test_t06_w6_a85.py::test_a85b_every_published_split_column_is_the_rule_applied_to_its_stream",
+      "tests/test_t06_w6_a85.py::test_a85b_the_rule_covers_the_measured_2800_values",
+      "tests/test_t06_w6_a85.py::test_a85c_the_zero_perturbation_assembly_against_the_traversal_start",
+      "tests/test_t06_w6_a85.py::test_a85d_the_valve_regime_census_from_the_file"
+     ],
+     "nodes": 98,
+     "outcomes": {
+      "passed": 98
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A86",
+   "description": "`T06-revision-v2` differs from v1 in exactly `policy_id` and `globalization.eo_core`; its hash is in the manifest, the registry and the `t06` key; the schema accepts it.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w18_policy.py::test_a86_the_schema_accepts_v2_and_every_registered_policy_validates_unchanged",
+      "tests/test_t06_w18_policy.py::test_a86_v2_differs_from_v1_in_exactly_the_policy_id_and_the_core"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A87",
+   "description": "ADR 0018 is inert on everything registered: (a) registered traces, certificates, fixtures and the K05 identity unchanged; (b) where the rule never fires, `newton_refined` is R0-equal to `newton` with a bit-identical final state.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_k03_schemas.py::test_the_fixtures_are_what_the_code_emits_today",
+      "tests/test_k04_schemas.py::test_a31_the_fixtures_are_what_the_verifier_emits_today",
+      "tests/test_k05_schemas.py::test_the_fixtures_are_what_a_real_run_emits_today",
+      "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_are_what_the_code_emits_today",
+      "tests/test_t06_w18_literal.py::test_w18_no_committed_fixture_names_the_new_value",
+      "tests/test_t06_w18_literal.py::test_w18_the_default_is_unchanged",
+      "tests/test_t06_w18_refinement.py::test_refinement_none_is_k03_newton"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "a_document_without_t06": "00ff5a9ab5f3d7431ae5d553a8305ea1d4edd2d9ddb70bb7dfa31c6b751bd475",
+     "a_registered": "00ff5a9ab5f3d7431ae5d553a8305ea1d4edd2d9ddb70bb7dfa31c6b751bd475",
+     "b": {
+      "STR-01:SYN-001-UL-C1": "equal",
+      "STA-01:T05b:DZ-3": "equal",
+      "STA-02:SYN-001-T06-STA02": "equal",
+      "STA-03:SYN-001-T06-STA03-kgs": "equal",
+      "STA-03:SYN-001-T06-STA03-degC": "equal",
+      "STA-04:SYN-001-T06-STA04": "equal",
+      "STA-05:T05b:DZ-7": "equal",
+      "NUM-03:T05b:NP-1": "equal",
+      "THM-01:SYN-001-T06-THM01": "equal",
+      "THM-02:SYN-001-T06-THM02": "equal",
+      "THM-07:T05b:SC-2": "equal",
+      "THM-08:T05b:SC-1": "equal",
+      "THM-09:T05b:SC-3": "equal",
+      "THM-10:SYN-001-T06-THM10": "equal",
+      "NET-02:SYN-001-T06-NET02": "equal",
+      "NET-03:SYN-001-T06-NET03": "equal",
+      "NET-06:SYN-001-T06-NET06": "equal",
+      "NET-07:SYN-001-UL-C3": "equal",
+      "NET-08:SYN-001-UL-C2": "equal",
+      "NET-09:SYN-001-T06-NET09": "equal",
+      "NET-10:SYN-001-T06-NET10": "equal",
+      "NET-11:SYN-001-T06-NET11": "equal"
+     },
+     "b_fired_in": []
+    }
+   }
+  },
+  {
+   "id": "T06.A88",
+   "description": "The rule on constructed problems: fires and keeps, does not fire, a root passed in, a double root reverted, abandonments typed.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w18_refinement.py::test_a88_a_the_refinement_fires_once_and_is_kept",
+      "tests/test_t06_w18_refinement.py::test_a88_b_a_column_without_a_tolerance_is_never_judged",
+      "tests/test_t06_w18_refinement.py::test_a88_b_no_refinement_below_the_tolerance_and_newton_bit_for_bit",
+      "tests/test_t06_w18_refinement.py::test_a88_c_a_root_passed_in_is_not_refined",
+      "tests/test_t06_w18_refinement.py::test_a88_d_a_double_root_does_not_contract_and_is_reverted",
+      "tests/test_t06_w18_refinement.py::test_a88_e_a_refinement_whose_jacobian_evaluation_fails_typed_is_abandoned",
+      "tests/test_t06_w18_refinement.py::test_a88_e_a_refinement_whose_trials_change_the_signature_is_abandoned",
+      "tests/test_t06_w18_refinement.py::test_a88_e_a_refinement_whose_trials_the_line_search_rejects_is_abandoned",
+      "tests/test_t06_w18_refinement.py::test_a88_e_an_observer_that_closes_the_attempt_abandons_the_refinement",
+      "tests/test_t06_w18_refinement.py::test_a88_e_no_refinement_at_the_iteration_budget"
+     ],
+     "nodes": 10,
+     "outcomes": {
+      "passed": 10
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A89",
+   "description": "THM-09 under `T06-revision-v2`, starts 1, 2, 5, 10, 6, 19: `CONVERGED`, `VERIFIED`, one refinement kept, S3's worst ratio \u2264 0.1.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w18_policy.py::test_a89_thm09_ends_within_a_tenth_of_s3s_allowance"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A90",
+   "description": "Run 2r's records (A5): per attempt whether the rule fired and how it ended; fired / kept / reverted / abandoned per case; on `ref-x86-64` exactly the verdicts' reconstruction (17 / 17 / 0 / 0 at the 17 listed starts, each in its last attempt).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w28_records.py::test_a90_a_v1_file_reads_as_not_recorded",
+      "tests/test_t06_w28_records.py::test_a90_the_expected_reconstruction_is_the_specs",
+      "tests/test_t06_w28_records.py::test_a90_the_report_counts_fired_kept_reverted_and_abandoned",
+      "tests/test_t06_w31_runs.py::test_a90_the_expected_reconstruction_has_seventeen_starts"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "run2r@ref-x86-64": {
+      "fired": 17,
+      "kept": 17,
+      "reverted": 0,
+      "abandoned": 0,
+      "abandoned_budget": 0,
+      "abandoned_by_reason": {},
+      "fired_at": [
+       "NET-03/08",
+       "NET-03/19",
+       "NET-10/00",
+       "NET-10/04",
+       "NET-10/08",
+       "NET-10/11",
+       "NET-11/12",
+       "STR-01/05",
+       "THM-07/00",
+       "THM-07/05",
+       "THM-09/01",
+       "THM-09/02",
+       "THM-09/05",
+       "THM-09/06",
+       "THM-09/10",
+       "THM-09/19",
+       "THM-10/07"
+      ],
+      "not_last": [],
+      "worst_s3_ratio": {
+       "kept": {
+        "median": 7.386796904277801e-08,
+        "p95": 7.311200533877113e-06,
+        "max": 2.166302692785393e-05,
+        "n": 17
+       },
+       "not_fired": {
+        "median": 3.183231456205249e-07,
+        "p95": 0.022426555861622163,
+        "max": 0.09684915240196715,
+        "n": 417
+       }
+      },
+      "F-OTHER-ROOT": [],
+      "expected_fired_at": [
+       "NET-03/08",
+       "NET-03/19",
+       "NET-10/00",
+       "NET-10/04",
+       "NET-10/08",
+       "NET-10/11",
+       "NET-11/12",
+       "STR-01/05",
+       "THM-07/00",
+       "THM-07/05",
+       "THM-09/01",
+       "THM-09/02",
+       "THM-09/05",
+       "THM-09/06",
+       "THM-09/10",
+       "THM-09/19",
+       "THM-10/07"
+      ],
+      "discrepancies": []
+     },
+     "run2r@ci-x86-64": {
+      "fired": 17,
+      "kept": 17,
+      "reverted": 0,
+      "abandoned": 0,
+      "abandoned_budget": 0,
+      "abandoned_by_reason": {},
+      "fired_at": [
+       "NET-03/08",
+       "NET-03/19",
+       "NET-10/00",
+       "NET-10/04",
+       "NET-10/08",
+       "NET-10/11",
+       "NET-11/12",
+       "STR-01/05",
+       "THM-07/00",
+       "THM-07/05",
+       "THM-09/01",
+       "THM-09/02",
+       "THM-09/05",
+       "THM-09/06",
+       "THM-09/10",
+       "THM-09/19",
+       "THM-10/07"
+      ],
+      "not_last": [],
+      "worst_s3_ratio": {
+       "kept": {
+        "median": 7.386796904277801e-08,
+        "p95": 7.311200533877113e-06,
+        "max": 2.166302692785393e-05,
+        "n": 17
+       },
+       "not_fired": {
+        "median": 3.183231456205249e-07,
+        "p95": 0.022426555861622163,
+        "max": 0.09684915240196715,
+        "n": 417
+       }
+      },
+      "F-OTHER-ROOT": []
+     },
+     "run2r@ci-aarch64": {
+      "fired": 17,
+      "kept": 17,
+      "reverted": 0,
+      "abandoned": 0,
+      "abandoned_budget": 0,
+      "abandoned_by_reason": {},
+      "fired_at": [
+       "NET-03/08",
+       "NET-03/19",
+       "NET-10/00",
+       "NET-10/04",
+       "NET-10/08",
+       "NET-10/11",
+       "NET-11/12",
+       "STR-01/05",
+       "THM-07/00",
+       "THM-07/05",
+       "THM-09/01",
+       "THM-09/02",
+       "THM-09/05",
+       "THM-09/06",
+       "THM-09/10",
+       "THM-09/19",
+       "THM-10/07"
+      ],
+      "not_last": [],
+      "worst_s3_ratio": {
+       "kept": {
+        "median": 8.164218092870712e-08,
+        "p95": 7.311200533877113e-06,
+        "max": 2.166302692785393e-05,
+        "n": 17
+       },
+       "not_fired": {
+        "median": 3.183231456205249e-07,
+        "p95": 0.022426555861622163,
+        "max": 0.09684915240196715,
+        "n": 417
+       }
+      },
+      "F-OTHER-ROOT": []
+     },
+     "verdicts_open_question": {
+      "THM-09/03 on ci-aarch64": {
+       "class": "F-BUDGET",
+       "refinements": [
+        {
+         "attempt": 0,
+         "attempt_outcome": "PHASE_UPDATE_REQUIRED",
+         "column": null,
+         "fired": false,
+         "last": false,
+         "reason": null,
+         "result": null,
+         "rho": null,
+         "step": 0
+        },
+        {
+         "attempt": 1,
+         "attempt_outcome": "BOUND_BLOCKED",
+         "column": null,
+         "fired": false,
+         "last": false,
+         "reason": null,
+         "result": null,
+         "rho": null,
+         "step": 0
+        },
+        {
+         "attempt": 2,
+         "attempt_outcome": "EVALUATION_ERROR",
+         "column": null,
+         "fired": false,
+         "last": true,
+         "reason": null,
+         "result": null,
+         "rho": null,
+         "step": 0
+        }
+       ]
+      }
+     },
+     "run2": "not recorded: run 2's v1 records carry no refinement record (A90 (A5))"
+    }
+   }
+  },
+  {
+   "id": "T06.A91",
+   "description": "\u00a78.8's closure: \u2264 1e-9 K at registered roots; NET-11 start 16's recorded state fails at 3.34 K; a refused `lnK` is `unsupported`; D7 precedence.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w19_closure.py::test_a91a_the_closure_vanishes_at_registered_roots",
+      "tests/test_t06_w19_closure.py::test_a91b_net11_start16s_false_two_phase_label_fails",
+      "tests/test_t06_w19_closure.py::test_a91c_a_refused_lnk_inside_the_bisection_is_unsupported",
+      "tests/test_t06_w19_closure.py::test_a91d_a_pure_component_split_at_saturation_keeps_saturation"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A92",
+   "description": "\u00a78.8's re-registrations: T05b B34 (a)'s tally with every `FAILED` beyond `100 \u03c4_T`; B16 and B26; the one T04 fixture.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t04_schemas.py::test_a26_the_t04_fixtures_are_what_the_code_emits_today",
+      "tests/test_t05b_candidate_answers.py::test_a92_the_floor_is_a_decade_beyond_the_near_threshold_band",
+      "tests/test_t05b_candidate_answers.py::test_b34a_both_declaration_orders_agree_on_the_certificate",
+      "tests/test_t05b_candidate_answers.py::test_b34a_the_certificate_tally",
+      "tests/test_t05b_candidate_answers.py::test_b34a_the_outcome_counts",
+      "tests/test_t05b_dormancy.py::test_b26_dz10_verified",
+      "tests/test_t05b_dormancy.py::test_b26_dz10_what_the_fresh_flash_reads_at_newtons_stop",
+      "tests/test_t05b_zero_flow.py::test_b16_dz3_verified",
+      "tests/test_t05b_zero_flow.py::test_b16_dz3_what_the_fresh_flash_reads_at_newtons_stop"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "floor_K": 9.999999999999999e-05,
+     "failed": 10,
+     "closures_K": {
+      "(0.0, 90000.0, 30000.0, False)": 0.0009494155568745555,
+      "(0.0, 90000.0, 30000.0, True)": 0.000949415557215616,
+      "(0.0, 115000.0, 30000.0, False)": 0.03208931398370396,
+      "(0.0, 115000.0, 30000.0, True)": 0.03208931398370396,
+      "(0.0, 115000.0, 90000.0, False)": 30.69953770685356,
+      "(0.0, 115000.0, 90000.0, True)": 30.69953770685356,
+      "(0.0, 125000.0, 30000.0, False)": 0.0333078807772722,
+      "(0.0, 125000.0, 30000.0, True)": 0.0333078807772722,
+      "(0.0, 125000.0, 90000.0, False)": 23.77737323355069,
+      "(0.0, 125000.0, 90000.0, True)": 23.77737323355069
+     },
+     "smallest_over_floor": 9.494155568745555
+    }
+   }
+  },
+  {
+   "id": "T06.A93",
+   "description": "Counters equal the meter; at `BUDGET_EXHAUSTED(property_calls)` exactly `max_property_calls`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w20_counters.py::test_a93_an_exhausted_budget_records_exactly_the_cap",
+      "tests/test_t06_w20_counters.py::test_a93_run_1s_budget_starts_record_the_cap",
+      "tests/test_t06_w20_counters.py::test_a93_the_closing_event_carries_the_meters_charge"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A94",
+   "description": "A cost remedy, only if one is proposed.",
+   "result": "not_applicable",
+   "value": {
+    "reason": "no cost remedy was proposed for adoption: W21's attribution landed none and left its one candidate (an exact `lnK` memo scoped to a band route, saving not measured) to the design lane (`docs/t06-measurements.md`, W21), so the three `F-BUDGET` starts stay `F-BUDGET` in run 2 and run 2r (spec \u00a76.6 (A4), Q23); the row applies only if one is proposed"
+   }
+  },
+  {
+   "id": "T06.A95",
+   "description": "Run 1's record kept unedited (`dfa7d09`, `T06-revision-v1`, S = 431, gate FAIL, the four THM-09 `F-OTHER-ROOT`s); run 2, run 2r and `holdout1` separate records; every run file committed with its SHA-256 equal to the registry's and, for runs 1 and 2, the verdicts' \u00a70.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w29_runs.py::test_a95_a97e_the_registry_names_every_run_file_by_its_hash",
+      "tests/test_t06_w29_runs.py::test_a95_runs_1_and_2_are_the_bytes_the_verdicts_judged"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "files": {
+      "run1-ref-x86-64.json": {
+       "sha256": "b82964be42580bb2cf1ffe94706ceb617108b35ee0b735cda298bf4fe2480cc6",
+       "registry_and_sha256sums_equal": true
+      },
+      "run2-ref-x86-64.json": {
+       "sha256": "c15924e6dd8205122a041348502d2634a56d687c9e79ce92408e0a0295d7d85e",
+       "registry_and_sha256sums_equal": true
+      },
+      "run2-ci-x86-64.json": {
+       "sha256": "8768b15043d9e16e37e787e6bf41039391d67ba5e5fd71292c9621c92a9c688b",
+       "registry_and_sha256sums_equal": true
+      },
+      "run2-ci-aarch64.json": {
+       "sha256": "c1f89ee86d3fe05b461308a283f368a862a1121082ad114e3eae677650e24f91",
+       "registry_and_sha256sums_equal": true
+      },
+      "run2r-ref-x86-64.json": {
+       "sha256": "d215eff1f951e4ac3d58a8094620ad163df76bf201bdb17e0cf67d2b6770f724",
+       "registry_and_sha256sums_equal": true
+      },
+      "run2r-ci-x86-64.json": {
+       "sha256": "d25dddbadf8b69c046b90b4acf7c9fbfc5290b2a2ef879218a27e58d5785e123",
+       "registry_and_sha256sums_equal": true
+      },
+      "run2r-ci-aarch64.json": {
+       "sha256": "a4c23c23a43738a92491f602b0f752b91cabc5728731213dc485172cba5f7e59",
+       "registry_and_sha256sums_equal": true
+      },
+      "holdout1-ref-x86-64.json": {
+       "sha256": "7d39a1e86903da6d00eefa5cf5126759cbe875306be2de7556c18d7218b12376",
+       "registry_and_sha256sums_equal": true
+      },
+      "holdout1-ci-x86-64.json": {
+       "sha256": "99944038384bac5dd49e2240eb0e49236a46b550be1ad89e2b881bf9822d98b6",
+       "registry_and_sha256sums_equal": true
+      },
+      "holdout1-ci-aarch64.json": {
+       "sha256": "bc04831dcf155dd6a4838afb931384a5a7d25428f02bd4307e377957564fbb83",
+       "registry_and_sha256sums_equal": true
+      }
+     },
+     "runs_1_and_2_are_the_verdicts_section_0_bytes": true,
+     "run1": {
+      "commit": "dfa7d09",
+      "policies": [
+       "SYN-001-K03",
+       "T04-W12",
+       "T06-revision-v1"
+      ],
+      "S": 431,
+      "S_first": 367,
+      "S_rescued": 64,
+      "N": 440,
+      "classes": {
+       "F-BUDGET": 3,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "F-OTHER-ROOT": 4,
+       "SUCCESS": 431
+      },
+      "cp_lower": 0.9645781736174642,
+      "cp_lower_first": 0.8021259217177437,
+      "gate_rule_applied": "FAIL",
+      "F-OTHER-ROOT": [
+       "THM-09/01",
+       "THM-09/02",
+       "THM-09/05",
+       "THM-09/10"
+      ],
+      "diagnosis": "spec Amendment 4 (A4.3): the registered root inside the certificate's own `b`, not a false verification and not explained under \u00a77.2; NET-11/16 was a missed false success (verdicts \u00a73.4)"
+     },
+     "separate_records": [
+      "holdout1",
+      "run1",
+      "run2",
+      "run2r"
+     ],
+     "gate_verdict": "run 2's (spec \u00a77.3 (A5))"
+    }
+   }
+  },
+  {
+   "id": "T06.A96",
+   "description": "ADR 0018 D4\u2032 at the plan level: THM-09 start 1 under `newton` and `newton_refined`, uncapped and at caps N\u2080, N\u2081 \u2212 1 and N\u2081.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w24_budget.py::test_a96_ab_a_cap_below_the_refineds_total_exhausts_the_budget",
+      "tests/test_t06_w24_budget.py::test_a96_c_at_the_refineds_total_it_converges",
+      "tests/test_t06_w24_budget.py::test_a96_uncapped_the_refinement_is_metered"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "N0_newton_property_calls": 365,
+     "N1_newton_refined_property_calls": 386
+    }
+   }
+  },
+  {
+   "id": "T06.A97",
+   "description": "Run records and the machine class: (a) the v2 record; (b) `machine_class()`; (c) equal counters twice in one process; (d) `refinements`; (e) the registry's `ensemble.runs`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w28_records.py::test_a97a_run_refuses_a_dirty_tree_without_allow_dirty",
+      "tests/test_t06_w28_records.py::test_a97a_run_writes_the_v2_record",
+      "tests/test_t06_w28_records.py::test_a97b_generate_refuses_off_the_reference_class",
+      "tests/test_t06_w28_records.py::test_a97b_the_machine_class_is_decided_from_the_host",
+      "tests/test_t06_w28_records.py::test_a97b_the_registered_classes_and_the_generators_literal",
+      "tests/test_t06_w28_records.py::test_a97c_a_start_run_twice_in_one_process_spends_the_same",
+      "tests/test_t06_w28_records.py::test_a97d_a_message_outside_the_grammar_stops_the_run",
+      "tests/test_t06_w28_records.py::test_a97d_run_start_does_not_turn_a_grammar_defect_into_a_crash",
+      "tests/test_t06_w28_records.py::test_a97d_the_grammar_parses_every_word_of_d5",
+      "tests/test_t06_w28_records.py::test_a97d_thm09_start_1_keeps_one_refinement_in_its_last_attempt",
+      "tests/test_t06_w28_records.py::test_a97d_under_plain_newton_nothing_fires",
+      "tests/test_t06_w29_runs.py::test_a95_a97e_the_registry_names_every_run_file_by_its_hash",
+      "tests/test_t06_w29_runs.py::test_a97e_each_files_class_is_its_entrys",
+      "tests/test_t06_w29_runs.py::test_a97e_each_headline_recomputes_from_its_records",
+      "tests/test_t06_w29_runs.py::test_a97e_the_judged_report_recomputes_byte_for_byte"
+     ],
+     "nodes": 46,
+     "outcomes": {
+      "passed": 46
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T06.A98",
+   "description": "Run 2r: (a) `src/` after run 2 changes only ADR 0018's docstring and S5's reading; (b) per class every start's class and `S` equal run 2's; (c) A90 on `ref-x86-64`; (d) replay `MATCH` on every class.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w28_records.py::test_a98_a_changed_class_or_s_is_a_discrepancy_and_a_moved_state_is_reported",
+      "tests/test_t06_w28_records.py::test_a98_a_missing_record_a_dirty_tree_or_another_starts_file_is_a_discrepancy",
+      "tests/test_t06_w28_records.py::test_a98_equal_runs_have_no_discrepancy",
+      "tests/test_t06_w28_records.py::test_a98_refinements_other_than_the_reconstruction_are_a_discrepancy",
+      "tests/test_t06_w31_runs.py::test_a98_the_committed_a98_text_recomputes",
+      "tests/test_t06_w31_runs.py::test_a98a_src_differs_from_run_2s_only_by_w24_and_w25",
+      "tests/test_t06_w31_runs.py::test_a98bc_run_2r_equals_run_2_on_its_class",
+      "tests/test_t06_w31_runs.py::test_a98d_a34_every_replay_matches_and_covers_the_first_starts_and_failures"
+     ],
+     "nodes": 20,
+     "outcomes": {
+      "passed": 20
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "a": {
+      "diff": "git diff f636452 6018ebccbe99a3e9d19cf4f966d10dc292195170 -- src/",
+      "files": [
+       "src/process_runtime/application/binding.py",
+       "src/process_runtime/application/validation.py",
+       "src/process_runtime/models/revision_flowsheet.py",
+       "src/process_runtime/numerics/newton.py",
+       "src/process_runtime/units/__init__.py",
+       "src/process_runtime/verify/certificate.py"
+      ],
+      "commits": [
+       "5129d68 T06 W25: S5 \u2014 one number reading (units.read_number) for every specification and parameter-Quantity number; an integer beyond 2^53 reads as the infinity of its sign, so V0's typed refusal fires (A100)",
+       "fc5f3f7 T06 W24: ADR 0018 D4' \u2014 newton.py's docstring sentence is C5's exact text; A88 (e)'s budget case renamed (body unchanged); A96, the plan-level budget test"
+      ],
+      "work_orders": [
+       "T06 W24",
+       "T06 W25"
+      ]
+     },
+     "ref-x86-64": {
+      "discrepancies": [],
+      "S": [
+       434,
+       434
+      ],
+      "S_first": [
+       370,
+       370
+      ],
+      "final_states_differing_bitwise_reported": 0,
+      "refinements": {
+       "fired": 17,
+       "kept": 17,
+       "reverted": 0,
+       "abandoned": 0,
+       "abandoned_budget": 0,
+       "abandoned_by_reason": {}
+      },
+      "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores"
+     },
+     "ci-x86-64": {
+      "discrepancies": [],
+      "S": [
+       434,
+       434
+      ],
+      "S_first": [
+       370,
+       370
+      ],
+      "final_states_differing_bitwise_reported": 0,
+      "refinements": {
+       "fired": 17,
+       "kept": 17,
+       "reverted": 0,
+       "abandoned": 0,
+       "abandoned_budget": 0,
+       "abandoned_by_reason": {}
+      },
+      "cpu_model": "AMD EPYC 7763 64-Core Processor"
+     },
+     "ci-aarch64": {
+      "discrepancies": [],
+      "S": [
+       434,
+       434
+      ],
+      "S_first": [
+       367,
+       367
+      ],
+      "final_states_differing_bitwise_reported": 0,
+      "refinements": {
+       "fired": 17,
+       "kept": 17,
+       "reverted": 0,
+       "abandoned": 0,
+       "abandoned_budget": 0,
+       "abandoned_by_reason": {}
+      },
+      "cpu_model": "aarch64"
+     },
+     "d": {
+      "benchmarks/t06/ensemble/runs/run2r-ref-x86-64.replay.txt": {
+       "replayed": 28,
+       "all_match": true,
+       "first_starts_and_failures": true,
+       "other_lines": 0
+      },
+      "benchmarks/t06/ensemble/runs/run2r-ci-x86-64.replay.txt": {
+       "replayed": 28,
+       "all_match": true,
+       "first_starts_and_failures": true,
+       "other_lines": 0
+      },
+      "benchmarks/t06/ensemble/runs/run2r-ci-aarch64.replay.txt": {
+       "replayed": 28,
+       "all_match": true,
+       "first_starts_and_failures": true,
+       "other_lines": 0
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "T06.A99",
+   "description": "The holdout: (a) its starts file; (b) committed before any holdout solve; (c) reports recompute, the holdout header, no gate line, both bounds; (d) no `F-CRASH`. Reported, never gated.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w30_holdout.py::test_a99a_indices_20_to_39_and_keys_disjoint_from_the_gates",
+      "tests/test_t06_w30_holdout.py::test_a99a_the_cases_are_the_nominal_files_in_its_order_with_the_same_law",
+      "tests/test_t06_w30_holdout.py::test_a99a_the_file_is_the_registered_one",
+      "tests/test_t06_w30_holdout.py::test_a99a_the_generator_provider_and_law_are_the_nominal_files",
+      "tests/test_t06_w30_holdout.py::test_a99a_the_holdout_regenerates_byte_for_byte_on_the_reference_machine_class",
+      "tests/test_t06_w31_runs.py::test_a99b_the_holdout_starts_commit_precedes_every_holdout_run",
+      "tests/test_t06_w31_runs.py::test_a99c_a31_every_committed_report_recomputes_byte_for_byte",
+      "tests/test_t06_w31_runs.py::test_a99c_a35_the_committed_comparison_recomputes",
+      "tests/test_t06_w31_runs.py::test_a99c_the_holdout_report_is_reported_and_never_gated",
+      "tests/test_t06_w31_runs.py::test_a99d_no_holdout_crash_and_its_classes_are_reported"
+     ],
+     "nodes": 20,
+     "outcomes": {
+      "passed": 20
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "a": {
+      "starts_sha256": "debbbdc5228f564b64cea0cdce14e3dced6a755f34ce62776b09fb7cb37831de",
+      "registry": "debbbdc5228f564b64cea0cdce14e3dced6a755f34ce62776b09fb7cb37831de"
+     },
+     "b": {
+      "starts_committed_at": "15d59e7205bacae2579dbe06da38a5707ed35702",
+      "holdout_run_files_at_that_commit": []
+     },
+     "ref-x86-64": {
+      "commit_descends_from_the_starts_commit": true,
+      "S": 436,
+      "S_first": 364,
+      "S_rescued": 72,
+      "cp_lower": 0.97931814450125,
+      "cp_lower_first": 0.7948746670673872,
+      "S_holdout_minus_S_run2": 2,
+      "classes": {
+       "F-BUDGET": 2,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "SUCCESS": 436
+      },
+      "F-CRASH": [],
+      "F-OTHER-ROOT": [],
+      "refinements": {
+       "fired": 16,
+       "kept": 16,
+       "reverted": 0,
+       "abandoned": 0
+      },
+      "report_recomputes": true,
+      "holdout_header": true,
+      "no_gate_line": true
+     },
+     "ci-x86-64": {
+      "commit_descends_from_the_starts_commit": true,
+      "S": 436,
+      "S_first": 364,
+      "S_rescued": 72,
+      "cp_lower": 0.97931814450125,
+      "cp_lower_first": 0.7948746670673872,
+      "S_holdout_minus_S_run2": 2,
+      "classes": {
+       "F-BUDGET": 2,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "SUCCESS": 436
+      },
+      "F-CRASH": [],
+      "F-OTHER-ROOT": [],
+      "refinements": {
+       "fired": 16,
+       "kept": 16,
+       "reverted": 0,
+       "abandoned": 0
+      },
+      "report_recomputes": true,
+      "holdout_header": true,
+      "no_gate_line": true
+     },
+     "ci-aarch64": {
+      "commit_descends_from_the_starts_commit": true,
+      "S": 436,
+      "S_first": 367,
+      "S_rescued": 69,
+      "cp_lower": 0.97931814450125,
+      "cp_lower_first": 0.8021259217177437,
+      "S_holdout_minus_S_run2": 2,
+      "classes": {
+       "F-BUDGET": 2,
+       "F-FALSE-SUCCESS-CAUGHT": 2,
+       "SUCCESS": 436
+      },
+      "F-CRASH": [],
+      "F-OTHER-ROOT": [],
+      "refinements": {
+       "fired": 16,
+       "kept": 16,
+       "reverted": 0,
+       "abandoned": 0
+      },
+      "report_recomputes": true,
+      "holdout_header": true,
+      "no_gate_line": true
+     },
+     "c_compare": {
+      "holdout1@ref-x86-64 vs holdout1@ci-x86-64": {
+       "classification": [],
+       "rescue_status": [],
+       "final_states_differing_bitwise": 0
+      },
+      "holdout1@ref-x86-64 vs holdout1@ci-aarch64": {
+       "classification": [
+        "THM-09 31: F-FALSE-SUCCESS-CAUGHT vs SUCCESS",
+        "THM-09 34: SUCCESS vs F-BUDGET",
+        "THM-09 35: F-BUDGET vs SUCCESS",
+        "THM-09 37: SUCCESS vs F-FALSE-SUCCESS-CAUGHT"
+       ],
+       "rescue_status": [
+        "STA-01 22",
+        "STA-02 22",
+        "STA-02 27",
+        "STA-02 30",
+        "STA-02 38"
+       ],
+       "final_states_differing_bitwise": 212
+      },
+      "holdout1@ci-x86-64 vs holdout1@ci-aarch64": {
+       "classification": [
+        "THM-09 31: F-FALSE-SUCCESS-CAUGHT vs SUCCESS",
+        "THM-09 34: SUCCESS vs F-BUDGET",
+        "THM-09 35: F-BUDGET vs SUCCESS",
+        "THM-09 37: SUCCESS vs F-FALSE-SUCCESS-CAUGHT"
+       ],
+       "rescue_status": [
+        "STA-01 22",
+        "STA-02 22",
+        "STA-02 27",
+        "STA-02 30",
+        "STA-02 38"
+       ],
+       "final_states_differing_bitwise": 212
+      },
+      "holdout1.compare.txt recomputes": true
+     },
+     "gated": false
+    }
+   }
+  },
+  {
+   "id": "T06.A100",
+   "description": "Integers without a binary64 reading (`2\u2075\u00b3 + 1`, `10\u2074\u2070\u2070`) get the result `\u00b1\u221e` gets on every path and field; `2\u2075\u00b3` gets `2.0**53`'s.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "functions": [
+      "tests/test_t06_w25_integers.py::test_a100_a_an_integer_beyond_2_53_gets_its_infinitys_result",
+      "tests/test_t06_w25_integers.py::test_a100_b_2_53_is_read_as_the_float_2_53"
+     ],
+     "nodes": 80,
+     "outcomes": {
+      "passed": 80
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "benchmarks/t06/ensemble/starts-nominal-v1.json",
+   "sha256": "3a7bd49c66493744753d1eac554101317c931e0ef51d9154d6f7cab3124fef82",
+   "description": "the published nominal starts (spec \u00a76.5; registry `starts_sha256`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/starts-nominal-holdout1.json",
+   "sha256": "debbbdc5228f564b64cea0cdce14e3dced6a755f34ce62776b09fb7cb37831de",
+   "description": "holdout1's starts, committed before any holdout solve (spec \u00a77.6 (A5))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run1-ref-x86-64.json",
+   "sha256": "b82964be42580bb2cf1ffe94706ceb617108b35ee0b735cda298bf4fe2480cc6",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2-ref-x86-64.json",
+   "sha256": "c15924e6dd8205122a041348502d2634a56d687c9e79ce92408e0a0295d7d85e",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2-ci-x86-64.json",
+   "sha256": "8768b15043d9e16e37e787e6bf41039391d67ba5e5fd71292c9621c92a9c688b",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2-ci-aarch64.json",
+   "sha256": "c1f89ee86d3fe05b461308a283f368a862a1121082ad114e3eae677650e24f91",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/judged/run2-ref-x86-64.report.txt",
+   "sha256": "eb24251edc41d36d366d0205aff3c5a7df1aebea4eaac4b1ccd57c6f1db5425f",
+   "description": "judged text of run 2 (the verdicts' \u00a70): report recomputed byte for byte from its run file (A31, A99 (c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/judged/run2-ref-x86-64.replay.txt",
+   "sha256": "b1a41a443b91347f63979bd30253bc29fdc40ec5ce6cb047816b24f103ada9fd",
+   "description": "judged text of run 2 (the verdicts' \u00a70): replay of each case's first start and every retained failure (A34)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ci-aarch64.json",
+   "sha256": "bc04831dcf155dd6a4838afb931384a5a7d25428f02bd4307e377957564fbb83",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ci-aarch64.replay.txt",
+   "sha256": "0dc964bd5f53900dfd0d150c0c2d078ebc053e1d575358169488f25a2843f021",
+   "description": "replay of each case's first start and every retained failure (A34)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ci-aarch64.report.txt",
+   "sha256": "d027e185539b9fdf5f9eb9235fc0183f4c1272a0ab1be192f615695cd18902ad",
+   "description": "report recomputed byte for byte from its run file (A31, A99 (c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ci-x86-64.json",
+   "sha256": "99944038384bac5dd49e2240eb0e49236a46b550be1ad89e2b881bf9822d98b6",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ci-x86-64.replay.txt",
+   "sha256": "3854c8b0d9cdb888fb6a582a512430ad800af870d5c4c18e912afb97f76c1bb6",
+   "description": "replay of each case's first start and every retained failure (A34)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ci-x86-64.report.txt",
+   "sha256": "21c715d826c71c17fab450d2fcf22ec1db6d9813d64a05c640df7533a64dd889",
+   "description": "report recomputed byte for byte from its run file (A31, A99 (c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1.compare.txt",
+   "sha256": "2865c08f27d71b91dc16195d9b64adc2c7778068291db123a920996fe44ed491",
+   "description": "cross-class per-start classification disagreements (A35)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ref-x86-64.json",
+   "sha256": "7d39a1e86903da6d00eefa5cf5126759cbe875306be2de7556c18d7218b12376",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ref-x86-64.replay.txt",
+   "sha256": "3854c8b0d9cdb888fb6a582a512430ad800af870d5c4c18e912afb97f76c1bb6",
+   "description": "replay of each case's first start and every retained failure (A34)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/holdout1-ref-x86-64.report.txt",
+   "sha256": "6de13fd110acbdd2b4eee8f89f213be5b20c4f0d2b26c959cb7291d660a4ae39",
+   "description": "report recomputed byte for byte from its run file (A31, A99 (c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ci-aarch64.a98.txt",
+   "sha256": "b7ab4f4c7de07db4591e879524981c2c7f4a9578c0137cfdb0597eee89afaf8a",
+   "description": "run 2r against run 2's same-class file (A98 (b)\u2013(c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ci-aarch64.json",
+   "sha256": "a4c23c23a43738a92491f602b0f752b91cabc5728731213dc485172cba5f7e59",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ci-aarch64.replay.txt",
+   "sha256": "c9165d8b6e82996415bcf77f09e4f23c1f5416cd07603669510da31a7dde1e28",
+   "description": "replay of each case's first start and every retained failure (A34)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ci-aarch64.report.txt",
+   "sha256": "4f861d27f952b0220e782bd1b69929d78e39e9e95aa5b9ffaba9087e976b3b10",
+   "description": "report recomputed byte for byte from its run file (A31, A99 (c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ci-x86-64.a98.txt",
+   "sha256": "1d8f291a13e1035784228764aa5c5137d611df39d2a2decdc147f0dace0a329e",
+   "description": "run 2r against run 2's same-class file (A98 (b)\u2013(c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ci-x86-64.json",
+   "sha256": "d25dddbadf8b69c046b90b4acf7c9fbfc5290b2a2ef879218a27e58d5785e123",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ci-x86-64.replay.txt",
+   "sha256": "c9165d8b6e82996415bcf77f09e4f23c1f5416cd07603669510da31a7dde1e28",
+   "description": "replay of each case's first start and every retained failure (A34)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ci-x86-64.report.txt",
+   "sha256": "7802fb535d3c841d1bb6f778600bfd61a3b407151b27290c040f8b784f15990c",
+   "description": "report recomputed byte for byte from its run file (A31, A99 (c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r.compare.txt",
+   "sha256": "8c8f1c7957d0acb31dc2f041e013d37384129377101255e23f817eb843fbb866",
+   "description": "cross-class per-start classification disagreements (A35)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ref-x86-64.a98.txt",
+   "sha256": "8fb55e84018be02fc2cd0f8ffe306b754022df1f5377047c1a6835bc2eb96e8b",
+   "description": "run 2r against run 2's same-class file (A98 (b)\u2013(c))"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ref-x86-64.json",
+   "sha256": "d215eff1f951e4ac3d58a8094620ad163df76bf201bdb17e0cf67d2b6770f724",
+   "description": "run file (committed, unedited; registry `ensemble.runs`)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ref-x86-64.replay.txt",
+   "sha256": "c9165d8b6e82996415bcf77f09e4f23c1f5416cd07603669510da31a7dde1e28",
+   "description": "replay of each case's first start and every retained failure (A34)"
+  },
+  {
+   "path": "benchmarks/t06/ensemble/runs/run2r-ref-x86-64.report.txt",
+   "sha256": "6a9a9e6b018573049b9514a8405a715582e33e0944104f28035afb9896ba023a",
+   "description": "report recomputed byte for byte from its run file (A31, A99 (c))"
+  },
+  {
+   "path": "benchmarks/t06/references/comparison.json",
+   "sha256": "4caa40ca3948386d6af77e30ee39eb7c74a1560b0d8f103023ddb7b184280786",
+   "description": "the reference comparison table (A50, A53)"
+  },
+  {
+   "path": "benchmarks/t06/references/results/SHA256SUMS",
+   "sha256": "c9efdd44c234a644456205d60623df0b853a50fd673f914bdfcd2d201382aa9e",
+   "description": "the reference records' digests (A50 (a))"
+  }
+ ],
+ "limitations": [
+  "Evidence class: the reference comparisons are numerical verification against independent implementations of the same synthetic equations; the ensemble and the holdout are numerical robustness evidence for 22 registered cases' start distributions. Neither is empirical validation or optimality evidence. Status `tested` is the build lane's; `reviewed` and the human numerical and process-modeling sign-off are not claimed (review fields pending).",
+  "Plan \u00a75's verification items V16, V18 and V20 (T06's gates) are not requirement ids the frozen evidence schema accepts: V16, V18, V20. Their evidence is here by assertion: V16 by A01\u2013A20 and A47\u2013A54 (8 of 8 fixtures compared by both tools, A53), V18 by A37\u2013A46 and A91\u2013A92, V20 by A28\u2013A30 on run 2 with A16, A19, A20 and A99; the verdicts (`docs/reviews/T06-verdicts.md`) judged V16's comparison clause and V20 on run 2 MET, and V20's no-false-verification clause NOT MET for run 1.",
+  "Run 1 FAILED the registered gate and stands as recorded (R-087, A95): `dfa7d09`, `T06-revision-v1`, S = 431 of 440 (S^first 367, rescued 64), classes {'F-BUDGET': 3, 'F-FALSE-SUCCESS-CAUGHT': 2, 'F-OTHER-ROOT': 4, 'SUCCESS': 431}; the four `F-OTHER-ROOT`s (THM-09/01, THM-09/02, THM-09/05, THM-09/10) are the registered root stopped inside the row-tolerance window (spec Amendment 4), not explained under \u00a77.2, so the gate term fails; NET-11 start 16 was a missed false success (a false `TWO_PHASE` label certified `VERIFIED`, counted SUCCESS; the verdicts \u00a73.4). Run 1 is not re-judged.",
+  "The gate verdict is run 2's (spec \u00a77.3 (A5)): run 2 re-scored run 1's 440 starts after a solver remedy (ADR 0018, `T06-revision-v2`) and a verifier correction (\u00a78.8), both registered by Amendment 4 after run 1 was seen; the verdict agent judged the re-score legitimate under R-087 and plan \u00a76.5 with qualifications that travel (\u00a72.3): run 2 is not an out-of-sample test of `T06-revision-v2`, so its Clopper\u2013Pearson bound (0.9733 on ref-x86-64) is start-sampling uncertainty for a solver whose last change was informed by these draws; the holdout is the out-of-sample estimate.",
+  "Run 2r (A98) is a reproduction at the closing commit, not a second gate result. Per class, S (S^first + S^rescued) and A98's discrepancies against run 2: ref-x86-64 434 (370 + 64), 0; ci-x86-64 434 (370 + 64), 0; ci-aarch64 434 (367 + 67), 0. It supplies A90's refinement records, which run 2's v1 records lack: A90 is judged on run 2r's records, not on run 2's.",
+  "The holdout `holdout1` (spec \u00a77.6 (A5), R-089) is reported and never gated; it is out-of-sample only for the start draw (the nominal law at start indices 20\u202639): ref-x86-64: S = 436 of 440 (S^first = 364, S^rescued = 72; S_holdout \u2212 S_run2 = +2), one-sided 95 % Clopper\u2013Pearson lower bound 0.979318 on S and 0.794875 on S^first, classes {'F-BUDGET': 2, 'F-FALSE-SUCCESS-CAUGHT': 2, 'SUCCESS': 436}; ci-x86-64: S = 436 of 440 (S^first = 364, S^rescued = 72; S_holdout \u2212 S_run2 = +2), one-sided 95 % Clopper\u2013Pearson lower bound 0.979318 on S and 0.794875 on S^first, classes {'F-BUDGET': 2, 'F-FALSE-SUCCESS-CAUGHT': 2, 'SUCCESS': 436}; ci-aarch64: S = 436 of 440 (S^first = 367, S^rescued = 69; S_holdout \u2212 S_run2 = +2), one-sided 95 % Clopper\u2013Pearson lower bound 0.979318 on S and 0.802126 on S^first, classes {'F-BUDGET': 2, 'F-FALSE-SUCCESS-CAUGHT': 2, 'SUCCESS': 436}. It says nothing more about other process designs than run 2 does.",
+  "Platform dependence: the gate holds on each architecture, but per-start outcomes are not portable (A35, reported). The starts classified differently on two classes: holdout1 THM-09 31, holdout1 THM-09 34, holdout1 THM-09 35, holdout1 THM-09 37, run2 THM-09 03, run2r THM-09 03; final states that differ bitwise and rescue-status differences are counted per pair in A35's value.",
+  "Every committed run file keeps the bytes it was written with: run 1's and run 2's v1 files say `machine_class: ref-x86-64` on every host (the pre-A5 literal, the verdicts' P2); their class is the registry's, from `architecture` and the CI job (A97 (e)), and they carry no commit, lock hash or `cache_condition` (P3; run 2's commit is the decisions log's `f636452`, corroborated by the verdicts). The v2 files (run 2r, `holdout1`) carry all of them.",
+  "The ensemble and holdout records were written at the closing commit `6018ebc`; this manifest measures `ebec629`, which differs from it in no `src/` file and in benchmarks/registry.yaml, benchmarks/t06, docs/T06_DECISIONS.md, scripts/t06_evidence_manifest.py, tests/test_t06_w28_records.py, tests/test_t06_w29_runs.py, tests/test_t06_w31_runs.py (the W31 records and bookkeeping, a test fix for A97 (c)'s machine-dependent counts, this generator).",
+  "CI: the two ensemble dispatches (36270294833 at `f636452`; 36278604955 at `6018ebc`) concluded `failure` because a `check` job failed on a pinned machine-dependent value that no ensemble job uses (T05b B34 (a)'s closure value on aarch64, fixed at `4d1e2ed`; A97 (c)'s absolute property-call count on aarch64, fixed at `7ec1b59`); their ensemble and compare jobs succeeded and their `identity` jobs were skipped. The cross-platform identity (A45, A79) is from the push run whose `identity` job succeeded (see the commands), with no `src/` change between its head and the measured commit.",
+  "IDAES agrees at the registered near-sharp SmoothVLE \u03b5 (1e-8 K), a setting the design lane ruled after W8's disagreement; at IDAES's default smoothing REF-03 (1.36\u00d7) and REF-08 (302\u00d7) disagree, and those records are retained `NOT_COMPARABLE(semantics)` (A83). Nothing is claimed about IDAES at its default smoothing.",
+  "T05b spec \u00a717, \u00a718 Q9 (Frank's default; a K04 follow-up): a lifted flash whose root lies exactly on its dew or bubble point with the other product zero is not certified (`UNVERIFIED`, `RANK_DEFICIENT`); STR-05's expectation (A07) rests on that default, and if the follow-up certifies it STR-05 needs a new fixture (T06 spec Q9). T05b B34 (a)'s dew-point runs that stop nearby are caught `FAILED` (A92); where a false success lands is machine-dependent.",
+  "T07's hand-on questions (R-088; spec \u00a716 Q24\u2013Q29), each with its default in force and no T06 change: Q24 a saturation-closure failure inside the rows' own window stays `FAILED(false_success_detected)`; Q25 the alias shift `997\u00b7(j+1)` Pa is unchanged (from about 20 streams every such certificate is `UNVERIFIED(pressure_shift_outside_domain)`); Q26 W14's identity refusal is defence in depth; Q27 no concurrent verification within one process (W3 seeds the global RNG); Q28 event messages stay outside R0; Q29 a non-canonical number in a field no reader reads escapes as an untyped `CanonicalizationError` (a K06 boundary gap older than T06).",
+  "Further registered scope defaults (spec \u00a716): Q2 `validate()` of a revision-built flowsheet stays `DRAFT` until T07 (F5); Q6 K05 run sessions and bundles are not generalized to revision-built flowsheets (harness-level replay only); Q13 results are keyed by component id, not presented in a declared order; Q14 one exact ASCII spelling per unit, no aliases; Q15 gauge pressure refused; Q18 `plan_revision` raises for a declaration T01 does not close (T07 returns T01's report first); Q22 a `TWO_PHASE` split with a vanishing phase is not converted by the solver (the verifier catches the label); Q23 no cost remedy: THM-08/3, THM-08/12 and THM-09/4 stay `F-BUDGET`.",
+  "ADR 0018 D4\u2032 (M1, A96): `newton_refined` spends property budget in its refinement, so a solve `newton` finishes can end `BUDGET_EXHAUSTED(property_calls)` (THM-09 start 1 at caps 365\u2013385); Frank kept `newton_refined` as T07's default knowing this (2026-09-27). A refined state that a converged closure converts would open a different later path (D4\u2032 (ii)); fired refinements recorded outside a start's last attempt, per run and class (A90): {'run2r@ref-x86-64': 0, 'run2r@ci-x86-64': 0, 'run2r@ci-aarch64': 0, 'holdout1@ref-x86-64': 0, 'holdout1@ci-x86-64': 0, 'holdout1@ci-aarch64': 0}.",
+  "Frank's decisions this evidence rests on (`docs/T06_DECISIONS.md`): the gate on the point estimate `S \u2265 418` on both classes with the Clopper\u2013Pearson bound reported (Q7); rescued starts counted as successes and reported (2026-09-26); unit conversion at the boundary (ADR 0016) and component order mapped (Q3, Q4, Q11); ADR 0015's and ADR 0018's enum widenings and ADR 0017's identity move approved; `newton_refined` as T07's default (kept 2026-09-27); the holdout run in T06 (2026-09-27). Standing directives: fewest limitations; robustness with recorded fallbacks; the T05/T05b defaults agreed.",
+  "ADRs 0014\u20130018 are `Proposed` at the measured commit; each says it is accepted when this manifest is `tested`. The acceptance is a separate bookkeeping step.",
+  "Not run: the stress profiles (spec \u00a76.7: box, log, trivial-split) \u2014 registered, reported and never gated; T06's gate does not depend on them.",
+  "Spec \u00a715, what T06 does not establish: no uniqueness claim for any root (the branch census reports what the ensemble found); no performance claim (the 60 s ceiling is a hang guard; costs are within-platform); a rescued start is evidence about the solver with its fallbacks, not Newton's basin, and THM-08's and THM-09's `p_c^first` is not a near-root basin (single-phase openings); no solution-accuracy promise from a certificate beyond ADR 0018's first-order target where a refinement is kept; \u00a78.8 checks saturation, not the split's amounts; units v2 is ADR 0016's table and nothing else; ADR 0017 removes one failure mode of SYN-001's flash; no block-level rank localization at T06's sizes.",
+  "Part-record assertions: A78's suite-level half (the full suite under the old hash), A41's W2 inertness, A38's 20-seed spread and A81 (a)'s fixture difference are the records of the commits that measured them (`docs/t06-measurements.md`, the W2 and W15 commits); what is measurable at this commit is measured and named in each check's value.",
+  "T06.A09 is `not_applicable`: superseded by Amendment 1: STA-03 is a solved case; A55\u2013A57 carry it (T06 spec \u00a713, A09's row).",
+  "T06.A10 is `not_applicable`: superseded by Amendment 1: STA-04 is a solved case; A59\u2013A60 carry it (T06 spec \u00a713, A10's row).",
+  "T06.A58 is `not_applicable`: superseded by A67 when W12 replaced `unit-conversion-v1` with `unit-conversion-v2` (T06 spec \u00a713, A58's row; ADR 0016); v1's known answers are A67's `v1_known_answers_under_v2`.",
+  "T06.A94 is `not_applicable`: no cost remedy was proposed for adoption: W21's attribution landed none and left its one candidate (an exact `lnK` memo scoped to a band route, saving not measured) to the design lane (`docs/t06-measurements.md`, W21), so the three `F-BUDGET` starts stay `F-BUDGET` in run 2 and run 2r (spec \u00a76.6 (A4), Q23); the row applies only if one is proposed."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

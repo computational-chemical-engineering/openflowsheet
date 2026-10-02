@@ -1,0 +1,145 @@
+{
+  "description": "T07 design note §9.5 (1), gate G20: every line of src/openflowsheet whose code (comments and strings excluded, W0.5's proposal) matches one of §9.5's patterns, with why it is not process-global mutable state that two jobs in one interpreter could share. Keyed by file and stripped line text; `occurrences` is how many lines of that file carry that text. A hit not listed here, or an entry with no hit, fails tests/test_t07_global_state.py.",
+  "entries": [
+    {
+      "file": "verify/regularity.py",
+      "line": "saved = np.random.get_state()",
+      "patterns": ["np.random"],
+      "occurrences": 1,
+      "justification": "T06 spec §8.1 (ADR 0014 D4, R-069): save/seed/restore of numpy's legacy generator around onenormest; safe with one computation per interpreter at a time, which the process executor guarantees (§9.4, R-088 Q27)."
+    },
+    {
+      "file": "verify/regularity.py",
+      "line": "np.random.seed(ONENORMEST_SEED)",
+      "patterns": ["np.random", "random"],
+      "occurrences": 1,
+      "justification": "As the save above: the seeding, restored in a finally (JobInterrupted included)."
+    },
+    {
+      "file": "verify/regularity.py",
+      "line": "np.random.set_state(saved)",
+      "patterns": ["np.random"],
+      "occurrences": 1,
+      "justification": "As the save above: the restore."
+    },
+    {
+      "file": "orchestrator/trace.py",
+      "line": "INTERRUPT_CHECK: ContextVar[Callable[[], None] | None] = ContextVar(\"INTERRUPT_CHECK\", default=None)",
+      "patterns": ["ContextVar"],
+      "occurrences": 1,
+      "justification": "§8.1's cooperative check: per thread and asyncio task, None outside a job, set and reset by jobs.interrupt.interruptible for the job running in that context only."
+    },
+    {
+      "file": "application/types.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 5,
+      "justification": "The published schemas, their registry and validators, and (W6b) `published_schemas`, the producer and J5 consumer readings by $id, all built from the packaged schema files, which are immutable for the process's life; the cached documents are never mutated (the consumer variants are new documents; the job one deep-copies)."
+    },
+    {
+      "file": "application/bindings/mcp.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "T07 W6b: the MCP tool list, built from OPERATIONS, the packaged description files and the published schemas, all immutable for the process's life; the tools are served, never mutated, and hold no job or request state."
+    },
+    {
+      "file": "run/solution_state.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "The solution-state schema's validator, from the packaged schema file (immutable for the process's life)."
+    },
+    {
+      "file": "models/syn001/component_separator.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/conversion_reactor.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/kinetic_cstr.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "T08 W2: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life (the W0.5 pattern of every model module)."
+    },
+    {
+      "file": "models/syn001/feed.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/flash.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/heat_exchanger.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/heater.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/mixer.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/ph_flash.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/pump.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/sink.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/splitter.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "models/syn001/valve.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    }
+  ]
+}

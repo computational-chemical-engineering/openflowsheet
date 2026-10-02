@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://process-runtime.invalid/p02/jacobian-result.draft.schema.json",
+  "title": "JacobianResult (P02 draft)",
+  "description": "Specification §10.4. Sparse CSC with explicit row and column identity; `pattern_provenance` records whether the pattern was declared by the backend or obtained by thresholding values, which specification §11.2 treats as a dense fallback.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status", "message", "phase_signature", "model_version", "constants_sha256", "state_sha256",
+    "counters", "accuracy", "pattern_provenance", "source_map", "format", "row_ids", "col_ids",
+    "indptr", "indices", "data", "nnz"
+  ],
+  "properties": {
+    "status": { "enum": ["ok", "invalid_trial_state", "unsupported", "error"] },
+    "message": { "type": "string" },
+    "phase_signature": {
+      "oneOf": [{ "enum": ["LIQUID", "VAPOR", "TWO_PHASE", "ZERO_FLOW"] }, { "type": "null" }]
+    },
+    "model_version": { "type": "string", "minLength": 1 },
+    "constants_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "state_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "counters": { "type": "object" },
+    "accuracy": { "type": "string" },
+    "pattern_provenance": { "enum": ["backend-declared", "thresholded"] },
+    "source_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["csc_index", "row_id", "col_id"],
+        "properties": {
+          "csc_index": { "type": "integer", "minimum": 0 },
+          "row_id": { "type": "string" },
+          "col_id": { "type": "string" },
+          "native_row": { "type": "string" },
+          "native_col": { "type": "string" },
+          "origin": { "type": "string" },
+          "value": { "type": "number" }
+        }
+      }
+    },
+    "format": { "const": "csc" },
+    "row_ids": { "type": "array", "items": { "type": "string" } },
+    "col_ids": { "type": "array", "items": { "type": "string" } },
+    "indptr": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+    "indices": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+    "data": { "type": "array", "items": { "type": "number" } },
+    "nnz": { "type": "integer", "minimum": 0 },
+    "raw_shape": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+    "raw_nnz": { "type": "integer", "minimum": 0 }
+  }
+}

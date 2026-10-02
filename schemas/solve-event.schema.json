@@ -1,0 +1,454 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/solve-event.schema.json",
+  "title": "SolveEvent",
+  "description": "One observable decision in a solve (K03 \u00a712.3). The trace is append-only and `sequence` strictly increases: a trace is the evidence that a solve did what it says, so an event that could be reordered or rewritten is not evidence. A quantity that does not exist at an event is absent or null, never 0.0 -- a zero standing for 'there was no residual here' is the placeholder-success pattern written into a trace.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sequence",
+    "kind",
+    "attempt",
+    "iteration",
+    "signature",
+    "state_sha256",
+    "residual_inf_unscaled",
+    "merit",
+    "counters",
+    "message"
+  ],
+  "properties": {
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "kind": {
+      "enum": [
+        "plan_built",
+        "initializer_candidate",
+        "initializer_rejected",
+        "initializer_accepted",
+        "attempt_opened",
+        "jacobian",
+        "linear_solve",
+        "trial",
+        "step_accepted",
+        "attempt_closed",
+        "solve_closed",
+        "unit_evaluated",
+        "region_opened",
+        "region_closed",
+        "acceleration",
+        "restart",
+        "homotopy_step"
+      ]
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "iteration": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "signature": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "prefixItems": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "enum": [
+              "LIQUID",
+              "VAPOR",
+              "TWO_PHASE",
+              "ZERO_FLOW"
+            ]
+          }
+        ]
+      },
+      "description": "The phase selections an attempt freezes, as ordered (unit_id, regime) pairs. Blueprint [A01]: the set belongs to the attempt, not to a residual call."
+    },
+    "state_sha256": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "residual_inf_unscaled": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "merit": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "alpha": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    },
+    "step_inf_scaled": {
+      "type": "number",
+      "minimum": 0
+    },
+    "trial_status": {
+      "enum": [
+        "accepted",
+        "rejected"
+      ]
+    },
+    "rejection_reason": {
+      "enum": [
+        "invalid_trial",
+        "phase_update_required",
+        "armijo",
+        "bound_blocked",
+        "linear_solve_failed"
+      ],
+      "description": "Why a trial was rejected. `bound_blocked` and `linear_solve_failed` are the PTC core's (ADR 0010 D7.2, T04 §7.3): a pseudo-step whose direction leaves the bounds at once, or whose shifted matrix does not factorize, is retried at a smaller pseudo-step."
+    },
+    "linear": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "residual_normalized",
+        "u_diag_min_abs",
+        "u_diag_max_abs",
+        "nnz_L",
+        "nnz_U"
+      ],
+      "properties": {
+        "residual_normalized": {
+          "type": "number",
+          "minimum": 0
+        },
+        "u_diag_min_abs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "u_diag_max_abs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "nnz_L": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nnz_U": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "ADR 0004 D3.1. The |U_ii| extremes are a recorded screen and never a rank statement: blueprint [A08] puts that on the final unregularized Jacobian, which is K04's."
+    },
+    "inner_consistency": {
+      "type": "object"
+    },
+    "counters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "property_calls",
+        "requested_evaluations",
+        "cache_hits",
+        "residual_calls",
+        "jacobian_calls",
+        "factorizations"
+      ],
+      "properties": {
+        "property_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requested_evaluations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cache_hits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "residual_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jacobian_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "factorizations": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "Cumulative, on every event, so a trace shows where a budget went. `property_calls` is the budgeted quantity -- actual provider calls, i.e. exact-cache misses. Requested evaluations and hits are recorded separately (blueprint \u00a76.4) and do not consume the budget, so that a cache cannot change what a budget means."
+    },
+    "outcome": {
+      "enum": [
+        "CONVERGED",
+        "INITIALIZATION_FAILED",
+        "SCALE_UNAVAILABLE",
+        "SPECIFICATION_CONFLICT",
+        "UNSUPPORTED_RANK_STRUCTURE",
+        "PHASE_UPDATE_REQUIRED",
+        "ACTIVE_SET_CYCLING",
+        "ATTEMPTS_EXHAUSTED",
+        "BUDGET_EXHAUSTED",
+        "STAGNATION",
+        "LINE_SEARCH_FAILED",
+        "BOUND_BLOCKED",
+        "LINEAR_SOLVE_FAILED",
+        "INNER_SOLVE_INCONSISTENT",
+        "EVALUATION_ERROR",
+        "RECYCLE_STAGNATION",
+        "CAPABILITY_UNAVAILABLE",
+        "CHECKPOINT_INCOMPATIBLE",
+        "HOMOTOPY_STALLED",
+        "PTC_STALLED",
+        "PTC_MAPPING_INVALID"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "step_index": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "ADR 0009 D3: the ExecutionPlan step this event belongs to; on every event from `region_opened` to `region_closed`, and on `unit_evaluated`."
+    },
+    "step_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "ADR 0009 D3: on the one `plan_built` event of an ExecutionPlan, its number of steps."
+    },
+    "depth_used": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "ADR 0009 D3, T02 \u00a75.8: the Anderson depth after filtering; 0 is a plain (substitution) step."
+    },
+    "columns_dropped_condition": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "T02 \u00a75.4: history columns dropped at this step for the condition bound."
+    },
+    "columns_dropped_coefficient": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "T02 \u00a75.4: history columns dropped at this step for the coefficient bound."
+    },
+    "kappa_2": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 1,
+      "description": "T02 \u00a75.8: 2-norm condition number of the accepted least squares; null on a plain step. R1/R2, floor 1.0 (ADR 0007 D2.2)."
+    },
+    "gamma_inf": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "T02 \u00a75.8: max-norm of the accepted Anderson coefficients; null on a plain step. R1/R2, floor 1e-12 (ADR 0007 D2.2)."
+    },
+    "beta_substitution": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "T02 \u00a75.8: the damping applied to this step (the substitution damping on a plain step, the mixing beta on an Anderson step)."
+    },
+    "oscillation_flag": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "T02 \u00a75.6: whether the oscillation detector has fired in this attempt."
+    },
+    "restart_reason": {
+      "enum": [
+        "stagnation",
+        null
+      ],
+      "description": "T02 \u00a75.6: why the Anderson history was cleared."
+    },
+    "restart_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1,
+      "description": "T02 \u00a75.6: the restart's ordinal within the attempt (at most `max_restarts`)."
+    },
+    "merge_into_eo": {
+      "enum": [
+        "taken",
+        "unsupported",
+        null
+      ],
+      "description": "T02 \u00a74.4: the merge edge's decision, on the closing event of a converge step."
+    },
+    "merge_unsupported": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "unit",
+        "method"
+      ],
+      "properties": {
+        "unit": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        }
+      },
+      "description": "T02 \u00a74.4: the non-capable unit and its declared derivative method, when `merge_into_eo` is `unsupported`."
+    },
+    "lambda_value": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$",
+      "description": "ADR 0010 D7.2 (T04 \u00a74.7): the \u03bb of a `homotopy_step`, an exact dyadic fraction `p/q` (R0)."
+    },
+    "delta_lambda": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$",
+      "description": "ADR 0010 D7.2: the \u0394\u03bb of a `homotopy_step` (`0` for the easy endpoint), `p/q` (R0)."
+    },
+    "corrector_outcome": {
+      "enum": [
+        "CONVERGED",
+        "INITIALIZATION_FAILED",
+        "SCALE_UNAVAILABLE",
+        "SPECIFICATION_CONFLICT",
+        "UNSUPPORTED_RANK_STRUCTURE",
+        "PHASE_UPDATE_REQUIRED",
+        "ACTIVE_SET_CYCLING",
+        "ATTEMPTS_EXHAUSTED",
+        "BUDGET_EXHAUSTED",
+        "STAGNATION",
+        "LINE_SEARCH_FAILED",
+        "BOUND_BLOCKED",
+        "LINEAR_SOLVE_FAILED",
+        "INNER_SOLVE_INCONSISTENT",
+        "EVALUATION_ERROR",
+        "RECYCLE_STAGNATION",
+        "CAPABILITY_UNAVAILABLE",
+        "CHECKPOINT_INCOMPATIBLE",
+        "HOMOTOPY_STALLED",
+        "PTC_STALLED",
+        "PTC_MAPPING_INVALID",
+        null
+      ],
+      "description": "ADR 0010 D7.2: the Newton corrector's outcome for this \u03bb-trial; accepted iff CONVERGED."
+    },
+    "corrector_iterations": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "level_constants_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "ADR 0010 D7.2: the \u03bb-level instance's constants_sha256. A digest whose preimage contains a solved float: compared by shape only."
+    },
+    "homotopy_level": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "ADR 0010 D7.2: on every event a homotopy corrector records, the index of its \u03bb-trial (0 for the easy endpoint)."
+    },
+    "eo_recovery": {
+      "enum": [
+        "taken",
+        "unsupported",
+        null
+      ],
+      "description": "ADR 0010 D3 (T04 \u00a75.2): recovery edge 3's decision, on a region step's `region_closed`."
+    },
+    "eo_recovery_unsupported": {
+      "enum": [
+        "no_continuation_parameter",
+        "no_restart_initializer",
+        "restart_start_unchanged",
+        "restart_initializer_failed",
+        null
+      ],
+      "description": "ADR 0010 D3: why edge 3 could not run, when `eo_recovery` is `unsupported`. The last three are ADR 0015 D4's (the sequential restart under `eo_recovery = homotopy_or_sequential_restart`): the flowsheet is not revision-built, the restart start is the failed item 0's by construction, or the restart initializer refused."
+    },
+    "pseudo_step": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "exclusiveMinimum": 0,
+      "description": "ADR 0010 D7.2 (T04 \u00a77.8): on a PTC `trial`, the pseudo-step \u0394\u03c4 it was taken at (s); on a PTC `step_accepted`, the \u0394\u03c4 used. Null on the polish trial. R1/R2 under ADR 0007 D2."
+    },
+    "pseudo_step_next": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "exclusiveMinimum": 0,
+      "description": "ADR 0010 D7.2: on a PTC `step_accepted`, the SER proposal for the next pseudo-step (s); null when the accepted iterate meets the stop test. R1/R2."
+    },
+    "ser_ratio": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "exclusiveMinimum": 0,
+      "description": "ADR 0010 D7.2: on a PTC `step_accepted`, the clipped SER ratio \u03c6_k / max(\u03c6_{k+1}, \u03c6_floor); null when the stop test holds. R1/R2."
+    }
+  }
+}

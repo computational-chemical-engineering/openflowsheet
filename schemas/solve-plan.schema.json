@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/solve-plan.schema.json",
+  "title": "SolvePlan",
+  "description": "The structural plan, built before any numerics and reproducible from the model alone (K03 \u00a712.2). Nothing here depends on an iterate, which is what makes it replayable and what requirement D06 means by 'scales precede initialization acceptance'. `eliminated_rows` carries the certificate for each structurally removed row: eliminated is not discarded -- the rows stay assembled, are evaluated in the inner-consistency check, and K04 re-evaluates all of them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id",
+    "model_version",
+    "constants_sha256",
+    "policy_id",
+    "tear_variable_ids",
+    "tear_row_ids",
+    "inner_variable_ids",
+    "inner_row_ids",
+    "eliminated_rows",
+    "column_scales",
+    "row_scales",
+    "scale_provenance",
+    "bounds",
+    "signature_units",
+    "initializer_chain",
+    "estimates"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}@[0-9a-f]{64}$"
+    },
+    "constants_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tear_variable_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "tear_row_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "inner_variable_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "inner_row_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "eliminated_rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "row_id",
+          "equals",
+          "constant_mismatch",
+          "tolerance"
+        ],
+        "properties": {
+          "row_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "equals": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "enum": [
+                    -1,
+                    1
+                  ]
+                }
+              ]
+            }
+          },
+          "constant_mismatch": {
+            "type": "number"
+          },
+          "tolerance": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      },
+      "description": "Each removed row with the retained rows it equals and their signs, and the constant mismatch measured at two states. |mismatch| above the tolerance is a SPECIFICATION_CONFLICT and the plan is not built."
+    },
+    "column_scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "row_scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "scale_provenance": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Where the scales came from. Never an iterate (ADR 0001 D3.5)."
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Lower and upper bound per variable, null where absent. A tear component is a flow bounded below by 0, and a tear at exactly 0 is a valid iterate (ADR 0001 D3.5)."
+    },
+    "signature_units": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "initializer_chain": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "estimates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "description": "Blueprint \u00a77.1's recorded estimates: the inner dimension and the assembled Jacobian's nonzero count."
+    }
+  }
+}

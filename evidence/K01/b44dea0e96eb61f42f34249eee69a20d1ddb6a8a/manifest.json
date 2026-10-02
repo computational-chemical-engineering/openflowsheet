@@ -1,0 +1,197 @@
+{
+ "work_package": "K01",
+ "commit": "b44dea0e96eb61f42f34249eee69a20d1ddb6a8a",
+ "requirements": [
+  "D02",
+  "D20"
+ ],
+ "status": "reviewed",
+ "inputs": {
+  "case_id": "SYN-001 lifted form (17 variables, 17 equations, 60 structural nonzeros) compiled from benchmarks/k01/syn001.py at the six registered states S1-S6",
+  "case_hash": "6a2f0c1559220d51c38a60eee26b5cf60d90b3abf96b221f247532938a053348",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "467ee251ed3b3612629465aed872e7fe44ce09da69c979de8b7a5cbcb46d1859"
+  },
+  {
+   "cmd": "PYTHONPATH=. .venv/bin/python scripts/k01_evidence_manifest.py /tmp/k01-stdout --commit \u2026",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "K01.conformance.residual",
+   "description": "Assembled residual vs the 20-digit references at all six states.",
+   "result": "pass",
+   "value": 0.013367195297273983,
+   "expected": "<= 1.0 (ratio to the registered tolerance)",
+   "tolerance": "1e-13 * (|E| + row scale), the P02 judge's registered form"
+  },
+  {
+   "id": "K01.conformance.jacobian",
+   "description": "Assembled Jacobian vs the 20-digit references. Every entry obtained by algorithmic differentiation through an opaque callback's declared-sparse chain rule.",
+   "result": "pass",
+   "value": 0.008603279426621245,
+   "expected": "<= 1.0 (ratio to the registered tolerance)",
+   "tolerance": "1e-13 * (|E| + row/column scale ratio)"
+  },
+  {
+   "id": "K01.conformance.pattern",
+   "description": "Assembled shape and structural nonzeros, at every state.",
+   "result": "pass",
+   "value": [
+    [
+     11,
+     11,
+     43
+    ],
+    [
+     17,
+     17,
+     60
+    ]
+   ],
+   "expected": "{(17, 17, 60)} lifted and {(11, 11, 43)} inlined, the registered patterns"
+  },
+  {
+   "id": "K01.D5.5.call_accounting",
+   "description": "Block calls per assembled Jacobian. Block H has five inputs, so a finite-difference fallback would show six value calls.",
+   "result": "pass",
+   "value": [
+    [
+     "blockH",
+     1,
+     1
+    ],
+    [
+     "blockK",
+     1,
+     1
+    ]
+   ],
+   "expected": "one value call and one Jacobian call per block"
+  },
+  {
+   "id": "K01.conformance.chain_rule",
+   "description": "The inlined form composes each block output with a non-unit outer derivative, so the callback's declared-sparse chain rule is exercised rather than passed through at +/-1 as it is in the lifted form.",
+   "result": "pass",
+   "value": [
+    [
+     0.0021018608761865757,
+     "S6 I r[eq_B]"
+    ],
+    [
+     0.008603279426621245,
+     "S2 I J[eq_A|l_A]"
+    ]
+   ],
+   "expected": "<= 1.0 (ratio to the registered tolerance) at all six states"
+  },
+  {
+   "id": "K01.D4.1.pinned_input_identity",
+   "description": "One model_version across states that differ only in pinned inputs; a distinct constants_sha256 per distinct pinned-input vector (ADR 0008 D4.1). PARTIAL: see the limitation on constant coverage.",
+   "result": "pass",
+   "value": [
+    "SYN-001-L-1",
+    6
+   ],
+   "expected": "one model_version, one hash per distinct pinned-input vector"
+  },
+  {
+   "id": "K01.D2.4.pairing",
+   "description": "Residual and Jacobian agree on state and problem identity at every state.",
+   "result": "pass",
+   "value": true,
+   "expected": true
+  },
+  {
+   "id": "K01.D5.4.second_order",
+   "description": "Second order through an opaque callback.",
+   "result": "unsupported",
+   "value": "capabilities.hessian == 'absent'; hessian() raises",
+   "expected": "reported absent, never fabricated zeros"
+  },
+  {
+   "id": "K01.D5.7.backend_confinement",
+   "description": "Only the adapter imports CasADi; the spec layer imports with the backend poisoned.",
+   "result": "pass",
+   "value": "src/process_runtime/compile/casadi_backend.py",
+   "expected": "exactly one module"
+  },
+  {
+   "id": "K01.schemas.promoted",
+   "description": "CompiledProblemMetadata, EvaluationResult and JacobianResult schemas with round-trip fixtures; 16 invalid fixtures each rejected by the schema or the cross-field checks.",
+   "result": "pass",
+   "value": 3,
+   "expected": "the plan \u00a72.2 P02/K01 row, less PropertyCapabilities"
+  },
+  {
+   "id": "K01.schemas.property_capabilities",
+   "description": "PropertyCapabilities, the fourth schema on the plan \u00a72.2 P02/K01 row.",
+   "result": "not_applicable",
+   "value": "no PropertyProvider exists; a schema is added when its object is used",
+   "expected": "deferred to K02"
+  },
+  {
+   "id": "K01.canonical.encoding",
+   "description": "Identity hashes encode big-endian IEEE-754 binary64 bytes (decision register R-006, ratified by Frank 2026-09-18). ADR 0008 D2's rules are pinned against both this and the legacy text encoding, and the legacy encoder still agrees with the two independent implementations that hashed the P02 artifacts.",
+   "result": "pass",
+   "value": "ieee754-be-v1",
+   "expected": "D2 rules hold for both encodings; legacy agreement preserved"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "src/process_runtime/compile/casadi_backend.py",
+   "sha256": "c9eb0148529b13530f98c27d3473d1893af87bb3c622fb31c908416f36a30eb5",
+   "description": "The CasADi adapter."
+  },
+  {
+   "path": "src/process_runtime/compile/spec.py",
+   "sha256": "3b2c9f19f99cbe1acb15bde8871c98c1af0655f8c83538ae37aa27bdee293adc",
+   "description": "The backend-free problem description."
+  },
+  {
+   "path": "src/process_runtime/canonical.py",
+   "sha256": "3a5b3c9bf9646cd9899995fc52308f63bf56ae23f33e855e137b0f5c550591ad",
+   "description": "The promoted identity encoding."
+  },
+  {
+   "path": "src/process_runtime/serialize.py",
+   "sha256": "2a28400385ce1cf2cbeadb9aee064e18df95fb8c684053e2899d7dd22aea0090",
+   "description": "Serialization and the cross-field rules."
+  },
+  {
+   "path": "benchmarks/k01/syn001.py",
+   "sha256": "92fe4b8f61b4571a907ab7a44d0e0da8a6e8a4f75827c6086fbd64111f9fc3e1",
+   "description": "The SYN-001 conformance fixture."
+  },
+  {
+   "path": "tests/fixtures/schemas/jacobian_result",
+   "sha256": "316331401c0e5ed6b80c03cd9cc5007bee11aa3f330864721d1f22b35ffed2a8",
+   "description": "Round-trip fixtures, generated from real output. Directory hash method: sha256 over every file sorted by relative path, each as `path\\0sha256\\n`."
+  }
+ ],
+ "limitations": [
+  "SYN-001 is synthetic. Nothing here is empirical validation of any thermodynamic model, and the conformance states are the six P02 registered ones, not a flowsheet population.",
+  "ADR 0008 D4.1 coverage is PARTIAL, and the check above should be read with this. D4.1 covers 'physical constants, model parameters and specification values'. The fixture's parameter_ids name the six specification values, and the thirteen SYN-001 physical constants baked into the block closed forms are hashed by nothing \u2014 the literal D4.1 test passes while the coverage it stands for does not. (P02 hashed those thirteen and not the specification values; K01 is the reverse.) Found by the Fable review of K01. The fix belongs in K02, where PropertyProvider.describe() exposes a provider's data hash and the compiler folds it into the pinned-input vector, rather than on a K01 fixture block.",
+  "The block closed forms are imported from benchmarks/p02/expected.py, so the values a block returns share a source with one of the comparisons. What is independent of the 20-digit references is the composition and the derivatives, which is what the assertions rest on; the block values are not, and this is stated in both the fixture and the test.",
+  "No solve was run. K01 delivers a compiled problem, not a solver; K03 owns the Newton orchestration and the linear solve stays in SciPy SuperLU (D03, ADR 0006 D2.4).",
+  "The Hessian is absent through an opaque callback and is reported so. That is a capability fact about this composition, not a claim that second order is unavailable in general: a block shipping symbolic derivative code gives exact second order, which K01 does not use.",
+  "Performance was not measured. The P02 timings stand and were taken on the spike, not on this compiler.",
+  "One host, one platform: Debian 13, x86-64, Python 3.13.5. No CI has executed any of it. The second-platform structural identity gate G05 requires is K05.",
+  "CasADi 3.8.0 ships a casadi.pyi that mypy cannot parse, so stubs/casadi shadows it and the adapter's calls into the backend are not statically checked. Its own signatures and every other module still are, and the behaviour is covered by the conformance fixtures.",
+  "ADR 0002 is still unwritten. The identity encoding is big-endian IEEE-754 binary64 bytes (decision register R-006, ratified by Frank on 2026-09-18 on the Fable review's recommendation); ADR 0002 must ratify that and must state what the digest does not cover \u2014 it is of the anonymous ordered vector, so constants_sha256 identifies a pinned-input vector only together with a model_version that pins parameter_ids, and nothing currently enforces that obligation on whatever assigns model_version.",
+  "review.numerical and review.process_model are pending. Fable reviews K01 per plan \u00a74.2; no human numerical or process-modeling reviewer has seen it and no agent may claim that."
+ ],
+ "review": {
+  "numerical": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more.",
+  "process_model": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more."
+ }
+}

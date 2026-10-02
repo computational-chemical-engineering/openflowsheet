@@ -1,0 +1,31 @@
+# Invalid ComponentRecord: no elemental formula and no elemental_verification.
+#
+# A pseudo-component without an elemental formula must say so explicitly. Omitting
+# elemental_verification leaves the verification scope unstated, which blueprint §4.2
+# forbids: pseudo-components without elemental formulas explicitly limit the verification
+# scope.
+expect_error: elemental_verification
+document:
+  id: D
+  name: SYN-001 pseudo-component D, incorrectly recorded
+  synthetic: true
+  molecular_weight:
+    value: 0.1
+    unit: kg/mol
+    dimension:
+    - 0
+    - 1
+    - 0
+    - 0
+    - -1
+    - 0
+    - 0
+    kind: molar_mass
+    meaning: Molecular weight
+    role: fixed
+    provenance: plan v1.1 §3.1, synthetic
+  elemental_composition: null
+  parameters: {}
+  rights:
+    source: Synthetic
+    redistribution: synthetic; no restrictions

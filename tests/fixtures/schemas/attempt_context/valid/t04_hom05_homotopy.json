@@ -1,0 +1,147 @@
+{
+ "active_phases": [
+  [
+   "U-HEAT",
+   "TWO_PHASE"
+  ],
+  [
+   "U-FLASH",
+   "TWO_PHASE"
+  ]
+ ],
+ "attempt_index": 0,
+ "column_scales": {
+  "S2.P": 100000.0,
+  "S2.T": 100.0,
+  "S2.n.A": 3.0,
+  "S2.n.B": 3.0,
+  "S2.n.C": 3.0,
+  "S3.L": 3.0,
+  "S3.P": 100000.0,
+  "S3.T": 100.0,
+  "S3.V": 3.0,
+  "S3.liq.A": 3.0,
+  "S3.liq.B": 3.0,
+  "S3.liq.C": 3.0,
+  "S3.n.A": 3.0,
+  "S3.n.B": 3.0,
+  "S3.n.C": 3.0,
+  "S3.vap.A": 3.0,
+  "S3.vap.B": 3.0,
+  "S3.vap.C": 3.0,
+  "S4.N": 3.0,
+  "S4.P": 100000.0,
+  "S4.T": 100.0,
+  "S4.n.A": 3.0,
+  "S4.n.B": 3.0,
+  "S4.n.C": 3.0,
+  "S5.N": 3.0,
+  "S5.P": 100000.0,
+  "S5.T": 100.0,
+  "S5.n.A": 3.0,
+  "S5.n.B": 3.0,
+  "S5.n.C": 3.0,
+  "S6.P": 100000.0,
+  "S6.T": 100.0,
+  "S6.n.A": 3.0,
+  "S6.n.B": 3.0,
+  "S6.n.C": 3.0,
+  "S7.P": 100000.0,
+  "S7.T": 100.0,
+  "S7.n.A": 3.0,
+  "S7.n.B": 3.0,
+  "S7.n.C": 3.0,
+  "U-FLASH.Q": 100000.0,
+  "U-HEAT.Q": 100000.0
+ },
+ "continuation": {
+  "parameter_ids": [
+   "SPEC:SPEC-flash-duty"
+  ],
+  "type": "specification_continuation"
+ },
+ "core": "homotopy",
+ "counters_at_open": {
+  "cache_hits": 0,
+  "factorizations": 0,
+  "jacobian_calls": 0,
+  "property_calls": 0,
+  "requested_evaluations": 0,
+  "residual_calls": 0
+ },
+ "evaluation_context": {
+  "accuracy_policy": "exact-double",
+  "constants_sha256": "02c781ed5c472e597e255d8f7eb0d167192dac26d059d451e4866788d9df515d",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@c823e7aa40bcdeca0c34417fe0156e5f494fa9630006771a5f10f5614e19a893",
+  "phase_signature": null
+ },
+ "flowsheet_context": {
+  "accuracy_policy": "exact-double",
+  "constants_sha256": "02c781ed5c472e597e255d8f7eb0d167192dac26d059d451e4866788d9df515d",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@c823e7aa40bcdeca0c34417fe0156e5f494fa9630006771a5f10f5614e19a893",
+  "phase_signature": null
+ },
+ "jacobian_pattern": {
+  "columns": 42,
+  "nnz": 153,
+  "rows": 42,
+  "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a"
+ },
+ "opened_from": null,
+ "opened_reason": "initial",
+ "row_scales": {
+  "SPEC:SPEC-flash-duty": 100000.0,
+  "U-FLASH:FLASH-P:liquid": 100000.0,
+  "U-FLASH:FLASH-P:vapor": 100000.0,
+  "U-FLASH:FLASH-T:liquid": 100.0,
+  "U-FLASH:FLASH-T:vapor": 100.0,
+  "U-FLASH:FLASH-duty": 100000.0,
+  "U-FLASH:FLASH-equilibrium:A": 9.0,
+  "U-FLASH:FLASH-equilibrium:B": 9.0,
+  "U-FLASH:FLASH-equilibrium:C": 9.0,
+  "U-FLASH:FLASH-mole:A": 3.0,
+  "U-FLASH:FLASH-mole:B": 3.0,
+  "U-FLASH:FLASH-mole:C": 3.0,
+  "U-FLASH:Ndef:liquid": 3.0,
+  "U-FLASH:Ndef:vapor": 3.0,
+  "U-HEAT:HEAT-duty": 100000.0,
+  "U-HEAT:HEAT-equilibrium:A": 9.0,
+  "U-HEAT:HEAT-equilibrium:B": 9.0,
+  "U-HEAT:HEAT-equilibrium:C": 9.0,
+  "U-HEAT:HEAT-mole:A": 3.0,
+  "U-HEAT:HEAT-mole:B": 3.0,
+  "U-HEAT:HEAT-mole:C": 3.0,
+  "U-HEAT:HEAT-pressure": 100000.0,
+  "U-HEAT:Ldef": 3.0,
+  "U-HEAT:Vdef": 3.0,
+  "U-HEAT:split:A": 3.0,
+  "U-HEAT:split:B": 3.0,
+  "U-HEAT:split:C": 3.0,
+  "U-MIX:MIX-energy": 100000.0,
+  "U-MIX:MIX-mole:A": 3.0,
+  "U-MIX:MIX-mole:B": 3.0,
+  "U-MIX:MIX-mole:C": 3.0,
+  "U-MIX:MIX-pressure:0": 100000.0,
+  "U-MIX:MIX-pressure:1": 100000.0,
+  "U-SPLIT:SPLIT-P:purge": 100000.0,
+  "U-SPLIT:SPLIT-T:purge": 100.0,
+  "U-SPLIT:SPLIT-T:recycle": 100.0,
+  "U-SPLIT:SPLIT-purge:A": 3.0,
+  "U-SPLIT:SPLIT-purge:B": 3.0,
+  "U-SPLIT:SPLIT-purge:C": 3.0,
+  "U-SPLIT:SPLIT-recycle:A": 3.0,
+  "U-SPLIT:SPLIT-recycle:B": 3.0,
+  "U-SPLIT:SPLIT-recycle:C": 3.0
+ },
+ "scale_segment": 0,
+ "signature": [
+  [
+   "U-HEAT",
+   "TWO_PHASE"
+  ],
+  [
+   "U-FLASH",
+   "TWO_PHASE"
+  ]
+ ]
+}

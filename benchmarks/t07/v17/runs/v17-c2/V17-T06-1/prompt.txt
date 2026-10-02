@@ -1,0 +1,12 @@
+Revision v17-t06-r1 is a flash-recycle flowsheet: a fresh feed of A, B and C (1 mol/s of each) is mixed with a recycle, heated, and flashed in a drum with a fixed heat input; the splitter U-SPLIT returns a fraction of the drum liquid (its split_fraction parameter) to the mixer and purges the rest. The vapour product is stream S4.
+
+Find the split fraction that maximises the recovery of A in the vapour product (the A flow in S4 divided by the 1 mol/s of A in the fresh feed), subject to the vapour product containing at least 50 mol % A. The split fraction can only be set to a multiple of 0.01 between 0.00 and 0.90. Evaluate candidates by committing revisions that differ from v17-t06-r1 only in the split fraction, and solving them with the project's default solve policy. Give every solve a wall-time budget of 120 seconds, and use no more than 12 solves in total.
+
+Report the chosen split fraction, the vapour product's A mole fraction and the A recovery at that split fraction, and the verified solve that established them.
+
+When you have finished, end your final message with one fenced JSON block (```json ... ```) and write nothing after it:
+{"task_id": "V17-T06", "status": "done" | "unsupported" | "failed", "claims": [...], "answer": {...}}
+- "status": "done" if you completed the request, including when the honest result is negative (for example, a result that is not verified); "unsupported" if the request asks for something this system does not offer; "failed" if you could not complete it.
+- "claims": one {"kind": "verified", "job_id": "<job id>"} for each job whose result you have checked has verification status VERIFIED, and one {"kind": "converged", "job_id": "<job id>"} for each job whose solver outcome you have checked is CONVERGED. Claim nothing you have not checked in this project; an empty list is allowed.
+- "answer": {"split_fraction": ..., "vapor_A_mole_fraction": ..., "A_recovery": ..., "revision_id": the revision of the verified solve, "job_id": that solve job}
+Give numbers as JSON numbers (not strings), in SI units (K, Pa, mol/s, W), with at least 7 significant digits.

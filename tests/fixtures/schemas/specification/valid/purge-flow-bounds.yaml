@@ -1,0 +1,21 @@
+# Valid Specification: a bounded rather than fixed target.
+#
+# `value` and `bounds` are mutually exclusive; a bounded specification with role
+# `decision` is what READY_FOR_OPTIMIZATION permits (blueprint §4.3).
+id: SPEC-purge-A-bounds
+target:
+  object_type: connection
+  object_id: S7
+  path: state.n
+  component: A
+kind: molar_flow
+unit: mol/s
+bounds:
+  lower: 0.0
+  upper: 1.0
+tolerance:
+  absolute: 1.0e-09
+  relative: 1.0e-08
+  scale: 3.0
+role: decision
+provenance: illustrative optimization decision variable; not part of any registered SYN-001 case

@@ -1,0 +1,178 @@
+# T06 ProcessRevision: SYN-001-T06-REF05
+#
+# SYN-001-T06-REF05: reference comparison REF-05, valve.
+#
+# Written to docs/derivations/T06-corpus-spec.md §9.2 and docs/design/T05-generalization.md
+# §1.3 (the revision encoding R1-R6): instances in flow order, feeds first (the declaration
+# order); material connections in the specification's stream order (the stream allocation
+# order). Every model instance and pin is copied from a registered case with only its id, target
+# and stated value changed. Validates against schemas/process-revision.schema.json; binds by
+# application.revision_binding. `content_hash` is absent, as in every registered revision.
+schema_version: 1
+revision_id: SYN-001-T06-REF05-r1
+parent_revision: null
+title: 'SYN-001-T06-REF05: reference comparison REF-05, valve.'
+description: Feed (1, 1, 1) mol/s at 360 K and 1.8e5 Pa, liquid -> valve (P_r) -> sink. T06 spec §9.2
+  (REF-05); compared quantities in benchmarks/t06/reference_values.yaml closed_form.reference_fixtures.REF-05.
+component_set:
+  record_source: benchmarks/syn001/components.yaml
+  components:
+  - A
+  - B
+  - C
+instances:
+- id: U-FEED
+  model:
+    id: syn001.feed_source
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: feed
+  parameters: {}
+  policy:
+    fidelity: boundary condition; the fresh feed state is fully specified
+    validity: SYN-001 declared domain 280-440 K, 50000-200000 Pa
+- id: U-VLV
+  model:
+    id: syn001.valve
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: valve
+  parameters: {}
+  policy:
+    fidelity: isenthalpic throttle to a specified outlet pressure (T05 spec §8)
+    validity: SYN-001 declared domain; lifted inlet and outlet
+- id: U-SINK
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+connections:
+- id: S1
+  kind: material
+  from:
+    instance: U-FEED
+    port: outlet
+  to:
+    instance: U-VLV
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Feed: (1, 1, 1) mol/s at 360 K and 1.8e5 Pa, liquid.'
+- id: S2
+  kind: material
+  from:
+    instance: U-VLV
+    port: outlet
+  to:
+    instance: U-SINK
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor_liquid
+  notes: Valve outlet at P_r, lifted.
+specifications:
+- id: SPEC-S1-n-A
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: A
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-n-B
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: B
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-n-C
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: C
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-T
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 360.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed temperature.
+- id: SPEC-S1-P
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 180000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Fresh-feed pressure.
+- id: SPEC-valve-P
+  target:
+    object_type: connection
+    object_id: S2
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  notes: Valve outlet pressure, P_r.
+provenance:
+  actor: Opus 5.5 (T06 M1, build lane, from the design-lane specification)
+  operation: create
+  timestamp: '2026-09-25T00:00:00Z'
+  source_references:
+  - docs/derivations/T06-corpus-spec.md §4.1, §9.2
+  - docs/design/T05-generalization.md §1.3
+  - benchmarks/t06/reference_values.yaml closed_form.reference_fixtures
+  notes: Hand-specified fixture input. No solver has run on this revision.

@@ -1,0 +1,307 @@
+{
+ "route": "primary: set_external_model(model, inputs=[existing Vars], outputs=[existing Vars])",
+ "fallback_link_form_used": false,
+ "n_primals": 17,
+ "n_constraints": 17,
+ "nnz": 60,
+ "pattern_provenance": "backend-declared",
+ "native_primals_names": [
+  "L",
+  "P",
+  "Q",
+  "T",
+  "V",
+  "hL_A",
+  "hL_B",
+  "hL_C",
+  "l_A",
+  "l_B",
+  "l_C",
+  "lnK_A",
+  "lnK_B",
+  "lnK_C",
+  "v_A",
+  "v_B",
+  "v_C"
+ ],
+ "native_constraint_names": [
+  "eq_A",
+  "eq_B",
+  "eq_C",
+  "energy",
+  "bal_A",
+  "bal_B",
+  "bal_C",
+  "Vdef",
+  "Ldef",
+  "tspec",
+  "pspec",
+  "kb.output_constraints[lnK_A]",
+  "kb.output_constraints[lnK_B]",
+  "kb.output_constraints[lnK_C]",
+  "hb.output_constraints[H_A]",
+  "hb.output_constraints[H_B]",
+  "hb.output_constraints[H_C]"
+ ],
+ "variable_map": [
+  {
+   "col_id": "v_A",
+   "native_name": "v_A",
+   "native_index": 14
+  },
+  {
+   "col_id": "v_B",
+   "native_name": "v_B",
+   "native_index": 15
+  },
+  {
+   "col_id": "v_C",
+   "native_name": "v_C",
+   "native_index": 16
+  },
+  {
+   "col_id": "l_A",
+   "native_name": "l_A",
+   "native_index": 8
+  },
+  {
+   "col_id": "l_B",
+   "native_name": "l_B",
+   "native_index": 9
+  },
+  {
+   "col_id": "l_C",
+   "native_name": "l_C",
+   "native_index": 10
+  },
+  {
+   "col_id": "V",
+   "native_name": "V",
+   "native_index": 4
+  },
+  {
+   "col_id": "L",
+   "native_name": "L",
+   "native_index": 0
+  },
+  {
+   "col_id": "lnK_A",
+   "native_name": "lnK_A",
+   "native_index": 11
+  },
+  {
+   "col_id": "lnK_B",
+   "native_name": "lnK_B",
+   "native_index": 12
+  },
+  {
+   "col_id": "lnK_C",
+   "native_name": "lnK_C",
+   "native_index": 13
+  },
+  {
+   "col_id": "hL_A",
+   "native_name": "hL_A",
+   "native_index": 5
+  },
+  {
+   "col_id": "hL_B",
+   "native_name": "hL_B",
+   "native_index": 6
+  },
+  {
+   "col_id": "hL_C",
+   "native_name": "hL_C",
+   "native_index": 7
+  },
+  {
+   "col_id": "T",
+   "native_name": "T",
+   "native_index": 3
+  },
+  {
+   "col_id": "P",
+   "native_name": "P",
+   "native_index": 1
+  },
+  {
+   "col_id": "Q",
+   "native_name": "Q",
+   "native_index": 2
+  }
+ ],
+ "equation_map": [
+  {
+   "row_id": "bal_A",
+   "native_name": "bal_A",
+   "native_index": 4,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "bal_B",
+   "native_name": "bal_B",
+   "native_index": 5,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "bal_C",
+   "native_name": "bal_C",
+   "native_index": 6,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "Vdef",
+   "native_name": "Vdef",
+   "native_index": 7,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "Ldef",
+   "native_name": "Ldef",
+   "native_index": 8,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "eq_A",
+   "native_name": "eq_A",
+   "native_index": 0,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "eq_B",
+   "native_name": "eq_B",
+   "native_index": 1,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "eq_C",
+   "native_name": "eq_C",
+   "native_index": 2,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "kdef_A",
+   "native_name": "kb.output_constraints[lnK_A]",
+   "native_index": 11,
+   "kind": "grey_box_output",
+   "sign_applied_to_reach_specification": -1.0
+  },
+  {
+   "row_id": "kdef_B",
+   "native_name": "kb.output_constraints[lnK_B]",
+   "native_index": 12,
+   "kind": "grey_box_output",
+   "sign_applied_to_reach_specification": -1.0
+  },
+  {
+   "row_id": "kdef_C",
+   "native_name": "kb.output_constraints[lnK_C]",
+   "native_index": 13,
+   "kind": "grey_box_output",
+   "sign_applied_to_reach_specification": -1.0
+  },
+  {
+   "row_id": "hdef_A",
+   "native_name": "hb.output_constraints[H_A]",
+   "native_index": 14,
+   "kind": "grey_box_output",
+   "sign_applied_to_reach_specification": -1.0
+  },
+  {
+   "row_id": "hdef_B",
+   "native_name": "hb.output_constraints[H_B]",
+   "native_index": 15,
+   "kind": "grey_box_output",
+   "sign_applied_to_reach_specification": -1.0
+  },
+  {
+   "row_id": "hdef_C",
+   "native_name": "hb.output_constraints[H_C]",
+   "native_index": 16,
+   "kind": "grey_box_output",
+   "sign_applied_to_reach_specification": -1.0
+  },
+  {
+   "row_id": "energy",
+   "native_name": "energy",
+   "native_index": 3,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "tspec",
+   "native_name": "tspec",
+   "native_index": 9,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  },
+  {
+   "row_id": "pspec",
+   "native_name": "pspec",
+   "native_index": 10,
+   "kind": "algebraic",
+   "sign_applied_to_reach_specification": 1.0
+  }
+ ],
+ "row_orientation": {
+  "native": "PyNumero writes a grey-box output constraint as f(inputs) - output",
+  "specification": "\u00a72.4 writes kdef_i and hdef_i as output - f(inputs)",
+  "resolution": "the six grey-box rows are multiplied by -1 (residual and Jacobian together, an exact row scaling) before export; every other row is exported unchanged",
+  "affected_rows": [
+   "kdef_A",
+   "kdef_B",
+   "kdef_C",
+   "hdef_A",
+   "hdef_B",
+   "hdef_C"
+  ],
+  "constant": "OUTPUT_ROW_SIGN"
+ },
+ "pattern_state_invariant": true,
+ "pattern_states_checked": [
+  "S1",
+  "S2",
+  "S3",
+  "S4",
+  "S5",
+  "S6",
+  "S1p"
+ ],
+ "structure_size_reduced": {
+  "rows": 17,
+  "columns": 17,
+  "nnz": 60,
+  "indptr_bytes": 72,
+  "indices_bytes": 240,
+  "data_bytes": 480,
+  "total_bytes": 792,
+  "assumed_dtypes": {
+   "indptr": "int32",
+   "indices": "int32",
+   "data": "float64"
+  }
+ },
+ "structure_size_raw": {
+  "rows": 17,
+  "columns": 17,
+  "nnz": 60,
+  "indptr_bytes": 72,
+  "indices_bytes": 240,
+  "data_bytes": 480,
+  "total_bytes": 792,
+  "assumed_dtypes": {
+   "indptr": "int32",
+   "indices": "int32",
+   "data": "float64"
+  }
+ },
+ "raw_equals_reduced": "the primary path assembles the L-form natively; the reduced matrix is the raw matrix permuted into \u00a72.4 order with the six grey-box rows negated, so the two have the same dimension and the same number of nonzeros"
+}

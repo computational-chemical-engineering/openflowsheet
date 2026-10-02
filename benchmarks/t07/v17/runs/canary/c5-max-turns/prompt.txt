@@ -1,0 +1,1 @@
+Call the get_project tool. When you have its result, call the list_revisions tool. When you have that result, call the list_models tool. When you have that result, call the list_jobs tool. Make exactly one tool call per message. Then reply with the single word DONE.

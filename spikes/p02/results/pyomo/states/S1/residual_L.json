@@ -1,0 +1,57 @@
+{
+ "status": "ok",
+ "message": "",
+ "phase_signature": "TWO_PHASE",
+ "model_version": "P02-L-form-v1",
+ "constants_sha256": "0d91ffeeed88e9b9c03be1b62a4827927764fb6d9d49d2e06b59aeada29bdccc",
+ "state_sha256": "3fe347ec6261b6b62c51ed01e07143bb8f8da06b0abe8f3fe4d1129995c7e8a0",
+ "equation_ids": [
+  "bal_A",
+  "bal_B",
+  "bal_C",
+  "Vdef",
+  "Ldef",
+  "eq_A",
+  "eq_B",
+  "eq_C",
+  "kdef_A",
+  "kdef_B",
+  "kdef_C",
+  "hdef_A",
+  "hdef_B",
+  "hdef_C",
+  "energy",
+  "tspec",
+  "pspec"
+ ],
+ "values": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  -2.220446049250313e-16,
+  0.0,
+  5.551115123125783e-17,
+  -2.220446049250313e-16,
+  -0.0,
+  2.220446049250313e-16,
+  -0.0,
+  -0.0,
+  -0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "counters": {
+  "K": {
+   "value_calls": 1,
+   "jacobian_calls": 0
+  },
+  "H": {
+   "value_calls": 1,
+   "jacobian_calls": 0
+  }
+ },
+ "accuracy": "exact-double"
+}

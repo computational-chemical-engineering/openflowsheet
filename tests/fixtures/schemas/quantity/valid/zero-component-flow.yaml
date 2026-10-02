@@ -1,0 +1,22 @@
+# Valid Quantity: a component molar flow of exactly zero.
+#
+# Exactly zero is a legitimate value, not a degenerate one: at r = 0 the SYN-001 recycle
+# is exactly (0, 0, 0) and the tear must be able to reach it (ADR 0001 D3.5, D3.6). The
+# lower bound is 0 inclusive; a positive log transform is forbidden for such a variable.
+value: 0.0
+unit: mol/s
+dimension:
+- 0
+- 0
+- -1
+- 0
+- 1
+- 0
+- 0
+kind: molar_flow
+meaning: Component molar flow of A in the recycle stream at r = 0
+role: free
+bounds:
+  lower: 0.0
+  upper: null
+nominal: 3.0

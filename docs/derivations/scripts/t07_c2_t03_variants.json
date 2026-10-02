@@ -1,0 +1,1835 @@
+{
+ "allowance": {
+  "heat_rate": "0.010000000000000000000",
+  "molar_flow": "0.00000031000000000000000000",
+  "pressure": "0.10000000000000000000",
+  "temperature": "0.000010000000000000000000"
+ },
+ "campaign": "v17-c2",
+ "certificates": {
+  "V17-T03-1": {
+   "beta_certified": "0.571510371494",
+   "beta_root": "0.571510371494",
+   "certificate_id": "cert-2a1d1894ec67",
+   "coordinates_compared": 51,
+   "duty_W": 50000,
+   "misses": [],
+   "registered_kind_coordinates": 32,
+   "result": "pass",
+   "rows": [
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 300,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "300.00000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 180000,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "180000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 300.02666666666664,
+     "deviation_over_allowance": "0.00000000243",
+     "id": "S2.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "300.02666666666666667",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 3,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.L",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "3.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 180000,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "180000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 360,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "360.00000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.V",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 2.871047827012283,
+     "deviation_over_allowance": "0.00000000486",
+     "id": "S4.L",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "2.8710478270122814991",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 348.4998644192089,
+     "deviation_over_allowance": "0.00000000211",
+     "id": "S4.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "348.49986441920892565",
+     "within": true
+    },
+    {
+     "certified": 0.128952172987717,
+     "deviation_over_allowance": "0.00000000486",
+     "id": "S4.V",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.12895217298771850086",
+     "within": true
+    },
+    {
+     "certified": 0.9117003650615993,
+     "deviation_over_allowance": "0.00000000332",
+     "id": "S4.liq.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.91170036506159832159",
+     "within": true
+    },
+    {
+     "certified": 0.9687421938102386,
+     "deviation_over_allowance": "0.00000000102",
+     "id": "S4.liq.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.96874219381023831161",
+     "within": true
+    },
+    {
+     "certified": 0.9906052681404449,
+     "deviation_over_allowance": "0.000000000164",
+     "id": "S4.liq.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.99060526814044486594",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0.08829963493840069,
+     "deviation_over_allowance": "0.00000000318",
+     "id": "S4.vap.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.088299634938401678406",
+     "within": true
+    },
+    {
+     "certified": 0.031257806189761296,
+     "deviation_over_allowance": "0.00000000127",
+     "id": "S4.vap.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.031257806189761688393",
+     "within": true
+    },
+    {
+     "certified": 0.009394731859555012,
+     "deviation_over_allowance": "0.000000000393",
+     "id": "S4.vap.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0093947318595551340614",
+     "within": true
+    },
+    {
+     "certified": 1.7145311144813329,
+     "deviation_over_allowance": "0.0000000106",
+     "id": "S5.N",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.7145311144813361571",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S5.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 363.42117518898635,
+     "deviation_over_allowance": "0.00000000641",
+     "id": "S5.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "363.42117518898641767",
+     "within": true
+    },
+    {
+     "certified": 0.803872128480922,
+     "deviation_over_allowance": "0.00000000202",
+     "id": "S5.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.80387212848092266859",
+     "within": true
+    },
+    {
+     "certified": 0.5944440557466916,
+     "deviation_over_allowance": "0.00000000404",
+     "id": "S5.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.59444405574669282259",
+     "within": true
+    },
+    {
+     "certified": 0.3162149302537194,
+     "deviation_over_allowance": "0.00000000414",
+     "id": "S5.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.31621493025372066587",
+     "within": true
+    },
+    {
+     "certified": 1.2854688855186673,
+     "deviation_over_allowance": "0.0000000113",
+     "id": "S6.N",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.2854688855186638429",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S6.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 363.42117518898635,
+     "deviation_over_allowance": "0.00000000641",
+     "id": "S6.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "363.42117518898641767",
+     "within": true
+    },
+    {
+     "certified": 0.19612787151907815,
+     "deviation_over_allowance": "0.00000000264",
+     "id": "S6.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.19612787151907733141",
+     "within": true
+    },
+    {
+     "certified": 0.4055559442533085,
+     "deviation_over_allowance": "0.00000000422",
+     "id": "S6.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.40555594425330717741",
+     "within": true
+    },
+    {
+     "certified": 0.6837850697462806,
+     "deviation_over_allowance": "0.00000000414",
+     "id": "S6.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.68378506974627933413",
+     "within": true
+    },
+    {
+     "certified": 17992.000000000007,
+     "deviation_over_allowance": "0.000000000728",
+     "id": "U-HEAT.Q",
+     "kind": "heat_rate",
+     "registered_kind": true,
+     "root": "17992.000000000000000",
+     "within": true
+    },
+    {
+     "certified": 50000,
+     "deviation_over_allowance": "0.0",
+     "id": "U-PHF.Q",
+     "kind": "heat_rate",
+     "registered_kind": true,
+     "root": "50000.000000000000000",
+     "within": true
+    },
+    {
+     "certified": 32,
+     "deviation_over_allowance": "0.0",
+     "id": "U-PUMP.W",
+     "kind": "heat_rate",
+     "registered_kind": false,
+     "root": "32.000000000000000000",
+     "within": true
+    }
+   ],
+   "state_sha256": "2a1d1894ec679ee0da047b4ec811e231d3fd81c0610c47388c5fca13b952ad88",
+   "store_export_sha256": "1b27cc539e922c01f73bd46f166f05cdb294b0a906c8aac1d35f17e2f8e11fe4",
+   "worst_all": {
+    "deviation_over_allowance": "0.0000000113",
+    "id": "S6.N"
+   },
+   "worst_registered": {
+    "deviation_over_allowance": "0.00000000641",
+    "id": "S6.T"
+   }
+  },
+  "V17-T03-2": {
+   "beta_certified": "0.154228675200",
+   "beta_root": "0.154228675200",
+   "certificate_id": "cert-8f9fa84b5053",
+   "coordinates_compared": 51,
+   "duty_W": 10000,
+   "misses": [],
+   "registered_kind_coordinates": 32,
+   "result": "pass",
+   "rows": [
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 300,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "300.00000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 180000,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "180000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 300.02666666666664,
+     "deviation_over_allowance": "0.00000000243",
+     "id": "S2.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "300.02666666666666667",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 3,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.L",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "3.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 180000,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "180000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 360,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "360.00000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.V",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 2.871047827012283,
+     "deviation_over_allowance": "0.00000000486",
+     "id": "S4.L",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "2.8710478270122814991",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 348.4998644192089,
+     "deviation_over_allowance": "0.00000000211",
+     "id": "S4.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "348.49986441920892565",
+     "within": true
+    },
+    {
+     "certified": 0.128952172987717,
+     "deviation_over_allowance": "0.00000000486",
+     "id": "S4.V",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.12895217298771850086",
+     "within": true
+    },
+    {
+     "certified": 0.9117003650615993,
+     "deviation_over_allowance": "0.00000000332",
+     "id": "S4.liq.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.91170036506159832159",
+     "within": true
+    },
+    {
+     "certified": 0.9687421938102386,
+     "deviation_over_allowance": "0.00000000102",
+     "id": "S4.liq.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.96874219381023831161",
+     "within": true
+    },
+    {
+     "certified": 0.9906052681404449,
+     "deviation_over_allowance": "0.000000000164",
+     "id": "S4.liq.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.99060526814044486594",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0.08829963493840069,
+     "deviation_over_allowance": "0.00000000318",
+     "id": "S4.vap.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.088299634938401678406",
+     "within": true
+    },
+    {
+     "certified": 0.031257806189761296,
+     "deviation_over_allowance": "0.00000000127",
+     "id": "S4.vap.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.031257806189761688393",
+     "within": true
+    },
+    {
+     "certified": 0.009394731859555012,
+     "deviation_over_allowance": "0.000000000393",
+     "id": "S4.vap.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0093947318595551340614",
+     "within": true
+    },
+    {
+     "certified": 0.4626860256012903,
+     "deviation_over_allowance": "0.0000000101",
+     "id": "S5.N",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.46268602560128715028",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S5.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 351.4135298787616,
+     "deviation_over_allowance": "0.000000000415",
+     "id": "S5.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "351.41352987876161211",
+     "within": true
+    },
+    {
+     "certified": 0.2969506101691026,
+     "deviation_over_allowance": "0.00000000598",
+     "id": "S5.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.29695061016910077046",
+     "within": true
+    },
+    {
+     "certified": 0.12491275159650618,
+     "deviation_over_allowance": "0.00000000304",
+     "id": "S5.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.12491275159650523779",
+     "within": true
+    },
+    {
+     "certified": 0.040822663835681484,
+     "deviation_over_allowance": "0.00000000110",
+     "id": "S5.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.040822663835681142029",
+     "within": true
+    },
+    {
+     "certified": 2.5373139743987094,
+     "deviation_over_allowance": "0.0000000110",
+     "id": "S6.N",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "2.5373139743987128497",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S6.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 351.4135298787616,
+     "deviation_over_allowance": "0.000000000415",
+     "id": "S6.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "351.41352987876161211",
+     "within": true
+    },
+    {
+     "certified": 0.7030493898308974,
+     "deviation_over_allowance": "0.00000000598",
+     "id": "S6.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.70304938983089922954",
+     "within": true
+    },
+    {
+     "certified": 0.8750872484034937,
+     "deviation_over_allowance": "0.00000000335",
+     "id": "S6.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.87508724840349476221",
+     "within": true
+    },
+    {
+     "certified": 0.9591773361643184,
+     "deviation_over_allowance": "0.00000000135",
+     "id": "S6.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.95917733616431885797",
+     "within": true
+    },
+    {
+     "certified": 17992.000000000007,
+     "deviation_over_allowance": "0.000000000728",
+     "id": "U-HEAT.Q",
+     "kind": "heat_rate",
+     "registered_kind": true,
+     "root": "17992.000000000000000",
+     "within": true
+    },
+    {
+     "certified": 10000,
+     "deviation_over_allowance": "0.0",
+     "id": "U-PHF.Q",
+     "kind": "heat_rate",
+     "registered_kind": true,
+     "root": "10000.000000000000000",
+     "within": true
+    },
+    {
+     "certified": 32,
+     "deviation_over_allowance": "0.0",
+     "id": "U-PUMP.W",
+     "kind": "heat_rate",
+     "registered_kind": false,
+     "root": "32.000000000000000000",
+     "within": true
+    }
+   ],
+   "state_sha256": "8f9fa84b5053d5468f79c42baa38193e93975d4d9ce32f8fca1f808688091752",
+   "store_export_sha256": "19b4b045517e553add888a01e880ad9229fcb8ca4230f543f90b991e9bde4310",
+   "worst_all": {
+    "deviation_over_allowance": "0.0000000110",
+    "id": "S6.N"
+   },
+   "worst_registered": {
+    "deviation_over_allowance": "0.00000000598",
+    "id": "S6.n.A"
+   }
+  },
+  "V17-T03-3": {
+   "beta_certified": "0.0429840576626",
+   "beta_root": "0.0429840576626",
+   "certificate_id": "cert-7743960e24d1",
+   "coordinates_compared": 51,
+   "duty_W": 0,
+   "misses": [],
+   "registered_kind_coordinates": 32,
+   "result": "pass",
+   "rows": [
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 300,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "300.00000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S1.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 180000,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "180000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 300.02666666666664,
+     "deviation_over_allowance": "0.00000000243",
+     "id": "S2.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "300.02666666666666667",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S2.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 3,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.L",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "3.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 180000,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "180000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 360,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "360.00000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.V",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.liq.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "S3.vap.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 2.871047827012283,
+     "deviation_over_allowance": "0.00000000486",
+     "id": "S4.L",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "2.8710478270122814991",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 348.4998644192089,
+     "deviation_over_allowance": "0.00000000211",
+     "id": "S4.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "348.49986441920892565",
+     "within": true
+    },
+    {
+     "certified": 0.128952172987717,
+     "deviation_over_allowance": "0.00000000486",
+     "id": "S4.V",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.12895217298771850086",
+     "within": true
+    },
+    {
+     "certified": 0.9117003650615993,
+     "deviation_over_allowance": "0.00000000332",
+     "id": "S4.liq.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.91170036506159832159",
+     "within": true
+    },
+    {
+     "certified": 0.9687421938102386,
+     "deviation_over_allowance": "0.00000000102",
+     "id": "S4.liq.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.96874219381023831161",
+     "within": true
+    },
+    {
+     "certified": 0.9906052681404449,
+     "deviation_over_allowance": "0.000000000164",
+     "id": "S4.liq.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.99060526814044486594",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 1,
+     "deviation_over_allowance": "0.0",
+     "id": "S4.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "1.0000000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0.08829963493840069,
+     "deviation_over_allowance": "0.00000000318",
+     "id": "S4.vap.A",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.088299634938401678406",
+     "within": true
+    },
+    {
+     "certified": 0.031257806189761296,
+     "deviation_over_allowance": "0.00000000127",
+     "id": "S4.vap.B",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.031257806189761688393",
+     "within": true
+    },
+    {
+     "certified": 0.009394731859555012,
+     "deviation_over_allowance": "0.000000000393",
+     "id": "S4.vap.C",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.0093947318595551340614",
+     "within": true
+    },
+    {
+     "certified": 0.128952172987717,
+     "deviation_over_allowance": "0.00000000486",
+     "id": "S5.N",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "0.12895217298771850086",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S5.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 348.4998644192089,
+     "deviation_over_allowance": "0.00000000211",
+     "id": "S5.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "348.49986441920892565",
+     "within": true
+    },
+    {
+     "certified": 0.08829963493840069,
+     "deviation_over_allowance": "0.00000000318",
+     "id": "S5.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.088299634938401678406",
+     "within": true
+    },
+    {
+     "certified": 0.031257806189761296,
+     "deviation_over_allowance": "0.00000000127",
+     "id": "S5.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.031257806189761688393",
+     "within": true
+    },
+    {
+     "certified": 0.009394731859555012,
+     "deviation_over_allowance": "0.000000000393",
+     "id": "S5.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.0093947318595551340614",
+     "within": true
+    },
+    {
+     "certified": 2.871047827012283,
+     "deviation_over_allowance": "0.00000000486",
+     "id": "S6.N",
+     "kind": "molar_flow",
+     "registered_kind": false,
+     "root": "2.8710478270122814991",
+     "within": true
+    },
+    {
+     "certified": 100000,
+     "deviation_over_allowance": "0.0",
+     "id": "S6.P",
+     "kind": "pressure",
+     "registered_kind": true,
+     "root": "100000.00000000000000",
+     "within": true
+    },
+    {
+     "certified": 348.4998644192089,
+     "deviation_over_allowance": "0.00000000211",
+     "id": "S6.T",
+     "kind": "temperature",
+     "registered_kind": true,
+     "root": "348.49986441920892565",
+     "within": true
+    },
+    {
+     "certified": 0.9117003650615993,
+     "deviation_over_allowance": "0.00000000332",
+     "id": "S6.n.A",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.91170036506159832159",
+     "within": true
+    },
+    {
+     "certified": 0.9687421938102386,
+     "deviation_over_allowance": "0.00000000102",
+     "id": "S6.n.B",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.96874219381023831161",
+     "within": true
+    },
+    {
+     "certified": 0.9906052681404449,
+     "deviation_over_allowance": "0.000000000164",
+     "id": "S6.n.C",
+     "kind": "molar_flow",
+     "registered_kind": true,
+     "root": "0.99060526814044486594",
+     "within": true
+    },
+    {
+     "certified": 17992.000000000007,
+     "deviation_over_allowance": "0.000000000728",
+     "id": "U-HEAT.Q",
+     "kind": "heat_rate",
+     "registered_kind": true,
+     "root": "17992.000000000000000",
+     "within": true
+    },
+    {
+     "certified": 0,
+     "deviation_over_allowance": "0.0",
+     "id": "U-PHF.Q",
+     "kind": "heat_rate",
+     "registered_kind": true,
+     "root": "0.0",
+     "within": true
+    },
+    {
+     "certified": 32,
+     "deviation_over_allowance": "0.0",
+     "id": "U-PUMP.W",
+     "kind": "heat_rate",
+     "registered_kind": false,
+     "root": "32.000000000000000000",
+     "within": true
+    }
+   ],
+   "state_sha256": "7743960e24d1dd382c6978e83f39a565fc2dd68a677486dadf06120c8a695479",
+   "store_export_sha256": "06c8c3e63ca13b4d61792c4a8209f3d30ea500f5965ad1443410d8515037ade2",
+   "worst_all": {
+    "deviation_over_allowance": "0.00000000486",
+    "id": "S6.N"
+   },
+   "worst_registered": {
+    "deviation_over_allowance": "0.00000000332",
+    "id": "S6.n.A"
+   }
+  }
+ },
+ "claims": [
+  {
+   "name": "P0.c1_at_10kW_equals_twin_coupled_c1_exactly",
+   "ok": true
+  },
+  {
+   "name": "P1.enthalpy_strictly_increasing_161pt_GC09_grid",
+   "ok": true
+  },
+  {
+   "name": "P1.valve_outlet_two_phase",
+   "ok": true
+  },
+  {
+   "name": "P1.heater_outlet_liquid",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.root_exists",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.root_exists",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.root_exists",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.duty_inside_attainable_range",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.fine_grid_increasing_one_sign_change",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.duty_inside_attainable_range",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.fine_grid_increasing_one_sign_change",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.duty_inside_attainable_range",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.fine_grid_increasing_one_sign_change",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.root_two_phase",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.root_regime_margins_ge_1e-3",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.beta_strictly_inside",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.root_between_bubble_and_dew",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.root_two_phase",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.root_regime_margins_ge_1e-3",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.beta_strictly_inside",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.root_between_bubble_and_dew",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.root_two_phase",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.root_regime_margins_ge_1e-3",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.beta_strictly_inside",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.root_between_bubble_and_dew",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.adiabatic_root_is_inlet_split",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.store_export_matches_SHA256SUMS",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.only_job-000002_verified",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.job_by_agent_on_rev-000002",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.bundle_revision_equals_store_revision",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.certificate_VERIFIED_on_this_state",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.duty_pin_is_50000",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.signature_is_UL_C1_at_its_duty",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.signature_differs_from_T03_fixture",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.state_ids_equal_root_ids",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.every_coordinate_within_allowance",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-1.certified_state_two_phase",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.store_export_matches_SHA256SUMS",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.only_job-000002_verified",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.job_by_agent_on_rev-000002",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.bundle_revision_equals_store_revision",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.certificate_VERIFIED_on_this_state",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.duty_pin_is_10000",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.signature_is_UL_C1_at_its_duty",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.signature_differs_from_T03_fixture",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.state_ids_equal_root_ids",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.every_coordinate_within_allowance",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-2.certified_state_two_phase",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.store_export_matches_SHA256SUMS",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.only_job-000002_verified",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.job_by_agent_on_rev-000002",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.bundle_revision_equals_store_revision",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.certificate_VERIFIED_on_this_state",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.duty_pin_is_0",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.signature_is_UL_C1_at_its_duty",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.signature_differs_from_T03_fixture",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.state_ids_equal_root_ids",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.every_coordinate_within_allowance",
+   "ok": true
+  },
+  {
+   "name": "V17-T03-3.certified_state_two_phase",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-1_misses_root_of_V17-T03-2_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-1_within_rejects_root_of_V17-T03-2",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-1_misses_root_of_V17-T03-3_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-1_within_rejects_root_of_V17-T03-3",
+   "ok": true
+  },
+  {
+   "name": "P4b.V17-T03-1_misses_single_phase_L_state_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4b.V17-T03-1_misses_single_phase_V_state_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-2_misses_root_of_V17-T03-1_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-2_within_rejects_root_of_V17-T03-1",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-2_misses_root_of_V17-T03-3_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-2_within_rejects_root_of_V17-T03-3",
+   "ok": true
+  },
+  {
+   "name": "P4b.V17-T03-2_misses_single_phase_L_state_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4b.V17-T03-2_misses_single_phase_V_state_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-3_misses_root_of_V17-T03-1_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-3_within_rejects_root_of_V17-T03-1",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-3_misses_root_of_V17-T03-2_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4a.V17-T03-3_within_rejects_root_of_V17-T03-2",
+   "ok": true
+  },
+  {
+   "name": "P4b.V17-T03-3_misses_single_phase_L_state_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P4b.V17-T03-3_misses_single_phase_V_state_by_ge_100",
+   "ok": true
+  },
+  {
+   "name": "P5.imports_nothing_from_process_runtime_or_benchmarks",
+   "ok": true
+  }
+ ],
+ "cross_matrix_worst_solved_over_allowance": {
+  "V17-T03-1|V17-T03-1": "0.00000000641",
+  "V17-T03-1|V17-T03-2": "1640000.",
+  "V17-T03-1|V17-T03-3": "2310000.",
+  "V17-T03-2|V17-T03-1": "1640000.",
+  "V17-T03-2|V17-T03-2": "0.00000000598",
+  "V17-T03-2|V17-T03-3": "673000.",
+  "V17-T03-3|V17-T03-1": "2310000.",
+  "V17-T03-3|V17-T03-2": "673000.",
+  "V17-T03-3|V17-T03-3": "0.00000000332"
+ },
+ "drum_inlet_S4": {
+  "H_in_W": "18024.000000000000000",
+  "P_Pa": "100000.00000000000000",
+  "Q_max_W": "113976.00000000000000",
+  "Q_min_W": "-24024.000000000000000",
+  "T_K": "348.49986441920892565",
+  "T_bubble_K": "347.44118198144020477",
+  "T_dew_K": "374.27030411847760313",
+  "n": [
+   "1.0000000000000000000",
+   "1.0000000000000000000",
+   "1.0000000000000000000"
+  ]
+ },
+ "method": "t05_reference.coupled_c1's evaluator chain (eval_pump, eval_heater, eval_valve, eval_ph_flash) at U-PHF.duty.Q = the revision's pin; mpmath 40 digits; roots quoted at 20 significant digits; comparison |v - ref| <= allowance exactly, as the scorer's within()",
+ "regimes": {
+  "V17-T03-1": {
+   "T_K": "363.42117518898641767",
+   "T_dew_minus_T_K": "10.849128929491185453",
+   "T_minus_T_bubble_K": "15.979993207546212901",
+   "beta": "0.57151037149377871902",
+   "route": "bracket",
+   "signature": "TWO_PHASE",
+   "sum_zK_minus_1": "0.50622512172861562321",
+   "sum_z_over_K_minus_1": "0.37318262539671809085"
+  },
+  "V17-T03-2": {
+   "T_K": "351.41352987876161211",
+   "T_dew_minus_T_K": "22.856774239715991014",
+   "T_minus_T_bubble_K": "3.9723478973214073401",
+   "beta": "0.15422867520042905009",
+   "route": "bracket",
+   "signature": "TWO_PHASE",
+   "sum_zK_minus_1": "0.11081161329029490937",
+   "sum_z_over_K_minus_1": "0.99793798362520282908"
+  },
+  "V17-T03-3": {
+   "T_K": "348.49986441920892565",
+   "T_dew_minus_T_K": "25.770439699268677473",
+   "T_minus_T_bubble_K": "1.0586824377687208804",
+   "beta": "0.042984057662572833620",
+   "route": "bracket",
+   "signature": "TWO_PHASE",
+   "sum_zK_minus_1": "0.028630512421556142486",
+   "sum_z_over_K_minus_1": "1.1972215446778897201"
+  }
+ },
+ "schema": "t07-v17-c2-t03-variant-roots-v1",
+ "single_phase_alternatives_worst_over_allowance": {
+  "V17-T03-1|all_liquid": "16300000.",
+  "V17-T03-1|all_vapour": "13700000.",
+  "V17-T03-2|all_liquid": "4200000.",
+  "V17-T03-2|all_vapour": "25800000.",
+  "V17-T03-3|all_liquid": "1160000.",
+  "V17-T03-3|all_vapour": "28800000."
+ }
+}

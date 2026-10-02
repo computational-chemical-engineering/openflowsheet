@@ -1,0 +1,2334 @@
+{
+ "categories_by_distribution": {
+  "casadi": {
+   "identified": 29,
+   "lgpl": 125,
+   "restrictive": 3,
+   "unresolved": 5
+  },
+  "cffi": {
+   "identified": 1
+  },
+  "cryptography": {
+   "identified": 1
+  },
+  "numpy": {
+   "gpl-family": 1,
+   "identified": 22
+  },
+  "pydantic-core": {
+   "identified": 1
+  },
+  "pyyaml": {
+   "identified": 1
+  },
+  "rpds-py": {
+   "identified": 1
+  },
+  "scipy": {
+   "gpl-family": 2,
+   "identified": 116
+  }
+ },
+ "distinct_objects": 232,
+ "distributions": [
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "29ea5f797092a72d6231271b52cd7992d6d2b7094be9dbdbe592540db07f256d",
+   "name": "annotated-types",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "0.8.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "b1feb58c25cc5738411bd537dd3788a95e140e2a9341e1f1fd6673f5a6fabd60",
+   "name": "anyio",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "4.15.1"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "a8bc77bb8476b3b0bace5bd1ed14ce028e540ee13ac54245f3cbb92415013f32",
+   "name": "attrs",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "26.1.0"
+  },
+  {
+   "compiled": true,
+   "declared_licence": "GNU Lesser General Public License v3 or later (LGPLv3+); OSI Approved",
+   "files_digest": "7a243303038920a021f9378886301fd25440730425c85b6c5432c614fb3d122d",
+   "name": "casadi",
+   "object_bytes": 131735820,
+   "objects": 162,
+   "objects_digest": "c64fce18eefd6906fe35873f6d59ba6d07cd8a2632d6e9de93f6b3738b76db04",
+   "version": "3.8.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MPL-2.0; OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+   "files_digest": "dfbadd79cd760736e4fa05ee740fa3f84541d40d29cd1a75d99a7631e7eb3499",
+   "name": "certifi",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "2026.7.22"
+  },
+  {
+   "compiled": true,
+   "declared_licence": "MIT-0",
+   "files_digest": "2a08c7de37068345c9e3d5aa54e7b065d7b3bd4143059a74f49d0d218e7b9977",
+   "name": "cffi",
+   "object_bytes": 452576,
+   "objects": 1,
+   "objects_digest": "846fbb5edf9b1db3a3ebd1446b45dad2eba2719e1ac8ab7f2928168ca6594f06",
+   "version": "2.1.1"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause",
+   "files_digest": "653959affcdf5c97add3c28cc9922452237f58ad1c01da75239158453246eb79",
+   "name": "click",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "8.5.0"
+  },
+  {
+   "compiled": true,
+   "declared_licence": "Apache-2.0 OR BSD-3-Clause",
+   "files_digest": "b433287f8647d67916f2ecd49fc06bda660fae5a468220386da161513e9c5794",
+   "name": "cryptography",
+   "object_bytes": 13616080,
+   "objects": 1,
+   "objects_digest": "a09addfad18eae4c2450130b79d1ba16905e6299ee0e755590109d9863f4a4e6",
+   "version": "50.0.1"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT; OSI Approved :: MIT License",
+   "files_digest": "a12051868561adc776001d57915a6e5e1bba151974091d08de924124397e223a",
+   "name": "h11",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "0.16.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause",
+   "files_digest": "bbc48614a1dcf033600d2db8d9c5a702c9f05faa5072e47357775e954505741d",
+   "name": "httpcore",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "1.0.9"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause; OSI Approved :: BSD License",
+   "files_digest": "4857c16e1bd6714b82b3564c943d2d3e8af9ff85eb5f08ed6bc7693fadac8120",
+   "name": "httpx",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "0.28.1"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "bfd94d18f4cb169603941f58cb1ef95bcdd3d5c58494d73e5a27b82d8d858596",
+   "name": "httpx-sse",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "0.4.3"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause",
+   "files_digest": "315c23f3a8260c7baec2e8fe85c126aad3c40a3748a7342e3f9f75beba4e4092",
+   "name": "idna",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "3.20"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "661ff966356f8a4a914ffb3f8e1ca53b7b64d068ec8e515c1f608e9ff35c54a0",
+   "name": "jsonschema",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "4.26.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "d44135b95fee0dfab09fdac4924771250ea4809c886529178083a3281f2f5079",
+   "name": "jsonschema-specifications",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "2025.9.1"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT; OSI Approved :: MIT License",
+   "files_digest": "53d39edfa4c8db57bbbc063643d314cfc03d9c82c971ea131761673e365e53a2",
+   "name": "mcp",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "1.30.0"
+  },
+  {
+   "compiled": true,
+   "declared_licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "files_digest": "96bdff114ac260b702dccbf26932ef90882c209d2aa08ff28597fb4734163614",
+   "name": "numpy",
+   "object_bytes": 36775387,
+   "objects": 23,
+   "objects_digest": "7f8738265ebc71436941dcce7d596798d5d5d742c968ad57d9385d449e993091",
+   "version": "2.2.4"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause",
+   "files_digest": "c48740296e72466477471650d2cc1adc7fc87d6f533480341ebd2b2a12aa0171",
+   "name": "pycparser",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "3.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "ebb5891b342d501f6ba411374c37df0c996fe1945cf1de04e71fe4af47b490ad",
+   "name": "pydantic",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "2.13.5"
+  },
+  {
+   "compiled": true,
+   "declared_licence": "MIT",
+   "files_digest": "e84d96c41c156710fdd7811093161b80a63c0efcfb12ecf64714e569876a952b",
+   "name": "pydantic-core",
+   "object_bytes": 4217952,
+   "objects": 1,
+   "objects_digest": "35941a16968bc5c36689d3a62e03782d2a4e2cafe703034bdfc32bf12947bda9",
+   "version": "2.46.5"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "f1b6bd313edd89dfb37125f70824b9df59684dcb3052cfd75b1794cfb1056ff8",
+   "name": "pydantic-settings",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "2.15.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "2d454cce05cfa7d27d7adc3684f83ff0867d66be726e4d4c2d2459a5ad585878",
+   "name": "pyjwt",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "2.15.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause",
+   "files_digest": "4e6c74ec6d1fb9a7f614388845bce6b706daca9eab9ee7824cc8279e08a985bc",
+   "name": "python-dotenv",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "1.2.3"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "Apache-2.0",
+   "files_digest": "fa49f51ddbc2a6cba0a0954194253c751f6b45b92fc019f35bbd63365404b1f1",
+   "name": "python-multipart",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "0.0.32"
+  },
+  {
+   "compiled": true,
+   "declared_licence": "MIT; OSI Approved :: MIT License",
+   "files_digest": "9c528183b7fa4a2d9c4e28bb01229b028102de70519811bbbde7fdaee6f8b611",
+   "name": "pyyaml",
+   "object_bytes": 2432720,
+   "objects": 1,
+   "objects_digest": "ffd0a7edd13327b43048f8bf514abd01f68cbe90067456d331778658b3847a33",
+   "version": "6.0.2"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "1f60eb691808875a96ff5e7520922cda95d70c5101cf044cbe801963ba0a1894",
+   "name": "referencing",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "0.37.0"
+  },
+  {
+   "compiled": true,
+   "declared_licence": "MIT",
+   "files_digest": "81c6442e557389914d36a8979b7359540618f9632f1d7744bbe846b5bf4de103",
+   "name": "rpds-py",
+   "object_bytes": 991376,
+   "objects": 1,
+   "objects_digest": "9693346fc6d12e319275bfcd106620237d69ff0afc53c0c2d53d809f0df0a924",
+   "version": "2026.6.3"
+  },
+  {
+   "compiled": true,
+   "declared_licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "files_digest": "0d56a4d46ee127801343e443b8133cdec0e54b1e67728c31a34a15c7d139ba5b",
+   "name": "scipy",
+   "object_bytes": 88889438,
+   "objects": 118,
+   "objects_digest": "0501620beaa3d927a3e3ae54163ad58ce202ab2c9008b5f2cd402522d863a1ea",
+   "version": "1.15.3"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause",
+   "files_digest": "4699a38b6e3153d9c7c6dc0637841e05099acf5aa3a459618a527b91cf22d590",
+   "name": "sse-starlette",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "3.4.11"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause",
+   "files_digest": "4072fa99b2cc51fb17c2a640d3d2ad8edec3c231a4dfb2f8fabad7cbde77dac0",
+   "name": "starlette",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "1.7.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "PSF-2.0",
+   "files_digest": "8a18cecd4fdc72f22dbfbb80e56f6093ae348ab7f39bfe7b89e5426d73e02ce4",
+   "name": "typing-extensions",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "4.16.0"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "MIT",
+   "files_digest": "8c4a3195a768d2fac9dfcdc6b85eda45c3dd22e493252265c14550bcc3af6854",
+   "name": "typing-inspection",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "0.4.4"
+  },
+  {
+   "compiled": false,
+   "declared_licence": "BSD-3-Clause",
+   "files_digest": "95eadaf993140b64d2da7ae06061a688dc276a1ef6aee2985cd23d4345977653",
+   "name": "uvicorn",
+   "object_bytes": 0,
+   "objects": 0,
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "version": "0.54.0"
+  }
+ ],
+ "findings": [
+  {
+   "bytes": 282568,
+   "category": "restrictive",
+   "dispositioned_by": "ADR 0006 D2",
+   "distribution": "casadi",
+   "in_required_closure": false,
+   "licence": "EPL-1.0; unidentified",
+   "loaded_by_project": false,
+   "notices": [
+    "casadi/include/licenses/metis-external/LICENSE",
+    "casadi/include/licenses/metis-external/metis-4.0/LICENSE"
+   ],
+   "path": "casadi/libcoinmetis.so",
+   "sha256": "9a9497723209a076784f88cd5687bcb0bcacad07939f03217d5ac88320fedd14"
+  },
+  {
+   "bytes": 282568,
+   "category": "restrictive",
+   "dispositioned_by": "ADR 0006 D2",
+   "distribution": "casadi",
+   "in_required_closure": false,
+   "licence": "EPL-1.0; unidentified",
+   "loaded_by_project": false,
+   "notices": [
+    "casadi/include/licenses/metis-external/LICENSE",
+    "casadi/include/licenses/metis-external/metis-4.0/LICENSE"
+   ],
+   "path": "casadi/libcoinmetis.so.2",
+   "sha256": "9a9497723209a076784f88cd5687bcb0bcacad07939f03217d5ac88320fedd14"
+  },
+  {
+   "bytes": 282568,
+   "category": "restrictive",
+   "dispositioned_by": "ADR 0006 D2",
+   "distribution": "casadi",
+   "in_required_closure": false,
+   "licence": "EPL-1.0; unidentified",
+   "loaded_by_project": false,
+   "notices": [
+    "casadi/include/licenses/metis-external/LICENSE",
+    "casadi/include/licenses/metis-external/metis-4.0/LICENSE"
+   ],
+   "path": "casadi/libcoinmetis.so.2.0.0",
+   "sha256": "9a9497723209a076784f88cd5687bcb0bcacad07939f03217d5ac88320fedd14"
+  },
+  {
+   "bytes": 18304,
+   "category": "unresolved",
+   "dispositioned_by": "ADR 0006 D4",
+   "distribution": "casadi",
+   "in_required_closure": false,
+   "licence": null,
+   "loaded_by_project": false,
+   "notices": [],
+   "path": "casadi/libcplex_adaptor.so",
+   "sha256": "3d74c722b33c3b3b18ffb4d00a3a7d7f392e1c28c8d1534876dccad68ef385d4"
+  },
+  {
+   "bytes": 5413232,
+   "category": "unresolved",
+   "dispositioned_by": "ADR 0006 Amendment 2",
+   "distribution": "casadi",
+   "in_required_closure": false,
+   "licence": null,
+   "loaded_by_project": false,
+   "notices": [],
+   "path": "casadi/libgfortran-8de1544a.so.5.0.0",
+   "sha256": "f84fe298f615936bd25cf8a41130eaec46ff05ca62f9e2b9a9b8080a0d87e43a"
+  },
+  {
+   "bytes": 1194968,
+   "category": "unresolved",
+   "dispositioned_by": "ADR 0006 Amendment 2",
+   "distribution": "casadi",
+   "in_required_closure": false,
+   "licence": null,
+   "loaded_by_project": false,
+   "notices": [],
+   "path": "casadi/libgomp-7eb2fb8b.so.1.0.0",
+   "sha256": "5e688427525a6c3fee9077533941f107b2d61f6e5892439144cfb597e354c681"
+  },
+  {
+   "bytes": 17968,
+   "category": "unresolved",
+   "dispositioned_by": "ADR 0006 D4",
+   "distribution": "casadi",
+   "in_required_closure": false,
+   "licence": null,
+   "loaded_by_project": false,
+   "notices": [],
+   "path": "casadi/libgurobi_adaptor.so",
+   "sha256": "39e1ead01ce34bffc22413cd965d6ddc62af23d576c53e4f69d9d72db9f9603e"
+  },
+  {
+   "bytes": 19024,
+   "category": "unresolved",
+   "dispositioned_by": "ADR 0006 D4",
+   "distribution": "casadi",
+   "in_required_closure": false,
+   "licence": null,
+   "loaded_by_project": false,
+   "notices": [],
+   "path": "casadi/libmatlab_ipc.so",
+   "sha256": "15d25398a25195c3f033c990f546dce80ad94b9c878499b845a254033db94f8c"
+  },
+  {
+   "bytes": 1671529,
+   "category": "gpl-family",
+   "dispositioned_by": "ADR 0006 Amendment 1",
+   "distribution": "numpy",
+   "in_required_closure": true,
+   "licence": "GPL-3.0-with-GCC-exception",
+   "loaded_by_project": true,
+   "notices": [
+    "numpy-2.2.4.dist-info/LICENSE.txt"
+   ],
+   "path": "numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0",
+   "sha256": "8c13f44b44e4dd0005632ea4173f5f5014d2829d50aa12b2054034297c07f233"
+  },
+  {
+   "bytes": 1671529,
+   "category": "gpl-family",
+   "dispositioned_by": "ADR 0006 Amendment 1",
+   "distribution": "scipy",
+   "in_required_closure": true,
+   "licence": "GPL-3.0-with-GCC-exception",
+   "loaded_by_project": false,
+   "notices": [
+    "scipy-1.15.3.dist-info/LICENSE.txt"
+   ],
+   "path": "scipy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0",
+   "sha256": "8c13f44b44e4dd0005632ea4173f5f5014d2829d50aa12b2054034297c07f233"
+  },
+  {
+   "bytes": 1484449,
+   "category": "gpl-family",
+   "dispositioned_by": "ADR 0006 Amendment 1",
+   "distribution": "scipy",
+   "in_required_closure": true,
+   "licence": "GPL-3.0-with-GCC-exception",
+   "loaded_by_project": true,
+   "notices": [
+    "scipy-1.15.3.dist-info/LICENSE.txt"
+   ],
+   "path": "scipy.libs/libgfortran-daac5196.so.5.0.0",
+   "sha256": "73b06dc7d12c5d4e37fe8ba67aa9ab440bb794e79adff58ae894b3d457e71bd7"
+  }
+ ],
+ "format": "t08-a30-inventory-v1-summary",
+ "host": {
+  "machine": "aarch64",
+  "platform": "Linux-6.17.0-1022-azure-aarch64-with-glibc2.39",
+  "python": "3.13.15"
+ },
+ "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+ "measured_project_load": {
+  "mapped": [
+   "casadi/_casadi.so",
+   "casadi/libcasadi.so.3.7",
+   "numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0",
+   "numpy.libs/libscipy_openblas64_-48fd33d4.so",
+   "numpy/_core/_multiarray_umath.cpython-313-aarch64-linux-gnu.so",
+   "numpy/fft/_pocketfft_umath.cpython-313-aarch64-linux-gnu.so",
+   "numpy/linalg/_umath_linalg.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/_bounded_integers.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/_common.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/_generator.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/_mt19937.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/_pcg64.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/_philox.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/_sfc64.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/bit_generator.cpython-313-aarch64-linux-gnu.so",
+   "numpy/random/mtrand.cpython-313-aarch64-linux-gnu.so",
+   "pydantic_core/_pydantic_core.cpython-313-aarch64-linux-gnu.so",
+   "rpds/rpds.cpython-313-aarch64-linux-gnu.so",
+   "scipy.libs/libgfortran-daac5196.so.5.0.0",
+   "scipy.libs/libscipy_openblas-9778f98e.so",
+   "scipy/_lib/_ccallback_c.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_cythonized_array_utils.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_decomp_lu_cython.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_decomp_update.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_fblas.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_flapack.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_linalg_pythran.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_matfuncs_expm.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_matfuncs_sqrtm_triu.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/_solve_toeplitz.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/cython_blas.cpython-313-aarch64-linux-gnu.so",
+   "scipy/linalg/cython_lapack.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/_csparsetools.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/_sparsetools.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/csgraph/_flow.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/csgraph/_matching.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/csgraph/_min_spanning_tree.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/csgraph/_reordering.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/csgraph/_shortest_path.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/csgraph/_tools.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/csgraph/_traversal.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/linalg/_dsolve/_superlu.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/linalg/_eigen/arpack/_arpack.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/linalg/_propack/_cpropack.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/linalg/_propack/_dpropack.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/linalg/_propack/_spropack.cpython-313-aarch64-linux-gnu.so",
+   "scipy/sparse/linalg/_propack/_zpropack.cpython-313-aarch64-linux-gnu.so",
+   "yaml/_yaml.cpython-313-aarch64-linux-gnu.so"
+  ],
+  "solve_exit": 0,
+  "workload": "import every openflowsheet module and both bindings; openflowsheet solve SYN-001-nominal"
+ },
+ "metis": {
+  "carriers": [
+   {
+    "conclusion": "METIS 4.x",
+    "path": "casadi/libcoinmetis.so",
+    "sha256": "9a9497723209a076784f88cd5687bcb0bcacad07939f03217d5ac88320fedd14"
+   },
+   {
+    "conclusion": "METIS 4.x",
+    "path": "casadi/libcoinmetis.so.2",
+    "sha256": "9a9497723209a076784f88cd5687bcb0bcacad07939f03217d5ac88320fedd14"
+   },
+   {
+    "conclusion": "METIS 4.x",
+    "path": "casadi/libcoinmetis.so.2.0.0",
+    "sha256": "9a9497723209a076784f88cd5687bcb0bcacad07939f03217d5ac88320fedd14"
+   }
+  ],
+  "closure": [
+   "casadi/libcasadi_linsol_mumps.so",
+   "casadi/libcasadi_linsol_mumps.so.3.7",
+   "casadi/libcasadi_nlpsol_ipopt.so",
+   "casadi/libcasadi_nlpsol_ipopt.so.3.7",
+   "casadi/libcasadi_nlpsol_uno.so",
+   "casadi/libcasadi_nlpsol_uno.so.3.7",
+   "casadi/libcoinmetis.so",
+   "casadi/libcoinmetis.so.2",
+   "casadi/libcoinmetis.so.2.0.0",
+   "casadi/libcoinmumps.so",
+   "casadi/libcoinmumps.so.3",
+   "casadi/libcoinmumps.so.3.0.12",
+   "casadi/libipopt.so",
+   "casadi/libipopt.so.3",
+   "casadi/libipopt.so.3.14.19",
+   "casadi/libsipopt.so",
+   "casadi/libsipopt.so.3",
+   "casadi/libsipopt.so.3.14.19",
+   "casadi/libuno.so"
+  ],
+  "closure_plugins": [
+   "linsol:mumps",
+   "nlpsol:ipopt",
+   "nlpsol:uno"
+  ],
+  "reached_from_project_paths": []
+ },
+ "objects": 308,
+ "record_sha256": "56a12dbd6de60d2db9975f05d31d7cf9b5a02e7d7aade5a110b29156a500437c",
+ "required_closure": [
+  {
+   "category": "lgpl",
+   "distribution": "casadi",
+   "licence": "LGPL-3.0",
+   "needed": [
+    "libcasadi.so.3.7",
+    "libdl.so.2",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "path": "casadi/_casadi.so",
+   "sha256": "e13658ffe6a0443307ffe05789b756edc973c4e0f78578e17ecfb399037c0e21"
+  },
+  {
+   "category": "lgpl",
+   "distribution": "casadi",
+   "licence": "LGPL-3.0",
+   "needed": [
+    "libdl.so.2",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "path": "casadi/libcasadi.so",
+   "sha256": "259fc2e0b68558994163d1b6d22b0ab3d47397493a240c12a7d4c67610c6c098"
+  },
+  {
+   "category": "lgpl",
+   "distribution": "casadi",
+   "licence": "LGPL-3.0",
+   "needed": [
+    "libdl.so.2",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "path": "casadi/libcasadi.so.3.7",
+   "sha256": "259fc2e0b68558994163d1b6d22b0ab3d47397493a240c12a7d4c67610c6c098"
+  },
+  {
+   "category": "identified",
+   "distribution": "cffi",
+   "licence": "MIT-0",
+   "needed": [
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "path": "_cffi_backend.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "a081e87a8721ffd0c2ef9327398f1c4657254a08a9584c2015064476474fb3da"
+  },
+  {
+   "category": "identified",
+   "distribution": "cryptography",
+   "licence": "Apache-2.0 OR BSD-3-Clause",
+   "needed": [
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "cryptography/hazmat/bindings/_rust.abi3.so",
+   "sha256": "01b23922e5fb188120cd012e49d622deee4a7e4058bcc9a2243163cabd9b84ca"
+  },
+  {
+   "category": "gpl-family",
+   "distribution": "numpy",
+   "licence": "GPL-3.0-with-GCC-exception",
+   "needed": [
+    "libz.so.1",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0",
+   "sha256": "8c13f44b44e4dd0005632ea4173f5f5014d2829d50aa12b2054034297c07f233"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "BSD-3-Clause",
+   "needed": [
+    "libm.so.6",
+    "libpthread.so.0",
+    "libgfortran-daac5196-038a5e3c.so.5.0.0",
+    "libc.so.6"
+   ],
+   "path": "numpy.libs/libscipy_openblas64_-48fd33d4.so",
+   "sha256": "d32eabc5f8be6070f32f0c0d8ee5769f51b00dcddc7d2de3f208b20d5d573268"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "numpy/_core/_multiarray_tests.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "12b316547732f37800597b2e4a25e76cae251fe478ee8fa66a7c90a0ed932324"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas64_-48fd33d4.so",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "numpy/_core/_multiarray_umath.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "bace7e288e8de25ff38a12cefbaf944c29042829694793955e1e3585f24157bc"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [],
+   "path": "numpy/_core/_operand_flag_tests.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "794d639bb2cb58ee40a0915c416d6f302e60ea527abf6193ad7da6036bc3f238"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "numpy/_core/_rational_tests.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "d6fc41ebb768d6f674996c3e24e3bafa49af8b47b3d9a7d9a4e37eff90d06ecf"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "numpy/_core/_simd.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "5ca1191e69e602ee8c12775507736dc4deedf7b2afd3459ad8772290b1529c22"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [],
+   "path": "numpy/_core/_struct_ufunc_tests.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "b62155931a8db05b3196c119c54d79a3357c580642eccbf47c67fa88ee24e339"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "numpy/_core/_umath_tests.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "af673fb7ada8e5afb85e4e52c6c5e3f79a52b921ecc168d9022150344ec104c2"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "numpy/fft/_pocketfft_umath.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "8a6fb2f65fbc90abd66ca4cce07fb15493e6e617a289d1061815c917af5f2750"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas64_-48fd33d4.so",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "numpy/linalg/_umath_linalg.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "a561b7a7d8ebcb2c2c0a73a969d62e3ac79592f120911535e43d5f5a1840019b"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas64_-48fd33d4.so"
+   ],
+   "path": "numpy/linalg/lapack_lite.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "a6c5dd2df1a1fcb6c67732ce0ead6953ebc3ab35e5db6c814ef909bc9fe10042"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "numpy/random/_bounded_integers.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "2faed04ba4d3decadf0d95170aaffc2296a62806a2645d229eebb8283b15eb57"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "numpy/random/_common.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "f7befefff0177ae7a9064996cceb4d1603a861d1bd6a9722555904155ee983f1"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "numpy/random/_generator.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "d974c4c6b1e58ec69bcc1e4e8a1c1833b489b3fa7ad560a6a16708439755026f"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "numpy/random/_mt19937.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "2c1aa0207f215cd275d286ac06fbe2b02cc73da7ae8fdd658d35c2124969f041"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "numpy/random/_pcg64.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "f745b670835257abc4665c0084d7d62270c00a34f4ece8aebe37582b8e794df7"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "numpy/random/_philox.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "ff8cf868016b6d088d987433720640cfabe0f152ff146697808fac353fbddaac"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "numpy/random/_sfc64.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "4210c5014df9374004d0fde509c4b7e8c117e829513034e42d4011cfdb65de5a"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "numpy/random/bit_generator.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "cb8cf917b6ddc1b88f4e8de64986da0ebebab344f7e664a69da505d38f7a20fb"
+  },
+  {
+   "category": "identified",
+   "distribution": "numpy",
+   "licence": "Copyright (c) 2005-2024, NumPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "numpy/random/mtrand.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "ec153582d8913509155724c56cfbc9a37a687f3defdcf1e296823dd8ed6bacdb"
+  },
+  {
+   "category": "identified",
+   "distribution": "pydantic-core",
+   "licence": "MIT",
+   "needed": [
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libdl.so.2",
+    "libc.so.6"
+   ],
+   "path": "pydantic_core/_pydantic_core.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "0ffd48b6208a0bcd33bf3bc68f4220a579de519c8b8a6fdd09466b285e6fc2ef"
+  },
+  {
+   "category": "identified",
+   "distribution": "pyyaml",
+   "licence": "MIT; OSI Approved :: MIT License",
+   "needed": [
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "path": "yaml/_yaml.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "023905667bf93be4a264202822d235d95506437a541003c1d95888bca03267bc"
+  },
+  {
+   "category": "identified",
+   "distribution": "rpds-py",
+   "licence": "MIT",
+   "needed": [
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libdl.so.2",
+    "libc.so.6"
+   ],
+   "path": "rpds/rpds.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "1be216bd843a0b5ef6b12fd4e5d44925e2f81929e9aaf52c196219954f4b49f8"
+  },
+  {
+   "category": "gpl-family",
+   "distribution": "scipy",
+   "licence": "GPL-3.0-with-GCC-exception",
+   "needed": [
+    "libz.so.1",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0",
+   "sha256": "8c13f44b44e4dd0005632ea4173f5f5014d2829d50aa12b2054034297c07f233"
+  },
+  {
+   "category": "gpl-family",
+   "distribution": "scipy",
+   "licence": "GPL-3.0-with-GCC-exception",
+   "needed": [
+    "libz.so.1",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy.libs/libgfortran-daac5196.so.5.0.0",
+   "sha256": "73b06dc7d12c5d4e37fe8ba67aa9ab440bb794e79adff58ae894b3d457e71bd7"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "BSD-3-Clause-Attribution",
+   "needed": [
+    "libm.so.6",
+    "libpthread.so.0",
+    "libgfortran-daac5196-038a5e3c.so.5.0.0",
+    "libc.so.6"
+   ],
+   "path": "scipy.libs/libscipy_openblas-9778f98e.so",
+   "sha256": "72e57f85d0692928219d4716bb48749964053ef445824b160f1b73de090a0f74"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/_lib/_ccallback_c.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "1e61ca47e5d1b4d31ff992a1b42bc483e0aa908ed1326f57fce6274c535ae840"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [],
+   "path": "scipy/_lib/_fpumode.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "bd2d5aa00a9b1b27903e0c68fd702c631938441ade80637bca9c45847960e2c2"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/_lib/_test_ccallback.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "85b37fdaa5cd001adcbff89d68db88d31a93725ca40ca47dfbc81eadb852e5b6"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/_lib/_test_deprecation_call.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "a8ed2bc42cb26e5c137e7d0f718cad296567447ba9975e35d6b6977766cfb555"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/_lib/_test_deprecation_def.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "820757a68091d453794a34de3af89907961f6ebcb7608443b03079088dcc7d3a"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/_lib/_uarray/_uarray.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "48fb58671f7da2937db21737dd20f3917d4dea9842b2d47cc5b723a7e9dbbbf9"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/_lib/messagestream.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "e0f1dfb2e328b36ab0de45b71bb1e1cc0d5d51b3b17d78c85ea45c5ec9c2d2c6"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/cluster/_hierarchy.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "56f54eeb4f285637ad62b880059572b730b448292389f61fde1f36703ceb0c85"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/cluster/_optimal_leaf_ordering.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "64cab59ae052c571e0026fd46624dd3fa09e86bc9c4acc1db0dfb4654c1a2dbd"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/cluster/_vq.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "2a4ebb7b88a38b08de17c016a63bbec3181fd8e4b093d25b49aa3627d15e62c7"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/fft/_pocketfft/pypocketfft.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "5095e92ed87fe08ddda276062ca299ba6127a577712ed81b740625df091dd9e5"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/fftpack/convolve.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "0f16ef8c2d51138273d64057fad33795b03019e87be79db0c88a0aff8eddeb36"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/integrate/_dop.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "22dbb5727119bf8dfc4f4ff5f9b2a6f3ccef8bf2c21246385e477ee6d17f0910"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/integrate/_lsoda.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "b9e77bed8683de6cdb87caea268cdb32876a9a9ad097e73bbb9a25d3eba7ed3d"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/integrate/_odepack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "853d66abe9a4b1dcf6333cec2de439fea9672d966c35d16f70cc5f59ba12bc0e"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/integrate/_quadpack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "439ecaf4bd925a45042a889d1f676e5bd9ad82ce1813d1ed724f9f2e1b261fa7"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6"
+   ],
+   "path": "scipy/integrate/_test_multivariate.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "549fd75f6f2529dea2e6ca43cfcf37234773b6774a87954f89b43c83a29a1964"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/integrate/_test_odeint_banded.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "2091e336c8bedaa38d88afb8a0eb0849efc0654da875186ae133cf6de9f3e5be"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/integrate/_vode.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "56e8e2155ffebd89873a8a379ab143e75a7288763754c1c44b182dece028d8ff"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/interpolate/_bspl.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "059261c793000bfe4a1c183a43d8b37d6c4687f9335d4e7c973a1bd1919c1b26"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/interpolate/_dfitpack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "776b2fada01acb1d11f020142979bc1be7e48327a659faad1d2c743b83096762"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/interpolate/_dierckx.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "b11c572f00f2d0f5cab7ae3c81ad1a373aaf964b627642c7e1cf3e036d596ecf"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libgfortran-daac5196.so.5.0.0",
+    "libc.so.6"
+   ],
+   "path": "scipy/interpolate/_fitpack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "60e152e39600106d027005acf13c42754cbb63c71bf30ab5f6548d0ff2c3290a"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/interpolate/_interpnd.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "852a078f3bbedd792de3897d7e2e4a6ae50b05af069a09689623ed586db47d0f"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/interpolate/_ppoly.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "893348dc947bd00a3184f424ea24f6eb408f975d8d2732f70a4cb77125aa5af7"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/interpolate/_rbfinterp_pythran.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "2d1b6226293ff7bc9e880b6494e2136f57f3226175e9c498a849d74927803f69"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/interpolate/_rgi_cython.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "09edca1bae6e2142c76fb0f9a7ec8e4ae390bf3aa302873e0ca39676e79ef233"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/io/_fast_matrix_market/_fmm_core.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "edfbe90d53d6f5b7cc29317290b193827f29c1eef6a3001be898ccf312670842"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libgfortran-daac5196.so.5.0.0",
+    "libc.so.6"
+   ],
+   "path": "scipy/io/_test_fortran.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "abb523e04c7d2b937bce94329975272daf7f9c44ad71c1ae8eb0e896b5e7f35f"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/io/matlab/_mio5_utils.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "88a3ef5f866c03a7e5ff606b66b9006938ab277362622108a947de3932f174a7"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/io/matlab/_mio_utils.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "eb2f01caf1759e9a19161a602ad5623bf55ac34b361a884260f97117e0f960e8"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/io/matlab/_streams.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "6292c1b0c00343b1213e9b76840c9c925369ba02e9210963de1bbf2a0ec2c41f"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/_cythonized_array_utils.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "7e64aa83a1e0a308d73ef58c0be8550799ccec91f374fad2e9874872f235b985"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/_decomp_interpolative.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "e353ba87afda9c595e6a747fd48aba9151792c873fc592697270ad61931f65a7"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/_decomp_lu_cython.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "e5ff4cb2c67836066b0b604e8e8029dc035bc2f5233151a36ab8797ec29637ec"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/_decomp_update.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "14d9c97115f758cfa39656572a0ae8cb878a92f4a32161ad3cbd3e210fe7ac79"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/_fblas.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "ddafd731e5fe215876f1c9e61c725b5d84809fb1bfd6bcc40892d2c3a7b05f09"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/_flapack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "fbf45d8899b815cbfab5a233a1096711ee37863df4b02b2568d9779262e193a6"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/linalg/_linalg_pythran.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "9b8aa419779805fb7efaa7cae486cb0effee81d519060c4b3d30bc4df55bb0e0"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libscipy_openblas-9778f98e.so"
+   ],
+   "path": "scipy/linalg/_matfuncs_expm.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "8ae5a5a0102be1accb7f331a30519dba458b304de54d5a9ae9da5817f56b2173"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/_matfuncs_sqrtm_triu.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "b7362f2eb49c8cac5758b1add1f92de5e6e8360abd61bf602709905aef065e03"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/_solve_toeplitz.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "b2d4001327cb4bd11bae9e60753141c421345ba2dc36320b3db6b40b316783ef"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/cython_blas.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "6197e2f1d93ca37604ed020e49710aa93dd5d0f751d9ada40313c4b6e69453da"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libc.so.6"
+   ],
+   "path": "scipy/linalg/cython_lapack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "dd76da2a9ce1e5405cdd3cff2bebb0aab6207c2c115dceb88511ecae9d26f701"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [],
+   "path": "scipy/ndimage/_ctest.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "1bf0a9d177c634764ad69113c58b79c1aa368c7e166253d2293805f2bbcef9cd"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/ndimage/_cytest.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "0c46e778409a914b4a518915046039db849f4cc234c64b3e85e024ac5b3d8d0c"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/ndimage/_nd_image.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "5c0a78a05784975b32985d5b21092b0417881fa7211b6cc1e2c9c7ad305d8e51"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/ndimage/_ni_label.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "41d4224cebd4b34cc502c2ba895183bf4dbfd7a124626a803d7446afd548cbe3"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/ndimage/_rank_filter_1d.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "42eb94bcf803627c165ea1b939ef70858f0b4dc9a2511e90cd12297bd0482cfe"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/odr/__odrpack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "3fa1917ab18a08c96cc034d6a7374f3318fb996add6a95efb3c32517cfb049b5"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_bglu_dense.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "d41845fd4ffc1d2e382c27f3a8738cf2529079f7d02d7815a50bda15c3d8fbfd"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libgfortran-daac5196.so.5.0.0",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_cobyla.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "1a7ab367992f8a7e890955eae0999503bf0f929c6d65de0909488cda48eb5e93"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_cython_nnls.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "3655f26dcab38b94034afe637d5c617cc1f48a5208d47a25b8a82aa397fee47e"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_direct.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "721f1a14aab8f39597307eccbc17d08a573ab42f99fae343756822b7ae9f1b83"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/optimize/_group_columns.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "bbbec2a7205648f8216d5f332cfb3cf1a37096712e83fe0f48c552563981f157"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/optimize/_highspy/_core.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "a677b4d6be977d84f96997e8060a4a2f02237686f33feb26729fe35ca1d442ec"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/optimize/_highspy/_highs_options.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "11cdfd6613627fc265db64d10f09f39aefe288a5878eadbb0822a69738dd6eb1"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libscipy_openblas-9778f98e.so",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_lbfgsb.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "15e6317b94459fee7e3e6892b52971cda12f8cd5156b82b9a65b5c6150a2b7be"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_lsap.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "e631b3741f9774f04da9c351fa2c6159ced8b3b8ebf9e1700338d83bda6cf4d5"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_lsq/givens_elimination.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "23a30c89f49d97250d000f9473aca0d3b62c28d3486ab0da057ee6af910fa2bd"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_minpack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "e208c67bc3e697ce6c586d0d98c8d6ffe6eb79c4c6c10214c795862393b3e200"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_moduleTNC.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "0d755fcc33183cbfcb613f8d8830f333db2b8dbb6f5a28f3d8acdd7cf117ec28"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/optimize/_pava_pybind.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "53008da0e6cec16ec59950fe2c14f623260f43bf1d5b4a897873cfc95b226d38"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_slsqp.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "30d576b2868de226d1fb137c985f46286a4ea5850db4d64dd0e6b0d000e75816"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libscipy_openblas-9778f98e.so",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_trlib/_trlib.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "e0d9a3ea1cfab17f7aa7e82b78ba6cf5c9cc42ff17f97a0371e39e60b2cd5459"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/_zeros.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "61510135dc6dcdb1ba6ad36cec358c7c2aae14f5bc437802d45d9e9e6bbe1f0d"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/optimize/cython_optimize/_zeros.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "a72cb6e26c1c22764fbce2674bcec22a6a4a85958889b0ec5f5ecb740374eb13"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/signal/_max_len_seq_inner.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "80e7d46abddc03ca9008a922b233cc41c4828c19ae3f7fb31e172a9f672299da"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/signal/_peak_finding_utils.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "1fd23902cc1ee9878011f4603c6d3857e43ac68e799529e8614f781797c81423"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/signal/_sigtools.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "be1dea79772ba08119f4ef4e44c13593d63afe7b3b8d27f0705a77cc4bbe3bd0"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/signal/_sosfilt.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "b601f5b2bad348baa9c717b07d17f95c1bd21fd04232ac9cb793232738dae893"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/signal/_spline.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "76a223637b7600911f47a55397b7f16e2be469b30a92cda8993d8444a3de5769"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/signal/_upfirdn_apply.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "4a78816bf7a80d2e479eb1c85c174fc56728c213b33840c4f9a255258238056c"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/_csparsetools.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "79be5cffc02f8661ee9ce49bf3e03d4e9cac9b12e61833e04af22144d25e1ad8"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/sparse/_sparsetools.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "cf68280adbc1abc6f0f39ad07131745f3f47e68f3e0a958af18bb14720bbc6c5"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/csgraph/_flow.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "763aa4c29610eafa9565f4f5bd730b68948b9ce155283f654b395659c2931648"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/csgraph/_matching.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "a427a31be57b8efba0e881c55f2d8b671076b7f1cd235d1362332c17ae7232fd"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/csgraph/_min_spanning_tree.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "51aafe451c2fe8db26a6532385bcbe28199ea8b4aebf0aa0870d8eb7ff0ec18e"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/csgraph/_reordering.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "5123e0249b2e7971fa2293238ccbf29a988c7db17c8c191fce7486151471c95b"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/csgraph/_shortest_path.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "0cfee321405b0daabc54f2b241c20133017c3cf8a3c8d01b54c54d11e9b8618f"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/csgraph/_tools.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "27bdf74e47b4f6a9c5f4e020e15f657fb48300650250edf36eac7a16cba80ab0"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/csgraph/_traversal.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "c1bd99fbcabe9d8440d891e97a9b26c7f42b5b862b65f4108fb4c579221bd5e7"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libscipy_openblas-9778f98e.so",
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/linalg/_dsolve/_superlu.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "f8598d460c24f6b59d7f976d5414b6686e41733ffab5adf84b018d96b8693d16"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/linalg/_eigen/arpack/_arpack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "4022bf4f21142f2216ed525bcd1a45a0c00dd51cf3b83c1e3a33ac9de35094d7"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/linalg/_propack/_cpropack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "eba57fc5406c9bd9b37840b90a85c3c1e70b6c846aa73195a2cb890d9cf29c0c"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/linalg/_propack/_dpropack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "d3c6c838a5a63980561b91dbc5533e653131dca08e6004f54008ee26b85afc6f"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/linalg/_propack/_spropack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "72a336e57213d245c596a3f4cb842e83f368ef1010df92d00fb54ad1dbcb1390"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libscipy_openblas-9778f98e.so",
+    "libgfortran-daac5196.so.5.0.0",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/sparse/linalg/_propack/_zpropack.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "126d5806b97e9c3b1292ea2e027a578f0b8fefbe4af7503501fd59e1b130ca2d"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/spatial/_ckdtree.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "6f5e3711c30fca48723009e4b4d68a323aaa8e37bf2c5ac003211480a18bdbc2"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/spatial/_distance_pybind.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "42baa7af968ead747c4490155e02e413a13e62c91077c1e72dd94442c7ce2644"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/spatial/_distance_wrap.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "c7abcbc1f47dfc69e285a779f4da9b8e72e8b8d723a555cff230060ed1420f5b"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/spatial/_hausdorff.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "25a8b87c8751a83434d96ce70b1a908166008bb018b7f067ecb8fd4b2a3a386a"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/spatial/_qhull.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "f21ff67ce0c3d0509d999eaf053f800f90c6eb4e8541bd488869e1d86773f8c2"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/spatial/_voronoi.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "007759ae67c16a9a409ea6e60ad1b93946e568b81fb71b9d7df775e265627cb0"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/spatial/transform/_rotation.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "7bcc7b146c56ab4a74300d5e892323f1940a8e94ce4537cbdbe28fdff416438f"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/special/_comb.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "62533121d1b219a38af47378f89ec1e6ef72c422cad3f70cba502b54fde05a27"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libsf_error_state.so",
+    "libscipy_openblas-9778f98e.so",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/special/_ellip_harm_2.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "97933e081dd2a852a94c744f7a741e68c462378e36c452af08ccdb3119f8de18"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libsf_error_state.so",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/special/_gufuncs.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "66575873c4c6b0b8c45b8c05e71f54ff792c75dd4ed028de7c1ba5d1f1c92b33"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/special/_specfun.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "93cc67c5b0b5784e5ecc217c359e9982ba6d9f45c26d33bc60fdb9eaf4101d07"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libsf_error_state.so",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/special/_special_ufuncs.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "987a8c2971a3ac5b509cd2dd868e5e8f07c1f1b261f6d3a6f37b6e45ad69b56d"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/special/_test_internal.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "ddd4e20c69d84116ad0a49ec706258a5426bf93cfd454d976c8d269a899e6920"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libsf_error_state.so",
+    "libscipy_openblas-9778f98e.so",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/special/_ufuncs.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "9b23de3aa9f4170f9de28b38a944a6d40e0bf4d566355f4f43ca43b76e055953"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libsf_error_state.so",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/special/_ufuncs_cxx.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "f90c0e654ebbe8eed598692fb18cc1ffaa36aecf447fd890f058360216def30d"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libsf_error_state.so",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "path": "scipy/special/cython_special.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "f78c3549ee7f946211357f4dee42ae544c4fb6fc1f543814bbabe00e514c94ee"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [],
+   "path": "scipy/special/libsf_error_state.so",
+   "sha256": "faa32add15424b43ba42825c9a009c06d536f7230a6768287084cc3e92fb4c29"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/stats/_ansari_swilk_statistics.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "4aee52c638b9160dd521e2dee30fe56e151d60710d8ddba8238ea96740289566"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/stats/_biasedurn.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "3f8184a193e0659fce0b49c2d62f2769284ae06faf418c6b45b0443328f0aff8"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/stats/_levy_stable/levyst.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "4255a095965783d3a25f0c5fc6f412ea5fa4cb2636e37e20a313e3241619ff41"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/stats/_mvn.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "c89a9eb7e47ebcbfb06d96115da49f7fabe6ad754df698069df752c0f092d717"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "path": "scipy/stats/_qmc_cy.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "4612d290d3fc6e78b0b8afb3d594176ec8aa1aa20d20c2f52f2b00ee97ca2fb6"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/stats/_rcont/rcont.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "407e5fbc117c7030dc7cb1d3ac2b32b73191507402187041f4366d160386236d"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libc.so.6"
+   ],
+   "path": "scipy/stats/_sobol.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "98228c5e53d20535e1abb9e6db9c3ba77eb3d225adfa5e725917a65f69fb0a1b"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/stats/_stats.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "5af2e67b79b17ea3786fd3b024b58b503873b7bf1780a086d4a8252c7cc30757"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-aarch64.so.1"
+   ],
+   "path": "scipy/stats/_stats_pythran.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "5a25073139bd5b382fc37ef00e5e3333e801223fb45d573c4be0655113bae36f"
+  },
+  {
+   "category": "identified",
+   "distribution": "scipy",
+   "licence": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers.; OSI Approved :: BSD License",
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "path": "scipy/stats/_unuran/unuran_wrapper.cpython-313-aarch64-linux-gnu.so",
+   "sha256": "b6f951fe0908a710b32569181abc58863b71cf7080a8f0803fb7fffe264f7f64"
+  }
+ ],
+ "verdict": {
+  "metis_reached_from_project_paths": [],
+  "pass": true,
+  "undispositioned_in_required_closure": []
+ }
+}

@@ -1,0 +1,73 @@
+{
+ "rss_after_numpy_mib": 25.75390625,
+ "rss_after_backend_import_mib": 35.04296875,
+ "rss_after_compile_mib": 48.18359375,
+ "tracemalloc_peak_compile_mib": 0.0896759033203125,
+ "import_ms": {
+  "numpy": 33.577978,
+  "backend": 11.323963
+ },
+ "samples": [
+  {
+   "backend": "casadi",
+   "backend_version": "3.8.0",
+   "numpy_import_ms": 36.341183,
+   "backend_import_ms": 11.35989,
+   "compile_L_ms": 5.604233,
+   "rss_after_numpy_mib": 25.640625,
+   "rss_after_backend_import_mib": 34.93359375,
+   "rss_after_compile_mib": 49.265625,
+   "peak_rss_mib": 53.2265625,
+   "tracemalloc_peak_compile_mib": 0.0896759033203125
+  },
+  {
+   "backend": "casadi",
+   "backend_version": "3.8.0",
+   "numpy_import_ms": 32.522992,
+   "backend_import_ms": 11.323963,
+   "compile_L_ms": 5.591369,
+   "rss_after_numpy_mib": 25.796875,
+   "rss_after_backend_import_mib": 35.09375,
+   "rss_after_compile_mib": 48.1875,
+   "peak_rss_mib": 53.2265625,
+   "tracemalloc_peak_compile_mib": 0.08009719848632812
+  },
+  {
+   "backend": "casadi",
+   "backend_version": "3.8.0",
+   "numpy_import_ms": 32.912095,
+   "backend_import_ms": 11.180504,
+   "compile_L_ms": 5.415277,
+   "rss_after_numpy_mib": 25.69921875,
+   "rss_after_backend_import_mib": 34.99609375,
+   "rss_after_compile_mib": 48.08203125,
+   "peak_rss_mib": 53.2265625,
+   "tracemalloc_peak_compile_mib": 0.08837318420410156
+  },
+  {
+   "backend": "casadi",
+   "backend_version": "3.8.0",
+   "numpy_import_ms": 33.577978,
+   "backend_import_ms": 11.929564,
+   "compile_L_ms": 5.419364,
+   "rss_after_numpy_mib": 25.75390625,
+   "rss_after_backend_import_mib": 35.04296875,
+   "rss_after_compile_mib": 48.15625,
+   "peak_rss_mib": 53.2265625,
+   "tracemalloc_peak_compile_mib": 0.0920858383178711
+  },
+  {
+   "backend": "casadi",
+   "backend_version": "3.8.0",
+   "numpy_import_ms": 39.919641,
+   "backend_import_ms": 11.077048,
+   "compile_L_ms": 5.704291,
+   "rss_after_numpy_mib": 25.77734375,
+   "rss_after_backend_import_mib": 35.06640625,
+   "rss_after_compile_mib": 48.18359375,
+   "peak_rss_mib": 53.2265625,
+   "tracemalloc_peak_compile_mib": 0.0900564193725586
+  }
+ ],
+ "note": "measured by memory_probe.py in staged-import subprocesses; the harness imports the backend at module scope and so cannot measure this in process"
+}

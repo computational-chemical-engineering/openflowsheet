@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/project-policy.schema.json",
+  "title": "ProjectPolicy",
+  "description": "T07 design note §5.9 and §10.3, ADR 0019 D4. `project-policy.json`: the capability grants of one project and its executor settings. It changes only through audited operator commands, and an invalid file is refused rather than defaulted: a grant must validate before it can confer authority. `capability_id` and every non-null `token_sha256` are unique across `capabilities`; a JSON Schema cannot state either, and `ProjectPolicy.from_document` does.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "capabilities",
+    "executor"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "project-policy-v1"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "$ref": "https://github.com/frankp/process-runtime/schemas/capability-reference.schema.json"
+      }
+    },
+    "executor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_workers": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "grace_s": {
+          "type": "number",
+          "minimum": 0.5,
+          "default": 10
+        }
+      }
+    }
+  }
+}

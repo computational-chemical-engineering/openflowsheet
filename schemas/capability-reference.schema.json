@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/capability-reference.schema.json",
+  "title": "CapabilityReference",
+  "description": "T07 design note §5.9 and §10.1, ADR 0019 D4; blueprint §11.3. What a presented credential grants. Authority comes only from the credential: a bearer token maps, by its SHA-256, to one capability, and no request field is ever consulted for authority. `token_sha256 = null` means the capability can never be presented over a transport. `note` is untrusted text and is never read for authority. `rights` is sorted and unique; a JSON Schema states uniqueness, and `CapabilityReference.from_document` states the order.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "capability_id",
+    "principal_id",
+    "rights",
+    "token_sha256",
+    "limits",
+    "expires_at",
+    "note"
+  ],
+  "properties": {
+    "capability_id": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/id"
+    },
+    "principal_id": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/id"
+    },
+    "rights": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "read",
+          "draft",
+          "execute",
+          "install",
+          "policy",
+          "publish"
+        ]
+      }
+    },
+    "token_sha256": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_wall_time_s",
+        "max_wall_time_s",
+        "max_active_jobs"
+      ],
+      "properties": {
+        "default_wall_time_s": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_wall_time_s": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_active_jobs": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/timestamp"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 256
+    }
+  }
+}

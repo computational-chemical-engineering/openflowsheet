@@ -1,0 +1,79 @@
+# Invalid ModelManifest: an energy holdup declared on a component-balance row.
+#
+# ADR 0008 D3.2: a `holdup_balance` row's dimension is its holdup's dimension with the time
+# exponent lowered by one. Here a joule holdup is declared on a mol/s row. The JSON Schema
+# accepts the shape; the semantic check must reject the physics.
+
+expect_error: time exponent lowered by one
+document:
+  id: syn001.bad_manifest_holdup_dimension
+  version: 0.0.0-declared
+  status: declared
+  introduced_by_package: K02
+  ports:
+  - name: inlet
+    kind: material
+    direction: inlet
+    multiplicity: 1
+    component_mapping: revision_component_set
+    state_definition: nTP-v1
+    phase_capabilities:
+    - liquid
+  mathematics:
+    equations:
+    - id: BAD-mole
+      statement: n_in,i - n_out,i = 0 for every component i
+      dependencies:
+      - inlet.state.n
+      conditional_class: unconditional
+      dimension:
+      - 0
+      - 0
+      - -1
+      - 0
+      - 1
+      - 0
+      - 0
+      accumulation:
+        kind: holdup_balance
+        holdup:
+          symbol: U
+          quantity: internal energy of the contents
+          dimension:
+          - 2
+          - 1
+          - -2
+          - 0
+          - 0
+          - 0
+          - 0
+  derivatives:
+  - output: outlet.state
+    with_respect_to:
+    - inlet.state
+    method: unavailable
+  initialization:
+    strategy: none
+    notes: n/a
+  validity:
+    domain:
+      temperature_K:
+        min: 280.0
+        max: 440.0
+      pressure_Pa:
+        min: 50000.0
+        max: 200000.0
+      components:
+      - A
+      - B
+      - C
+    limitations:
+    - deliberately malformed fixture
+  implementation_artifact:
+    state: not_implemented
+    module: null
+    artifact_hash: null
+  execution_requirements:
+    execution_class: native_equation
+    thread_safety: unknown
+    evaluation_cost_class: unknown

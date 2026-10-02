@@ -1,0 +1,402 @@
+# SYN-001 ProcessRevision: SYN-001-all-liquid-310K
+#
+# Single-phase endpoint: r = 0.5, flash at 310 K.
+#
+# Sum z_i K_i = 0.328 at 310 K, so the flash liquid takes everything and the vapor product has exactly zero flow. The 350 K heater outlet is nonetheless two-phase (derivation §7 finding 2).
+#
+# Validates against schemas/process-revision.schema.json (and each embedded Quantity against
+# process_runtime.units.check_quantity). `content_hash` is deliberately absent: the canonical
+# JSON encoding that would make a semantic hash meaningful is ADR 0002 / K01, and a hash
+# written before that encoding exists would be a fabricated identity.
+#
+# The six SYN-001 case revisions differ only in the split fraction r, the flash temperature,
+# and — for SYN-001-conflicting-heater-spec — one extra, deliberately conflicting heater-duty
+# specification. Streams are named S1-S7 as in docs/derivations/SYN-001.md §4.
+schema_version: 1
+revision_id: SYN-001-all-liquid-310K-r1
+parent_revision: null
+title: 'Single-phase endpoint: r = 0.5, flash at 310 K.'
+description: Sum z_i K_i = 0.328 at 310 K, so the flash liquid takes everything and the vapor product
+  has exactly zero flow. The 350 K heater outlet is nonetheless two-phase (derivation §7 finding 2).
+component_set:
+  record_source: benchmarks/syn001/components.yaml
+  components:
+  - A
+  - B
+  - C
+instances:
+- id: feed
+  model:
+    id: syn001.feed_source
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: feed
+  parameters: {}
+  policy:
+    fidelity: boundary condition; the fresh feed state is fully specified
+    validity: SYN-001 declared domain 280-440 K, 50000-200000 Pa
+- id: mixer
+  model:
+    id: syn001.adiabatic_mixer
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: mixer
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the mixer; zero in SYN-001, imposed as an equation P_out
+        = P_in rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: adiabatic component and energy balance; enthalpy closure by a bracketed scalar thermal
+      solve
+    validity: v0.0 restricts the closure to the subcooled-liquid domain with a typed failure outside
+      it (plan §3.2)
+- id: heater
+  model:
+    id: syn001.tp_heater
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: heater
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the heater; zero in SYN-001, imposed as an equation P_out
+        = P_in rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: 'TP-state outlet: a TP flash at the specified outlet temperature with the duty as a
+      calculated unknown of either sign'
+    validity: SYN-001 declared domain; a two-phase outlet is a supported result
+- id: flash
+  model:
+    id: syn001.tp_flash
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: flash
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the flash; zero in SYN-001, imposed as an equation P_out
+        = P_in rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: isothermal-isobaric equilibrium flash sharing the heater's TP-state kernel; duty calculated
+    validity: SYN-001 declared domain; single-phase and zero-flow results are supported outcomes,
+      not failures (ADR 0001 D3.4)
+- id: splitter
+  model:
+    id: syn001.stream_splitter
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: splitter
+  parameters:
+    split_fraction:
+      value: 0.5
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Fraction r of the flash liquid returned to the mixer; the purge takes 1 - r. Pinned
+        by specification SPEC-splitter-r.
+      role: fixed
+      bounds:
+        lower: 0.0
+        upper: 1.0
+  policy:
+    fidelity: linear split at constant T, P and composition
+    validity: 0 <= r < 1; r = 1 has no steady state (derivation §5)
+- id: vapor_product
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+- id: purge
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+connections:
+- id: S1
+  kind: material
+  from:
+    instance: feed
+    port: outlet
+  to:
+    instance: mixer
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Fresh feed: (1, 1, 1) mol/s at 300 K and P_r, liquid (derivation §4).'
+- id: S2
+  kind: material
+  from:
+    instance: mixer
+    port: outlet
+  to:
+    instance: heater
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Adiabatic mixer outlet. The v0.0 closure is restricted to the subcooled-liquid domain; derivation
+    §7 finding 5 shows no registered r-variant leaves it.
+- id: S3
+  kind: material
+  from:
+    instance: heater
+    port: outlet
+  to:
+    instance: flash
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor_liquid
+  notes: Heater outlet at the specified temperature. Two-phase in three of the five registered variants
+    (derivation §7 finding 2), which is a supported result.
+- id: S4
+  kind: material
+  from:
+    instance: flash
+    port: vapor
+  to:
+    instance: vapor_product
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor
+  notes: Vapor product. Exactly zero flow in the 310 K variant; ZERO_FLOW is a phase signature, not
+    a failure (ADR 0001 D3.4).
+- id: S5
+  kind: material
+  from:
+    instance: flash
+    port: liquid
+  to:
+    instance: splitter
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Flash liquid at the flash temperature and pressure.
+- id: S6
+  kind: material
+  from:
+    instance: splitter
+    port: recycle
+  to:
+    instance: mixer
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Liquid recycle. Its T and P are known from the flash specification, so the tear needs only
+    its three component flows; T01 must rediscover that from the incidence graph rather than have
+    it hard-coded (plan §3.2).
+- id: S7
+  kind: material
+  from:
+    instance: splitter
+    port: purge
+  to:
+    instance: purge
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Purge. Together with S4 it carries the whole external product balance.
+specifications:
+- id: SPEC-feed-n-A
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: A
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Fresh-feed component molar flow. The registered throughput scale is the fresh-feed total,
+    3 mol/s (derivation §9).
+- id: SPEC-feed-n-B
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: B
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Fresh-feed component molar flow. The registered throughput scale is the fresh-feed total,
+    3 mol/s (derivation §9).
+- id: SPEC-feed-n-C
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: C
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Fresh-feed component molar flow. The registered throughput scale is the fresh-feed total,
+    3 mol/s (derivation §9).
+- id: SPEC-feed-T
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 300.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Fresh-feed temperature. Equal to T_r, so the fresh-feed enthalpy flow is exactly zero at
+    P_r in the SYN-001-ref-v1 reference convention (ADR 0001 D5.1).
+- id: SPEC-feed-P
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Fresh-feed pressure. All pressure drops in SYN-001 are zero, so every stream is at this pressure.
+- id: SPEC-heater-outlet-T
+  target:
+    object_type: connection
+    object_id: S3
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 350.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Heater outlet temperature. The duty is the calculated unknown and may be negative (ADR 0001
+    D4.2); specifying the duty as well is the over-specification of case SYN-001-conflicting-heater-spec.
+- id: SPEC-flash-T
+  target:
+    object_type: instance
+    object_id: flash
+    path: outlet.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 310.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Isothermal flash temperature, shared by both outlets. The flash duty is the calculated unknown.
+- id: SPEC-flash-P
+  target:
+    object_type: instance
+    object_id: flash
+    path: outlet.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Isobaric flash pressure.
+- id: SPEC-splitter-r
+  target:
+    object_type: instance
+    object_id: splitter
+    path: parameters.split_fraction
+    component: null
+  kind: dimensionless
+  unit: '1'
+  value: 0.5
+  tolerance:
+    absolute: 1.0e-12
+  role: fixed
+  provenance: plan v1.1 §3.2; docs/derivations/SYN-001.md §4
+  notes: Split fraction returned to the mixer. Must equal the splitter instance's split_fraction parameter
+    binding; tests/test_schemas_p01.py asserts that.
+provenance:
+  actor: Opus 5 (P01 second model, implementing the Fable-authored SYN-001 specification)
+  operation: create
+  timestamp: '2026-09-07T00:00:00Z'
+  source_references:
+  - docs/implementation-plan.md §3.2, §3.3
+  - docs/derivations/SYN-001.md §4, §7
+  - docs/adr/0001-state-units-zero-flow.md
+  notes: Hand-authored fixture input. No solver has run on this revision.

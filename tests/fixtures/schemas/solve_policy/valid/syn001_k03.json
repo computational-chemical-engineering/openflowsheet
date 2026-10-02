@@ -1,0 +1,106 @@
+{
+ "admissibility_epsilon": 1e-12,
+ "armijo_c": 0.0001,
+ "cycle_rule": "no_repeated_signature",
+ "derivative_path": "assembled_schur",
+ "eta_inner": 1e-10,
+ "globalization": {
+  "eo_core": "newton",
+  "eo_recovery": "homotopy",
+  "eo_recovery_max_count": 1,
+  "homotopy": {
+   "corrector_max_iterations": 10,
+   "delta_lambda_initial": "1/4",
+   "delta_lambda_min": "1/1024",
+   "growth": 2,
+   "max_lambda_trials": 64,
+   "shrink": "1/2",
+   "type": "specification_continuation"
+  },
+  "policy_id": "T04-globalization-v1",
+  "ptc": {
+   "gamma_max": 2.0,
+   "gamma_min": 0.2,
+   "mass_policy": "T04-residence-time-v1",
+   "max_steps_per_attempt": 200,
+   "phi_floor": 1e-12,
+   "polish": "one_newton_step",
+   "residence_time_s": 1.0,
+   "retries_max": 10,
+   "retry_shrink": 0.5,
+   "status": "experimental",
+   "tau_initial_s": 1.0,
+   "tau_max_s": 10000000000.0,
+   "tau_min_s": 0.0001
+  }
+ },
+ "initializer_chain": [],
+ "linear_residual_threshold": 1e-12,
+ "linear_solver": {
+  "diag_pivot_thresh": 1.0,
+  "name": "scipy.sparse.linalg.splu",
+  "options": {
+   "Equil": false,
+   "IterRefine": "NOREFINE",
+   "SymmetricMode": false
+  },
+  "panel_size": 10,
+  "permc_spec": "COLAMD",
+  "relax": 1
+ },
+ "max_attempts": 5,
+ "max_iterations_per_attempt": 50,
+ "max_property_calls": 10000,
+ "merit": "scaled_residual_half_norm2",
+ "phase_contract": "T03-phase-contract-v1",
+ "phase_wall_patience": 2,
+ "policy_id": "SYN-001-K03",
+ "recycle": {
+  "beta": 1.0,
+  "beta_substitution": 1.0,
+  "beta_substitution_oscillating": 0.5,
+  "coefficient_max": 10000.0,
+  "condition_max": 100000000.0,
+  "depth_max": 5,
+  "max_iterations_per_attempt": 200,
+  "max_restarts": 2,
+  "method": "auto",
+  "oscillation_window": 3,
+  "policy_id": "T02-recycle-policy-v1",
+  "stagnation_ratio": 0.99,
+  "stagnation_window": 5,
+  "step_halvings_max": 20
+ },
+ "redundant_row_policy": "structural_alias_elimination",
+ "residual_tolerances": {
+  "heat_rate": {
+   "absolute": 1e-05,
+   "relative": 1e-08,
+   "scale": 100000.0
+  },
+  "molar_flow": {
+   "absolute": 1e-09,
+   "relative": 1e-08,
+   "scale": 3.0
+  },
+  "pressure": {
+   "absolute": 0.01,
+   "relative": 0.0,
+   "scale": 100000.0
+  },
+  "temperature": {
+   "absolute": 1e-06,
+   "relative": 0.0,
+   "scale": 100.0
+  }
+ },
+ "scales": {
+  "heat_rate": 100000.0,
+  "molar_flow": 3.0,
+  "pressure": 100000.0,
+  "temperature": 100.0
+ },
+ "stagnation_ratio": 0.99,
+ "stagnation_window": 5,
+ "step_halvings_max": 20
+}

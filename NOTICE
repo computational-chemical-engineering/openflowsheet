@@ -1,0 +1,27 @@
+OpenFlowsheet — an agent-native open process simulator
+
+Copyright 2026 E.A.J.F. Peters
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+
+The copyright line records the author's determination that this is scholarly
+output. Eindhoven University of Technology's guidance distinguishes teaching
+materials, whose copyright belongs to the university, from scholarly work such
+as dissertations, articles and monographs, whose copyright belongs to the
+creator; this software is of the second kind. Recorded here as the basis for
+the line, not as a legal opinion.
+
+This project distributes no third-party binaries. It depends on CasADi 3.8.0,
+fetched by the installer from PyPI; that wheel's `_casadi.so` closure is
+LGPL-3.0-or-later and its bytes are not redistributed here. See
+docs/adr/0006-distribution-data-rights.md.

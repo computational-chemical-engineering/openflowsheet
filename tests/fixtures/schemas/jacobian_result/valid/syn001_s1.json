@@ -1,0 +1,273 @@
+{
+  "col_ids": [
+    "v_A",
+    "v_B",
+    "v_C",
+    "l_A",
+    "l_B",
+    "l_C",
+    "V",
+    "L",
+    "lnK_A",
+    "lnK_B",
+    "lnK_C",
+    "hL_A",
+    "hL_B",
+    "hL_C",
+    "T",
+    "P",
+    "Q"
+  ],
+  "constants_sha256": "d4ddcbf81bad6fc0c7e3e76a49cb15d214a5dd5a41e83a0e96cbe5850323f009",
+  "counters": {
+    "blockH": {
+      "jacobian_calls": 1,
+      "value_calls": 1
+    },
+    "blockK": {
+      "jacobian_calls": 1,
+      "value_calls": 1
+    }
+  },
+  "data": [
+    1.0,
+    -1.0,
+    1.6391909307768484,
+    31000.0,
+    1.0,
+    -1.0,
+    1.6391909307768484,
+    36000.0,
+    1.0,
+    -1.0,
+    1.6391909307768484,
+    41000.0,
+    1.0,
+    -1.0,
+    -3.865574398722196,
+    -6000.0,
+    1.0,
+    -1.0,
+    -1.3608090692231516,
+    -6000.0,
+    1.0,
+    -1.0,
+    -0.422639742153356,
+    -6000.0,
+    1.0,
+    -0.8458776972750018,
+    -0.5463969769256162,
+    -0.2469162565762305,
+    1.0,
+    0.702223286069486,
+    0.4536030230743839,
+    0.2049827600792817,
+    -1.151078041905418,
+    1.0,
+    -0.7435419615964916,
+    1.0,
+    -0.33600588128756514,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    -0.023200685772130795,
+    -0.027840822926556954,
+    -0.03248096008098311,
+    -29.777671393051396,
+    -54.63969769256162,
+    -79.50172399207183,
+    136.08090692231517,
+    1.0,
+    9.966591012488133e-06,
+    9.966591012488133e-06,
+    9.966591012488133e-06,
+    -2.9777671393051397e-05,
+    -5.463969769256162e-05,
+    -7.950172399207183e-05,
+    1.0,
+    -1.0
+  ],
+  "format": "csc",
+  "indices": [
+    0,
+    3,
+    5,
+    14,
+    1,
+    3,
+    6,
+    14,
+    2,
+    3,
+    7,
+    14,
+    0,
+    4,
+    5,
+    11,
+    1,
+    4,
+    6,
+    12,
+    2,
+    4,
+    7,
+    13,
+    3,
+    5,
+    6,
+    7,
+    4,
+    5,
+    6,
+    7,
+    5,
+    8,
+    6,
+    9,
+    7,
+    10,
+    11,
+    14,
+    12,
+    14,
+    13,
+    14,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    16,
+    14
+  ],
+  "indptr": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    32,
+    34,
+    36,
+    38,
+    40,
+    42,
+    44,
+    52,
+    59,
+    60
+  ],
+  "message": "",
+  "model_version": "SYN-001-L-1@8e5930fc737e8e0b033a2fe35d06971c6cf911df2db5d9731e050cf1cb6fb98a",
+  "nnz": 60,
+  "pattern_provenance": "backend-declared",
+  "phase_signature": null,
+  "row_ids": [
+    "bal_A",
+    "bal_B",
+    "bal_C",
+    "Vdef",
+    "Ldef",
+    "eq_A",
+    "eq_B",
+    "eq_C",
+    "kdef_A",
+    "kdef_B",
+    "kdef_C",
+    "hdef_A",
+    "hdef_B",
+    "hdef_C",
+    "energy",
+    "tspec",
+    "pspec"
+  ],
+  "source_map": [
+    {
+      "origin": "mole balance",
+      "row_id": "bal_A"
+    },
+    {
+      "origin": "mole balance",
+      "row_id": "bal_B"
+    },
+    {
+      "origin": "mole balance",
+      "row_id": "bal_C"
+    },
+    {
+      "origin": "total vapour flow",
+      "row_id": "Vdef"
+    },
+    {
+      "origin": "total liquid flow",
+      "row_id": "Ldef"
+    },
+    {
+      "origin": "K-value",
+      "row_id": "eq_A"
+    },
+    {
+      "origin": "K-value",
+      "row_id": "eq_B"
+    },
+    {
+      "origin": "K-value",
+      "row_id": "eq_C"
+    },
+    {
+      "origin": "lifted lnK",
+      "row_id": "kdef_A"
+    },
+    {
+      "origin": "lifted lnK",
+      "row_id": "kdef_B"
+    },
+    {
+      "origin": "lifted lnK",
+      "row_id": "kdef_C"
+    },
+    {
+      "origin": "lifted enthalpy",
+      "row_id": "hdef_A"
+    },
+    {
+      "origin": "lifted enthalpy",
+      "row_id": "hdef_B"
+    },
+    {
+      "origin": "lifted enthalpy",
+      "row_id": "hdef_C"
+    },
+    {
+      "origin": "energy balance",
+      "row_id": "energy"
+    },
+    {
+      "origin": "specification",
+      "row_id": "tspec"
+    },
+    {
+      "origin": "specification",
+      "row_id": "pspec"
+    }
+  ],
+  "state_sha256": "01717133b4bbc41ce322cf4648ac8dbe570ed4a0d9f4f13d096239336058867f",
+  "status": "ok"
+}

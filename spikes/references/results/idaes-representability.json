@@ -1,0 +1,68 @@
+{
+  "tool": "idaes-pse",
+  "idaes_version": "2.13.0",
+  "pyomo_version": "6.10.1",
+  "component_set": "SYN-001 constants as user parameters (A, B, C)",
+  "fixtures": {
+    "mixer": {
+      "degrees_of_freedom": 0,
+      "termination_condition": "optimal",
+      "tool_outlet_T_K": 320.8695793738,
+      "built": true,
+      "status": "RAN"
+    },
+    "splitter": {
+      "degrees_of_freedom": 0,
+      "termination_condition": "optimal",
+      "tool_recycle_flow": 0.8,
+      "built": true,
+      "status": "RAN"
+    },
+    "heater": {
+      "degrees_of_freedom": 0,
+      "termination_condition": "optimal",
+      "tool_heat_duty_W": 16877.877740803768,
+      "built": true,
+      "status": "RAN"
+    },
+    "ideal_flash": {
+      "degrees_of_freedom": 0,
+      "termination_condition": "optimal",
+      "tool_vap_flow": 1.3608092728486298,
+      "tool_heat_duty_W": 33100.19458787622,
+      "built": true,
+      "status": "RAN"
+    },
+    "valve": {
+      "degrees_of_freedom": 0,
+      "termination_condition": "optimal",
+      "tool_outlet_T_K": 300.09999798501536,
+      "built": true,
+      "status": "RAN"
+    },
+    "liquid_pump": {
+      "degrees_of_freedom": 0,
+      "termination_condition": "optimal",
+      "tool_work_mechanical_W": 40.00000056102797,
+      "tool_outlet_T_K": 300.03333533611226,
+      "built": true,
+      "status": "RAN"
+    },
+    "conversion_reactor": {
+      "degrees_of_freedom": 0,
+      "termination_condition": "optimal",
+      "tool_heat_duty_W": -0.0001409104417802825,
+      "built": true,
+      "status": "RAN"
+    },
+    "recycle": {
+      "degrees_of_freedom": 0,
+      "termination_condition": "optimal",
+      "overall_component_balance_max_abs_mol_per_s": 2.220446049250313e-16,
+      "tool_vap_flow": 1.360809368411683,
+      "tool_liq_flow": 3.2783812631766334,
+      "built": true,
+      "status": "RAN"
+    }
+  }
+}

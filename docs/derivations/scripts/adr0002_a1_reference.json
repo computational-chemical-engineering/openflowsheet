@@ -1,0 +1,274 @@
+{
+ "schema": "adr0002-a1-reference-v1",
+ "generator": "docs/derivations/scripts/adr0002_a1_reference.py",
+ "specification": "docs/adr/0002-canonicalization-and-schemas.md, Amendment 1",
+ "note": "Integers are decimal strings. Verdicts, bits and spellings come from exact integer arithmetic on ECMA-262 Number::toString's definition; none from process_runtime.",
+ "integers": [
+  {
+   "id": "I01",
+   "n": "9007199254740992",
+   "why": "2^53: the old boundary; admitted under both rules (T06 A100 (b))",
+   "verdict_before": "admitted",
+   "verdict": "admitted",
+   "binary64": "4340000000000000",
+   "binary64_exact_integer": "9007199254740992",
+   "spelling_of_binary64": "9007199254740992",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I02",
+   "n": "9007199254740993",
+   "why": "2^53+1: J2, T06 A100 (a) and T07 G10's integer; its nearest binary64 is 2^53 (a tie, to the even mantissa); refused under both rules",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "4340000000000000",
+   "binary64_exact_integer": "9007199254740992",
+   "spelling_of_binary64": "9007199254740992",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I03",
+   "n": "-9007199254740993",
+   "why": "sign symmetry of I02",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "c340000000000000",
+   "binary64_exact_integer": "-9007199254740992",
+   "spelling_of_binary64": "-9007199254740992",
+   "read_number": "-inf"
+  },
+  {
+   "id": "I04",
+   "n": "9007199254740994",
+   "why": "2^53+2: exact, and its own canonical spelling; refused before, admitted now; the value the pre-amendment test_j7 asserted refused",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "4340000000000001",
+   "binary64_exact_integer": "9007199254740994",
+   "spelling_of_binary64": "9007199254740994",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I05",
+   "n": "18014398509481984",
+   "why": "2^54: a power of two, whose rounding interval is asymmetric (the ulp below is half the ulp above); admitted now",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "4350000000000000",
+   "binary64_exact_integer": "18014398509481984",
+   "spelling_of_binary64": "18014398509481984",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I06",
+   "n": "36028797018963968",
+   "why": "2^55: exact, but its binary64 is spelled 36028797018963970; refused under both rules, so exactness is not the criterion",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "4360000000000000",
+   "binary64_exact_integer": "36028797018963968",
+   "spelling_of_binary64": "36028797018963970",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I07",
+   "n": "36028797018963970",
+   "why": "the canonical spelling of I06's binary64, 2 away from it; admitted now, so the criterion is the spelling",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "4360000000000000",
+   "binary64_exact_integer": "36028797018963968",
+   "spelling_of_binary64": "36028797018963970",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I08",
+   "n": "592612204108959000",
+   "why": "the measured witness: T07 W7c's V17 T08 certificate, regularity.inverse_one_norm_estimate = 5.92612204108959e17 as written; admitted now",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "43a072c351d6f39a",
+   "binary64_exact_integer": "592612204108958976",
+   "spelling_of_binary64": "592612204108959000",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I09",
+   "n": "-592612204108959000",
+   "why": "sign symmetry of I08",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "c3a072c351d6f39a",
+   "binary64_exact_integer": "-592612204108958976",
+   "spelling_of_binary64": "-592612204108959000",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I10",
+   "n": "592612204108958976",
+   "why": "the exact value of I08's binary64; refused under both rules",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "43a072c351d6f39a",
+   "binary64_exact_integer": "592612204108958976",
+   "spelling_of_binary64": "592612204108959000",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I11",
+   "n": "1152921504606846976",
+   "why": "2^60: exact; J2's float 2.0**60 is spelled I12, not this",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "43b0000000000000",
+   "binary64_exact_integer": "1152921504606846976",
+   "spelling_of_binary64": "1152921504606847000",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I12",
+   "n": "1152921504606847000",
+   "why": "J2's registered bytes for 2.0**60, read back by json.loads; admitted now (before, ADR 0002's own J2 vector failed its round trip)",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "43b0000000000000",
+   "binary64_exact_integer": "1152921504606846976",
+   "spelling_of_binary64": "1152921504606847000",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I13",
+   "n": "18446744073709551615",
+   "why": "2^64-1: the shape of a u64 seed or hash; its nearest binary64 is 2^64; refused under both rules, which is the refusal D3.3 exists for",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "43f0000000000000",
+   "binary64_exact_integer": "18446744073709551616",
+   "spelling_of_binary64": "18446744073709552000",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I14",
+   "n": "18446744073709551616",
+   "why": "2^64: exact, spelled 18446744073709552000; refused under both rules",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "43f0000000000000",
+   "binary64_exact_integer": "18446744073709551616",
+   "spelling_of_binary64": "18446744073709552000",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I15",
+   "n": "18446744073709552000",
+   "why": "the canonical spelling of 2^64; admitted now",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "43f0000000000000",
+   "binary64_exact_integer": "18446744073709551616",
+   "spelling_of_binary64": "18446744073709552000",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I16",
+   "n": "100000000000000000000",
+   "why": "10^20: the largest power of ten spelled without an exponent (21 digits); admitted now",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "4415af1d78b58c40",
+   "binary64_exact_integer": "100000000000000000000",
+   "spelling_of_binary64": "100000000000000000000",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I17",
+   "n": "295147905179352825856",
+   "why": "2^68: exact; D3.3's own example spells its binary64 I18",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "4430000000000000",
+   "binary64_exact_integer": "295147905179352825856",
+   "spelling_of_binary64": "295147905179352830000",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I18",
+   "n": "295147905179352830000",
+   "why": "D3.3's registered spelling of 2^68 (21 digits); admitted now",
+   "verdict_before": "refused",
+   "verdict": "admitted",
+   "binary64": "4430000000000000",
+   "binary64_exact_integer": "295147905179352825856",
+   "spelling_of_binary64": "295147905179352830000",
+   "read_number": "binary64"
+  },
+  {
+   "id": "I19",
+   "n": "999999999999999999999",
+   "why": "10^21-1: its nearest binary64 is 10^21, spelled 1e+21; refused under both rules",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "444b1ae4d6e2ef50",
+   "binary64_exact_integer": "1000000000000000000000",
+   "spelling_of_binary64": "1e+21",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I20",
+   "n": "1000000000000000000000",
+   "why": "10^21: exact, spelled 1e+21; refused under both rules (the exponent-form guard)",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": "444b1ae4d6e2ef50",
+   "binary64_exact_integer": "1000000000000000000000",
+   "spelling_of_binary64": "1e+21",
+   "read_number": "+inf"
+  },
+  {
+   "id": "I21",
+   "n": "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "why": "10^400: beyond binary64's range; refused with no OverflowError (T06 A100 (a))",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": null,
+   "binary64_exact_integer": null,
+   "spelling_of_binary64": null,
+   "read_number": "+inf"
+  },
+  {
+   "id": "I22",
+   "n": "-10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "why": "sign symmetry of I21",
+   "verdict_before": "refused",
+   "verdict": "refused",
+   "binary64": null,
+   "binary64_exact_integer": null,
+   "spelling_of_binary64": null,
+   "read_number": "-inf"
+  }
+ ],
+ "samples": {
+  "j11": {
+   "seed": 20260927,
+   "count": 100000,
+   "law": "random.Random(seed).randint(-2**53, 2**53), count draws"
+  },
+  "j12": {
+   "seed": 20260927,
+   "count": 100000,
+   "law": "rng = random.Random(seed); per draw: e = rng.randint(53, 69); m = rng.getrandbits(52) | 2**52; s = rng.choice((1, -1)); f = s * math.ldexp(m, e - 52); kept iff abs(f) < 1e21 (the integral band)"
+  }
+ },
+ "generator_claims": {
+  "C1": "22 registered integers, pairwise distinct",
+  "C2": "beyond 2^53: 9 admitted ['I04', 'I05', 'I07', 'I08', 'I09', 'I12', 'I15', 'I16', 'I18'], 12 refused ['I02', 'I03', 'I06', 'I10', 'I11', 'I13', 'I14', 'I17', 'I19', 'I20', 'I21', 'I22']; at or below: ['I01']",
+  "C3": "5 binary64 values registered twice: the exact integer refused, the canonical spelling (inexact) admitted",
+  "C4": "below 10^21: admitted exactly when the binary64's spelling is the integer's digits",
+  "C5": "no state goes admitted -> refused; the states that change are ['I04', 'I05', 'I07', 'I08', 'I09', 'I12', 'I15', 'I16', 'I18']",
+  "C6": "the oracle reproduces ADR 0002's registered spellings of 2^60, 2^68, 1e20, 1e21",
+  "C7": "[2^53, 2^53+4096]: admitted exactly the even integers; in 4096-wide windows at 2^55, 2^60, the witness, 1e20 and 2^68, the admitted integers are exactly the canonical spellings in the window, one per binary64",
+  "C8": "the oracle's rounding equals CPython's float(n) on every registered integer",
+  "C9": "I08 is the binary64 of the decimal 5.92612204108959e17 (43a072c351d6f39a)",
+  "C10": "every refused integer reads as the infinity of its sign (T06 A100 (a))"
+ }
+}

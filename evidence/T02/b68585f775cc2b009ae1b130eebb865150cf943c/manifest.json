@@ -1,0 +1,2376 @@
+{
+ "work_package": "T02",
+ "commit": "b68585f775cc2b009ae1b130eebb865150cf943c",
+ "requirements": [
+  "D01",
+  "D06",
+  "A02"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "The five registered SYN-001 variants under auto, anderson and eo; the A02 family SYN-001-A02-360/-365/-355 and the two liquid-guess cases; CAP-1 and MERGE-U (test doubles); the manufactured recycles REC-01..05 at both gamma, RCY-DIV, RCY-STALL, RCY-COEF, SCL-1, RCY-TRUNC and NEST-1; judged against benchmarks/t02/reference_values.yaml (716bfc88ac7b69b76cf67ca9019ff9afc5a15d8dc6270a701a73bf1470561422), benchmarks/syn001/reference_values.yaml (1e70fc3a41dd7215e447f81974f6f993e08f1885412ed9171cd4769646fb3668) and docs/derivations/T02-recycle-spec.md (5c6ea173a8f42174975ed346a9216726ffee1c4b17b8771906d9df1de7fd7f56)",
+  "case_hash": "3818b1d7cbbc7f997228942b747a3c5eb67436ebd81322e99f0162003a314aeb",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "899917657f539c6baedb09c9f15fb15ef33ea8eed223e6140ae518b7e7279dae"
+  },
+  {
+   "cmd": "PATH=.venv/bin:$PATH .venv/bin/python docs/derivations/scripts/t02_reference.py --check",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=. .venv/bin/python scripts/t02_evidence_manifest.py GATE_STDOUT --commit b68585f775cc2b009ae1b130eebb865150cf943c --identities ci --ci-run https://github.com/computational-chemical-engineering/clearsheet/actions/runs/35984230481",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "GitHub Actions workflow `ci`, jobs `check` (ubuntu-latest, ubuntu-24.04-arm) and `identity`: https://github.com/computational-chemical-engineering/clearsheet/actions/runs/35984230481",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "T02.A00",
+   "description": "Generator self-check: `t02_reference.py --check` passes with 114 checks; the committed YAML's SHA-256 equals the one in the specification header; `--emit` twice gives identical bytes, equal to the committed file; the generator and its two sibling closed-form scripts import nothing from `process_runtime` or `benchmarks` (every import statement, read from the syntax tree).",
+   "result": "pass",
+   "value": {
+    "check_exit_code": 0,
+    "checks_passed": 114,
+    "reference_sha256": "716bfc88ac7b69b76cf67ca9019ff9afc5a15d8dc6270a701a73bf1470561422",
+    "digest_in_spec_header": true,
+    "emit_twice_identical": true,
+    "emit_equals_committed": true,
+    "forbidden_imports": []
+   },
+   "expected": {
+    "check_exit_code": 0,
+    "checks_passed": 114,
+    "digest_in_spec_header": true,
+    "emit_twice_identical": true,
+    "emit_equals_committed": true,
+    "forbidden_imports": []
+   }
+  },
+  {
+   "id": "T02.A01",
+   "description": "Plan shape: at the five SYN-001 variants the `ExecutionPlan` equals `ref.syn001.plans['SYN-001-nominal (tear)']`, validates against `execution-plan.schema.json`, and every step's `solve_plan` against `solve-plan.schema.json` unchanged; the builder calls no analysis, compiler or provider (spied, zero calls), so the analysis runs once per plan \u2014 the caller's. NEST-1 (`tests/test_t02_plan.nest_structure`: the linear scalar flowsheet of `ref.cases_auxiliary.NEST-1.units`, each stream's columns owned by its producer), through the same builder: `[evaluate FEED, converge {A, B, C} tear [s4, s5]]` with tear variables `(s4.x, s5.x)` and tear rows `(B:s4, C:s5)`, schema-valid.",
+   "result": "pass",
+   "value": {
+    "syn001": {
+     "SYN-001-nominal": {
+      "equals_registered": true,
+      "schema_errors": 0
+     },
+     "SYN-001-once-through": {
+      "equals_registered": true,
+      "schema_errors": 0
+     },
+     "SYN-001-high-recycle": {
+      "equals_registered": true,
+      "schema_errors": 0
+     },
+     "SYN-001-all-liquid-310K": {
+      "equals_registered": true,
+      "schema_errors": 0
+     },
+     "SYN-001-all-vapor-420K": {
+      "equals_registered": true,
+      "schema_errors": 0
+     }
+    },
+    "spy": {
+     "calls_inside_builder": {},
+     "kinds": [
+      "evaluate",
+      "converge"
+     ]
+    },
+    "NEST-1": {
+     "steps": [
+      {
+       "kind": "evaluate",
+       "units": [
+        "FEED"
+       ],
+       "tear_streams": [],
+       "tear_variable_ids": [],
+       "tear_row_ids": []
+      },
+      {
+       "kind": "converge",
+       "units": [
+        "A",
+        "B",
+        "C"
+       ],
+       "tear_streams": [
+        "s4",
+        "s5"
+       ],
+       "tear_variable_ids": [
+        "s4.x",
+        "s5.x"
+       ],
+       "tear_row_ids": [
+        "B:s4",
+        "C:s5"
+       ]
+      }
+     ],
+     "schema_errors": 0
+    }
+   },
+   "expected": {
+    "syn001": {
+     "SYN-001-nominal": {
+      "equals_registered": true,
+      "schema_errors": 0
+     },
+     "SYN-001-once-through": {
+      "equals_registered": true,
+      "schema_errors": 0
+     },
+     "SYN-001-high-recycle": {
+      "equals_registered": true,
+      "schema_errors": 0
+     },
+     "SYN-001-all-liquid-310K": {
+      "equals_registered": true,
+      "schema_errors": 0
+     },
+     "SYN-001-all-vapor-420K": {
+      "equals_registered": true,
+      "schema_errors": 0
+     }
+    },
+    "spy": {
+     "calls_inside_builder": {},
+     "kinds": [
+      "evaluate",
+      "converge"
+     ]
+    },
+    "NEST-1": {
+     "steps": [
+      {
+       "kind": "evaluate",
+       "units": [
+        "FEED"
+       ],
+       "tear_streams": [],
+       "tear_variable_ids": [],
+       "tear_row_ids": []
+      },
+      {
+       "kind": "converge",
+       "units": [
+        "A",
+        "B",
+        "C"
+       ],
+       "tear_streams": [
+        "s4",
+        "s5"
+       ],
+       "tear_variable_ids": [
+        "s4.x",
+        "s5.x"
+       ],
+       "tear_row_ids": [
+        "B:s4",
+        "C:s5"
+       ]
+      }
+     ],
+     "schema_errors": 0
+    }
+   }
+  },
+  {
+   "id": "T02.A02",
+   "description": "R0: the plan's R0 projection (`execution_plan_r0`) is byte-identical across the five SYN-001 variants once `model_version` and `constants_sha256` are removed at every depth; `scripts/k05_structural_identity.py` carries the T02 plans in the document CI compares, and its nominal plan equals the one built here; and \u2014 from the two CI artifacts \u2014 the x86-64 and aarch64 `identity.json` are equal key for key, `t02.plans` included. Without `--identities` the cross-platform half is not measured and the check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "variants_identical_up_to_identity": true,
+    "variant_r0_sha256": "5a77ed7bd9c97307b865915857800824c1542e8de42edfca133b60c34d85f805",
+    "k05_carries_t02_plans": true,
+    "k05_t02_plan_keys": [
+     "SYN-001-A02-355-liquid-guess",
+     "SYN-001-A02-360",
+     "SYN-001-nominal anderson",
+     "SYN-001-nominal auto",
+     "SYN-001-nominal eo"
+    ],
+    "k05_nominal_plan_equals_built": true,
+    "ci": {
+     "platforms": 2,
+     "identity_differences": [],
+     "t02_plans_equal": true
+    }
+   },
+   "expected": {
+    "variants_identical_up_to_identity": true,
+    "k05_carries_t02_plans": true,
+    "k05_nominal_plan_equals_built": true,
+    "ci": {
+     "platforms": 2,
+     "identity_differences": [],
+     "t02_plans_equal": true
+    }
+   }
+  },
+  {
+   "id": "T02.A03",
+   "description": "Solver choice: `auto` resolves to `newton_tear` on SYN-001 and on NEST-1's units declaring `residuals/ad`, and to `anderson` when one loop unit declares `unavailable` (test double); the tear rows' and tear columns' scales are equal componentwise on every registered plan (the five SYN-001 variants and NEST-1). NEST-1's non-capable double: unit B declaring no residual derivative.",
+   "result": "pass",
+   "value": {
+    "SYN-001 auto": "newton_tear",
+    "SYN-001 merge region present": true,
+    "heater unavailable: capability": [
+     false,
+     "unavailable"
+    ],
+    "heater unavailable: auto": "anderson",
+    "heater unavailable: merge_unsupported": [
+     "U-HEAT",
+     "unavailable"
+    ],
+    "NEST-1 auto": {
+     "all capable": "newton_tear",
+     "B declares no residual derivative": "anderson"
+    },
+    "tear scales equal": {
+     "SYN-001-nominal": true,
+     "SYN-001-once-through": true,
+     "SYN-001-high-recycle": true,
+     "SYN-001-all-liquid-310K": true,
+     "SYN-001-all-vapor-420K": true,
+     "NEST-1": true
+    }
+   },
+   "expected": {
+    "SYN-001 auto": "newton_tear",
+    "SYN-001 merge region present": true,
+    "heater unavailable: capability": [
+     false,
+     "unavailable"
+    ],
+    "heater unavailable: auto": "anderson",
+    "heater unavailable: merge_unsupported": [
+     "U-HEAT",
+     "unavailable"
+    ],
+    "NEST-1 auto": {
+     "all capable": "newton_tear",
+     "B declares no residual derivative": "anderson"
+    },
+    "tear scales equal": {
+     "SYN-001-nominal": true,
+     "SYN-001-once-through": true,
+     "SYN-001-high-recycle": true,
+     "SYN-001-all-liquid-310K": true,
+     "SYN-001-all-vapor-420K": true,
+     "NEST-1": true
+    }
+   }
+  },
+  {
+   "id": "T02.A04",
+   "description": "SYN-001 under `anderson` from `t\u2070`: iterations exactly 2 (nominal, high-recycle, 310 K) and 0 (once-through, 420 K); `|t \u2212 t*|\u221e \u2264 \u03c4_R`; no `restart` event, no column drop, no bound landing (every accepted step has \u03b1 = 1) and no rejected trial; `depth_used` on the second step is 1.",
+   "result": "pass",
+   "value": {
+    "SYN-001-nominal": {
+     "outcome": "CONVERGED",
+     "iterations": 2,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": 8.881784197001252e-16,
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": [
+      1.0,
+      1.0
+     ],
+     "depth_used": [
+      0,
+      1
+     ]
+    },
+    "SYN-001-high-recycle": {
+     "outcome": "CONVERGED",
+     "iterations": 2,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": 1.9184653865522705e-13,
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": [
+      1.0,
+      1.0
+     ],
+     "depth_used": [
+      0,
+      1
+     ]
+    },
+    "SYN-001-all-liquid-310K": {
+     "outcome": "CONVERGED",
+     "iterations": 2,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": 0.0,
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": [
+      1.0,
+      1.0
+     ],
+     "depth_used": [
+      0,
+      1
+     ]
+    },
+    "SYN-001-once-through": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": 0.0,
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": [],
+     "depth_used": []
+    },
+    "SYN-001-all-vapor-420K": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": 0.0,
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": [],
+     "depth_used": []
+    }
+   },
+   "expected": {
+    "SYN-001-nominal": {
+     "outcome": "CONVERGED",
+     "iterations": 2,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": "at most 3.1e-08",
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": "every one 1.0 (no landing)",
+     "depth_used": "second step 1"
+    },
+    "SYN-001-high-recycle": {
+     "outcome": "CONVERGED",
+     "iterations": 2,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": "at most 3.1e-08",
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": "every one 1.0 (no landing)",
+     "depth_used": "second step 1"
+    },
+    "SYN-001-all-liquid-310K": {
+     "outcome": "CONVERGED",
+     "iterations": 2,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": "at most 3.1e-08",
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": "every one 1.0 (no landing)",
+     "depth_used": "second step 1"
+    },
+    "SYN-001-once-through": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": "at most 3.1e-08",
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": "every one 1.0 (no landing)",
+     "depth_used": "no step"
+    },
+    "SYN-001-all-vapor-420K": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "attempts": 1,
+     "max_abs_t_minus_t_star": "at most 3.1e-08",
+     "restarts": 0,
+     "column_drops": 0,
+     "rejected_trials": 0,
+     "accepted_alphas": "every one 1.0 (no landing)",
+     "depth_used": "no step"
+    }
+   }
+  },
+  {
+   "id": "T02.A05",
+   "description": "SYN-001 under `anderson` from OFF-A `(0.1, 0.8, 1.2)` at the three 360 K variants (nominal, high-recycle, once-through): CONVERGED to `t*` within `\u03c4_R`, iterations \u2264 15, zero `invalid_trial` rejections, one attempt.",
+   "result": "pass",
+   "value": {
+    "SYN-001-nominal": {
+     "outcome": "CONVERGED",
+     "iterations": 6,
+     "attempts": 1,
+     "invalid_trials": 0,
+     "max_abs_t_minus_t_star": 4.440892098500626e-16
+    },
+    "SYN-001-high-recycle": {
+     "outcome": "CONVERGED",
+     "iterations": 6,
+     "attempts": 1,
+     "invalid_trials": 0,
+     "max_abs_t_minus_t_star": 9.059419880941277e-14
+    },
+    "SYN-001-once-through": {
+     "outcome": "CONVERGED",
+     "iterations": 1,
+     "attempts": 1,
+     "invalid_trials": 0,
+     "max_abs_t_minus_t_star": 0.0
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "iterations": "at most 15 (spec measured 9, 9, 1)",
+    "attempts": 1,
+    "invalid_trials": 0,
+    "max_abs_t_minus_t_star": "at most 3.1e-08"
+   }
+  },
+  {
+   "id": "T02.A06",
+   "description": "SYN-001 under `anderson` from OFF-B `(0.05, 0.1, 4.0)` at `r = 0.5`: CONVERGED to `t*` within `\u03c4_R`; exactly 2 attempts with the flash LIQUID then TWO_PHASE (K03 \u00a713.3's contract); at least one `invalid_trial` rejection, every one naming `U-MIX`; accepted iterations \u2264 40.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "flash_signatures": [
+     "LIQUID",
+     "TWO_PHASE"
+    ],
+    "invalid_trials": 1,
+    "every_invalid_names_U-MIX": true,
+    "iterations": 8,
+    "max_abs_t_minus_t_star": 3.3306690738754696e-16,
+    "attempts_opened_closed": [
+     2,
+     2
+    ]
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "flash_signatures": [
+     "LIQUID",
+     "TWO_PHASE"
+    ],
+    "invalid_trials": "at least 1",
+    "every_invalid_names_U-MIX": true,
+    "iterations": "at most 40",
+    "max_abs_t_minus_t_star": "at most 3.1e-08",
+    "attempts_opened_closed": [
+     2,
+     2
+    ]
+   }
+  },
+  {
+   "id": "T02.A07",
+   "description": "REC-01..05 linear (`\u03b3 = 0`) under the registered policy: iterations exactly 4 (the Krylov grade 3 plus one, registered); trajectory `k = 0..3` equals the 40-digit twin's to `1e-9` relative; zero restarts, column drops, landings and invalid trials; `|t \u2212 t*|\u221e \u2264 1e-5 mol/s`.",
+   "result": "pass",
+   "value": {
+    "REC-01": {
+     "outcome": "CONVERGED",
+     "iterations": 4,
+     "restarts": [],
+     "stagnation_closures": [],
+     "columns_dropped_condition": 0,
+     "columns_dropped_coefficient": 0,
+     "bound_landings": 0,
+     "invalid_trials": 0,
+     "oscillation_detected_at": null,
+     "anderson_steps": 3,
+     "plain_steps": 1,
+     "residual_increases": 0,
+     "krylov_grade_registered": 3,
+     "twin_iterations": 4,
+     "trajectory_worst_relative_k0_3": 6.697594793510046e-16,
+     "max_abs_t_minus_t_star": 8.881784197001252e-16
+    },
+    "REC-02": {
+     "outcome": "CONVERGED",
+     "iterations": 4,
+     "restarts": [],
+     "stagnation_closures": [],
+     "columns_dropped_condition": 0,
+     "columns_dropped_coefficient": 0,
+     "bound_landings": 0,
+     "invalid_trials": 0,
+     "oscillation_detected_at": null,
+     "anderson_steps": 3,
+     "plain_steps": 1,
+     "residual_increases": 1,
+     "krylov_grade_registered": 3,
+     "twin_iterations": 4,
+     "trajectory_worst_relative_k0_3": 4.554954108689986e-16,
+     "max_abs_t_minus_t_star": 0.0
+    },
+    "REC-03": {
+     "outcome": "CONVERGED",
+     "iterations": 4,
+     "restarts": [],
+     "stagnation_closures": [],
+     "columns_dropped_condition": 0,
+     "columns_dropped_coefficient": 0,
+     "bound_landings": 0,
+     "invalid_trials": 0,
+     "oscillation_detected_at": null,
+     "anderson_steps": 3,
+     "plain_steps": 1,
+     "residual_increases": 0,
+     "krylov_grade_registered": 3,
+     "twin_iterations": 4,
+     "trajectory_worst_relative_k0_3": 1.9249949919988864e-15,
+     "max_abs_t_minus_t_star": 4.1744385725905886e-14
+    },
+    "REC-04": {
+     "outcome": "CONVERGED",
+     "iterations": 4,
+     "restarts": [],
+     "stagnation_closures": [],
+     "columns_dropped_condition": 0,
+     "columns_dropped_coefficient": 0,
+     "bound_landings": 0,
+     "invalid_trials": 0,
+     "oscillation_detected_at": null,
+     "anderson_steps": 3,
+     "plain_steps": 1,
+     "residual_increases": 1,
+     "krylov_grade_registered": 3,
+     "twin_iterations": 4,
+     "trajectory_worst_relative_k0_3": 6.494046101159929e-16,
+     "max_abs_t_minus_t_star": 2.220446049250313e-16
+    },
+    "REC-05": {
+     "outcome": "CONVERGED",
+     "iterations": 4,
+     "restarts": [],
+     "stagnation_closures": [],
+     "columns_dropped_condition": 0,
+     "columns_dropped_coefficient": 0,
+     "bound_landings": 0,
+     "invalid_trials": 0,
+     "oscillation_detected_at": null,
+     "anderson_steps": 3,
+     "plain_steps": 1,
+     "residual_increases": 2,
+     "krylov_grade_registered": 3,
+     "twin_iterations": 4,
+     "trajectory_worst_relative_k0_3": 3.737979475355052e-14,
+     "max_abs_t_minus_t_star": 3.099742684753437e-13
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "iterations": 4,
+    "trajectory_worst_relative_k0_3": "at most 1e-9",
+    "restarts, drops, landings, invalid trials": 0,
+    "max_abs_t_minus_t_star": "at most 1e-5"
+   }
+  },
+  {
+   "id": "T02.A08",
+   "description": "REC-01..05 with the tail (`\u03b3 = 0.1`): CONVERGED; trajectory `k = 0..5` equals the twin's to `1e-8` relative wherever the registered value exceeds `1e-6`; iterations in `[ref, ref + 2]`; REC-01..04 within `1e-5` of `t*`; REC-05 within `1e-4` of the registered second fixed point `S1` and farther than 1 from `t*`.",
+   "result": "pass",
+   "value": {
+    "REC-01": {
+     "outcome": "CONVERGED",
+     "iterations": 7,
+     "twin_iterations": 7,
+     "trajectory_worst_relative_k0_5": 1.6475233265726927e-11,
+     "max_abs_t_minus_t_star": 8.51034798188266e-11
+    },
+    "REC-02": {
+     "outcome": "CONVERGED",
+     "iterations": 7,
+     "twin_iterations": 7,
+     "trajectory_worst_relative_k0_5": 1.033482969252053e-11,
+     "max_abs_t_minus_t_star": 1.0025269503444179e-10
+    },
+    "REC-03": {
+     "outcome": "CONVERGED",
+     "iterations": 7,
+     "twin_iterations": 7,
+     "trajectory_worst_relative_k0_5": 7.202972003618661e-12,
+     "max_abs_t_minus_t_star": 5.347193798854732e-10
+    },
+    "REC-04": {
+     "outcome": "CONVERGED",
+     "iterations": 7,
+     "twin_iterations": 7,
+     "trajectory_worst_relative_k0_5": 4.18286965866499e-12,
+     "max_abs_t_minus_t_star": 3.1513547327222113e-10
+    },
+    "REC-05": {
+     "outcome": "CONVERGED",
+     "iterations": 9,
+     "twin_iterations": 9,
+     "trajectory_worst_relative_k0_5": 4.893094045756245e-12,
+     "max_abs_t_minus_t_star": 2.8887372867544823,
+     "max_abs_t_minus_S1": 1.9095836023552692e-14
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "iterations": "within [twin, twin + 2]",
+    "trajectory_worst_relative_k0_5": "at most 1e-8 where the twin exceeds 1e-6",
+    "REC-01..04 max_abs_t_minus_t_star": "at most 1e-5",
+    "REC-05": "max_abs_t_minus_S1 at most 1e-4 and max_abs_t_minus_t_star above 1"
+   }
+  },
+  {
+   "id": "T02.A09",
+   "description": "REC-01 under `depth_max = 0`: `oscillation_detected` at iteration 3, `beta_substitution` 1 on the first three steps and 0.5 on every one after, CONVERGED at \u2264 60 iterations and at exactly the twin's count.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "iterations": 54,
+    "restarts": [],
+    "stagnation_closures": [],
+    "columns_dropped_condition": 0,
+    "columns_dropped_coefficient": 0,
+    "bound_landings": 0,
+    "invalid_trials": 0,
+    "oscillation_detected_at": 3,
+    "anderson_steps": 0,
+    "plain_steps": 54,
+    "residual_increases": 0,
+    "beta_first_three": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "beta_after": [
+     0.5
+    ],
+    "twin_iterations": 54
+   },
+   "expected": {
+    "oscillation_detected_at": 3,
+    "beta_first_three": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "beta_after": [
+     0.5
+    ],
+    "outcome": "CONVERGED",
+    "iterations": "at most 60 and equal to the twin's 54"
+   }
+  },
+  {
+   "id": "T02.A10",
+   "description": "REC-02 under `depth_max = 0`: the second accepted iterate is `(+0.0, 1.7333333333333333, 2.924)` with `t_A` bit-exactly `+0.0` after a bound landing at `\u03b1_max = 14/15`; the closed-form unbounded iterate `t_A = \u22120.125` is the reason; `oscillation_detected` at 3; CONVERGED \u2264 60; zero `invalid_trial` rejections. Under Anderson (both `\u03b3`): zero landings and zero invalid trials.",
+   "result": "pass",
+   "value": {
+    "iterate_2": [
+     0.0,
+     1.7333333333333334,
+     2.924
+    ],
+    "iterate_2_t_A_sign_bit_positive": true,
+    "alpha_of_the_landing_step": 0.9333333333333331,
+    "unbounded_iterate_2_registered": [
+     -0.125,
+     1.75,
+     2.94
+    ],
+    "outcome": "CONVERGED",
+    "iterations": 54,
+    "invalid_trials": 0,
+    "oscillation_detected_at": 3,
+    "anderson": {
+     "gamma=0.0": {
+      "bound_landings": 0,
+      "invalid_trials": 0
+     },
+     "gamma=0.1": {
+      "bound_landings": 0,
+      "invalid_trials": 0
+     }
+    }
+   },
+   "expected": {
+    "iterate_2": [
+     0.0,
+     1.7333333333333334,
+     2.924
+    ],
+    "iterate_2_t_A_sign_bit_positive": true,
+    "alpha_of_the_landing_step": "14/15 to 1e-12 relative",
+    "unbounded_iterate_2_registered": "t_A = -0.125",
+    "outcome": "CONVERGED",
+    "iterations": "at most 60",
+    "oscillation_detected_at": 3,
+    "invalid_trials": 0,
+    "anderson": "zero landings and zero invalid trials at both gamma"
+   }
+  },
+  {
+   "id": "T02.A11",
+   "description": "REC-03 under `depth_max = 0`: `BUDGET_EXHAUSTED` at 200 with `\u2016f\u0302\u2016\u221e > \u03c4\u0302` (closed form `0.65 \u00b7 0.95\u00b2\u2070\u2070`); `ref.best_damping` is `\u03c9* = 1`, rate 0.95; under Anderson 4 (linear) and \u2264 9 (tail).",
+   "result": "pass",
+   "value": {
+    "outcome": "BUDGET_EXHAUSTED",
+    "iterations": 200,
+    "final_residual_inf_scaled": 4.874149687309851e-05,
+    "spec_argument_0.65_x_0.95^200": 2.2784233061738654e-05,
+    "oscillation_detected_at": 3,
+    "twin_oscillation_detected_at": 3,
+    "closed_form_under_the_policy": 4.874149687309944e-05,
+    "best_damping": {
+     "omega_star": 1.0,
+     "rate": 0.95
+    },
+    "anderson_linear_iterations": 4,
+    "anderson_tail_iterations": 7
+   },
+   "expected": {
+    "outcome": "BUDGET_EXHAUSTED",
+    "iterations": 200,
+    "final_residual_inf_scaled": "above the scaled tolerance 1.0333333333333333e-08",
+    "best_damping": {
+     "omega_star": 1.0,
+     "rate": 0.95
+    },
+    "anderson_linear_iterations": 4,
+    "anderson_tail_iterations": "at most 9"
+   }
+  },
+  {
+   "id": "T02.A12",
+   "description": "REC-04 under `depth_max = 0` for 200 iterations: the oscillation flag never sets. Under Anderson: 4 (linear) and \u2264 9 (tail).",
+   "result": "pass",
+   "value": {
+    "iterations": 200,
+    "oscillation_detected_at": null,
+    "any_event_flagged": false,
+    "anderson_linear_iterations": 4,
+    "anderson_tail_iterations": 7
+   },
+   "expected": {
+    "iterations": 200,
+    "oscillation_detected_at": null,
+    "any_event_flagged": false,
+    "anderson_linear_iterations": 4,
+    "anderson_tail_iterations": "at most 9"
+   }
+  },
+  {
+   "id": "T02.A13",
+   "description": "REC-05 linear under Anderson: the residual at iterates 1 and 2 exceeds iterate 0's (`residual_increases \u2265 1`), no restart, no stagnation closure, no column drop, termination at exactly 4 \u2014 the assertion that a growth-based safeguard is absent.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "iterations": 4,
+    "restarts": [],
+    "stagnation_closures": [],
+    "columns_dropped_condition": 0,
+    "columns_dropped_coefficient": 0,
+    "bound_landings": 0,
+    "invalid_trials": 0,
+    "oscillation_detected_at": null,
+    "anderson_steps": 3,
+    "plain_steps": 1,
+    "residual_increases": 2,
+    "residual_inf_scaled_k0_2": [
+     0.21666666666666648,
+     0.6166666666666664,
+     0.6400059387460763
+    ]
+   },
+   "expected": {
+    "residual_inf_scaled_k0_2": "iterates 1 and 2 above iterate 0",
+    "residual_increases": "at least 1",
+    "restarts": [],
+    "stagnation_closures": [],
+    "columns_dropped": 0,
+    "iterations": 4
+   }
+  },
+  {
+   "id": "T02.A14",
+   "description": "REC-05 with the tail under `depth_max = 0`: `RECYCLE_STAGNATION` at 20, closures `[10, 15, 20]`, two restarts; the merge edge then runs the region Newton from the best iterate and returns CONVERGED with `\u2016R\u2016\u221e \u2264 \u03c4_R`. Which fixed point it lands on is recorded, not asserted (spec \u00a712).",
+   "result": "pass",
+   "value": {
+    "recycle": {
+     "outcome": "RECYCLE_STAGNATION",
+     "iterations": 20,
+     "restarts": [
+      [
+       10,
+       1,
+       "stagnation"
+      ],
+      [
+       15,
+       2,
+       "stagnation"
+      ]
+     ],
+     "stagnation_closures": [
+      10,
+      15,
+      20
+     ]
+    },
+    "merge_into_eo": "taken",
+    "outcome": "CONVERGED",
+    "merged_residual_inf": 6.149036835267907e-11,
+    "merged_iterations": 3,
+    "landing_recorded": "S1",
+    "distance_to": {
+     "t*": 2.888736056706562,
+     "S1": 3.1977815950767763e-09
+    },
+    "x": [
+     3.888736056706562,
+     2.576892645864079,
+     3.11109937234078
+    ]
+   },
+   "expected": {
+    "recycle": {
+     "outcome": "RECYCLE_STAGNATION",
+     "iterations": 20,
+     "stagnation_closures": [
+      10,
+      15,
+      20
+     ],
+     "restarts": "two, counts 1 and 2"
+    },
+    "merge_into_eo": "taken",
+    "outcome": "CONVERGED",
+    "merged_residual_inf": "at most 3.1e-08",
+    "landing_recorded": "recorded, not asserted (t* or S1)"
+   }
+  },
+  {
+   "id": "T02.A15",
+   "description": "RCY-DIV under `depth_max = 0`: `RECYCLE_STAGNATION` at 16, closures `[6, 11, 16]`, trajectory `0.4` at `k = 0` and the closed form `0.25 \u00b7 1.5^k / 3` for `k = 1..16` to `1e-12` relative; the merge converges in exactly 1 Newton iteration to `t*`; under Anderson exactly 4.",
+   "result": "pass",
+   "value": {
+    "recycle": {
+     "outcome": "RECYCLE_STAGNATION",
+     "iterations": 16,
+     "restarts": [
+      [
+       6,
+       1,
+       "stagnation"
+      ],
+      [
+       11,
+       2,
+       "stagnation"
+      ]
+     ],
+     "stagnation_closures": [
+      6,
+      11,
+      16
+     ],
+     "columns_dropped_condition": 0,
+     "columns_dropped_coefficient": 0,
+     "bound_landings": 0,
+     "invalid_trials": 0,
+     "oscillation_detected_at": null,
+     "anderson_steps": 0,
+     "plain_steps": 16,
+     "residual_increases": 15
+    },
+    "trajectory_worst_relative_vs_closed_form": 1.947164145566234e-16,
+    "merge_into_eo": "taken",
+    "outcome": "CONVERGED",
+    "merged_iterations": 1,
+    "max_abs_x_minus_t_star": 0.0,
+    "anderson": {
+     "outcome": "CONVERGED",
+     "iterations": 4,
+     "merge_into_eo": null
+    }
+   },
+   "expected": {
+    "recycle": {
+     "outcome": "RECYCLE_STAGNATION",
+     "iterations": 16,
+     "stagnation_closures": [
+      6,
+      11,
+      16
+     ]
+    },
+    "trajectory_worst_relative_vs_closed_form": "at most 1e-12",
+    "merge_into_eo": "taken",
+    "outcome": "CONVERGED",
+    "merged_iterations": 1,
+    "max_abs_x_minus_t_star": "at most 3.1e-08",
+    "anderson": {
+     "outcome": "CONVERGED",
+     "iterations": 4,
+     "merge_into_eo": null
+    }
+   }
+  },
+  {
+   "id": "T02.A16",
+   "description": "RCY-STALL: `RECYCLE_STAGNATION` at 15, closures `[5, 10, 15]`, two restarts, 27 condition drops, zero Anderson steps; the merge ends `LINEAR_SOLVE_FAILED(exactly_singular)`; no certificate; no `INFEASIBLE` anywhere in the failure bundle.",
+   "result": "pass",
+   "value": {
+    "recycle": {
+     "outcome": "RECYCLE_STAGNATION",
+     "iterations": 15,
+     "restarts": [
+      [
+       5,
+       1,
+       "stagnation"
+      ],
+      [
+       10,
+       2,
+       "stagnation"
+      ]
+     ],
+     "stagnation_closures": [
+      5,
+      10,
+      15
+     ],
+     "columns_dropped_condition": 27,
+     "columns_dropped_coefficient": 0,
+     "bound_landings": 0,
+     "invalid_trials": 0,
+     "oscillation_detected_at": null,
+     "anderson_steps": 0,
+     "plain_steps": 15,
+     "residual_increases": 0
+    },
+    "merge_into_eo": "taken",
+    "outcome": "LINEAR_SOLVE_FAILED",
+    "linear_reason": "exactly_singular",
+    "checkpoint": null,
+    "INFEASIBLE_in_bundle": false
+   },
+   "expected": {
+    "recycle": {
+     "outcome": "RECYCLE_STAGNATION",
+     "iterations": 15,
+     "stagnation_closures": [
+      5,
+      10,
+      15
+     ],
+     "restarts": 2,
+     "columns_dropped_condition": 27,
+     "anderson_steps": 0
+    },
+    "merge_into_eo": "taken",
+    "outcome": "LINEAR_SOLVE_FAILED",
+    "linear_reason": "exactly_singular",
+    "checkpoint": null,
+    "INFEASIBLE_in_bundle": false
+   }
+  },
+  {
+   "id": "T02.A17",
+   "description": "RCY-COEF: the `acceleration` event at `k = 1` has `depth_used = 0`, one coefficient drop, and the refused coefficient recorded on the drop equal to `1 000 001` to `1e-6` relative; 12 coefficient drops in all; closures `[5, 10, 15]`; the merge converges in exactly 1 iteration to `\u22121e6` to `1e-9` relative.",
+   "result": "pass",
+   "value": {
+    "event_k1": {
+     "iteration": 1,
+     "depth_used": 0,
+     "columns_dropped_coefficient": 1,
+     "gamma_inf": null,
+     "dropped": [
+      "coefficient",
+      1000000.999860222
+     ]
+    },
+    "refused_relative_off": 1.397778744945769e-10,
+    "recycle": {
+     "outcome": "RECYCLE_STAGNATION",
+     "iterations": 15,
+     "restarts": [
+      [
+       5,
+       1,
+       "stagnation"
+      ],
+      [
+       10,
+       2,
+       "stagnation"
+      ]
+     ],
+     "stagnation_closures": [
+      5,
+      10,
+      15
+     ],
+     "columns_dropped_condition": 0,
+     "columns_dropped_coefficient": 12,
+     "bound_landings": 0,
+     "invalid_trials": 0,
+     "oscillation_detected_at": null,
+     "anderson_steps": 0,
+     "plain_steps": 15,
+     "residual_increases": 15
+    },
+    "merge_into_eo": "taken",
+    "outcome": "CONVERGED",
+    "merged_iterations": 1,
+    "x": -1000000.0000822666,
+    "root_relative_off": 8.226663339883089e-11
+   },
+   "expected": {
+    "event_k1": {
+     "iteration": 1,
+     "depth_used": 0,
+     "columns_dropped_coefficient": 1,
+     "gamma_inf": null,
+     "dropped": [
+      "coefficient",
+      1000001.0
+     ]
+    },
+    "refused_relative_off": "at most 1e-6",
+    "recycle": {
+     "outcome": "RECYCLE_STAGNATION",
+     "columns_dropped_coefficient": 12,
+     "stagnation_closures": [
+      5,
+      10,
+      15
+     ]
+    },
+    "merge_into_eo": "taken",
+    "outcome": "CONVERGED",
+    "merged_iterations": 1,
+    "x": -1000000.0,
+    "root_relative_off": "at most 1e-9"
+   }
+  },
+  {
+   "id": "T02.A18",
+   "description": "NEST-1: T01's own tear analysis of the flowsheet reports `multi_edge_feedback_set`; the tear set T02's rule builds from T01's candidates is `[s4, s5]` with the registered rounds, candidates and boundary distances; Anderson converges in exactly 2 iterations to `(5, 4)` within `1e-7`, product `s3 = 1` within `1e-7`; with `recycle.tear_streams = [s1, s5]` the plan tears `(s1.x, s5.x)` by rows `(A:s1, C:s5)` and reaches `(6, 4)` with the same product within `1e-7`. Both recycles are measured through the plan: `G(t)` is derived from each `converge` step's own `SolvePlan` partition (inner rows solved exactly for the inner variables from T01's traced affine coefficients, tear rows evaluated there), not written by hand.",
+   "result": "pass",
+   "value": {
+    "t01_unsupported": "multi_edge_feedback_set",
+    "t01_candidates_break_loop": [
+     false,
+     false,
+     false,
+     false
+    ],
+    "tear_streams": [
+     "s4",
+     "s5"
+    ],
+    "rounds": [
+     {
+      "cycle_edges": [
+       "s1",
+       "s2",
+       "s4",
+       "s5"
+      ],
+      "chosen": "s4"
+     },
+     {
+      "cycle_edges": [
+       "s2",
+       "s5"
+      ],
+      "chosen": "s5"
+     }
+    ],
+    "consumer_boundary_distances": {
+     "s1": 2,
+     "s2": 3,
+     "s4": 1,
+     "s5": 2
+    },
+    "plan_tear": {
+     "streams": [
+      "s4",
+      "s5"
+     ],
+     "variables": [
+      "s4.x",
+      "s5.x"
+     ],
+     "rows": [
+      "B:s4",
+      "C:s5"
+     ]
+    },
+    "anderson": {
+     "outcome": "CONVERGED",
+     "iterations": 2
+    },
+    "fixed_point": [
+     5.0,
+     4.0
+    ],
+    "product_s3": 1.0,
+    "alternate": {
+     "plan_tear": {
+      "streams": [
+       "s1",
+       "s5"
+      ],
+      "variables": [
+       "s1.x",
+       "s5.x"
+      ],
+      "rows": [
+       "A:s1",
+       "C:s5"
+      ]
+     },
+     "outcome": "CONVERGED",
+     "iterations": 3,
+     "fixed_point": [
+      6.000000000000011,
+      4.000000000000009
+     ],
+     "product_s3": 1.000000000000002
+    }
+   },
+   "expected": {
+    "t01_unsupported": "multi_edge_feedback_set",
+    "t01_candidates_break_loop": [
+     false,
+     false,
+     false,
+     false
+    ],
+    "tear_streams": [
+     "s4",
+     "s5"
+    ],
+    "rounds": [
+     {
+      "cycle_edges": [
+       "s1",
+       "s2",
+       "s4",
+       "s5"
+      ],
+      "chosen": "s4"
+     },
+     {
+      "cycle_edges": [
+       "s2",
+       "s5"
+      ],
+      "chosen": "s5"
+     }
+    ],
+    "consumer_boundary_distances": {
+     "s1": 2,
+     "s2": 3,
+     "s4": 1,
+     "s5": 2
+    },
+    "plan_tear": {
+     "streams": [
+      "s4",
+      "s5"
+     ],
+     "variables": [
+      "s4.x",
+      "s5.x"
+     ],
+     "rows": [
+      "B:s4",
+      "C:s5"
+     ]
+    },
+    "anderson": {
+     "outcome": "CONVERGED",
+     "iterations": 2
+    },
+    "fixed_point": [
+     5.0,
+     4.0
+    ],
+    "product_s3": "1 within 1e-7",
+    "alternate": {
+     "plan_tear": {
+      "streams": [
+       "s1",
+       "s5"
+      ],
+      "variables": [
+       "s1.x",
+       "s5.x"
+      ],
+      "rows": [
+       "A:s1",
+       "C:s5"
+      ]
+     },
+     "outcome": "CONVERGED",
+     "iterations": "recorded (twin: 3)",
+     "fixed_point": [
+      6.0,
+      4.0
+     ],
+     "product_s3": "equal to the rule tear's within 1e-7"
+    }
+   }
+  },
+  {
+   "id": "T02.A19",
+   "description": "SCL-1 (REC-03 linear under scales `(1, 3, 9)`): trajectory `k = 0..3` equals the twin's to `1e-9` relative; iterate 2's residual differs from REC-03's unscaled one by more than `1e-2`; exactly 4 iterations; accepted `kappa_2 \u2264 1e7` and `gamma_inf \u2264 1e3` throughout.",
+   "result": "pass",
+   "value": {
+    "iterations": 4,
+    "trajectory_worst_relative_k0_3": 2.6991993185434972e-15,
+    "iterate_2_shift_from_unscaled": 0.04174682512733774,
+    "max_kappa_2": 1372.4485783594662,
+    "max_gamma_inf": 18.860130116085358,
+    "twin_max_kappa_2": 1372.4485783592747,
+    "twin_max_gamma_inf": 18.860130116082814
+   },
+   "expected": {
+    "iterations": 4,
+    "trajectory_worst_relative_k0_3": "at most 1e-9",
+    "iterate_2_shift_from_unscaled": "above 1e-2",
+    "max_kappa_2": "at most 1e7",
+    "max_gamma_inf": "at most 1e3"
+   }
+  },
+  {
+   "id": "T02.A20",
+   "description": "RCY-TRUNC (REC-01 linear, `depth_max = 2`): iterations in `[10, 20]` and more than 4; trajectory `k = 0..5` to `1e-8` relative; `depth_used \u2264 2` on every event; the oscillation flag sets at 7 and `beta_substitution` stays 1 on every Anderson step.",
+   "result": "pass",
+   "value": {
+    "iterations": 14,
+    "twin_iterations": 14,
+    "trajectory_worst_relative_k0_5": 1.2512480693535728e-13,
+    "max_depth_used": 2,
+    "oscillation_detected_at": 7,
+    "beta_on_anderson_steps": [
+     1.0
+    ]
+   },
+   "expected": {
+    "iterations": "within [10, 20]",
+    "trajectory_worst_relative_k0_5": "at most 1e-8",
+    "max_depth_used": "at most 2",
+    "oscillation_detected_at": 7,
+    "beta_on_anderson_steps": [
+     1.0
+    ]
+   }
+  },
+  {
+   "id": "T02.A21",
+   "description": "SYN-001 nominal under `eo` from `x(t\u2070)`: CONVERGED in exactly 2 attempts; attempt 1 `(U-HEAT TWO_PHASE, U-FLASH TWO_PHASE)` closes `PHASE_UPDATE_REQUIRED(phase_disappeared(U-HEAT, vapor, v))` at iteration \u2264 2 with `v` one of `S3.vap.A/B/C, S3.V`; attempt 2 `(U-HEAT LIQUID, U-FLASH TWO_PHASE)` converges in \u2264 5; the final state agrees with the tear solve (itself gated against P01) per kind within `3.1e-7 mol/s, 1e-5 K, 0.1 Pa, 1e-2 W`, and with P01's recycle and duties directly; `S3.V` and `S3.vap.*` exactly 0.0 (pinned).",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "attempts": [
+     {
+      "signature": {
+       "U-HEAT": "TWO_PHASE",
+       "U-FLASH": "TWO_PHASE"
+      },
+      "outcome": "PHASE_UPDATE_REQUIRED",
+      "iterations": 1,
+      "reason": "phase_disappeared(U-HEAT, vapor, S3.vap.B)"
+     },
+     {
+      "signature": {
+       "U-HEAT": "LIQUID",
+       "U-FLASH": "TWO_PHASE"
+      },
+      "outcome": "CONVERGED",
+      "iterations": 2,
+      "reason": ""
+     }
+    ],
+    "departures_from_tear_solution": [],
+    "p01": {
+     "S6.n max abs off (mol/s)": 1.1102230246251565e-16,
+     "U-HEAT.Q abs off (W)": 1.8189894035458565e-12,
+     "U-FLASH.Q abs off (W)": 7.275957614183426e-12
+    },
+    "pinned_vapour": {
+     "S3.V": 0.0,
+     "S3.vap.A": 0.0,
+     "S3.vap.B": 0.0,
+     "S3.vap.C": 0.0
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "attempts": [
+     {
+      "signature": {
+       "U-HEAT": "TWO_PHASE",
+       "U-FLASH": "TWO_PHASE"
+      },
+      "outcome": "PHASE_UPDATE_REQUIRED",
+      "iterations": "at most 2",
+      "reason": "phase_disappeared(U-HEAT, vapor, one of S3.vap.A/B/C, S3.V)"
+     },
+     {
+      "signature": {
+       "U-HEAT": "LIQUID",
+       "U-FLASH": "TWO_PHASE"
+      },
+      "outcome": "CONVERGED",
+      "iterations": "at most 5"
+     }
+    ],
+    "departures_from_tear_solution": [],
+    "p01": {
+     "S6.n": 3.1e-07,
+     "duties": 0.01
+    },
+    "pinned_vapour": {
+     "S3.V": 0.0,
+     "S3.vap.A": 0.0,
+     "S3.vap.B": 0.0,
+     "S3.vap.C": 0.0
+    }
+   }
+  },
+  {
+   "id": "T02.A22",
+   "description": "SYN-001 high-recycle and 310 K under `eo` from `x(t\u2070)`: one attempt, \u2264 10 and \u2264 5 iterations; once-through and 420 K: iteration 0; every state within A21's tolerances of the tear solution; the high-recycle heater LIQUID from the start with `S3.V` exactly 0.0.",
+   "result": "pass",
+   "value": {
+    "SYN-001-high-recycle": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": 5,
+     "departures_from_tear_solution": [],
+     "p01": {
+      "S6.n max abs off (mol/s)": 3.019806626980426e-14,
+      "U-HEAT.Q abs off (W)": 4.729372449219227e-11,
+      "U-FLASH.Q abs off (W)": 2.9103830456733704e-11
+     },
+     "heater_regime": "LIQUID",
+     "S3.V": 0.0
+    },
+    "SYN-001-all-liquid-310K": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": 2,
+     "departures_from_tear_solution": [],
+     "p01": {
+      "S6.n max abs off (mol/s)": 0.0,
+      "U-HEAT.Q abs off (W)": 8.731149137020111e-11,
+      "U-FLASH.Q abs off (W)": 8.731149137020111e-11
+     }
+    },
+    "SYN-001-once-through": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": 0,
+     "departures_from_tear_solution": [],
+     "p01": {
+      "S6.n max abs off (mol/s)": 0.0,
+      "U-HEAT.Q abs off (W)": 8.767528925091028e-10,
+      "U-FLASH.Q abs off (W)": 8.731149137020111e-10
+     }
+    },
+    "SYN-001-all-vapor-420K": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": 0,
+     "departures_from_tear_solution": [],
+     "p01": {
+      "S6.n max abs off (mol/s)": 0.0,
+      "U-HEAT.Q abs off (W)": 8.767528925091028e-10,
+      "U-FLASH.Q abs off (W)": 8.87666828930378e-10
+     }
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "attempts": 1,
+    "iterations": "at most 10, 5, 0, 0 (spec measured 5, 2, 0, 0)",
+    "departures_from_tear_solution": [],
+    "high-recycle": {
+     "heater_regime": "LIQUID",
+     "S3.V": 0.0
+    }
+   }
+  },
+  {
+   "id": "T02.A23",
+   "description": "Same function: the `eo` region started from the tear solve's reconstructed `x(t*)` converges at iteration 0 with `jacobian_calls = 0` and `factorizations = 0` at all five variants.",
+   "result": "pass",
+   "value": {
+    "SYN-001-nominal": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "jacobian_calls": 0,
+     "factorizations": 0
+    },
+    "SYN-001-once-through": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "jacobian_calls": 0,
+     "factorizations": 0
+    },
+    "SYN-001-high-recycle": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "jacobian_calls": 0,
+     "factorizations": 0
+    },
+    "SYN-001-all-liquid-310K": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "jacobian_calls": 0,
+     "factorizations": 0
+    },
+    "SYN-001-all-vapor-420K": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "jacobian_calls": 0,
+     "factorizations": 0
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "iterations": 0,
+    "jacobian_calls": 0,
+    "factorizations": 0
+   }
+  },
+  {
+   "id": "T02.A24",
+   "description": "EO-TRIV: once-through under `eo` with `S3`'s split forced all-liquid: one `initializer_candidate` event with message `projected(S3, all_liquid, TWO_PHASE)`, then one `initializer_accepted`; one attempt; iteration 0; the heater outlet vapour fraction equals P01's `0.10136872342672776` to `1e-12` relative.",
+   "result": "pass",
+   "value": {
+    "projections": [
+     "S3"
+    ],
+    "initializer_candidate_messages": [
+     "projected(S3, all_liquid, TWO_PHASE)"
+    ],
+    "initializer_accepted_events": 1,
+    "outcome": "CONVERGED",
+    "attempts": 1,
+    "iterations": 0,
+    "heater_outlet_vapor_fraction": 0.10136872342671704,
+    "relative_off_p01": 1.056899191926482e-13
+   },
+   "expected": {
+    "projections": [
+     "S3"
+    ],
+    "initializer_candidate_messages": [
+     "projected(S3, all_liquid, TWO_PHASE)"
+    ],
+    "initializer_accepted_events": 1,
+    "outcome": "CONVERGED",
+    "attempts": 1,
+    "iterations": 0,
+    "heater_outlet_vapor_fraction": 0.10136872342672776,
+    "relative_off_p01": "at most 1e-12"
+   }
+  },
+  {
+   "id": "T02.A25",
+   "description": "A02 plan: for `SYN-001-A02-360/-365/-355` the `ExecutionPlan` equals `ref.syn001.plans['SYN-001-A02-*']` \u2014 the `solve_eo` step with `tear_variable_ids = []`, a 42 \u00d7 42 system whose rows are the four units' 44 rows minus the two certificates and whose columns are the 47 free columns minus `S1`'s five, `eliminated_rows` the two certificates, `signature_units (U-HEAT, U-FLASH)`, the registered specification, adjusted, target and removed rows \u2014 built without any evaluation.",
+   "result": "pass",
+   "value": {
+    "SYN-001-A02-360": {
+     "finding": "STRUCTURALLY_CLOSED",
+     "kinds": [
+      "evaluate",
+      "solve_eo"
+     ],
+     "evaluate": [
+      "U-FEED"
+     ],
+     "region_units": [
+      "U-MIX",
+      "U-HEAT",
+      "U-FLASH",
+      "U-SPLIT"
+     ],
+     "specification_rows": [
+      "SPEC:SPEC-flash-duty"
+     ],
+     "adjusted_variables": [
+      "S3.T"
+     ],
+     "target_variables": [
+      "U-FLASH.Q"
+     ],
+     "removed_specification_rows": [
+      "U-HEAT:HEAT-T"
+     ],
+     "signature_units": [
+      "U-HEAT",
+      "U-FLASH"
+     ],
+     "square": [
+      42,
+      42
+     ],
+     "tear_variable_ids": [],
+     "eliminated_rows": [
+      "U-FLASH:FLASH-P:inlet",
+      "U-SPLIT:SPLIT-P:recycle"
+     ],
+     "unit_rows": 44,
+     "rows_are_unit_rows_minus_certificates": true,
+     "columns_are_free_minus_S1": true,
+     "fixed_upstream": [
+      "S1.n.A",
+      "S1.n.B",
+      "S1.n.C",
+      "S1.T",
+      "S1.P"
+     ],
+     "calls_during_plan_construction": {}
+    },
+    "SYN-001-A02-365": {
+     "finding": "STRUCTURALLY_CLOSED",
+     "kinds": [
+      "evaluate",
+      "solve_eo"
+     ],
+     "evaluate": [
+      "U-FEED"
+     ],
+     "region_units": [
+      "U-MIX",
+      "U-HEAT",
+      "U-FLASH",
+      "U-SPLIT"
+     ],
+     "specification_rows": [
+      "SPEC:SPEC-flash-duty"
+     ],
+     "adjusted_variables": [
+      "S3.T"
+     ],
+     "target_variables": [
+      "U-FLASH.Q"
+     ],
+     "removed_specification_rows": [
+      "U-HEAT:HEAT-T"
+     ],
+     "signature_units": [
+      "U-HEAT",
+      "U-FLASH"
+     ],
+     "square": [
+      42,
+      42
+     ],
+     "tear_variable_ids": [],
+     "eliminated_rows": [
+      "U-FLASH:FLASH-P:inlet",
+      "U-SPLIT:SPLIT-P:recycle"
+     ],
+     "unit_rows": 44,
+     "rows_are_unit_rows_minus_certificates": true,
+     "columns_are_free_minus_S1": true,
+     "fixed_upstream": [
+      "S1.n.A",
+      "S1.n.B",
+      "S1.n.C",
+      "S1.T",
+      "S1.P"
+     ],
+     "calls_during_plan_construction": {}
+    },
+    "SYN-001-A02-355": {
+     "finding": "STRUCTURALLY_CLOSED",
+     "kinds": [
+      "evaluate",
+      "solve_eo"
+     ],
+     "evaluate": [
+      "U-FEED"
+     ],
+     "region_units": [
+      "U-MIX",
+      "U-HEAT",
+      "U-FLASH",
+      "U-SPLIT"
+     ],
+     "specification_rows": [
+      "SPEC:SPEC-flash-duty"
+     ],
+     "adjusted_variables": [
+      "S3.T"
+     ],
+     "target_variables": [
+      "U-FLASH.Q"
+     ],
+     "removed_specification_rows": [
+      "U-HEAT:HEAT-T"
+     ],
+     "signature_units": [
+      "U-HEAT",
+      "U-FLASH"
+     ],
+     "square": [
+      42,
+      42
+     ],
+     "tear_variable_ids": [],
+     "eliminated_rows": [
+      "U-FLASH:FLASH-P:inlet",
+      "U-SPLIT:SPLIT-P:recycle"
+     ],
+     "unit_rows": 44,
+     "rows_are_unit_rows_minus_certificates": true,
+     "columns_are_free_minus_S1": true,
+     "fixed_upstream": [
+      "S1.n.A",
+      "S1.n.B",
+      "S1.n.C",
+      "S1.T",
+      "S1.P"
+     ],
+     "calls_during_plan_construction": {}
+    }
+   },
+   "expected": {
+    "plan": [
+     {
+      "kind": "evaluate",
+      "unit": "U-FEED"
+     },
+     {
+      "kind": "solve_eo",
+      "region_units": [
+       "U-MIX",
+       "U-HEAT",
+       "U-FLASH",
+       "U-SPLIT"
+      ],
+      "specification_rows": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "adjusted_variable": "S3.T",
+      "target_variable": "U-FLASH.Q",
+      "removed_specification_row": "U-HEAT:HEAT-T",
+      "square": 42,
+      "signature_units": [
+       "U-HEAT",
+       "U-FLASH"
+      ]
+     }
+    ],
+    "eliminated_rows": [
+     "U-FLASH:FLASH-P:inlet",
+     "U-SPLIT:SPLIT-P:recycle"
+    ],
+    "unit_rows": 44,
+    "fixed_upstream": [
+     "S1.n.A",
+     "S1.n.B",
+     "S1.n.C",
+     "S1.T",
+     "S1.P"
+    ],
+    "calls_during_plan_construction": {}
+   }
+  },
+  {
+   "id": "T02.A26",
+   "description": "A02 DOF, against A26 as amended by the T02 review (2026-09-24). (a) `HEAT-T` retained \u2192 `STRUCTURAL_OVER_SPECIFICATION` at validation (STR-03 `FAIL`, status `INVALID`) naming the over-specified unit among `U-HEAT`/`U-FLASH` \u2014 which row the canonical matching leaves unmatched is T01's; the spec measured `U-FLASH` \u2014 with both `SPEC-heater-outlet-T` and the promotion row's `SPEC-flash-duty` among the candidate specifications, and no plan built. (b) `HEAT-T` removed and no promotion row \u2192 `STRUCTURAL_UNDER_SPECIFICATION` (STR-02 `FAIL`) with `S3.T` implicated; the status is `DRAFT` (register R-022's extension), recorded. (c) a synthetic region closed but non-square after certificates \u2192 `UNSUPPORTED_RANK_STRUCTURE` at plan construction. Zero compiler and provider calls in all three (validation runs T01's analysis by design, so the analysis is not spied here).",
+   "result": "pass",
+   "value": {
+    "HEAT-T retained": {
+     "status": "INVALID",
+     "STR-03": [
+      "FAIL",
+      true
+     ],
+     "finding": "STRUCTURAL_OVER_SPECIFICATION",
+     "over_specified_units": [
+      "U-FLASH"
+     ],
+     "STR-03_implicated_objects": [
+      "SPEC-flash-T",
+      "SPEC-flash-P",
+      "SPEC-flash-duty",
+      "flash"
+     ],
+     "candidate_specifications": [
+      "SPEC-feed-P",
+      "SPEC-feed-n-A",
+      "SPEC-feed-n-B",
+      "SPEC-feed-n-C",
+      "SPEC-flash-P",
+      "SPEC-flash-T",
+      "SPEC-flash-duty",
+      "SPEC-heater-outlet-T"
+     ],
+     "declared_specifications": 10,
+     "plan": "ValueError: an execution plan needs a structurally closed declaration; T01 reports STRUCTURAL_OVER_SPECIFICATION",
+     "calls": {}
+    },
+    "over-specified unit among U-HEAT/U-FLASH": true,
+    "both conflicting specifications among the candidates": true,
+    "no promotion row": {
+     "status": "DRAFT",
+     "STR-02": [
+      "FAIL",
+      true
+     ],
+     "S3.T_implicated": true,
+     "finding": "STRUCTURAL_UNDER_SPECIFICATION",
+     "plan": "ValueError: an execution plan needs a structurally closed declaration; T01 reports STRUCTURAL_UNDER_SPECIFICATION",
+     "calls": {}
+    },
+    "closed non-square region": {
+     "square": false,
+     "plan": "UnsupportedRankStructureError: UNSUPPORTED_RANK_STRUCTURE: the region ['U-MIX', 'U-HEAT', 'U-FLASH', 'U-SPLIT'] for ['SPEC:SPEC-flash-duty'] is 41 rows over 42 columns after certificates",
+     "calls": {}
+    }
+   },
+   "expected": {
+    "HEAT-T retained": {
+     "status": "INVALID",
+     "STR-03": [
+      "FAIL",
+      true
+     ],
+     "finding": "STRUCTURAL_OVER_SPECIFICATION",
+     "plan": "refused: needs a structurally closed declaration",
+     "calls": {}
+    },
+    "over-specified unit among U-HEAT/U-FLASH": true,
+    "both conflicting specifications among the candidates": true,
+    "no promotion row": {
+     "status": "recorded (spec: not stated; measured DRAFT per R-022)",
+     "STR-02": [
+      "FAIL",
+      true
+     ],
+     "S3.T_implicated": true,
+     "finding": "STRUCTURAL_UNDER_SPECIFICATION",
+     "plan": "refused",
+     "calls": {}
+    },
+    "closed non-square region": {
+     "square": false,
+     "plan": "UnsupportedRankStructureError: UNSUPPORTED_RANK_STRUCTURE",
+     "calls": {}
+    }
+   }
+  },
+  {
+   "id": "T02.A27",
+   "description": "CAP-1 (the A02-360 heater with `residuals` declared `unavailable`): `CAPABILITY_UNAVAILABLE` naming `U-HEAT`, `unavailable`, the four region units and `SPEC-flash-duty`; no `plan_built` event; zero residual, Jacobian and property calls; no attempt; the failure bundle's only suggested action is `provide_derivatives`, `U-HEAT` first among its implicated sources, no `report_defect`, and it validates; no `converge` step exists because no plan exists.",
+   "result": "pass",
+   "value": {
+    "outcome": "CAPABILITY_UNAVAILABLE",
+    "message_names": {
+     "U-HEAT": true,
+     "'unavailable'": true,
+     "U-MIX": true,
+     "U-FLASH": true,
+     "U-SPLIT": true,
+     "SPEC-flash-duty": true
+    },
+    "event_kinds": [
+     "solve_closed"
+    ],
+    "counters": {
+     "residual_calls": 0,
+     "jacobian_calls": 0,
+     "property_calls": 0
+    },
+    "calls_during_refusal": {},
+    "taxonomy": "model domain/conservation/derivative defects",
+    "suggested_actions": [
+     "provide_derivatives"
+    ],
+    "implicated_sources": [
+     "U-HEAT",
+     "U-MIX",
+     "U-FLASH",
+     "U-SPLIT",
+     "SPEC-flash-duty"
+    ],
+    "attempt_tree": [],
+    "bundle_schema_errors": 0
+   },
+   "expected": {
+    "outcome": "CAPABILITY_UNAVAILABLE",
+    "message_names": {
+     "U-HEAT": true,
+     "'unavailable'": true,
+     "U-MIX": true,
+     "U-FLASH": true,
+     "U-SPLIT": true,
+     "SPEC-flash-duty": true
+    },
+    "event_kinds": [
+     "solve_closed"
+    ],
+    "counters": {
+     "residual_calls": 0,
+     "jacobian_calls": 0,
+     "property_calls": 0
+    },
+    "calls_during_refusal": {},
+    "taxonomy": "model domain/conservation/derivative defects",
+    "suggested_actions": [
+     "provide_derivatives"
+    ],
+    "implicated_sources": "U-HEAT first, SPEC-flash-duty among them",
+    "attempt_tree": [],
+    "bundle_schema_errors": 0
+   }
+  },
+  {
+   "id": "T02.A28",
+   "description": "`SYN-001-A02-360`: CONVERGED in 1 attempt and \u2264 6 iterations; `S3.T` within `1e-5 K` of 360; `U-HEAT.Q` within `1e-2 W` of `Q_total = 56 338.069 446 743 527`; `U-FLASH.Q` within `1e-2 W` of 0; `S3.vap`, `S3.liq` within `3.1e-7 mol/s` of the 360 K split; `S6.n` within `3.1e-7` of `t*`.",
+   "result": "pass",
+   "value": {
+    "SYN-001-A02-360": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": 3,
+     "S3.T": 360.0000000005063,
+     "S3.T abs off (K)": 5.06304331793217e-10,
+     "U-HEAT.Q abs off (W)": 1.4551915228366852e-11,
+     "U-FLASH.Q abs off (W)": 3.899697337511436e-17,
+     "S3 split max abs off (mol/s)": 1.8726464823259903e-11,
+     "S6.n max abs off t* (mol/s)": 2.220446049250313e-16
+    }
+   },
+   "expected": {
+    "SYN-001-A02-360": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": "at most 6",
+     "S3.T": 360.0,
+     "S3.T abs off (K)": "at most 1e-05",
+     "U-HEAT.Q": 56338.069446743524,
+     "U-FLASH.Q": 0.0,
+     "duty abs off (W)": "at most 0.01",
+     "split and S6.n abs off (mol/s)": "at most 3.1e-07"
+    }
+   }
+  },
+  {
+   "id": "T02.A29",
+   "description": "`SYN-001-A02-365` and `-355`: as A28 with the 365 K and 355 K rows of the sweep. The spec's *measured* 4 iterations for -355 is 3 at this commit; the registered bound is \u2264 6 and the count is recorded.",
+   "result": "pass",
+   "value": {
+    "SYN-001-A02-365": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": 4,
+     "S3.T": 365.0000000000047,
+     "S3.T abs off (K)": 4.718003765447065e-12,
+     "U-HEAT.Q abs off (W)": 1.4551915228366852e-11,
+     "U-FLASH.Q abs off (W)": 0.0,
+     "S3 split max abs off (mol/s)": 2.1288526497187377e-13,
+     "S6.n max abs off t* (mol/s)": 2.220446049250313e-16
+    },
+    "SYN-001-A02-355": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": 3,
+     "S3.T": 354.9999998068252,
+     "S3.T abs off (K)": 1.9317479882374755e-07,
+     "U-HEAT.Q abs off (W)": 7.275957614183426e-12,
+     "U-FLASH.Q abs off (W)": 0.0,
+     "S3 split max abs off (mol/s)": 1.8225237985447507e-09,
+     "S6.n max abs off t* (mol/s)": 2.220446049250313e-16
+    }
+   },
+   "expected": {
+    "SYN-001-A02-365": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": "at most 6",
+     "S3.T": 365.0,
+     "S3.T abs off (K)": "at most 1e-05",
+     "U-HEAT.Q": 82449.67950698281,
+     "U-FLASH.Q": -26111.61006023928,
+     "duty abs off (W)": "at most 0.01",
+     "split and S6.n abs off (mol/s)": "at most 3.1e-07"
+    },
+    "SYN-001-A02-355": {
+     "outcome": "CONVERGED",
+     "attempts": 1,
+     "iterations": "at most 6",
+     "S3.T": 355.0,
+     "S3.T abs off (K)": "at most 1e-05",
+     "U-HEAT.Q": 31656.963378118286,
+     "U-FLASH.Q": 24681.106068625242,
+     "duty abs off (W)": "at most 0.01",
+     "split and S6.n abs off (mol/s)": "at most 3.1e-07"
+    }
+   }
+  },
+  {
+   "id": "T02.A30",
+   "description": "`SYN-001-A02-355-liquid-guess`: attempt 1 (heater LIQUID) converges and closes `PHASE_UPDATE_REQUIRED(inadmissible(S3, all_liquid, \u03a3))` with `S3.T` within `1e-5 K` of the liquid-branch root `389.438 243 827 208 422 K` and `\u03a3` within `1e-9` relative of `2.495 993 838 622 898 6`; attempt 2 opens VAPOR; the solve ends `ACTIVE_SET_CYCLING` with no certificate and a checkpoint labelled `partial`.",
+   "result": "pass",
+   "value": {
+    "outcome": "ACTIVE_SET_CYCLING",
+    "attempt_1": {
+     "heater": "LIQUID",
+     "solver_outcome": "CONVERGED",
+     "outcome": "PHASE_UPDATE_REQUIRED",
+     "reason": "inadmissible(S3, all_liquid, 2.4959938386229013)",
+     "S3.T": 389.43824382720845,
+     "S3.T abs off root (K)": 5.684341886080802e-14,
+     "sum_zK_relative_off": 1.0675247742480268e-15
+    },
+    "attempt_2": {
+     "heater": "VAPOR",
+     "reason": "kernel_disagrees(U-HEAT, LIQUID)"
+    },
+    "checkpoint_label": "partial",
+    "checkpoint_scope": "unverified"
+   },
+   "expected": {
+    "outcome": "ACTIVE_SET_CYCLING",
+    "attempt_1": {
+     "heater": "LIQUID",
+     "solver_outcome": "CONVERGED",
+     "outcome": "PHASE_UPDATE_REQUIRED",
+     "reason": "inadmissible(S3, all_liquid, 2.4959938386228986)",
+     "S3.T": 389.4382438272084,
+     "S3.T abs off root (K)": "at most 1e-05",
+     "sum_zK_relative_off": "at most 1e-9"
+    },
+    "attempt_2": {
+     "heater": "VAPOR"
+    },
+    "checkpoint_label": "partial",
+    "checkpoint_scope": "unverified (no certificate)"
+   }
+  },
+  {
+   "id": "T02.A31",
+   "description": "`SYN-001-A02-360-liquid-guess`: attempt 1 (LIQUID) ends `STAGNATION`, converted to `PHASE_UPDATE_REQUIRED(kernel_disagrees(U-HEAT, VAPOR))` with its best iterate's `S3.T \u2265 430 K`; attempt 2 (VAPOR) converted to LIQUID with `S3.T \u2264 290 K`; the solve ends `ACTIVE_SET_CYCLING`, no certificate, no `INFEASIBLE`.",
+   "result": "pass",
+   "value": {
+    "outcome": "ACTIVE_SET_CYCLING",
+    "attempt_1": {
+     "heater": "LIQUID",
+     "solver_outcome": "STAGNATION",
+     "reason": "kernel_disagrees(U-HEAT, VAPOR)",
+     "S3.T": 439.99999970524533
+    },
+    "attempt_2": {
+     "heater": "VAPOR",
+     "solver_outcome": "STAGNATION",
+     "reason": "kernel_disagrees(U-HEAT, LIQUID)",
+     "S3.T": 280.00002176610116
+    },
+    "certificate": "partial",
+    "INFEASIBLE": false
+   },
+   "expected": {
+    "outcome": "ACTIVE_SET_CYCLING",
+    "attempt_1": {
+     "heater": "LIQUID",
+     "solver_outcome": "STAGNATION",
+     "reason": "kernel_disagrees(U-HEAT, VAPOR)",
+     "S3.T": "at least 430 K (spec measured 439.9999997)"
+    },
+    "attempt_2": {
+     "heater": "VAPOR",
+     "reason": "kernel_disagrees(U-HEAT, LIQUID)",
+     "S3.T": "at most 290 K (spec measured 280.00002)"
+    },
+    "certificate": "none (not candidate_root)",
+    "INFEASIBLE": false
+   }
+  },
+  {
+   "id": "T02.A32",
+   "description": "Recovery edges: every `restart` of every recycle run in this manifest carries `reason = stagnation` and `count \u2264 2`; `region_on_merge` has the loop's `model_version` and `constants_sha256` and its rows (solved and eliminated) are exactly the loop units' rows, with no specification row; one merge at most per loop (one recycle closure then one region closure); MERGE-U, on the manufactured stall and on SYN-001 with the heater non-capable, ends with the recycle's own outcome, `merge_into_eo: unsupported(U-HEAT, \"derivatives: unavailable\")` on the closing message and in the failure bundle, and no residual call after the closure.",
+   "result": "pass",
+   "value": {
+    "restarts_seen": 8,
+    "restarts_not_stagnation_or_count_above_2": [],
+    "region_on_merge": {
+     "same_model_version": true,
+     "same_constants_sha256": true,
+     "rows_equal_loop_rows": true,
+     "solved_and_eliminated_disjoint": true,
+     "specification_rows": []
+    },
+    "one_merge": {
+     "closures": [
+      [
+       0,
+       "RECYCLE_STAGNATION"
+      ],
+      [
+       1,
+       "LINEAR_SOLVE_FAILED"
+      ]
+     ],
+     "outcome": "LINEAR_SOLVE_FAILED"
+    },
+    "MERGE-U manufactured": {
+     "outcome": "RECYCLE_STAGNATION",
+     "merge_into_eo": "unsupported",
+     "message_carries_reason": true,
+     "bundle_merge_into_eo": "unsupported(U-HEAT, \"derivatives: unavailable\")",
+     "bundle_implicated": [
+      "U-HEAT"
+     ],
+     "residual_calls_total_vs_recycle": [
+      16,
+      16
+     ]
+    },
+    "MERGE-U SYN-001": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "step_outcome": "BUDGET_EXHAUSTED",
+     "merge_into_eo": "unsupported",
+     "merge_unsupported": [
+      "U-HEAT",
+      "unavailable"
+     ],
+     "closing_message_carries_reason": true,
+     "closing_document_merge_unsupported": {
+      "unit": "U-HEAT",
+      "method": "unavailable"
+     },
+     "residual_calls_after_closure": [
+      2
+     ],
+     "residual_calls_at_closure": 2
+    }
+   },
+   "expected": {
+    "restarts_not_stagnation_or_count_above_2": [],
+    "region_on_merge": {
+     "same_model_version": true,
+     "same_constants_sha256": true,
+     "rows_equal_loop_rows": true,
+     "solved_and_eliminated_disjoint": true,
+     "specification_rows": []
+    },
+    "one_merge": {
+     "closures": [
+      [
+       0,
+       "RECYCLE_STAGNATION"
+      ],
+      [
+       1,
+       "LINEAR_SOLVE_FAILED"
+      ]
+     ],
+     "outcome": "LINEAR_SOLVE_FAILED"
+    },
+    "MERGE-U manufactured": {
+     "outcome": "RECYCLE_STAGNATION",
+     "merge_into_eo": "unsupported",
+     "message_carries_reason": true,
+     "bundle_merge_into_eo": "unsupported(U-HEAT, \"derivatives: unavailable\")",
+     "bundle_implicated": [
+      "U-HEAT"
+     ],
+     "residual_calls_total_vs_recycle": "equal (none after the closure)"
+    },
+    "MERGE-U SYN-001": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "merge_into_eo": "unsupported",
+     "merge_unsupported": [
+      "U-HEAT",
+      "unavailable"
+     ],
+     "closing_message_carries_reason": true,
+     "closing_document_merge_unsupported": {
+      "unit": "U-HEAT",
+      "method": "unavailable"
+     },
+     "residual_calls_after_closure": "only the count at the closure"
+    }
+   }
+  },
+  {
+   "id": "T02.A33",
+   "description": "Trace well-formedness with ADR 0009's kinds, on seven plan runs (nominal under auto/anderson/eo, A02-360, A02-355-liquid-guess, the SYN-001 merge, SYN-001 MERGE-U): dense increasing `sequence`; one `plan_built` with `step_count`; `unit_evaluated` and `region_opened`/`region_closed` bracket every step in plan order with every inner event stamped with its `step_index`; every `acceleration` event has `depth_used \u2264 min(5, n)`, both drop counts, `beta_substitution \u2208 {1, 0.5}` and `kappa_2`/`gamma_inf` non-null iff `depth_used \u2265 1`; every event validates against `solve-event.schema.json` and serializes with no non-finite number; the one `solve_closed` outcome equals the result's. Also the acceleration events of REC-01..05 at both `\u03b3`. Property metering on `SYN-001-A02-360`: every call the SYN-001 provider class receives (counted at the class) appears on the trace \u2014 the `solve_closed` `property_calls` equals the independent count \u2014 and the region Newton's own calls are on the trace (review finding closed by 76b245d, a24ca16).",
+   "result": "pass",
+   "value": {
+    "runs": {
+     "nominal auto": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     },
+     "nominal anderson": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     },
+     "nominal eo": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     },
+     "A02-355-liquid-guess": {
+      "outcome": "ACTIVE_SET_CYCLING",
+      "malformed": []
+     },
+     "nominal anderson merge": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     },
+     "MERGE-U": {
+      "outcome": "BUDGET_EXHAUSTED",
+      "malformed": []
+     },
+     "A02-360": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     }
+    },
+    "recycle_acceleration_events_malformed": [],
+    "A02-360 property metering": {
+     "provider_calls_received": 247,
+     "pre_solve_property_calls_on_trace": 155,
+     "region_property_calls_on_trace_after_the_pre_solve": 92,
+     "trace_property_calls_at_solve_closed": 247,
+     "region_step_property_calls_on_trace": 247,
+     "property_calls_on_trace_during_region_newton": 90
+    }
+   },
+   "expected": {
+    "runs": {
+     "nominal auto": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     },
+     "nominal anderson": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     },
+     "nominal eo": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     },
+     "A02-355-liquid-guess": {
+      "outcome": "ACTIVE_SET_CYCLING",
+      "malformed": []
+     },
+     "nominal anderson merge": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     },
+     "MERGE-U": {
+      "outcome": "BUDGET_EXHAUSTED",
+      "malformed": []
+     },
+     "A02-360": {
+      "outcome": "CONVERGED",
+      "malformed": []
+     }
+    },
+    "recycle_acceleration_events_malformed": [],
+    "A02-360 property metering": {
+     "provider_calls_received": "equal to the trace's property_calls at solve_closed",
+     "property_calls_on_trace_during_region_newton": "above 0 (the region is metered)"
+    }
+   }
+  },
+  {
+   "id": "T02.A34",
+   "description": "Reproducibility classes (A34 as amended by the T02 review, M4): `kappa_2` and `gamma_inf` carry no floor (`REGISTERED_FLOOR` 0 for both) and the comparability window `{kappa_2, gamma_inf} \u2192 (residual_inf_scaled, 1e-4)` is registered where ADR 0007 D2.6 says the policy lives; the ADR's D2.2 table carries both rows with the window; on every accelerated event of every registered case, on this platform, `kappa_2 \u2209 [1e7, 1e9]` and `gamma_inf \u2209 [1e3, 1e5]` (D2.4's decision margin) and the window holds at least one event; the T02 R0 document holds no float (`beta_substitution` as its exact decimal) and is identical twice on one machine; the float document holds only `kappa_2`, `gamma_inf` and their selector `residual_inf_scaled`. From the two CI artifacts: the R0 fields of \u00a75.8 (`t02.recycle`, `t02.runs`) are equal across x86-64 and aarch64 and the floats agree under `process_runtime.run.compare.differences` (which implements the window) \u2014 the CI job's own comparison. Without `--identities` the cross-platform half is not measured and the check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "floors": {
+     "kappa_2": 0.0,
+     "gamma_inf": 0.0
+    },
+    "window": {
+     "kappa_2": [
+      "residual_inf_scaled",
+      0.0001
+     ],
+     "gamma_inf": [
+      "residual_inf_scaled",
+      0.0001
+     ]
+    },
+    "adr_0007_d2_2_rows_carry_the_window": true,
+    "accelerated_events": 48,
+    "accelerated_events_near_threshold": [],
+    "accelerated_events_inside_window": 38,
+    "max_kappa_2": 26888.61082621331,
+    "max_gamma_inf": 125.10687022898327,
+    "r0_floats": [],
+    "r0_same_twice": true,
+    "float_document_names": [
+     "gamma_inf",
+     "kappa_2",
+     "residual_inf_scaled"
+    ],
+    "ci": {
+     "platforms": 2,
+     "t02_r0_equal": true,
+     "float_differences": []
+    }
+   },
+   "expected": {
+    "floors": {
+     "kappa_2": 0.0,
+     "gamma_inf": 0.0
+    },
+    "window": {
+     "kappa_2": [
+      "residual_inf_scaled",
+      0.0001
+     ],
+     "gamma_inf": [
+      "residual_inf_scaled",
+      0.0001
+     ]
+    },
+    "adr_0007_d2_2_rows_carry_the_window": true,
+    "accelerated_events_near_threshold": [],
+    "accelerated_events_inside_window": "at least 1",
+    "r0_floats": [],
+    "r0_same_twice": true,
+    "float_document_names": [
+     "gamma_inf",
+     "kappa_2",
+     "residual_inf_scaled"
+    ],
+    "ci": {
+     "platforms": 2,
+     "t02_r0_equal": true,
+     "float_differences": []
+    }
+   }
+  },
+  {
+   "id": "T02.A35",
+   "description": "K03 regression: the gate's pytest run passed with no failure, and K03's own test files `tests/test_k03_*.py`, run again here, pass (the tear path, `SolvePlan`, the Newton core and the phase contract unchanged); BND-02 (`R = x + 1`, `x \u2265 0`, `x\u2070 = 0`) run through the tear path's attempt controller ends `BOUND_BLOCKED` at iteration 0 in one attempt \u2014 a bound block on a *tear* variable is not converted to a phase event.",
+   "result": "pass",
+   "value": {
+    "gate": {
+     "passed": true,
+     "pytest_passed": 1533,
+     "pytest_failed_or_errors": false
+    },
+    "k03_files": [
+     "tests/test_k03_attempts.py",
+     "tests/test_k03_budget.py",
+     "tests/test_k03_linear.py",
+     "tests/test_k03_newton.py",
+     "tests/test_k03_rank.py",
+     "tests/test_k03_scaling.py",
+     "tests/test_k03_schemas.py",
+     "tests/test_k03_tear.py"
+    ],
+    "k03_rerun_exit_code": 0,
+    "k03_rerun_passed": 159,
+    "k03_rerun_failures": false,
+    "BND-02": {
+     "outcome": "BOUND_BLOCKED",
+     "iterations": 0,
+     "attempts": 1,
+     "attempt_closures": [
+      "BOUND_BLOCKED"
+     ]
+    }
+   },
+   "expected": {
+    "gate": {
+     "passed": true,
+     "pytest_failed_or_errors": false
+    },
+    "k03_rerun_exit_code": 0,
+    "k03_rerun_failures": false,
+    "BND-02": {
+     "outcome": "BOUND_BLOCKED",
+     "iterations": 0,
+     "attempts": 1,
+     "attempt_closures": "no PHASE_UPDATE_REQUIRED"
+    }
+   }
+  },
+  {
+   "id": "T02.A36",
+   "description": "This manifest carries one `checks[]` entry per assertion of spec \u00a710, `T02.A00`\u2026`T02.A36`, including every `unsupported`; `limitations` restates spec \u00a712; `review` is unset (`pending` in both fields \u2014 no agent may set it); `commands` is the gate actually run here plus the named CI run on both architectures. Without `--ci-run` the two-architecture half of `commands` is absent and this check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "entries": 37,
+    "ids_in_order": true,
+    "ci_run": "https://github.com/computational-chemical-engineering/clearsheet/actions/runs/35984230481"
+   },
+   "expected": {
+    "entries": 37,
+    "ids_in_order": true,
+    "ci_run": "a workflow run URL"
+   }
+  }
+ ],
+ "artifacts": [],
+ "limitations": [
+  "Spec \u00a712: correctness of any solver is not established by the specification; it registers what a correct one must produce. This manifest measures the implementation against those registrations \u2014 numerical verification, not empirical validation.",
+  "Spec \u00a712: minimality of a tear set for a multi-edge feedback set is not claimed (the rule of \u00a73.3 is greedy), nor the quality of a tear beyond dimension and boundary distance.",
+  "Spec \u00a712: behaviour finer than the registered basin margin is not established. REC-05's landing on S1 is asserted with a \u00b15 % start margin; a fourth fixed point at gamma = 0.02 exists and is not registered; the merge edge's landing on REC-05 (A14) is recorded, not asserted.",
+  "Spec \u00a712: no trajectory beyond the registered iterates is claimed. Anderson trajectories below a residual of 1e-6 are roundoff-dominated and deliberately not compared.",
+  "Spec \u00a712: appearance of a phase during an EO attempt, and the adjacent-regime restart, are not delivered; the two A02 liquid-guess cases are registered failures (A30, A31) whose success is T03's evidence.",
+  "Spec \u00a712: a lifted component at zero because the stream lacks the component, a provider whose K-values can vanish or diverge, a saturated lifted stream, and more than one region or loop per plan on a registered flowsheet are stated rules that no registered case exercises beyond the synthetic.",
+  "Spec \u00a712: the equation-level (BTF-block) region for A02 is stated as recoverable and not delivered.",
+  "Spec \u00a712: Wegstein, Aitken, trust regions and Krylov linear solves are not implemented; nothing measured here motivates them.",
+  "Spec \u00a712: nothing is empirically validated. Every case is synthetic.",
+  "Spec \u00a712: human numerical and process-modeling review are `pending`; no agent sets them.",
+  "Spec \u00a712: cost at size is not measured \u2014 47 variables and tears of dimension 1 to 3 say nothing about a plant.",
+  "Reviewed by Fable against the specification: docs/reviews/T02-review.md (commit 76a0437, 4 must-fix and 8 should-fix findings; the same commit amended spec \u00a75.8, \u00a77.1, A26 and A34, ADR 0009 D3, ADR 0007 D2.2 and register R-026). Every M and S finding is closed: M4 in ec916a8, M1 and M3 in 4682451, M2 and NEST-1's plan in c73a9a1, S1, S3, S5 and S6 in 5e560ce, S2, S4, S7 and S8 in a24ca16, N9's evaluate step in 797484c. A Fable review is not the human numerical and process-modeling sign-off, which stays `pending`.",
+  "A11: the spec's argument `0.65 \u00b7 0.95^200 = 2.3e-5` is undamped substitution. Under the registered policy the oscillation detector fires at iteration 3 (implementation and 40-digit twin alike), plain steps are then damped by 0.5, and the `+0.95` mode governs at 0.975: measured 4.874e-5, equal to that closed form to 2e-14 relative. The assertion's criterion (residual above the scaled tolerance at 200) holds either way; the spec's `substitution needs 535` also includes the damping.",
+  "Measured counts that differ from the spec's *measured* figures, all inside their registered bounds: A05 (OFF-A) 6, 6, 1 iterations against 9, 9, 1 (bound 15); A06 (OFF-B) 8 iterations and 1 invalid trial against 10 and 12 (bound 40, at least 1); A29 SYN-001-A02-355 3 iterations against 4 (bound 6).",
+  "A14: the merge edge on REC-05 with the tail lands on S1 \u2014 recorded, not asserted (spec \u00a712).",
+  "Review N8, single-loop assumptions: the plan builder reads T01's inner rows and variables as if one loop existed and eliminates every consistent certificate in every loop's SolvePlan. No registered flowsheet has two loops (spec \u00a712); the day one does, those lines are to be revisited.",
+  "Review N10, performance: `compile_problem` runs once per region step and once per merge, and the tear problem is rebuilt for the merge's reconstruction \u2014 three to four compiles per plan run where one would do. Immaterial at 47 variables; to be measured before the first large flowsheet.",
+  "Review N9, handed to T03: a `role: free` specification without a `value` is silently not freed by the binding, so it surfaces as over-specification rather than \u00a77.5's INITIALIZATION_FAILED naming the variable \u2014 typed, but the wrong object.",
+  "A26 as amended: the over-specified unit is the one T01's canonical matching names (U-FLASH, measured), and the under-specified revision validates DRAFT (register R-022's extension) with STR-02 FAIL.",
+  "The frozen evidence-manifest schema takes D/A requirement ids only, so this manifest's `requirements` names D01, D06 and A02; V13 and V15 are recorded in `docs/requirements.yaml`."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

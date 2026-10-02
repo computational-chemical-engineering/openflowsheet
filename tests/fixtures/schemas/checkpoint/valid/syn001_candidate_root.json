@@ -1,0 +1,26 @@
+{
+ "attempt_index": 0,
+ "checkpoint_id": "attempt-0",
+ "continuation_lambda": null,
+ "full_state_sha256": "8dc637985b0d2dbe80e71c9aec6565ba224a826a891920df4aea11140efeb84f",
+ "iteration": 1,
+ "jacobian_identity": null,
+ "label": "candidate_root",
+ "merit": 6.847750913376838e-34,
+ "residual_inf_unscaled": 1.1102230246251565e-16,
+ "scale_segment": 0,
+ "signature": [
+  [
+   "U-FLASH",
+   "TWO_PHASE"
+  ]
+ ],
+ "state_sha256": "13c05f70f2f7f10752ae3d97491419a0e6a905c77156eb644a70efee28e5926f",
+ "step_index": null,
+ "variable_ids": [
+  "S6.n.A",
+  "S6.n.B",
+  "S6.n.C"
+ ],
+ "verification_scope": "unverified"
+}

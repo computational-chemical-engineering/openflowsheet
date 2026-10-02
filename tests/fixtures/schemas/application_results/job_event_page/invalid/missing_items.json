@@ -1,0 +1,6 @@
+{
+  "expect_error": "'items' is a required property",
+  "document": {
+    "next_cursor": "2"
+  }
+}

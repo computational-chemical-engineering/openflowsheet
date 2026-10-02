@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/solve-policy.schema.json",
+  "title": "SolvePolicy",
+  "description": "What a solve was told to do (K03 specification §12.1; plan §2.2 K03 row, joining the freeze). Every field is required: a policy that did not say what merit it used must not read as though it used the usual one. `merit`, `redundant_row_policy`, `derivative_path` and `cycle_rule` are single-valued today so that a later second policy is a new value a reader can see, never a silent change of meaning. K04 may refuse a certificate on the finite-difference derivative path, which is why the path is recorded rather than assumed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_id",
+    "residual_tolerances",
+    "scales",
+    "merit",
+    "armijo_c",
+    "step_halvings_max",
+    "stagnation_window",
+    "stagnation_ratio",
+    "phase_wall_patience",
+    "max_iterations_per_attempt",
+    "max_attempts",
+    "max_property_calls",
+    "linear_solver",
+    "linear_residual_threshold",
+    "eta_inner",
+    "admissibility_epsilon",
+    "redundant_row_policy",
+    "derivative_path",
+    "initializer_chain",
+    "cycle_rule",
+    "phase_contract",
+    "recycle",
+    "globalization"
+  ],
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "residual_tolerances": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "absolute",
+          "relative",
+          "scale"
+        ],
+        "properties": {
+          "absolute": {
+            "type": "number"
+          },
+          "relative": {
+            "type": "number"
+          },
+          "scale": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Blueprint §8.1's rule |e_i| <= a_i + r_i s_i, per quantity kind, with all three reported. ADR 0001 D6 registers the SYN-001 values and they apply to SYN-001 only."
+    },
+    "scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "description": "The registered physical nominals by quantity kind. A scale divides, so it is strictly positive; and it is never derived from an iterate (ADR 0001 D3.5)."
+    },
+    "merit": {
+      "const": "scaled_residual_half_norm2"
+    },
+    "armijo_c": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 1
+    },
+    "step_halvings_max": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stagnation_window": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stagnation_ratio": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "phase_wall_patience": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_iterations_per_attempt": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_property_calls": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "linear_solver": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "ADR 0004 D1, recorded verbatim. An option left implicit is not declared, and replay reproduces only within a declared numerical policy."
+    },
+    "linear_residual_threshold": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "eta_inner": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "admissibility_epsilon": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "redundant_row_policy": {
+      "const": "structural_alias_elimination"
+    },
+    "derivative_path": {
+      "enum": [
+        "assembled_schur",
+        "finite_difference_oracle"
+      ]
+    },
+    "initializer_chain": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "cycle_rule": {
+      "const": "no_repeated_signature"
+    },
+    "phase_contract": {
+      "enum": [
+        "T03-phase-contract-v1",
+        "T05b-phase-contract-v2"
+      ],
+      "description": "ADR 0005 D1: the phase-attempt rule set (docs/derivations/T03-phase-controller-spec.md §4). A later rule set is a new value, and a replay under a policy without it is refused. ADR 0012 D4 (T05b) adds the second value: a PH-type split's kernel is its PH closure, no start projection of a PH-type split, and the ZERO_FLOW regime (docs/derivations/T05b-limitations-spec.md §6-§8); v1 is kept verbatim."
+    },
+    "recycle": {
+      "description": "ADR 0009 D2: T02's recycle policy (T02-recycle-spec.md §5.10) and the method selector. Every value is R0.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "method",
+        "depth_max",
+        "beta",
+        "beta_substitution",
+        "beta_substitution_oscillating",
+        "condition_max",
+        "coefficient_max",
+        "stagnation_window",
+        "stagnation_ratio",
+        "oscillation_window",
+        "max_restarts",
+        "max_iterations_per_attempt",
+        "step_halvings_max"
+      ],
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method": {
+          "enum": [
+            "auto",
+            "newton_tear",
+            "anderson",
+            "eo"
+          ]
+        },
+        "depth_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "beta": {
+          "type": "number"
+        },
+        "beta_substitution": {
+          "type": "number"
+        },
+        "beta_substitution_oscillating": {
+          "type": "number"
+        },
+        "condition_max": {
+          "type": "number"
+        },
+        "coefficient_max": {
+          "type": "number"
+        },
+        "stagnation_window": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stagnation_ratio": {
+          "type": "number"
+        },
+        "oscillation_window": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_restarts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_iterations_per_attempt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "step_halvings_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tear_streams": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "globalization": {
+      "description": "ADR 0010 D1 (T04): the EO core, recovery edge 3 and the constants of both globalizations (docs/derivations/T04-globalization-spec.md §4.3, §7.7). Every value is R0. `policy_id`, `eo_recovery_max_count`, `homotopy.type`, `ptc.status`, `ptc.mass_policy` and `ptc.polish` are single-valued: a later rule is a new value, and a replay under a policy without this object is refused. λ constants are exact dyadic fractions written as `p/q` strings, so no float formatting enters an R0 field.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "eo_core",
+        "eo_recovery",
+        "eo_recovery_max_count",
+        "homotopy",
+        "ptc"
+      ],
+      "properties": {
+        "policy_id": {
+          "const": "T04-globalization-v1"
+        },
+        "eo_core": {
+          "enum": [
+            "newton",
+            "ptc",
+            "newton_refined"
+          ]
+        },
+        "eo_recovery": {
+          "enum": [
+            "homotopy",
+            "none",
+            "homotopy_or_sequential_restart"
+          ],
+          "description": "Recovery edge 3's action set. `homotopy`: ADR 0010 D3, the specification continuation. `none`: no recovery. `homotopy_or_sequential_restart` (ADR 0015 D1, T06 F4): the specification continuation when the region has a continuation parameter, else one region solve from the restart initializer `traversal-G0-pass8-v1` on a revision-built flowsheet, else `unsupported`."
+        },
+        "eo_recovery_max_count": {
+          "const": 1
+        },
+        "homotopy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "delta_lambda_initial",
+            "delta_lambda_min",
+            "growth",
+            "shrink",
+            "corrector_max_iterations",
+            "max_lambda_trials"
+          ],
+          "properties": {
+            "type": {
+              "const": "specification_continuation"
+            },
+            "delta_lambda_initial": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+            },
+            "delta_lambda_min": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+            },
+            "growth": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "shrink": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+            },
+            "corrector_max_iterations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_lambda_trials": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "ptc": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "mass_policy",
+            "residence_time_s",
+            "tau_initial_s",
+            "tau_min_s",
+            "tau_max_s",
+            "gamma_min",
+            "gamma_max",
+            "phi_floor",
+            "retry_shrink",
+            "retries_max",
+            "max_steps_per_attempt",
+            "polish"
+          ],
+          "properties": {
+            "status": {
+              "const": "experimental"
+            },
+            "mass_policy": {
+              "const": "T04-residence-time-v1"
+            },
+            "residence_time_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "tau_initial_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "tau_min_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "tau_max_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "gamma_min": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "gamma_max": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "phi_floor": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "retry_shrink": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "exclusiveMaximum": 1
+            },
+            "retries_max": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_steps_per_attempt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "polish": {
+              "const": "one_newton_step"
+            }
+          }
+        }
+      }
+    }
+  }
+}

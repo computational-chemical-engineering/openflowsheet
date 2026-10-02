@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/requirements-ledger.schema.json",
+  "title": "Requirements ledger",
+  "description": "Structure of docs/requirements.yaml: requirement -> work package -> test -> evidence -> status, plus the release-gate ledger and the work-package table. Fixed by P00; changes require a Fable-authored ADR.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "blueprint",
+    "plan",
+    "status_vocabulary",
+    "requirements",
+    "gates",
+    "packages"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "blueprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "version", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "status_vocabulary": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/status" }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/requirement" }
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/gate" }
+    },
+    "packages": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/package" }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "implemented",
+        "tested",
+        "reviewed",
+        "released",
+        "blocked"
+      ]
+    },
+    "requirement_id": {
+      "type": "string",
+      "pattern": "^[DA][0-9]{2}$"
+    },
+    "gate_id": {
+      "type": "string",
+      "pattern": "^[GVWX][0-9]{2}$"
+    },
+    "package_id": {
+      "type": "string",
+      "pattern": "^[PKTMSR][0-9]{2}$"
+    },
+    "model": {
+      "type": ["string", "null"],
+      "enum": ["Fable", "Opus", null]
+    },
+    "evidence_path": {
+      "type": "string",
+      "pattern": "^evidence/[A-Za-z0-9]+/[0-9a-f]{40}/manifest\\.json$"
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "blueprint_ref",
+        "packages",
+        "minimum_evidence",
+        "tests",
+        "evidence",
+        "status"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/requirement_id" },
+        "title": { "type": "string", "minLength": 1 },
+        "blueprint_ref": { "type": "string", "minLength": 1 },
+        "packages": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/package_id" }
+        },
+        "minimum_evidence": { "type": "string", "minLength": 1 },
+        "tests": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence_path" }
+        },
+        "status": { "$ref": "#/$defs/status" }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "required_evidence", "owner_packages", "verdict", "evidence"],
+      "properties": {
+        "id": { "$ref": "#/$defs/gate_id" },
+        "required_evidence": { "type": "string", "minLength": 1 },
+        "owner_packages": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/package_id" }
+        },
+        "verdict": {
+          "type": ["string", "null"],
+          "enum": ["PASS", "FAIL", "BLOCKED", null]
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence_path" }
+        }
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "phase", "lead", "second", "depends_on", "status", "evidence"],
+      "properties": {
+        "id": { "$ref": "#/$defs/package_id" },
+        "phase": { "type": "string", "minLength": 1 },
+        "lead": { "$ref": "#/$defs/model" },
+        "second": { "$ref": "#/$defs/model" },
+        "depends_on": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/package_id" }
+        },
+        "status": { "$ref": "#/$defs/status" },
+        "evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence_path" }
+        }
+      },
+      "allOf": [
+        {
+          "description": "A lead model is always named.",
+          "properties": { "lead": { "type": "string" } }
+        }
+      ]
+    }
+  }
+}

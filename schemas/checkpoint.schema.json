@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/checkpoint.schema.json",
+  "title": "Checkpoint",
+  "description": "A state a solve reached, and exactly what is claimed about it (K03 \u00a712.5). `verification_scope` is `unverified` from K03, which never writes anything else: verifying a state is K04's, and a solver certifying its own answer is the injected-false-success failure blueprint \u00a78.2 warns about. `label` carries the registry's required partial-state labelling.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "checkpoint_id",
+    "attempt_index",
+    "iteration",
+    "variable_ids",
+    "state_sha256",
+    "full_state_sha256",
+    "signature",
+    "residual_inf_unscaled",
+    "merit",
+    "label",
+    "verification_scope",
+    "scale_segment",
+    "jacobian_identity",
+    "step_index",
+    "continuation_lambda"
+  ],
+  "properties": {
+    "checkpoint_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempt_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "iteration": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "variable_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "state_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "full_state_sha256": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "signature": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "prefixItems": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "enum": [
+              "LIQUID",
+              "VAPOR",
+              "TWO_PHASE",
+              "ZERO_FLOW"
+            ]
+          }
+        ]
+      },
+      "description": "The phase selections an attempt freezes, as ordered (unit_id, regime) pairs. Blueprint [A01]: the set belongs to the attempt, not to a residual call."
+    },
+    "residual_inf_unscaled": {
+      "type": "number",
+      "minimum": 0
+    },
+    "merit": {
+      "type": "number",
+      "minimum": 0
+    },
+    "label": {
+      "enum": [
+        "partial",
+        "candidate_root"
+      ]
+    },
+    "verification_scope": {
+      "enum": [
+        "unverified",
+        "checked_partial",
+        "certified"
+      ],
+      "description": "K03 writes only `unverified`. The verifier (K04 \u00a78.3) writes `checked_partial` on a partial checkpoint it has run the check set over, and `certified` only on a `candidate_root` together with a certificate id."
+    },
+    "scale_segment": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "jacobian_identity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state_sha256",
+            "model_version",
+            "constants_sha256",
+            "phase_signature"
+          ],
+          "properties": {
+            "state_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "model_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "constants_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "phase_signature": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Of the last EO Jacobian evaluated at this state. Blueprint [A08] lets K04 reuse a factorization only if it belongs to that Jacobian, which needs the identity checkable rather than assumed."
+    },
+    "step_index": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "ADR 0009 D4: the ExecutionPlan step the checkpoint was taken in; null for a solve run outside a plan. R0."
+    },
+    "continuation_lambda": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$",
+      "description": "ADR 0010 D7.4 (T04 \u00a74.4): the \u03bb of a homotopy checkpoint as `p/q`, null otherwise. A value other than `1` is a state of a modified problem and requires `label = partial` and `verification_scope = unverified`."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "continuation_lambda": {
+            "type": "string",
+            "not": {
+              "const": "1"
+            }
+          }
+        },
+        "required": [
+          "continuation_lambda"
+        ]
+      },
+      "then": {
+        "properties": {
+          "label": {
+            "const": "partial"
+          },
+          "verification_scope": {
+            "const": "unverified"
+          }
+        }
+      }
+    }
+  ]
+}

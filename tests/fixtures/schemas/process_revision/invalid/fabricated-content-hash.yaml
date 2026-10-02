@@ -1,0 +1,35 @@
+# Invalid ProcessRevision: a content_hash that is not a hash.
+#
+# The canonical JSON encoding a semantic content hash depends on is ADR 0002 / K01 and
+# does not exist yet, so every P01 fixture omits the field. Writing a placeholder in its
+# place would be a fabricated identity, and the schema's hex pattern rejects it. Angle
+# brackets are never valid values anywhere in this repository.
+expect_error: content_hash
+document:
+  schema_version: 1
+  revision_id: SYN-001-fabricated-hash-r1
+  parent_revision: null
+  content_hash: <computed at commit time>
+  component_set:
+    record_source: benchmarks/syn001/components.yaml
+    components:
+    - A
+    - B
+    - C
+  instances:
+  - id: feed
+    model:
+      id: syn001.feed_source
+      version: 0.0.0-declared
+      artifact_ref: null
+    semantic_role: feed
+    parameters: {}
+    policy:
+      fidelity: boundary
+      validity: SYN-001 domain
+  connections: []
+  specifications: []
+  provenance:
+    actor: deliberately malformed fixture
+    operation: create
+    timestamp: '2026-09-07T00:00:00Z'

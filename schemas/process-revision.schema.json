@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/process-revision.schema.json",
+  "title": "ProcessRevision",
+  "description": "Blueprint v3.1 §4.1: parent revision, semantic content hash, schema version, component set, instances, connections, specifications. `content_hash` is optional in P01 and every P01 fixture omits it: the canonical JSON encoding that would make the hash meaningful is ADR 0002 / K01, and writing a hash before that encoding exists would be a fabricated identity. Provenance (actor, operation, timestamp, source references, artifact hashes) is recorded outside the hashed content (blueprint §4.4).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "revision_id",
+    "parent_revision",
+    "component_set",
+    "instances",
+    "connections",
+    "specifications",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "revision_id": { "type": "string", "minLength": 1 },
+    "parent_revision": {
+      "type": ["string", "null"],
+      "description": "Null for a root revision; explicitly stated, never omitted."
+    },
+    "content_hash": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Semantic content hash over the canonical encoding. Absent until ADR 0002 fixes that encoding (K01)."
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "component_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_source", "components"],
+      "properties": {
+        "record_source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to the file holding the referenced ComponentRecords."
+        },
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "ComponentRecord ids. Array order is the canonical component order: component molar flow vectors are indexed by it (ADR 0001 D2.1)."
+        }
+      }
+    },
+    "instances": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "model", "semantic_role", "parameters", "policy"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+          "model": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "version", "artifact_ref"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "version": { "type": "string", "minLength": 1 },
+              "artifact_ref": {
+                "type": ["string", "null"],
+                "description": "Null while the model is only a declared ModelManifest (P01)."
+              }
+            }
+          },
+          "semantic_role": {
+            "enum": [
+              "feed",
+              "product_sink",
+              "mixer",
+              "heater",
+              "flash",
+              "splitter",
+              "reactor",
+              "separator",
+              "valve",
+              "pump",
+              "heat_exchanger"
+            ]
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json"
+            },
+            "description": "Parameter bindings, each a Quantity."
+          },
+          "policy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fidelity", "validity"],
+            "properties": {
+              "fidelity": { "type": "string", "minLength": 1 },
+              "validity": { "type": "string", "minLength": 1 }
+            },
+            "description": "Blueprint §4.1 'fidelity and validity policy'."
+          }
+        }
+      }
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "from", "to", "state_definition", "component_mapping"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+          "kind": { "enum": ["material", "energy", "signal"] },
+          "from": { "$ref": "#/$defs/endpoint" },
+          "to": { "$ref": "#/$defs/endpoint" },
+          "state_definition": { "const": "nTP-v1" },
+          "component_mapping": { "const": "revision_component_set" },
+          "phase_capability": {
+            "enum": ["liquid", "vapor", "vapor_liquid"],
+            "description": "Declared capability set by the connected models. The phase signature (LIQUID, VAPOR, TWO_PHASE, ZERO_FLOW) is a result of evaluation and is not stored here (ADR 0001 D2.4)."
+          },
+          "initialization_hint": {
+            "type": ["object", "null"],
+            "additionalProperties": {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json"
+            },
+            "description": "A labeled guess, never a constraint (blueprint §4.2; ADR 0001 D3.1)."
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "specifications": {
+      "type": "array",
+      "items": {
+        "$ref": "https://github.com/frankp/process-runtime/schemas/specification.schema.json"
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor", "operation", "timestamp"],
+      "properties": {
+        "actor": { "type": "string", "minLength": 1 },
+        "operation": { "type": "string", "minLength": 1 },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Outside the semantic content hash (blueprint §4.4)."
+        },
+        "source_references": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "artifact_hashes": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance", "port"],
+      "properties": {
+        "instance": { "type": "string", "minLength": 1 },
+        "port": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

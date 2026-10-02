@@ -1,0 +1,1032 @@
+generated_by: Fable 5.1, mpmath 1.3.0 at 40 significant digits, from plan §3.1 definitions and derivation §5.1 only
+specification: docs/derivations/K03-solver-spec.md
+independence: closed-form expectations; no solver, oracle or process_runtime code was used. The pressure_elimination
+  block is a registered structural fact, not a computation.
+tear_scale_mol_per_s: '3.0'
+tear_tolerance_mol_per_s: '3.1e-8'
+fd_oracle:
+  stencil: central two-point per component
+  delta_relative_to_scale: '1.0e-5'
+  h_mol_per_s: '3.0e-5'
+  registered_state: OFF-A of every 360 K variant
+  floors_measured_2026_09_21:
+    note: max |FD - closed| at OFF-A, nominal, through the K02 traversal; error is quadratic in delta down to 1e-5,
+      roundoff appears at 1e-6
+    delta=1e-2: '3.0e-5'
+    delta=1e-3: '3.0e-7'
+    delta=1e-4: '3.0e-9'
+    delta=1e-5: '3.3e-11'
+    delta=1e-6: '6.9e-11'
+    delta=1e-7: '3.7e-10'
+  tolerance: 1e-9 absolute on every entry (30x above the measured floor at 1e-5)
+K_at_P_r:
+  310K:
+  - '0.73852100585014179144'
+  - '0.19857986606023633514'
+  - '0.047108313155180429751'
+  350K:
+  - '2.2375806935233951076'
+  - '0.75099014477898610309'
+  - '0.22237181893994125472'
+  360K:
+  - '2.8406442065593713944'
+  - '1.0'
+  - '0.31057975120244414912'
+  365K:
+  - '3.1849774232579322034'
+  - '1.1471690467700539154'
+  - '0.36453435272919135569'
+  420K:
+  - '9.3671509124165164156'
+  - '4.1862851871798105604'
+  - '1.650593322513812142'
+states:
+  SYN-001-nominal:
+    r: '0.5'
+    T_flash_K: '360.0'
+    P_Pa: '100000'
+    t_star:
+      label: t_star
+      why_registered: the registered solution; R must vanish here
+      t_mol_per_s:
+      - '0.29777671393051394767'
+      - '0.54639697692561612246'
+      - '0.79501723992071829724'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.0'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.2481518814249447499'
+      flash_sum_z_over_K: '1.6776258053372369605'
+      flash_beta: '0.29332896393537299529'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.96231656003527667518'
+      R_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      R_inf_mol_per_s: '0.0'
+      merit_scaled: '0.0'
+      dR_dt:
+      - - '-1.0613778337830190391'
+        - '0.0'
+        - '0.21026619074827601294'
+      - - '-0.28929128281899621597'
+        - '-0.64666448196768649764'
+        - '0.20915425324949077485'
+      - - '-0.16386921382265989049'
+        - '0.0'
+        - '-0.43862216621698096089'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      newton_step_target_t1:
+      - '0.29777671393051394767'
+      - '0.54639697692561612246'
+      - '0.79501723992071829724'
+      t1_mixer_margin: '0.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.0'
+      converged_after_one_step: true
+      eigenvector_t_star_eigenvalue: '-0.5'
+    retired_guess_rF:
+      label: retired P01 guess r*F (SYN-001-inadmissible-guess at the nominal variant)
+      why_registered: retired as an initializer (register R-014); registered at the nominal variant as the user
+        guess of the adversarial case SYN-001-inadmissible-guess, which exists to exercise the §7.4 rejection path;
+        recorded at the other variants for the domain classification only
+      t_mol_per_s:
+      - '0.5'
+      - '0.5'
+      - '0.5'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '-0.38374131925393851449'
+      mixer_accepts: false
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.3837413192539385145'
+      flash_sum_z_over_K: '1.5239392484301446332'
+      flash_beta: '0.45360302307438387754'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0703142190807741552'
+      R_mol_per_s:
+      - '-0.27666746455211453924'
+      - '-0.090202267305787908159'
+      - '0.096262929940538722927'
+      R_inf_mol_per_s: '0.27666746455211453924'
+      merit_scaled: '0.0052193270360854130995'
+      dR_dt:
+      - - '-1.0613778337830190391'
+        - '0.0'
+        - '0.21026619074827601294'
+      - - '-0.24922276803424349541'
+        - '-0.72680151153719193877'
+        - '0.24922276803424349541'
+      - - '-0.16386921382265989049'
+        - '0.0'
+        - '-0.43862216621698096089'
+      dR_dt_regime: TWO_PHASE
+    init_v2_G0:
+      label: SYN-001-tear-init-v2
+      why_registered: 'the registered initializer (derivation §9): one traversal from the dormant recycle, r x liquid
+        of the flash of F; equals (1-r) t*'
+      t_mol_per_s:
+      - '0.14888835696525697384'
+      - '0.27319848846280806123'
+      - '0.39750861996035914862'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.0'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.3013994461438980449'
+      flash_sum_z_over_K: '1.6172712894075780752'
+      flash_beta: '0.35627046936101846231'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0047285091634476066'
+      R_mol_per_s:
+      - '0.074444178482628486919'
+      - '0.13659924423140403061'
+      - '0.19875430998017957431'
+      R_inf_mol_per_s: '0.19875430998017957431'
+      merit_scaled: '0.0035391424983467513044'
+      dR_dt:
+      - - '-1.0613778337830190391'
+        - '0.0'
+        - '0.21026619074827601294'
+      - - '-0.27355590646258484922'
+        - '-0.67813523468050923115'
+        - '0.2248896296059021416'
+      - - '-0.16386921382265989049'
+        - '0.0'
+        - '-0.43862216621698096089'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '0.14888835696525697384'
+      - '0.27319848846280806123'
+      - '0.39750861996035914862'
+      newton_step_target_t1:
+      - '0.29777671393051394767'
+      - '0.54639697692561612246'
+      - '0.79501723992071829724'
+      t1_mixer_margin: '0.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.0'
+      converged_after_one_step: true
+    off_a:
+      label: OFF-A
+      why_registered: 'in-domain, off the ray, all components nonzero, flash two-phase at the start: the genuinely
+        nonlinear tear Newton with no phase change'
+      t_mol_per_s:
+      - '0.1'
+      - '0.8'
+      - '1.2'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.30630470376244280077'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.0996047215413109141'
+      flash_sum_z_over_K: '1.8177966537292113247'
+      flash_beta: '0.12130599902872588366'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.84359588728348634595'
+      R_mol_per_s:
+      - '0.29507000248488628546'
+      - '-0.009175399125853295298'
+      - '-0.1452249008822839935'
+      R_inf_mol_per_s: '0.29507000248488628546'
+      merit_scaled: '0.0060133758973232621292'
+      dR_dt:
+      - - '-1.0613778337830190391'
+        - '0.0'
+        - '0.21026619074827601294'
+      - - '-0.36250584441344508423'
+        - '-0.56065299951436294183'
+        - '0.18125292220672254212'
+      - - '-0.16386921382265989049'
+        - '0.0'
+        - '-0.43862216621698096089'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '0.19777671393051394767'
+      - '-0.27517006536288440159'
+      - '-0.40498276007928170276'
+      newton_step_target_t1:
+      - '0.29777671393051394767'
+      - '0.52482993463711559841'
+      - '0.79501723992071829724'
+      t1_mixer_margin: '0.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.013946640229068379269'
+      converged_after_one_step: false
+    off_b:
+      label: OFF-B
+      why_registered: 'in-domain, off the ray, flash all-liquid at the start while the solution is two-phase: the
+        phase-change restart'
+      t_mol_per_s:
+      - '0.05'
+      - '0.1'
+      - '4.0'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.64232500840054333345'
+      mixer_accepts: true
+      flash_regime: LIQUID
+      flash_sum_zK: '0.78819233187406443492'
+      flash_sum_z_over_K: '2.4571411292941485056'
+      flash_beta: '0.0'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.59963748002183997903'
+      R_mol_per_s:
+      - '0.475'
+      - '0.45'
+      - '-1.5'
+      R_inf_mol_per_s: '1.5'
+      merit_scaled: '0.14878472222222222222'
+      dR_dt:
+      - - '-0.5'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-0.5'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-0.5'
+      dR_dt_regime: LIQUID
+      liquid_regime_newton_target_rF_over_1_minus_r:
+      - '1.0'
+      - '1.0'
+      - '1.0'
+      liquid_regime_target_mixer_margin: '-0.38374131925393851449'
+      liquid_regime_target_mixer_accepts: false
+    fd_oracle_stencil_checks_at_off_a:
+    - 'stencil A+1: t=[''0.10003'', ''0.8'', ''1.2''] in domain, two-phase'
+    - 'stencil A-1: t=[''0.09997'', ''0.8'', ''1.2''] in domain, two-phase'
+    - 'stencil B+1: t=[''0.1'', ''0.80003'', ''1.2''] in domain, two-phase'
+    - 'stencil B-1: t=[''0.1'', ''0.79997'', ''1.2''] in domain, two-phase'
+    - 'stencil C+1: t=[''0.1'', ''0.8'', ''1.20003''] in domain, two-phase'
+    - 'stencil C-1: t=[''0.1'', ''0.8'', ''1.19997''] in domain, two-phase'
+  SYN-001-once-through:
+    r: '0.0'
+    T_flash_K: '360.0'
+    P_Pa: '100000'
+    t_star:
+      label: t_star
+      why_registered: the registered solution; R must vanish here
+      t_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '1.0'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.3837413192539385145'
+      flash_sum_z_over_K: '1.5239392484301446332'
+      flash_beta: '0.45360302307438387754'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0703142190807741552'
+      R_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      R_inf_mol_per_s: '0.0'
+      merit_scaled: '0.0'
+      dR_dt:
+      - - '-1.0'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-1.0'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-1.0'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      newton_step_target_t1:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      t1_mixer_margin: '1.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.0'
+      converged_after_one_step: true
+    retired_guess_rF:
+      label: retired P01 guess r*F
+      t_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      mixer_accepts: true
+      why_registered: 'dormant recycle at r = 0: accepted trivially; coincides with t*'
+    init_v2_G0:
+      label: SYN-001-tear-init-v2 (the registered initializer)
+      t_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      mixer_accepts: true
+      why_registered: G(0) is dormant here and coincides with t*
+    off_a:
+      label: OFF-A
+      why_registered: 'in-domain, off the ray, all components nonzero, flash two-phase at the start: the genuinely
+        nonlinear tear Newton with no phase change'
+      t_mol_per_s:
+      - '0.1'
+      - '0.8'
+      - '1.2'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.30630470376244280077'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.0996047215413109141'
+      flash_sum_z_over_K: '1.8177966537292113247'
+      flash_beta: '0.12130599902872588366'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.84359588728348634595'
+      R_mol_per_s:
+      - '-0.1'
+      - '-0.8'
+      - '-1.2'
+      R_inf_mol_per_s: '1.2'
+      merit_scaled: '0.11611111111111111111'
+      dR_dt:
+      - - '-1.0'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-1.0'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-1.0'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '-0.1'
+      - '-0.8'
+      - '-1.2'
+      newton_step_target_t1:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      t1_mixer_margin: '1.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.0'
+      converged_after_one_step: true
+    off_b:
+      label: OFF-B
+      why_registered: 'in-domain, off the ray, flash all-liquid at the start while the solution is two-phase: the
+        phase-change restart'
+      t_mol_per_s:
+      - '0.05'
+      - '0.1'
+      - '4.0'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.64232500840054333345'
+      mixer_accepts: true
+      flash_regime: LIQUID
+      flash_sum_zK: '0.78819233187406443492'
+      flash_sum_z_over_K: '2.4571411292941485056'
+      flash_beta: '0.0'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.59963748002183997903'
+      R_mol_per_s:
+      - '-0.05'
+      - '-0.1'
+      - '-4.0'
+      R_inf_mol_per_s: '4.0'
+      merit_scaled: '0.88958333333333333333'
+      dR_dt:
+      - - '-1.0'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-1.0'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-1.0'
+      dR_dt_regime: LIQUID
+      liquid_regime_newton_target_rF_over_1_minus_r:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      liquid_regime_target_mixer_margin: '1.0'
+      liquid_regime_target_mixer_accepts: true
+    fd_oracle_stencil_checks_at_off_a:
+    - 'stencil A+1: t=[''0.10003'', ''0.8'', ''1.2''] in domain, two-phase'
+    - 'stencil A-1: t=[''0.09997'', ''0.8'', ''1.2''] in domain, two-phase'
+    - 'stencil B+1: t=[''0.1'', ''0.80003'', ''1.2''] in domain, two-phase'
+    - 'stencil B-1: t=[''0.1'', ''0.79997'', ''1.2''] in domain, two-phase'
+    - 'stencil C+1: t=[''0.1'', ''0.8'', ''1.20003''] in domain, two-phase'
+    - 'stencil C-1: t=[''0.1'', ''0.8'', ''1.19997''] in domain, two-phase'
+  SYN-001-high-recycle:
+    r: '0.95'
+    T_flash_K: '360.0'
+    P_Pa: '100000'
+    t_star:
+      label: t_star
+      why_registered: the registered solution; R must vanish here
+      t_mol_per_s:
+      - '5.6577575646797650058'
+      - '10.381542561586706327'
+      - '15.105327558493647647'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.0'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.0337161080914537258'
+      flash_sum_z_over_K: '1.9206823162942194548'
+      flash_beta: '0.039854265853674131652'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.79151740409485847777'
+      R_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      R_inf_mol_per_s: '0.0'
+      merit_scaled: '0.0'
+      dR_dt:
+      - - '-1.1166178841877361743'
+        - '0.0'
+        - '0.39950576242172442459'
+      - - '-0.67005391894489977058'
+        - '-0.08786155256099042507'
+        - '0.27699259958522551198'
+      - - '-0.31135150626305379193'
+        - '0.0'
+        - '0.0666178841877361743'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      newton_step_target_t1:
+      - '5.6577575646797650058'
+      - '10.381542561586706327'
+      - '15.105327558493647647'
+      t1_mixer_margin: '0.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.0'
+      converged_after_one_step: true
+      eigenvector_t_star_eigenvalue: '-0.05'
+    retired_guess_rF:
+      label: retired P01 guess r*F (SYN-001-inadmissible-guess at the nominal variant)
+      why_registered: retired as an initializer (register R-014); registered at the nominal variant as the user
+        guess of the adversarial case SYN-001-inadmissible-guess, which exists to exercise the §7.4 rejection path;
+        recorded at the other variants for the domain classification only
+      t_mol_per_s:
+      - '0.95'
+      - '0.95'
+      - '0.95'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '-0.38374131925393851449'
+      mixer_accepts: false
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.3837413192539385145'
+      flash_sum_z_over_K: '1.5239392484301446332'
+      flash_beta: '0.45360302307438387754'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0703142190807741552'
+      R_mol_per_s:
+      - '-0.39836863744372291193'
+      - '0.062200399754703866848'
+      - '0.52276943695313064563'
+      R_inf_mol_per_s: '0.52276943695313064563'
+      merit_scaled: '0.024214130291150364129'
+      dR_dt:
+      - - '-1.1166178841877361743'
+        - '0.0'
+        - '0.39950576242172442459'
+      - - '-0.47352325926506264128'
+        - '-0.48092287192066468367'
+        - '0.47352325926506264128'
+      - - '-0.31135150626305379193'
+        - '0.0'
+        - '0.0666178841877361743'
+      dR_dt_regime: TWO_PHASE
+    init_v2_G0:
+      label: SYN-001-tear-init-v2
+      why_registered: 'the registered initializer (derivation §9): one traversal from the dormant recycle, r x liquid
+        of the flash of F; equals (1-r) t*'
+      t_mol_per_s:
+      - '0.28288787823398825029'
+      - '0.51907712807933531633'
+      - '0.75526637792468238237'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.0'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.2526147699551811314'
+      flash_sum_z_over_K: '1.6725672551798329089'
+      flash_beta: '0.29860433989148575199'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.96587127286220356427'
+      R_mol_per_s:
+      - '0.26874348432228883778'
+      - '0.49312327167536855052'
+      - '0.71750305902844826326'
+      R_inf_mol_per_s: '0.71750305902844826326'
+      merit_scaled: '0.046122458952704697674'
+      dR_dt:
+      - - '-1.1166178841877361743'
+        - '0.0'
+        - '0.39950576242172442459'
+      - - '-0.54714763377693925092'
+        - '-0.33367412289691146439'
+        - '0.39989888475318603164'
+      - - '-0.31135150626305379193'
+        - '0.0'
+        - '0.0666178841877361743'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '5.3748696864457767555'
+      - '9.8624654335073710103'
+      - '14.350061180568965265'
+      newton_step_target_t1:
+      - '5.6577575646797650058'
+      - '10.381542561586706327'
+      - '15.105327558493647647'
+      t1_mixer_margin: '0.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.0'
+      converged_after_one_step: true
+    off_a:
+      label: OFF-A
+      why_registered: 'in-domain, off the ray, all components nonzero, flash two-phase at the start: the genuinely
+        nonlinear tear Newton with no phase change'
+      t_mol_per_s:
+      - '0.1'
+      - '0.8'
+      - '1.2'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.30630470376244280077'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.0996047215413109141'
+      flash_sum_z_over_K: '1.8177966537292113247'
+      flash_beta: '0.12130599902872588366'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.84359588728348634595'
+      R_mol_per_s:
+      - '0.65063300472128394237'
+      - '0.70256674166087873893'
+      - '0.80407268832366041234'
+      R_inf_mol_per_s: '0.80407268832366041234'
+      merit_scaled: '0.086858678968259364306'
+      dR_dt:
+      - - '-1.1166178841877361743'
+        - '0.0'
+        - '0.39950576242172442459'
+      - - '-0.68876110438554566004'
+        - '-0.16524069907728958948'
+        - '0.34438055219277283002'
+      - - '-0.31135150626305379193'
+        - '0.0'
+        - '0.0666178841877361743'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '5.5577575646797650058'
+      - '10.066066627703777338'
+      - '13.905327558493647647'
+      newton_step_target_t1:
+      - '5.6577575646797650058'
+      - '10.866066627703777338'
+      - '15.105327558493647647'
+      t1_mixer_margin: '0.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.042571036702209834546'
+      converged_after_one_step: false
+    off_b:
+      label: OFF-B
+      why_registered: 'in-domain, off the ray, flash all-liquid at the start while the solution is two-phase: the
+        phase-change restart'
+      t_mol_per_s:
+      - '0.05'
+      - '0.1'
+      - '4.0'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.64232500840054333345'
+      mixer_accepts: true
+      flash_regime: LIQUID
+      flash_sum_zK: '0.78819233187406443492'
+      flash_sum_z_over_K: '2.4571411292941485056'
+      flash_beta: '0.0'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.59963748002183997903'
+      R_mol_per_s:
+      - '0.9475'
+      - '0.945'
+      - '0.75'
+      R_inf_mol_per_s: '0.9475'
+      merit_scaled: '0.13073784722222222222'
+      dR_dt:
+      - - '-0.05'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-0.05'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-0.05'
+      dR_dt_regime: LIQUID
+      liquid_regime_newton_target_rF_over_1_minus_r:
+      - '19.0'
+      - '19.0'
+      - '19.0'
+      liquid_regime_target_mixer_margin: '-0.38374131925393851449'
+      liquid_regime_target_mixer_accepts: false
+    fd_oracle_stencil_checks_at_off_a:
+    - 'stencil A+1: t=[''0.10003'', ''0.8'', ''1.2''] in domain, two-phase'
+    - 'stencil A-1: t=[''0.09997'', ''0.8'', ''1.2''] in domain, two-phase'
+    - 'stencil B+1: t=[''0.1'', ''0.80003'', ''1.2''] in domain, two-phase'
+    - 'stencil B-1: t=[''0.1'', ''0.79997'', ''1.2''] in domain, two-phase'
+    - 'stencil C+1: t=[''0.1'', ''0.8'', ''1.20003''] in domain, two-phase'
+    - 'stencil C-1: t=[''0.1'', ''0.8'', ''1.19997''] in domain, two-phase'
+  SYN-001-all-liquid-310K:
+    r: '0.5'
+    T_flash_K: '310.0'
+    P_Pa: '100000'
+    t_star:
+      label: t_star
+      why_registered: the registered solution; R must vanish here
+      t_mol_per_s:
+      - '1.0'
+      - '1.0'
+      - '1.0'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.67193027164481381456'
+      mixer_accepts: true
+      flash_regime: LIQUID
+      flash_sum_zK: '0.32806972835518618544'
+      flash_sum_z_over_K: '9.2058302310634599926'
+      flash_beta: '0.0'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0703142190807741552'
+      R_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      R_inf_mol_per_s: '0.0'
+      merit_scaled: '0.0'
+      dR_dt:
+      - - '-0.5'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-0.5'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-0.5'
+      dR_dt_regime: LIQUID
+      liquid_regime_newton_target_rF_over_1_minus_r:
+      - '1.0'
+      - '1.0'
+      - '1.0'
+      liquid_regime_target_mixer_margin: '0.67193027164481381456'
+      liquid_regime_target_mixer_accepts: true
+    retired_guess_rF:
+      label: retired P01 guess r*F (SYN-001-inadmissible-guess at the nominal variant)
+      why_registered: retired as an initializer (register R-014); registered at the nominal variant as the user
+        guess of the adversarial case SYN-001-inadmissible-guess, which exists to exercise the §7.4 rejection path;
+        recorded at the other variants for the domain classification only
+      t_mol_per_s:
+      - '0.5'
+      - '0.5'
+      - '0.5'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.67193027164481381456'
+      mixer_accepts: true
+      flash_regime: LIQUID
+      flash_sum_zK: '0.32806972835518618544'
+      flash_sum_z_over_K: '9.2058302310634599926'
+      flash_beta: '0.0'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0703142190807741552'
+      R_mol_per_s:
+      - '0.25'
+      - '0.25'
+      - '0.25'
+      R_inf_mol_per_s: '0.25'
+      merit_scaled: '0.010416666666666666667'
+      dR_dt:
+      - - '-0.5'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-0.5'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-0.5'
+      dR_dt_regime: LIQUID
+      liquid_regime_newton_target_rF_over_1_minus_r:
+      - '1.0'
+      - '1.0'
+      - '1.0'
+      liquid_regime_target_mixer_margin: '0.67193027164481381456'
+      liquid_regime_target_mixer_accepts: true
+    init_v2_G0:
+      label: SYN-001-tear-init-v2
+      why_registered: 'the registered initializer (derivation §9): one traversal from the dormant recycle, r x liquid
+        of the flash of F; equals (1-r) t*'
+      t_mol_per_s:
+      - '0.5'
+      - '0.5'
+      - '0.5'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.67193027164481381456'
+      mixer_accepts: true
+      flash_regime: LIQUID
+      flash_sum_zK: '0.32806972835518618544'
+      flash_sum_z_over_K: '9.2058302310634599926'
+      flash_beta: '0.0'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0703142190807741552'
+      R_mol_per_s:
+      - '0.25'
+      - '0.25'
+      - '0.25'
+      R_inf_mol_per_s: '0.25'
+      merit_scaled: '0.010416666666666666667'
+      dR_dt:
+      - - '-0.5'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-0.5'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-0.5'
+      dR_dt_regime: LIQUID
+      liquid_regime_newton_target_rF_over_1_minus_r:
+      - '1.0'
+      - '1.0'
+      - '1.0'
+      liquid_regime_target_mixer_margin: '0.67193027164481381456'
+      liquid_regime_target_mixer_accepts: true
+    global_affine_note: the flash is single-phase for every composition at this T_f (pure A at 310 K has K_A < 1;
+      pure C at 420 K has K_C > 1), so R is affine on the whole domain and Newton converges in one step from any
+      admissible start
+  SYN-001-all-vapor-420K:
+    r: '0.5'
+    T_flash_K: '420.0'
+    P_Pa: '100000'
+    t_star:
+      label: t_star
+      why_registered: the registered solution; R must vanish here
+      t_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '1.0'
+      mixer_accepts: true
+      flash_regime: VAPOR
+      flash_sum_zK: '5.0680098073700463727'
+      flash_sum_z_over_K: '0.31715802235115620433'
+      flash_beta: '1.0'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0703142190807741552'
+      R_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      R_inf_mol_per_s: '0.0'
+      merit_scaled: '0.0'
+      dR_dt:
+      - - '-1.0'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-1.0'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-1.0'
+      dR_dt_regime: VAPOR
+    retired_guess_rF:
+      label: retired P01 guess r*F (SYN-001-inadmissible-guess at the nominal variant)
+      why_registered: retired as an initializer (register R-014); registered at the nominal variant as the user
+        guess of the adversarial case SYN-001-inadmissible-guess, which exists to exercise the §7.4 rejection path;
+        recorded at the other variants for the domain classification only
+      t_mol_per_s:
+      - '0.5'
+      - '0.5'
+      - '0.5'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '-4.0680098073700463727'
+      mixer_accepts: false
+      flash_regime: VAPOR
+      flash_sum_zK: '5.0680098073700463727'
+      flash_sum_z_over_K: '0.31715802235115620433'
+      flash_beta: '1.0'
+      heater_outlet_regime_at_350K: TWO_PHASE
+      heater_outlet_sum_zK_at_350K: '1.0703142190807741552'
+      R_mol_per_s:
+      - '-0.5'
+      - '-0.5'
+      - '-0.5'
+      R_inf_mol_per_s: '0.5'
+      merit_scaled: '0.041666666666666666667'
+      dR_dt:
+      - - '-1.0'
+        - '0.0'
+        - '0.0'
+      - - '0.0'
+        - '-1.0'
+        - '0.0'
+      - - '0.0'
+        - '0.0'
+        - '-1.0'
+      dR_dt_regime: VAPOR
+    init_v2_G0:
+      label: SYN-001-tear-init-v2 (the registered initializer)
+      t_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      mixer_accepts: true
+      why_registered: G(0) is dormant here and coincides with t*
+    global_affine_note: the flash is single-phase for every composition at this T_f (pure A at 310 K has K_A < 1;
+      pure C at 420 K has K_C > 1), so R is affine on the whole domain and Newton converges in one step from any
+      admissible start
+  JAC-365K:
+    r: '0.5'
+    T_flash_K: '365'
+    P_Pa: '100000'
+    off_a:
+      label: JAC-365K-OFF-A
+      why_registered: 'Jacobian-only: flash two-phase at 365 K with every K_i != 1, so all nine entries of dR/dt
+        are nonzero and an accidental zero cannot hide a dropped term'
+      t_mol_per_s:
+      - '0.1'
+      - '0.8'
+      - '1.2'
+      mixer_margin_1_minus_sum_zK_at_T_flash: '0.2030122842776828669'
+      mixer_accepts: true
+      flash_regime: TWO_PHASE
+      flash_sum_zK: '1.2490892207400085204'
+      flash_sum_z_over_K: '1.5587348761266070295'
+      flash_beta: '0.29343000104562036202'
+      heater_outlet_regime_at_350K: LIQUID
+      heater_outlet_sum_zK_at_350K: '0.84359588728348634595'
+      R_mol_per_s:
+      - '0.13679514859259476975'
+      - '-0.19041136298275860749'
+      - '-0.24463028827616808543'
+      R_inf_mol_per_s: '0.24463028827616808543'
+      merit_scaled: '0.0063785209874168354636'
+      dR_dt:
+      - - '-1.0449283549127395841'
+        - '-0.027571189475560532991'
+        - '0.15265658184209875984'
+      - - '-0.37955184286088960806'
+        - '-0.70155805359427793208'
+        - '0.22268189119723647233'
+      - - '-0.24238245564275286269'
+        - '-0.025683543772715556102'
+        - '-0.42353600376284178886'
+      dR_dt_regime: TWO_PHASE
+      newton_step_full:
+      - '0.058809149714464108669'
+      - '-0.48785422786429729054'
+      - '-0.58166192907678060921'
+      newton_step_target_t1:
+      - '0.15880914971446410867'
+      - '0.31214577213570270946'
+      - '0.61833807092321939079'
+      t1_mixer_margin: '0.0'
+      t1_flash_regime: TWO_PHASE
+      R_at_t1_inf_mol_per_s: '0.022000394461215569837'
+      converged_after_one_step: false
+      fd_oracle_stencil_checks:
+      - 'stencil A+1: t=[''0.10003'', ''0.8'', ''1.2''] in domain, two-phase'
+      - 'stencil A-1: t=[''0.09997'', ''0.8'', ''1.2''] in domain, two-phase'
+      - 'stencil B+1: t=[''0.1'', ''0.80003'', ''1.2''] in domain, two-phase'
+      - 'stencil B-1: t=[''0.1'', ''0.79997'', ''1.2''] in domain, two-phase'
+      - 'stencil C+1: t=[''0.1'', ''0.8'', ''1.20003''] in domain, two-phase'
+      - 'stencil C-1: t=[''0.1'', ''0.8'', ''1.19997''] in domain, two-phase'
+    note: not a registered solve; the tear Jacobian is asserted here only
+synthetic_seeds:
+  NUM-02-linear-recycle:
+    residual: R(t) = f + r t - t, f = (1, 1, 1)
+    jacobian: (r - 1) I
+    solution:
+      r=0.5:
+      - '2.0'
+      - '2.0'
+      - '2.0'
+      r=0.95:
+      - '20.0'
+      - '20.0'
+      - '20.0'
+    start:
+    - '1.0'
+    - '1.0'
+    - '1.0'
+    one_step_exact: true
+    r=1:
+      jacobian: 0 (exactly singular)
+      expected_outcome: LINEAR_SOLVE_FAILED
+      residual_at_start:
+      - '1.0'
+      - '1.0'
+      - '1.0'
+  NUM-01-known-root:
+    residual: R(x) = x - 2
+    start: '2'
+    expected: CONVERGED at iteration 0; no Jacobian, no factorization
+  NUM-05-small-step-stagnation:
+    residual: R(x) = x^2 + c, c = 0.01
+    start: '1'
+    minimum_of_abs_R: '0.01'
+    expected_outcome: STAGNATION
+    final_abs_R_interval:
+    - '0.01'
+    - '0.0101'
+    note: R has no real root; the merit function has a strict positive minimum at x = 0
+  BND-01-exact-bound-landing:
+    residual: R(x) = ln(1 + x) - 1/2, bound x >= 0
+    start: '4'
+    root: '0.64872127070012814685'
+    first_newton_direction: '-5.547189562170501873'
+    alpha_max_first_step: '0.72108586792820575129'
+    first_accepted_iterate: 0 exactly (bit-exact +0.0)
+    note: the full step from 4 crosses the bound; the line search lands exactly on it
+  BND-02-bound-blocked:
+    residual: R(x) = x + 1, bound x >= 0
+    start: '0'
+    expected_outcome: BOUND_BLOCKED
+  NUM-06-invalid-trial-wall:
+    residual: R(x) = x - 5, provider-like domain x <= 3
+    start: '3'
+    expected_outcome: LINE_SEARCH_FAILED
+    rejections: 21 trials, alpha = 1, 1/2, ..., 2^-20, every one invalid_trial_state
+    final_abs_R: '2'
+pressure_elimination:
+  rule: graph-cycle rule of K03-solver-spec §5.2, rows visited in assembled order
+  eliminated_rows:
+  - row_id: U-FLASH:FLASH-P:inlet
+    equals:
+    - - U-FEED:FEED-P
+      - 1
+    - - U-MIX:MIX-pressure:0
+      - -1
+    - - U-HEAT:HEAT-pressure
+      - 1
+    constant_mismatch_Pa_when_feed_and_flash_pressures_equal: '0'
+  - row_id: U-SPLIT:SPLIT-P:recycle
+    equals:
+    - - U-FEED:FEED-P
+      - 1
+    - - U-MIX:MIX-pressure:0
+      - -1
+    - - U-MIX:MIX-pressure:1
+      - 1
+    - - U-FLASH:FLASH-P:liquid
+      - -1
+    constant_mismatch_Pa_when_feed_and_flash_pressures_equal: '0'
+  inconsistent_state:
+    feed_pressure_Pa: '100000'
+    flash_pressure_Pa: '150000'
+    constant_mismatch_Pa: '-50000'
+    pressure_tolerance_Pa: '0.01'
+    expected_outcome: SPECIFICATION_CONFLICT
+  retained_inner_rows: 44
+  inner_variables: 44
+floors_measured_2026_09_21:
+  note: measured by Fable on the K02 flowsheet through the CasADi backend and SciPy SuperLU; regression floors,
+    not closed forms
+  schur_vs_closed_form_max_abs: '5.3e-15'
+  inner_consistency_scaled_max: '2.0e-15'
+  linear_residual_normalized_max: '1.3e-16'
+  u_diagonal_min_over_max_min: '7.1e-3'
+  kappa2_scaled_inner_block_range: 28 to 1440
+  kappa2_unscaled_inner_block_range: 6.7e9 to 1.1e11
+checks_passed:
+- 'SYN-001-nominal: R(t*) = 0 to 1e-35'
+- 'SYN-001-nominal: dR/dt(t*) t* = -(1-r) t* to 1e-35 (affine-ray relation)'
+- 'SYN-001-nominal: G(0) = r * liquid(flash(F)) = (1-r) t* to 1e-35'
+- 'SYN-001-nominal: OFF-A is off the ray (max cross product 0.27783 > 0.05)'
+- 'SYN-001-nominal: OFF-B is off the ray (max cross product 2.10609 > 0.05)'
+- 'SYN-001-nominal: OFF-A two-phase, in-domain; OFF-B liquid-regime, in-domain'
+- 'SYN-001-nominal: liquid-regime Newton target rF/(1-r) refused by the mixer'
+- 'SYN-001-nominal: one Newton step from OFF-A leaves |R| = 0.01394664 > tolerance'
+- 'SYN-001-nominal: closed-form dR/dt equals 40-digit central differences at OFF-A to 1.42e-26'
+- 'SYN-001-nominal: the three rows of dR/dt at OFF-A are pairwise distinct'
+- 'SYN-001-once-through: R(t*) = 0 to 1e-35'
+- 'SYN-001-once-through: G(0) = r * liquid(flash(F)) = (1-r) t* to 1e-35'
+- 'SYN-001-once-through: OFF-A two-phase, in-domain; OFF-B liquid-regime, in-domain'
+- 'SYN-001-once-through: one Newton step from OFF-A lands exactly on t* = 0'
+- 'SYN-001-once-through: closed-form dR/dt equals 40-digit central differences at OFF-A to 6.46e-27'
+- 'SYN-001-once-through: the three rows of dR/dt at OFF-A are pairwise distinct'
+- 'SYN-001-high-recycle: R(t*) = 0 to 1e-35'
+- 'SYN-001-high-recycle: dR/dt(t*) t* = -(1-r) t* to 1e-35 (affine-ray relation)'
+- 'SYN-001-high-recycle: G(0) = r * liquid(flash(F)) = (1-r) t* to 1e-35'
+- 'SYN-001-high-recycle: OFF-A is off the ray (max cross product 5.27878 > 0.05)'
+- 'SYN-001-high-recycle: OFF-B is off the ray (max cross product 40.0156 > 0.05)'
+- 'SYN-001-high-recycle: OFF-A two-phase, in-domain; OFF-B liquid-regime, in-domain'
+- 'SYN-001-high-recycle: liquid-regime Newton target rF/(1-r) refused by the mixer'
+- 'SYN-001-high-recycle: one Newton step from OFF-A leaves |R| = 0.04257103 > tolerance'
+- 'SYN-001-high-recycle: closed-form dR/dt equals 40-digit central differences at OFF-A to 1.45e-26'
+- 'SYN-001-high-recycle: the three rows of dR/dt at OFF-A are pairwise distinct'
+- 'SYN-001-all-liquid-310K: R(t*) = 0 to 1e-35'
+- 'SYN-001-all-liquid-310K: G(0) = r * liquid(flash(F)) = (1-r) t* to 1e-35'
+- 'SYN-001-all-liquid-310K: dR/dt is exactly -0.5 I (LIQUID on the whole domain)'
+- 'SYN-001-all-vapor-420K: R(t*) = 0 to 1e-35'
+- 'SYN-001-all-vapor-420K: G(0) = r * liquid(flash(F)) = (1-r) t* to 1e-35'
+- 'SYN-001-all-vapor-420K: dR/dt is exactly -1.0 I (VAPOR on the whole domain)'
+- 'JAC-365K-OFF-A: in-domain, two-phase, smallest |dR/dt entry| = 0.0256835 > 1e-3'
+- '365 K: every |K_i - 1| > 0.05 (K = [''3.1849774232579322034'', ''1.1471690467700539154'', ''0.36453435272919135569''])'
+- '420 K: every K_i > 1 (min 1.65059), so no flowing recycle is a subcooled liquid: t* = 0 is the only admissible
+  tear'
+- 'BND-01: ln(1 + (e^0.5 - 1)) = 1/2 to 1e-38'

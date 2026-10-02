@@ -1,0 +1,18 @@
+# Invalid Quantity: a kind outside the registered vocabulary.
+#
+# An unknown kind is a schema error, never silently coerced to `dimensionless`.
+expect_error: kind
+document:
+  value: 1.0
+  unit: kg/m3
+  dimension:
+  - -3
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  kind: mass_density
+  meaning: Mass density, which no SYN-001 model needs and which is not registered
+  role: fixed

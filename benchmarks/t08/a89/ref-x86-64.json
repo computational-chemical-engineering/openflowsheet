@@ -1,0 +1,42 @@
+{
+ "all_meet_a89_outcome": true,
+ "assertion": "T08.A15",
+ "case": "THM-09",
+ "commit": "8128e171f1d48a7340e037f8b4e88ea77741c07b",
+ "format": "t08-a89-repeats-v1",
+ "host": {
+  "cpu": "model name: AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+  "machine": "x86_64",
+  "platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  }
+ },
+ "label": "ref-x86-64",
+ "policy": "T06-revision-v2",
+ "ratio_bound": 0.1,
+ "refinement_counts": {
+  "1": 1
+ },
+ "repetitions": [
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.0002166061499721879 at S3.T): chord 34.29957391329278 at S3.T"
+   ],
+   "repetition": 1,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  }
+ ],
+ "start": 2
+}

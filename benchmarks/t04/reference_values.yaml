@@ -1,0 +1,4714 @@
+generated_by: 'docs/derivations/scripts/t04_reference.py (design lane, T04): closed forms of SYN-001 through syn001_reference.py
+  and t03_reference.py; the SYN-001 EO region, K03''s Newton core, T03''s contract and the T04 homotopy, PTC core,
+  mass mapping and edge 3 simulated at 40 digits from their statements in T04-globalization-spec.md'
+specification: docs/derivations/T04-globalization-spec.md
+independence: no solver, graph-layer, oracle or process_runtime code was used. `closed_form` values are expectations;
+  `policy_simulation` values are definition-level references (the same policies, derived a second time); `measured`
+  is labelled and never an expectation.
+constants:
+  homotopy:
+    type: specification_continuation
+    delta_lambda_initial: 1/4
+    delta_lambda_min: 1/1024
+    growth: 2
+    shrink: 1/2
+    corrector_max_iterations: 10
+    max_lambda_trials: 64
+  ptc:
+    mass_policy: T04-residence-time-v1
+    residence_time_s: '1.00'
+    tau_initial_s: '1.00'
+    tau_min_s: '0.000100'
+    tau_max_s: '1.00e+10'
+    gamma_min: '0.200'
+    gamma_max: '2.00'
+    phi_floor: '1.00e-12'
+    retry_shrink: '0.500'
+    retries_max: 10
+    max_steps_per_attempt: 200
+    holdup_row_sign: -1
+  edge3_triggers:
+  - ACTIVE_SET_CYCLING
+  - ATTEMPTS_EXHAUSTED
+  - BOUND_BLOCKED
+  - BUDGET_EXHAUSTED
+  - LINE_SEARCH_FAILED
+  - PTC_STALLED
+  - STAGNATION
+closed_form:
+  a02:
+    HOM-04_lambda_bubble: '0.88850138134929217197'
+    HOM-03_lambda_dew_vapor_branch: '0.090729960133148168342'
+    S3_bubble_point_K: '351.44416909142989639'
+    S3_dew_point_K: '377.52906060550727364'
+  ptc_r1_cstr_preregistered:
+    Da: '0.0720'
+    B: '8.00'
+    beta: '0.300'
+    Le: '1'
+    steady_states:
+    - x1: '0.170751376008'
+      x2: '1.05077769851'
+      eigenvalues:
+      - '-0.9209054391065559'
+      - '-0.21899450772253223'
+    - x1: '0.242160224880'
+      x2: '1.49021676849'
+      eigenvalues:
+      - '-0.922720719133932'
+      - '0.2404623820780095'
+    - x1: '0.964596072289'
+      x2: '5.93597582947'
+      eigenvalues:
+      - '-20.407527052357697'
+      - '-1.4211580424379697'
+  loop_modes:
+    r=0.50:
+      D_eigenvalues:
+      - '1'
+      - '0.70667103606462700472'
+      - '0'
+      mu_eq_r_times_D_eigenvalues:
+      - '0.50000000000000000000'
+      - '0.35333551803231350236'
+      - '0.0'
+      finite_modes_per_second:
+      - '-1.7071067811865475244'
+      - '-1.5944203210122560256'
+      - '-1.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '-0.40557967898774397439'
+      - '-0.29289321881345247560'
+      slowest_time_constant_s: '3.4142135623730950488'
+    r=0.95:
+      D_eigenvalues:
+      - '1'
+      - '0.96014573414632586834'
+      - '0'
+      mu_eq_r_times_D_eigenvalues:
+      - '0.95000000000000000000'
+      - '0.91213844743900957492'
+      - '0.0'
+      finite_modes_per_second:
+      - '-1.9746794344808963907'
+      - '-1.9550593947179461021'
+      - '-1.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '-0.044940605282053897894'
+      - '-0.025320565519103609316'
+      slowest_time_constant_s: '39.493588689617927814'
+bound_declaration_certificate:
+  certificate_states:
+    HOM-01:
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '5.240e-6'
+      independent_split_S3_total_mol_per_s: '1.9820e-12'
+      energy_heater_W: '5.5414e-8'
+      independent_split_flash_total_mol_per_s: '6.8877e-41'
+      largest_value_over_threshold: '6.394e-5'
+      verdict_promised: true
+    HOM-02:
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '3.640e-5'
+      independent_split_S3_total_mol_per_s: '1.3758e-11'
+      energy_heater_W: '3.8463e-7'
+      independent_split_flash_total_mol_per_s: '6.8877e-41'
+      largest_value_over_threshold: '0.0004438'
+      verdict_promised: true
+    HOM-05:
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '2.039e-8'
+      independent_split_S3_total_mol_per_s: '-1.2247e-15'
+      energy_heater_W: '-3.4693e-11'
+      independent_split_flash_total_mol_per_s: '6.8877e-41'
+      largest_value_over_threshold: '3.951e-8'
+      verdict_promised: true
+    SYN-001-A02-360:
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '0.001455'
+      independent_split_S3_total_mol_per_s: '-8.9750e-11'
+      energy_heater_W: '-2.5457e-6'
+      independent_split_flash_total_mol_per_s: '0.0'
+      largest_value_over_threshold: '0.002895'
+      verdict_promised: true
+    SYN-001-A02-365:
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '2.168e-5'
+      independent_split_S3_total_mol_per_s: '-8.9218e-13'
+      energy_heater_W: '-2.5987e-8'
+      independent_split_flash_total_mol_per_s: '4.5918e-41'
+      largest_value_over_threshold: '2.878e-5'
+      verdict_promised: true
+    SYN-001-A02-355:
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '0.08130'
+      independent_split_S3_total_mol_per_s: '3.3856e-8'
+      energy_heater_W: '0.00094675'
+      independent_split_flash_total_mol_per_s: '0.0'
+      largest_value_over_threshold: '1.092'
+      verdict_promised: false
+  target_regularity:
+    HOM-01:
+      S3_T_K: '354.999999999989'
+      one_norm: '5.78340027970152'
+      inverse_one_norm: '75.2566631082464'
+      rcond_1: '0.00229758607592846'
+      smallest_nonzero_scaled_entry: '0.000163919093078'
+      nominal_declaration_rcond_1_same_state: '0.00291949255978'
+      dH_S3_dT_W_per_K: '4901.00370237772'
+      det_ratio_A02_over_nominal: '-4901.00370236415'
+      identity_relative_error: '2.77e-12'
+    HOM-05:
+      S3_T_K: '360.000000000000'
+      one_norm: '5.55279395385123'
+      inverse_one_norm: '74.5738486511759'
+      rcond_1: '0.00241491519684256'
+      smallest_nonzero_scaled_entry: '0.000163919093078'
+      nominal_declaration_rcond_1_same_state: '0.00301080516841'
+      dH_S3_dT_W_per_K: '5028.15280444156'
+      det_ratio_A02_over_nominal: '-5028.15280444156'
+      identity_relative_error: '8.29e-16'
+    SYN-001-A02-365:
+      S3_T_K: '365.000000000005'
+      one_norm: '5.31709360858496'
+      inverse_one_norm: '73.8784527748124'
+      rcond_1: '0.00254570398424352'
+      smallest_nonzero_scaled_entry: '0.000163919093078'
+      nominal_declaration_rcond_1_same_state: '0.00306839590240'
+      dH_S3_dT_W_per_K: '5467.50004970787'
+      det_ratio_A02_over_nominal: '-5467.50004970952'
+      identity_relative_error: '3.01e-13'
+  absolute_limit_inverse_one_norm: '958213.'
+  finding_F9:
+    state: SYN-001-A02-355 from 358 K (T02 §7.6), Newton, 1 attempt, 3 iterations
+    worst_row: U-HEAT:HEAT-equilibrium:A
+    worst_row_over_tolerance: '0.081300'
+    independent_split_S3_total_mol_per_s: '3.38556e-8'
+    independent_split_S3_total_over_tau_flow: '1.0921'
+    energy_heater_W: '0.000946750'
+    energy_heater_over_tau_energy: '0.93738'
+    amplification_at_355K_root:
+      worst_split_total_over_tau_flow: '24.33'
+      worst_split_component_over_tau_flow: '12.67'
+      worst_energy_over_tau_energy: '21.03'
+    family_scan_converged_states:
+      S3_as_implemented:
+        clear: 155
+        near: 9
+        fail: 15
+      flash_outlets_as_specified_by_K04_4_7:
+        clear: 179
+        near: 0
+        fail: 0
+      S3_failures:
+      - T_target_K: 352
+        guess_K: '360.000'
+        largest_over_threshold: '27.28'
+      - T_target_K: 352
+        guess_K: '390.000'
+        largest_over_threshold: '4.051'
+      - T_target_K: 352
+        guess_K: '420.000'
+        largest_over_threshold: '15.76'
+      - T_target_K: 352
+        guess_K: '375.000'
+        largest_over_threshold: '1.663'
+      - T_target_K: 352
+        guess_K: '376.000'
+        largest_over_threshold: '4.049'
+      - T_target_K: 352
+        guess_K: '377.000'
+        largest_over_threshold: '9.502'
+      - T_target_K: 352
+        guess_K: '377.400'
+        largest_over_threshold: '13.25'
+      - T_target_K: 355
+        guess_K: '320.000'
+        largest_over_threshold: '1.715'
+      - T_target_K: 360
+        guess_K: '320.000'
+        largest_over_threshold: '2.697'
+      - T_target_K: 360
+        guess_K: '350.000'
+        largest_over_threshold: '2.892'
+      - T_target_K: 370
+        guess_K: '340.000'
+        largest_over_threshold: '1.408'
+      - T_target_K: 370
+        guess_K: '400.000'
+        largest_over_threshold: '1.443'
+      - T_target_K: 375
+        guess_K: '300.000'
+        largest_over_threshold: '2.591'
+      - T_target_K: 375
+        guess_K: '360.000'
+        largest_over_threshold: '4.813'
+      - T_target_K: 375
+        guess_K: '410.000'
+        largest_over_threshold: '1.530'
+policy_simulation:
+  homotopy_cases:
+    HOM-01:
+      registry_id: SYN-001-A02-355-dew-guess
+      T_target_K: 355
+      guess_S3_T_K: '375.000'
+      policy_overrides: {}
+      Q_flash_spec_W: '24681.106068625242185'
+      contract:
+        outcome: ACTIVE_SET_CYCLING
+        attempts:
+        - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: newton
+          core_outcome: BOUND_BLOCKED
+          iterations: 1
+          decision: restart
+          cause: phase_disappeared(U-HEAT, vapor, S3.vap.C)
+          landings:
+          - iteration: 0
+            alpha_max: '0.642309461269271'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: pinned_iterate
+          core: newton
+          core_outcome: LINE_SEARCH_FAILED
+          iterations: 0
+          decision: restart
+          cause: phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)
+      edge3: taken
+      homotopy:
+        outcome: CONVERGED
+        lambda_reached: '1'
+        lambda_trials: 3
+        provenance_item_iterations: 12
+        steps:
+        - lambda: '0'
+          delta_lambda: '0'
+          corrector_outcome: CONVERGED
+          corrector_iterations: 0
+          accepted: true
+          S3_T_K: '375.000000000000'
+        - lambda: 1/4
+          delta_lambda: 1/4
+          corrector_outcome: CONVERGED
+          corrector_iterations: 4
+          accepted: true
+          S3_T_K: '370.960886297580'
+        - lambda: 3/4
+          delta_lambda: 1/2
+          corrector_outcome: CONVERGED
+          corrector_iterations: 4
+          accepted: true
+          S3_T_K: '360.796591565079'
+        - lambda: '1'
+          delta_lambda: 1/4
+          corrector_outcome: CONVERGED
+          corrector_iterations: 4
+          accepted: true
+          S3_T_K: '354.999999999989'
+        end_S3_T_K: '354.99999999998869342'
+        end_S3_V_mol_per_s: '0.57899009167208007801'
+      outcome: CONVERGED
+    HOM-02:
+      registry_id: SYN-001-A02-355-dew-guess-377
+      T_target_K: 355
+      guess_S3_T_K: '377.000'
+      policy_overrides: {}
+      Q_flash_spec_W: '24681.106068625242185'
+      contract:
+        outcome: ACTIVE_SET_CYCLING
+        attempts:
+        - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: newton
+          core_outcome: BOUND_BLOCKED
+          iterations: 1
+          decision: restart
+          cause: phase_disappeared(U-HEAT, vapor, S3.vap.C)
+          landings:
+          - iteration: 0
+            alpha_max: '0.638628326147891'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: pinned_iterate
+          core: newton
+          core_outcome: LINE_SEARCH_FAILED
+          iterations: 0
+          decision: restart
+          cause: phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)
+      edge3: taken
+      homotopy:
+        outcome: CONVERGED
+        lambda_reached: '1'
+        lambda_trials: 3
+        provenance_item_iterations: 12
+        steps:
+        - lambda: '0'
+          delta_lambda: '0'
+          corrector_outcome: CONVERGED
+          corrector_iterations: 0
+          accepted: true
+          S3_T_K: '377.000000000000'
+        - lambda: 1/4
+          delta_lambda: 1/4
+          corrector_outcome: CONVERGED
+          corrector_iterations: 4
+          accepted: true
+          S3_T_K: '372.801514002155'
+        - lambda: 3/4
+          delta_lambda: 1/2
+          corrector_outcome: CONVERGED
+          corrector_iterations: 4
+          accepted: true
+          S3_T_K: '361.608136125843'
+          landings:
+          - iteration: 0
+            alpha_max: '0.982888701677'
+            variables:
+            - S3.vap.C
+        - lambda: '1'
+          delta_lambda: 1/4
+          corrector_outcome: CONVERGED
+          corrector_iterations: 4
+          accepted: true
+          S3_T_K: '354.999999999922'
+        end_S3_T_K: '354.99999999992151929'
+        end_S3_V_mol_per_s: '0.57899009167321120813'
+      outcome: CONVERGED
+    HOM-03:
+      registry_id: SYN-001-A02-352-vapor-guess-410
+      T_target_K: 352
+      guess_S3_T_K: '410.000'
+      policy_overrides: {}
+      Q_flash_spec_W: '39510.112315917996926'
+      contract:
+        outcome: ACTIVE_SET_CYCLING
+        attempts:
+        - signature: U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: newton
+          core_outcome: PHASE_UPDATE_REQUIRED
+          iterations: 2
+          decision: restart
+          cause: phase_wall(patience, U-HEAT:VAPOR->TWO_PHASE)
+        - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+          opening_source: phase_rejected_trial
+          core: newton
+          core_outcome: BOUND_BLOCKED
+          iterations: 1
+          decision: restart
+          cause: phase_disappeared(U-HEAT, vapor, S3.vap.C)
+          landings:
+          - iteration: 0
+            alpha_max: '0.609302346636100'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: pinned_iterate
+          core: newton
+          core_outcome: LINE_SEARCH_FAILED
+          iterations: 0
+          decision: restart
+          cause: phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)
+      edge3: taken
+      homotopy:
+        outcome: HOMOTOPY_STALLED
+        lambda_reached: 23/256
+        lambda_trials: 17
+        provenance_item_iterations: 30
+        steps:
+        - lambda: '0'
+          delta_lambda: '0'
+          corrector_outcome: CONVERGED
+          corrector_iterations: 0
+          accepted: true
+          S3_T_K: '410.000000000000'
+        - lambda: 1/4
+          delta_lambda: 1/4
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '379.244212715192'
+        - lambda: 1/8
+          delta_lambda: 1/8
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '382.040193377447'
+        - lambda: 1/16
+          delta_lambda: 1/16
+          corrector_outcome: CONVERGED
+          corrector_iterations: 1
+          accepted: true
+          S3_T_K: '387.632154701958'
+        - lambda: 3/16
+          delta_lambda: 1/8
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '379.593710297974'
+        - lambda: 1/8
+          delta_lambda: 1/16
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '377.846222384064'
+        - lambda: 3/32
+          delta_lambda: 1/32
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '379.244212715192'
+        - lambda: 5/64
+          delta_lambda: 1/64
+          corrector_outcome: CONVERGED
+          corrector_iterations: 1
+          accepted: true
+          S3_T_K: '382.040193377447'
+        - lambda: 7/64
+          delta_lambda: 1/32
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '378.195719966846'
+        - lambda: 3/32
+          delta_lambda: 1/64
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '377.846222384064'
+        - lambda: 11/128
+          delta_lambda: 1/128
+          corrector_outcome: CONVERGED
+          corrector_iterations: 1
+          accepted: true
+          S3_T_K: '379.244212715192'
+        - lambda: 13/128
+          delta_lambda: 1/64
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '377.584099196978'
+        - lambda: 3/32
+          delta_lambda: 1/128
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '377.671473592673'
+        - lambda: 23/256
+          delta_lambda: 1/256
+          corrector_outcome: CONVERGED
+          corrector_iterations: 1
+          accepted: true
+          S3_T_K: '377.846222384064'
+        - lambda: 25/256
+          delta_lambda: 1/128
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '377.589560096709'
+        - lambda: 3/32
+          delta_lambda: 1/256
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '377.595020996440'
+        - lambda: 47/512
+          delta_lambda: 1/512
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '377.540411999130'
+        - lambda: 93/1024
+          delta_lambda: 1/1024
+          corrector_outcome: PHASE_UPDATE_REQUIRED
+          corrector_iterations: 2
+          accepted: false
+          S3_T_K: '377.584099196978'
+        end_S3_T_K: '377.84622238406432353'
+        end_S3_V_mol_per_s: '4.6391909307768483674'
+      outcome: HOMOTOPY_STALLED
+    HOM-04:
+      registry_id: SYN-001-A02-340-two-phase-guess-capped
+      T_target_K: 340
+      guess_S3_T_K: '360.000'
+      policy_overrides:
+        max_attempts: 1
+      Q_flash_spec_W: '47616.451308297223966'
+      contract:
+        outcome: ATTEMPTS_EXHAUSTED
+        attempts:
+        - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: newton
+          core_outcome: BOUND_BLOCKED
+          iterations: 1
+          decision: restart
+          cause: phase_disappeared(U-HEAT, vapor, S3.vap.C)
+          landings:
+          - iteration: 0
+            alpha_max: '0.611571194452767'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+      edge3: taken
+      homotopy:
+        outcome: HOMOTOPY_STALLED
+        lambda_reached: 909/1024
+        lambda_trials: 18
+        provenance_item_iterations: 28
+        steps:
+        - lambda: '0'
+          delta_lambda: '0'
+          corrector_outcome: CONVERGED
+          corrector_iterations: 0
+          accepted: true
+          S3_T_K: '360.000000000000'
+        - lambda: 1/4
+          delta_lambda: 1/4
+          corrector_outcome: CONVERGED
+          corrector_iterations: 3
+          accepted: true
+          S3_T_K: '357.605074472882'
+        - lambda: 3/4
+          delta_lambda: 1/2
+          corrector_outcome: CONVERGED
+          corrector_iterations: 4
+          accepted: true
+          S3_T_K: '352.761140027031'
+          landings:
+          - iteration: 0
+            alpha_max: '0.955179814595'
+            variables:
+            - S3.vap.C
+        - lambda: '1'
+          delta_lambda: 1/4
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.526454606063'
+          landings:
+          - iteration: 0
+            alpha_max: '0.515308773613'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 7/8
+          delta_lambda: 1/8
+          corrector_outcome: CONVERGED
+          corrector_iterations: 3
+          accepted: true
+          S3_T_K: '351.571514100908'
+        - lambda: '1'
+          delta_lambda: 1/8
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444957130865'
+          landings:
+          - iteration: 0
+            alpha_max: '0.107229550142'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 15/16
+          delta_lambda: 1/16
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444957823055'
+          landings:
+          - iteration: 0
+            alpha_max: '0.214458993118'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 29/32
+          delta_lambda: 1/32
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444959207432'
+          landings:
+          - iteration: 0
+            alpha_max: '0.428917557570'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 57/64
+          delta_lambda: 1/64
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444961976178'
+          landings:
+          - iteration: 0
+            alpha_max: '0.857833400480'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 113/128
+          delta_lambda: 1/128
+          corrector_outcome: CONVERGED
+          corrector_iterations: 2
+          accepted: true
+          S3_T_K: '351.497798737329'
+        - lambda: 115/128
+          delta_lambda: 1/64
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444311136378'
+          landings:
+          - iteration: 0
+            alpha_max: '0.362972919187'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 57/64
+          delta_lambda: 1/128
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444311182370'
+          landings:
+          - iteration: 0
+            alpha_max: '0.725945780869'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 227/256
+          delta_lambda: 1/256
+          corrector_outcome: CONVERGED
+          corrector_iterations: 2
+          accepted: true
+          S3_T_K: '351.460969367827'
+        - lambda: 229/256
+          delta_lambda: 1/128
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444183024655'
+          landings:
+          - iteration: 0
+            alpha_max: '0.227957357978'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 57/64
+          delta_lambda: 1/256
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444183030282'
+          landings:
+          - iteration: 0
+            alpha_max: '0.455914701910'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 455/512
+          delta_lambda: 1/512
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444183041536'
+          landings:
+          - iteration: 0
+            alpha_max: '0.911829347635'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 909/1024
+          delta_lambda: 1/1024
+          corrector_outcome: CONVERGED
+          corrector_iterations: 2
+          accepted: true
+          S3_T_K: '351.451765294992'
+        - lambda: 911/1024
+          delta_lambda: 1/512
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444171949363'
+          landings:
+          - iteration: 0
+            alpha_max: '0.412527637135'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        - lambda: 455/512
+          delta_lambda: 1/1024
+          corrector_outcome: BOUND_BLOCKED
+          corrector_iterations: 1
+          accepted: false
+          S3_T_K: '351.444171949452'
+          landings:
+          - iteration: 0
+            alpha_max: '0.825055273388'
+            variables:
+            - S3.vap.C
+          blocked_by:
+          - S3.vap.C
+        end_S3_T_K: '351.45176529499238597'
+        end_S3_V_mol_per_s: '0.0012810486520466113170'
+      outcome: HOMOTOPY_STALLED
+    HOM-05:
+      registry_id: SYN-001-A02-360-iteration-capped
+      T_target_K: 360
+      guess_S3_T_K: '358.000'
+      policy_overrides:
+        max_iterations_per_attempt: 1
+      Q_flash_spec_W: '0.0'
+      contract:
+        outcome: BUDGET_EXHAUSTED
+        attempts:
+        - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: newton
+          core_outcome: BUDGET_EXHAUSTED
+          iterations: 1
+          decision: terminal
+          cause: null
+      edge3: taken
+      homotopy:
+        outcome: CONVERGED
+        lambda_reached: '1'
+        lambda_trials: 3
+        provenance_item_iterations: 9
+        steps:
+        - lambda: '0'
+          delta_lambda: '0'
+          corrector_outcome: CONVERGED
+          corrector_iterations: 0
+          accepted: true
+          S3_T_K: '358.000000000000'
+        - lambda: 1/4
+          delta_lambda: 1/4
+          corrector_outcome: CONVERGED
+          corrector_iterations: 3
+          accepted: true
+          S3_T_K: '358.503297371864'
+        - lambda: 3/4
+          delta_lambda: 1/2
+          corrector_outcome: CONVERGED
+          corrector_iterations: 3
+          accepted: true
+          S3_T_K: '359.503577355442'
+        - lambda: '1'
+          delta_lambda: 1/4
+          corrector_outcome: CONVERGED
+          corrector_iterations: 3
+          accepted: true
+          S3_T_K: '360.000000000000'
+        end_S3_T_K: '360.00000000000000690'
+        end_S3_V_mol_per_s: '1.3608090692231514857'
+      outcome: CONVERGED
+  a02_family_scan:
+    targets_K:
+    - 340
+    - 345
+    - 350
+    - 352
+    - 355
+    - 358
+    - 360
+    - 365
+    - 370
+    - 375
+    guesses_K:
+    - '300.000'
+    - '310.000'
+    - '320.000'
+    - '330.000'
+    - '340.000'
+    - '350.000'
+    - '360.000'
+    - '370.000'
+    - '380.000'
+    - '390.000'
+    - '400.000'
+    - '410.000'
+    - '420.000'
+    - '430.000'
+    - '375.000'
+    - '376.000'
+    - '377.000'
+    - '377.400'
+    runs: 180
+    contract_failures:
+    - T_target_K: 352
+      guess_K: '370.000'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    - T_target_K: 352
+      guess_K: '410.000'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: HOMOTOPY_STALLED
+      lambda_trials: 17
+    - T_target_K: 352
+      guess_K: '375.000'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    - T_target_K: 352
+      guess_K: '376.000'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    - T_target_K: 352
+      guess_K: '377.000'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    - T_target_K: 352
+      guess_K: '377.400'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    - T_target_K: 355
+      guess_K: '375.000'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    - T_target_K: 355
+      guess_K: '376.000'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    - T_target_K: 355
+      guess_K: '377.000'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    - T_target_K: 355
+      guess_K: '377.400'
+      contract: ACTIVE_SET_CYCLING
+      edge3: taken
+      outcome: CONVERGED
+      lambda_trials: 3
+    contract_attempts:
+    - T_target_K: 340
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 0
+        - converged
+    - T_target_K: 340
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '375.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '376.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '377.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 340
+      guess_K: '377.400'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '375.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '376.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '377.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 345
+      guess_K: '377.400'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 0
+        - converged
+    - T_target_K: 350
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '375.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '376.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '377.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 350
+      guess_K: '377.400'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 1
+        - converged
+    - T_target_K: 352
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '370.000'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 352
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 352
+      guess_K: '410.000'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 352
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 352
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+        - converged
+    - T_target_K: 352
+      guess_K: '375.000'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 352
+      guess_K: '376.000'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 352
+      guess_K: '377.000'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 352
+      guess_K: '377.400'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 355
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 355
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 355
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 355
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 355
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 355
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 355
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 355
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 355
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 355
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 355
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 355
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 355
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 355
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 355
+      guess_K: '375.000'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 355
+      guess_K: '376.000'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 355
+      guess_K: '377.000'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 355
+      guess_K: '377.400'
+      contract: ACTIVE_SET_CYCLING
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+        - restart
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - LINE_SEARCH_FAILED
+        - 0
+        - restart
+    - T_target_K: 358
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 358
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 358
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 358
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 358
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 358
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 358
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 358
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 358
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 358
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 358
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 358
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 358
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 358
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 358
+      guess_K: '375.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 358
+      guess_K: '376.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 358
+      guess_K: '377.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 358
+      guess_K: '377.400'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 360
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 360
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 0
+        - converged
+    - T_target_K: 360
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 360
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 360
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 360
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 360
+      guess_K: '375.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 360
+      guess_K: '376.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 360
+      guess_K: '377.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 360
+      guess_K: '377.400'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 365
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 365
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 365
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 365
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 365
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 365
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '375.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '376.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '377.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 365
+      guess_K: '377.400'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 370
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 370
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 370
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 0
+        - converged
+    - T_target_K: 370
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 370
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 370
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 370
+      guess_K: '375.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '376.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '377.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 370
+      guess_K: '377.400'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 375
+      guess_K: '300.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 375
+      guess_K: '310.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 375
+      guess_K: '320.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 375
+      guess_K: '330.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 375
+      guess_K: '340.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 375
+      guess_K: '350.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 375
+      guess_K: '360.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 375
+      guess_K: '370.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 4
+        - converged
+    - T_target_K: 375
+      guess_K: '380.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+        - converged
+    - T_target_K: 375
+      guess_K: '390.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+        - converged
+    - T_target_K: 375
+      guess_K: '400.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+        - converged
+    - T_target_K: 375
+      guess_K: '410.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 375
+      guess_K: '420.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+        - converged
+    - T_target_K: 375
+      guess_K: '430.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+        - PHASE_UPDATE_REQUIRED
+        - 2
+        - restart
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+        - converged
+    - T_target_K: 375
+      guess_K: '375.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 0
+        - converged
+    - T_target_K: 375
+      guess_K: '376.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 375
+      guess_K: '377.000'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    - T_target_K: 375
+      guess_K: '377.400'
+      contract: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+        - converged
+    margins:
+      convergence_factor_min: '1.065'
+      armijo_relative_min: '0.0009762'
+      screen_relative_min: '6.174e-5'
+      landing_gap_min: '0.002136'
+      domain_K_min: '3.640'
+  ptc_seeds:
+    PTC-S1:
+      outcome: CONVERGED
+      attempts:
+      - regime: null
+        outcome: CONVERGED
+        pseudo_steps: 8
+        events:
+        - step: 0
+          tau: '1.00000000000000'
+          result: accepted
+          phi: '0.500000000000000'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.50000000000000000000'
+          tau_next: '2.00000000000000'
+        - step: 1
+          tau: '2.00000000000000'
+          result: accepted
+          phi: '0.166666666666667'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.83333333333333333333'
+          tau_next: '4.00000000000000'
+        - step: 2
+          tau: '4.00000000000000'
+          result: accepted
+          phi: '0.0333333333333333'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.96666666666666666667'
+          tau_next: '8.00000000000000'
+        - step: 3
+          tau: '8.00000000000000'
+          result: accepted
+          phi: '0.00370370370370370'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99629629629629629630'
+          tau_next: '16.0000000000000'
+        - step: 4
+          tau: '16.0000000000000'
+          result: accepted
+          phi: '0.000217864923747277'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99978213507625272331'
+          tau_next: '32.0000000000000'
+        - step: 5
+          tau: '32.0000000000000'
+          result: accepted
+          phi: '6.60196738628111e-6'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99999339803261371889'
+          tau_next: '64.0000000000000'
+        - step: 6
+          tau: '64.0000000000000'
+          result: accepted
+          phi: '1.01568729019709e-7'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99999989843127098029'
+          tau_next: '128.000000000000'
+        - step: 7
+          tau: '128.000000000000'
+          result: accepted
+          phi: '7.87354488524879e-10'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99999999921264551148'
+          tau_next: null
+        blocked_by: []
+    PTC-S2:
+      outcome: CONVERGED
+      attempts:
+      - regime: LIQUID
+        outcome: CONVERGED
+        pseudo_steps: 8
+        events:
+        - step: 0
+          tau: '1.00000000000000'
+          result: phase_update_required
+        - step: 0
+          tau: '0.500000000000000'
+          result: accepted
+          phi: '0.792400984671793'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.59211822660098522167'
+          tau_next: '0.630362669484680'
+        - step: 1
+          tau: '0.630362669484680'
+          result: accepted
+          phi: '0.289133610440497'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.89247486460954331519'
+          tau_next: '1.26072533896936'
+        - step: 2
+          tau: '1.26072533896936'
+          result: accepted
+          phi: '0.0492115919085304'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.98331944209007576188'
+          tau_next: '2.52145067793872'
+        - step: 3
+          tau: '2.52145067793872'
+          result: accepted
+          phi: '0.00525864257193894'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99824403754331838551'
+          tau_next: '5.04290135587744'
+        - step: 4
+          tau: '5.04290135587744'
+          result: accepted
+          phi: '0.000318965131648865'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99989366698314066291'
+          tau_next: '10.0858027117549'
+        - step: 5
+          tau: '10.0858027117549'
+          result: accepted
+          phi: '1.01747776608645e-5'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99999660839594341343'
+          tau_next: '20.1716054235098'
+        - step: 6
+          tau: '20.1716054235098'
+          result: accepted
+          phi: '1.65371398484975e-7'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99999994487619746637'
+          tau_next: '40.3432108470195'
+        - step: 7
+          tau: '40.3432108470195'
+          result: accepted
+          phi: '1.35516528953511e-9'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.99999999954827823662'
+          tau_next: null
+        blocked_by: []
+    PTC-S3:
+      outcome: PTC_STALLED
+      attempts:
+      - regime: null
+        outcome: PTC_STALLED
+        pseudo_steps: 0
+        events:
+        - step: 0
+          tau: '1.00000000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.500000000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.250000000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.125000000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.0625000000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.0312500000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.0156250000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.00781250000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.00390625000000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.00195312500000000'
+          result: invalid_trial
+        - step: 0
+          tau: '0.000976562500000000'
+          result: invalid_trial
+        blocked_by: []
+    PTC-S4:
+      outcome: BOUND_BLOCKED
+      attempts:
+      - regime: null
+        outcome: BOUND_BLOCKED
+        pseudo_steps: 2
+        events:
+        - step: 0
+          tau: '1.00000000000000'
+          result: accepted
+          phi: '0.750000000000000'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.25000000000000000000'
+          tau_next: '2.00000000000000'
+        - step: 1
+          tau: '2.00000000000000'
+          result: accepted
+          phi: '0.500000000000000'
+          alpha: '0.500000000000000'
+          x:
+            x: '0.0'
+          tau_next: '3.00000000000000'
+        - step: 2
+          tau: '3.00000000000000'
+          result: bound_blocked
+        - step: 2
+          tau: '1.50000000000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.750000000000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.375000000000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.187500000000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.0937500000000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.0468750000000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.0234375000000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.0117187500000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.00585937500000000'
+          result: bound_blocked
+        - step: 2
+          tau: '0.00292968750000000'
+          result: bound_blocked
+        blocked_by:
+        - x
+    PTC-S5:
+      outcome: CONVERGED
+      attempts:
+      - regime: LIQUID
+        outcome: PHASE_UPDATE_REQUIRED
+        pseudo_steps: 2
+        events:
+        - step: 0
+          tau: '1.00000000000000'
+          result: phase_update_required
+        - step: 0
+          tau: '0.500000000000000'
+          result: phase_update_required
+        - step: 0
+          tau: '0.250000000000000'
+          result: accepted
+          phi: '2.40000000000000'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.60000000000000000000'
+          tau_next: '0.312500000000000'
+        - step: 1
+          tau: '0.312500000000000'
+          result: phase_update_required
+        - step: 1
+          tau: '0.156250000000000'
+          result: accepted
+          phi: '2.07567567567568'
+          alpha: '1.00000000000000'
+          x:
+            x: '0.92432432432432432432'
+          tau_next: '0.180664062500000'
+        blocked_by: []
+      - regime: TWO_PHASE
+        outcome: PHASE_UPDATE_REQUIRED
+        pseudo_steps: 2
+        events:
+        - step: 0
+          tau: '1.00000000000000'
+          result: phase_update_required
+        - step: 0
+          tau: '0.500000000000000'
+          result: accepted
+          phi: '1.21904761904762'
+          alpha: '1.00000000000000'
+          x:
+            x: '1.7809523809523809524'
+          tau_next: '0.750000000000000'
+        - step: 1
+          tau: '0.750000000000000'
+          result: phase_update_required
+        - step: 1
+          tau: '0.375000000000000'
+          result: phase_update_required
+        - step: 1
+          tau: '0.187500000000000'
+          result: accepted
+          phi: '1.02656641604010'
+          alpha: '1.00000000000000'
+          x:
+            x: '1.9734335839598997494'
+          tau_next: '0.222656250000000'
+        blocked_by: []
+      - regime: VAPOR
+        outcome: CONVERGED
+        pseudo_steps: 10
+        events:
+        - step: 0
+          tau: '1.00000000000000'
+          result: accepted
+          phi: '0.348299319727891'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.6517006802721088435'
+          tau_next: '2.00000000000000'
+        - step: 1
+          tau: '2.00000000000000'
+          result: accepted
+          phi: '0.116099773242630'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.8839002267573696145'
+          tau_next: '4.00000000000000'
+        - step: 2
+          tau: '4.00000000000000'
+          result: accepted
+          phi: '0.0232199546485261'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.9767800453514739229'
+          tau_next: '8.00000000000000'
+        - step: 3
+          tau: '8.00000000000000'
+          result: accepted
+          phi: '0.00257999496094734'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.9974200050390526581'
+          tau_next: '16.0000000000000'
+        - step: 4
+          tau: '16.0000000000000'
+          result: accepted
+          phi: '0.000151764409467491'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.9998482355905325093'
+          tau_next: '32.0000000000000'
+        - step: 5
+          tau: '32.0000000000000'
+          result: accepted
+          phi: '4.59892149901487e-6'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.9999954010785009851'
+          tau_next: '64.0000000000000'
+        - step: 6
+          tau: '64.0000000000000'
+          result: accepted
+          phi: '7.07526384463826e-8'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.9999999292473615536'
+          tau_next: '128.000000000000'
+        - step: 7
+          tau: '128.000000000000'
+          result: accepted
+          phi: '5.48470065475834e-10'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.9999999994515299345'
+          tau_next: '256.000000000000'
+        - step: 8
+          tau: '256.000000000000'
+          result: accepted
+          phi: '2.13412476838846e-12'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.9999999999978658752'
+          tau_next: '512.000000000000'
+        - step: 9
+          tau: '512.000000000000'
+          result: accepted
+          phi: '4.16008726781376e-15'
+          alpha: '1.00000000000000'
+          x:
+            x: '2.9999999999999958399'
+          tau_next: null
+        blocked_by: []
+  ptc_phs05:
+    outcome: PTC_STALLED
+    attempts:
+    - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+      opening_source: initializer
+      core: ptc
+      core_outcome: BOUND_BLOCKED
+      iterations: 1
+      decision: restart
+      cause: phase_disappeared(U-HEAT, vapor, S3.vap.C)
+      rejected_trials: 11
+      polish: null
+      landings:
+      - iteration: 0
+        alpha_max: '0.642309461269271'
+        variables:
+        - S3.vap.C
+      blocked_by:
+      - S3.vap.C
+    - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+      opening_source: pinned_iterate
+      core: ptc
+      core_outcome: PTC_STALLED
+      iterations: 0
+      decision: restart
+      cause: phase_wall(stall, U-HEAT:LIQUID->VAPOR)
+      rejected_trials: 11
+      polish: null
+    - signature: U-HEAT:VAPOR,U-FLASH:TWO_PHASE
+      opening_source: phase_rejected_trial
+      core: ptc
+      core_outcome: PTC_STALLED
+      iterations: 0
+      decision: terminal
+      cause: null
+      rejected_trials: 11
+      polish: null
+    with_edge3: CONVERGED
+  ptc_named:
+    r=0.95/initializer:
+      newton:
+        outcome: CONVERGED
+        attempts:
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: newton
+          core_outcome: CONVERGED
+          iterations: 5
+          decision: converged
+          cause: ''
+        final_error_vs_P01_by_kind:
+          heat_rate: '1.06e-14'
+          molar_flow: '5.33e-19'
+          pressure: '0.0'
+          temperature: '2.19e-20'
+      ptc:
+        outcome: CONVERGED
+        attempts:
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: ptc
+          core_outcome: CONVERGED
+          iterations: 39
+          decision: converged
+          cause: ''
+          rejected_trials: 0
+          polish: accepted
+        final_error_vs_P01_by_kind:
+          heat_rate: '1.06e-14'
+          molar_flow: '5.33e-19'
+          pressure: '0.0'
+          temperature: '4.83e-18'
+        unpolished_envelope_over_tolerance: '0.02686'
+    r=0.95/OFF-A:
+      newton:
+        outcome: CONVERGED
+        attempts:
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: newton
+          core_outcome: CONVERGED
+          iterations: 5
+          decision: converged
+          cause: ''
+        final_error_vs_P01_by_kind:
+          heat_rate: '1.06e-14'
+          molar_flow: '5.33e-19'
+          pressure: '0.0'
+          temperature: '2.22e-20'
+      ptc:
+        outcome: CONVERGED
+        attempts:
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: ptc
+          core_outcome: CONVERGED
+          iterations: 30
+          decision: converged
+          cause: ''
+          rejected_trials: 0
+          polish: accepted
+        final_error_vs_P01_by_kind:
+          heat_rate: '1.06e-14'
+          molar_flow: '6.51e-19'
+          pressure: '0.0'
+          temperature: '3.42e-15'
+        unpolished_envelope_over_tolerance: '0.7165'
+    r=0.95/OFF-B:
+      newton:
+        outcome: CONVERGED
+        attempts:
+        - signature: U-HEAT:LIQUID,U-FLASH:LIQUID
+          opening_source: initializer
+          core: newton
+          core_outcome: PHASE_UPDATE_REQUIRED
+          iterations: 2
+          decision: restart
+          cause: phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE, U-FLASH:LIQUID->TWO_PHASE)
+        - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+          opening_source: phase_rejected_trial
+          core: newton
+          core_outcome: BOUND_BLOCKED
+          iterations: 1
+          decision: restart
+          cause: phase_disappeared(U-HEAT, vapor, S3.vap.B)
+          landings:
+          - iteration: 0
+            alpha_max: '0.101088118919203'
+            variables:
+            - S3.vap.B
+          blocked_by:
+          - S3.vap.B
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: pinned_iterate
+          core: newton
+          core_outcome: CONVERGED
+          iterations: 3
+          decision: converged
+          cause: ''
+        final_error_vs_P01_by_kind:
+          heat_rate: '1.06e-14'
+          molar_flow: '5.33e-19'
+          pressure: '0.0'
+          temperature: '2.22e-20'
+      ptc:
+        outcome: CONVERGED
+        attempts:
+        - signature: U-HEAT:LIQUID,U-FLASH:LIQUID
+          opening_source: initializer
+          core: ptc
+          core_outcome: PHASE_UPDATE_REQUIRED
+          iterations: 4
+          decision: restart
+          cause: phase_wall(patience, U-FLASH:LIQUID->TWO_PHASE)
+          rejected_trials: 5
+          polish: null
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: phase_rejected_trial
+          core: ptc
+          core_outcome: CONVERGED
+          iterations: 26
+          decision: converged
+          cause: ''
+          rejected_trials: 0
+          polish: accepted
+        final_error_vs_P01_by_kind:
+          heat_rate: '1.50e-14'
+          molar_flow: '1.61e-17'
+          pressure: '0.0'
+          temperature: '1.15e-14'
+        unpolished_envelope_over_tolerance: '1.310'
+    r=0.5/initializer:
+      newton:
+        outcome: CONVERGED
+        attempts:
+        - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: newton
+          core_outcome: BOUND_BLOCKED
+          iterations: 1
+          decision: restart
+          cause: phase_disappeared(U-HEAT, vapor, S3.vap.B)
+          landings:
+          - iteration: 0
+            alpha_max: '0.0934167944249637'
+            variables:
+            - S3.vap.B
+          blocked_by:
+          - S3.vap.B
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: pinned_iterate
+          core: newton
+          core_outcome: CONVERGED
+          iterations: 2
+          decision: converged
+          cause: ''
+        final_error_vs_P01_by_kind:
+          heat_rate: '3.28e-16'
+          molar_flow: '1.64e-20'
+          pressure: '0.0'
+          temperature: '3.79e-20'
+      ptc:
+        outcome: CONVERGED
+        attempts:
+        - signature: U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+          opening_source: initializer
+          core: ptc
+          core_outcome: BOUND_BLOCKED
+          iterations: 1
+          decision: restart
+          cause: phase_disappeared(U-HEAT, vapor, S3.vap.B)
+          rejected_trials: 11
+          polish: null
+          landings:
+          - iteration: 0
+            alpha_max: '0.326958780487373'
+            variables:
+            - S3.vap.B
+          blocked_by:
+          - S3.vap.B
+        - signature: U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+          opening_source: pinned_iterate
+          core: ptc
+          core_outcome: CONVERGED
+          iterations: 11
+          decision: converged
+          cause: ''
+          rejected_trials: 0
+          polish: accepted
+        final_error_vs_P01_by_kind:
+          heat_rate: '3.28e-16'
+          molar_flow: '1.64e-20'
+          pressure: '0.0'
+          temperature: '1.58e-16'
+        unpolished_envelope_over_tolerance: '0.1466'
+  basin_comparison_r095:
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 0
+    - 0
+    - 4
+    mixer_margin: '0.689420'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 35
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 0
+    - 1
+    - 3
+    mixer_margin: '0.517065'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 39
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 0
+    - 2
+    - 2
+    mixer_margin: '0.344710'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 3
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 40
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 0
+    - 3
+    - 1
+    mixer_margin: '0.172355'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 3
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 43
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 0
+    - 4
+    - 0
+    mixer_margin: '0.0'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 4
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 46
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 1
+    - 0
+    - 3
+    mixer_margin: '0.0569041'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 6
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 54
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 1
+    - 1
+    - 2
+    mixer_margin: '-0.115451'
+    mixer_gap_K: '33.90'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 1
+    - 2
+    - 1
+    mixer_margin: '-0.287806'
+    mixer_gap_K: '129.9'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 1
+    - 3
+    - 0
+    mixer_margin: '-0.460161'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 2
+    - 0
+    - 2
+    mixer_margin: '-0.575612'
+    mixer_gap_K: '123.6'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 2
+    - 1
+    - 1
+    mixer_margin: '-0.747967'
+    mixer_gap_K: '219.6'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 2
+    - 2
+    - 0
+    mixer_margin: '-0.920322'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 3
+    - 0
+    - 1
+    mixer_margin: '-1.20813'
+    mixer_gap_K: '259.5'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 3
+    - 1
+    - 0
+    mixer_margin: '-1.38048'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '0.300'
+    direction_quarters:
+    - 4
+    - 0
+    - 0
+    mixer_margin: '-1.84064'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 0
+    - 0
+    - 4
+    mixer_margin: '0.689420'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 2
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 3
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 30
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 0
+    - 1
+    - 3
+    mixer_margin: '0.517065'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 2
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 3
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 3
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 30
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 0
+    - 2
+    - 2
+    mixer_margin: '0.344710'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 27
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 0
+    - 3
+    - 1
+    mixer_margin: '0.172355'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 34
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 0
+    - 4
+    - 0
+    mixer_margin: '0.0'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 10
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 31
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 1
+    - 0
+    - 3
+    mixer_margin: '0.0569041'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 5
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 32
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 1
+    - 1
+    - 2
+    mixer_margin: '-0.115451'
+    mixer_gap_K: '33.90'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 1
+    - 2
+    - 1
+    mixer_margin: '-0.287806'
+    mixer_gap_K: '129.9'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 1
+    - 3
+    - 0
+    mixer_margin: '-0.460161'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 2
+    - 0
+    - 2
+    mixer_margin: '-0.575612'
+    mixer_gap_K: '123.6'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 2
+    - 1
+    - 1
+    mixer_margin: '-0.747967'
+    mixer_gap_K: '219.6'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 2
+    - 2
+    - 0
+    mixer_margin: '-0.920322'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 3
+    - 0
+    - 1
+    mixer_margin: '-1.20813'
+    mixer_gap_K: '259.5'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 3
+    - 1
+    - 0
+    mixer_margin: '-1.38048'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '3.00'
+    direction_quarters:
+    - 4
+    - 0
+    - 0
+    mixer_margin: '-1.84064'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 0
+    - 0
+    - 4
+    mixer_margin: '0.689420'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 2
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 2
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 16
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 28
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 0
+    - 1
+    - 3
+    mixer_margin: '0.517065'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 2
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 2
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 14
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 29
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 0
+    - 2
+    - 2
+    mixer_margin: '0.344710'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 2
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 2
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 11
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 24
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 0
+    - 3
+    - 1
+    mixer_margin: '0.172355'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 2
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 2
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 7
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 23
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 0
+    - 4
+    - 0
+    mixer_margin: '0.0'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 8
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 15
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 1
+    - 0
+    - 3
+    mixer_margin: '0.0569041'
+    mixer_gap_K: '0.0'
+    newton:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 2
+      - - U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE
+        - BOUND_BLOCKED
+        - 1
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 2
+      same_root: true
+    ptc:
+      outcome: CONVERGED
+      attempts:
+      - - U-HEAT:LIQUID,U-FLASH:LIQUID
+        - PHASE_UPDATE_REQUIRED
+        - 3
+      - - U-HEAT:LIQUID,U-FLASH:TWO_PHASE
+        - CONVERGED
+        - 30
+      same_root: true
+      polish: accepted
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 1
+    - 1
+    - 2
+    mixer_margin: '-0.115451'
+    mixer_gap_K: '33.90'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 1
+    - 2
+    - 1
+    mixer_margin: '-0.287806'
+    mixer_gap_K: '129.9'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 1
+    - 3
+    - 0
+    mixer_margin: '-0.460161'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 2
+    - 0
+    - 2
+    mixer_margin: '-0.575612'
+    mixer_gap_K: '123.6'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 2
+    - 1
+    - 1
+    mixer_margin: '-0.747967'
+    mixer_gap_K: '219.6'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 2
+    - 2
+    - 0
+    mixer_margin: '-0.920322'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 3
+    - 0
+    - 1
+    mixer_margin: '-1.20813'
+    mixer_gap_K: '259.5'
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 3
+    - 1
+    - 0
+    mixer_margin: '-1.38048'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  - magnitude_mol_per_s: '30.0'
+    direction_quarters:
+    - 4
+    - 0
+    - 0
+    mixer_margin: '-1.84064'
+    mixer_gap_K: +inf
+    start: refused_by_the_mixer
+  ablations:
+    no_gamma_clip (PTC-S1):
+      outcome: CONVERGED
+      pseudo_steps:
+      - 6
+    row_sign_plus_one (PTC-S1):
+      outcome: BOUND_BLOCKED
+      pseudo_steps:
+      - 0
+    stop_on_phi_floor (PTC-S1):
+      outcome: CONVERGED
+      pseudo_steps:
+      - 10
+    tau_max_16 (PTC-S1, a policy override, not an ablation):
+      outcome: CONVERGED
+      pseudo_steps:
+      - 9
+    proposed_tau_in_update (PTC-S2):
+      outcome: CONVERGED
+      pseudo_steps:
+      - 7
+    rejected_residual_in_ratio (PTC-S2):
+      outcome: CONVERGED
+      pseudo_steps:
+      - 7
+    no_reset_on_restart (PTC-S5):
+      outcome: BUDGET_EXHAUSTED
+      pseudo_steps:
+      - 2
+      - 5
+      - 200
+    no_phi_floor (every seed):
+      outcome: CONVERGED
+      pseudo_steps:
+      - 8
+    no_growth (HOM-01):
+      outcome: CONVERGED
+      lambda_reached: '1'
+      lambda_trials: 4
+      end_S3_T_K: '355.000000000'
+    no_shrink (HOM-04):
+      outcome: HOMOTOPY_STALLED
+      lambda_reached: 3/4
+      lambda_trials: 3
+      end_S3_T_K: '352.761140027'
+    no_rollback (HOM-04):
+      outcome: HOMOTOPY_STALLED
+      lambda_reached: 909/1024
+      lambda_trials: 18
+      end_S3_T_K: '351.444104734'
+    corrector_cap_50 (HOM-01):
+      outcome: CONVERGED
+      lambda_reached: '1'
+      lambda_trials: 3
+      end_S3_T_K: '355.000000000'
+    corrector_cap_50 (HOM-04):
+      outcome: HOMOTOPY_STALLED
+      lambda_reached: 909/1024
+      lambda_trials: 18
+      end_S3_T_K: '351.451765295'
+    edge3_from_failed_end_state (HOM-01):
+      outcome: HOMOTOPY_STALLED
+      lambda_reached: '0'
+    delta_lambda_initial_1 (HOM-01, sensitivity):
+      outcome: CONVERGED
+      lambda_trials: 3
+    delta_lambda_initial_1/2 (HOM-01, sensitivity):
+      outcome: CONVERGED
+      lambda_trials: 2
+    delta_lambda_initial_1/8 (HOM-01, sensitivity):
+      outcome: CONVERGED
+      lambda_trials: 4
+  margins:
+    convergence_factor_min: '1.037'
+    armijo_relative_min: '0.001951'
+    screen_relative_min: '1.275e-6'
+    landing_gap_min: '0.0001889'
+    domain_K_min: '1.748'
+    tau_min_retry_decision_relative_min: '0.2683'
+    phi_min_at_a_formed_ratio: '2.106e-8'
+    accumulation_identity_max: '5.93e-33'
+  pseudo_step_limits:
+    smallest_pseudo_step_tried_s: '0.0001344'
+    largest_ser_proposal_s: '3293.'
+    retry_sequences_ended_by_tau_min: 3
+    ser_proposals_clipped_at_tau_min: 0
+measured:
+  low_precision_53_bit:
+    HOM-01:
+      same_lambda_path_and_counts: true
+      end_T_difference_K: '5.26e-15'
+    HOM-02:
+      same_lambda_path_and_counts: true
+      end_T_difference_K: '2.01e-14'
+    HOM-03:
+      same_lambda_path_and_counts: true
+      end_T_difference_K: '6.66e-14'
+    HOM-04:
+      same_lambda_path_and_counts: true
+      end_T_difference_K: '3.01e-14'
+    HOM-05:
+      same_lambda_path_and_counts: true
+      end_T_difference_K: '6.90e-15'
+    r=0.95/OFF-A/newton:
+      attempt_iterations:
+      - 5
+    r=0.95/OFF-A/ptc:
+      attempt_iterations:
+      - 30
+    r=0.95/OFF-B/newton:
+      attempt_iterations:
+      - 2
+      - 1
+      - 3
+    r=0.95/OFF-B/ptc:
+      attempt_iterations:
+      - 4
+      - 26
+    PTC-S1:
+      outcome: CONVERGED
+      pseudo_steps:
+      - 8
+    PTC-S2:
+      outcome: CONVERGED
+      pseudo_steps:
+      - 8
+    PTC-S3:
+      outcome: PTC_STALLED
+      pseudo_steps:
+      - 0
+    PTC-S4:
+      outcome: BOUND_BLOCKED
+      pseudo_steps:
+      - 2
+    PTC-S5:
+      outcome: CONVERGED
+      pseudo_steps:
+      - 2
+      - 2
+      - 10
+  seed_phi_53_bit:
+    PTC-S1:
+      max_abs: '7.40e-17'
+      max_rel: '3.35e-8'
+      smallest_phi: '7.87e-10'
+    PTC-S2:
+      max_abs: '1.31e-16'
+      max_rel: '1.75e-8'
+      smallest_phi: '1.36e-9'
+    PTC-S3:
+      max_abs: '0.0'
+      max_rel: '0'
+      smallest_phi: '0.0'
+    PTC-S4:
+      max_abs: '0.0'
+      max_rel: '0.0'
+      smallest_phi: '0.500'
+    PTC-S5:
+      max_abs: '1.68e-16'
+      max_rel: '0.0393'
+      smallest_phi: '4.16e-15'
+  floors_53_bit:
+    A21 r=0.95/OFF-A:
+      relative_old_rule: '4.15e-9'
+      absolute_over_1_plus_theta_over_dtau_mol_per_s: '2.29e-15'
+    A21 r=0.95/OFF-B:
+      relative_old_rule: '3.68e-9'
+      absolute_over_1_plus_theta_over_dtau_mol_per_s: '2.48e-15'
+    A15/A17 r=0.50:
+      root_residual_scaled: '2.22e-16'
+      steps:
+        '0.00010':
+        - '9.75e-13'
+        - U-FLASH.Q
+        '0.0010':
+        - '9.74e-14'
+        - U-FLASH.Q
+        '1.0':
+        - '1.93e-16'
+        - S3.L
+        '1.0e+10':
+        - '1.32e-16'
+        - S4.N
+      modes:
+      - - '-1.707106781186549'
+        - '5.10e-25'
+      - - '-1.594420321012255'
+        - '-6.16e-26'
+      - - '-1.000000000000001'
+        - '-7.36e-9'
+      - - '-1.000000000000001'
+        - '7.36e-9'
+      - - '-0.4055796789877441'
+        - '9.49e-27'
+      - - '-0.2928932188134526'
+        - '6.33e-27'
+    A15/A17 r=0.95:
+      root_residual_scaled: '1.18e-15'
+      steps:
+        '0.00010':
+        - '1.19e-11'
+        - U-FLASH.Q
+        '0.0010':
+        - '1.19e-12'
+        - U-FLASH.Q
+        '1.0':
+        - '1.84e-15'
+        - S3.L
+        '1.0e+10':
+        - '3.23e-14'
+        - S5.N
+      modes:
+      - - '-1.974679434480902'
+        - '1.40e-16'
+      - - '-1.955059394717943'
+        - '-1.15e-16'
+      - - '-1.000000062126967'
+        - '5.84e-12'
+      - - '-0.9999999378730368'
+        - '-5.84e-12'
+      - - '-0.04494060528205404'
+        - '9.20e-20'
+      - - '-0.02532056551910366'
+        - '-7.29e-21'
+checks_passed:
+- the full-region A02 opening at 375 K has the block's S3.n to 1e-18 mol/s and its flash duty to 1e-12 W (two 40-digit
+  derivations of the loop, P01's and T02's)
+- the dual-number Jacobian equals central differences at 40 digits to 1e-20
+- the region is square under the nominal and the A02 row sets
+- PHS-05 on the full region reproduces T03's attempts, counts and landing
+- 'HOM-01 (PHS-05): the contract ends ACTIVE_SET_CYCLING (T03 A12 unchanged)'
+- 'HOM-01: edge 3 converges in 3 λ-trials 1/4, 3/4, 1 with correctors 4, 4, 4 and no rejection'
+- 'HOM-01: the λ = 1 root is the 355 K root to 1e-6 K'
+- 'HOM-02 (377 K): converges in 3 λ-trials with one landing of S3.vap.C at λ = 3/4 that does not close the corrector'
+- 'HOM-03 (352 K from 410 K): the contract cycles, edge 3 stalls'
+- 'HOM-04 (PHS-04, max_attempts = 1): ATTEMPTS_EXHAUSTED, then edge 3 stalls'
+- 'HOM-05 (A02-360, max_iterations = 1): BUDGET_EXHAUSTED, then edge 3 converges to 360 K'
+- 'HOM-03: 17 λ-trials, accepted at 1/16, 5/64, 11/128, 23/256, every rejection PHASE_UPDATE_REQUIRED; the last
+  root 0.317 K above the dew point'
+- '§4.7 as amended (review Q1): the provenance item''s iterations — every corrector''s, rejected λ-trials included
+  — are 12, 12, 30, 28, 9 on HOM-01…05 (HOM-03''s accepted correctors ran 4 of its 30)'
+- 'HOM-04: 18 λ-trials, accepted at 1/4, 3/4, 7/8, 113/128, 227/256, 909/1024, every rejection BOUND_BLOCKED on
+  S3.vap.C'
+- 'HOM-05: λ-trials 1/4, 3/4, 1 with correctors 3, 3, 3'
+- 'HOM-04: every accepted λ lies below the boundary λ_b and every rejected one above it'
+- 'HOM-04: λ_last < λ_b < λ_last + 2 Δλ_min (the stall brackets the boundary)'
+- 'HOM-04: every λ decision is at least 2e-5 from λ_b'
+- 'HOM-03: every accepted λ lies below the boundary λ_b and every rejected one above it'
+- 'HOM-03: λ_last < λ_b < λ_last + 2 Δλ_min (the stall brackets the boundary)'
+- 'HOM-03: every λ decision is at least 2e-5 from λ_b'
+- 'HOM-04: the reported stall state is the last accepted root, V = 1.28e-3 mol/s'
+- 'HOM-01''s root and A02-355''s Newton root (358 K) are the same root: scaled distance < 1e-8'
+- 'the λ = 1 instance is the target instance: p(1) = p* exactly'
+- 'ADR 0008 D5: the rows with a nonzero M are exactly the eight holdup_balance rows'
+- no M entry on a zero_holdup_balance (mixer) or algebraic row
+- the mapping validator refuses M on MIX-mole:A (the ablation)
+- the mapping validator refuses a missing FLASH-duty mapping
+- the reconstructed P01 root at r = 0.95 is a root to 1e-18 scaled
+- 'steady-state equivalence: at that root the PTC step at Δτ = 1.0e-6 is at most 10 times the root''s own residual'
+- 'steady-state equivalence: at that root the PTC step at Δτ = 1.0 is at most 10 times the root''s own residual'
+- 'steady-state equivalence: at that root the PTC step at Δτ = 1.0e+10 is at most 10 times the root''s own residual'
+- '§6.4: on the split manifold the phase-resolved and stream-total heater mole holdups give the same step to 1e-25
+  (no registered path can tell them apart)'
+- '§6.4: off the split manifold the phase-resolved step (every component) is invariant under an enthalpy-reference
+  shift to 1e-25'
+- '§6.4: off the split manifold the stream-total holdup''s step moves by more than 1e-6 scaled under the same shift'
+- 'r = 0.50: the flash split Jacobian D has eigenvalues 1, d₂ = tr D − 1, 0'
+- 'r = 0.50: the pencil has exactly six finite modes, equal to the closed form to 1e-18'
+- 'r = 0.50: every finite mode is real and negative'
+- 'r = 0.50: the double mode at −1/θ is one 2 × 2 Jordan block (nullity of Ĵ_σ⁻¹M̂ − θI is 1, of its square 2; the
+  next singular value ≥ 1e-2)'
+- 'r = 0.95: the flash split Jacobian D has eigenvalues 1, d₂ = tr D − 1, 0'
+- 'r = 0.95: the pencil has exactly six finite modes, equal to the closed form to 1e-18'
+- 'r = 0.95: every finite mode is real and negative'
+- 'r = 0.95: the double mode at −1/θ is one 2 × 2 Jordan block (nullity of Ĵ_σ⁻¹M̂ − θI is 1, of its square 2; the
+  next singular value ≥ 1e-2)'
+- '§6.5: scaling θ and the τ constants by 8 reproduces the OFF-A pseudo-step count and every state'
+- 'PTC-S1: CONVERGED at pseudo-step 8 with Δτ_k = 2^k exactly'
+- 'PTC-S1: φ_{k+1} = 1/∏_{j≤k}(1 + 2^j) exactly (the implicit-Euler contraction θ/(θ+Δτ))'
+- 'PTC-S1: the stop is decided with margin ≥ 9.8 on both sides (φ₇ = 1.0157e-7, φ₈ = 7.87e-10, tol 1e-8)'
+- 'PTC-S2: one phase rejection at Δτ = 1, accepted at 1/2, CONVERGED at 8'
+- 'PTC-S3: PTC_STALLED at pseudo-step 0 after 11 invalid trials, Δτ from 1 to 2⁻¹⁰'
+- 'PTC-S4: lands x on +0.0 at α_max = 1/2 at step 1, then BOUND_BLOCKED at step 2 after 11 trials'
+- 'PTC-S5: LIQUID → TWO_PHASE → VAPOR by patience, CONVERGED at x = 3 in the third attempt'
+- 'ablation: without the γ clip PTC-S1 converges at 6, not 8'
+- 'ablation: the wrong row sign makes PTC-S1 BOUND_BLOCKED at step 0 (first trial exactly singular at Δτ = θ)'
+- 'ablation: stopping on ‖F̂‖ ≤ φ_floor instead of K03''s test takes 10 steps, not 8'
+- 'τ_max = 16 caps the growth: PTC-S1 converges at 9'
+- 'ablation: the proposed (rejected) Δτ in the update makes PTC-S2 converge at 7, not 8'
+- 'ablation: the rejected trial''s residual in the ratio makes PTC-S2 converge at 7, not 8'
+- 'A20''s rows without a seam are discharged by A19 (F16): the counts A19 registers — PTC-S1 8, PTC-S2 8 — differ
+  from the ablated rules'' 10, 7 and 7, so an implementation of any of the three rules fails A19'
+- 'ablation: without the reset PTC-S5 ends BUDGET_EXHAUSTED in its third attempt'
+- 'the φ_floor is inert: removing it changes nothing on PTC-S1'
+- 'ablation: without growth HOM-01 needs 4 λ-trials, not 3'
+- 'ablation: without shrinking HOM-04 stalls at λ = 3/4, not at the bubble point'
+- 'ablation: without rollback HOM-04 reports a boundary state (S3.T within 1e-3 K of the bubble point), not the
+  last root'
+- 'ablation: rollback is inert on HOM-04''s λ path (18 trials, 909/1024 either way) — only the reported state depends
+  on it, which A07 asserts'
+- the corrector cap is inert on the registered paths (50 changes nothing)
+- 'budget: HOM-04 with max_lambda_trials = 4 ends BUDGET_EXHAUSTED(homotopy_steps) at λ = 7/8'
+- 'budget: OFF-A (r = 0.95) under PTC with max_steps_per_attempt = 5 ends BUDGET_EXHAUSTED(ptc_steps) after 5 pseudo-steps'
+- 'ablation: edge 3 started from the failed end state cannot leave λ = 0 (PHS-05 unrescued)'
+- 'sensitivity: HOM-01 also converges from Δλ₀ = 1 (the constant is not fitted)'
+- 'sensitivity: HOM-01 also converges from Δλ₀ = 1/2 (the constant is not fitted)'
+- 'sensitivity: HOM-01 also converges from Δλ₀ = 1/8 (the constant is not fitted)'
+- the λ = 0 corrector converges at iteration 0 on every registered continuation case
+- '§8.4 PTC-R1 (preregistered, not run): three steady states in 0 < x₂ < 8, the middle one a saddle (one positive
+  eigenvalue), the outer two stable'
+- 'PHS-05 under PTC: the first pseudo-step lands S3.vap.C at Newton''s α_max to 1e-15 (the opening''s loop residual,
+  1e-21, is the only difference)'
+- '§6.7: on PHS-05''s opening state the PTC step''s S3.T, split and U-FLASH.Q components equal Newton''s at Δτ =
+  1e-3, 1, 1e3 (to 1e-15)'
+- PHS-05 under PTC ends PTC_STALLED after TWO_PHASE → LIQUID → VAPOR
+- 'PHS-05 under PTC: 11 rejected trials in each of its three attempts'
+- 'PHS-05 under PTC with edge 3: the continuation converges (Newton correctors)'
+- 'family scan: the block twin (T03) and the full region agree on all 180 runs'
+- 'family scan: 180 runs; the contract fails exactly 10'
+- 'family scan (A11, review S4): every contract decision on the 180 runs is far from its threshold — stop factor
+  ≥ 1.06, Armijo ≥ 9e-4 relative, screen ≥ 6e-5, landing ≥ 2e-3, ≥ 3.6 K inside the domain — decades above the 1e-9
+  relative duty difference a test''s oracle duty may carry and the 53-bit floor'
+- 'family scan: edge 3 rescues 9; 352 K from 410 K ends HOMOTOPY_STALLED'
+- 'T02''s A02 successes from 358 K: CONVERGED in one TWO_PHASE attempt, 3 / 4 / 3 iterations (360 / 365 / 355 K)'
+- 'HOM-01: every K04 §4.4/§4.7 S3 value and every row is outside ADR 0007 D2.4''s band (< tau / 10), so its verdict
+  is promised'
+- 'HOM-01: the flash outlets'' split (K04 §4.7''s second clause, F10) is below tau_flow / 10 too'
+- 'HOM-02: every K04 §4.4/§4.7 S3 value and every row is outside ADR 0007 D2.4''s band (< tau / 10), so its verdict
+  is promised'
+- 'HOM-02: the flash outlets'' split (K04 §4.7''s second clause, F10) is below tau_flow / 10 too'
+- 'HOM-05: every K04 §4.4/§4.7 S3 value and every row is outside ADR 0007 D2.4''s band (< tau / 10), so its verdict
+  is promised'
+- 'HOM-05: the flash outlets'' split (K04 §4.7''s second clause, F10) is below tau_flow / 10 too'
+- 'SYN-001-A02-360: every K04 §4.4/§4.7 S3 value and every row is outside ADR 0007 D2.4''s band (< tau / 10), so
+  its verdict is promised'
+- 'SYN-001-A02-360: the flash outlets'' split (K04 §4.7''s second clause, F10) is below tau_flow / 10 too'
+- 'SYN-001-A02-365: every K04 §4.4/§4.7 S3 value and every row is outside ADR 0007 D2.4''s band (< tau / 10), so
+  its verdict is promised'
+- 'SYN-001-A02-365: the flash outlets'' split (K04 §4.7''s second clause, F10) is below tau_flow / 10 too'
+- 'finding F9: T02''s A02-355 from 358 K satisfies every row at <= 0.082 tau, yet its lifted S3 split differs from
+  the fresh flash by more than tau_flow (1.09 tau_flow) and its fresh-flash heater balance is inside D2.4''s band
+  (0.937 tau)'
+- 'finding F9: at the 355 K root the equilibrium rows'' tolerance admits a lifted split error above tau_flow (first
+  order, worst case)'
+- 'finding F9: the family scan has converged states whose S3 fresh-flash checks fail and states inside D2.4''s band'
+- 'HOM-01: the 47 x 47 bound target is regular with margin — rcond_1 >= 1e4 tau_ill and ||J^-1||_1 <= the absolute
+  limit / 1e3'
+- 'HOM-01: det J_A02 / det J_nominal = -dH_S3/dT to 1e-10 relative (§4.8''s identity, exact on the solution curve
+  and first order in the residual off it), and dH_S3/dT > 0'
+- 'HOM-01: the nominal declaration''s target at the same state differs in rcond_1 by more than 1e-3 relative (A30''s
+  1e-6 separates the two declarations)'
+- 'HOM-01: the smallest nonzero scaled entry is >= 1e3 x K04 §4.8''s witness tolerance'
+- 'HOM-05: the 47 x 47 bound target is regular with margin — rcond_1 >= 1e4 tau_ill and ||J^-1||_1 <= the absolute
+  limit / 1e3'
+- 'HOM-05: det J_A02 / det J_nominal = -dH_S3/dT to 1e-10 relative (§4.8''s identity, exact on the solution curve
+  and first order in the residual off it), and dH_S3/dT > 0'
+- 'HOM-05: the nominal declaration''s target at the same state differs in rcond_1 by more than 1e-3 relative (A30''s
+  1e-6 separates the two declarations)'
+- 'HOM-05: the smallest nonzero scaled entry is >= 1e3 x K04 §4.8''s witness tolerance'
+- 'SYN-001-A02-365: the 47 x 47 bound target is regular with margin — rcond_1 >= 1e4 tau_ill and ||J^-1||_1 <= the
+  absolute limit / 1e3'
+- 'SYN-001-A02-365: det J_A02 / det J_nominal = -dH_S3/dT to 1e-10 relative (§4.8''s identity, exact on the solution
+  curve and first order in the residual off it), and dH_S3/dT > 0'
+- 'SYN-001-A02-365: the nominal declaration''s target at the same state differs in rcond_1 by more than 1e-3 relative
+  (A30''s 1e-6 separates the two declarations)'
+- 'SYN-001-A02-365: the smallest nonzero scaled entry is >= 1e3 x K04 §4.8''s witness tolerance'
+- 'basin set (F14, K03 §10.1''s rule as the mixer enforces it): 45 lattice starts, 18 admitted, the 27 refused are
+  the directions 112, 121, 130, 202, 211, 220, 301, 310, 400 at every magnitude (the rule is intensive), each with
+  K03 margin ≤ −0.115 and a gap ≥ 1e3 × the mixer''s 1e-6 K; every admitted gap is 0 (subcooled or exactly saturated)'
+- 'basin comparison: damped Newton converges to the P01 root from all 18'
+- 'basin comparison: PTC converges to the P01 root from all 18 (it improves no basin)'
+- 'basin comparison: every PTC run''s polish is accepted'
+- 'basin comparison: PTC costs between 1.87 and 8.81 times Newton''s iterations on every start (Newton 5–10, PTC
+  15–55 per start)'
+- '§6.5: the accumulation identity holds on every accepted PTC step of the basin set to 1e-30'
+- '§7.4: the φ floor never binds: the smallest φ at which a ratio was formed exceeds 1e-12 by 1e3'
+- 'named: r = 0.95 initializer -- Newton 5, PTC 39 (one attempt each, heater LIQUID)'
+- 'named: OFF-B at r = 0.95 -- Newton [2, 1, 3], PTC [4, 26]'
+- '§7.5: without the polish OFF-B''s PTC stop has a material envelope 1.31 × τ (K04 would say FAILED)'
+- '§7.5: with the polish every named PTC final state is within 1e-12 scaled of P01''s root'
+- '§7.7: τ_max is never reached on a registered path (largest SER proposal below 1e4 s)'
+- '§7.7: τ_min is reached on registered paths only by ending a retry sequence or clipping a proposal, never inside
+  a decision margin (every retry decision ≥ 1e-3 from it)'
+- 'margins: every stop decided by a factor ≥ 1 + 1e-8 on both sides'
+- 'margins: every Armijo decision ≥ 1e-8 relative from its bound'
+- 'margins: every screen value ≥ 1e-8 from 1 + ε'
+- 'margins: every landing decided by ≥ 1e-8 (ratio gap, or the distance of α_max from 1)'
+- 'margins: every evaluated trial ≥ 1e-6 K inside the provider''s temperature domain'
+- 'HOM-01: 53-bit arithmetic reproduces the λ path and every corrector count'
+- 'HOM-01: 53-bit end temperature within 1e-9 K'
+- 'HOM-02: 53-bit arithmetic reproduces the λ path and every corrector count'
+- 'HOM-02: 53-bit end temperature within 1e-9 K'
+- 'HOM-03: 53-bit arithmetic reproduces the λ path and every corrector count'
+- 'HOM-03: 53-bit end temperature within 1e-9 K'
+- 'HOM-04: 53-bit arithmetic reproduces the λ path and every corrector count'
+- 'HOM-04: 53-bit end temperature within 1e-9 K'
+- 'HOM-05: 53-bit arithmetic reproduces the λ path and every corrector count'
+- 'HOM-05: 53-bit end temperature within 1e-9 K'
+- 'r=0.95/OFF-A/newton: 53-bit arithmetic reproduces the attempt iteration counts'
+- 'r=0.95/OFF-A/ptc: 53-bit arithmetic reproduces the attempt iteration counts'
+- 'r=0.95/OFF-B/newton: 53-bit arithmetic reproduces the attempt iteration counts'
+- 'r=0.95/OFF-B/ptc: 53-bit arithmetic reproduces the attempt iteration counts'
+- 'A15''s floor (F14), r = 0.50: at the root rounded to 53 bits every PTC step is ≤ half of 1e-12 + 10 (θ/Δτ) ‖F̂_σ‖∞,
+  and the Δτ = 1e-4 step''s largest component is U-FLASH.Q (the index-2 duty)'
+- 'A15''s floor (F14), r = 0.95: at the root rounded to 53 bits every PTC step is ≤ half of 1e-12 + 10 (θ/Δτ) ‖F̂_σ‖∞,
+  and the Δτ = 1e-4 step''s largest component is U-FLASH.Q (the index-2 duty)'
+- 'A15''s floor (F14): the Δτ = 1e-4 step exceeds A15''s first tolerance 1e-12 at some r (why the θ/Δτ term is needed)'
+- 'A17''s rule (F14), r = 0.50: in 53 bits the four simple modes are real and equal the closed form to 1e-10 relative;
+  the Jordan pair at −1/θ splits by less than 1e-6/5 relative and its mean equals −1/θ to 1e-10 relative'
+- 'A17''s rule (F14), r = 0.95: in 53 bits the four simple modes are real and equal the closed form to 1e-10 relative;
+  the Jordan pair at −1/θ splits by less than 1e-6/5 relative and its mean equals −1/θ to 1e-10 relative'
+- 'A21''s floor (F14): on the 53-bit named PTC runs the identity''s defect is ≤ 1e-13/10 (1 + θ/Δτ) mol/s, while
+  the old relative rule (1e-9 × max(|F|, tol)) is exceeded'
+- 'A19''s φ floor (F13): every seed''s 53-bit φ departs from the 40-digit φ by at most 1e-15 / 5 absolute, and by
+  more than 1e-12 relative on some seed (why A19 needs the floor)'
+- 'PTC-S1: 53-bit arithmetic reproduces the outcome and the pseudo-step counts'
+- 'PTC-S2: 53-bit arithmetic reproduces the outcome and the pseudo-step counts'
+- 'PTC-S3: 53-bit arithmetic reproduces the outcome and the pseudo-step counts'
+- 'PTC-S4: 53-bit arithmetic reproduces the outcome and the pseudo-step counts'
+- 'PTC-S5: 53-bit arithmetic reproduces the outcome and the pseudo-step counts'

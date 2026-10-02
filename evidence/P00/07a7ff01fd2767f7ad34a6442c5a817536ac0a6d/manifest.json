@@ -1,0 +1,171 @@
+{
+ "work_package": "P00",
+ "commit": "07a7ff01fd2767f7ad34a6442c5a817536ac0a6d",
+ "requirements": [],
+ "status": "reviewed",
+ "inputs": {
+  "case_id": "none",
+  "case_hash": "none",
+  "environment_lock_hash": "a99e3fc99761613f3681be8fe97a387c8761a32cb32898cd4e463052af5641a5"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "bac88864fe463fcfa0fb4b164e3c9882aed43bdb2fdf7daa4f9c3a32fc78a57b"
+  },
+  {
+   "cmd": "ruff check .",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+  },
+  {
+   "cmd": "ruff format --check .",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "d41ae50829b47e318b0787bc39d2a2ea2d52b518cfc7900d2efd569e6d26ab88"
+  },
+  {
+   "cmd": "mypy src",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "14fdf673bd175fe32ef42df34666481bb15e465313f7dbef32d0aea2ba76a26e"
+  },
+  {
+   "cmd": "pytest -q",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "7e758e30122a9613f33c7700602f8bf91801dd939459cb4ab5aa44e0d39d981e"
+  },
+  {
+   "cmd": "sha256sum docs/blueprint-v3.1.md docs/implementation-plan.md CLAUDE.md",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python3 -m venv .venv && .venv/bin/python -m pip install -e '.[dev]'",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "make lock",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "baseline.blueprint_hash",
+   "description": "SHA-256 of docs/blueprint-v3.1.md equals the Baseline SHA-256 recorded in the docs/implementation-plan.md header. Checked by tests/test_document_hashes.py::test_blueprint_hash_matches_plan_header and again by tests/test_requirements_ledger.py::test_recorded_blueprint_hash_matches_plan_header.",
+   "result": "pass",
+   "value": "66f574b07e86a89962236f4a48850e733f3c03379a3a55caf78ef30f7915e8aa",
+   "expected": "66f574b07e86a89962236f4a48850e733f3c03379a3a55caf78ef30f7915e8aa"
+  },
+  {
+   "id": "baseline.plan_hash_recorded",
+   "description": "SHA-256 of docs/implementation-plan.md recorded in docs/requirements.yaml equals the actual file hash. Checked by tests/test_requirements_ledger.py::test_recorded_plan_hash_is_the_actual_file_hash.",
+   "result": "pass",
+   "value": "86b652dadde6be9223105ee00ffa1afe121870278ffd60ae769427785bf4ca23",
+   "expected": "86b652dadde6be9223105ee00ffa1afe121870278ffd60ae769427785bf4ca23"
+  },
+  {
+   "id": "baseline.plan_version",
+   "description": "The execution authority is plan version 1.1, parsed from the plan header. Checked by tests/test_document_hashes.py::test_plan_version_is_the_execution_authority.",
+   "result": "pass",
+   "value": "1.1",
+   "expected": "1.1"
+  },
+  {
+   "id": "baseline.no_user_work_overwritten",
+   "description": "All eight files present at baseline commit 292f8fe are byte-identical afterwards; P00 added files only and modified or deleted none. Verified with git diff --stat against 292f8fe for CLAUDE.md, .gitignore, docs/blueprint-v3.1.md, docs/implementation-plan.md and docs/design-history/, which reported no changes.",
+   "result": "pass",
+   "value": "0 files changed",
+   "expected": "0 files changed"
+  },
+  {
+   "id": "bootstrap.package_imports",
+   "description": "process_runtime imports, exposes __version__ 0.0.0.dev0 and ships py.typed; all nine blueprint section 3 layers (ir, units, models, thermo, compile, graph, numerics, orchestrator, application) import and each docstring names its introducing package; no extra subpackage exists. Checked by tests/test_package_imports.py (12 test cases).",
+   "result": "pass",
+   "value": "12 passed",
+   "expected": "12 passed"
+  },
+  {
+   "id": "ledger.schema_validation",
+   "description": "docs/requirements.yaml validates against schemas/requirements-ledger.schema.json (JSON Schema draft 2020-12); the schema itself is a valid draft 2020-12 schema. Checked by tests/test_requirements_ledger.py::test_ledger_validates and ::test_schema_is_itself_valid.",
+   "result": "pass",
+   "value": "0 validation errors",
+   "expected": "0 validation errors"
+  },
+  {
+   "id": "ledger.coverage",
+   "description": "The ledger covers exactly requirements D01-D20 and A01-A10, exactly gates G00-G06, V11-V20, W21-W27, X31, X41, X42, and every work package of plan sections 4.1-4.5; every referenced package ID exists in the packages table; IDs are unique; dependencies are acyclic; statuses use the declared vocabulary. Checked by tests/test_requirements_ledger.py (7 test cases).",
+   "result": "pass",
+   "value": "30 requirements, 27 gates, 31 packages",
+   "expected": "30 requirements, 27 gates, 31 packages"
+  },
+  {
+   "id": "ledger.no_placeholders",
+   "description": "No string anywhere in docs/requirements.yaml contains angle-bracket placeholder text. Checked by tests/test_requirements_ledger.py::test_no_angle_bracket_placeholders.",
+   "result": "pass",
+   "value": "0 offending strings",
+   "expected": "0 offending strings"
+  },
+  {
+   "id": "lint.ruff_check",
+   "description": "ruff check . with line-length 100 and rule sets E, F, I, B, UP, N over the whole repository.",
+   "result": "pass",
+   "value": "All checks passed!",
+   "expected": "exit code 0"
+  },
+  {
+   "id": "lint.ruff_format",
+   "description": "ruff format --check . over the whole repository.",
+   "result": "pass",
+   "value": "15 files already formatted",
+   "expected": "exit code 0"
+  },
+  {
+   "id": "types.mypy_strict",
+   "description": "mypy in strict mode with warn_unreachable over src/.",
+   "result": "pass",
+   "value": "Success: no issues found in 10 source files",
+   "expected": "exit code 0"
+  },
+  {
+   "id": "tests.pytest",
+   "description": "pytest -q over tests/ at commit 07a7ff01fd2767f7ad34a6442c5a817536ac0a6d. 34 tests collected. The 6 skips are the parametrized evidence-manifest cases: at this commit no manifest existed yet, so their parameter set was empty. See limitations.",
+   "result": "pass",
+   "value": "28 passed, 6 skipped",
+   "expected": "0 failed"
+  },
+  {
+   "id": "environment.lock_reproducible",
+   "description": "A fresh python3 -m venv .venv followed by pip install -e '.[dev]' resolved to the exact pinned versions, and requirements.lock was regenerated from that environment by make lock (pip freeze --exclude-editable). Python 3.13.5 on Debian GNU/Linux 13, x86-64.",
+   "result": "pass",
+   "value": "18 locked distributions",
+   "expected": "18 locked distributions"
+  },
+  {
+   "id": "ci.workflow_execution",
+   "description": ".github/workflows/ci.yml is committed but was not executed by this package; no CI evidence exists. Recorded as not applicable rather than pass so that no CI claim is inferred from this manifest.",
+   "result": "not_applicable"
+  }
+ ],
+ "artifacts": [],
+ "limitations": [
+  "P00 maps to no D or A requirement in implementation plan section 5. Its acceptance evidence in plan section 4.1 is a clean baseline report, a reproducible environment, no overwritten user work, and initial requirement statuses; those are the checks above. The requirements array is therefore deliberately empty rather than padded with a requirement this package does not supply evidence for.",
+  "P00 is scaffolding. Nothing here is numerical verification, empirical validation, or optimality evidence. No equation, unit convention, state definition, zero-flow rule, residual, derivative, or solver behavior exists in this repository yet; the nine layer packages contain a docstring and nothing else.",
+  "No continuous-integration run was executed. .github/workflows/ci.yml is committed but has never run on GitHub Actions. Every result in this manifest was produced locally.",
+  "Single platform only: Debian GNU/Linux 13 (trixie), kernel 6.12.86+deb13-amd64, x86-64, CPython 3.13.5. The two-platform structural-identity evidence required by gate G05 is work package K05 and is not claimed here.",
+  "The six skipped pytest cases at this commit are the parametrized evidence-manifest checks (validation, placeholder rejection, path/content agreement, hash form, commit existence, review self-certification). They had an empty parameter set because this manifest did not exist yet. They are exercised from the following commit, which adds this file; that run's result is not recorded in this manifest, since a manifest cannot describe a commit later than the one it certifies.",
+  "The lint, format, type and test checks establish that the scaffolding is internally consistent. They establish nothing about the correctness of any future scientific code.",
+  "Requirement D17's owning packages are recorded in docs/requirements.yaml as the release-closing packages K06, T08, M07, S03, R01, R02, R03. Plan section 5 gives them as 'All release gates', which is not a package list; this expansion is an Opus bookkeeping interpretation awaiting Fable's confirmation and is noted in docs/progress.md under handoff.",
+  "No LICENSE text file exists. pyproject.toml declares license = 'Apache-2.0' as the intent recorded in blueprint section 15, but that section conditions adoption on the project holding distribution rights, so the text file awaits Frank's confirmation. The declared metadata and the absent file are deliberately inconsistent and visible."
+ ],
+ "review": {
+  "numerical": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more.",
+  "process_model": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more."
+ }
+}

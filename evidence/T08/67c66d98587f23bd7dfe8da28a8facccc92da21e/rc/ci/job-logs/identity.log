@@ -1,0 +1,257 @@
+identity	Set up job	﻿2026-10-02T13:04:52.3178281Z Current runner version: '2.337.0'
+identity	Set up job	2026-10-02T13:04:52.3235781Z ##[group]Runner Image Provisioner
+identity	Set up job	2026-10-02T13:04:52.3237083Z Hosted Compute Agent
+identity	Set up job	2026-10-02T13:04:52.3238066Z Version: 20260901.588
+identity	Set up job	2026-10-02T13:04:52.3239470Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+identity	Set up job	2026-10-02T13:04:52.3240702Z Build Date: 2026-09-01T19:56:44Z
+identity	Set up job	2026-10-02T13:04:52.3241876Z Worker ID: {01dc3382-259c-44c7-b730-21a243984cff}
+identity	Set up job	2026-10-02T13:04:52.3243117Z Azure Region: eastus
+identity	Set up job	2026-10-02T13:04:52.3244053Z ##[endgroup]
+identity	Set up job	2026-10-02T13:04:52.3246333Z ##[group]Operating System
+identity	Set up job	2026-10-02T13:04:52.3247372Z Ubuntu
+identity	Set up job	2026-10-02T13:04:52.3248319Z 24.04.5
+identity	Set up job	2026-10-02T13:04:52.3269660Z LTS
+identity	Set up job	2026-10-02T13:04:52.3270652Z ##[endgroup]
+identity	Set up job	2026-10-02T13:04:52.3271627Z ##[group]Runner Image
+identity	Set up job	2026-10-02T13:04:52.3272593Z Image: ubuntu-24.04
+identity	Set up job	2026-10-02T13:04:52.3274114Z Version: 20260927.320.1
+identity	Set up job	2026-10-02T13:04:52.3275973Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+identity	Set up job	2026-10-02T13:04:52.3279291Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+identity	Set up job	2026-10-02T13:04:52.3280953Z ##[endgroup]
+identity	Set up job	2026-10-02T13:04:52.3286632Z ##[group]GITHUB_TOKEN Permissions
+identity	Set up job	2026-10-02T13:04:52.3310148Z Actions: write
+identity	Set up job	2026-10-02T13:04:52.3311246Z ArtifactMetadata: write
+identity	Set up job	2026-10-02T13:04:52.3312484Z Attestations: write
+identity	Set up job	2026-10-02T13:04:52.3313508Z Checks: write
+identity	Set up job	2026-10-02T13:04:52.3314407Z CodeQuality: write
+identity	Set up job	2026-10-02T13:04:52.3315481Z Contents: write
+identity	Set up job	2026-10-02T13:04:52.3316436Z CopilotRequests: write
+identity	Set up job	2026-10-02T13:04:52.3317583Z Deployments: write
+identity	Set up job	2026-10-02T13:04:52.3339069Z Discussions: write
+identity	Set up job	2026-10-02T13:04:52.3340240Z Drives: write
+identity	Set up job	2026-10-02T13:04:52.3341194Z Issues: write
+identity	Set up job	2026-10-02T13:04:52.3342226Z Metadata: read
+identity	Set up job	2026-10-02T13:04:52.3343461Z Models: read
+identity	Set up job	2026-10-02T13:04:52.3344463Z Packages: write
+identity	Set up job	2026-10-02T13:04:52.3345458Z Pages: write
+identity	Set up job	2026-10-02T13:04:52.3346689Z PullRequests: write
+identity	Set up job	2026-10-02T13:04:52.3347825Z RepositoryProjects: write
+identity	Set up job	2026-10-02T13:04:52.3349511Z SecurityEvents: write
+identity	Set up job	2026-10-02T13:04:52.3350555Z Statuses: write
+identity	Set up job	2026-10-02T13:04:52.3351467Z VulnerabilityAlerts: read
+identity	Set up job	2026-10-02T13:04:52.3352616Z ##[endgroup]
+identity	Set up job	2026-10-02T13:04:52.3355593Z Secret source: Actions
+identity	Set up job	2026-10-02T13:04:52.3357414Z Cache mode: write
+identity	Set up job	2026-10-02T13:04:52.3358997Z Prepare workflow directory
+identity	Set up job	2026-10-02T13:04:52.4365635Z Prepare all required actions
+identity	Set up job	2026-10-02T13:04:52.4530873Z Getting action download info
+identity	Set up job	2026-10-02T13:04:52.7557496Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+identity	Set up job	2026-10-02T13:04:52.8501890Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+identity	Set up job	2026-10-02T13:04:53.0497638Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+identity	Set up job	2026-10-02T13:04:53.2404447Z Complete job name: identity
+identity	Run actions/checkout@v4	﻿2026-10-02T13:04:53.3166547Z ##[group]Run actions/checkout@v4
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3167460Z with:
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3168054Z   repository: computational-chemical-engineering/openflowsheet
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3172500Z   token: ***
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3172929Z   ssh-strict: true
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3173365Z   ssh-user: git
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3173819Z   persist-credentials: true
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3174313Z   clean: true
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3174776Z   sparse-checkout-cone-mode: true
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3175303Z   fetch-depth: 1
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3175731Z   fetch-tags: false
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3176185Z   show-progress: true
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3176639Z   lfs: false
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3177052Z   submodules: false
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3177501Z   set-safe-directory: true
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3178012Z   allow-unsafe-pr-checkout: false
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.3179190Z ##[endgroup]
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4292075Z Syncing repository: computational-chemical-engineering/openflowsheet
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4295406Z ##[group]Getting Git version info
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4296741Z Working directory is '/home/runner/work/openflowsheet/openflowsheet'
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4299801Z [command]/usr/bin/git version
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4389720Z git version 2.55.0
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4409473Z ##[endgroup]
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4425921Z Temporarily overriding HOME='/home/runner/work/_temp/987a59d3-815f-4d38-a471-16fa9bacfa39' before making global git config changes
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4429106Z Adding repository directory to the temporary git global config as a safe directory
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4433649Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4494277Z Deleting the contents of '/home/runner/work/openflowsheet/openflowsheet'
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4500782Z ##[group]Initializing the repository
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4505720Z [command]/usr/bin/git init /home/runner/work/openflowsheet/openflowsheet
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4615618Z hint: Using 'master' as the name for the initial branch. This default branch name
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4617984Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4619839Z hint: to use in all of your new repositories, which will suppress this warning,
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4621500Z hint: call:
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4622378Z hint:
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4623539Z hint: 	git config --global init.defaultBranch <name>
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4625004Z hint:
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4626404Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4628504Z hint: 'development'. The just-created branch can be renamed via this command:
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4630492Z hint:
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4631669Z hint: 	git branch -m <name>
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4632928Z hint:
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4634503Z hint: Disable this message with "git config set advice.defaultBranchName false"
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4636581Z Initialized empty Git repository in /home/runner/work/openflowsheet/openflowsheet/.git/
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4641675Z [command]/usr/bin/git remote add origin https://github.com/computational-chemical-engineering/openflowsheet
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4710274Z ##[endgroup]
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4711856Z ##[group]Disabling automatic garbage collection
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4715717Z [command]/usr/bin/git config --local gc.auto 0
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4751338Z ##[endgroup]
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4752359Z ##[group]Setting up auth
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4760580Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.4796917Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.5146153Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.5183988Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.5421250Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.5451898Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.5740772Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.5780228Z ##[endgroup]
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.5800334Z ##[group]Fetching the repository
+identity	Run actions/checkout@v4	2026-10-02T13:04:53.5821620Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +67c66d98587f23bd7dfe8da28a8facccc92da21e:refs/remotes/origin/wp/T08
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3218471Z From https://github.com/computational-chemical-engineering/openflowsheet
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3229958Z  * [new ref]         67c66d98587f23bd7dfe8da28a8facccc92da21e -> origin/wp/T08
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3241367Z ##[endgroup]
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3242659Z ##[group]Determining the checkout info
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3243886Z ##[endgroup]
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3245170Z [command]/usr/bin/git sparse-checkout disable
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3284327Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3316664Z ##[group]Checking out the ref
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.3327346Z [command]/usr/bin/git checkout --progress --force -B wp/T08 refs/remotes/origin/wp/T08
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.6007376Z Switched to a new branch 'wp/T08'
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.6013043Z branch 'wp/T08' set up to track 'origin/wp/T08'.
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.6044456Z ##[endgroup]
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.6093651Z [command]/usr/bin/git log -1 --format=%H
+identity	Run actions/checkout@v4	2026-10-02T13:04:55.6123406Z 67c66d98587f23bd7dfe8da28a8facccc92da21e
+identity	Run actions/download-artifact@v4	﻿2026-10-02T13:04:55.6394681Z ##[group]Run actions/download-artifact@v4
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.6395127Z with:
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.6395404Z   pattern: structural-identity-*
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.6395713Z   path: identities
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.6395976Z   merge-multiple: false
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.6396361Z   repository: computational-chemical-engineering/openflowsheet
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.6396802Z   run-id: 37008077757
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.6397059Z ##[endgroup]
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.8210505Z (node:2069) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.8221008Z (Use `node --trace-deprecation ...` to show where the warning was created)
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.8961833Z Found 12 artifact(s)
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.9170674Z Filtering artifacts by pattern 'structural-identity-*'
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.9173108Z Preparing to download the following artifacts:
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.9174464Z - structural-identity-ubuntu-24.04-arm (ID: 11227487017, Size: 190001, Expected Digest: sha256:aa6a9029d52c5cad3cf75fd1eee46518385fbd0baa487e2a836201705cfed30c)
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:55.9176603Z - structural-identity-ubuntu-latest (ID: 11227263743, Size: 190002, Expected Digest: sha256:01b1ce9c4b6d7573929fefd310e456a0f8c0dcef7fef5601b3b97f19da00a719)
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.0223226Z Redirecting to blob download url: https://productionresultssa5.blob.core.windows.net/actions-results/89e686f0-4915-44ea-b22d-361c1977d7dc/workflow-job-run-3dbcd881-60f8-5971-9e97-e3e902043da9/artifacts/a8bd061afccd26c2a08b238dd0ca769d1ac2934954d09356bc80933e11ce2d67.zip
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.0226649Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-ubuntu-24.04-arm
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.0597527Z Redirecting to blob download url: https://productionresultssa5.blob.core.windows.net/actions-results/89e686f0-4915-44ea-b22d-361c1977d7dc/workflow-job-run-21c656e8-8d64-5865-9d9b-a6b7ce0d9130/artifacts/311b1d67c140c151d759f3e44d31a0a3b12b964419759907445c032ecb5d3121.zip
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.0605433Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-ubuntu-latest
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.0699653Z (node:2069) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.1063152Z SHA256 digest of downloaded artifact is aa6a9029d52c5cad3cf75fd1eee46518385fbd0baa487e2a836201705cfed30c
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.1229497Z Artifact download completed successfully.
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.1529900Z SHA256 digest of downloaded artifact is 01b1ce9c4b6d7573929fefd310e456a0f8c0dcef7fef5601b3b97f19da00a719
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.1536027Z Artifact download completed successfully.
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.1548081Z Total of 2 artifact(s) downloaded
+identity	Run actions/download-artifact@v4	2026-10-02T13:04:56.1548956Z Download artifact has finished successfully
+identity	Run actions/setup-python@v5	﻿2026-10-02T13:04:56.1652123Z ##[group]Run actions/setup-python@v5
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.1652474Z with:
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.1652715Z   python-version: 3.13
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.1652983Z   check-latest: false
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.1655938Z   token: ***
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.1656185Z   update-environment: true
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.1656461Z   allow-prereleases: false
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.1656728Z   freethreaded: false
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.1656971Z ##[endgroup]
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.3048874Z ##[group]Installed versions
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.3141201Z (node:2082) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.3142973Z Successfully set up CPython (3.13.15)
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.3144407Z (Use `node --trace-deprecation ...` to show where the warning was created)
+identity	Run actions/setup-python@v5	2026-10-02T13:04:56.3161633Z ##[endgroup]
+identity	Install the comparator's dependencies	﻿2026-10-02T13:04:56.3310791Z ##[group]Run python -m pip install -c requirements.lock pyyaml numpy
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3311447Z ^[[36;1mpython -m pip install -c requirements.lock pyyaml numpy^[[0m
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3591927Z shell: /usr/bin/bash -e {0}
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3592317Z env:
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3592691Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3593296Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3593892Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3594390Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3594897Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3595406Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+identity	Install the comparator's dependencies	2026-10-02T13:04:56.3595823Z ##[endgroup]
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.4335605Z Collecting pyyaml
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.4845806Z   Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.6766467Z Collecting numpy
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.6806417Z   Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.7149901Z Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (759 kB)
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.7285314Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 759.5/759.5 kB 74.0 MB/s  0:00:00
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.7360526Z Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.1 MB)
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.8382418Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.1/16.1 MB 159.6 MB/s  0:00:00
+identity	Install the comparator's dependencies	2026-10-02T13:04:57.9169553Z Installing collected packages: pyyaml, numpy
+identity	Install the comparator's dependencies	2026-10-02T13:04:59.9301316Z 
+identity	Install the comparator's dependencies	2026-10-02T13:04:59.9314463Z Successfully installed numpy-2.2.4 pyyaml-6.0.2
+identity	Compare the structural identity across platforms	﻿2026-10-02T13:04:59.9868059Z ##[group]Run python - <<'PY'
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9868461Z ^[[36;1mpython - <<'PY'^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9869050Z ^[[36;1mimport json, pathlib, sys^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9869461Z ^[[36;1mfound = sorted(pathlib.Path("identities").rglob("identity.json"))^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9869887Z ^[[36;1mif len(found) < 2:^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9870236Z ^[[36;1m    sys.exit(f"G05 needs two platforms; found {len(found)}")^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9870773Z ^[[36;1mdocuments = {path.parent.name: json.loads(path.read_text()) for path in found}^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9871245Z ^[[36;1mnames = sorted(documents)^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9871531Z ^[[36;1mfirst = documents[names[0]]^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9871800Z ^[[36;1mfailures = []^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9872074Z ^[[36;1msys.path.insert(0, "src")^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9872426Z ^[[36;1mfrom openflowsheet.run.compare import differences^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9872791Z ^[[36;1mfloats = {^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9873088Z ^[[36;1m    path.parent.name: json.loads(path.read_text())^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9873559Z ^[[36;1m    for path in pathlib.Path("identities").rglob("t02-floats.json")^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9873936Z ^[[36;1m}^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9874153Z ^[[36;1mif sorted(floats) != names:^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9874598Z ^[[36;1m    failures.append(f"t02-floats.json from {sorted(floats)}, identities from {names}")^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9875084Z ^[[36;1mfor name in names[1:]:^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9875362Z ^[[36;1m    other = documents[name]^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9875695Z ^[[36;1m    for key in sorted(set(first) | set(other)):^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9876049Z ^[[36;1m        if first.get(key) != other.get(key):^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9876410Z ^[[36;1m            failures.append(f"{key}: {names[0]} != {name}")^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9876978Z ^[[36;1m    if name in floats and names[0] in floats:^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9877292Z ^[[36;1m        failures += [^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9877577Z ^[[36;1m            f"{found} ({names[0]} vs {name})"^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9877899Z ^[[36;1m            for found in differences(^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9878209Z ^[[36;1m                floats[name],^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9878504Z ^[[36;1m                floats[names[0]],^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9879178Z ^[[36;1m                "t02_floats",^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9879556Z ^[[36;1m                # ADR 0025 W5: registered comparisons keep v1 (RC F4).^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9879990Z ^[[36;1m                policy_id="K04-numerical-policy-v1",^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9880315Z ^[[36;1m            )^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9880544Z ^[[36;1m        ]^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9880769Z ^[[36;1mfor name in names:^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9881099Z ^[[36;1m    print(f"{name}: {documents[name]['structural_sha256']}")^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9881471Z ^[[36;1mif failures:^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9881888Z ^[[36;1m    sys.exit("R0 structural artifacts differ across platforms:\n  " + "\n  ".join(failures))^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9882499Z ^[[36;1mprint(f"G05: R0 structural identity equal across {len(names)} platforms")^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9882907Z ^[[36;1mPY^[[0m
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9946770Z shell: /usr/bin/bash -e {0}
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9947046Z env:
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9947337Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9947805Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9948256Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9948940Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9949363Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9949780Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+identity	Compare the structural identity across platforms	2026-10-02T13:04:59.9950126Z ##[endgroup]
+identity	Compare the structural identity across platforms	2026-10-02T13:05:00.2700329Z structural-identity-ubuntu-24.04-arm: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+identity	Compare the structural identity across platforms	2026-10-02T13:05:00.2719861Z structural-identity-ubuntu-latest: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+identity	Compare the structural identity across platforms	2026-10-02T13:05:00.2729409Z G05: R0 structural identity equal across 2 platforms
+identity	Post Run actions/setup-python@v5	﻿2026-10-02T13:05:00.3167463Z Post job cleanup.
+identity	Post Run actions/setup-python@v5	2026-10-02T13:05:00.4489533Z (node:2119) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+identity	Post Run actions/setup-python@v5	2026-10-02T13:05:00.4490984Z (Use `node --trace-deprecation ...` to show where the warning was created)
+identity	Post Run actions/checkout@v4	﻿2026-10-02T13:05:00.4665209Z Post job cleanup.
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.5600244Z [command]/usr/bin/git version
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.5642653Z git version 2.55.0
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.5684029Z Temporarily overriding HOME='/home/runner/work/_temp/cd40423b-0a59-44f9-874e-8d8655dda606' before making global git config changes
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.5686037Z Adding repository directory to the temporary git global config as a safe directory
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.5690594Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.5734899Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.5774172Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.6016398Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.6049567Z http.https://github.com/.extraheader
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.6058308Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.6093940Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.6552559Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+identity	Post Run actions/checkout@v4	2026-10-02T13:05:00.6556069Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+identity	Complete job	﻿2026-10-02T13:05:00.7081062Z Cleaning up orphan processes
+identity	Complete job	2026-10-02T13:05:00.7353064Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/job-event.schema.json",
+  "title": "JobEvent",
+  "description": "T07 design note §5.6, ADR 0008 Amendment 1 C6 J2, J5 and J6. One event of a job's lifecycle. **J2:** an `output` event appends exactly one artifact reference, and outputs are never read from the payload of the event that ends the job. **J5:** whether an event ends the job is `ends_job`, never `kind`; the kind enum is closed for producers — this schema — and open for consumers, which read only the common members of an event whose kind they do not know and still honour `ends_job`. **J6:** `sequence` is dense from 0, `accepted` is always sequence 0, and exactly one event ends a job with nothing after it (the lifecycle checker, §6.3). Payload members are each required in their own kind's branch and absent everywhere else.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id",
+    "sequence",
+    "kind",
+    "ends_job",
+    "recorded_at"
+  ],
+  "properties": {
+    "job_id": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/job_id"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "kind": {
+      "enum": [
+        "accepted",
+        "started",
+        "progress",
+        "output",
+        "cancel_requested",
+        "ended"
+      ]
+    },
+    "ends_job": {
+      "type": "boolean",
+      "description": "J5's member: whether this event ends the job."
+    },
+    "recorded_at": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/timestamp"
+    },
+    "progress": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/progress"
+    },
+    "output": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/artifact_ref"
+    },
+    "ending": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/job_ending"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/api-error.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "kind": {
+          "const": "accepted"
+        },
+        "ends_job": {
+          "const": false
+        },
+        "sequence": {
+          "const": 0
+        },
+        "progress": false,
+        "output": false,
+        "ending": false,
+        "error": false
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "started"
+        },
+        "ends_job": {
+          "const": false
+        },
+        "progress": false,
+        "output": false,
+        "ending": false,
+        "error": false
+      }
+    },
+    {
+      "required": [
+        "progress"
+      ],
+      "properties": {
+        "kind": {
+          "const": "progress"
+        },
+        "ends_job": {
+          "const": false
+        },
+        "output": false,
+        "ending": false,
+        "error": false
+      }
+    },
+    {
+      "required": [
+        "output"
+      ],
+      "properties": {
+        "kind": {
+          "const": "output"
+        },
+        "ends_job": {
+          "const": false
+        },
+        "progress": false,
+        "ending": false,
+        "error": false
+      }
+    },
+    {
+      "properties": {
+        "kind": {
+          "const": "cancel_requested"
+        },
+        "ends_job": {
+          "const": false
+        },
+        "progress": false,
+        "output": false,
+        "ending": false,
+        "error": false
+      }
+    },
+    {
+      "required": [
+        "ending",
+        "error"
+      ],
+      "properties": {
+        "kind": {
+          "const": "ended"
+        },
+        "ends_job": {
+          "const": true
+        },
+        "progress": false,
+        "output": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# Valid Quantity: the SYN-001 nominal flash temperature, a fixed absolute temperature.
+value: 360.0
+unit: K
+dimension:
+- 0
+- 0
+- 0
+- 1
+- 0
+- 0
+- 0
+kind: temperature
+meaning: Isothermal flash temperature of the SYN-001 nominal case
+role: fixed
+bounds:
+  lower: 280.0
+  upper: 440.0
+nominal: 360.0
+display_unit: degC
+uncertainty_ref: null

@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/failure-bundle.schema.json",
+  "title": "FailureBundle",
+  "description": "K04 \u00a710.1, blueprint \u00a78.2. What a solve that did not converge is allowed to say. It carries **no verdict word** \u2014 an injected failure must not become a successful certificate through fallback \u2014 and **no infeasibility claim**: a solver may report that it failed, never that no answer exists (\u00a77.7). `observations` and `inferred_causes` are separate and never mixed, because a guess formatted like a measurement is worse than no guess.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "outcome",
+    "taxonomy",
+    "observations",
+    "inferred_causes",
+    "implicated_sources",
+    "attempt_tree",
+    "replay_identity",
+    "best_checkpoint",
+    "check_report",
+    "suggested_actions"
+  ],
+  "properties": {
+    "outcome": {
+      "type": "string",
+      "minLength": 1
+    },
+    "taxonomy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observations": {
+      "type": "object"
+    },
+    "inferred_causes": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "implicated_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attempt_tree": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "replay_identity": {
+      "type": "object"
+    },
+    "best_checkpoint": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "check_report": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "suggested_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "preconditions",
+          "requires_permission"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "increase_budget",
+              "supply_initial_guess",
+              "revise_specification",
+              "report_defect",
+              "provide_derivatives"
+            ]
+          },
+          "preconditions": {
+            "type": "string"
+          },
+          "requires_permission": {
+            "const": true
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2997 @@
+schema_version: 1
+generator: docs/derivations/scripts/t06_reference.py
+specification: docs/derivations/T06-corpus-spec.md
+precision: mpmath 40 significant digits, written to 20
+independence: imports t05_reference (the T05 twin) only; nothing from process_runtime or benchmarks
+closed_form:
+  corpus_cases:
+    SYN-001-T06-THM01:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '300.00000000000000000'
+          P_Pa: '120000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '0.63272942777817581187'
+          - '0.38291259215744634184'
+          - '0.16470408245056590329'
+          T_K: '365.00000000000000000'
+          P_Pa: '120000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '0.36727057222182418813'
+          - '0.61708740784255365816'
+          - '0.83529591754943409671'
+          T_K: '365.00000000000000000'
+          P_Pa: '120000.00000000000000'
+      duty_W:
+        U-FLASH: '52567.895652742819791'
+      work_W: {}
+      extent_mol_per_s: {}
+      signatures:
+        U-FLASH: TWO_PHASE
+    SYN-001-T06-THM02:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '300.00000000000000000'
+          P_Pa: '150000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '0.41437623432968905804'
+          - '0.20611582788829240659'
+          - '0.077530773845481198155'
+          T_K: '369.15677444899158910'
+          P_Pa: '150000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '0.58562376567031094196'
+          - '0.79388417211170759341'
+          - '0.92246922615451880185'
+          T_K: '369.15677444899158910'
+          P_Pa: '150000.00000000000000'
+      duty_W:
+        U-PHF: '40000.000000000000000'
+      work_W: {}
+      extent_mol_per_s: {}
+      signatures:
+        U-PHF: TWO_PHASE
+    SYN-001-T06-THM10:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '400.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '0.88040391432680535600'
+          - '0.72768195558069274121'
+          - '0.46113914388213870003'
+          T_K: '366.73191146178076454'
+          P_Pa: '100000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '0.11959608567319464400'
+          - '0.27231804441930725879'
+          - '0.53886085611786129997'
+          T_K: '366.73191146178076454'
+          P_Pa: '100000.00000000000000'
+      duty_W:
+        U-PHF: '-40000.000000000000000'
+      work_W: {}
+      extent_mol_per_s: {}
+      signatures:
+        U-PHF: TWO_PHASE
+    SYN-001-T06-STA02:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '0.0'
+          - '2.0000000000000000000'
+          T_K: '300.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '0.0'
+          - '2.0000000000000000000'
+          T_K: '331.40612819796957569'
+          P_Pa: '100000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '1.3858845011660049301'
+          - '0.0'
+          - '4.2070629236890139520'
+          T_K: '351.38702157374961256'
+          P_Pa: '100000.00000000000000'
+        S4:
+          n_mol_per_s:
+          - '0.74274366588933004663'
+          - '0.0'
+          - '0.52862471754065736535'
+          T_K: '374.50460566078204584'
+          P_Pa: '100000.00000000000000'
+        S5:
+          n_mol_per_s:
+          - '0.64314083527667488343'
+          - '0.0'
+          - '3.6784382061483565866'
+          T_K: '374.50460566078204584'
+          P_Pa: '100000.00000000000000'
+        S6:
+          n_mol_per_s:
+          - '0.38588450116600493006'
+          - '0.0'
+          - '2.2070629236890139520'
+          T_K: '374.50460566078204584'
+          P_Pa: '100000.00000000000000'
+        S7:
+          n_mol_per_s:
+          - '0.25725633411066995337'
+          - '0.0'
+          - '1.4713752824593426347'
+          T_K: '374.50460566078204584'
+          P_Pa: '100000.00000000000000'
+        S8:
+          n_mol_per_s:
+          - '0.25725633411066995337'
+          - '0.0'
+          - '1.4713752824593426347'
+          T_K: '320.00000000000000000'
+          P_Pa: '100000.00000000000000'
+      duty_W:
+        U-PHF: '50000.000000000000000'
+        U-HX: '9421.8384593908727064'
+      work_W: {}
+      extent_mol_per_s: {}
+      signatures:
+        U-PHF: TWO_PHASE
+    SYN-001-T06-NET02:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '300.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '7.6442651699596384236'
+          - '12.513693655936886537'
+          - '16.825765959469665133'
+          T_K: '353.79246307080145402'
+          P_Pa: '100000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '7.6442651699596384236'
+          - '12.513693655936886537'
+          - '16.825765959469665133'
+          T_K: '358.00000000000000000'
+          P_Pa: '100000.00000000000000'
+          regime: TWO_PHASE
+          beta: '0.015413369725987703366'
+          vapor_mol_per_s:
+          - '0.31122888536246526415'
+          - '0.18252840215992096118'
+          - '0.076286536438638081558'
+          liquid_mol_per_s:
+          - '7.3330362845971731595'
+          - '12.331165253776965576'
+          - '16.749479423031027051'
+        S4:
+          n_mol_per_s:
+          - '0.65030183316001903033'
+          - '0.39401612337174281386'
+          - '0.16706494950159657195'
+          T_K: '358.54112997625778148'
+          P_Pa: '100000.00000000000000'
+        S5:
+          n_mol_per_s:
+          - '6.9939633367996193933'
+          - '12.119677532565143723'
+          - '16.658701009968068561'
+          T_K: '358.54112997625778148'
+          P_Pa: '100000.00000000000000'
+        S6:
+          n_mol_per_s:
+          - '6.6442651699596384236'
+          - '11.513693655936886537'
+          - '15.825765959469665133'
+          T_K: '358.54112997625778148'
+          P_Pa: '100000.00000000000000'
+        S7:
+          n_mol_per_s:
+          - '0.34969816683998096967'
+          - '0.60598387662825718614'
+          - '0.83293505049840342805'
+          T_K: '358.54112997625778148'
+          P_Pa: '100000.00000000000000'
+      duty_W:
+        U-HEAT: '31487.641755585974637'
+        U-PHF: '20000.000000000000000'
+      work_W: {}
+      extent_mol_per_s: {}
+      signatures:
+        U-HEAT: TWO_PHASE
+        U-PHF: TWO_PHASE
+    SYN-001-T06-NET03:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '300.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '2.7270664699334097547'
+          - '2.6204330726261282629'
+          - '1.6549961330617003921'
+          T_K: '322.86325253755276411'
+          P_Pa: '100000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '3.0990072986144411382'
+          - '3.4324013000981560202'
+          - '2.6335998916618583299'
+          T_K: '331.58455011748660489'
+          P_Pa: '100000.00000000000000'
+        S4:
+          n_mol_per_s:
+          - '3.0990072986144411382'
+          - '3.4324013000981560202'
+          - '2.6335998916618583299'
+          T_K: '358.00000000000000000'
+          P_Pa: '100000.00000000000000'
+          regime: TWO_PHASE
+          beta: '0.46073719994847820725'
+          vapor_mol_per_s:
+          - '2.1645455754432801593'
+          - '1.5338010332658968805'
+          - '0.52431374064997886538'
+          liquid_mol_per_s:
+          - '0.93446172317116097891'
+          - '1.8986002668322591397'
+          - '2.1092861510118794646'
+        S5:
+          n_mol_per_s:
+          - '2.3551256412523783712'
+          - '1.8084648451541005056'
+          - '0.67639237446154245419'
+          T_K: '359.82523760504815781'
+          P_Pa: '100000.00000000000000'
+        S6:
+          n_mol_per_s:
+          - '0.74388165736206276700'
+          - '1.6239364549440555146'
+          - '1.9572075172003158757'
+          T_K: '359.82523760504815781'
+          P_Pa: '100000.00000000000000'
+        S7:
+          n_mol_per_s:
+          - '0.37194082868103138350'
+          - '0.81196822747202775730'
+          - '0.97860375860015793787'
+          T_K: '359.82523760504815781'
+          P_Pa: '100000.00000000000000'
+        S8:
+          n_mol_per_s:
+          - '0.37194082868103138350'
+          - '0.81196822747202775730'
+          - '0.97860375860015793787'
+          T_K: '359.82523760504815781'
+          P_Pa: '100000.00000000000000'
+        S9:
+          n_mol_per_s:
+          - '2.3551256412523783712'
+          - '1.8084648451541005056'
+          - '0.67639237446154245419'
+          T_K: '340.00000000000000000'
+          P_Pa: '100000.00000000000000'
+          regime: TWO_PHASE
+          beta: '0.17303515514858346330'
+          vapor_mol_per_s:
+          - '0.62805917131896861650'
+          - '0.18803177252797224270'
+          - '0.021396241399842062130'
+          liquid_mol_per_s:
+          - '1.7270664699334097547'
+          - '1.6204330726261282629'
+          - '0.65499613306170039206'
+        S10:
+          n_mol_per_s:
+          - '1.7270664699334097547'
+          - '1.6204330726261282629'
+          - '0.65499613306170039206'
+          T_K: '340.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S11:
+          n_mol_per_s:
+          - '0.62805917131896861650'
+          - '0.18803177252797224270'
+          - '0.021396241399842062130'
+          T_K: '340.00000000000000000'
+          P_Pa: '100000.00000000000000'
+      duty_W:
+        U-HEAT: '142688.43355183778857'
+        U-PHF: '20000.000000000000000'
+        U-COOL: '-124309.89960638553172'
+        U-FL2: '0.0'
+      work_W: {}
+      extent_mol_per_s: {}
+      signatures:
+        U-HEAT: TWO_PHASE
+        U-PHF: TWO_PHASE
+        U-COOL: TWO_PHASE
+        U-FL2: TWO_PHASE
+    SYN-001-T06-NET06:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '300.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '323.86715035232086154'
+          P_Pa: '100000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '0.59843965237831419048'
+          - '0.34118251431574462873'
+          - '0.13701469147577304750'
+          T_K: '357.22721388371336058'
+          P_Pa: '100000.00000000000000'
+        S4:
+          n_mol_per_s:
+          - '0.40156034762168580952'
+          - '0.65881748568425537127'
+          - '0.86298530852422695250'
+          T_K: '357.22721388371336058'
+          P_Pa: '100000.00000000000000'
+        S5:
+          n_mol_per_s:
+          - '0.40156034762168580952'
+          - '0.65881748568425537127'
+          - '0.86298530852422695250'
+          T_K: '320.00000000000000000'
+          P_Pa: '100000.00000000000000'
+      duty_W:
+        U-PHF: '40000.000000000000000'
+        U-HX: '7160.1451056962584614'
+      work_W: {}
+      extent_mol_per_s: {}
+      signatures:
+        U-PHF: TWO_PHASE
+    SYN-001-T06-NET09:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '2.0000000000000000000'
+          - '1.0000000000000000000'
+          - '0.0'
+          T_K: '300.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '2.2756221637908102505'
+          - '1.2416748007120217782'
+          - '1.3602936381084674698'
+          T_K: '326.94595608586481270'
+          P_Pa: '100000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '1.1378110818954051252'
+          - '0.67276925976431921561'
+          - '3.0670102609515751577'
+          T_K: '380.00000000000000000'
+          P_Pa: '100000.00000000000000'
+          regime: TWO_PHASE
+          beta: '0.54438327828160426836'
+          vapor_mol_per_s:
+          - '0.95628008445562715554'
+          - '0.45035760062413658701'
+          - '1.2486410772853211713'
+          liquid_mol_per_s:
+          - '0.18153099743977796968'
+          - '0.22241165914018262860'
+          - '1.8183691836662539864'
+        S4:
+          n_mol_per_s:
+          - '0.58656675431378462432'
+          - '0.18941965834027565916'
+          - '0.34642298473464021800'
+          T_K: '370.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S5:
+          n_mol_per_s:
+          - '0.55124432758162050090'
+          - '0.48334960142404355645'
+          - '2.7205872762169349397'
+          T_K: '370.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S6:
+          n_mol_per_s:
+          - '0.27562216379081025045'
+          - '0.24167480071202177822'
+          - '1.3602936381084674698'
+          T_K: '370.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S7:
+          n_mol_per_s:
+          - '0.27562216379081025045'
+          - '0.24167480071202177822'
+          - '1.3602936381084674698'
+          T_K: '370.00000000000000000'
+          P_Pa: '100000.00000000000000'
+      duty_W:
+        U-RX: '106997.75843771231699'
+        U-FLASH: '-53526.195363947023980'
+      work_W: {}
+      extent_mol_per_s:
+        U-RX: '0.56890554094770256261'
+      signatures:
+        U-RX: TWO_PHASE
+        U-FLASH: TWO_PHASE
+    SYN-001-T06-NET10:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '300.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '1.4667509063291826120'
+          - '1.4087227953485174145'
+          - '1.1924350054872735518'
+          T_K: '310.50081291435102662'
+          P_Pa: '100000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '1.1453453603512955797'
+          - '0.78386994122602953792'
+          - '0.33433248065997148330'
+          T_K: '360.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S4:
+          n_mol_per_s:
+          - '0.32140554597788703232'
+          - '0.62485285412248787656'
+          - '0.85810252482730206852'
+          T_K: '360.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S5:
+          n_mol_per_s:
+          - '1.1453453603512955797'
+          - '0.78386994122602953792'
+          - '0.33433248065997148330'
+          T_K: '340.00000000000000000'
+          P_Pa: '100000.00000000000000'
+          regime: TWO_PHASE
+          beta: '0.21369106530821732556'
+          vapor_mol_per_s:
+          - '0.36742718313599122635'
+          - '0.10266528231183384712'
+          - '0.013607471514515563606'
+          liquid_mol_per_s:
+          - '0.77791817721530435331'
+          - '0.68120465891419569080'
+          - '0.32072500914545591970'
+        S6:
+          n_mol_per_s:
+          - '0.36742718313599122635'
+          - '0.10266528231183384712'
+          - '0.013607471514515563606'
+          T_K: '340.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S7:
+          n_mol_per_s:
+          - '0.77791817721530435331'
+          - '0.68120465891419569080'
+          - '0.32072500914545591970'
+          T_K: '340.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S8:
+          n_mol_per_s:
+          - '0.46675090632918261199'
+          - '0.40872279534851741448'
+          - '0.19243500548727355182'
+          T_K: '340.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S9:
+          n_mol_per_s:
+          - '0.31116727088612174132'
+          - '0.27248186356567827632'
+          - '0.12829000365818236788'
+          T_K: '340.00000000000000000'
+          P_Pa: '100000.00000000000000'
+      duty_W:
+        U-FL1: '83987.186482992224701'
+        U-COOL: '-55636.565082374029948'
+        U-FL2: '0.0'
+      work_W: {}
+      extent_mol_per_s: {}
+      signatures:
+        U-FL1: TWO_PHASE
+        U-COOL: TWO_PHASE
+        U-FL2: TWO_PHASE
+    SYN-001-T06-NET11:
+      streams:
+        S1:
+          n_mol_per_s:
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          - '1.0000000000000000000'
+          T_K: '300.00000000000000000'
+          P_Pa: '100000.00000000000000'
+        S2:
+          n_mol_per_s:
+          - '1.5808715286282866552'
+          - '1.8023764683441352432'
+          - '1.9309490342796322592'
+          T_K: '323.28742450940320606'
+          P_Pa: '100000.00000000000000'
+        S3:
+          n_mol_per_s:
+          - '1.5808715286282866552'
+          - '1.8023764683441352432'
+          - '1.9309490342796322592'
+          T_K: '323.31409117606987273'
+          P_Pa: '180000.00000000000000'
+        S4:
+          n_mol_per_s:
+          - '1.5808715286282866552'
+          - '1.8023764683441352432'
+          - '1.9309490342796322592'
+          T_K: '370.00000000000000000'
+          P_Pa: '180000.00000000000000'
+          regime: LIQUID
+          beta: '0.0'
+          vapor_mol_per_s:
+          - '0.0'
+          - '0.0'
+          - '0.0'
+          liquid_mol_per_s:
+          - '1.5808715286282866552'
+          - '1.8023764683441352432'
+          - '1.9309490342796322592'
+        S5:
+          n_mol_per_s:
+          - '1.5808715286282866552'
+          - '1.8023764683441352432'
+          - '1.9309490342796322592'
+          T_K: '351.75591342890311277'
+          P_Pa: '100000.00000000000000'
+          regime: TWO_PHASE
+          beta: '0.067208939898159820103'
+          vapor_mol_per_s:
+          - '0.22771600451953212371'
+          - '0.097142703993152095461'
+          - '0.032302840367714431907'
+          liquid_mol_per_s:
+          - '1.3531555241087545315'
+          - '1.7052337643509831477'
+          - '1.8986461939119178273'
+        S6:
+          n_mol_per_s:
+          - '0.41912847137171334478'
+          - '0.19762353165586475684'
+          - '0.069050965720367740841'
+          T_K: '353.47598347165021380'
+          P_Pa: '100000.00000000000000'
+        S7:
+          n_mol_per_s:
+          - '1.1617430572565733104'
+          - '1.6047529366882704863'
+          - '1.8618980685592645183'
+          T_K: '353.47598347165021380'
+          P_Pa: '100000.00000000000000'
+        S8:
+          n_mol_per_s:
+          - '0.58087152862828665522'
+          - '0.80237646834413524316'
+          - '0.93094903427963225916'
+          T_K: '353.47598347165021380'
+          P_Pa: '100000.00000000000000'
+        S9:
+          n_mol_per_s:
+          - '0.58087152862828665522'
+          - '0.80237646834413524316'
+          - '0.93094903427963225916'
+          T_K: '353.47598347165021380'
+          P_Pa: '100000.00000000000000'
+      duty_W:
+        U-HEAT: '24809.811807343356150'
+        U-PHF: '10000.000000000000000'
+      work_W:
+        U-PUMP: '56.684768333355244347'
+      extent_mol_per_s: {}
+      signatures:
+        U-HEAT: LIQUID
+        U-VLV: TWO_PHASE
+        U-PHF: TWO_PHASE
+  reference_fixtures:
+    REF-01:
+      quantities:
+        S3.n.A:
+          value: '1.2000000000000000000'
+          kind: molar_flow
+          tolerance: '0.00000151000'
+        S3.n.B:
+          value: '1.0000000000000000000'
+          kind: molar_flow
+          tolerance: '0.00000131000'
+        S3.n.C:
+          value: '1.2000000000000000000'
+          kind: molar_flow
+          tolerance: '0.00000151000'
+        S3.T:
+          value: '320.00000000000000000'
+          kind: temperature
+          tolerance: '0.000330000'
+    REF-02:
+      quantities:
+        S2.n.A:
+          value: '0.30000000000000000000'
+          kind: molar_flow
+          tolerance: '0.000000610000'
+        S2.n.B:
+          value: '0.60000000000000000000'
+          kind: molar_flow
+          tolerance: '0.000000910000'
+        S2.n.C:
+          value: '0.90000000000000000000'
+          kind: molar_flow
+          tolerance: '0.00000121000'
+        S3.n.A:
+          value: '0.70000000000000000000'
+          kind: molar_flow
+          tolerance: '0.00000101000'
+        S3.n.B:
+          value: '1.4000000000000000000'
+          kind: molar_flow
+          tolerance: '0.00000171000'
+        S3.n.C:
+          value: '2.1000000000000000000'
+          kind: molar_flow
+          tolerance: '0.00000241000'
+        S2.T:
+          value: '330.00000000000000000'
+          kind: temperature
+          tolerance: '0.000340000'
+        S3.T:
+          value: '330.00000000000000000'
+          kind: temperature
+          tolerance: '0.000340000'
+    REF-03:
+      quantities:
+        U-HEAT.Q:
+          value: '23237.850393069453045'
+          kind: heat_rate
+          tolerance: '0.0332379'
+        S2.vap.A:
+          value: '0.20153742984785378405'
+          kind: molar_flow
+          tolerance: '0.000000511537'
+        S2.vap.B:
+          value: '0.078098253651684779698'
+          kind: molar_flow
+          tolerance: '0.000000388098'
+        S2.vap.C:
+          value: '0.024470486780644715795'
+          kind: molar_flow
+          tolerance: '0.000000334470'
+    REF-04:
+      quantities:
+        U-FLASH.Q:
+          value: '56338.069446743527231'
+          kind: heat_rate
+          tolerance: '0.0663381'
+        S2.n.A:
+          value: '0.70222328606948605233'
+          kind: molar_flow
+          tolerance: '0.00000101222'
+        S2.n.B:
+          value: '0.45360302307438387754'
+          kind: molar_flow
+          tolerance: '0.000000763603'
+        S2.n.C:
+          value: '0.20498276007928170276'
+          kind: molar_flow
+          tolerance: '0.000000514983'
+        S3.n.A:
+          value: '0.29777671393051394767'
+          kind: molar_flow
+          tolerance: '0.000000607777'
+        S3.n.B:
+          value: '0.54639697692561612246'
+          kind: molar_flow
+          tolerance: '0.000000856397'
+        S3.n.C:
+          value: '0.79501723992071829724'
+          kind: molar_flow
+          tolerance: '0.00000110502'
+    REF-05:
+      quantities:
+        S2.T:
+          value: '348.49986441920892565'
+          kind: temperature
+          tolerance: '0.000358500'
+        S2.vap.A:
+          value: '0.088299634938401678406'
+          kind: molar_flow
+          tolerance: '0.000000398300'
+        S2.vap.B:
+          value: '0.031257806189761688393'
+          kind: molar_flow
+          tolerance: '0.000000341258'
+        S2.vap.C:
+          value: '0.0093947318595551340614'
+          kind: molar_flow
+          tolerance: '0.000000319395'
+    REF-06:
+      quantities:
+        U-PUMP.W:
+          value: '32.000000000000000000'
+          kind: heat_rate
+          tolerance: '0.0100320'
+        S2.T:
+          value: '300.02666666666666667'
+          kind: temperature
+          tolerance: '0.000310027'
+    REF-07:
+      quantities:
+        S2.n.A:
+          value: '0.60000000000000000000'
+          kind: molar_flow
+          tolerance: '0.000000910000'
+        S2.n.B:
+          value: '0.60000000000000000000'
+          kind: molar_flow
+          tolerance: '0.000000910000'
+        S2.n.C:
+          value: '1.2000000000000000000'
+          kind: molar_flow
+          tolerance: '0.00000151000'
+        U-RX.Q:
+          value: '3600.0000000000000000'
+          kind: heat_rate
+          tolerance: '0.0136000'
+    REF-08:
+      quantities:
+        S4.n.A:
+          value: '0.70222328606948558956'
+          kind: molar_flow
+          tolerance: '0.00000101222'
+        S4.n.B:
+          value: '0.45360302307438331325'
+          kind: molar_flow
+          tolerance: '0.000000763603'
+        S4.n.C:
+          value: '0.20498276007928132134'
+          kind: molar_flow
+          tolerance: '0.000000514983'
+        S6.n.A:
+          value: '0.29777671393051441044'
+          kind: molar_flow
+          tolerance: '0.000000607777'
+        S6.n.B:
+          value: '0.54639697692561668675'
+          kind: molar_flow
+          tolerance: '0.000000856397'
+        S6.n.C:
+          value: '0.79501723992071867866'
+          kind: molar_flow
+          tolerance: '0.00000110502'
+        S7.n.A:
+          value: '0.29777671393051441044'
+          kind: molar_flow
+          tolerance: '0.000000607777'
+        S7.n.B:
+          value: '0.54639697692561668675'
+          kind: molar_flow
+          tolerance: '0.000000856397'
+        S7.n.C:
+          value: '0.79501723992071867866'
+          kind: molar_flow
+          tolerance: '0.00000110502'
+        U-HEAT.Q:
+          value: '13360.809069223150224'
+          kind: heat_rate
+          tolerance: '0.0233608'
+        U-FLASH.Q:
+          value: '42977.260377520335159'
+          kind: heat_rate
+          tolerance: '0.0529773'
+        S2.T:
+          value: '321.20013108193882192'
+          kind: temperature
+          tolerance: '0.000331200'
+  positive_controls:
+    PC-1:
+      quantity: U-FLASH.Q
+      effect_W: '-13.608090692231516326'
+      tolerance_W: '0.0663381'
+    PC-2:
+      T_K: '370.00000000000000000'
+      P_Pa: '150000.00000000000000'
+      ours_vapor_mol_per_s:
+      - '0.45960804728346168282'
+      - '0.23852118148815867643'
+      - '0.092375284821749235127'
+      no_poynting_vapor_mol_per_s:
+      - '0.45616143886140976370'
+      - '0.23600842824619019685'
+      - '0.091217707608272717201'
+      worst_quantity: S2.n.B
+      worst_effect_over_tolerance: '4580.96'
+    REF-05-latent-offset:
+      effect_K: '0.00036511570'
+      tolerance_K: '0.000358500'
+  draw_known_answers:
+  - key: T06-ens-v1|nominal|SYN-001-nominal|00|00|S6.n.A|00
+    k53: 1650715324349568
+    u: '0.18326621601944737'
+    delta: '-0.12669351359222105'
+    u_hex: 0x1.775447221f200p-3
+    delta_hex: -0x1.0377e38bf38cdp-3
+    literal_0p2_product_differs: false
+    decimal17_differs: false
+  - key: T06-ens-v1|nominal|SYN-001-nominal|00|00|S6.n.B|00
+    k53: 8756127815744058
+    u: '0.97212547075998335'
+    delta: '0.18885018830399334'
+    u_hex: 0x1.f1ba6e010ba3ap-1
+    delta_hex: 0x1.82c3e334df6c3p-3
+    literal_0p2_product_differs: true
+    decimal17_differs: false
+  - key: T06-ens-v1|nominal|SYN-001-nominal|19|03|S6.n.C|07
+    k53: 5198274666340027
+    u: '0.57712442228963512'
+    delta: '0.030849768915854048'
+    u_hex: 0x1.277cda2ee9ebbp-1
+    delta_hex: 0x1.f9714f254bc8dp-6
+    literal_0p2_product_differs: false
+    decimal17_differs: false
+  - key: T06-ens-v1|nominal|SYN-001-A02-360|05|00|S3.T|00
+    k53: 6866829216595034
+    u: '0.76237119024325328'
+    delta: '0.10494847609730131'
+    u_hex: 0x1.8655844303c5ap-1
+    delta_hex: 0x1.adde7409a5abap-4
+    literal_0p2_product_differs: false
+    decimal17_differs: true
+  - key: T06-ens-v1|nominal|SYN-001-UL-C1|00|00|S2.n.A|00
+    k53: 1837319078452338
+    u: '0.20398339444808600'
+    delta: '-0.11840664222076560'
+    u_hex: 0x1.a1c20bc0a71c8p-3
+    delta_hex: -0x1.e4fe5cff7a4fap-4
+    literal_0p2_product_differs: false
+    decimal17_differs: false
+  - key: T06-ens-v1|nominal|SYN-001-UL-C1|00|00|U-HEAT.Q|00
+    k53: 3775989759833068
+    u: '0.41921907721154872'
+    delta: '-0.032312369115380513'
+    u_hex: 0x1.ad47c409ee7d8p-2
+    delta_hex: -0x1.08b3f3136b3b3p-5
+    literal_0p2_product_differs: false
+    decimal17_differs: false
+  - key: T06-ens-v1|nominal|SYN-001-T06-NET03|12|00|S10.T|01
+    k53: 1969813083354737
+    u: '0.21869318393483017'
+    delta: '-0.11252272642606793'
+    u_hex: 0x1.bfe23646dd9c4p-3
+    delta_hex: -0x1.cce4a160e84fdp-4
+    literal_0p2_product_differs: false
+    decimal17_differs: false
+  - key: T06-ens-v1|box|SYN-001-UL-C3|07|00|S6.n.B|00
+    k53: 1887211526548415
+    u: '0.20952256891120402'
+    delta: '-0.11619097243551839'
+    u_hex: 0x1.ad1a2b29faefcp-3
+    delta_hex: -0x1.dbeb10ab37403p-4
+    literal_0p2_product_differs: true
+    decimal17_differs: false
+  - key: T06-ens-v1|log|SYN-001-UL-C2|00|00|S4.n.C|00
+    k53: 857053646825422
+    u: '0.095152069204454071'
+    delta: '-0.16193917231821837'
+    u_hex: 0x1.85be2d1613e70p-4
+    delta_hex: -0x1.4ba6c3c8626b6p-3
+    literal_0p2_product_differs: true
+    decimal17_differs: false
+  - key: T06-ens-v1|trivial-split|SYN-001-UL-C1|03|00|split:U-VLV|00
+    k53: 7899255834186164
+    u: '0.87699357045180770'
+    delta: '0.15079742818072308'
+    u_hex: 0x1.c1054d1fc91b4p-1
+    delta_hex: 0x1.34d54832db5edp-3
+    literal_0p2_product_differs: false
+    decimal17_differs: false
+  gate:
+    eligible_cases: 22
+    starts_per_case: 20
+    N: 440
+    fraction: '0.950'
+    S_min: 418
+    clopper_pearson_one_sided_95_lower:
+      '410': '0.908654290353'
+      '411': '0.911218977734'
+      '412': '0.913790046763'
+      '413': '0.916367809048'
+      '414': '0.918952604260'
+      '415': '0.921544803819'
+      '416': '0.924144815240'
+      '417': '0.926753087264'
+      '418': '0.929370115979'
+      '419': '0.931996452153'
+      '420': '0.934632710118'
+      '421': '0.937279578581'
+      '422': '0.939937833949'
+      '423': '0.942608356879'
+      '424': '0.945292153097'
+      '425': '0.947990379884'
+      '426': '0.950704380275'
+      '427': '0.953435727873'
+      '428': '0.956186286630'
+      '429': '0.958958292214'
+      '430': '0.961754465299'
+      '431': '0.964578173617'
+      '432': '0.967433671162'
+      '433': '0.970326464842'
+      '434': '0.973263902956'
+      '435': '0.976256175471'
+      '436': '0.979318144501'
+      '437': '0.982473042201'
+      '438': '0.985761066918'
+      '439': '0.989264250014'
+      '440': '0.993214642764'
+  adv06_noise_bands:
+    H:
+      eta_h_J_per_mol: '10.0000'
+      eta_lnK: '0.00100000'
+      energy_row_noise_scaled_max: '0.000600000'
+      energy_row_noise_scaled_typical_min: '0.00000408227'
+      witness_error_scaled_typical_min: '0.408227'
+      witness_error_scaled_max: '60.0000'
+    M:
+      eta_h_J_per_mol: '0.0000100000'
+      eta_lnK: '0.0000000000100000'
+      energy_row_noise_scaled_max: '0.000000000600000'
+      energy_row_noise_scaled_typical_min: '0.00000000000408227'
+      witness_error_scaled_typical_min: '0.000000408227'
+      witness_error_scaled_max: '0.0000600000'
+    L:
+      eta_h_J_per_mol: '0.000000000100000'
+      eta_lnK: '0.00000000000000100000'
+      energy_row_noise_scaled_max: '0.00000000000000600000'
+      energy_row_noise_scaled_typical_min: '0.0000000000000000408227'
+      witness_error_scaled_typical_min: '0.00000000000408227'
+      witness_error_scaled_max: '0.000000000600000'
+  dwsim_input_mapping:
+    dH_vap_J_per_mol:
+    - '25010.000000000000000'
+    - '30010.000000000000000'
+    - '35010.000000000000000'
+    dH_f_ig_J_per_mol:
+    - '25010.000000000000000'
+    - '30010.000000000000000'
+    - '35010.000000000000000'
+    unmapped_latent_offset_J_per_mol:
+    - '-10.000000000000000000'
+    - '-10.000000000000000000'
+    - '-10.000000000000000000'
+  unit_conversion_v1:
+    id: unit-conversion-v1
+    authority: ADR 0001 D1.3-D1.4; T06 spec §8.5 (amendment 1)
+    operation: one IEEE-754 binary64 operation on binary64 operands
+    rules:
+    - rule: degC_to_K
+      required_kind: temperature
+      declared_kinds:
+      - temperature
+      unit: degC
+      si: value + 273.15
+    - rule: mass_to_molar
+      required_kind: molar_flow
+      declared_kinds:
+      - molar_flow
+      - mass_flow
+      unit: kg/s
+      si: value / M_c (the target component's molecular weight, kg/mol)
+    syn001_molar_mass_kg_per_mol:
+      A: 0.1
+      B: 0.1
+      C: 0.1
+    synthetic_molar_mass_kg_per_mol:
+      A: 0.1
+      B: 0.2
+      C: 0.04401
+    known_answers:
+      degC:
+      - value: 26.85
+        unit: degC
+        required_kind: temperature
+        rule: degC_to_K
+        si_value: '300.0'
+        si_value_hex: 0x1.2c00000000000p+8
+        si_unit: K
+        decimal_sum_differs: false
+      - value: 86.85
+        unit: degC
+        required_kind: temperature
+        rule: degC_to_K
+        si_value: '360.0'
+        si_value_hex: 0x1.6800000000000p+8
+        si_unit: K
+        decimal_sum_differs: false
+      - value: 84.85
+        unit: degC
+        required_kind: temperature
+        rule: degC_to_K
+        si_value: '358.0'
+        si_value_hex: 0x1.6600000000000p+8
+        si_unit: K
+        decimal_sum_differs: false
+      - value: -40.0
+        unit: degC
+        required_kind: temperature
+        rule: degC_to_K
+        si_value: '233.14999999999998'
+        si_value_hex: 0x1.d24ccccccccccp+7
+        si_unit: K
+        decimal_sum_differs: true
+      - value: 12.34
+        unit: degC
+        required_kind: temperature
+        rule: degC_to_K
+        si_value: '285.48999999999995'
+        si_value_hex: 0x1.1d7d70a3d70a3p+8
+        si_unit: K
+        decimal_sum_differs: true
+      - value: 0.01
+        unit: degC
+        required_kind: temperature
+        rule: degC_to_K
+        si_value: '273.15999999999997'
+        si_value_hex: 0x1.1128f5c28f5c2p+8
+        si_unit: K
+        decimal_sum_differs: true
+      mass_basis:
+      - value: 0.1
+        unit: kg/s
+        required_kind: molar_flow
+        component: A
+        molar_mass_table: SYN-001
+        molar_mass_kg_per_mol: 0.1
+        rule: mass_to_molar
+        si_value: '1.0'
+        si_value_hex: 0x1.0000000000000p+0
+        si_unit: mol/s
+        reciprocal_product_differs: false
+      - value: 0.3
+        unit: kg/s
+        required_kind: molar_flow
+        component: A
+        molar_mass_table: synthetic
+        molar_mass_kg_per_mol: 0.1
+        rule: mass_to_molar
+        si_value: '2.9999999999999996'
+        si_value_hex: 0x1.7ffffffffffffp+1
+        si_unit: mol/s
+        reciprocal_product_differs: true
+      - value: 0.3
+        unit: kg/s
+        required_kind: molar_flow
+        component: B
+        molar_mass_table: synthetic
+        molar_mass_kg_per_mol: 0.2
+        rule: mass_to_molar
+        si_value: '1.4999999999999998'
+        si_value_hex: 0x1.7ffffffffffffp+0
+        si_unit: mol/s
+        reciprocal_product_differs: true
+      - value: 0.3
+        unit: kg/s
+        required_kind: molar_flow
+        component: C
+        molar_mass_table: synthetic
+        molar_mass_kg_per_mol: 0.04401
+        rule: mass_to_molar
+        si_value: '6.816632583503749'
+        si_value_hex: 0x1.b443b54fbfc82p+2
+        si_unit: mol/s
+        reciprocal_product_differs: true
+  reference_tool_settings:
+    IDAES:
+      final_solve:
+        linear_solver: mumps
+        tol: 1e-10
+        constr_viol_tol: 1e-9
+        max_iter: 500
+      initializers:
+        linear_solver: mumps
+        other_options: IDAES defaults
+      converged_iff_termination: Optimal Solution Found
+      smooth_vle:
+        eps_1_K: 1e-8
+        eps_2_K: 1e-8
+    DWSIM:
+      flash_loop_tolerances: 1e-10
+      flash_loop_iterations: 1000
+      recycle:
+        mass_flow_kg_per_s: 1e-12
+        temperature_K: 1e-8
+        pressure_Pa: 1e-6
+        iterations: 1000
+        acceleration: none
+        legacy_mode: true
+    REF-08_tool_recycle_guess:
+      n_mol_per_s:
+      - '0.2'
+      - '0.6'
+      - '0.8'
+      T_K: '360'
+      P_Pa: 1e5
+    PC-1:
+      tools:
+      - DWSIM
+      IDAES: not_applicable
+    PC-2:
+      tools:
+      - DWSIM
+      - IDAES
+      feed:
+        n_mol_per_s:
+        - '1'
+        - '1'
+        - '1'
+        T_K: '300'
+        P_Pa: 1.5e5
+        phase: liquid
+      fixture_ours: SYN-001-T06-PC2
+  metamorphic_restatements:
+    NUM-04: NET-01
+    STA-03: NET-01
+    STA-04: NET-08
+  unit_conversion_v2:
+    id: unit-conversion-v2
+    authority: ADR 0016; T06 spec §8.5 (amendment 2)
+    operation: 'SI = RN(a * D(v) + b): D(v) the shortest decimal that rounds to v (repr), a and b exact,
+      one round-to-nearest-even to binary64; a zero result is +0.0'
+    rows:
+    - required_kind: temperature
+      unit: degC
+      rule: degC_to_K
+      a: '1'
+      b: 5463/20
+      declared_kinds:
+      - temperature
+      target_class: any
+    - required_kind: temperature
+      unit: degF
+      rule: degF_to_K
+      a: 5/9
+      b: 45967/180
+      declared_kinds:
+      - temperature
+      target_class: any
+    - required_kind: temperature_difference
+      unit: degC
+      rule: scale
+      a: '1'
+      b: '0'
+      declared_kinds:
+      - temperature_difference
+      target_class: any
+    - required_kind: temperature_difference
+      unit: degF
+      rule: scale
+      a: 5/9
+      b: '0'
+      declared_kinds:
+      - temperature_difference
+      target_class: any
+    - required_kind: pressure
+      unit: kPa
+      rule: scale
+      a: '1000'
+      b: '0'
+      declared_kinds:
+      - pressure
+      target_class: any
+    - required_kind: pressure
+      unit: MPa
+      rule: scale
+      a: '1000000'
+      b: '0'
+      declared_kinds:
+      - pressure
+      target_class: any
+    - required_kind: pressure
+      unit: bar
+      rule: scale
+      a: '100000'
+      b: '0'
+      declared_kinds:
+      - pressure
+      target_class: any
+    - required_kind: pressure
+      unit: atm
+      rule: scale
+      a: '101325'
+      b: '0'
+      declared_kinds:
+      - pressure
+      target_class: any
+    - required_kind: pressure
+      unit: psi
+      rule: scale
+      a: 8896443230521/1290320000
+      b: '0'
+      declared_kinds:
+      - pressure
+      target_class: any
+    - required_kind: heat_rate
+      unit: kW
+      rule: scale
+      a: '1000'
+      b: '0'
+      declared_kinds:
+      - heat_rate
+      target_class: any
+    - required_kind: heat_rate
+      unit: MW
+      rule: scale
+      a: '1000000'
+      b: '0'
+      declared_kinds:
+      - heat_rate
+      target_class: any
+    - required_kind: power
+      unit: kW
+      rule: scale
+      a: '1000'
+      b: '0'
+      declared_kinds:
+      - power
+      target_class: any
+    - required_kind: power
+      unit: MW
+      rule: scale
+      a: '1000000'
+      b: '0'
+      declared_kinds:
+      - power
+      target_class: any
+    - required_kind: molar_flow
+      unit: kmol/s
+      rule: scale
+      a: '1000'
+      b: '0'
+      declared_kinds:
+      - molar_flow
+      target_class: component
+    - required_kind: molar_flow
+      unit: mmol/s
+      rule: scale
+      a: 1/1000
+      b: '0'
+      declared_kinds:
+      - molar_flow
+      target_class: component
+    - required_kind: molar_flow
+      unit: mol/h
+      rule: scale
+      a: 1/3600
+      b: '0'
+      declared_kinds:
+      - molar_flow
+      target_class: component
+    - required_kind: molar_flow
+      unit: kmol/h
+      rule: scale
+      a: 5/18
+      b: '0'
+      declared_kinds:
+      - molar_flow
+      target_class: component
+    - required_kind: molar_flow
+      unit: kg/s
+      rule: mass_to_molar
+      a: '1'
+      b: '0'
+      declared_kinds:
+      - molar_flow
+      - mass_flow
+      target_class: mass
+    - required_kind: molar_flow
+      unit: g/s
+      rule: mass_to_molar
+      a: 1/1000
+      b: '0'
+      declared_kinds:
+      - molar_flow
+      - mass_flow
+      target_class: mass
+    - required_kind: molar_flow
+      unit: kg/h
+      rule: mass_to_molar
+      a: 1/3600
+      b: '0'
+      declared_kinds:
+      - molar_flow
+      - mass_flow
+      target_class: mass
+    - required_kind: dimensionless
+      unit: '%'
+      rule: scale
+      a: 1/100
+      b: '0'
+      declared_kinds:
+      - dimensionless
+      target_class: fraction
+    - required_kind: mole_fraction
+      unit: '%'
+      rule: scale
+      a: 1/100
+      b: '0'
+      declared_kinds:
+      - mole_fraction
+      target_class: any
+    fraction_parameters:
+    - split_fraction
+    - efficiency
+    - conversion
+    - split
+    psi_Pa_exact: 8896443230521/1290320000
+    known_answers:
+      rows:
+      - required_kind: temperature
+        unit: degC
+        rule: degC_to_K
+        declared_kinds:
+        - temperature
+        target_class: any
+        value: '0.7'
+        target: state.T
+        component: null
+        si_value: '273.85'
+        si_value_hex: 0x1.11d999999999ap+8
+        si_unit: K
+        naive_chain_differs: true
+      - required_kind: temperature
+        unit: degF
+        rule: degF_to_K
+        declared_kinds:
+        - temperature
+        target_class: any
+        value: '0.1'
+        target: state.T
+        component: null
+        si_value: '255.42777777777778'
+        si_value_hex: 0x1.fedb05b05b05bp+7
+        si_unit: K
+        naive_chain_differs: true
+      - required_kind: temperature_difference
+        unit: degC
+        rule: scale
+        declared_kinds:
+        - temperature_difference
+        target_class: any
+        value: '0.1'
+        target: parameters.none
+        component: null
+        si_value: '0.1'
+        si_value_hex: 0x1.999999999999ap-4
+        si_unit: K
+        naive_chain_differs: false
+      - required_kind: temperature_difference
+        unit: degF
+        rule: scale
+        declared_kinds:
+        - temperature_difference
+        target_class: any
+        value: '12.34'
+        target: parameters.none
+        component: null
+        si_value: '6.855555555555555'
+        si_value_hex: 0x1.b6c16c16c16c1p+2
+        si_unit: K
+        naive_chain_differs: true
+      - required_kind: pressure
+        unit: kPa
+        rule: scale
+        declared_kinds:
+        - pressure
+        target_class: any
+        value: '1.001'
+        target: state.P
+        component: null
+        si_value: '1001.0'
+        si_value_hex: 0x1.f480000000000p+9
+        si_unit: Pa
+        naive_chain_differs: true
+      - required_kind: pressure
+        unit: MPa
+        rule: scale
+        declared_kinds:
+        - pressure
+        target_class: any
+        value: '33.3'
+        target: state.P
+        component: null
+        si_value: '33300000.0'
+        si_value_hex: 0x1.fc1e200000000p+24
+        si_unit: Pa
+        naive_chain_differs: true
+      - required_kind: pressure
+        unit: bar
+        rule: scale
+        declared_kinds:
+        - pressure
+        target_class: any
+        value: '1.1'
+        target: state.P
+        component: null
+        si_value: '110000.0'
+        si_value_hex: 0x1.adb0000000000p+16
+        si_unit: Pa
+        naive_chain_differs: true
+      - required_kind: pressure
+        unit: atm
+        rule: scale
+        declared_kinds:
+        - pressure
+        target_class: any
+        value: '1.1'
+        target: state.P
+        component: null
+        si_value: '111457.5'
+        si_value_hex: 0x1.b361800000000p+16
+        si_unit: Pa
+        naive_chain_differs: true
+      - required_kind: pressure
+        unit: psi
+        rule: scale
+        declared_kinds:
+        - pressure
+        target_class: any
+        value: '0.3'
+        target: state.P
+        component: null
+        si_value: '2068.4271879505086'
+        si_value_hex: 0x1.028dab861095cp+11
+        si_unit: Pa
+        naive_chain_differs: true
+      - required_kind: heat_rate
+        unit: kW
+        rule: scale
+        declared_kinds:
+        - heat_rate
+        target_class: any
+        value: '1.001'
+        target: duty.Q
+        component: null
+        si_value: '1001.0'
+        si_value_hex: 0x1.f480000000000p+9
+        si_unit: W
+        naive_chain_differs: true
+      - required_kind: heat_rate
+        unit: MW
+        rule: scale
+        declared_kinds:
+        - heat_rate
+        target_class: any
+        value: '33.3'
+        target: duty.Q
+        component: null
+        si_value: '33300000.0'
+        si_value_hex: 0x1.fc1e200000000p+24
+        si_unit: W
+        naive_chain_differs: true
+      - required_kind: power
+        unit: kW
+        rule: scale
+        declared_kinds:
+        - power
+        target_class: any
+        value: '0.1'
+        target: work.W
+        component: null
+        si_value: '100.0'
+        si_value_hex: 0x1.9000000000000p+6
+        si_unit: W
+        naive_chain_differs: false
+      - required_kind: power
+        unit: MW
+        rule: scale
+        declared_kinds:
+        - power
+        target_class: any
+        value: '0.1'
+        target: work.W
+        component: null
+        si_value: '100000.0'
+        si_value_hex: 0x1.86a0000000000p+16
+        si_unit: W
+        naive_chain_differs: false
+      - required_kind: molar_flow
+        unit: kmol/s
+        rule: scale
+        declared_kinds:
+        - molar_flow
+        target_class: component
+        value: '1.001'
+        target: state.n
+        component: A
+        si_value: '1001.0'
+        si_value_hex: 0x1.f480000000000p+9
+        si_unit: mol/s
+        naive_chain_differs: true
+      - required_kind: molar_flow
+        unit: mmol/s
+        rule: scale
+        declared_kinds:
+        - molar_flow
+        target_class: component
+        value: '1.3'
+        target: state.n
+        component: A
+        si_value: '0.0013'
+        si_value_hex: 0x1.54c985f06f694p-10
+        si_unit: mol/s
+        naive_chain_differs: true
+      - required_kind: molar_flow
+        unit: mol/h
+        rule: scale
+        declared_kinds:
+        - molar_flow
+        target_class: component
+        value: '1.1'
+        target: state.n
+        component: A
+        si_value: '0.00030555555555555555'
+        si_value_hex: 0x1.4065f1e43cfc2p-12
+        si_unit: mol/s
+        naive_chain_differs: true
+      - required_kind: molar_flow
+        unit: kmol/h
+        rule: scale
+        declared_kinds:
+        - molar_flow
+        target_class: component
+        value: '0.1'
+        target: state.n
+        component: A
+        si_value: '0.027777777777777776'
+        si_value_hex: 0x1.c71c71c71c71cp-6
+        si_unit: mol/s
+        naive_chain_differs: true
+      - required_kind: molar_flow
+        unit: kg/s
+        rule: mass_to_molar
+        declared_kinds:
+        - molar_flow
+        - mass_flow
+        target_class: mass
+        value: '0.3'
+        target: state.n
+        component: A
+        si_value: '3.0'
+        si_value_hex: 0x1.8000000000000p+1
+        si_unit: mol/s
+        naive_chain_differs: true
+      - required_kind: molar_flow
+        unit: g/s
+        rule: mass_to_molar
+        declared_kinds:
+        - molar_flow
+        - mass_flow
+        target_class: mass
+        value: '0.3'
+        target: state.n
+        component: A
+        si_value: '0.003'
+        si_value_hex: 0x1.89374bc6a7efap-9
+        si_unit: mol/s
+        naive_chain_differs: true
+      - required_kind: molar_flow
+        unit: kg/h
+        rule: mass_to_molar
+        declared_kinds:
+        - molar_flow
+        - mass_flow
+        target_class: mass
+        value: '0.3'
+        target: state.n
+        component: A
+        si_value: '0.0008333333333333334'
+        si_value_hex: 0x1.b4e81b4e81b4fp-11
+        si_unit: mol/s
+        naive_chain_differs: true
+      - required_kind: dimensionless
+        unit: '%'
+        rule: scale
+        declared_kinds:
+        - dimensionless
+        target_class: fraction
+        value: '0.7'
+        target: parameters.split_fraction
+        component: null
+        si_value: '0.007'
+        si_value_hex: 0x1.cac083126e979p-8
+        si_unit: '1'
+        naive_chain_differs: true
+      - required_kind: mole_fraction
+        unit: '%'
+        rule: scale
+        declared_kinds:
+        - mole_fraction
+        target_class: any
+        value: '0.1'
+        target: parameters.none
+        component: null
+        si_value: '0.001'
+        si_value_hex: 0x1.0624dd2f1a9fcp-10
+        si_unit: '1'
+        naive_chain_differs: false
+      discriminated:
+        temperature:degC: true
+        temperature:degF: true
+        temperature_difference:degC: false
+        temperature_difference:degF: true
+        pressure:kPa: true
+        pressure:MPa: true
+        pressure:bar: true
+        pressure:atm: true
+        pressure:psi: true
+        heat_rate:kW: true
+        heat_rate:MW: true
+        power:kW: false
+        power:MW: false
+        molar_flow:kmol/s: true
+        molar_flow:mmol/s: true
+        molar_flow:mol/h: true
+        molar_flow:kmol/h: true
+        molar_flow:kg/s: true
+        molar_flow:g/s: true
+        molar_flow:kg/h: true
+        dimensionless:%: true
+        mole_fraction:%: false
+      metamorphic_pairs:
+      - case: SYN-001-nominal
+        input: SPEC-feed-n-A
+        source: specification
+        value: '3.6'
+        unit: kmol/h
+        required_kind: molar_flow
+        target: state.n
+        component: A
+        rule: scale
+        si_value: '1.0'
+        si_value_hex: 0x1.0000000000000p+0
+        registered_si_value: '1.0'
+        binds_to_registered_value: true
+        binary_reading_value: '1.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-n-A
+        source: specification
+        value: '3600.0'
+        unit: mol/h
+        required_kind: molar_flow
+        target: state.n
+        component: A
+        rule: scale
+        si_value: '1.0'
+        si_value_hex: 0x1.0000000000000p+0
+        registered_si_value: '1.0'
+        binds_to_registered_value: true
+        binary_reading_value: '1.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-n-A
+        source: specification
+        value: '1000.0'
+        unit: mmol/s
+        required_kind: molar_flow
+        target: state.n
+        component: A
+        rule: scale
+        si_value: '1.0'
+        si_value_hex: 0x1.0000000000000p+0
+        registered_si_value: '1.0'
+        binds_to_registered_value: true
+        binary_reading_value: '1.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-n-A
+        source: specification
+        value: '0.001'
+        unit: kmol/s
+        required_kind: molar_flow
+        target: state.n
+        component: A
+        rule: scale
+        si_value: '1.0'
+        si_value_hex: 0x1.0000000000000p+0
+        registered_si_value: '1.0'
+        binds_to_registered_value: true
+        binary_reading_value: '1.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-n-A
+        source: specification
+        value: '360.0'
+        unit: kg/h
+        required_kind: molar_flow
+        target: state.n
+        component: A
+        rule: mass_to_molar
+        si_value: '1.0'
+        si_value_hex: 0x1.0000000000000p+0
+        registered_si_value: '1.0'
+        binds_to_registered_value: true
+        binary_reading_value: '1.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-n-A
+        source: specification
+        value: '100.0'
+        unit: g/s
+        required_kind: molar_flow
+        target: state.n
+        component: A
+        rule: mass_to_molar
+        si_value: '1.0'
+        si_value_hex: 0x1.0000000000000p+0
+        registered_si_value: '1.0'
+        binds_to_registered_value: true
+        binary_reading_value: '1.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-T
+        source: specification
+        value: '80.33'
+        unit: degF
+        required_kind: temperature
+        target: state.T
+        component: null
+        rule: degF_to_K
+        si_value: '300.0'
+        si_value_hex: 0x1.2c00000000000p+8
+        registered_si_value: '300.0'
+        binds_to_registered_value: true
+        binary_reading_value: '300.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-P
+        source: specification
+        value: '1.0'
+        unit: bar
+        required_kind: pressure
+        target: state.P
+        component: null
+        rule: scale
+        si_value: '100000.0'
+        si_value_hex: 0x1.86a0000000000p+16
+        registered_si_value: '100000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '100000.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-P
+        source: specification
+        value: '100.0'
+        unit: kPa
+        required_kind: pressure
+        target: state.P
+        component: null
+        rule: scale
+        si_value: '100000.0'
+        si_value_hex: 0x1.86a0000000000p+16
+        registered_si_value: '100000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '100000.0'
+      - case: SYN-001-nominal
+        input: SPEC-feed-P
+        source: specification
+        value: '0.1'
+        unit: MPa
+        required_kind: pressure
+        target: state.P
+        component: null
+        rule: scale
+        si_value: '100000.0'
+        si_value_hex: 0x1.86a0000000000p+16
+        registered_si_value: '100000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '100000.0'
+      - case: SYN-001-UL-C1
+        input: SPEC-pump-P
+        source: specification
+        value: '180.0'
+        unit: kPa
+        required_kind: pressure
+        target: state.P
+        component: null
+        rule: scale
+        si_value: '180000.0'
+        si_value_hex: 0x1.5f90000000000p+17
+        registered_si_value: '180000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '180000.0'
+      - case: SYN-001-UL-C1
+        input: SPEC-pump-P
+        source: specification
+        value: '1.8'
+        unit: bar
+        required_kind: pressure
+        target: state.P
+        component: null
+        rule: scale
+        si_value: '180000.0'
+        si_value_hex: 0x1.5f90000000000p+17
+        registered_si_value: '180000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '180000.0'
+      - case: SYN-001-UL-C1
+        input: SPEC-pump-P
+        source: specification
+        value: '0.18'
+        unit: MPa
+        required_kind: pressure
+        target: state.P
+        component: null
+        rule: scale
+        si_value: '180000.0'
+        si_value_hex: 0x1.5f90000000000p+17
+        registered_si_value: '180000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '180000.0'
+      - case: SYN-001-UL-C1
+        input: SPEC-phf-Q
+        source: specification
+        value: '10.0'
+        unit: kW
+        required_kind: heat_rate
+        target: duty.Q
+        component: null
+        rule: scale
+        si_value: '10000.0'
+        si_value_hex: 0x1.3880000000000p+13
+        registered_si_value: '10000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '10000.0'
+      - case: SYN-001-UL-C1
+        input: SPEC-phf-Q
+        source: specification
+        value: '0.01'
+        unit: MW
+        required_kind: heat_rate
+        target: duty.Q
+        component: null
+        rule: scale
+        si_value: '10000.0'
+        si_value_hex: 0x1.3880000000000p+13
+        registered_si_value: '10000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '10000.0'
+      - case: SYN-001-UL-C1
+        input: U-PUMP.efficiency
+        source: parameter
+        value: '75.1'
+        unit: '%'
+        required_kind: dimensionless
+        target: parameters.efficiency
+        component: null
+        rule: scale
+        si_value: '0.751'
+        si_value_hex: 0x1.8083126e978d5p-1
+        registered_si_value: '0.751'
+        binds_to_registered_value: true
+        binary_reading_value: '0.7509999999999999'
+      - case: SYN-001-UL-C2
+        input: U-RX.conversion.A
+        source: parameter
+        value: '51.0'
+        unit: '%'
+        required_kind: dimensionless
+        target: parameters.conversion.A
+        component: null
+        rule: scale
+        si_value: '0.51'
+        si_value_hex: 0x1.051eb851eb852p-1
+        registered_si_value: '0.51'
+        binds_to_registered_value: true
+        binary_reading_value: '0.51'
+      - case: SYN-001-UL-C2
+        input: U-SEP.split.C
+        source: parameter
+        value: '5.1'
+        unit: '%'
+        required_kind: dimensionless
+        target: parameters.split.C
+        component: null
+        rule: scale
+        si_value: '0.051'
+        si_value_hex: 0x1.a1cac083126e9p-5
+        registered_si_value: '0.051'
+        binds_to_registered_value: true
+        binary_reading_value: '0.051'
+      - case: SYN-001-UL-C2
+        input: U-RX.pressure_drop
+        source: parameter
+        value: '2.5'
+        unit: kPa
+        required_kind: pressure
+        target: parameters.pressure_drop
+        component: null
+        rule: scale
+        si_value: '2500.0'
+        si_value_hex: 0x1.3880000000000p+11
+        registered_si_value: '2500.0'
+        binds_to_registered_value: true
+        binary_reading_value: '2500.0'
+      - case: SYN-001-UL-C3
+        input: U-SPLIT.split_fraction
+        source: parameter
+        value: '61.0'
+        unit: '%'
+        required_kind: dimensionless
+        target: parameters.split_fraction
+        component: null
+        rule: scale
+        si_value: '0.61'
+        si_value_hex: 0x1.3851eb851eb85p-1
+        registered_si_value: '0.61'
+        binds_to_registered_value: true
+        binary_reading_value: '0.61'
+      - case: SYN-001-UL-C3
+        input: SPEC-phf-Q
+        source: specification
+        value: '48.0'
+        unit: kW
+        required_kind: heat_rate
+        target: duty.Q
+        component: null
+        rule: scale
+        si_value: '48000.0'
+        si_value_hex: 0x1.7700000000000p+15
+        registered_si_value: '48000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '48000.0'
+      - case: SYN-001-T06-THM10
+        input: SPEC-phf-Q
+        source: specification
+        value: '-40.0'
+        unit: kW
+        required_kind: heat_rate
+        target: duty.Q
+        component: null
+        rule: scale
+        si_value: '-40000.0'
+        si_value_hex: -0x1.3880000000000p+15
+        registered_si_value: '-40000.0'
+        binds_to_registered_value: true
+        binary_reading_value: '-40000.0'
+      - case: SYN-001-A02-360
+        input: SPEC-flash-T
+        source: specification
+        value: '188.33'
+        unit: degF
+        required_kind: temperature
+        target: outlet.T
+        component: null
+        rule: degF_to_K
+        si_value: '360.0'
+        si_value_hex: 0x1.6800000000000p+8
+        registered_si_value: '360.0'
+        binds_to_registered_value: true
+        binary_reading_value: '360.0'
+      invariance_groups:
+      - inputs:
+        - -40.0 degC
+        - -40.0 degF
+        - 233.15 K
+        si_value_hex: 0x1.d24cccccccccdp+7
+        all_equal: true
+      - inputs:
+        - 75.1 %
+        - 0.751 1
+        si_value_hex: 0x1.8083126e978d5p-1
+        all_equal: true
+      - inputs:
+        - 180.0 kPa
+        - 1.8 bar
+        - 0.18 MPa
+        - 180000.0 Pa
+        si_value_hex: 0x1.5f90000000000p+17
+        all_equal: true
+      - inputs:
+        - 3.6 kmol/h
+        - 3600.0 mol/h
+        - 0.001 kmol/s
+        - 1.0 mol/s
+        si_value_hex: 0x1.0000000000000p+0
+        all_equal: true
+      - inputs:
+        - 0.3 kg/s
+        - 1080.0 kg/h
+        - 300.0 g/s
+        - 3.0 mol/s
+        si_value_hex: 0x1.8000000000000p+1
+        all_equal: true
+      synthetic_mass_kg_per_h_0p3:
+      - 0x1.b4e81b4e81b4fp-11
+      - 0x1.b4e81b4e81b4fp-12
+      - 0x1.f05f3dcb60768p-10
+      refusals:
+      - value: '26.85'
+        unit: °C
+        required_kind: temperature
+        declared_kind: temperature
+        target: state.T
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '26.85'
+        unit: C
+        required_kind: temperature
+        declared_kind: temperature
+        target: state.T
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '26.85'
+        unit: degc
+        required_kind: temperature
+        declared_kind: temperature
+        target: state.T
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '80.33'
+        unit: degF
+        required_kind: pressure
+        declared_kind: pressure
+        target: state.P
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '1.0'
+        unit: barg
+        required_kind: pressure
+        declared_kind: pressure
+        target: state.P
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '14.7'
+        unit: psig
+        required_kind: pressure
+        declared_kind: pressure
+        target: state.P
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '14.7'
+        unit: psia
+        required_kind: pressure
+        declared_kind: pressure
+        target: state.P
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '760.0'
+        unit: mmHg
+        required_kind: pressure
+        declared_kind: pressure
+        target: state.P
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '-200.0'
+        unit: '%'
+        required_kind: dimensionless
+        declared_kind: dimensionless
+        target: parameters.nu.A
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '50.0'
+        unit: '%'
+        required_kind: temperature
+        declared_kind: temperature
+        target: state.T
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '1.0'
+        unit: ppm
+        required_kind: dimensionless
+        declared_kind: dimensionless
+        target: parameters.split_fraction
+        component: null
+        reason: unit
+        refused_as_registered: true
+      - value: '0.1'
+        unit: K
+        required_kind: molar_flow
+        declared_kind: molar_flow
+        target: state.n
+        component: A
+        reason: unit
+        refused_as_registered: true
+      - value: '1.0'
+        unit: mol/s
+        required_kind: molar_flow
+        declared_kind: mass_flow
+        target: state.n
+        component: A
+        reason: unit
+        refused_as_registered: true
+      - value: '0.1'
+        unit: kg/s
+        required_kind: molar_flow
+        declared_kind: temperature
+        target: state.n
+        component: A
+        reason: kind
+        refused_as_registered: true
+      - value: '0.1'
+        unit: kg/h
+        required_kind: molar_flow
+        declared_kind: molar_flow
+        target: state.n
+        component: D
+        reason: unit
+        refused_as_registered: true
+      - value: nan
+        unit: K
+        required_kind: temperature
+        declared_kind: temperature
+        target: state.T
+        component: null
+        reason: value
+        refused_as_registered: true
+      - value: inf
+        unit: kPa
+        required_kind: pressure
+        declared_kind: pressure
+        target: state.P
+        component: null
+        reason: value
+        refused_as_registered: true
+      - value: 1e+306
+        unit: kPa
+        required_kind: pressure
+        declared_kind: pressure
+        target: state.P
+        component: null
+        reason: value
+        refused_as_registered: true
+      v1_known_answers_under_v2:
+      - value: '26.85'
+        unit: degC
+        v1_hex: 0x1.2c00000000000p+8
+        v2_hex: 0x1.2c00000000000p+8
+      - value: '86.85'
+        unit: degC
+        v1_hex: 0x1.6800000000000p+8
+        v2_hex: 0x1.6800000000000p+8
+      - value: '84.85'
+        unit: degC
+        v1_hex: 0x1.6600000000000p+8
+        v2_hex: 0x1.6600000000000p+8
+      - value: '-40.0'
+        unit: degC
+        v1_hex: 0x1.d24ccccccccccp+7
+        v2_hex: 0x1.d24cccccccccdp+7
+      - value: '12.34'
+        unit: degC
+        v1_hex: 0x1.1d7d70a3d70a3p+8
+        v2_hex: 0x1.1d7d70a3d70a4p+8
+      - value: '0.01'
+        unit: degC
+        v1_hex: 0x1.1128f5c28f5c2p+8
+        v2_hex: 0x1.1128f5c28f5c3p+8
+      - value: '0.1'
+        unit: kg/s
+        component: A
+        molar_mass_table: SYN-001
+        v1_hex: 0x1.0000000000000p+0
+        v2_hex: 0x1.0000000000000p+0
+      - value: '0.3'
+        unit: kg/s
+        component: A
+        molar_mass_table: synthetic
+        v1_hex: 0x1.7ffffffffffffp+1
+        v2_hex: 0x1.8000000000000p+1
+      - value: '0.3'
+        unit: kg/s
+        component: B
+        molar_mass_table: synthetic
+        v1_hex: 0x1.7ffffffffffffp+0
+        v2_hex: 0x1.8000000000000p+0
+      - value: '0.3'
+        unit: kg/s
+        component: C
+        molar_mass_table: synthetic
+        v1_hex: 0x1.b443b54fbfc82p+2
+        v2_hex: 0x1.b443b54fbfc83p+2
+  f6_states:
+    F6-liquid:
+      n_hex:
+      - 0x1.1162dac4dbaedp-10
+      - 0x1.401b6924b775fp-2
+      - 0x1.20bb90837f1b3p-2
+      T_hex: 0x1.73414197f5766p+8
+      P_hex: 0x1.6a18d5991c1d6p+16
+      fixed_signature: LIQUID
+      fixed_vapor_fraction: '0.0'
+      rachford_rice_f0: '0.000000000000000296105'
+      rachford_rice_f1: '-0.351022'
+      beta_exact: '0.0000000000000011556531482053766345'
+      T_minus_bubble_K: '0.0000000000000109122'
+      T_minus_dew_K: '-10.5381'
+      beta_bound: '0.00000000000001'
+    F6-vapour:
+      n_hex:
+      - 0x1.f031da3db7e0bp-2
+      - 0x1.0887a2b9d0178p-4
+      - 0x1.0dc6dc8dd710ep-3
+      T_hex: 0x1.52fe0d0f214c0p+8
+      P_hex: 0x1.9e4a8ae0e7679p+15
+      fixed_signature: VAPOR
+      fixed_vapor_fraction: '1.'
+      rachford_rice_f0: '1.41892'
+      rachford_rice_f1: '-0.000000000000000880641'
+      beta_exact: '0.99999999999999944032'
+      T_minus_bubble_K: '30.2826'
+      T_minus_dew_K: '-0.0000000000000260479'
+      beta_bound: '0.00000000000001'
+  smooth_vle:
+    default_eps_K:
+    - '0.0100'
+    - '0.000500'
+    registered_eps_K:
+    - '0.0000000100'
+    - '0.0000000100'
+    self_check_bound_K: '0.000000100'
+  amendment_4:
+    thm09_row_window:
+      T_sat_K: '360.00000000000000000'
+      vapor_B_mol_per_s: '0.033866666666666666667'
+      liquid_B_mol_per_s: '1.9661333333333333333'
+      VL_mol2_per_s2: '0.066586382222222222222'
+      dlnK_B_dT_per_K: '0.027840822926556954036'
+      tau_eq_mol2_per_s2: '0.0000000930000'
+      row_window_K: '0.000050166692'
+      window_over_T_allowance: '5.01667'
+      run1_start1_T_offset_K: '-0.000010050859'
+      run1_start1_lnK_B: '-0.00000027982420'
+      run1_start1_row: '0.000000018632515'
+      run1_start1_row_over_tau_eq: '0.200350'
+    allowance_over_kind_tolerance:
+      molar_flow: '10.0000'
+      temperature: '10.0000'
+      pressure: '10.0000'
+      heat_rate: '9.90099'
+    saturation_closure:
+      THM-01_registered_split_K: '0.0'
+      NET-11_heater_outlet_bubble_excess_K: '3.3367980'
+corpus:
+  cases:
+  - id: STR-01
+    class: STR
+    fixture: SYN-001-UL-C1
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: STR-02
+    class: STR
+    fixture: SYN-001-T06-STR02
+    expected: validation
+    path: none
+    eligible: false
+    in_success_denominator: false
+  - id: STR-03
+    class: STR
+    fixture: SYN-001-conflicting-heater-spec
+    expected: validation
+    path: none
+    eligible: false
+    in_success_denominator: false
+  - id: STR-04
+    class: STR
+    fixture: T01:SQ-1
+    expected: structural_finding
+    path: none
+    eligible: false
+    in_success_denominator: false
+  - id: STR-05
+    class: STR
+    fixture: T05b:CH-UP
+    expected: certificate_unverified_rank
+    path: revision_eo
+    eligible: false
+    in_success_denominator: false
+  - id: STR-06
+    class: STR
+    fixture: SYN-001-T06-STR06
+    expected: validation
+    path: none
+    eligible: false
+    in_success_denominator: false
+  - id: STA-01
+    class: STA
+    fixture: T05b:DZ-3
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: STA-02
+    class: STA
+    fixture: SYN-001-T06-STA02
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: STA-03
+    class: STA
+    fixture: SYN-001-T06-STA03
+    expected: verified_at_reference
+    path: tear
+    eligible: false
+    in_success_denominator: true
+  - id: STA-04
+    class: STA
+    fixture: SYN-001-T06-STA04
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: false
+    in_success_denominator: true
+  - id: STA-05
+    class: STA
+    fixture: T05b:DZ-7
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NUM-01
+    class: NUM
+    fixture: K03:BND-01
+    expected: converged_to_closed_form
+    path: newton_core
+    eligible: false
+    in_success_denominator: true
+  - id: NUM-02
+    class: NUM
+    fixture: NUM-02-linear-recycle
+    expected: converged_to_closed_form
+    path: newton_core
+    eligible: false
+    in_success_denominator: true
+  - id: NUM-03
+    class: NUM
+    fixture: T05b:NP-1
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NUM-04
+    class: NUM
+    fixture: T02:A23-nominal-eo-from-root
+    expected: verified_at_reference
+    path: legacy_eo
+    eligible: false
+    in_success_denominator: true
+  - id: NUM-05
+    class: NUM
+    fixture: K03:NUM-05
+    expected: typed_failure
+    path: newton_core
+    eligible: false
+    in_success_denominator: false
+  - id: NUM-06
+    class: NUM
+    fixture: K03:NUM-06
+    expected: typed_failure
+    path: newton_core
+    eligible: false
+    in_success_denominator: false
+  - id: THM-01
+    class: THM
+    fixture: SYN-001-T06-THM01
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: THM-02
+    class: THM
+    fixture: SYN-001-T06-THM02
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: THM-03
+    class: THM
+    fixture: SYN-001-all-liquid-310K
+    expected: verified_at_reference
+    path: tear
+    eligible: true
+    in_success_denominator: true
+  - id: THM-04
+    class: THM
+    fixture: SYN-001-all-vapor-420K
+    expected: verified_at_reference
+    path: tear
+    eligible: false
+    in_success_denominator: true
+  - id: THM-05
+    class: THM
+    fixture: T05:RX-S-convention
+    expected: construction_refusal
+    path: none
+    eligible: false
+    in_success_denominator: false
+  - id: THM-06
+    class: THM
+    fixture: K02:exact-cache
+    expected: invariant
+    path: none
+    eligible: false
+    in_success_denominator: false
+  - id: THM-07
+    class: THM
+    fixture: T05b:SC-2
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: THM-08
+    class: THM
+    fixture: T05b:SC-1
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: THM-09
+    class: THM
+    fixture: T05b:SC-3
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: THM-10
+    class: THM
+    fixture: SYN-001-T06-THM10
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-01
+    class: NET
+    fixture: SYN-001-nominal
+    expected: verified_at_reference
+    path: tear
+    eligible: true
+    in_success_denominator: true
+  - id: NET-02
+    class: NET
+    fixture: SYN-001-T06-NET02
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-03
+    class: NET
+    fixture: SYN-001-T06-NET03
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-04
+    class: NET
+    fixture: T02:REC-01
+    expected: converged_to_closed_form
+    path: tear_synthetic
+    eligible: false
+    in_success_denominator: true
+  - id: NET-05
+    class: NET
+    fixture: SYN-001-A02-360
+    expected: verified_at_reference
+    path: legacy_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-06
+    class: NET
+    fixture: SYN-001-T06-NET06
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-07
+    class: NET
+    fixture: SYN-001-UL-C3
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-08
+    class: NET
+    fixture: SYN-001-UL-C2
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-09
+    class: NET
+    fixture: SYN-001-T06-NET09
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-10
+    class: NET
+    fixture: SYN-001-T06-NET10
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: NET-11
+    class: NET
+    fixture: SYN-001-T06-NET11
+    expected: verified_at_reference
+    path: revision_eo
+    eligible: true
+    in_success_denominator: true
+  - id: ADV-01
+    class: ADV
+    fixture: T03:PHS-05-default-policy
+    expected: verified_at_reference
+    path: legacy_eo
+    eligible: false
+    in_success_denominator: true
+  - id: ADV-02
+    class: ADV
+    fixture: T04:HOM-03
+    expected: typed_failure
+    path: legacy_eo
+    eligible: false
+    in_success_denominator: false
+  - id: ADV-03
+    class: ADV
+    fixture: T04:HOM-04
+    expected: typed_failure
+    path: legacy_eo
+    eligible: false
+    in_success_denominator: false
+  - id: ADV-04
+    class: ADV
+    fixture: T04:ADV-04-mapping-doubles
+    expected: typed_failure
+    path: ptc_synthetic
+    eligible: false
+    in_success_denominator: false
+  - id: ADV-05
+    class: ADV
+    fixture: T03:MR-A/MR-B/MR-C
+    expected: multiple_roots
+    path: tear_synthetic
+    eligible: false
+    in_success_denominator: false
+  - id: ADV-06
+    class: ADV
+    fixture: SYN-001-T06-ADV06
+    expected: noise_levels
+    path: revision_eo
+    eligible: false
+    in_success_denominator: false
+  - id: VER-01
+    class: VER
+    fixture: K04:INJ-1
+    expected: certificate_failed
+    path: injected
+    eligible: false
+    in_success_denominator: false
+  - id: VER-02
+    class: VER
+    fixture: K04:REG-eps
+    expected: regularity_inconclusive
+    path: injected
+    eligible: false
+    in_success_denominator: false
+  - id: VER-03
+    class: VER
+    fixture: K04:REG-eps-identity
+    expected: regularity_inconclusive
+    path: injected
+    eligible: false
+    in_success_denominator: false
+  - id: VER-04
+    class: VER
+    fixture: K04:SQ-0/SQ-1/SQ-2
+    expected: regularity_fixtures
+    path: newton_core
+    eligible: false
+    in_success_denominator: false
+  - id: VER-05
+    class: VER
+    fixture: K04:INJ-4
+    expected: certificate_relaxed
+    path: injected
+    eligible: false
+    in_success_denominator: false
+  counted: 49
+  eligible: 22
+  in_success_denominator: 30
+generator_claims:
+  count: 347
+  all_pass: true
+  names:
+  - SYN-001-T06-THM01.material_balance.A
+  - SYN-001-T06-THM01.material_balance.B
+  - SYN-001-T06-THM01.material_balance.C
+  - SYN-001-T06-THM01.energy_envelope
+  - SYN-001-T06-THM01.S1.in_domain_with_stencil
+  - SYN-001-T06-THM01.S1.flows_nonnegative
+  - SYN-001-T06-THM01.S2.in_domain_with_stencil
+  - SYN-001-T06-THM01.S2.flows_nonnegative
+  - SYN-001-T06-THM01.S3.in_domain_with_stencil
+  - SYN-001-T06-THM01.S3.flows_nonnegative
+  - SYN-001-T06-THM01.U-FLASH.two_phase_margin
+  - SYN-001-T06-THM02.material_balance.A
+  - SYN-001-T06-THM02.material_balance.B
+  - SYN-001-T06-THM02.material_balance.C
+  - SYN-001-T06-THM02.energy_envelope
+  - SYN-001-T06-THM02.S1.in_domain_with_stencil
+  - SYN-001-T06-THM02.S1.flows_nonnegative
+  - SYN-001-T06-THM02.S2.in_domain_with_stencil
+  - SYN-001-T06-THM02.S2.flows_nonnegative
+  - SYN-001-T06-THM02.S3.in_domain_with_stencil
+  - SYN-001-T06-THM02.S3.flows_nonnegative
+  - SYN-001-T06-THM02.U-PHF.two_phase_margin
+  - SYN-001-T06-THM10.material_balance.A
+  - SYN-001-T06-THM10.material_balance.B
+  - SYN-001-T06-THM10.material_balance.C
+  - SYN-001-T06-THM10.energy_envelope
+  - SYN-001-T06-THM10.S1.in_domain_with_stencil
+  - SYN-001-T06-THM10.S1.flows_nonnegative
+  - SYN-001-T06-THM10.S2.in_domain_with_stencil
+  - SYN-001-T06-THM10.S2.flows_nonnegative
+  - SYN-001-T06-THM10.S3.in_domain_with_stencil
+  - SYN-001-T06-THM10.S3.flows_nonnegative
+  - SYN-001-T06-THM10.U-PHF.two_phase_margin
+  - SYN-001-T06-THM10.declared_vapor0
+  - SYN-001-T06-STA02.material_balance.A
+  - SYN-001-T06-STA02.material_balance.B
+  - SYN-001-T06-STA02.material_balance.C
+  - SYN-001-T06-STA02.energy_envelope
+  - SYN-001-T06-STA02.fixed_point.flash_T_minus_reduction_K
+  - SYN-001-T06-STA02.fixed_point.flash_liquid_minus_loop
+  - SYN-001-T06-STA02.S1.in_domain_with_stencil
+  - SYN-001-T06-STA02.S1.flows_nonnegative
+  - SYN-001-T06-STA02.S2.in_domain_with_stencil
+  - SYN-001-T06-STA02.S2.flows_nonnegative
+  - SYN-001-T06-STA02.S3.in_domain_with_stencil
+  - SYN-001-T06-STA02.S3.flows_nonnegative
+  - SYN-001-T06-STA02.S4.in_domain_with_stencil
+  - SYN-001-T06-STA02.S4.flows_nonnegative
+  - SYN-001-T06-STA02.S5.in_domain_with_stencil
+  - SYN-001-T06-STA02.S5.flows_nonnegative
+  - SYN-001-T06-STA02.S6.in_domain_with_stencil
+  - SYN-001-T06-STA02.S6.flows_nonnegative
+  - SYN-001-T06-STA02.S7.in_domain_with_stencil
+  - SYN-001-T06-STA02.S7.flows_nonnegative
+  - SYN-001-T06-STA02.S8.in_domain_with_stencil
+  - SYN-001-T06-STA02.S8.flows_nonnegative
+  - SYN-001-T06-STA02.mixer0.subcooled
+  - SYN-001-T06-STA02.U-PHF.two_phase_margin
+  - SYN-001-T06-STA02.declared_liquid0
+  - SYN-001-T06-STA02.declared_liquid1
+  - SYN-001-T06-STA02.declared_liquid2
+  - SYN-001-T06-STA02.declared_liquid3
+  - SYN-001-T06-STA02.hx0.no_failure
+  - SYN-001-T06-STA02.hx0.terminal
+  - SYN-001-T06-NET02.material_balance.A
+  - SYN-001-T06-NET02.material_balance.B
+  - SYN-001-T06-NET02.material_balance.C
+  - SYN-001-T06-NET02.energy_envelope
+  - SYN-001-T06-NET02.fixed_point.flash_T_minus_root_K
+  - SYN-001-T06-NET02.fixed_point.recycle_closure
+  - SYN-001-T06-NET02.S1.in_domain_with_stencil
+  - SYN-001-T06-NET02.S1.flows_nonnegative
+  - SYN-001-T06-NET02.S2.in_domain_with_stencil
+  - SYN-001-T06-NET02.S2.flows_nonnegative
+  - SYN-001-T06-NET02.S3.in_domain_with_stencil
+  - SYN-001-T06-NET02.S3.flows_nonnegative
+  - SYN-001-T06-NET02.S4.in_domain_with_stencil
+  - SYN-001-T06-NET02.S4.flows_nonnegative
+  - SYN-001-T06-NET02.S5.in_domain_with_stencil
+  - SYN-001-T06-NET02.S5.flows_nonnegative
+  - SYN-001-T06-NET02.S6.in_domain_with_stencil
+  - SYN-001-T06-NET02.S6.flows_nonnegative
+  - SYN-001-T06-NET02.S7.in_domain_with_stencil
+  - SYN-001-T06-NET02.S7.flows_nonnegative
+  - SYN-001-T06-NET02.mixer0.subcooled
+  - SYN-001-T06-NET02.U-HEAT.two_phase_margin
+  - SYN-001-T06-NET02.U-PHF.two_phase_margin
+  - SYN-001-T06-NET02.declared_liquid0
+  - SYN-001-T06-NET02.declared_liquid1
+  - SYN-001-T06-NET03.material_balance.A
+  - SYN-001-T06-NET03.material_balance.B
+  - SYN-001-T06-NET03.material_balance.C
+  - SYN-001-T06-NET03.energy_envelope
+  - SYN-001-T06-NET03.fixed_point.tear_residual
+  - SYN-001-T06-NET03.S1.in_domain_with_stencil
+  - SYN-001-T06-NET03.S1.flows_nonnegative
+  - SYN-001-T06-NET03.S2.in_domain_with_stencil
+  - SYN-001-T06-NET03.S2.flows_nonnegative
+  - SYN-001-T06-NET03.S3.in_domain_with_stencil
+  - SYN-001-T06-NET03.S3.flows_nonnegative
+  - SYN-001-T06-NET03.S4.in_domain_with_stencil
+  - SYN-001-T06-NET03.S4.flows_nonnegative
+  - SYN-001-T06-NET03.S5.in_domain_with_stencil
+  - SYN-001-T06-NET03.S5.flows_nonnegative
+  - SYN-001-T06-NET03.S6.in_domain_with_stencil
+  - SYN-001-T06-NET03.S6.flows_nonnegative
+  - SYN-001-T06-NET03.S7.in_domain_with_stencil
+  - SYN-001-T06-NET03.S7.flows_nonnegative
+  - SYN-001-T06-NET03.S8.in_domain_with_stencil
+  - SYN-001-T06-NET03.S8.flows_nonnegative
+  - SYN-001-T06-NET03.S9.in_domain_with_stencil
+  - SYN-001-T06-NET03.S9.flows_nonnegative
+  - SYN-001-T06-NET03.S10.in_domain_with_stencil
+  - SYN-001-T06-NET03.S10.flows_nonnegative
+  - SYN-001-T06-NET03.S11.in_domain_with_stencil
+  - SYN-001-T06-NET03.S11.flows_nonnegative
+  - SYN-001-T06-NET03.mixer0.subcooled
+  - SYN-001-T06-NET03.mixer1.subcooled
+  - SYN-001-T06-NET03.U-HEAT.two_phase_margin
+  - SYN-001-T06-NET03.U-PHF.two_phase_margin
+  - SYN-001-T06-NET03.U-COOL.two_phase_margin
+  - SYN-001-T06-NET03.U-FL2.two_phase_margin
+  - SYN-001-T06-NET03.declared_liquid0
+  - SYN-001-T06-NET03.declared_liquid1
+  - SYN-001-T06-NET03.declared_liquid2
+  - SYN-001-T06-NET03.declared_vapor0
+  - SYN-001-T06-NET06.material_balance.A
+  - SYN-001-T06-NET06.material_balance.B
+  - SYN-001-T06-NET06.material_balance.C
+  - SYN-001-T06-NET06.energy_envelope
+  - SYN-001-T06-NET06.fixed_point.flash_T_minus_root_K
+  - SYN-001-T06-NET06.fixed_point.exchanger_duty_minus_reduction_W
+  - SYN-001-T06-NET06.S1.in_domain_with_stencil
+  - SYN-001-T06-NET06.S1.flows_nonnegative
+  - SYN-001-T06-NET06.S2.in_domain_with_stencil
+  - SYN-001-T06-NET06.S2.flows_nonnegative
+  - SYN-001-T06-NET06.S3.in_domain_with_stencil
+  - SYN-001-T06-NET06.S3.flows_nonnegative
+  - SYN-001-T06-NET06.S4.in_domain_with_stencil
+  - SYN-001-T06-NET06.S4.flows_nonnegative
+  - SYN-001-T06-NET06.S5.in_domain_with_stencil
+  - SYN-001-T06-NET06.S5.flows_nonnegative
+  - SYN-001-T06-NET06.U-PHF.two_phase_margin
+  - SYN-001-T06-NET06.declared_liquid0
+  - SYN-001-T06-NET06.declared_liquid1
+  - SYN-001-T06-NET06.declared_liquid2
+  - SYN-001-T06-NET06.hx0.no_failure
+  - SYN-001-T06-NET06.hx0.terminal
+  - SYN-001-T06-NET09.material_balance.A
+  - SYN-001-T06-NET09.material_balance.B
+  - SYN-001-T06-NET09.material_balance.C
+  - SYN-001-T06-NET09.energy_envelope
+  - SYN-001-T06-NET09.fixed_point.tear_residual
+  - SYN-001-T06-NET09.S1.in_domain_with_stencil
+  - SYN-001-T06-NET09.S1.flows_nonnegative
+  - SYN-001-T06-NET09.S2.in_domain_with_stencil
+  - SYN-001-T06-NET09.S2.flows_nonnegative
+  - SYN-001-T06-NET09.S3.in_domain_with_stencil
+  - SYN-001-T06-NET09.S3.flows_nonnegative
+  - SYN-001-T06-NET09.S4.in_domain_with_stencil
+  - SYN-001-T06-NET09.S4.flows_nonnegative
+  - SYN-001-T06-NET09.S5.in_domain_with_stencil
+  - SYN-001-T06-NET09.S5.flows_nonnegative
+  - SYN-001-T06-NET09.S6.in_domain_with_stencil
+  - SYN-001-T06-NET09.S6.flows_nonnegative
+  - SYN-001-T06-NET09.S7.in_domain_with_stencil
+  - SYN-001-T06-NET09.S7.flows_nonnegative
+  - SYN-001-T06-NET09.mixer0.subcooled
+  - SYN-001-T06-NET09.U-RX.two_phase_margin
+  - SYN-001-T06-NET09.U-FLASH.two_phase_margin
+  - SYN-001-T06-NET09.declared_liquid0
+  - SYN-001-T06-NET09.declared_liquid1
+  - SYN-001-T06-NET10.material_balance.A
+  - SYN-001-T06-NET10.material_balance.B
+  - SYN-001-T06-NET10.material_balance.C
+  - SYN-001-T06-NET10.energy_envelope
+  - SYN-001-T06-NET10.fixed_point.tear_residual
+  - SYN-001-T06-NET10.S1.in_domain_with_stencil
+  - SYN-001-T06-NET10.S1.flows_nonnegative
+  - SYN-001-T06-NET10.S2.in_domain_with_stencil
+  - SYN-001-T06-NET10.S2.flows_nonnegative
+  - SYN-001-T06-NET10.S3.in_domain_with_stencil
+  - SYN-001-T06-NET10.S3.flows_nonnegative
+  - SYN-001-T06-NET10.S4.in_domain_with_stencil
+  - SYN-001-T06-NET10.S4.flows_nonnegative
+  - SYN-001-T06-NET10.S5.in_domain_with_stencil
+  - SYN-001-T06-NET10.S5.flows_nonnegative
+  - SYN-001-T06-NET10.S6.in_domain_with_stencil
+  - SYN-001-T06-NET10.S6.flows_nonnegative
+  - SYN-001-T06-NET10.S7.in_domain_with_stencil
+  - SYN-001-T06-NET10.S7.flows_nonnegative
+  - SYN-001-T06-NET10.S8.in_domain_with_stencil
+  - SYN-001-T06-NET10.S8.flows_nonnegative
+  - SYN-001-T06-NET10.S9.in_domain_with_stencil
+  - SYN-001-T06-NET10.S9.flows_nonnegative
+  - SYN-001-T06-NET10.mixer0.subcooled
+  - SYN-001-T06-NET10.U-FL1.two_phase_margin
+  - SYN-001-T06-NET10.U-COOL.two_phase_margin
+  - SYN-001-T06-NET10.U-FL2.two_phase_margin
+  - SYN-001-T06-NET10.declared_liquid0
+  - SYN-001-T06-NET10.declared_liquid1
+  - SYN-001-T06-NET10.declared_liquid2
+  - SYN-001-T06-NET10.declared_liquid3
+  - SYN-001-T06-NET10.declared_vapor0
+  - SYN-001-T06-NET11.material_balance.A
+  - SYN-001-T06-NET11.material_balance.B
+  - SYN-001-T06-NET11.material_balance.C
+  - SYN-001-T06-NET11.energy_envelope
+  - SYN-001-T06-NET11.fixed_point.tear_residual
+  - SYN-001-T06-NET11.fixed_point.valve_T_minus_root_K
+  - SYN-001-T06-NET11.fixed_point.flash_T_minus_root_K
+  - SYN-001-T06-NET11.S1.in_domain_with_stencil
+  - SYN-001-T06-NET11.S1.flows_nonnegative
+  - SYN-001-T06-NET11.S2.in_domain_with_stencil
+  - SYN-001-T06-NET11.S2.flows_nonnegative
+  - SYN-001-T06-NET11.S3.in_domain_with_stencil
+  - SYN-001-T06-NET11.S3.flows_nonnegative
+  - SYN-001-T06-NET11.S4.in_domain_with_stencil
+  - SYN-001-T06-NET11.S4.flows_nonnegative
+  - SYN-001-T06-NET11.S5.in_domain_with_stencil
+  - SYN-001-T06-NET11.S5.flows_nonnegative
+  - SYN-001-T06-NET11.S6.in_domain_with_stencil
+  - SYN-001-T06-NET11.S6.flows_nonnegative
+  - SYN-001-T06-NET11.S7.in_domain_with_stencil
+  - SYN-001-T06-NET11.S7.flows_nonnegative
+  - SYN-001-T06-NET11.S8.in_domain_with_stencil
+  - SYN-001-T06-NET11.S8.flows_nonnegative
+  - SYN-001-T06-NET11.S9.in_domain_with_stencil
+  - SYN-001-T06-NET11.S9.flows_nonnegative
+  - SYN-001-T06-NET11.mixer0.subcooled
+  - SYN-001-T06-NET11.U-HEAT.liquid_margin
+  - SYN-001-T06-NET11.U-VLV.two_phase_margin
+  - SYN-001-T06-NET11.U-PHF.two_phase_margin
+  - SYN-001-T06-NET11.declared_liquid0
+  - SYN-001-T06-NET11.declared_liquid1
+  - SYN-001-T06-NET11.declared_liquid2
+  - SYN-001-T06-NET11.declared_liquid3
+  - THM-01.two_phase
+  - THM-01.poynting_effect_exceeds_100_allowances
+  - NET-02.heater_two_phase
+  - NET-02.recycle_over_feed_at_least_10
+  - NET-02.T_flash_depends_on_r
+  - NET-11.heater_outlet_liquid_with_margin
+  - NET-11.heater_signature
+  - NET-11.valve_and_flash_two_phase
+  - STA-02.B_absent_everywhere
+  - NET-03.every_lifted_two_phase
+  - NET-10.both_flashes_two_phase
+  - NET-09.reactor_and_flash_two_phase
+  - new_cases.flash_temperatures_pairwise_distinct
+  - THM-04.min_K_at_420K_above_1
+  - REF-01.T_out_exactly_320
+  - REF-01.subcooled
+  - REF-02.inlet_subcooled
+  - REF-03.two_phase
+  - REF-05.inlet_liquid_in_both_K_forms
+  - REF-06.work_exactly_32
+  - REF-06.T_out
+  - REF-07.duty_exactly_3600
+  - REF-07.gas_datum_error_is_7500_W
+  - REF-07.liquid
+  - REF-08.V_is_the_plan_value
+  - REF-08.L_is_the_plan_value
+  - PC-1.effect_exceeds_100_tolerances
+  - PC-2.effect_exceeds_100_tolerances
+  - PC-2.two_phase
+  - DWSIM.mapped_latent_equals_ours_at_every_P
+  - DWSIM.unmapped_offset_is_minus_Pr_v
+  - REF-05.latent_offset_is_caught
+  - REF.tolerance_above_roundoff
+  - KAT.range
+  - KAT.distinct
+  - gate.N
+  - gate.S_min
+  - gate.cp_monotone
+  - gate.cp_at_all_successes
+  - gate.cp_at_threshold_below_095
+  - gate.bound_gate_would_need_426
+  - ADV-06.H.residual_noise_above_100_tau
+  - ADV-06.M.residual_noise_below_tau_by_10
+  - ADV-06.M.witness_error_scale_above_tol_by_100
+  - ADV-06.M.escape_probability_below_1e-20
+  - ADV-06.L.witness_error_below_tol_by_100
+  - corpus.ids_unique
+  - corpus.fixtures_unique
+  - corpus.at_least_30
+  - corpus.eligible_matches_gate
+  - corpus.plan_ids.STR
+  - corpus.plan_ids.STA
+  - corpus.plan_ids.NUM
+  - corpus.plan_ids.THM
+  - corpus.plan_ids.NET
+  - corpus.plan_ids.ADV
+  - corpus.plan_ids.VER
+  - corpus.eligible_are_success_kind
+  - corpus.counted_is_49
+  - corpus.denominator_is_30
+  - corpus.metamorphic_cases_ineligible_their_twins_eligible
+  - units.sta03_degC_is_nominal_exactly
+  - units.sta03_kgs_is_nominal_exactly
+  - units.a02_degC_control_is_exact
+  - units.kats_pin_binary64_addition
+  - units.kats_pin_binary64_division
+  - units.synthetic_component_results_distinct
+  - units.syn001_masses_equal
+  - units.sta03_dropped_offset_leaves_domain
+  - units.sta03_wrong_offset_caught
+  - STA-04.every_permutation_changes_c2_inputs
+  - STA-04.nominal_K_pairwise_distinct
+  - IDAES.constr_viol_tol_below_allowances_by_100
+  - IDAES.constr_viol_tol_above_Pa_row_floor_by_30_ulps
+  - IDAES.old_1e-10_within_4_ulps_of_Pa_row
+  - PC-2.feed_is_flash_pressure_and_equimolar
+  - draw.u_hex_is_k_times_2^-53_and_its_17_digits_round_trip
+  - draw.delta_hex_is_w_over_5_one_rounding
+  - draw.delta_hex_is_nearest_to_exact
+  - draw.kats_refuse_the_literal_0.2_product
+  - draw.decimal_delta_is_not_a_binary64_expectation
+  - units_v2.psi_is_the_1959_definition
+  - units_v2.every_row_known_answer_is_nearest
+  - units_v2.every_naive_chain_is_refused_by_a_known_answer
+  - units_v2.metamorphic_pairs_bind_to_the_registered_value
+  - units_v2.metamorphic_pairs_are_not_the_identity
+  - units_v2.the_binary_reading_would_break_a_pair
+  - units_v2.unit_invariance
+  - units_v2.synthetic_masses_separate_components
+  - units_v2.refusals_as_registered
+  - units_v2.sta03_and_a02_control_unchanged_from_v1
+  - units_v2.reverses_v1_where_v1_was_not_unit_invariant
+  - units_v2.minus_zero_converts_to_plus_zero
+  - units_v2.degF_agrees_with_degC_at_exact_celsius
+  - F6.states_in_domain_and_every_component_flows
+  - F6.liquid_state_is_at_its_bubble_point
+  - F6.vapour_state_is_at_its_dew_point
+  - F6.fixed_answer_within_1e-14_of_exact_beta
+  - F6.a_wrong_phase_is_caught
+  - IDAES.smooth_vle_shift_at_a_bubble_point_is_eps1_over_2
+  - IDAES.default_smoothing_is_500_temperature_allowances
+  - IDAES.registered_smoothing_worst_shift_below_half_the_self_check_bound
+  - IDAES.registered_smoothing_resolved_in_binary64_at_440_K
+  - A4.THM-09.root_is_T05b_SC-3
+  - A4.THM-09.row_window_exceeds_the_S3_temperature_allowance_4x
+  - A4.THM-09.start1_row_reproduces_the_measured_1.863e-8
+  - A4.THM-09.start1_is_inside_the_row_window_and_outside_the_allowance
+  - A4.refinement_threshold_leaves_a_margin_of_at_least_9.9_below_every_allowance
+  - A4.closure_vanishes_at_a_registered_equilibrium_split
+  - A4.closure_catches_a_vanishing_vapour_at_NET-11s_liquid_heater_outlet

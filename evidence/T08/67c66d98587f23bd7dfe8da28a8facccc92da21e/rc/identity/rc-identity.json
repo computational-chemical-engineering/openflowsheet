@@ -1,0 +1,46 @@
+{
+ "checks": [
+  {
+   "expected": "24af004ab5718e559bd3d40716d66e21d9b19043a26777a39a0da84c6fbdcb8e",
+   "found": "24af004ab5718e559bd3d40716d66e21d9b19043a26777a39a0da84c6fbdcb8e",
+   "id": "a42.minus_t07_registered",
+   "result": "pass"
+  },
+  {
+   "expected": "887a2e622676dbfaff0a8ebfc309414f0e74150ace8327887b4a9ec15e498a38",
+   "found": "887a2e622676dbfaff0a8ebfc309414f0e74150ace8327887b4a9ec15e498a38",
+   "id": "a42.t07_key_substituted",
+   "result": "pass"
+  },
+  {
+   "id": "a42.unchanged_under_trial_version",
+   "result": "pass",
+   "trial_version": "0.1.0"
+  }
+ ],
+ "digests": {
+  "minus_t07": "24af004ab5718e559bd3d40716d66e21d9b19043a26777a39a0da84c6fbdcb8e",
+  "structural_sha256": "ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90",
+  "t07_key": "887a2e622676dbfaff0a8ebfc309414f0e74150ace8327887b4a9ec15e498a38",
+  "whole": "174977ccf18d0dbf57fa429cb2522921cc98d0d5b693382ec973c86fd714c225"
+ },
+ "format": "t08-rc-v1",
+ "machine_class": "ref-x86-64",
+ "note": "equality across the two architectures is the CI job `identity` (G05's comparison)",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "identity",
+ "t02_floats_sha256": "9a8a5baf14e4f04f5d852a0998f7914f7bdcc81c056787e117a09980e25a2fb2"
+}

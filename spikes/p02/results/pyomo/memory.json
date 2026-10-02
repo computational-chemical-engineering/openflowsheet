@@ -1,0 +1,119 @@
+{
+ "M06_memory": {
+  "processes": 5,
+  "method": "VmRSS from /proc/self/status, read in a fresh interpreter at each stage; this is the current resident set, not a high-water mark. ru_maxrss_peak_mib is reported separately as the peak, and the probe is started from a minimal launcher because ru_maxrss is inherited by a spawned process from the process that spawned it",
+  "stages": {
+   "vmrss_at_start_mib": {
+    "median": 11.0390625,
+    "min": 11.0078125,
+    "samples": [
+     11.0078125,
+     11.0546875,
+     11.0390625,
+     11.0234375,
+     11.06640625
+    ]
+   },
+   "vmrss_after_numpy_import_mib": {
+    "median": 25.63671875,
+    "min": 25.60546875,
+    "samples": [
+     25.63671875,
+     25.62109375,
+     25.60546875,
+     25.65625,
+     25.640625
+    ]
+   },
+   "vmrss_after_backend_import_mib": {
+    "median": 111.81640625,
+    "min": 111.50390625,
+    "samples": [
+     111.93359375,
+     111.66015625,
+     111.50390625,
+     111.8671875,
+     111.81640625
+    ]
+   },
+   "vmrss_after_harness_module_mib": {
+    "median": 115.3671875,
+    "min": 115.0703125,
+    "samples": [
+     117.97265625,
+     115.23046875,
+     115.0703125,
+     115.390625,
+     115.3671875
+    ]
+   },
+   "vmrss_after_compile_mib": {
+    "median": 116.42578125,
+    "min": 116.140625,
+    "samples": [
+     118.796875,
+     116.29296875,
+     116.140625,
+     116.49609375,
+     116.42578125
+    ]
+   },
+   "numpy_import_ms": {
+    "median": 33.836434,
+    "min": 33.44622,
+    "samples": [
+     33.651585,
+     35.453831,
+     35.416449,
+     33.836434,
+     33.44622
+    ]
+   },
+   "backend_import_ms": {
+    "median": 392.65462,
+    "min": 388.792746,
+    "samples": [
+     399.466891,
+     392.65462,
+     389.26179,
+     388.792746,
+     392.712107
+    ]
+   },
+   "compile_ms": {
+    "median": 203.93974,
+    "min": 202.498276,
+    "samples": [
+     205.166201,
+     203.852425,
+     203.93974,
+     204.106133,
+     202.498276
+    ]
+   },
+   "tracemalloc_peak_during_compile_mib": {
+    "median": 0.43886661529541016,
+    "min": 0.43866729736328125,
+    "samples": [
+     0.4386911392211914,
+     0.43886661529541016,
+     0.43900108337402344,
+     0.4390382766723633,
+     0.43866729736328125
+    ]
+   },
+   "ru_maxrss_peak_mib": {
+    "median": 114.421875,
+    "min": 113.3828125,
+    "samples": [
+     117.8984375,
+     114.421875,
+     113.3828125,
+     115.29296875,
+     114.0234375
+    ]
+   }
+  },
+  "note": "the ASL library is loaded inside PyomoNLPWithGreyBoxBlocks construction, together with the .nl write, so its cost falls in the compile stage and not in the backend import stage; vmrss_after_harness_module_mib is taken after this harness module itself is loaded, so the compile cost is vmrss_after_compile_mib minus that figure. compile_ms here runs under tracemalloc and is slower than the M02 headline in timings.json, which is measured without it"
+ }
+}

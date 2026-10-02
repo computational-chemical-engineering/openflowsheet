@@ -1,0 +1,1041 @@
+# Requirements ledger: requirement -> work package -> test -> evidence -> status.
+#
+# Authority: docs/blueprint-v3.1.md (architecture) and docs/implementation-plan.md v1.2
+# (execution). Requirement rows come from plan §5; gate rows from plan §5.1; package rows
+# from plan §4.1-§4.5 with lead/second from the Model column. Titles and blueprint
+# references come from blueprint §1 (D01-D20) and the §3.1/§6.3/§7.2/§7.5/§8.1/§9.2/§10/§13.4/§15
+# amendment markers (A01-A10, listed in the version 3.1 amendment guide).
+#
+# Structure is fixed by P00 and validated by schemas/requirements-ledger.schema.json and
+# tests/test_requirements_ledger.py. `tests` holds pytest node IDs and `evidence` holds
+# evidence/<package>/<commit>/manifest.json paths; both are filled as work lands.
+# Statuses use the vocabulary below. No agent sets `reviewed` on its own package.
+
+schema_version: 1
+blueprint:
+  path: docs/blueprint-v3.1.md
+  sha256: 66f574b07e86a89962236f4a48850e733f3c03379a3a55caf78ef30f7915e8aa
+plan:
+  path: docs/implementation-plan.md
+  version: "1.2"
+  sha256: af98facc80c829a0b6c8ebf860d18ea885064a8f31f983b9374629f5a893f2cd
+status_vocabulary: [planned, implemented, tested, reviewed, released, blocked]
+
+requirements:
+  - id: D01
+    title: Meaning of an original numerical core
+    blueprint_ref: "§1 D01"
+    packages: [K03, T02, T04]
+    minimum_evidence: "Explicit plans/attempts; own policy calls interchangeable numerical interfaces"
+    # All three halves are K03's, and all three are executable. "Explicit plans": `SolvePlan` is
+    # built before any residual is evaluated and `plan_built` is the first event of every trace --
+    # a mutation that builds it after the solve, or does not record it, is caught. "Explicit
+    # attempts": every attempt opens with a frozen signature and an `AttemptContext`, and the
+    # contexts survive on the result, so an attempt can be reconstructed rather than inferred.
+    # "Own policy calls interchangeable numerical interfaces": the policy lives in `SolvePolicy`
+    # and the only linear algebra is the one ADR 0004 call, behind `solve_linear`.
+    #
+    # Status `implemented`, not `tested`: T02 and T04 own the rest of the requirement (design
+    # specifications and pseudo-transient continuation), and neither exists.
+    tests:
+      - tests/test_k03_schemas.py
+      - tests/test_k03_attempts.py
+      - "tests/test_k03_newton.py::test_a_policy_records_the_linear_solver_it_used"
+    evidence:
+      - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+    status: implemented
+
+  - id: D02
+    title: Language and compiled backend
+    blueprint_ref: "§1 D02"
+    packages: [P02, P03, K01]
+    minimum_evidence: "Matched spike, sparse callback and selection ADR"
+    tests:
+      - "tests/test_p02_composition.py::test_composition_assertions[casadi]"
+      - "tests/test_p02_composition.py::test_composition_assertions[pyomo]"
+      - "tests/test_p02_composition.py::test_no_assertion_is_silently_missing[casadi]"
+      - "tests/test_p02_composition.py::test_no_assertion_is_silently_missing[pyomo]"
+      - "tests/test_p02_composition.py::test_judge_self_test_reproduces_the_reference"
+      - "tests/test_p02_composition.py::test_judge_detects_a_perturbed_jacobian_entry"
+      - "tests/test_p02_composition.py::test_judge_detects_a_structural_zero_that_is_not_exactly_zero"
+      - "tests/test_p02_composition.py::test_absent_evidence_is_unsupported_never_a_pass"
+      - "tests/test_k01_syn001_conformance.py::test_the_assembled_residual_matches_the_reference"
+      - "tests/test_k01_syn001_conformance.py::test_the_assembled_jacobian_matches_the_reference"
+      - "tests/test_k01_syn001_conformance.py::test_the_assembled_pattern_is_the_registered_one"
+      - "tests/test_k01_compiler.py::test_only_the_adapter_imports_the_backend"
+    evidence:
+      - "evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json"
+      - "evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json"
+      - "evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json"
+    status: implemented
+
+  - id: D03
+    title: Sparse solver
+    blueprint_ref: "§1 D03"
+    packages: [P02, K03]
+    minimum_evidence: "Explicit SuperLU configuration and linear residual evidence"
+    # P02 established that SuperLU is reachable and what its options do; ADR 0004 then fixed the
+    # configuration and K03 is the first code to run it on a real problem. Both halves of the
+    # minimum evidence are measured on the 44x44 inner block at all five registered variants:
+    # the options are asserted verbatim against ADR 0004 D1, and the normalized residual and the
+    # |U_ii| screen are recorded on every solve (worst 1.1e-16 and 7.13e-3 respectively).
+    #
+    # A note on how the screen was nearly worthless: `np.min(diagonal, initial=0.0)` returns 0.0
+    # for any positive array, so `min|U_ii|` was a constant and the screen could never fire. It
+    # was found because the measurement disagreed with the ADR's registered 7.1e-3.
+    tests:
+      - "tests/test_p02_composition.py::test_linear_solve_evidence[casadi]"
+      - "tests/test_p02_composition.py::test_linear_solve_evidence[pyomo]"
+      - tests/test_k03_linear.py
+    evidence:
+      - "evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json"
+      - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+    status: implemented
+
+  - id: D04
+    title: Licensing
+    blueprint_ref: "§1 D04"
+    packages: [P03, T08]
+    minimum_evidence: "Exact binary/data inventory and distribution verdict"
+    tests:
+      - "tests/test_p03_binary_audit.py::test_shared_object_payload_is_the_audited_figure"
+      - "tests/test_p03_binary_audit.py::test_no_proprietary_vendor_library_is_shipped"
+      - "tests/test_p03_binary_audit.py::test_exactly_one_restrictive_notice_and_it_is_metis_4"
+      - "tests/test_p03_binary_audit.py::test_metis_attribution_is_carried_by_exactly_three_copies"
+      - "tests/test_p03_binary_audit.py::test_clean_environment_reproduction_had_no_shipped_difference"
+    evidence: ["evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json"]
+    status: implemented
+
+  - id: D05
+    title: Structural decomposition
+    blueprint_ref: "§1 D05"
+    packages: [T01, K04, T06]
+    minimum_evidence: "Structural and numerical singularity separated"
+    # Two different things with two different mechanisms, which is the requirement. *Structural*
+    # redundancy is eliminated before any numerics with a certificate (K03 §7, register R-011)
+    # and the eliminated rows are still checked at the final state. *Numerical* singularity is
+    # the [A08] screen on the unregularized target Jacobian at that state, with a rank-revealing
+    # escalation. The triangular fixtures show they cannot be conflated: `U = I - N` is
+    # structurally perfect at every size and numerically well conditioned, ill conditioned and
+    # rank deficient at n = 16, 32, 64.
+    #
+    # T01 delivers the structural half: a declaration-traced incidence graph, matching,
+    # Dulmage-Mendelsohn, the block-triangular form and the tear, with the certificate now issued
+    # from the declaration rather than from a Jacobian at one state. The registered SQ-2 fixture
+    # holds the separation executable: structurally perfect, numerically singular, and no rank
+    # word anywhere in the report.
+    #
+    # Status `implemented`, not `tested`: T06 owns the broader rank diagnostics and the
+    # generalization of the certificate class beyond pressure and temperature copies.
+    tests:
+      - tests/test_k04_regularity.py
+      - tests/test_k03_rank.py
+      - tests/test_t01_structural.py
+    evidence:
+      - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+      - evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+    status: implemented
+
+  - id: D06
+    title: Scaling order
+    blueprint_ref: "§1 D06"
+    packages: [K03, T02]
+    minimum_evidence: "Scales precede initialization acceptance; fixed within attempt"
+    # "Scales precede initialization acceptance" is structural rather than asserted after the
+    # fact: the scales are fields of `SolvePlan`, the plan is built before the initializer runs,
+    # and `plan_built` is therefore the first event of every trace. "Fixed within attempt" is
+    # carried by `AttemptContext`, which holds the scales the attempt's calls use and is frozen;
+    # there is one scale segment and it is zero (A34).
+    #
+    # Status `implemented`, not `tested`: T02 owns rescaling across a design specification's
+    # promoted region, which is where "fixed within attempt" first has to be *defended* rather
+    # than merely arranged.
+    tests:
+      - tests/test_k03_scaling.py
+      - "tests/test_k03_schemas.py::test_the_solve_keeps_the_context_each_attempt_ran_under"
+      - "tests/test_k03_attempts.py::test_every_event_of_an_attempt_carries_that_attempts_signature"
+    evidence:
+      - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+    status: implemented
+
+  - id: D07
+    title: Pseudo-transient continuation
+    blueprint_ref: "§1 D07"
+    packages: [T04]
+    minimum_evidence: "Mapping/equivalence/qualification, SER and final target checks"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: D08
+    title: Thermodynamic primitive
+    blueprint_ref: "§1 D08"
+    packages: [P01, K02, M01]
+    minimum_evidence: "Consistent synthetic model and real provider conformance"
+    # P01 delivered the synthetic half as an algebraic oracle: h = g - T dg/dT, K from equality
+    # of chemical potentials, exact pure-component boiling points, the declared domain failure,
+    # zero-component handling, and every registered variant's phase state against Fable's
+    # independent 20-digit reference.
+    #
+    # K02 adds the production half: the capability contract of blueprint §6.1 with every field
+    # required, a SYN-001 provider transcribed separately from the oracle, and the six unit
+    # models, whose outlets, duties, phase signatures and overall balances agree with the same
+    # 20-digit references at all five registered variants. D08's own rule -- a unit requires the
+    # capabilities it uses, not a universal tier -- is carried by `PropertyCapabilities` being a
+    # description a unit queries rather than a grade it must meet.
+    #
+    # Status moves to `implemented`, not `tested`: the *real provider conformance* half of the
+    # minimum evidence is M01's and does not exist. A synthetic provider conforming to its own
+    # contract is not the conformance this requirement asks for, and calling it `tested` would
+    # claim M01's work.
+    tests:
+      - tests/test_syn001_oracle.py::test_a1_identity_by_a_fourth_order_difference
+      - tests/test_syn001_oracle.py::test_a2_k_values_equal_the_chemical_potential_form
+      - tests/test_syn001_oracle.py::test_a3_k_is_one_at_the_reference_boiling_point
+      - tests/test_syn001_oracle.py::test_a3_enthalpy_of_vaporization_at_p_r_is_l_i
+      - tests/test_syn001_oracle.py::test_a5_outside_the_declared_domain_raises
+      - tests/test_syn001_oracle.py::test_c_absent_component_passes_exact_zeros_through
+      - tests/test_syn001_oracle.py::test_c_zero_feed_is_zero_flow_with_undefined_composition
+      - tests/test_syn001_oracle.py::test_c_pure_b_at_its_boiling_point_is_classified_liquid
+      - tests/test_syn001_oracle.py::test_g_energy_closure
+      - tests/test_syn001_oracle.py::test_g_closed_form_total_duty
+      - tests/test_syn001_reference_values.py::test_a4_k_values_match_the_reference_grid
+      - tests/test_syn001_reference_values.py::test_c_fresh_feed_flash_matches_the_reference
+      - tests/test_syn001_reference_values.py::test_e_variant_phase_states_match_the_reference
+      - tests/test_k02_syn001_provider.py
+      - tests/test_k02_unit_models.py
+      - tests/test_k02_heater_flash.py
+      - tests/test_k02_mixer.py
+      - tests/test_k02_flowsheet.py
+    evidence:
+      - evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+      - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+    status: implemented
+
+  - id: D09
+    title: Phase appearance
+    blueprint_ref: "§1 D09"
+    packages: [K03, T03]
+    minimum_evidence: "Frozen attempts, bounded restarts, phase-domain outcomes"
+    # All three are exercised by OFF-B, the registered phase-change start, which opens all-liquid
+    # and must cross into two-phase: attempts are frozen (the signature is fixed at open and every
+    # event carries it), bounded (each signature at most once, then ACTIVE_SET_CYCLING; and a cap
+    # that reports the attempts actually run rather than the policy's maximum), and the outcomes
+    # are phase-domain types -- PHASE_UPDATE_REQUIRED, not a converged answer in the wrong regime.
+    #
+    # Status `implemented`, not `tested`: T03 owns the general phase-attempt contract (plan §4.1
+    # pre-allocates it as ADR 0005). K03's §9 is the interim normative text and is written for the
+    # SYN-001 instance -- one signature unit, one registered restart -- so the requirement's
+    # general form has no evidence yet.
+    tests:
+      - tests/test_k03_attempts.py
+      - "tests/test_k03_newton.py::test_a_trial_in_another_phase_regime_is_rejected_not_accepted"
+      - "tests/test_k03_schemas.py::test_the_restart_context_opens_from_the_regime_it_is_leaving"
+    evidence:
+      - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+    status: implemented
+
+  - id: D10
+    title: Property cache
+    blueprint_ref: "§1 D10"
+    packages: [K02, M02]
+    minimum_evidence: "Nearby distinct states do not alias; separate warm-start hints"
+    # K02 supplies both halves of the minimum evidence. "Nearby distinct states do not alias" is
+    # tested as a *miss*: a one-ulp nudge of any coordinate must reach the provider, witnessed by
+    # a call-counting spy rather than by the cache's own bookkeeping, because a cache may not be
+    # the only witness to its own behaviour. The complementary direction is tested too -- `-0.0`
+    # and `+0.0` must *hit* -- since a cache that never hit at all would satisfy the first rule.
+    # "Separate warm-start hints" is carried by the type system: `WarmStartCache` returns a
+    # `FlashGuess`, which has no status and no outlet streams, so an approximate lookup cannot be
+    # returned as an answer even by mistake.
+    #
+    # Status `implemented`, not `tested`: the requirement's packages are [K02, M02], and M02's
+    # half -- the cache under a real provider and a real solve -- does not exist. Every §6.4 rule
+    # is under the gate today and 12 of 12 mutations of them are caught.
+    tests:
+      - tests/test_k02_cache.py
+    evidence:
+      - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+    status: implemented
+
+  - id: D11
+    title: Multiple steady states
+    blueprint_ref: "§1 D11"
+    packages: [T03, T06]
+    minimum_evidence: "Branch histories; no uniqueness/dynamic-stability overclaim"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: D12
+    title: Surrogate uncertainty
+    blueprint_ref: "§1 D12"
+    packages: [M04]
+    minimum_evidence: "Independent calibration/test and qualified coverage/error evidence"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: D13
+    title: Multi-fidelity optimization
+    blueprint_ref: "§1 D13"
+    packages: [M05]
+    minimum_evidence: "Tested framework path, assumptions, finite-budget truth checks"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: D14
+    title: Meaning of a certificate
+    blueprint_ref: "§1 D14"
+    packages: [K04, T06, M07]
+    minimum_evidence: "Model verification separated from empirical validation/optimality"
+    # The separation is carried as text on every certificate, frozen as literals rather than
+    # composed at runtime (Fable's Q4 default: a sentence that can drift is a claim that can
+    # drift). Three statements: what VERIFIED certifies (residuals at the registered
+    # tolerances, with the solution-error bound recorded and not promised — Frank's F3 ruling
+    # of 2026-09-22); that it is not an experimental validation or an optimality claim; and
+    # that no finite test suite proves the verifier defect-free.
+    #
+    # Status `implemented`, not `tested`: T06 broadens the adversarial coverage and M07 owns
+    # the optimality report that this separation exists to stay distinct from. Neither exists.
+    tests:
+      - tests/test_k04_schemas.py
+      - "tests/test_k04_injections.py::test_a30_every_check_result_is_completely_populated"
+    evidence:
+      - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+    status: implemented
+
+  - id: D15
+    title: Agent workflow (local and remote clients)
+    blueprint_ref: "§1 D15"
+    packages: [K06, T07]
+    minimum_evidence: "In-process scientific use and common transport semantics"
+    # The in-process half is delivered: one application layer that a Python caller and the CLI
+    # both use, with no network round trip anywhere on the local path. Blueprint §11's three
+    # transaction properties are implemented and measured — an expected revision that refuses a
+    # stale commit and names both ids, an idempotency key that returns the *original* result
+    # rather than a second one, and a change set that applies whole or not at all.
+    #
+    # Status `implemented`, not `tested`: "common transport semantics" is the second half and
+    # it is T07's — there is no HTTP or MCP binding, no job lifecycle, and no authorization
+    # model. D15 itself says the binding follows in v0.1, so the absence is the plan and not a
+    # gap; it is nevertheless half the requirement.
+    tests:
+      - tests/test_k06_application.py
+    evidence:
+      - evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+    status: implemented
+
+  - id: D16
+    title: Draft editing and readiness
+    blueprint_ref: "§1 D16"
+    packages: [K06, M03]
+    minimum_evidence: "Incomplete draft persistence; task-specific closure"
+    # Both halves are exercised and one is honest about its depth. An under-specified revision
+    # commits and reports `DRAFT` — blueprint D16's "a syntactically valid draft can be
+    # committed without being executable", which matters because a tool that refuses to hold an
+    # unfinished thought gets worked around and the work then happens with no provenance at
+    # all. `DRAFT` and `INVALID` are kept distinct: incomplete is not malformed.
+    #
+    # Task-specific closure is where the depth is limited, and the report says so in its own
+    # output rather than in a footnote: `structural_counts` is null and an `unsupported` check
+    # carries blueprint §4.3's matching and Dulmage-Mendelsohn decomposition, so the registered
+    # conflicting-heater revision is now rejected at validation with STRUCTURAL_OVER_SPECIFICATION
+    # naming the heater and its two specifications. Before T01 it validated READY_FOR_SIMULATION
+    # and was refused downstream as UNSUPPORTED_RANK_STRUCTURE, which described the tool rather
+    # than the revision.
+    #
+    # Status `implemented`, not `tested`: M03 owns the optimization closure, which is a
+    # different requirement from simulation closure (D16 says so).
+    tests:
+      - "tests/test_k06_application.py::test_d16_an_incomplete_draft_is_committable"
+      - "tests/test_k06_application.py::test_a_status_is_computed_and_there_is_no_way_to_set_one"
+      - "tests/test_k06_application.py::test_validation_computes_the_structural_counts"
+    evidence:
+      - evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+    status: implemented
+
+  - id: D17
+    title: Release scope
+    blueprint_ref: "§1 D17"
+    packages: [K06, T08, M07, S03, R01, R02, R03]
+    minimum_evidence: "No later breadth substituted for early scientific gates"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: D18
+    title: Interoperability
+    blueprint_ref: "§1 D18"
+    packages: [K05, M06, R02]
+    minimum_evidence: "Replay first; optional topology loss report"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: D19
+    title: External references
+    blueprint_ref: "§1 D19"
+    packages: [T06, S03, R01]
+    minimum_evidence: "Matched-model inputs, independence disclosure and verdicts"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: D20
+    title: Reproducibility
+    blueprint_ref: "§1 D20"
+    packages: [K05, T06]
+    minimum_evidence: "Structural hashes vs controlled numerical replay"
+    # The requirement is the *separation*, and both halves are measured. The structural hash
+    # covers ids, policies and outcomes only and is equal on x86-64 and aarch64 — established
+    # by CI, because no single machine can establish it. The controlled numerical replay is
+    # ADR 0007 D4's mode decision, taken from the environment before anything runs, so a
+    # changed dependency cannot reach a comparison at all.
+    #
+    # The first version of the structural hash covered the environment and the artifact index,
+    # and CI produced two different values across architectures while every other R0 field was
+    # identical. That was the hash measuring the platform rather than the model; blueprint
+    # §8.3 R0 promises structural artifacts identical *on supported platforms*, so an identity
+    # that moves with the platform cannot be it. The environment is provenance (ADR 0007 D6)
+    # and the artifact index hashes documents containing floats.
+    #
+    # Status `implemented`, not `tested`: T06 owns the robustness ensemble and the broader
+    # replay matrix, and a genuinely clean-environment replay — a fresh container built only
+    # from the recorded lock file — is recorded `unsupported` in the manifest rather than
+    # claimed.
+    tests:
+      - tests/test_k05_replay.py
+      - tests/test_k05_schemas.py
+    evidence:
+      - evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+    status: implemented
+
+  - id: A01
+    title: Phase-set ownership
+    blueprint_ref: "§6.3 [A01] and §7.6 [A01]"
+    packages: [K03, T03]
+    minimum_evidence: "Same signature across residual/Jacobian trials; restart on update"
+    # [A01] is made structural rather than checked: `AttemptContext` is the one object an
+    # attempt's calls take their signature from, so residual and Jacobian cannot disagree about
+    # it by construction. What is asserted is the consequence -- every event of an attempt
+    # carries that attempt's signature -- and the restart, which is OFF-B.
+    #
+    # One measured subtlety, because it is the kind of thing that looks like a violation: the
+    # signature covers the *flash* and only the flash (§9.1). Freezing every stream's regime
+    # instead makes the nominal case's one-step landing on the solution a rejected phase change,
+    # because the heater outlet flips TWO_PHASE -> LIQUID along that step. The signature is over
+    # the selections the residual depends on, not over every selection made anywhere.
+    #
+    # Status `implemented`, not `tested`: the general rule for deriving a signature from the
+    # block-triangular form is T03's.
+    tests:
+      - "tests/test_k03_attempts.py::test_every_event_of_an_attempt_carries_that_attempts_signature"
+      - "tests/test_k03_attempts.py::test_the_signature_is_the_flash_and_only_the_flash"
+      - "tests/test_k03_attempts.py::test_the_heater_outlet_regime_is_not_frozen"
+      - "tests/test_k03_attempts.py::test_off_b_restarts_across_the_phase_boundary_and_converges"
+      - "tests/test_k03_tear.py::test_the_lifted_function_does_not_depend_on_the_pinned_phase_signature"
+    evidence:
+      - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+    status: implemented
+
+  - id: A02
+    title: Cross-unit design specifications
+    blueprint_ref: "§7.2 [A02]"
+    packages: [T02]
+    minimum_evidence: "Affected region promoted to EO; no nested SM controls"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: A03
+    title: PTC execution and qualification (SER)
+    blueprint_ref: "§7.5 [A03]"
+    packages: [T04]
+    minimum_evidence: "Accepted-step ratio, reject shrink, reset and endpoint tests"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: A04
+    title: Register the sampling law
+    blueprint_ref: "§13.4 [A04]"
+    packages: [P01, T06]
+    minimum_evidence: "Executable generator, distributions, scales, domain handling, saved draws"
+    # P01 delivers only the registration substrate: benchmarks/registry.yaml with the eight
+    # SYN-001 cases, their registered scales, tolerances, initializers, budgets, expected
+    # outcome classes and the three cases that sit outside the success denominator. There is no
+    # executable ensemble generator, no distribution, and no saved draw in P01 — those are T06
+    # — so the requirement status stays `planned`.
+    #
+    # (The citation below read `test_the_two_outcome_type_cases_...` until K03, which added the
+    # third case and renamed the test. Nothing noticed, because until K03 no test checked that a
+    # cited node ID exists; `test_every_cited_test_exists` now does.)
+    tests:
+      - tests/test_schemas_p01.py::test_registry_cases_point_at_existing_revisions
+      - tests/test_schemas_p01.py::test_capped_budget_case_reuses_the_nominal_revision_unchanged
+      - tests/test_schemas_p01.py::test_the_outcome_type_cases_are_outside_the_success_denominator
+      - tests/test_schemas_p01.py::test_registry_blueprint_hash_matches_the_ledger
+      - tests/test_syn001_reference_values.py::test_l_every_reference_variant_is_registered
+      - tests/test_syn001_reference_values.py::test_l_registry_records_the_reference_file_digest
+      - tests/test_syn001_oracle.py::test_h_mixer_subcooling_margin_matches_the_reference_table
+    evidence:
+      - evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+    status: planned
+
+  - id: A05
+    title: Named backend comparator
+    blueprint_ref: "§3.1 [A05]"
+    packages: [P02, P03]
+    minimum_evidence: "CasADi vs Pyomo/PyNumero/ASL with sparse property callback"
+    tests:
+      - "tests/test_p02_composition.py::test_composition_assertions[casadi]"
+      - "tests/test_p02_composition.py::test_composition_assertions[pyomo]"
+      - "tests/test_p02_composition.py::test_no_assertion_is_silently_missing[casadi]"
+      - "tests/test_p02_composition.py::test_no_assertion_is_silently_missing[pyomo]"
+    evidence:
+      - "evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json"
+      - "evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json"
+    status: tested
+
+  - id: A06
+    title: Two distinct bridge mechanisms
+    blueprint_ref: "§10 [A06]"
+    packages: [M03, M05]
+    minimum_evidence: "Gray-box NLP and trust-region compositions tested separately"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: A07
+    title: Default uncertainty reporting (split-conformal)
+    blueprint_ref: "§9.2 [A07] and §1 D12"
+    packages: [M04]
+    minimum_evidence: "Registered reference distribution, frozen predictor and independent splits"
+    tests: []
+    evidence: []
+    status: planned
+
+  - id: A08
+    title: Local numerical regularity
+    blueprint_ref: "§8.1 [A08]"
+    packages: [K04, T06]
+    minimum_evidence: "Final unregularized Jacobian; bounded condition/rank checks"
+    # The 47x47 scaled target Jacobian after alias elimination, factorized by the screen itself
+    # at the final state — never a reused Newton factorization, and K03 never factorizes that
+    # matrix at all, so nothing could belong to it. Bounded: `rcond_1` by onenormest, escalating
+    # to a dense SVD under a 2000-dimension cap and retaining `INCONCLUSIVE` above it.
+    #
+    # Two things [A08] insists on and that are held by construction rather than by attention.
+    # The U-diagonal never decides: the registered triangular family has the ratio exactly 1.0
+    # at three different statuses. And thresholds account for scales — unscaled, the same
+    # matrices give rcond 9e-12 to 5.9e-11 and a fixed threshold would call every correct answer
+    # ill conditioned. The evaluation-uncertainty clause is the absolute limit
+    # ||J^-1||_1 <= tau_min/(n eps), which a scale-free condition number cannot see.
+    #
+    # Status `implemented`, not `tested`: T06 owns rank diagnostics beyond this fixture.
+    tests:
+      - tests/test_k04_regularity.py
+      - tests/test_k03_linear.py
+    evidence:
+      - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+    status: implemented
+
+  - id: A09
+    title: Independence of energy verification
+    blueprint_ref: "§8.1 [A09]"
+    packages: [K04, T06]
+    minimum_evidence: "Shared provider hashes and limited consistency claim"
+    # Every energy and phase check carries `provider_id`, `implementation_sha256`,
+    # `data_sha256` and `reference_convention` from `describe()`, with the sentence saying the
+    # check is process bookkeeping and not a validation of the enthalpy correlations. A test
+    # asserts the complement too: a material or specification check shares no provider and must
+    # *not* claim a qualification, so the label means something where it appears.
+    #
+    # The independence that [A09] does buy is real and measured: the energy check recomputes
+    # every stream's enthalpy from a fresh flash of its own (n, T, P) instead of reading the
+    # lifted split, and that is what catches the trivial root where all 49 assembled rows pass.
+    #
+    # Status `implemented`, not `tested`: genuine thermodynamic independence is a property
+    # conformance suite and an independent reference comparison, which is M01's, not K04's.
+    tests:
+      - "tests/test_k04_checks.py::test_a09_every_provider_dependent_check_names_the_provider"
+      - "tests/test_k04_checks.py::test_a18_the_trivial_root_is_rejected_and_for_the_right_reasons"
+    evidence:
+      - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+    status: implemented
+
+  - id: A10
+    title: Binary-license audit (wheel/plugin inventory)
+    blueprint_ref: "§3.1 [A10] and §15 [A10]"
+    packages: [P03, T08]
+    minimum_evidence: "Bundled plugin inventory including disabled distributed bytes"
+    tests:
+      - "tests/test_p03_binary_audit.py::test_disabled_distributed_bytes_are_the_a10_figure"
+      - "tests/test_p03_binary_audit.py::test_import_closure_is_the_audited_figure"
+      - "tests/test_p03_binary_audit.py::test_the_metis_closure_names_all_seven_plugins"
+      - "tests/test_p03_binary_audit.py::test_no_backend_wheel_bytes_are_tracked_in_the_repository"
+    evidence: ["evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json"]
+    status: implemented
+
+gates:
+  - id: G00
+    required_evidence: "Three-component ideal process with all named v0.0 units and one numerical tear"
+    owner_packages: [K02, K03]
+    verdict: PASS
+    evidence:
+      - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+      - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+
+  - id: G01
+    required_evidence: "Damped Newton plus expression/callback interface fixtures"
+    owner_packages: [K01, K03]
+    verdict: PASS
+    evidence:
+      - evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+      - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+
+  - id: G02
+    required_evidence: "Canonical revision, locks, source mapping, Python/CLI"
+    owner_packages: [K01, K06]
+    verdict: PASS
+    evidence:
+      - evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+      - evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+
+  - id: G03
+    required_evidence: "Serialized manifests, events, certificates, failures, replay bundle"
+    owner_packages: [K04, K05]
+    verdict: PASS
+    evidence:
+      - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+      - evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+
+  - id: G04
+    required_evidence: "Balances, phase transition, bad spec and numerical failure"
+    owner_packages: [K04]
+    verdict: PASS
+    evidence:
+      - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+
+  - id: G05
+    required_evidence: "Dependency change detected and two-platform structural equality"
+    owner_packages: [K05]
+    verdict: PASS
+    evidence:
+      - evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+
+  - id: G06
+    required_evidence: "End-to-end example is inspectable without unrelated code"
+    owner_packages: [K06]
+    verdict: PASS
+    evidence:
+      - evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+
+  - id: V11
+    required_evidence: "Semantic diff, drafts, task validation, units/references, real migration when applicable"
+    owner_packages: [K06, T01]
+    verdict: PASS
+    evidence:
+      - evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+      - evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+      - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+      - evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+
+  - id: V12
+    required_evidence: "Required unit library with per-model definition of done"
+    owner_packages: [T05]
+    verdict: PASS
+    evidence:
+      - evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+      - evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+
+  - id: V13
+    required_evidence: "DM/SCC/BTF, tear and EO, scaling and initialization"
+    owner_packages: [T01, T02]
+    verdict: PASS
+    evidence:
+      - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+      - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+      - evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+      - evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+
+  - id: V14
+    required_evidence: "Homotopy, qualified PTC/SER and three bounded recovery edges"
+    owner_packages: [T04]
+    verdict: FAIL
+    evidence:
+      - evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+      - evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+
+  - id: V15
+    required_evidence: "Frozen phases, EO cross-unit spec, multiple-root evidence"
+    owner_packages: [T02, T03]
+    verdict: PASS
+    evidence:
+      - evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+      - evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+      - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+
+  - id: V16
+    required_evidence: "30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble"
+    owner_packages: [T06]
+    verdict: PASS
+    evidence:
+      - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+
+  - id: V17
+    required_evidence: "Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification"
+    owner_packages: [T07]
+    verdict: PASS
+    evidence:
+      - evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+
+  - id: V18
+    required_evidence: "Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested"
+    owner_packages: [T06, T08]
+    verdict: PASS
+    evidence:
+      - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+      - evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+      - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+      - evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+
+  - id: V19
+    required_evidence: "Real-chemistry dossier with usable data/kinetics/property/reference route"
+    owner_packages: [T08]
+    verdict: PASS
+    evidence:
+      - evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+
+  - id: V20
+    required_evidence: ">=95% nominal robustness, correct invalid-structure handling, no adversarial false verification"
+    owner_packages: [T06, T08]
+    verdict: PASS
+    evidence:
+      - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+      - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+      - evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+
+  - id: W21
+    required_evidence: "PyMRM boundary/accuracy/execution and provenance"
+    owner_packages: [M01, M02]
+    verdict: null
+    evidence: []
+
+  - id: W22
+    required_evidence: "One validated needed nonideal property route"
+    owner_packages: [M01]
+    verdict: null
+    evidence: []
+
+  - id: W23
+    required_evidence: "Surrogate conservation/domain/derivative/default UQ and promotion"
+    owner_packages: [M04]
+    verdict: null
+    evidence: []
+
+  - id: W24
+    required_evidence: "Fixed-topology optimization, eligible trust-region example and parent-model checks"
+    owner_packages: [M03, M05]
+    verdict: null
+    evidence: []
+
+  - id: W25
+    required_evidence: "End-to-end real reactor refinement with honest evidence limits"
+    owner_packages: [M07]
+    verdict: null
+    evidence: []
+
+  - id: W26
+    required_evidence: "Diagnostic web shell through shared contract"
+    owner_packages: [M06]
+    verdict: null
+    evidence: []
+
+  - id: W27
+    required_evidence: "External agent benchmark adaptation attempted; inaccessible assets disclosed"
+    owner_packages: [M06]
+    verdict: null
+    evidence: []
+
+  - id: X31
+    required_evidence: "Four matched column cases, invalid specs/phases, two independent references where available"
+    owner_packages: [S02, S03]
+    verdict: null
+    evidence: []
+
+  - id: X41
+    required_evidence: "v1 counts, robustness, independent reproduction/extension and stable governance/workbench"
+    owner_packages: [R01, R02]
+    verdict: null
+    evidence: []
+
+  - id: X42
+    required_evidence: "Conditional CFD integration is genuine or explicitly experimental"
+    owner_packages: [R03]
+    verdict: null
+    evidence: []
+
+packages:
+  - id: P00
+    phase: "Phase 0"
+    lead: Opus
+    second: null
+    depends_on: []
+    # Opus is the lead and does not set `reviewed` on its own package. Fable reviewed and merged
+    # (2026-09-06) and set `tested`; `reviewed` awaits the human sign-off recorded in the manifest.
+    status: tested
+    evidence:
+      - evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+
+  - id: P01
+    phase: "Phase 0"
+    lead: Fable
+    second: Opus
+    depends_on: [P00]
+    # Fable authored ADR 0001, the SYN-001 derivation, the oracle specification, the reference
+    # values and the interface freeze; Opus implemented the oracle, the registry, the fixture
+    # inputs, the six schemas with their round-trip fixtures and the tests. `implemented`, not
+    # `tested`: Fable leads P01, verifies the K-values, the r = 0.5 oracle values and every
+    # variant's phase state, writes evidence/P01/<commit>/manifest.json, and sets `tested`.
+    # Opus does not set a status beyond `implemented` on a package it does not lead.
+    # Fable verified (2026-09-07): K-values, r = 0.5 oracle values, every variant's phase state,
+    # recycle invariance and energy closure against plan §3; `tested`. `reviewed` awaits the
+    # Opus coverage/packaging review and the human sign-off; neither is claimed here.
+    status: tested
+    evidence:
+      - evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+
+  - id: P02
+    phase: "Phase 0"
+    lead: Fable
+    second: Opus
+    depends_on: [P01]
+    status: tested
+    evidence: ["evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json"]
+
+  - id: P03
+    phase: "Phase 0"
+    lead: Fable
+    second: Opus
+    depends_on: [P02]
+    status: tested
+    evidence: ["evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json"]
+
+  - id: K01
+    phase: "v0.0"
+    lead: Opus
+    second: Fable
+    depends_on: [P03]
+    status: tested
+    evidence: ["evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json"]
+
+  - id: K02
+    phase: "v0.0"
+    lead: Opus
+    second: Fable
+    depends_on: [K01]
+    status: planned
+    evidence: []
+
+  - id: K03
+    phase: "v0.0"
+    lead: Fable
+    second: Opus
+    depends_on: [K02]
+    status: planned
+    evidence: []
+
+  - id: K04
+    phase: "v0.0"
+    lead: Fable
+    second: Opus
+    depends_on: [K03]
+    status: planned
+    evidence: []
+
+  - id: K05
+    phase: "v0.0"
+    lead: Opus
+    second: Fable
+    depends_on: [K04]
+    status: planned
+    evidence: []
+
+  - id: K06
+    phase: "v0.0"
+    lead: Opus
+    second: null
+    depends_on: [K05]
+    status: planned
+    evidence: []
+
+  - id: T01
+    phase: "v0.1"
+    lead: Fable
+    second: Opus
+    depends_on: [K06]
+    status: planned
+    evidence: []
+
+  - id: T02
+    phase: "v0.1"
+    lead: Fable
+    second: Opus
+    depends_on: [T01]
+    status: planned
+    evidence: []
+
+  - id: T03
+    phase: "v0.1"
+    lead: Fable
+    second: Opus
+    depends_on: [T02]
+    status: planned
+    evidence: []
+
+  - id: T04
+    phase: "v0.1"
+    lead: Fable
+    second: Opus
+    depends_on: [T03]
+    status: planned
+    evidence: []
+
+  - id: T05
+    phase: "v0.1"
+    lead: Opus
+    second: Fable
+    depends_on: [T02]
+    status: planned
+    evidence: []
+
+  - id: T06
+    phase: "v0.1"
+    lead: Fable
+    second: Opus
+    depends_on: [T04, T05]
+    status: planned
+    evidence: []
+
+  - id: T07
+    phase: "v0.1"
+    lead: Opus
+    second: Fable
+    depends_on: [T03, K06]
+    status: planned
+    evidence: []
+
+  - id: T08
+    phase: "v0.1"
+    lead: Fable
+    second: Opus
+    depends_on: [T06, T07]
+    status: planned
+    evidence: []
+
+  - id: M01
+    phase: "v0.2"
+    lead: Fable
+    second: Opus
+    depends_on: [T08]
+    status: planned
+    evidence: []
+
+  - id: M02
+    phase: "v0.2"
+    lead: Opus
+    second: Fable
+    depends_on: [M01]
+    status: planned
+    evidence: []
+
+  - id: M03
+    phase: "v0.2"
+    lead: Fable
+    second: Opus
+    depends_on: [T08]
+    status: planned
+    evidence: []
+
+  - id: M04
+    phase: "v0.2"
+    lead: Fable
+    second: Opus
+    depends_on: [M02]
+    status: planned
+    evidence: []
+
+  - id: M05
+    phase: "v0.2"
+    lead: Fable
+    second: Opus
+    depends_on: [M03, M04]
+    status: planned
+    evidence: []
+
+  - id: M06
+    phase: "v0.2"
+    lead: Opus
+    second: Fable
+    depends_on: [T08]
+    status: planned
+    evidence: []
+
+  - id: M07
+    phase: "v0.2"
+    lead: Fable
+    second: Opus
+    depends_on: [M05, M06]
+    status: planned
+    evidence: []
+
+  - id: S01
+    phase: "v0.3"
+    lead: Fable
+    second: Opus
+    depends_on: [M07]
+    status: planned
+    evidence: []
+
+  - id: S02
+    phase: "v0.3"
+    lead: Fable
+    second: Opus
+    depends_on: [S01]
+    status: planned
+    evidence: []
+
+  - id: S03
+    phase: "v0.3"
+    lead: Fable
+    second: Opus
+    depends_on: [S02]
+    status: planned
+    evidence: []
+
+  - id: R01
+    phase: "v1"
+    lead: Opus
+    second: Fable
+    depends_on: [S03]
+    status: planned
+    evidence: []
+
+  - id: R02
+    phase: "v1"
+    lead: Opus
+    second: Fable
+    depends_on: [R01]
+    status: planned
+    evidence: []
+
+  - id: R03
+    phase: "v1 (conditional)"
+    lead: Opus
+    second: Fable
+    depends_on: [M07]
+    status: planned
+    evidence: []

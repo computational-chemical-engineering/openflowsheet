@@ -1,0 +1,207 @@
+{
+ "tool": "IDAES",
+ "versions": {
+  "idaes_pse": "2.13.0",
+  "pyomo": "6.10.1",
+  "python": "3.13.5"
+ },
+ "environment_fingerprint": {
+  "measured": {
+   "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+   "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+  },
+  "expected_docs_reference_environments_s3": {
+   "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+   "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+  },
+  "matches": true
+ },
+ "settings": {
+  "final_solve_ipopt_options": {
+   "linear_solver": "mumps",
+   "tol": 1e-10,
+   "constr_viol_tol": 1e-09,
+   "max_iter": 500
+  },
+  "initializer_ipopt_options": {
+   "nlp_scaling_method": "gradient-based",
+   "tol": 1e-06,
+   "max_iter": 200,
+   "linear_solver": "mumps"
+  },
+  "placeholders": {
+   "T_c_K": 1000.0,
+   "P_c_Pa": 10000000.0
+  },
+  "property_package": "idaes_representability.build_property_package (SYN-001, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0)"
+ },
+ "application_notes": [
+  "IDAES unit initializers call idaes.core.solvers.get_solver(), whose Ipopt would use the bundled default linear solver HSL MA27; idaes.cfg.ipopt.options.linear_solver is set to 'mumps' before any model is built so that MA27 is used nowhere (spec \u00a79.3 D19 disclosure). The initializers' other options stay IDAES defaults (tol 1e-6, max_iter 200, gradient-based scaling); the final solve uses spec \u00a79.3's options.",
+  "Mixer: MomentumMixingType.none with the outlet pressure fixed at P_r (spec \u00a79.3).",
+  "Conversion reactor: StoichiometricReactor, extent = X n_key,in / |nu_key| written as a constraint; h_form,liq = 0 and h_form,ig = L_i (spec \u00a79.3 IDAES reaction datum)."
+ ],
+ "wall_time_import_s": 0.03380153514444828,
+ "fixture": "REF-04",
+ "definition": {
+  "unit": "flash",
+  "feeds": {
+   "S1": {
+    "flows": {
+     "A": 1.0,
+     "B": 1.0,
+     "C": 1.0
+    },
+    "T": 300.0,
+    "P": 100000.0
+   }
+  },
+  "flash_T": 360.0,
+  "flash_P": 100000.0
+ },
+ "adjustments": [],
+ "accepted": true,
+ "converged": true,
+ "stage_reached": "solved",
+ "degrees_of_freedom": 0,
+ "wall_time_initialize_s": 0.1020057462155819,
+ "final_solve_ipopt_options_used": {
+  "linear_solver": "mumps",
+  "tol": 1e-10,
+  "constr_viol_tol": 1e-09,
+  "max_iter": 500
+ },
+ "wall_time_solve_s": 0.017321530729532242,
+ "solver_status": "ok",
+ "termination_condition": "optimal",
+ "ipopt": {
+  "linear_solver": "mumps",
+  "iterations": 3,
+  "exit": "Optimal Solution Found.",
+  "ipopt_version": "3.13.2",
+  "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+  "final_overall_nlp_error_scaled": 1.0883985811824823e-12
+ },
+ "self_check": {
+  "rule2_component_balance": {
+   "residual_mol_per_s": {
+    "A": 0.0,
+    "B": -2.220446049250313e-16,
+    "C": 0.0
+   },
+   "max_abs_mol_per_s": 2.220446049250313e-16,
+   "tolerance_mol_per_s": 3.1e-08,
+   "passes": true
+  },
+  "constraint_residuals": {
+   "max_abs_violation": 1.0186340659856796e-10,
+   "argmax": "fs.unit.control_volume.properties_out[0.0].eq_temperature_bubble[Vap,Liq]",
+   "count_above_1e-8": 0
+  }
+ },
+ "raw_output": {
+  "variables": {
+   "fs.props.A.pressure_crit": 10000000.0,
+   "fs.props.A.temperature_crit": 1000.0,
+   "fs.props.A.dens_mol_liq_comp_coeff": 10000.0,
+   "fs.props.A.cp_mol_liq_comp_coeff": 100.0,
+   "fs.props.A.enth_mol_form_liq_comp_ref": 0.0,
+   "fs.props.A.cp_mol_ig_comp_coeff": 100.0,
+   "fs.props.A.enth_mol_form_ig_comp_ref": 25000.0,
+   "fs.props.A.syn_t_boil": 320.0,
+   "fs.props.A.syn_l_vap": 25000.0,
+   "fs.props.B.pressure_crit": 10000000.0,
+   "fs.props.B.temperature_crit": 1000.0,
+   "fs.props.B.dens_mol_liq_comp_coeff": 10000.0,
+   "fs.props.B.cp_mol_liq_comp_coeff": 100.0,
+   "fs.props.B.enth_mol_form_liq_comp_ref": 0.0,
+   "fs.props.B.cp_mol_ig_comp_coeff": 100.0,
+   "fs.props.B.enth_mol_form_ig_comp_ref": 30000.0,
+   "fs.props.B.syn_t_boil": 360.0,
+   "fs.props.B.syn_l_vap": 30000.0,
+   "fs.props.C.pressure_crit": 10000000.0,
+   "fs.props.C.temperature_crit": 1000.0,
+   "fs.props.C.dens_mol_liq_comp_coeff": 10000.0,
+   "fs.props.C.cp_mol_liq_comp_coeff": 100.0,
+   "fs.props.C.enth_mol_form_liq_comp_ref": 0.0,
+   "fs.props.C.cp_mol_ig_comp_coeff": 100.0,
+   "fs.props.C.enth_mol_form_ig_comp_ref": 35000.0,
+   "fs.props.C.syn_t_boil": 400.0,
+   "fs.props.C.syn_l_vap": 35000.0,
+   "fs.unit.control_volume.properties_in[0.0].flow_mol": 3.0,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_comp[A]": 0.3333333333333333,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_comp[B]": 0.3333333333333333,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_comp[C]": 0.3333333333333333,
+   "fs.unit.control_volume.properties_in[0.0].temperature": 300.0,
+   "fs.unit.control_volume.properties_in[0.0].pressure": 100000.0,
+   "fs.unit.control_volume.heat[0.0]": 56338.07374784729,
+   "fs.unit.control_volume.deltaP[0.0]": 0.0,
+   "fs.unit.control_volume.properties_in[0.0].flow_mol_phase[Liq]": 2.99999993483744,
+   "fs.unit.control_volume.properties_in[0.0].flow_mol_phase[Vap]": 6.51625599949601e-08,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_phase_comp[Liq,A]": 0.33333332536615906,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_phase_comp[Liq,B]": 0.3333333355337791,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_phase_comp[Liq,C]": 0.3333333391000619,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_phase_comp[Vap,A]": 0.7001317264938389,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_phase_comp[Vap,B]": 0.23202766336018582,
+   "fs.unit.control_volume.properties_in[0.0].mole_frac_phase_comp[Vap,C]": 0.06784061014597523,
+   "fs.unit.control_volume.properties_in[0.0].phase_frac[Liq]": 0.9999999782791468,
+   "fs.unit.control_volume.properties_in[0.0].phase_frac[Vap]": 2.1720853331653298e-08,
+   "fs.unit.control_volume.properties_in[0.0]._teq[Vap,Liq]": 347.441182506079,
+   "fs.unit.control_volume.properties_in[0.0]._t1_Vap_Liq": 347.4411825084085,
+   "fs.unit.control_volume.properties_in[0.0].temperature_bubble[Vap,Liq]": 347.4411819814402,
+   "fs.unit.control_volume.properties_in[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.7001317340788477,
+   "fs.unit.control_volume.properties_in[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.23202765818997415,
+   "fs.unit.control_volume.properties_in[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.06784060773117825,
+   "fs.unit.control_volume.properties_in[0.0].temperature_dew[Vap,Liq]": 374.2703041184776,
+   "fs.unit.control_volume.properties_in[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.08534098763217199,
+   "fs.unit.control_volume.properties_in[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.22746451639958723,
+   "fs.unit.control_volume.properties_in[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.6871944959682407,
+   "fs.unit.control_volume.properties_out[0.0].flow_mol": 3.0,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_comp[A]": 0.3333333333333333,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_comp[B]": 0.3333333333333334,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_comp[C]": 0.3333333333333333,
+   "fs.unit.control_volume.properties_out[0.0].pressure": 100000.0,
+   "fs.unit.control_volume.properties_out[0.0].temperature": 360.0,
+   "fs.unit.control_volume.properties_out[0.0].flow_mol_phase[Liq]": 1.639190727151374,
+   "fs.unit.control_volume.properties_out[0.0].flow_mol_phase[Vap]": 1.3608092728486263,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_phase_comp[Liq,A]": 0.18166076838810755,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_phase_comp[Liq,B]": 0.33333332497207946,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_phase_comp[Liq,C]": 0.48500590663981297,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_phase_comp[Vap,A]": 0.5160336330608871,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_phase_comp[Vap,B]": 0.3333333434050533,
+   "fs.unit.control_volume.properties_out[0.0].mole_frac_phase_comp[Vap,C]": 0.1506330235340596,
+   "fs.unit.control_volume.properties_out[0.0].phase_frac[Liq]": 0.5463969090504579,
+   "fs.unit.control_volume.properties_out[0.0].phase_frac[Vap]": 0.4536030909495421,
+   "fs.unit.control_volume.properties_out[0.0]._teq[Vap,Liq]": 360.00000198625315,
+   "fs.unit.control_volume.properties_out[0.0]._t1_Vap_Liq": 360.0000019906329,
+   "fs.unit.control_volume.properties_out[0.0].temperature_bubble[Vap,Liq]": 347.4411819814402,
+   "fs.unit.control_volume.properties_out[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.7001317340788477,
+   "fs.unit.control_volume.properties_out[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.23202765818997406,
+   "fs.unit.control_volume.properties_out[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.06784060773117828,
+   "fs.unit.control_volume.properties_out[0.0].temperature_dew[Vap,Liq]": 374.2703041184776,
+   "fs.unit.control_volume.properties_out[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.08534098763217199,
+   "fs.unit.control_volume.properties_out[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.22746451639958729,
+   "fs.unit.control_volume.properties_out[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.6871944959682406
+  }
+ },
+ "compared_quantities": {
+  "U-FLASH.Q": 56338.07374784729,
+  "S2.n.A": 0.7022233529710207,
+  "S2.n.B": 0.45360310465523196,
+  "S2.n.C": 0.20498281522237366,
+  "S3.n.A": 0.2977766470289793,
+  "S3.n.B": 0.5463968953447682,
+  "S3.n.C": 0.7950171847776264
+ },
+ "compared_quantity_sources": {
+  "U-FLASH.Q": "fs.unit.control_volume.heat[0.0]",
+  "S2.n.A": "fs.unit.vap_outlet flow_mol*mole_frac_comp",
+  "S2.n.B": "fs.unit.vap_outlet flow_mol*mole_frac_comp",
+  "S2.n.C": "fs.unit.vap_outlet flow_mol*mole_frac_comp",
+  "S3.n.A": "fs.unit.liq_outlet flow_mol*mole_frac_comp",
+  "S3.n.B": "fs.unit.liq_outlet flow_mol*mole_frac_comp",
+  "S3.n.C": "fs.unit.liq_outlet flow_mol*mole_frac_comp"
+ },
+ "wall_time_total_s": 0.1414733361452818
+}

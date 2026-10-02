@@ -1,0 +1,12 @@
+{
+  "job_id": "job-000002",
+  "sequence": 2,
+  "kind": "progress",
+  "ends_job": false,
+  "recorded_at": "2026-09-27T11:59:54.919259Z",
+  "progress": {
+    "completed": 0,
+    "total": 6,
+    "stage": "resolve"
+  }
+}

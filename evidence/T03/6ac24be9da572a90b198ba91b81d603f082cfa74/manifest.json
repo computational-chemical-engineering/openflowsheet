@@ -1,0 +1,2829 @@
+{
+ "work_package": "T03",
+ "commit": "6ac24be9da572a90b198ba91b81d603f082cfa74",
+ "requirements": [
+  "D09",
+  "D11",
+  "A01"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "The five registered phase cases PHS-01..05 (SYN-001-A02-355/360 liquid-guess, -360-vapor-guess, -340-two-phase-guess, -355-dew-guess), T02's SYN-001-A02-355/360/365 from 358 K and SYN-001-A02-360-no-guess; SYN-001 nominal under eo (T02 A21) and OFF-B on the tear path; the synthetic tear seeds PHS-SYN-1/2 and K03's constructed seeds; REC-05 at gamma 0.1 (MR-A/B/C); judged against benchmarks/t03/reference_values.yaml (7ac2449d5a178793e04e85335a290a00f722f086b606012283ee58bfbdd25fcd), benchmarks/t02/reference_values.yaml (716bfc88ac7b69b76cf67ca9019ff9afc5a15d8dc6270a701a73bf1470561422), benchmarks/syn001/reference_values.yaml (1e70fc3a41dd7215e447f81974f6f993e08f1885412ed9171cd4769646fb3668) and docs/derivations/T03-phase-controller-spec.md (b0bd159fc98b5c91c6573ad49f5a3d87f3d1312dca8ab9acc29201f51e3da805)",
+  "case_hash": "a9e526c9ef59eba4b2c1de6dbc2372bdb9c629f18575a0cfd5e512ca785887a9",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "6e03f6a9dac8a4ba80d0cfbd19cffd89f221844c6ea8815097b21dde664388dd"
+  },
+  {
+   "cmd": "PATH=.venv/bin:$PATH .venv/bin/python docs/derivations/scripts/t03_reference.py --check",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=. .venv/bin/python scripts/t03_evidence_manifest.py GATE_STDOUT --commit 6ac24be9da572a90b198ba91b81d603f082cfa74 --identities ci-ids --ci-run https://github.com/computational-chemical-engineering/clearsheet/actions/runs/36019081919",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "GitHub Actions workflow `ci`, jobs `check` (ubuntu-latest, ubuntu-24.04-arm) and `identity`: https://github.com/computational-chemical-engineering/clearsheet/actions/runs/36019081919",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "T03.A00",
+   "description": "Generator self-check: `t03_reference.py --check` passes with 107 checks; the committed YAML's SHA-256 equals the one in the specification header; `--emit` twice gives identical bytes, equal to the committed file; the generator and the two sibling closed-form scripts it imports import nothing from `process_runtime` or `benchmarks` (every import statement, read from the syntax tree).",
+   "result": "pass",
+   "value": {
+    "check_exit_code": 0,
+    "checks_passed": 107,
+    "reference_sha256": "7ac2449d5a178793e04e85335a290a00f722f086b606012283ee58bfbdd25fcd",
+    "digest_in_spec_header": true,
+    "emit_twice_identical": true,
+    "emit_equals_committed": true,
+    "forbidden_imports": []
+   },
+   "expected": {
+    "check_exit_code": 0,
+    "checks_passed": 107,
+    "digest_in_spec_header": true,
+    "emit_twice_identical": true,
+    "emit_equals_committed": true,
+    "forbidden_imports": []
+   }
+  },
+  {
+   "id": "T03.A01",
+   "description": "`SolvePolicy.phase_contract`: every policy that reached the decision function in any solve of this manifest carries `T03-phase-contract-v1` and its document validates against `solve-policy.schema.json`; the schema refuses the policy without the field and with any other value (`T02-interim`, `T03-phase-contract-v2`); the committed round-trip fixtures of `solve-policy`, `attempt-context`, `solve-event`, `checkpoint`, `solve-plan` (K03's generator) and `solution-certificate`, `regularity-evidence`, `failure-bundle` (K04's) are what the generators emit today under the ADR 0007 comparison and validate against their schemas.",
+   "result": "pass",
+   "value": {
+    "policies_reaching_decide": 30,
+    "distinct_policies": [
+     {
+      "policy_id": "SYN-001-K03",
+      "phase_contract": "T03-phase-contract-v1",
+      "document": "T03-phase-contract-v1",
+      "schema_errors": 0
+     },
+     {
+      "policy_id": "T02-eo",
+      "phase_contract": "T03-phase-contract-v1",
+      "document": "T03-phase-contract-v1",
+      "schema_errors": 0
+     },
+     {
+      "policy_id": "T03",
+      "phase_contract": "T03-phase-contract-v1",
+      "document": "T03-phase-contract-v1",
+      "schema_errors": 0
+     },
+     {
+      "policy_id": "constructed",
+      "phase_contract": "T03-phase-contract-v1",
+      "document": "T03-phase-contract-v1",
+      "schema_errors": 0
+     }
+    ],
+    "schema_refuses": {
+     "without": true,
+     "T02-interim": true,
+     "T03-phase-contract-v2": true
+    },
+    "policy_fixture_phase_contract": "T03-phase-contract-v1",
+    "fixtures": {
+     "solve_policy/valid/syn001_k03.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_plan/valid/syn001_nominal.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_event/valid/syn001_nominal_trace.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_event/valid/syn001_off_b_restart_trace.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "attempt_context/valid/syn001_restart.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "checkpoint/valid/syn001_candidate_root.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solution_certificate/valid/syn001_nominal_verified.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solution_certificate/valid/syn001_trivial_root_failed.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "regularity_evidence/valid/syn001_nominal.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "failure_bundle/valid/syn001_capped_budget.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     }
+    }
+   },
+   "expected": {
+    "distinct_policies": "every one: phase_contract and document T03-phase-contract-v1, 0 schema errors",
+    "schema_refuses": {
+     "without": true,
+     "T02-interim": true,
+     "T03-phase-contract-v2": true
+    },
+    "policy_fixture_phase_contract": "T03-phase-contract-v1",
+    "fixtures": "every one: no difference from what its generator emits, 0 schema errors"
+   }
+  },
+  {
+   "id": "T03.A02",
+   "description": "One contract, one implementation: the decision function `phase_contract.decide` (spied) is called exactly once per attempt closure on the tear path (OFF-B) and the lifted path (PHS-01, PHS-04, PHS-05); both controllers construct the one `WallObserver`, defined in `phase_contract.py` alone; the cycling refusal `active_set_cycling(` is produced in `phase_contract.py` alone, and neither `attempts.py` nor `region.py` names `ACTIVE_SET_CYCLING` or `ATTEMPTS_EXHAUSTED`, tests `in used`, or compares against `max_attempts` (grep of the orchestrator sources; each attempt loop's `range(policy.max_attempts)` bound is not a rule \u2014 `decide` refuses at the bound and the loop's end is unreachable).",
+   "result": "pass",
+   "value": {
+    "per_run": {
+     "OFF-B (tear)": {
+      "decide_calls": 2,
+      "attempt_closures": 2
+     },
+     "PHS-01 (region)": {
+      "decide_calls": 2,
+      "attempt_closures": 2
+     },
+     "PHS-04 (region)": {
+      "decide_calls": 2,
+      "attempt_closures": 2
+     },
+     "PHS-05 (region)": {
+      "decide_calls": 2,
+      "attempt_closures": 2
+     }
+    },
+    "cycling_refusal_produced_in": [
+     "phase_contract.py"
+    ],
+    "WallObserver_defined_in": [
+     "phase_contract.py"
+    ],
+    "WallObserver_constructed_by": {
+     "attempts.py": true,
+     "region.py": true
+    },
+    "own_cycle_or_budget_rule": {
+     "attempts.py": [],
+     "region.py": []
+    }
+   },
+   "expected": {
+    "per_run": "decide_calls == attempt_closures on every run (2, 2, 2, 2)",
+    "cycling_refusal_produced_in": [
+     "phase_contract.py"
+    ],
+    "WallObserver_defined_in": [
+     "phase_contract.py"
+    ],
+    "WallObserver_constructed_by": {
+     "attempts.py": true,
+     "region.py": true
+    },
+    "own_cycle_or_budget_rule": {
+     "attempts.py": [],
+     "region.py": []
+    }
+   }
+  },
+  {
+   "id": "T03.A03",
+   "description": "[A01] on every multi-attempt registered case \u2014 OFF-B, T02 A21 (nominal `eo`), PHS-01\u202605, PHS-SYN-1/2: every event of attempt k from its `attempt_opened` on, except a rejected trial, carries \u03c3_k; each attempt's `EvaluationContext` is a distinct object. Lifted path: every compiled residual and Jacobian call made from inside attempt k's problem passes attempt k's evaluation context object (spied at the compiled class); every \u03c3_k-pinned variable is outside the attempt's free columns and bit-exactly `+0.0` (sign bit clear) in every vector the compiled problem received inside attempt k, every accepted iterate among them (review M3: the vectors the evaluator was given, not the end state the region writes); the attempt's row and column ids equal the keys of its `AttemptContext.row_scales` / `column_scales`. Tear path (OFF-B, review M3's probe): at the tear problem's boundary every residual call traverses under attempt k's flowsheet context and every Jacobian call takes attempt k's evaluation context and flowsheet; between attempt k's `attempt_opened` and `attempt_closed` every compiled call passes attempt k's evaluation context object and every provider call the tear code makes itself passes attempt k's flowsheet context object; provider calls made by the compiled problem's property blocks carry the context bound at assembly, asserted field-equal (`attempts._context_document`) to attempt k's \u2014 counted per attempt and category (see `limitations`).",
+   "result": "pass",
+   "value": {
+    "PHS-01": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "problem_built_under_own_context": true,
+     "compiled_calls_per_attempt": {
+      "0": 18,
+      "1": 11
+     },
+     "compiled_calls_under_another_context": [],
+     "scales_keys_equal_ids": true,
+     "pinned_violations": [],
+     "events_off_signature": []
+    },
+    "PHS-02": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "problem_built_under_own_context": true,
+     "compiled_calls_per_attempt": {
+      "0": 19,
+      "1": 9
+     },
+     "compiled_calls_under_another_context": [],
+     "scales_keys_equal_ids": true,
+     "pinned_violations": [],
+     "events_off_signature": []
+    },
+    "PHS-03": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "problem_built_under_own_context": true,
+     "compiled_calls_per_attempt": {
+      "0": 15,
+      "1": 9
+     },
+     "compiled_calls_under_another_context": [],
+     "scales_keys_equal_ids": true,
+     "pinned_violations": [],
+     "events_off_signature": []
+    },
+    "PHS-04": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "problem_built_under_own_context": true,
+     "compiled_calls_per_attempt": {
+      "0": 4,
+      "1": 3
+     },
+     "compiled_calls_under_another_context": [],
+     "scales_keys_equal_ids": true,
+     "pinned_violations": [],
+     "events_off_signature": []
+    },
+    "PHS-05": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "problem_built_under_own_context": true,
+     "compiled_calls_per_attempt": {
+      "0": 4,
+      "1": 23
+     },
+     "compiled_calls_under_another_context": [],
+     "scales_keys_equal_ids": true,
+     "pinned_violations": [],
+     "events_off_signature": []
+    },
+    "T02 A21": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "problem_built_under_own_context": true,
+     "compiled_calls_per_attempt": {
+      "0": 4,
+      "1": 5
+     },
+     "compiled_calls_under_another_context": [],
+     "scales_keys_equal_ids": true,
+     "pinned_violations": [],
+     "events_off_signature": []
+    },
+    "OFF-B": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "at_the_tear_problem_boundary": {
+      "residual_calls": {
+       "0": 8,
+       "1": 3
+      },
+      "residual_under_own_flowsheet_context": true,
+      "jacobian_calls": {
+       "0": 2,
+       "1": 2
+      },
+      "jacobian_under_own_evaluation_context": true,
+      "jacobian_under_own_flowsheet_context": true
+     },
+     "inside_an_open_attempt": {
+      "compiled_calls (own = the attempt's evaluation_context object)": {
+       "0": {
+        "calls": 4,
+        "own": 4
+       },
+       "1": {
+        "calls": 4,
+        "own": 4
+       }
+      },
+      "provider_calls_by_the_tear_code (own = the attempt's flowsheet_context object)": {
+       "0": {
+        "calls": 458,
+        "own": 458
+       },
+       "1": {
+        "calls": 371,
+        "own": 371
+       }
+      },
+      "provider_calls_by_compiled_property_blocks (own = field-equal to the attempt's flowsheet_context; the context bound at assembly)": {
+       "0": {
+        "calls": 46,
+        "own": 46
+       },
+       "1": {
+        "calls": 50,
+        "own": 50
+       }
+      },
+      "block_calls_carrying_the_attempts_own_object": 0
+     },
+     "events_off_signature": []
+    },
+    "PHS-SYN-1": {
+     "attempts": 3,
+     "distinct_context_objects": true,
+     "events_off_signature": []
+    },
+    "PHS-SYN-2": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "events_off_signature": []
+    }
+   },
+   "expected": {
+    "every region run": {
+     "attempts": "at least 2",
+     "distinct_context_objects": true,
+     "problem_built_under_own_context": true,
+     "compiled_calls_per_attempt": "at least 1 per attempt",
+     "compiled_calls_under_another_context": [],
+     "scales_keys_equal_ids": true,
+     "pinned_violations": [],
+     "events_off_signature": []
+    },
+    "OFF-B": {
+     "attempts": 2,
+     "distinct_context_objects": true,
+     "at_the_tear_problem_boundary": "every residual and Jacobian call of attempt k under attempt k's context objects",
+     "inside_an_open_attempt": "per attempt and category: at least 1 call, own == calls",
+     "events_off_signature": []
+    },
+    "bare controller (PHS-SYN-1/2)": {
+     "attempts": "at least 2",
+     "distinct_context_objects": true,
+     "events_off_signature": []
+    }
+   }
+  },
+  {
+   "id": "T03.A04",
+   "description": "The evaluator does not choose: at every `ok` trial of every attempt of PHS-01 the screened residual's values are bit-identical (IEEE bytes) with the same attempt's residual built without the screen \u2014 the frozen formulation's; at iteration 0's \u03b1 = 1 trial of attempt 1 the frozen `LIQUID` formulation evaluates and only the reported signature differs (`U-HEAT:VAPOR`, the unscreened evaluation reports none).",
+   "result": "pass",
+   "value": {
+    "ok_evaluations_compared": 22,
+    "differing": [],
+    "first_trial": {
+     "S3.T": 389.43824382720845,
+     "frozen_regime": "LIQUID",
+     "reported": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+     "unscreened_reports": "",
+     "values_bit_identical": true
+    }
+   },
+   "expected": {
+    "ok_evaluations_compared": "every one (more than 20)",
+    "differing": [],
+    "first_trial": {
+     "frozen_regime": "LIQUID",
+     "reported": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+     "unscreened_reports": "",
+     "values_bit_identical": true
+    }
+   }
+  },
+  {
+   "id": "T03.A05",
+   "description": "The screen: every call of K03 \u00a78.2's check `_admissible` (spied), from the screen and from the closure alike, uses `policy.admissibility_epsilon` (1e-12) \u2014 one callable for both, the closure's calls observed on every converged attempt; no `TWO_PHASE` unit is screened; on attempt 1 the screen reads exactly the trials the twin screens (PHS-01 15, PHS-02 14, PHS-03 8 = the registered trials less the domain-refused ones), flags exactly those whose registered value exceeds 1 + \u03b5, and the kernel flash is called once per flagged trial and on no other \u2014 PHS-01 13, PHS-02 12, PHS-03 6; the opening state is never screened (every attempt's screen invocations equal its screened trials), and PHS-04's `LIQUID` attempt, whose opening the check refuses at `ref\u2026opening_screen_value` 1.075 417 012 292 933 (1e-9 relative), converges.",
+   "result": "pass",
+   "value": {
+    "admissibility_epsilon": 1e-12,
+    "PHS-01": {
+     "screened": 15,
+     "flagged": 13,
+     "kernel_flashes": 13,
+     "screened_units": [
+      "U-HEAT"
+     ],
+     "registered_screened": 15,
+     "registered_flagged": 13
+    },
+    "PHS-02": {
+     "screened": 14,
+     "flagged": 12,
+     "kernel_flashes": 12,
+     "screened_units": [
+      "U-HEAT"
+     ],
+     "registered_screened": 14,
+     "registered_flagged": 12
+    },
+    "PHS-03": {
+     "screened": 8,
+     "flagged": 6,
+     "kernel_flashes": 6,
+     "screened_units": [
+      "U-HEAT"
+     ],
+     "registered_screened": 8,
+     "registered_flagged": 6
+    },
+    "every_region_solve": {
+     "epsilons_used": [
+      1e-12
+     ],
+     "two_phase_units_screened": [],
+     "closure_calls_through_the_same_callable": 10,
+     "attempts_whose_opening_was_screened": []
+    },
+    "PHS-04 opening": {
+     "admissible": false,
+     "screen_value": 1.0754170122929345,
+     "relative_off": 1.0323651308602717e-15,
+     "attempt_2_outcome": "CONVERGED"
+    }
+   },
+   "expected": {
+    "admissibility_epsilon": 1e-12,
+    "PHS-01": {
+     "screened": 15,
+     "flagged": 13,
+     "kernel_flashes": 13
+    },
+    "PHS-02": {
+     "screened": 14,
+     "flagged": 12,
+     "kernel_flashes": 12
+    },
+    "PHS-03": {
+     "screened": 8,
+     "flagged": 6,
+     "kernel_flashes": 6
+    },
+    "screened_units": [
+     "U-HEAT"
+    ],
+    "every_region_solve": {
+     "epsilons_used": [
+      1e-12
+     ],
+     "two_phase_units_screened": [],
+     "closure_calls_through_the_same_callable": "at least 1",
+     "attempts_whose_opening_was_screened": []
+    },
+    "PHS-04 opening": {
+     "admissible": false,
+     "screen_value": 1.0754170122929334,
+     "attempt_2_outcome": "CONVERGED"
+    }
+   }
+  },
+  {
+   "id": "T03.A06",
+   "description": "PHS-01 (`SYN-001-A02-355-liquid-guess`) attempt 1 against `ref.cases\u2026attempts[0]`: every trial's iteration, halving, verdict, \u03b1 and reported heater regime exactly, its `S3.T` to 1e-9 relative (the residual call observed per trial); accepted iterates 351.232 445 119 600 and 351.381 686 520 802 K among them; `PHASE_UPDATE_REQUIRED` on patience at core iteration 2; 13 phase rejections, 0 invalid trials.",
+   "result": "pass",
+   "value": {
+    "attempt_1": {
+     "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+     "opening": {
+      "source": "initializer",
+      "trial": null,
+      "alpha": null,
+      "S3_T_K": 350.0,
+      "beta": 0.0,
+      "message": "initial"
+     },
+     "core": {
+      "outcome": "PHASE_UPDATE_REQUIRED",
+      "iterations": 2,
+      "blocked_by": []
+     },
+     "decision": "restart",
+     "cause": "phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE)",
+     "end_S3_T_K": 351.38168652080185,
+     "trials": 15,
+     "phase_rejections": 13,
+     "invalid_trials": 0,
+     "worst_trial_S3_T_relative_off": 1.6129161345094304e-16,
+     "landings": [],
+     "screen_values_worst_relative_off (recorded, not judged)": 1.5129498557714343e-15,
+     "mismatches": []
+    },
+    "accepted_S3_T_K": [
+     351.23244511960024,
+     351.38168652080185
+    ]
+   },
+   "expected": {
+    "attempt_1": {
+     "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+     "opening": {
+      "source": "initializer",
+      "trial": null,
+      "alpha": null,
+      "S3_T_K": "350.00000000000000000",
+      "beta": "0.0"
+     },
+     "core": {
+      "outcome": "PHASE_UPDATE_REQUIRED",
+      "iterations": 2,
+      "blocked_by": []
+     },
+     "decision": "restart",
+     "cause": "phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE)",
+     "end_S3_T_K": "351.38168652080185756",
+     "trials": 15,
+     "phase_rejections": 13,
+     "invalid_trials": 0,
+     "landings": [],
+     "mismatches": [],
+     "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+    },
+    "accepted_S3_T_K": [
+     351.23244511960024,
+     351.38168652080185
+    ]
+   }
+  },
+  {
+   "id": "T03.A07",
+   "description": "PHS-01 restart: attempt 2 opens `(U-HEAT:TWO_PHASE, U-FLASH:TWO_PHASE)` from `phase_rejected_trial` (iteration 1, halving 1), `attempt_opened.alpha = 0.5`, `S3.T = 370.335 344 473 404 K` and \u03b2 = 0.664 711 039 122 145 (1e-9 relative), message `phase_update(phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE))`; the \u03b1 = 1 candidate of the same line search reported `VAPOR` and was not chosen.",
+   "result": "pass",
+   "value": {
+    "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+    "opening_source": "phase_rejected_trial",
+    "opening_trial": {
+     "iteration": 1,
+     "halving": 1
+    },
+    "attempt_opened_alpha": 0.5,
+    "S3_T_K": 370.33534447340435,
+    "S3_T_relative_off": 0.0,
+    "beta": 0.6647110391221454,
+    "beta_relative_off": 2.220446049250313e-16,
+    "message": "phase_update(phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE))",
+    "alpha_1_candidate": {
+     "iteration": 1,
+     "halving": 0,
+     "verdict": "phase_update_required",
+     "alpha": 1.0,
+     "S3_T_K": 389.43824382720845,
+     "reported_heater_regime": "VAPOR"
+    }
+   },
+   "expected": {
+    "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+    "opening_source": "phase_rejected_trial",
+    "opening_trial": {
+     "iteration": 1,
+     "halving": 1
+    },
+    "attempt_opened_alpha": 0.5,
+    "S3_T_K": 370.33534447340435,
+    "beta": 0.6647110391221451,
+    "message": "phase_update(phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE))",
+    "alpha_1_candidate": "iteration 1, halving 0, phase_update_required, VAPOR (not chosen)"
+   }
+  },
+  {
+   "id": "T03.A08",
+   "description": "PHS-01 attempt 2: iteration 0's accepted step is at `\u03b1_max = 0.683 005 540 573 936` (1e-9 relative) with `S3.vap.C` exactly `+0.0`, and the attempt continues; every trial as registered; `CONVERGED` at core iteration 5; the solve `CONVERGED` in exactly 2 attempts; final state = `t02.syn001.a02_sweep[T_heater=355K]` and the twin's final record by kind (1e-5 K, 1e-2 W, 3.1e-7 mol/s); every lifted unit admissible at closure; a `root_fingerprint` with `branch_found` all `TWO_PHASE`.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": 350.0,
+       "beta": 0.0,
+       "message": "initial"
+      },
+      "core": {
+       "outcome": "PHASE_UPDATE_REQUIRED",
+       "iterations": 2,
+       "blocked_by": []
+      },
+      "decision": "restart",
+      "cause": "phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE)",
+      "end_S3_T_K": 351.38168652080185,
+      "trials": 15,
+      "phase_rejections": 13,
+      "invalid_trials": 0,
+      "worst_trial_S3_T_relative_off": 1.6129161345094304e-16,
+      "landings": [],
+      "screen_values_worst_relative_off (recorded, not judged)": 1.5129498557714343e-15,
+      "mismatches": []
+     },
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "phase_rejected_trial",
+       "trial": {
+        "iteration": 1,
+        "halving": 1
+       },
+       "alpha": 0.5,
+       "S3_T_K": 370.33534447340435,
+       "beta": 0.6647110391221454,
+       "message": "phase_update(phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE))"
+      },
+      "core": {
+       "outcome": "CONVERGED",
+       "iterations": 5,
+       "blocked_by": []
+      },
+      "decision": "converged",
+      "cause": "",
+      "end_S3_T_K": 354.9999999952258,
+      "trials": 5,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "worst_trial_S3_T_relative_off": 1.6022324680280377e-16,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha": 0.6830055405739356,
+        "alpha_max_registered": 0.6830055405739364,
+        "alpha_relative_off": 7.771561172376096e-16,
+        "variables": {
+         "S3.vap.C": 0.0
+        },
+        "on_positive_zero": true,
+        "attempt_continued": true
+       }
+      ],
+      "screen_values_worst_relative_off (recorded, not judged)": null,
+      "mismatches": []
+     }
+    ],
+    "final": {
+     "S3.T": 354.9999999952258,
+     "against_t03_final": {
+      "S3.T (K)": 0.0,
+      "U-HEAT.Q (W)": 1.4551915228366852e-11,
+      "U-FLASH.Q (W)": 0.0,
+      "S3 split (mol/s)": 2.220446049250313e-16
+     },
+     "against_t02_sweep": {
+      "U-HEAT.Q (W)": 1.4551915228366852e-11,
+      "U-FLASH.Q (W)": 0.0,
+      "S3 split (mol/s)": 4.719313828616123e-11
+     }
+    },
+    "admissible_at_closure": [
+     {
+      "unit": "U-HEAT",
+      "branch": "TWO_PHASE",
+      "ok": true
+     },
+     {
+      "unit": "U-FLASH",
+      "branch": "TWO_PHASE",
+      "ok": true
+     }
+    ],
+    "root_fingerprint_branch_found": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-FLASH",
+      "TWO_PHASE"
+     ]
+    ],
+    "S3.vap.C after the next accepted step (recorded)": 0.03451236758538908,
+    "summary": {
+     "attempt_2_core": {
+      "outcome": "CONVERGED",
+      "iterations": 5,
+      "blocked_by": []
+     },
+     "landing": [
+      {
+       "iteration": 0,
+       "alpha": 0.6830055405739356,
+       "alpha_max_registered": 0.6830055405739364,
+       "alpha_relative_off": 7.771561172376096e-16,
+       "variables": {
+        "S3.vap.C": 0.0
+       },
+       "on_positive_zero": true,
+       "attempt_continued": true
+      }
+     ]
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": "350.00000000000000000",
+       "beta": "0.0"
+      },
+      "core": {
+       "outcome": "PHASE_UPDATE_REQUIRED",
+       "iterations": 2,
+       "blocked_by": []
+      },
+      "decision": "restart",
+      "cause": "phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE)",
+      "end_S3_T_K": "351.38168652080185756",
+      "trials": 15,
+      "phase_rejections": 13,
+      "invalid_trials": 0,
+      "landings": [],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     },
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "phase_rejected_trial",
+       "trial": {
+        "iteration": 1,
+        "halving": 1
+       },
+       "alpha": "0.50000000000000000000",
+       "S3_T_K": "370.33534447340434262",
+       "beta": "0.66471103912214510449"
+      },
+      "core": {
+       "outcome": "CONVERGED",
+       "iterations": 5,
+       "blocked_by": []
+      },
+      "decision": "converged",
+      "cause": "",
+      "end_S3_T_K": "354.99999999522575535",
+      "trials": 5,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.68300554057393632880"
+       }
+      ],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     }
+    ],
+    "final": {
+     "t03_final": "ref.cases.final",
+     "t02_sweep": "T_heater=355K",
+     "S3.T": 1e-05,
+     "duties": 0.01,
+     "S3 split": 3.1e-07
+    },
+    "admissible_at_closure": "every lifted unit admissible, by branch found",
+    "root_fingerprint_branch_found": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-FLASH",
+      "TWO_PHASE"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "T03.A09",
+   "description": "PHS-02 (`SYN-001-A02-360-liquid-guess`) against `ref.cases`: attempt 1 with the \u03b1 = 1 trial (442.639 559 394 732 K) `invalid_trial` in both iterations and not screened, accepted 350.723 746 557 771 and 351.441 838 845 560 K, patience at 2, 12 phase rejections, 2 invalid; restart (1, 2), \u03b1 = 0.25, 373.702 699 767 012 K, \u03b2 = 0.807 854 853 272; attempt 2 lands `S3.vap.C` at `\u03b1_max = 0.848 058 504 137 589`, continues, `CONVERGED` at 4; final = the 360 K row.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": 350.0,
+       "beta": 0.0,
+       "message": "initial"
+      },
+      "core": {
+       "outcome": "PHASE_UPDATE_REQUIRED",
+       "iterations": 2,
+       "blocked_by": []
+      },
+      "decision": "restart",
+      "cause": "phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE)",
+      "end_S3_T_K": 351.4418388455601,
+      "trials": 16,
+      "phase_rejections": 12,
+      "invalid_trials": 2,
+      "worst_trial_S3_T_relative_off": 1.607580409836867e-16,
+      "landings": [],
+      "screen_values_worst_relative_off (recorded, not judged)": 1.5464498615148807e-15,
+      "mismatches": []
+     },
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "phase_rejected_trial",
+       "trial": {
+        "iteration": 1,
+        "halving": 2
+       },
+       "alpha": 0.25,
+       "S3_T_K": 373.7026997670115,
+       "beta": 0.8078548532717877,
+       "message": "phase_update(phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE))"
+      },
+      "core": {
+       "outcome": "CONVERGED",
+       "iterations": 4,
+       "blocked_by": []
+      },
+      "decision": "converged",
+      "cause": "",
+      "end_S3_T_K": 359.9999994571142,
+      "trials": 4,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "worst_trial_S3_T_relative_off": 1.559928784222314e-16,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha": 0.8480585041375899,
+        "alpha_max_registered": 0.8480585041375894,
+        "alpha_relative_off": 4.440892098500626e-16,
+        "variables": {
+         "S3.vap.C": 0.0
+        },
+        "on_positive_zero": true,
+        "attempt_continued": true
+       }
+      ],
+      "screen_values_worst_relative_off (recorded, not judged)": null,
+      "mismatches": []
+     }
+    ],
+    "final": {
+     "S3.T": 359.9999994571142,
+     "against_t03_final": {
+      "S3.T (K)": 0.0,
+      "U-HEAT.Q (W)": 1.4551915228366852e-11,
+      "U-FLASH.Q (W)": 4.530826668708299e-15,
+      "S3 split (mol/s)": 3.3306690738754696e-16
+     },
+     "against_t02_sweep": {
+      "U-HEAT.Q (W)": 1.4551915228366852e-11,
+      "U-FLASH.Q (W)": 4.530826668708299e-15,
+      "S3 split (mol/s)": 1.079205569354258e-08
+     }
+    },
+    "admissible_at_closure": [
+     {
+      "unit": "U-HEAT",
+      "branch": "TWO_PHASE",
+      "ok": true
+     },
+     {
+      "unit": "U-FLASH",
+      "branch": "TWO_PHASE",
+      "ok": true
+     }
+    ],
+    "root_fingerprint_branch_found": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-FLASH",
+      "TWO_PHASE"
+     ]
+    ]
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": "350.00000000000000000",
+       "beta": "0.0"
+      },
+      "core": {
+       "outcome": "PHASE_UPDATE_REQUIRED",
+       "iterations": 2,
+       "blocked_by": []
+      },
+      "decision": "restart",
+      "cause": "phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE)",
+      "end_S3_T_K": "351.44183884556009848",
+      "trials": 16,
+      "phase_rejections": 12,
+      "invalid_trials": 2,
+      "landings": [],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     },
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "phase_rejected_trial",
+       "trial": {
+        "iteration": 1,
+        "halving": 2
+       },
+       "alpha": "0.25000000000000000000",
+       "S3_T_K": "373.70269976701150127",
+       "beta": "0.80785485327178810928"
+      },
+      "core": {
+       "outcome": "CONVERGED",
+       "iterations": 4,
+       "blocked_by": []
+      },
+      "decision": "converged",
+      "cause": "",
+      "end_S3_T_K": "359.99999945711419197",
+      "trials": 4,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.84805850413758937871"
+       }
+      ],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     }
+    ],
+    "final": {
+     "t03_final": "ref.cases.final",
+     "t02_sweep": "T_heater=360K",
+     "S3.T": 1e-05,
+     "duties": 0.01,
+     "S3 split": 3.1e-07
+    },
+    "admissible_at_closure": "every lifted unit admissible, by branch found",
+    "root_fingerprint_branch_found": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-FLASH",
+      "TWO_PHASE"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "T03.A10",
+   "description": "PHS-03 (`SYN-001-A02-360-vapor-guess`, 400 K) against `ref.cases`: attempt 1 `VAPOR`, \u03b1 = 1 and 1/2 `invalid_trial` in both iterations, the far `LIQUID` candidates at halving 2 skipped; accepted 383.580 026 850 553 and 379.731 595 643 652 K; patience at 2; restart (1, 3), \u03b1 = 0.125, 352.792 577 195 341 K, \u03b2 = 0.048 273 238 6; attempt 2 `CONVERGED` at 4 with no landing (every accepted \u03b1 = 1); final = the 360 K row.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": 400.0,
+       "beta": 1.0,
+       "message": "initial"
+      },
+      "core": {
+       "outcome": "PHASE_UPDATE_REQUIRED",
+       "iterations": 2,
+       "blocked_by": []
+      },
+      "decision": "restart",
+      "cause": "phase_wall(patience, U-HEAT:VAPOR->TWO_PHASE)",
+      "end_S3_T_K": 379.73159564365164,
+      "trials": 12,
+      "phase_rejections": 6,
+      "invalid_trials": 4,
+      "worst_trial_S3_T_relative_off": 8.281357950695496e-16,
+      "landings": [],
+      "screen_values_worst_relative_off (recorded, not judged)": 1.2718109103015151e-15,
+      "mismatches": []
+     },
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "phase_rejected_trial",
+       "trial": {
+        "iteration": 1,
+        "halving": 3
+       },
+       "alpha": 0.125,
+       "S3_T_K": 352.7925771953406,
+       "beta": 0.04827323869182762,
+       "message": "phase_update(phase_wall(patience, U-HEAT:VAPOR->TWO_PHASE))"
+      },
+      "core": {
+       "outcome": "CONVERGED",
+       "iterations": 4,
+       "blocked_by": []
+      },
+      "decision": "converged",
+      "cause": "",
+      "end_S3_T_K": 360.00000000000057,
+      "trials": 4,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "worst_trial_S3_T_relative_off": 1.578983785652003e-16,
+      "landings": [],
+      "screen_values_worst_relative_off (recorded, not judged)": null,
+      "mismatches": []
+     }
+    ],
+    "final": {
+     "S3.T": 360.00000000000057,
+     "against_t03_final": {
+      "S3.T (K)": 0.0,
+      "U-HEAT.Q (W)": 1.4551915228366852e-11,
+      "U-FLASH.Q (W)": 8.271806125530277e-19,
+      "S3 split (mol/s)": 4.440892098500626e-16
+     },
+     "against_t02_sweep": {
+      "U-HEAT.Q (W)": 1.4551915228366852e-11,
+      "U-FLASH.Q (W)": 8.271806125530277e-19,
+      "S3 split (mol/s)": 5.040412531798211e-14
+     }
+    },
+    "admissible_at_closure": [
+     {
+      "unit": "U-HEAT",
+      "branch": "TWO_PHASE",
+      "ok": true
+     },
+     {
+      "unit": "U-FLASH",
+      "branch": "TWO_PHASE",
+      "ok": true
+     }
+    ],
+    "root_fingerprint_branch_found": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-FLASH",
+      "TWO_PHASE"
+     ]
+    ],
+    "attempt_2_accepted_alphas": [
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": "400.00000000000000000",
+       "beta": "1.0000000000000000000"
+      },
+      "core": {
+       "outcome": "PHASE_UPDATE_REQUIRED",
+       "iterations": 2,
+       "blocked_by": []
+      },
+      "decision": "restart",
+      "cause": "phase_wall(patience, U-HEAT:VAPOR->TWO_PHASE)",
+      "end_S3_T_K": "379.73159564365167185",
+      "trials": 12,
+      "phase_rejections": 6,
+      "invalid_trials": 4,
+      "landings": [],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     },
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "phase_rejected_trial",
+       "trial": {
+        "iteration": 1,
+        "halving": 3
+       },
+       "alpha": "0.12500000000000000000",
+       "S3_T_K": "352.79257719534060278",
+       "beta": "0.048273238691828364992"
+      },
+      "core": {
+       "outcome": "CONVERGED",
+       "iterations": 4,
+       "blocked_by": []
+      },
+      "decision": "converged",
+      "cause": "",
+      "end_S3_T_K": "360.00000000000056032",
+      "trials": 4,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "landings": [],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     }
+    ],
+    "final": {
+     "t03_final": "ref.cases.final",
+     "t02_sweep": "T_heater=360K",
+     "S3.T": 1e-05,
+     "duties": 0.01,
+     "S3 split": 3.1e-07
+    },
+    "admissible_at_closure": "every lifted unit admissible, by branch found",
+    "root_fingerprint_branch_found": [
+     [
+      "U-HEAT",
+      "TWO_PHASE"
+     ],
+     [
+      "U-FLASH",
+      "TWO_PHASE"
+     ]
+    ],
+    "attempt_2_accepted_alphas": "every one 1.0 (no landing)"
+   }
+  },
+  {
+   "id": "T03.A11",
+   "description": "PHS-04 (`SYN-001-A02-340-two-phase-guess`) against `ref.cases`: attempt 1 lands `S3.vap.C` at `\u03b1_max = 0.611 571 194 452 767` and its core ends `BOUND_BLOCKED` at iteration 1 with `blocked_by = (S3.vap.C)`; attempt 2 `LIQUID` from `pinned_iterate`, message `phase_update(phase_disappeared(U-HEAT, vapor, S3.vap.C))`, opening at 354.208 439 732 282 K with the opening vector equal, bit for bit, to attempt 1's end state with the vapour pinned (`S3.vap.* = S3.V = +0.0`, `S3.liq = S3.n`); `CONVERGED` at core iteration 1; `S3.T = 340`, `U-HEAT.Q = 8 721.618 138 446 303 W` (T02's 340 K row), `S3.V = 0.0` exactly; admissible at closure with `\u03a3 x K = 0.731 446 283\u2026` (1e-9 relative).",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": 360.0,
+       "beta": 0.293328963935373,
+       "message": "initial"
+      },
+      "core": {
+       "outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "blocked_by": [
+        "S3.vap.C"
+       ]
+      },
+      "decision": "restart",
+      "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+      "end_S3_T_K": 354.2084397322823,
+      "trials": 1,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "worst_trial_S3_T_relative_off": 1.6048013679112616e-16,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha": 0.6115711944527674,
+        "alpha_max_registered": 0.6115711944527673,
+        "alpha_relative_off": 1.1102230246251565e-16,
+        "variables": {
+         "S3.vap.C": 0.0
+        },
+        "on_positive_zero": true,
+        "attempt_continued": true
+       }
+      ],
+      "screen_values_worst_relative_off (recorded, not judged)": null,
+      "mismatches": []
+     },
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "pinned_iterate",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": 354.2084397322823,
+       "beta": 0.0,
+       "message": "phase_update(phase_disappeared(U-HEAT, vapor, S3.vap.C))"
+      },
+      "core": {
+       "outcome": "CONVERGED",
+       "iterations": 1,
+       "blocked_by": []
+      },
+      "decision": "converged",
+      "cause": "",
+      "end_S3_T_K": 340.0,
+      "trials": 1,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "worst_trial_S3_T_relative_off": 0.0,
+      "landings": [],
+      "screen_values_worst_relative_off (recorded, not judged)": 6.071385149110501e-16,
+      "mismatches": []
+     }
+    ],
+    "final": {
+     "S3.T": 340.0,
+     "against_t03_final": {
+      "S3.T (K)": 0.0,
+      "U-HEAT.Q (W)": 1.2732925824820995e-11,
+      "U-FLASH.Q (W)": 0.0,
+      "S3 split (mol/s)": 4.440892098500626e-16
+     },
+     "against_t02_sweep": {
+      "U-HEAT.Q (W)": 1.2732925824820995e-11,
+      "U-FLASH.Q (W)": 0.0,
+      "S3 split (mol/s)": 4.440892098500626e-16
+     }
+    },
+    "admissible_at_closure": [
+     {
+      "unit": "U-HEAT",
+      "branch": "LIQUID",
+      "ok": true
+     },
+     {
+      "unit": "U-FLASH",
+      "branch": "TWO_PHASE",
+      "ok": true
+     }
+    ],
+    "root_fingerprint_branch_found": [
+     [
+      "U-HEAT",
+      "LIQUID"
+     ],
+     [
+      "U-FLASH",
+      "TWO_PHASE"
+     ]
+    ],
+    "pinned_restart": {
+     "opening_equals_pinned_end_state_bitwise": true,
+     "opening_vapour_pinned_positive_zero": {
+      "S3.vap.A": true,
+      "S3.vap.B": true,
+      "S3.vap.C": true,
+      "S3.V": true
+     },
+     "opening_liquid_equals_feed": true,
+     "final_S3.V": 0.0,
+     "final_S3.V_is_positive_zero": true,
+     "closure_sum_xK": 0.7314462827566209,
+     "closure_sum_xK_relative_off": 4.440892098500626e-16
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": "360.00000000000000000",
+       "beta": "0.29332896393537299529"
+      },
+      "core": {
+       "outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "blocked_by": [
+        "S3.vap.C"
+       ]
+      },
+      "decision": "restart",
+      "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+      "end_S3_T_K": "354.20843973228223898",
+      "trials": 1,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.61157119445276734290"
+       }
+      ],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     },
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "pinned_iterate",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": "354.20843973228223898",
+       "beta": "0.0"
+      },
+      "core": {
+       "outcome": "CONVERGED",
+       "iterations": 1,
+       "blocked_by": []
+      },
+      "decision": "converged",
+      "cause": "",
+      "end_S3_T_K": "340.00000000000000000",
+      "trials": 1,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "landings": [],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     }
+    ],
+    "final": {
+     "t03_final": "ref.cases.final",
+     "t02_sweep": "T_heater=340K",
+     "S3.T": 1e-05,
+     "duties": 0.01,
+     "S3 split": 3.1e-07
+    },
+    "admissible_at_closure": "every lifted unit admissible, by branch found",
+    "root_fingerprint_branch_found": [
+     [
+      "U-HEAT",
+      "LIQUID"
+     ],
+     [
+      "U-FLASH",
+      "TWO_PHASE"
+     ]
+    ],
+    "pinned_restart": {
+     "opening_equals_pinned_end_state_bitwise": true,
+     "opening_vapour_pinned_positive_zero": {
+      "S3.vap.A": true,
+      "S3.vap.B": true,
+      "S3.vap.C": true,
+      "S3.V": true
+     },
+     "opening_liquid_equals_feed": true,
+     "final_S3.V": 0.0,
+     "closure_sum_xK": 0.7314462827566205
+    }
+   }
+  },
+  {
+   "id": "T03.A12",
+   "description": "PHS-05 (`SYN-001-A02-355-dew-guess`, expected failure): attempt 1 lands at `\u03b1_max = 0.642 309 461 269 271` and its core ends `BOUND_BLOCKED` at 1 on `S3.vap.C` alone; attempt 2 `LIQUID` opens at 365.572 400 509 395 K; its core ends `LINE_SEARCH_FAILED` at iteration 0 with exactly 21 phase-rejected trials, each as registered; the solve ends `ACTIVE_SET_CYCLING` with \u00a76.4's message; no certificate target (no `root_fingerprint`); checkpoint `partial`; the failure class and action the bundle builder resolves for the outcome (`TAXONOMY`, `OUTCOME_ACTIONS` over `ACTIONS`) are `homotopy/PTC/active-set stalls` and `supply_initial_guess`; no `INFEASIBLE`; the registry entry is outside the success denominator with `handed_to: T04`.",
+   "result": "pass",
+   "value": {
+    "outcome": "ACTIVE_SET_CYCLING",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": 375.0,
+       "beta": 0.8686478872398264,
+       "message": "initial"
+      },
+      "core": {
+       "outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "blocked_by": [
+        "S3.vap.C"
+       ]
+      },
+      "decision": "restart",
+      "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+      "end_S3_T_K": 365.57240050939515,
+      "trials": 1,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "worst_trial_S3_T_relative_off": 0.0,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha": 0.6423094612692711,
+        "alpha_max_registered": 0.6423094612692714,
+        "alpha_relative_off": 2.220446049250313e-16,
+        "variables": {
+         "S3.vap.C": 0.0
+        },
+        "on_positive_zero": true,
+        "attempt_continued": true
+       }
+      ],
+      "screen_values_worst_relative_off (recorded, not judged)": null,
+      "mismatches": []
+     },
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "pinned_iterate",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": 365.57240050939515,
+       "beta": 0.0,
+       "message": "phase_update(phase_disappeared(U-HEAT, vapor, S3.vap.C))"
+      },
+      "core": {
+       "outcome": "LINE_SEARCH_FAILED",
+       "iterations": 0,
+       "blocked_by": []
+      },
+      "decision": "restart",
+      "cause": "phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)",
+      "end_S3_T_K": 365.57240050939515,
+      "trials": 21,
+      "phase_rejections": 21,
+      "invalid_trials": 0,
+      "worst_trial_S3_T_relative_off": 1.5549153941210095e-16,
+      "landings": [],
+      "screen_values_worst_relative_off (recorded, not judged)": 1.2382988493663978e-15,
+      "mismatches": []
+     }
+    ],
+    "solve": {
+     "message": "active_set_cycling(U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE; phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE))",
+     "refused_signature_and_cause_registered": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE; phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)",
+     "root_fingerprint": null,
+     "checkpoint_label": "partial",
+     "failure_class": "homotopy/PTC/active-set stalls",
+     "failure_action": "supply_initial_guess",
+     "INFEASIBLE": false,
+     "registry": {
+      "code": "ACTIVE_SET_CYCLING",
+      "in_success_denominator": false,
+      "handed_to": "T04"
+     }
+    }
+   },
+   "expected": {
+    "outcome": "ACTIVE_SET_CYCLING",
+    "attempts": 2,
+    "per_attempt": [
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "initializer",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": "375.00000000000000000",
+       "beta": "0.86864788723982536777"
+      },
+      "core": {
+       "outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "blocked_by": [
+        "S3.vap.C"
+       ]
+      },
+      "decision": "restart",
+      "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+      "end_S3_T_K": "365.57240050939517035",
+      "trials": 1,
+      "phase_rejections": 0,
+      "invalid_trials": 0,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.64230946126927131862"
+       }
+      ],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     },
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening": {
+       "source": "pinned_iterate",
+       "trial": null,
+       "alpha": null,
+       "S3_T_K": "365.57240050939517035",
+       "beta": "0.0"
+      },
+      "core": {
+       "outcome": "LINE_SEARCH_FAILED",
+       "iterations": 0,
+       "blocked_by": []
+      },
+      "decision": "restart",
+      "cause": "phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)",
+      "end_S3_T_K": "365.57240050939517035",
+      "trials": 21,
+      "phase_rejections": 21,
+      "invalid_trials": 0,
+      "landings": [],
+      "mismatches": [],
+      "tolerance": "temperatures, alpha, beta 1e-9 relative on max(1, |x|); the rest exact"
+     }
+    ],
+    "solve": {
+     "message": "active_set_cycling(U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE; phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE))",
+     "root_fingerprint": null,
+     "checkpoint_label": "partial",
+     "failure_class": "homotopy/PTC/active-set stalls",
+     "failure_action": "supply_initial_guess",
+     "INFEASIBLE": false,
+     "registry": {
+      "code": "ACTIVE_SET_CYCLING",
+      "in_success_denominator": false,
+      "handed_to": "T04"
+     }
+    }
+   }
+  },
+  {
+   "id": "T03.A13",
+   "description": "Regression under the contract. T02 A21 (nominal `eo` from `x(t\u2070)`): exactly 2 attempts; attempt 1's core ends `BOUND_BLOCKED` at iteration 1 with `S3.vap.B` in `blocked_by`, converted to `phase_disappeared(U-HEAT, vapor, S3.vap.B)`; attempt 2 opens, bit for bit, from T02's pinned iterate (attempt 1's end state with the heater vapour pinned); attempt 2 `LIQUID` converges within 5; T02's own A21\u2013A24 measurements (`scripts/t02_evidence_manifest.py`) still pass. T02 A28/A29's cases (guess 358 K) converge in 1 attempt with 3, 3, 4 core iterations (`ref.t02_successes_under_the_contract`) and no landing (every accepted \u03b1 = 1).",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "A21": {
+     "attempt_1_core": "BOUND_BLOCKED",
+     "attempt_1_core_iterations": 1,
+     "attempt_1_blocked_by": [
+      "S3.vap.B"
+     ],
+     "attempt_1_cause": "phase_disappeared(U-HEAT, vapor, S3.vap.B)",
+     "attempt_2_opening_source": "pinned_iterate",
+     "attempt_2_opening_equals_pinned_iterate_bitwise": true,
+     "attempt_2_signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+     "attempt_2_outcome": "CONVERGED",
+     "attempt_2_iterations": 2
+    },
+    "t02_manifest_measurements": {
+     "A21": "pass",
+     "A22": "pass",
+     "A23": "pass",
+     "A24": "pass"
+    },
+    "t02_successes": {
+     "SYN-001-A02-355": {
+      "outcome": "CONVERGED",
+      "attempts": 1,
+      "core_iterations": 3,
+      "every_accepted_alpha_1": true
+     },
+     "SYN-001-A02-360": {
+      "outcome": "CONVERGED",
+      "attempts": 1,
+      "core_iterations": 3,
+      "every_accepted_alpha_1": true
+     },
+     "SYN-001-A02-365": {
+      "outcome": "CONVERGED",
+      "attempts": 1,
+      "core_iterations": 4,
+      "every_accepted_alpha_1": true
+     }
+    }
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "attempts": 2,
+    "A21": {
+     "attempt_1_core": "BOUND_BLOCKED",
+     "attempt_1_core_iterations": 1,
+     "attempt_1_blocked_by": "contains S3.vap.B",
+     "attempt_1_cause": "phase_disappeared(U-HEAT, vapor, S3.vap.B)",
+     "attempt_2_opening_source": "pinned_iterate",
+     "attempt_2_opening_equals_pinned_iterate_bitwise": true,
+     "attempt_2_signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+     "attempt_2_outcome": "CONVERGED",
+     "attempt_2_iterations": "at most 5"
+    },
+    "t02_manifest_measurements": {
+     "A21": "pass",
+     "A22": "pass",
+     "A23": "pass",
+     "A24": "pass"
+    },
+    "t02_successes": {
+     "SYN-001-A02-355": {
+      "outcome": "CONVERGED",
+      "attempts": 1,
+      "core_iterations": 3,
+      "every_accepted_alpha_1": true
+     },
+     "SYN-001-A02-360": {
+      "outcome": "CONVERGED",
+      "attempts": 1,
+      "core_iterations": 3,
+      "every_accepted_alpha_1": true
+     },
+     "SYN-001-A02-365": {
+      "outcome": "CONVERGED",
+      "attempts": 1,
+      "core_iterations": 4,
+      "every_accepted_alpha_1": true
+     }
+    }
+   }
+  },
+  {
+   "id": "T03.A14",
+   "description": "Adjacency on the tear path: PHS-SYN-1 and PHS-SYN-2 through the bare controller \u2014 every evaluated point (each opening and each trial) exactly the twin's dyadic rationals, every attempt's signature, `CONVERGED` at x = 3 in 3 and 2 attempts; OFF-B restarts from the largest-\u03b1 phase-rejected trial of its last line search, `TWO_PHASE` (K03's point), and K03's own attempt tests (`tests/test_k03_attempts.py`, A12/A29 included) pass when rerun here.",
+   "result": "pass",
+   "value": {
+    "PHS-SYN-1": {
+     "outcome": "CONVERGED",
+     "x": 3.0,
+     "attempts": 3,
+     "signatures": [
+      "LIQUID",
+      "TWO_PHASE",
+      "VAPOR"
+     ],
+     "evaluated_points": 22,
+     "points_equal_exactly": true
+    },
+    "PHS-SYN-2": {
+     "outcome": "CONVERGED",
+     "x": 3.0,
+     "attempts": 2,
+     "signatures": [
+      "LIQUID",
+      "VAPOR"
+     ],
+     "evaluated_points": 10,
+     "points_equal_exactly": true
+    },
+    "OFF-B": {
+     "outcome": "CONVERGED",
+     "attempts": 2,
+     "opening_source": "phase_rejected_trial",
+     "opening_trial": {
+      "iteration": 1,
+      "halving": 1
+     },
+     "last_iteration_with_a_phase_rejection": 1,
+     "chosen_alpha": 0.5,
+     "largest_rejected_alpha_there": 0.5,
+     "new_signature": "U-FLASH:TWO_PHASE"
+    },
+    "k03_attempt_tests": {
+     "exit_code": 0,
+     "counts": {
+      "passed": 28
+     }
+    }
+   },
+   "expected": {
+    "PHS-SYN-1": {
+     "outcome": "CONVERGED",
+     "x": 3.0,
+     "attempts": 3,
+     "signatures": [
+      "LIQUID",
+      "TWO_PHASE",
+      "VAPOR"
+     ],
+     "evaluated_points": 22,
+     "points_equal_exactly": true
+    },
+    "PHS-SYN-2": {
+     "outcome": "CONVERGED",
+     "x": 3.0,
+     "attempts": 2,
+     "signatures": [
+      "LIQUID",
+      "VAPOR"
+     ],
+     "evaluated_points": 10,
+     "points_equal_exactly": true
+    },
+    "OFF-B": {
+     "outcome": "CONVERGED",
+     "attempts": 2,
+     "opening_source": "phase_rejected_trial",
+     "opening_trial": "in the last iteration with a phase rejection",
+     "chosen_alpha": "the largest phase-rejected alpha of that line search",
+     "new_signature": "U-FLASH:TWO_PHASE"
+    },
+    "k03_attempt_tests": {
+     "exit_code": 0,
+     "counts": "passed only"
+    }
+   }
+  },
+  {
+   "id": "T03.A15",
+   "description": "Sparsity rebuild: every region `AttemptContext` carries `jacobian_pattern` with the shape `ref.closed_form.region_shapes_rows_by_columns` gives its signature (42 \u00d7 42 two-phase, 38 \u00d7 38 single-phase heater) and an `nnz` equal to an independent count here of the compiled structural pattern's entries restricted by id to the attempt's rows and columns (review S5: not recomputed with the function that recorded it), fewer than rows \u00d7 columns; within a solve, one `sha256` per signature and distinct across signatures; on PHS-01 the 38 \u00d7 38 entry set is exactly the 42 \u00d7 42 set restricted to its ids; every factorized Jacobian of every region attempt has the recorded shape and stores no entry outside the recorded pattern; OFF-B's two tear attempts record the same non-null pattern; the bare controller's is null; the exact property cache is never cleared across `attempt_opened` (its size does not decrease).",
+   "result": "pass",
+   "value": {
+    "SYN-001-A02-355-liquid-guess": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "shape": [
+        38,
+        38
+       ],
+       "registered_shape": [
+        38,
+        38
+       ],
+       "nnz": 122,
+       "declared_entries_restricted_by_id": 122,
+       "sha256": "31a469a80bf8be374737fb21424abf4f994122d4261be410015b50cdf4c416d7",
+       "jacobians": 2,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      },
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a",
+       "jacobians": 5,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "SYN-001-A02-360-liquid-guess": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "shape": [
+        38,
+        38
+       ],
+       "registered_shape": [
+        38,
+        38
+       ],
+       "nnz": 122,
+       "declared_entries_restricted_by_id": 122,
+       "sha256": "31a469a80bf8be374737fb21424abf4f994122d4261be410015b50cdf4c416d7",
+       "jacobians": 2,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      },
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a",
+       "jacobians": 4,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "SYN-001-A02-360-vapor-guess": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+       "shape": [
+        38,
+        38
+       ],
+       "registered_shape": [
+        38,
+        38
+       ],
+       "nnz": 122,
+       "declared_entries_restricted_by_id": 122,
+       "sha256": "5ada04dd82d651960b07b4308eecb8322b314fe2fc4e13d7558c4224ce1a1a30",
+       "jacobians": 2,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      },
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a",
+       "jacobians": 4,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "SYN-001-A02-340-two-phase-guess": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a",
+       "jacobians": 2,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "shape": [
+        38,
+        38
+       ],
+       "registered_shape": [
+        38,
+        38
+       ],
+       "nnz": 122,
+       "declared_entries_restricted_by_id": 122,
+       "sha256": "31a469a80bf8be374737fb21424abf4f994122d4261be410015b50cdf4c416d7",
+       "jacobians": 1,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "SYN-001-A02-355-dew-guess": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a",
+       "jacobians": 2,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "shape": [
+        38,
+        38
+       ],
+       "registered_shape": [
+        38,
+        38
+       ],
+       "nnz": 122,
+       "declared_entries_restricted_by_id": 122,
+       "sha256": "31a469a80bf8be374737fb21424abf4f994122d4261be410015b50cdf4c416d7",
+       "jacobians": 1,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "SYN-001-A02-355": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a",
+       "jacobians": 3,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "SYN-001-A02-360": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a",
+       "jacobians": 3,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "SYN-001-A02-365": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "3c7e1f169e7e779f71897aa0b523481f29682638c23eefa7e693fa79ef87f53a",
+       "jacobians": 4,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "SYN-001-nominal eo": {
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "shape": [
+        42,
+        42
+       ],
+       "registered_shape": [
+        42,
+        42
+       ],
+       "nnz": 153,
+       "declared_entries_restricted_by_id": 153,
+       "sha256": "0c71cf7c736d0d874b48e78a42b270d7ce76fa16e435604cdd73a734679f7589",
+       "jacobians": 2,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "shape": [
+        38,
+        38
+       ],
+       "registered_shape": [
+        38,
+        38
+       ],
+       "nnz": 122,
+       "declared_entries_restricted_by_id": 122,
+       "sha256": "298956aef6e0a2cfd6c828fd821b769ac6025e57f6782924944b9d715b2f2c96",
+       "jacobians": 2,
+       "wrong_shape": 0,
+       "entries_outside_pattern": 0
+      }
+     ],
+     "one_digest_per_signature": true
+    },
+    "PHS-01 restriction": {
+     "38x38_entries": 122,
+     "42x42_entries": 153,
+     "equal_to_restriction": true,
+     "pinned_columns": [
+      "S3.V",
+      "S3.vap.A",
+      "S3.vap.B",
+      "S3.vap.C"
+     ],
+     "dropped_rows": [
+      "U-HEAT:HEAT-equilibrium:A",
+      "U-HEAT:HEAT-equilibrium:B",
+      "U-HEAT:HEAT-equilibrium:C",
+      "U-HEAT:Vdef"
+     ]
+    },
+    "OFF-B": {
+     "patterns": 2,
+     "same_across_attempts": true,
+     "non_null": true,
+     "cache_sizes_at_attempt_opened": [
+      105,
+      383
+     ]
+    },
+    "bare_controller_patterns_null": true
+   },
+   "expected": {
+    "every region attempt": {
+     "shape": "ref.closed_form.region_shapes_rows_by_columns[signature]",
+     "nnz": "declared_entries_restricted_by_id, fewer than rows \u00d7 columns",
+     "wrong_shape": 0,
+     "entries_outside_pattern": 0
+    },
+    "every region run": {
+     "one_digest_per_signature": true
+    },
+    "PHS-01 restriction": {
+     "equal_to_restriction": true,
+     "pinned_columns": 4
+    },
+    "OFF-B": {
+     "same_across_attempts": true,
+     "non_null": true,
+     "cache_sizes_at_attempt_opened": "non-decreasing, last > 0"
+    },
+    "bare_controller_patterns_null": true
+   }
+  },
+  {
+   "id": "T03.A16",
+   "description": "Opening checks: on every opening of every region solve here and of OFF-B's tear solve (review S5: `attempts.check_opening` spied as well as the region's) the six checks hold (every `check_opening` call observed returns none), and, recomputed from the opening vectors each restart's problem and compiled residual received, coverage (finite), active set (\u03c3'-pinned variables exactly `+0.0`) and bounds (molar flows \u2265 0) hold. The four constructed refusals \u2014 `scale_segment` (1), `identity` (another `model_version`), `bounds` (`S3.liq.B = \u22121e-9`) on PHS-01, `active_set` (`S3.vap.A = 1e-3` under `LIQUID`) on PHS-04 \u2014 each end `CHECKPOINT_INCOMPATIBLE` with exactly the message naming the check and the variable or field, and no float in it (review S4): `checkpoint_incompatible(scale_segment, scale_segment)`, `(identity, model_version)`, `(bounds, S3.liq.B)`, `(active_set, S3.vap.A)`; the offending value on the attempt's `observations` instead (`{bounds:S3.liq.B: -1e-9}`, `{active_set:S3.vap.A: 0.001}`, none for the other two), no `attempt_opened` for the refused attempt, no residual or Jacobian call after the decision, checkpoint `partial`, no certificate target, failure class `homotopy/PTC/active-set stalls` and action `report_defect` (an override of the class's).",
+   "result": "pass",
+   "value": {
+    "opening_checks_observed": {
+     "region": 6,
+     "tear (OFF-B)": 1
+    },
+    "refused": [],
+    "region_restart_openings_recomputed": 6,
+    "recomputed_violations": [],
+    "constructed_refusals": {
+     "scale_segment": {
+      "outcome": "CHECKPOINT_INCOMPATIBLE",
+      "message": "checkpoint_incompatible(scale_segment, scale_segment)",
+      "message_carries_a_float": false,
+      "observations": {},
+      "attempt_opened": 1,
+      "attempts": 1,
+      "events_after_the_last_closure": [],
+      "residual_calls_after_the_decision": 0,
+      "jacobian_calls_after_the_decision": 0,
+      "checkpoint_label": "partial",
+      "root_fingerprint": null,
+      "failure_class": "homotopy/PTC/active-set stalls",
+      "failure_action": "report_defect",
+      "class_action_overridden": true
+     },
+     "identity": {
+      "outcome": "CHECKPOINT_INCOMPATIBLE",
+      "message": "checkpoint_incompatible(identity, model_version)",
+      "message_carries_a_float": false,
+      "observations": {},
+      "attempt_opened": 1,
+      "attempts": 1,
+      "events_after_the_last_closure": [],
+      "residual_calls_after_the_decision": 0,
+      "jacobian_calls_after_the_decision": 0,
+      "checkpoint_label": "partial",
+      "root_fingerprint": null,
+      "failure_class": "homotopy/PTC/active-set stalls",
+      "failure_action": "report_defect",
+      "class_action_overridden": true
+     },
+     "bounds": {
+      "outcome": "CHECKPOINT_INCOMPATIBLE",
+      "message": "checkpoint_incompatible(bounds, S3.liq.B)",
+      "message_carries_a_float": false,
+      "observations": {
+       "bounds:S3.liq.B": -1e-09
+      },
+      "attempt_opened": 1,
+      "attempts": 1,
+      "events_after_the_last_closure": [],
+      "residual_calls_after_the_decision": 0,
+      "jacobian_calls_after_the_decision": 0,
+      "checkpoint_label": "partial",
+      "root_fingerprint": null,
+      "failure_class": "homotopy/PTC/active-set stalls",
+      "failure_action": "report_defect",
+      "class_action_overridden": true
+     },
+     "active_set": {
+      "outcome": "CHECKPOINT_INCOMPATIBLE",
+      "message": "checkpoint_incompatible(active_set, S3.vap.A)",
+      "message_carries_a_float": false,
+      "observations": {
+       "active_set:S3.vap.A": 0.001
+      },
+      "attempt_opened": 1,
+      "attempts": 1,
+      "events_after_the_last_closure": [],
+      "residual_calls_after_the_decision": 0,
+      "jacobian_calls_after_the_decision": 0,
+      "checkpoint_label": "partial",
+      "root_fingerprint": null,
+      "failure_class": "homotopy/PTC/active-set stalls",
+      "failure_action": "report_defect",
+      "class_action_overridden": true
+     }
+    }
+   },
+   "expected": {
+    "opening_checks_observed": "at least one region opening and OFF-B's tear openings",
+    "refused": [],
+    "recomputed_violations": [],
+    "constructed_refusals": {
+     "scale_segment": {
+      "message": "checkpoint_incompatible(scale_segment, scale_segment)",
+      "observations": {}
+     },
+     "identity": {
+      "message": "checkpoint_incompatible(identity, model_version)",
+      "observations": {}
+     },
+     "bounds": {
+      "message": "checkpoint_incompatible(bounds, S3.liq.B)",
+      "observations": {
+       "bounds:S3.liq.B": -1e-09
+      }
+     },
+     "active_set": {
+      "message": "checkpoint_incompatible(active_set, S3.vap.A)",
+      "observations": {
+       "active_set:S3.vap.A": 0.001
+      }
+     }
+    },
+    "each constructed refusal": {
+     "outcome": "CHECKPOINT_INCOMPATIBLE",
+     "message_carries_a_float": false,
+     "attempt_opened": 1,
+     "attempts": 1,
+     "events_after_the_last_closure": "no trial, step_accepted or jacobian",
+     "residual_calls_after_the_decision": 0,
+     "jacobian_calls_after_the_decision": 0,
+     "checkpoint_label": "partial",
+     "root_fingerprint": null,
+     "failure_class": "homotopy/PTC/active-set stalls",
+     "failure_action": "report_defect",
+     "class_action_overridden": true
+    }
+   }
+  },
+  {
+   "id": "T03.A17",
+   "description": "Opening record, on both paths (the region solves PHS-01\u202605, T02's A02-355/360/365 and A21; OFF-B on the tear): every `attempt_opened.state_sha256` is non-empty and equals ADR 0008 D2's hash of the observed opening free vector (region: the attempt's first residual call; tear: OFF-B's start, then the chosen trial's own hash) and the provenance item's `opening_state_sha256`; `alpha` is set iff the source is `phase_rejected_trial` and equals that candidate's `trial.alpha`; every `attempt_opened` message (`initial` exactly on attempt 0) and every terminal decision produced here \u2014 PHS-05's and K03's two-regime seed's `ACTIVE_SET_CYCLING`, A16's four constructed `CHECKPOINT_INCOMPATIBLE` \u2014 parses under \u00a74.10's grammar as amended (review S4: no number in `inadmissible(\u2026)` or `checkpoint_incompatible(\u2026)`), written out in this script; `opened_from` is the closing attempt's `partial` checkpoint.",
+   "result": "pass",
+   "value": {
+    "openings_checked": 17,
+    "problems": [],
+    "OFF-B": {
+     "attempt_0_hash_is_the_start": true,
+     "attempt_1_hash_is_the_chosen_trial": true,
+     "provenance_hashes": true,
+     "alpha": [
+      null,
+      0.5
+     ],
+     "chosen_trial_alpha": 0.5,
+     "messages": [
+      "initial",
+      "phase_update(phase_wall(patience, U-FLASH:LIQUID->TWO_PHASE))"
+     ],
+     "opened_from": [
+      "attempt-0",
+      "partial"
+     ]
+    },
+    "terminal_messages": [
+     "active_set_cycling(U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE; phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE))",
+     "active_set_cycling(U-FLASH:LIQUID; phase_wall(patience, U-FLASH:TWO_PHASE->LIQUID))",
+     "checkpoint_incompatible(scale_segment, scale_segment)",
+     "checkpoint_incompatible(identity, model_version)",
+     "checkpoint_incompatible(bounds, S3.liq.B)",
+     "checkpoint_incompatible(active_set, S3.vap.A)"
+    ],
+    "terminal_unparsed": []
+   },
+   "expected": {
+    "problems": [],
+    "OFF-B": {
+     "attempt_0_hash_is_the_start": true,
+     "attempt_1_hash_is_the_chosen_trial": true,
+     "provenance_hashes": true,
+     "alpha": [
+      null,
+      "the chosen trial's alpha"
+     ],
+     "opened_from": [
+      "attempt-0",
+      "partial"
+     ]
+    },
+    "terminal_unparsed": []
+   }
+  },
+  {
+   "id": "T03.A18",
+   "description": "Bounded cycling and budget: PHS-05 ends `ACTIVE_SET_CYCLING` (A12); K03's constructed two-regime seed ends `ACTIVE_SET_CYCLING` and its budget construction (`root_in_b = \u22122`, `max_attempts = 2`) `ATTEMPTS_EXHAUSTED`, each the terminal decision of the one decision function (spied); PHS-01 with `max_attempts = 1` ends `ATTEMPTS_EXHAUSTED` after attempt 1's patience closure, checkpoint `partial`; no solve measured in this manifest ran more attempts than its policy's `max_attempts`.",
+   "result": "pass",
+   "value": {
+    "PHS-05": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "decided": "ACTIVE_SET_CYCLING"
+    },
+    "K03 two-regime seed": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "decided": "ACTIVE_SET_CYCLING",
+     "message": "active_set_cycling(U-FLASH:LIQUID; phase_wall(patience, U-FLASH:TWO_PHASE->LIQUID))"
+    },
+    "K03 budget seed": {
+     "outcome": "ATTEMPTS_EXHAUSTED",
+     "decided": "ATTEMPTS_EXHAUSTED",
+     "attempts": 2
+    },
+    "PHS-01 max_attempts=1": {
+     "outcome": "ATTEMPTS_EXHAUSTED",
+     "decided": "ATTEMPTS_EXHAUSTED",
+     "attempts": 1,
+     "attempt_1_core": "PHASE_UPDATE_REQUIRED",
+     "checkpoint_label": "partial"
+    },
+    "solves_counted": 19,
+    "over_max_attempts": []
+   },
+   "expected": {
+    "PHS-05": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "decided": "ACTIVE_SET_CYCLING"
+    },
+    "K03 two-regime seed": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "decided": "ACTIVE_SET_CYCLING"
+    },
+    "K03 budget seed": {
+     "outcome": "ATTEMPTS_EXHAUSTED",
+     "decided": "ATTEMPTS_EXHAUSTED",
+     "attempts": 2
+    },
+    "PHS-01 max_attempts=1": {
+     "outcome": "ATTEMPTS_EXHAUSTED",
+     "decided": "ATTEMPTS_EXHAUSTED",
+     "attempts": 1,
+     "attempt_1_core": "PHASE_UPDATE_REQUIRED",
+     "checkpoint_label": "partial"
+    },
+    "over_max_attempts": []
+   }
+  },
+  {
+   "id": "T03.A19",
+   "description": "REC-05 (\u03b3 = 0.1) provenance, against `ref.multiple_roots`: MR-A (`anderson` from 1.1 t*) `CONVERGED` within `\u03b4_root` of `S1` (scaled by 3 mol/s); MR-B `CONVERGED` at iteration 0 on `t*`; MR-C (`depth_max = 0`) `RECYCLE_STAGNATION` at 20, then a merge whose Newton converges within 5 iterations (twin 3) within `\u03b4_root` of `S1`; `same_root(MR-A, MR-B) = DISTINCT`, `same_root(MR-A, MR-C) = SAME` with different `branch_provenance`; each result's item 0 has `initializer_source = user_guess` and `opening_state_sha256` equal to the hash of its start; MR-C's list is `[(anderson, initializer), (newton, merge_best_iterate)]`.",
+   "result": "pass",
+   "value": {
+    "delta_root": 0.0001,
+    "MR-A": {
+     "outcome": "CONVERGED",
+     "iterations": 9,
+     "scaled_distance_to_S1": 4.1108190066789046e-07
+    },
+    "MR-B": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "scaled_distance_to_t_star": 0.0
+    },
+    "MR-C": {
+     "loop_outcome": "RECYCLE_STAGNATION",
+     "loop_iterations": 20,
+     "outcome": "CONVERGED",
+     "merge_newton_iterations": 3,
+     "scaled_distance_to_S1": 1.0659271983589254e-09,
+     "provenance": [
+      [
+       "anderson",
+       "initializer"
+      ],
+      [
+       "newton",
+       "merge_best_iterate"
+      ]
+     ]
+    },
+    "item_0": {
+     "MR-A": {
+      "initializer_source": "user_guess",
+      "opening_state_sha256_is_the_start": true
+     },
+     "MR-B": {
+      "initializer_source": "user_guess",
+      "opening_state_sha256_is_the_start": true
+     },
+     "MR-C": {
+      "initializer_source": "user_guess",
+      "opening_state_sha256_is_the_start": true
+     }
+    },
+    "fingerprints_issued": true,
+    "same_root(MR-A, MR-B)": "DISTINCT",
+    "same_root(MR-A, MR-C)": "SAME",
+    "provenance_differs(MR-A, MR-C)": true
+   },
+   "expected": {
+    "delta_root": 0.0001,
+    "MR-A": {
+     "outcome": "CONVERGED",
+     "iterations (twin, recorded)": 9,
+     "scaled_distance_to_S1": "at most 0.0001"
+    },
+    "MR-B": {
+     "outcome": "CONVERGED",
+     "iterations": 0,
+     "scaled_distance_to_t_star": "at most \u03b4_root"
+    },
+    "MR-C": {
+     "loop_outcome": "RECYCLE_STAGNATION",
+     "loop_iterations": 20,
+     "outcome": "CONVERGED",
+     "merge_newton_iterations": "at most 5 (twin 3)",
+     "scaled_distance_to_S1": "at most \u03b4_root",
+     "provenance": [
+      [
+       "anderson",
+       "initializer"
+      ],
+      [
+       "newton",
+       "merge_best_iterate"
+      ]
+     ]
+    },
+    "item_0": {
+     "MR-A": {
+      "initializer_source": "user_guess",
+      "opening_state_sha256_is_the_start": true
+     },
+     "MR-B": {
+      "initializer_source": "user_guess",
+      "opening_state_sha256_is_the_start": true
+     },
+     "MR-C": {
+      "initializer_source": "user_guess",
+      "opening_state_sha256_is_the_start": true
+     }
+    },
+    "same_root(MR-A, MR-B)": "DISTINCT",
+    "same_root(MR-A, MR-C)": "SAME",
+    "provenance_differs(MR-A, MR-C)": true
+   }
+  },
+  {
+   "id": "T03.A20",
+   "description": "SYN-001 one root, three histories: SYN-001-A02-360 from 358 K, PHS-02 and PHS-03 are pairwise `SAME` under `same_root` with the plan's column scales; their `branch_provenance` lengths are 1, 2, 2 with different opening sources, and their item-0 `opening_state_sha256` are three different hashes.",
+   "result": "pass",
+   "value": {
+    "same_root": {
+     "SYN-001-A02-360 / SYN-001-A02-360-liquid-guess": "SAME",
+     "SYN-001-A02-360 / SYN-001-A02-360-vapor-guess": "SAME",
+     "SYN-001-A02-360-liquid-guess / SYN-001-A02-360-vapor-guess": "SAME"
+    },
+    "provenance_lengths": [
+     1,
+     2,
+     2
+    ],
+    "opening_sources": [
+     [
+      "initializer"
+     ],
+     [
+      "initializer",
+      "phase_rejected_trial"
+     ],
+     [
+      "initializer",
+      "phase_rejected_trial"
+     ]
+    ],
+    "distinct_item_0_hashes": 3
+   },
+   "expected": {
+    "same_root": {
+     "SYN-001-A02-360 / SYN-001-A02-360-liquid-guess": "SAME",
+     "SYN-001-A02-360 / SYN-001-A02-360-vapor-guess": "SAME",
+     "SYN-001-A02-360-liquid-guess / SYN-001-A02-360-vapor-guess": "SAME"
+    },
+    "provenance_lengths": [
+     1,
+     2,
+     2
+    ],
+    "opening_sources": "three different lists",
+    "distinct_item_0_hashes": 3
+   }
+  },
+  {
+   "id": "T03.A21",
+   "description": "No overclaim: every root fingerprint issued by a solve in this manifest has `claims` `NOT_ASSESSED` for uniqueness and dynamic stability; every certificate issued here \u2014 OFF-B's, the one converged tear solve this check certifies \u2014 validates against the extended `solution-certificate.schema.json`, lists `[LIQUID: restart, phase_wall(patience, U-FLASH:LIQUID->TWO_PHASE); TWO_PHASE: converged]` in \u00a78.1's item shape, one item per attempt, carries a \u00a78.2 fingerprint whose `branch_found` is `[[U-HEAT, LIQUID], [U-FLASH, TWO_PHASE]]` (read from the reconstructed state, review M1), and says `unique root` or `stable` nowhere outside the `dynamic_stability` key. The review's ruling (\u00a78): a non-`CONVERGED` solve is issued no certificate \u2014 `verify()` on OFF-B under `max_attempts = 1` (`ATTEMPTS_EXHAUSTED`) raises `VerifierError`, and that solve result carries no `root_fingerprint` and exactly one `branch_provenance` item, `decision: restart` with the patience cause (the restart the budget refused, R-029).",
+   "result": "pass",
+   "value": {
+    "fingerprints_measured": 12,
+    "claims_seen": [
+     "{\"dynamic_stability\": \"NOT_ASSESSED\", \"uniqueness\": \"NOT_ASSESSED\"}"
+    ],
+    "certificates_issued_here": 1,
+    "OFF-B": {
+     "schema_errors": [],
+     "history": [
+      [
+       "LIQUID",
+       "restart",
+       "phase_wall(patience, U-FLASH:LIQUID->TWO_PHASE)"
+      ],
+      [
+       "TWO_PHASE",
+       "converged",
+       ""
+      ]
+     ],
+     "provenance_items_per_attempt": [
+      2,
+      2
+     ],
+     "item_keys": [
+      "attempt",
+      "cause",
+      "core",
+      "core_outcome",
+      "decision",
+      "initializer_source",
+      "iterations",
+      "opening_source",
+      "opening_state_sha256",
+      "opening_trial",
+      "signature"
+     ],
+     "fingerprint_claims": {
+      "uniqueness": "NOT_ASSESSED",
+      "dynamic_stability": "NOT_ASSESSED"
+     },
+     "fingerprint_branch_found": [
+      [
+       "U-HEAT",
+       "LIQUID"
+      ],
+      [
+       "U-FLASH",
+       "TWO_PHASE"
+      ]
+     ],
+     "overclaims": []
+    },
+    "OFF-B max_attempts=1": {
+     "solve_outcome": "ATTEMPTS_EXHAUSTED",
+     "attempts": 1,
+     "verify": "VerifierError",
+     "verify_message": "a solve that ended ATTEMPTS_EXHAUSTED receives no certificate (K04 \u00a73); its record is the failure bundle",
+     "solve_root_fingerprint": null,
+     "solve_branch_provenance": [
+      {
+       "decision": "restart",
+       "cause": "phase_wall(patience, U-FLASH:LIQUID->TWO_PHASE)"
+      }
+     ]
+    }
+   },
+   "expected": {
+    "claims_seen": [
+     "{\"dynamic_stability\": \"NOT_ASSESSED\", \"uniqueness\": \"NOT_ASSESSED\"}"
+    ],
+    "OFF-B": {
+     "schema_errors": [],
+     "history": [
+      [
+       "LIQUID",
+       "restart",
+       "phase_wall(patience, U-FLASH:LIQUID->TWO_PHASE)"
+      ],
+      [
+       "TWO_PHASE",
+       "converged",
+       ""
+      ]
+     ],
+     "provenance_items_per_attempt": [
+      2,
+      2
+     ],
+     "item_keys": [
+      "attempt",
+      "cause",
+      "core",
+      "core_outcome",
+      "decision",
+      "initializer_source",
+      "iterations",
+      "opening_source",
+      "opening_state_sha256",
+      "opening_trial",
+      "signature"
+     ],
+     "fingerprint_claims": {
+      "uniqueness": "NOT_ASSESSED",
+      "dynamic_stability": "NOT_ASSESSED"
+     },
+     "fingerprint_branch_found": [
+      [
+       "U-HEAT",
+       "LIQUID"
+      ],
+      [
+       "U-FLASH",
+       "TWO_PHASE"
+      ]
+     ],
+     "overclaims": []
+    },
+    "OFF-B max_attempts=1": {
+     "solve_outcome": "ATTEMPTS_EXHAUSTED",
+     "attempts": 1,
+     "verify": "VerifierError",
+     "solve_root_fingerprint": null,
+     "solve_branch_provenance": [
+      {
+       "decision": "restart",
+       "cause": "phase_wall(patience, U-FLASH:LIQUID->TWO_PHASE)"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "T03.A22",
+   "description": "`NOT_COMPARABLE`: MR-A's fingerprint against a copy differing only in `model_version`, and separately only in `variable_ids_sha256`, returns `NOT_COMPARABLE` \u2014 never `SAME` or `DISTINCT` \u2014 at the same state (the unchanged copy, the control, `SAME`). With it, \u00a78.3 as amended (review S3): `same_root` refuses with `RootComparisonError`, never a verdict, for empty scales, for MR-A's fingerprint paired with MR-B's state, and for variable ids that are not the fingerprint's.",
+   "result": "pass",
+   "value": {
+    "model_version": "NOT_COMPARABLE",
+    "variable_ids_sha256": "NOT_COMPARABLE",
+    "unchanged (control)": "SAME",
+    "typed refusals (\u00a78.3 as amended)": {
+     "empty scales": "RootComparisonError",
+     "MR-A's fingerprint with MR-B's state": "RootComparisonError",
+     "variable ids not the fingerprint's": "RootComparisonError"
+    }
+   },
+   "expected": {
+    "model_version": "NOT_COMPARABLE",
+    "variable_ids_sha256": "NOT_COMPARABLE",
+    "unchanged (control)": "SAME",
+    "typed refusals (\u00a78.3 as amended)": {
+     "empty scales": "RootComparisonError",
+     "MR-A's fingerprint with MR-B's state": "RootComparisonError",
+     "variable ids not the fingerprint's": "RootComparisonError"
+    }
+   }
+  },
+  {
+   "id": "T03.A23",
+   "description": "R0 on the CI pair. Locally: `scripts/t03_identity.py` covers exactly OFF-B, PHS-01, PHS-04, PHS-05 and MR-A, carries `phase_contract` `T03-phase-contract-v1` and a non-empty `jacobian_pattern.sha256` for every attempt of the four phase-contract solves, the `attempt_opened` messages and PHS-05's terminal `active_set_cycling(\u2026)`, the R0 fields of `branch_provenance` and `root_fingerprint`; holds no float; is identical twice on one machine; and `scripts/k05_structural_identity.py`'s document carries it under `t03`, equal to the one built here. From the two CI artifacts: the x86-64 and aarch64 `identity.json` are equal key for key and the T02 floats agree \u2014 the `identity` job's own comparison in `.github/workflows/ci.yml` \u2014 with `t03` equal. Without `--identities` the cross-platform half is not measured and the check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "cases": [
+     "MR-A",
+     "OFF-B",
+     "PHS-01",
+     "PHS-04",
+     "PHS-05"
+    ],
+    "phase_contract": {
+     "OFF-B": "T03-phase-contract-v1",
+     "PHS-01": "T03-phase-contract-v1",
+     "PHS-04": "T03-phase-contract-v1",
+     "PHS-05": "T03-phase-contract-v1"
+    },
+    "every_pattern_hashed": true,
+    "attempt_opened_messages": {
+     "OFF-B": [
+      "initial",
+      "phase_update(phase_wall(patience, U-FLASH:LIQUID->TWO_PHASE))"
+     ],
+     "PHS-01": [
+      "initial",
+      "phase_update(phase_wall(patience, U-HEAT:LIQUID->TWO_PHASE))"
+     ],
+     "PHS-04": [
+      "initial",
+      "phase_update(phase_disappeared(U-HEAT, vapor, S3.vap.C))"
+     ],
+     "PHS-05": [
+      "initial",
+      "phase_update(phase_disappeared(U-HEAT, vapor, S3.vap.C))"
+     ]
+    },
+    "PHS-05_terminal_is_cycling": true,
+    "floats": [],
+    "same_twice": true,
+    "k05_carries_t03": true,
+    "ci": {
+     "platforms": 2,
+     "identity_differences": [],
+     "float_differences": [],
+     "t03_equal": true
+    }
+   },
+   "expected": {
+    "cases": [
+     "MR-A",
+     "OFF-B",
+     "PHS-01",
+     "PHS-04",
+     "PHS-05"
+    ],
+    "phase_contract": {
+     "OFF-B": "T03-phase-contract-v1",
+     "PHS-01": "T03-phase-contract-v1",
+     "PHS-04": "T03-phase-contract-v1",
+     "PHS-05": "T03-phase-contract-v1"
+    },
+    "every_pattern_hashed": true,
+    "PHS-05_terminal_is_cycling": true,
+    "floats": [],
+    "same_twice": true,
+    "k05_carries_t03": true,
+    "ci": {
+     "platforms": 2,
+     "identity_differences": [],
+     "float_differences": [],
+     "t03_equal": true
+    }
+   }
+  },
+  {
+   "id": "T03.A24",
+   "description": "`SYN-001-A02-360-no-guess` through the plan executor: the A02 plan is built with `S3.T` in the `solve_eo` step's `adjusted_variables`; one `initializer_rejected` with `missing_initial_guess(S3.T)`; outcome `INITIALIZATION_FAILED` with the same message; no `attempt_opened`, zero Jacobian calls; no `CONVERGED` anywhere in the trace.",
+   "result": "pass",
+   "value": {
+    "solve_eo_steps": 1,
+    "S3.T_adjusted": true,
+    "initializer_rejected": [
+     "missing_initial_guess(S3.T)"
+    ],
+    "outcome": "INITIALIZATION_FAILED",
+    "message": "missing_initial_guess(S3.T)",
+    "attempt_opened": 0,
+    "jacobian_calls": 0,
+    "CONVERGED_in_trace": false
+   },
+   "expected": {
+    "solve_eo_steps": 1,
+    "S3.T_adjusted": true,
+    "initializer_rejected": [
+     "missing_initial_guess(S3.T)"
+    ],
+    "outcome": "INITIALIZATION_FAILED",
+    "message": "missing_initial_guess(S3.T)",
+    "attempt_opened": 0,
+    "jacobian_calls": 0,
+    "CONVERGED_in_trace": false
+   }
+  },
+  {
+   "id": "T03.A25",
+   "description": "Regression gate: the gate's pytest run passed with no failure, error or skip, and the number it passed equals the number of tests `pytest --collect-only` finds here, among them K03's, T02's, K04's, K05's and T03's own test files (counted per family) \u2014 every one of them ran green in the gate, with \u00a710's re-registrations already in the tests. The two-architecture half is A26's `--ci-run`.",
+   "result": "pass",
+   "value": {
+    "gate": {
+     "passed": true,
+     "pytest_passed": 1611,
+     "pytest_counts": {
+      "passed": 1611
+     },
+     "pytest_failed_or_errors": false
+    },
+    "collected": 1611,
+    "collected_by_family": {
+     "k03": 159,
+     "t02": 114,
+     "k04": 56,
+     "k05": 41,
+     "t03": 70
+    }
+   },
+   "expected": {
+    "gate": {
+     "passed": true,
+     "pytest_failed_or_errors": false,
+     "pytest_counts": "passed only"
+    },
+    "collected": "equal to the gate's passed count",
+    "collected_by_family": "every family at least 1"
+   }
+  },
+  {
+   "id": "T03.A26",
+   "description": "This manifest carries one `checks[]` entry per assertion of spec \u00a711, `T03.A00`\u2026`T03.A26`, including every `unsupported`; `requirements` is spec A26's `[D09, D11, A01, V15]` less `V15`, which the frozen evidence-manifest schema refuses (items `^[DA][0-9]{2}$`, measured here) \u2014 T02's precedent; V15 is carried by `docs/requirements.yaml` (owner T03) and stated in `limitations`; `limitations` restates spec \u00a713; `review` is unset (`pending` in both fields \u2014 no agent may set it); `commands` is the gate actually run here plus the named CI run on both architectures. Without `--ci-run` the two-architecture half of `commands` is absent and this check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "entries": 27,
+    "ids_in_order": true,
+    "requirements": [
+     "D09",
+     "D11",
+     "A01"
+    ],
+    "V15_refused_by_the_frozen_schema": true,
+    "ci_run": "https://github.com/computational-chemical-engineering/clearsheet/actions/runs/36019081919"
+   },
+   "expected": {
+    "entries": 27,
+    "ids_in_order": true,
+    "requirements": "D09, D11, A01 (V15 in docs/requirements.yaml and limitations)",
+    "V15_refused_by_the_frozen_schema": true,
+    "ci_run": "a workflow run URL"
+   }
+  }
+ ],
+ "artifacts": [],
+ "limitations": [
+  "Spec \u00a713: correctness of any solver is not established. The specification registers what a correct implementation of the contract must produce; the twin is the contract simulated a second time on an exact reduction of the region. This manifest measures the implementation against those registrations \u2014 numerical verification, not empirical validation.",
+  "Spec \u00a713: that the contract converges wherever a root exists is not established. PHS-05 (A12) is a registered counterexample on an ordinary guess, and the A02 scan found one more (377 K). The bound-driven disappearance premise holds at roots, not at Newton iterates far from them; the persistent-block rule filters a one-step overshoot (PHS-01/02), not a two-step one (PHS-05). Handed to T04 (spec F1).",
+  "Spec \u00a713: recurrence of a signature is not permitted (`no_repeated_signature`); \u00a77 says why and what would reopen it.",
+  "Spec \u00a713: phase changes of more than one lifted unit at once, or of the flash on the lifted path, are stated rules that no registered case exercises.",
+  "Spec \u00a713: a single-phase unit whose component vanishes from the stream, a provider whose K-values vanish or diverge, a saturated lifted stream, and a narrow-band mixture where even the adjacent candidate is absent (only PHS-SYN-2's synthetic) are stated, not exercised on physics.",
+  "Spec \u00a713: root completeness, uniqueness, thermodynamic stability beyond K03 \u00a78.2 and dynamic stability are not assessed (`claims` say NOT_ASSESSED; no root search runs). Two roots within delta_root = 1e-4 scaled are reported SAME; a fingerprint cannot separate nearly degenerate steady states, and REC-05's basin boundaries are finer than double precision resolves.",
+  "Spec \u00a713: warm starts across runs and continuation history do not exist in v0.1; the opening checks are ready for an external checkpoint and exercised here only by constructed bites (A16).",
+  "Spec \u00a713: the cost of the screen at size is not measured; counts are registered on SYN-001 only.",
+  "Spec \u00a713: nothing is empirically validated (SYN-001 and REC-05 are synthetic), and human numerical and process-modeling review are `pending`; no agent sets them.",
+  "Review ruling Q1 / brief decision 3 (register R-029): `branch_provenance.decision` records what the attempt's closure proposed; an attempt whose restart the restart gate refused (budget, cycling, opening check) is `restart` with that restart's cause, the refusal being the solve's outcome and terminal message. Spec \u00a78.1 amended; PHS-05's attempt 2, A16's refused openings and OFF-B under `max_attempts = 1` read `restart`.",
+  "Review ruling Q2 / brief decision 1: a removed row's parameter that no remaining row reads is dropped from the declaration's identity (sound: an initial guess is not a constant of the problem); every A02 revision's `constants_sha256` changed as the correction of an identity that was wrong. Accepted with the review's N2 hardening note (parameter reads other than `__getitem__` are not yet recorded).",
+  "Review ruling Q3: spec \u00a714 Q2\u2013Q5's defaults are confirmed \u2014 no far-restart refusal, the registry class `phase-controller case` outside the success denominator (Frank's to overrule, review \u00a76), `delta_root = 1e-4`, `alpha` on `attempt_opened`.",
+  "Review ruling, brief decision 4: `root_fingerprint.delta_scaled_inf` is a registered constant (`1e-4`), compared exactly as an ADR 0007 D1 field \u2014 accepted; spec \u00a710 amended from 'no float is added' to 'no *measured* float is added'.",
+  "Review ruling, brief decision 5: the cycling `solve_closed` message follows \u00a74.10's grammar, which re-registers K03's `test_restarting_into_a_used_signature_is_reported_as_cycling` \u2014 accepted; spec \u00a710 amended to list it.",
+  "Review ruling, brief decision 6: a bare region solve records no `solve_closed`; the plan executor's `solve_closed` carries the region's message (measured by the review on PHS-05) \u2014 accepted; spec \u00a74.10 amended to say where it lives.",
+  "PHS-05 (`SYN-001-A02-355-dew-guess`) is an expected failure handed to T04 (spec F1); A12 asserts the failure, and the registry keeps it outside the success denominator.",
+  "K04 defect handed on (review \u00a78): a `CONVERGED` result without `x_final` still yields a certificate its schema refuses (`regularity: null`). It is unreachable on every registered path (K04 A01 made every `CONVERGED` result carry `x_final`) and is not a phase-attempt question; a K04 follow-up decides between refusing that input too and a nullable `regularity` (a schema change, its own ADR).",
+  "Review S1's tear-path twin is not folded in: a `BudgetExhaustedError` on the tear path still returns `attempts = 0`, `x = start` and no provenance (K03's registered capped-budget shape). Handed to T04/K05 (review \u00a77); the region path's refusal now closes the attempt with its end state, `partial` checkpoint and provenance.",
+  "A03's scope on the tear path (review M3): property calls made inside the compiled problem by its property blocks carry the provider context bound at assembly (K01/K02: one compiled problem serves every attempt; `casadi_backend.residual` states that nothing in `context` reaches the evaluated function). That context is field-equal to the attempt's flowsheet context (`attempts._context_document`), not the attempt's object; A03 counts these calls in their own category and asserts field equality. Routing the attempt's object into the CasADi callbacks is a compiled-boundary change for the design lane.",
+  "A12's and A16's failure-bundle class and action are the ones `bundle_for` resolves from the verifier's tables (`TAXONOMY`, then `OUTCOME_ACTIONS` over `ACTIONS`) for the solve's outcome; no bundle document is built from a region result here (the region returns no K03-shaped result for `bundle_for`).",
+  "Spec A26 lists V15 among `requirements`; the frozen evidence-manifest schema takes D/A ids only (measured: it refuses `V15`), so this manifest names D09, D11 and A01 and V15 is carried by `docs/requirements.yaml` (owner packages T02, T03) \u2014 T02's precedent for V13/V15."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

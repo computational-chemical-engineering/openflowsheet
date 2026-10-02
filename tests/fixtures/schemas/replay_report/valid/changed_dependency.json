@@ -1,0 +1,50 @@
+{
+ "bitwise_floats": null,
+ "current_environment": {
+  "architecture": "x86_64",
+  "blas": {
+   "name": "scipy-openblas",
+   "version": "0.3.28"
+  },
+  "lock_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "os_name": "Linux",
+  "os_release": "6.12.86+deb13-amd64",
+  "python_version": "3.13.5",
+  "superlu_options_ref": "ADR 0004 D1",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  }
+ },
+ "differences": [],
+ "integrity": {
+  "missing": [],
+  "ok": true,
+  "tampered": [],
+  "unexpected": []
+ },
+ "mode": "inspected_archived_results",
+ "reasons": [
+  "the lock file differs: recorded ead4edf1ea35, current 000000000000"
+ ],
+ "recorded_environment": {
+  "architecture": "x86_64",
+  "blas": {
+   "name": "scipy-openblas",
+   "version": "0.3.28"
+  },
+  "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "os_name": "Linux",
+  "os_release": "6.12.86+deb13-amd64",
+  "python_version": "3.13.5",
+  "superlu_options_ref": "ADR 0004 D1",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  }
+ },
+ "verdict": "NOT_RUN",
+ "verdict_changed_near_threshold": []
+}

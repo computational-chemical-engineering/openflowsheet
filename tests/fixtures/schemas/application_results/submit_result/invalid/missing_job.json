@@ -1,0 +1,6 @@
+{
+  "expect_error": "'job' is a required property",
+  "document": {
+    "replayed": false
+  }
+}

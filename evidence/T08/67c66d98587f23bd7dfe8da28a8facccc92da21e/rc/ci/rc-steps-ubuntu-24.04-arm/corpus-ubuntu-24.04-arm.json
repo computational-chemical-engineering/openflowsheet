@@ -1,0 +1,154 @@
+{
+ "checks": [
+  {
+   "failed": [],
+   "id": "a47.T06.A02",
+   "missing": [],
+   "nodes": 83,
+   "outcomes": {
+    "passed": 83
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A03",
+   "missing": [],
+   "nodes": 15,
+   "outcomes": {
+    "passed": 15
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A04",
+   "missing": [],
+   "nodes": 3,
+   "outcomes": {
+    "passed": 3
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A05",
+   "missing": [],
+   "nodes": 1,
+   "outcomes": {
+    "passed": 1
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A06",
+   "missing": [],
+   "nodes": 1,
+   "outcomes": {
+    "passed": 1
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A07",
+   "missing": [],
+   "nodes": 10,
+   "outcomes": {
+    "passed": 10
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A08",
+   "missing": [],
+   "nodes": 3,
+   "outcomes": {
+    "passed": 3
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A16",
+   "missing": [],
+   "nodes": 11,
+   "outcomes": {
+    "passed": 11
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A19",
+   "missing": [],
+   "nodes": 9,
+   "outcomes": {
+    "passed": 9
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a47.T06.A20",
+   "missing": [],
+   "nodes": 3,
+   "outcomes": {
+    "passed": 3
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a48.T06.A47",
+   "missing": [],
+   "nodes": 9,
+   "outcomes": {
+    "passed": 9
+   },
+   "result": "pass",
+   "skipped": []
+  },
+  {
+   "failed": [],
+   "id": "a48.T06.A50",
+   "missing": [],
+   "nodes": 17,
+   "outcomes": {
+    "passed": 17
+   },
+   "result": "pass",
+   "skipped": []
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-aarch64",
+  "python": "3.13.15",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "pytest_exit": 0,
+ "step": "corpus"
+}

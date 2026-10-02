@@ -1,0 +1,40 @@
+{
+ "check_policy_id": "K04-check-policy-v1",
+ "compared_quantities": {
+  "S2.T": 348.4998644192089,
+  "S2.vap.A": 0.08829963493840069,
+  "S2.vap.B": 0.031257806189761296,
+  "S2.vap.C": 0.009394731859555012
+ },
+ "fixture": "REF-05",
+ "limitations": [],
+ "non_passing_checks": [],
+ "outcome": "CONVERGED",
+ "path": "revision",
+ "policy_id": "T06-revision-v2",
+ "revision": "benchmarks/t06/cases/SYN-001-T06-REF05.yaml",
+ "revision_file_sha256": "dffb9fe873b902bfda8aa3ba32bb77af51e923b21becc6bf50a78cbee453e271",
+ "revision_id": "SYN-001-T06-REF05-r1",
+ "side": "ours",
+ "state": {
+  "S1.P": 180000.0,
+  "S1.T": 360.0,
+  "S1.n.A": 1.0,
+  "S1.n.B": 1.0,
+  "S1.n.C": 1.0,
+  "S2.L": 2.871047827012283,
+  "S2.P": 100000.0,
+  "S2.T": 348.4998644192089,
+  "S2.V": 0.128952172987717,
+  "S2.liq.A": 0.9117003650615993,
+  "S2.liq.B": 0.9687421938102386,
+  "S2.liq.C": 0.9906052681404449,
+  "S2.n.A": 1.0,
+  "S2.n.B": 1.0,
+  "S2.n.C": 1.0,
+  "S2.vap.A": 0.08829963493840069,
+  "S2.vap.B": 0.031257806189761296,
+  "S2.vap.C": 0.009394731859555012
+ },
+ "verification_status": "VERIFIED"
+}

@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/jacobian-result.schema.json",
+  "title": "JacobianResult",
+  "description": "A sparse Jacobian in documented CSC ordering with explicit row and column identity (plan \u00a72.1, \u00a72.2 P02/K01 row; frozen in docs/interfaces-frozen.md \u00a71). Valid only for the same state, model version, phase regime and evaluation policy as the residual it accompanies. The CSC arrays are anonymous integers, so the rules that make them mean anything are cross-field and are checked by tests/test_k01_schemas.py: `indptr` has one more entry than `col_ids`, starts at 0, is non-decreasing and ends at `nnz`; `indices` and `data` both have length `nnz`; every index is a valid row; the rows within each column ascend; and a permutation of `row_ids` against the same arrays is a different matrix, which is why identity travels by name and never by position.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "row_ids",
+    "col_ids",
+    "format",
+    "indptr",
+    "indices",
+    "data",
+    "nnz",
+    "phase_signature",
+    "model_version",
+    "constants_sha256",
+    "state_sha256",
+    "counters",
+    "pattern_provenance",
+    "source_map",
+    "message"
+  ],
+  "properties": {
+    "status": {
+      "$ref": "#/$defs/status"
+    },
+    "row_ids": {
+      "$ref": "#/$defs/id_list",
+      "description": "Equation ids, in row-index order."
+    },
+    "col_ids": {
+      "$ref": "#/$defs/id_list",
+      "description": "Variable ids, in column-index order."
+    },
+    "format": {
+      "const": "csc"
+    },
+    "indptr": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "indices": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "nnz": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Stored entries. Equals len(data); emitted so a consumer can check the arrays it was handed."
+    },
+    "phase_signature": {
+      "$ref": "#/$defs/phase_signature"
+    },
+    "model_version": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}@[0-9a-f]{64}$",
+      "description": "Format `<label>@<structure_sha256>` (ADR 0002 D2.3): the label names the function family and the 64 hex characters are the SHA-256 of the canonical JSON of the structure document \u2014 variable_ids, equation_ids, parameter_ids and row_accumulation. The compiler assigns it; a reader recomputes it where the document carries those lists."
+    },
+    "constants_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "state_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "counters": {
+      "$ref": "#/$defs/counters"
+    },
+    "pattern_provenance": {
+      "enum": [
+        "backend-declared",
+        "thresholded"
+      ],
+      "description": "Required, with no default: a default of `backend-declared` would let a pattern obtained by thresholding numerical values pass as one the backend structurally declared, which is a far weaker claim."
+    },
+    "source_map": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Where rows and entries came from, so a nonzero can be traced back to the declaration that produced it (plan \u00a72.1)."
+    },
+    "message": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "status": {
+      "enum": [
+        "ok",
+        "invalid_trial_state",
+        "unsupported",
+        "error"
+      ]
+    },
+    "id_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "phase_signature": {
+      "oneOf": [
+        {
+          "enum": [
+            "LIQUID",
+            "VAPOR",
+            "TWO_PHASE",
+            "ZERO_FLOW"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "counters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

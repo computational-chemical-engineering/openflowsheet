@@ -1,0 +1,562 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/job.schema.json",
+  "title": "Job",
+  "description": "T07 design note §5.3–§5.5, ADR 0019 D2, ADR 0008 Amendment 1 C6 (J1–J3 and J5 binding, J4 and J6 recommended). A job is one accepted request and its lifecycle. **J1:** `outputs` is an ordered, possibly empty list of typed artifact references with no maximum, and no member holds a single certificate, manifest, result or failure bundle. **J3:** the request names its operation in the closed `operation` enum and the body is selected by it, one `oneOf` branch per value; a later operation is an added value and an added branch. `status = completed` means the operation ran to its end — never that anything converged or verified; `RunResult` carries those. The artifact-kind enum is closed for producers and open for consumers (J5): a shipped consumer keeps an output of an unknown kind and otherwise ignores it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id",
+    "operation",
+    "request",
+    "request_sha256",
+    "principal_id",
+    "capability_id",
+    "policy_sha256",
+    "status",
+    "outputs",
+    "progress",
+    "effective_budgets",
+    "cancel_requested",
+    "event_count",
+    "created_at",
+    "started_at",
+    "ended_at",
+    "ending",
+    "error"
+  ],
+  "properties": {
+    "job_id": {
+      "$ref": "#/$defs/job_id"
+    },
+    "operation": {
+      "$ref": "#/$defs/operation",
+      "description": "Equals `request.operation` (lifecycle rule 9)."
+    },
+    "request": {
+      "$ref": "#/$defs/job_request",
+      "description": "The request as accepted, normalized: every omitted optional member filled with its schema default."
+    },
+    "request_sha256": {
+      "$ref": "#/$defs/sha256",
+      "description": "SHA-256 of the canonical JSON of the normalized request (§5.3). Not resolved against project policy."
+    },
+    "principal_id": {
+      "$ref": "#/$defs/id"
+    },
+    "capability_id": {
+      "$ref": "#/$defs/id"
+    },
+    "policy_sha256": {
+      "$ref": "#/$defs/sha256",
+      "description": "The project-policy document hash at acceptance."
+    },
+    "status": {
+      "$ref": "#/$defs/job_status"
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact_ref"
+      },
+      "description": "J1. Always the ordered list of the output events' references (§6.2)."
+    },
+    "progress": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/progress"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "effective_budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wall_time_s",
+        "max_property_calls"
+      ],
+      "properties": {
+        "wall_time_s": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "max_property_calls": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "cancel_requested": {
+      "type": "boolean"
+    },
+    "event_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The next event sequence."
+    },
+    "created_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/timestamp"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ended_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/timestamp"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ending": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/job_ending"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/api-error.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:~-]{1,128}$",
+      "description": "§5.1. Idempotency keys, API-created revision ids, principal and capability ids. The prefix `auto:` is reserved for in-process `solve` and `reproduce`; transports refuse it."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{6}Z$",
+      "description": "§5.1. RFC 3339 UTC with microseconds. Never part of R0."
+    },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:/-]{1,256}$",
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^/"
+          },
+          {
+            "pattern": "(^|/)\\.\\.(/|$)"
+          }
+        ]
+      },
+      "description": "§5.1. No `..` segment and no leading `/`."
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job-[0-9]{6,}$"
+    },
+    "operation": {
+      "enum": [
+        "solve",
+        "reproduce"
+      ],
+      "description": "J3's closed discriminator. A later operation is an added value here and an added branch in `job_request.oneOf`."
+    },
+    "job_status": {
+      "enum": [
+        "queued",
+        "running",
+        "completed",
+        "failed",
+        "cancelled",
+        "timed_out"
+      ]
+    },
+    "terminal_status": {
+      "enum": [
+        "completed",
+        "failed",
+        "cancelled",
+        "timed_out"
+      ]
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wall_time_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "default": null
+        }
+      }
+    },
+    "job_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "idempotency_key",
+        "body"
+      ],
+      "properties": {
+        "operation": {
+          "$ref": "#/$defs/operation"
+        },
+        "idempotency_key": {
+          "$ref": "#/$defs/id"
+        },
+        "budgets": {
+          "$ref": "#/$defs/budgets",
+          "default": {
+            "wall_time_s": null
+          }
+        },
+        "body": {
+          "type": "object"
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "operation": {
+              "const": "solve"
+            },
+            "body": {
+              "$ref": "#/$defs/solve_body"
+            }
+          }
+        },
+        {
+          "properties": {
+            "operation": {
+              "const": "reproduce"
+            },
+            "body": {
+              "$ref": "#/$defs/reproduce_body"
+            }
+          }
+        }
+      ]
+    },
+    "solve_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision_id"
+      ],
+      "properties": {
+        "revision_id": {
+          "type": "string"
+        },
+        "policy_id": {
+          "type": "string",
+          "default": "default",
+          "description": "A registered application policy id, or the reserved `default`, which resolves at admission to the route's registered policy (ruling round 1 R2.3)."
+        },
+        "check_tolerances": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "default": {},
+          "description": "Keyed by `KIND_TOLERANCE` kind. An unknown kind and a looser value are refused at semantic admission (§5.3), not here."
+        },
+        "max_property_calls": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "default": null
+        }
+      }
+    },
+    "reproduce_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle_artifact_id"
+      ],
+      "properties": {
+        "bundle_artifact_id": {
+          "$ref": "#/$defs/artifact_id"
+        },
+        "rerun": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "artifact_id",
+        "sha256",
+        "size_bytes",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "solve_trace",
+            "solve_plan",
+            "execution_plan",
+            "structural_report",
+            "solution_certificate",
+            "solution_state",
+            "failure_bundle",
+            "revision_document",
+            "solve_policy",
+            "check_policy",
+            "solve_path",
+            "run_manifest",
+            "replay_bundle",
+            "replay_report",
+            "partial_solve_trace",
+            "worker_log"
+          ],
+          "description": "J1/J5: closed for producers (producer kinds, version 1), open for consumers."
+        },
+        "artifact_id": {
+          "$ref": "#/$defs/artifact_id"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256",
+          "description": "SHA-256 of the file bytes; for `replay_bundle`, `canonical.directory_hash` (dirhash-v1)."
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "The file name, fixed per kind (§5.4); for `replay_bundle`, the directory."
+        }
+      }
+    },
+    "job_ending": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason",
+        "interruption"
+      ],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/terminal_status"
+        },
+        "reason": {
+          "enum": [
+            "operation_completed",
+            "operation_error",
+            "verifier_refused",
+            "worker_lost",
+            "owner_lost",
+            "store_error",
+            "cancel_requested",
+            "server_shutdown",
+            "keyboard_interrupt",
+            "wall_time_exhausted"
+          ]
+        },
+        "interruption": {
+          "enum": [
+            "cooperative",
+            "forced",
+            null
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "status": {
+              "const": "completed"
+            },
+            "reason": {
+              "enum": [
+                "operation_completed"
+              ]
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "failed"
+            },
+            "reason": {
+              "enum": [
+                "operation_error",
+                "verifier_refused",
+                "worker_lost",
+                "owner_lost",
+                "store_error"
+              ]
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "cancelled"
+            },
+            "reason": {
+              "enum": [
+                "cancel_requested",
+                "server_shutdown",
+                "keyboard_interrupt"
+              ]
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "timed_out"
+            },
+            "reason": {
+              "enum": [
+                "wall_time_exhausted"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "progress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completed",
+        "total",
+        "stage"
+      ],
+      "properties": {
+        "completed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "stage": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 64
+        }
+      },
+      "description": "J6: operation-neutral counts (§6.4). Solver quantities stay in the solve events."
+    },
+    "job_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "run_result",
+        "replay_report",
+        "error"
+      ],
+      "description": "`get_job_result`'s answer for an ended job (§4.2, ruling round 1 R4). `run_result` is non-null iff the operation is `solve` — a failed or cancelled solve still has one, whose `error` equals the job's; `replay_report` is non-null only for a `reproduce` whose report was produced; `error` is byte-equal to `Job.error`.",
+      "properties": {
+        "operation": {
+          "$ref": "#/$defs/operation"
+        },
+        "run_result": {
+          "anyOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/run-result.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "replay_report": {
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/replay-report.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/api-error.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "operation": {
+              "const": "solve"
+            },
+            "run_result": {
+              "type": "object"
+            },
+            "replay_report": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "operation": {
+              "const": "reproduce"
+            },
+            "run_result": {
+              "type": "null"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

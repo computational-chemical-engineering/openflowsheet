@@ -1,0 +1,172 @@
+{
+  "record": "t08-v19-c1-provenance",
+  "version": 2,
+  "assertions": ["T08.A60 item 5", "T08.A64", "spec §7.3 H2, H5"],
+  "read_on": "2026-10-01",
+  "method": "read from the tracked tree and git history of a fresh clone of the released code (main @ 6089593; nothing else of the group's was opened). Literature facts that need the papers themselves are carried from version 1 of this record (read 2026-10-01 from local copies of the published papers) and marked 'carried'; they are facts of the publications, not of any checkout. Frank's statements (2026-10-01, docs/T08_DECISIONS.md, brief docs/briefs/T08-W3.2-redo.md) are recorded as his, with his pointers. Page numbers are PDF page indices (pdftotext), not printed journal pages.",
+  "group_repository_commit": "6089593464fc9bc2c0a0cb58e30ad5433ece6332",
+  "group_repository": {
+    "url": "https://github.com/computational-chemical-engineering/ammonia_synthesis_reactor",
+    "branch": "main",
+    "root_commit": "d2b00336d621722fc25e7052883b79184b6736b5",
+    "commit_count": 9,
+    "tag": "v1.1.0",
+    "tag_commit": "d78fbfb32aac366ce446cdfce372444803700632",
+    "tag_note": "v1.1.0 tags the parent of 6089593; 6089593 ('Wire in the Zenodo code DOIs') changes only CITATION.cff, README.md and src/reactor/archive.py",
+    "code_doi_concept": "10.5281/zenodo.22811033",
+    "code_doi_v1_1_0": "10.5281/zenodo.22811034",
+    "dataset_doi": "10.4121/e03a6e99-6ddc-4c10-8d92-fb36335cdb43",
+    "dataset_doi_note": "4TU.ResearchData, CC BY 4.0 (README.md 'Citing'; src/reactor/archive.py:52, :71); in curation (Frank, 2026-10-01)"
+  },
+  "sources_read": [
+    {
+      "id": "code",
+      "path": "src/reactor/ammonia_synthesis_kinetics.py, src/reactor/paper/validation.py, src/reactor/data/properties_database.json, src/reactor/archive.py",
+      "tracked": true,
+      "note": "the kinetics module itself cites no publication; the citation is in the data file header and README.md"
+    },
+    {
+      "id": "rossetti_csv",
+      "path": "data/inputs/ammonia_synthesis_data_rossetti_et_al.csv",
+      "tracked": true,
+      "what": "11-line comment header naming the source publication (with DOI), that the group transcribed it, its use, and the unit of the values"
+    },
+    {
+      "id": "readme",
+      "path": "README.md ('Data', 'Citing', 'License'), LICENSE, pyproject.toml, CITATION.cff",
+      "tracked": true
+    },
+    {
+      "id": "gargiulo2025",
+      "carried": true,
+      "what": "Gargiulo, Anello, Richard, Gallucci, 'Modeling of a packed bed membrane reactor for ammonia synthesis: on the role of membrane performance and operating conditions', Int. J. Hydrogen Energy 166 (2025) 150995, doi:10.1016/j.ijhydene.2025.150995 (published; CC BY per the TU/e repository cover sheet)",
+      "licence_stated_in_file": "CC BY (cover sheet, PDF p.1)"
+    },
+    {
+      "id": "richard2024",
+      "carried": true,
+      "what": "Richard et al., 'Power-to-ammonia synthesis process with membrane reactors: Techno-economic study', Int. J. Hydrogen Energy 73 (2024) 462-474, doi:10.1016/j.ijhydene.2024.06.041 (published)",
+      "licence_stated_in_file": null
+    },
+    {
+      "id": "simpelaar2024",
+      "carried": true,
+      "what": "B. Simpelaar, MSc project report (unpublished); not part of the release",
+      "licence_stated_in_file": null
+    }
+  ],
+  "frank_statements": [
+    {
+      "about": "lambda(q)",
+      "statement": "omitted deliberately: Weisz-Prater scan worst Phi_WP 0.099, nominal 0.0008; paper Fig. 2",
+      "pointers": ["validation/weisz_prater_scan.json (a pipeline output; written by reactor.paper.validation.weisz_prater_scan, validation.py:266-268, :302-319)", "the accompanying paper, Fig. 2"]
+    },
+    {
+      "about": "K_NH3",
+      "statement": "the code's 7000 cal/mol (29 288 J/mol) is likely right and Gargiulo et al. 2025 Table 1's 29 228 J/mol a transposition; 0.35 % relative effect at Rossetti Test 1; being checked against Rossetti et al. 2006",
+      "pointers": ["src/reactor/ammonia_synthesis_kinetics.py:264-266"]
+    },
+    {
+      "about": "membrane-free Rossetti validation",
+      "statement": "a genuine defect on main: validation.py:103 sets cfg.Perm_NH3 (a removed field, config.py:51) and cfg.Nm (never read), so the P0_* permeances stay live; worst 0.26 % on outlet NH3; no reported number changes; logged by the group for its next version",
+      "pointers": ["src/reactor/paper/validation.py:103-104", "src/reactor/config.py:51"]
+    }
+  ],
+  "findings": [
+    {
+      "item": "published rate law the kinetics class implements",
+      "status": "found",
+      "answer": "Rossetti, Pernicone, Ferrero, Forni, 'Kinetic Study of Ammonia Synthesis on a Promoted Ru/C Catalyst', Ind. Eng. Chem. Res. 45 (2006) 4150-4155, doi:10.1021/ie051398g. On main the release names it in the header of its kinetics dataset and in the validation module; the kinetics module carries no citation. Carried: the same rate law is transcribed in Gargiulo et al. 2025 Eq. (2) and Table 1 (a Temkin-type rate with an additional adsorption term) and named in Richard et al. 2024.",
+      "pointers": [
+        "data/inputs/ammonia_synthesis_data_rossetti_et_al.csv lines 1-11",
+        "src/reactor/paper/validation.py:1-8",
+        "README.md 'Data'",
+        "carried: gargiulo2025 PDF p.3 §2.2, p.4 Eq. (2) and Table 1, p.16 ref. [23]; richard2024 PDF p.4"
+      ]
+    },
+    {
+      "item": "equation-by-equation match of the code with the transcription",
+      "status": "found",
+      "answer": "The constants and exponents at 6089593 are those compared in version 1 against Gargiulo 2025 Table 1: k_f = 9.02e8 exp(-23000 cal/mol / RT) (:239), K_H2 = exp(-13.6/R + 9000/RT) (:261, equal to Table 1's exp(-56.9024/R + 37656/RT) in J), K_NH3 = exp(-8.3/R + 7000/RT) (:266, see the next finding), the rate exponents 0.5, 0.375, 0.25, 0.75, 1.125, 0.3, 0.2 (__call__, :329-383), K_a (compute_K_eq, :195), the fugacity-coefficient correlations (compute_fugacity_coeffs, :271) and the conversion rate_constant = k_f 1000 rho_b / 3600 / rho_c (:193, i.e. r* rho_b / (3.6 rho_c)).",
+      "pointers": [
+        "src/reactor/ammonia_synthesis_kinetics.py:193, :195, :222-242, :244-269, :271, :329-383",
+        "carried: gargiulo2025 PDF p.4 Table 1"
+      ]
+    },
+    {
+      "item": "discrepancy: NH3 adsorption constant",
+      "status": "discrepancy",
+      "answer": "The code has K_NH3 = exp(-8.3/R + 7000/RT) with R in cal (7000 cal/mol = 29 288 J/mol); Gargiulo 2025 Table 1 prints exp(-34.7272/R + 29228/RT) in J (29 228 J/mol = 6985.7 cal/mol); the entropy terms agree (34.7272 J = 8.3 cal). Frank (2026-10-01): the code's value is likely right and 29 228 a transposition (0.35 % relative effect at Rossetti Test 1); being checked against Rossetti et al. 2006. Open until that check is recorded.",
+      "pointers": [
+        "src/reactor/ammonia_synthesis_kinetics.py:264-266",
+        "carried: gargiulo2025 PDF p.4 Table 1, row K_NH3",
+        "frank_statements[K_NH3]"
+      ]
+    },
+    {
+      "item": "deviation: feed-ratio parameters lambda(q), a, beta(q)",
+      "status": "deviation_documented",
+      "answer": "The published form evaluates activities from a fractional conversion with fitted feed-ratio parameters and multiplies by lambda(q) (carried: Gargiulo 2025 p.4); the code evaluates activities from local partial pressures times fugacity coefficients and has no lambda(q) factor (lambda = 1). Frank (2026-10-01): omitted deliberately, justified by the Weisz-Prater scan (worst Phi_WP 0.099, nominal 0.0008) and the paper's Fig. 2. The scan's code is in the release (reactor.paper.validation.weisz_prater_scan); its output is not tracked.",
+      "pointers": [
+        "src/reactor/ammonia_synthesis_kinetics.py:329-383 (activities = 1e-5 * p_loc * fugacity_coeffs)",
+        "src/reactor/paper/validation.py:266-319",
+        "frank_statements[lambda(q)]"
+      ]
+    },
+    {
+      "item": "where the Rossetti et al. data come from",
+      "status": "found",
+      "answer": "The file's header states that the group transcribed it from Rossetti et al. 2006 (with DOI), that it is reproduced only so the paper's kinetics verification is reproducible, that the original publication is to be cited for the measurements, and that the GHSV_* columns hold the NH3 outlet mole fraction [vol%] at that space velocity [1/h]. 19 test rows (tests 1-4, 7, 8, 10, 11, 13, 15-24) and 125 non-empty GHSV cells (README.md: '19 test conditions, 125 points'). The file entered with the root commit d2b0033. Which table or figure of Rossetti et al. 2006 was transcribed is not stated.",
+      "pointers": [
+        "data/inputs/ammonia_synthesis_data_rossetti_et_al.csv lines 1-12",
+        "README.md 'Data'",
+        "git log -- data/inputs/ammonia_synthesis_data_rossetti_et_al.csv (d2b0033 only)"
+      ]
+    },
+    {
+      "item": "the group's comparison of the kinetics with the data",
+      "status": "found",
+      "answer": "The release re-solves every experimental point with the isothermal, membrane-free 1D model (reactor.paper.validation, Rossetti 1D/2D tables) for the paper's Figures 3/4/S.6 (README.md). Frank's statement on that validation's live permeances (worst 0.26 % on outlet NH3) is recorded under frank_statements. Carried: Gargiulo 2025 §3.1 validates its 1D packed-bed model against 16 of these tests with a mean absolute error and a parity plot (Figs. 3-4).",
+      "pointers": [
+        "src/reactor/paper/validation.py:1-8, :80-160",
+        "README.md 'Data'",
+        "carried: gargiulo2025 PDF p.5-6 §3.1, Figs. 3-4"
+      ]
+    },
+    {
+      "item": "heat of reaction",
+      "status": "found",
+      "answer": "Taken from standard enthalpies of formation in the property database (dH_f NH3 = -46120 J/mol; H2, N2 0) through species enthalpies (formation enthalpy plus integrated ideal-gas c_p from 298.15 K); -92.24 kJ per mol of reaction at 298.15 K. Carried: Gargiulo 2025 Eq. (1) states dH_298 = -92 kJ/mol. The source of the database value is not stated.",
+      "pointers": [
+        "src/reactor/data/properties_database.json (species_properties.data.NH3.dH_f)",
+        "src/reactor/gas_mixture_correlations.py:538 species_enthalpies",
+        "carried: gargiulo2025 PDF p.3 Eq. (1)"
+      ]
+    },
+    {
+      "item": "property database sources (Tc, Pc, omega, heat capacity, viscosity, conductivity, diffusivity coefficients)",
+      "status": "not_determinable",
+      "answer": "properties_database.json has columns Mw, Tc, Pc, omega, wilke_C1-C4, therm_cond_C1-C4, c_p_C1-C5, dH_f per species and binary properties per pair, with no source field; it entered with the root commit d2b0033. N2 Mw = 0.028 kg/mol (not 0.0280134). The sources are not stated in the release; Frank's item.",
+      "pointers": [
+        "src/reactor/data/properties_database.json",
+        "git log -- src/reactor/data/properties_database.json (d2b0033 only)"
+      ]
+    },
+    {
+      "item": "licence of the group repository",
+      "status": "found",
+      "answer": "MIT: LICENSE ('MIT License', Copyright (c) 2026 Iolanda Gargiulo, E.A.J.F. (Frank) Peters, Eindhoven University of Technology); pyproject.toml license = \"MIT\", license-files = [\"LICENSE\"]; CITATION.cff license: MIT. README.md: 'The MIT licence covers our code and our own outputs, not the underlying third-party measurements' (the Rossetti CSV and s1_diffusivity_chapman.csv). The archived dataset is CC BY 4.0 (archive.py DATASET_LICENSE; commit c1ca849 'Dataset is CC BY 4.0; code stays MIT').",
+      "pointers": [
+        "LICENSE",
+        "pyproject.toml:11-12",
+        "CITATION.cff",
+        "README.md 'Data', 'License'",
+        "src/reactor/archive.py:65-73"
+      ]
+    }
+  ],
+  "superseded": {
+    "commit": "a6ee9efc85aee199b51e849467845b59bd5b1800",
+    "disposition": "version 1 of this record read the superseded line (gitlab/master of a local clone, no common ancestor with the release). Its code-level findings are replaced above; its literature facts are carried where marked. Version 1: `git show 7c042a0:benchmarks/t08/v19/c1-provenance.json`."
+  }
+}

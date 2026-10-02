@@ -1,0 +1,822 @@
+{
+ "checks": [
+  {
+   "id": "a45.same_commit",
+   "replayed_at": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+   "result": "pass",
+   "written_at": "67c66d98587f23bd7dfe8da28a8facccc92da21e"
+  },
+  {
+   "found": 52,
+   "id": "a45.n_b_equals_the_enumeration",
+   "n_b": 52,
+   "result": "pass"
+  },
+  {
+   "failing": [],
+   "id": "a45.every_bundle_matches",
+   "modes": {
+    "compatible_reproduction": 52
+   },
+   "near_threshold": [],
+   "result": "pass"
+  },
+  {
+   "id": "a45.every_bundle_records_the_current_policy",
+   "other": [],
+   "policies": {
+    "T08-numerical-policy-v2": 52
+   },
+   "policy": "T08-numerical-policy-v2",
+   "result": "pass"
+  },
+  {
+   "bitwise_floats": false,
+   "expected": "MISMATCH",
+   "id": "a14.c1",
+   "integrity_ok": true,
+   "mutated": "solution-state.json<root>.variables.heater.Q",
+   "result": "pass",
+   "verdict": "MISMATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "expected": "MISMATCH",
+   "id": "a14.c2",
+   "integrity_ok": true,
+   "mutated": "solution-certificate.json<root>.verification_status",
+   "result": "pass",
+   "verdict": "MISMATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "expected": "MATCH",
+   "id": "a14.c3",
+   "integrity_ok": true,
+   "mutated": "solve-events.json<root>[3].linear.u_diag_min_abs",
+   "result": "pass",
+   "verdict": "MATCH"
+  },
+  {
+   "counted": {
+    "g8": 47,
+    "k05": 5
+   },
+   "id": "a45.every_set_enumerated",
+   "recorded": {
+    "g8": 47,
+    "k05": 5
+   },
+   "result": "pass",
+   "sets": [
+    "k05",
+    "g8"
+   ]
+  }
+ ],
+ "controls": [
+  {
+   "bitwise_floats": false,
+   "control": "c1",
+   "differences": [
+    "solution-state.json<root>.variables.heater.Q: 13360.809069223147 against 13360.819169223148, outside T08-numerical-policy-v2 (1e-09 relative / 0.00101 absolute, tau_kind of heat_rate, ADR 0025 D5)"
+   ],
+   "expected": "MISMATCH",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "mutated": "solution-state.json<root>.variables.heater.Q",
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "passed": true,
+   "source": "g8/SYN-001-nominal",
+   "verdict": "MISMATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "control": "c2",
+   "differences": [
+    "solution-certificate.json<root>.verification_status: 'VERIFIED' against 'FAILED'"
+   ],
+   "expected": "MISMATCH",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "mutated": "solution-certificate.json<root>.verification_status",
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "passed": true,
+   "source": "g8/SYN-001-nominal",
+   "verdict": "MISMATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "control": "c3",
+   "differences": [],
+   "expected": "MATCH",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "mutated": "solve-events.json<root>[3].linear.u_diag_min_abs",
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "passed": true,
+   "source": "k05/SYN-001-high-recycle",
+   "verdict": "MATCH"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "n_b": 52,
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-aarch64",
+  "python": "3.13.15",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "replays": [
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "k05/SYN-001-nominal",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "k05/SYN-001-once-through",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "k05/SYN-001-high-recycle",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "k05/SYN-001-all-liquid-310K",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "k05/SYN-001-all-vapor-420K",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/T05b%3ADZ-3",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/T05b%3ADZ-7",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/T05b%3ANP-1",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/T05b%3ASC-1",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/T05b%3ASC-2",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/T05b%3ASC-3",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-NET02",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-NET03",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-NET06",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-NET09",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-NET10",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-NET11",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-PC2",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-REF01",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-REF02",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-REF03",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-REF04",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-REF05",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-REF06",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-REF07",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-STA02",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-STA03-degC",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-STA03-kgs",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-STA04",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-THM01",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-THM02",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-T06-THM10",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-UL-C1",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-UL-C2",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-UL-C3",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-UL-C3X",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-340-two-phase-guess",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-352-vapor-guess-410",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-355-dew-guess-377",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-355-dew-guess",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-355-liquid-guess",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-355",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-360-liquid-guess",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-360-no-guess",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-360-vapor-guess",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-360",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-A02-365",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-all-liquid-310K",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": true,
+   "differences": [],
+   "directory": "g8/SYN-001-all-vapor-420K",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-high-recycle",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-nominal",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  },
+  {
+   "bitwise_floats": false,
+   "differences": [],
+   "directory": "g8/SYN-001-once-through",
+   "integrity_ok": true,
+   "mode": "compatible_reproduction",
+   "near_threshold": [],
+   "numerical_policy_id": "T08-numerical-policy-v2",
+   "reasons": [
+    "platform identity differs: recorded ('x86_64', 'Linux', '3.13.15', 'scipy-openblas'), current ('aarch64', 'Linux', '3.13.15', 'scipy-openblas')"
+   ],
+   "verdict": "MATCH"
+  }
+ ],
+ "sets": {
+  "g8": 47,
+  "k05": 5
+ },
+ "step": "bundles-replay"
+}

@@ -1,0 +1,126 @@
+{
+ "M01_import_time": {
+  "processes": 5,
+  "backend_import_ms": {
+   "median_ms": 428.055855,
+   "min_ms": 424.352519,
+   "samples_ms": [
+    426.023699,
+    430.949075,
+    430.714431,
+    428.055855,
+    424.352519
+   ]
+  },
+  "subprocess_wall_ms": {
+   "median_ms": 504.24315,
+   "min_ms": 497.773877,
+   "samples_ms": [
+    497.773877,
+    508.864703,
+    504.24315,
+    504.300188,
+    499.058023
+   ]
+  },
+  "empty_interpreter_wall_ms": {
+   "median_ms": 12.629115,
+   "min_ms": 10.330215,
+   "samples_ms": [
+    12.253647,
+    13.115701,
+    10.330215,
+    12.629115,
+    13.125441
+   ]
+  },
+  "note": "backend_import_ms times the import statements inside a child that imports nothing at module scope, so the import is measured from a clean interpreter; subprocess_wall_ms is interpreter start to child exit, and empty_interpreter_wall_ms is the same measurement for a child that imports nothing at all. The ASL library is not loaded by these imports: it is loaded inside PyomoNLPWithGreyBoxBlocks construction and its cost is therefore in M02, not in M01"
+ },
+ "M02_M04_M07_compile": {
+  "processes": 5,
+  "compile_ms": {
+   "median_ms": 156.732665,
+   "min_ms": 156.438953,
+   "samples_ms": [
+    158.174593,
+    156.438953,
+    156.489768,
+    157.357344,
+    156.732665
+   ]
+  },
+  "first_residual_ms": {
+   "median_ms": 0.153709,
+   "min_ms": 0.150753,
+   "samples_ms": [
+    0.154591,
+    0.150753,
+    0.153188,
+    0.153709,
+    0.158509
+   ]
+  },
+  "first_jacobian_ms": {
+   "median_ms": 1.007718,
+   "min_ms": 0.99775,
+   "samples_ms": [
+    1.000395,
+    1.726392,
+    1.007718,
+    0.99775,
+    1.144846
+   ]
+  },
+  "compile_phase_counters": {
+   "K": {
+    "value_calls": 0,
+    "jacobian_calls": 1
+   },
+   "H": {
+    "value_calls": 0,
+    "jacobian_calls": 1
+   }
+  },
+  "compile_phase_counters_identical_across_processes": true
+ },
+ "M05_evaluation_time": {
+  "state": "S1",
+  "warmup": 20,
+  "repetitions": 200,
+  "backend_residual_us": {
+   "median_us": 68.198,
+   "min_us": 54.363,
+   "repetitions": 200.0
+  },
+  "backend_jacobian_us": {
+   "median_us": 730.276,
+   "min_us": 710.568,
+   "repetitions": 200.0
+  },
+  "boundary_residual_us": {
+   "median_us": 64.802,
+   "min_us": 63.399,
+   "repetitions": 200.0
+  },
+  "boundary_jacobian_us": {
+   "median_us": 810.998,
+   "min_us": 794.035,
+   "repetitions": 200.0
+  },
+  "note": "backend_* is set_primals plus the PyNumero evaluation; boundary_* is the full CompiledProblem call, which adds the name-keyed permutation into \u00a72.4 order and, for the Jacobian, the canonical CSC assembly"
+ },
+ "M08_structure_size": {
+  "rows": 17,
+  "columns": 17,
+  "nnz": 60,
+  "indptr_bytes": 72,
+  "indices_bytes": 240,
+  "data_bytes": 480,
+  "total_bytes": 792,
+  "assumed_dtypes": {
+   "indptr": "int32",
+   "indices": "int32",
+   "data": "float64"
+  }
+ }
+}

@@ -1,0 +1,2285 @@
+{
+ "coupled_cases": {
+  "SYN-001-UL-C1": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "-0x1.a000000000000p-35",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.199fffffffff3p+14",
+       "iterations": 6,
+       "k_values": {
+        "A": "0x1.1403293a3e47dp+1",
+        "B": "0x1.6fd132357fcc4p-1",
+        "C": "0x1.b0708a828cc76p-3"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.5c7ff71d54efbp+8",
+        "n": [
+         "0x1.d2ca63e761b48p-1",
+         "0x1.effefa11572d7p-1",
+         "0x1.fb309d1bd129cp-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.5c7ff71d54efbp+8",
+        "n": [
+         "0x1.69ace0c4f25c3p-4",
+         "0x1.00105eea8d285p-5",
+         "0x1.33d8b90bb58d7p-7"
+        ]
+       },
+       "vapor_fraction": "0x1.60201a3d1fc16p-5"
+      },
+      "status": "ok",
+      "temperature": "0x1.5c7ff71d54efbp+8"
+     },
+     "caller": "valve",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.19a0000000000p+14"
+     }
+    },
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "0x1.2000000000000p-33",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.b5e0000000017p+14",
+       "iterations": 5,
+       "k_values": {
+        "A": "0x1.287b044ad79eap+1",
+        "B": "0x1.90c95f9d5c8e5p-1",
+        "C": "0x1.ddfdd5c773043p-3"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.5f69dd1819333p+8",
+        "n": [
+         "0x1.67f616f197c98p-1",
+         "0x1.c00b6f92144aep-1",
+         "0x1.eb194ab3c7c13p-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.5f69dd1819333p+8",
+        "n": [
+         "0x1.3013d21cd06d0p-2",
+         "0x1.ffa4836f5da89p-4",
+         "0x1.4e6b54c383ec5p-5"
+        ]
+       },
+       "vapor_fraction": "0x1.3bdc3e60bae31p-3"
+      },
+      "status": "ok",
+      "temperature": "0x1.5f69dd1819333p+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.b5dfffffffff3p+14"
+     }
+    }
+   ],
+   "outcome": "CONVERGED"
+  },
+  "SYN-001-UL-C2": {
+   "calls": [],
+   "outcome": "CONVERGED"
+  },
+  "SYN-001-UL-C3": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "0x1.8000000000000p-36",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.7700000000003p+15",
+       "iterations": 5,
+       "k_values": {
+        "A": "0x1.56d5eff01a9eap+1",
+        "B": "0x1.dd1cdd41e73fep-1",
+        "C": "0x1.24e5d166ffb20p-2"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.657b9ed3a711cp+8",
+        "n": [
+         "0x1.90739defcc386p-2",
+         "0x1.4c175809abbc3p-1",
+         "0x1.b6ffefab83fb6p-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.657b9ed3a711cp+8",
+        "n": [
+         "0x1.37c6310819e3bp-1",
+         "0x1.67d14feca8879p-2",
+         "0x1.24004151f0126p-3"
+        ]
+       },
+       "vapor_fraction": "0x1.78749b8c9c1d7p-2"
+      },
+      "status": "ok",
+      "temperature": "0x1.657b9ed3a711cp+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.7700000000000p+15"
+     }
+    },
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "-0x1.4000000000000p-34",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.c64482ebaaf80p+15",
+       "iterations": 5,
+       "k_values": {
+        "A": "0x1.5d5f32117ec2ap+1",
+        "B": "0x1.e80c81377aa76p-1",
+        "C": "0x1.2cbec2c31d50cp-2"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.664990a7a80f1p+8",
+        "n": [
+         "0x1.27f3b7ffd86abp-1",
+         "0x1.fd3c9829fc9b2p-1",
+         "0x1.59791425d5de4p+0"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.664990a7a80f1p+8",
+        "n": [
+         "0x1.502ef761b1a64p-1",
+         "0x1.940939513b455p-2",
+         "0x1.51d0d139c102ap-3"
+        ]
+       },
+       "vapor_fraction": "0x1.2ced11e7f7174p-2"
+      },
+      "status": "ok",
+      "temperature": "0x1.664990a7a80f1p+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.3c1157b0c5087p+0",
+       "0x1.63a09a694d1eep+0",
+       "0x1.83b32e4d0dfeap+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.c64482ebaaf8ap+15"
+     }
+    }
+   ],
+   "outcome": "CONVERGED"
+  },
+  "SYN-001-UL-C3X": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "0x1.8000000000000p-36",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.7700000000003p+15",
+       "iterations": 5,
+       "k_values": {
+        "A": "0x1.56d5eff01a9eap+1",
+        "B": "0x1.dd1cdd41e73fep-1",
+        "C": "0x1.24e5d166ffb20p-2"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.657b9ed3a711cp+8",
+        "n": [
+         "0x1.90739defcc386p-2",
+         "0x1.4c175809abbc3p-1",
+         "0x1.b6ffefab83fb6p-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.657b9ed3a711cp+8",
+        "n": [
+         "0x1.37c6310819e3bp-1",
+         "0x1.67d14feca8879p-2",
+         "0x1.24004151f0126p-3"
+        ]
+       },
+       "vapor_fraction": "0x1.78749b8c9c1d7p-2"
+      },
+      "status": "ok",
+      "temperature": "0x1.657b9ed3a711cp+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.7700000000000p+15"
+     }
+    }
+   ],
+   "outcome": "INITIALIZATION_FAILED"
+  }
+ },
+ "generator": "scripts/t05b_ph_baseline.py",
+ "kernel_targets": {
+  "PHF-1": {
+   "answer": {
+    "code": "",
+    "evaluations": 53,
+    "message": "",
+    "residual": "0x1.4000000000000p-34",
+    "route": "bracket",
+    "split": {
+     "enthalpy_flow": "0x1.86a000000000ap+15",
+     "iterations": 4,
+     "k_values": {
+      "A": "0x1.5bc3898036041p+1",
+      "B": "0x1.e55ac07e71e32p-1",
+      "C": "0x1.2acf1c4122a41p-2"
+     },
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.66172c1541247p+8",
+      "n": [
+       "0x1.77b874062dd0ep-2",
+       "0x1.3f98a09fc9d80p-1",
+       "0x1.aff3a5054ef33p-1"
+      ]
+     },
+     "message": "",
+     "phase_signature": "TWO_PHASE",
+     "provider_id": "syn001",
+     "reference_convention": "SYN-001-ref-v1",
+     "status": "ok",
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.66172c1541247p+8",
+      "n": [
+       "0x1.4423c5fce9177p-1",
+       "0x1.80cebec06c4fcp-2",
+       "0x1.40316beac4334p-3"
+      ]
+     },
+     "vapor_fraction": "0x1.8dba558fe0320p-2"
+    },
+    "status": "ok",
+    "temperature": "0x1.66172c1541247p+8"
+   },
+   "inputs": {
+    "flows": [
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0"
+    ],
+    "pressure": "0x1.86a0000000000p+16",
+    "target": "0x1.86a0000000000p+15"
+   }
+  },
+  "PHF-2": {
+   "answer": {
+    "code": "",
+    "evaluations": 3,
+    "message": "",
+    "residual": "0x0.0p+0",
+    "route": "bracket",
+    "split": {
+     "enthalpy_flow": "0x1.b824238e86088p+15",
+     "iterations": 4,
+     "k_values": {
+      "A": "0x1.6b9a3ab75f479p+1",
+      "B": "0x1.0000000000000p+0",
+      "C": "0x1.3e089e48db752p-2"
+     },
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6800000000000p+8",
+      "n": [
+       "0x1.30ec60ff5e1c3p-2",
+       "0x1.17c158350ebd4p-1",
+       "0x1.970c7fea6e6c6p-1"
+      ]
+     },
+     "message": "",
+     "phase_signature": "TWO_PHASE",
+     "provider_id": "syn001",
+     "reference_convention": "SYN-001-ref-v1",
+     "status": "ok",
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6800000000000p+8",
+      "n": [
+       "0x1.6789cf8050f1dp-1",
+       "0x1.d07d4f95e2858p-2",
+       "0x1.a3ce0056464e7p-3"
+      ]
+     },
+     "vapor_fraction": "0x1.d07d4f95e2858p-2"
+    },
+    "status": "ok",
+    "temperature": "0x1.6800000000000p+8"
+   },
+   "inputs": {
+    "flows": [
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0"
+    ],
+    "pressure": "0x1.86a0000000000p+16",
+    "target": "0x1.b824238e86088p+15"
+   }
+  },
+  "PHF-5": {
+   "answer": {
+    "code": "",
+    "evaluations": 54,
+    "message": "",
+    "residual": "0x1.4000000000000p-35",
+    "route": "bracket",
+    "split": {
+     "enthalpy_flow": "0x1.d4c0000000005p+15",
+     "iterations": 5,
+     "k_values": {
+      "A": "0x1.f8c3488efd890p+1",
+      "B": "0x1.7b7bb73771935p+0",
+      "C": "0x1.f767c819198bdp-2"
+     },
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.76b778ba7ec20p+8",
+      "n": [
+       "0x1.0245620a18608p-2",
+       "0x0.0p+0",
+       "0x1.75d4764f026dep+0"
+      ]
+     },
+     "message": "",
+     "phase_signature": "TWO_PHASE",
+     "provider_id": "syn001",
+     "reference_convention": "SYN-001-ref-v1",
+     "status": "ok",
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.76b778ba7ec20p+8",
+      "n": [
+       "0x1.7edd4efaf3cfep-1",
+       "0x0.0p+0",
+       "0x1.14571361fb246p-1"
+      ]
+     },
+     "vapor_fraction": "0x1.b778419349f81p-2"
+    },
+    "status": "ok",
+    "temperature": "0x1.76b778ba7ec20p+8"
+   },
+   "inputs": {
+    "flows": [
+     "0x1.0000000000000p+0",
+     "0x0.0p+0",
+     "0x1.0000000000000p+1"
+    ],
+    "pressure": "0x1.86a0000000000p+16",
+    "target": "0x1.d4c0000000000p+15"
+   }
+  },
+  "PHF-7": {
+   "answer": {
+    "code": "",
+    "evaluations": 53,
+    "message": "",
+    "residual": "-0x1.a000000000000p-35",
+    "route": "bracket",
+    "split": {
+     "enthalpy_flow": "0x1.199fffffffff3p+14",
+     "iterations": 6,
+     "k_values": {
+      "A": "0x1.1403293a3e47dp+1",
+      "B": "0x1.6fd132357fcc4p-1",
+      "C": "0x1.b0708a828cc76p-3"
+     },
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.5c7ff71d54efbp+8",
+      "n": [
+       "0x1.d2ca63e761b48p-1",
+       "0x1.effefa11572d7p-1",
+       "0x1.fb309d1bd129cp-1"
+      ]
+     },
+     "message": "",
+     "phase_signature": "TWO_PHASE",
+     "provider_id": "syn001",
+     "reference_convention": "SYN-001-ref-v1",
+     "status": "ok",
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.5c7ff71d54efbp+8",
+      "n": [
+       "0x1.69ace0c4f25c3p-4",
+       "0x1.00105eea8d285p-5",
+       "0x1.33d8b90bb58d7p-7"
+      ]
+     },
+     "vapor_fraction": "0x1.60201a3d1fc16p-5"
+    },
+    "status": "ok",
+    "temperature": "0x1.5c7ff71d54efbp+8"
+   },
+   "inputs": {
+    "flows": [
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0"
+    ],
+    "pressure": "0x1.86a0000000000p+16",
+    "target": "0x1.19a0000000000p+14"
+   }
+  },
+  "RX-3": {
+   "answer": {
+    "code": "",
+    "evaluations": 9,
+    "message": "",
+    "residual": "0x0.0p+0",
+    "route": "bracket",
+    "split": {
+     "enthalpy_flow": "0x1.782c000000000p+16",
+     "iterations": 0,
+     "k_values": {
+      "A": "0x1.512cfc290e3cap+2",
+      "B": "0x1.0c9c07599f121p+1",
+      "C": "0x1.7993e6389aa4ep-1"
+     },
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.84c0000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x0.0p+0",
+       "0x0.0p+0"
+      ]
+     },
+     "message": "",
+     "phase_signature": "VAPOR",
+     "provider_id": "syn001",
+     "reference_convention": "SYN-001-ref-v1",
+     "status": "ok",
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.84c0000000000p+8",
+      "n": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333333p-1",
+       "0x1.3333333333333p+0"
+      ]
+     },
+     "vapor_fraction": "0x1.0000000000000p+0"
+    },
+    "status": "ok",
+    "temperature": "0x1.84c0000000000p+8"
+   },
+   "inputs": {
+    "flows": [
+     "0x1.3333333333333p-1",
+     "0x1.3333333333333p-1",
+     "0x1.3333333333333p+0"
+    ],
+    "pressure": "0x1.86a0000000000p+16",
+    "target": "0x1.782c000000000p+16"
+   }
+  },
+  "RX-5": {
+   "answer": {
+    "code": "",
+    "evaluations": 54,
+    "message": "",
+    "residual": "-0x1.8000000000000p-36",
+    "route": "bracket",
+    "split": {
+     "enthalpy_flow": "0x1.387fffffffffdp+15",
+     "iterations": 5,
+     "k_values": {
+      "A": "0x1.b043fb4e4d35bp+1",
+      "B": "0x1.3b0e7ba703ae2p+0",
+      "C": "0x1.952db508615c0p-2"
+     },
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6f9d0af3a0f91p+8",
+      "n": [
+       "0x1.bd59be22a0f90p-3",
+       "0x1.7662d2980bfd9p-2",
+       "0x1.fd6732ccdaa85p-1"
+      ]
+     },
+     "message": "",
+     "phase_signature": "TWO_PHASE",
+     "provider_id": "syn001",
+     "reference_convention": "SYN-001-ref-v1",
+     "status": "ok",
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6f9d0af3a0f91p+8",
+      "n": [
+       "0x1.87b9875515e9ep-2",
+       "0x1.e007279cb4d18p-3",
+       "0x1.a3fcce662ef83p-3"
+      ]
+     },
+     "vapor_fraction": "0x1.5eb8cba40deb8p-2"
+    },
+    "status": "ok",
+    "temperature": "0x1.6f9d0af3a0f91p+8"
+   },
+   "inputs": {
+    "flows": [
+     "0x1.3333333333333p-1",
+     "0x1.3333333333333p-1",
+     "0x1.3333333333333p+0"
+    ],
+    "pressure": "0x1.86a0000000000p+16",
+    "target": "0x1.3880000000000p+15"
+   }
+  },
+  "VLV-2": {
+   "answer": {
+    "code": "",
+    "evaluations": 53,
+    "message": "",
+    "residual": "-0x1.a000000000000p-35",
+    "route": "bracket",
+    "split": {
+     "enthalpy_flow": "0x1.199fffffffff3p+14",
+     "iterations": 6,
+     "k_values": {
+      "A": "0x1.1403293a3e47dp+1",
+      "B": "0x1.6fd132357fcc4p-1",
+      "C": "0x1.b0708a828cc76p-3"
+     },
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.5c7ff71d54efbp+8",
+      "n": [
+       "0x1.d2ca63e761b48p-1",
+       "0x1.effefa11572d7p-1",
+       "0x1.fb309d1bd129cp-1"
+      ]
+     },
+     "message": "",
+     "phase_signature": "TWO_PHASE",
+     "provider_id": "syn001",
+     "reference_convention": "SYN-001-ref-v1",
+     "status": "ok",
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.5c7ff71d54efbp+8",
+      "n": [
+       "0x1.69ace0c4f25c3p-4",
+       "0x1.00105eea8d285p-5",
+       "0x1.33d8b90bb58d7p-7"
+      ]
+     },
+     "vapor_fraction": "0x1.60201a3d1fc16p-5"
+    },
+    "status": "ok",
+    "temperature": "0x1.5c7ff71d54efbp+8"
+   },
+   "inputs": {
+    "flows": [
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0"
+    ],
+    "pressure": "0x1.86a0000000000p+16",
+    "target": "0x1.19a0000000000p+14"
+   }
+  },
+  "VLV-5": {
+   "answer": {
+    "code": "",
+    "evaluations": 53,
+    "message": "",
+    "residual": "0x1.3000000000000p-33",
+    "route": "bracket",
+    "split": {
+     "enthalpy_flow": "0x1.19a0000000019p+14",
+     "iterations": 6,
+     "k_values": {
+      "A": "0x1.2b5cc8b7c3558p+1",
+      "B": "0x1.6e318ae10b9d6p-1",
+      "C": "0x1.8b3283d1664e4p-3"
+     },
+     "liquid": {
+      "P": "0x1.d4c0000000000p+15",
+      "T": "0x1.4c05da393484fp+8",
+      "n": [
+       "0x1.92650e7a267cfp-1",
+       "0x1.d8a187fd1fef6p-1",
+       "0x1.f4bf10920b9e6p-1"
+      ]
+     },
+     "message": "",
+     "phase_signature": "TWO_PHASE",
+     "provider_id": "syn001",
+     "reference_convention": "SYN-001-ref-v1",
+     "status": "ok",
+     "vapor": {
+      "P": "0x1.d4c0000000000p+15",
+      "T": "0x1.4c05da393484fp+8",
+      "n": [
+       "0x1.b66bc617660c5p-3",
+       "0x1.3af3c0170084ap-4",
+       "0x1.681dedbe8c329p-6"
+      ]
+     },
+     "vapor_fraction": "0x1.ab464291cfe35p-4"
+    },
+    "status": "ok",
+    "temperature": "0x1.4c05da393484fp+8"
+   },
+   "inputs": {
+    "flows": [
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0",
+     "0x1.0000000000000p+0"
+    ],
+    "pressure": "0x1.d4c0000000000p+15",
+    "target": "0x1.199fffffffff3p+14"
+   }
+  }
+ },
+ "specification": "docs/derivations/T05b-limitations-spec.md \u00a75.4, \u00a714 B02",
+ "unit_cases": {
+  "PHF-1": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "0x1.4000000000000p-34",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.86a000000000ap+15",
+       "iterations": 4,
+       "k_values": {
+        "A": "0x1.5bc3898036041p+1",
+        "B": "0x1.e55ac07e71e32p-1",
+        "C": "0x1.2acf1c4122a41p-2"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.66172c1541247p+8",
+        "n": [
+         "0x1.77b874062dd0ep-2",
+         "0x1.3f98a09fc9d80p-1",
+         "0x1.aff3a5054ef33p-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.66172c1541247p+8",
+        "n": [
+         "0x1.4423c5fce9177p-1",
+         "0x1.80cebec06c4fcp-2",
+         "0x1.40316beac4334p-3"
+        ]
+       },
+       "vapor_fraction": "0x1.8dba558fe0320p-2"
+      },
+      "status": "ok",
+      "temperature": "0x1.66172c1541247p+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.86a0000000000p+15"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": "0x1.86a0000000000p+15",
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.66172c1541247p+8",
+      "n": [
+       "0x1.77b874062dd0ep-2",
+       "0x1.3f98a09fc9d80p-1",
+       "0x1.aff3a5054ef33p-1"
+      ]
+     },
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.66172c1541247p+8",
+      "n": [
+       "0x1.4423c5fce9177p-1",
+       "0x1.80cebec06c4fcp-2",
+       "0x1.40316beac4334p-3"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "PHF-2": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 3,
+      "message": "",
+      "residual": "0x0.0p+0",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.b824238e86088p+15",
+       "iterations": 4,
+       "k_values": {
+        "A": "0x1.6b9a3ab75f479p+1",
+        "B": "0x1.0000000000000p+0",
+        "C": "0x1.3e089e48db752p-2"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.6800000000000p+8",
+        "n": [
+         "0x1.30ec60ff5e1c3p-2",
+         "0x1.17c158350ebd4p-1",
+         "0x1.970c7fea6e6c6p-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.6800000000000p+8",
+        "n": [
+         "0x1.6789cf8050f1dp-1",
+         "0x1.d07d4f95e2858p-2",
+         "0x1.a3ce0056464e7p-3"
+        ]
+       },
+       "vapor_fraction": "0x1.d07d4f95e2858p-2"
+      },
+      "status": "ok",
+      "temperature": "0x1.6800000000000p+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.b824238e86088p+15"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": "0x1.b824238e86088p+15",
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6800000000000p+8",
+      "n": [
+       "0x1.30ec60ff5e1c3p-2",
+       "0x1.17c158350ebd4p-1",
+       "0x1.970c7fea6e6c6p-1"
+      ]
+     },
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6800000000000p+8",
+      "n": [
+       "0x1.6789cf8050f1dp-1",
+       "0x1.d07d4f95e2858p-2",
+       "0x1.a3ce0056464e7p-3"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "PHF-3": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 54,
+      "message": "",
+      "residual": "-0x1.0000000000000p-37",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.387fffffffffcp+13",
+       "iterations": 0,
+       "k_values": {
+        "A": "0x1.74cb8244b9029p+0",
+        "B": "0x1.cb473778e8d33p-2",
+        "C": "0x1.f33252a79b4a5p-4"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.4d55555555555p+8",
+        "n": [
+         "0x1.0000000000000p+0",
+         "0x1.0000000000000p+0",
+         "0x1.0000000000000p+0"
+        ]
+       },
+       "message": "",
+       "phase_signature": "LIQUID",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.4d55555555555p+8",
+        "n": [
+         "0x0.0p+0",
+         "0x0.0p+0",
+         "0x0.0p+0"
+        ]
+       },
+       "vapor_fraction": "0x0.0p+0"
+      },
+      "status": "ok",
+      "temperature": "0x1.4d55555555555p+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.3880000000000p+13"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": "0x1.3880000000000p+13",
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.4d55555555555p+8",
+      "n": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ]
+     },
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.4d55555555555p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x0.0p+0",
+       "0x0.0p+0"
+      ]
+     }
+    },
+    "phase_signature": "LIQUID",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "PHF-4": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 4,
+      "message": "",
+      "residual": "0x0.0p+0",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.d4c0000000000p+16",
+       "iterations": 0,
+       "k_values": {
+        "A": "0x1.a31cb8375b51cp+2",
+        "B": "0x1.5cbb0cd3f861ep+1",
+        "C": "0x1.0000000000000p+0"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.9000000000000p+8",
+        "n": [
+         "0x0.0p+0",
+         "0x0.0p+0",
+         "0x0.0p+0"
+        ]
+       },
+       "message": "",
+       "phase_signature": "VAPOR",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.9000000000000p+8",
+        "n": [
+         "0x1.0000000000000p+0",
+         "0x1.0000000000000p+0",
+         "0x1.0000000000000p+0"
+        ]
+       },
+       "vapor_fraction": "0x1.0000000000000p+0"
+      },
+      "status": "ok",
+      "temperature": "0x1.9000000000000p+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.d4c0000000000p+16"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": "0x1.d4c0000000000p+16",
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.9000000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x0.0p+0",
+       "0x0.0p+0"
+      ]
+     },
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.9000000000000p+8",
+      "n": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ]
+     }
+    },
+    "phase_signature": "VAPOR",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "PHF-5": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 54,
+      "message": "",
+      "residual": "0x1.4000000000000p-35",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.d4c0000000005p+15",
+       "iterations": 5,
+       "k_values": {
+        "A": "0x1.f8c3488efd890p+1",
+        "B": "0x1.7b7bb73771935p+0",
+        "C": "0x1.f767c819198bdp-2"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.76b778ba7ec20p+8",
+        "n": [
+         "0x1.0245620a18608p-2",
+         "0x0.0p+0",
+         "0x1.75d4764f026dep+0"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.76b778ba7ec20p+8",
+        "n": [
+         "0x1.7edd4efaf3cfep-1",
+         "0x0.0p+0",
+         "0x1.14571361fb246p-1"
+        ]
+       },
+       "vapor_fraction": "0x1.b778419349f81p-2"
+      },
+      "status": "ok",
+      "temperature": "0x1.76b778ba7ec20p+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x0.0p+0",
+       "0x1.0000000000000p+1"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.d4c0000000000p+15"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": "0x1.d4c0000000000p+15",
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.76b778ba7ec20p+8",
+      "n": [
+       "0x1.0245620a18608p-2",
+       "0x0.0p+0",
+       "0x1.75d4764f026dep+0"
+      ]
+     },
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.76b778ba7ec20p+8",
+      "n": [
+       "0x1.7edd4efaf3cfep-1",
+       "0x0.0p+0",
+       "0x1.14571361fb246p-1"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "PHF-6": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 0,
+      "message": "",
+      "residual": "0x0.0p+0",
+      "route": "saturation",
+      "split": {
+       "enthalpy_flow": "0x1.4820000000000p+15",
+       "iterations": 0,
+       "k_values": {},
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.6800000000000p+8",
+        "n": [
+         "0x0.0p+0",
+         "0x1.0000000000000p+0",
+         "0x0.0p+0"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.6800000000000p+8",
+        "n": [
+         "0x0.0p+0",
+         "0x1.0000000000000p+0",
+         "0x0.0p+0"
+        ]
+       },
+       "vapor_fraction": "0x1.0000000000000p-1"
+      },
+      "status": "ok",
+      "temperature": "0x1.6800000000000p+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x0.0p+0",
+       "0x1.0000000000000p+1",
+       "0x0.0p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.4820000000000p+15"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": "0x1.4820000000000p+15",
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6800000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x1.0000000000000p+0",
+       "0x0.0p+0"
+      ]
+     },
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6800000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x1.0000000000000p+0",
+       "0x0.0p+0"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "PHF-7": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "-0x1.a000000000000p-35",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.199fffffffff3p+14",
+       "iterations": 6,
+       "k_values": {
+        "A": "0x1.1403293a3e47dp+1",
+        "B": "0x1.6fd132357fcc4p-1",
+        "C": "0x1.b0708a828cc76p-3"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.5c7ff71d54efbp+8",
+        "n": [
+         "0x1.d2ca63e761b48p-1",
+         "0x1.effefa11572d7p-1",
+         "0x1.fb309d1bd129cp-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.5c7ff71d54efbp+8",
+        "n": [
+         "0x1.69ace0c4f25c3p-4",
+         "0x1.00105eea8d285p-5",
+         "0x1.33d8b90bb58d7p-7"
+        ]
+       },
+       "vapor_fraction": "0x1.60201a3d1fc16p-5"
+      },
+      "status": "ok",
+      "temperature": "0x1.5c7ff71d54efbp+8"
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.19a0000000000p+14"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": "0x0.0p+0",
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.5c7ff71d54efbp+8",
+      "n": [
+       "0x1.d2ca63e761b48p-1",
+       "0x1.effefa11572d7p-1",
+       "0x1.fb309d1bd129cp-1"
+      ]
+     },
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.5c7ff71d54efbp+8",
+      "n": [
+       "0x1.69ace0c4f25c3p-4",
+       "0x1.00105eea8d285p-5",
+       "0x1.33d8b90bb58d7p-7"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "PHF-F1": {
+   "calls": [
+    {
+     "answer": {
+      "code": "ph_outside_domain(below)",
+      "evaluations": 2,
+      "message": "ph_outside_domain(below)\nHdot_TP(280.0 K) exceeds the target by 4000.0 W",
+      "residual": null,
+      "route": null,
+      "split": null,
+      "status": "out_of_domain",
+      "temperature": null
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "-0x1.3880000000000p+13"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "ph_outside_domain(below)\nHdot_TP(280.0 K) exceeds the target by 4000.0 W",
+    "outlets": {},
+    "phase_signature": null,
+    "status": "out_of_domain",
+    "work": null
+   }
+  },
+  "PHF-F2": {
+   "calls": [
+    {
+     "answer": {
+      "code": "ph_outside_domain(above)",
+      "evaluations": 2,
+      "message": "ph_outside_domain(above)\nthe target exceeds Hdot_TP(440.0 K) by 68000.0 W",
+      "residual": null,
+      "route": null,
+      "split": null,
+      "status": "out_of_domain",
+      "temperature": null
+     },
+     "caller": "ph_flash",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.86a0000000000p+17"
+     }
+    }
+   ],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "ph_outside_domain(above)\nthe target exceeds Hdot_TP(440.0 K) by 68000.0 W",
+    "outlets": {},
+    "phase_signature": null,
+    "status": "out_of_domain",
+    "work": null
+   }
+  },
+  "PHF-F3": {
+   "calls": [],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "inadmissible_phase(inlet, LIQUID)\nwriting the stream's enthalpy as LIQUID would be wrong by 128 K",
+    "outlets": {},
+    "phase_signature": null,
+    "status": "unsupported",
+    "work": null
+   }
+  },
+  "PHF-F4": {
+   "calls": [],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "pressure_outside_domain(outlet)\nP_in - dP = 40000.0 Pa outside [50000.0, 200000.0] Pa",
+    "outlets": {},
+    "phase_signature": null,
+    "status": "out_of_domain",
+    "work": null
+   }
+  },
+  "PHF-Z0": {
+   "calls": [],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": "0x0.0p+0",
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "liquid": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.4a00000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x0.0p+0",
+       "0x0.0p+0"
+      ]
+     },
+     "vapor": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.4a00000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x0.0p+0",
+       "0x0.0p+0"
+      ]
+     }
+    },
+    "phase_signature": "ZERO_FLOW",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "PHF-Z1": {
+   "calls": [],
+   "model": "syn001.ph_flash",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "duty_into_dormant_stream\nQ_spec = 1000.0 W into a dormant stream; PHF-duty forces Q = 0",
+    "outlets": {},
+    "phase_signature": null,
+    "status": "error",
+    "work": null
+   }
+  },
+  "RX-1": {
+   "calls": [],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x0.0p+0",
+    "extent": "0x1.3333333333333p-2",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.2c00000000000p+8",
+      "n": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333334p-1",
+       "0x1.3333333333333p+0"
+      ]
+     }
+    },
+    "phase_signature": "LIQUID",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "RX-2": {
+   "calls": [],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x1.d4c0000000000p+12",
+    "extent": "0x1.3333333333333p-2",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.a400000000000p+8",
+      "n": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333334p-1",
+       "0x1.3333333333333p+0"
+      ]
+     }
+    },
+    "phase_signature": "VAPOR",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "RX-3": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 9,
+      "message": "",
+      "residual": "0x0.0p+0",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.782c000000000p+16",
+       "iterations": 0,
+       "k_values": {
+        "A": "0x1.512cfc290e3cap+2",
+        "B": "0x1.0c9c07599f121p+1",
+        "C": "0x1.7993e6389aa4ep-1"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.84c0000000000p+8",
+        "n": [
+         "0x0.0p+0",
+         "0x0.0p+0",
+         "0x0.0p+0"
+        ]
+       },
+       "message": "",
+       "phase_signature": "VAPOR",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.84c0000000000p+8",
+        "n": [
+         "0x1.3333333333333p-1",
+         "0x1.3333333333334p-1",
+         "0x1.3333333333333p+0"
+        ]
+       },
+       "vapor_fraction": "0x1.0000000000000p+0"
+      },
+      "status": "ok",
+      "temperature": "0x1.84c0000000000p+8"
+     },
+     "caller": "conversion_reactor",
+     "inputs": {
+      "flows": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333334p-1",
+       "0x1.3333333333333p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.782c000000000p+16"
+     }
+    }
+   ],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x0.0p+0",
+    "extent": "0x1.3333333333333p-2",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.84c0000000000p+8",
+      "n": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333334p-1",
+       "0x1.3333333333333p+0"
+      ]
+     }
+    },
+    "phase_signature": "VAPOR",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "RX-4": {
+   "calls": [],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x1.601e8fdda14d6p+14",
+    "extent": "0x1.3333333333333p-2",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6800000000000p+8",
+      "n": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333334p-1",
+       "0x1.3333333333333p+0"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "RX-5": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 54,
+      "message": "",
+      "residual": "-0x1.8000000000000p-36",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.387fffffffffdp+15",
+       "iterations": 5,
+       "k_values": {
+        "A": "0x1.b043fb4e4d35bp+1",
+        "B": "0x1.3b0e7ba703ae2p+0",
+        "C": "0x1.952db508615c0p-2"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.6f9d0af3a0f91p+8",
+        "n": [
+         "0x1.bd59be22a0f90p-3",
+         "0x1.7662d2980bfdbp-2",
+         "0x1.fd6732ccdaa85p-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.6f9d0af3a0f91p+8",
+        "n": [
+         "0x1.87b9875515e9ep-2",
+         "0x1.e007279cb4d19p-3",
+         "0x1.a3fcce662ef83p-3"
+        ]
+       },
+       "vapor_fraction": "0x1.5eb8cba40deb8p-2"
+      },
+      "status": "ok",
+      "temperature": "0x1.6f9d0af3a0f91p+8"
+     },
+     "caller": "conversion_reactor",
+     "inputs": {
+      "flows": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333334p-1",
+       "0x1.3333333333333p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.3880000000000p+15"
+     }
+    }
+   ],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x1.3880000000000p+15",
+    "extent": "0x1.3333333333333p-2",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.6f9d0af3a0f91p+8",
+      "n": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333334p-1",
+       "0x1.3333333333333p+0"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "RX-6": {
+   "calls": [],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x1.86a0000000000p+13",
+    "extent": "0x1.0000000000000p-1",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.a400000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x1.0000000000000p-1",
+       "0x1.0000000000000p+1"
+      ]
+     }
+    },
+    "phase_signature": "VAPOR",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "RX-7": {
+   "calls": [],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x1.c200000000000p+12",
+    "extent": "0x0.0p+0",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.4a00000000000p+8",
+      "n": [
+       "0x1.3333333333333p+0",
+       "0x1.ccccccccccccdp-1",
+       "0x1.3333333333333p-2"
+      ]
+     }
+    },
+    "phase_signature": "LIQUID",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "RX-8": {
+   "calls": [],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x1.d4bfffffffff8p+13",
+    "extent": "0x1.3333333333333p-1",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.a400000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x1.3333333333334p-2",
+       "0x1.0ccccccccccccp+1"
+      ]
+     }
+    },
+    "phase_signature": "VAPOR",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "RX-F1": {
+   "calls": [],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "reactant_exhausted(A)\nconversion 0.6 of B gives xi = 0.6 mol/s and n_out = (-0.19999999999999996, 0.4, 2.3) mol/s",
+    "outlets": {},
+    "phase_signature": null,
+    "status": "out_of_domain",
+    "work": null
+   }
+  },
+  "RX-F5": {
+   "calls": [
+    {
+     "answer": {
+      "code": "ph_outside_domain(below)",
+      "evaluations": 2,
+      "message": "ph_outside_domain(below)\nHdot_TP(280.0 K) exceeds the target by 15200.0 W",
+      "residual": null,
+      "route": null,
+      "split": null,
+      "status": "out_of_domain",
+      "temperature": null
+     },
+     "caller": "conversion_reactor",
+     "inputs": {
+      "flows": [
+       "0x1.3333333333333p-1",
+       "0x1.3333333333334p-1",
+       "0x1.3333333333333p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "-0x1.3880000000000p+14"
+     }
+    }
+   ],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "ph_outside_domain(below)\nHdot_TP(280.0 K) exceeds the target by 15200.0 W",
+    "outlets": {},
+    "phase_signature": null,
+    "status": "out_of_domain",
+    "work": null
+   }
+  },
+  "RX-Z": {
+   "calls": [],
+   "model": "syn001.conversion_reactor",
+   "unit": {
+    "duty": "0x0.0p+0",
+    "extent": "0x0.0p+0",
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.4a00000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x0.0p+0",
+       "0x0.0p+0"
+      ]
+     }
+    },
+    "phase_signature": "ZERO_FLOW",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "VLV-1": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 54,
+      "message": "",
+      "residual": "-0x1.0cc0000000000p-38",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.3333333332f00p+4",
+       "iterations": 0,
+       "k_values": {
+        "A": "0x1.1265c8817ab4bp-1",
+        "B": "0x1.14cc281394f21p-3",
+        "C": "0x1.ecadcc8b4bd16p-6"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.2c147ae147ae1p+8",
+        "n": [
+         "0x1.3333333333333p+0",
+         "0x1.ccccccccccccdp-1",
+         "0x1.3333333333333p-2"
+        ]
+       },
+       "message": "",
+       "phase_signature": "LIQUID",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.2c147ae147ae1p+8",
+        "n": [
+         "0x0.0p+0",
+         "0x0.0p+0",
+         "0x0.0p+0"
+        ]
+       },
+       "vapor_fraction": "0x0.0p+0"
+      },
+      "status": "ok",
+      "temperature": "0x1.2c147ae147ae1p+8"
+     },
+     "caller": "valve",
+     "inputs": {
+      "flows": [
+       "0x1.3333333333333p+0",
+       "0x1.ccccccccccccdp-1",
+       "0x1.3333333333333p-2"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.3333333333333p+4"
+     }
+    }
+   ],
+   "model": "syn001.valve",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.2c147ae147ae1p+8",
+      "n": [
+       "0x1.3333333333333p+0",
+       "0x1.ccccccccccccdp-1",
+       "0x1.3333333333333p-2"
+      ]
+     }
+    },
+    "phase_signature": "LIQUID",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "VLV-2": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "-0x1.a000000000000p-35",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.199fffffffff3p+14",
+       "iterations": 6,
+       "k_values": {
+        "A": "0x1.1403293a3e47dp+1",
+        "B": "0x1.6fd132357fcc4p-1",
+        "C": "0x1.b0708a828cc76p-3"
+       },
+       "liquid": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.5c7ff71d54efbp+8",
+        "n": [
+         "0x1.d2ca63e761b48p-1",
+         "0x1.effefa11572d7p-1",
+         "0x1.fb309d1bd129cp-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.86a0000000000p+16",
+        "T": "0x1.5c7ff71d54efbp+8",
+        "n": [
+         "0x1.69ace0c4f25c3p-4",
+         "0x1.00105eea8d285p-5",
+         "0x1.33d8b90bb58d7p-7"
+        ]
+       },
+       "vapor_fraction": "0x1.60201a3d1fc16p-5"
+      },
+      "status": "ok",
+      "temperature": "0x1.5c7ff71d54efbp+8"
+     },
+     "caller": "valve",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.86a0000000000p+16",
+      "target": "0x1.19a0000000000p+14"
+     }
+    }
+   ],
+   "model": "syn001.valve",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.86a0000000000p+16",
+      "T": "0x1.5c7ff71d54efbp+8",
+      "n": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "VLV-3": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 5,
+      "message": "",
+      "residual": "0x0.0p+0",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.ec30000000000p+16",
+       "iterations": 0,
+       "k_values": {
+        "A": "0x1.f3026c35237dap+3",
+        "B": "0x1.be06a0ee49efcp+2",
+        "C": "0x1.5fb934d91f5a8p+1"
+       },
+       "liquid": {
+        "P": "0x1.d4c0000000000p+15",
+        "T": "0x1.a400000000000p+8",
+        "n": [
+         "0x0.0p+0",
+         "0x0.0p+0",
+         "0x0.0p+0"
+        ]
+       },
+       "message": "",
+       "phase_signature": "VAPOR",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.d4c0000000000p+15",
+        "T": "0x1.a400000000000p+8",
+        "n": [
+         "0x1.0000000000000p+0",
+         "0x1.0000000000000p+0",
+         "0x1.0000000000000p+0"
+        ]
+       },
+       "vapor_fraction": "0x1.0000000000000p+0"
+      },
+      "status": "ok",
+      "temperature": "0x1.a400000000000p+8"
+     },
+     "caller": "valve",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.d4c0000000000p+15",
+      "target": "0x1.ec30000000000p+16"
+     }
+    }
+   ],
+   "model": "syn001.valve",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.d4c0000000000p+15",
+      "T": "0x1.a400000000000p+8",
+      "n": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ]
+     }
+    },
+    "phase_signature": "VAPOR",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "VLV-4": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 5,
+      "message": "",
+      "residual": "0x0.0p+0",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.3333333333333p+4",
+       "iterations": 0,
+       "k_values": {
+        "A": "0x1.310ca89db319cp-2",
+        "B": "0x1.338d9318c8c7dp-4",
+        "C": "0x1.119083457ce22p-6"
+       },
+       "liquid": {
+        "P": "0x1.5f90000000000p+17",
+        "T": "0x1.2c00000000000p+8",
+        "n": [
+         "0x1.3333333333333p+0",
+         "0x1.ccccccccccccdp-1",
+         "0x1.3333333333333p-2"
+        ]
+       },
+       "message": "",
+       "phase_signature": "LIQUID",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.5f90000000000p+17",
+        "T": "0x1.2c00000000000p+8",
+        "n": [
+         "0x0.0p+0",
+         "0x0.0p+0",
+         "0x0.0p+0"
+        ]
+       },
+       "vapor_fraction": "0x0.0p+0"
+      },
+      "status": "ok",
+      "temperature": "0x1.2c00000000000p+8"
+     },
+     "caller": "valve",
+     "inputs": {
+      "flows": [
+       "0x1.3333333333333p+0",
+       "0x1.ccccccccccccdp-1",
+       "0x1.3333333333333p-2"
+      ],
+      "keywords": {},
+      "pressure": "0x1.5f90000000000p+17",
+      "target": "0x1.3333333333333p+4"
+     }
+    }
+   ],
+   "model": "syn001.valve",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.5f90000000000p+17",
+      "T": "0x1.2c00000000000p+8",
+      "n": [
+       "0x1.3333333333333p+0",
+       "0x1.ccccccccccccdp-1",
+       "0x1.3333333333333p-2"
+      ]
+     }
+    },
+    "phase_signature": "LIQUID",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "VLV-5": {
+   "calls": [
+    {
+     "answer": {
+      "code": "",
+      "evaluations": 53,
+      "message": "",
+      "residual": "0x1.3000000000000p-33",
+      "route": "bracket",
+      "split": {
+       "enthalpy_flow": "0x1.19a0000000019p+14",
+       "iterations": 6,
+       "k_values": {
+        "A": "0x1.2b5cc8b7c3558p+1",
+        "B": "0x1.6e318ae10b9d6p-1",
+        "C": "0x1.8b3283d1664e4p-3"
+       },
+       "liquid": {
+        "P": "0x1.d4c0000000000p+15",
+        "T": "0x1.4c05da393484fp+8",
+        "n": [
+         "0x1.92650e7a267cfp-1",
+         "0x1.d8a187fd1fef6p-1",
+         "0x1.f4bf10920b9e6p-1"
+        ]
+       },
+       "message": "",
+       "phase_signature": "TWO_PHASE",
+       "provider_id": "syn001",
+       "reference_convention": "SYN-001-ref-v1",
+       "status": "ok",
+       "vapor": {
+        "P": "0x1.d4c0000000000p+15",
+        "T": "0x1.4c05da393484fp+8",
+        "n": [
+         "0x1.b66bc617660c5p-3",
+         "0x1.3af3c0170084ap-4",
+         "0x1.681dedbe8c329p-6"
+        ]
+       },
+       "vapor_fraction": "0x1.ab464291cfe35p-4"
+      },
+      "status": "ok",
+      "temperature": "0x1.4c05da393484fp+8"
+     },
+     "caller": "valve",
+     "inputs": {
+      "flows": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ],
+      "keywords": {},
+      "pressure": "0x1.d4c0000000000p+15",
+      "target": "0x1.199fffffffff3p+14"
+     }
+    }
+   ],
+   "model": "syn001.valve",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.d4c0000000000p+15",
+      "T": "0x1.4c05da393484fp+8",
+      "n": [
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0",
+       "0x1.0000000000000p+0"
+      ]
+     }
+    },
+    "phase_signature": "TWO_PHASE",
+    "status": "ok",
+    "work": null
+   }
+  },
+  "VLV-F1": {
+   "calls": [],
+   "model": "syn001.valve",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "pressure_rise(valve)\nP_spec = 120000.0 Pa exceeds the inlet's 100000.0 Pa",
+    "outlets": {},
+    "phase_signature": null,
+    "status": "out_of_domain",
+    "work": null
+   }
+  },
+  "VLV-Z": {
+   "calls": [],
+   "model": "syn001.valve",
+   "unit": {
+    "duty": null,
+    "extent": null,
+    "message": "",
+    "outlets": {
+     "outlet": {
+      "P": "0x1.5f90000000000p+16",
+      "T": "0x1.4a00000000000p+8",
+      "n": [
+       "0x0.0p+0",
+       "0x0.0p+0",
+       "0x0.0p+0"
+      ]
+     }
+    },
+    "phase_signature": "ZERO_FLOW",
+    "status": "ok",
+    "work": null
+   }
+  }
+ }
+}

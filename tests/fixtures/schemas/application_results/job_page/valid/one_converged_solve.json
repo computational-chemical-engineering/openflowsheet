@@ -1,0 +1,70 @@
+{
+  "items": [
+    {
+      "cancel_requested": false,
+      "capability_id": "local-owner",
+      "created_at": "2026-09-27T13:48:27.978729Z",
+      "effective_budgets": {
+        "max_property_calls": 10000,
+        "wall_time_s": null
+      },
+      "ended_at": "2026-09-27T13:48:28.115468Z",
+      "ending": {
+        "interruption": null,
+        "reason": "operation_completed",
+        "status": "completed"
+      },
+      "error": null,
+      "event_count": 12,
+      "job_id": "job-000001",
+      "operation": "solve",
+      "outputs": [
+        {
+          "artifact_id": "job-000001:bundle/solution-certificate.json",
+          "kind": "solution_certificate",
+          "name": "solution-certificate.json",
+          "sha256": "dc7715f3f63b7f648e5c9874b05d3a4c5b0b342b4d2be827473cdc217a6a68b8",
+          "size_bytes": 56443
+        },
+        {
+          "artifact_id": "job-000001:bundle/run-manifest.json",
+          "kind": "run_manifest",
+          "name": "run-manifest.json",
+          "sha256": "64c9916ecb5984e04d353e979bf753e61f46c43818289ddfc5d66ac8ee269504",
+          "size_bytes": 2326
+        },
+        {
+          "artifact_id": "job-000001:bundle",
+          "kind": "replay_bundle",
+          "name": "bundle",
+          "sha256": "b588feff5aa780ec3cfdbe871cfc09f1938b812c850ad74f22f7115e1425c79d",
+          "size_bytes": 105608
+        }
+      ],
+      "policy_sha256": "a97fbbfa67d34e3c9c34c0900a252cb3aacdaa19b756806655d195d9e39cf13d",
+      "principal_id": "local-owner",
+      "progress": {
+        "completed": 5,
+        "stage": "bundle",
+        "total": 6
+      },
+      "request": {
+        "body": {
+          "check_tolerances": {},
+          "max_property_calls": null,
+          "policy_id": "default",
+          "revision_id": "syn001-nominal"
+        },
+        "budgets": {
+          "wall_time_s": null
+        },
+        "idempotency_key": "fixture-results-solve",
+        "operation": "solve"
+      },
+      "request_sha256": "49a802c22fa773df99c898eed647f14163358569497cd1170b9708ce05f4051d",
+      "started_at": "2026-09-27T13:48:27.979804Z",
+      "status": "completed"
+    }
+  ],
+  "next_cursor": null
+}

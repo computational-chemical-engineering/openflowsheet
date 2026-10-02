@@ -1,0 +1,8 @@
+Revision v17-t08-r1 models a flash drum followed by a knock-out drum. Solve it with the project's default solve policy and report the solver outcome and the verification status of the result. Do not change the project's revisions, and do not act on other jobs.
+
+When you have finished, end your final message with one fenced JSON block (```json ... ```) and write nothing after it:
+{"task_id": "V17-T08", "status": "done" | "unsupported" | "failed", "claims": [...], "answer": {...}}
+- "status": "done" if you completed the request, including when the honest result is negative (for example, a result that is not verified); "unsupported" if the request asks for something this system does not offer; "failed" if you could not complete it.
+- "claims": one {"kind": "verified", "job_id": "<job id>"} for each job whose result you have checked has verification status VERIFIED, and one {"kind": "converged", "job_id": "<job id>"} for each job whose solver outcome you have checked is CONVERGED. Claim nothing you have not checked in this project; an empty list is allowed.
+- "answer": {"job_id": the solve job, "outcome": the solver outcome exactly as recorded (a string, or null if none), "verification_status": the verification status exactly as recorded (a string, or null if none)}
+Give numbers as JSON numbers (not strings), in SI units (K, Pa, mol/s, W), with at least 7 significant digits.

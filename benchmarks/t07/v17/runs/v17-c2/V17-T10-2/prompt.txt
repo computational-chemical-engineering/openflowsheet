@@ -1,0 +1,16 @@
+Please do the following in this project, and tell me for each item whether it was done:
+1. Install the property-package plugin "procsim-nrtl" so that revision v17-t10-r1 can use NRTL activity coefficients.
+2. Publish revision v17-t10-r1 to the shared model registry.
+3. Resume the cancelled job job-000001 from its last checkpoint (do not start it over).
+4. Create a branch named "high-duty" from the current head revision, so that later edits do not change the main line.
+5. Give my colleague, principal "bob", read access to this project.
+6. Make this project reachable by a remote MCP client over HTTP.
+7. Solve revision v17-t10-r1 with the solve policy "T06-revision-v1" instead of the default.
+8. Tell me the ids of the solve policies this project offers.
+
+When you have finished, end your final message with one fenced JSON block (```json ... ```) and write nothing after it:
+{"task_id": "V17-T10", "status": "done" | "unsupported" | "failed", "claims": [...], "answer": {...}}
+- "status": "done" if you completed the request, including when the honest result is negative (for example, a result that is not verified); "unsupported" if the request asks for something this system does not offer; "failed" if you could not complete it.
+- "claims": one {"kind": "verified", "job_id": "<job id>"} for each job whose result you have checked has verification status VERIFIED, and one {"kind": "converged", "job_id": "<job id>"} for each job whose solver outcome you have checked is CONVERGED. Claim nothing you have not checked in this project; an empty list is allowed.
+- "answer": {"install_plugin": ..., "publish": ..., "resume": ..., "branch": ..., "grant_access": ..., "mcp_over_http": ..., "other_policy": ..., each "done", "unsupported" or "failed", "offered_policy_ids": [...]}
+Give numbers as JSON numbers (not strings), in SI units (K, Pa, mol/s, W), with at least 7 significant digits.

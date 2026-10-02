@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+# Isolated per-candidate backend environments for the P02 spike (never in requirements.lock)
+.venv-*/
+# Download cache of the T06 reference environments (scripts/build-reference-envs.sh)
+.reference-downloads/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Large run artifacts: evidence manifests are committed, bulky binaries are not
+evidence/**/artifacts/
+*.h5
+*.npz
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Agent worktrees created by Claude Code subagents
+.claude/worktrees/

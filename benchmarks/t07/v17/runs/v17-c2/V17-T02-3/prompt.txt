@@ -1,0 +1,14 @@
+Using the process-simulator tools, build and solve the following recycle flowsheet in this project.
+
+A fresh liquid feed of A, B and C, 1 mol/s of each, at 300 K and 100000 Pa, enters a mixer together with a recycle stream. The mixer outlet is heated to 345 K, and the heated stream (possibly partly vaporised) enters a flash drum at 358 K and 100000 Pa. The drum's vapour leaves as the vapour product. The drum's liquid goes to a splitter: a fraction 0.6 of it is returned to the mixer as the recycle, and the rest leaves as a purge. All pressure drops are zero.
+
+Name the units U-FEED, U-MIX, U-HEAT, U-FLASH, U-SPLIT, U-PROD (vapour product) and U-PURGE (purge), and the streams S1 (feed to mixer), S2 (mixer to heater), S3 (heater to drum), S4 (drum vapour to U-PROD), S5 (drum liquid to splitter), S6 (recycle, splitter to mixer) and S7 (purge). The project's head revision is an example of a different recycle flowsheet; you may use it to see how revisions are written.
+
+Commit the flowsheet as a new revision, make sure it validates as ready for simulation, solve it with the project's default solve policy, and check that the result is verified. Report the recycle's component flows (stream S6), the vapour product's component flows (stream S4), the mixer outlet temperature, the heater duty and the flash-drum duty.
+
+When you have finished, end your final message with one fenced JSON block (```json ... ```) and write nothing after it:
+{"task_id": "V17-T02", "status": "done" | "unsupported" | "failed", "claims": [...], "answer": {...}}
+- "status": "done" if you completed the request, including when the honest result is negative (for example, a result that is not verified); "unsupported" if the request asks for something this system does not offer; "failed" if you could not complete it.
+- "claims": one {"kind": "verified", "job_id": "<job id>"} for each job whose result you have checked has verification status VERIFIED, and one {"kind": "converged", "job_id": "<job id>"} for each job whose solver outcome you have checked is CONVERGED. Claim nothing you have not checked in this project; an empty list is allowed.
+- "answer": {"revision_id": the revision you solved, "job_id": the solve job, "recycle_flow_mol_s": {"A": ..., "B": ..., "C": ...} for stream S6, "vapor_flow_mol_s": {"A": ..., "B": ..., "C": ...} for stream S4, "mixer_outlet_T_K": ..., "heater_duty_W": ..., "flash_duty_W": ...}
+Give numbers as JSON numbers (not strings), in SI units (K, Pa, mol/s, W), with at least 7 significant digits.

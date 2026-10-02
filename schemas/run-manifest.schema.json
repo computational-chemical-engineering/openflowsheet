@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/run-manifest.schema.json",
+  "title": "RunManifest",
+  "description": "K05, blueprint \u00a78.3 and Appendix A. What ran, in what, and what it is comparable with. `structural_sha256` covers ids, policies and outcomes only \u2014 never the environment, never the artifact index, never timing. R0 promises structural artifacts identical *on supported platforms*, so an identity that moved with the platform would be promising something else; it is measured equal on x86-64 and aarch64. The environment is provenance (ADR 0007 D6), recorded so that a within-policy difference is attributable. `manifest_sha256` is the integrity hash over the whole document, because identity and integrity are two questions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "parent_run_id",
+    "model_version",
+    "constants_sha256",
+    "policy_id",
+    "plan_id",
+    "check_policy_sha256",
+    "numerical_policy_id",
+    "environment",
+    "artifacts",
+    "outcome",
+    "verification_status",
+    "seeds",
+    "reproducibility_class",
+    "started_at",
+    "elapsed_seconds",
+    "hostname",
+    "structural_sha256",
+    "manifest_sha256",
+    "policy_sha256",
+    "artifact_r0_sha256"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "model_version": {
+      "type": "string",
+      "pattern": "^.*(@[0-9a-f]{64})?$"
+    },
+    "constants_sha256": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "policy_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "check_policy_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "numerical_policy_id": {
+      "enum": [
+        "K04-numerical-policy-v1",
+        "T08-numerical-policy-v2"
+      ]
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "architecture",
+        "os_name",
+        "os_release",
+        "python_version",
+        "lock_sha256",
+        "blas",
+        "threads",
+        "superlu_options_ref"
+      ],
+      "properties": {
+        "architecture": {
+          "type": "string",
+          "minLength": 1
+        },
+        "os_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "os_release": {
+          "type": "string"
+        },
+        "python_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lock_sha256": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{64})?$"
+        },
+        "blas": {
+          "type": "object",
+          "required": [
+            "name",
+            "version"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "threads": {
+          "type": "object",
+          "description": "ADR 0007 D6: a differing thread count is a differing environment. `null` means the variable was unset, which is a different fact from being set to 1 and is recorded as such.",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "superlu_options_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "outcome": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verification_status": {
+      "enum": [
+        "VERIFIED",
+        "RELAXED",
+        "UNVERIFIED",
+        "FAILED",
+        null
+      ]
+    },
+    "seeds": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "reproducibility_class": {
+      "enum": [
+        "R0",
+        "R1",
+        "R2",
+        "R3"
+      ]
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "elapsed_seconds": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "hostname": {
+      "type": "string"
+    },
+    "structural_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Integrity, as distinct from identity. `structural_sha256` excludes the environment and the artifact index so that two runs of the same model on different machines share one identity \u2014 which also means it cannot detect an edit to either. This covers the whole document. It is a self-hash and not a signature: it catches an edit that forgot to recompute it, which is every accidental one, and nothing in a plain directory could catch an adversary."
+    },
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The SolvePolicy's *values*, not its name. ADR 0007 D1 makes every SolvePolicy value R0, and `policy_id` is a label \u2014 two policies with the same id and different iteration caps were measured producing an identical structural identity."
+    },
+    "artifact_r0_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The digest of the R0 projection of this run's artifacts (`run/identity.py`): the plan's structure, the event sequence with its kinds and outcomes, the certificate's check ids and results, the solver counters, and no floats. Without it the identity covered what the run was *called* and not what it did. Conditional under ADR 0007 D2.4, which is why the projection also carries each check's near-threshold flag."
+    }
+  }
+}

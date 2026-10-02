@@ -1,0 +1,19 @@
+# Invalid Quantity: `kind` and `dimension` disagree.
+#
+# The declared kind is temperature but the exponent vector is that of pressure. JSON
+# Schema cannot express the cross-field rule; check_quantity does (ADR 0001 D1.2).
+expect_error: does not match kind
+document:
+  value: 350.0
+  unit: K
+  dimension:
+  - -1
+  - 1
+  - -2
+  - 0
+  - 0
+  - 0
+  - 0
+  kind: temperature
+  meaning: Heater outlet temperature with the wrong dimension vector
+  role: fixed

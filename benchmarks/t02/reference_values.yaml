@@ -1,0 +1,1664 @@
+generated_by: 'Fable 5.1, docs/derivations/scripts/t02_reference.py: closed forms of the manufactured maps and of
+  SYN-001 (through syn001_reference.py and k03_reference.py), and the registered recycle policy simulated at 40
+  digits from its statement in T02-recycle-spec.md §5'
+specification: docs/derivations/T02-recycle-spec.md
+independence: no solver, graph-layer, oracle or process_runtime code was used. `closed_form` values are expectations;
+  `policy_simulation` values are definition-level references (the same policy, derived a second time); the `measured`
+  block is prototype observation, labelled, never an expectation.
+policy:
+  policy_id: T02-recycle-policy-v1
+  method_default: auto
+  depth_max: 5
+  beta: '1'
+  beta_substitution: '1'
+  beta_substitution_oscillating: '0.5'
+  condition_max: 1e8
+  coefficient_max: 1e4
+  stagnation_window: 5
+  stagnation_ratio: '0.99'
+  oscillation_window: 3
+  max_restarts: 2
+  max_iterations_per_attempt: 200
+  step_halvings_max: 20
+  tear_tolerance_mol_per_s: '3.1e-8'
+  tear_scale_mol_per_s: '3'
+cases_rec:
+  REC-01:
+    title: 'oscillating: real spectrum, dominant negative eigenvalue'
+    A:
+    - - '-0.90000000000000000000'
+      - '0.0'
+      - '0.0'
+    - - '0.0'
+      - '0.50000000000000000000'
+      - '0.0'
+    - - '0.0'
+      - '0.0'
+      - '0.20000000000000000000'
+    t_star:
+    - '1.0000000000000000000'
+    - '2.0000000000000000000'
+    - '3.0000000000000000000'
+    start:
+    - '0.50000000000000000000'
+    - '1.0000000000000000000'
+    - '1.5000000000000000000'
+    scale_mol_per_s: '3'
+    lower_bounds:
+    - '0'
+    - '0'
+    - '0'
+    variants:
+      gamma=0:
+        gamma: '0'
+        residual_at_start_mol_per_s:
+        - '0.95000000000000000000'
+        - '0.50000000000000000000'
+        - '1.2000000000000000000'
+        krylov_grade: 3
+        anderson_termination_iteration_exact_arithmetic: 4
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 4
+          final_t:
+          - '1.0000000000000000000'
+          - '2.0000000000000000000'
+          - '3.0000000000000000000'
+          residual_inf_scaled:
+          - '0.40000000000000000000'
+          - '0.28500000000000000000'
+          - '0.096891770044494209859'
+          - '0.020720554520948328887'
+          - '1.5305916026331868593e-41'
+          residual_inf_scaled_recorded_through: 4
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 3
+            max_kappa: '33.403709331029046110'
+            max_gamma_inf: '0.88163337643325026159'
+            residual_increases: 0
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 54
+          final_t:
+          - '1.0000000000000000000'
+          - '1.9999999469073447100'
+          - '2.9999999999999418037'
+          residual_inf_scaled:
+          - '0.40000000000000000000'
+          - '0.28500000000000000000'
+          - '0.25650000000000000000'
+          - '0.23085000000000000000'
+          - '0.015625000000000000000'
+          - '0.011718750000000000000'
+          - '0.0087890625000000000000'
+          - '0.0065917968750000000000'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: 3
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 54
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 0
+      gamma=0.1:
+        gamma: '0.1'
+        residual_at_start_mol_per_s:
+        - '1.0000000000000000000'
+        - '0.52500000000000000000'
+        - '1.2166666666666666667'
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 7
+          final_t:
+          - '1.0000000000464585790'
+          - '1.9999999999717428100'
+          - '2.9999999999148962331'
+          residual_inf_scaled:
+          - '0.40555555555555555556'
+          - '0.31517129629629629630'
+          - '0.091500608458439379608'
+          - '0.020337389762188370591'
+          - '0.0013154734978465048246'
+          - '7.6350648780569475370e-6'
+          residual_inf_scaled_recorded_through: 5
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 6
+            max_kappa: '6988.5354587853874522'
+            max_gamma_inf: '0.96329934498306390082'
+            residual_increases: 0
+        converges_to: t*
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 54
+          final_t:
+          - '1.0000000000000000000'
+          - '1.9999999489294797968'
+          - '2.9999999999999478701'
+          residual_inf_scaled:
+          - '0.40555555555555555556'
+          - '0.31517129629629629630'
+          - '0.28233261316872427984'
+          - '0.25426072690994783496'
+          - '0.015027967945901609057'
+          - '0.011272360242771300626'
+          - '0.0084543123476408262637'
+          - '0.0063407356084258889266'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: 3
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 54
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 0
+    spectrum:
+    - '-0.90000000000000000000'
+    - '0.50000000000000000000'
+    - '0.20000000000000000000'
+    spectral_radius: '0.90000000000000000000'
+    best_damping:
+      omega_star: '0.83333333333333333333'
+      rate: '0.58333333333333333333'
+  REC-02:
+    title: 'divergent oscillation: rho = 1.5, second substitution iterate negative'
+    A:
+    - - '-1.5000000000000000000'
+      - '0.0'
+      - '0.0'
+    - - '0.0'
+      - '0.50000000000000000000'
+      - '0.0'
+    - - '0.0'
+      - '0.0'
+      - '0.20000000000000000000'
+    t_star:
+    - '1.0000000000000000000'
+    - '2.0000000000000000000'
+    - '3.0000000000000000000'
+    start:
+    - '0.50000000000000000000'
+    - '1.0000000000000000000'
+    - '1.5000000000000000000'
+    scale_mol_per_s: '3'
+    lower_bounds:
+    - '0'
+    - '0'
+    - '0'
+    variants:
+      gamma=0:
+        gamma: '0'
+        residual_at_start_mol_per_s:
+        - '1.2500000000000000000'
+        - '0.50000000000000000000'
+        - '1.2000000000000000000'
+        krylov_grade: 3
+        anderson_termination_iteration_exact_arithmetic: 4
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 4
+          final_t:
+          - '1.0000000000000000000'
+          - '2.0000000000000000000'
+          - '3.0000000000000000000'
+          residual_inf_scaled:
+          - '0.41666666666666666667'
+          - '0.62500000000000000000'
+          - '0.12839863345341392454'
+          - '0.022850594336403322250'
+          - '3.0611832052663737187e-41'
+          residual_inf_scaled_recorded_through: 4
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 3
+            max_kappa: '53.353368928155186312'
+            max_gamma_inf: '0.90077006776729943087'
+            residual_increases: 1
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 54
+          final_t:
+          - '1.0000000000000000000'
+          - '1.9999999433678343573'
+          - '2.9999999999999262847'
+          residual_inf_scaled:
+          - '0.41666666666666666667'
+          - '0.62500000000000000000'
+          - '0.83333333333333333333'
+          - '1.2500000000000000000'
+          - '0.31250000000000000000'
+          - '0.078125000000000000000'
+          - '0.019531250000000000000'
+          - '0.0070312500000000000000'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: 3
+            bound_landings: 1
+            invalid_trials: 0
+            plain_steps: 54
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 3
+      gamma=0.1:
+        gamma: '0.1'
+        residual_at_start_mol_per_s:
+        - '1.3000000000000000000'
+        - '0.52500000000000000000'
+        - '1.2166666666666666667'
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 7
+          final_t:
+          - '1.0000000000262141359'
+          - '1.9999999999608109700'
+          - '2.9999999998997472930'
+          residual_inf_scaled:
+          - '0.43333333333333333333'
+          - '0.66517129629629629630'
+          - '0.12137680587940698064'
+          - '0.022363758436637119485'
+          - '0.0016117881138434725613'
+          - '9.3539877430293945491e-6'
+          residual_inf_scaled_recorded_through: 5
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 6
+            max_kappa: '26888.610825730739389'
+            max_gamma_inf: '2.0090878714393417612'
+            residual_increases: 1
+        converges_to: t*
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 54
+          final_t:
+          - '1.0000000000000000000'
+          - '1.9999999443571625092'
+          - '2.9999999999999355404'
+          residual_inf_scaled:
+          - '0.43333333333333333333'
+          - '0.66517129629629629630'
+          - '0.83360181107810298620'
+          - '1.2506579118460541021'
+          - '0.31266076007316734820'
+          - '0.078170957062148226949'
+          - '0.019540721563321988309'
+          - '0.0069082755312374686353'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: 3
+            bound_landings: 1
+            invalid_trials: 0
+            plain_steps: 54
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 3
+    spectrum:
+    - '-1.5000000000000000000'
+    - '0.50000000000000000000'
+    - '0.20000000000000000000'
+    spectral_radius: '1.5000000000000000000'
+    best_damping:
+      omega_star: '0.66666666666666666667'
+      rate: '0.66666666666666666667'
+    unbounded_linear_substitution_iterate_2:
+    - '-0.12500000000000000000'
+    - '1.7500000000000000000'
+    - '2.9400000000000000000'
+    substitution_iterate_2_landed:
+    - '0.0'
+    - '1.7333333333333333333'
+    - '2.9240000000000000000'
+  REC-03:
+    title: 'mixed sign: +-0.95, no damping factor helps'
+    A:
+    - - '0.95000000000000000000'
+      - '0.0'
+      - '0.0'
+    - - '0.0'
+      - '-0.95000000000000000000'
+      - '0.0'
+    - - '0.0'
+      - '0.0'
+      - '0.30000000000000000000'
+    t_star:
+    - '1.0000000000000000000'
+    - '2.0000000000000000000'
+    - '3.0000000000000000000'
+    start:
+    - '0.50000000000000000000'
+    - '1.0000000000000000000'
+    - '1.5000000000000000000'
+    scale_mol_per_s: '3'
+    lower_bounds:
+    - '0'
+    - '0'
+    - '0'
+    variants:
+      gamma=0:
+        gamma: '0'
+        residual_at_start_mol_per_s:
+        - '0.025000000000000000000'
+        - '1.9500000000000000000'
+        - '1.0500000000000000000'
+        krylov_grade: 3
+        anderson_termination_iteration_exact_arithmetic: 4
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 4
+          final_t:
+          - '1.0000000000000000000'
+          - '2.0000000000000000000'
+          - '3.0000000000000000000'
+          residual_inf_scaled:
+          - '0.65000000000000000000'
+          - '0.61750000000000000000'
+          - '0.064883332574613972444'
+          - '0.0071626503397011583271'
+          - '4.2091269072412638632e-40'
+          residual_inf_scaled_recorded_through: 4
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 3
+            max_kappa: '4122.2469997221894740'
+            max_gamma_inf: '18.998240534776074884'
+            residual_increases: 0
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 535
+          final_t:
+          - '0.99999939382730205249'
+          - '2.0000000000000000000'
+          - '3.0000000000000000000'
+          residual_inf_scaled:
+          - '0.65000000000000000000'
+          - '0.61750000000000000000'
+          - '0.58662500000000000000'
+          - '0.55729375000000000000'
+          - '0.013932343750000000000'
+          - '0.0067920175781250000000'
+          - '0.0066222171386718750000'
+          - '0.0064566617102050781250'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: 3
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 535
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 0
+      gamma=0.1:
+        gamma: '0.1'
+        residual_at_start_mol_per_s:
+        - '0.075000000000000000000'
+        - '1.9750000000000000000'
+        - '1.0666666666666666667'
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 7
+          final_t:
+          - '1.0000000000859487522'
+          - '2.0000000005347197161'
+          - '3.0000000003053238695'
+          residual_inf_scaled:
+          - '0.65833333333333333333'
+          - '0.63170370370370370370'
+          - '0.064628444029627585553'
+          - '0.0065290621215837036742'
+          - '0.0071025139158055448090'
+          - '0.000028006877542842843524'
+          residual_inf_scaled_recorded_through: 5
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 6
+            max_kappa: '9669.1083046369302594'
+            max_gamma_inf: '12.488766345182411414'
+            residual_increases: 1
+        converges_to: t*
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 531
+          final_t:
+          - '0.99999938507189572811'
+          - '2.0000000000000000000'
+          - '3.0000000000000000000'
+          residual_inf_scaled:
+          - '0.65833333333333333333'
+          - '0.63170370370370370370'
+          - '0.59873988506944444444'
+          - '0.56933827665670162235'
+          - '0.014257404746258863039'
+          - '0.0062263812486686957787'
+          - '0.0060708395675800687178'
+          - '0.0059190778526973794330'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: 3
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 531
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 0
+    spectrum:
+    - '0.95000000000000000000'
+    - '-0.95000000000000000000'
+    - '0.30000000000000000000'
+    spectral_radius: '0.95000000000000000000'
+    best_damping:
+      omega_star: '1.0000000000000000000'
+      rate: '0.95000000000000000000'
+  REC-04:
+    title: 'spiral: complex pair 0.95 e^{+-2 pi i/3}, sign alternation does not see it'
+    A:
+    - - '-0.47500000000000000000'
+      - '-0.82272413359521671443'
+      - '0.0'
+    - - '0.82272413359521671443'
+      - '-0.47500000000000000000'
+      - '0.0'
+    - - '0.0'
+      - '0.0'
+      - '0.30000000000000000000'
+    t_star:
+    - '1.0000000000000000000'
+    - '2.0000000000000000000'
+    - '3.0000000000000000000'
+    start:
+    - '0.50000000000000000000'
+    - '1.0000000000000000000'
+    - '1.5000000000000000000'
+    scale_mol_per_s: '3'
+    lower_bounds:
+    - '0'
+    - '0'
+    - '0'
+    variants:
+      gamma=0:
+        gamma: '0'
+        residual_at_start_mol_per_s:
+        - '1.5602241335952167144'
+        - '1.0636379332023916428'
+        - '1.0500000000000000000'
+        krylov_grade: 3
+        anderson_termination_iteration_exact_arithmetic: 4
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 4
+          final_t:
+          - '1.0000000000000000000'
+          - '2.0000000000000000000'
+          - '3.0000000000000000000'
+          residual_inf_scaled:
+          - '0.52007471119840557148'
+          - '0.53872902017022419771'
+          - '0.21150352629491526304'
+          - '0.042740034769188613874'
+          - '7.6529580131659342967e-42'
+          residual_inf_scaled_recorded_through: 4
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 3
+            max_kappa: '10.988914462395266943'
+            max_gamma_inf: '0.43693856982539693886'
+            residual_increases: 1
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 348
+          final_t:
+          - '0.99999999115323186783'
+          - '1.9999999823064637357'
+          - '3.0000000000000000000'
+          residual_inf_scaled:
+          - '0.52007471119840557148'
+          - '0.53872902017022419771'
+          - '0.56647298781924264645'
+          - '0.44589905551373297684'
+          - '0.46189279366844597151'
+          - '0.48567977793152316400'
+          - '0.38230270272108681102'
+          - '0.39601533397148386482'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 348
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 232
+      gamma=0.1:
+        gamma: '0.1'
+        residual_at_start_mol_per_s:
+        - '1.6102241335952167144'
+        - '1.0886379332023916428'
+        - '1.0666666666666666667'
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 7
+          final_t:
+          - '0.99999999991492107312'
+          - '2.0000000003151360034'
+          - '3.0000000000721744466'
+          residual_inf_scaled:
+          - '0.53674137786507223814'
+          - '0.57059516318412177824'
+          - '0.22085116910026823730'
+          - '0.040945633273133980495'
+          - '0.0017526292593252500304'
+          - '8.6402887832228931594e-6'
+          residual_inf_scaled_recorded_through: 5
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 6
+            max_kappa: '8404.4472645074259390'
+            max_gamma_inf: '0.44436395843725410331'
+            residual_increases: 1
+        converges_to: t*
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 348
+          final_t:
+          - '0.99999999129206583266'
+          - '1.9999999813727935895'
+          - '2.9999999999999999935'
+          residual_inf_scaled:
+          - '0.53674137786507223814'
+          - '0.57059516318412177824'
+          - '0.58463307984696791765'
+          - '0.45424040779579107232'
+          - '0.48492691756092955727'
+          - '0.50263646349510376591'
+          - '0.38952963774481730576'
+          - '0.41593605975492601514'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 348
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 232
+    spectrum: 0.95 e^{+-2 pi i / 3}, 0.3
+    spectral_radius: '0.95'
+  REC-05:
+    title: 'non-normal: all eigenvalues 0.5, ||A||_2 = 2.80, transient growth 8.70'
+    A:
+    - - '0.50000000000000000000'
+      - '2.5000000000000000000'
+      - '0.0'
+    - - '0.0'
+      - '0.50000000000000000000'
+      - '2.5000000000000000000'
+    - - '0.0'
+      - '0.0'
+      - '0.50000000000000000000'
+    t_star:
+    - '1.0000000000000000000'
+    - '2.0000000000000000000'
+    - '3.0000000000000000000'
+    start:
+    - '1.1000000000000000000'
+    - '2.2000000000000000000'
+    - '3.3000000000000000000'
+    scale_mol_per_s: '3'
+    lower_bounds:
+    - '0'
+    - '0'
+    - '0'
+    variants:
+      gamma=0:
+        gamma: '0'
+        residual_at_start_mol_per_s:
+        - '0.45000000000000000000'
+        - '0.65000000000000000000'
+        - '-0.15000000000000000000'
+        krylov_grade: 3
+        anderson_termination_iteration_exact_arithmetic: 4
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 4
+          final_t:
+          - '1.0000000000000000000'
+          - '2.0000000000000000000'
+          - '3.0000000000000000000'
+          residual_inf_scaled:
+          - '0.21666666666666666667'
+          - '0.61666666666666666667'
+          - '0.64000593874607618563'
+          - '0.046036788043239272310'
+          - '4.6453455139917221181e-39'
+          residual_inf_scaled_recorded_through: 4
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 3
+            max_kappa: '6477.9245256808897378'
+            max_gamma_inf: '125.10687022900763359'
+            residual_increases: 2
+        policy_simulation_substitution_depth0:
+          outcome: CONVERGED
+          iterations: 37
+          final_t:
+          - '1.0000000366133463103'
+          - '2.0000000004052708391'
+          - '3.0000000000021827873'
+          residual_inf_scaled:
+          - '0.21666666666666666667'
+          - '0.61666666666666666667'
+          - '0.26666666666666666667'
+          - '0.066666666666666666667'
+          - '0.18854166666666666667'
+          - '0.21666666666666666667'
+          - '0.18906250000000000000'
+          - '0.14466145833333333333'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 37
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 3
+      gamma=0.1:
+        gamma: '0.1'
+        residual_at_start_mol_per_s:
+        - '0.45200000000000000000'
+        - '0.65100000000000000000'
+        - '-0.14933333333333333333'
+        policy_simulation_anderson:
+          outcome: CONVERGED
+          iterations: 9
+          final_t:
+          - '3.8887372867544633303'
+          - '2.5768928915129930267'
+          - '3.1110994196651438463'
+          residual_inf_scaled:
+          - '0.21700000000000000000'
+          - '0.61859130370370370370'
+          - '0.64224098255448807712'
+          - '0.021513813373319349549'
+          - '0.0027631699149827946801'
+          - '0.0072959443329782109883'
+          residual_inf_scaled_recorded_through: 5
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 0
+            stagnation_closures: []
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 1
+            anderson_steps: 8
+            max_kappa: '9625.8188612172152178'
+            max_gamma_inf: '37.126690916704896101'
+            residual_increases: 3
+        converges_to: S1
+        policy_simulation_substitution_depth0:
+          outcome: RECYCLE_STAGNATION
+          iterations: 20
+          final_t:
+          - '7.1921595273383889662'
+          - '3.6075638685051787704'
+          - '3.4231791271979055239'
+          residual_inf_scaled:
+          - '0.21700000000000000000'
+          - '0.61859130370370370370'
+          - '0.27030060135672019753'
+          - '0.010521483932667800762'
+          - '0.028564322119063167606'
+          - '0.0056294520465140684386'
+          - '0.014863176115650350579'
+          - '0.018278584355525586067'
+          residual_inf_scaled_recorded_through: 7
+          events:
+            column_dropped_condition: 0
+            column_dropped_coefficient: 0
+            restarts: 2
+            stagnation_closures:
+            - 10
+            - 15
+            - 20
+            oscillation_detected_at: null
+            bound_landings: 0
+            invalid_trials: 0
+            plain_steps: 20
+            anderson_steps: 0
+            max_kappa: '0.0'
+            max_gamma_inf: '0.0'
+            residual_increases: 17
+    spectrum: 0.5 (triple, one Jordan block of size 3)
+    spectral_radius: '0.5'
+    norm_2: '2.8030188450371063572'
+    transient_growth_2norm_d0=0.1t*:
+    - '1.0000000000000000000'
+    - '2.7353505912666582972'
+    - '6.7642046306801131336'
+    - '8.6958785393672887609'
+    - '8.2668591267438791060'
+    - '6.7207690072719463207'
+    - '4.9675793909690418900'
+    - '3.4440721973822282229'
+    - '2.2805021668989983193'
+    raw_substitution_gamma=0.1_exceeds_divergence_factor_at: 30
+    fixed_points_gamma=0.1:
+      t*:
+      - '1.0000000000000000000'
+      - '2.0000000000000000000'
+      - '3.0000000000000000000'
+      S1:
+      - '3.8887360535087802344'
+      - '2.5768926452254679125'
+      - '3.1110993722177906032'
+      note: 'S1 is the fixed point the registered policy reaches from the registered start 1.1 t*; the basin margin
+        is executable (1.05 t* and 1.15 t* land there too). Other fixed points of the quadratic map exist and are
+        not registered (T03: multiple-root provenance).'
+      basin_margin:
+        start=1.05t*:
+          outcome: CONVERGED
+          iterations: 12
+          lands_on: S1
+        start=1.15t*:
+          outcome: CONVERGED
+          iterations: 11
+          lands_on: S1
+cases_auxiliary:
+  RCY-DIV:
+    title: 'monotone divergence (rho = 1.5, real positive), no bounds: the stagnation rule''s divergence case and
+      the EO-merge edge with a real root'
+    A:
+    - - '1.5000000000000000000'
+      - '0.0'
+      - '0.0'
+    - - '0.0'
+      - '0.50000000000000000000'
+      - '0.0'
+    - - '0.0'
+      - '0.0'
+      - '0.20000000000000000000'
+    gamma: '0'
+    start:
+    - '0.50000000000000000000'
+    - '1.0000000000000000000'
+    - '1.5000000000000000000'
+    lower_bounds: null
+    substitution_depth0:
+      outcome: RECYCLE_STAGNATION
+      iterations: 16
+      final_t:
+      - '-327.42041778564453125'
+      - '1.9999847412109375000'
+      - '2.9999999999901696000'
+      residual_inf_scaled:
+      - '0.40000000000000000000'
+      - '0.12500000000000000000'
+      - '0.18750000000000000000'
+      - '0.28125000000000000000'
+      - '0.42187500000000000000'
+      - '0.63281250000000000000'
+      - '0.94921875000000000000'
+      - '1.4238281250000000000'
+      - '2.1357421875000000000'
+      - '3.2036132812500000000'
+      - '4.8054199218750000000'
+      - '7.2081298828125000000'
+      - '10.812194824218750000'
+      - '16.218292236328125000'
+      - '24.327438354492187500'
+      - '36.491157531738281250'
+      - '54.736736297607421875'
+      residual_inf_scaled_recorded_through: 16
+      events:
+        column_dropped_condition: 0
+        column_dropped_coefficient: 0
+        restarts: 2
+        stagnation_closures:
+        - 6
+        - 11
+        - 16
+        oscillation_detected_at: null
+        bound_landings: 0
+        invalid_trials: 0
+        plain_steps: 16
+        anderson_steps: 0
+        max_kappa: '0.0'
+        max_gamma_inf: '0.0'
+        residual_increases: 15
+    anderson:
+      outcome: CONVERGED
+      iterations: 4
+      final_t:
+      - '1.0000000000000000000'
+      - '2.0000000000000000000'
+      - '3.0000000000000000000'
+      residual_inf_scaled:
+      - '0.40000000000000000000'
+      - '0.12500000000000000000'
+      - '0.20288079221785991148'
+      - '0.069056963387267007552'
+      - '7.6529580131659342967e-42'
+      residual_inf_scaled_recorded_through: 4
+      events:
+        column_dropped_condition: 0
+        column_dropped_coefficient: 0
+        restarts: 0
+        stagnation_closures: []
+        oscillation_detected_at: null
+        bound_landings: 0
+        invalid_trials: 0
+        plain_steps: 1
+        anderson_steps: 3
+        max_kappa: '19.767336247837301381'
+        max_gamma_inf: '2.8557595825807746338'
+        residual_increases: 1
+    closed_form: '||f_hat_k||_inf = 0.25 * 1.5^k / 3 for k >= 1 (component 1 dominates from k = 1; at k = 0 component
+      3 gives 0.4); 1.5^16 = 656.84'
+    eo_merge_expected: CONVERGED in one Newton step to t* (affine)
+  RCY-STALL:
+    title: 'constant residual, no root: stagnation -> restart x2 -> give up -> EO merge fails singular'
+    map: G(t) = t + (1, 1, 1)
+    start:
+    - '0'
+    - '0'
+    - '0'
+    lower_bounds: null
+    anderson:
+      outcome: RECYCLE_STAGNATION
+      iterations: 15
+      final_t:
+      - '15.000000000000000000'
+      - '15.000000000000000000'
+      - '15.000000000000000000'
+      residual_inf_scaled:
+      - '0.33333333333333333333'
+      - '0.33333333333333333333'
+      - '0.33333333333333333333'
+      residual_inf_scaled_recorded_through: 2
+      events:
+        column_dropped_condition: 27
+        column_dropped_coefficient: 0
+        restarts: 2
+        stagnation_closures:
+        - 5
+        - 10
+        - 15
+        oscillation_detected_at: null
+        bound_landings: 0
+        invalid_trials: 0
+        plain_steps: 15
+        anderson_steps: 0
+        max_kappa: '0.0'
+        max_gamma_inf: '0.0'
+        residual_increases: 0
+    eo_merge_expected: 'LINEAR_SOLVE_FAILED(exactly_singular): dR/dt = 0'
+  RCY-COEF:
+    title: 'nearly constant residual with a far root: the coefficient bound''s case, then the EO merge that solves
+      it'
+    map: G(t) = t + 1 + 1e-6 t (one variable, scale 1, no bounds)
+    start:
+    - '0'
+    root: '-1000000.0000000000000'
+    secant_coefficient_at_k1: '1000001.0000000000000'
+    anderson:
+      outcome: RECYCLE_STAGNATION
+      iterations: 15
+      final_t:
+      - '15.000105000455001365'
+      residual_inf_scaled:
+      - '1.0000000000000000000'
+      - '1.0000010000000000000'
+      - '1.0000020000010000000'
+      residual_inf_scaled_recorded_through: 2
+      events:
+        column_dropped_condition: 0
+        column_dropped_coefficient: 12
+        restarts: 2
+        stagnation_closures:
+        - 5
+        - 10
+        - 15
+        oscillation_detected_at: null
+        bound_landings: 0
+        invalid_trials: 0
+        plain_steps: 15
+        anderson_steps: 0
+        max_kappa: '0.0'
+        max_gamma_inf: '0.0'
+        residual_increases: 15
+    eo_merge_expected: CONVERGED in one Newton step to t = -1e6 (affine)
+  NEST-1:
+    title: 'two edge-disjoint loops sharing unit B: a multi-edge feedback set'
+    connections:
+    - - s0
+      - FEED
+      - A
+    - - s1
+      - A
+      - B
+    - - s2
+      - B
+      - C
+    - - s3
+      - C
+      - PRODUCT
+    - - s4
+      - B
+      - A
+    - - s5
+      - C
+      - B
+    boundary_units:
+    - FEED
+    units:
+      A: s1 = s0 + s4
+      B: s4 = 0.5 (s1 + s5); s2 = 0.5 (s1 + s5)
+      C: s5 = 0.8 s2; s3 = 0.2 s2
+    tear:
+      rounds:
+      - loop_units:
+        - A
+        - B
+        - C
+        cycle_edges:
+        - s1
+        - s2
+        - s4
+        - s5
+        candidates:
+        - stream: s1
+          dimension: 1
+          consumer_boundary_distance: 2
+          declaration_index: 1
+          breaks_loop: false
+        - stream: s2
+          dimension: 1
+          consumer_boundary_distance: 3
+          declaration_index: 2
+          breaks_loop: false
+        - stream: s4
+          dimension: 1
+          consumer_boundary_distance: 1
+          declaration_index: 4
+          breaks_loop: false
+        - stream: s5
+          dimension: 1
+          consumer_boundary_distance: 2
+          declaration_index: 5
+          breaks_loop: false
+        chosen: s4
+      - loop_units:
+        - B
+        - C
+        cycle_edges:
+        - s2
+        - s5
+        candidates:
+        - stream: s2
+          dimension: 1
+          consumer_boundary_distance: 3
+          declaration_index: 2
+          breaks_loop: true
+        - stream: s5
+          dimension: 1
+          consumer_boundary_distance: 2
+          declaration_index: 5
+          breaks_loop: true
+        chosen: s5
+      tear_streams:
+      - s4
+      - s5
+      tear_dimension: 2
+      single_edge_feedback_set_exists: false
+      boundary_distances:
+        FEED: 0
+        A: 1
+        B: 2
+        C: 3
+        PRODUCT: 4
+    map_A:
+    - - '0.50000000000000000000'
+      - '0.50000000000000000000'
+    - - '0.40000000000000000000'
+      - '0.40000000000000000000'
+    spectrum:
+    - '0.9'
+    - '0'
+    fixed_point_s4_s5:
+    - '5.0000000000000000000'
+    - '4.0000000000000000000'
+    streams_at_fixed_point:
+      s1: '6.0000000000000000000'
+      s2: '5.0000000000000000000'
+      s3: '1.0000000000000000000'
+      s4: '5.0000000000000000000'
+      s5: '4.0000000000000000000'
+    anderson:
+      outcome: CONVERGED
+      iterations: 2
+      final_t:
+      - '5.0000000000000000000'
+      - '4.0000000000000000000'
+      residual_inf_scaled:
+      - '0.50000000000000000000'
+      - '0.45000000000000000000'
+      - '9.1835496157991211560e-41'
+      residual_inf_scaled_recorded_through: 2
+      events:
+        column_dropped_condition: 0
+        column_dropped_coefficient: 0
+        restarts: 0
+        stagnation_closures: []
+        oscillation_detected_at: null
+        bound_landings: 0
+        invalid_trials: 0
+        plain_steps: 1
+        anderson_steps: 1
+        max_kappa: '1.0000000000000000000'
+        max_gamma_inf: '9.0000000000000000000'
+        residual_increases: 0
+    alternate_tear_s1_s5:
+      fixed_point:
+      - '6.0000000000000000000'
+      - '4.0000000000000000000'
+      anderson:
+        outcome: CONVERGED
+        iterations: 3
+        final_t:
+        - '6.0000000000000000000'
+        - '4.0000000000000000000'
+        residual_inf_scaled:
+        - '1.0000000000000000000'
+        - '0.50000000000000000000'
+        - '0.43902439024390243902'
+        - '9.1835496157991211560e-41'
+        residual_inf_scaled_recorded_through: 3
+        events:
+          column_dropped_condition: 0
+          column_dropped_coefficient: 0
+          restarts: 0
+          stagnation_closures: []
+          oscillation_detected_at: null
+          bound_landings: 0
+          invalid_trials: 0
+          plain_steps: 1
+          anderson_steps: 2
+          max_kappa: '8.4111096222844856180'
+          max_gamma_inf: '7.2000000000000000000'
+          residual_increases: 0
+  SCL-1:
+    title: 'REC-03 linear under scales (1, 3, 9): the least squares is taken in scaled coordinates'
+    scale:
+    - '1'
+    - '3'
+    - '9'
+    tolerance_mol_per_s:
+    - '1.0333333333333333333e-8'
+    - '3.1e-8'
+    - '9.3000000000000000000e-8'
+    anderson:
+      outcome: CONVERGED
+      iterations: 4
+      final_t:
+      - '1.0000000000000000000'
+      - '2.0000000000000000000'
+      - '3.0000000000000000000'
+      residual_inf_scaled:
+      - '0.65000000000000000000'
+      - '0.61750000000000000000'
+      - '0.023136507447276416784'
+      - '0.021476464927960459479'
+      - '1.1479437019748901445e-40'
+      residual_inf_scaled_recorded_through: 4
+      events:
+        column_dropped_condition: 0
+        column_dropped_coefficient: 0
+        restarts: 0
+        stagnation_closures: []
+        oscillation_detected_at: null
+        bound_landings: 0
+        invalid_trials: 0
+        plain_steps: 1
+        anderson_steps: 3
+        max_kappa: '1372.4485783592748121'
+        max_gamma_inf: '18.860130116082815885'
+        residual_increases: 0
+  RCY-TRUNC:
+    title: 'REC-01 linear with depth_max = 2: the sliding window truncates and finite termination is lost'
+    depth_max: 2
+    anderson:
+      outcome: CONVERGED
+      iterations: 14
+      final_t:
+      - '0.99999999884792159371'
+      - '1.9999999557276515784'
+      - '2.9999999989466777294'
+      residual_inf_scaled:
+      - '0.40000000000000000000'
+      - '0.28500000000000000000'
+      - '0.096891770044494209859'
+      - '0.020720554520948328887'
+      - '0.0068245701231550673910'
+      - '0.00072525763723191478962'
+      residual_inf_scaled_recorded_through: 5
+      events:
+        column_dropped_condition: 0
+        column_dropped_coefficient: 0
+        restarts: 0
+        stagnation_closures: []
+        oscillation_detected_at: 7
+        bound_landings: 0
+        invalid_trials: 0
+        plain_steps: 1
+        anderson_steps: 13
+        max_kappa: '12.079828738468425626'
+        max_gamma_inf: '0.78329627938820727262'
+        residual_increases: 0
+syn001:
+  t_star_nominal_mol_per_s:
+  - '0.29777671393051394767'
+  - '0.54639697692561612246'
+  - '0.79501723992071829724'
+  S3_n_at_t_star_mol_per_s:
+  - '1.2977767139305139477'
+  - '1.5463969769256161225'
+  - '1.7950172399207182972'
+  H_S2_W: '9835.1455846610902042'
+  H_flash_products_W: '66173.215031404617435'
+  Q_total_W: '56338.069446743527231'
+  flash_split_at_360K:
+    beta: '0.29332896393537299529'
+    vapor:
+    - '0.70222328606948605233'
+    - '0.45360302307438387754'
+    - '0.20498276007928170276'
+    liquid:
+    - '0.59555342786102789535'
+    - '1.0927939538512322449'
+    - '1.5900344798414365945'
+  a02_sweep:
+    T_heater=340K:
+      regime: LIQUID
+      Q_heater_W: '8721.6181384463032653'
+      Q_flash_W: '47616.451308297223966'
+      beta: '0.0'
+      S3_vapor_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      S3_liquid_mol_per_s:
+      - '1.2977767139305139477'
+      - '1.5463969769256161225'
+      - '1.7950172399207182972'
+    T_heater=350K:
+      regime: LIQUID
+      Q_heater_W: '13360.809069223151633'
+      Q_flash_W: '42977.260377520375599'
+      beta: '0.0'
+      S3_vapor_mol_per_s:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      S3_liquid_mol_per_s:
+      - '1.2977767139305139477'
+      - '1.5463969769256161225'
+      - '1.7950172399207182972'
+    T_heater=355K:
+      regime: TWO_PHASE
+      Q_heater_W: '31656.963378118285046'
+      Q_flash_W: '24681.106068625242185'
+      beta: '0.12480410923180862183'
+      S3_vapor_mol_per_s:
+      - '0.34361564402086500661'
+      - '0.17038758496015600151'
+      - '0.064986862690868686275'
+      S3_liquid_mol_per_s:
+      - '0.95416106990964894107'
+      - '1.3760093919654601209'
+      - '1.7300303772298496110'
+    T_heater=358K:
+      regime: TWO_PHASE
+      Q_heater_W: '46381.246058592791808'
+      Q_flash_W: '9956.8233881507354234'
+      beta: '0.22614746930696137074'
+      S3_vapor_mol_per_s:
+      - '0.57368942917968013465'
+      - '0.33479331307994351974'
+      - '0.14065854636736721494'
+      S3_liquid_mol_per_s:
+      - '0.72408728475083381302'
+      - '1.2116036638456726027'
+      - '1.6543586935533510823'
+    T_heater=360K:
+      regime: TWO_PHASE
+      Q_heater_W: '56338.069446743527231'
+      Q_flash_W: '0.0'
+      beta: '0.29332896393537299529'
+      S3_vapor_mol_per_s:
+      - '0.70222328606948605233'
+      - '0.45360302307438387754'
+      - '0.20498276007928170276'
+      S3_liquid_mol_per_s:
+      - '0.59555342786102789535'
+      - '1.0927939538512322449'
+      - '1.5900344798414365945'
+    T_heater=365K:
+      regime: TWO_PHASE
+      Q_heater_W: '82449.679506982807408'
+      Q_flash_W: '-26111.610060239280177'
+      beta: '0.46514794006566739658'
+      S3_vapor_mol_per_s:
+      - '0.95352955115492123781'
+      - '0.77229482452652133859'
+      - '0.43208572934073463204'
+      S3_liquid_mol_per_s:
+      - '0.34424716277559270987'
+      - '0.77410215239909478386'
+      - '1.3629315105799836652'
+  S3_bubble_point_K: '351.44416909142989639'
+  S3_dew_point_K: '377.52906060550727364'
+  s_flip_nominal_ray: '0.54681884136298479359'
+  s_flip_high_recycle_ray: '0.028779939019104462821'
+  branch_roots:
+    Q_flash=0:
+      liquid_branch_T_K: '442.63955939473197442'
+      liquid_branch_sum_zK: '7.0108222706873217275'
+      vapor_branch_T_K: '137.28042960885205026'
+      provider_domain_K:
+      - 280
+      - 440
+      sum_z_over_K_at_440K: '0.22409145115273868343'
+      sum_zK_at_280K: '0.096354237244929304478'
+    Q_flash=Q(355K):
+      liquid_branch_T_K: '389.43824382720842205'
+      liquid_branch_sum_zK: '2.4959938386228986075'
+      vapor_branch_T_K: '84.079114041328497889'
+      provider_domain_K:
+      - 280
+      - 440
+      sum_z_over_K_at_440K: '0.22409145115273868343'
+      sum_zK_at_280K: '0.096354237244929304478'
+  plans:
+    SYN-001-nominal (tear):
+    - kind: evaluate
+      unit: U-FEED
+    - kind: converge
+      loop:
+      - U-MIX
+      - U-HEAT
+      - U-FLASH
+      - U-SPLIT
+      tear_stream: S6
+      tear_variable_ids:
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      tear_row_ids:
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-recycle:C
+      method: newton_tear
+      signature_units:
+      - U-FLASH
+    SYN-001-nominal (eo override):
+    - kind: evaluate
+      unit: U-FEED
+    - kind: solve_eo
+      region_units:
+      - U-MIX
+      - U-HEAT
+      - U-FLASH
+      - U-SPLIT
+      specification_rows: []
+      square: 42
+      signature_units:
+      - U-HEAT
+      - U-FLASH
+    SYN-001-A02-*:
+    - kind: evaluate
+      unit: U-FEED
+    - kind: solve_eo
+      region_units:
+      - U-MIX
+      - U-HEAT
+      - U-FLASH
+      - U-SPLIT
+      specification_rows:
+      - SPEC:SPEC-flash-duty
+      adjusted_variable: S3.T
+      target_variable: U-FLASH.Q
+      removed_specification_row: U-HEAT:HEAT-T
+      square: 42
+      signature_units:
+      - U-HEAT
+      - U-FLASH
+    SYN-001-once-through:
+    - kind: evaluate
+      unit: U-FEED
+    - kind: converge
+      loop:
+      - U-MIX
+      - U-HEAT
+      - U-FLASH
+      - U-SPLIT
+      tear_stream: S6
+      tear_variable_ids:
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      tear_row_ids:
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-recycle:C
+      method: newton_tear
+      signature_units:
+      - U-FLASH
+      note: 'the loop is structurally present at r = 0 (T01 A02: the declared pattern does not fold); numerically
+        the tear converges at iteration 0'
+  certified_rows:
+  - U-FLASH:FLASH-P:inlet
+  - U-SPLIT:SPLIT-P:recycle
+  a02_region:
+    units:
+    - U-MIX
+    - U-HEAT
+    - U-FLASH
+    - U-SPLIT
+    rows: all rows of the four units (44 after the heater's HEAT-T is removed and SPEC:SPEC-flash-duty added) minus
+      the 2 certified = 42
+    columns: the 47 free variables minus S1's 5 = 42
+    fixed_upstream:
+    - S1.n.A
+    - S1.n.B
+    - S1.n.C
+    - S1.T
+    - S1.P
+measured:
+  note: 'Prototype observations on main@fe0a4de, 2026-09-24: a double-precision Anderson of the registered policy
+    on the manufactured maps and on the real SYN-001 traversal, and a plain bounded K03 Newton on the compiled 47-row
+    EO system and the 42-row A02 region. Floors and counts used to argue tolerances and bounds; not expectations.'
+  linear_variants_trajectory_floor_scaled_inf: 4.4e-16 (worst |double - 40-digit| before termination, REC-01..05
+    gamma=0, m=5)
+  linear_variants_terminal_residual_scaled_inf:
+    REC-01: '3.0e-16'
+    REC-02: '0.0'
+    REC-03: '1.3e-15'
+    REC-04: '7.4e-17'
+    REC-05: '6.2e-13'
+  linear_variants_iterations_double:
+    REC-01: 4
+    REC-02: 4
+    REC-03: 4
+    REC-04: 4
+    REC-05: 4
+  tail_variants_iterations_double_gamma_0.1:
+    REC-01: 7
+    REC-02: 7
+    REC-03: 9
+    REC-04: 7
+    REC-05: 12, to the fixed point S1
+  REC-05_basin_double: 'gamma=0.1: starts 1.08..1.15 t* -> S1, 1.05 and 1.20 t* -> t*; gamma=0.05: 1.05..1.11 t*
+    -> t*, 1.12..1.3 t* -> S2; plain substitution diverges from 1.10 t* at gamma=0.1 and from 1.20 t* at gamma=0.05'
+  plain_substitution_iterations_double:
+    REC-01: 164
+    REC-02: never (2-cycle on the bound without the oscillation response); 54 with it
+    REC-03: 351
+    REC-04: 348
+    REC-05 gamma=0: 37
+    REC-05 gamma=0.1: diverges
+  syn001_anderson_iterations_double:
+    nominal t0: 2
+    high-recycle t0: 2
+    310K t0: 2
+    once-through t0: 0
+    420K t0: 0
+    nominal OFF-A: 9
+    high-recycle OFF-A: 9
+    once-through OFF-A: 1
+    nominal OFF-B (no signature contract, 12 invalid trials): 10
+    high-recycle OFF-B (no signature contract, 83 invalid trials): 13
+  syn001_eo_newton_double:
+    nominal from x(t0), two-phase active set: BOUND_BLOCKED at iteration 1, iterate at s = 0.5467 on the ray (S3.V
+      4.4e-5)
+    nominal liquid active-set restart from that iterate: CONVERGED in 2 iterations to t*
+    nominal liquid active set from x(t0): CONVERGED in 2
+    high-recycle from x(t0): CONVERGED in 5 (S3 liquid at both ends)
+    310K from x(t0): CONVERGED in 2
+    once-through and 420K: CONVERGED at iteration 0
+    once-through forced all-liquid S3 without projection: CONVERGED in 1 to the inadmissible trivial root (|R| 2e-16)
+  a02_eo_newton_double:
+    Q_flash=0 from S3.T=358K: CONVERGED in 3, S3.T = 360.0000000005
+    Q_flash=0 from 355K: CONVERGED in 4
+    Q_flash=Q(365K) from 358K: CONVERGED in 4, S3.T = 365.0000000000047
+    Q_flash=0 from 350K, liquid active set: STAGNATION at iteration 13 at S3.T = 439.9999997 K (domain edge)
+    then vapor active set from that state: STAGNATION at iteration 9 at S3.T = 280.00002 K (domain edge)
+    Q_flash=Q(355K) from 350K, liquid active set: CONVERGED in 1 to the liquid-branch root 389.438 K (inadmissible)
+  eo_region_condition: kappa_2 of the scaled 44x44 inner block 28-1440 over the registered states (K03 §4.3)
+checks_passed:
+- 'REC-01 gamma=0: t* is a fixed point'
+- 'REC-01 gamma=0: dG/dt(t*) = A'
+- 'REC-01 linear: Krylov grade 3'
+- 'REC-01 gamma=0: policy converges'
+- 'REC-01 linear: policy terminates at exactly grade+1 = 4'
+- 'REC-01 linear: no restart, no column drop, no landing'
+- 'REC-01 linear: kappa and gamma a decade inside their limits'
+- 'REC-01 linear: converged to t*'
+- 'REC-01 gamma=0.1: t* is a fixed point'
+- 'REC-01 gamma=0.1: dG/dt(t*) = A'
+- 'REC-01 gamma=0.1: policy converges'
+- 'REC-01 gamma=0.1: converged to t*'
+- 'REC-02 gamma=0: t* is a fixed point'
+- 'REC-02 gamma=0: dG/dt(t*) = A'
+- 'REC-02 linear: Krylov grade 3'
+- 'REC-02 gamma=0: policy converges'
+- 'REC-02 linear: policy terminates at exactly grade+1 = 4'
+- 'REC-02 linear: no restart, no column drop, no landing'
+- 'REC-02 linear: kappa and gamma a decade inside their limits'
+- 'REC-02 linear: converged to t*'
+- 'REC-02 gamma=0.1: t* is a fixed point'
+- 'REC-02 gamma=0.1: dG/dt(t*) = A'
+- 'REC-02 gamma=0.1: policy converges'
+- 'REC-02 gamma=0.1: converged to t*'
+- 'REC-03 gamma=0: t* is a fixed point'
+- 'REC-03 gamma=0: dG/dt(t*) = A'
+- 'REC-03 linear: Krylov grade 3'
+- 'REC-03 gamma=0: policy converges'
+- 'REC-03 linear: policy terminates at exactly grade+1 = 4'
+- 'REC-03 linear: no restart, no column drop, no landing'
+- 'REC-03 linear: kappa and gamma a decade inside their limits'
+- 'REC-03 linear: converged to t*'
+- 'REC-03 gamma=0.1: t* is a fixed point'
+- 'REC-03 gamma=0.1: dG/dt(t*) = A'
+- 'REC-03 gamma=0.1: policy converges'
+- 'REC-03 gamma=0.1: converged to t*'
+- 'REC-04 gamma=0: t* is a fixed point'
+- 'REC-04 gamma=0: dG/dt(t*) = A'
+- 'REC-04 linear: Krylov grade 3'
+- 'REC-04 gamma=0: policy converges'
+- 'REC-04 linear: policy terminates at exactly grade+1 = 4'
+- 'REC-04 linear: no restart, no column drop, no landing'
+- 'REC-04 linear: kappa and gamma a decade inside their limits'
+- 'REC-04 linear: converged to t*'
+- 'REC-04 gamma=0.1: t* is a fixed point'
+- 'REC-04 gamma=0.1: dG/dt(t*) = A'
+- 'REC-04 gamma=0.1: policy converges'
+- 'REC-04 gamma=0.1: converged to t*'
+- REC-05 transient growth peaks at k=3 with 8.70
+- 'REC-05 gamma=0: t* is a fixed point'
+- 'REC-05 gamma=0: dG/dt(t*) = A'
+- 'REC-05 linear: Krylov grade 3'
+- 'REC-05 gamma=0: policy converges'
+- 'REC-05 linear: policy terminates at exactly grade+1 = 4'
+- 'REC-05 linear: no restart, no column drop, no landing'
+- 'REC-05 linear: kappa and gamma a decade inside their limits'
+- 'REC-05 linear: converged to t*'
+- 'REC-05 gamma=0.1: t* is a fixed point'
+- 'REC-05 gamma=0.1: dG/dt(t*) = A'
+- 'REC-05 gamma=0.1: policy converges'
+- 'REC-05 gamma=0.1: the policy lands on a fixed point other than t*'
+- 'REC-01 substitution: oscillation detected at iteration 3'
+- REC-01 substitution converges (with the damping response)
+- 'REC-02: unbounded linear substitution has t_2,A = -0.125'
+- 'REC-02 substitution: first bound landing at the second step, iterate 2 has t_A = 0 exactly'
+- 'REC-02 substitution: iterate 2 lands on the bound exactly'
+- 'REC-02 substitution: oscillation detected at iteration 3, then converges'
+- 'REC-02 Anderson: no invalid trial and no landing (bounds never reached)'
+- 'REC-03: omega* = 1 and rate 0.95'
+- 'REC-04 substitution: oscillation detector never fires (rotation)'
+- 'REC-05 linear Anderson: residual increases at least once and no safeguard fires'
+- REC-05 linear substitution converges despite the transient (rho = 0.5)
+- 'REC-05 gamma=0.1 substitution under the policy: a slow divergence reads as stagnation and closes RECYCLE_STAGNATION
+  at 20 with the residual grown'
+- REC-05 gamma=0.1 raw substitution (no safeguard, no bound) exceeds 1e4 x the initial residual within 60 steps
+- 'REC-05 gamma=0.1: S1 is a fixed point'
+- 'REC-05 gamma=0.1: S1 is not t* (distance > 1 mol/s)'
+- 'REC-05 gamma=0.1: the policy lands on S1 from 1.1 t* (within 1e-4: the solution-error bound is ~40 x 3.1e-8)'
+- 'REC-05 gamma=0.1: start 1.05 t* also lands on S1 (basin margin)'
+- 'REC-05 gamma=0.1: start 1.15 t* also lands on S1 (basin margin)'
+- 'RCY-DIV substitution: RECYCLE_STAGNATION at 16 with closures [6, 11, 16]'
+- 'RCY-DIV substitution: ||f_hat_k|| = 0.25 * 1.5^k / 3 for k = 1..16 and 0.4 at k = 0'
+- 'RCY-DIV: Anderson terminates at 4'
+- 'RCY-STALL: stagnation closures at 5, 10, 15 and RECYCLE_STAGNATION after two restarts'
+- 'RCY-STALL: every history column was dropped for condition (sigma_min = 0)'
+- 'RCY-COEF: the coefficient at k = 1 is (1 + 1e-6)/1e-6 > 1e4'
+- 'RCY-COEF: every Anderson column is dropped for its coefficient and the run stagnates out after two restarts'
+- 'NEST-1: no single edge breaks the loop'
+- 'NEST-1: the rule tears {s4, s5}'
+- 'NEST-1: (5, 4) is the fixed point'
+- 'NEST-1: product equals feed'
+- 'NEST-1: Anderson terminates at 2 (grade 1 + 1)'
+- 'NEST-1 alternate tear {s1, s5}: same product'
+- NEST-1 alternate tear fixed point (6, 4)
+- 'SCL-1: non-uniform scales change iterate 2 by more than 1e-2 and still terminate at 4'
+- 'RCY-TRUNC: depth 2 converges later than 4 and within 30'
+- 'A02 sweep T_heater=340K: Q_heater + Q_flash = Q_total'
+- 'A02 sweep T_heater=350K: Q_heater + Q_flash = Q_total'
+- 'A02 sweep T_heater=355K: Q_heater + Q_flash = Q_total'
+- 'A02 sweep T_heater=358K: Q_heater + Q_flash = Q_total'
+- 'A02 sweep T_heater=360K: Q_heater + Q_flash = Q_total'
+- 'A02 sweep T_heater=365K: Q_heater + Q_flash = Q_total'
+- 'A02: Q_flash = 0 exactly at T_heater = 360 K'
+- 'A02: Q_total equals P01''s 56338.069446743527231 W'
+- 'A02: the 360 K heater split equals the flash split'
+- 'A02: regimes along the sweep'
+- 'A02: bubble point of S3.n between 350 and 355 K'
+- 'A02: dew point of S3.n between 365 and 400 K'
+- 'A02: the duty curve is steep in the band (factor > 2 between 350 and 355 K)'
+- A02 liquid-branch root for Q_flash = 0 lies outside the provider domain
+- A02 liquid-branch root for Q_flash = Q(355 K) is inside the domain and inadmissible
+- A02 vapor-branch root for Q_flash = 0 lies outside the domain (below 280 K)
+- 'A02: at 440 K the S3 kernel is all vapor; at 280 K all liquid'
+- 'EO nominal: the S3 flip on the ray is between 0.5 and 1'
+- 'EO high-recycle: the S3 flip on the ray is below the initializer 0.05'

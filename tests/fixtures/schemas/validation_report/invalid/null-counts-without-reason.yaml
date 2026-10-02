@@ -1,0 +1,14 @@
+# Invalid ValidationReport: structural_counts is null with no reason given.
+#
+# A missing count must say why it is missing. Silence would let an unrun structural
+# analysis look like one that found nothing to report.
+expect_error: structural_counts_absent_reason
+document:
+  revision_id: SYN-001-nominal-r1
+  task: simulation
+  status: DRAFT
+  checks: []
+  structural_counts: null
+  provenance:
+    produced_by: deliberately malformed fixture
+    timestamp: '2026-09-07T00:00:00Z'

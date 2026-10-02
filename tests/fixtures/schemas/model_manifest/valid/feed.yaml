@@ -1,0 +1,113 @@
+# Declared ModelManifest: SYN-001 fresh-feed boundary
+#
+# `status: declared` and `implementation_artifact.state: not_implemented` mean this document
+# states intended behavior for work package K02. No code implements it, no test exercises it,
+# and it is not evidence that the model works. Every derivative is declared `unavailable`
+# because none exists yet (blueprint §5.2).
+id: syn001.feed_source
+version: 0.0.0-declared
+status: declared
+title: SYN-001 fresh-feed boundary
+description: Boundary that emits a fully specified material stream.
+introduced_by_package: K02
+ports:
+- name: outlet
+  kind: material
+  direction: outlet
+  multiplicity: 1
+  component_mapping: revision_component_set
+  state_definition: nTP-v1
+  phase_capabilities:
+  - liquid
+mathematics:
+  equations:
+  - id: FEED-n
+    statement: n_out,i - n_spec,i = 0 for every component i
+    dependencies:
+    - specifications.SPEC-feed-n-*
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - 0
+    - 0
+    - -1
+    - 0
+    - 1
+    - 0
+    - 0
+    accumulation:
+      kind: algebraic
+  - id: FEED-T
+    statement: T_out - T_spec = 0
+    dependencies:
+    - specifications.SPEC-feed-T
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - 0
+    - 0
+    - 0
+    - 1
+    - 0
+    - 0
+    - 0
+    accumulation:
+      kind: algebraic
+  - id: FEED-P
+    statement: P_out - P_spec = 0
+    dependencies:
+    - specifications.SPEC-feed-P
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - -1
+    - 1
+    - -2
+    - 0
+    - 0
+    - 0
+    - 0
+    accumulation:
+      kind: algebraic
+derivatives:
+- output: outlet.state
+  with_respect_to:
+  - specifications
+  method: unavailable
+  regime: all
+  notes: 'Nothing is implemented in P01, so no derivative exists. Declared `unavailable` rather than
+    guessed: a missing derivative is reported as absent, never replaced with zeros (blueprint §5.2).
+    K02 implements the model and K01 supplies the derivative route.'
+initialization:
+  strategy: none
+  registered_initializer: null
+  notes: A fully specified boundary needs no guess.
+validity:
+  domain:
+    temperature_K:
+      min: 280.0
+      max: 440.0
+    pressure_Pa:
+      min: 50000.0
+      max: 200000.0
+    components:
+    - A
+    - B
+    - C
+    phases:
+    - liquid
+  limitations:
+  - 'Boundary only: it imposes the specified state and models no equipment.'
+  - SYN-001 declares the feed liquid at 300 K and P_r; the manifest does not verify that claim, the
+    flash kernel does.
+implementation_artifact:
+  state: not_implemented
+  module: null
+  artifact_hash: null
+  planned_package: K02
+execution_requirements:
+  execution_class: native_equation
+  thread_safety: unknown
+  evaluation_cost_class: unknown
+  property_provider: syn001
+  reference_convention: SYN-001-ref-v1

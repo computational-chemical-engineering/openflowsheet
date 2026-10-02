@@ -1,0 +1,171 @@
+# SYN-001 component records.
+#
+# A, B and C are artificial pseudo-components (implementation plan §3.1). They have no chemical
+# identity, no elemental formula and no experimental provenance; elemental verification is
+# NOT_APPLICABLE, which limits the verification scope explicitly rather than hiding it
+# (blueprint §4.2, ADR 0001 consequences). Constants are transcribed from plan §3.1 and are
+# the same numbers the oracle's `Syn001Constants` carries; `tests/test_schemas_p01.py`
+# asserts the two agree.
+#
+# Each record validates against schemas/component-record.schema.json; each Quantity in it also
+# passes process_runtime.units.check_quantity.
+
+schema_version: 1
+record_schema: schemas/component-record.schema.json
+components:
+  - id: A
+    name: SYN-001 pseudo-component A
+    synthetic: true
+    molecular_weight:
+      value: 0.100
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molecular weight of pseudo-component A
+      role: fixed
+      provenance: "plan v1.1 §3.1, synthetic"
+    elemental_composition: null
+    elemental_verification: NOT_APPLICABLE
+    parameters:
+      reference_boiling_temperature:
+        value: 320.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: Pure-component boiling temperature at P_r = 100000 Pa; K_A(T_b, P_r) = 1 exactly
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      vapor_reference_enthalpy_offset:
+        value: 25000.0
+        unit: J/mol
+        dimension: [2, 1, -2, 0, -1, 0, 0]
+        kind: molar_enthalpy
+        meaning: L_A; the enthalpy of vaporization at P_r, temperature-independent by construction
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      heat_capacity:
+        value: 100.0
+        unit: J/(mol K)
+        dimension: [2, 1, -2, -1, -1, 0, 0]
+        kind: molar_heat_capacity
+        meaning: c_p of A, identical in both phases
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      liquid_molar_volume:
+        value: 0.0001
+        unit: m3/mol
+        dimension: [3, 0, 0, 0, -1, 0, 0]
+        kind: molar_volume
+        meaning: v_A; incompressible liquid volume, source of the Poynting-type term in K_A
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+    rights:
+      source: "Synthetic constants defined in implementation plan v1.1 §3.1; no external data"
+      redistribution: "synthetic; no restrictions"
+      notes: >-
+        Not a real substance. No experimental, elemental or literature claim is made. Any use of
+        these numbers outside the SYN-001 fixture would be meaningless.
+
+  - id: B
+    name: SYN-001 pseudo-component B
+    synthetic: true
+    molecular_weight:
+      value: 0.100
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molecular weight of pseudo-component B
+      role: fixed
+      provenance: "plan v1.1 §3.1, synthetic"
+    elemental_composition: null
+    elemental_verification: NOT_APPLICABLE
+    parameters:
+      reference_boiling_temperature:
+        value: 360.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: Pure-component boiling temperature at P_r; equal to the nominal flash temperature, so K_B = 1 exactly there
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      vapor_reference_enthalpy_offset:
+        value: 30000.0
+        unit: J/mol
+        dimension: [2, 1, -2, 0, -1, 0, 0]
+        kind: molar_enthalpy
+        meaning: L_B; the enthalpy of vaporization at P_r
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      heat_capacity:
+        value: 100.0
+        unit: J/(mol K)
+        dimension: [2, 1, -2, -1, -1, 0, 0]
+        kind: molar_heat_capacity
+        meaning: c_p of B, identical in both phases
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      liquid_molar_volume:
+        value: 0.0001
+        unit: m3/mol
+        dimension: [3, 0, 0, 0, -1, 0, 0]
+        kind: molar_volume
+        meaning: v_B; incompressible liquid volume
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+    rights:
+      source: "Synthetic constants defined in implementation plan v1.1 §3.1; no external data"
+      redistribution: "synthetic; no restrictions"
+      notes: >-
+        Not a real substance. No experimental, elemental or literature claim is made.
+
+  - id: C
+    name: SYN-001 pseudo-component C
+    synthetic: true
+    molecular_weight:
+      value: 0.100
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molecular weight of pseudo-component C
+      role: fixed
+      provenance: "plan v1.1 §3.1, synthetic"
+    elemental_composition: null
+    elemental_verification: NOT_APPLICABLE
+    parameters:
+      reference_boiling_temperature:
+        value: 400.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: Pure-component boiling temperature at P_r; the heaviest of the three
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      vapor_reference_enthalpy_offset:
+        value: 35000.0
+        unit: J/mol
+        dimension: [2, 1, -2, 0, -1, 0, 0]
+        kind: molar_enthalpy
+        meaning: L_C; the enthalpy of vaporization at P_r
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      heat_capacity:
+        value: 100.0
+        unit: J/(mol K)
+        dimension: [2, 1, -2, -1, -1, 0, 0]
+        kind: molar_heat_capacity
+        meaning: c_p of C, identical in both phases
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+      liquid_molar_volume:
+        value: 0.0001
+        unit: m3/mol
+        dimension: [3, 0, 0, 0, -1, 0, 0]
+        kind: molar_volume
+        meaning: v_C; incompressible liquid volume
+        role: fixed
+        provenance: "plan v1.1 §3.1, synthetic"
+    rights:
+      source: "Synthetic constants defined in implementation plan v1.1 §3.1; no external data"
+      redistribution: "synthetic; no restrictions"
+      notes: >-
+        Not a real substance. No experimental, elemental or literature claim is made.

@@ -1,0 +1,37 @@
+{
+ "check_policy_id": "K04-check-policy-v1",
+ "compared_quantities": {
+  "S3.T": 320.0,
+  "S3.n.A": 1.2,
+  "S3.n.B": 1.0,
+  "S3.n.C": 1.2
+ },
+ "fixture": "REF-01",
+ "limitations": [],
+ "non_passing_checks": [],
+ "outcome": "CONVERGED",
+ "path": "revision",
+ "policy_id": "T06-revision-v2",
+ "revision": "benchmarks/t06/cases/SYN-001-T06-REF01.yaml",
+ "revision_file_sha256": "2b6fee9576165d2d3849c8423770bf87c5d382d520fdc2f50e13787afd887fa2",
+ "revision_id": "SYN-001-T06-REF01-r1",
+ "side": "ours",
+ "state": {
+  "S1.P": 100000.0,
+  "S1.T": 300.0,
+  "S1.n.A": 1.0,
+  "S1.n.B": 0.5,
+  "S1.n.C": 0.2,
+  "S2.P": 100000.0,
+  "S2.T": 340.0,
+  "S2.n.A": 0.2,
+  "S2.n.B": 0.5,
+  "S2.n.C": 1.0,
+  "S3.P": 100000.0,
+  "S3.T": 320.0,
+  "S3.n.A": 1.2,
+  "S3.n.B": 1.0,
+  "S3.n.C": 1.2
+ },
+ "verification_status": "VERIFIED"
+}

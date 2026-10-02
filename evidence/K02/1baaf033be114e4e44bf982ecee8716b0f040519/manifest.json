@@ -1,0 +1,357 @@
+{
+ "work_package": "K02",
+ "commit": "1baaf033be114e4e44bf982ecee8716b0f040519",
+ "requirements": [
+  "D08",
+  "D10"
+ ],
+ "status": "reviewed",
+ "inputs": {
+  "case_id": "SYN-001 at all five registered variants (nominal, once-through, high-recycle, all-liquid-310K, all-vapor-420K), traversed from the 20-digit reference recycle and assembled as a 47-variable, 49-row CompiledProblem at the nominal variant",
+  "case_hash": "1e70fc3a41dd7215e447f81974f6f993e08f1885412ed9171cd4769646fb3668",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "967da3cb026dc0fcad9d1042b3e027698d563457fd1ad5869bb806033f73c1cb"
+  },
+  {
+   "cmd": "PYTHONPATH=. .venv/bin/python scripts/k02_evidence_manifest.py /tmp/claude-1003/-home-frankp-Codes-Process-Simulator/792f277d-c76e-49b7-b7c9-f63d51726398/scratchpad/g6.txt --commit 1baaf033be114e4e44bf982ecee8716b0f040519",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "K02.flowsheet.tear_residual",
+   "description": "R(t*) = G(t*) - t* at Fable's 20-digit converged recycle, one sequential pass through feed, mixer, heater, flash and splitter, at all five registered variants.",
+   "result": "pass",
+   "value": [
+    -3.552713678800501e-15,
+    "SYN-001-high-recycle C"
+   ],
+   "expected": "|R| < 3.1e-8 mol/s",
+   "tolerance": "ADR 0001 D6 component balance: 1e-9 + 1e-8 x 3 mol/s"
+  },
+  {
+   "id": "K02.flowsheet.tear_map_affine",
+   "description": "R(s t*) = (1 - r)(1 - s) t*, derived in docs/K02_DECISIONS.md and measured at eight scale factors from s = 0 to s = 4 at every variant. Exercises the whole flowsheet at non-solution states against a closed form.",
+   "result": "pass",
+   "value": [
+    1.0670873260883266e-14,
+    "SYN-001-high-recycle s=0.9 A"
+   ],
+   "expected": "< 1e-12 relative to the tear scale"
+  },
+  {
+   "id": "K02.flowsheet.duty",
+   "description": "Heater and flash duties vs the 20-digit references, all five variants.",
+   "result": "pass",
+   "value": [
+    -1.7535057850182056e-09,
+    "SYN-001-all-liquid-310K Q_heater"
+   ],
+   "expected": "|dQ| < 1.01e-3 W",
+   "tolerance": "ADR 0001 D6 energy: 1e-5 W + 1e-8 x 1e5 W"
+  },
+  {
+   "id": "K02.flowsheet.mixer_temperature",
+   "description": "Mixer outlet temperature from the bracketed closure vs the 20-digit T_mix, all five variants. Independently cross-checked against derivation \u00a74.1's closed-form flow-weighted mean in the suite.",
+   "result": "pass",
+   "value": [
+    5.684341886080802e-14,
+    "SYN-001-high-recycle T_mix"
+   ],
+   "expected": "|dT| < 1e-6 K",
+   "tolerance": "ADR 0001 D6 temperature"
+  },
+  {
+   "id": "K02.flowsheet.vapor_product",
+   "description": "Vapour product component flows vs the 20-digit references.",
+   "result": "pass",
+   "value": [
+    1.4432899320127035e-15,
+    "SYN-001-high-recycle vapor A"
+   ],
+   "expected": "< 3.1e-8 mol/s"
+  },
+  {
+   "id": "K02.flowsheet.overall_balance",
+   "description": "Fresh feed = vapour product + purge, which no single unit can satisfy.",
+   "result": "pass",
+   "value": [
+    1.5543122344752192e-15,
+    "SYN-001-high-recycle A"
+   ],
+   "expected": "< 3.1e-8 mol/s"
+  },
+  {
+   "id": "K02.flowsheet.energy_identity",
+   "description": "Q_h + Q_f = H(external products) - H(fresh feed), derivation \u00a76, every variant. Blueprint A09: shares SYN-001's thermodynamics with the units it checks, so it verifies bookkeeping and not enthalpy data.",
+   "result": "pass",
+   "value": [
+    -1.1641532182693481e-10,
+    "SYN-001-high-recycle Q_h + Q_f"
+   ],
+   "expected": "< 1.01e-3 W"
+  },
+  {
+   "id": "K02.flowsheet.recycle_invariance",
+   "description": "Plan \u00a73.2's registered metamorphic check: V, x and y are the same at r = 0, 0.5 and 0.95, and only L scales as 1/(1 - r).",
+   "result": "pass",
+   "value": [
+    2.6645352591003757e-15,
+    "r=0.95 V"
+   ],
+   "expected": "< 3.1e-8 (flows) / 1e-10 (compositions)"
+  },
+  {
+   "id": "K02.flowsheet.phase_signatures",
+   "description": "Every registered stream reaches its registered phase, derivation \u00a77, including the three exactly dormant ones (recycle at r = 0, vapour product at 310 K, liquid/purge/recycle at 420 K).",
+   "result": "pass",
+   "value": true,
+   "expected": true
+  },
+  {
+   "id": "K02.rows.adr_0008_d4_3",
+   "description": "ADR 0008 D4.3 verbatim: HEAT-mole at n_in = 1, n_out = 0.5 returns +0.5 mol/s, and MIX-mole at two inlets of 0.25 and an outlet of 1.0 returns -0.5 mol/s. Both exact; the rows are linear.",
+   "result": "pass",
+   "value": {
+    "HEAT-mole": 0.5,
+    "MIX-mole": -0.5
+   },
+   "expected": {
+    "HEAT-mole": 0.5,
+    "MIX-mole": -0.5
+   },
+   "tolerance": "exact equality"
+  },
+  {
+   "id": "K02.rows.reference_solution",
+   "description": "Every row of the assembled flowsheet, at the 20-digit nominal answer. A wrong sign, a missing term or a mis-wired stream anywhere shows here.",
+   "result": "pass",
+   "value": [
+    5.4569682106375694e-12,
+    "U-HEAT:HEAT-duty"
+   ],
+   "expected": "< 1.01e-3, the loosest of the registered tolerances"
+  },
+  {
+   "id": "K02.rows.compiled_agreement",
+   "description": "The CasADi-compiled residual against the backend-free float route, row by row. Both call the same builders, so this checks the adapter's wiring of 47 variables and 8 property blocks and explicitly not the equations.",
+   "result": "pass",
+   "value": [
+    0.0,
+    "U-FEED:FEED-n:A"
+   ],
+   "expected": "< 1e-9"
+  },
+  {
+   "id": "K02.rows.shape",
+   "description": "The assembled flowsheet: variables, rows and property blocks, and the accumulation kinds present. Two more rows than variables \u2014 the declared pressure rows over-determine the network; see the limitations.",
+   "result": "pass",
+   "value": {
+    "variables": 47,
+    "equations": 49,
+    "blocks": 9,
+    "accumulation_kinds": [
+     "algebraic",
+     "holdup_balance",
+     "zero_holdup_balance"
+    ]
+   },
+   "expected": "47 variables, 49 rows, no row accumulation `absent`"
+  },
+  {
+   "id": "K02.cache.on_off",
+   "description": "Plan \u00a74.2's cache on/off test, at bit equality. The warm pass must reach the provider strictly fewer times, or the comparison would pass with no cache.",
+   "result": "pass",
+   "value": {
+    "identical": true,
+    "calls_cold": 66,
+    "calls_warm": 0
+   },
+   "expected": "identical results; warm provider traffic strictly below cold"
+  },
+  {
+   "id": "K02.identity.property_package",
+   "description": "ADR 0008 D4.1, the half K01 left open. Two flowsheets with identical equations and specifications, over providers declaring different data, have different model_version and the same structure digest; two recycle ratios have the same structure digest and different constants_sha256.",
+   "result": "pass",
+   "value": {
+    "distinct_model_version": true,
+    "same_structure_digest": true,
+    "distinct_constants": true
+   },
+   "expected": {
+    "distinct_model_version": true,
+    "same_structure_digest": true,
+    "distinct_constants": true
+   }
+  },
+  {
+   "id": "K02.rows.two_phase_heater_outlet",
+   "description": "The heater's lifted equilibrium rows evaluated where they can fail: three of the five variants have a two-phase heater outlet, and the reference-state check above now runs at all five. Before the Fable review it ran only at the nominal variant, where S3.V is zero and the row is identically zero for any K -- dropping the K-value entirely passed 1003 of 1003 tests.",
+   "result": "pass",
+   "value": {
+    "variants": 3,
+    "case_ids": [
+     "SYN-001-once-through",
+     "SYN-001-all-liquid-310K",
+     "SYN-001-all-vapor-420K"
+    ]
+   },
+   "expected": "at least three variants with a two-phase heater outlet, all checked"
+  },
+  {
+   "id": "K02.rows.trivial_root",
+   "description": "A registered hazard for K03, measured rather than described. The lifted equilibrium is satisfied identically by the all-liquid split: at the once-through variant's two-phase heater outlet, thirteen of the heater's fourteen rows are exactly zero there, and a solver free to choose Q closes the fourteenth at a duty this far below the true one. No residual can exclude it.",
+   "result": "pass",
+   "value": {
+    "heater_rows": 14,
+    "exactly_zero": 13,
+    "duty_offset_W": 8237.850393069453
+   },
+   "expected": "13 of 14 rows exactly zero; the duty offset measured and registered"
+  },
+  {
+   "id": "K02.mixer.admissibility_is_intensive",
+   "description": "A stream is written as a single phase only when doing so would misplace the outlet temperature by less than ADR 0001 D6's registered 1e-6 K. The bound is pinned from both sides by a measured case at 347.4412 K, whose equivalent error sits between the registered tolerance and a thousandfold one. The first version bounded the gap in watts, which admitted a 45%-vapour stream at 1e-8 mol/s and reported an outlet 64 K too cold with status ok.",
+   "result": "pass",
+   "value": {
+    "marginal_K": 347.4412,
+    "marginal_equivalent_error_K": 0.00020021443633595483,
+    "marginal_refused": true,
+    "subcooled_equivalent_error_K": 0.0,
+    "subcooled_admitted": true,
+    "scale_free": true,
+    "discriminating": true
+   },
+   "expected": "marginal case refused, subcooled case admitted, verdict scale-free"
+  },
+  {
+   "id": "K02.mixer.domain_restriction",
+   "description": "The v0.0 subcooled-liquid restriction is a typed `unsupported`, not an approximation, on both halves: an inlet carrying latent heat, and two liquid inlets whose mixture is not liquid. Exercised in tests/test_k02_mixer.py; the registered r-variants never leave the domain (derivation \u00a77 finding 5), so the cases are separate ones.",
+   "result": "pass",
+   "value": "tests/test_k02_mixer.py",
+   "expected": "typed unsupported naming T05, with no outlets and no duty"
+  },
+  {
+   "id": "K02.solver.tear",
+   "description": "Solving R(t) = 0 by damped Newton. K02 computes the residual and does not solve it; plan \u00a74.2 gives the solver to K03.",
+   "result": "not_applicable",
+   "value": "K03",
+   "expected": "out of scope for this package"
+  },
+  {
+   "id": "K02.structure.rank",
+   "description": "Reporting the rank of the assembled system, and of the two dependent pressure rows in particular. Blueprint \u00a77.2 gives structural analysis to K03/T01; K02 assembles the rows exactly as the manifests declare them and reports the counts.",
+   "result": "unsupported",
+   "value": {
+    "equations": 49,
+    "variables": 47
+   },
+   "expected": "a rank report, which K02 does not produce"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "src/process_runtime/models/__init__.py",
+   "sha256": "8934b5c4ca74f348fe9f77a83e872254e1be2955feb0e0ae19d1628db55ad907",
+   "description": "The unit-model contract and assembler."
+  },
+  {
+   "path": "src/process_runtime/models/rows.py",
+   "sha256": "df754320175d0b0b7750957fab259d9fd266f0b427601aa2c9512c7a077f72bb",
+   "description": "The row shapes every unit is built from, consolidated from six builders that had been duplicated two to three times. Proved inert: every float row value, compiled residual, CSC Jacobian entry and identity digest over five variants at four states each was byte-identical before and after."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/tp_state.py",
+   "sha256": "9dcc3800a1f110afa4c17ef7545f15bb138def8d32a3e1c04de47562c816d739",
+   "description": "The TP-state kernel the heater and flash share, and its lifted EO form."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/blocks.py",
+   "sha256": "26a48fce18dce5a50bafda5ba59cd22cf60c851f8cd862ff402bd182062976e8",
+   "description": "The property blocks."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/feed.py",
+   "sha256": "601538882a6d9412545dac76a1a6d89e3a8afde36201c27e23b1556a0b779cd5",
+   "description": "syn001.feed_source."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/mixer.py",
+   "sha256": "e0fc1cc7544d7a8ca278817926ebc88309bcb4a133c0c5db6d99d30f7ca1398e",
+   "description": "syn001.adiabatic_mixer."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/heater.py",
+   "sha256": "0134272b98dc9f5e7736df028ebc872cae1d0e9e03571d22b6afbc5d5fc09c3f",
+   "description": "syn001.tp_heater."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/flash.py",
+   "sha256": "2940f4acb3383b2a8f576c704bf113e8d854d26cd398ac538c382858c19db369",
+   "description": "syn001.tp_flash."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/splitter.py",
+   "sha256": "8d26b47d95acdf3fe2fe2978958f41fe542ef9cb66cbc63140eef94c981ad0b8",
+   "description": "syn001.stream_splitter."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/sink.py",
+   "sha256": "4870fdd8b47f6ae2461bd67d9904ef58de01bb5d68d1e31d8d2f342ba18b5eda",
+   "description": "syn001.product_sink."
+  },
+  {
+   "path": "src/process_runtime/models/syn001/flowsheet.py",
+   "sha256": "b33e3d6337b48c5ecb49e559b6d453f7219b56904028dcf26988fe635d6b76bf",
+   "description": "The SYN-001 flowsheet."
+  },
+  {
+   "path": "src/process_runtime/thermo/__init__.py",
+   "sha256": "a5ebd90ece7de7c4c6617add72d2f9522631df693e086a1c7a86aaea09657d1b",
+   "description": "The PropertyProvider contract."
+  },
+  {
+   "path": "src/process_runtime/thermo/syn001.py",
+   "sha256": "75c9d5bad4f1cb3c8aa28b97d529777949434ebf911c0d9e11568b1e69ddd6ce",
+   "description": "The SYN-001 property provider."
+  },
+  {
+   "path": "src/process_runtime/thermo/cache.py",
+   "sha256": "54a308ff23eeb0ef2a554eedc5e47aa6406753e0cd9b104405a367c578d45a97",
+   "description": "The exact and warm-start caches."
+  },
+  {
+   "path": "src/process_runtime/compile/reference.py",
+   "sha256": "d4cc81bf8d5cceaa9164de8de01726ef44b571dec960a388594a7b7825ed5c6d",
+   "description": "The backend-free float row evaluator. Not a backend."
+  },
+  {
+   "path": "tests/fixtures/schemas/model_manifest/valid",
+   "sha256": "ec91908473a7b712ecb2a1174a382bb0d7e8f5d1f08faad6c759e78de88f8b52",
+   "description": "P01's six declared manifests, which K02 re-transcribes in Python and is compared against field by field. Directory hash method: sha256 over every file sorted by relative path, each as `path\\0sha256\\n`."
+  }
+ ],
+ "limitations": [
+  "SYN-001 is synthetic. Nothing here is empirical validation of any thermodynamic model or of any equipment model; the components are pseudo-components with no chemical identity and the constants were invented for the fixture.",
+  "The energy identity Q_h + Q_f = H(products) - H(feed) shares SYN-001's thermodynamics with the units it checks (blueprint A09). It verifies bookkeeping, not enthalpy data.",
+  "The tear residual is computed, not solved. Every traversal here starts from Fable's converged recycle or from a stated multiple of it; no iteration is performed and no claim is made about convergence. That is K03's.",
+  "The registered tear initializer of derivation \u00a79 (recycle_i = r F_i at the flash temperature) is an equimolar stream at 360 K, above its 347.44 K bubble point, and the v0.0 mixer correctly refuses it. A damped Newton started there fails on its first residual evaluation. Handed to K03 (blueprint \u00a77.4), not worked around here.",
+  "The declared rows over-determine the pressure network by two: seven pressure variables carry nine declared pressure rows, because FLASH-P imposes the specification on its own inlet as well as on both outlets while the chain upstream already fixes it, and the recycle loop closes the network. Every one of those rows is in a manifest. K02 assembles them as declared and does not report rank.",
+  "The registered recycle is a saturated liquid: sum_i z_i K_i evaluates to 1.0000000000000002 in double precision and the provider classifies it TWO_PHASE with a vapour fraction of 1.3e-17, while the 20-digit reference registers it LIQUID. The mixer therefore gates on enthalpy rather than on the phase label. K03's phase-attempt controller meets the same boundary and its decision is about an active set, not an enthalpy.",
+  "The heater's outlet phase split is lifted into variables rather than solved inside an opaque block, so no sensitivity through an inner flash exists. Every model manifest still declares its causal sensitivities `unavailable`; only the residual route is differentiable, and only with respect to free variables, not with respect to pinned specifications.",
+  "ADR 0008 D4.1 coverage is now complete for this flowsheet, but by a different route than D4.1 describes: the physical constants reach identity through the label and hence `model_version`, because `constants_sha256` hashes the pinned inputs and those are floats. Twelve hex digits of each provider hash is a distinguishing name, not a cryptographic claim.",
+  "No CI has ever executed. The gate has only ever run on one platform.",
+  "`PropertyCapabilities` still has no JSON schema. Nothing in K02 serializes one, and the repository's rule is that a schema is added when a document carries its object."
+ ],
+ "review": {
+  "numerical": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more.",
+  "process_model": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more."
+ }
+}

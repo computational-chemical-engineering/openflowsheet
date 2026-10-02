@@ -1,0 +1,13 @@
+{
+  "job_id": "job-000002",
+  "sequence": 11,
+  "kind": "ended",
+  "ends_job": true,
+  "recorded_at": "2026-09-27T11:59:55.057378Z",
+  "ending": {
+    "status": "completed",
+    "reason": "operation_completed",
+    "interruption": null
+  },
+  "error": null
+}

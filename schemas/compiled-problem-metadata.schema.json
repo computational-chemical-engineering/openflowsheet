@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/compiled-problem-metadata.schema.json",
+  "title": "CompiledProblemMetadata",
+  "description": "The serializable metadata of a compiled problem (plan \u00a72.1, \u00a72.2 P02/K01 row; frozen in docs/interfaces-frozen.md \u00a71). Executable objects stay runtime-local: only this travels. Promoted by K01, which is the window ADR 0008 D4.1 and D4.4 name for adding `parameter_ids` and `row_accumulation` \u2014 adding either later would be a migration. Four rules a JSON Schema cannot express are checked by tests/test_k01_schemas.py: `row_accumulation` must key exactly `equation_ids`; `variable_ids`, `equation_ids` and `parameter_ids` must each be unique; every `column_scales` key must be a variable and every `row_scales` key an equation; and a scale must be finite and strictly positive, because a scale divides.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_version",
+    "backend",
+    "backend_version",
+    "variable_ids",
+    "equation_ids",
+    "parameter_ids",
+    "column_scales",
+    "row_scales",
+    "row_accumulation",
+    "capabilities",
+    "constants_sha256"
+  ],
+  "properties": {
+    "model_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifies equation structure and backend form only, never pinned-input values (ADR 0008 D4.1). Two instances differing solely in specification values share this. Format `<label>@<structure_sha256>` (ADR 0002 D2.3): the label names the function family and the 64 hex characters are the SHA-256 of the canonical JSON of the structure document \u2014 variable_ids, equation_ids, parameter_ids and row_accumulation. The compiler assigns it; a reader recomputes it where the document carries those lists.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}@[0-9a-f]{64}$"
+    },
+    "backend": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The compiled backend, e.g. `casadi` (ADR 0003)."
+    },
+    "backend_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact version. The [A10] audit in docs/p03-binary-audit.md is of these bytes."
+    },
+    "variable_ids": {
+      "$ref": "#/$defs/id_list",
+      "description": "The ordered free variables. `x` is dense in this order."
+    },
+    "equation_ids": {
+      "$ref": "#/$defs/id_list",
+      "description": "The ordered residual rows."
+    },
+    "parameter_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "The order `constants_sha256` hashes the complete pinned-input vector in \u2014 physical constants, model parameters and specification values (ADR 0008 D4.1). May be empty only for a problem with no pinned inputs at all."
+    },
+    "column_scales": {
+      "$ref": "#/$defs/scales",
+      "description": "By variable id. A scale divides, so it is strictly positive."
+    },
+    "row_scales": {
+      "$ref": "#/$defs/scales",
+      "description": "By equation id."
+    },
+    "row_accumulation": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/accumulation"
+      },
+      "description": "How each row's conservation content accumulates, by equation id, copied from the contributing manifests (ADR 0008 D4.4). T04 reads this to place the nonzero entries of the PTC mass matrix `M`, so a guessed entry here becomes a wrong `M` there rather than a visible error."
+    },
+    "capabilities": {
+      "$ref": "#/$defs/capabilities"
+    },
+    "constants_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "id_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "accumulation": {
+      "enum": [
+        "algebraic",
+        "zero_holdup_balance",
+        "holdup_balance",
+        "absent"
+      ],
+      "description": "ADR 0008 D3. `absent` is for a row whose accumulation genuinely cannot be known \u2014 one produced by an opaque evaluator. A row the compiler itself authors, such as a tear or a specification-promotion row, is `algebraic`, because the compiler wrote it and knows."
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jacobian",
+        "jvp",
+        "vjp",
+        "hessian"
+      ],
+      "description": "Negotiated optional capabilities. Every field is required and none has a default: a default would let a backend that declares nothing be read as having declared something. A missing exact Hessian is `absent`, never zeros.",
+      "properties": {
+        "jacobian": {
+          "enum": [
+            "exact_sparse_csc",
+            "absent"
+          ]
+        },
+        "jvp": {
+          "enum": [
+            "exact",
+            "absent"
+          ]
+        },
+        "vjp": {
+          "enum": [
+            "exact",
+            "absent"
+          ]
+        },
+        "hessian": {
+          "enum": [
+            "exact",
+            "absent"
+          ]
+        }
+      }
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Lowercase hex SHA-256 under the canonical encoding of process_runtime.canonical."
+    }
+  }
+}

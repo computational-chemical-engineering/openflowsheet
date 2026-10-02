@@ -1,0 +1,191 @@
+[
+ {
+  "argv": [
+   "validate",
+   "<CASE>"
+  ],
+  "exit": 0,
+  "stdout": "revision  SYN-001-nominal-r1\ntask      simulation\nstatus    READY_FOR_SIMULATION\n  [ok  ] SCHEMA-01: every required key present\n  [ok  ] DIM-01: every specification and parameter is in its kind's internal SI unit\n  [ok  ] GRAPH-01: 7 instances\n  [ok  ] GRAPH-02: 7 connections resolve\n  [ok  ] COMP-01: 3 components: ['A', 'B', 'C']\n  [ok  ] COMP-02: benchmarks/syn001/components.yaml\n  [ok  ] COMP-03: every component reference names a member of the component set ['A', 'B', 'C']\n  [ok  ] COND-01: 9 specifications declared\n  [ok  ] STR-01: STRUCTURALLY_CLOSED: 49 equations over 47 free variables, structural rank 47, 170 declared incidences. This finding is structural: it is a statement about the declared equations and variables and about which of them reference which. It was made without evaluating any equation. Structurally closed means that after the certified redundant rows are removed, every remaining equation can be assigned a distinct variable it references. It does not establish that a solution exists, that it is unique, or that any Jacobian is nonsingular. Numerical rank and conditioning are decided by the certificate's regularity screen on the unregularized target Jacobian at a converged state (blueprint [A08]); this report makes no such claim, in either direction.\n  [ok  ] STR-02: no structural under-specification\n  [ok  ] STR-03: no structural over-specification after certified redundancy\n  [ok  ] STR-04: 2 certified redundant rows, all consistent. A certified redundant equation is one shown from the declaration to equal a signed sum of retained equations up to a constant computed from the specifications; it is retained in the residual, evaluated by the solver and the verifier, and never discarded.\n  [ok  ] STR-05: 24 blocks, largest 17/47; loop ['mixer', 'heater', 'flash', 'splitter'] torn at S6 (3 variables, by boundary_distance); inner 44x44, attempt signature ['flash']\n\nstructural counts: 49 equations, 47 free variables, 47 matched, 2 unmatched\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "validate",
+   "<CASE>",
+   "--json"
+  ],
+  "exit": 0,
+  "stdout": "{\n \"checks\": [\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"SCHEMA-01\",\n   \"implicated_objects\": [],\n   \"message\": \"every required key present\",\n   \"result\": \"PASS\",\n   \"stage\": \"schema\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"DIM-01\",\n   \"implicated_objects\": [],\n   \"message\": \"every specification and parameter is in its kind's internal SI unit\",\n   \"result\": \"PASS\",\n   \"stage\": \"dimensions\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"GRAPH-01\",\n   \"implicated_objects\": [],\n   \"message\": \"7 instances\",\n   \"result\": \"PASS\",\n   \"stage\": \"graph_connectivity\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"GRAPH-02\",\n   \"implicated_objects\": [],\n   \"message\": \"7 connections resolve\",\n   \"result\": \"PASS\",\n   \"stage\": \"graph_connectivity\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"COMP-01\",\n   \"implicated_objects\": [],\n   \"message\": \"3 components: ['A', 'B', 'C']\",\n   \"result\": \"PASS\",\n   \"stage\": \"component_reference_compatibility\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"COMP-02\",\n   \"implicated_objects\": [],\n   \"message\": \"benchmarks/syn001/components.yaml\",\n   \"result\": \"PASS\",\n   \"stage\": \"component_reference_compatibility\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"COMP-03\",\n   \"implicated_objects\": [],\n   \"message\": \"every component reference names a member of the component set ['A', 'B', 'C']\",\n   \"result\": \"PASS\",\n   \"stage\": \"component_reference_compatibility\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"COND-01\",\n   \"implicated_objects\": [],\n   \"message\": \"9 specifications declared\",\n   \"result\": \"PASS\",\n   \"stage\": \"conditional_classification\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-01\",\n   \"implicated_objects\": [],\n   \"message\": \"STRUCTURALLY_CLOSED: 49 equations over 47 free variables, structural rank 47, 170 declared incidences. This finding is structural: it is a statement about the declared equations and variables and about which of them reference which. It was made without evaluating any equation. Structurally closed means that after the certified redundant rows are removed, every remaining equation can be assigned a distinct variable it references. It does not establish that a solution exists, that it is unique, or that any Jacobian is nonsingular. Numerical rank and conditioning are decided by the certificate's regularity screen on the unregularized target Jacobian at a converged state (blueprint [A08]); this report makes no such claim, in either direction.\",\n   \"result\": \"PASS\",\n   \"stage\": \"structural_analysis\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-02\",\n   \"implicated_objects\": [],\n   \"message\": \"no structural under-specification\",\n   \"result\": \"PASS\",\n   \"stage\": \"structural_analysis\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-03\",\n   \"implicated_objects\": [],\n   \"message\": \"no structural over-specification after certified redundancy\",\n   \"result\": \"PASS\",\n   \"stage\": \"structural_analysis\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-04\",\n   \"implicated_objects\": [],\n   \"message\": \"2 certified redundant rows, all consistent. A certified redundant equation is one shown from the declaration to equal a signed sum of retained equations up to a constant computed from the specifications; it is retained in the residual, evaluated by the solver and the verifier, and never discarded.\",\n   \"result\": \"PASS\",\n   \"stage\": \"structural_analysis\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-05\",\n   \"implicated_objects\": [],\n   \"message\": \"24 blocks, largest 17/47; loop ['mixer', 'heater', 'flash', 'splitter'] torn at S6 (3 variables, by boundary_distance); inner 44x44, attempt signature ['flash']\",\n   \"result\": \"PASS\",\n   \"stage\": \"structural_analysis\"\n  }\n ],\n \"provenance\": {\n  \"produced_by\": \"K06 validator; T01 declaration-traced incidence v1, increment 1\",\n  \"timestamp\": \"<TIMESTAMP>\"\n },\n \"revision_id\": \"SYN-001-nominal-r1\",\n \"status\": \"READY_FOR_SIMULATION\",\n \"structural_counts\": {\n  \"equations\": 49,\n  \"free_variables\": 47,\n  \"matched\": 47,\n  \"unmatched\": 2\n },\n \"task\": \"simulation\"\n}\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "validate",
+   "<CASE>",
+   "--task",
+   "optimization"
+  ],
+  "exit": 14,
+  "stdout": "{\"code\":\"unsupported\",\"detail\":{\"pointer\":\"/task\"},\"message\":\"task_unsupported(optimization)\",\"retryable\":false}\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "validate",
+   "<ROOT>/broken.yaml"
+  ],
+  "exit": 0,
+  "stdout": "revision  SYN-001-nominal-r1\ntask      simulation\nstatus    DRAFT\n  [ok  ] SCHEMA-01: every required key present\n  [ok  ] DIM-01: every specification and parameter is in its kind's internal SI unit\n  [ok  ] GRAPH-01: 7 instances\n  [ok  ] GRAPH-02: 1 connections resolve\n  [ok  ] COMP-01: 3 components: ['A', 'B', 'C']\n  [ok  ] COMP-02: benchmarks/syn001/components.yaml\n  [ok  ] COMP-03: every component reference names a member of the component set ['A', 'B', 'C']\n  [ok  ] COND-01: 9 specifications declared\n  [  - ] STR-01: not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\n  [  - ] STR-02: not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\n  [  - ] STR-03: not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\n  [  - ] STR-04: not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\n  [  - ] STR-05: not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\n\nstructural counts: not computed — the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "validate",
+   "<ROOT>/broken.yaml",
+   "--json"
+  ],
+  "exit": 0,
+  "stdout": "{\n \"checks\": [\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"SCHEMA-01\",\n   \"implicated_objects\": [],\n   \"message\": \"every required key present\",\n   \"result\": \"PASS\",\n   \"stage\": \"schema\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"DIM-01\",\n   \"implicated_objects\": [],\n   \"message\": \"every specification and parameter is in its kind's internal SI unit\",\n   \"result\": \"PASS\",\n   \"stage\": \"dimensions\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"GRAPH-01\",\n   \"implicated_objects\": [],\n   \"message\": \"7 instances\",\n   \"result\": \"PASS\",\n   \"stage\": \"graph_connectivity\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"GRAPH-02\",\n   \"implicated_objects\": [],\n   \"message\": \"1 connections resolve\",\n   \"result\": \"PASS\",\n   \"stage\": \"graph_connectivity\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"COMP-01\",\n   \"implicated_objects\": [],\n   \"message\": \"3 components: ['A', 'B', 'C']\",\n   \"result\": \"PASS\",\n   \"stage\": \"component_reference_compatibility\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"COMP-02\",\n   \"implicated_objects\": [],\n   \"message\": \"benchmarks/syn001/components.yaml\",\n   \"result\": \"PASS\",\n   \"stage\": \"component_reference_compatibility\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"COMP-03\",\n   \"implicated_objects\": [],\n   \"message\": \"every component reference names a member of the component set ['A', 'B', 'C']\",\n   \"result\": \"PASS\",\n   \"stage\": \"component_reference_compatibility\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"COND-01\",\n   \"implicated_objects\": [],\n   \"message\": \"9 specifications declared\",\n   \"result\": \"PASS\",\n   \"stage\": \"conditional_classification\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-01\",\n   \"implicated_objects\": [],\n   \"message\": \"not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\",\n   \"result\": \"NOT_RUN\",\n   \"stage\": \"structural_analysis\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-02\",\n   \"implicated_objects\": [],\n   \"message\": \"not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\",\n   \"result\": \"NOT_RUN\",\n   \"stage\": \"structural_analysis\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-03\",\n   \"implicated_objects\": [],\n   \"message\": \"not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\",\n   \"result\": \"NOT_RUN\",\n   \"stage\": \"structural_analysis\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-04\",\n   \"implicated_objects\": [],\n   \"message\": \"not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\",\n   \"result\": \"NOT_RUN\",\n   \"stage\": \"structural_analysis\"\n  },\n  {\n   \"evidence_class\": \"structural\",\n   \"id\": \"STR-05\",\n   \"implicated_objects\": [],\n   \"message\": \"not run: the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\",\n   \"result\": \"NOT_RUN\",\n   \"stage\": \"structural_analysis\"\n  }\n ],\n \"provenance\": {\n  \"produced_by\": \"K06 validator; T01 declaration-traced incidence v1, increment 1\",\n  \"timestamp\": \"<TIMESTAMP>\"\n },\n \"revision_id\": \"SYN-001-nominal-r1\",\n \"status\": \"DRAFT\",\n \"structural_counts\": null,\n \"structural_counts_absent_reason\": \"the revision is incomplete: specification_target_unknown(SPEC-heater-outlet-T)\",\n \"task\": \"simulation\"\n}\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "solve",
+   "SYN-001-invented",
+   "--out",
+   "<ROOT>/nowhere"
+  ],
+  "exit": 2,
+  "stdout": "",
+  "stderr": "no registered case 'SYN-001-invented'\n"
+ },
+ {
+  "argv": [
+   "solve",
+   "SYN-001-nominal",
+   "--out",
+   "<ROOT>/bundle"
+  ],
+  "exit": 0,
+  "stdout": "case              SYN-001-nominal\noutcome           CONVERGED\nverification      VERIFIED\nstructural sha256 16ae2bd4ab03810597147f4daa3894fb123ead2bb0e36548ef75fd28b3ce773b\nbundle            <ROOT>/bundle\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "inspect",
+   "<ROOT>/bundle"
+  ],
+  "exit": 0,
+  "stdout": "=== run\n  id                SYN-001-nominal\n  model             SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769\n  outcome           CONVERGED\n  verification      VERIFIED\n  structural sha256 16ae2bd4ab03810597147f4daa3894fb123ead2bb0e36548ef75fd28b3ce773b\n  integrity         ok\n\n=== environment (provenance; recorded, not part of the identity)\n  architecture          <HOST>\n  blas                  <HOST>\n  lock_sha256           <HOST>\n  os_name               <HOST>\n  os_release            <HOST>\n  python_version        <HOST>\n  superlu_options_ref   <HOST>\n  threads               <HOST>\n\n=== certificate  VERIFIED\n  checks            136 ({'pass': 136})\n  regularity        NO_RANK_LOSS_DETECTED\n  solution bound    <HOST>\n\n=== what this certificate does not claim\n  - VERIFIED certifies the residuals at the registered tolerances; at first order the scaled solution is determined to within the recorded solution-error bound b; no solution accuracy beyond b is claimed.\n  - This is a target-model verification of the stated equations at the stated state. It is not an experimental validation of any thermodynamic model or correlation, and it is not an optimality claim.\n  - No finite test suite constitutes a proof that the verifier has no defects.\n  - shares the property provider with the solver: provider_id=syn001, implementation_sha256=4e4c37cc8054c7da12965cba80494be5666053e3bf817446053ebdeb8d6a04e7, data_sha256=44f894ff62f9d4c4d755b146cb1486f3ccc09ddba635982eff1caf8c16f95400, reference_convention=SYN-001-ref-v1; this is a consistency check of process bookkeeping, not a validation of the enthalpy correlations\n\n=== trace  8 events\n    0  plan_built       attempt 0\n    1  attempt_opened   attempt 0\n    2  jacobian         attempt 0\n    3  linear_solve     attempt 0\n    4  linear_solve     attempt 0\n    5  step_accepted    attempt 0\n    6  attempt_closed   attempt 0 -> CONVERGED\n    7  solve_closed     attempt 1 -> CONVERGED\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "replay",
+   "<ROOT>/bundle"
+  ],
+  "exit": 0,
+  "stdout": "mode      exact_replay\nverdict   NOT_RUN\nintegrity ok\nbitwise   None\n  reason  no rerun was supplied\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "replay",
+   "<ROOT>/bundle",
+   "--json"
+  ],
+  "exit": 0,
+  "stdout": "{\n \"bitwise_floats\": null,\n \"current_environment\": <HOST>,\n \"differences\": [],\n \"integrity\": {\n  \"missing\": [],\n  \"ok\": true,\n  \"tampered\": [],\n  \"unexpected\": []\n },\n \"mode\": \"exact_replay\",\n \"reasons\": [\n  \"no rerun was supplied\"\n ],\n \"recorded_environment\": <HOST>,\n \"verdict\": \"NOT_RUN\",\n \"verdict_changed_near_threshold\": []\n}\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "replay",
+   "<ROOT>/bundle",
+   "--rerun"
+  ],
+  "exit": 0,
+  "stdout": "mode      exact_replay\nverdict   MATCH\nintegrity ok\nbitwise   True\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "project",
+   "init",
+   "<ROOT>/project",
+   "--project-id",
+   "p-cli"
+  ],
+  "exit": 0,
+  "stdout": "project   p-cli\ndirectory <ROOT>/project\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "project",
+   "init",
+   "<ROOT>/project",
+   "--project-id",
+   "p-cli"
+  ],
+  "exit": 2,
+  "stdout": "",
+  "stderr": "<ROOT>/project is not empty; a project is created in a new directory\n"
+ },
+ {
+  "argv": [
+   "project",
+   "grant",
+   "--project",
+   "<ROOT>/project",
+   "--principal",
+   "agent-1",
+   "--capability-id",
+   "cap-1"
+  ],
+  "exit": 0,
+  "stdout": "capability cap-1\nprincipal  agent-1\nrights     draft,execute,read\ntoken      <TOKEN>\n(the token is shown once; the project stores only its SHA-256)\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "project",
+   "grant",
+   "--project",
+   "<ROOT>/project",
+   "--principal",
+   "agent-2",
+   "--rights",
+   "read,bogus"
+  ],
+  "exit": 2,
+  "stdout": "",
+  "stderr": "unknown rights ['bogus']; the rights are ['read', 'draft', 'execute', 'install', 'policy', 'publish']\n"
+ },
+ {
+  "argv": [
+   "project",
+   "revoke",
+   "--project",
+   "<ROOT>/project",
+   "--capability",
+   "cap-1"
+  ],
+  "exit": 0,
+  "stdout": "revoked    cap-1 (principal agent-1)\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "project",
+   "revoke",
+   "--project",
+   "<ROOT>/project",
+   "--capability",
+   "cap-1"
+  ],
+  "exit": 2,
+  "stdout": "",
+  "stderr": "no capability 'cap-1' to revoke\n"
+ }
+]

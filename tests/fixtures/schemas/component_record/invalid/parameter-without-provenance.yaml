@@ -1,0 +1,44 @@
+# Invalid ComponentRecord: a parameter Quantity with no provenance.
+#
+# Blueprint §4.1 requires parameter data *and provenance*. A number with no stated source
+# cannot be audited, so the schema requires `provenance` on every parameter.
+expect_error: provenance
+document:
+  id: E
+  name: SYN-001 pseudo-component E, incorrectly recorded
+  synthetic: true
+  molecular_weight:
+    value: 0.1
+    unit: kg/mol
+    dimension:
+    - 0
+    - 1
+    - 0
+    - 0
+    - -1
+    - 0
+    - 0
+    kind: molar_mass
+    meaning: Molecular weight
+    role: fixed
+    provenance: plan v1.1 §3.1, synthetic
+  elemental_composition: null
+  elemental_verification: NOT_APPLICABLE
+  parameters:
+    reference_boiling_temperature:
+      value: 330.0
+      unit: K
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 1
+      - 0
+      - 0
+      - 0
+      kind: temperature
+      meaning: Boiling temperature at P_r with no recorded source
+      role: fixed
+  rights:
+    source: Synthetic
+    redistribution: synthetic; no restrictions

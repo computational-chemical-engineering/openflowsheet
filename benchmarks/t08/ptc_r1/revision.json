@@ -1,0 +1,365 @@
+{
+  "schema_version": 1,
+  "revision_id": "SYN-001-T08-PTC-R1-r1",
+  "parent_revision": null,
+  "title": "SYN-001-T08-PTC-R1: T04 PTC-R1 realised as a vapour-phase kinetic CSTR.",
+  "description": "Feed (0.4990234375, 0.5, 0.0009765625) mol/s at 360 K and 100 kPa, vapour -> syn001.kinetic_cstr (B -> A, Da 0.072, T_s 3.125 K, coolant 0.3 mol/s x 100 J/(mol K) at 360 K) -> sink. T08 build-first spec §A1.5 and §A2 as amended by Amendment 1 §Am1.1 (C an inert 2^-10 mol/s trace taken from A); expected values in benchmarks/t08/build_first_reference.yaml.",
+  "component_set": {
+    "record_source": "benchmarks/syn001/components.yaml",
+    "components": [
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  "instances": [
+    {
+      "id": "U-FEED",
+      "model": {
+        "id": "syn001.feed_source",
+        "version": "0.0.0-declared",
+        "artifact_ref": null
+      },
+      "semantic_role": "feed",
+      "parameters": {},
+      "policy": {
+        "fidelity": "boundary condition; the fresh feed state is fully specified",
+        "validity": "SYN-001 declared domain 280-440 K, 50000-200000 Pa"
+      }
+    },
+    {
+      "id": "U-CSTR",
+      "model": {
+        "id": "syn001.kinetic_cstr",
+        "version": "0.0.0-declared",
+        "artifact_ref": null
+      },
+      "semantic_role": "reactor",
+      "parameters": {
+        "nu.A": {
+          "value": 1.0,
+          "unit": "1",
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): nu.A",
+          "role": "fixed"
+        },
+        "nu.B": {
+          "value": -1.0,
+          "unit": "1",
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): nu.B",
+          "role": "fixed"
+        },
+        "nu.C": {
+          "value": 0.0,
+          "unit": "1",
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): nu.C",
+          "role": "fixed"
+        },
+        "damkohler.B": {
+          "value": 0.072,
+          "unit": "1",
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): damkohler.B",
+          "role": "fixed"
+        },
+        "T_ref": {
+          "value": 360.0,
+          "unit": "K",
+          "dimension": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "kind": "temperature",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): T_ref",
+          "role": "fixed"
+        },
+        "T_scale": {
+          "value": 3.125,
+          "unit": "K",
+          "dimension": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "kind": "temperature_difference",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): T_scale",
+          "role": "fixed"
+        },
+        "coolant_flow": {
+          "value": 0.3,
+          "unit": "mol/s",
+          "dimension": [
+            0,
+            0,
+            -1,
+            0,
+            1,
+            0,
+            0
+          ],
+          "kind": "molar_flow",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): coolant_flow",
+          "role": "fixed"
+        },
+        "coolant_cp": {
+          "value": 100.0,
+          "unit": "J/(mol K)",
+          "dimension": [
+            2,
+            1,
+            -2,
+            -1,
+            -1,
+            0,
+            0
+          ],
+          "kind": "molar_heat_capacity",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): coolant_cp",
+          "role": "fixed"
+        },
+        "T_coolant": {
+          "value": 360.0,
+          "unit": "K",
+          "dimension": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "kind": "temperature",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): T_coolant",
+          "role": "fixed"
+        },
+        "pressure_drop": {
+          "value": 0.0,
+          "unit": "Pa",
+          "dimension": [
+            -1,
+            1,
+            -2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "pressure",
+          "meaning": "PTC-R1 realization (T08 build-first spec §A1.5): pressure_drop",
+          "role": "fixed"
+        }
+      },
+      "policy": {
+        "fidelity": "synthetic first-order kinetics, gamma -> infinity law (T08 build-first spec §A1)",
+        "validity": "SYN-001 declared domain 280-440 K, 50000-200000 Pa"
+      }
+    },
+    {
+      "id": "U-SINK",
+      "model": {
+        "id": "syn001.product_sink",
+        "version": "0.0.0-declared",
+        "artifact_ref": null
+      },
+      "semantic_role": "product_sink",
+      "parameters": {},
+      "policy": {
+        "fidelity": "boundary; accepts a stream and imposes no equation on it",
+        "validity": "accepts any phase signature including ZERO_FLOW"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "S1",
+      "kind": "material",
+      "from": {
+        "instance": "U-FEED",
+        "port": "outlet"
+      },
+      "to": {
+        "instance": "U-CSTR",
+        "port": "inlet"
+      },
+      "state_definition": "nTP-v1",
+      "component_mapping": "revision_component_set",
+      "phase_capability": "vapor",
+      "notes": "Feed: (0.4990234375, 0.5, 0.0009765625) mol/s at 360 K and 100 kPa, vapour."
+    },
+    {
+      "id": "S2",
+      "kind": "material",
+      "from": {
+        "instance": "U-CSTR",
+        "port": "outlet"
+      },
+      "to": {
+        "instance": "U-SINK",
+        "port": "inlet"
+      },
+      "state_definition": "nTP-v1",
+      "component_mapping": "revision_component_set",
+      "phase_capability": "vapor",
+      "notes": "Reactor outlet, vapour (declared phase)."
+    }
+  ],
+  "specifications": [
+    {
+      "id": "SPEC-feed-n-A",
+      "target": {
+        "object_type": "connection",
+        "object_id": "S1",
+        "path": "state.n",
+        "component": "A"
+      },
+      "kind": "molar_flow",
+      "unit": "mol/s",
+      "value": 0.4990234375,
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "role": "fixed",
+      "provenance": "docs/derivations/T08-build-first-spec.md §A1.5 as amended (§Am1.1)",
+      "notes": "PTC-R1 feed pin."
+    },
+    {
+      "id": "SPEC-feed-n-B",
+      "target": {
+        "object_type": "connection",
+        "object_id": "S1",
+        "path": "state.n",
+        "component": "B"
+      },
+      "kind": "molar_flow",
+      "unit": "mol/s",
+      "value": 0.5,
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "role": "fixed",
+      "provenance": "docs/derivations/T08-build-first-spec.md §A1.5 as amended (§Am1.1)",
+      "notes": "PTC-R1 feed pin."
+    },
+    {
+      "id": "SPEC-feed-n-C",
+      "target": {
+        "object_type": "connection",
+        "object_id": "S1",
+        "path": "state.n",
+        "component": "C"
+      },
+      "kind": "molar_flow",
+      "unit": "mol/s",
+      "value": 0.0009765625,
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "role": "fixed",
+      "provenance": "docs/derivations/T08-build-first-spec.md §A1.5 as amended (§Am1.1)",
+      "notes": "PTC-R1 feed pin."
+    },
+    {
+      "id": "SPEC-feed-T",
+      "target": {
+        "object_type": "connection",
+        "object_id": "S1",
+        "path": "state.T"
+      },
+      "kind": "temperature",
+      "unit": "K",
+      "value": 360.0,
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "role": "fixed",
+      "provenance": "docs/derivations/T08-build-first-spec.md §A1.5 as amended (§Am1.1)",
+      "notes": "PTC-R1 feed pin."
+    },
+    {
+      "id": "SPEC-feed-P",
+      "target": {
+        "object_type": "connection",
+        "object_id": "S1",
+        "path": "state.P"
+      },
+      "kind": "pressure",
+      "unit": "Pa",
+      "value": 100000.0,
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "role": "fixed",
+      "provenance": "docs/derivations/T08-build-first-spec.md §A1.5 as amended (§Am1.1)",
+      "notes": "PTC-R1 feed pin."
+    }
+  ],
+  "provenance": {
+    "actor": "Opus 5.5 (T08 W3, build lane, from the design-lane specification)",
+    "operation": "create",
+    "timestamp": "2026-09-29T00:00:00Z",
+    "source_references": [
+      "docs/derivations/T08-build-first-spec.md §A1.5, §A2, Amendment 1 §Am1.1",
+      "docs/adr/0023-kinetic-cstr-and-ptc-r1.md D2 (Amendment 1)",
+      "benchmarks/t08/build_first_reference.yaml case.realization"
+    ],
+    "notes": "Hand-specified registration input (C_case). No solver has run on this revision."
+  }
+}

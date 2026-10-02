@@ -1,0 +1,7 @@
+{
+ "form": "I",
+ "status": "not_applicable",
+ "reason": "grey-box outputs are NLP variables; no inline composition mechanism",
+ "specification": "\u00a74.3 level 3, \u00a710.3",
+ "note": "the I-form matrix for this route is obtained by the exact Schur elimination of A14 from the exported L-form; the harness assembles no I-form and reports none"
+}

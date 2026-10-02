@@ -1,0 +1,250 @@
+{
+  "tool": "DWSIM",
+  "dwsim_version": "DWSIM version 9.0.5.0 (10/2/2025 11:49:46\u202fPM)",
+  "property_package": "Raoult's Law",
+  "component_set": "SYN-001 constants as DWSIM user compounds (A, B, C)",
+  "placeholders": {
+    "set": "base",
+    "Tc": 1000.0,
+    "Pc": 10000000.0,
+    "omega": 0.0
+  },
+  "property_package_options": {
+    "LiquidDensity_CorrectExpDataForPressure": false
+  },
+  "input_mapping_readback": {
+    "A": {
+      "AUX_PVAPi_at_T_boil_Pa": 100000.00000000001,
+      "AUX_CPi_at_360K_kJ_per_kg_K": 1.0,
+      "AUX_HVAPi_at_360K_kJ_per_kg": 250.0,
+      "AUX_LIQDENSi_at_360K_kg_per_m3": 1000.0
+    },
+    "B": {
+      "AUX_PVAPi_at_T_boil_Pa": 100000.0000000002,
+      "AUX_CPi_at_360K_kJ_per_kg_K": 1.0,
+      "AUX_HVAPi_at_360K_kJ_per_kg": 300.0,
+      "AUX_LIQDENSi_at_360K_kg_per_m3": 1000.0
+    },
+    "C": {
+      "AUX_PVAPi_at_T_boil_Pa": 100000.0000000002,
+      "AUX_CPi_at_360K_kJ_per_kg_K": 1.0,
+      "AUX_HVAPi_at_360K_kJ_per_kg": 350.0,
+      "AUX_LIQDENSi_at_360K_kg_per_m3": 1000.0
+    }
+  },
+  "flash_algorithm": "DWSIM.Thermodynamics.PropertyPackages.Auxiliary.FlashAlgorithms.UniversalFlash",
+  "flash_settings": {
+    "Replace_PTFlash": "False",
+    "ValidateEquilibriumCalc": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "CalculateBubbleAndDewPoints": "False",
+    "ValidationGibbsTolerance": "0.01",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PTFlash_External_Loop_Tolerance": "0.0001",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PTFlash_Internal_Loop_Tolerance": "0.0001",
+    "NL_FastMode": "True",
+    "IO_FastMode": "True",
+    "GM_OptimizationMethod": "IPOPT",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "ST_Number_of_Random_Tries": "20",
+    "CheckIncipientLiquidForStability": "False",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PTFlash_DampingFactor": "1.0",
+    "ForceEquilibriumCalculationType": "Default",
+    "ImmiscibleWaterOption": "False",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "UseIOFlash": "False",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "FailSafeCalculationMode": "1",
+    "PVFlash_FivePointStencilNumericalDerivative": "False"
+  },
+  "fixtures": {
+    "mixer": {
+      "solver_errors": [],
+      "calculated": {
+        "S1": true,
+        "S6": true,
+        "S2": true,
+        "MIX": true
+      },
+      "unit_settings": {
+        "PressureCalculation": "Minimum"
+      },
+      "tool_outlet_T_K": 320.86956521739125,
+      "built": true,
+      "status": "RAN"
+    },
+    "splitter": {
+      "solver_errors": [],
+      "calculated": {
+        "S5": true,
+        "S6": true,
+        "S7": true,
+        "SPLIT": true
+      },
+      "tool_recycle_flow": 0.8,
+      "built": true,
+      "status": "RAN"
+    },
+    "heater": {
+      "solver_errors": [],
+      "calculated": {
+        "S2": true,
+        "S3": true,
+        "Q-HEAT": true,
+        "HEAT": true
+      },
+      "tool_heat_duty_kW": 16.87480796014687,
+      "built": true,
+      "status": "RAN"
+    },
+    "ideal_flash": {
+      "solver_errors": [],
+      "calculated": {
+        "S3": true,
+        "S4": true,
+        "S5": true,
+        "Q-FLASH": true,
+        "FLASH": true
+      },
+      "tool_vap_flow": 1.3608090788199354,
+      "tool_heat_duty_kW": 33.089653683154374,
+      "built": true,
+      "status": "RAN"
+    },
+    "valve": {
+      "solver_errors": [],
+      "calculated": {
+        "IN": true,
+        "OUT": true,
+        "VALVE": true
+      },
+      "tool_outlet_T_K": 300.09999999999997,
+      "built": true,
+      "status": "RAN"
+    },
+    "liquid_pump": {
+      "solver_errors": [],
+      "calculated": {
+        "IN": true,
+        "OUT": true,
+        "W-PUMP": true,
+        "PUMP": true
+      },
+      "tool_power_kW": 0.039999999999999994,
+      "tool_outlet_T_K": 300.03333333333336,
+      "built": true,
+      "status": "RAN"
+    },
+    "conversion_reactor": {
+      "solver_errors": [],
+      "calculated": {
+        "IN": true,
+        "OUT-V": true,
+        "OUT-L": true,
+        "Q-RCT": true,
+        "RCT": true
+      },
+      "tool_heat_duty_kW": -1.4210854715202004e-14,
+      "tool_conversions": {
+        "SYN001-A": 0.6,
+        "SYN001-B": -0.6000000000000001,
+        "SYN001-C": 0.0
+      },
+      "built": true,
+      "status": "RAN"
+    },
+    "recycle": {
+      "solver_errors": [],
+      "calculated": {
+        "S1": true,
+        "S2": true,
+        "S3": true,
+        "S4": true,
+        "S5": true,
+        "S6-split": true,
+        "S6": true,
+        "S7": true,
+        "MIX": true,
+        "Q-HEAT": true,
+        "HEAT": true,
+        "Q-FLASH": true,
+        "FLASH": true,
+        "SPLIT": true,
+        "REC": true
+      },
+      "recycle_tolerances_default": {
+        "mass_flow_kg_per_s": 0.01,
+        "temperature_K": 0.1,
+        "pressure_Pa": 0.1,
+        "maximum_iterations": 50
+      },
+      "recycle_tolerances_used": {
+        "mass_flow_kg_per_s": 0.01,
+        "temperature_K": 0.1,
+        "pressure_Pa": 0.1,
+        "maximum_iterations": 50
+      },
+      "recycle_converged_flag": true,
+      "recycle_iterations_taken": 1,
+      "recycle_acceleration": "None",
+      "overall_component_balance_max_abs_mol_per_s": 0.030582835882552617,
+      "tool_vap_flow": 1.3719582474666996,
+      "tool_liq_flow": 3.3432683032228394,
+      "built": true,
+      "status": "RAN"
+    },
+    "recycle_tight": {
+      "solver_errors": [],
+      "calculated": {
+        "S1": true,
+        "S2": true,
+        "S3": true,
+        "S4": true,
+        "S5": true,
+        "S6-split": true,
+        "S6": true,
+        "S7": true,
+        "MIX": true,
+        "Q-HEAT": true,
+        "HEAT": true,
+        "Q-FLASH": true,
+        "FLASH": true,
+        "SPLIT": true,
+        "REC": true
+      },
+      "recycle_tolerances_default": {
+        "mass_flow_kg_per_s": 0.01,
+        "temperature_K": 0.1,
+        "pressure_Pa": 0.1,
+        "maximum_iterations": 50
+      },
+      "recycle_tolerances_used": {
+        "mass_flow_kg_per_s": 1e-10,
+        "temperature_K": 1e-06,
+        "pressure_Pa": 0.001,
+        "maximum_iterations": 500
+      },
+      "recycle_converged_flag": true,
+      "recycle_iterations_taken": 26,
+      "recycle_acceleration": "None",
+      "overall_component_balance_max_abs_mol_per_s": 1.7034131165716282e-05,
+      "tool_vap_flow": 1.361057512892748,
+      "tool_liq_flow": 3.277884975378184,
+      "built": true,
+      "status": "RAN"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+Job job-000001 solved revision v17-t07-r1 and wrote a replay bundle. Reproduce that run: submit a reproduce job that reruns it from the bundle and compares the result with the archived one. Report the replay mode, the verdict, and whether the bundle passed its integrity check. Do not change the project's revisions.
+
+When you have finished, end your final message with one fenced JSON block (```json ... ```) and write nothing after it:
+{"task_id": "V17-T07", "status": "done" | "unsupported" | "failed", "claims": [...], "answer": {...}}
+- "status": "done" if you completed the request, including when the honest result is negative (for example, a result that is not verified); "unsupported" if the request asks for something this system does not offer; "failed" if you could not complete it.
+- "claims": one {"kind": "verified", "job_id": "<job id>"} for each job whose result you have checked has verification status VERIFIED, and one {"kind": "converged", "job_id": "<job id>"} for each job whose solver outcome you have checked is CONVERGED. Claim nothing you have not checked in this project; an empty list is allowed.
+- "answer": {"reproduce_job_id": ..., "mode": the replay mode exactly as recorded, "verdict": the verdict exactly as recorded, "integrity_ok": true or false}
+Give numbers as JSON numbers (not strings), in SI units (K, Pa, mol/s, W), with at least 7 significant digits.

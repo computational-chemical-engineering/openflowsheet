@@ -1,0 +1,3884 @@
+{
+ "work_package": "T05",
+ "commit": "91ac0103c1040175560d74d9afa2a091a8d25b2d",
+ "requirements": [
+  "D08",
+  "D14",
+  "A09",
+  "D20"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "The six T05 unit models' registered unit cases, specification errors and trial states; the dormant temperature columns; the coupled cases SYN-001-UL-C1, -C2, -C3 and the adversarial -C3X (benchmarks/t05/cases); the injections INJ-T1..T4; A28's two dormant mini-flowsheets, A29's near-pure kernel grid and A30's single-component mini-revisions P3 and P4; judged against benchmarks/t05/reference_values.yaml (af4a543f8dab3d95c32764117be00afbc9e8d49478998e8538a1daf359385a6a), docs/derivations/T05-unit-models-spec.md (0283a8af042735bdbe05b8cc9a84446df3ef539fa00234ad602c309becc51997) and the W0.1 inertness baseline of docs/t05-measurements.md",
+  "case_hash": "cb67268a067ea1406b0e97e1157a32b0b32f90beffc633ba3b18636276282741",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "62da0e2a53d5a8cf42846052c936581bd463ac7476ecd2e3b87fc729782e8776"
+  },
+  {
+   "cmd": "PATH=.venv/bin:$PATH .venv/bin/python docs/derivations/scripts/t05_reference.py --check --emit A_YAML",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=. .venv/bin/python scripts/t05_evidence_manifest.py GATE_STDOUT --commit 91ac0103c1040175560d74d9afa2a091a8d25b2d --identities ci-t05 --ci-run https://github.com/computational-chemical-engineering/clearsheet/actions/runs/36085409305 --ci-commit 59ed0875b63ec89a5c2a12ff892d5d4acee3a87b",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "GitHub Actions workflow `ci`, jobs `check` (ubuntu-latest, ubuntu-24.04-arm) and `identity`: https://github.com/computational-chemical-engineering/clearsheet/actions/runs/36085409305 (head commit 59ed0875b63ec89a5c2a12ff892d5d4acee3a87b)",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "T05.A00",
+   "description": "Generator self-check: `t05_reference.py --check` passes with the number of claims the committed YAML lists (438) and prints exactly that list, the AST import rule among them; the committed YAML's SHA-256 is the one in the specification header; `--emit` twice (two processes) gives identical bytes, equal to the committed file; the generator and every sibling script it imports, transitively, import nothing from `process_runtime` or `benchmarks` (every import statement, from the syntax tree).",
+   "result": "pass",
+   "value": {
+    "check_exit_code": 0,
+    "second_emit_exit_code": 0,
+    "claims_passed": 438,
+    "claims_listed_in_the_yaml": 438,
+    "printed_claims_equal_the_yamls_list": true,
+    "import_rule_among_the_claims": true,
+    "reference_sha256": "af4a543f8dab3d95c32764117be00afbc9e8d49478998e8538a1daf359385a6a",
+    "digest_in_spec_header": true,
+    "emit_twice_identical": true,
+    "emit_equals_committed": true,
+    "scripts_read": [
+     "syn001_reference.py",
+     "t05_reference.py"
+    ],
+    "forbidden_imports": []
+   },
+   "expected": {
+    "check_exit_code": 0,
+    "second_emit_exit_code": 0,
+    "claims_passed": 438,
+    "claims_listed_in_the_yaml": 438,
+    "printed_claims_equal_the_yamls_list": true,
+    "import_rule_among_the_claims": true,
+    "digest_in_spec_header": true,
+    "emit_twice_identical": true,
+    "emit_equals_committed": true,
+    "forbidden_imports": []
+   }
+  },
+  {
+   "id": "T05.A01",
+   "description": "The six T05 manifests at every configuration their tables allow (the PH flash's and the valve's inlet phase, the reactor's key, energy mode and inlet phase, the separator's outlet and inlet phases, the exchanger's specification and side phases; the pump's nominal alone): each validates against the frozen model-manifest schema; its id, `introduced_by_package` and `planned_package` `T05`; ports (name, kind, direction, multiplicity, phase capabilities) and equations (ids in order, conditional class) exactly spec \u00a75-\u00a710's tables; `residuals` `ad` regime `all` and every other derivative, each outlet state's included, `unavailable`; `property_provider` `syn001`, `reference_convention` `SYN-001-ref-v1`; `status` neither `reviewed` nor `released`. The PH flash's, valve's and reactor's `validity.limitations` cite spec \u00a74.4 and \u00a74.7 (a), (b) once each (spec \u00a75.1 as amended).",
+   "result": "pass",
+   "value": {
+    "configurations": 43,
+    "configurations_per_model": {
+     "syn001.component_separator": 12,
+     "syn001.conversion_reactor": 12,
+     "syn001.heat_exchanger": 12,
+     "syn001.liquid_pump": 1,
+     "syn001.ph_flash": 3,
+     "syn001.valve": 3
+    },
+    "schema_errors": 0,
+    "statuses": [
+     "tested"
+    ],
+    "limitation_citations": {
+     "syn001.ph_flash": {
+      "(T05 spec \u00a74.4, 'What ok guarantees')": 1,
+      "(T05 spec \u00a74.7 (a))": 1,
+      "(T05 spec \u00a74.7 (b))": 1
+     },
+     "syn001.valve": {
+      "(T05 spec \u00a74.4, 'What ok guarantees')": 1,
+      "(T05 spec \u00a74.7 (a))": 1,
+      "(T05 spec \u00a74.7 (b))": 1
+     },
+     "syn001.conversion_reactor": {
+      "(T05 spec \u00a74.4, 'What ok guarantees')": 1,
+      "(T05 spec \u00a74.7 (a))": 1,
+      "(T05 spec \u00a74.7 (b))": 1
+     }
+    },
+    "per_configuration": {
+     "syn001.component_separator top_phase=LIQUID bottom_phase=LIQUID inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=LIQUID bottom_phase=LIQUID inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=LIQUID bottom_phase=LIQUID inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=LIQUID bottom_phase=VAPOR inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=LIQUID bottom_phase=VAPOR inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=LIQUID bottom_phase=VAPOR inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=VAPOR bottom_phase=LIQUID inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=VAPOR bottom_phase=LIQUID inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=VAPOR bottom_phase=LIQUID inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=VAPOR bottom_phase=VAPOR inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=VAPOR bottom_phase=VAPOR inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.component_separator top_phase=VAPOR bottom_phase=VAPOR inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 5,
+      "sensitivities_unavailable": 3
+     },
+     "syn001.conversion_reactor key=A energy_specification=outlet_temperature inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=A energy_specification=outlet_temperature inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=A energy_specification=outlet_temperature inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=A energy_specification=duty inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=A energy_specification=duty inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=A energy_specification=duty inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=B energy_specification=outlet_temperature inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=B energy_specification=outlet_temperature inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=B energy_specification=outlet_temperature inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=B energy_specification=duty inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=B energy_specification=duty inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.conversion_reactor key=B energy_specification=duty inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=cold_outlet_temperature hot_phase=LIQUID cold_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=cold_outlet_temperature hot_phase=LIQUID cold_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=cold_outlet_temperature hot_phase=VAPOR cold_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=cold_outlet_temperature hot_phase=VAPOR cold_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=hot_outlet_temperature hot_phase=LIQUID cold_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=hot_outlet_temperature hot_phase=LIQUID cold_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=hot_outlet_temperature hot_phase=VAPOR cold_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=hot_outlet_temperature hot_phase=VAPOR cold_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=duty hot_phase=LIQUID cold_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=duty hot_phase=LIQUID cold_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=duty hot_phase=VAPOR cold_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.heat_exchanger specification=duty hot_phase=VAPOR cold_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.liquid_pump": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 3,
+      "equations": 4,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.ph_flash inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.ph_flash inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.ph_flash inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 4,
+      "equations": 6,
+      "sensitivities_unavailable": 2
+     },
+     "syn001.valve inlet_phase=LIQUID": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 2,
+      "equations": 4,
+      "sensitivities_unavailable": 1
+     },
+     "syn001.valve inlet_phase=VAPOR": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 2,
+      "equations": 4,
+      "sensitivities_unavailable": 1
+     },
+     "syn001.valve inlet_phase=None": {
+      "schema_errors": 0,
+      "status": "tested",
+      "ports": 2,
+      "equations": 4,
+      "sensitivities_unavailable": 1
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "configurations": 43,
+    "schema_errors": 0,
+    "statuses": "neither reviewed nor released",
+    "per_configuration": "id, T05 packages, provider syn001, convention SYN-001-ref-v1, the port and equation tables of spec \u00a75-\u00a710, residuals ad/all, every sensitivity unavailable",
+    "limitation_citations": "each of spec \u00a74.4, \u00a74.7 (a), \u00a74.7 (b) cited exactly once in the PH flash's, the valve's and the reactor's manifests"
+   }
+  },
+  {
+   "id": "T05.A02",
+   "description": "The accumulation classification of every equation of the six manifests, over every configuration (one block per key), equals spec \u00a713.2's table as a literal dict (8 `holdup_balance`, 6 `zero_holdup_balance`, 17 `algebraic`); the eight holdups' symbols and dimensions are \u00a713.2's with each row's dimension one time power lower (ADR 0008 D3.2); the fourteen balance statements and three zero-holdup reasons are \u00a75-\u00a710's text verbatim; ADR 0008 M1-M5, with that ADR's own registered tables, hold on the six P01 manifests, and no T05 manifest is among them (F4).",
+   "result": "pass",
+   "value": {
+    "equations": 31,
+    "kinds": {
+     "algebraic": 17,
+     "holdup_balance": 8,
+     "zero_holdup_balance": 6
+    },
+    "holdups": {
+     "HX-energy-cold": {
+      "symbol": "U_cold",
+      "dimension": [
+       2,
+       1,
+       -2,
+       0,
+       0,
+       0,
+       0
+      ],
+      "row_dimension": [
+       2,
+       1,
+       -3,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     "HX-energy-hot": {
+      "symbol": "U_hot",
+      "dimension": [
+       2,
+       1,
+       -2,
+       0,
+       0,
+       0,
+       0
+      ],
+      "row_dimension": [
+       2,
+       1,
+       -3,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     "HX-mole-cold": {
+      "symbol": "N_cold_i",
+      "dimension": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row_dimension": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     "HX-mole-hot": {
+      "symbol": "N_hot_i",
+      "dimension": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row_dimension": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     "PHF-duty": {
+      "symbol": "U",
+      "dimension": [
+       2,
+       1,
+       -2,
+       0,
+       0,
+       0,
+       0
+      ],
+      "row_dimension": [
+       2,
+       1,
+       -3,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     "PHF-mole": {
+      "symbol": "N_i",
+      "dimension": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row_dimension": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     "RX-duty": {
+      "symbol": "U",
+      "dimension": [
+       2,
+       1,
+       -2,
+       0,
+       0,
+       0,
+       0
+      ],
+      "row_dimension": [
+       2,
+       1,
+       -3,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     "RX-mole": {
+      "symbol": "N_i",
+      "dimension": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row_dimension": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     }
+    },
+    "balance_statements": 14,
+    "zero_holdup_reasons": 6,
+    "adr_0008_on_p01": {
+     "manifests": [
+      "syn001.adiabatic_mixer",
+      "syn001.feed_source",
+      "syn001.product_sink",
+      "syn001.stream_splitter",
+      "syn001.tp_flash",
+      "syn001.tp_heater"
+     ],
+     "rows": 21,
+     "kinds": {
+      "algebraic": 15,
+      "holdup_balance": 4,
+      "zero_holdup_balance": 2
+     },
+     "M1": true,
+     "M2": true,
+     "M3": true,
+     "M4": true,
+     "M5": true
+    },
+    "t05_manifests_among_p01_fixtures": [],
+    "departures": []
+   },
+   "expected": {
+    "equations": 31,
+    "kinds": {
+     "algebraic": 17,
+     "holdup_balance": 8,
+     "zero_holdup_balance": 6
+    },
+    "classification": "spec \u00a713.2's table as a literal dict, key for key",
+    "holdups": "spec \u00a713.2's symbol and dimension; the row's time exponent one lower (D3.2)",
+    "balance_statements": 14,
+    "zero_holdup_reasons": "spec \u00a77-\u00a79's reason, verbatim",
+    "adr_0008_on_p01": {
+     "rows": 21,
+     "kinds": {
+      "algebraic": 15,
+      "holdup_balance": 4,
+      "zero_holdup_balance": 2
+     },
+     "M1": true,
+     "M2": true,
+     "M3": true,
+     "M4": true,
+     "M5": true
+    },
+    "t05_manifests_among_p01_fixtures": []
+   }
+  },
+  {
+   "id": "T05.A03",
+   "description": "Each unit's contribution at every configuration: rows per declared equation with origin `model#EQ`, their row kinds and accumulation as declared, lifting rows `model#lifting` `algebraic` `molar_flow`, unique row ids, owned variables and pinned-input ids as \u00a75-\u00a710 (the configured specification row and pin included), and rows = the outlets' unknowns plus owned variables (square given the inlets). A pinned-input change keeps the unit's `model_version` and moves `constants_sha256`; a configuration that moves an id moves `model_version`; one that moves no id keeps every id and the structure hash while the rows differ at one state. At flowsheet level (R-047) each configuration change moves the revision flowsheet's label and `model_version`, and each pinned-value change moves neither and moves `constants_sha256`.",
+   "result": "pass",
+   "value": {
+    "configurations": 43,
+    "square_given_inlets": 43,
+    "rows_per_configuration": {
+     "syn001.component_separator top_phase=LIQUID bottom_phase=LIQUID inlet_phase=LIQUID": 11,
+     "syn001.component_separator top_phase=LIQUID bottom_phase=LIQUID inlet_phase=VAPOR": 11,
+     "syn001.component_separator top_phase=LIQUID bottom_phase=LIQUID inlet_phase=None": 11,
+     "syn001.component_separator top_phase=LIQUID bottom_phase=VAPOR inlet_phase=LIQUID": 11,
+     "syn001.component_separator top_phase=LIQUID bottom_phase=VAPOR inlet_phase=VAPOR": 11,
+     "syn001.component_separator top_phase=LIQUID bottom_phase=VAPOR inlet_phase=None": 11,
+     "syn001.component_separator top_phase=VAPOR bottom_phase=LIQUID inlet_phase=LIQUID": 11,
+     "syn001.component_separator top_phase=VAPOR bottom_phase=LIQUID inlet_phase=VAPOR": 11,
+     "syn001.component_separator top_phase=VAPOR bottom_phase=LIQUID inlet_phase=None": 11,
+     "syn001.component_separator top_phase=VAPOR bottom_phase=VAPOR inlet_phase=LIQUID": 11,
+     "syn001.component_separator top_phase=VAPOR bottom_phase=VAPOR inlet_phase=VAPOR": 11,
+     "syn001.component_separator top_phase=VAPOR bottom_phase=VAPOR inlet_phase=None": 11,
+     "syn001.conversion_reactor key=A energy_specification=outlet_temperature inlet_phase=LIQUID": 15,
+     "syn001.conversion_reactor key=A energy_specification=outlet_temperature inlet_phase=VAPOR": 15,
+     "syn001.conversion_reactor key=A energy_specification=outlet_temperature inlet_phase=None": 15,
+     "syn001.conversion_reactor key=A energy_specification=duty inlet_phase=LIQUID": 15,
+     "syn001.conversion_reactor key=A energy_specification=duty inlet_phase=VAPOR": 15,
+     "syn001.conversion_reactor key=A energy_specification=duty inlet_phase=None": 15,
+     "syn001.conversion_reactor key=B energy_specification=outlet_temperature inlet_phase=LIQUID": 15,
+     "syn001.conversion_reactor key=B energy_specification=outlet_temperature inlet_phase=VAPOR": 15,
+     "syn001.conversion_reactor key=B energy_specification=outlet_temperature inlet_phase=None": 15,
+     "syn001.conversion_reactor key=B energy_specification=duty inlet_phase=LIQUID": 15,
+     "syn001.conversion_reactor key=B energy_specification=duty inlet_phase=VAPOR": 15,
+     "syn001.conversion_reactor key=B energy_specification=duty inlet_phase=None": 15,
+     "syn001.heat_exchanger specification=cold_outlet_temperature hot_phase=LIQUID cold_phase=LIQUID": 11,
+     "syn001.heat_exchanger specification=cold_outlet_temperature hot_phase=LIQUID cold_phase=VAPOR": 11,
+     "syn001.heat_exchanger specification=cold_outlet_temperature hot_phase=VAPOR cold_phase=LIQUID": 11,
+     "syn001.heat_exchanger specification=cold_outlet_temperature hot_phase=VAPOR cold_phase=VAPOR": 11,
+     "syn001.heat_exchanger specification=hot_outlet_temperature hot_phase=LIQUID cold_phase=LIQUID": 11,
+     "syn001.heat_exchanger specification=hot_outlet_temperature hot_phase=LIQUID cold_phase=VAPOR": 11,
+     "syn001.heat_exchanger specification=hot_outlet_temperature hot_phase=VAPOR cold_phase=LIQUID": 11,
+     "syn001.heat_exchanger specification=hot_outlet_temperature hot_phase=VAPOR cold_phase=VAPOR": 11,
+     "syn001.heat_exchanger specification=duty hot_phase=LIQUID cold_phase=LIQUID": 11,
+     "syn001.heat_exchanger specification=duty hot_phase=LIQUID cold_phase=VAPOR": 11,
+     "syn001.heat_exchanger specification=duty hot_phase=VAPOR cold_phase=LIQUID": 11,
+     "syn001.heat_exchanger specification=duty hot_phase=VAPOR cold_phase=VAPOR": 11,
+     "syn001.liquid_pump": 6,
+     "syn001.ph_flash inlet_phase=LIQUID": 13,
+     "syn001.ph_flash inlet_phase=VAPOR": 13,
+     "syn001.ph_flash inlet_phase=None": 13,
+     "syn001.valve inlet_phase=LIQUID": 13,
+     "syn001.valve inlet_phase=VAPOR": 13,
+     "syn001.valve inlet_phase=None": 13
+    },
+    "unit_pinned_changes": {
+     "syn001.component_separator": {
+      "model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "syn001.conversion_reactor": {
+      "model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "syn001.heat_exchanger": {
+      "model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "syn001.liquid_pump": {
+      "model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "syn001.ph_flash": {
+      "model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "syn001.valve": {
+      "model_version_equal": true,
+      "constants_sha256_differs": true
+     }
+    },
+    "unit_configurations_moving_an_id": {
+     "syn001.conversion_reactor -> {'energy_specification': 'duty'}": true,
+     "syn001.heat_exchanger -> {'specification': 'duty'}": true,
+     "syn001.heat_exchanger specification=hot_outlet_temperature -> {'specification': 'duty'}": true,
+     "syn001.ph_flash -> {'inlet_phase': None}": true,
+     "syn001.valve -> {'inlet_phase': None}": true,
+     "syn001.conversion_reactor -> {'inlet_phase': None}": true,
+     "syn001.component_separator -> {'inlet_phase': None}": true
+    },
+    "unit_configurations_moving_no_id": {
+     "syn001.conversion_reactor -> {'key': 'B'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.conversion_reactor -> {'inlet_phase': 'VAPOR'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.ph_flash -> {'inlet_phase': 'VAPOR'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.valve -> {'inlet_phase': 'VAPOR'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.component_separator -> {'inlet_phase': 'VAPOR'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.component_separator -> {'top_phase': 'VAPOR'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.component_separator -> {'bottom_phase': 'VAPOR'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.heat_exchanger -> {'specification': 'hot_outlet_temperature'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.heat_exchanger -> {'hot_phase': 'VAPOR'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     },
+     "syn001.heat_exchanger -> {'cold_phase': 'VAPOR'}": {
+      "ids_equal": true,
+      "structure_hash_equal": true,
+      "rows_differ": true,
+      "rows_changed": 1
+     }
+    },
+    "flowsheet_configurations": {
+     "exchanger-cold-phase": true,
+     "exchanger-hot-phase": true,
+     "exchanger-specification": true,
+     "ph-flash-inlet-phase": true,
+     "reactor-energy-specification": true,
+     "reactor-key": true,
+     "separator-bottom-phase": true,
+     "separator-top-phase": true
+    },
+    "flowsheet_pinned_values": {
+     "c3x-is-c3-with-another-value": {
+      "label_and_model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "exchanger-outlet-temperature": {
+      "label_and_model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "ph-flash-duty": {
+      "label_and_model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "pump-efficiency": {
+      "label_and_model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "reactor-conversion": {
+      "label_and_model_version_equal": true,
+      "constants_sha256_differs": true
+     },
+     "separator-split": {
+      "label_and_model_version_equal": true,
+      "constants_sha256_differs": true
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "configurations": 43,
+    "square_given_inlets": 43,
+    "rows": "per declared equation its \u00a75-\u00a710 row count, kind and accumulation; lifting rows origin model#lifting, algebraic, molar_flow; owned variables and pinned-input ids as \u00a75-\u00a710",
+    "unit_pinned_changes": "model_version equal, constants_sha256 differs (ADR 0008 D4.1)",
+    "unit_configurations_moving_an_id": "model_version differs",
+    "unit_configurations_moving_no_id": "ids and structure hash equal, rows differ",
+    "flowsheet_configurations": {
+     "exchanger-cold-phase": true,
+     "exchanger-hot-phase": true,
+     "exchanger-specification": true,
+     "ph-flash-inlet-phase": true,
+     "reactor-energy-specification": true,
+     "reactor-key": true,
+     "separator-bottom-phase": true,
+     "separator-top-phase": true
+    },
+    "flowsheet_pinned_values": "label and model_version equal, constants_sha256 differs"
+   }
+  },
+  {
+   "id": "T05.A04",
+   "description": "Rows at the twelve trial states (two per model, `ref.trial_states`): each model's unit assembled alone through `models.assemble` by the tests' harness (`t05_trial_states.assemble_trial` on each model test's `build_trial`, a lifted inlet's split added as free columns), compiled through K01 and evaluated at the registered `x`; the columns, the row-id set and the row kinds are exactly the registered ones, and every row is within `1e-12 x` its registered term scale, the registered value taken at full precision. The worst ratio per model and overall is recorded.",
+   "result": "pass",
+   "value": {
+    "states": 12,
+    "per_state": {
+     "syn001.ph_flash J1": {
+      "rows": 13,
+      "worst": {
+       "ratio": 0.00017354016463190581,
+       "where": "U-PHF:PHF-equilibrium:C",
+       "count": 13
+      }
+     },
+     "syn001.ph_flash J2": {
+      "rows": 13,
+      "worst": {
+       "ratio": 0.0003035095760062978,
+       "where": "U-PHF:PHF-equilibrium:C",
+       "count": 13
+      }
+     },
+     "syn001.valve J1": {
+      "rows": 13,
+      "worst": {
+       "ratio": 0.0004810571439297384,
+       "where": "U-VLV:VLV-equilibrium:B",
+       "count": 13
+      }
+     },
+     "syn001.valve J2": {
+      "rows": 13,
+      "worst": {
+       "ratio": 0.0003465979171220626,
+       "where": "U-VLV:VLV-equilibrium:A",
+       "count": 13
+      }
+     },
+     "syn001.liquid_pump J1": {
+      "rows": 6,
+      "worst": {
+       "ratio": 2.2152795458239744e-05,
+       "where": "U-PUMP:PUMP-energy",
+       "count": 6
+      }
+     },
+     "syn001.liquid_pump J2": {
+      "rows": 6,
+      "worst": {
+       "ratio": 5.150113561805197e-05,
+       "where": "U-PUMP:PUMP-energy",
+       "count": 6
+      }
+     },
+     "syn001.conversion_reactor J1": {
+      "rows": 15,
+      "worst": {
+       "ratio": 0.0005489795118812989,
+       "where": "U-RX:RX-equilibrium:A",
+       "count": 15
+      }
+     },
+     "syn001.conversion_reactor J2": {
+      "rows": 15,
+      "worst": {
+       "ratio": 0.0004426205453611785,
+       "where": "U-RX:RX-equilibrium:B",
+       "count": 15
+      }
+     },
+     "syn001.component_separator J1": {
+      "rows": 11,
+      "worst": {
+       "ratio": 3.101178025671336e-05,
+       "where": "U-SEP:SEP-mole:C",
+       "count": 11
+      }
+     },
+     "syn001.component_separator J2": {
+      "rows": 11,
+      "worst": {
+       "ratio": 1.876448478450881e-05,
+       "where": "U-SEP:SEP-split:A",
+       "count": 11
+      }
+     },
+     "syn001.heat_exchanger J1": {
+      "rows": 11,
+      "worst": {
+       "ratio": 4.091067615914794e-05,
+       "where": "U-HX:HX-energy-cold",
+       "count": 11
+      }
+     },
+     "syn001.heat_exchanger J2": {
+      "rows": 11,
+      "worst": {
+       "ratio": 3.550143732536076e-05,
+       "where": "U-HX:HX-energy-hot",
+       "count": 11
+      }
+     }
+    },
+    "worst_row_ratio_per_model": {
+     "syn001.ph_flash": {
+      "ratio": 0.0003035095760062978,
+      "where": "J2 U-PHF:PHF-equilibrium:C",
+      "count": 26
+     },
+     "syn001.valve": {
+      "ratio": 0.0004810571439297384,
+      "where": "J1 U-VLV:VLV-equilibrium:B",
+      "count": 26
+     },
+     "syn001.liquid_pump": {
+      "ratio": 5.150113561805197e-05,
+      "where": "J2 U-PUMP:PUMP-energy",
+      "count": 12
+     },
+     "syn001.conversion_reactor": {
+      "ratio": 0.0005489795118812989,
+      "where": "J1 U-RX:RX-equilibrium:A",
+      "count": 30
+     },
+     "syn001.component_separator": {
+      "ratio": 3.101178025671336e-05,
+      "where": "J1 U-SEP:SEP-mole:C",
+      "count": 22
+     },
+     "syn001.heat_exchanger": {
+      "ratio": 4.091067615914794e-05,
+      "where": "J1 U-HX:HX-energy-cold",
+      "count": 22
+     }
+    },
+    "worst_row_ratio": {
+     "ratio": 0.0005489795118812989,
+     "where": "syn001.conversion_reactor J1 U-RX:RX-equilibrium:A",
+     "count": 138
+    },
+    "departures": []
+   },
+   "expected": {
+    "states": 12,
+    "per_state": "the registered row-id set, kinds and columns; every row within 1e-12 x its registered term_scale",
+    "worst_row_ratio": "at most 1 (the ratio is |row - ref| / (1e-12 x term_scale))"
+   }
+  },
+  {
+   "id": "T05.A05",
+   "description": "Jacobians at the same twelve states: every registered nonzero within `1e-11` relative; every registered cancelling partial within `1e-11 x` its registered partial scale; every other entry the compiled structure stores in the unit's rows exactly `0.0` (counted per state). The worst nonzero ratio and every cancelling partial's ratio are recorded.",
+   "result": "pass",
+   "value": {
+    "states": 12,
+    "per_state": {
+     "syn001.ph_flash J1": {
+      "registered_nonzeros": 57,
+      "cancelling_partials": 0,
+      "other_stored_entries": 1,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 5.451527742243265e-05,
+       "where": "U-PHF:PHF-equilibrium:C / S3.n.C",
+       "count": 57
+      }
+     },
+     "syn001.ph_flash J2": {
+      "registered_nonzeros": 56,
+      "cancelling_partials": 0,
+      "other_stored_entries": 2,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 5.269694453919833e-05,
+       "where": "U-PHF:PHF-equilibrium:C / S2.N",
+       "count": 56
+      }
+     },
+     "syn001.valve J1": {
+      "registered_nonzeros": 55,
+      "cancelling_partials": 0,
+      "other_stored_entries": 0,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 0.00011180172785183425,
+       "where": "U-VLV:VLV-equilibrium:A / S2.P",
+       "count": 55
+      }
+     },
+     "syn001.valve J2": {
+      "registered_nonzeros": 58,
+      "cancelling_partials": 0,
+      "other_stored_entries": 0,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 8.304081909104406e-05,
+       "where": "U-VLV:VLV-equilibrium:A / S2.P",
+       "count": 58
+      }
+     },
+     "syn001.liquid_pump J1": {
+      "registered_nonzeros": 24,
+      "cancelling_partials": 1,
+      "other_stored_entries": 0,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 1.2902191706431799e-05,
+       "where": "U-PUMP:PUMP-energy / S2.P",
+       "count": 24
+      }
+     },
+     "syn001.liquid_pump J2": {
+      "registered_nonzeros": 24,
+      "cancelling_partials": 1,
+      "other_stored_entries": 0,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 9.795560747574544e-06,
+       "where": "U-PUMP:PUMP-energy / S2.P",
+       "count": 24
+      }
+     },
+     "syn001.conversion_reactor J1": {
+      "registered_nonzeros": 63,
+      "cancelling_partials": 0,
+      "other_stored_entries": 0,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 0.00010925013124329034,
+       "where": "U-RX:RX-equilibrium:A / S2.liq.A",
+       "count": 63
+      }
+     },
+     "syn001.conversion_reactor J2": {
+      "registered_nonzeros": 62,
+      "cancelling_partials": 0,
+      "other_stored_entries": 1,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 7.527340567690768e-05,
+       "where": "U-RX:RX-equilibrium:B / S2.liq.B",
+       "count": 62
+      }
+     },
+     "syn001.component_separator J1": {
+      "registered_nonzeros": 38,
+      "cancelling_partials": 0,
+      "other_stored_entries": 1,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 1.4472550142435078e-05,
+       "where": "U-SEP:SEP-duty / S3.P",
+       "count": 38
+      }
+     },
+     "syn001.component_separator J2": {
+      "registered_nonzeros": 42,
+      "cancelling_partials": 0,
+      "other_stored_entries": 0,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 1.1023477211410353e-05,
+       "where": "U-SEP:SEP-duty / S2.P",
+       "count": 42
+      }
+     },
+     "syn001.heat_exchanger J1": {
+      "registered_nonzeros": 39,
+      "cancelling_partials": 0,
+      "other_stored_entries": 0,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 9.309682654408865e-06,
+       "where": "U-HX:HX-energy-cold / S4.P",
+       "count": 39
+      }
+     },
+     "syn001.heat_exchanger J2": {
+      "registered_nonzeros": 37,
+      "cancelling_partials": 0,
+      "other_stored_entries": 2,
+      "other_entries_not_exactly_zero": 0,
+      "worst_nonzero": {
+       "ratio": 1.4605828038708362e-05,
+       "where": "U-HX:HX-energy-cold / S4.P",
+       "count": 37
+      }
+     }
+    },
+    "worst_nonzero_ratio": {
+     "ratio": 0.00011180172785183425,
+     "where": "syn001.valve J1 U-VLV:VLV-equilibrium:A / S2.P",
+     "count": 555
+    },
+    "cancelling_partials": {
+     "syn001.liquid_pump J1 U-PUMP:PUMP-work / S1.T": 0.0,
+     "syn001.liquid_pump J2 U-PUMP:PUMP-work / S1.T": 0.0
+    },
+    "worst_cancelling_ratio": {
+     "ratio": 0.0,
+     "where": "syn001.liquid_pump J1 U-PUMP:PUMP-work / S1.T",
+     "count": 2
+    },
+    "other_entries_not_exactly_zero": [],
+    "departures": []
+   },
+   "expected": {
+    "states": 12,
+    "worst_nonzero_ratio": "at most 1 (relative error / 1e-11)",
+    "worst_cancelling_ratio": "at most 1 (|entry| / (1e-11 x partial scale))",
+    "other_entries_not_exactly_zero": []
+   }
+  },
+  {
+   "id": "T05.A06",
+   "description": "Rows at the twin's causal solutions of PHF-1, 5, 6, VLV-2, 5, PUMP-1, RX-3, 4, 5, SEP-2, HX-1 and HX-4 (every coordinate the double its registered string rounds to; VLV-5's lifted inlet split VLV-2's registered outlet split), the unit assembled alone and compiled through K01 (`test_t05_limits.rows_at_solution`): every row within K04's `tau_kind`; the worst `|row| / tau_kind` per case is recorded.",
+   "result": "pass",
+   "value": {
+    "per_case": {
+     "PHF-1": {
+      "ratio": 9.55030558817339e-09,
+      "where": "U-PHF:PHF-equilibrium:A",
+      "count": 13
+     },
+     "PHF-5": {
+      "ratio": 9.004898037355725e-09,
+      "where": "U-PHF:PHF-duty",
+      "count": 13
+     },
+     "PHF-6": {
+      "ratio": 0.0,
+      "where": "U-PHF:PHF-mole:A",
+      "count": 13
+     },
+     "VLV-2": {
+      "ratio": 5.402938822413435e-09,
+      "where": "U-VLV:VLV-energy",
+      "count": 13
+     },
+     "VLV-5": {
+      "ratio": 5.943232704654778e-08,
+      "where": "U-VLV:VLV-energy",
+      "count": 13
+     },
+     "PUMP-1": {
+      "ratio": 5.763926190024228e-09,
+      "where": "U-PUMP:PUMP-energy",
+      "count": 6
+     },
+     "RX-3": {
+      "ratio": 7.1627291911300404e-09,
+      "where": "U-RX:Vdef",
+      "count": 15
+     },
+     "RX-4": {
+      "ratio": 7.1627291911300404e-09,
+      "where": "U-RX:Ldef",
+      "count": 15
+     },
+     "RX-5": {
+      "ratio": 9.55030558817339e-09,
+      "where": "U-RX:RX-equilibrium:A",
+      "count": 15
+     },
+     "SEP-2": {
+      "ratio": 1.3430117233368827e-09,
+      "where": "U-SEP:SEP-mole:A",
+      "count": 11
+     },
+     "HX-1": {
+      "ratio": 0.0,
+      "where": "U-HX:HX-mole-hot:A",
+      "count": 11
+     },
+     "HX-4": {
+      "ratio": 0.0,
+      "where": "U-HX:HX-mole-hot:A",
+      "count": 11
+     }
+    },
+    "worst_ratio": {
+     "ratio": 5.943232704654778e-08,
+     "where": "VLV-5 U-VLV:VLV-energy",
+     "count": 149
+    },
+    "departures": []
+   },
+   "expected": {
+    "per_case": "every row's |value| / tau_kind at most 1 (the expected value is 0)",
+    "tau_kind": {
+     "molar_flow": 3.1000000000000006e-08,
+     "molar_flow_squared": 9.3e-08,
+     "heat_rate": 0.00101,
+     "temperature": 1e-06,
+     "pressure": 0.01
+    }
+   }
+  },
+  {
+   "id": "T05.A07",
+   "description": "PH flash cases PHF-1\u20267, Z0, Z1, F1\u2026F4 through `test_t05_ph_flash.unit_for` (`evaluate_with_closure`) and the construction refusal PHF-S1: status, code (the message's first line), signature and route exact; T, both products' flows, T and P, \u03b2 and duty to \u00a714 against `ref.unit_cases`, every registered zero flow `== 0.0`; a failure carries no answer. The value lists each case and the worst error over its tolerance per quantity.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "PHF-1": "pass",
+     "PHF-3": "pass",
+     "PHF-4": "pass",
+     "PHF-F1": "pass",
+     "PHF-F2": "pass",
+     "PHF-2": "pass",
+     "PHF-5": "pass",
+     "PHF-6": "pass",
+     "PHF-7": "pass",
+     "PHF-Z0": "pass",
+     "PHF-Z1": "pass",
+     "PHF-F3": "pass",
+     "PHF-F4": "pass",
+     "PHF-S1": "pass"
+    },
+    "count": 14,
+    "failed": [],
+    "worst_error_over_tolerance": {
+     "beta": {
+      "ratio": 4.972198469942023e-06,
+      "where": "PHF-7 beta",
+      "count": 7
+     },
+     "energy": {
+      "ratio": 2.804270593246611e-09,
+      "where": "PHF-2 duty",
+      "count": 8
+     },
+     "flow": {
+      "ratio": 3.3152044464626436e-08,
+      "where": "PHF-7 liquid.n.A",
+      "count": 30
+     },
+     "pressure": {
+      "ratio": 0.0,
+      "where": "PHF-1 vapor.P",
+      "count": 16
+     },
+     "temperature": {
+      "ratio": 9.834390050195158e-08,
+      "where": "PHF-1 vapor.T",
+      "count": 23
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "cases": {
+     "PHF-1": "pass",
+     "PHF-3": "pass",
+     "PHF-4": "pass",
+     "PHF-F1": "pass",
+     "PHF-F2": "pass",
+     "PHF-2": "pass",
+     "PHF-5": "pass",
+     "PHF-6": "pass",
+     "PHF-7": "pass",
+     "PHF-Z0": "pass",
+     "PHF-Z1": "pass",
+     "PHF-F3": "pass",
+     "PHF-F4": "pass",
+     "PHF-S1": "pass"
+    },
+    "failed": [],
+    "registration": "ref.unit_cases and ref.specification_errors of syn001.ph_flash: PHF-1\u20267, Z0, Z1, F1\u2026F4, S1",
+    "tolerances": "\u00a714: T 1e-6 K, flows and extent 3.1e-8 mol/s, duty and work 1.01e-3 W, beta 1e-10, P 0.01 Pa (the separator's and exchanger's P exact); status, code, signature and route exact; a registered zero flow == 0.0",
+    "departures": []
+   }
+  },
+  {
+   "id": "T05.A08",
+   "description": "Valve cases VLV-1\u20265, Z, F1 (`test_t05_valve.unit_for`) and VLV-S1: status, code, signature exact; no duty and no work (no energy port); the outlet and the PH kernel's lifted split (regime, vapour and liquid flows) to \u00a714; the dormant case never reaches the kernel.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "VLV-1": "pass",
+     "VLV-2": "pass",
+     "VLV-3": "pass",
+     "VLV-4": "pass",
+     "VLV-5": "pass",
+     "VLV-Z": "pass",
+     "VLV-F1": "pass",
+     "VLV-S1": "pass"
+    },
+    "count": 8,
+    "failed": [],
+    "worst_error_over_tolerance": {
+     "flow": {
+      "ratio": 1.2225415629183984e-07,
+      "where": "VLV-5 vapour.A",
+      "count": 36
+     },
+     "pressure": {
+      "ratio": 0.0,
+      "where": "VLV-1 outlet.P",
+      "count": 6
+     },
+     "temperature": {
+      "ratio": 2.108541562743485e-08,
+      "where": "VLV-2 outlet.T",
+      "count": 6
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "cases": {
+     "VLV-1": "pass",
+     "VLV-2": "pass",
+     "VLV-3": "pass",
+     "VLV-4": "pass",
+     "VLV-5": "pass",
+     "VLV-Z": "pass",
+     "VLV-F1": "pass",
+     "VLV-S1": "pass"
+    },
+    "failed": [],
+    "registration": "ref.unit_cases and ref.specification_errors of syn001.valve: VLV-1\u20265, Z, F1, S1; no duty or work (no energy port)",
+    "tolerances": "\u00a714: T 1e-6 K, flows and extent 3.1e-8 mol/s, duty and work 1.01e-3 W, beta 1e-10, P 0.01 Pa (the separator's and exchanger's P exact); status, code, signature and route exact; a registered zero flow == 0.0",
+    "departures": []
+   }
+  },
+  {
+   "id": "T05.A09",
+   "description": "Pump cases PUMP-1\u20264, F1\u2026F3, Z (`test_t05_pump.unit_for`) and PUMP-S1, S2: status, code, signature exact; no duty; the work `W` and, where registered, the ideal work `\u03b7 W` to 1.01e-3 W; the outlet to \u00a714.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "PUMP-1": "pass",
+     "PUMP-2": "pass",
+     "PUMP-3": "pass",
+     "PUMP-4": "pass",
+     "PUMP-F1": "pass",
+     "PUMP-F2": "pass",
+     "PUMP-F3": "pass",
+     "PUMP-Z": "pass",
+     "PUMP-S1": "pass",
+     "PUMP-S2": "pass"
+    },
+    "count": 10,
+    "failed": [],
+    "worst_error_over_tolerance": {
+     "energy": {
+      "ratio": 1.0470537273411823e-09,
+      "where": "PUMP-4 work",
+      "count": 9
+     },
+     "flow": {
+      "ratio": 1.4325458382260085e-09,
+      "where": "PUMP-1 outlet.n.A",
+      "count": 12
+     },
+     "pressure": {
+      "ratio": 0.0,
+      "where": "PUMP-1 outlet.P",
+      "count": 5
+     },
+     "temperature": {
+      "ratio": 2.425652538061142e-08,
+      "where": "PUMP-1 outlet.T",
+      "count": 5
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "cases": {
+     "PUMP-1": "pass",
+     "PUMP-2": "pass",
+     "PUMP-3": "pass",
+     "PUMP-4": "pass",
+     "PUMP-F1": "pass",
+     "PUMP-F2": "pass",
+     "PUMP-F3": "pass",
+     "PUMP-Z": "pass",
+     "PUMP-S1": "pass",
+     "PUMP-S2": "pass"
+    },
+    "failed": [],
+    "registration": "ref.unit_cases and ref.specification_errors of syn001.liquid_pump: PUMP-1\u20264, F1\u2026F3, Z, S1, S2; `W` reported (and \u03b7 W the ideal work)",
+    "tolerances": "\u00a714: T 1e-6 K, flows and extent 3.1e-8 mol/s, duty and work 1.01e-3 W, beta 1e-10, P 0.01 Pa (the separator's and exchanger's P exact); status, code, signature and route exact; a registered zero flow == 0.0",
+    "departures": []
+   }
+  },
+  {
+   "id": "T05.A10",
+   "description": "Reactor cases RX-1\u20268, Z, F1, F5 (`test_t05_reactor.unit_for`, `evaluate_with_split`) and RX-S1\u2026S5 (RX-S4 through the tests' `ConventionDouble`, convention SYN-001-ref-v0): status, code, signature exact; \u03be, duty, outlet and split to \u00a714 on ok cases, RX-F1's extent `None`; on every ok case the key's outlet equals the pre-amendment form `n_in + \u03bd_k \u03be` bit for bit (\u00a76.3 as amended, |\u03bd_k| \u2208 {1, 2}); and ruling Q-R7's acceptance: the P2 input ok with `n_out,A == 0.0`, and the 1 000-feed sweep for \u03bd_A \u2208 {\u22123, \u22125, \u22127} at X \u2208 {1, 0.25, 0.5, 0.75} with nothing refused, `n_out,A == 0.0` at X = 1 and RX-mole:A within 1e-12 of its term scale.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "RX-1": "pass",
+     "RX-2": "pass",
+     "RX-3": "pass",
+     "RX-4": "pass",
+     "RX-5": "pass",
+     "RX-6": "pass",
+     "RX-7": "pass",
+     "RX-8": "pass",
+     "RX-Z": "pass",
+     "RX-F1": "pass",
+     "RX-F5": "pass",
+     "RX-S1": "pass",
+     "RX-S2": "pass",
+     "RX-S3": "pass",
+     "RX-S4": "pass",
+     "RX-S5": "pass"
+    },
+    "count": 16,
+    "failed": [],
+    "worst_error_over_tolerance": {
+     "energy": {
+      "ratio": 1.440783685976916e-08,
+      "where": "RX-8 duty",
+      "count": 9
+     },
+     "flow": {
+      "ratio": 1.1460366705808068e-08,
+      "where": "RX-8 outlet.n.C",
+      "count": 59
+     },
+     "pressure": {
+      "ratio": 0.0,
+      "where": "RX-1 outlet.P",
+      "count": 9
+     },
+     "temperature": {
+      "ratio": 4.1151298664435743e-08,
+      "where": "RX-5 outlet.T",
+      "count": 9
+     }
+    },
+    "departures": [],
+    "key_outlet_equals_old_form_bitwise": {
+     "RX-1": true,
+     "RX-2": true,
+     "RX-3": true,
+     "RX-4": true,
+     "RX-5": true,
+     "RX-6": true,
+     "RX-7": true,
+     "RX-8": true,
+     "RX-Z": true
+    },
+    "full_conversion_q_r7": {
+     "p2": {
+      "status": "ok",
+      "n_out_A": 0.0
+     },
+     "sweep": {
+      "nu_A=-3 X=1": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": 0,
+       "worst_rx_mole_A_over_term_scale": 1.4790749601456082e-16
+      },
+      "nu_A=-3 X=0.25": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 1.4581804484745422e-16
+      },
+      "nu_A=-3 X=0.5": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 7.395374800728042e-17
+      },
+      "nu_A=-3 X=0.75": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 0.0
+      },
+      "nu_A=-5 X=1": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": 0,
+       "worst_rx_mole_A_over_term_scale": 1.7702013089429228e-16
+      },
+      "nu_A=-5 X=0.25": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 1.6614557926984024e-16
+      },
+      "nu_A=-5 X=0.5": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 8.851006544714615e-17
+      },
+      "nu_A=-5 X=0.75": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 1.3194866395376588e-16
+      },
+      "nu_A=-7 X=1": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": 0,
+       "worst_rx_mole_A_over_term_scale": 1.268613586319814e-16
+      },
+      "nu_A=-7 X=0.25": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 1.2686135863198144e-16
+      },
+      "nu_A=-7 X=0.5": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 6.343067931599072e-17
+      },
+      "nu_A=-7 X=0.75": {
+       "feeds": 1000,
+       "refused": 0,
+       "refusal_codes": [],
+       "key_outlet_not_exactly_zero": null,
+       "worst_rx_mole_A_over_term_scale": 9.503442564961714e-17
+      }
+     }
+    }
+   },
+   "expected": {
+    "cases": {
+     "RX-1": "pass",
+     "RX-2": "pass",
+     "RX-3": "pass",
+     "RX-4": "pass",
+     "RX-5": "pass",
+     "RX-6": "pass",
+     "RX-7": "pass",
+     "RX-8": "pass",
+     "RX-Z": "pass",
+     "RX-F1": "pass",
+     "RX-F5": "pass",
+     "RX-S1": "pass",
+     "RX-S2": "pass",
+     "RX-S3": "pass",
+     "RX-S4": "pass",
+     "RX-S5": "pass"
+    },
+    "failed": [],
+    "registration": "ref.unit_cases and ref.specification_errors of syn001.conversion_reactor: RX-1\u20268, Z, F1, F5, S1\u2026S5; \u03be reported on ok cases, RX-F1's extent None, RX-S4 through a provider test double declaring SYN-001-ref-v0",
+    "tolerances": "\u00a714: T 1e-6 K, flows and extent 3.1e-8 mol/s, duty and work 1.01e-3 W, beta 1e-10, P 0.01 Pa (the separator's and exchanger's P exact); status, code, signature and route exact; a registered zero flow == 0.0",
+    "departures": [],
+    "key_outlet_equals_old_form_bitwise": "every ok case (|\u03bd_k| \u2208 {1, 2})",
+    "full_conversion_q_r7": "P2 ok with n_out,A == 0.0; the 1 000-feed sweep: nothing refused, n_out,A == 0.0 at X = 1, RX-mole:A within 1e-12 of its term scale"
+   }
+  },
+  {
+   "id": "T05.A11",
+   "description": "Separator cases SEP-1\u20264, Z, F2 (`test_t05_separator.separator`) and SEP-S1: status, code, signature exact; duty to 1.01e-3 W; both outlets' flows and T to \u00a714 and P exactly; no work, extent or transferred duty.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "SEP-1": "pass",
+     "SEP-2": "pass",
+     "SEP-3": "pass",
+     "SEP-4": "pass",
+     "SEP-Z": "pass",
+     "SEP-F2": "pass",
+     "SEP-S1": "pass"
+    },
+    "count": 7,
+    "failed": [],
+    "worst_error_over_tolerance": {
+     "energy": {
+      "ratio": 0.0,
+      "where": "SEP-1 duty",
+      "count": 5
+     },
+     "flow": {
+      "ratio": 3.724619179387622e-09,
+      "where": "SEP-1 bottom.n.A",
+      "count": 17
+     },
+     "temperature": {
+      "ratio": 0.0,
+      "where": "SEP-1 top.T",
+      "count": 10
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "cases": {
+     "SEP-1": "pass",
+     "SEP-2": "pass",
+     "SEP-3": "pass",
+     "SEP-4": "pass",
+     "SEP-Z": "pass",
+     "SEP-F2": "pass",
+     "SEP-S1": "pass"
+    },
+    "failed": [],
+    "registration": "ref.unit_cases and ref.specification_errors of syn001.component_separator: SEP-1\u20264, Z, F2, S1",
+    "tolerances": "\u00a714: T 1e-6 K, flows and extent 3.1e-8 mol/s, duty and work 1.01e-3 W, beta 1e-10, P 0.01 Pa (the separator's and exchanger's P exact); status, code, signature and route exact; a registered zero flow == 0.0",
+    "departures": []
+   }
+  },
+  {
+   "id": "T05.A12",
+   "description": "Exchanger cases HX-1\u20265, Z0, Z1, F1\u2026F4 (`test_t05_exchanger.exchanger`) and HX-S1: status, code, signature exact; no duty (no energy port); the transferred duty and both outlets to \u00a714 (P exactly); `assess`'s full list of failed checks equals `ref\u2026expected.failures` \u2014 each failure case fails exactly its registered check and passes every other \u2014 with the assessed duty, terminal differences and outlets as registered.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "HX-1": "pass",
+     "HX-2": "pass",
+     "HX-3": "pass",
+     "HX-4": "pass",
+     "HX-5": "pass",
+     "HX-Z0": "pass",
+     "HX-Z1": "pass",
+     "HX-F1": "pass",
+     "HX-F2": "pass",
+     "HX-F3": "pass",
+     "HX-F4": "pass",
+     "HX-S1": "pass"
+    },
+    "count": 12,
+    "failed": [],
+    "worst_error_over_tolerance": {
+     "energy": {
+      "ratio": 0.0,
+      "where": "HX-1 assessed duty",
+      "count": 16
+     },
+     "flow": {
+      "ratio": 2.865091676452017e-09,
+      "where": "HX-1 hot_outlet.n.B",
+      "count": 57
+     },
+     "temperature": {
+      "ratio": 0.0,
+      "where": "HX-1 hot_end_K",
+      "count": 38
+     }
+    },
+    "departures": [],
+    "failure_lists": {
+     "HX-1": {
+      "assessed": [],
+      "registered": []
+     },
+     "HX-2": {
+      "assessed": [],
+      "registered": []
+     },
+     "HX-3": {
+      "assessed": [],
+      "registered": []
+     },
+     "HX-4": {
+      "assessed": [],
+      "registered": []
+     },
+     "HX-5": {
+      "assessed": [],
+      "registered": []
+     },
+     "HX-Z0": {
+      "assessed": [],
+      "registered": []
+     },
+     "HX-Z1": {
+      "assessed": [
+       "specification_unsatisfiable_with_dormant_side"
+      ],
+      "registered": [
+       "specification_unsatisfiable_with_dormant_side"
+      ]
+     },
+     "HX-F1": {
+      "assessed": [
+       "temperature_cross(hot_end)"
+      ],
+      "registered": [
+       "temperature_cross(hot_end)"
+      ]
+     },
+     "HX-F2": {
+      "assessed": [
+       "temperature_cross(cold_end)"
+      ],
+      "registered": [
+       "temperature_cross(cold_end)"
+      ]
+     },
+     "HX-F3": {
+      "assessed": [
+       "heat_flow_reversed"
+      ],
+      "registered": [
+       "heat_flow_reversed"
+      ]
+     },
+     "HX-F4": {
+      "assessed": [
+       "inadmissible_phase(cold_outlet, LIQUID)"
+      ],
+      "registered": [
+       "inadmissible_phase(cold_outlet, LIQUID)"
+      ]
+     }
+    }
+   },
+   "expected": {
+    "cases": {
+     "HX-1": "pass",
+     "HX-2": "pass",
+     "HX-3": "pass",
+     "HX-4": "pass",
+     "HX-5": "pass",
+     "HX-Z0": "pass",
+     "HX-Z1": "pass",
+     "HX-F1": "pass",
+     "HX-F2": "pass",
+     "HX-F3": "pass",
+     "HX-F4": "pass",
+     "HX-S1": "pass"
+    },
+    "failed": [],
+    "registration": "ref.unit_cases and ref.specification_errors of syn001.heat_exchanger: HX-1\u20265, Z0, Z1, F1\u2026F4, S1; the transferred duty reported (no energy port)",
+    "tolerances": "\u00a714: T 1e-6 K, flows and extent 3.1e-8 mol/s, duty and work 1.01e-3 W, beta 1e-10, P 0.01 Pa (the separator's and exchanger's P exact); status, code, signature and route exact; a registered zero flow == 0.0",
+    "departures": [],
+    "failure_lists": "each case's assessed list equals ref\u2026expected.failures (F1\u2026F4: their one registered check), or its code, or empty"
+   }
+  },
+  {
+   "id": "T05.A13",
+   "description": "Metamorphic identities on the implementation, with the measured differences: PHF-2's T within 1e-6 K of 360 K and its split within 3.1e-8 mol/s of K02's TP flash at 360 K (whose duty is the registered one); PHF-7 and VLV-2 agree in T, split, signature and P; RX-7's duty equals K02's `TPHeater` duty on the same stream to 1.01e-3 W, with the same outlet; HX-2 and HX-3 agree with HX-1 to \u00a714.",
+   "result": "pass",
+   "value": {
+    "PHF-2_vs_K02_TP_flash_360K": {
+     "T_minus_360_K": 0.0,
+     "split_minus_k02_mol_per_s": 0.0,
+     "k02_duty_minus_registered_duty_W": 0.0
+    },
+    "PHF-7_vs_VLV-2": {
+     "T_difference_K": 0.0,
+     "split_difference_mol_per_s": 0.0,
+     "signatures": [
+      "TWO_PHASE",
+      "TWO_PHASE"
+     ],
+     "pressures": [
+      100000.0,
+      100000.0
+     ]
+    },
+    "RX-7_vs_K02_TPHeater": {
+     "duty_difference_W": 0.0,
+     "signatures": [
+      "LIQUID",
+      "LIQUID"
+     ],
+     "outlets_equal": true
+    },
+    "HX-2_HX-3_vs_HX-1": {
+     "HX-2": {
+      "duty_difference_W": 0.0,
+      "T_difference_K": 0.0,
+      "flows_and_pressures_equal": true
+     },
+     "HX-3": {
+      "duty_difference_W": 0.0,
+      "T_difference_K": 0.0,
+      "flows_and_pressures_equal": true
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "PHF-2_vs_K02_TP_flash_360K": "T within 1e-6 K of 360 K; split within 3.1e-8 mol/s of K02's TP flash at 360 K; K02's duty the registered one to 1.01e-3 W",
+    "PHF-7_vs_VLV-2": "T within 1e-6 K, split within 3.1e-8 mol/s, one signature, one P",
+    "RX-7_vs_K02_TPHeater": "duty within 1.01e-3 W, one signature, the same outlet",
+    "HX-2_HX-3_vs_HX-1": "duty within 1.01e-3 W, T within 1e-6 K, flows and P equal"
+   }
+  },
+  {
+   "id": "T05.A14",
+   "description": "Exact limits: \u00a714's exact zeros (RX-6, RX-8 `n_A`; PHF-5 `n_B` in both products; SEP-2 `n_top,C`) are `== 0.0`; PHF-6 takes the saturation route; every dormant case (PHF-Z0, VLV-Z, PUMP-Z, RX-Z, SEP-Z, HX-Z0, and SEP-3/4's dormant outlets) returns its zero-flow outlets at the registered label exactly with duty, work, extent and transferred heat `== 0.0`, and PHF-Z1 and HX-Z1 their registered typed errors.",
+   "result": "pass",
+   "value": {
+    "exact_zeros": {
+     "RX-6 outlet.n.A": 0.0,
+     "RX-8 outlet.n.A": 0.0,
+     "PHF-5 vapor.n.B": 0.0,
+     "PHF-5 liquid.n.B": 0.0,
+     "SEP-2 top.n.C": 0.0
+    },
+    "phf6_route": "saturation",
+    "dormant": {
+     "PHF-Z0": {
+      "status": "ok",
+      "code": "",
+      "signature": "ZERO_FLOW",
+      "energies": {
+       "duty": 0.0
+      },
+      "zero_flow_outlets": {
+       "vapor": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 330.0
+       },
+       "liquid": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 330.0
+       }
+      }
+     },
+     "PHF-Z1": {
+      "status": "error",
+      "code": "duty_into_dormant_stream",
+      "signature": null
+     },
+     "VLV-Z": {
+      "status": "ok",
+      "code": "",
+      "signature": "ZERO_FLOW",
+      "energies": {},
+      "zero_flow_outlets": {
+       "outlet": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 330.0
+       }
+      }
+     },
+     "PUMP-Z": {
+      "status": "ok",
+      "code": "",
+      "signature": "ZERO_FLOW",
+      "energies": {
+       "work": 0.0
+      },
+      "zero_flow_outlets": {
+       "outlet": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 330.0
+       }
+      }
+     },
+     "RX-Z": {
+      "status": "ok",
+      "code": "",
+      "signature": "ZERO_FLOW",
+      "energies": {
+       "duty": 0.0,
+       "extent": 0.0
+      },
+      "zero_flow_outlets": {
+       "outlet": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 330.0
+       }
+      }
+     },
+     "SEP-Z": {
+      "status": "ok",
+      "code": "",
+      "signature": "ZERO_FLOW",
+      "energies": {
+       "duty": 0.0
+      },
+      "zero_flow_outlets": {
+       "top": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 330.0
+       },
+       "bottom": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 330.0
+       }
+      }
+     },
+     "HX-Z0": {
+      "status": "ok",
+      "code": "",
+      "signature": null,
+      "energies": {
+       "transferred_duty": 0.0
+      },
+      "zero_flow_outlets": {
+       "hot_outlet": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 340.0
+       }
+      }
+     },
+     "HX-Z1": {
+      "status": "error",
+      "code": "specification_unsatisfiable_with_dormant_side",
+      "signature": null
+     },
+     "SEP-3": {
+      "status": "ok",
+      "code": "",
+      "signature": null,
+      "energies": {
+       "duty": 0.0
+      },
+      "zero_flow_outlets": {
+       "bottom": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 300.0
+       }
+      }
+     },
+     "SEP-4": {
+      "status": "ok",
+      "code": "",
+      "signature": null,
+      "energies": {
+       "duty": 0.0
+      },
+      "zero_flow_outlets": {
+       "top": {
+        "n": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "T_K": 300.0
+       }
+      }
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "exact_zeros": {
+     "RX-6 outlet.n.A": 0.0,
+     "RX-8 outlet.n.A": 0.0,
+     "PHF-5 vapor.n.B": 0.0,
+     "PHF-5 liquid.n.B": 0.0,
+     "SEP-2 top.n.C": 0.0
+    },
+    "phf6_route": "saturation",
+    "dormant": "PHF-Z0, VLV-Z, PUMP-Z, RX-Z, SEP-Z, HX-Z0 (and SEP-3/4's dormant outlet): ok, every zero-flow outlet (0.0, 0.0, 0.0) at its registered label exactly, duty, work, extent and transferred heat == 0.0; PHF-Z1 duty_into_dormant_stream, HX-Z1 specification_unsatisfiable_with_dormant_side"
+   }
+  },
+  {
+   "id": "T05.A15",
+   "description": "Dormant singularity: at the registered dormant states (VLV-Z, PHF-Z0, RX-Z in both energy modes, PUMP-Z, SEP-Z, HX-Z0 with its hot side dormant), the Jacobian column of each temperature listed in `ref.dormant_temperature_columns` is nonzero in exactly the listed rows (an empty list: a zero column).",
+   "result": "pass",
+   "value": {
+    "states": {
+     "syn001.component_separator": "SEP-Z",
+     "syn001.conversion_reactor(duty)": "RX-Z",
+     "syn001.conversion_reactor(outlet_temperature)": "RX-Z",
+     "syn001.heat_exchanger(hot side dormant)": "HX-Z0",
+     "syn001.liquid_pump": "PUMP-Z",
+     "syn001.ph_flash": "PHF-Z0",
+     "syn001.valve": "VLV-Z"
+    },
+    "nonzero_rows": {
+     "syn001.component_separator": {
+      "S2.T": [
+       "U-SEP:SEP-T:top"
+      ],
+      "S3.T": [
+       "U-SEP:SEP-T:bottom"
+      ]
+     },
+     "syn001.conversion_reactor(duty)": {
+      "S2.T": []
+     },
+     "syn001.conversion_reactor(outlet_temperature)": {
+      "S2.T": [
+       "U-RX:RX-spec"
+      ]
+     },
+     "syn001.heat_exchanger(hot side dormant)": {
+      "S2.T": [],
+      "S4.T": [
+       "U-HX:HX-energy-cold"
+      ]
+     },
+     "syn001.liquid_pump": {
+      "S2.T": []
+     },
+     "syn001.ph_flash": {
+      "S2.T": [
+       "U-PHF:PHF-T"
+      ],
+      "S3.T": [
+       "U-PHF:PHF-T"
+      ]
+     },
+     "syn001.valve": {
+      "S2.T": []
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "syn001.valve": {
+     "S2.T": []
+    },
+    "syn001.ph_flash": {
+     "S2.T": [
+      "U-PHF:PHF-T"
+     ],
+     "S3.T": [
+      "U-PHF:PHF-T"
+     ]
+    },
+    "syn001.conversion_reactor(duty)": {
+     "S2.T": []
+    },
+    "syn001.conversion_reactor(outlet_temperature)": {
+     "S2.T": [
+      "U-RX:RX-spec"
+     ]
+    },
+    "syn001.liquid_pump": {
+     "S2.T": []
+    },
+    "syn001.component_separator": {
+     "S2.T": [
+      "U-SEP:SEP-T:top"
+     ],
+     "S3.T": [
+      "U-SEP:SEP-T:bottom"
+     ]
+    },
+    "syn001.heat_exchanger(hot side dormant)": {
+     "S2.T": [],
+     "S4.T": [
+      "U-HX:HX-energy-cold"
+     ]
+    }
+   }
+  },
+  {
+   "id": "T05.A16",
+   "description": "Every registered failure case (`ref.unit_cases` not `ok`) run through its unit and every construction case (`ref.specification_errors`) built: the message's first line is the registered code byte for byte and matches exactly one code of spec \u00a713.3; four constructed changes to registered cases reach the four codes no registered case reaches, so all 26 catalogued codes are produced (22 by registered cases). Every numeric constructor input \u00d7 {nan, +inf, -inf} is refused at construction with its registered code or `ValueError` (spec \u00a73.5, \u00a75.1 as amended).",
+   "result": "pass",
+   "value": {
+    "registered_failure_cases": 17,
+    "construction_cases": 11,
+    "first_lines": {
+     "PHF-F1": "ph_outside_domain(below)",
+     "PHF-F2": "ph_outside_domain(above)",
+     "PHF-Z1": "duty_into_dormant_stream",
+     "PHF-F3": "inadmissible_phase(inlet, LIQUID)",
+     "PHF-F4": "pressure_outside_domain(outlet)",
+     "VLV-F1": "pressure_rise(valve)",
+     "PUMP-F1": "inadmissible_phase(inlet, LIQUID)",
+     "PUMP-F2": "inadmissible_phase(inlet, LIQUID)",
+     "PUMP-F3": "pressure_fall(pump)",
+     "RX-F1": "reactant_exhausted(A)",
+     "RX-F5": "ph_outside_domain(below)",
+     "SEP-F2": "inadmissible_phase(top, VAPOR)",
+     "HX-Z1": "specification_unsatisfiable_with_dormant_side",
+     "HX-F1": "temperature_cross(hot_end)",
+     "HX-F2": "temperature_cross(cold_end)",
+     "HX-F3": "heat_flow_reversed",
+     "HX-F4": "inadmissible_phase(cold_outlet, LIQUID)",
+     "PHF-S1": "negative_pressure_drop",
+     "VLV-S1": "pressure_outside_domain(outlet_pressure)",
+     "PUMP-S1": "efficiency_outside_interval",
+     "PUMP-S2": "efficiency_outside_interval",
+     "RX-S1": "conversion_outside_unit_interval",
+     "RX-S2": "key_not_reactant",
+     "RX-S3": "stoichiometry_not_mass_conserving",
+     "RX-S4": "reference_convention_not_reaction_consistent(SYN-001-ref-v0)",
+     "RX-S5": "outlet_temperature_outside_domain",
+     "SEP-S1": "split_fraction_outside_unit_interval(A)",
+     "HX-S1": "unknown_specification(approach_temperature)"
+    },
+    "constructed_first_lines": {
+     "PHF-1 at 450 K": "state_outside_domain(inlet)",
+     "HX-3 at 1 MW": "outlet_outside_domain",
+     "PHF-6 near pure": "ph_ill_conditioned",
+     "PHF-1 with a 10-evaluation budget": "ph_not_converged"
+    },
+    "catalogue_codes": 26,
+    "codes_produced_by_registered_cases": 22,
+    "codes_produced": 26,
+    "codes_produced_by_no_case": [],
+    "non_finite_constructor_inputs": {
+     "inputs": 63,
+     "refused_as_registered": {
+      "ValueError": 33,
+      "registered code": 30
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "first_lines": "each registered failure and construction case's registered code, byte for byte, matching exactly one \u00a713.3 code",
+    "catalogue_codes": 26,
+    "codes_produced_by_registered_cases": 22,
+    "codes_produced": 26,
+    "codes_produced_by_no_case": [],
+    "non_finite_constructor_inputs": "every one refused at construction, with its registered code or ValueError (not finite)"
+   }
+  },
+  {
+   "id": "T05.A17",
+   "description": "C1 (pressure chain: pump, valve, PH flash) through `bind_revision_flowsheet` \u2192 `plan_revision` \u2192 `execute_plan` under policy `T05-W13` (`test_t05_coupled.solve`): `CONVERGED` in one `solve_eo` step and one attempt from `traversal-G0-v1`; every solver column mapped to `ref.coupled_cases.SYN-001-UL-C1` and every registered stream coordinate, duty and work a solver column; the worst `|x \u2212 x_ref|` per kind (at full registered precision) within \u00a711.5's allowance (3.1e-7 mol/s, 1e-5 K, 0.1 Pa, 1e-2 W); the unit phase signature the twin's.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "iterations": 0,
+    "attempts": 1,
+    "columns_compared": 51,
+    "deviation_by_kind": {
+     "heat_rate": {
+      "worst_error": 7.275957614183426e-12,
+      "column": "U-HEAT.Q",
+      "allowance": 0.01,
+      "ratio": 7.275957614183426e-10
+     },
+     "molar_flow": {
+      "worst_error": 3.423381117377924e-15,
+      "column": "S6.N",
+      "allowance": 3.1e-07,
+      "ratio": 1.1043164894767497e-08
+     },
+     "pressure": {
+      "worst_error": 0.0,
+      "column": "S1.P",
+      "allowance": 0.1,
+      "ratio": 0.0
+     },
+     "temperature": {
+      "worst_error": 2.425652538061142e-14,
+      "column": "S2.T",
+      "allowance": 1e-05,
+      "ratio": 2.425652538061142e-09
+     }
+    },
+    "signature": {
+     "U-HEAT": "LIQUID",
+     "U-VLV": "TWO_PHASE",
+     "U-PHF": "TWO_PHASE"
+    },
+    "departures": []
+   },
+   "expected": {
+    "outcome": "CONVERGED, one solve_eo step, one attempt from traversal-G0-v1",
+    "deviation_by_kind": {
+     "molar_flow": "worst error at most 3.1e-07",
+     "temperature": "worst error at most 1e-05",
+     "pressure": "worst error at most 0.1",
+     "heat_rate": "worst error at most 0.01"
+    },
+    "signature": {
+     "U-HEAT": "LIQUID",
+     "U-VLV": "TWO_PHASE",
+     "U-PHF": "TWO_PHASE"
+    },
+    "mapping": "every solver column registered and every registered value a column"
+   }
+  },
+  {
+   "id": "T05.A18",
+   "description": "C2 (reaction with recycle: mixer, reactor, separator) as A17, against `ref.coupled_cases.SYN-001-UL-C2`, the reactor's extent `U-RX.xi` included among the compared columns.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "iterations": 2,
+    "attempts": 1,
+    "columns_compared": 36,
+    "deviation_by_kind": {
+     "heat_rate": {
+      "worst_error": 9.094947017729282e-13,
+      "column": "U-RX.Q",
+      "allowance": 0.01,
+      "ratio": 9.094947017729282e-11
+     },
+     "molar_flow": {
+      "worst_error": 5.269510719751939e-16,
+      "column": "S3.L",
+      "allowance": 3.1e-07,
+      "ratio": 1.6998421676619158e-09
+     },
+     "pressure": {
+      "worst_error": 0.0,
+      "column": "S1.P",
+      "allowance": 0.1,
+      "ratio": 0.0
+     },
+     "temperature": {
+      "worst_error": 1.1634467115700245e-14,
+      "column": "S2.T",
+      "allowance": 1e-05,
+      "ratio": 1.1634467115700243e-09
+     }
+    },
+    "signature": {
+     "U-RX": "LIQUID"
+    },
+    "departures": []
+   },
+   "expected": {
+    "outcome": "CONVERGED, one solve_eo step, one attempt from traversal-G0-v1",
+    "deviation_by_kind": {
+     "molar_flow": "worst error at most 3.1e-07",
+     "temperature": "worst error at most 1e-05",
+     "pressure": "worst error at most 0.1",
+     "heat_rate": "worst error at most 0.01"
+    },
+    "signature": {
+     "U-RX": "LIQUID"
+    },
+    "mapping": "every solver column registered and every registered value a column"
+   }
+  },
+  {
+   "id": "T05.A19",
+   "description": "C3 (thermally coupled recycle: exchanger, PH flash) as A17, against `ref.coupled_cases.SYN-001-UL-C3`, with `U-PHF`'s regime `TWO_PHASE`.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "iterations": 3,
+    "attempts": 1,
+    "columns_compared": 44,
+    "deviation_by_kind": {
+     "heat_rate": {
+      "worst_error": 3.2992292932804296e-07,
+      "column": "U-HX.Q",
+      "allowance": 0.01,
+      "ratio": 3.2992292932804294e-05
+     },
+     "molar_flow": {
+      "worst_error": 4.635822564997067e-11,
+      "column": "S5.n.B",
+      "allowance": 3.1e-07,
+      "ratio": 0.00014954266338700216
+     },
+     "pressure": {
+      "worst_error": 0.0,
+      "column": "S1.P",
+      "allowance": 0.1,
+      "ratio": 0.0
+     },
+     "temperature": {
+      "worst_error": 3.6030020661214637e-08,
+      "column": "S3.T",
+      "allowance": 1e-05,
+      "ratio": 0.0036030020661214635
+     }
+    },
+    "signature": {
+     "U-PHF": "TWO_PHASE"
+    },
+    "departures": [],
+    "u_phf_regime": "TWO_PHASE"
+   },
+   "expected": {
+    "outcome": "CONVERGED, one solve_eo step, one attempt from traversal-G0-v1",
+    "deviation_by_kind": {
+     "molar_flow": "worst error at most 3.1e-07",
+     "temperature": "worst error at most 1e-05",
+     "pressure": "worst error at most 0.1",
+     "heat_rate": "worst error at most 0.01"
+    },
+    "signature": {
+     "U-PHF": "TWO_PHASE"
+    },
+    "mapping": "every solver column registered and every registered value a column",
+    "u_phf_regime": "TWO_PHASE"
+   }
+  },
+  {
+   "id": "T05.A20",
+   "description": "C3X: the plan's path ends `INITIALIZATION_FAILED` with `initializer_failed(U-HX): temperature_cross(cold_end)` (and `initial_state` returns that typed refusal); the second accepted branch, exercised from the twin's state as W12 does (region solve `CONVERGED`), is `FAILED` with exactly `{bounds_and_domain.U-HX.cold_end}` failing at +10 K within 1e-5 K, judged at the solve's final state and at the twin's. Never `VERIFIED`.",
+   "result": "pass",
+   "value": {
+    "first_branch": {
+     "outcome": "INITIALIZATION_FAILED",
+     "steps": [
+      [
+       "INITIALIZATION_FAILED",
+       "initializer_failed(U-HX): temperature_cross(cold_end)"
+      ]
+     ],
+     "initial_state_refusal": [
+      "U-HX",
+      "temperature_cross(cold_end)"
+     ]
+    },
+    "second_branch": {
+     "solved_state": {
+      "verification_status": "FAILED",
+      "false_success_detected": true,
+      "failing_checks": [
+       "bounds_and_domain.U-HX.cold_end"
+      ],
+      "cold_end_K": 10.0,
+      "cold_end_error_K": 0.0,
+      "neither_pass_nor_fail": []
+     },
+     "twin_state": {
+      "verification_status": "FAILED",
+      "false_success_detected": true,
+      "failing_checks": [
+       "bounds_and_domain.U-HX.cold_end"
+      ],
+      "cold_end_K": 10.0,
+      "cold_end_error_K": 0.0,
+      "neither_pass_nor_fail": []
+     }
+    },
+    "verified_anywhere": false,
+    "departures": []
+   },
+   "expected": {
+    "first_branch": {
+     "steps": [
+      [
+       "INITIALIZATION_FAILED",
+       "initializer_failed(U-HX): temperature_cross(cold_end)"
+      ]
+     ]
+    },
+    "second_branch": {
+     "verification_status": "FAILED",
+     "failing_checks": [
+      "bounds_and_domain.U-HX.cold_end"
+     ],
+     "cold_end_K": "+10 within 1e-05"
+    },
+    "verified_anywhere": false
+   }
+  },
+  {
+   "id": "T05.A21",
+   "description": "C1\u2013C3's certificates from `verify_revision` on the actual solves (`test_t05_certificates.certify`): `VERIFIED`, no limitation, no false success; every check `pass`, none `near_threshold`, the worst two- and one-sided ratios below 1/10; the \u00a712.2 ids of the case exactly and in \u00a74.3's order (`TABLE_IDS`; C3's includes `energy_balance.U-SPLIT`), every residual row, the plan's aliases and the two witness checks; [A09] on exactly the energy, admissibility and independent-split checks, ADR 0011 D2's note on C2's reactor and envelope energy checks; the solution-error bound recomputed with the exact `\u2016\u0134\u207b\u00b9\u2016\u2081` (dense inverse of the target Jacobian at the final state) times `\u2016F\u0302\u2016\u221e` at most 1e-8, and the recorded estimate never above it.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "SYN-001-UL-C1": {
+      "verification_status": "VERIFIED",
+      "limitations": [],
+      "false_success_detected": false,
+      "checks": 160,
+      "not_pass": [],
+      "near_threshold": [],
+      "table_ids_equal_spec_12_2": true,
+      "table_ids": 65,
+      "missing_from_table": [],
+      "residual_ids_equal_rows": true,
+      "alias_ids_equal_plan": true,
+      "derivative_witness_ids": [
+       "derivative_witness.on_pattern",
+       "derivative_witness.off_pattern"
+      ],
+      "energy_balance_U-SPLIT": false,
+      "worst_two_sided_ratio": {
+       "ratio": 0.00023646862246096134,
+       "check": "derivative_witness.on_pattern"
+      },
+      "worst_one_sided_ratio": {
+       "ratio": -8000000.0,
+       "check": "bounds_and_domain.U-VLV.direction"
+      },
+      "misqualified": [],
+      "bound": {
+       "n": 51,
+       "residual_inf_scaled": 1.3915268937125801e-15,
+       "inverse_one_norm_exact": 58.07226354873194,
+       "inverse_one_norm_estimate": 58.072263548731925,
+       "bound_exact": 8.080911650682525e-14,
+       "bound_recorded": 8.080911650682523e-14,
+       "margin_to_1e-8": 123748.41394479775
+      }
+     },
+     "SYN-001-UL-C2": {
+      "verification_status": "VERIFIED",
+      "limitations": [],
+      "false_success_detected": false,
+      "checks": 116,
+      "not_pass": [],
+      "near_threshold": [],
+      "table_ids_equal_spec_12_2": true,
+      "table_ids": 47,
+      "missing_from_table": [],
+      "residual_ids_equal_rows": true,
+      "alias_ids_equal_plan": true,
+      "derivative_witness_ids": [
+       "derivative_witness.on_pattern",
+       "derivative_witness.off_pattern"
+      ],
+      "energy_balance_U-SPLIT": false,
+      "worst_two_sided_ratio": {
+       "ratio": 0.00023646862246096134,
+       "check": "derivative_witness.on_pattern"
+      },
+      "worst_one_sided_ratio": {
+       "ratio": -641762902963.0221,
+       "check": "phase_admissibility.U-RX.S3.bubble"
+      },
+      "misqualified": [],
+      "bound": {
+       "n": 36,
+       "residual_inf_scaled": 1.4802973661668753e-16,
+       "inverse_one_norm_exact": 26.212652136289908,
+       "inverse_one_norm_estimate": 26.212652136289904,
+       "bound_exact": 3.8802519917598465e-15,
+       "bound_recorded": 3.8802519917598465e-15,
+       "margin_to_1e-8": 2577152.2110512746
+      }
+     },
+     "SYN-001-UL-C3": {
+      "verification_status": "VERIFIED",
+      "limitations": [],
+      "false_success_detected": false,
+      "checks": 140,
+      "not_pass": [],
+      "near_threshold": [],
+      "table_ids_equal_spec_12_2": true,
+      "table_ids": 57,
+      "missing_from_table": [],
+      "residual_ids_equal_rows": true,
+      "alias_ids_equal_plan": true,
+      "derivative_witness_ids": [
+       "derivative_witness.on_pattern",
+       "derivative_witness.off_pattern"
+      ],
+      "energy_balance_U-SPLIT": true,
+      "worst_two_sided_ratio": {
+       "ratio": 0.018938678321958804,
+       "check": "residual.U-PHF:PHF-duty"
+      },
+      "worst_one_sided_ratio": {
+       "ratio": -8128073.378207931,
+       "check": "bounds_and_domain.U-HX.heat_flow"
+      },
+      "misqualified": [],
+      "bound": {
+       "n": 44,
+       "residual_inf_scaled": 1.9128065105178394e-10,
+       "inverse_one_norm_exact": 17.756189388868975,
+       "inverse_one_norm_estimate": 16.632123921384423,
+       "bound_exact": 3.3964154665016353e-09,
+       "bound_recorded": 3.181403492056362e-09,
+       "margin_to_1e-8": 2.944280550665425
+      }
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "verification_status": "VERIFIED, no limitation, no false success",
+    "checks": "every one pass, none near_threshold, worst ratios below 1/10",
+    "ids": "\u00a712.2's list for the case in \u00a74.3's order (C3 with energy_balance.U-SPLIT), every residual row, the plan's aliases, the two witness checks",
+    "qualification": "[A09] on energy, admissibility and independent-split checks only; ADR 0011 D2's note on C2's U-RX and envelope energy checks",
+    "bound_exact": "at most 1e-8 (exact dense inverse times the recorded residual norm)"
+   }
+  },
+  {
+   "id": "T05.A22",
+   "description": "INJ-T1\u2026T4 on `test_t05_w12_injections`' mini-revisions, the state from a real solve (INJ-T2 from the twin's HX-F1 state) then injected, judged by `verify_revision(..., state=injected)`: `FAILED` with `false_success_detected`; the registered failing checks among the failures, each at `ref.injections`' value to \u00a714's tolerance and at least 10\u00b3 \u03c4; the full failing set recorded; the 'what passes' checks (the unit's rows and material balances for INJ-T1; the exchanger's rows, balances, specification, cold end and heat flow for INJ-T2; the reactor's energy balance, dew admissibility and independent split, with moles and mass conserved, for INJ-T3; the pump's energy balance for INJ-T4) passing.",
+   "result": "pass",
+   "value": {
+    "INJ-T1": {
+     "verification_status": "FAILED",
+     "false_success_detected": true,
+     "failing": [
+      "energy_balance.U-VLV",
+      "energy_balance.envelope",
+      "independent_split.U-VLV.S2.A",
+      "independent_split.U-VLV.S2.B",
+      "independent_split.U-VLV.S2.C",
+      "independent_split.U-VLV.S2.total",
+      "phase_admissibility.U-VLV.S2.bubble"
+     ],
+     "registered": {
+      "phase_admissibility.U-VLV.S2.bubble": {
+       "result": "fail",
+       "value": 0.38651240922981045,
+       "registered": "0.38651240922981119863",
+       "error": 7.489565632214607e-16,
+       "tolerance": 1e-10,
+       "value_over_tau": 386512409229.8105
+      },
+      "energy_balance.U-VLV": {
+       "result": "fail",
+       "value": -38581.847479409065,
+       "registered": "-38581.847479409153988",
+       "error": 8.871580659794807e-11,
+       "tolerance": 0.00101,
+       "value_over_tau": 38199848.989513926
+      },
+      "independent_split.U-VLV.S2.total": {
+       "result": "fail",
+       "value": -1.3690112427403234,
+       "registered": "-1.3690112427403260808",
+       "error": 2.7055556843154598e-15,
+       "tolerance": 3.1e-08,
+       "value_over_tau": 44161652.99162333
+      }
+     },
+     "what_passes": {
+      "residual.U-VLV:": {
+       "checks": 13,
+       "not_passing": []
+      },
+      "material_balance.": {
+       "checks": 11,
+       "not_passing": []
+      }
+     },
+     "solved_true_T_error_K": 2.108541562743485e-14,
+     "VLV-energy_row_W": 5.4569682106375694e-12
+    },
+    "INJ-T2": {
+     "verification_status": "FAILED",
+     "false_success_detected": true,
+     "failing": [
+      "bounds_and_domain.U-HX.hot_end"
+     ],
+     "registered": {
+      "bounds_and_domain.U-HX.hot_end": {
+       "result": "fail",
+       "value": 5.0,
+       "registered": "5.0000000000000000000",
+       "error": 0.0,
+       "tolerance": 1e-06,
+       "value_over_tau": 5000000.0
+      }
+     },
+     "what_passes": {
+      "residual.U-HX:": {
+       "checks": 11,
+       "not_passing": []
+      },
+      "material_balance.U-HX.": {
+       "checks": 6,
+       "not_passing": []
+      },
+      "energy_balance.U-HX.": {
+       "checks": 2,
+       "not_passing": []
+      },
+      "specification.U-HX.": {
+       "checks": 3,
+       "not_passing": []
+      },
+      "bounds_and_domain.U-HX.cold_end": {
+       "checks": 1,
+       "not_passing": []
+      },
+      "bounds_and_domain.U-HX.heat_flow": {
+       "checks": 1,
+       "not_passing": []
+      }
+     },
+     "cold_end_error_K": 0.0,
+     "heat_flow_error_W": 0.0
+    },
+    "INJ-T3": {
+     "verification_status": "FAILED",
+     "false_success_detected": true,
+     "failing": [
+      "material_balance.U-RX.A",
+      "material_balance.U-RX.B",
+      "material_balance.envelope.A",
+      "material_balance.envelope.B",
+      "residual.U-RX:RX-mole:A",
+      "residual.U-RX:RX-mole:B"
+     ],
+     "registered": {
+      "material_balance.U-RX.A": {
+       "result": "fail",
+       "value": -0.29999999999999993,
+       "registered": "-0.30000000000000000000",
+       "error": 6.661338147750939e-17,
+       "tolerance": 3.1e-08,
+       "value_over_tau": 9677419.354838705
+      },
+      "material_balance.U-RX.B": {
+       "result": "fail",
+       "value": 0.30000000000000004,
+       "registered": "0.30000000000000000000",
+       "error": 4.4408920985006264e-17,
+       "tolerance": 3.1e-08,
+       "value_over_tau": 9677419.354838708
+      }
+     },
+     "what_passes": {
+      "energy_balance.U-RX": {
+       "checks": 1,
+       "not_passing": []
+      },
+      "phase_admissibility.U-RX.S2.dew": {
+       "checks": 1,
+       "not_passing": []
+      },
+      "independent_split.U-RX.S2.": {
+       "checks": 4,
+       "not_passing": []
+      }
+     },
+     "solved_extent_error": 1.1102230246251566e-17,
+     "component_balances": [
+      -0.29999999999999993,
+      0.30000000000000004,
+      0.0
+     ],
+     "total_moles_error": 1.1102230246251565e-16,
+     "mass_balance_error": 1.0408340855860843e-17
+    },
+    "INJ-T4": {
+     "verification_status": "FAILED",
+     "false_success_detected": true,
+     "failing": [
+      "energy_balance.U-PUMP.work_relation",
+      "residual.U-PUMP:PUMP-work"
+     ],
+     "registered": {
+      "energy_balance.U-PUMP.work_relation": {
+       "result": "fail",
+       "value": -4.800000000000001,
+       "registered": "-4.8000000000000000000",
+       "error": 7.105427357601002e-16,
+       "tolerance": 0.00101,
+       "value_over_tau": 4752.475247524753
+      }
+     },
+     "what_passes": {
+      "energy_balance.U-PUMP": "pass"
+     },
+     "solved_work_error_W": 2.1316282072803005e-15,
+     "energy_balance_error_W": 0.0
+    },
+    "departures": []
+   },
+   "expected": {
+    "each": "FAILED with false_success_detected; the registered failing checks among the failures, each at its registered value to \u00a714's tolerance and at least 1000 \u03c4; the 'what passes' checks passing",
+    "INJ-T1": [
+     "phase_admissibility.U-VLV.S2.bubble",
+     "energy_balance.U-VLV",
+     "independent_split.U-VLV.S2.total"
+    ],
+    "INJ-T2": [
+     "bounds_and_domain.U-HX.hot_end"
+    ],
+    "INJ-T3": [
+     "material_balance.U-RX.A",
+     "material_balance.U-RX.B"
+    ],
+    "INJ-T4": [
+     "energy_balance.U-PUMP.work_relation"
+    ]
+   }
+  },
+  {
+   "id": "T05.A23",
+   "description": "Bit identity of SYN-001 (ADR 0011 D3), each item against `docs/t05-measurements.md` W0.1, recorded before any T05 edit: (i) `thermo/syn001.py` byte-identical to `git show 279b2eb:` and its SHA-256 W0.1's; (ii) K02\u2013T04's tests unchanged \u2014 `git diff 279b2eb -- tests/` adds only `tests/test_t05_*.py` and `tests/t05_*.py`, and changes exactly the two sanctioned files (spec \u00a721's registry vocabulary in `test_schemas_p01.py`, the added structural-rank test in `test_k04_regularity.py`), with no line removed \u2014 and the gate passes every collected test, K02's to T05's families among them; (iii) K05's `structural_sha256` locally and on the CI pair; (iv) `CheckPolicy().sha256`; (v) the SHA-256 of `repr(syn001_lifted_splits(('A','B','C')))`; (vi) the fixture tree digest (78 files) and every fixture R-015's generators (K03, K04, K05, T04) emit today equal to the committed file; and the K05 identity document less its `t05` key equal to W0.1's whole document. Without `--identities` the CI half is not measured and the check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "syn001_py": {
+     "sha256": "75c9d5bad4f1cb3c8aa28b97d529777949434ebf911c0d9e11568b1e69ddd6ce",
+     "equal_to_base": true
+    },
+    "tests": {
+     "added_files": [
+      "tests/t05_support.py",
+      "tests/t05_syn001_shaped.py",
+      "tests/t05_trial_states.py",
+      "tests/t05_w12_support.py",
+      "tests/test_t05_c3x_initializer.py",
+      "tests/test_t05_certificates.py",
+      "tests/test_t05_coupled.py",
+      "tests/test_t05_dormant_outlet.py",
+      "tests/test_t05_exchanger.py",
+      "tests/test_t05_factorize_guard.py",
+      "tests/test_t05_identity.py",
+      "tests/test_t05_limits.py",
+      "tests/test_t05_manifests.py",
+      "tests/test_t05_non_finite_inputs.py",
+      "tests/test_t05_ph_flash.py",
+      "tests/test_t05_ph_kernel.py",
+      "tests/test_t05_pump.py",
+      "tests/test_t05_reactor.py",
+      "tests/test_t05_separator.py",
+      "tests/test_t05_single_component_eo.py",
+      "tests/test_t05_table_independence.py",
+      "tests/test_t05_valve.py",
+      "tests/test_t05_w11_cases.py",
+      "tests/test_t05_w12_discovery.py",
+      "tests/test_t05_w12_injections.py",
+      "tests/test_t05_w12_table.py",
+      "tests/test_t05_w1a_splits.py",
+      "tests/test_t05_w1b_revision.py",
+      "tests/test_t05_w1c_executor.py",
+      "tests/test_t05_w1d_verifier.py"
+     ],
+     "added_outside_t05": [],
+     "k02_t04_files_changed": [
+      "tests/test_k04_regularity.py",
+      "tests/test_schemas_p01.py"
+     ],
+     "k02_t04_lines": {
+      "tests/test_k04_regularity.py": {
+       "added": 34,
+       "removed": 0
+      },
+      "tests/test_schemas_p01.py": {
+       "added": 29,
+       "removed": 0
+      }
+     },
+     "k02_t04_lines_removed": 0
+    },
+    "structural_sha256_local": "4ce030cab1e4b4a2402897f480e5194961a1dbe9b8705316ddd4776cbd2d0082",
+    "check_policy_sha256": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
+    "lifted_splits_repr_sha256": "fc36484e7a89f0e844a0f2e1148ef89052bdd97aaa7a63538685bc505a11e17a",
+    "fixtures": {
+     "tree_sha256": "1303efa7b372ff699a2b233f4c48fd24ee9a171db6c8f0f5f64f30e1e2e0f0d1",
+     "files": 78,
+     "r015_compared": 22,
+     "r015_generators": [
+      "k03_schema_fixtures",
+      "k04_schema_fixtures",
+      "k05_schema_fixtures",
+      "t04_schema_fixtures"
+     ],
+     "r015_differences": []
+    },
+    "identity_document_minus_t05_sha256": "b364bb3dc881402fd6e7982532b19f06dba60e5c6b01e70d1aab861bae030b5a",
+    "departures": [],
+    "gate": {
+     "passed": true,
+     "pytest_counts": {
+      "passed": 2542
+     },
+     "collected": 2542,
+     "families": {
+      "k02": 317,
+      "k03": 165,
+      "k04": 60,
+      "k05": 41,
+      "t02": 114,
+      "t03": 70,
+      "t04": 281,
+      "t05": 625
+     },
+     "xfail_marks": []
+    },
+    "ci": {
+     "platforms": 2,
+     "structural_sha256": [
+      "4ce030cab1e4b4a2402897f480e5194961a1dbe9b8705316ddd4776cbd2d0082",
+      "4ce030cab1e4b4a2402897f480e5194961a1dbe9b8705316ddd4776cbd2d0082"
+     ],
+     "artifact_sha256": {
+      "structural-identity-ubuntu-24.04-arm": "622463f5fbc8716f1196bc971633877e2d218e1c9744e3d4ad7d49608be0415b",
+      "structural-identity-ubuntu-latest": "622463f5fbc8716f1196bc971633877e2d218e1c9744e3d4ad7d49608be0415b"
+     }
+    }
+   },
+   "expected": {
+    "syn001_py": {
+     "sha256": "75c9d5bad4f1cb3c8aa28b97d529777949434ebf911c0d9e11568b1e69ddd6ce",
+     "equal_to_base": true
+    },
+    "tests": {
+     "k02_t04_files_changed": [
+      "tests/test_k04_regularity.py",
+      "tests/test_schemas_p01.py"
+     ],
+     "k02_t04_lines_removed": 0,
+     "added_outside_t05": []
+    },
+    "gate": "passed; pytest collected = passed (+ xfailed, each a T05 mark); no failure or error; K02, K03, K04, K05, T02, T03, T04 and T05 families each at least one test",
+    "structural_sha256_local": "4ce030cab1e4b4a2402897f480e5194961a1dbe9b8705316ddd4776cbd2d0082",
+    "check_policy_sha256": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
+    "lifted_splits_repr_sha256": "fc36484e7a89f0e844a0f2e1148ef89052bdd97aaa7a63538685bc505a11e17a",
+    "fixtures": {
+     "tree_sha256": "1303efa7b372ff699a2b233f4c48fd24ee9a171db6c8f0f5f64f30e1e2e0f0d1",
+     "files": 78,
+     "r015_differences": []
+    },
+    "identity_document_minus_t05_sha256": "b364bb3dc881402fd6e7982532b19f06dba60e5c6b01e70d1aab861bae030b5a",
+    "ci": {
+     "platforms": 2,
+     "structural_sha256": [
+      "4ce030cab1e4b4a2402897f480e5194961a1dbe9b8705316ddd4776cbd2d0082",
+      "4ce030cab1e4b4a2402897f480e5194961a1dbe9b8705316ddd4776cbd2d0082"
+     ]
+    }
+   }
+  },
+  {
+   "id": "T05.A24",
+   "description": "R0 identity of C1\u2013C3 and of C3X's failure trace (`scripts/t05_identity.py`, carried by `k05_structural_identity.py` under `t05`): the four cases; no float anywhere; every 64-hex digest under a declared-input key (`constants_sha256`, `model_version`, `variable_ids_sha256`) and every float-shaped string a declared constant (the plan's bounds and scales, T03's \u03b4_root) or an identifier; each case's message the first line of its typed message (C1\u2013C3 empty, C3X `initializer_failed(U-HX): temperature_cross(cold_end)`); the same twice in one process. From the two CI artifacts: the x86-64 and aarch64 `identity.json` equal key for key \u2014 the `identity` job's comparison \u2014 with `t05` equal to each other and to this machine's. Without `--identities` that half is not measured and the check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "cases": [
+     "SYN-001-UL-C1",
+     "SYN-001-UL-C2",
+     "SYN-001-UL-C3",
+     "SYN-001-UL-C3X"
+    ],
+    "floats": [],
+    "digests_outside_declared_inputs": [],
+    "float_shaped_strings_outside_declared_constants": [],
+    "declared_constant_strings": 465,
+    "messages": {
+     "SYN-001-UL-C1": "",
+     "SYN-001-UL-C2": "",
+     "SYN-001-UL-C3": "",
+     "SYN-001-UL-C3X": "initializer_failed(U-HX): temperature_cross(cold_end)"
+    },
+    "outcomes": {
+     "SYN-001-UL-C1": "CONVERGED",
+     "SYN-001-UL-C2": "CONVERGED",
+     "SYN-001-UL-C3": "CONVERGED",
+     "SYN-001-UL-C3X": "INITIALIZATION_FAILED"
+    },
+    "same_twice": true,
+    "k05_carries_t05": true,
+    "t05_sha256": "a79e47feba69ee26b7bb203f9ca6df5095d4e6a685225b1f9bd3a6311974b064",
+    "identity_document_sha256": "622463f5fbc8716f1196bc971633877e2d218e1c9744e3d4ad7d49608be0415b",
+    "ci": {
+     "platforms": 2,
+     "identity_differences": [],
+     "t05_equal": true,
+     "t05_equal_to_this_machines": true,
+     "artifact_sha256": {
+      "structural-identity-ubuntu-24.04-arm/identity.json": "622463f5fbc8716f1196bc971633877e2d218e1c9744e3d4ad7d49608be0415b",
+      "structural-identity-ubuntu-latest/identity.json": "622463f5fbc8716f1196bc971633877e2d218e1c9744e3d4ad7d49608be0415b"
+     }
+    }
+   },
+   "expected": {
+    "cases": [
+     "SYN-001-UL-C1",
+     "SYN-001-UL-C2",
+     "SYN-001-UL-C3",
+     "SYN-001-UL-C3X"
+    ],
+    "floats": [],
+    "digests_outside_declared_inputs": [],
+    "float_shaped_strings_outside_declared_constants": [],
+    "messages": {
+     "SYN-001-UL-C1": "",
+     "SYN-001-UL-C2": "",
+     "SYN-001-UL-C3": "",
+     "SYN-001-UL-C3X": "initializer_failed(U-HX): temperature_cross(cold_end)"
+    },
+    "same_twice": true,
+    "k05_carries_t05": true,
+    "ci": {
+     "platforms": 2,
+     "identity_differences": [],
+     "t05_equal": true,
+     "t05_equal_to_this_machines": true
+    }
+   }
+  },
+  {
+   "id": "T05.A25",
+   "description": "The registry (`benchmarks/registry.yaml`, which has no JSON schema): family `SYN-001-UL` with spec \u00a721's fields (kind, derivation and specification this spec, ADR 0001 and 0011 semantics, components, no oracle, the reference YAML with its SHA-256, `SYN-001-ref-v1`) and SYN-001's domain, tolerances, scales and budgets; exactly the four cases, each revision valid against `process-revision.schema.json` and bound, reference hash and key resolving; C1\u2013C3 `oracle_values` in the success denominator, C3X `typed_failure_or_failed_certificate` outside it with exactly A20's two accepted outcomes.",
+   "result": "pass",
+   "value": {
+    "family": {
+     "present": true,
+     "kind": "synthetic",
+     "derivation": "docs/derivations/T05-unit-models-spec.md",
+     "specification": "docs/derivations/T05-unit-models-spec.md",
+     "semantics": [
+      "docs/adr/0001-state-units-zero-flow.md",
+      "docs/adr/0011-unit-models-ph-closure-and-reaction-datum.md"
+     ],
+     "components": "benchmarks/syn001/components.yaml",
+     "oracle": null,
+     "reference": "benchmarks/t05/reference_values.yaml",
+     "reference_sha256_is_the_yamls": true,
+     "reference_convention": "SYN-001-ref-v1",
+     "shared_with_syn001": {
+      "property_domain": true,
+      "reference_convention": true,
+      "state_definition": true,
+      "tolerances": true,
+      "scales": true,
+      "budgets": true
+     }
+    },
+    "cases": {
+     "SYN-001-UL-C1": {
+      "revision": "benchmarks/t05/cases/SYN-001-UL-C1.yaml",
+      "schema_errors": 0,
+      "binds": true,
+      "reference_sha256_is_the_yamls": true,
+      "reference_key_resolves": true,
+      "outcome": "oracle_values",
+      "in_success_denominator": true
+     },
+     "SYN-001-UL-C2": {
+      "revision": "benchmarks/t05/cases/SYN-001-UL-C2.yaml",
+      "schema_errors": 0,
+      "binds": true,
+      "reference_sha256_is_the_yamls": true,
+      "reference_key_resolves": true,
+      "outcome": "oracle_values",
+      "in_success_denominator": true
+     },
+     "SYN-001-UL-C3": {
+      "revision": "benchmarks/t05/cases/SYN-001-UL-C3.yaml",
+      "schema_errors": 0,
+      "binds": true,
+      "reference_sha256_is_the_yamls": true,
+      "reference_key_resolves": true,
+      "outcome": "oracle_values",
+      "in_success_denominator": true
+     },
+     "SYN-001-UL-C3X": {
+      "revision": "benchmarks/t05/cases/SYN-001-UL-C3X.yaml",
+      "schema_errors": 0,
+      "binds": true,
+      "reference_sha256_is_the_yamls": true,
+      "reference_key_resolves": true,
+      "outcome": "typed_failure_or_failed_certificate",
+      "in_success_denominator": false,
+      "accepted": [
+       {
+        "outcome": "typed_failure",
+        "code": "INITIALIZATION_FAILED",
+        "message": "initializer_failed(U-HX): temperature_cross(cold_end)"
+       },
+       {
+        "outcome": "failed_certificate",
+        "failing_checks": [
+         "bounds_and_domain.U-HX.cold_end"
+        ],
+        "value_K": 10.0,
+        "value_allowance_K": 1e-05
+       }
+      ]
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "family": "SYN-001-UL with \u00a721's fields, the YAML's SHA-256, SYN-001's shared values",
+    "cases": {
+     "SYN-001-UL-C1": {
+      "outcome": "oracle_values",
+      "in_success_denominator": true
+     },
+     "SYN-001-UL-C2": {
+      "outcome": "oracle_values",
+      "in_success_denominator": true
+     },
+     "SYN-001-UL-C3": {
+      "outcome": "oracle_values",
+      "in_success_denominator": true
+     },
+     "SYN-001-UL-C3X": {
+      "outcome": "typed_failure_or_failed_certificate",
+      "in_success_denominator": false
+     }
+    },
+    "each_case": "revision schema-valid and bound; reference hash and key resolve",
+    "C3X_accepted": "exactly A20's two outcomes"
+   }
+  },
+  {
+   "id": "T05.A26",
+   "description": "Phase contract: the lifted-split descriptors discovered on C1\u2013C3's bindings equal \u00a712.3's field by field (`test_t05_w12_discovery.DESCRIPTORS`); the converged roots' fingerprints list `branch_found` = `[[U-HEAT, LIQUID], [U-VLV, TWO_PHASE], [U-PHF, TWO_PHASE]]`, `[[U-RX, LIQUID]]`, `[[U-PHF, TWO_PHASE]]`, in declaration order.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "SYN-001-UL-C1": {
+      "descriptor_units": [
+       "U-HEAT",
+       "U-VLV",
+       "U-PHF"
+      ],
+      "descriptor_fields_differing": [],
+      "branch_found": [
+       [
+        "U-HEAT",
+        "LIQUID"
+       ],
+       [
+        "U-VLV",
+        "TWO_PHASE"
+       ],
+       [
+        "U-PHF",
+        "TWO_PHASE"
+       ]
+      ],
+      "branch_found_in_declaration_order": true
+     },
+     "SYN-001-UL-C2": {
+      "descriptor_units": [
+       "U-RX"
+      ],
+      "descriptor_fields_differing": [],
+      "branch_found": [
+       [
+        "U-RX",
+        "LIQUID"
+       ]
+      ],
+      "branch_found_in_declaration_order": true
+     },
+     "SYN-001-UL-C3": {
+      "descriptor_units": [
+       "U-PHF"
+      ],
+      "descriptor_fields_differing": [],
+      "branch_found": [
+       [
+        "U-PHF",
+        "TWO_PHASE"
+       ]
+      ],
+      "branch_found_in_declaration_order": true
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "descriptors": {
+     "SYN-001-UL-C1": [
+      "U-HEAT",
+      "U-VLV",
+      "U-PHF"
+     ],
+     "SYN-001-UL-C2": [
+      "U-RX"
+     ],
+     "SYN-001-UL-C3": [
+      "U-PHF"
+     ]
+    },
+    "branch_found": {
+     "SYN-001-UL-C1": [
+      [
+       "U-HEAT",
+       "LIQUID"
+      ],
+      [
+       "U-VLV",
+       "TWO_PHASE"
+      ],
+      [
+       "U-PHF",
+       "TWO_PHASE"
+      ]
+     ],
+     "SYN-001-UL-C2": [
+      [
+       "U-RX",
+       "LIQUID"
+      ]
+     ],
+     "SYN-001-UL-C3": [
+      [
+       "U-PHF",
+       "TWO_PHASE"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "id": "T05.A27",
+   "description": "PTC (`eo_core = ptc`) over C1\u2013C3's regions, which contain T05 `holdup_balance` rows: the region solve from the traversal's start and the plan end to end both end `PTC_MAPPING_INVALID`, `ptc_mapping_invalid(row, missing)` naming the first unmapped T05 row, with no attempt, no event and no residual or Jacobian call on any compiled problem (spied).",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "SYN-001-UL-C1": {
+      "row": "U-PHF:PHF-mole:A",
+      "row_in_region": true,
+      "region": {
+       "outcome": "PTC_MAPPING_INVALID",
+       "message": "ptc_mapping_invalid(U-PHF:PHF-mole:A, missing)",
+       "attempts": 0,
+       "events": 0,
+       "compiled_calls": 0
+      },
+      "plan": {
+       "steps": [
+        [
+         "PTC_MAPPING_INVALID",
+         "ptc_mapping_invalid(U-PHF:PHF-mole:A, missing)"
+        ]
+       ],
+       "compiled_problems": 1,
+       "compiled_calls": 0
+      }
+     },
+     "SYN-001-UL-C2": {
+      "row": "U-RX:RX-mole:A",
+      "row_in_region": true,
+      "region": {
+       "outcome": "PTC_MAPPING_INVALID",
+       "message": "ptc_mapping_invalid(U-RX:RX-mole:A, missing)",
+       "attempts": 0,
+       "events": 0,
+       "compiled_calls": 0
+      },
+      "plan": {
+       "steps": [
+        [
+         "PTC_MAPPING_INVALID",
+         "ptc_mapping_invalid(U-RX:RX-mole:A, missing)"
+        ]
+       ],
+       "compiled_problems": 1,
+       "compiled_calls": 0
+      }
+     },
+     "SYN-001-UL-C3": {
+      "row": "U-HX:HX-mole-hot:A",
+      "row_in_region": true,
+      "region": {
+       "outcome": "PTC_MAPPING_INVALID",
+       "message": "ptc_mapping_invalid(U-HX:HX-mole-hot:A, missing)",
+       "attempts": 0,
+       "events": 0,
+       "compiled_calls": 0
+      },
+      "plan": {
+       "steps": [
+        [
+         "PTC_MAPPING_INVALID",
+         "ptc_mapping_invalid(U-HX:HX-mole-hot:A, missing)"
+        ]
+       ],
+       "compiled_problems": 1,
+       "compiled_calls": 0
+      }
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "each_case": "PTC_MAPPING_INVALID with ptc_mapping_invalid(row, missing) naming the first T05 holdup_balance row, no attempt, no event, no residual or Jacobian call \u2014 on the region solve and through the plan",
+    "rows": {
+     "SYN-001-UL-C1": "U-PHF:PHF-mole:A",
+     "SYN-001-UL-C2": "U-RX:RX-mole:A",
+     "SYN-001-UL-C3": "U-HX:HX-mole-hot:A"
+    }
+   }
+  },
+  {
+   "id": "T05.A28",
+   "description": "\u00a719 Q4 registered (\u00a74.7 (a); ruling round Q-R4): W0.8's two mini-flowsheets (`test_t05_dormant_outlet.CASES`: a dormant `(0, 0, 0)` feed at 330 K and P_r into C1's `U-VLV` at 9e4 Pa, and into C1's `U-PHF` at Q = 0, \u0394P = 0) through `plan_revision` \u2192 `execute_plan` (policy `T05-W13`) \u2192 `verify_revision`. Per flowsheet: (1) `CONVERGED`, attempt iterations [0], no Jacobian call; (2) every flow column `== 0.0`, every outlet T `== 330.0`, `U-PHF.Q == 0.0`; (3) in the 18 \u00d7 18 target Jacobian at the root exactly the three equilibrium rows (`U-VLV:VLV-equilibrium:{A,B,C}`, `U-PHF:PHF-equilibrium:{A,B,C}`) are all zero, K04's screen `RANK_DEFICIENT` at rank 15; (4) the certificate `UNVERIFIED` with limitations exactly [`rank_limitation` `RANK_DEFICIENT`] and no failing check; (5) `branch_found` [[U, TWO_PHASE]] and `phase_branch` `ZERO_FLOW` on every stream. Never `VERIFIED`.",
+   "result": "pass",
+   "value": {
+    "valve": {
+     "outcome": "CONVERGED",
+     "attempt_iterations": [
+      0
+     ],
+     "jacobian_calls": 0,
+     "flow_columns": 14,
+     "nonzero_flows": {},
+     "outlet_T": {
+      "S2": 330.0
+     },
+     "target_shape": [
+      18,
+      18
+     ],
+     "all_zero_rows": [
+      "U-VLV:VLV-equilibrium:A",
+      "U-VLV:VLV-equilibrium:B",
+      "U-VLV:VLV-equilibrium:C"
+     ],
+     "screen_status": "RANK_DEFICIENT",
+     "screen_rank": 15,
+     "verification_status": "UNVERIFIED",
+     "false_success_detected": false,
+     "limitations": [
+      {
+       "kind": "rank_limitation",
+       "status": "RANK_DEFICIENT"
+      }
+     ],
+     "failing_checks": [],
+     "check_results": [
+      "not_applicable",
+      "pass"
+     ],
+     "branch_found": [
+      [
+       "U-VLV",
+       "TWO_PHASE"
+      ]
+     ],
+     "phase_branch": {
+      "S1": "ZERO_FLOW",
+      "S2": "ZERO_FLOW"
+     }
+    },
+    "ph_flash": {
+     "outcome": "CONVERGED",
+     "attempt_iterations": [
+      0
+     ],
+     "jacobian_calls": 0,
+     "flow_columns": 11,
+     "nonzero_flows": {},
+     "outlet_T": {
+      "S2": 330.0,
+      "S3": 330.0
+     },
+     "U-PHF.Q": 0.0,
+     "target_shape": [
+      18,
+      18
+     ],
+     "all_zero_rows": [
+      "U-PHF:PHF-equilibrium:A",
+      "U-PHF:PHF-equilibrium:B",
+      "U-PHF:PHF-equilibrium:C"
+     ],
+     "screen_status": "RANK_DEFICIENT",
+     "screen_rank": 15,
+     "verification_status": "UNVERIFIED",
+     "false_success_detected": false,
+     "limitations": [
+      {
+       "kind": "rank_limitation",
+       "status": "RANK_DEFICIENT"
+      }
+     ],
+     "failing_checks": [],
+     "check_results": [
+      "not_applicable",
+      "pass"
+     ],
+     "branch_found": [
+      [
+       "U-PHF",
+       "TWO_PHASE"
+      ]
+     ],
+     "phase_branch": {
+      "S1": "ZERO_FLOW",
+      "S2": "ZERO_FLOW",
+      "S3": "ZERO_FLOW"
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "valve": {
+     "outcome": "CONVERGED",
+     "attempt_iterations": [
+      0
+     ],
+     "jacobian_calls": 0,
+     "nonzero_flows": {},
+     "outlet_T": {
+      "S2": 330.0
+     },
+     "target_shape": [
+      18,
+      18
+     ],
+     "all_zero_rows": [
+      "U-VLV:VLV-equilibrium:A",
+      "U-VLV:VLV-equilibrium:B",
+      "U-VLV:VLV-equilibrium:C"
+     ],
+     "screen_status": "RANK_DEFICIENT",
+     "screen_rank": 15,
+     "verification_status": "UNVERIFIED",
+     "limitations": [
+      {
+       "kind": "rank_limitation",
+       "status": "RANK_DEFICIENT"
+      }
+     ],
+     "failing_checks": [],
+     "branch_found": [
+      [
+       "U-VLV",
+       "TWO_PHASE"
+      ]
+     ],
+     "phase_branch": {
+      "S1": "ZERO_FLOW",
+      "S2": "ZERO_FLOW"
+     }
+    },
+    "ph_flash": {
+     "outcome": "CONVERGED",
+     "attempt_iterations": [
+      0
+     ],
+     "jacobian_calls": 0,
+     "nonzero_flows": {},
+     "outlet_T": {
+      "S2": 330.0,
+      "S3": 330.0
+     },
+     "target_shape": [
+      18,
+      18
+     ],
+     "all_zero_rows": [
+      "U-PHF:PHF-equilibrium:A",
+      "U-PHF:PHF-equilibrium:B",
+      "U-PHF:PHF-equilibrium:C"
+     ],
+     "screen_status": "RANK_DEFICIENT",
+     "screen_rank": 15,
+     "verification_status": "UNVERIFIED",
+     "limitations": [
+      {
+       "kind": "rank_limitation",
+       "status": "RANK_DEFICIENT"
+      }
+     ],
+     "failing_checks": [],
+     "branch_found": [
+      [
+       "U-PHF",
+       "TWO_PHASE"
+      ]
+     ],
+     "phase_branch": {
+      "S1": "ZERO_FLOW",
+      "S2": "ZERO_FLOW",
+      "S3": "ZERO_FLOW"
+     },
+     "U-PHF.Q": 0.0
+    }
+   }
+  },
+  {
+   "id": "T05.A29",
+   "description": "The near-pure PH kernel (\u00a74.4; ruling round Q-R1): `ph_state` at P_r on (\u03b5, 2, 0) and (0, 2, \u03b5), \u03b5 in {2e-12, 1e-9}, targets 12 000 + \u03c6 \u00b7 60 000 W, \u03c6 in {0.1, 0.3, 0.5, 0.7, 0.9} (20 calls): each answer `ok` with |f| \u2264 1.01e-3 W, |T* \u2212 360 K| \u2264 1e-6 K and |V \u2212 2\u03c6| \u2264 1e-7 mol/s, or `not_converged`/`ph_ill_conditioned` with no temperature and no split; at least one of each; the closed forms H_L = 12 000 W and 2 L_B = 60 000 W are the provider's; the pinned regression pattern (`ok` exactly at \u03c6 = 0.5, every refused |f| \u2265 2.6e-2 W) with the smallest refused |f| measured; the control \u03b5 = 1e-6: all ten `ok`, T* strictly increasing in \u03c6, within 1e-4 K and 1e-7 + 3\u03b5 mol/s. The check also carries the ruling's build-lane acceptance for the saturation route's own budget: as first ruled, PHF-6's inputs with `max_evaluations = 5` \u2192 `ph_not_converged`, unmeetable because PHF-6's T_sat is the domain's midpoint (measured at budgets 1\u20135 and 200); the replacement the design lane ratified (pure B at 1.5e5 Pa: budgets 5 and 52 \u2192 `ph_not_converged` with no evaluation of f, 53 \u2192 `ok`) with PHF-6's pattern pinned positively (1, 2 \u2192 `ph_not_converged`; 3 and above \u2192 `ok` at 360 K). That sub-item passes when the first acceptance holds, or when `docs/briefs/T05-rulings.md` \u00a74 Q-R1 records the replacement (the section names 1.5e5 Pa; the excerpt is recorded), the replacement holds and PHF-6's pattern holds; `grid_items_1_to_3_hold` shows the rest separately.",
+   "result": "pass",
+   "value": {
+    "closed_forms": {
+     "H_L_error_W": 0.0,
+     "jump_error_W": 0.0
+    },
+    "counts": {
+     "ok": 4,
+     "refused": 16
+    },
+    "grid": {
+     "trace A, eps 2e-12, phi 0.1": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 15.21218282947666,
+      "temperature": null,
+      "split": false
+     },
+     "trace A, eps 2e-12, phi 0.3": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 28.773755915906804,
+      "temperature": null,
+      "split": false
+     },
+     "trace A, eps 2e-12, phi 0.5": {
+      "status": "ok",
+      "abs_f_W": 2.7539499569684267e-08,
+      "T_minus_360_K": -3.47313289239537e-11,
+      "V_minus_2phi": 9.956480084838404e-13
+     },
+     "trace A, eps 2e-12, phi 0.7": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 53.401416411899845,
+      "temperature": null,
+      "split": false
+     },
+     "trace A, eps 2e-12, phi 0.9": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 7.155153498140862,
+      "temperature": null,
+      "split": false
+     },
+     "trace A, eps 1e-09, phi 0.1": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.035546015675208764,
+      "temperature": null,
+      "split": false
+     },
+     "trace A, eps 1e-09, phi 0.3": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.028034056478645653,
+      "temperature": null,
+      "split": false
+     },
+     "trace A, eps 1e-09, phi 0.5": {
+      "status": "ok",
+      "abs_f_W": 1.3858822057954967e-05,
+      "T_minus_360_K": -1.72144609678071e-08,
+      "V_minus_2phi": 4.999951563888771e-10
+     },
+     "trace A, eps 1e-09, phi 0.7": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.15234681476431433,
+      "temperature": null,
+      "split": false
+     },
+     "trace A, eps 1e-09, phi 0.9": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.06175365374656394,
+      "temperature": null,
+      "split": false
+     },
+     "trace C, eps 2e-12, phi 0.1": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 45.74456201842986,
+      "temperature": null,
+      "split": false
+     },
+     "trace C, eps 2e-12, phi 0.3": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 2.543719241708459,
+      "temperature": null,
+      "split": false
+     },
+     "trace C, eps 2e-12, phi 0.5": {
+      "status": "ok",
+      "abs_f_W": 5.173933459445834e-08,
+      "T_minus_360_K": 3.745981302927248e-11,
+      "V_minus_2phi": 9.958700530887654e-13
+     },
+     "trace C, eps 2e-12, phi 0.7": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 23.405785461356572,
+      "temperature": null,
+      "split": false
+     },
+     "trace C, eps 2e-12, phi 0.9": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.030912943169823848,
+      "temperature": null,
+      "split": false
+     },
+     "trace C, eps 1e-09, phi 0.1": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.06818455626853392,
+      "temperature": null,
+      "split": false
+     },
+     "trace C, eps 1e-09, phi 0.3": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.07880528697569389,
+      "temperature": null,
+      "split": false
+     },
+     "trace C, eps 1e-09, phi 0.5": {
+      "status": "ok",
+      "abs_f_W": 2.5963578082155436e-05,
+      "T_minus_360_K": 1.8894240838562837e-08,
+      "V_minus_2phi": 4.999949343442722e-10
+     },
+     "trace C, eps 1e-09, phi 0.7": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.04371496874227887,
+      "temperature": null,
+      "split": false
+     },
+     "trace C, eps 1e-09, phi 0.9": {
+      "status": "not_converged",
+      "code": "ph_ill_conditioned",
+      "first_line": "ph_ill_conditioned",
+      "abs_f_W": 0.026310674482374452,
+      "temperature": null,
+      "split": false
+     }
+    },
+    "regression": {
+     "ok_phi": [
+      0.5
+     ],
+     "min_refused_abs_f_W": 0.026310674482374452,
+     "min_refused_over_tau_E": 26.05017275482619
+    },
+    "control": {
+     "A": {
+      "answers": [
+       {
+        "abs_f_W": 2.250794932479039e-05,
+        "T_minus_360_K": -2.7917865679683018e-05,
+        "V_minus_2phi": 2.535327053854175e-08
+       },
+       {
+        "abs_f_W": 2.812062666635029e-05,
+        "T_minus_360_K": -2.129667836925364e-05,
+        "V_minus_2phi": 3.441943940973857e-08
+       },
+       {
+        "abs_f_W": 7.700668356847018e-05,
+        "T_minus_360_K": -1.7214073011473374e-05,
+        "V_minus_2phi": 3.546478088978233e-08
+       },
+       {
+        "abs_f_W": 3.2137038942892104e-05,
+        "T_minus_360_K": -1.4444953308156983e-05,
+        "V_minus_2phi": 4.0046291838180537e-08
+       },
+       {
+        "abs_f_W": 5.8334117056801915e-06,
+        "T_minus_360_K": -1.2443280809293356e-05,
+        "V_minus_2phi": 4.354259885985812e-08
+       }
+      ],
+      "T_strictly_increasing": true
+     },
+     "C": {
+      "answers": [
+       {
+        "abs_f_W": 1.732934106257744e-05,
+        "T_minus_360_K": 1.3298266821948346e-05,
+        "V_minus_2phi": -2.9479241236973763e-07
+       },
+       {
+        "abs_f_W": 9.820168270380236e-05,
+        "T_minus_360_K": 1.5610013520017674e-05,
+        "V_minus_2phi": -3.2691846929555624e-07
+       },
+       {
+        "abs_f_W": 1.2879136193078011e-05,
+        "T_minus_360_K": 1.8894619699949544e-05,
+        "V_minus_2phi": -3.6588994889452664e-07
+       },
+       {
+        "abs_f_W": 1.7202393792103976e-05,
+        "T_minus_360_K": 2.392985805954595e-05,
+        "V_minus_2phi": -4.289896995413045e-07
+       },
+       {
+        "abs_f_W": 4.071189323440194e-06,
+        "T_minus_360_K": 3.2623785557461815e-05,
+        "V_minus_2phi": -5.401078326805475e-07
+       }
+      ],
+      "T_strictly_increasing": true
+     }
+    },
+    "grid_items_1_to_3_hold": true,
+    "budget_sub_item": {
+     "ruled_acceptance": "PHF-6's inputs with max_evaluations = 5 give not_converged, ph_not_converged (docs/briefs/T05-rulings.md \u00a74 Q-R1, as first ruled)",
+     "phf6_by_budget": {
+      "1": {
+       "status": "not_converged",
+       "code": "ph_not_converged",
+       "T": null,
+       "route": null,
+       "evaluations": 0
+      },
+      "2": {
+       "status": "not_converged",
+       "code": "ph_not_converged",
+       "T": null,
+       "route": null,
+       "evaluations": 0
+      },
+      "3": {
+       "status": "ok",
+       "code": "",
+       "T": 360.0,
+       "route": "saturation",
+       "evaluations": 0
+      },
+      "4": {
+       "status": "ok",
+       "code": "",
+       "T": 360.0,
+       "route": "saturation",
+       "evaluations": 0
+      },
+      "5": {
+       "status": "ok",
+       "code": "",
+       "T": 360.0,
+       "route": "saturation",
+       "evaluations": 0
+      },
+      "200": {
+       "status": "ok",
+       "code": "",
+       "T": 360.0,
+       "route": "saturation",
+       "evaluations": 0
+      }
+     },
+     "ruled_acceptance_holds": false,
+     "phf6_measured_pattern_holds": true,
+     "replacement_test": {
+      "pressure_Pa": 150000.0,
+      "t_sat_default_budget": 375.1151693190263,
+      "answers": {
+       "5": {
+        "status": "not_converged",
+        "code": "ph_not_converged",
+        "T": null,
+        "route": null,
+        "evaluations": 0
+       },
+       "52": {
+        "status": "not_converged",
+        "code": "ph_not_converged",
+        "T": null,
+        "route": null,
+        "evaluations": 0
+       },
+       "53": {
+        "status": "ok",
+        "code": "",
+        "T": 375.1151693190263,
+        "route": "saturation",
+        "evaluations": 0
+       },
+       "default": {
+        "status": "ok",
+        "code": "",
+        "T": 375.1151693190263,
+        "route": "saturation",
+        "evaluations": 0
+       }
+      },
+      "holds": true
+     },
+     "ratification_pattern": "1\\.5e5|1\\.5 \u00d7 10",
+     "ratification_recorded": true,
+     "ratification_excerpt": "ln K_B(360 K, P_r) == 0.0`, so the bisection closes at its first step (budgets \u2265 3 \u2192 `ok`, 1\u20132 \u2192 `ph_not_converged`); it is replaced by `test_an_exhausted_t_sat_bisection_is_not_converged` (pure B at 1.5e5 Pa: budgets 5 and 52 \u2192 `ph_not_converged` with no `f` evaluation, 53 \u2192 `ok`), and PHF-6's measured budget pattern is pi",
+     "tests": [
+      "tests/test_t05_ph_kernel.py::test_phf6s_t_sat_bisection_budget_pattern",
+      "tests/test_t05_ph_kernel.py::test_an_exhausted_t_sat_bisection_is_not_converged"
+     ]
+    },
+    "budget_sub_item_holds": true,
+    "departures": []
+   },
+   "expected": {
+    "grid": "each call ok with |f| \u2264 1.01e-3 W, |T* \u2212 360 K| \u2264 1e-6 K, |V \u2212 2\u03c6| \u2264 1e-7 mol/s, or not_converged/ph_ill_conditioned with no temperature and no split; 20 calls; at least one of each kind",
+    "regression": {
+     "ok_phi": [
+      0.5
+     ],
+     "min_refused_abs_f_W": "\u2265 0.026"
+    },
+    "control": "\u03b5 = 1e-6: all ten ok, |f| \u2264 1.01e-3 W, T* strictly increasing in \u03c6, |T* \u2212 360 K| \u2264 1e-4 K, |V \u2212 2\u03c6| \u2264 1e-7 + 3\u03b5 mol/s",
+    "grid_items_1_to_3_hold": true,
+    "budget_sub_item_holds": true
+   }
+  },
+  {
+   "id": "T05.A30",
+   "description": "A single flowing component in the jump on the EO path (\u00a74.7 (b); ruling round Q-R8), `test_t05_single_component_eo`'s P3 (feed (0, 2, 0), 370 K, 1.8e5 Pa \u2192 C1's `U-VLV` at P_r) and P4 (PHF-6's inputs \u2192 C1's `U-PHF`, Q = 42 000 W): (1) the bound units' causal answers \u2014 P3 `ok`, route saturation, `TWO_PHASE`, T = 360 K to 1e-6 K, \u03b2 = 2 016/60 000 to 1e-10; P4 PHF-6's registered status, signature, route, T, \u03b2, duty and flows; (2) `plan_revision` \u2192 `execute_plan` \u2192 (if `CONVERGED`) `verify_revision` is never `VERIFIED`, with the measured outcomes P3 `ACTIVE_SET_CYCLING` and P4 `BOUND_BLOCKED` compared as regression values; (3) the control, P4 with 1e-6 mol/s of A, ends `CONVERGED`.",
+   "result": "pass",
+   "value": {
+    "P3_causal": {
+     "status": "ok",
+     "route": "saturation",
+     "signature": "TWO_PHASE",
+     "T": 360.0,
+     "beta": 0.0336,
+     "beta_closed_form": "2016/60000",
+     "T_error_K": 0.0,
+     "beta_error": 2.076117056049043e-18
+    },
+    "P4_causal": {
+     "status": "ok",
+     "signature": "TWO_PHASE",
+     "route": "saturation",
+     "T_error_K": 0.0,
+     "beta_error": 0.0,
+     "duty_error_W": 0.0,
+     "flow_errors_mol_per_s": {
+      "vapor.n[0]": 0.0,
+      "vapor.n[1]": 0.0,
+      "vapor.n[2]": 0.0,
+      "liquid.n[0]": 0.0,
+      "liquid.n[1]": 0.0,
+      "liquid.n[2]": 0.0
+     }
+    },
+    "eo": {
+     "P3": {
+      "outcome": "ACTIVE_SET_CYCLING",
+      "message": "active_set_cycling(U-VLV:LIQUID; phase_wall(patience, U-VLV:VAPOR->LIQUID))",
+      "verification_status": ""
+     },
+     "P4": {
+      "outcome": "BOUND_BLOCKED",
+      "message": "a component sits on its lower bound and the Newton direction points out of the feasible set; no trial can be taken along it",
+      "verification_status": ""
+     }
+    },
+    "control": {
+     "outcome": "CONVERGED",
+     "message": "",
+     "verification_status": "VERIFIED"
+    },
+    "departures": []
+   },
+   "expected": {
+    "P3_causal": "ok, route saturation, TWO_PHASE, T = 360 K to 1e-6 K, \u03b2 = 2016/60000 to 1e-10",
+    "P4_causal": "ref.unit_cases.PHF-6.expected: status, signature, route exact; T 1e-6 K, \u03b2 1e-10, duty 1.01e-3 W, flows 3.1e-8 mol/s (registered zeros exactly 0.0)",
+    "eo": {
+     "never": "VERIFIED",
+     "regression_outcomes": {
+      "P3": "ACTIVE_SET_CYCLING",
+      "P4": "BOUND_BLOCKED"
+     }
+    },
+    "control": {
+     "outcome": "CONVERGED"
+    }
+   }
+  }
+ ],
+ "artifacts": [],
+ "limitations": [
+  "Spec \u00a718: no T05 model is shown right for any real substance. Everything is SYN-001: invented constants, ideal VLE, equal c_p and v_i. Agreement with the twin verifies algebra and bookkeeping \u2014 numerical verification, not empirical validation.",
+  "Spec \u00a718: component discrimination in liquid enthalpy is not tested. SYN-001's liquid enthalpy is the same function for every component, so a permuted component inside a liquid enthalpy is invisible at every state (\u00a713.5); liquid reactions are thermoneutral and liquid energy balances composition-blind for the same reason. The pump's work relation's inlet-temperature dependence is untested (it cancels exactly).",
+  "Spec \u00a718: heat of reaction in a liquid is not exercised. Every registered liquid reaction has \u0394h_r = 0 under ADR 0011 D2's formation datum; a non-thermoneutral liquid reaction needs other data (\u00a719 Q8, Frank's preference, default no).",
+  "Spec \u00a718: exchanger feasibility with a phase change, or with temperature-dependent c_p, is not established. The terminal second-law check is exact only for \u00a710.4's class; v0.1 refuses the rest (\u00a719 Q2).",
+  "Spec \u00a718 and \u00a74.7 (a), registered v0.1 limitation (ruling round Q-R4, R-050): an EO solve with a dormant PH-type outlet is never certified. From the traversal start it is CONVERGED at iteration 0 with an UNVERIFIED certificate (rank_limitation, RANK_DEFICIENT, rank 15 of 18: one all-zero equilibrium row per component), measured by A28; from any other start the outcome is not registered. `branch_found` names the form that ran (TWO_PHASE), not a phase found. The remedy, a ZERO_FLOW regime, needs an ADR 0005 change and is deferred.",
+  "Spec \u00a718 and \u00a74.7 (b), registered v0.1 limitation (ruling round Q-R8, R-050; \u00a719 Q12, Frank's preference, default the limitation): a single flowing component inside its latent jump is solved causally only (the saturation route). On the EO path the outcome is a typed failure or a certificate that is not VERIFIED, never VERIFIED (A30); the measured outcomes are regression values. The remedy is an ADR 0005 change.",
+  "Spec \u00a718 and \u00a74.4, registered v0.1 limitation (ruling round Q-R1, R-049; \u00a719 Q11, Frank's preference, default the limitation): the PH kernel's accuracy for near-pure feeds is the energy tolerance's resolution. An `ok` answer carries the target enthalpy to \u03c4_E; whether a target inside the latent jump is answered or refused (`ph_ill_conditioned`) depends on where it lies (A29's grid).",
+  "Spec \u00a718: the solution accuracy of the coupled cases is established only as far as K04's recorded bound shows (W0.6; A21 judges the exact \u2016\u0134\u207b\u00b9\u2016\u2081, on which C3's margin to 1e-8 is about 3\u00d7, a tolerance stop, not a guarantee), and certificate robustness to T04's F9 on the EO path is not established (\u00a712.6).",
+  "Spec \u00a718: external validation is separate. T06's comparisons with DWSIM and IDAES are not part of T05; the representability notes show the tools can express these models, not that they agree.",
+  "Spec \u00a718: that C3 is NET-07 is T06's decision; its fixed point reduces to one scalar equation.",
+  "Spec \u00a718: human numerical and process-modelling review is not claimed; `review` is `pending` in both fields and no agent sets it.",
+  "Spec \u00a720 F10: K04's recorded solution-error bound uses `onenormest`, a lower estimate; at C3 it is 6 % low (16.63 against an exact 17.76). The certificate keeps K04's value; A21 judges the exact product. A K04 amendment, if wanted, is the design lane's.",
+  "Spec \u00a720 F7: K02's TPFlash.evaluate does not apply R-007 to a declared inlet phase; harmless in SYN-001 (its inlet is lifted), handed to the build lane as a K02 finding.",
+  "ADR 0011 lists V12 among the requirements served; the frozen evidence-manifest schema takes D/A ids only (measured: it refuses `V12`), so `requirements` omits it and `docs/requirements.yaml` carries it (T02's to T04's precedent for V-items).",
+  "The CI pair was measured at the run's head commit 59ed0875b63ec89a5c2a12ff892d5d4acee3a87b, not at 91ac0103c1040175560d74d9afa2a091a8d25b2d: `git diff --name-only` between them lists only ['scripts/t05_evidence_manifest.py'], which neither CI job's tests nor its identity document import; this machine's `t05` identity at the measured commit is compared with both artifacts in A24 (`t05_equal_to_this_machines`), and the gate recorded in `commands` ran at the measured commit."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

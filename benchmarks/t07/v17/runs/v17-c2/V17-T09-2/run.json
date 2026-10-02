@@ -1,0 +1,170 @@
+{
+ "agent_configuration": {
+  "claude": "claude",
+  "effort": "high",
+  "isolation": [
+   "--setting-sources",
+   ""
+  ],
+  "max_budget_usd": 5.0,
+  "max_turns": 60,
+  "max_turns_flag": true,
+  "model": "claude-sonnet-5",
+  "operator_isolation": true,
+  "wall_cap_s": 1800.0
+ },
+ "campaign": "v17-c2",
+ "claude_code_version": "2.1.283 (Claude Code)",
+ "command": [
+  "claude",
+  "-p",
+  "<prompt.txt>",
+  "--output-format",
+  "stream-json",
+  "--verbose",
+  "--mcp-config",
+  "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/c1654ca5-cf40-4fac-b53a-1914bdd081e5/scratchpad/v17-work-c2/v17-c2/V17-T09-2/mcp.json",
+  "--strict-mcp-config",
+  "--tools",
+  "",
+  "--allowedTools",
+  "mcp__procsim__*",
+  "--permission-prompts",
+  "none",
+  "--model",
+  "claude-sonnet-5",
+  "--effort",
+  "high",
+  "--max-budget-usd",
+  "5",
+  "--no-session-persistence",
+  "--setting-sources",
+  "",
+  "--max-turns",
+  "60"
+ ],
+ "cost_basis": "subscription_estimate",
+ "environment_keys": [
+  "CLAUDE_CODE_OAUTH_TOKEN",
+  "CLAUDE_CONFIG_DIR",
+  "HOME",
+  "LANG",
+  "LOGNAME",
+  "PATH",
+  "TERM",
+  "USER"
+ ],
+ "fixture_digest": "306d5156b74907b6cf40321a988b3d57982f1d69f155c9db6c462bb7801bcc48",
+ "git": {
+  "commit": "c7bbc9833beab5f743b064b5d428da4fe13fd9be",
+  "dirty": false
+ },
+ "infrastructure_failure": null,
+ "model": "claude-sonnet-5",
+ "operator_identifier_hits": 0,
+ "operator_identifier_hits_by_file": {
+  "result.json": 0,
+  "stderr.txt": 0,
+  "store-export.json": 0,
+  "transcript.jsonl": 0
+ },
+ "reference_sha256": "23b924b84e72e15c03843228fefeeb856a9d571ca341747712a519de9b947319",
+ "repetition": 2,
+ "session": {
+  "auto_memory_files": [],
+  "checks": [],
+  "ended_at": "2026-09-28T10:01:37+00:00",
+  "init": {
+   "agents": [
+    "claude",
+    "Explore",
+    "general-purpose",
+    "Plan",
+    "statusline-setup"
+   ],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.283",
+   "mcp_servers": [
+    {
+     "name": "procsim",
+     "source": "dynamic",
+     "status": "connected"
+    }
+   ],
+   "memory_paths": {
+    "auto": "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/c1654ca5-cf40-4fac-b53a-1914bdd081e5/scratchpad/v17-work-c2/v17-c2/V17-T09-2/claude-config/projects/-tmp-claude-1003--home-frankp-Codes-Process-Simulator-c1654ca5-cf40-4fac-b53a-1914bdd081e5-scratchpad-v17-work-c2-v17-c2-V17-T09-2-cwd/memory/"
+   },
+   "model": "claude-sonnet-5",
+   "output_style": "default",
+   "permissionMode": "default",
+   "plugins": [
+    {
+     "name": "agents-md",
+     "path": "builtin",
+     "source": "agents-md@builtin"
+    },
+    {
+     "name": "telemetry",
+     "path": "builtin",
+     "source": "telemetry@builtin"
+    }
+   ],
+   "skills": [
+    "deep-research",
+    "design",
+    "design-sync",
+    "dataviz",
+    "update-config",
+    "verify",
+    "debug",
+    "code-review",
+    "simplify",
+    "batch",
+    "fewer-permission-prompts",
+    "doctor",
+    "loop",
+    "schedule",
+    "claude-api",
+    "workflow-authoring",
+    "run",
+    "run-skill-generator"
+   ],
+   "tools": [
+    "mcp__procsim__cancel_job",
+    "mcp__procsim__commit_change",
+    "mcp__procsim__diff_revisions",
+    "mcp__procsim__get_artifact",
+    "mcp__procsim__get_job",
+    "mcp__procsim__get_job_result",
+    "mcp__procsim__get_project",
+    "mcp__procsim__get_revision",
+    "mcp__procsim__inspect_structure",
+    "mcp__procsim__list_job_events",
+    "mcp__procsim__list_jobs",
+    "mcp__procsim__list_models",
+    "mcp__procsim__list_revisions",
+    "mcp__procsim__preview_change",
+    "mcp__procsim__submit_job",
+    "mcp__procsim__validate_revision",
+    "mcp__procsim__wait_job"
+   ]
+  },
+  "returncode": 0,
+  "started_at": "2026-09-28T10:00:13+00:00",
+  "stopped": null,
+  "turns_counted": 11,
+  "wall_s": 83.764
+ },
+ "session_principal": "agent-v17",
+ "session_start": {
+  "audit_seq": 4,
+  "job_ordinal": 1,
+  "revision_ordinal": 1
+ },
+ "sha256": {
+  "task_text": "92ad385b8669255a648b08f93397f7b2ae70474feb9c9f9147fdfeb9c9b6ee48",
+  "tool_descriptions": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+  "transcript": "d4866e047494a74bc83b10e1e989b6707ef18fec4dcd6946c45db6190370bff9"
+ },
+ "task_id": "V17-T09"
+}

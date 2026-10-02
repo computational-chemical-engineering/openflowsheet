@@ -1,0 +1,825 @@
+{
+ "work_package": "P02",
+ "commit": "507dccfaa46fa905b651ba96de65c2ea8c9f3ca1",
+ "requirements": [
+  "D02",
+  "D03",
+  "A05"
+ ],
+ "status": "reviewed",
+ "inputs": {
+  "case_id": "SYN-001 P02 composition test (states S1-S6, the perturbed Newton state S1p, and the out-of-domain probes S7a and S7b; lifted and inlined forms)",
+  "case_hash": "6a2f0c1559220d51c38a60eee26b5cf60d90b3abf96b221f247532938a053348",
+  "environment_lock_hash": "6522994a25ca08a6077752dcb1a89bc38a4f07680ec9327d10f2ca32dc028fd5"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "108d2c3a61e8d9282cf72586b082b3a594bea41317449cf4e3198038e4e6301f"
+  },
+  {
+   "cmd": "./spikes/p02/casadi/run.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "5e11911f885989bc5ce0ef9d79f84acdc8d5810ac04fe4a764564d8f8dc956ef"
+  },
+  {
+   "cmd": "./spikes/p02/pyomo/run.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "bbdbfbf54a14fc54699ec2f4aa0271d09c0a83392c9a7114b334134b7639fa28"
+  },
+  {
+   "cmd": ".venv/bin/python docs/derivations/scripts/p02_reference.py --check",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "c76989bb984b07c19399e14ce132d84f294d5cdcd9962aa1a154cbf164f1f642"
+  }
+ ],
+ "checks": [
+  {
+   "id": "P02.verdict.casadi",
+   "description": "Per-backend composition verdict (specification \u00a711.1).",
+   "result": "pass",
+   "value": "PASS-composition",
+   "expected": "PASS-composition",
+   "tolerance": "every mandatory assertion for that backend passes"
+  },
+  {
+   "id": "P02.verdict.pyomo",
+   "description": "Per-backend composition verdict (specification \u00a711.1).",
+   "result": "pass",
+   "value": "PASS-composition",
+   "expected": "PASS-composition",
+   "tolerance": "every mandatory assertion for that backend passes"
+  },
+  {
+   "id": "P02.A00.judge",
+   "description": "expected.py == reference values",
+   "result": "pass",
+   "value": 0.013367195297273983,
+   "expected": "expected.py == reference values",
+   "tolerance": "1e-13 * (|E| + s_r/s_c)"
+  },
+  {
+   "id": "P02.A01.casadi.I",
+   "description": "identity maps equal the specification orderings; source map by name",
+   "result": "pass",
+   "value": 0,
+   "expected": "identity maps equal the specification orderings; source map by name",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A01.casadi.L",
+   "description": "identity maps equal the specification orderings; source map by name",
+   "result": "pass",
+   "value": 0,
+   "expected": "identity maps equal the specification orderings; source map by name",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A02.casadi",
+   "description": "block K Jacobian == closed form",
+   "result": "pass",
+   "value": 0.0,
+   "expected": "block K Jacobian == closed form",
+   "tolerance": "1e-13 relative"
+  },
+  {
+   "id": "P02.A05.casadi",
+   "description": "block H declared pattern is exactly the 9 specified entries",
+   "result": "pass",
+   "value": 0,
+   "expected": "block H declared pattern is exactly the 9 specified entries",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A06.casadi",
+   "description": "block H Jacobian == closed form",
+   "result": "pass",
+   "value": 0.0,
+   "expected": "block H Jacobian == closed form",
+   "tolerance": "1e-12 relative + 1e-14 s_r/s_c"
+  },
+  {
+   "id": "P02.A03.casadi",
+   "description": "assembled kdef columns == P01 reference derivatives",
+   "result": "pass",
+   "value": 0.0016997445690165648,
+   "expected": "assembled kdef columns == P01 reference derivatives",
+   "tolerance": "1e-13 relative"
+  },
+  {
+   "id": "P02.A04.casadi",
+   "description": "blockK reported Jacobian == fourth-order difference",
+   "result": "pass",
+   "value": 0.006262296865484011,
+   "expected": "blockK reported Jacobian == fourth-order difference",
+   "tolerance": "1e-9 relative (measured floors 5.0e-13 (T), 6.3e-12 (P))"
+  },
+  {
+   "id": "P02.A07.casadi",
+   "description": "blockH reported Jacobian == fourth-order difference",
+   "result": "pass",
+   "value": 0.0012831152179027295,
+   "expected": "blockH reported Jacobian == fourth-order difference",
+   "tolerance": "1e-9 relative (measured floors 3.9e-15, 3.2e-13, 3.7e-13)"
+  },
+  {
+   "id": "P02.A08.casadi.I",
+   "description": "assembled pattern == specification (43 entries), provenance backend-declared",
+   "result": "pass",
+   "value": 0,
+   "expected": "assembled pattern == specification (43 entries), provenance backend-declared",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A09.casadi.I",
+   "description": "one canonical structure at every state",
+   "result": "pass",
+   "value": 1,
+   "expected": "one canonical structure at every state",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A10.casadi.I",
+   "description": "every assembled entry == closed form",
+   "result": "pass",
+   "value": 3.0948926203528148e-06,
+   "expected": "every assembled entry == closed form",
+   "tolerance": "1e-10 |E| + 1e-14 s_r/s_c"
+  },
+  {
+   "id": "P02.A11.casadi.I",
+   "description": "vanishing entries stored and exactly 0.0; the same entries nonzero elsewhere",
+   "result": "pass",
+   "value": 0,
+   "expected": "vanishing entries stored and exactly 0.0; the same entries nonzero elsewhere",
+   "tolerance": "exact zero / >= 1e-5"
+  },
+  {
+   "id": "P02.A12.casadi.I",
+   "description": "residual == closed form",
+   "result": "pass",
+   "value": 7.282118996672541e-05,
+   "expected": "residual == closed form",
+   "tolerance": "1e-12 (s_r + |E|)"
+  },
+  {
+   "id": "P02.A15.casadi.I",
+   "description": "fourth-order directional difference == J D_c u",
+   "result": "pass",
+   "value": 0.0031410178333375225,
+   "expected": "fourth-order directional difference == J D_c u",
+   "tolerance": "1e-9 (s_r + |exact|)"
+  },
+  {
+   "id": "P02.A16.casadi.I",
+   "description": "exported forward and reverse products equal the assembled matrix applied to the registered directions, and v^T(Ju) == (J^T v)^T u",
+   "result": "pass",
+   "value": 0.00022977895934088376,
+   "expected": "exported forward and reverse products equal the assembled matrix applied to the registered directions, and v^T(Ju) == (J^T v)^T u",
+   "tolerance": "1e-12 sum |J_rj u_j|"
+  },
+  {
+   "id": "P02.A17.casadi.I",
+   "description": "out-of-domain states return invalid_trial_state with no numbers; the boundary state succeeds",
+   "result": "pass",
+   "value": 0,
+   "expected": "out-of-domain states return invalid_trial_state with no numbers; the boundary state succeeds",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A18.casadi.I",
+   "description": "one value call per residual, one Jacobian call per Jacobian, no FD fallback",
+   "result": "pass",
+   "value": 0,
+   "expected": "one value call per residual, one Jacobian call per Jacobian, no FD fallback",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A19.casadi.I",
+   "description": "declared capabilities agree with every probe outcome",
+   "result": "pass",
+   "value": 0,
+   "expected": "declared capabilities agree with every probe outcome",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A20.casadi.I",
+   "description": "envelope fields present; residual and Jacobian share state hash and version",
+   "result": "pass",
+   "value": 0,
+   "expected": "envelope fields present; residual and Jacobian share state hash and version",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A20.schema.casadi.I",
+   "description": "19 documents validate against the draft schemas",
+   "result": "pass",
+   "value": 0,
+   "expected": "19 documents validate against the draft schemas",
+   "tolerance": "JSON Schema draft 2020-12"
+  },
+  {
+   "id": "P02.A08.casadi.L",
+   "description": "assembled pattern == specification (60 entries), provenance backend-declared",
+   "result": "pass",
+   "value": 0,
+   "expected": "assembled pattern == specification (60 entries), provenance backend-declared",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A09.casadi.L",
+   "description": "one canonical structure at every state",
+   "result": "pass",
+   "value": 1,
+   "expected": "one canonical structure at every state",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A10.casadi.L",
+   "description": "every assembled entry == closed form",
+   "result": "pass",
+   "value": 0.0,
+   "expected": "every assembled entry == closed form",
+   "tolerance": "1e-10 |E| + 1e-14 s_r/s_c"
+  },
+  {
+   "id": "P02.A11.casadi.L",
+   "description": "vanishing entries stored and exactly 0.0; the same entries nonzero elsewhere",
+   "result": "pass",
+   "value": 0,
+   "expected": "vanishing entries stored and exactly 0.0; the same entries nonzero elsewhere",
+   "tolerance": "exact zero / >= 1e-5"
+  },
+  {
+   "id": "P02.A12.casadi.L",
+   "description": "residual == closed form",
+   "result": "pass",
+   "value": 7.282118996672541e-05,
+   "expected": "residual == closed form",
+   "tolerance": "1e-12 (s_r + |E|)"
+  },
+  {
+   "id": "P02.A15.casadi.L",
+   "description": "fourth-order directional difference == J D_c u",
+   "result": "pass",
+   "value": 0.0005696030350626573,
+   "expected": "fourth-order directional difference == J D_c u",
+   "tolerance": "1e-9 (s_r + |exact|)"
+  },
+  {
+   "id": "P02.A16.casadi.L",
+   "description": "exported forward and reverse products equal the assembled matrix applied to the registered directions, and v^T(Ju) == (J^T v)^T u",
+   "result": "pass",
+   "value": 0.0002211902054301695,
+   "expected": "exported forward and reverse products equal the assembled matrix applied to the registered directions, and v^T(Ju) == (J^T v)^T u",
+   "tolerance": "1e-12 sum |J_rj u_j|"
+  },
+  {
+   "id": "P02.A17.casadi.L",
+   "description": "out-of-domain states return invalid_trial_state with no numbers; the boundary state succeeds",
+   "result": "pass",
+   "value": 0,
+   "expected": "out-of-domain states return invalid_trial_state with no numbers; the boundary state succeeds",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A18.casadi.L",
+   "description": "one value call per residual, one Jacobian call per Jacobian, no FD fallback",
+   "result": "pass",
+   "value": 0,
+   "expected": "one value call per residual, one Jacobian call per Jacobian, no FD fallback",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A19.casadi.L",
+   "description": "declared capabilities agree with every probe outcome",
+   "result": "pass",
+   "value": 0,
+   "expected": "declared capabilities agree with every probe outcome",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A20.casadi.L",
+   "description": "envelope fields present; residual and Jacobian share state hash and version",
+   "result": "pass",
+   "value": 0,
+   "expected": "envelope fields present; residual and Jacobian share state hash and version",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A20.schema.casadi.L",
+   "description": "19 documents validate against the draft schemas",
+   "result": "pass",
+   "value": 0,
+   "expected": "19 documents validate against the draft schemas",
+   "tolerance": "JSON Schema draft 2020-12"
+  },
+  {
+   "id": "P02.A13.casadi",
+   "description": "inlined pattern, invariance, values and vanishing entries",
+   "result": "pass",
+   "value": 7.282118996672541e-05,
+   "expected": "inlined pattern, invariance, values and vanishing entries",
+   "tolerance": "as A08-A11"
+  },
+  {
+   "id": "P02.A14.casadi",
+   "description": "Schur elimination of the lifted variables == inlined closed form",
+   "result": "pass",
+   "value": 1.2705107728671776e-05,
+   "expected": "Schur elimination of the lifted variables == inlined closed form",
+   "tolerance": "1e-10 |E| + 1e-14 s_r/s_c"
+  },
+  {
+   "id": "P02.A22.casadi",
+   "description": "every probed entry is exact or absent; none fabricated",
+   "result": "pass",
+   "value": "H1=absent; H2=absent; H3=absent; H4=absent",
+   "expected": "every probed entry is exact or absent; none fabricated",
+   "tolerance": "1e-10 |E| + 1e-14"
+  },
+  {
+   "id": "P02.H5.casadi",
+   "description": "recorded, not gated",
+   "result": "pass",
+   "value": "H1.d2/dv_AdL=exact; H1.d2/dlnK_AdlnK_A=exact; H2.d2/dTdT=exact; H2.d2/dTdP=exact; H2.d2/dPdP=exact; H3.d2/dl_AdT=exact; H3.d2/dl_AdP=exact; H4.d2/dTdl_A=exact; H4.d2/dTdT=exact",
+   "expected": "recorded, not gated",
+   "tolerance": "1e-10 |E| + 1e-14"
+  },
+  {
+   "id": "P02.A24.casadi",
+   "description": "raw grey-box structure",
+   "result": "not_applicable",
+   "value": null,
+   "expected": "raw grey-box structure",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A01.pyomo.L",
+   "description": "identity maps equal the specification orderings; source map by name",
+   "result": "pass",
+   "value": 0,
+   "expected": "identity maps equal the specification orderings; source map by name",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A02.pyomo",
+   "description": "block K Jacobian == closed form",
+   "result": "pass",
+   "value": 0.0,
+   "expected": "block K Jacobian == closed form",
+   "tolerance": "1e-13 relative"
+  },
+  {
+   "id": "P02.A05.pyomo",
+   "description": "block H declared pattern is exactly the 9 specified entries",
+   "result": "pass",
+   "value": 0,
+   "expected": "block H declared pattern is exactly the 9 specified entries",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A06.pyomo",
+   "description": "block H Jacobian == closed form",
+   "result": "pass",
+   "value": 0.0,
+   "expected": "block H Jacobian == closed form",
+   "tolerance": "1e-12 relative + 1e-14 s_r/s_c"
+  },
+  {
+   "id": "P02.A03.pyomo",
+   "description": "assembled kdef columns == P01 reference derivatives",
+   "result": "pass",
+   "value": 0.0016997445690165648,
+   "expected": "assembled kdef columns == P01 reference derivatives",
+   "tolerance": "1e-13 relative"
+  },
+  {
+   "id": "P02.A04.pyomo",
+   "description": "blockK reported Jacobian == fourth-order difference",
+   "result": "pass",
+   "value": 0.006262296865484011,
+   "expected": "blockK reported Jacobian == fourth-order difference",
+   "tolerance": "1e-9 relative (measured floors 5.0e-13 (T), 6.3e-12 (P))"
+  },
+  {
+   "id": "P02.A07.pyomo",
+   "description": "blockH reported Jacobian == fourth-order difference",
+   "result": "pass",
+   "value": 0.0012831152179027295,
+   "expected": "blockH reported Jacobian == fourth-order difference",
+   "tolerance": "1e-9 relative (measured floors 3.9e-15, 3.2e-13, 3.7e-13)"
+  },
+  {
+   "id": "P02.A08.pyomo.L",
+   "description": "assembled pattern == specification (60 entries), provenance backend-declared",
+   "result": "pass",
+   "value": 0,
+   "expected": "assembled pattern == specification (60 entries), provenance backend-declared",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A09.pyomo.L",
+   "description": "one canonical structure at every state",
+   "result": "pass",
+   "value": 1,
+   "expected": "one canonical structure at every state",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A10.pyomo.L",
+   "description": "every assembled entry == closed form",
+   "result": "pass",
+   "value": 2.025033784147319e-06,
+   "expected": "every assembled entry == closed form",
+   "tolerance": "1e-10 |E| + 1e-14 s_r/s_c"
+  },
+  {
+   "id": "P02.A11.pyomo.L",
+   "description": "vanishing entries stored and exactly 0.0; the same entries nonzero elsewhere",
+   "result": "pass",
+   "value": 0,
+   "expected": "vanishing entries stored and exactly 0.0; the same entries nonzero elsewhere",
+   "tolerance": "exact zero / >= 1e-5"
+  },
+  {
+   "id": "P02.A12.pyomo.L",
+   "description": "residual == closed form",
+   "result": "pass",
+   "value": 0.00014551915228366852,
+   "expected": "residual == closed form",
+   "tolerance": "1e-12 (s_r + |E|)"
+  },
+  {
+   "id": "P02.A15.pyomo.L",
+   "description": "fourth-order directional difference == J D_c u",
+   "result": "pass",
+   "value": 0.0005696030350626573,
+   "expected": "fourth-order directional difference == J D_c u",
+   "tolerance": "1e-9 (s_r + |exact|)"
+  },
+  {
+   "id": "P02.A16.pyomo.L",
+   "description": "jvp/vjp declared exact",
+   "result": "not_applicable",
+   "value": null,
+   "expected": "jvp/vjp declared exact",
+   "tolerance": "1e-12"
+  },
+  {
+   "id": "P02.A17.pyomo.L",
+   "description": "out-of-domain states return invalid_trial_state with no numbers; the boundary state succeeds",
+   "result": "pass",
+   "value": 0,
+   "expected": "out-of-domain states return invalid_trial_state with no numbers; the boundary state succeeds",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A18.pyomo.L",
+   "description": "one value call per residual, one Jacobian call per Jacobian, no FD fallback",
+   "result": "pass",
+   "value": 0,
+   "expected": "one value call per residual, one Jacobian call per Jacobian, no FD fallback",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A19.pyomo.L",
+   "description": "declared capabilities agree with every probe outcome",
+   "result": "pass",
+   "value": 0,
+   "expected": "declared capabilities agree with every probe outcome",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A20.pyomo.L",
+   "description": "envelope fields present; residual and Jacobian share state hash and version",
+   "result": "pass",
+   "value": 0,
+   "expected": "envelope fields present; residual and Jacobian share state hash and version",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A20.schema.pyomo.L",
+   "description": "19 documents validate against the draft schemas",
+   "result": "pass",
+   "value": 0,
+   "expected": "19 documents validate against the draft schemas",
+   "tolerance": "JSON Schema draft 2020-12"
+  },
+  {
+   "id": "P02.A13.pyomo",
+   "description": "inlined form",
+   "result": "not_applicable",
+   "value": null,
+   "expected": "inlined form",
+   "tolerance": "n/a"
+  },
+  {
+   "id": "P02.A14.pyomo",
+   "description": "Schur elimination of the lifted variables == inlined closed form",
+   "result": "pass",
+   "value": 1.2705107728671776e-05,
+   "expected": "Schur elimination of the lifted variables == inlined closed form",
+   "tolerance": "1e-10 |E| + 1e-14 s_r/s_c"
+  },
+  {
+   "id": "P02.A22.pyomo",
+   "description": "every probed entry is exact or absent; none fabricated",
+   "result": "pass",
+   "value": "H1=absent; H2=absent; H3=absent",
+   "expected": "every probed entry is exact or absent; none fabricated",
+   "tolerance": "1e-10 |E| + 1e-14"
+  },
+  {
+   "id": "P02.H5.pyomo",
+   "description": "recorded, not gated",
+   "result": "pass",
+   "value": "H5=not_applicable",
+   "expected": "recorded, not gated",
+   "tolerance": "1e-10 |E| + 1e-14"
+  },
+  {
+   "id": "P02.A24.pyomo",
+   "description": "raw 17 x 17 nnz 60 with no link rows; name map a bijection; the six defining rows negated and the native orientation recorded",
+   "result": "pass",
+   "value": "17x17 nnz 60, 6 rows negated",
+   "expected": "raw 17 x 17 nnz 60 with no link rows; name map a bijection; the six defining rows negated and the native orientation recorded",
+   "tolerance": "exact"
+  },
+  {
+   "id": "P02.A21.cross",
+   "description": "identical patterns and values across backends",
+   "result": "pass",
+   "value": 0.00018728485843931208,
+   "expected": "identical patterns and values across backends",
+   "tolerance": "1e-12 (|E| + 1e-2 s_r/s_c)"
+  },
+  {
+   "id": "P02.A23.1.casadi",
+   "description": "scaled linear residual <= 1e-14",
+   "result": "pass",
+   "value": 3.805176306737051e-17,
+   "expected": "scaled linear residual <= 1e-14",
+   "tolerance": "1e-14"
+  },
+  {
+   "id": "P02.A23.2.casadi",
+   "description": "affine rows after the step <= 1e-12 s_r",
+   "result": "pass",
+   "value": 7.401486830834377e-17,
+   "expected": "affine rows after the step <= 1e-12 s_r",
+   "tolerance": "1e-12 s_r"
+  },
+  {
+   "id": "P02.A23.3.casadi",
+   "description": "recovered direction error <= 1e-11",
+   "result": "pass",
+   "value": 4.551914400963142e-15,
+   "expected": "recovered direction error <= 1e-11",
+   "tolerance": "1e-11"
+  },
+  {
+   "id": "P02.A23.4.casadi",
+   "description": "condition numbers within 1 percent of the registered values",
+   "result": "pass",
+   "value": 0,
+   "expected": "condition numbers within 1 percent of the registered values",
+   "tolerance": "1 percent"
+  },
+  {
+   "id": "P02.A23.5.casadi",
+   "description": "no state is singular",
+   "result": "pass",
+   "value": 0,
+   "expected": "no state is singular",
+   "tolerance": "typed failure recorded"
+  },
+  {
+   "id": "P02.A23.1.pyomo",
+   "description": "scaled linear residual <= 1e-14",
+   "result": "pass",
+   "value": 3.805176306737051e-17,
+   "expected": "scaled linear residual <= 1e-14",
+   "tolerance": "1e-14"
+  },
+  {
+   "id": "P02.A23.2.pyomo",
+   "description": "affine rows after the step <= 1e-12 s_r",
+   "result": "pass",
+   "value": 7.401486830834377e-17,
+   "expected": "affine rows after the step <= 1e-12 s_r",
+   "tolerance": "1e-12 s_r"
+  },
+  {
+   "id": "P02.A23.3.pyomo",
+   "description": "recovered direction error <= 1e-11",
+   "result": "pass",
+   "value": 4.551914400963142e-15,
+   "expected": "recovered direction error <= 1e-11",
+   "tolerance": "1e-11"
+  },
+  {
+   "id": "P02.A23.4.pyomo",
+   "description": "condition numbers within 1 percent of the registered values",
+   "result": "pass",
+   "value": 0,
+   "expected": "condition numbers within 1 percent of the registered values",
+   "tolerance": "1 percent"
+  },
+  {
+   "id": "P02.A23.5.pyomo",
+   "description": "no state is singular",
+   "result": "pass",
+   "value": 0,
+   "expected": "no state is singular",
+   "tolerance": "typed failure recorded"
+  },
+  {
+   "id": "P02.M01.casadi",
+   "description": "Backend import time, median and minimum over five fresh processes.",
+   "result": "pass",
+   "value": "{\"numpy\": 33.577978, \"backend\": 11.323963}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M01.pyomo",
+   "description": "Backend import time, median and minimum over five fresh processes.",
+   "result": "pass",
+   "value": "{\"median_ms\": 428.055855, \"min_ms\": 424.352519}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M02.casadi",
+   "description": "Compile time of the lifted form, median and minimum over five fresh processes.",
+   "result": "pass",
+   "value": "{\"median_ms\": 5.376244, \"min_ms\": 5.371604}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M02.pyomo",
+   "description": "Compile time of the lifted form, median and minimum over five fresh processes.",
+   "result": "pass",
+   "value": "{\"median_ms\": 156.732665, \"min_ms\": 156.438953}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M03.casadi",
+   "description": "Compile time of the inlined form.",
+   "result": "pass",
+   "value": "{\"median_ms\": 2.241982, \"min_ms\": 2.213398}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M03.pyomo",
+   "description": "Compile time of the inlined form.",
+   "result": "not_applicable",
+   "value": "the grey-box route has no inlined form",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M04.casadi",
+   "description": "First residual and first Jacobian call after compiling.",
+   "result": "pass",
+   "value": "{\"compile_L_ms\": {\"median_ms\": 5.376244, \"min_ms\": 5.371604, \"samples\": 5}, \"compile_I_ms\": {\"median_ms\": 2.241982, \"min_ms\": 2.213398, \"samples\": 5}, \"first_residual_ms\": {\"median_ms\": 0.104898, \"min_ms\": 0.097102, \"samples\": 5}, \"first_jacobian_ms\": {\"median_ms\": 0.220305, \"min_ms\": 0.216347, \"samples\": 5}}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M04.pyomo",
+   "description": "First residual and first Jacobian call after compiling.",
+   "result": "pass",
+   "value": "{\"processes\": 5, \"compile_ms\": {\"median_ms\": 156.732665, \"min_ms\": 156.438953, \"samples_ms\": [158.174593, 156.438953, 156.489768, 157.357344, 156.732665]}, \"first_residual_ms\": {\"median_ms\": 0.153709, \"min_ms\": 0.150753, \"samples_ms\": [0.154591, 0.150753, 0.153188, 0.153709, 0.158509]}, \"first_jacobian_ms\": {\"median_ms\": 1.007718, \"min_ms\": 0.99775, \"samples_ms\": [1.000395, 1.726392, 1.007718, 0.99775, 1.144846]}, \"compile_phase_counters\": {\"K\": {\"value_calls\": 0, \"jacobian_calls\": 1}, \"H\": {\"value_calls\": 0, \"jacobian_calls\": 1}}, \"compile_phase_counters_identical_across_processes\": true}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M05.casadi",
+   "description": "Steady-state evaluation, 200 timed calls after 20 warm-ups, at the backend level and at the full boundary.",
+   "result": "pass",
+   "value": "{\"L\": {\"backend_residual\": {\"median_us\": 74.63, \"min_us\": 59.151, \"repetitions\": 200.0}, \"backend_jacobian\": {\"median_us\": 178.466, \"min_us\": 175.751, \"repetitions\": 200.0}, \"boundary_residual\": {\"median_us\": 119.375, \"min_us\": 117.01, \"repetitions\": 200.0}, \"boundary_jacobian\": {\"median_us\": 238.76, \"min_us\": 235.153, \"repetitions\": 200.0}, \"note\": \"backend_* includes constructing the DM from the NumPy state vector; boundary_* adds the named-entry extraction and canonical CSC assembly the judge reads\"}, \"I\": {\"backend_residual\": {\"median_us\": 60.534, \"min_us\": 59.783, \"repetitions\": 200.0}, \"backend_jacobian\": {\"median_us\": 175.961, \"min_us\": 173.557, \"repetitions\": 200.0}, \"boundary_residual\": {\"median_us\": 98.285, \"min_us\": 97.533, \"repetitions\": 200.0}, \"boundary_jacobian\": {\"median_us",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M05.pyomo",
+   "description": "Steady-state evaluation, 200 timed calls after 20 warm-ups, at the backend level and at the full boundary.",
+   "result": "pass",
+   "value": "{\"state\": \"S1\", \"warmup\": 20, \"repetitions\": 200, \"backend_residual_us\": {\"median_us\": 68.198, \"min_us\": 54.363, \"repetitions\": 200.0}, \"backend_jacobian_us\": {\"median_us\": 730.276, \"min_us\": 710.568, \"repetitions\": 200.0}, \"boundary_residual_us\": {\"median_us\": 64.802, \"min_us\": 63.399, \"repetitions\": 200.0}, \"boundary_jacobian_us\": {\"median_us\": 810.998, \"min_us\": 794.035, \"repetitions\": 200.0}}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M06.casadi",
+   "description": "Resident memory by stage and the peak allocation during compile.",
+   "result": "pass",
+   "value": "{\"rss_after_numpy_mib\": 25.75390625, \"rss_after_backend_import_mib\": 35.04296875, \"rss_after_compile_mib\": 48.18359375, \"tracemalloc_peak_compile_mib\": 0.0896759033203125, \"import_ms\": {\"numpy\": 33.577978, \"backend\": 11.323963}}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M06.pyomo",
+   "description": "Resident memory by stage and the peak allocation during compile.",
+   "result": "pass",
+   "value": "{\"vmrss_at_start_mib\": {\"median\": 11.0390625, \"min\": 11.0078125, \"samples\": [11.0078125, 11.0546875, 11.0390625, 11.0234375, 11.06640625]}, \"vmrss_after_numpy_import_mib\": {\"median\": 25.63671875, \"min\": 25.60546875, \"samples\": [25.63671875, 25.62109375, 25.60546875, 25.65625, 25.640625]}, \"vmrss_after_backend_import_mib\": {\"median\": 111.81640625, \"min\": 111.50390625, \"samples\": [111.93359375, 111.66015625, 111.50390625, 111.8671875, 111.81640625]}, \"vmrss_after_harness_module_mib\": {\"median\": 115.3671875, \"min\": 115.0703125, \"samples\": [117.97265625, 115.23046875, 115.0703125, 115.390625, 115.3671875]}, \"vmrss_after_compile_mib\": {\"median\": 116.42578125, \"min\": 116.140625, \"samples\": [118.796875, 116.29296875, 116.140625, 116.49609375, 116.42578125]}, \"numpy_import_ms\": {\"median\": 33.83643",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M07.casadi",
+   "description": "Callback invocations during the compile phase.",
+   "result": "pass",
+   "value": "[{\"sample\": 0, \"L\": {\"blockK\": {\"value_calls\": 0, \"jacobian_calls\": 0}, \"blockH\": {\"value_calls\": 0, \"jacobian_calls\": 0}}, \"I\": {\"blockK\": {\"value_calls\": 0, \"jacobian_calls\": 0}, \"blockH\": {\"value_calls\": 0, \"jacobian_calls\": 0}}}, {\"sample\": 1, \"L\": {\"blockK\": {\"value_calls\": 0, \"jacobian_calls\": 0}, \"blockH\": {\"value_calls\": 0, \"jacobian_calls\": 0}}, \"I\": {\"blockK\": {\"value_calls\": 0, \"jacobian_calls\": 0}, \"blockH\": {\"value_calls\": 0, \"jacobian_calls\": 0}}}, {\"sample\": 2, \"L\": {\"blockK\": {\"value_calls\": 0, \"jacobian_calls\": 0}, \"blockH\": {\"value_calls\": 0, \"jacobian_calls\": 0}}, \"I\": {\"blockK\": {\"value_calls\": 0, \"jacobian_calls\": 0}, \"blockH\": {\"value_calls\": 0, \"jacobian_calls\": 0}}}, {\"sample\": 3, \"L\": {\"blockK\": {\"value_calls\": 0, \"jacobian_calls\": 0}, \"blockH\": {\"value_calls\": 0, ",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M07.pyomo",
+   "description": "Callback invocations during the compile phase.",
+   "result": "pass",
+   "value": "{\"K\": {\"value_calls\": 0, \"jacobian_calls\": 1}, \"H\": {\"value_calls\": 0, \"jacobian_calls\": 1}}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M08.casadi",
+   "description": "Assembled structure: dimension, nonzeros and stored bytes.",
+   "result": "pass",
+   "value": "60",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M08.pyomo",
+   "description": "Assembled structure: dimension, nonzeros and stored bytes.",
+   "result": "pass",
+   "value": "{\"rows\": 17, \"columns\": 17, \"nnz\": 60, \"indptr_bytes\": 72, \"indices_bytes\": 240, \"data_bytes\": 480, \"total_bytes\": 792, \"assumed_dtypes\": {\"indptr\": \"int32\", \"indices\": \"int32\", \"data\": \"float64\"}}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M09.casadi",
+   "description": "Source-map example at S1, with the CSC index taken from the exported structure.",
+   "result": "pass",
+   "value": "[{\"csc_index\": 34, \"row_id\": \"eq_B\", \"col_id\": \"lnK_B\", \"native_row\": \"residual[6]\", \"native_col\": \"lnK_B\", \"value\": -0.7435419615964916}, {\"csc_index\": 45, \"row_id\": \"kdef_B\", \"col_id\": \"T\", \"native_row\": \"residual[9]\", \"native_col\": \"T\", \"value\": -0.027840822926556954}, {\"csc_index\": 23, \"row_id\": \"hdef_C\", \"col_id\": \"l_C\", \"native_row\": \"residual[13]\", \"native_col\": \"l_C\", \"value\": -6000.0}]",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  },
+  {
+   "id": "P02.M09.pyomo",
+   "description": "Source-map example at S1, with the CSC index taken from the exported structure.",
+   "result": "pass",
+   "value": "{\"state\": \"S1\", \"entries\": [{\"k\": 34, \"csc_index\": 34, \"row_id\": \"eq_B\", \"col_id\": \"lnK_B\", \"native_row\": \"eq_B\", \"native_col\": \"lnK_B\", \"native_row_index\": 1, \"native_col_index\": 12, \"origin\": \"algebraic\", \"value\": -0.7435419615964916, \"expected\": -0.7435419615964916}, {\"k\": 45, \"csc_index\": 45, \"row_id\": \"kdef_B\", \"col_id\": \"T\", \"native_row\": \"kb.output_constraints[lnK_B]\", \"native_col\": \"T\", \"native_row_index\": 12, \"native_col_index\": 3, \"origin\": \"callback:K\", \"value\": -0.027840822926556954, \"expected\": -0.027840822926556954}, {\"k\": 23, \"csc_index\": 23, \"row_id\": \"hdef_C\", \"col_id\": \"l_C\", \"native_row\": \"hb.output_constraints[H_C]\", \"native_col\": \"l_C\", \"native_row_index\": 16, \"native_col_index\": 10, \"origin\": \"callback:H\", \"value\": -6000.0, \"expected\": -6000.0}]}",
+   "expected": "recorded per protocol",
+   "tolerance": "not gated"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "spikes/p02/results/casadi",
+   "sha256": "dc6b69cfbdfa480c4bb5c4779db5291b116df55f159536570926a420cbe451c6",
+   "description": "CasADi result set. Directory hash method: sha256 over every file sorted by relative POSIX path, each contributing the byte length and bytes of its path followed by the byte length and bytes of its contents, separated by colons."
+  },
+  {
+   "path": "spikes/p02/results/pyomo",
+   "sha256": "31aad29d107c332164e1d7ede3f74a06e585cdced2def6bc0d7f9a1f679c6d8d",
+   "description": "Pyomo/PyNumero result set, hashed by the same method, including the raw grey-box structure with the recorded native row orientation."
+  },
+  {
+   "path": "benchmarks/p02/reference_values.yaml",
+   "sha256": "6a2f0c1559220d51c38a60eee26b5cf60d90b3abf96b221f247532938a053348",
+   "description": "The 40-digit reference: registered states, expected residuals and Jacobian entries, measured finite-difference floors with their in-domain assertions, condition numbers and second-order expectations."
+  },
+  {
+   "path": "docs/p02-measurements.md",
+   "sha256": "31deb9891450e34504cccc956d94f10135b00afac14d7745d253d00608b167b6",
+   "description": "The matched measurement record for P03, including where the two routes do not measure the same boundary."
+  }
+ ],
+ "limitations": [
+  "P02 is a composition test on a synthetic subsystem. It is not a solver test, not a performance benchmark on a real flowsheet, and not the backend selection, which is P03.",
+  "The compiled system has 17 variables. The timings measure boundary and assembly overhead, not how either backend scales.",
+  "SYN-001 is synthetic. Nothing here is empirical validation of any thermodynamic model.",
+  "The declared sparsity of both callback blocks is P02's own. Whether a real property provider's declared sparsity is correct is not tested here.",
+  "Second order is absent through opaque callback Jacobians on both routes. The supplementary record shows CasADi returns exact second derivatives when the block ships symbolic derivative code; that is a capability fact for K01, not part of this verdict.",
+  "CasADi calls each block's value method once per assembled Jacobian, because its Jacobian callback takes the block's nominal output. That is one call, far below the finite-difference threshold of three for block K and six for block H, and it is not evidence of differencing.",
+  "The Pyomo route needs libpynumero_ASL, which is not available from a plain pip install: it requires pyomo build-extensions with setuptools, cmake and a C or C++ compiler. See docs/backend-environments.md.",
+  "The grey-box route's exported lifted form carries a declared row-sign adapter on the six defining rows, because PyNumero writes an output constraint as f(inputs) - output. The native orientation is recorded in raw_structure.json and asserted by A24.",
+  "All results are from one host and one platform: Debian 13, x86-64, Python 3.13.5. No CI has executed any of this.",
+  "review.numerical and review.process_model are pending. A Fable review of the completed implementation was run and its findings are applied, but no human numerical or process-modeling reviewer has seen this package."
+ ],
+ "review": {
+  "numerical": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more.",
+  "process_model": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more."
+ }
+}

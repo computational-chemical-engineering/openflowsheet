@@ -1,0 +1,65 @@
+{
+  "job_id": "job-000002",
+  "operation": "solve",
+  "request": {
+    "operation": "solve",
+    "idempotency_key": "fixture-solve",
+    "budgets": {
+      "wall_time_s": null
+    },
+    "body": {
+      "revision_id": "syn001-nominal",
+      "policy_id": "default",
+      "check_tolerances": {},
+      "max_property_calls": null
+    }
+  },
+  "request_sha256": "ee3fe16ec68f1ef59cb28894a3429a6a4addd35566a6e7d4737e8920b578893d",
+  "principal_id": "local-owner",
+  "capability_id": "local-owner",
+  "policy_sha256": "a3603643f8038f01b2890e15a180fce2ba9e25a3c56362da72b7c058109f6e78",
+  "status": "completed",
+  "outputs": [
+    {
+      "kind": "solution_certificate",
+      "artifact_id": "job-000002:bundle/solution-certificate.json",
+      "sha256": "dc7715f3f63b7f648e5c9874b05d3a4c5b0b342b4d2be827473cdc217a6a68b8",
+      "size_bytes": 56443,
+      "name": "solution-certificate.json"
+    },
+    {
+      "kind": "run_manifest",
+      "artifact_id": "job-000002:bundle/run-manifest.json",
+      "sha256": "6108fb89ba8d3d5dca9210070d95996474f717d5c2d8d85ec726f944b85b095e",
+      "size_bytes": 2326,
+      "name": "run-manifest.json"
+    },
+    {
+      "kind": "replay_bundle",
+      "artifact_id": "job-000002:bundle",
+      "sha256": "377c47beb454426268150515458d63d1f830959043660a1fda452d0b5704b520",
+      "size_bytes": 105608,
+      "name": "bundle"
+    }
+  ],
+  "progress": {
+    "completed": 5,
+    "total": 6,
+    "stage": "bundle"
+  },
+  "effective_budgets": {
+    "wall_time_s": null,
+    "max_property_calls": 10000
+  },
+  "cancel_requested": false,
+  "event_count": 12,
+  "created_at": "2026-09-27T11:59:54.915955Z",
+  "started_at": "2026-09-27T11:59:54.917285Z",
+  "ended_at": "2026-09-27T11:59:55.057378Z",
+  "ending": {
+    "status": "completed",
+    "reason": "operation_completed",
+    "interruption": null
+  },
+  "error": null
+}

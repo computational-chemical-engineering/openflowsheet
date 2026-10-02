@@ -1,0 +1,23 @@
+{
+  "items": [
+    {
+      "content_sha256": "3b60e8facbb2028e0112c26ca786f4524582eb056372a0cc56dad5dbd46d30ab",
+      "created_at": "2026-09-27T13:49:11.672980Z",
+      "head": false,
+      "parent_revision": null,
+      "principal_id": "local-owner",
+      "revision_id": "syn001-nominal",
+      "title": "Nominal SYN-001 flash-recycle case: r = 0.5, flash at 360 K."
+    },
+    {
+      "content_sha256": "4ff6843ca9d7ff9dbdb0a44d89e5225c7d6fee62c8de3c6643ab6818956f8284",
+      "created_at": "2026-09-27T13:49:11.688440Z",
+      "head": true,
+      "parent_revision": "syn001-nominal",
+      "principal_id": "local-owner",
+      "revision_id": "syn001-edited",
+      "title": "Nominal SYN-001 flash-recycle case: r = 0.5, flash at 360 K."
+    }
+  ],
+  "next_cursor": null
+}

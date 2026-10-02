@@ -1,0 +1,221 @@
+# Declared ModelManifest: SYN-001 isothermal-isobaric flash
+#
+# `status: declared` and `implementation_artifact.state: not_implemented` mean this document
+# states intended behavior for work package K02. No code implements it, no test exercises it,
+# and it is not evidence that the model works. Every derivative is declared `unavailable`
+# because none exists yet (blueprint §5.2).
+id: syn001.tp_flash
+version: 0.0.0-declared
+status: declared
+title: SYN-001 isothermal-isobaric flash
+description: Two-outlet equilibrium flash at a specified temperature and pressure.
+introduced_by_package: K02
+ports:
+- name: inlet
+  kind: material
+  direction: inlet
+  multiplicity: 1
+  component_mapping: revision_component_set
+  state_definition: nTP-v1
+  phase_capabilities:
+  - liquid
+  - vapor
+  - vapor_liquid
+- name: vapor
+  kind: material
+  direction: outlet
+  multiplicity: 1
+  component_mapping: revision_component_set
+  state_definition: nTP-v1
+  phase_capabilities:
+  - vapor
+- name: liquid
+  kind: material
+  direction: outlet
+  multiplicity: 1
+  component_mapping: revision_component_set
+  state_definition: nTP-v1
+  phase_capabilities:
+  - liquid
+- name: duty
+  kind: energy
+  direction: inlet
+  multiplicity: 1
+  component_mapping: null
+  state_definition: null
+  phase_capabilities: []
+mathematics:
+  equations:
+  - id: FLASH-mole
+    statement: n_in,i - n_vap,i - n_liq,i = 0 for every component i
+    dependencies:
+    - inlet.state.n
+    - vapor.state.n
+    - liquid.state.n
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - 0
+    - 0
+    - -1
+    - 0
+    - 1
+    - 0
+    - 0
+    accumulation:
+      kind: holdup_balance
+      holdup:
+        symbol: N_i
+        quantity: component moles held in the flash drum, vapor plus liquid
+        dimension:
+        - 0
+        - 0
+        - 0
+        - 0
+        - 1
+        - 0
+        - 0
+  - id: FLASH-equilibrium
+    statement: y_i - K_i(T, P) x_i = 0 for every component present in a flowing phase; written in
+      K-value form so that ln(0) is never evaluated for an absent component
+    dependencies:
+    - vapor.state
+    - liquid.state
+    conditional_class: phase_conditional
+    source: docs/derivations/SYN-001.md §4
+    accumulation:
+      kind: algebraic
+  - id: FLASH-T
+    statement: T_vap - T_spec = 0 and T_liq - T_spec = 0
+    dependencies:
+    - specifications.SPEC-flash-T
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - 0
+    - 0
+    - 0
+    - 1
+    - 0
+    - 0
+    - 0
+    accumulation:
+      kind: algebraic
+  - id: FLASH-P
+    statement: P_vap - P_spec = 0, P_liq - P_spec = 0, P_in - P_spec = 0 with dP = 0 declared
+    dependencies:
+    - specifications.SPEC-flash-P
+    - parameters.pressure_drop
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - -1
+    - 1
+    - -2
+    - 0
+    - 0
+    - 0
+    - 0
+    accumulation:
+      kind: algebraic
+  - id: FLASH-duty
+    statement: Q - (Hdot_vap + Hdot_liq - Hdot_in) = 0, Q positive into the unit
+    dependencies:
+    - inlet.state
+    - vapor.state
+    - liquid.state
+    - duty.Q
+    conditional_class: unconditional
+    source: docs/derivations/SYN-001.md §4
+    dimension:
+    - 2
+    - 1
+    - -3
+    - 0
+    - 0
+    - 0
+    - 0
+    accumulation:
+      kind: holdup_balance
+      holdup:
+        symbol: U
+        quantity: internal energy of the flash drum contents
+        dimension:
+        - 2
+        - 1
+        - -2
+        - 0
+        - 0
+        - 0
+        - 0
+derivatives:
+- output: vapor.state
+  with_respect_to:
+  - inlet.state
+  - specifications
+  method: unavailable
+  regime: all
+  notes: 'Nothing is implemented in P01, so no derivative exists. Declared `unavailable` rather than
+    guessed: a missing derivative is reported as absent, never replaced with zeros (blueprint §5.2).
+    K02 implements the model and K01 supplies the derivative route.'
+- output: liquid.state
+  with_respect_to:
+  - inlet.state
+  - specifications
+  method: unavailable
+  regime: all
+  notes: 'Nothing is implemented in P01, so no derivative exists. Declared `unavailable` rather than
+    guessed: a missing derivative is reported as absent, never replaced with zeros (blueprint §5.2).
+    K02 implements the model and K01 supplies the derivative route.'
+- output: duty.Q
+  with_respect_to:
+  - inlet.state
+  - specifications
+  method: unavailable
+  regime: all
+  notes: 'Nothing is implemented in P01, so no derivative exists. Declared `unavailable` rather than
+    guessed: a missing derivative is reported as absent, never replaced with zeros (blueprint §5.2).
+    K02 implements the model and K01 supplies the derivative route.'
+initialization:
+  strategy: local_initializer
+  registered_initializer: null
+  notes: Safeguarded Rachford-Rice on a bracket derived from the active-set K-values, with explicit
+    single-phase endpoints (blueprint §6.2).
+validity:
+  domain:
+    temperature_K:
+      min: 280.0
+      max: 440.0
+    pressure_Pa:
+      min: 50000.0
+      max: 200000.0
+    components:
+    - A
+    - B
+    - C
+    phases:
+    - liquid
+    - vapor
+    - vapor_liquid
+    - zero_flow
+  limitations:
+  - Classification order is the liquid test, then the vapor test, then two-phase. Derivation §5.1
+    proves that unambiguous on the SYN-001 domain; it is not a general-purpose stability test and
+    makes no claim about a third phase.
+  - A dormant feed produces two dormant outlets, exactly zero duty and phase signature ZERO_FLOW.
+    That is a valid result, not a failure (ADR 0001 D3.4).
+  - V = 0 or L = 0 with a flowing feed produces one dormant outlet; the unit's own signature is then
+    LIQUID or VAPOR.
+  - Nothing divides by total flow before that flow has been tested against exact zero, and compositions
+    are never renormalized to force solvability.
+implementation_artifact:
+  state: not_implemented
+  module: null
+  artifact_hash: null
+  planned_package: K02
+execution_requirements:
+  execution_class: native_equation
+  thread_safety: unknown
+  evaluation_cost_class: unknown
+  property_provider: syn001
+  reference_convention: SYN-001-ref-v1

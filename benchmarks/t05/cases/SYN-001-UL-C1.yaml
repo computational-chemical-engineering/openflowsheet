@@ -1,0 +1,361 @@
+# T05 ProcessRevision: SYN-001-UL-C1
+#
+# SYN-001-UL-C1: the pressure chain (pump, heater, valve, PH flash); acyclic.
+#
+# Written to docs/design/T05-generalization.md §1.3 (the revision encoding R1-R6 and the per-model
+# table) and §2.4 (this case's instances in declaration order, connections in stream order, pins
+# and parameters); the case is docs/derivations/T05-unit-models-spec.md §11.1, registered in
+# benchmarks/registry.yaml (family SYN-001-UL, spec §21). Validates against
+# schemas/process-revision.schema.json, and each embedded Quantity against
+# process_runtime.units.check_quantity; binds by application.revision_binding. `content_hash` is
+# absent, as in every registered revision.
+schema_version: 1
+revision_id: SYN-001-UL-C1-r1
+parent_revision: null
+title: 'SYN-001-UL-C1: the pressure chain (pump, heater, valve, PH flash); acyclic.'
+description: Feed -> pump (1.8e5 Pa, eta 0.75) -> heater (360 K) -> valve (P_r) -> PH flash (10 000 W)
+  -> vapour and liquid sinks. T05 spec §11.1; expected values in benchmarks/t05/reference_values.yaml
+  coupled_cases.SYN-001-UL-C1.
+component_set:
+  record_source: benchmarks/syn001/components.yaml
+  components:
+  - A
+  - B
+  - C
+instances:
+- id: U-FEED
+  model:
+    id: syn001.feed_source
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: feed
+  parameters: {}
+  policy:
+    fidelity: boundary condition; the fresh feed state is fully specified
+    validity: SYN-001 declared domain 280-440 K, 50000-200000 Pa
+- id: U-PUMP
+  model:
+    id: syn001.liquid_pump
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: pump
+  parameters:
+    efficiency:
+      value: 0.75
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Pump efficiency eta in (0, 1] (T05 spec §9)
+      role: fixed
+      bounds:
+        lower: 0.0
+        upper: 1.0
+  policy:
+    fidelity: liquid pump to a specified outlet pressure at a specified efficiency; work and outlet temperature
+      calculated (T05 spec §9)
+    validity: liquid inlet and outlet; SYN-001 declared domain
+- id: U-HEAT
+  model:
+    id: syn001.tp_heater
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: heater
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the heater; zero here, imposed as an equation P_out = P_in
+        rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: TP-state outlet at the specified temperature (K02, unchanged)
+    validity: SYN-001 declared domain; a two-phase outlet is a supported result
+- id: U-VLV
+  model:
+    id: syn001.valve
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: valve
+  parameters: {}
+  policy:
+    fidelity: isenthalpic throttle to a specified outlet pressure (T05 spec §8)
+    validity: SYN-001 declared domain; lifted inlet and outlet
+- id: U-PHF
+  model:
+    id: syn001.ph_flash
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: flash
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the PH flash; zero here, imposed as an equation P_out = P_in
+        rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: PH flash at a specified duty (duty.Q = 10000 W, pinned by SPEC-phf-Q); the temperature and
+      the phase split are calculated (T05 spec §5)
+    validity: SYN-001 declared domain; single-phase and zero-flow results are supported outcomes
+- id: U-SINK-V
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+- id: U-SINK-L
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+connections:
+- id: S1
+  kind: material
+  from:
+    instance: U-FEED
+    port: outlet
+  to:
+    instance: U-PUMP
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Fresh feed: (1, 1, 1) mol/s at 300 K and P_r, liquid.'
+- id: S2
+  kind: material
+  from:
+    instance: U-PUMP
+    port: outlet
+  to:
+    instance: U-HEAT
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Pump outlet at 1.8e5 Pa (T05 spec §11.1: ten stencil steps inside the domain).'
+- id: S3
+  kind: material
+  from:
+    instance: U-HEAT
+    port: outlet
+  to:
+    instance: U-VLV
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor_liquid
+  notes: Heater outlet at 360 K, lifted; LIQUID at the solution.
+- id: S4
+  kind: material
+  from:
+    instance: U-VLV
+    port: outlet
+  to:
+    instance: U-PHF
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor_liquid
+  notes: Valve outlet at P_r, lifted; TWO_PHASE at the solution.
+- id: S5
+  kind: material
+  from:
+    instance: U-PHF
+    port: vapor
+  to:
+    instance: U-SINK-V
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor
+  notes: PH-flash vapour product.
+- id: S6
+  kind: material
+  from:
+    instance: U-PHF
+    port: liquid
+  to:
+    instance: U-SINK-L
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: PH-flash liquid product.
+specifications:
+- id: SPEC-feed-n-A
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: A
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed component molar flow.
+- id: SPEC-feed-n-B
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: B
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed component molar flow.
+- id: SPEC-feed-n-C
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: C
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed component molar flow.
+- id: SPEC-feed-T
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 300.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed temperature, T_r.
+- id: SPEC-feed-P
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed pressure, P_r.
+- id: SPEC-pump-P
+  target:
+    object_type: connection
+    object_id: S2
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 180000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: Pump outlet pressure.
+- id: SPEC-heater-outlet-T
+  target:
+    object_type: connection
+    object_id: S3
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 360.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: Heater outlet temperature; the duty is calculated.
+- id: SPEC-valve-P
+  target:
+    object_type: connection
+    object_id: S4
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: Valve outlet pressure, P_r.
+- id: SPEC-phf-Q
+  target:
+    object_type: instance
+    object_id: U-PHF
+    path: duty.Q
+    component: null
+  kind: heat_rate
+  unit: W
+  value: 10000.0
+  tolerance:
+    absolute: 1.0e-05
+    relative: 1.0e-08
+    scale: 100000.0
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.1; docs/design/T05-generalization.md §2.4
+  notes: PH-flash duty, positive into the unit.
+provenance:
+  actor: Opus 5.5 (T05 W11, build lane, from the design-lane specification)
+  operation: create
+  timestamp: '2026-09-25T00:00:00Z'
+  source_references:
+  - docs/derivations/T05-unit-models-spec.md §11.1, §21
+  - docs/design/T05-generalization.md §1.3, §2.4
+  - benchmarks/t05/reference_values.yaml coupled_cases
+  notes: Hand-specified fixture input. No solver has run on this revision.

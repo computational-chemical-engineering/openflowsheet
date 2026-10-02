@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://process-runtime.invalid/p02/compiled-problem-metadata.draft.schema.json",
+  "title": "CompiledProblemMetadata (P02 draft)",
+  "description": "Minimal metadata the P02 spike exposes. Draft: field sets are frozen when the schema is first delivered under schemas/, which is K01 (specification \u00a710.4, open question Q5).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_version",
+    "form",
+    "backend",
+    "backend_version",
+    "variable_ids",
+    "equation_ids",
+    "column_scales",
+    "row_scales",
+    "capabilities",
+    "constants_sha256",
+    "callback_blocks"
+  ],
+  "properties": {
+    "model_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "form": {
+      "enum": [
+        "L",
+        "I"
+      ]
+    },
+    "backend": {
+      "type": "string",
+      "minLength": 1
+    },
+    "backend_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "variable_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "equation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "column_scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "row_scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jacobian",
+        "jvp",
+        "vjp",
+        "hessian"
+      ],
+      "properties": {
+        "jacobian": {
+          "enum": [
+            "exact_sparse_csc",
+            "absent"
+          ]
+        },
+        "jvp": {
+          "enum": [
+            "exact",
+            "absent"
+          ]
+        },
+        "vjp": {
+          "enum": [
+            "exact",
+            "absent"
+          ]
+        },
+        "hessian": {
+          "enum": [
+            "exact",
+            "absent"
+          ]
+        }
+      }
+    },
+    "constants_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "callback_blocks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "inputs",
+          "outputs",
+          "declared_jacobian_nnz"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "declared_jacobian_nnz": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "declared_shape": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "[n_outputs, n_inputs] of the block's declared Jacobian."
+          },
+          "declared_dense": {
+            "type": "boolean",
+            "description": "True when the block declares a dense Jacobian, as block K does; block H declares 9 of 15 entries."
+          }
+        }
+      }
+    }
+  }
+}

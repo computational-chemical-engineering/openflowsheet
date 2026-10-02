@@ -1,0 +1,201 @@
+{
+ "candidate": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+ "gates": [
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [],
+   "failing_clauses": [],
+   "gate": "V11",
+   "ledger": "PASS",
+   "limitations": [
+    "L38"
+   ],
+   "problems": [],
+   "requirement": "Semantic diff, drafts, task validation, units/references, real migration when applicable",
+   "verdict_document": "PASS"
+  },
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [],
+   "failing_clauses": [],
+   "gate": "V12",
+   "ledger": "PASS",
+   "limitations": [
+    "L02",
+    "L26",
+    "L27",
+    "L28",
+    "L29",
+    "L30",
+    "L-CSTR-1",
+    "L-CSTR-2",
+    "L-CSTR-3"
+   ],
+   "problems": [],
+   "requirement": "Required unit library with per-model definition of done",
+   "verdict_document": "PASS"
+  },
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [],
+   "failing_clauses": [
+    "V13 (e)"
+   ],
+   "gate": "V13",
+   "ledger": "FAIL",
+   "limitations": [
+    "L10",
+    "L22",
+    "L23",
+    "L24",
+    "L36",
+    "L38",
+    "L-WS-1",
+    "L-WS-2"
+   ],
+   "problems": [
+    "FAIL clause not accepted in ADR 0021 D3: ['V13 (e)'] (D2.3)"
+   ],
+   "requirement": "DM/SCC/BTF, tear and EO, scaling and initialization",
+   "verdict_document": "FAIL"
+  },
+  {
+   "accepted_fail_clauses": {
+    "V14 (b)": "2026-09-29, answering \"carry as FAIL, or hold the tag\": **\"One the PTC: 1 and 3\"** \u2014 option 1, carry V14 (b) as FAIL into v0.1 with PTC experimental; option 3, a diagnostic run recording step-size histories of the 149 saddle runs (diagnostic only; no new criterion; the verdict stands)"
+   },
+   "blocked_clauses": [],
+   "failing_clauses": [
+    "V14 (b)"
+   ],
+   "gate": "V14",
+   "ledger": "FAIL",
+   "limitations": [
+    "L01",
+    "L08",
+    "L20",
+    "L21"
+   ],
+   "problems": [],
+   "requirement": "Homotopy, qualified PTC/SER and three bounded recovery edges",
+   "verdict_document": "FAIL"
+  },
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [],
+   "failing_clauses": [],
+   "gate": "V15",
+   "ledger": "PASS",
+   "limitations": [
+    "L02",
+    "L14",
+    "L19",
+    "L20",
+    "L33"
+   ],
+   "problems": [],
+   "requirement": "Frozen phases, EO cross-unit spec, multiple-root evidence",
+   "verdict_document": "PASS"
+  },
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [],
+   "failing_clauses": [],
+   "gate": "V16",
+   "ledger": "PASS",
+   "limitations": [
+    "L16",
+    "L17",
+    "L18",
+    "L32"
+   ],
+   "problems": [],
+   "requirement": "30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble",
+   "verdict_document": "PASS"
+  },
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [],
+   "failing_clauses": [],
+   "gate": "V17",
+   "ledger": "PASS",
+   "limitations": [
+    "L11",
+    "L12",
+    "L13"
+   ],
+   "problems": [],
+   "requirement": "Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification",
+   "verdict_document": "PASS"
+  },
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [],
+   "failing_clauses": [],
+   "gate": "V18",
+   "ledger": "PASS",
+   "limitations": [
+    "L03",
+    "L05",
+    "L06",
+    "L15",
+    "L19",
+    "L25",
+    "L34",
+    "L37",
+    "L39",
+    "L40",
+    "L41"
+   ],
+   "problems": [],
+   "requirement": "Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested",
+   "verdict_document": "PASS"
+  },
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [
+    "V19 (i): Frank's selection (F3), ADR 0022 still Proposed",
+    "V19 (iii): Frank's rights statements behind H5",
+    "V19 (v): Frank's statements on four rights-table rows (property-database sources, 4TU dataset use in curation, citing the MSc report and the 2D draft, the IDAES Ar and CH4 values for M01 records)"
+   ],
+   "failing_clauses": [],
+   "gate": "V19",
+   "ledger": "BLOCKED",
+   "limitations": [],
+   "problems": [
+    "BLOCKED blocks the tag (D2.2)"
+   ],
+   "requirement": "Real-chemistry dossier with usable data/kinetics/property/reference route",
+   "verdict_document": "BLOCKED"
+  },
+  {
+   "accepted_fail_clauses": {},
+   "blocked_clauses": [],
+   "failing_clauses": [],
+   "gate": "V20",
+   "ledger": "PASS",
+   "limitations": [
+    "L04",
+    "L07",
+    "L09",
+    "L31",
+    "L32",
+    "L38"
+   ],
+   "problems": [],
+   "requirement": ">=95% nominal robustness, correct invalid-structure handling, no adversarial false verification",
+   "verdict_document": "PASS"
+  }
+ ],
+ "rc": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+ "rc_record_problems": [
+  "docs/t08-rc-record.md (\u00a78.1 item 4) is the record of C = ['78e92b708fb574d403f3c05ccccc3d1daa45e6a8'], not of 67c66d98587f23bd7dfe8da28a8facccc92da21e"
+ ],
+ "reasons": [
+  "V13: FAIL clause not accepted in ADR 0021 D3: ['V13 (e)'] (D2.3)",
+  "V19: BLOCKED blocks the tag (D2.2)",
+  "docs/t08-rc-record.md (\u00a78.1 item 4) is the record of C = ['78e92b708fb574d403f3c05ccccc3d1daa45e6a8'], not of 67c66d98587f23bd7dfe8da28a8facccc92da21e"
+ ],
+ "tag_may_be_proposed": false,
+ "tree_differences": []
+}
+v0_1_gate_json exit status 1

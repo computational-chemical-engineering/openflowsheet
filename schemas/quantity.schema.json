@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json",
+  "title": "Quantity",
+  "description": "A physical quantity in internal units. Blueprint v3.1 §4.1 requires physical meaning, dimensions, display unit, role, bounds, nominal and an uncertainty reference; ADR 0001 D1 adds the explicit `kind` and fixes the dimension order and the SI storage rule. JSON Schema cannot reject NaN or infinity once a document is decoded into Python floats, and it cannot check that `dimension` and `unit` are the ones registered for `kind`: those are `process_runtime.units.check_quantity`, which every round-trip fixture runs alongside this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["value", "unit", "dimension", "kind", "meaning", "role"],
+  "properties": {
+    "value": {
+      "type": "number",
+      "description": "Magnitude in `unit`. Must be finite; see check_quantity (ADR 0001 D1.5)."
+    },
+    "unit": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The unprefixed SI unit registered for `kind` in schemas/units.json (ADR 0001 D1.1). Display units belong in `display_unit`."
+    },
+    "dimension": { "$ref": "#/$defs/dimension" },
+    "kind": { "$ref": "#/$defs/kind" },
+    "meaning": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What the number is physically, in words. Blueprint §4.1 'physical meaning'."
+    },
+    "role": {
+      "enum": ["fixed", "free", "decision", "derived"],
+      "description": "How the solver treats it: a fixed specification, a free variable, a declared decision variable, or a value reconstructed from a solution."
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lower": { "type": ["number", "null"] },
+        "upper": { "type": ["number", "null"] }
+      },
+      "description": "Validity bounds. A trial state outside them is an invalid trial state, reported and never clipped inside a residual or Jacobian evaluation (ADR 0001 D2.3)."
+    },
+    "nominal": {
+      "type": "number",
+      "description": "Registered physical nominal used to build scales. Scales never come from an iterate value (ADR 0001 D3.5)."
+    },
+    "display_unit": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Presentation only; conversion metadata, never the stored value."
+    },
+    "uncertainty_ref": {
+      "type": ["string", "null"],
+      "description": "Reference to an uncertainty record. `null` states explicitly that none is recorded; it is not an implicit claim of exactness."
+    },
+    "provenance": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Where the number comes from. Required for every ComponentRecord parameter."
+    }
+  },
+  "$defs": {
+    "dimension": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": { "type": "integer" },
+      "description": "SI exponents in the fixed order (length, mass, time, temperature, amount, current, luminous_intensity) — ADR 0001 D1.2."
+    },
+    "kind": {
+      "enum": [
+        "temperature",
+        "temperature_difference",
+        "pressure",
+        "molar_flow",
+        "mass_flow",
+        "heat_rate",
+        "power",
+        "molar_enthalpy",
+        "mole_fraction",
+        "dimensionless",
+        "molar_mass",
+        "molar_heat_capacity",
+        "molar_volume"
+      ],
+      "description": "ADR 0001 D1.3, plus `molar_mass` for ComponentRecord.molecular_weight and the two kinds `molar_heat_capacity` and `molar_volume` that the SYN-001 ComponentRecord parameters c_p and v_i need; the latter two are a P01 addition awaiting Fable's confirmation (docs/progress.md, 'Opus -> Fable, P01 handoff'). `temperature` and `temperature_difference` share a dimension and are not interchangeable."
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+ "tool": "IDAES",
+ "versions": {
+  "idaes_pse": "2.13.0",
+  "pyomo": "6.10.1",
+  "python": "3.13.5"
+ },
+ "environment_fingerprint": {
+  "measured": {
+   "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+   "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+  },
+  "expected_docs_reference_environments_s3": {
+   "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+   "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+  },
+  "matches": true
+ },
+ "settings": {
+  "final_solve_ipopt_options": {
+   "linear_solver": "mumps",
+   "tol": 1e-10,
+   "constr_viol_tol": 1e-09,
+   "max_iter": 500
+  },
+  "smooth_vle_eps_K": {
+   "eps_1": 1e-08,
+   "eps_2": 1e-08
+  },
+  "initializer_ipopt_options": {
+   "nlp_scaling_method": "gradient-based",
+   "tol": 1e-06,
+   "max_iter": 200,
+   "linear_solver": "mumps"
+  },
+  "placeholders": {
+   "T_c_K": 1000.0,
+   "P_c_Pa": 10000000.0
+  },
+  "property_package": "idaes_representability.build_property_package (SYN-001, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0)"
+ },
+ "application_notes": [
+  "IDAES unit initializers call idaes.core.solvers.get_solver(), whose Ipopt would use the bundled default linear solver HSL MA27; idaes.cfg.ipopt.options.linear_solver is set to 'mumps' before any model is built so that MA27 is used nowhere (spec \u00a79.3 D19 disclosure). The initializers' other options stay IDAES defaults (tol 1e-6, max_iter 200, gradient-based scaling); the final solve uses spec \u00a79.3's options.",
+  "Mixer: MomentumMixingType.none with the outlet pressure fixed at P_r (spec \u00a79.3).",
+  "Conversion reactor: StoichiometricReactor, extent = X n_key,in / |nu_key| written as a constraint; h_form,liq = 0 and h_form,ig = L_i (spec \u00a79.3 IDAES reaction datum).",
+  "SmoothVLE: eps_1 = eps_2 = 1e-8 K is set on every state block that carries SmoothVLE's equilibrium temperature (_teq), after the model is built and before any initializer runs, so that initializers and the final solve see the same equations (spec \u00a79.3 as amended by A2; IDAES's defaults are 0.01 K and 5e-4 K)."
+ ],
+ "wall_time_import_s": 0.032480452209711075,
+ "fixture": "PC-1",
+ "not_applicable": "PC-1 is defined on DWSIM's vaporization-enthalpy input (spec \u00a79.4: 'DWSIM with dH_vap = L_i on REF-04'); IDAES's SYN-001 mapping has no such input (its enthalpies are SYN-001's exactly, docs/reference-environments.md \u00a75.0), so there is no unmapped IDAES variant to run; registered not_applicable by spec \u00a79.4 as amended (A1, ruling M6 (b))"
+}

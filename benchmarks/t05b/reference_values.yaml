@@ -1,0 +1,4143 @@
+meta:
+  package: T05b
+  generator: docs/derivations/scripts/t05b_reference.py
+  specification: docs/derivations/T05b-limitations-spec.md
+  adr: docs/adr/0012-saturation-band-ph-contract-zero-flow.md
+  precision: mpmath 40 significant digits; values written to 20
+  reads:
+    benchmarks/t05/reference_values.yaml: af4a543f8dab3d95c32764117be00afbc9e8d49478998e8538a1daf359385a6a
+  classes:
+    closed_form: expectations
+    measured_53_bit: a transcription of the published algorithms in doubles; never an expectation
+    generator_claims: re-derived by --check
+tolerances:
+  molar_flow: '3.1000000000000000000e-8'
+  molar_flow_squared: '9.3000000000000000000e-8'
+  heat_rate: '0.0010100000000000000000'
+  temperature: '1.0000000000000000000e-6'
+  admissibility_epsilon: '1.0000000000000000000e-12'
+  grid:
+    T: '1.0000000000000000000e-6'
+    V: '1.0000000000000000000e-7'
+    q: '1.0000000000000000000e-6'
+  coupled_allowances:
+    flow: '3.1000000000000000000e-7'
+    T: '0.000010000000000000000000'
+    P: '0.10000000000000000000'
+    duty: '0.010000000000000000000'
+  band_route:
+    beta_width_floor: 2^-60
+    max_beta_evaluations: 64
+    max_temperature_evaluations: 200
+kernel_grid:
+  NPK-A-1.0e-12-0.1:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-12'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '18000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999999997208212'
+      V_mol_per_s: '0.20000000000002610358'
+      beta: '0.099999999999963051789'
+      vapor_mol_per_s:
+      - '2.3990622106383810304e-13'
+      - '0.19999999999978619736'
+      - '0.0'
+      liquid_mol_per_s:
+      - '7.6009377893616189696e-13'
+      - '1.8000000000002138026'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.23990622106383810304'
+      - '0.099999999999893098678'
+      - null
+    band:
+      T_bubble_K: '359.99999999996694343'
+      T_dew_K: '359.99999999998836300'
+      width_K: '2.1419572133252256940e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 25.808559392266034
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-12-0.3:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-12'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '30000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999999997870332'
+      V_mol_per_s: '0.60000000000003348210'
+      beta: '0.29999999999986674105'
+      vapor_mol_per_s:
+      - '5.4902522955614401850e-13'
+      - '0.59999999999948445687'
+      - '0.0'
+      liquid_mol_per_s:
+      - '4.5097477044385598150e-13'
+      - '1.4000000000005155431'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.54902522955614401850'
+      - '0.29999999999974222843'
+      - null
+    band:
+      T_bubble_K: '359.99999999996694343'
+      T_dew_K: '359.99999999998836300'
+      width_K: '2.1419572133252256940e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -33.821173019237904
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-12-0.5:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-12'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '42000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999999998278592'
+      V_mol_per_s: '1.0000000000000380317'
+      beta: '0.49999999999976901584'
+      vapor_mol_per_s:
+      - '7.3962701405844997470e-13'
+      - '0.99999999999929840466'
+      - '0.0'
+      liquid_mol_per_s:
+      - '2.6037298594155002530e-13'
+      - '1.0000000000007015953'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.73962701405844997470'
+      - '0.49999999999964920233'
+      - null
+    band:
+      T_bubble_K: '359.99999999996694343'
+      T_dew_K: '359.99999999998836300'
+      width_K: '2.1419572133252256940e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 1.365697244182229e-08
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-12-0.7:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-12'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '54000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999999998555505'
+      V_mol_per_s: '1.4000000000000411175'
+      beta: '0.69999999999967055876'
+      vapor_mol_per_s:
+      - '8.6890695616198146658e-13'
+      - '1.3999999999991722106'
+      - '0.0'
+      liquid_mol_per_s:
+      - '1.3109304383801853342e-13'
+      - '0.60000000000082778943'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.86890695616198146658'
+      - '0.69999999999958610528'
+      - null
+    band:
+      T_bubble_K: '359.99999999996694343'
+      T_dew_K: '359.99999999998836300'
+      width_K: '2.1419572133252256940e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -43.254918997998175
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-12-0.9:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-12'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '66000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999999998755672'
+      V_mol_per_s: '1.8000000000000433481'
+      beta: '0.89999999999957167407'
+      vapor_mol_per_s:
+      - '9.6235761465508615800e-13'
+      - '1.7999999999990809905'
+      - '0.0'
+      liquid_mol_per_s:
+      - '3.7642385344913841999e-14'
+      - '0.20000000000091900947'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.96235761465508615800'
+      - '0.89999999999954049527'
+      - null
+    band:
+      T_bubble_K: '359.99999999996694343'
+      T_dew_K: '359.99999999998836300'
+      width_K: '2.1419572133252256940e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -7.15515348588815
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-9-0.1:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-9'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '18000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999997208211893'
+      V_mol_per_s: '0.20000000002610357735'
+      beta: '0.099999999963051788693'
+      vapor_mol_per_s:
+      - '2.3990622087105795179e-10'
+      - '0.19999999978619735648'
+      - '0.0'
+      liquid_mol_per_s:
+      - '7.6009377912894204821e-10'
+      - '1.8000000002138026435'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.23990622087105795179'
+      - '0.099999999893098678239'
+      - null
+    band:
+      T_bubble_K: '359.99999996694343034'
+      T_dew_K: '359.99999998836300245'
+      width_K: '2.1419572110293573447e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.035546015675208764
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-9-0.3:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-9'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '30000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999997870331582'
+      V_mol_per_s: '0.60000000003348209946'
+      beta: '0.29999999986674104980'
+      vapor_mol_per_s:
+      - '5.4902522927697015885e-10'
+      - '0.59999999948445687018'
+      - '0.0'
+      liquid_mol_per_s:
+      - '4.5097477072302984115e-10'
+      - '1.4000000005155431298'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.54902522927697015885'
+      - '0.29999999974222843509'
+      - null
+    band:
+      T_bubble_K: '359.99999996694343034'
+      T_dew_K: '359.99999998836300245'
+      width_K: '2.1419572110293573447e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.028034056478645653
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-9-0.5:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-9'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '42000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999998278592449'
+      V_mol_per_s: '1.0000000000380316724'
+      beta: '0.49999999976901583632'
+      vapor_mol_per_s:
+      - '7.3962701380386227567e-10'
+      - '0.99999999929840465860'
+      - '0.0'
+      liquid_mol_per_s:
+      - '2.6037298619613772433e-10'
+      - '1.0000000007015953414'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.73962701380386227567'
+      - '0.49999999964920232930'
+      - null
+    band:
+      T_bubble_K: '359.99999996694343034'
+      T_dew_K: '359.99999998836300245'
+      width_K: '2.1419572110293573447e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 1.3858822057954967e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-9-0.7:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-9'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '54000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999998555504554'
+      V_mol_per_s: '1.4000000000411175225'
+      beta: '0.69999999967055876140'
+      vapor_mol_per_s:
+      - '8.6890695594532947155e-10'
+      - '1.3999999991722105665'
+      - '0.0'
+      liquid_mol_per_s:
+      - '1.3109304405467052845e-10'
+      - '0.60000000082778943348'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.86890695594532947155'
+      - '0.69999999958610528326'
+      - null
+    band:
+      T_bubble_K: '359.99999996694343034'
+      T_dew_K: '359.99999998836300245'
+      width_K: '2.1419572110293573447e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.15234681476431433
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-9-0.9:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-9'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '66000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999998755671866'
+      V_mol_per_s: '1.8000000000433481447'
+      beta: '0.89999999957167407259'
+      vapor_mol_per_s:
+      - '9.6235761447240774004e-10'
+      - '1.7999999990809905303'
+      - '0.0'
+      liquid_mol_per_s:
+      - '3.7642385527592259957e-11'
+      - '0.20000000091900946973'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.96235761447240774004'
+      - '0.89999999954049526514'
+      - null
+    band:
+      T_bubble_K: '359.99999996694343034'
+      T_dew_K: '359.99999998836300245'
+      width_K: '2.1419572110293573447e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.06175365374656394
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-7-0.1:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-7'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '18000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999720821204630'
+      V_mol_per_s: '0.20000000261035731801'
+      beta: '0.099999996305178843748'
+      vapor_mol_per_s:
+      - '2.3990620176671954784e-8'
+      - '0.19999997861973714134'
+      - '0.0'
+      liquid_mol_per_s:
+      - '7.6009379823328045216e-8'
+      - '1.8000000213802628587'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.23990620176671954784'
+      - '0.099999989309868570671'
+      - null
+    band:
+      T_bubble_K: '359.99999669434330057'
+      T_dew_K: '359.99999883630028408'
+      width_K: '2.1419569835108918898e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.0003472316420811694
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-7-0.3:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-7'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '30000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999787033164013'
+      V_mol_per_s: '0.60000000334820980255'
+      beta: '0.29999998667410556757'
+      vapor_mol_per_s:
+      - '5.4902520161109277856e-8'
+      - '0.59999994844568964144'
+      - '0.0'
+      liquid_mol_per_s:
+      - '4.5097479838890722144e-8'
+      - '1.4000000515543103586'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.54902520161109277856'
+      - '0.29999997422284482072'
+      - null
+    band:
+      T_bubble_K: '359.99999669434330057'
+      T_dew_K: '359.99999883630028408'
+      width_K: '2.1419569835108918898e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.0005909329593123402
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-7-0.5:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-7'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '42000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999827859247437'
+      V_mol_per_s: '1.0000000038031672209'
+      beta: '0.49999997690158476536'
+      vapor_mol_per_s:
+      - '7.3962698857445080859e-8'
+      - '0.99999992984046836344'
+      - '0.0'
+      liquid_mol_per_s:
+      - '2.6037301142554919141e-8'
+      - '1.0000000701595316366'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.73962698857445080859'
+      - '0.49999996492023418172'
+      - null
+    band:
+      T_bubble_K: '359.99999669434330057'
+      T_dew_K: '359.99999883630028408'
+      width_K: '2.1419569835108918898e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.0013859047685400583
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-7-0.7:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-7'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '54000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999855550456532'
+      V_mol_per_s: '1.4000000041117522873'
+      beta: '0.69999996705587779086'
+      vapor_mol_per_s:
+      - '8.6890693447531190444e-8'
+      - '1.3999999172210588398'
+      - '0.0'
+      liquid_mol_per_s:
+      - '1.3109306552468809556e-8'
+      - '0.60000008277894116022'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.86890693447531190444'
+      - '0.69999995861052941989'
+      - null
+    band:
+      T_bubble_K: '359.99999669434330057'
+      T_dew_K: '359.99999883630028408'
+      width_K: '2.1419569835108918898e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.0007176211656769738
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-7-0.9:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-7'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '66000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99999875567187106'
+      V_mol_per_s: '1.8000000043348145472'
+      beta: '0.89999995716740941521'
+      vapor_mol_per_s:
+      - '9.6235759636914098854e-8'
+      - '1.7999999080990549103'
+      - '0.0'
+      liquid_mol_per_s:
+      - '3.7642403630859011462e-9'
+      - '0.20000009190094508975'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.96235759636914098854'
+      - '0.89999995404952745513'
+      - null
+    band:
+      T_bubble_K: '359.99999669434330057'
+      T_dew_K: '359.99999883630028408'
+      width_K: '2.1419569835108918898e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.001064869953552261
+      temperature_route_rows_ok: false
+      route: band
+  NPK-A-1.0e-6-0.1:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-6'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '18000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99997208213436855'
+      V_mol_per_s: '0.20000002610353528441'
+      beta: '0.099999963051786116312'
+      vapor_mol_per_s:
+      - '2.3990602809099841524e-7'
+      - '0.19999978619750719341'
+      - '0.0'
+      liquid_mol_per_s:
+      - '7.6009397190900158476e-7'
+      - '1.8000002138024928066'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.23990602809099841524'
+      - '0.099999893098753596705'
+      - null
+    band:
+      T_bubble_K: '359.99996694345726051'
+      T_dew_K: '359.99998836300641214'
+      width_K: '0.000021419549151629864012'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -2.250794932479039e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-6-0.3:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-6'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '30000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99997870332164948'
+      V_mol_per_s: '0.60000003348208500957'
+      beta: '0.29999986674110913423'
+      vapor_mol_per_s:
+      - '5.4902495010317134016e-7'
+      - '0.59999948445713490640'
+      - '0.0'
+      liquid_mol_per_s:
+      - '4.5097504989682865984e-7'
+      - '1.4000005155428650936'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.54902495010317134016'
+      - '0.29999974222856745320'
+      - null
+    band:
+      T_bubble_K: '359.99996694345726051'
+      T_dew_K: '359.99998836300641214'
+      width_K: '0.000021419549151629864012'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 2.812062666635029e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-6-0.5:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-6'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '42000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99998278592702707'
+      V_mol_per_s: '1.0000000380316704025'
+      beta: '0.49999976901595069326'
+      vapor_mol_per_s:
+      - '7.3962675921617826573e-7'
+      - '0.99999929840491118630'
+      - '0.0'
+      liquid_mol_per_s:
+      - '2.6037324078382173427e-7'
+      - '1.0000007015950888137'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.73962675921617826573'
+      - '0.49999964920245559315'
+      - null
+    band:
+      T_bubble_K: '359.99996694345726051'
+      T_dew_K: '359.99998836300641214'
+      width_K: '0.000021419549151629864012'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -7.700668356847018e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-6-0.7:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-6'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '54000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99998555504671384'
+      V_mol_per_s: '1.4000000411175266065'
+      beta: '0.69999967055892802376'
+      vapor_mol_per_s:
+      - '8.6890673929333024610e-7'
+      - '1.3999991722107873131'
+      - '0.0'
+      liquid_mol_per_s:
+      - '1.3109326070666975390e-7'
+      - '0.60000082778921268688'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.86890673929333024610'
+      - '0.69999958610539365656'
+      - null
+    band:
+      T_bubble_K: '359.99996694345726051'
+      T_dew_K: '359.99998836300641214'
+      width_K: '0.000021419549151629864012'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -3.213703166693449e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-A-1.0e-6-0.9:
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000e-6'
+      - '2.0000000000000000000'
+      - '0.0'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '66000.000000000000000'
+    expected:
+      status: ok
+      T_K: '359.99998755671920426'
+      V_mol_per_s: '1.8000000433481520816'
+      beta: '0.89999957167429020364'
+      vapor_mol_per_s:
+      - '9.6235743179397898687e-7'
+      - '1.7999990809907202876'
+      - '0.0'
+      liquid_mol_per_s:
+      - '3.7642568206021013132e-8'
+      - '0.20000091900927971241'
+      - '0.0'
+      vapour_fraction_by_component:
+      - '0.96235743179397898687'
+      - '0.89999954049536014379'
+      - null
+    band:
+      T_bubble_K: '359.99996694345726051'
+      T_dew_K: '359.99998836300641214'
+      width_K: '0.000021419549151629864012'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 5.8334117056801915e-06
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-12-0.1:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-12'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '18000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000000001329827'
+      V_mol_per_s: '0.19999999999970578523'
+      beta: '0.099999999999802892613'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.19999999999967242750'
+      - '3.3357724169840822265e-14'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.8000000000003275725'
+      - '9.6664227583015917774e-13'
+      vapour_fraction_by_component:
+      - null
+      - '0.099999999999836213751'
+      - '0.033357724169840822265'
+    band:
+      T_bubble_K: '360.00000000001238146'
+      T_dew_K: '360.00000000003986565'
+      width_K: '2.7484185313712943646e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 112.36565764698389
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-12-0.3:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-12'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '30000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000000001561002'
+      V_mol_per_s: '0.59999999999967635489'
+      beta: '0.29999999999968817745'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.59999999999955888516'
+      - '1.1746972811578192245e-13'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.4000000000004411148'
+      - '8.8253027188421807755e-13'
+      vapour_fraction_by_component:
+      - null
+      - '0.29999999999977944258'
+      - '0.11746972811578192245'
+    band:
+      T_bubble_K: '360.00000000001238146'
+      T_dew_K: '360.00000000003986565'
+      width_K: '2.7484185313712943646e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -119.02016513311537
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-12-0.5:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-12'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '42000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000000001889464'
+      V_mol_per_s: '0.99999999999963453928'
+      beta: '0.49999999999956726964'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.99999999999939756038'
+      - '2.3697890259423396408e-13'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.0000000000006024396'
+      - '7.6302109740576603592e-13'
+      vapour_fraction_by_component:
+      - null
+      - '0.49999999999969878019'
+      - '0.23697890259423396408'
+    band:
+      T_bubble_K: '360.00000000001238146'
+      T_dew_K: '360.00000000003986565'
+      width_K: '2.7484185313712943646e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 2.5749613996595144e-08
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-12-0.7:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-12'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '54000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000000002392989'
+      V_mol_per_s: '1.3999999999995704367'
+      beta: '0.69999999999943521835'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.3999999999991502524'
+      - '4.2018434076925230528e-13'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.60000000000084974765'
+      - '5.7981565923074769472e-13'
+      vapour_fraction_by_component:
+      - null
+      - '0.69999999999957512618'
+      - '0.42018434076925230528'
+    band:
+      T_bubble_K: '360.00000000001238146'
+      T_dew_K: '360.00000000003986565'
+      width_K: '2.7484185313712943646e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 23.405785418115556
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-12-0.9:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-12'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '66000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000000003262385'
+      V_mol_per_s: '1.7999999999994597559'
+      beta: '0.89999999999927987794'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.7999999999987232454'
+      - '7.3651050795342900841e-13'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.20000000000127675462'
+      - '2.6348949204657099159e-13'
+      vapour_fraction_by_component:
+      - null
+      - '0.89999999999936162269'
+      - '0.73651050795342900841'
+    band:
+      T_bubble_K: '360.00000000001238146'
+      T_dew_K: '360.00000000003986565'
+      width_K: '2.7484185313712943646e-11'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 26.704749781361897
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-9-0.1:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-9'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '18000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000001329827306'
+      V_mol_per_s: '0.19999999970578522552'
+      beta: '0.099999999802892612860'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.19999999967242750141'
+      - '3.3357724113206267856e-11'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.8000000003275724986'
+      - '9.6664227588679373214e-10'
+      vapour_fraction_by_component:
+      - null
+      - '0.099999999836213750705'
+      - '0.033357724113206267856'
+    band:
+      T_bubble_K: '360.00000001238146319'
+      T_dew_K: '360.00000003986564846'
+      width_K: '2.7484185269370626962e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.06818455626853392
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-9-0.3:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-9'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '30000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000001561002296'
+      V_mol_per_s: '0.59999999967635489220'
+      beta: '0.29999999968817744625'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.59999999955888516418'
+      - '1.1746972801450996506e-10'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.4000000004411148358'
+      - '8.8253027198549003494e-10'
+      vapour_fraction_by_component:
+      - null
+      - '0.29999999977944258209'
+      - '0.11746972801450996506'
+    band:
+      T_bubble_K: '360.00000001238146319'
+      T_dew_K: '360.00000003986564846'
+      width_K: '2.7484185269370626962e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.07880528697569389
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-9-0.5:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-9'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '42000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000001889463525'
+      V_mol_per_s: '0.99999999963453928118'
+      beta: '0.49999999956726964080'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.99999999939756037878'
+      - '2.3697890239242297991e-10'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.0000000006024396212'
+      - '7.6302109760757702009e-10'
+      vapour_fraction_by_component:
+      - null
+      - '0.49999999969878018939'
+      - '0.23697890239242297991'
+    band:
+      T_bubble_K: '360.00000001238146319'
+      T_dew_K: '360.00000003986564846'
+      width_K: '2.7484185269370626962e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 2.596358535811305e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-9-0.7:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-9'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '54000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000002392988745'
+      V_mol_per_s: '1.3999999995704366935'
+      beta: '0.69999999943521834704'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.3999999991502523532'
+      - '4.2018434030385704498e-10'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.60000000084974764679'
+      - '5.7981565969614295502e-10'
+      vapour_fraction_by_component:
+      - null
+      - '0.69999999957512617660'
+      - '0.42018434030385704498'
+    band:
+      T_bubble_K: '360.00000001238146319'
+      T_dew_K: '360.00000003986564846'
+      width_K: '2.7484185269370626962e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.04371496874955483
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-9-0.9:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-9'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '66000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000003262385441'
+      V_mol_per_s: '1.7999999994597558860'
+      beta: '0.89999999927987794338'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.7999999987232453794'
+      - '7.3651050660765013775e-10'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.20000000127675462057'
+      - '2.6348949339234986225e-10'
+      vapour_fraction_by_component:
+      - null
+      - '0.89999999936162268972'
+      - '0.73651050660765013775'
+    band:
+      T_bubble_K: '360.00000001238146319'
+      T_dew_K: '360.00000003986564846'
+      width_K: '2.7484185269370626962e-8'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.026310674482374452
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-7-0.1:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-7'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '18000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000132982724484'
+      V_mol_per_s: '0.19999997057852261609'
+      beta: '0.099999980289262293580'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.19999996724275076601'
+      - '3.3357718500773087682e-9'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.8000000327572492340'
+      - '9.6664228149922691232e-8'
+      vapour_fraction_by_component:
+      - null
+      - '0.099999983621375383004'
+      - '0.033357718500773087682'
+    band:
+      T_bubble_K: '360.00000123814628004'
+      T_dew_K: '360.00000398656436755'
+      width_K: '2.7484180875087667863e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.0007021740930213127
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-7-0.3:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-7'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '30000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000156100220312'
+      V_mol_per_s: '0.59999996763548949254'
+      beta: '0.29999996881774630538'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.59999995588851769468'
+      - '1.1746971797855064004e-8'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.4000000441114823053'
+      - '8.8253028202144935996e-8'
+      vapour_fraction_by_component:
+      - null
+      - '0.29999997794425884734'
+      - '0.11746971797855064004'
+    band:
+      T_bubble_K: '360.00000123814628004'
+      T_dew_K: '360.00000398656436755'
+      width_K: '2.7484180875087667863e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.0005705613148165867
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-7-0.5:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-7'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '42000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000188946337117'
+      V_mol_per_s: '0.99999996345392885585'
+      beta: '0.49999995672696659158'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.99999993975604061654'
+      - '2.3697888239313770087e-8'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.0000000602439593835'
+      - '7.6302111760686229913e-8'
+      vapour_fraction_by_component:
+      - null
+      - '0.49999996987802030827'
+      - '0.23697888239313770087'
+    band:
+      T_bubble_K: '360.00000123814628004'
+      T_dew_K: '360.00000398656436755'
+      width_K: '2.7484180875087667863e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.0025963819716707803
+      temperature_route_rows_ok: false
+      route: band
+  NPK-C-1.0e-7-0.7:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-7'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '54000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000239298845408'
+      V_mol_per_s: '1.3999999570436712721'
+      beta: '0.69999994352183845994'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.3999999150252418537'
+      - '4.2018429418361214431e-8'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.60000008497475814631'
+      - '5.7981570581638785569e-8'
+      vapour_fraction_by_component:
+      - null
+      - '0.69999995751262092685'
+      - '0.42018429418361214431'
+    band:
+      T_bubble_K: '360.00000123814628004'
+      T_dew_K: '360.00000398656436755'
+      width_K: '2.7484180875087667863e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 0.0002830180892487988
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-7-0.9:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-7'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '66000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00000326238475915'
+      V_mol_per_s: '1.7999999459755942975'
+      beta: '0.89999992798780074937'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.7999998723245569733'
+      - '7.3651037324221311334e-8'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.20000012767544302671'
+      - '2.6348962675778688666e-8'
+      vapour_fraction_by_component:
+      - null
+      - '0.89999993616227848665'
+      - '0.73651037324221311334'
+    band:
+      T_bubble_K: '360.00000123814628004'
+      T_dew_K: '360.00000398656436755'
+      width_K: '2.7484180875087667863e-6'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -0.000109148706542328
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-6-0.1:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-6'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '18000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00001329826686993'
+      V_mol_per_s: '0.19999970578523195980'
+      beta: '0.099999802892714533544'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.19999967242756448114'
+      - '3.3357667478665948472e-8'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.8000003275724355189'
+      - '9.6664233252133405153e-7'
+      vapour_fraction_by_component:
+      - null
+      - '0.099999836213782240568'
+      - '0.033357667478665948472'
+    band:
+      T_bubble_K: '360.00001238145924420'
+      T_dew_K: '360.00003986560017132'
+      width_K: '0.000027484140927122184038'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -1.7329337424598634e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-6-0.3:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-6'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '30000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00001561001356578'
+      V_mol_per_s: '0.59999967635491973764'
+      beta: '0.29999968817761578001'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.59999955888529299505'
+      - '1.1746962674259456079e-7'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.4000004411147070050'
+      - '8.8253037325740543921e-7'
+      vapour_fraction_by_component:
+      - null
+      - '0.29999977944264649752'
+      - '0.11746962674259456079'
+    band:
+      T_bubble_K: '360.00001238145924420'
+      T_dew_K: '360.00003986560017132'
+      width_K: '0.000027484140927122184038'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -9.820168634178117e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-6-0.5:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-6'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '42000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00001889461968757'
+      V_mol_per_s: '0.99999963453935567055'
+      beta: '0.49999956726989420033'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.99999939756065508896'
+      - '2.3697870058158414522e-7'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.0000006024393449110'
+      - '7.6302129941841585478e-7'
+      vapour_fraction_by_component:
+      - null
+      - '0.49999969878032754448'
+      - '0.23697870058158414522'
+    band:
+      T_bubble_K: '360.00001238145924420'
+      T_dew_K: '360.00003986560017132'
+      width_K: '0.000027484140927122184038'
+    measured_53_bit:
+      temperature_route_energy_residual_W: -1.2879136193078011e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-6-0.7:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-6'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '54000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00002392985805959'
+      V_mol_per_s: '1.3999995704368873516'
+      beta: '0.69999943521872606646'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.3999991502530124424'
+      - '4.2018387490921439511e-7'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.60000084974698755758'
+      - '5.7981612509078560489e-7'
+      vapour_fraction_by_component:
+      - null
+      - '0.69999957512650622121'
+      - '0.42018387490921439511'
+    band:
+      T_bubble_K: '360.00001238145924420'
+      T_dew_K: '360.00003986560017132'
+      width_K: '0.000027484140927122184038'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 1.720240106806159e-05
+      temperature_route_rows_ok: true
+      route: bracket
+  NPK-C-1.0e-6-0.9:
+    inputs:
+      n_mol_per_s:
+      - '0.0'
+      - '2.0000000000000000000'
+      - '1.0000000000000000000e-6'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '66000.000000000000000'
+    expected:
+      status: ok
+      T_K: '360.00003262378557968'
+      V_mol_per_s: '1.7999994597564605841'
+      beta: '0.89999927987859035277'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.7999987232472997517'
+      - '7.3650916083247724981e-7'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.20000127675270024835'
+      - '2.6349083916752275019e-7'
+      vapour_fraction_by_component:
+      - null
+      - '0.89999936162364987583'
+      - '0.73650916083247724981'
+    band:
+      T_bubble_K: '360.00001238145924420'
+      T_dew_K: '360.00003986560017132'
+      width_K: '0.000027484140927122184038'
+    measured_53_bit:
+      temperature_route_energy_residual_W: 4.071189323440194e-06
+      temperature_route_rows_ok: true
+      route: bracket
+kernel_grid_measured_53_bit_floors:
+  note: 'max over the 40 grid states of |kernel - reference|: the band route alone, and the route the kernel takes (the temperature route when its rows pass)'
+  band_route:
+    T_K: '5.69e-14'
+    V_mol_per_s: '5.51e-16'
+    q: '7.52e-16'
+  chosen:
+    T_K: '3.94e-13'
+    V_mol_per_s: '2.39e-8'
+    q: '1.20e-8'
+kernel_doubles:
+  JUMP:
+    definition: SYN-001 with every vapour enthalpy + 1000 J/mol above 360 K (evaluate_phase only; flash, lnK and liquid enthalpies unchanged)
+    inputs:
+      n_mol_per_s:
+      - '1.0000000000000000000'
+      - '1.0000000000000000000'
+      - '1.0000000000000000000'
+      P_Pa: '100000.00000000000000'
+      H_target_W: '57018.473981355103048'
+    jump_W: '1360.8090692231516326'
+    expected:
+      status: not_converged
+      code: ph_ill_conditioned
+  BIASED:
+    definition: SYN-001 whose TP flash returns beta + 1e-5 (x, y recomputed from it) whenever the provider's answer is two-phase
+    inputs: 'PHF-1''s (T05 §5.3): (1,1,1) mol/s, 300 K, 1e5 Pa, LIQUID; Q = 50000 W'
+    expected:
+      status: ok
+      route: band
+      T_K: '358.09051640358332349'
+      vapor_mol_per_s:
+      - '0.63308542930876247120'
+      - '0.37578867005784299029'
+      - '0.15634426412773289897'
+      liquid_mol_per_s:
+      - '0.36691457069123752880'
+      - '0.62421132994215700971'
+      - '0.84365573587226710103'
+    measured_53_bit:
+      temperature_route_T_K: 358.0902934482825
+      temperature_route_energy_residual_W: -9.458744898438454e-11
+      temperature_route_max_equilibrium_row: 7.81399006832828e-06
+      band_route_T_K: 358.0905164035833
+single_component_cases:
+  SC-1:
+    flowsheet: U-FEED (0,2,0) 370 K 1.8e5 Pa liquid -> S1 -> U-VLV (P_spec = 1e5 Pa, inlet LIQUID) -> S2 (vapor_liquid, lifted) -> sink
+    root:
+      S2:
+        n_mol_per_s:
+        - '0.0'
+        - '2.0000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        vapor_mol_per_s:
+        - '0.0'
+        - '0.067200000000000000000'
+        - '0.0'
+        liquid_mol_per_s:
+        - '0.0'
+        - '1.9328000000000000000'
+        - '0.0'
+        beta: '0.033600000000000000000'
+    signature:
+    - - U-VLV
+      - TWO_PHASE
+  SC-2:
+    flowsheet: U-FEED (0,2,0) 300 K 1e5 Pa liquid -> S1 -> U-PHF (Q_spec = 42000 W, dP = 0, inlet LIQUID) -> S2 (vapor), S3 (liquid) -> sinks
+    root:
+      S2:
+        n_mol_per_s:
+        - '0.0'
+        - '1.0000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S3:
+        n_mol_per_s:
+        - '0.0'
+        - '1.0000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      U-PHF.Q: '42000.000000000000000'
+    signature:
+    - - U-PHF
+      - TWO_PHASE
+  SC-3:
+    flowsheet: SC-1's feed and valve; S2 (lifted) -> U-PHF (Q_spec = -1000 W, dP = 0, inlet lifted) -> S3 (vapor), S4 (liquid) -> sinks
+    root:
+      S2:
+        n_mol_per_s:
+        - '0.0'
+        - '2.0000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        vapor_mol_per_s:
+        - '0.0'
+        - '0.067200000000000000000'
+        - '0.0'
+        liquid_mol_per_s:
+        - '0.0'
+        - '1.9328000000000000000'
+        - '0.0'
+      S3:
+        n_mol_per_s:
+        - '0.0'
+        - '0.033866666666666666667'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S4:
+        n_mol_per_s:
+        - '0.0'
+        - '1.9661333333333333333'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      U-PHF.Q: '-1000.0000000000000000'
+      U-PHF_beta: '0.016933333333333333333'
+    start:
+      U-PHF_H_in_read_W: '12000.000000000000000'
+      U-PHF_regime: LIQUID
+      U-PHF_T_K: '355.00000000000000000'
+    first_trial:
+      T_K: '365.08000000000000000'
+      rho_TP: VAPOR
+      rho_PH: TWO_PHASE
+      rho_PH_beta: '0.016933333333333333333'
+      rho_PH_T_K: '360.00000000000000000'
+    signatures:
+      opening:
+      - - U-VLV
+        - TWO_PHASE
+      - - U-PHF
+        - LIQUID
+      final:
+      - - U-VLV
+        - TWO_PHASE
+      - - U-PHF
+        - TWO_PHASE
+  SC-4:
+    flowsheet: U-FEED (0,2,0) 300 K 1e5 Pa liquid -> S1 -> U-PHF1 (Q = 42000 W) -> S2 (vapor) -> U-PHF2 (Q = -15000 W, inlet VAPOR) -> S4 (vapor), S5 (liquid) -> sinks; U-PHF1 S3 (liquid) -> U-PUMP (P_out
+      = 1.5e5 Pa, efficiency 0.75) -> S6 -> sink
+    root:
+      S2:
+        n_mol_per_s:
+        - '0.0'
+        - '1.0000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S3:
+        n_mol_per_s:
+        - '0.0'
+        - '1.0000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S4:
+        n_mol_per_s:
+        - '0.0'
+        - '0.50000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S5:
+        n_mol_per_s:
+        - '0.0'
+        - '0.50000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S6:
+        n_mol_per_s:
+        - '0.0'
+        - '1.0000000000000000000'
+        - '0.0'
+        T_K: '360.01666666666666667'
+        P_Pa: '150000.00000000000000'
+      U-PHF1.Q: '42000.000000000000000'
+      U-PHF2.Q: '-15000.000000000000000'
+      U-PUMP.W: '6.6666666666666666667'
+    r007:
+      U-PHF2.inlet_tp_gap_K: '300.00000000000000000'
+      U-PHF2.inlet_degeneracy_K: '0.0'
+      U-PUMP.inlet_tp_gap_K: '0.0'
+    signature:
+    - - U-PHF1
+      - TWO_PHASE
+    - - U-PHF2
+      - TWO_PHASE
+single_component_regularity:
+  SC-1:
+    dimension: 18
+    rank: 18
+    rcond1_scaled: '0.00547973'
+  SC-2:
+    dimension: 18
+    rank: 18
+    rcond1_scaled: '0.0147528'
+near_pure_cases:
+  NP-1:
+    why: light trace, degenerate by 5 decades
+    flowsheet: U-FEED ['1.0000000000000000000e-12', '2.0000000000000000000', '0.0'] 300 K 1e5 Pa liquid -> S1 -> U-PHF (Q_spec = 30000.000000000000000 W, dP = 0, inlet LIQUID) -> S2, S3 -> sinks
+    root:
+      T_K: '359.99999999997870332'
+      V_mol_per_s: '0.60000000000003348210'
+      vapor_mol_per_s:
+      - '5.4902522955614401850e-13'
+      - '0.59999999999948445687'
+      - '0.0'
+      liquid_mol_per_s:
+      - '4.5097477044385598150e-13'
+      - '1.4000000000005155431'
+      - '0.0'
+    band:
+      T_bubble_K: '359.99999999996694343'
+      T_dew_K: '359.99999999998836300'
+      width_K: '2.1419572133252256940e-11'
+    degeneracy_K: '1.1759885507450690567e-11'
+    degenerate: true
+    measured_53_bit_traversal_route: band
+    measured_53_bit_fresh_flash_at_nearest_double:
+      products_energy_error_W: -312.9515736151261
+      feed_vapour_flow_error_mol_per_s: -0.0058316104511013656
+  NP-2:
+    why: heavy trace, degenerate by a factor 3.6
+    flowsheet: U-FEED ['0.0', '2.0000000000000000000', '1.0000000000000000000e-8'] 300 K 1e5 Pa liquid -> S1 -> U-PHF (Q_spec = 54000.000000000000000 W, dP = 0, inlet LIQUID) -> S2, S3 -> sinks
+    root:
+      T_K: '360.00000023929887189'
+      V_mol_per_s: '1.3999999957043669526'
+      vapor_mol_per_s:
+      - '0.0'
+      - '1.3999999915025235915'
+      - '4.2018433611110700775e-9'
+      liquid_mol_per_s:
+      - '0.0'
+      - '0.60000000849747640854'
+      - '5.7981566388889299225e-9'
+    band:
+      T_bubble_K: '360.00000012381463156'
+      T_dew_K: '360.00000039865648026'
+      width_K: '2.7484184869890302622e-7'
+    degeneracy_K: '1.5935760836959496789e-7'
+    degenerate: true
+    measured_53_bit_traversal_route: band
+    measured_53_bit_fresh_flash_at_nearest_double:
+      products_energy_error_W: -0.0006815580345573835
+      feed_vapour_flow_error_mol_per_s: -8.062727530067093e-08
+  NP-3:
+    why: 'resolved: judged by the fresh flash'
+    flowsheet: U-FEED ['0.000010000000000000000000', '2.0000000000000000000', '0.0'] 300 K 1e5 Pa liquid -> S1 -> U-PHF (Q_spec = 30000.000000000000000 W, dP = 0, inlet LIQUID) -> S2, S3 -> sinks
+    root:
+      T_K: '359.99978703374131513'
+      V_mol_per_s: '0.60000033481954849008'
+      vapor_mol_per_s:
+      - '5.4902243502938225001e-6'
+      - '0.59999484459519819626'
+      - '0.0'
+      liquid_mol_per_s:
+      - '4.5097756497061774999e-6'
+      - '1.4000051554048018037'
+      - '0.0'
+    band:
+      T_bubble_K: '359.99966943699807031'
+      T_dew_K: '359.99988363042125635'
+      width_K: '0.00021419342318603726517'
+    degeneracy_K: '0.00011759674324481308452'
+    degenerate: false
+    measured_53_bit_traversal_route: bracket
+    measured_53_bit_fresh_flash_at_nearest_double:
+      products_energy_error_W: 2.1641426428686827e-06
+      feed_vapour_flow_error_mol_per_s: 7.411693481174098e-11
+  NP-G:
+    why: the residual limitation (F9's band)
+    flowsheet: U-FEED ['0.0', '2.0000000000000000000', '1.5000000000000000000e-7'] 300 K 1e5 Pa liquid -> S1 -> U-PHF (Q_spec = 30000.000000000000000 W, dP = 0, inlet LIQUID) -> S2, S3 -> sinks
+    root:
+      T_K: '360.00000234150323414'
+      V_mol_per_s: '0.59999995145323444557'
+      vapor_mol_per_s:
+      - '0.0'
+      - '0.59999993383277750909'
+      - '1.7620456936482694103e-8'
+      liquid_mol_per_s:
+      - '0.0'
+      - '1.4000000661672224909'
+      - '1.3237954306351730590e-7'
+    band:
+      T_bubble_K: '360.00000185721939043'
+      T_dew_K: '360.00000597984618879'
+      width_K: '4.1226267983630023413e-6'
+    degeneracy_K: '3.6383429546501271361e-6'
+    degenerate: false
+    measured_53_bit_traversal_route: bracket
+    measured_53_bit_fresh_flash_at_nearest_double:
+      products_energy_error_W: 0.004230304752127267
+      feed_vapour_flow_error_mol_per_s: 6.83321901284728e-08
+dormant_cases:
+  DZ-1:
+    full_form:
+      dimension: 18
+      rank: 15
+      identically_zero_rows:
+      - U-VLV:VLV-equilibrium:A
+      - U-VLV:VLV-equilibrium:B
+      - U-VLV:VLV-equilibrium:C
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-VLV:VLV-mole:A
+      - U-VLV:VLV-mole:B
+      - U-VLV:VLV-mole:C
+      - U-VLV:VLV-P
+      - U-VLV:zero-flow-label
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      dimension: 10
+      rcond1_scaled: '0.250000'
+    label:
+      row: U-VLV:zero-flow-label
+      T_out: S2.T
+      T_label: S1.T
+    root:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '330.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '330.00000000000000000'
+      S2.P: '90000.000000000000000'
+      S2.vap.A: '0.0'
+      S2.liq.A: '0.0'
+      S2.vap.B: '0.0'
+      S2.liq.B: '0.0'
+      S2.vap.C: '0.0'
+      S2.liq.C: '0.0'
+      S2.V: '0.0'
+      S2.L: '0.0'
+  DZ-2:
+    full_form:
+      dimension: 18
+      rank: 15
+      identically_zero_rows:
+      - U-PHF:PHF-equilibrium:A
+      - U-PHF:PHF-equilibrium:B
+      - U-PHF:PHF-equilibrium:C
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-PHF:PHF-T
+      - U-PHF:PHF-pressure:vapor
+      - U-PHF:PHF-pressure:liquid
+      - U-PHF:PHF-Q
+      - U-PHF:zero-flow-label
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.T
+      - S2.P
+      - S3.T
+      - S3.P
+      - U-PHF.Q
+      dimension: 10
+      rcond1_scaled: '0.111111'
+    label:
+      row: U-PHF:zero-flow-label
+      T_out: S2.T
+      T_label: S1.T
+    root:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '330.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '330.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.0'
+      S3.n.B: '0.0'
+      S3.n.C: '0.0'
+      S3.T: '330.00000000000000000'
+      S3.P: '100000.00000000000000'
+      U-PHF.Q: '0.0'
+      S2.N: '0.0'
+      S3.N: '0.0'
+  DZ-3:
+    full_form:
+      dimension: 41
+      rank: 38
+      identically_zero_rows:
+      - U-VLV:VLV-equilibrium:A
+      - U-VLV:VLV-equilibrium:B
+      - U-VLV:VLV-equilibrium:C
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-PHF:PHF-mole:A
+      - U-PHF:PHF-mole:B
+      - U-PHF:PHF-mole:C
+      - U-PHF:PHF-equilibrium:A
+      - U-PHF:PHF-equilibrium:B
+      - U-PHF:PHF-equilibrium:C
+      - U-PHF:PHF-T
+      - U-PHF:PHF-pressure:vapor
+      - U-PHF:PHF-pressure:liquid
+      - U-PHF:PHF-duty
+      - U-PHF:PHF-Q
+      - U-PHF:Ndef:vapor
+      - U-PHF:Ndef:liquid
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-purge:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-purge:B
+      - U-SPLIT:SPLIT-recycle:C
+      - U-SPLIT:SPLIT-purge:C
+      - U-SPLIT:SPLIT-T:recycle
+      - U-SPLIT:SPLIT-P:recycle
+      - U-SPLIT:SPLIT-T:purge
+      - U-SPLIT:SPLIT-P:purge
+      - U-VLV:VLV-mole:A
+      - U-VLV:VLV-mole:B
+      - U-VLV:VLV-mole:C
+      - U-VLV:VLV-P
+      - U-VLV:zero-flow-label
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - U-PHF.Q
+      - S2.N
+      - S3.N
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S6.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S5.P
+      dimension: 33
+      rcond1_scaled: '0.0130549'
+    label:
+      row: U-VLV:zero-flow-label
+      T_out: S5.T
+      T_label: S4.T
+    root:
+      S1.n.A: '1.0000000000000000000'
+      S1.n.B: '1.0000000000000000000'
+      S1.n.C: '1.0000000000000000000'
+      S1.T: '300.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.63308542930876247120'
+      S2.n.B: '0.37578867005784299029'
+      S2.n.C: '0.15634426412773289897'
+      S2.T: '358.09051640358332349'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.36691457069123752880'
+      S3.n.B: '0.62421132994215700971'
+      S3.n.C: '0.84365573587226710103'
+      S3.T: '358.09051640358332349'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '0.0'
+      S4.n.B: '0.0'
+      S4.n.C: '0.0'
+      S4.T: '358.09051640358332349'
+      S4.P: '100000.00000000000000'
+      S6.n.A: '0.36691457069123752880'
+      S6.n.B: '0.62421132994215700971'
+      S6.n.C: '0.84365573587226710103'
+      S6.T: '358.09051640358332349'
+      S6.P: '100000.00000000000000'
+      S5.n.A: '0.0'
+      S5.n.B: '0.0'
+      S5.n.C: '0.0'
+      S5.T: '358.09051640358332349'
+      S5.P: '90000.000000000000000'
+      S5.vap.A: '0.0'
+      S5.liq.A: '0.0'
+      S5.vap.B: '0.0'
+      S5.liq.B: '0.0'
+      S5.vap.C: '0.0'
+      S5.liq.C: '0.0'
+      S5.V: '0.0'
+      S5.L: '0.0'
+      U-PHF.Q: '50000.000000000000000'
+      S2.N: '1.1652183634943383605'
+      S3.N: '1.8347816365056616395'
+    start:
+      S1.n.A: '1.0000000000000000000'
+      S1.n.B: '1.0000000000000000000'
+      S1.n.C: '1.0000000000000000000'
+      S1.T: '300.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.63308542930876247120'
+      S2.n.B: '0.37578867005784299029'
+      S2.n.C: '0.15634426412773289897'
+      S2.T: '359.09051640358332349'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.36691457069123752880'
+      S3.n.B: '0.62421132994215700971'
+      S3.n.C: '0.84365573587226710103'
+      S3.T: '359.09051640358332349'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '0.0'
+      S4.n.B: '0.0'
+      S4.n.C: '0.0'
+      S4.T: '359.09051640358332349'
+      S4.P: '100000.00000000000000'
+      S6.n.A: '0.36691457069123752880'
+      S6.n.B: '0.62421132994215700971'
+      S6.n.C: '0.84365573587226710103'
+      S6.T: '359.09051640358332349'
+      S6.P: '100000.00000000000000'
+      S5.n.A: '0.0'
+      S5.n.B: '0.0'
+      S5.n.C: '0.0'
+      S5.T: '359.09051640358332349'
+      S5.P: '90000.000000000000000'
+      S5.vap.A: '0.0'
+      S5.liq.A: '0.0'
+      S5.vap.B: '0.0'
+      S5.liq.B: '0.0'
+      S5.vap.C: '0.0'
+      S5.liq.C: '0.0'
+      S5.V: '0.0'
+      S5.L: '0.0'
+      U-PHF.Q: '50000.000000000000000'
+      S2.N: '1.1652183634943383605'
+      S3.N: '1.8347816365056616395'
+  DZ-4:
+    full_form:
+      dimension: 20
+      rank: 17
+      identically_zero_rows:
+      - U-RX:RX-equilibrium:A
+      - U-RX:RX-equilibrium:B
+      - U-RX:RX-equilibrium:C
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-RX:RX-mole:A
+      - U-RX:RX-mole:B
+      - U-RX:RX-mole:C
+      - U-RX:RX-conversion
+      - U-RX:RX-pressure
+      - U-RX:RX-spec
+      - U-RX:zero-flow-label
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - U-RX.Q
+      - U-RX.xi
+      dimension: 12
+      rcond1_scaled: '0.0204082'
+    label:
+      row: U-RX:zero-flow-label
+      T_out: S2.T
+      T_label: S1.T
+    root:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '330.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '330.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S2.vap.A: '0.0'
+      S2.liq.A: '0.0'
+      S2.vap.B: '0.0'
+      S2.liq.B: '0.0'
+      S2.vap.C: '0.0'
+      S2.liq.C: '0.0'
+      S2.V: '0.0'
+      S2.L: '0.0'
+      U-RX.Q: '0.0'
+      U-RX.xi: '0.0'
+  DZ-5:
+    full_form:
+      dimension: 19
+      rank: 16
+      identically_zero_rows:
+      - U-HEAT:HEAT-equilibrium:A
+      - U-HEAT:HEAT-equilibrium:B
+      - U-HEAT:HEAT-equilibrium:C
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-HEAT:HEAT-mole:A
+      - U-HEAT:HEAT-mole:B
+      - U-HEAT:HEAT-mole:C
+      - U-HEAT:HEAT-T
+      - U-HEAT:HEAT-pressure
+      - U-HEAT:HEAT-duty
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - U-HEAT.Q
+      dimension: 11
+      rcond1_scaled: '0.228932'
+    label: null
+    root:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '330.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '350.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S2.vap.A: '0.0'
+      S2.liq.A: '0.0'
+      S2.vap.B: '0.0'
+      S2.liq.B: '0.0'
+      S2.vap.C: '0.0'
+      S2.liq.C: '0.0'
+      S2.V: '0.0'
+      S2.L: '0.0'
+      U-HEAT.Q: '0.0'
+degeneracy_at_registered_states_K:
+  C1:
+    S1: '74.270304'
+    S2: '96.169061'
+    S3: '36.195728'
+    S4: '25.770440'
+    S5: '20.379882'
+    S6: '25.756722'
+    split:S4@S5: '22.856774'
+  C2:
+    S1: '39.471144'
+    S2: '35.810852'
+    S3: '68.506703'
+    S4: '30.237185'
+    S5: '82.226674'
+  C3:
+    S1: '74.270304'
+    S2: '46.905790'
+    S3: '36.301074'
+    S4: '23.640682'
+    S5: '22.836487'
+    S6: '22.836487'
+    S7: '22.836487'
+    S8: '72.798011'
+    split:S3@S4: '18.406042'
+  SYN-001-nominal:
+    S1: '74.270304'
+    S2: '56.328930'
+    S3: '27.529061'
+    S4: '23.653364'
+    S5: '22.821949'
+    S6: '22.821949'
+    S7: '22.821949'
+    split:S3@S4: '17.529061'
+r007_states:
+  R7-1:
+    n_mol_per_s:
+    - '0.0'
+    - '1.0000000000000000000'
+    - '0.0'
+    T_K: '360.00000000000000000'
+    P_Pa: '100000.00000000000000'
+    declared_phase: VAPOR
+    tp_gap_K: '300.000000000'
+    degeneracy_K: '0.0'
+    admitted: true
+    why: 'admitted: saturated vapour, T = T_sat exactly'
+  R7-2:
+    n_mol_per_s:
+    - '0.0'
+    - '1.0000000000000000000'
+    - '0.0'
+    T_K: '360.00000200000000000'
+    P_Pa: '100000.00000000000000'
+    declared_phase: LIQUID
+    tp_gap_K: '300.000000000'
+    degeneracy_K: '2.00000000000e-6'
+    admitted: false
+    why: 'refused: 2e-6 K above T_sat is outside the tolerance'
+  R7-3:
+    n_mol_per_s:
+    - '0.0'
+    - '1.0000000000000000000'
+    - '0.0'
+    T_K: '360.00000050000000000'
+    P_Pa: '100000.00000000000000'
+    declared_phase: LIQUID
+    tp_gap_K: '300.000000000'
+    degeneracy_K: '5.00000000000e-7'
+    admitted: true
+    why: 'admitted: 5e-7 K above T_sat is inside the tolerance'
+  R7-4:
+    n_mol_per_s:
+    - '1.0000000000000000000'
+    - '1.0000000000000000000'
+    - '1.0000000000000000000'
+    T_K: '347.45000000000000000'
+    P_Pa: '100000.00000000000000'
+    declared_phase: LIQUID
+    tp_gap_K: '0.0979684121257'
+    degeneracy_K: '26.8203041185'
+    admitted: false
+    why: 'refused: R-007''s registered discriminating state, unchanged'
+injections:
+  INJ-B1:
+    state: SC-1's root with S2.vap = 0, S2.liq = S2.n (V = 0, L = 2) at T = 360 K
+    degeneracy_K: '0.0'
+    energy_balance_U-VLV_W: '2016.0000000000000000'
+    compiled_energy_row_W: '2016.0000000000000000'
+    energy_balance_envelope_in_minus_out_W: '2016.0000000000000000'
+    compiled_equilibrium_rows_max: '0.0'
+  INJ-B2:
+    state: SC-1's root with S2.T = 360.000002 K (the lever-rule split kept)
+    degeneracy_K: '2.0000000000000000000e-6'
+    fresh_regime: VAPOR
+    independent_split_total_mol_per_s: '-1.9328000000000000000'
+    energy_balance_U-VLV_W: '-57984.000400000000000'
+    compiled_energy_row_W: '-0.00040000000000000000000'
+    compiled_equilibrium_row_B: '-7.2321639602198889900e-9'
+  INJ-B2p:
+    state: SC-1's root with S2.T = 360.0000005 K (the lever-rule split kept)
+    degeneracy_K: '5.0000000000000000000e-7'
+    energy_balance_U-VLV_W: '-0.00010000000000000000000'
+  INJ-B3:
+    state: DZ-1's root with S2.T = 331 K
+    label_residual_K: '1.0000000000000000000'
+contract_kernel_states:
+  KS-1:
+    split: U-VLV's outlet (PH-type, heater style), frozen LIQUID at the trial
+    feed_mol_per_s:
+    - '0.0'
+    - '2.0000000000000000000'
+    - '0.0'
+    T_K: '365.08000000000000000'
+    P_Pa: '100000.00000000000000'
+    vapor_mol_per_s:
+    - '0.0'
+    - '0.0'
+    - '0.0'
+    liquid_mol_per_s:
+    - '0.0'
+    - '2.0000000000000000000'
+    - '0.0'
+    H_split_W: '13016.000000000000000'
+    tp_regime: VAPOR
+    ph_closure: ok via saturation
+    expected_regime: TWO_PHASE
+    expected_T_K: '360.00000000000000000'
+    expected_beta: '0.016933333333333333333'
+    expected_record: ''
+  KS-2:
+    split: U-VLV's outlet (PH-type, heater style), frozen LIQUID at the trial
+    feed_mol_per_s:
+    - '1.0000000000000000000e-12'
+    - '2.0000000000000000000'
+    - '0.0'
+    T_K: '430.00000000000000000'
+    P_Pa: '100000.00000000000000'
+    vapor_mol_per_s:
+    - '0.0'
+    - '0.0'
+    - '0.0'
+    liquid_mol_per_s:
+    - '1.0000000000000000000e-12'
+    - '2.0000000000000000000'
+    - '0.0'
+    H_split_W: '26000.000000013000000'
+    tp_regime: VAPOR
+    ph_closure: ok via band
+    expected_regime: TWO_PHASE
+    expected_T_K: '359.99999999997687517'
+    expected_beta: '0.23333333333344905576'
+    expected_record: fallback(U-VLV, ph-band)
+  KS-3:
+    split: U-VLV's outlet (PH-type, heater style), frozen LIQUID at the trial
+    feed_mol_per_s:
+    - '1.0000000000000000000'
+    - '1.0000000000000000000'
+    - '1.0000000000000000000'
+    T_K: '280.00000000000000000'
+    P_Pa: '100000.00000000000000'
+    vapor_mol_per_s:
+    - '0.0'
+    - '0.0'
+    - '0.0'
+    liquid_mol_per_s:
+    - '2.0000000000000000000'
+    - '2.0000000000000000000'
+    - '2.0000000000000000000'
+    H_split_W: '-12000.000000000000000'
+    tp_regime: LIQUID
+    ph_closure: out_of_domain
+    expected_regime: LIQUID
+    expected_record: fallback(U-VLV, tp)
+t05_registered_refusals_degeneracy_K:
+  PHF-F3: '14.270304'
+  PUMP-F1: '72.558818'
+  PUMP-F2: '14.270304'
+  SEP-F2: '29.270304'
+  HX-F4: '24.270304'
+dormancy_forms:
+  syn001.liquid_pump:
+  - item: <U>.outlet
+    trigger: every stream of port inlet exactly dormant
+    swapped_row: <U>:PUMP-energy
+    label_row: <U>:zero-flow-label
+    label: T(outlet) - T(first stream of inlet)
+    declared_phase: LIQUID
+  syn001.adiabatic_mixer:
+  - item: <U>.outlet
+    trigger: every stream of port inlet exactly dormant
+    swapped_row: <U>:MIX-energy
+    label_row: <U>:zero-flow-label
+    label: T(outlet) - T(first stream of inlet)
+    declared_phase: LIQUID
+  syn001.heat_exchanger(specification=duty):
+  - item: <U>.hot_outlet
+    trigger: every stream of port hot_inlet exactly dormant
+    swapped_row: <U>:HX-energy-hot
+    label_row: <U>:zero-flow-label:hot
+    label: T(hot_outlet) - T(first stream of hot_inlet)
+    declared_phase: hot_phase
+  - item: <U>.cold_outlet
+    trigger: every stream of port cold_inlet exactly dormant
+    swapped_row: <U>:HX-energy-cold
+    label_row: <U>:zero-flow-label:cold
+    label: T(cold_outlet) - T(first stream of cold_inlet)
+    declared_phase: cold_phase
+  syn001.heat_exchanger(specification=hot_outlet_temperature):
+  - item: <U>.cold_outlet
+    trigger: every stream of port cold_inlet exactly dormant
+    swapped_row: <U>:HX-energy-cold
+    label_row: <U>:zero-flow-label:cold
+    label: T(cold_outlet) - T(first stream of cold_inlet)
+    declared_phase: cold_phase
+  syn001.heat_exchanger(specification=cold_outlet_temperature):
+  - item: <U>.hot_outlet
+    trigger: every stream of port hot_inlet exactly dormant
+    swapped_row: <U>:HX-energy-hot
+    label_row: <U>:zero-flow-label:hot
+    label: T(hot_outlet) - T(first stream of hot_inlet)
+    declared_phase: hot_phase
+dormant_non_lifted_cases:
+  DZ-6:
+    flowsheet: U-FEED (0,0,0) 330 K 1e5 Pa liquid -> S1 -> U-PUMP (P_out = 1.5e5 Pa, efficiency 0.75) -> S2 -> sink
+    signature:
+    - - U-PUMP.outlet
+      - ZERO_FLOW
+    items:
+    - U-PUMP.outlet
+    label_rows:
+      U-PUMP:zero-flow-label:
+        T_out: S2.T
+        T_label: S1.T
+    swapped_rows:
+    - U-PUMP:PUMP-energy
+    eliminated_rows: []
+    declared_form:
+      dimension: 11
+      rows_count: 11
+      rank: 10
+      rcond1_scaled: '0.0'
+      dormant_T_out_rows:
+        S2.T: []
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-PUMP:PUMP-mole:A
+      - U-PUMP:PUMP-mole:B
+      - U-PUMP:PUMP-mole:C
+      - U-PUMP:PUMP-P
+      - U-PUMP:PUMP-work
+      - U-PUMP:zero-flow-label
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - U-PUMP.W
+      dimension: 11
+      rows_count: 11
+      rank: 11
+      rcond1_scaled: '0.249956'
+    root:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '330.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '330.00000000000000000'
+      S2.P: '150000.00000000000000'
+      U-PUMP.W: '0.0'
+  DZ-7:
+    flowsheet: U-FEED (0,0,0) 290 K 1e5 Pa -> S1 -> U-HX hot side (LIQUID) -> S2 -> sink; U-FEED2 (1,1,1) 300 K 1e5 Pa -> S3 -> U-HX cold side (LIQUID) -> S4 -> sink; specification duty, Q_spec = 0 W
+    signature:
+    - - U-HX.hot_outlet
+      - ZERO_FLOW
+    items:
+    - U-HX.hot_outlet
+    label_rows:
+      U-HX:zero-flow-label:hot:
+        T_out: S2.T
+        T_label: S1.T
+    swapped_rows:
+    - U-HX:HX-energy-hot
+    eliminated_rows: []
+    declared_form:
+      dimension: 21
+      rows_count: 21
+      rank: 20
+      rcond1_scaled: '0.0'
+      dormant_T_out_rows:
+        S2.T: []
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-FEED2:FEED-n:A
+      - U-FEED2:FEED-n:B
+      - U-FEED2:FEED-n:C
+      - U-FEED2:FEED-T
+      - U-FEED2:FEED-P
+      - U-HX:HX-mole-hot:A
+      - U-HX:HX-mole-hot:B
+      - U-HX:HX-mole-hot:C
+      - U-HX:HX-mole-cold:A
+      - U-HX:HX-mole-cold:B
+      - U-HX:HX-mole-cold:C
+      - U-HX:HX-pressure:hot
+      - U-HX:HX-pressure:cold
+      - U-HX:HX-energy-cold
+      - U-HX:HX-spec
+      - U-HX:zero-flow-label:hot
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - U-HX.Q
+      dimension: 21
+      rows_count: 21
+      rank: 21
+      rcond1_scaled: '0.115367'
+    root:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '290.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '290.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '1.0000000000000000000'
+      S3.n.B: '1.0000000000000000000'
+      S3.n.C: '1.0000000000000000000'
+      S3.T: '300.00000000000000000'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '1.0000000000000000000'
+      S4.n.B: '1.0000000000000000000'
+      S4.n.C: '1.0000000000000000000'
+      S4.T: '300.00000000000000000'
+      S4.P: '100000.00000000000000'
+      U-HX.Q: '0.0'
+    terminal_differences_if_judged_K:
+      hot_end: '-10.000000000000000000'
+      cold_end: '-10.000000000000000000'
+  DZ-8:
+    flowsheet: U-FEED (0,0,0) 350 K 1e5 Pa -> S1 -> U-HX hot side (LIQUID) -> S2 -> sink; U-FEED2 (0,0,0) 300 K 1e5 Pa -> S3 -> U-HX cold side (LIQUID) -> S4 -> sink; specification hot_outlet_temperature,
+      T_spec = 345 K
+    signature:
+    - - U-HX.cold_outlet
+      - ZERO_FLOW
+    items:
+    - U-HX.cold_outlet
+    label_rows:
+      U-HX:zero-flow-label:cold:
+        T_out: S4.T
+        T_label: S3.T
+    swapped_rows:
+    - U-HX:HX-energy-cold
+    eliminated_rows: []
+    declared_form:
+      dimension: 21
+      rows_count: 21
+      rank: 20
+      rcond1_scaled: '0.0'
+      dormant_T_out_rows:
+        S4.T: []
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-FEED2:FEED-n:A
+      - U-FEED2:FEED-n:B
+      - U-FEED2:FEED-n:C
+      - U-FEED2:FEED-T
+      - U-FEED2:FEED-P
+      - U-HX:HX-mole-hot:A
+      - U-HX:HX-mole-hot:B
+      - U-HX:HX-mole-hot:C
+      - U-HX:HX-mole-cold:A
+      - U-HX:HX-mole-cold:B
+      - U-HX:HX-mole-cold:C
+      - U-HX:HX-pressure:hot
+      - U-HX:HX-pressure:cold
+      - U-HX:HX-energy-hot
+      - U-HX:HX-spec
+      - U-HX:zero-flow-label:cold
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - U-HX.Q
+      dimension: 21
+      rows_count: 21
+      rank: 21
+      rcond1_scaled: '0.230827'
+    root:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '350.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '345.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.0'
+      S3.n.B: '0.0'
+      S3.n.C: '0.0'
+      S3.T: '300.00000000000000000'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '0.0'
+      S4.n.B: '0.0'
+      S4.n.C: '0.0'
+      S4.T: '300.00000000000000000'
+      S4.P: '100000.00000000000000'
+      U-HX.Q: '0.0'
+  DZ-9:
+    flowsheet: U-FEED (0,0,0) 330 K 1e5 Pa -> S1, U-FEED2 (0,0,0) 310 K 1e5 Pa -> S2; U-MIX (inlets S1, S2 in that wiring order) -> S3 -> sink
+    signature:
+    - - U-MIX.outlet
+      - ZERO_FLOW
+    items:
+    - U-MIX.outlet
+    label_rows:
+      U-MIX:zero-flow-label:
+        T_out: S3.T
+        T_label: S1.T
+    swapped_rows:
+    - U-MIX:MIX-energy
+    eliminated_rows:
+    - U-MIX:MIX-pressure:1
+    declared_form:
+      dimension: 15
+      rows_count: 15
+      rank: 14
+      rcond1_scaled: '0.0'
+      dormant_T_out_rows:
+        S3.T: []
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-FEED2:FEED-n:A
+      - U-FEED2:FEED-n:B
+      - U-FEED2:FEED-n:C
+      - U-FEED2:FEED-T
+      - U-FEED2:FEED-P
+      - U-MIX:MIX-mole:A
+      - U-MIX:MIX-mole:B
+      - U-MIX:MIX-mole:C
+      - U-MIX:MIX-pressure:0
+      - U-MIX:zero-flow-label
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      dimension: 15
+      rows_count: 15
+      rank: 15
+      rcond1_scaled: '0.250000'
+    root:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '330.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '310.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.0'
+      S3.n.B: '0.0'
+      S3.n.C: '0.0'
+      S3.T: '330.00000000000000000'
+      S3.P: '100000.00000000000000'
+  DZ-10:
+    flowsheet: 'DZ-3 with U-VLV replaced by U-PUMP: U-FEED (1,1,1) 300 K 1e5 Pa liquid -> S1 -> U-PHF (Q_spec = 50000 W, dP = 0, inlet LIQUID) -> S2 (vapor) -> sink; S3 (liquid) -> U-SPLIT (r = 0) -> S4
+      (recycle, dormant) -> U-PUMP (P_out = 1.5e5 Pa, efficiency 0.75) -> S5 -> sink; S6 (purge) -> sink'
+    signature:
+    - - U-PHF
+      - TWO_PHASE
+    - - U-PUMP.outlet
+      - ZERO_FLOW
+    items:
+    - U-PUMP.outlet
+    label_rows:
+      U-PUMP:zero-flow-label:
+        T_out: S5.T
+        T_label: S4.T
+    swapped_rows:
+    - U-PUMP:PUMP-energy
+    eliminated_rows: []
+    declared_form:
+      dimension: 34
+      rows_count: 34
+      rank: 33
+      rcond1_scaled: '0.0'
+      dormant_T_out_rows:
+        S5.T: []
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-PHF:PHF-mole:A
+      - U-PHF:PHF-mole:B
+      - U-PHF:PHF-mole:C
+      - U-PHF:PHF-equilibrium:A
+      - U-PHF:PHF-equilibrium:B
+      - U-PHF:PHF-equilibrium:C
+      - U-PHF:PHF-T
+      - U-PHF:PHF-pressure:vapor
+      - U-PHF:PHF-pressure:liquid
+      - U-PHF:PHF-duty
+      - U-PHF:PHF-Q
+      - U-PHF:Ndef:vapor
+      - U-PHF:Ndef:liquid
+      - U-SPLIT:SPLIT-recycle:A
+      - U-SPLIT:SPLIT-purge:A
+      - U-SPLIT:SPLIT-recycle:B
+      - U-SPLIT:SPLIT-purge:B
+      - U-SPLIT:SPLIT-recycle:C
+      - U-SPLIT:SPLIT-purge:C
+      - U-SPLIT:SPLIT-T:recycle
+      - U-SPLIT:SPLIT-P:recycle
+      - U-SPLIT:SPLIT-T:purge
+      - U-SPLIT:SPLIT-P:purge
+      - U-PUMP:PUMP-mole:A
+      - U-PUMP:PUMP-mole:B
+      - U-PUMP:PUMP-mole:C
+      - U-PUMP:PUMP-P
+      - U-PUMP:PUMP-work
+      - U-PUMP:zero-flow-label
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - U-PHF.Q
+      - S2.N
+      - S3.N
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S6.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S5.P
+      - U-PUMP.W
+      dimension: 34
+      rows_count: 34
+      rank: 34
+      rcond1_scaled: '0.0130549'
+    root:
+      S1.n.A: '1.0000000000000000000'
+      S1.n.B: '1.0000000000000000000'
+      S1.n.C: '1.0000000000000000000'
+      S1.T: '300.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.63308542930876247120'
+      S2.n.B: '0.37578867005784299029'
+      S2.n.C: '0.15634426412773289897'
+      S2.T: '358.09051640358332349'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.36691457069123752880'
+      S3.n.B: '0.62421132994215700971'
+      S3.n.C: '0.84365573587226710103'
+      S3.T: '358.09051640358332349'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '0.0'
+      S4.n.B: '0.0'
+      S4.n.C: '0.0'
+      S4.T: '358.09051640358332349'
+      S4.P: '100000.00000000000000'
+      S6.n.A: '0.36691457069123752880'
+      S6.n.B: '0.62421132994215700971'
+      S6.n.C: '0.84365573587226710103'
+      S6.T: '358.09051640358332349'
+      S6.P: '100000.00000000000000'
+      S5.n.A: '0.0'
+      S5.n.B: '0.0'
+      S5.n.C: '0.0'
+      S5.T: '358.09051640358332349'
+      S5.P: '150000.00000000000000'
+      U-PHF.Q: '50000.000000000000000'
+      S2.N: '1.1652183634943383605'
+      S3.N: '1.8347816365056616395'
+      U-PUMP.W: '0.0'
+    start:
+      S1.n.A: '1.0000000000000000000'
+      S1.n.B: '1.0000000000000000000'
+      S1.n.C: '1.0000000000000000000'
+      S1.T: '300.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.63308542930876247120'
+      S2.n.B: '0.37578867005784299029'
+      S2.n.C: '0.15634426412773289897'
+      S2.T: '359.09051640358332349'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.36691457069123752880'
+      S3.n.B: '0.62421132994215700971'
+      S3.n.C: '0.84365573587226710103'
+      S3.T: '359.09051640358332349'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '0.0'
+      S4.n.B: '0.0'
+      S4.n.C: '0.0'
+      S4.T: '359.09051640358332349'
+      S4.P: '100000.00000000000000'
+      S6.n.A: '0.36691457069123752880'
+      S6.n.B: '0.62421132994215700971'
+      S6.n.C: '0.84365573587226710103'
+      S6.T: '359.09051640358332349'
+      S6.P: '100000.00000000000000'
+      S5.n.A: '0.0'
+      S5.n.B: '0.0'
+      S5.n.C: '0.0'
+      S5.T: '359.09051640358332349'
+      S5.P: '150000.00000000000000'
+      U-PHF.Q: '50000.000000000000000'
+      S2.N: '1.1652183634943383605'
+      S3.N: '1.8347816365056616395'
+      U-PUMP.W: '0.0'
+    phf1_T_K: '358.09051640358332349'
+  DZ-12:
+    flowsheet: U-FEED (1,1,1) 300 K 1e5 Pa liquid -> S1 -> U-PHF (Q_spec = 30000 W, dP = 0, inlet LIQUID) -> S2 (vapor), S3 (liquid); S2 -> U-HX hot side (VAPOR) -> S4 -> sink; U-FEED2 (1,1,1) 300 K 1e5
+      Pa -> S5 -> U-HX cold side (LIQUID) -> S6 -> sink; U-HX specification duty, Q_spec = 0 W; S3 -> sink. Solved from the registered start
+    signature:
+    - - U-PHF
+      - TWO_PHASE
+    items: []
+    label_rows: {}
+    swapped_rows: []
+    eliminated_rows: []
+    declared_form:
+      dimension: 34
+      rows_count: 34
+      rank: 34
+      rcond1_scaled: '0.00672043'
+      dormant_T_out_rows: {}
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-PHF:PHF-mole:A
+      - U-PHF:PHF-mole:B
+      - U-PHF:PHF-mole:C
+      - U-PHF:PHF-equilibrium:A
+      - U-PHF:PHF-equilibrium:B
+      - U-PHF:PHF-equilibrium:C
+      - U-PHF:PHF-T
+      - U-PHF:PHF-pressure:vapor
+      - U-PHF:PHF-pressure:liquid
+      - U-PHF:PHF-duty
+      - U-PHF:PHF-Q
+      - U-PHF:Ndef:vapor
+      - U-PHF:Ndef:liquid
+      - U-FEED2:FEED-n:A
+      - U-FEED2:FEED-n:B
+      - U-FEED2:FEED-n:C
+      - U-FEED2:FEED-T
+      - U-FEED2:FEED-P
+      - U-HX:HX-mole-hot:A
+      - U-HX:HX-mole-hot:B
+      - U-HX:HX-mole-hot:C
+      - U-HX:HX-mole-cold:A
+      - U-HX:HX-mole-cold:B
+      - U-HX:HX-mole-cold:C
+      - U-HX:HX-pressure:hot
+      - U-HX:HX-pressure:cold
+      - U-HX:HX-energy-hot
+      - U-HX:HX-energy-cold
+      - U-HX:HX-spec
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - U-PHF.Q
+      - S2.N
+      - S3.N
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - S5.n.A
+      - S5.n.B
+      - S5.n.C
+      - S5.T
+      - S5.P
+      - S6.n.A
+      - S6.n.B
+      - S6.n.C
+      - S6.T
+      - S6.P
+      - U-HX.Q
+      dimension: 34
+      rows_count: 34
+      rank: 34
+      rcond1_scaled: '0.00672043'
+    root:
+      S1.n.A: '1.0000000000000000000'
+      S1.n.B: '1.0000000000000000000'
+      S1.n.C: '1.0000000000000000000'
+      S1.T: '300.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.33394484582700498100'
+      S2.n.B: '0.14524811561710262773'
+      S2.n.C: '0.048354988318850533761'
+      S2.T: '352.00503598217342654'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.66605515417299501900'
+      S3.n.B: '0.85475188438289737227'
+      S3.n.C: '0.95164501168114946624'
+      S3.T: '352.00503598217342654'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '0.33394484582700498100'
+      S4.n.B: '0.14524811561710262773'
+      S4.n.C: '0.048354988318850533761'
+      S4.T: '352.00503598217342654'
+      S4.P: '100000.00000000000000'
+      S5.n.A: '1.0000000000000000000'
+      S5.n.B: '1.0000000000000000000'
+      S5.n.C: '1.0000000000000000000'
+      S5.T: '300.00000000000000000'
+      S5.P: '100000.00000000000000'
+      S6.n.A: '1.0000000000000000000'
+      S6.n.B: '1.0000000000000000000'
+      S6.n.C: '1.0000000000000000000'
+      S6.T: '300.00000000000000000'
+      S6.P: '100000.00000000000000'
+      U-PHF.Q: '30000.000000000000000'
+      S2.N: '0.52754794976295814249'
+      S3.N: '2.4724520502370418575'
+      U-HX.Q: '0.0'
+    start:
+      S1.n.A: '1.0000000000000000000'
+      S1.n.B: '1.0000000000000000000'
+      S1.n.C: '1.0000000000000000000'
+      S1.T: '300.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '400.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '1.0000000000000000000'
+      S3.n.B: '1.0000000000000000000'
+      S3.n.C: '1.0000000000000000000'
+      S3.T: '400.00000000000000000'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '0.0'
+      S4.n.B: '0.0'
+      S4.n.C: '0.0'
+      S4.T: '400.00000000000000000'
+      S4.P: '100000.00000000000000'
+      S5.n.A: '1.0000000000000000000'
+      S5.n.B: '1.0000000000000000000'
+      S5.n.C: '1.0000000000000000000'
+      S5.T: '300.00000000000000000'
+      S5.P: '100000.00000000000000'
+      S6.n.A: '1.0000000000000000000'
+      S6.n.B: '1.0000000000000000000'
+      S6.n.C: '1.0000000000000000000'
+      S6.T: '300.00000000000000000'
+      S6.P: '100000.00000000000000'
+      U-PHF.Q: '30000.000000000000000'
+      S2.N: '0.0'
+      S3.N: '3.0000000000000000000'
+      U-HX.Q: '0.0'
+    attempt0:
+      signature:
+      - - U-PHF
+        - LIQUID
+      - - U-HX.hot_outlet
+        - ZERO_FLOW
+      core_outcome: CONVERGED at iteration 0 (every row of the attempt vanishes at the start)
+      form:
+        rows:
+        - U-FEED:FEED-n:A
+        - U-FEED:FEED-n:B
+        - U-FEED:FEED-n:C
+        - U-FEED:FEED-T
+        - U-FEED:FEED-P
+        - U-PHF:PHF-mole:A
+        - U-PHF:PHF-mole:B
+        - U-PHF:PHF-mole:C
+        - U-PHF:PHF-T
+        - U-PHF:PHF-pressure:vapor
+        - U-PHF:PHF-pressure:liquid
+        - U-PHF:PHF-duty
+        - U-PHF:PHF-Q
+        - U-PHF:Ndef:liquid
+        - U-FEED2:FEED-n:A
+        - U-FEED2:FEED-n:B
+        - U-FEED2:FEED-n:C
+        - U-FEED2:FEED-T
+        - U-FEED2:FEED-P
+        - U-HX:HX-mole-hot:A
+        - U-HX:HX-mole-hot:B
+        - U-HX:HX-mole-hot:C
+        - U-HX:HX-mole-cold:A
+        - U-HX:HX-mole-cold:B
+        - U-HX:HX-mole-cold:C
+        - U-HX:HX-pressure:hot
+        - U-HX:HX-pressure:cold
+        - U-HX:HX-energy-cold
+        - U-HX:HX-spec
+        - U-HX:zero-flow-label:hot
+        columns:
+        - S1.n.A
+        - S1.n.B
+        - S1.n.C
+        - S1.T
+        - S1.P
+        - S2.T
+        - S2.P
+        - S3.n.A
+        - S3.n.B
+        - S3.n.C
+        - S3.T
+        - S3.P
+        - U-PHF.Q
+        - S3.N
+        - S4.n.A
+        - S4.n.B
+        - S4.n.C
+        - S4.T
+        - S4.P
+        - S5.n.A
+        - S5.n.B
+        - S5.n.C
+        - S5.T
+        - S5.P
+        - S6.n.A
+        - S6.n.B
+        - S6.n.C
+        - S6.T
+        - S6.P
+        - U-HX.Q
+        dimension: 30
+        rows_count: 30
+        rank: 30
+        rcond1_scaled: '0.0303000'
+      form_without_the_hx_zero_flow_form:
+        dimension: 30
+        rows_count: 30
+        rank: 29
+        rcond1_scaled: '0.0'
+      closure: 'U-PHF''s LIQUID branch inadmissible: sum x K at 400 K = 3.42436207376'
+      kernel_H_split_W: '30000.000000000000000'
+      kernel:
+        status: ok
+        route: bracket
+        regime: TWO_PHASE
+        T_K: '352.00503598217342654'
+    attempt1:
+      signature:
+      - - U-PHF
+        - TWO_PHASE
+      opening_message: phase_update(inadmissible(S1, all_liquid))
+      opening_with_outlet_reset:
+        dimension: 34
+        rows_count: 34
+        rank: 34
+        rcond1_scaled: '0.00603061'
+      opening_without_outlet_reset:
+        dimension: 34
+        rows_count: 34
+        rank: 33
+        rcond1_scaled: '0.0'
+    root_checks:
+      hot_outlet_dew_function: '0.0'
+      hot_outlet_degeneracy_K: '20.635834'
+      hot_end_K: '52.0050359822'
+      cold_end_K: '52.0050359822'
+zero_flow_conflicts:
+  DZ-11:
+    flowsheet: 'DZ-7 with Q_spec = 1000 W, solved from DZ-7''s root (the traversal refuses: specification_unsatisfiable_with_dormant_side)'
+    Q_spec_W: '1000.0000000000000000'
+    signature:
+    - - U-HX.hot_outlet
+      - ZERO_FLOW
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-FEED2:FEED-n:A
+      - U-FEED2:FEED-n:B
+      - U-FEED2:FEED-n:C
+      - U-FEED2:FEED-T
+      - U-FEED2:FEED-P
+      - U-HX:HX-mole-hot:A
+      - U-HX:HX-mole-hot:B
+      - U-HX:HX-mole-hot:C
+      - U-HX:HX-mole-cold:A
+      - U-HX:HX-mole-cold:B
+      - U-HX:HX-mole-cold:C
+      - U-HX:HX-pressure:hot
+      - U-HX:HX-pressure:cold
+      - U-HX:HX-energy-cold
+      - U-HX:HX-spec
+      - U-HX:zero-flow-label:hot
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.n.A
+      - S2.n.B
+      - S2.n.C
+      - S2.T
+      - S2.P
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      - S3.P
+      - S4.n.A
+      - S4.n.B
+      - S4.n.C
+      - S4.T
+      - S4.P
+      - U-HX.Q
+      dimension: 21
+      rows_count: 21
+      rank: 21
+      rcond1_scaled: '0.115367'
+    start:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '290.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '290.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '1.0000000000000000000'
+      S3.n.B: '1.0000000000000000000'
+      S3.n.C: '1.0000000000000000000'
+      S3.T: '300.00000000000000000'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '1.0000000000000000000'
+      S4.n.B: '1.0000000000000000000'
+      S4.n.C: '1.0000000000000000000'
+      S4.T: '300.00000000000000000'
+      S4.P: '100000.00000000000000'
+      U-HX.Q: '0.0'
+    end_state:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '290.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '290.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '1.0000000000000000000'
+      S3.n.B: '1.0000000000000000000'
+      S3.n.C: '1.0000000000000000000'
+      S3.T: '300.00000000000000000'
+      S3.P: '100000.00000000000000'
+      S4.n.A: '1.0000000000000000000'
+      S4.n.B: '1.0000000000000000000'
+      S4.n.C: '1.0000000000000000000'
+      S4.T: '303.33333333333333333'
+      S4.P: '100000.00000000000000'
+      U-HX.Q: '1000.0000000000000000'
+    swapped_row_at_end_W:
+      U-HX:HX-energy-hot: '-1000.0000000000000000'
+    expected:
+      outcome: SPECIFICATION_CONFLICT
+      message: zero_flow_conflict(U-HX:HX-energy-hot)
+    start_rows_not_satisfied:
+    - U-HX:HX-spec
+  DZ-2C:
+    flowsheet: 'DZ-2 with Q_spec = 1000 W, solved from DZ-2''s root (the traversal refuses: duty_into_dormant_stream)'
+    Q_spec_W: '1000.0000000000000000'
+    signature:
+    - - U-PHF
+      - ZERO_FLOW
+    zero_flow_form:
+      rows:
+      - U-FEED:FEED-n:A
+      - U-FEED:FEED-n:B
+      - U-FEED:FEED-n:C
+      - U-FEED:FEED-T
+      - U-FEED:FEED-P
+      - U-PHF:PHF-T
+      - U-PHF:PHF-pressure:vapor
+      - U-PHF:PHF-pressure:liquid
+      - U-PHF:PHF-Q
+      - U-PHF:zero-flow-label
+      columns:
+      - S1.n.A
+      - S1.n.B
+      - S1.n.C
+      - S1.T
+      - S1.P
+      - S2.T
+      - S2.P
+      - S3.T
+      - S3.P
+      - U-PHF.Q
+      dimension: 10
+      rows_count: 10
+      rank: 10
+      rcond1_scaled: '0.111111'
+    start:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '330.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '330.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.0'
+      S3.n.B: '0.0'
+      S3.n.C: '0.0'
+      S3.T: '330.00000000000000000'
+      S3.P: '100000.00000000000000'
+      U-PHF.Q: '0.0'
+      S2.N: '0.0'
+      S3.N: '0.0'
+    end_state:
+      S1.n.A: '0.0'
+      S1.n.B: '0.0'
+      S1.n.C: '0.0'
+      S1.T: '330.00000000000000000'
+      S1.P: '100000.00000000000000'
+      S2.n.A: '0.0'
+      S2.n.B: '0.0'
+      S2.n.C: '0.0'
+      S2.T: '330.00000000000000000'
+      S2.P: '100000.00000000000000'
+      S3.n.A: '0.0'
+      S3.n.B: '0.0'
+      S3.n.C: '0.0'
+      S3.T: '330.00000000000000000'
+      S3.P: '100000.00000000000000'
+      U-PHF.Q: '1000.0000000000000000'
+      S2.N: '0.0'
+      S3.N: '0.0'
+    swapped_row_at_end_W:
+      U-PHF:PHF-duty: '1000.0000000000000000'
+    expected:
+      outcome: SPECIFICATION_CONFLICT
+      message: zero_flow_conflict(U-PHF:PHF-duty)
+dormant_non_lifted_injections:
+  INJ-B4:
+    state: DZ-11's end state, given to the verifier
+    residual_U-HX:HX-energy-hot_W: '-1000.0000000000000000'
+    residual_U-HX:zero-flow-label:hot_K: '0.0'
+    energy_balance_U-HX_in_minus_out_W: '-1000.0000000000000000'
+    energy_balance_envelope_in_minus_out_W: '-1000.0000000000000000'
+  INJ-B5:
+    state: DZ-9's root with S3.T = 310 K (inlet 1's temperature, not inlet 0's)
+    residual_U-MIX:zero-flow-label_K: '-20.000000000000000000'
+    compiled_rows_max: '0.0'
+dormant_outlet_structure:
+  models:
+    syn001.valve:
+      S2.T:
+        rows: []
+        determined_by: lifted
+    syn001.ph_flash:
+      S2.T:
+        rows:
+        - U-PHF:PHF-T
+        determined_by: lifted
+      S3.T:
+        rows:
+        - U-PHF:PHF-T
+        determined_by: lifted
+    syn001.conversion_reactor(duty):
+      S2.T:
+        rows: []
+        determined_by: lifted
+    syn001.conversion_reactor(outlet_temperature):
+      S2.T:
+        rows:
+        - U-RX:RX-spec
+        determined_by: row
+    syn001.liquid_pump:
+      S2.T:
+        rows: []
+        determined_by: form
+    syn001.component_separator:
+      S2.T:
+        rows:
+        - U-SEP:SEP-T:top
+        determined_by: row
+      S3.T:
+        rows:
+        - U-SEP:SEP-T:bottom
+        determined_by: row
+    syn001.heat_exchanger(hot side dormant):
+      S2.T:
+        rows: []
+        determined_by: form
+      S4.T:
+        rows:
+        - U-HX:HX-energy-cold
+        determined_by: row
+    syn001.tp_heater:
+      S2.T:
+        rows:
+        - U-HEAT:HEAT-T
+        determined_by: row
+    syn001.splitter:
+      S2.T:
+        rows:
+        - U-SPLIT:SPLIT-T:recycle
+        determined_by: row
+      S3.T:
+        rows:
+        - U-SPLIT:SPLIT-T:purge
+        determined_by: row
+    syn001.adiabatic_mixer:
+      S3.T:
+        rows: []
+        determined_by: form
+  exchanger_patterns:
+    duty/hot:
+      dormant_T_out_rows:
+        S2.T: []
+      items:
+      - U-HX.hot_outlet
+      declared_rank: 20
+      dimension: 21
+      zero_flow_rank: 21
+    duty/cold:
+      dormant_T_out_rows:
+        S4.T: []
+      items:
+      - U-HX.cold_outlet
+      declared_rank: 20
+      dimension: 21
+      zero_flow_rank: 21
+    duty/both:
+      dormant_T_out_rows:
+        S2.T: []
+        S4.T: []
+      items:
+      - U-HX.hot_outlet
+      - U-HX.cold_outlet
+      declared_rank: 19
+      dimension: 21
+      zero_flow_rank: 21
+    hot_outlet_temperature/hot:
+      dormant_T_out_rows:
+        S2.T:
+        - U-HX:HX-spec
+      items: []
+      declared_rank: 21
+      dimension: 21
+      zero_flow_rank: 21
+    hot_outlet_temperature/cold:
+      dormant_T_out_rows:
+        S4.T: []
+      items:
+      - U-HX.cold_outlet
+      declared_rank: 20
+      dimension: 21
+      zero_flow_rank: 21
+    hot_outlet_temperature/both:
+      dormant_T_out_rows:
+        S2.T:
+        - U-HX:HX-spec
+        S4.T: []
+      items:
+      - U-HX.cold_outlet
+      declared_rank: 20
+      dimension: 21
+      zero_flow_rank: 21
+    cold_outlet_temperature/hot:
+      dormant_T_out_rows:
+        S2.T: []
+      items:
+      - U-HX.hot_outlet
+      declared_rank: 20
+      dimension: 21
+      zero_flow_rank: 21
+    cold_outlet_temperature/cold:
+      dormant_T_out_rows:
+        S4.T:
+        - U-HX:HX-spec
+      items: []
+      declared_rank: 21
+      dimension: 21
+      zero_flow_rank: 21
+    cold_outlet_temperature/both:
+      dormant_T_out_rows:
+        S2.T: []
+        S4.T:
+        - U-HX:HX-spec
+      items:
+      - U-HX.hot_outlet
+      declared_rank: 20
+      dimension: 21
+      zero_flow_rank: 21
+registered_dormancy_trigger_flows_mol_per_s:
+  C1:U-PUMP.outlet (inlet S1): '3.0000000000000000000'
+  C2:U-MIX.outlet (inlets S1, S4): '5.1435406698564593301'
+  C3:U-MIX.outlet (inlets S2, S6): '5.4647028946070063831'
+  C3:U-HX.cold_outlet (inlet S1; hot side temperature-specified): '3.0000000000000000000'
+  C3X:U-MIX.outlet (inlets S2, S6): '5.3356857074851719757'
+  C3X:U-HX.cold_outlet (inlet S1): '3.0000000000000000000'
+  SC-4:U-PUMP.outlet (inlet S3): '1.0000000000000000000'
+downstream_flash_cases:
+  _about: 'Spec B31 (b), (i) (Q-S9 addendum, 2026-09-25): U-PHF at DZ-12''s root (30 000 W) feeding Q = 0 flashes (CH-UP: U-PHF2 on S2; CH-3: U-PHF2, U-PHF3 in series; BUB: U-PHF4 on the liquid product
+    S3), each with pressure drop dp, in the declared lifted form at the closed-form root (the feed passed through at its own T, P_in - dp; the other product zero). boundary_function: sum y/K - 1 (fed a
+    vapour) or sum K x - 1 (fed a liquid) at the product''s T and P; block_det: the equilibrium rows over the absent product''s flows, its total substituted'
+  downstream_pressure_drop_Pa: '10000.000000000000000'
+  CH-UP/dp=0:
+    dimension: 31
+    declared_rank: 30
+    rcond1_scaled: '0.0'
+    null_right_support:
+    - S4.N
+    - S4.T
+    - S4.n.A
+    - S4.n.B
+    - S4.n.C
+    - S5.N
+    - S5.T
+    - S5.n.A
+    - S5.n.B
+    - S5.n.C
+    null_left_support:
+    - U-PHF2:Ndef:liquid
+    - U-PHF2:PHF-equilibrium:A
+    - U-PHF2:PHF-equilibrium:B
+    - U-PHF2:PHF-equilibrium:C
+    flashes:
+      U-PHF2:
+        fed: vapor
+        boundary_function: '0.0'
+        block_det: '0.0'
+        product_P_Pa: '100000.00000000000000'
+  CH-UP/dp=10000:
+    dimension: 31
+    declared_rank: 31
+    rcond1_scaled: '1.89304e-5'
+    null_right_support: []
+    null_left_support: []
+    flashes:
+      U-PHF2:
+        fed: vapor
+        boundary_function: '-0.099692437314632840986'
+        block_det: '-0.00893870183841'
+        product_P_Pa: '90000.000000000000000'
+  CH-3/dp=0:
+    dimension: 44
+    declared_rank: 42
+    rcond1_scaled: '0.0'
+    null_right_support:
+    - S4.N
+    - S4.T
+    - S4.n.A
+    - S4.n.B
+    - S4.n.C
+    - S5.N
+    - S5.T
+    - S5.n.A
+    - S5.n.B
+    - S5.n.C
+    - S6.N
+    - S6.T
+    - S6.n.A
+    - S6.n.B
+    - S6.n.C
+    - S7.N
+    - S7.T
+    - S7.n.A
+    - S7.n.B
+    - S7.n.C
+    null_left_support:
+    - U-PHF2:Ndef:liquid
+    - U-PHF2:PHF-equilibrium:A
+    - U-PHF2:PHF-equilibrium:B
+    - U-PHF2:PHF-equilibrium:C
+    - U-PHF3:Ndef:liquid
+    - U-PHF3:PHF-equilibrium:A
+    - U-PHF3:PHF-equilibrium:B
+    - U-PHF3:PHF-equilibrium:C
+    flashes:
+      U-PHF2:
+        fed: vapor
+        boundary_function: '0.0'
+        block_det: '0.0'
+        product_P_Pa: '100000.00000000000000'
+      U-PHF3:
+        fed: vapor
+        boundary_function: '0.0'
+        block_det: '0.0'
+        product_P_Pa: '100000.00000000000000'
+  CH-3/dp=10000:
+    dimension: 44
+    declared_rank: 44
+    rcond1_scaled: '9.71245e-6'
+    null_right_support: []
+    null_left_support: []
+    flashes:
+      U-PHF2:
+        fed: vapor
+        boundary_function: '-0.099692437314632840986'
+        block_det: '-0.00893870183841'
+        product_P_Pa: '90000.000000000000000'
+      U-PHF3:
+        fed: vapor
+        boundary_function: '-0.19945312846571228002'
+        block_det: '-0.0254369766130'
+        product_P_Pa: '80000.000000000000000'
+  BUB/dp=0:
+    dimension: 31
+    declared_rank: 30
+    rcond1_scaled: '0.0'
+    null_right_support:
+    - S4.N
+    - S4.T
+    - S4.n.A
+    - S4.n.B
+    - S4.n.C
+    - S5.N
+    - S5.T
+    - S5.n.A
+    - S5.n.B
+    - S5.n.C
+    null_left_support:
+    - U-PHF4:Ndef:vapor
+    - U-PHF4:PHF-equilibrium:A
+    - U-PHF4:PHF-equilibrium:B
+    - U-PHF4:PHF-equilibrium:C
+    flashes:
+      U-PHF4:
+        fed: liquid
+        boundary_function: '-2.2958874039497802890e-41'
+        block_det: '2.83014290281e-40'
+        product_P_Pa: '100000.00000000000000'
+generator_claims:
+  count: 630
+  names:
+  - imports_nothing_from_process_runtime_or_benchmarks
+  - t05_reference_file_unchanged
+  - band_temperature_increasing_in_beta(A,1.0e-12)
+  - band_enthalpy_strictly_increasing_in_beta(A,1.0e-12)
+  - band_end_enthalpies(A,1.0e-12)
+  - g_increasing_in_T(A,1.0e-12,0.0)
+  - g_increasing_in_T(A,1.0e-12,0.5)
+  - g_increasing_in_T(A,1.0e-12,1.0)
+  - band_width_linear_in_trace(A,1.0e-12)
+  - band_temperature_increasing_in_beta(A,1.0e-9)
+  - band_enthalpy_strictly_increasing_in_beta(A,1.0e-9)
+  - band_end_enthalpies(A,1.0e-9)
+  - g_increasing_in_T(A,1.0e-9,0.0)
+  - g_increasing_in_T(A,1.0e-9,0.5)
+  - g_increasing_in_T(A,1.0e-9,1.0)
+  - band_width_linear_in_trace(A,1.0e-9)
+  - band_temperature_increasing_in_beta(A,1.0e-7)
+  - band_enthalpy_strictly_increasing_in_beta(A,1.0e-7)
+  - band_end_enthalpies(A,1.0e-7)
+  - g_increasing_in_T(A,1.0e-7,0.0)
+  - g_increasing_in_T(A,1.0e-7,0.5)
+  - g_increasing_in_T(A,1.0e-7,1.0)
+  - band_width_linear_in_trace(A,1.0e-7)
+  - band_temperature_increasing_in_beta(A,1.0e-6)
+  - band_enthalpy_strictly_increasing_in_beta(A,1.0e-6)
+  - band_end_enthalpies(A,1.0e-6)
+  - g_increasing_in_T(A,1.0e-6,0.0)
+  - g_increasing_in_T(A,1.0e-6,0.5)
+  - g_increasing_in_T(A,1.0e-6,1.0)
+  - band_temperature_increasing_in_beta(C,1.0e-12)
+  - band_enthalpy_strictly_increasing_in_beta(C,1.0e-12)
+  - band_end_enthalpies(C,1.0e-12)
+  - g_increasing_in_T(C,1.0e-12,0.0)
+  - g_increasing_in_T(C,1.0e-12,0.5)
+  - g_increasing_in_T(C,1.0e-12,1.0)
+  - band_width_linear_in_trace(C,1.0e-12)
+  - band_temperature_increasing_in_beta(C,1.0e-9)
+  - band_enthalpy_strictly_increasing_in_beta(C,1.0e-9)
+  - band_end_enthalpies(C,1.0e-9)
+  - g_increasing_in_T(C,1.0e-9,0.0)
+  - g_increasing_in_T(C,1.0e-9,0.5)
+  - g_increasing_in_T(C,1.0e-9,1.0)
+  - band_width_linear_in_trace(C,1.0e-9)
+  - band_temperature_increasing_in_beta(C,1.0e-7)
+  - band_enthalpy_strictly_increasing_in_beta(C,1.0e-7)
+  - band_end_enthalpies(C,1.0e-7)
+  - g_increasing_in_T(C,1.0e-7,0.0)
+  - g_increasing_in_T(C,1.0e-7,0.5)
+  - g_increasing_in_T(C,1.0e-7,1.0)
+  - band_width_linear_in_trace(C,1.0e-7)
+  - band_temperature_increasing_in_beta(C,1.0e-6)
+  - band_enthalpy_strictly_increasing_in_beta(C,1.0e-6)
+  - band_end_enthalpies(C,1.0e-6)
+  - g_increasing_in_T(C,1.0e-6,0.0)
+  - g_increasing_in_T(C,1.0e-6,0.5)
+  - g_increasing_in_T(C,1.0e-6,1.0)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-12-0.1)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-12-0.1)
+  - reference_inside_band(NPK-A-1.0e-12-0.1)
+  - band_route_53_accepts(NPK-A-1.0e-12-0.1)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-12-0.1)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-12-0.1)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-12-0.1)
+  - temperature_route_fails_energy_by_10x(NPK-A-1.0e-12-0.1)
+  - pure_limit(NPK-A-1.0e-12-0.1)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-12-0.3)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-12-0.3)
+  - reference_inside_band(NPK-A-1.0e-12-0.3)
+  - band_route_53_accepts(NPK-A-1.0e-12-0.3)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-12-0.3)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-12-0.3)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-12-0.3)
+  - temperature_route_fails_energy_by_10x(NPK-A-1.0e-12-0.3)
+  - pure_limit(NPK-A-1.0e-12-0.3)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-12-0.5)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-12-0.5)
+  - reference_inside_band(NPK-A-1.0e-12-0.5)
+  - band_route_53_accepts(NPK-A-1.0e-12-0.5)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-12-0.5)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-12-0.5)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-12-0.5)
+  - pure_limit(NPK-A-1.0e-12-0.5)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-12-0.7)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-12-0.7)
+  - reference_inside_band(NPK-A-1.0e-12-0.7)
+  - band_route_53_accepts(NPK-A-1.0e-12-0.7)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-12-0.7)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-12-0.7)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-12-0.7)
+  - temperature_route_fails_energy_by_10x(NPK-A-1.0e-12-0.7)
+  - pure_limit(NPK-A-1.0e-12-0.7)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-12-0.9)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-12-0.9)
+  - reference_inside_band(NPK-A-1.0e-12-0.9)
+  - band_route_53_accepts(NPK-A-1.0e-12-0.9)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-12-0.9)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-12-0.9)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-12-0.9)
+  - temperature_route_fails_energy_by_10x(NPK-A-1.0e-12-0.9)
+  - pure_limit(NPK-A-1.0e-12-0.9)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-9-0.1)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-9-0.1)
+  - reference_inside_band(NPK-A-1.0e-9-0.1)
+  - band_route_53_accepts(NPK-A-1.0e-9-0.1)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-9-0.1)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-9-0.1)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-9-0.1)
+  - temperature_route_fails_energy_by_10x(NPK-A-1.0e-9-0.1)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-9-0.3)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-9-0.3)
+  - reference_inside_band(NPK-A-1.0e-9-0.3)
+  - band_route_53_accepts(NPK-A-1.0e-9-0.3)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-9-0.3)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-9-0.3)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-9-0.3)
+  - temperature_route_fails_energy_by_10x(NPK-A-1.0e-9-0.3)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-9-0.5)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-9-0.5)
+  - reference_inside_band(NPK-A-1.0e-9-0.5)
+  - band_route_53_accepts(NPK-A-1.0e-9-0.5)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-9-0.5)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-9-0.5)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-9-0.5)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-9-0.7)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-9-0.7)
+  - reference_inside_band(NPK-A-1.0e-9-0.7)
+  - band_route_53_accepts(NPK-A-1.0e-9-0.7)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-9-0.7)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-9-0.7)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-9-0.7)
+  - temperature_route_fails_energy_by_10x(NPK-A-1.0e-9-0.7)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-9-0.9)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-9-0.9)
+  - reference_inside_band(NPK-A-1.0e-9-0.9)
+  - band_route_53_accepts(NPK-A-1.0e-9-0.9)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-9-0.9)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-9-0.9)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-9-0.9)
+  - temperature_route_fails_energy_by_10x(NPK-A-1.0e-9-0.9)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-7-0.1)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-7-0.1)
+  - reference_inside_band(NPK-A-1.0e-7-0.1)
+  - band_route_53_accepts(NPK-A-1.0e-7-0.1)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-7-0.1)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-7-0.1)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-7-0.1)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-7-0.3)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-7-0.3)
+  - reference_inside_band(NPK-A-1.0e-7-0.3)
+  - band_route_53_accepts(NPK-A-1.0e-7-0.3)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-7-0.3)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-7-0.3)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-7-0.3)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-7-0.5)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-7-0.5)
+  - reference_inside_band(NPK-A-1.0e-7-0.5)
+  - band_route_53_accepts(NPK-A-1.0e-7-0.5)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-7-0.5)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-7-0.5)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-7-0.5)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-7-0.7)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-7-0.7)
+  - reference_inside_band(NPK-A-1.0e-7-0.7)
+  - band_route_53_accepts(NPK-A-1.0e-7-0.7)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-7-0.7)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-7-0.7)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-7-0.7)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-7-0.9)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-7-0.9)
+  - reference_inside_band(NPK-A-1.0e-7-0.9)
+  - band_route_53_accepts(NPK-A-1.0e-7-0.9)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-7-0.9)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-7-0.9)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-7-0.9)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-6-0.1)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-6-0.1)
+  - reference_inside_band(NPK-A-1.0e-6-0.1)
+  - band_route_53_accepts(NPK-A-1.0e-6-0.1)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-6-0.1)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-6-0.1)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-6-0.1)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-6-0.3)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-6-0.3)
+  - reference_inside_band(NPK-A-1.0e-6-0.3)
+  - band_route_53_accepts(NPK-A-1.0e-6-0.3)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-6-0.3)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-6-0.3)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-6-0.3)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-6-0.5)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-6-0.5)
+  - reference_inside_band(NPK-A-1.0e-6-0.5)
+  - band_route_53_accepts(NPK-A-1.0e-6-0.5)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-6-0.5)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-6-0.5)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-6-0.5)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-6-0.7)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-6-0.7)
+  - reference_inside_band(NPK-A-1.0e-6-0.7)
+  - band_route_53_accepts(NPK-A-1.0e-6-0.7)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-6-0.7)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-6-0.7)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-6-0.7)
+  - band_solve_equals_temperature_bisection(NPK-A-1.0e-6-0.9)
+  - reference_satisfies_closure_rows(NPK-A-1.0e-6-0.9)
+  - reference_inside_band(NPK-A-1.0e-6-0.9)
+  - band_route_53_accepts(NPK-A-1.0e-6-0.9)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-A-1.0e-6-0.9)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-A-1.0e-6-0.9)
+  - band_route_53_floor_100x_under_tolerance(NPK-A-1.0e-6-0.9)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-12-0.1)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-12-0.1)
+  - reference_inside_band(NPK-C-1.0e-12-0.1)
+  - band_route_53_accepts(NPK-C-1.0e-12-0.1)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-12-0.1)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-12-0.1)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-12-0.1)
+  - temperature_route_fails_energy_by_10x(NPK-C-1.0e-12-0.1)
+  - pure_limit(NPK-C-1.0e-12-0.1)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-12-0.3)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-12-0.3)
+  - reference_inside_band(NPK-C-1.0e-12-0.3)
+  - band_route_53_accepts(NPK-C-1.0e-12-0.3)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-12-0.3)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-12-0.3)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-12-0.3)
+  - temperature_route_fails_energy_by_10x(NPK-C-1.0e-12-0.3)
+  - pure_limit(NPK-C-1.0e-12-0.3)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-12-0.5)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-12-0.5)
+  - reference_inside_band(NPK-C-1.0e-12-0.5)
+  - band_route_53_accepts(NPK-C-1.0e-12-0.5)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-12-0.5)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-12-0.5)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-12-0.5)
+  - pure_limit(NPK-C-1.0e-12-0.5)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-12-0.7)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-12-0.7)
+  - reference_inside_band(NPK-C-1.0e-12-0.7)
+  - band_route_53_accepts(NPK-C-1.0e-12-0.7)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-12-0.7)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-12-0.7)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-12-0.7)
+  - temperature_route_fails_energy_by_10x(NPK-C-1.0e-12-0.7)
+  - pure_limit(NPK-C-1.0e-12-0.7)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-12-0.9)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-12-0.9)
+  - reference_inside_band(NPK-C-1.0e-12-0.9)
+  - band_route_53_accepts(NPK-C-1.0e-12-0.9)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-12-0.9)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-12-0.9)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-12-0.9)
+  - temperature_route_fails_energy_by_10x(NPK-C-1.0e-12-0.9)
+  - pure_limit(NPK-C-1.0e-12-0.9)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-9-0.1)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-9-0.1)
+  - reference_inside_band(NPK-C-1.0e-9-0.1)
+  - band_route_53_accepts(NPK-C-1.0e-9-0.1)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-9-0.1)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-9-0.1)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-9-0.1)
+  - temperature_route_fails_energy_by_10x(NPK-C-1.0e-9-0.1)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-9-0.3)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-9-0.3)
+  - reference_inside_band(NPK-C-1.0e-9-0.3)
+  - band_route_53_accepts(NPK-C-1.0e-9-0.3)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-9-0.3)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-9-0.3)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-9-0.3)
+  - temperature_route_fails_energy_by_10x(NPK-C-1.0e-9-0.3)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-9-0.5)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-9-0.5)
+  - reference_inside_band(NPK-C-1.0e-9-0.5)
+  - band_route_53_accepts(NPK-C-1.0e-9-0.5)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-9-0.5)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-9-0.5)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-9-0.5)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-9-0.7)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-9-0.7)
+  - reference_inside_band(NPK-C-1.0e-9-0.7)
+  - band_route_53_accepts(NPK-C-1.0e-9-0.7)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-9-0.7)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-9-0.7)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-9-0.7)
+  - temperature_route_fails_energy_by_10x(NPK-C-1.0e-9-0.7)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-9-0.9)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-9-0.9)
+  - reference_inside_band(NPK-C-1.0e-9-0.9)
+  - band_route_53_accepts(NPK-C-1.0e-9-0.9)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-9-0.9)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-9-0.9)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-9-0.9)
+  - temperature_route_fails_energy_by_10x(NPK-C-1.0e-9-0.9)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-7-0.1)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-7-0.1)
+  - reference_inside_band(NPK-C-1.0e-7-0.1)
+  - band_route_53_accepts(NPK-C-1.0e-7-0.1)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-7-0.1)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-7-0.1)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-7-0.1)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-7-0.3)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-7-0.3)
+  - reference_inside_band(NPK-C-1.0e-7-0.3)
+  - band_route_53_accepts(NPK-C-1.0e-7-0.3)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-7-0.3)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-7-0.3)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-7-0.3)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-7-0.5)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-7-0.5)
+  - reference_inside_band(NPK-C-1.0e-7-0.5)
+  - band_route_53_accepts(NPK-C-1.0e-7-0.5)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-7-0.5)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-7-0.5)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-7-0.5)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-7-0.7)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-7-0.7)
+  - reference_inside_band(NPK-C-1.0e-7-0.7)
+  - band_route_53_accepts(NPK-C-1.0e-7-0.7)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-7-0.7)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-7-0.7)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-7-0.7)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-7-0.9)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-7-0.9)
+  - reference_inside_band(NPK-C-1.0e-7-0.9)
+  - band_route_53_accepts(NPK-C-1.0e-7-0.9)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-7-0.9)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-7-0.9)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-7-0.9)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-6-0.1)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-6-0.1)
+  - reference_inside_band(NPK-C-1.0e-6-0.1)
+  - band_route_53_accepts(NPK-C-1.0e-6-0.1)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-6-0.1)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-6-0.1)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-6-0.1)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-6-0.3)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-6-0.3)
+  - reference_inside_band(NPK-C-1.0e-6-0.3)
+  - band_route_53_accepts(NPK-C-1.0e-6-0.3)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-6-0.3)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-6-0.3)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-6-0.3)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-6-0.5)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-6-0.5)
+  - reference_inside_band(NPK-C-1.0e-6-0.5)
+  - band_route_53_accepts(NPK-C-1.0e-6-0.5)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-6-0.5)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-6-0.5)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-6-0.5)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-6-0.7)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-6-0.7)
+  - reference_inside_band(NPK-C-1.0e-6-0.7)
+  - band_route_53_accepts(NPK-C-1.0e-6-0.7)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-6-0.7)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-6-0.7)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-6-0.7)
+  - band_solve_equals_temperature_bisection(NPK-C-1.0e-6-0.9)
+  - reference_satisfies_closure_rows(NPK-C-1.0e-6-0.9)
+  - reference_inside_band(NPK-C-1.0e-6-0.9)
+  - band_route_53_accepts(NPK-C-1.0e-6-0.9)
+  - kernel_53_T_and_q_within_grid_tolerances_by_10x(NPK-C-1.0e-6-0.9)
+  - kernel_53_V_error_within_the_acceptance_bound(NPK-C-1.0e-6-0.9)
+  - band_route_53_floor_100x_under_tolerance(NPK-C-1.0e-6-0.9)
+  - grid_V_tolerance_is_2x_the_acceptance_bound
+  - trace_vapour_fractions_are_order_one
+  - jump_margin_is_1e5_tau_E
+  - biased_temperature_route_meets_energy
+  - biased_temperature_route_fails_equilibrium_by_10x
+  - biased_temperature_route_is_wrong_by_10_tau_T
+  - biased_band_route_equals_phf1_within_100x
+  - sc1_lever_rule_closed_form
+  - sc2_is_phf6
+  - sc3_root_closed_form
+  - sc3_start_reads_liquid_and_opens_liquid_at_355K
+  - sc3_trial_at_liquid_form_root
+  - sc3_trial_tp_regime_is_far
+  - sc3_trial_ph_regime_is_adjacent_and_is_the_root
+  - sc4_phf2_inlet_refused_by_tp_R007
+  - sc4_phf2_inlet_degenerate_exactly
+  - sc4_pump_inlet_admitted_by_tp_R007
+  - sc4_phf2_lever_rule
+  - sc4_pump_outlet_not_degenerate
+  - sc4_pump_ok
+  - SC-1_root_regular
+  - SC-1_rows_vanish_at_root
+  - SC-2_root_regular
+  - SC-2_rows_vanish_at_root
+  - NP-1_band_solve_equals_temperature_bisection
+  - NP-2_band_solve_equals_temperature_bisection
+  - NP-3_band_solve_equals_temperature_bisection
+  - NP-G_band_solve_equals_temperature_bisection
+  - np1_traversal_takes_the_band_route_by_10x
+  - np3_traversal_takes_the_temperature_route_with_10x
+  - np1_np2_degenerate
+  - np1_np2_degeneracy_margin_absolute_7e-7K
+  - np3_npg_not_degenerate
+  - npg_width_exceeds_twice_tau_T
+  - np3_width_exceeds_10_tau_T
+  - np3_fresh_flash_resolves_it_by_10x
+  - npg_fresh_flash_fails_by_2x
+  - DZ-1_rows_vanish_at_dormant_root
+  - DZ-1_full_form_zero_rows_are_exactly_the_equilibrium_rows
+  - DZ-1_full_form_rank_deficit
+  - DZ-1_zero_flow_form_square
+  - DZ-1_zero_flow_form_regular
+  - DZ-1_label_satisfied
+  - DZ-2_rows_vanish_at_dormant_root
+  - DZ-2_full_form_zero_rows_are_exactly_the_equilibrium_rows
+  - DZ-2_full_form_rank_deficit
+  - DZ-2_zero_flow_form_square
+  - DZ-2_zero_flow_form_regular
+  - DZ-2_label_satisfied
+  - DZ-3_rows_vanish_at_dormant_root
+  - DZ-3_full_form_zero_rows_are_exactly_the_equilibrium_rows
+  - DZ-3_full_form_rank_deficit
+  - DZ-3_zero_flow_form_square
+  - DZ-3_zero_flow_form_regular
+  - DZ-3_label_satisfied
+  - DZ-4_rows_vanish_at_dormant_root
+  - DZ-4_full_form_zero_rows_are_exactly_the_equilibrium_rows
+  - DZ-4_full_form_rank_deficit
+  - DZ-4_zero_flow_form_square
+  - DZ-4_zero_flow_form_regular
+  - DZ-4_label_satisfied
+  - DZ-5_rows_vanish_at_dormant_root
+  - DZ-5_full_form_zero_rows_are_exactly_the_equilibrium_rows
+  - DZ-5_full_form_rank_deficit
+  - DZ-5_zero_flow_form_square
+  - DZ-5_zero_flow_form_regular
+  - dz3_start_moves_the_label
+  - dormant_T_columns_match_T05_A15
+  - registered_states_are_not_degenerate_by_1e7
+  - C1__balance:S4_holds
+  - C3__balance:S3_holds
+  - r7_1_admitted
+  - r7_2_refused
+  - r7_3_admitted
+  - r7_4_refused_unchanged
+  - ks1_primary_ph_answer_is_the_adjacent_regime
+  - ks2_ph_closure_takes_the_band_route_by_10x
+  - ks2_ph_regime_two_phase_tp_vapour
+  - ks3_ph_closure_refuses_below_and_tp_answers_liquid
+  - inj_b1_is_degenerate_and_misses_the_latent_share_exactly
+  - inj_b1_compiled_energy_row_and_envelope_miss_by_2016W_equilibrium_rows_pass
+  - inj_b2_outside_window_by_1.9x
+  - inj_b2_fresh_flash_vapour_and_fails_by_1e3
+  - inj_b2_compiled_rows_pass
+  - inj_b2p_inside_window_by_2x_and_balances
+  - inj_b3_label_residual_1e6_tau_T
+  - ph_regime_never_far_on_the_domain
+  - t05_registered_refusals_are_the_five_known
+  - t05_refusal_PHF-F3_stays_refused_by_1e6_tau_T
+  - t05_refusal_PUMP-F1_stays_refused_by_1e6_tau_T
+  - t05_refusal_PUMP-F2_stays_refused_by_1e6_tau_T
+  - t05_refusal_SEP-F2_stays_refused_by_1e6_tau_T
+  - t05_refusal_HX-F4_stays_refused_by_1e6_tau_T
+  - DZ-6_rows_vanish_at_dormant_root
+  - DZ-6_label_and_swapped_rows_vanish_at_root
+  - DZ-6_trigger_inlets_and_outlet_exactly_dormant
+  - DZ-6_dormant_outlet_temperature_has_no_row_in_the_declared_form
+  - DZ-6_declared_form_square
+  - DZ-6_declared_form_rank_deficit_is_one_per_form
+  - DZ-6_zero_flow_form_square_and_regular
+  - DZ-7_rows_vanish_at_dormant_root
+  - DZ-7_label_and_swapped_rows_vanish_at_root
+  - DZ-7_trigger_inlets_and_outlet_exactly_dormant
+  - DZ-7_dormant_outlet_temperature_has_no_row_in_the_declared_form
+  - DZ-7_declared_form_square
+  - DZ-7_declared_form_rank_deficit_is_one_per_form
+  - DZ-7_zero_flow_form_square_and_regular
+  - DZ-8_rows_vanish_at_dormant_root
+  - DZ-8_label_and_swapped_rows_vanish_at_root
+  - DZ-8_trigger_inlets_and_outlet_exactly_dormant
+  - DZ-8_dormant_outlet_temperature_has_no_row_in_the_declared_form
+  - DZ-8_declared_form_square
+  - DZ-8_declared_form_rank_deficit_is_one_per_form
+  - DZ-8_zero_flow_form_square_and_regular
+  - DZ-9_rows_vanish_at_dormant_root
+  - DZ-9_label_and_swapped_rows_vanish_at_root
+  - DZ-9_trigger_inlets_and_outlet_exactly_dormant
+  - DZ-9_dormant_outlet_temperature_has_no_row_in_the_declared_form
+  - DZ-9_declared_form_square
+  - DZ-9_declared_form_rank_deficit_is_one_per_form
+  - DZ-9_zero_flow_form_square_and_regular
+  - DZ-10_rows_vanish_at_dormant_root
+  - DZ-10_label_and_swapped_rows_vanish_at_root
+  - DZ-10_trigger_inlets_and_outlet_exactly_dormant
+  - DZ-10_dormant_outlet_temperature_has_no_row_in_the_declared_form
+  - DZ-10_declared_form_square
+  - DZ-10_declared_form_rank_deficit_is_one_per_form
+  - DZ-10_zero_flow_form_square_and_regular
+  - dz9_t01_certifies_exactly_the_second_mixer_pressure_row
+  - dz9_label_is_inlet_0s_and_inlet_1_differs_by_20K
+  - dz8_hot_side_dormant_but_specified_has_no_form
+  - dz7_terminal_differences_would_cross_by_10K_if_judged
+  - dz10_start_moves_the_label_by_1K
+  - DZ-11_zero_flow_rows_vanish_at_the_end_state
+  - DZ-11_zero_flow_form_square_and_regular
+  - DZ-11_swapped_row_is_-1000.0W_at_the_end_by_9e5_tau_E
+  - DZ-2C_zero_flow_rows_vanish_at_the_end_state
+  - DZ-2C_zero_flow_form_square_and_regular
+  - DZ-2C_swapped_row_is_1000.0W_at_the_end_by_9e5_tau_E
+  - dz11_start_is_not_the_end_state
+  - dz11_energy_balances_fail_by_minus_1000W
+  - dz12_start_satisfies_attempt0_and_the_declaration
+  - dz12_attempt0_form_square_and_regular
+  - dz12_attempt0_without_the_hx_form_is_singular_by_one
+  - dz12_liquid_branch_inadmissible_at_closure
+  - dz12_kernel_is_the_ph_closure_primary_route_two_phase
+  - dz12_attempt1_opening_regular_with_the_outlet_reset
+  - dz12_attempt1_opening_singular_without_the_outlet_reset
+  - dz12_root_rows_vanish
+  - dz12_root_declared_form_regular
+  - dz12_hot_inlet_flows_at_the_root_so_no_item
+  - dz12_hot_outlet_at_its_dew_point
+  - dz12_hot_outlet_not_degenerate_by_1K
+  - dz12_terminal_differences_positive
+  - inj_b5_label_residual_minus_20K_compiled_rows_zero
+  - dormant_structure_covers_every_model_scanned
+  - dormant_coverage(syn001.valve,S2.T)=lifted
+  - dormant_coverage(syn001.ph_flash,S2.T)=lifted
+  - dormant_coverage(syn001.ph_flash,S3.T)=lifted
+  - dormant_coverage(syn001.conversion_reactor(duty),S2.T)=lifted
+  - dormant_coverage(syn001.conversion_reactor(outlet_temperature),S2.T)=row
+  - dormant_coverage(syn001.liquid_pump,S2.T)=form
+  - dormant_coverage(syn001.component_separator,S2.T)=row
+  - dormant_coverage(syn001.component_separator,S3.T)=row
+  - dormant_coverage(syn001.heat_exchanger(hot side dormant),S2.T)=form
+  - dormant_coverage(syn001.heat_exchanger(hot side dormant),S4.T)=row
+  - dormant_coverage(syn001.tp_heater,S2.T)=row
+  - dormant_coverage(syn001.splitter,S2.T)=row
+  - dormant_coverage(syn001.splitter,S3.T)=row
+  - dormant_coverage(syn001.adiabatic_mixer,S3.T)=form
+  - dormant_coverage_forms_are_the_registered_non_lifted_models
+  - hx_duty/hot_state_is_a_root
+  - hx_duty/hot_dormant_outlet_rows
+  - hx_duty/hot_forms_are_the_registry
+  - hx_duty/hot_declared_rank_deficit_is_one_per_form
+  - hx_duty/hot_zero_flow_form_square_and_regular
+  - hx_duty/cold_state_is_a_root
+  - hx_duty/cold_dormant_outlet_rows
+  - hx_duty/cold_forms_are_the_registry
+  - hx_duty/cold_declared_rank_deficit_is_one_per_form
+  - hx_duty/cold_zero_flow_form_square_and_regular
+  - hx_duty/both_state_is_a_root
+  - hx_duty/both_dormant_outlet_rows
+  - hx_duty/both_forms_are_the_registry
+  - hx_duty/both_declared_rank_deficit_is_one_per_form
+  - hx_duty/both_zero_flow_form_square_and_regular
+  - hx_hot_outlet_temperature/hot_state_is_a_root
+  - hx_hot_outlet_temperature/hot_dormant_outlet_rows
+  - hx_hot_outlet_temperature/hot_forms_are_the_registry
+  - hx_hot_outlet_temperature/hot_declared_rank_deficit_is_one_per_form
+  - hx_hot_outlet_temperature/hot_zero_flow_form_square_and_regular
+  - hx_hot_outlet_temperature/cold_state_is_a_root
+  - hx_hot_outlet_temperature/cold_dormant_outlet_rows
+  - hx_hot_outlet_temperature/cold_forms_are_the_registry
+  - hx_hot_outlet_temperature/cold_declared_rank_deficit_is_one_per_form
+  - hx_hot_outlet_temperature/cold_zero_flow_form_square_and_regular
+  - hx_hot_outlet_temperature/both_state_is_a_root
+  - hx_hot_outlet_temperature/both_dormant_outlet_rows
+  - hx_hot_outlet_temperature/both_forms_are_the_registry
+  - hx_hot_outlet_temperature/both_declared_rank_deficit_is_one_per_form
+  - hx_hot_outlet_temperature/both_zero_flow_form_square_and_regular
+  - hx_cold_outlet_temperature/hot_state_is_a_root
+  - hx_cold_outlet_temperature/hot_dormant_outlet_rows
+  - hx_cold_outlet_temperature/hot_forms_are_the_registry
+  - hx_cold_outlet_temperature/hot_declared_rank_deficit_is_one_per_form
+  - hx_cold_outlet_temperature/hot_zero_flow_form_square_and_regular
+  - hx_cold_outlet_temperature/cold_state_is_a_root
+  - hx_cold_outlet_temperature/cold_dormant_outlet_rows
+  - hx_cold_outlet_temperature/cold_forms_are_the_registry
+  - hx_cold_outlet_temperature/cold_declared_rank_deficit_is_one_per_form
+  - hx_cold_outlet_temperature/cold_zero_flow_form_square_and_regular
+  - hx_cold_outlet_temperature/both_state_is_a_root
+  - hx_cold_outlet_temperature/both_dormant_outlet_rows
+  - hx_cold_outlet_temperature/both_forms_are_the_registry
+  - hx_cold_outlet_temperature/both_declared_rank_deficit_is_one_per_form
+  - hx_cold_outlet_temperature/both_zero_flow_form_square_and_regular
+  - registered_dormancy_trigger_flows(C1:U-PUMP.outlet (inlet S1))
+  - registered_dormancy_trigger_flows(C2:U-MIX.outlet (inlets S1, S4))
+  - registered_dormancy_trigger_flows(C3:U-MIX.outlet (inlets S2, S6))
+  - registered_dormancy_trigger_flows(C3:U-HX.cold_outlet (inlet S1; hot side temperature-specified))
+  - registered_dormancy_trigger_flows(C3X:U-MIX.outlet (inlets S2, S6))
+  - registered_dormancy_trigger_flows(C3X:U-HX.cold_outlet (inlet S1))
+  - registered_dormancy_trigger_flows(SC-4:U-PUMP.outlet (inlet S3))
+  - b31_upstream_root_is_dz12s
+  - b31_CH-UP/dp=0_closed_form_rows_vanish
+  - b31_CH-UP/dp=0_declared_rank_deficit_one_per_downstream_flash
+  - b31_CH-UP/dp=0_left_null_space_on_equilibrium_rows
+  - b31_CH-UP/dp=0_right_null_space_in_the_products_with_their_T_no_P
+  - b31_CH-UP/dp=0_U-PHF2_equilibrium_rows_read_only_the_absent_product
+  - b31_CH-UP/dp=0_U-PHF2_block_determinant_is_the_closed_form
+  - b31_CH-UP/dp=0_U-PHF2_product_P_is_feed_P_minus_dp
+  - b31_CH-UP/dp=0_U-PHF2_on_its_boundary
+  - b31_CH-UP/dp=10000_closed_form_rows_vanish
+  - b31_CH-UP/dp=10000_declared_form_square_and_regular
+  - b31_CH-UP/dp=10000_U-PHF2_equilibrium_rows_read_only_the_absent_product
+  - b31_CH-UP/dp=10000_U-PHF2_block_determinant_is_the_closed_form
+  - b31_CH-UP/dp=10000_U-PHF2_product_P_is_feed_P_minus_dp
+  - b31_CH-UP/dp=10000_U-PHF2_superheated_by_at_least_0.05
+  - b31_CH-3/dp=0_closed_form_rows_vanish
+  - b31_CH-3/dp=0_declared_rank_deficit_one_per_downstream_flash
+  - b31_CH-3/dp=0_left_null_space_on_equilibrium_rows
+  - b31_CH-3/dp=0_right_null_space_in_the_products_with_their_T_no_P
+  - b31_CH-3/dp=0_U-PHF2_equilibrium_rows_read_only_the_absent_product
+  - b31_CH-3/dp=0_U-PHF2_block_determinant_is_the_closed_form
+  - b31_CH-3/dp=0_U-PHF2_product_P_is_feed_P_minus_dp
+  - b31_CH-3/dp=0_U-PHF2_on_its_boundary
+  - b31_CH-3/dp=0_U-PHF3_equilibrium_rows_read_only_the_absent_product
+  - b31_CH-3/dp=0_U-PHF3_block_determinant_is_the_closed_form
+  - b31_CH-3/dp=0_U-PHF3_product_P_is_feed_P_minus_dp
+  - b31_CH-3/dp=0_U-PHF3_on_its_boundary
+  - b31_CH-3/dp=10000_closed_form_rows_vanish
+  - b31_CH-3/dp=10000_declared_form_square_and_regular
+  - b31_CH-3/dp=10000_U-PHF2_equilibrium_rows_read_only_the_absent_product
+  - b31_CH-3/dp=10000_U-PHF2_block_determinant_is_the_closed_form
+  - b31_CH-3/dp=10000_U-PHF2_product_P_is_feed_P_minus_dp
+  - b31_CH-3/dp=10000_U-PHF2_superheated_by_at_least_0.05
+  - b31_CH-3/dp=10000_U-PHF3_equilibrium_rows_read_only_the_absent_product
+  - b31_CH-3/dp=10000_U-PHF3_block_determinant_is_the_closed_form
+  - b31_CH-3/dp=10000_U-PHF3_product_P_is_feed_P_minus_dp
+  - b31_CH-3/dp=10000_U-PHF3_superheated_by_at_least_0.05
+  - b31_BUB/dp=0_closed_form_rows_vanish
+  - b31_BUB/dp=0_declared_rank_deficit_one_per_downstream_flash
+  - b31_BUB/dp=0_left_null_space_on_equilibrium_rows
+  - b31_BUB/dp=0_right_null_space_in_the_products_with_their_T_no_P
+  - b31_BUB/dp=0_U-PHF4_equilibrium_rows_read_only_the_absent_product
+  - b31_BUB/dp=0_U-PHF4_block_determinant_is_the_closed_form
+  - b31_BUB/dp=0_U-PHF4_product_P_is_feed_P_minus_dp
+  - b31_BUB/dp=0_U-PHF4_on_its_boundary

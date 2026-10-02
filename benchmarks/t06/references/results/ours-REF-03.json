@@ -1,0 +1,41 @@
+{
+ "check_policy_id": "K04-check-policy-v1",
+ "compared_quantities": {
+  "S2.vap.A": 0.20153742984783365,
+  "S2.vap.B": 0.07809825365167575,
+  "S2.vap.C": 0.024470486780641718,
+  "U-HEAT.Q": 23237.850393068577
+ },
+ "fixture": "REF-03",
+ "limitations": [],
+ "non_passing_checks": [],
+ "outcome": "CONVERGED",
+ "path": "revision",
+ "policy_id": "T06-revision-v2",
+ "revision": "benchmarks/t06/cases/SYN-001-T06-REF03.yaml",
+ "revision_file_sha256": "e01a6ceb4ece9fa7ea88b0d2e7fc8539b570fbf980d955ab226ad6b748cedd25",
+ "revision_id": "SYN-001-T06-REF03-r1",
+ "side": "ours",
+ "state": {
+  "S1.P": 100000.0,
+  "S1.T": 300.0,
+  "S1.n.A": 1.0,
+  "S1.n.B": 1.0,
+  "S1.n.C": 1.0,
+  "S2.L": 2.6958938297198487,
+  "S2.P": 100000.0,
+  "S2.T": 350.0,
+  "S2.V": 0.30410617028015113,
+  "S2.liq.A": 0.7984625701521664,
+  "S2.liq.B": 0.9219017463483241,
+  "S2.liq.C": 0.9755295132193582,
+  "S2.n.A": 1.0,
+  "S2.n.B": 1.0,
+  "S2.n.C": 1.0,
+  "S2.vap.A": 0.20153742984783365,
+  "S2.vap.B": 0.07809825365167575,
+  "S2.vap.C": 0.024470486780641718,
+  "U-HEAT.Q": 23237.850393068577
+ },
+ "verification_status": "VERIFIED"
+}

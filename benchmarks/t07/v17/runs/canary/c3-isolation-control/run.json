@@ -1,0 +1,102 @@
+{
+ "agent_configuration": {
+  "claude": "claude",
+  "effort": "high",
+  "isolation": [],
+  "max_budget_usd": 5.0,
+  "max_turns": 60,
+  "max_turns_flag": true,
+  "model": "claude-sonnet-5",
+  "wall_cap_s": 1800.0
+ },
+ "canary": "c3-isolation-control",
+ "claude_code_version": "2.1.283 (Claude Code)",
+ "command": [
+  "claude",
+  "-p",
+  "<prompt.txt>",
+  "--output-format",
+  "stream-json",
+  "--verbose",
+  "--mcp-config",
+  "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/c1654ca5-cf40-4fac-b53a-1914bdd081e5/scratchpad/w7a/work/canary/c3-isolation-control/mcp.json",
+  "--strict-mcp-config",
+  "--tools",
+  "",
+  "--allowedTools",
+  "mcp__procsim__*",
+  "--permission-prompts",
+  "none",
+  "--model",
+  "claude-sonnet-5",
+  "--effort",
+  "high",
+  "--max-budget-usd",
+  "5",
+  "--no-session-persistence",
+  "--max-turns",
+  "60"
+ ],
+ "cost_basis": "subscription_estimate",
+ "environment_keys": [
+  "HOME",
+  "LANG",
+  "LOGNAME",
+  "PATH",
+  "TERM",
+  "USER"
+ ],
+ "fixture_digest": "c54f1b121dc3f2ca82282b8378f69bfad5412990d2859d22b90f17cc933ea5d8",
+ "fixture_task": "V17-T01",
+ "git": {
+  "commit": "2fe9642e2b65e1107dec51c1dbb27bdd088cc09d",
+  "dirty": true
+ },
+ "infrastructure_failure": null,
+ "model": "claude-sonnet-5",
+ "session": {
+  "ended_at": "2026-09-27T15:09:25+00:00",
+  "init": {
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.283",
+   "mcp_servers": [
+    {
+     "name": "procsim",
+     "source": "dynamic",
+     "status": "connected"
+    }
+   ],
+   "model": "claude-sonnet-5",
+   "permissionMode": "default",
+   "tools": [
+    "mcp__procsim__cancel_job",
+    "mcp__procsim__commit_change",
+    "mcp__procsim__diff_revisions",
+    "mcp__procsim__get_artifact",
+    "mcp__procsim__get_job",
+    "mcp__procsim__get_job_result",
+    "mcp__procsim__get_project",
+    "mcp__procsim__get_revision",
+    "mcp__procsim__inspect_structure",
+    "mcp__procsim__list_job_events",
+    "mcp__procsim__list_jobs",
+    "mcp__procsim__list_models",
+    "mcp__procsim__list_revisions",
+    "mcp__procsim__preview_change",
+    "mcp__procsim__submit_job",
+    "mcp__procsim__validate_revision",
+    "mcp__procsim__wait_job"
+   ]
+  },
+  "returncode": 0,
+  "started_at": "2026-09-27T15:08:54+00:00",
+  "stopped": null,
+  "turns_counted": 1,
+  "wall_s": 31.309
+ },
+ "sha256": {
+  "task_text": "a7aea851d1e16f8789a11f4266066b1ffa1aacfc92e2135e9b29207ceea8ff41",
+  "tool_descriptions": "1983bc382eaea593709cfd35646823dd42c23b4fb5d93015f62cf67bb897d814",
+  "transcript": "728058910bce3b9a5fee81f34bbd63f515658ac7b88c54f60cf3e1f569f11794"
+ }
+}

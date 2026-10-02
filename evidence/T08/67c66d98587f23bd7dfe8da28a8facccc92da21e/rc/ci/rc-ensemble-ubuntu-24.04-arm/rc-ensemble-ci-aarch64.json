@@ -1,0 +1,69 @@
+{
+ "checks": [
+  {
+   "id": "a46.registered_class",
+   "machine_class": "ci-aarch64",
+   "result": "pass"
+  },
+  {
+   "id": "a46.run_and_report",
+   "report_exit": 0,
+   "result": "pass",
+   "run_exit": 0
+  },
+  {
+   "classes": {
+    "F-BUDGET": 4,
+    "F-FALSE-SUCCESS-CAUGHT": 2,
+    "SUCCESS": 434
+   },
+   "gate": {
+    "S_min": 418,
+    "complete": true,
+    "pass": true,
+    "registered_N": 440
+   },
+   "id": "a46.gate",
+   "result": "pass"
+  },
+  {
+   "found": [],
+   "id": "a47.no_verified_outside_s3",
+   "result": "pass",
+   "worst_ratio_success": 0.09684915240196715
+  },
+  {
+   "a33_failures": 0,
+   "id": "a34.ensemble_certificates",
+   "result": "pass",
+   "rule": "T06 A33 (A4) on every certificate of the run, as the harness records it"
+  },
+  {
+   "differ": [],
+   "id": "a46.t06_a34_same_class_replay",
+   "match": 28,
+   "not_generated": 0,
+   "replay_class": "ci-aarch64",
+   "replay_exit": 0,
+   "replay_set": 28,
+   "result": "pass",
+   "rule": "T06 A34: same machine class, MATCH on every field (K04-numerical-policy-v1)",
+   "run_class": "ci-aarch64"
+  },
+  {
+   "id": "a46.registered_runs_untouched",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "machine_class": "ci-aarch64",
+  "tree_clean": true
+ },
+ "replay": "/home/runner/work/_temp/rc-ensemble/rc-ci-aarch64.replay.txt",
+ "results": "/home/runner/work/_temp/rc-ensemble/rc-ci-aarch64.json",
+ "step": "ensemble"
+}

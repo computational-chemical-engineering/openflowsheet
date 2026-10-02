@@ -1,0 +1,38 @@
+{
+ "attempt_tree": [],
+ "best_checkpoint": null,
+ "check_report": null,
+ "implicated_sources": [],
+ "inferred_causes": [],
+ "observations": {
+  "attempts": 0,
+  "closing_event": "solve_closed",
+  "counters": {
+   "cache_hits": 14,
+   "factorizations": 0,
+   "jacobian_calls": 0,
+   "property_calls": 20,
+   "requested_evaluations": 35,
+   "residual_calls": 0
+  },
+  "iterations": 0,
+  "last_linear": null,
+  "message": "the property-call budget of 20 is spent; the call to evaluate_phase(LIQUID) was refused rather than made, so the recorded count is exactly the cap",
+  "residual_inf_unscaled": null
+ },
+ "outcome": "BUDGET_EXHAUSTED",
+ "replay_identity": {
+  "constants_sha256": "",
+  "model_version": "",
+  "plan_id": "",
+  "policy_id": ""
+ },
+ "suggested_actions": [
+  {
+   "action": "increase_budget",
+   "preconditions": "the budget/cancellation outcomes reported above is what a reader would act on",
+   "requires_permission": true
+  }
+ ],
+ "taxonomy": "budget/cancellation outcomes"
+}

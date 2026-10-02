@@ -1,0 +1,21 @@
+# Invalid Quantity: a nonfinite value.
+#
+# ADR 0001 D1.5: nonfinite numbers are rejected in every semantic input. JSON Schema's
+# `type: number` accepts a decoded NaN, so this is caught by
+# process_runtime.units.check_quantity, which the round-trip test runs alongside the
+# schema. That is exactly why the runtime check exists.
+expect_error: value must be finite
+document:
+  value: .nan
+  unit: K
+  dimension:
+  - 0
+  - 0
+  - 0
+  - 1
+  - 0
+  - 0
+  - 0
+  kind: temperature
+  meaning: A temperature that was never computed
+  role: fixed

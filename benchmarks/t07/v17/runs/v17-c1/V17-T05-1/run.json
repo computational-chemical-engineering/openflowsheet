@@ -1,0 +1,161 @@
+{
+ "agent_configuration": {
+  "claude": "claude",
+  "effort": "high",
+  "isolation": [
+   "--setting-sources",
+   ""
+  ],
+  "max_budget_usd": 5.0,
+  "max_turns": 60,
+  "max_turns_flag": true,
+  "model": "claude-sonnet-5",
+  "wall_cap_s": 1800.0
+ },
+ "campaign": "v17-c1",
+ "claude_code_version": "2.1.283 (Claude Code)",
+ "command": [
+  "claude",
+  "-p",
+  "<prompt.txt>",
+  "--output-format",
+  "stream-json",
+  "--verbose",
+  "--mcp-config",
+  "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/c1654ca5-cf40-4fac-b53a-1914bdd081e5/scratchpad/v17-work/v17-c1/V17-T05-1/mcp.json",
+  "--strict-mcp-config",
+  "--tools",
+  "",
+  "--allowedTools",
+  "mcp__procsim__*",
+  "--permission-prompts",
+  "none",
+  "--model",
+  "claude-sonnet-5",
+  "--effort",
+  "high",
+  "--max-budget-usd",
+  "5",
+  "--no-session-persistence",
+  "--setting-sources",
+  "",
+  "--max-turns",
+  "60"
+ ],
+ "cost_basis": "subscription_estimate",
+ "environment_keys": [
+  "HOME",
+  "LANG",
+  "LOGNAME",
+  "PATH",
+  "TERM",
+  "USER"
+ ],
+ "fixture_digest": "a698ca81fbf99d5a747cbbad25ed994635267a2a4ab36c019a3c74bc6a5f136f",
+ "git": {
+  "commit": "1ed044d6124ab214f5f364ca411445bc812ca30b",
+  "dirty": false
+ },
+ "infrastructure_failure": {
+  "reason": "wall_cap"
+ },
+ "model": "claude-sonnet-5",
+ "repetition": 1,
+ "session": {
+  "auto_memory_files": [],
+  "checks": [],
+  "ended_at": "2026-09-27T16:13:58+00:00",
+  "init": {
+   "agents": [
+    "claude",
+    "Explore",
+    "general-purpose",
+    "Plan",
+    "statusline-setup"
+   ],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.283",
+   "mcp_servers": [
+    {
+     "name": "procsim",
+     "source": "dynamic",
+     "status": "connected"
+    }
+   ],
+   "memory_paths": {
+    "auto": "/home/frankp/.claude/projects/-tmp-claude-1003--home-frankp-Codes-Process-Simulator-c1654ca5-cf40-4fac-b53a-1914bdd081e5-scratchpad-v17-work-v17-c1-V17-T05-1-cwd/memory/"
+   },
+   "model": "claude-sonnet-5",
+   "output_style": "default",
+   "permissionMode": "default",
+   "plugins": [
+    {
+     "name": "agents-md",
+     "path": "builtin",
+     "source": "agents-md@builtin"
+    },
+    {
+     "name": "telemetry",
+     "path": "builtin",
+     "source": "telemetry@builtin"
+    }
+   ],
+   "skills": [
+    "deep-research",
+    "design",
+    "design-sync",
+    "dataviz",
+    "update-config",
+    "verify",
+    "debug",
+    "code-review",
+    "simplify",
+    "batch",
+    "fewer-permission-prompts",
+    "doctor",
+    "loop",
+    "schedule",
+    "claude-api",
+    "workflow-authoring",
+    "run",
+    "run-skill-generator"
+   ],
+   "tools": [
+    "mcp__procsim__cancel_job",
+    "mcp__procsim__commit_change",
+    "mcp__procsim__diff_revisions",
+    "mcp__procsim__get_artifact",
+    "mcp__procsim__get_job",
+    "mcp__procsim__get_job_result",
+    "mcp__procsim__get_project",
+    "mcp__procsim__get_revision",
+    "mcp__procsim__inspect_structure",
+    "mcp__procsim__list_job_events",
+    "mcp__procsim__list_jobs",
+    "mcp__procsim__list_models",
+    "mcp__procsim__list_revisions",
+    "mcp__procsim__preview_change",
+    "mcp__procsim__submit_job",
+    "mcp__procsim__validate_revision",
+    "mcp__procsim__wait_job"
+   ]
+  },
+  "returncode": 143,
+  "started_at": "2026-09-27T15:43:57+00:00",
+  "stopped": "wall_cap",
+  "turns_counted": 41,
+  "wall_s": 1800.366
+ },
+ "session_principal": "agent-v17",
+ "session_start": {
+  "audit_seq": 3,
+  "job_ordinal": 0,
+  "revision_ordinal": 1
+ },
+ "sha256": {
+  "task_text": "19d5d6898d3546e5cd5dc7cd4ee90f19b1fe6bb0f55087caeca7ca4b3ea8629a",
+  "tool_descriptions": "1983bc382eaea593709cfd35646823dd42c23b4fb5d93015f62cf67bb897d814",
+  "transcript": "67be73fc841e20afc456725e6f2659fefc3ff570f00877a4b98b5f181c1ce27b"
+ },
+ "task_id": "V17-T05"
+}

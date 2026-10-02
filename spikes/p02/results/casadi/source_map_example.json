@@ -1,0 +1,17 @@
+{
+ "entries": [
+  [
+   "eq_B",
+   "lnK_B"
+  ],
+  [
+   "kdef_B",
+   "T"
+  ],
+  [
+   "hdef_C",
+   "l_C"
+  ]
+ ],
+ "see": "states/S1/jacobian_L.json -> source_map"
+}

@@ -1,0 +1,44 @@
+{
+ "artifact_r0_sha256": "68e18bd114f96383fca469f143b3c51469c3c0ef72d70159d1d1ad314f49d01b",
+ "artifacts": {
+  "solution-certificate.json": "3cb9083f678702548514941a961c38f4240ccb087026f81d8f36cc673d2b8229",
+  "solve-events.json": "2ce6ddaee2cc171edd05e32d9fabc73813e0a96a2e80642670e23d44025085c8",
+  "solve-plan.json": "9e9097a33c882792d0b8f3475f125dceb8a4a682c636e4fc9c9c061813e37cf7",
+  "structural-report.json": "9d515044db4dedf09caa99a2aeba4d86bcce8e8e55bc8262766ce69a40a93143"
+ },
+ "check_policy_sha256": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
+ "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+ "elapsed_seconds": 0.19384749792516232,
+ "environment": {
+  "architecture": "x86_64",
+  "blas": {
+   "name": "scipy-openblas",
+   "version": "0.3.28"
+  },
+  "lock_sha256": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313",
+  "os_name": "Linux",
+  "os_release": "6.12.86+deb13-amd64",
+  "python_version": "3.13.5",
+  "superlu_options_ref": "ADR 0004 D1",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  }
+ },
+ "hostname": "",
+ "manifest_sha256": "30a80bfaea3cde844a9ab65190c24c36d22c79b9ca67db3d24a0aa7da44c0eab",
+ "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+ "numerical_policy_id": "T08-numerical-policy-v2",
+ "outcome": "CONVERGED",
+ "parent_run_id": null,
+ "plan_id": "SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+ "policy_id": "SYN-001-K03",
+ "policy_sha256": "051a894cc707714bfb3efa52b7a860603b4c082cef326dcc33bce1b96c4aa654",
+ "reproducibility_class": "R1",
+ "run_id": "syn001-nominal",
+ "seeds": {},
+ "started_at": "2026-09-26T12:26:19.933317+00:00",
+ "structural_sha256": "ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90",
+ "verification_status": "VERIFIED"
+}

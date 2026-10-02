@@ -1,0 +1,42 @@
+{
+ "check_policy_id": "K04-check-policy-v1",
+ "compared_quantities": {
+  "S2.n.A": 0.6,
+  "S2.n.B": 0.6000000000000001,
+  "S2.n.C": 1.2,
+  "U-RX.Q": 3600.0
+ },
+ "fixture": "REF-07",
+ "limitations": [],
+ "non_passing_checks": [],
+ "outcome": "CONVERGED",
+ "path": "revision",
+ "policy_id": "T06-revision-v2",
+ "revision": "benchmarks/t06/cases/SYN-001-T06-REF07.yaml",
+ "revision_file_sha256": "4bd39205dc51f530b1b4f51efdeec02a99632ee3d9461fe82994cbb34d3c8ade",
+ "revision_id": "SYN-001-T06-REF07-r1",
+ "side": "ours",
+ "state": {
+  "S1.P": 100000.0,
+  "S1.T": 300.0,
+  "S1.n.A": 1.2,
+  "S1.n.B": 0.9,
+  "S1.n.C": 0.3,
+  "S2.L": 2.4,
+  "S2.P": 100000.0,
+  "S2.T": 315.0,
+  "S2.V": 0.0,
+  "S2.liq.A": 0.6,
+  "S2.liq.B": 0.6000000000000001,
+  "S2.liq.C": 1.2,
+  "S2.n.A": 0.6,
+  "S2.n.B": 0.6000000000000001,
+  "S2.n.C": 1.2,
+  "S2.vap.A": 0.0,
+  "S2.vap.B": 0.0,
+  "S2.vap.C": 0.0,
+  "U-RX.Q": 3600.0,
+  "U-RX.xi": 0.3
+ },
+ "verification_status": "VERIFIED"
+}

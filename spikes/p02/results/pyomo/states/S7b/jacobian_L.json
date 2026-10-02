@@ -1,0 +1,32 @@
+{
+ "status": "invalid_trial_state",
+ "message": "P = 40000.0 Pa is outside the closed domain [50000.0, 200000.0] Pa",
+ "phase_signature": null,
+ "model_version": "P02-L-form-v1",
+ "constants_sha256": "0d91ffeeed88e9b9c03be1b62a4827927764fb6d9d49d2e06b59aeada29bdccc",
+ "state_sha256": "8d3e88459b9b765979e9d3c8f6a9b43ae4caeca50300cfdc2858d54378c0313f",
+ "counters": {
+  "K": {
+   "value_calls": 0,
+   "jacobian_calls": 1
+  },
+  "H": {
+   "value_calls": 0,
+   "jacobian_calls": 0
+  }
+ },
+ "accuracy": "exact-double",
+ "pattern_provenance": "backend-declared",
+ "source_map": [],
+ "format": "csc",
+ "row_ids": [],
+ "col_ids": [],
+ "indptr": [],
+ "indices": [],
+ "data": [],
+ "nnz": 0,
+ "raw_shape": [
+  17,
+  17
+ ]
+}

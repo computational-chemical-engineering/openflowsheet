@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/component-record.schema.json",
+  "title": "ComponentRecord",
+  "description": "Blueprint v3.1 §4.1: stable chemical identity, elemental composition where known, molecular weight, parameter data and provenance. A pseudo-component has no elemental formula; ADR 0001 requires it to say so explicitly with `elemental_composition: null` and `elemental_verification: NOT_APPLICABLE`, which limits the verification scope rather than hiding it (blueprint §4.2, plan §3.1).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "molecular_weight",
+    "elemental_composition",
+    "parameters",
+    "rights"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "description": "Stable identity within the revision's component set. Ordering of the component set fixes the order of component molar flow vectors (ADR 0001 D2.1)."
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "synthetic": {
+      "type": "boolean",
+      "description": "True for an artificial pseudo-component with no chemical identity. SYN-001 sets it true; nothing about such a component is an experimental claim."
+    },
+    "identifiers": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Real chemical identifiers (CAS, InChI, ...). Absent for synthetic components; a synthetic component must not be given one (plan §3.1)."
+    },
+    "molecular_weight": {
+      "allOf": [
+        { "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json" },
+        {
+          "properties": { "kind": { "const": "molar_mass" } },
+          "required": ["kind"]
+        }
+      ],
+      "description": "kg/mol. The only route from the amount basis to the mass basis; there is no independent mass state (ADR 0001 D1.4)."
+    },
+    "elemental_composition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "description": "Element symbol -> atoms per molecule."
+        },
+        { "type": "null" }
+      ]
+    },
+    "elemental_verification": {
+      "enum": ["VERIFIED", "PENDING", "FAILED", "NOT_APPLICABLE"],
+      "description": "Whether A N = 0 elemental accounting is possible for this component (blueprint §4.2). NOT_APPLICABLE is mandatory when there is no elemental formula."
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": {
+        "allOf": [
+          { "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json" },
+          { "required": ["provenance"] }
+        ]
+      },
+      "description": "Named model parameters, each a Quantity that must carry its own provenance (blueprint §4.1 'parameter data and provenance')."
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "redistribution"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "redistribution": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string" }
+      },
+      "description": "Data rights for this record (blueprint §15, requirement D04). Unresolved rights are stated, never assumed."
+    }
+  },
+  "if": {
+    "type": "object",
+    "properties": { "elemental_composition": { "type": "null" } },
+    "required": ["elemental_composition"]
+  },
+  "then": {
+    "required": ["elemental_verification"],
+    "properties": { "elemental_verification": { "const": "NOT_APPLICABLE" } }
+  }
+}

@@ -1,0 +1,17 @@
+# Valid Quantity: a temperature difference.
+#
+# Same dimension as `temperature`, different kind, and unbounded rather than strictly
+# positive (ADR 0001 D1.3). The two are not interchangeable.
+value: -4.728306846340575
+unit: K
+dimension:
+- 0
+- 0
+- 0
+- 1
+- 0
+- 0
+- 0
+kind: temperature_difference
+meaning: Heater outlet temperature minus adiabatic mixer outlet temperature at r = 0.95
+role: derived

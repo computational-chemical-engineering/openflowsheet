@@ -1,0 +1,13 @@
+{
+  "job_id": "job-000001",
+  "sequence": 2,
+  "kind": "ended",
+  "ends_job": true,
+  "recorded_at": "2026-09-27T11:59:54.897227Z",
+  "ending": {
+    "status": "cancelled",
+    "reason": "cancel_requested",
+    "interruption": null
+  },
+  "error": null
+}

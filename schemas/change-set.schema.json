@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/change-set.schema.json",
+  "title": "ChangeSet",
+  "description": "T07 design note §5.2, ADR 0019 D2; blueprint §11. The HTTP/MCP body of `commit_change`: a group of edits applied whole or not at all, against a stated expected revision, under an idempotency key. Flat, as K06's `as_document`. The Python `Change` holds every member except `expected_revision` and `idempotency_key`, which are `commit_change`'s own parameters. `author` is a label and never authority; the authenticated principal is recorded in the store. Path semantics that a schema cannot state (a string indexes an object, an integer an array; `set` on an array index needs the index to exist) are refused `edit_path_invalid` by the application.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "edits",
+    "expected_revision",
+    "idempotency_key"
+  ],
+  "properties": {
+    "edits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/edit"
+      }
+    },
+    "expected_revision": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "`null` only for the first commit."
+    },
+    "idempotency_key": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/id"
+    },
+    "new_revision_id": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "`null`: the store assigns `rev-<ordinal:06d>`."
+    },
+    "restore_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null,
+      "description": "Rollback: the new document starts from that stored revision's document."
+    },
+    "task": {
+      "enum": [
+        "simulation",
+        "optimization"
+      ],
+      "default": "simulation"
+    },
+    "author": {
+      "type": "string",
+      "maxLength": 256,
+      "default": "unknown"
+    }
+  },
+  "$defs": {
+    "edit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "path"
+      ],
+      "properties": {
+        "operation": {
+          "enum": [
+            "set",
+            "remove",
+            "append"
+          ]
+        },
+        "path": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "minimum": 0
+              }
+            ]
+          },
+          "description": "Strings index objects; integers index arrays."
+        },
+        "value": {
+          "description": "Any JSON value. Required for `set` and `append`; absent for `remove`."
+        }
+      },
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "remove"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "value"
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "value"
+        ]
+      }
+    }
+  }
+}

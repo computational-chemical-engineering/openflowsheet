@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json",
+  "title": "EvaluationResult",
+  "description": "The result of one residual evaluation (plan \u00a72.1, \u00a72.2 P02/K01 row; frozen in docs/interfaces-frozen.md \u00a71). Carries status, values, phase signature, the identity of the state and the problem, evaluation counters and accuracy. Three rules a JSON Schema cannot express are checked by tests/test_k01_schemas.py: `values` must be present and the same length as `equation_ids` when and only when `status` is `ok`; a decoded NaN or infinity satisfies `type: number` but is not a value this boundary may report as `ok`; and `state_sha256` must be the canonical hash of the `x` that produced it, which only the evaluator can know.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "values",
+    "equation_ids",
+    "phase_signature",
+    "model_version",
+    "constants_sha256",
+    "state_sha256",
+    "counters",
+    "accuracy",
+    "message"
+  ],
+  "properties": {
+    "status": {
+      "$ref": "#/$defs/status"
+    },
+    "values": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Residual values in `equation_ids` order, or null. Null is the honest report for any status other than `ok`: an unevaluated residual is absent, never zeros."
+    },
+    "equation_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "phase_signature": {
+      "$ref": "#/$defs/phase_signature"
+    },
+    "model_version": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}@[0-9a-f]{64}$",
+      "description": "Format `<label>@<structure_sha256>` (ADR 0002 D2.3): the label names the function family and the 64 hex characters are the SHA-256 of the canonical JSON of the structure document \u2014 variable_ids, equation_ids, parameter_ids and row_accumulation. The compiler assigns it; a reader recomputes it where the document carries those lists."
+    },
+    "constants_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "state_sha256": {
+      "$ref": "#/$defs/sha256",
+      "description": "Hash of exactly the dense `x` as passed, in `variable_ids` order, after signed-zero normalization, and nothing else (ADR 0008 D2). No context field, no time, no pseudo-time and no integrator internal participates."
+    },
+    "counters": {
+      "$ref": "#/$defs/counters"
+    },
+    "accuracy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "message": {
+      "type": "string",
+      "description": "Why, when the status is not `ok`. Empty otherwise. A blocked or out-of-domain evaluation says so here rather than returning a number."
+    }
+  },
+  "$defs": {
+    "status": {
+      "enum": [
+        "ok",
+        "invalid_trial_state",
+        "unsupported",
+        "error"
+      ],
+      "description": "`invalid_trial_state` means the state left a declared domain and the solver should shorten its step; `unsupported` means the capability does not exist, which is never a silent success."
+    },
+    "phase_signature": {
+      "oneOf": [
+        {
+          "enum": [
+            "LIQUID",
+            "VAPOR",
+            "TWO_PHASE",
+            "ZERO_FLOW"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "counters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "Per-block call accounting, `{block_id: {counter: count}}` (ADR 0003 D5.5). `n_inputs + 1` value calls per Jacobian is the finite-difference signature, so this is evidence rather than telemetry."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

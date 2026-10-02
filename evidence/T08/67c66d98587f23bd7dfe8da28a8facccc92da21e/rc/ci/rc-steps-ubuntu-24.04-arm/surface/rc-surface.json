@@ -1,0 +1,291 @@
+{
+ "checks": [
+  {
+   "equals_v17_c2_as_written": false,
+   "id": "a49.descriptions_digest_r133",
+   "r133": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "result": "pass",
+   "served": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14"
+  },
+  {
+   "found": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "id": "a49.schemas_and_other_texts_are_v17_c2s",
+   "result": "pass",
+   "v17_c2": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d"
+  },
+  {
+   "clean": 40,
+   "id": "a49.g16b_clean",
+   "not_clean": [],
+   "result": "pass",
+   "runs": 40
+  },
+  {
+   "id": "a16.g16b_records_attributable",
+   "result": "pass"
+  }
+ ],
+ "digests": {
+  "served": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+  "with_v17_c2_texts": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d"
+ },
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-aarch64",
+  "python": "3.13.15",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "runs": [
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "mcp"
+  }
+ ],
+ "step": "surface"
+}

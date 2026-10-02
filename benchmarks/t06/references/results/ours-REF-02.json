@@ -1,0 +1,41 @@
+{
+ "check_policy_id": "K04-check-policy-v1",
+ "compared_quantities": {
+  "S2.T": 330.0,
+  "S2.n.A": 0.3,
+  "S2.n.B": 0.6,
+  "S2.n.C": 0.8999999999999999,
+  "S3.T": 330.0,
+  "S3.n.A": 0.7,
+  "S3.n.B": 1.4,
+  "S3.n.C": 2.0999999999999996
+ },
+ "fixture": "REF-02",
+ "limitations": [],
+ "non_passing_checks": [],
+ "outcome": "CONVERGED",
+ "path": "revision",
+ "policy_id": "T06-revision-v2",
+ "revision": "benchmarks/t06/cases/SYN-001-T06-REF02.yaml",
+ "revision_file_sha256": "ee373256f77d2e2d29f58791865054cf058df27fa7f43210fe845d6d829bab80",
+ "revision_id": "SYN-001-T06-REF02-r1",
+ "side": "ours",
+ "state": {
+  "S1.P": 100000.0,
+  "S1.T": 330.0,
+  "S1.n.A": 1.0,
+  "S1.n.B": 2.0,
+  "S1.n.C": 3.0,
+  "S2.P": 100000.0,
+  "S2.T": 330.0,
+  "S2.n.A": 0.3,
+  "S2.n.B": 0.6,
+  "S2.n.C": 0.8999999999999999,
+  "S3.P": 100000.0,
+  "S3.T": 330.0,
+  "S3.n.A": 0.7,
+  "S3.n.B": 1.4,
+  "S3.n.C": 2.0999999999999996
+ },
+ "verification_status": "VERIFIED"
+}

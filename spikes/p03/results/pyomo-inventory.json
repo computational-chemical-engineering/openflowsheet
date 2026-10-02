@@ -1,0 +1,149 @@
+{
+  "candidate": "pyomo",
+  "dist_info": {
+    "declared": {
+      "License": null,
+      "License-Expression": "BSD-3-Clause",
+      "Name": "pyomo",
+      "Version": "6.10.1"
+    },
+    "entries": [
+      "INSTALLER",
+      "METADATA",
+      "RECORD",
+      "REQUESTED",
+      "WHEEL",
+      "entry_points.txt",
+      "licenses",
+      "top_level.txt"
+    ],
+    "notice_files": [
+      {
+        "bytes": 16947,
+        "path": "licenses/LICENSE.md",
+        "sha256": "a57ea3ac2d2dec65238989c17c7f4839481b9810bcec159c7977eac55fc75e69"
+      }
+    ],
+    "path": "pyomo-6.10.1.dist-info",
+    "present": true
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+    "python": "3.13.5"
+  },
+  "locally_built_extensions": [
+    {
+      "bytes": 3112408,
+      "kind": "static-archive",
+      "needed": [],
+      "path": "/home/frankp/.pyomo/lib/libasl.a",
+      "sha256": "5247eaf10b4c27d713b4fabee8a877bacd2513732168fd6de7831f585eb9d7b3"
+    },
+    {
+      "bytes": 2775730,
+      "kind": "static-archive",
+      "needed": [],
+      "path": "/home/frankp/.pyomo/lib/libasl2.a",
+      "sha256": "5f29d81e60d6f4021df002a82dbfc605a2ed44c348cf6900e1d95fddae3e7090"
+    },
+    {
+      "bytes": 15576,
+      "kind": "elf-shared",
+      "needed": [
+        "libc.so.6"
+      ],
+      "path": "/home/frankp/.pyomo/lib/libasl_external_demo.so",
+      "sha256": "35fb5a478bb457e0c0ea1277049d32272dce62fa0cd2b6d0a1c0a6ff2973e6f7"
+    },
+    {
+      "bytes": 20472,
+      "kind": "elf-shared",
+      "needed": [
+        "libm.so.6"
+      ],
+      "path": "/home/frankp/.pyomo/lib/libaslfunctions.so",
+      "sha256": "fcd8d47c9701f5053dff7d6dc462d0ad8277a078ffbb97849dfe3715e40a034d"
+    },
+    {
+      "bytes": 147072,
+      "kind": "elf-shared",
+      "needed": [
+        "libstdc++.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ],
+      "path": "/home/frankp/.pyomo/lib/libcspline_external.so",
+      "sha256": "5e737b3016a9dde649b52fb3f4cd31adf3e541fb2edb8dbc4cee8b4ae716f488"
+    },
+    {
+      "bytes": 479520,
+      "kind": "elf-shared",
+      "needed": [
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ],
+      "path": "/home/frankp/.pyomo/lib/libpynumero_ASL.so",
+      "sha256": "a63bc651c1c34967f6202828a406fbb5abb7936c7ddaa7ed0ff5128fc0ecc60e"
+    },
+    {
+      "bytes": 640000,
+      "kind": "elf-shared",
+      "needed": [
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libc.so.6"
+      ],
+      "path": "/home/frankp/.pyomo/lib/mcppInterface.so",
+      "sha256": "df71365f1a85320a545b5a2c50ba83f77002a01149b8f147767b95315a0652ba"
+    }
+  ],
+  "locally_built_note": "PyNumero's ASL interface is not distributed in the wheel. It is compiled on the host by `pyomo build-extensions` into ~/.pyomo/lib, so these bytes are a build product of the installing machine, not bytes this project would redistribute. The build leaves no notice file for the AMPL Solver Library itself; establishing the ASL terms needs the upstream source distribution and is recorded as unresolved, not guessed.",
+  "locally_built_notice_files": [
+    "/home/frankp/.pyomo/src/mcpp/LICENSE"
+  ],
+  "package_tree_notice_files": [],
+  "root": ".venv-pyomo/lib/python3.13/site-packages/pyomo",
+  "shipped_binaries": [
+    {
+      "bytes": 1367496,
+      "kind": "elf-shared",
+      "needed": [
+        "libstdc++.so.6",
+        "libm.so.6",
+        "libgcc_s.so.1",
+        "libpthread.so.0",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ],
+      "path": "contrib/appsi/cmodel/appsi_cmodel.cpython-313-x86_64-linux-gnu.so",
+      "sha256": "2cf52b15480ea9b70293c5a8388a30ac08396ff0cd560bee1077cd4101c7b34f"
+    }
+  ],
+  "total_bytes": 47516130,
+  "totals": {
+    "build-metadata": {
+      "bytes": 4625,
+      "files": 1
+    },
+    "elf-shared": {
+      "bytes": 1367496,
+      "files": 1
+    },
+    "header": {
+      "bytes": 63159,
+      "files": 10
+    },
+    "other": {
+      "bytes": 246404,
+      "files": 27
+    },
+    "python": {
+      "bytes": 45834446,
+      "files": 2782
+    }
+  }
+}

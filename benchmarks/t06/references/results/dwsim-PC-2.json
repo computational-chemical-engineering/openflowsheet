@@ -1,0 +1,308 @@
+{
+ "tool": "DWSIM",
+ "versions": {
+  "dwsim": "DWSIM version 9.0.5.0 (10/2/2025 11:49:46\u202fPM)",
+  "pythonnet": "3.1.0",
+  "dotnet_runtime": "8.0.31",
+  "python": "3.13.5"
+ },
+ "environment_fingerprint": {
+  "measured": {
+   "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a",
+   "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+   "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+   "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31"
+  },
+  "expected_docs_reference_environments_s3": {
+   "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a",
+   "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+   "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+   "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31"
+  },
+  "matches": true
+ },
+ "settings": {
+  "flash_settings": {
+   "PTFlash_External_Loop_Tolerance": "1E-10",
+   "PTFlash_Internal_Loop_Tolerance": "1E-10",
+   "PHFlash_External_Loop_Tolerance": "1E-10",
+   "PHFlash_Internal_Loop_Tolerance": "1E-10",
+   "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+   "PHFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PHFlash_Maximum_Number_Of_Internal_Iterations": "1000"
+  },
+  "recycle": {
+   "mass_flow_kg_per_s": 1e-12,
+   "temperature_K": 1e-08,
+   "pressure_Pa": 1e-06,
+   "maximum_iterations": 1000,
+   "acceleration": "None"
+  },
+  "property_package": "Raoult's Law",
+  "property_package_options": {
+   "LiquidDensity_CorrectExpDataForPressure": false
+  },
+  "placeholders": {
+   "T_c_K": 1000.0,
+   "P_c_Pa": 10000000.0,
+   "omega": 0.0,
+   "NBP": "T_b,i"
+  }
+ },
+ "application_notes": [
+  "Mixer: DWSIM NodeIn, outlet pressure 'Minimum' of the inlets (its default; both at P_r).",
+  "Splitter: DWSIM NodeOut, SplitRatios[0] = split fraction to S2 (mass split = molar split at equal composition).",
+  "Heater: CalcMode OutletTemperature, DeltaP 0, energy stream as feed.",
+  "Flash: Vessel with OverrideT (isothermal TP flash at the inlet pressure), energy stream as feed.",
+  "Valve: CalcMode OutletPressure (isenthalpic PH flash).",
+  "Pump: CalcMode OutletPressure, Eficiencia = 100 * efficiency (percent).",
+  "Conversion reactor: RCT_Conversion, conversion reaction in the liquid phase with base component = key, conversion expression = 100 * X (percent), OperationMode OutletTemperature, DeltaP 0; rule 2 uses extent = X_key(tool) n_key,in / |nu_key| with X_key read back from the reactor's ComponentConversions.",
+  "Recycle (REF-08): SYN-001 loop torn on S6 by an OT_Recycle block whose outlet is initialized with t06_fixtures.RECYCLE_TEAR_GUESS; sequential modular."
+ ],
+ "wall_time_runtime_start_s": 1.3906276319175959,
+ "fixture": "PC-2",
+ "definition": {
+  "unit": "flash",
+  "feeds": {
+   "S1": {
+    "flows": {
+     "A": 1.0,
+     "B": 1.0,
+     "C": 1.0
+    },
+    "T": 300.0,
+    "P": 150000.0
+   }
+  },
+  "flash_T": 370.0,
+  "flash_P": 150000.0
+ },
+ "adjustments": [],
+ "accepted": true,
+ "converged": true,
+ "stage_reached": "calculated",
+ "settings_readback": {
+  "flash_algorithm": "DWSIM.Thermodynamics.PropertyPackages.Auxiliary.FlashAlgorithms.UniversalFlash",
+  "flash_settings": {
+   "Replace_PTFlash": "False",
+   "ValidateEquilibriumCalc": "False",
+   "UsePhaseIdentificationAlgorithm": "False",
+   "CalculateBubbleAndDewPoints": "False",
+   "ValidationGibbsTolerance": "0.01",
+   "PHFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PHFlash_External_Loop_Tolerance": "1E-10",
+   "PHFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+   "PHFlash_Internal_Loop_Tolerance": "1E-10",
+   "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PTFlash_External_Loop_Tolerance": "1E-10",
+   "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+   "PTFlash_Internal_Loop_Tolerance": "1E-10",
+   "NL_FastMode": "True",
+   "IO_FastMode": "True",
+   "GM_OptimizationMethod": "IPOPT",
+   "ThreePhaseFlashStabTestSeverity": "0",
+   "ThreePhaseFlashStabTestCompIds": "",
+   "PVFlash_FixedDampingFactor": "1.0",
+   "PVFlash_MaximumTemperatureChange": "10.0",
+   "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+   "ST_Number_of_Random_Tries": "20",
+   "CheckIncipientLiquidForStability": "False",
+   "PHFlash_MaximumTemperatureChange": "30.0",
+   "PTFlash_DampingFactor": "1.0",
+   "ForceEquilibriumCalculationType": "Default",
+   "ImmiscibleWaterOption": "False",
+   "HandleSolidsInDefaultEqCalcMode": "False",
+   "UseIOFlash": "False",
+   "GibbsMinimizationExternalSolver": "",
+   "GibbsMinimizationExternalSolverConfigData": "",
+   "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+   "PVFlash_TryIdealCalcOnFailure": "True",
+   "FailSafeCalculationMode": "1",
+   "PVFlash_FivePointStencilNumericalDerivative": "False"
+  },
+  "LiquidDensity_CorrectExpDataForPressure": false,
+  "compounds": {
+   "A": {
+    "HVap_A_J_per_kmol": 25010000.0,
+    "IG_Enthalpy_of_Formation_25C_kJ_per_kg": 250.1,
+    "Critical_Temperature": 1000.0,
+    "Critical_Pressure": 10000000.0,
+    "Acentric_Factor": 0.0,
+    "NBP": 320.0
+   },
+   "B": {
+    "HVap_A_J_per_kmol": 30010000.0,
+    "IG_Enthalpy_of_Formation_25C_kJ_per_kg": 300.1,
+    "Critical_Temperature": 1000.0,
+    "Critical_Pressure": 10000000.0,
+    "Acentric_Factor": 0.0,
+    "NBP": 360.0
+   },
+   "C": {
+    "HVap_A_J_per_kmol": 35010000.0,
+    "IG_Enthalpy_of_Formation_25C_kJ_per_kg": 350.1,
+    "Critical_Temperature": 1000.0,
+    "Critical_Pressure": 10000000.0,
+    "Acentric_Factor": 0.0,
+    "NBP": 400.0
+   }
+  }
+ },
+ "wall_time_calculate_s": 0.001965479925274849,
+ "solver_errors": [],
+ "calculated": {
+  "S1": true,
+  "S2": true,
+  "S3": true,
+  "Q-FLASH": true,
+  "U-FLASH": true
+ },
+ "raw_output": {
+  "streams": {
+   "S1": {
+    "T_K": 300.0,
+    "P_Pa": 150000.0,
+    "molar_flow_mol_per_s": 3.0,
+    "mass_flow_kg_per_s": 0.29999999999999993,
+    "mass_enthalpy_kJ_per_kg": -298.09999999999997,
+    "vapor_molar_fraction": null,
+    "overall_mol_per_s": {
+     "A": 1.0,
+     "B": 1.0,
+     "C": 1.0
+    },
+    "vapor_mol_per_s": {
+     "A": 0.0,
+     "B": 0.0,
+     "C": 0.0
+    },
+    "liquid_mol_per_s": {
+     "A": 1.0,
+     "B": 1.0,
+     "C": 1.0
+    },
+    "vapor_mole_fractions": {
+     "A": 0.7644669678842941,
+     "B": 0.19268526029990082,
+     "C": 0.04284777181580504
+    },
+    "liquid_mole_fractions": {
+     "A": 0.3333333333333333,
+     "B": 0.3333333333333333,
+     "C": 0.3333333333333333
+    },
+    "calculated": true
+   },
+   "S2": {
+    "T_K": 370.0,
+    "P_Pa": 150000.0,
+    "molar_flow_mol_per_s": 0.7833875743482747,
+    "mass_flow_kg_per_s": 0.07833875743482746,
+    "mass_enthalpy_kJ_per_kg": 71.85000000000002,
+    "vapor_molar_fraction": 1.0,
+    "overall_mol_per_s": {
+     "A": 0.4561614386788842,
+     "B": 0.2360084281187582,
+     "C": 0.09121770755063226
+    },
+    "vapor_mol_per_s": {
+     "A": 0.4561614386788842,
+     "B": 0.2360084281187582,
+     "C": 0.09121770755063226
+    },
+    "liquid_mol_per_s": {
+     "A": "nan",
+     "B": "nan",
+     "C": "nan"
+    },
+    "vapor_mole_fractions": {
+     "A": 0.582293431266611,
+     "B": 0.30126649419363233,
+     "C": 0.11644007453975665
+    },
+    "liquid_mole_fractions": {
+     "A": "nan",
+     "B": "nan",
+     "C": "nan"
+    },
+    "calculated": true
+   },
+   "S3": {
+    "T_K": 370.0,
+    "P_Pa": 150000.0,
+    "molar_flow_mol_per_s": 2.2166124256517246,
+    "mass_flow_kg_per_s": 0.22166124256517244,
+    "mass_enthalpy_kJ_per_kg": -236.33201491907172,
+    "vapor_molar_fraction": null,
+    "overall_mol_per_s": {
+     "A": 0.543838561306663,
+     "B": 0.7639915718831032,
+     "C": 0.9087822924619585
+    },
+    "vapor_mol_per_s": {
+     "A": 0.0,
+     "B": 0.0,
+     "C": 0.0
+    },
+    "liquid_mol_per_s": {
+     "A": 0.543838561306663,
+     "B": 0.7639915718831032,
+     "C": 0.9087822924619585
+    },
+    "vapor_mole_fractions": {
+     "A": null,
+     "B": null,
+     "C": null
+    },
+    "liquid_mole_fractions": {
+     "A": 0.24534670789223087,
+     "B": 0.3446662858341037,
+     "C": 0.4099870062736655
+    },
+    "calculated": true
+   }
+  },
+  "energy_streams_kW": {
+   "Q-FLASH": 42.6729916368
+  },
+  "units": {
+   "U-FLASH": {
+    "class": "DWSIM.UnitOperations.UnitOperations.Vessel",
+    "calculated": true,
+    "error_message": "",
+    "DeltaQ": 42.6729916368,
+    "FlashTemperature": 370.0
+   }
+  }
+ },
+ "self_check": {
+  "rule2_component_balance": {
+   "residual_mol_per_s": {
+    "A": 1.4452883334570288e-11,
+    "B": -1.8613999230865375e-12,
+    "C": -1.2590817277668975e-11
+   },
+   "max_abs_mol_per_s": 1.4452883334570288e-11,
+   "tolerance_mol_per_s": 3.1e-08,
+   "passes": true
+  },
+  "energy_balance": {
+   "residual_W": -1.4551915228366852e-11,
+   "relative_to_largest_term": -1.6271849746580405e-16,
+   "energy_streams_counted_as_inlets_W": {
+    "Q-FLASH": 42672.9916368
+   },
+   "reaction_term_W": 0.0
+  },
+  "phase_equilibrium_relative": {
+   "flash_vapour_vs_liquid_outlet": 4.315021215006709e-11
+  }
+ },
+ "compared_quantities": {
+  "S2.n.A": 0.4561614386788842,
+  "S2.n.B": 0.2360084281187582,
+  "S2.n.C": 0.09121770755063226
+ },
+ "wall_time_total_s": 0.007700471207499504
+}

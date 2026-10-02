@@ -1,0 +1,45 @@
+{
+ "status": "ok",
+ "message": "",
+ "phase_signature": "VAPOR",
+ "model_version": "P02-I-form-v1",
+ "constants_sha256": "0d91ffeeed88e9b9c03be1b62a4827927764fb6d9d49d2e06b59aeada29bdccc",
+ "state_sha256": "58e8137eb90bf150366fce7e7f386eedcc027fe82afed227eb0ebb92468db4ac",
+ "equation_ids": [
+  "bal_A",
+  "bal_B",
+  "bal_C",
+  "Vdef",
+  "Ldef",
+  "eq_A",
+  "eq_B",
+  "eq_C",
+  "energy",
+  "tspec",
+  "pspec"
+ ],
+ "values": [
+  0.8,
+  0.19999999999999996,
+  -0.5,
+  -0.10000000000000009,
+  0.1499999999999999,
+  -0.5506851065569456,
+  -1.564191352564153,
+  -0.7873291524007772,
+  120008.0,
+  3.0,
+  3000.0
+ ],
+ "counters": {
+  "blockK": {
+   "value_calls": 1,
+   "jacobian_calls": 0
+  },
+  "blockH": {
+   "value_calls": 1,
+   "jacobian_calls": 0
+  }
+ },
+ "accuracy": "exact-double"
+}

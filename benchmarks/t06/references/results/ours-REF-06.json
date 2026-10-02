@@ -1,0 +1,31 @@
+{
+ "check_policy_id": "K04-check-policy-v1",
+ "compared_quantities": {
+  "S2.T": 300.02666666666664,
+  "U-PUMP.W": 32.0
+ },
+ "fixture": "REF-06",
+ "limitations": [],
+ "non_passing_checks": [],
+ "outcome": "CONVERGED",
+ "path": "revision",
+ "policy_id": "T06-revision-v2",
+ "revision": "benchmarks/t06/cases/SYN-001-T06-REF06.yaml",
+ "revision_file_sha256": "f3dba27099d9ee24bd774ba208bde6ca68e2ad86fe71ff589b92ea7afef028fe",
+ "revision_id": "SYN-001-T06-REF06-r1",
+ "side": "ours",
+ "state": {
+  "S1.P": 100000.0,
+  "S1.T": 300.0,
+  "S1.n.A": 1.0,
+  "S1.n.B": 1.0,
+  "S1.n.C": 1.0,
+  "S2.P": 180000.0,
+  "S2.T": 300.02666666666664,
+  "S2.n.A": 1.0,
+  "S2.n.B": 1.0,
+  "S2.n.C": 1.0,
+  "U-PUMP.W": 32.0
+ },
+ "verification_status": "VERIFIED"
+}

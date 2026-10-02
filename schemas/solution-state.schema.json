@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/solution-state.schema.json",
+  "title": "SolutionState",
+  "description": "T07 design note ruling round 2 (V17 F1), ADR 0020 D4 as amended: `solution-state.json`, the state the verifier judged, written in a revision bundle exactly when `solution-certificate.json` is. `variable_ids` is the verifier's `spec.variable_ids`, in the order `state_sha256` is defined over; `variables` maps each of them to its binary64 value in unprefixed SI (ADR 0001 D1.1): amount flow mol/s, temperature K, pressure Pa, heat rate W, fractions dimensionless. `state_sha256` is `canonical.state_sha256` of the values in `variable_ids` order and equals the certificate's `target_state_sha256`. That `variables` has exactly the ids of `variable_ids`, and both hash identities, are checked by `process_runtime.run.solution_state.inconsistencies`, which JSON Schema cannot express. The file carries no run id and no verdict: its provenance is its bundle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "state_sha256",
+    "variable_ids",
+    "variables"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "solution-state-v1"
+    },
+    "state_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "variable_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "variables": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "number"
+      }
+    }
+  }
+}

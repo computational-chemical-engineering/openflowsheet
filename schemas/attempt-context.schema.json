@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/attempt-context.schema.json",
+  "title": "AttemptContext",
+  "description": "Blueprint [A01] made structural (K03 \u00a712.4). The active phase set belongs to the local nonlinear attempt, and this is the only object that can hand the Newton core an EvaluationContext -- so freezing the set is a property of the type rather than a convention. `scale_segment` is 0 throughout K03 v0.0, which never refreshes scales; the counter exists because a segment number appearing retroactively could not be read back into traces already written.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "attempt_index",
+    "signature",
+    "evaluation_context",
+    "flowsheet_context",
+    "column_scales",
+    "row_scales",
+    "scale_segment",
+    "opened_reason",
+    "opened_from",
+    "counters_at_open",
+    "active_phases",
+    "jacobian_pattern",
+    "core",
+    "continuation"
+  ],
+  "properties": {
+    "attempt_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "signature": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "prefixItems": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "enum": [
+              "LIQUID",
+              "VAPOR",
+              "TWO_PHASE",
+              "ZERO_FLOW"
+            ]
+          }
+        ]
+      },
+      "description": "The phase selections an attempt freezes, as ordered (unit_id, regime) pairs. Blueprint [A01]: the set belongs to the attempt, not to a residual call."
+    },
+    "evaluation_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_version",
+        "constants_sha256",
+        "phase_signature",
+        "accuracy_policy"
+      ],
+      "properties": {
+        "model_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constants_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "phase_signature": {
+          "oneOf": [
+            {
+              "enum": [
+                "LIQUID",
+                "VAPOR",
+                "TWO_PHASE",
+                "ZERO_FLOW"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accuracy_policy": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "The serializable part of an EvaluationContext. `workspace` is deliberately absent: ADR 0008 D1.4 makes it inert, so a workspace in a replayed document would be a claim that the evaluated function depends on one."
+    },
+    "flowsheet_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_version",
+        "constants_sha256",
+        "phase_signature",
+        "accuracy_policy"
+      ],
+      "properties": {
+        "model_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constants_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "phase_signature": {
+          "oneOf": [
+            {
+              "enum": [
+                "LIQUID",
+                "VAPOR",
+                "TWO_PHASE",
+                "ZERO_FLOW"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accuracy_policy": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "The serializable part of an EvaluationContext. `workspace` is deliberately absent: ADR 0008 D1.4 makes it inert, so a workspace in a replayed document would be a claim that the evaluated function depends on one."
+    },
+    "column_scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "row_scales": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "scale_segment": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "opened_reason": {
+      "enum": [
+        "initial",
+        "phase_update"
+      ]
+    },
+    "opened_from": {
+      "oneOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/checkpoint.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The restart point, or null for the first attempt. It is a phase-rejected trial and never the closing attempt's last accepted iterate, whose traversal reports the old signature and would re-open the same attempt."
+    },
+    "counters_at_open": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "property_calls",
+        "requested_evaluations",
+        "cache_hits",
+        "residual_calls",
+        "jacobian_calls",
+        "factorizations"
+      ],
+      "properties": {
+        "property_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requested_evaluations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cache_hits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "residual_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jacobian_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "factorizations": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "Cumulative, on every event, so a trace shows where a budget went. `property_calls` is the budgeted quantity -- actual provider calls, i.e. exact-cache misses. Requested evaluations and hits are recorded separately (blueprint \u00a76.4) and do not consume the budget, so that a cache cannot change what a budget means."
+    },
+    "active_phases": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "description": "ADR 0009 D4: a region attempt's active phase set (T02 6.3.1), [[unit, regime], ...] in the shape of `signature`; null on a tear attempt. R0.",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "prefixItems": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "enum": [
+              "LIQUID",
+              "VAPOR",
+              "TWO_PHASE",
+              "ZERO_FLOW"
+            ]
+          }
+        ]
+      }
+    },
+    "jacobian_pattern": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "rows",
+        "columns",
+        "nnz",
+        "sha256"
+      ],
+      "properties": {
+        "rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "columns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nnz": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "description": "ADR 0005 D5 (T03 \u00a75.2): the structural pattern of the attempt's EO block (compiled sparsity, structural zeros included, restricted by id to the attempt's rows and columns), hashed per ADR 0002 over {rows, columns, entries}; null only for an attempt with no compiled problem. R0."
+    },
+    "core": {
+      "enum": [
+        "newton",
+        "anderson",
+        "ptc",
+        "homotopy"
+      ],
+      "description": "ADR 0010 D7.3 (T04): the core the attempt ran."
+    },
+    "continuation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "parameter_ids"
+      ],
+      "properties": {
+        "type": {
+          "const": "specification_continuation"
+        },
+        "parameter_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "description": "ADR 0010 D7.3: a homotopy attempt's continuation (T04 \u00a74.1); null for every other core. The attempt's evaluation_context is the target's (\u03bb = 1); each \u03bb-level uses a level context equal to it except constants_sha256 (ADR 0010 D6)."
+    }
+  }
+}

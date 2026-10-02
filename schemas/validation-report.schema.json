@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/validation-report.schema.json",
+  "title": "ValidationReport",
+  "description": "Blueprint v3.1 §4.3: validation runs schema, dimensions, graph connectivity, component/reference compatibility, conditional classification, capability checks, then task-specific structural analysis. A report is a result tied to a revision and a task, not an editable badge. Matching and Dulmage-Mendelsohn decomposition give structural counts; they do not prove nonlinear feasibility or numerical nonsingularity, so `structural_counts` may be null with a stated reason (in P01 it always is: no structural analysis exists before T01). `provenance.produced_by` says what produced the report, so a hand-authored expectation can never be mistaken for a validator's verdict.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "revision_id",
+    "task",
+    "status",
+    "checks",
+    "structural_counts",
+    "provenance"
+  ],
+  "properties": {
+    "revision_id": { "type": "string", "minLength": 1 },
+    "task": { "enum": ["simulation", "optimization"] },
+    "status": {
+      "enum": [
+        "DRAFT",
+        "READY_FOR_SIMULATION",
+        "READY_FOR_OPTIMIZATION",
+        "INVALID"
+      ],
+      "description": "DRAFT revisions may be incomplete or under-specified; READY_FOR_SIMULATION requires an appropriately closed system after fixed-variable elimination."
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "stage", "result", "message", "implicated_objects"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "stage": {
+            "enum": [
+              "schema",
+              "dimensions",
+              "graph_connectivity",
+              "component_reference_compatibility",
+              "conditional_classification",
+              "capability",
+              "structural_analysis"
+            ],
+            "description": "The blueprint §4.3 stage order."
+          },
+          "result": { "enum": ["PASS", "FAIL", "WARN", "NOT_RUN"] },
+          "message": { "type": "string", "minLength": 1 },
+          "implicated_objects": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "description": "Ids of the objects the check names. A structural conflict names every object in the conflict; it does not claim to be a unique minimal conflict set unless the evidence class says so."
+          },
+          "evidence_class": {
+            "enum": ["structural", "local_numerical", "verified_minimal_subset"],
+            "description": "Blueprint §4.3: additional rank or conflict searches must label which of these they are."
+          }
+        }
+      }
+    },
+    "structural_counts": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["free_variables", "equations", "matched", "unmatched"],
+          "properties": {
+            "free_variables": { "type": "integer", "minimum": 0 },
+            "equations": { "type": "integer", "minimum": 0 },
+            "matched": { "type": "integer", "minimum": 0 },
+            "unmatched": { "type": "integer", "minimum": 0 }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "structural_counts_absent_reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Required whenever structural_counts is null. Silence about a missing count is not permitted."
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["produced_by", "timestamp"],
+      "properties": {
+        "produced_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The validator implementation and version, or an explicit statement that the document is a hand-authored expectation and no validator ran."
+        },
+        "actor": { "type": "string", "minLength": 1 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "if": {
+    "type": "object",
+    "properties": { "structural_counts": { "type": "null" } },
+    "required": ["structural_counts"]
+  },
+  "then": { "required": ["structural_counts_absent_reason"] }
+}

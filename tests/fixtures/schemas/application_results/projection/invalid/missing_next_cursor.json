@@ -1,0 +1,47 @@
+{
+  "expect_error": "'next_cursor' is a required property",
+  "document": {
+    "pointer": "",
+    "sha256": "62fc46966f9d4898b2ae6e9d83d74919918ad28d882c2a308ead3c3e4e561e64",
+    "subject_id": "syn001-nominal",
+    "truncated": false,
+    "value": {
+      "component_set": {
+        "$elided": {
+          "members": 2,
+          "pointer": "/component_set"
+        }
+      },
+      "connections": {
+        "$elided": {
+          "items": 7,
+          "pointer": "/connections"
+        }
+      },
+      "content_hash": "3b60e8facbb2028e0112c26ca786f4524582eb056372a0cc56dad5dbd46d30ab",
+      "description": "Two-phase flash, liquid heater outlet, all three recycle streams flowing. The reference values are in benchmarks/syn001/reference_values.yaml; the algebraic reference is benchmarks/syn001/oracle.py. Case SYN-001-capped-budget reuses this revision unchanged and differs only in a solve-policy override in the registry.",
+      "instances": {
+        "$elided": {
+          "items": 7,
+          "pointer": "/instances"
+        }
+      },
+      "parent_revision": null,
+      "provenance": {
+        "$elided": {
+          "members": 5,
+          "pointer": "/provenance"
+        }
+      },
+      "revision_id": "syn001-nominal",
+      "schema_version": 1,
+      "specifications": {
+        "$elided": {
+          "items": 9,
+          "pointer": "/specifications"
+        }
+      },
+      "title": "Nominal SYN-001 flash-recycle case: r = 0.5, flash at 360 K."
+    }
+  }
+}

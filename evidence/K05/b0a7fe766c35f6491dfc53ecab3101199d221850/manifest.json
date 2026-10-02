@@ -1,0 +1,223 @@
+{
+ "work_package": "K05",
+ "commit": "b0a7fe766c35f6491dfc53ecab3101199d221850",
+ "requirements": [
+  "D20"
+ ],
+ "status": "reviewed",
+ "inputs": {
+  "case_id": "SYN-001 nominal run bundled and replayed: clean, with a changed lock file, with a changed platform, with changed thread pins, on an unregistered platform, and with a tampered artifact",
+  "case_hash": "1e70fc3a41dd7215e447f81974f6f993e08f1885412ed9171cd4769646fb3668",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "741eeee9e0a9695a5893e6fa6f8562feed811bf7e56dbac24f27b243e116dc1c"
+  },
+  {
+   "cmd": "GitHub Actions workflow `ci`, jobs `check` (ubuntu-latest, ubuntu-24.04-arm) and `identity`: https://github.com/computational-chemical-engineering/clearsheet/actions/runs/35754022129",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "K05.clean_replay",
+   "description": "Plan \u00a74.2 K05's first acceptance item. A run writes its plan, its trace and its certificate, the bundle verifies, and replaying it in the same environment gives `exact_replay` / `MATCH`. Bitwise agreement is *recorded* here rather than promised (ADR 0007 D3, Frank's F1 ruling of 2026-09-22).",
+   "result": "pass",
+   "value": {
+    "artifacts": [
+     "solution-certificate.json",
+     "solve-events.json",
+     "solve-plan.json"
+    ],
+    "outcome": "CONVERGED",
+    "verification_status": "VERIFIED",
+    "structural_sha256": "10b6841ce1eb5cc4c67193410f9c93b4fa4be0fcef25d51407cc058ce6484062",
+    "integrity_ok": true,
+    "replay": {
+     "mode": "exact_replay",
+     "verdict": "MATCH",
+     "bitwise_floats": true,
+     "differences": []
+    },
+    "elapsed_seconds_recorded": true
+   },
+   "expected": "exact_replay / MATCH with no differences"
+  },
+  {
+   "id": "K05.timing_excluded_from_structural_identity",
+   "description": "Plan \u00a74.2 K05 and blueprint D20. The structural document is built by *removing* the excluded fields rather than by listing the included ones, so a field added to the manifest is hashed by default. Checked by moving every excluded field at once \u2014 a different run id, a different start time, a 99-fold elapsed time, a different host, a different architecture and BLAS, and a wholly different artifact index \u2014 and requiring the hash not to move.",
+   "result": "pass",
+   "value": {
+    "excluded": [
+     "artifacts",
+     "elapsed_seconds",
+     "environment",
+     "hostname",
+     "parent_run_id",
+     "run_id",
+     "started_at"
+    ],
+    "structural_fields": [
+     "artifact_r0_sha256",
+     "check_policy_sha256",
+     "constants_sha256",
+     "model_version",
+     "numerical_policy_id",
+     "outcome",
+     "plan_id",
+     "policy_id",
+     "policy_sha256",
+     "reproducibility_class",
+     "seeds",
+     "verification_status"
+    ],
+    "hash_unchanged_under_provenance": true,
+    "hash_changes_under_policy": true,
+    "no_floats_in_structural_document": true
+   },
+   "expected": "the hash is blind to provenance and sensitive to policy"
+  },
+  {
+   "id": "K05.G05.changed_dependency",
+   "description": "Gate **G05**'s first clause. ADR 0007 D4 decides the mode from the environment *before* anything runs, so there is no path on which a changed lock file reaches a comparison \u2014 measured both at the decision function and end to end with a rerun supplied that would otherwise have matched. The full D4 table is measured beside it, including D6's clause that a differing thread count is a differing environment.",
+   "result": "pass",
+   "value": {
+    "decision_before_rerun": "inspected_archived_results",
+    "reasons": [
+     "the lock file differs: recorded b9c509b5d13a, current 000000000000"
+    ],
+    "with_a_rerun_supplied": {
+     "mode": "inspected_archived_results",
+     "verdict": "NOT_RUN"
+    },
+    "same_environment": "exact_replay",
+    "other_registered_platform": "compatible_reproduction",
+    "differing_threads": "compatible_reproduction",
+    "unregistered_platform": "inspected_archived_results"
+   },
+   "expected": "a changed dependency is NOT_RUN; the D4 table row for row"
+  },
+  {
+   "id": "K05.tampered_archive_is_not_re_run",
+   "description": "Re-running a tampered archive and reporting a match on the parts that happened to survive is the injected-false-success shape in a different costume, so integrity is checked first and unconditionally and a failure stops the rerun rather than being noted beside it.",
+   "result": "pass",
+   "value": {
+    "integrity_ok": false,
+    "tampered": [
+     "solve-events.json"
+    ],
+    "mode": "inspected_archived_results",
+    "verdict": "NOT_RUN",
+    "re_run": false
+   },
+   "expected": "integrity fails, nothing is re-run, the verdict is NOT_RUN"
+  },
+  {
+   "id": "K05.G05.two_platform_structural_equality",
+   "description": "Gate **G05**'s second clause, which no single machine can measure. Each CI architecture emits the R0 artifacts blueprint \u00a78.3 promises identical across supported platforms and a third job compares them field by field. The document carries no floats by construction \u2014 \u00a78.3 excludes adaptive floating-point decisions from any cross-platform bitwise promise, and two x86-64 runners were measured disagreeing on a converged state's last bits on 2026-09-21, so a comparison including one would fail for a reason that is not a defect.\n\nThis manifest records the document this machine produced and names the CI run that performed the comparison; it does not claim to have performed it.",
+   "result": "pass",
+   "value": {
+    "structural_sha256": "10b6841ce1eb5cc4c67193410f9c93b4fa4be0fcef25d51407cc058ce6484062",
+    "events": 8,
+    "checks": 136,
+    "solver_counters": {
+     "residual_calls": 2,
+     "jacobian_calls": 1,
+     "factorizations": 2
+    },
+    "floats_in_document": [],
+    "compared_by": "https://github.com/computational-chemical-engineering/clearsheet/actions/runs/35754022129"
+   },
+   "expected": "no floats in the comparison document; equality established by the CI `identity` job across ubuntu-latest and ubuntu-24.04-arm"
+  },
+  {
+   "id": "K05.interfaces",
+   "description": "Plan \u00a72.2's RunManifest and replay artifact manifest, with fixtures generated from real runs and real replays (R-015). The two that did not match are the ones worth having.",
+   "result": "pass",
+   "value": [
+    "run-manifest",
+    "replay-report"
+   ],
+   "expected": "two schemas, each with at least one generated fixture"
+  },
+  {
+   "id": "K05.G03.serialized_artifacts",
+   "description": "Gate **G03**: serialized manifests, events, certificates, failures and the replay bundle. All five exist as schemas with generated fixtures across K03, K04 and K05. The gate is shared with K04 and its certificate/failure half is recorded in that package's manifest.",
+   "result": "pass",
+   "value": [
+    "solve-plan",
+    "solve-event",
+    "solution-certificate",
+    "failure-bundle",
+    "run-manifest",
+    "replay-report"
+   ],
+   "expected": "every artifact of a run is serialized and round-tripped"
+  },
+  {
+   "id": "K05.clean_environment_replay_from_a_fresh_checkout",
+   "description": "Plan \u00a74.2 K05 says 'clean-environment replay'. What is measured here is a replay in the *same* environment and a correct refusal in a changed one. A genuinely clean environment \u2014 a fresh container with only the lock file \u2014 is an infrastructure exercise this package does not perform, and calling the in-process replay by that name would overstate it.",
+   "result": "unsupported",
+   "value": {
+    "performed": "same-process replay",
+    "not_performed": "fresh container"
+   },
+   "expected": "a replay from a container built only from the recorded lock file"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "src/process_runtime/run/manifest.py",
+   "sha256": "4ef536d7dcbc04540a66b3eb11909a15c69c0c4fc1532ef1e6522c243d1a06ae",
+   "description": "The immutable run manifest."
+  },
+  {
+   "path": "src/process_runtime/run/bundle.py",
+   "sha256": "cd10cdc54709152ea4161bb6bf1cbf6e9f44af3a849fabcf55e920ae6f811b55",
+   "description": "The replay bundle and its integrity."
+  },
+  {
+   "path": "src/process_runtime/run/replay.py",
+   "sha256": "0a918b5ab6d2ab64b2ccfb02bb51ea68499dec043be6525b6527d329dd1ed754",
+   "description": "The mode decision and the verdict."
+  },
+  {
+   "path": "src/process_runtime/run/compare.py",
+   "sha256": "196817f653b508c64d6727c4a9134fd274350890534607fbb8c26432c4418974",
+   "description": "ADR 0007 D2's comparison, made normative."
+  },
+  {
+   "path": "scripts/k05_structural_identity.py",
+   "sha256": "e69faedc8d116b9e8b1a479b510a4328eba7225f386c02261ad79a9032204b10",
+   "description": "The G05 cross-platform document."
+  },
+  {
+   "path": ".github/workflows/ci.yml",
+   "sha256": "72e34e2a0c6cfa36079637dc54ffad2a9a6d3044aace0e9496de4e6dd190b259",
+   "description": "The two-platform matrix and the comparison job."
+  },
+  {
+   "path": "docs/adr/0007-reproducibility-certificate-policy.md",
+   "sha256": "48b523386c27c14484ac81c5aa3504a3267482dcac7421af165fc33e6fa2a727",
+   "description": "The governing ADR."
+  }
+ ],
+ "limitations": [
+  "A genuinely clean-environment replay \u2014 a fresh container built only from the recorded lock file \u2014 is not performed. What is measured is an in-process replay and a correct refusal when the environment differs. Recorded as `unsupported` above rather than as a pass.",
+  "The two-platform equality is established by CI and named here, not measured by this script: no single machine can measure it. The named run is the evidence.",
+  "Bitwise float agreement is observed and reported, never promised (ADR 0007 D3, Frank's F1 ruling of 2026-09-22). Two `ubuntu-latest` runners were measured disagreeing on a converged state's last bits on 2026-09-21.",
+  "The registered platform set is the plan \u00a74.2 pair plus macOS arm64, which has never been exercised; a bundle recorded there would be an inspection today.",
+  "A replay bundle references the backend by hash and never embeds it (ADR 0006 D1.3), so a replay depends on the wheel still being fetchable. Nothing here archives it.",
+  "Nothing is empirically validated. SYN-001 is synthetic.",
+  "Human numerical and process-modeling review remain `pending`."
+ ],
+ "review": {
+  "numerical": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more.",
+  "process_model": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more."
+ }
+}

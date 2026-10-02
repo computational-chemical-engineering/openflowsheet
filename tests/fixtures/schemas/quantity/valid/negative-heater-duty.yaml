@@ -1,0 +1,19 @@
+# Valid Quantity: a negative heater duty.
+#
+# Duties are positive into the unit (ADR 0001 D4.1), so the SYN-001 r = 0.95 heater
+# removes heat. This is a supported result, not an error, and a schema that forbade it
+# would reject a registered variant.
+value: -16144.627684760118
+unit: W
+dimension:
+- 2
+- 1
+- -3
+- 0
+- 0
+- 0
+- 0
+kind: heat_rate
+meaning: Heater duty of the SYN-001 high-recycle case, positive into the unit
+role: derived
+nominal: 100000.0

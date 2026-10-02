@@ -1,0 +1,13 @@
+{
+ "backend": "casadi",
+ "backend_version": "3.8.0",
+ "numpy_version": "2.2.4",
+ "python_version": "3.13.5",
+ "executable": "/home/frankp/Codes/Process Simulator/.venv-casadi/bin/python",
+ "platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+ "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+ "git_commit": "7c6893b471a6a417a67603af4ab2180ebff7b30e",
+ "recorded_at_unix": 1789074327.9937024,
+ "asl_required": false,
+ "build_step_required": false
+}

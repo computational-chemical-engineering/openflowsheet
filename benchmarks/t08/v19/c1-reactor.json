@@ -1,0 +1,544 @@
+{
+  "record": "t08-v19-c1-reactor",
+  "version": 2,
+  "assertions": [
+    "T08.A61",
+    "Q6"
+  ],
+  "status": "measured",
+  "judged": false,
+  "group_repository": {
+    "local_path": "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/c1654ca5-cf40-4fac-b53a-1914bdd081e5/scratchpad/asr-release",
+    "remotes": [
+      "origin\thttps://github.com/computational-chemical-engineering/ammonia_synthesis_reactor (fetch)",
+      "origin\thttps://github.com/computational-chemical-engineering/ammonia_synthesis_reactor (push)"
+    ],
+    "branch": "main",
+    "on_remote_branches": [
+      "origin/HEAD -> origin/main",
+      "origin/main"
+    ],
+    "commit": "6089593464fc9bc2c0a0cb58e30ad5433ece6332",
+    "commit_date": "2026-09-17T12:53:58+02:00",
+    "commit_subject": "Wire in the Zenodo code DOIs",
+    "root_commits": [
+      "d2b00336d621722fc25e7052883b79184b6736b5"
+    ],
+    "commit_count": 9,
+    "tag": "v1.1.0",
+    "tag_commit": "d78fbfb32aac366ce446cdfce372444803700632",
+    "describe": "v1.1.0-1-g6089593",
+    "files_changed_tag_to_commit": [
+      "CITATION.cff",
+      "README.md",
+      "src/reactor/archive.py"
+    ],
+    "worktree_clean_before": true,
+    "worktree_clean_after": true,
+    "licence_file": [
+      "LICENSE"
+    ],
+    "licence_file_first_line": "MIT License",
+    "pyproject_license": "MIT",
+    "pyproject_version": "1.1.0",
+    "pyproject_pymrm_requirement": "pymrm>=2.3.1"
+  },
+  "environment": {
+    "kind": "separate venv outside this repository (python3 -m venv; pip install -e '.[test]' in the clone), never the project .venv",
+    "python": "3.13.5",
+    "platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+    "machine": "x86_64",
+    "cpu_count": 48,
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "packages": {
+      "pymrm": "2.5.0",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "pandas": "3.0.6",
+      "matplotlib": "3.11.2",
+      "h5py": "3.16.0",
+      "openpyxl": "3.1.5",
+      "numba": "0.68.0",
+      "llvmlite": "0.50.0",
+      "pytest": "9.1.1"
+    },
+    "installed_reactor": {
+      "distribution": "ammonia-synthesis-reactor",
+      "version": "1.1.0"
+    },
+    "pymrm_licence": "MIT License"
+  },
+  "group_test_suite": {
+    "command": "python -m pytest tests/ -q -rs -p no:cacheprovider (cwd: the clone)",
+    "collected": 72,
+    "collected_per_module": {
+      "test_1d_models": 7,
+      "test_archive": 12,
+      "test_cp_closure": 5,
+      "test_dataset": 4,
+      "test_paper_pipeline": 36,
+      "test_validation": 8
+    },
+    "exit_code": 0,
+    "summary_line": "69 passed, 3 skipped, 1384 warnings in 3.85s",
+    "counts": {
+      "passed": 69,
+      "skipped": 3
+    },
+    "skipped": [
+      "tests/test_cp_closure.py:57: publication cache not present",
+      "tests/test_paper_pipeline.py:115: Dataset_paper not available",
+      "tests/test_paper_pipeline.py:127: Dataset_paper not available"
+    ],
+    "wall_s": 4.73
+  },
+  "quoted_lines": [
+    {
+      "path": "src/reactor/membrane_reactor_1d.py",
+      "lines": {
+        "688": "lambda_mem = self.lambda_mem(T_mean)"
+      }
+    },
+    {
+      "path": "src/reactor/membrane_reactor_1d_corrected.py",
+      "lines": {
+        "866": "lambda_mem = self.lambda_mem(T_mean)"
+      }
+    },
+    {
+      "path": "src/reactor/membrane_reactor.py",
+      "lines": {
+        "2073": ") / self.lambda_mem(T_ret_i)",
+        "2077": "resist_mem = (self.r_f_perm[-1] - self.r_f_ret[0]) / self.lambda_mem(T_ret_i)"
+      }
+    },
+    {
+      "path": "src/reactor/config.py",
+      "lines": {
+        "51": "#Perm_NH3: float = 4e-7",
+        "52": "P0_NH3: float = 5.36e-8         #pre-exponential factor of Arrhenius equation",
+        "54": "P0_H2: float = 5.36e-9",
+        "56": "P0_N2: float = 5.36e-11",
+        "71": "Nm: int = 1"
+      }
+    },
+    {
+      "path": "src/reactor/paper/validation.py",
+      "lines": {
+        "103": "cfg.Perm_NH3 = 0.0",
+        "104": "cfg.Nm = 0"
+      }
+    },
+    {
+      "path": "src/reactor/membrane_reactor_1d.py",
+      "lines": {
+        "172": "self.Nm = cfg.Nm"
+      }
+    },
+    {
+      "path": "src/reactor/membrane_reactor_1d_corrected.py",
+      "lines": {
+        "179": "self.Nm = cfg.Nm"
+      }
+    }
+  ],
+  "one_1d_solve": {
+    "model": "reactor.MembraneReactor1D (reactor.membrane_reactor_1d, paper model '1d')",
+    "case_table": "data/inputs/cases_to_run.xlsx",
+    "case": {
+      "Case_ID": "G2 — GHSV sweep_1000",
+      "Description": "G2 — GHSV sweep_1000",
+      "Fixed conditions": "r=0.03 m | P=80 bar | T=623 K",
+      "p_ret_bar": 80.0,
+      "r_max_m": 0.03,
+      "GHSV_h": 1000.0,
+      "T_ret_K": 623.0,
+      "T_perm_K": 623.0,
+      "p_perm_bar": 1.0,
+      "L_m": 1.0,
+      "H2_N2_ratio": 2.0,
+      "Sweep_Ratio": 1.0,
+      "Dcat": 0.333,
+      "N_mem": 1,
+      "Is_Counter_Current": false,
+      "family": "G2"
+    },
+    "resolution": "publication",
+    "grid": {
+      "num_z": 100
+    },
+    "solver_1d": {
+      "num_timesteps": 400,
+      "max_newton_iterations": 10,
+      "dt_max": 1000000.0,
+      "rtol": 0.05,
+      "atol": 0.001,
+      "steady_state_atol": 0.001,
+      "steady_state_rtol": null
+    },
+    "dt_init_1d": 1e-06,
+    "configured_by": "reactor.paper.runner.run_case_1d(row, 'publication', model='1d', force=True): build_config_1d (num_z of the tier, settings.SOLVER_1D, TRACE_NH3), cold start solve(dt_init=settings.DT_INIT_1D), solver_acceptance, the KPI-drift certificate with certify-and-resume, check_element_balance; cache written to a temporary export",
+    "timing_fields": "runtime_s is the group's own runtime_s (the cold solve only); wall_s is the whole run_case_1d call (construction, solve, certificate, cache write)",
+    "non_isothermal": {
+      "repeats": 3,
+      "result": {
+        "overrides": {},
+        "dt_init_1d": 1e-06,
+        "outcome": "solved",
+        "status": "converged",
+        "init": "cold",
+        "runtime_s": 12.031,
+        "wall_s": 13.586,
+        "solve_converged": true,
+        "solver_accepted": true,
+        "solver_acceptance_reason": "solver_converged",
+        "solver_steps_attempted": 185,
+        "steady_state_norm": 0.0009700118760892472,
+        "steady_state_atol": 0.001,
+        "is_isothermal": false,
+        "convergence_certificate": {
+          "class": "converged",
+          "certify_steps": 20,
+          "kpi_drift_ok": true,
+          "kpi_drift_rel_max": 0.0,
+          "resume_rounds": 0
+        },
+        "species": [
+          "H2",
+          "N2",
+          "NH3"
+        ],
+        "retentate_in_mol_s": [
+          0.004764640861436763,
+          0.002382320430718381,
+          7.146961299302104e-12
+        ],
+        "retentate_out_mol_s": [
+          0.0011351089104202749,
+          0.001734690831603391,
+          4.17835071615745e-05
+        ],
+        "y_NH3_retentate_out": 0.01435078566730556,
+        "membrane_transfer_mol_s": [
+          0.0017216783148464544,
+          1.4613939977753876e-05,
+          0.0012311221525813682
+        ],
+        "permeate_flow_change_mol_s": [
+          0.0017216797501077136,
+          1.4619977605139639e-05,
+          0.0012311232550747306
+        ],
+        "kpis": {
+          "X_H2_out": 40.04188891444522,
+          "NH3_prod_out": 13.46803919663921,
+          "NH3_rec_out": 96.71747307806213,
+          "J_H2_avg": 0.11553159022284899,
+          "DeltaT_max": 304.8593761778137
+        },
+        "element_balance_H_rel": 0.00031648381603185304,
+        "element_balance_N_rel": 0.00036138673733212043,
+        "element_balance_ok": true,
+        "equilibrium_y_NH3_at_T_in_p_out": null
+      },
+      "runtime_s": [
+        12.031,
+        11.469,
+        10.744
+      ],
+      "runtime_s_median": 11.469,
+      "wall_s": [
+        13.586,
+        12.015,
+        11.199
+      ],
+      "wall_s_median": 12.015,
+      "repeat_outlet_identical": true
+    }
+  },
+  "no_membrane": {
+    "configuration": "P0_H2 = P0_N2 = P0_NH3 = 0 (the Arrhenius pre-factors of ReactorConfig; Perm_NH3 is a removed field): no species crosses the membrane. Non-isothermal: the permeate tube remains a heat-exchange surface; isothermal: is_isothermal = True also removes that coupling",
+    "non_isothermal": {
+      "repeats": 1,
+      "result": {
+        "overrides": {
+          "P0_H2": 0.0,
+          "P0_N2": 0.0,
+          "P0_NH3": 0.0
+        },
+        "dt_init_1d": 1e-06,
+        "outcome": "solved",
+        "status": "converged",
+        "init": "cold",
+        "runtime_s": 3.552,
+        "wall_s": 4.087,
+        "solve_converged": true,
+        "solver_accepted": true,
+        "solver_acceptance_reason": "solver_converged",
+        "solver_steps_attempted": 48,
+        "steady_state_norm": 0.00040228395749502616,
+        "steady_state_atol": 0.001,
+        "is_isothermal": false,
+        "convergence_certificate": {
+          "class": "converged",
+          "certify_steps": 20,
+          "kpi_drift_ok": true,
+          "kpi_drift_rel_max": 1.1091682574059299e-08,
+          "resume_rounds": 0
+        },
+        "species": [
+          "H2",
+          "N2",
+          "NH3"
+        ],
+        "retentate_in_mol_s": [
+          0.004764640861436763,
+          0.002382320430718381,
+          7.146961299302104e-12
+        ],
+        "retentate_out_mol_s": [
+          0.0037563854562978117,
+          0.0020466221679410696,
+          0.000673687565454777
+        ],
+        "y_NH3_retentate_out": 0.1040171793983471,
+        "membrane_transfer_mol_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "permeate_flow_change_mol_s": [
+          0.0,
+          -1.6728673992057186e-08,
+          0.0
+        ],
+        "kpis": {
+          "X_H2_out": 21.161204683849242,
+          "NH3_prod_out": 7.127977289224916,
+          "NH3_rec_out": 0.0,
+          "J_H2_avg": 0.03209376632539712,
+          "DeltaT_max": 135.29947787309652
+        },
+        "element_balance_H_rel": 0.00047767132588565244,
+        "element_balance_N_rel": 0.00011845464686228311,
+        "element_balance_ok": true,
+        "equilibrium_y_NH3_at_T_in_p_out": null
+      },
+      "runtime_s": [
+        3.552
+      ],
+      "runtime_s_median": 3.552,
+      "wall_s": [
+        4.087
+      ],
+      "wall_s_median": 4.087,
+      "repeat_outlet_identical": true
+    },
+    "isothermal_by_start": [
+      {
+        "start": "the paper pipeline's cold start, settings.DT_INIT_1D (the pipeline itself solves only non-isothermal cases)",
+        "repeats": 1,
+        "result": {
+          "overrides": {
+            "P0_H2": 0.0,
+            "P0_N2": 0.0,
+            "P0_NH3": 0.0,
+            "is_isothermal": true
+          },
+          "dt_init_1d": 1e-06,
+          "outcome": "failed",
+          "status": "failed",
+          "init": "cold",
+          "runtime_s": 8.991,
+          "wall_s": 10.015,
+          "solve_converged": false,
+          "solver_accepted": false,
+          "solver_acceptance_reason": "steady_state_norm_above_accept_limit",
+          "solver_steps_attempted": 400,
+          "steady_state_norm": 11.92797163205879,
+          "steady_state_atol": 0.001,
+          "is_isothermal": true,
+          "convergence_certificate": {
+            "class": "failed",
+            "certify_steps": 0,
+            "kpi_drift_ok": null,
+            "kpi_drift_rel_max": null,
+            "resume_rounds": 0
+          },
+          "message": "steady-state norm above accept limit"
+        }
+      },
+      {
+        "start": "the start of the group's own isothermal path, the Rossetti validation: ROSSETTI_DT_INIT (src/reactor/paper/validation.py:55, :155)",
+        "repeats": 1,
+        "result": {
+          "overrides": {
+            "P0_H2": 0.0,
+            "P0_N2": 0.0,
+            "P0_NH3": 0.0,
+            "is_isothermal": true
+          },
+          "dt_init_1d": 0.001,
+          "outcome": "failed",
+          "status": "failed",
+          "init": "cold",
+          "runtime_s": 8.556,
+          "wall_s": 9.177,
+          "solve_converged": false,
+          "solver_accepted": false,
+          "solver_acceptance_reason": "steady_state_norm_above_accept_limit",
+          "solver_steps_attempted": 400,
+          "steady_state_norm": 11.838086050444979,
+          "steady_state_atol": 0.001,
+          "is_isothermal": true,
+          "convergence_certificate": {
+            "class": "failed",
+            "certify_steps": 0,
+            "kpi_drift_ok": null,
+            "kpi_drift_rel_max": null,
+            "resume_rounds": 0
+          },
+          "message": "steady-state norm above accept limit"
+        }
+      },
+      {
+        "start": "one decade larger, to show whether the outcome depends on the start alone",
+        "repeats": 1,
+        "result": {
+          "overrides": {
+            "P0_H2": 0.0,
+            "P0_N2": 0.0,
+            "P0_NH3": 0.0,
+            "is_isothermal": true
+          },
+          "dt_init_1d": 0.01,
+          "outcome": "solved",
+          "status": "converged",
+          "init": "cold",
+          "runtime_s": 0.476,
+          "wall_s": 0.676,
+          "solve_converged": true,
+          "solver_accepted": true,
+          "solver_acceptance_reason": "solver_converged",
+          "solver_steps_attempted": 19,
+          "steady_state_norm": 0.00037511721145433257,
+          "steady_state_atol": 0.001,
+          "is_isothermal": true,
+          "convergence_certificate": {
+            "class": "converged",
+            "certify_steps": 20,
+            "kpi_drift_ok": true,
+            "kpi_drift_rel_max": 3.0604511970690336e-08,
+            "resume_rounds": 0
+          },
+          "species": [
+            "H2",
+            "N2",
+            "NH3"
+          ],
+          "retentate_in_mol_s": [
+            0.004764640861436763,
+            0.002382320430718381,
+            7.146961299302104e-12
+          ],
+          "retentate_out_mol_s": [
+            0.0024813442494441983,
+            0.0016205678701626143,
+            0.0015195468942704523
+          ],
+          "y_NH3_retentate_out": 0.2703118337284437,
+          "membrane_transfer_mol_s": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "permeate_flow_change_mol_s": [
+            0.0,
+            8.675438839533811e-14,
+            0.0
+          ],
+          "kpis": {
+            "X_H2_out": 47.92169396171537,
+            "NH3_prod_out": 16.077624661103975,
+            "NH3_rec_out": 0.0,
+            "J_H2_avg": 0.0726795884687188,
+            "DeltaT_max": 0.0
+          },
+          "element_balance_H_rel": 0.0008345395621658132,
+          "element_balance_N_rel": 0.0002076879415044439,
+          "element_balance_ok": true,
+          "equilibrium_y_NH3_at_T_in_p_out": 0.3210753713285415
+        },
+        "runtime_s": [
+          0.476
+        ],
+        "runtime_s_median": 0.476,
+        "wall_s": [
+          0.676
+        ],
+        "wall_s_median": 0.676,
+        "repeat_outlet_identical": true
+      }
+    ]
+  },
+  "a61_reading": {
+    "criterion": "its own regression reference reproduced within the group's regression tolerance; one-solve wall time recorded; PyMRM version recorded (spec §9 T08.A61)",
+    "reading": "on main the group's regression reference is its pytest suite, tests/ (6 modules, 72 tests); the group's regression tolerance is each test's own assertion tolerance (e.g. rtol=1e-12 on the 1D membrane-coupling conservation identity, test_1d_models.py:41, :98). Reproduced means the suite passes in the separate environment. main has no stored-field regression harness (no tests/regression_test.py, no regression_reference.npz).",
+    "observations": [
+      "On a fresh clone 3 of the 72 tests skip by their own skipif guards because they read data that is generated or archived, not shipped: the publication-tier closure fit results/paper/publication/screened_cp_fit.json (written by the 2D publication sweep) and the earlier study's archive Dataset_paper/ (git-ignored). See group_test_suite.",
+      "No test in the suite solves a full reactor or compares a solved field with a stored one; the solved-case reference is the published dataset (4TU, in curation) with its SHA-256 manifest and reactor.paper.dataset.verify. Whether A61 needs that comparison is for the design lane."
+    ]
+  },
+  "frank_statements": [
+    {
+      "statement": "the suite is 6 modules, 72 tests (test_1d_models, test_archive, test_cp_closure, test_dataset, test_paper_pipeline, test_validation)",
+      "pointers": [
+        "tests/"
+      ]
+    },
+    {
+      "statement": "lambda_mem is evaluated at T at every call site",
+      "pointers": [
+        "src/reactor/membrane_reactor_1d.py:688",
+        "src/reactor/membrane_reactor_1d_corrected.py:866",
+        "src/reactor/membrane_reactor.py:2073",
+        "src/reactor/membrane_reactor.py:2077"
+      ]
+    },
+    {
+      "statement": "the 52-case publication sweep is non-isothermal, with per-case convergence certificates and element_balance_ok in each kpis.json",
+      "pointers": [],
+      "note": "no pointer given; the record's own run goes through the same run_case_1d path"
+    },
+    {
+      "statement": "lambda(q) is omitted deliberately: Weisz-Prater scan worst Phi_WP 0.099, nominal 0.0008; paper Fig. 2",
+      "pointers": [
+        "validation/weisz_prater_scan.json",
+        "paper Fig. 2"
+      ],
+      "note": "a pipeline output, not tracked: reactor.paper.validation.weisz_prater_scan writes it under the results cache (validation.py:266-268, :302-319)"
+    },
+    {
+      "statement": "K_NH3 = 7000 cal/mol (29 288 J/mol) in the code is likely right and Gargiulo et al. 2025 Table 1's 29 228 J/mol a transposition (0.35 % relative effect at Rossetti Test 1); being checked against Rossetti et al. 2006",
+      "pointers": [
+        "src/reactor/ammonia_synthesis_kinetics.py (K_NH3)"
+      ]
+    },
+    {
+      "statement": "genuine defect on main: the 'membrane-free' Rossetti validation sets cfg.Perm_NH3 (a removed field) and cfg.Nm (never read), so the P0_* permeances stay live; worst effect 0.26 % on outlet NH3; no reported number changes; logged by the group for its next version, not patched now because of the DOI/curation",
+      "pointers": [
+        "src/reactor/paper/validation.py:103",
+        "src/reactor/config.py:51"
+      ]
+    }
+  ],
+  "superseded": {
+    "commit": "a6ee9efc85aee199b51e849467845b59bd5b1800",
+    "line": "gitlab/master of the local clone ~/Codes/ammonia_synthesis_reactor: an abandoned line with no common ancestor with the released code",
+    "disposition": "measurements dropped from this record; the C1 findings made on it are withdrawn (docs/T08_DECISIONS.md, 2026-10-01 CORRECTION). The withdrawn record is `git show 7c042a0:benchmarks/t08/v19/c1-reactor.json`."
+  }
+}

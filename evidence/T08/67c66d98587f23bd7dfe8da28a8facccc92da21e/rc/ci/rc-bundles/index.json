@@ -1,0 +1,447 @@
+{
+ "entries": [
+  {
+   "directory": "k05/SYN-001-nominal",
+   "exit": 0,
+   "name": "SYN-001-nominal",
+   "outcome": "CONVERGED",
+   "set": "k05",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "k05/SYN-001-once-through",
+   "exit": 0,
+   "name": "SYN-001-once-through",
+   "outcome": "CONVERGED",
+   "set": "k05",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "k05/SYN-001-high-recycle",
+   "exit": 0,
+   "name": "SYN-001-high-recycle",
+   "outcome": "CONVERGED",
+   "set": "k05",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "k05/SYN-001-all-liquid-310K",
+   "exit": 0,
+   "name": "SYN-001-all-liquid-310K",
+   "outcome": "CONVERGED",
+   "set": "k05",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "k05/SYN-001-all-vapor-420K",
+   "exit": 0,
+   "name": "SYN-001-all-vapor-420K",
+   "outcome": "CONVERGED",
+   "set": "k05",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/T05b%3ADZ-3",
+   "exit": 0,
+   "name": "T05b:DZ-3",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/T05b%3ADZ-7",
+   "exit": 0,
+   "name": "T05b:DZ-7",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/T05b%3ANP-1",
+   "exit": 0,
+   "name": "T05b:NP-1",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/T05b%3ASC-1",
+   "exit": 0,
+   "name": "T05b:SC-1",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/T05b%3ASC-2",
+   "exit": 0,
+   "name": "T05b:SC-2",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/T05b%3ASC-3",
+   "exit": 0,
+   "name": "T05b:SC-3",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-NET02",
+   "exit": 0,
+   "name": "SYN-001-T06-NET02",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-NET03",
+   "exit": 0,
+   "name": "SYN-001-T06-NET03",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-NET06",
+   "exit": 0,
+   "name": "SYN-001-T06-NET06",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-NET09",
+   "exit": 0,
+   "name": "SYN-001-T06-NET09",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-NET10",
+   "exit": 0,
+   "name": "SYN-001-T06-NET10",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-NET11",
+   "exit": 0,
+   "name": "SYN-001-T06-NET11",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-PC2",
+   "exit": 0,
+   "name": "SYN-001-T06-PC2",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-REF01",
+   "exit": 0,
+   "name": "SYN-001-T06-REF01",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-REF02",
+   "exit": 0,
+   "name": "SYN-001-T06-REF02",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-REF03",
+   "exit": 0,
+   "name": "SYN-001-T06-REF03",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-REF04",
+   "exit": 0,
+   "name": "SYN-001-T06-REF04",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-REF05",
+   "exit": 0,
+   "name": "SYN-001-T06-REF05",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-REF06",
+   "exit": 0,
+   "name": "SYN-001-T06-REF06",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-REF07",
+   "exit": 0,
+   "name": "SYN-001-T06-REF07",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-STA02",
+   "exit": 0,
+   "name": "SYN-001-T06-STA02",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-STA03-degC",
+   "exit": 0,
+   "name": "SYN-001-T06-STA03-degC",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-STA03-kgs",
+   "exit": 0,
+   "name": "SYN-001-T06-STA03-kgs",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-STA04",
+   "exit": 0,
+   "name": "SYN-001-T06-STA04",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-THM01",
+   "exit": 0,
+   "name": "SYN-001-T06-THM01",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-THM02",
+   "exit": 0,
+   "name": "SYN-001-T06-THM02",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-T06-THM10",
+   "exit": 0,
+   "name": "SYN-001-T06-THM10",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-UL-C1",
+   "exit": 0,
+   "name": "SYN-001-UL-C1",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-UL-C2",
+   "exit": 0,
+   "name": "SYN-001-UL-C2",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-UL-C3",
+   "exit": 0,
+   "name": "SYN-001-UL-C3",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-UL-C3X",
+   "exit": 0,
+   "name": "SYN-001-UL-C3X",
+   "outcome": "INITIALIZATION_FAILED",
+   "set": "g8",
+   "verification_status": null
+  },
+  {
+   "directory": "g8/SYN-001-A02-340-two-phase-guess",
+   "exit": 0,
+   "name": "SYN-001-A02-340-two-phase-guess",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-A02-352-vapor-guess-410",
+   "exit": 0,
+   "name": "SYN-001-A02-352-vapor-guess-410",
+   "outcome": "HOMOTOPY_STALLED",
+   "set": "g8",
+   "verification_status": null
+  },
+  {
+   "directory": "g8/SYN-001-A02-355-dew-guess-377",
+   "exit": 0,
+   "name": "SYN-001-A02-355-dew-guess-377",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-A02-355-dew-guess",
+   "exit": 0,
+   "name": "SYN-001-A02-355-dew-guess",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-A02-355-liquid-guess",
+   "exit": 0,
+   "name": "SYN-001-A02-355-liquid-guess",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-A02-355",
+   "exit": 0,
+   "name": "SYN-001-A02-355",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-A02-360-liquid-guess",
+   "exit": 0,
+   "name": "SYN-001-A02-360-liquid-guess",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-A02-360-no-guess",
+   "exit": 0,
+   "name": "SYN-001-A02-360-no-guess",
+   "outcome": "INITIALIZATION_FAILED",
+   "set": "g8",
+   "verification_status": null
+  },
+  {
+   "directory": "g8/SYN-001-A02-360-vapor-guess",
+   "exit": 0,
+   "name": "SYN-001-A02-360-vapor-guess",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-A02-360",
+   "exit": 0,
+   "name": "SYN-001-A02-360",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-A02-365",
+   "exit": 0,
+   "name": "SYN-001-A02-365",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-all-liquid-310K",
+   "exit": 0,
+   "name": "SYN-001-all-liquid-310K",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-all-vapor-420K",
+   "exit": 0,
+   "name": "SYN-001-all-vapor-420K",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-high-recycle",
+   "exit": 0,
+   "name": "SYN-001-high-recycle",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-nominal",
+   "exit": 0,
+   "name": "SYN-001-nominal",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  },
+  {
+   "directory": "g8/SYN-001-once-through",
+   "exit": 0,
+   "name": "SYN-001-once-through",
+   "outcome": "CONVERGED",
+   "set": "g8",
+   "verification_status": "VERIFIED"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "n_b": 52,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-x86-64",
+  "python": "3.13.15",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "sets": {
+  "g8": {
+   "enumerated_by": "tests/test_t07_w3a_revision_runs.py ELIGIBLE, default policy",
+   "n": 47
+  },
+  "k05": {
+   "enumerated_by": "benchmarks/syn001/reference_values.yaml variants, CLI solve",
+   "n": 5
+  }
+ },
+ "step": "bundles-write"
+}

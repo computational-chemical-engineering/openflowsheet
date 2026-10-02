@@ -1,0 +1,34 @@
+{
+ "checks": [
+  {
+   "certificates": 1,
+   "id": "a34.certificates_audited",
+   "result": "pass"
+  },
+  {
+   "first": {},
+   "id": "a34.violations",
+   "result": "pass",
+   "violations": 0
+  }
+ ],
+ "format": "t08-rc-v1",
+ "inputs": [
+  "/home/runner/work/_temp/rc-install/bundle"
+ ],
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "python": "3.13.15",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "certificates"
+}

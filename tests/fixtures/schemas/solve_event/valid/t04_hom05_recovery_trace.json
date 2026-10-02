@@ -1,0 +1,1596 @@
+[
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 0,
+   "factorizations": 0,
+   "jacobian_calls": 0,
+   "property_calls": 0,
+   "requested_evaluations": 0,
+   "residual_calls": 0
+  },
+  "iteration": 0,
+  "kind": "region_opened",
+  "merit": null,
+  "message": "solve_eo ['U-MIX', 'U-HEAT', 'U-FLASH', 'U-SPLIT']",
+  "residual_inf_unscaled": null,
+  "sequence": 2,
+  "signature": [],
+  "state_sha256": "",
+  "step_index": 1
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 253,
+   "factorizations": 0,
+   "jacobian_calls": 0,
+   "property_calls": 92,
+   "requested_evaluations": 345,
+   "residual_calls": 0
+  },
+  "iteration": 0,
+  "kind": "attempt_opened",
+  "merit": null,
+  "message": "initial",
+  "residual_inf_unscaled": null,
+  "sequence": 3,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "7e1f88b7b4be0bcd7792087cdfc1cba30aef6f989d2377f2802716434765d6f8",
+  "step_index": 1
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 433,
+   "factorizations": 0,
+   "jacobian_calls": 1,
+   "property_calls": 92,
+   "requested_evaluations": 525,
+   "residual_calls": 1
+  },
+  "inner_consistency": {
+   "eta": 2.1373125491663813e-16,
+   "eta_max": 1e-10,
+   "rows_checked": 46
+  },
+  "iteration": 0,
+  "kind": "jacobian",
+  "merit": 0.003539142498346755,
+  "message": "",
+  "residual_inf_unscaled": 0.19875430998017962,
+  "sequence": 4,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "7e1f88b7b4be0bcd7792087cdfc1cba30aef6f989d2377f2802716434765d6f8",
+  "step_index": 1
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 433,
+   "factorizations": 1,
+   "jacobian_calls": 1,
+   "property_calls": 92,
+   "requested_evaluations": 525,
+   "residual_calls": 1
+  },
+  "iteration": 0,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 114,
+   "nnz_U": 171,
+   "residual_normalized": 6.475209708018924e-17,
+   "u_diag_max_abs": 1.9017111550270795,
+   "u_diag_min_abs": 0.1645787365308761
+  },
+  "merit": 0.003539142498346755,
+  "message": "assembling the derivative: 44x44",
+  "residual_inf_unscaled": 0.19875430998017962,
+  "sequence": 5,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "7e1f88b7b4be0bcd7792087cdfc1cba30aef6f989d2377f2802716434765d6f8",
+  "step_index": 1
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 433,
+   "factorizations": 2,
+   "jacobian_calls": 1,
+   "property_calls": 92,
+   "requested_evaluations": 525,
+   "residual_calls": 1
+  },
+  "iteration": 0,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 6,
+   "nnz_U": 6,
+   "residual_normalized": 3.353952761613358e-17,
+   "u_diag_max_abs": 1.0613778337830189,
+   "u_diag_min_abs": 0.47108577556954756
+  },
+  "merit": 0.003539142498346755,
+  "message": "",
+  "residual_inf_unscaled": 0.19875430998017962,
+  "sequence": 6,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "7e1f88b7b4be0bcd7792087cdfc1cba30aef6f989d2377f2802716434765d6f8",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 2,
+   "jacobian_calls": 1,
+   "property_calls": 155,
+   "requested_evaluations": 601,
+   "residual_calls": 2
+  },
+  "iteration": 0,
+  "kind": "step_accepted",
+  "merit": 6.162975822039155e-33,
+  "message": "",
+  "residual_inf_unscaled": 2.220446049250313e-16,
+  "sequence": 7,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "c423f704b369e0e66d61d8c6cd0158808a72abe540133f8edd8326e4b422ad1c",
+  "step_index": 1,
+  "step_inf_scaled": 0.1325028733201198,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 2,
+   "jacobian_calls": 1,
+   "property_calls": 155,
+   "requested_evaluations": 601,
+   "residual_calls": 2
+  },
+  "iteration": 1,
+  "kind": "attempt_closed",
+  "merit": 6.162975822039155e-33,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": 2.220446049250313e-16,
+  "sequence": 8,
+  "signature": [
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "c423f704b369e0e66d61d8c6cd0158808a72abe540133f8edd8326e4b422ad1c",
+  "step_index": 1
+ },
+ {
+  "attempt": 1,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 2,
+   "jacobian_calls": 1,
+   "property_calls": 157,
+   "requested_evaluations": 603,
+   "residual_calls": 2
+  },
+  "iteration": 0,
+  "kind": "attempt_opened",
+  "merit": null,
+  "message": "initial",
+  "residual_inf_unscaled": null,
+  "sequence": 9,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a6aa1b9e324abf64b44aea92fa4c182e6ffe7ec23397090eb210c4ab36f9226d",
+  "step_index": 1
+ },
+ {
+  "attempt": 1,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 2,
+   "jacobian_calls": 2,
+   "property_calls": 184,
+   "requested_evaluations": 630,
+   "residual_calls": 3
+  },
+  "iteration": 0,
+  "kind": "jacobian",
+  "merit": 0.004956916599141266,
+  "message": "",
+  "residual_inf_unscaled": 9956.823388150726,
+  "sequence": 10,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a6aa1b9e324abf64b44aea92fa4c182e6ffe7ec23397090eb210c4ab36f9226d",
+  "step_index": 1
+ },
+ {
+  "attempt": 1,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 3,
+   "jacobian_calls": 2,
+   "property_calls": 184,
+   "requested_evaluations": 630,
+   "residual_calls": 3
+  },
+  "iteration": 0,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 1.1425628678963966e-16,
+   "u_diag_max_abs": 2.023668900042895,
+   "u_diag_min_abs": 0.29646635707918
+  },
+  "merit": 0.004956916599141266,
+  "message": "",
+  "residual_inf_unscaled": 9956.823388150726,
+  "sequence": 11,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a6aa1b9e324abf64b44aea92fa4c182e6ffe7ec23397090eb210c4ab36f9226d",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 1,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 3,
+   "jacobian_calls": 2,
+   "property_calls": 193,
+   "requested_evaluations": 639,
+   "residual_calls": 4
+  },
+  "iteration": 0,
+  "kind": "step_accepted",
+  "merit": 3.3225830153146394e-05,
+  "message": "",
+  "residual_inf_unscaled": 0.06795872047245366,
+  "sequence": 12,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "36681237b16f4f4437297cc186d127dcc60600291aa6ecead83e74638a9bd3b1",
+  "step_index": 1,
+  "step_inf_scaled": 0.10469292063907487,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 1,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 3,
+   "jacobian_calls": 2,
+   "property_calls": 193,
+   "requested_evaluations": 639,
+   "residual_calls": 4
+  },
+  "iteration": 1,
+  "kind": "attempt_closed",
+  "merit": 3.3225830153146394e-05,
+  "message": "1 accepted iterations without convergence",
+  "outcome": "BUDGET_EXHAUSTED",
+  "residual_inf_unscaled": 0.06795872047245366,
+  "sequence": 13,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "36681237b16f4f4437297cc186d127dcc60600291aa6ecead83e74638a9bd3b1",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 3,
+   "jacobian_calls": 2,
+   "property_calls": 195,
+   "requested_evaluations": 641,
+   "residual_calls": 4
+  },
+  "iteration": 0,
+  "kind": "attempt_opened",
+  "merit": null,
+  "message": "initial",
+  "residual_inf_unscaled": null,
+  "sequence": 14,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a6aa1b9e324abf64b44aea92fa4c182e6ffe7ec23397090eb210c4ab36f9226d",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 3,
+   "jacobian_calls": 2,
+   "property_calls": 204,
+   "requested_evaluations": 650,
+   "residual_calls": 5
+  },
+  "homotopy_level": 0,
+  "iteration": 0,
+  "kind": "attempt_closed",
+  "merit": 3.488575265067131e-32,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": 9.094947017729282e-12,
+  "sequence": 15,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a6aa1b9e324abf64b44aea92fa4c182e6ffe7ec23397090eb210c4ab36f9226d",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "corrector_iterations": 0,
+  "corrector_outcome": "CONVERGED",
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 3,
+   "jacobian_calls": 2,
+   "property_calls": 204,
+   "requested_evaluations": 650,
+   "residual_calls": 5
+  },
+  "delta_lambda": "0",
+  "iteration": 0,
+  "kind": "homotopy_step",
+  "lambda_value": "0",
+  "level_constants_sha256": "115b5b3b53d21be7648b19243e852778d241094d3187d47fa9c670651f820995",
+  "merit": 3.488575265067131e-32,
+  "message": "",
+  "residual_inf_unscaled": 9.094947017729282e-12,
+  "sequence": 16,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a6aa1b9e324abf64b44aea92fa4c182e6ffe7ec23397090eb210c4ab36f9226d",
+  "step_index": 1,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 3,
+   "jacobian_calls": 3,
+   "property_calls": 231,
+   "requested_evaluations": 677,
+   "residual_calls": 6
+  },
+  "homotopy_level": 1,
+  "iteration": 0,
+  "kind": "jacobian",
+  "merit": 0.0003098072874463291,
+  "message": "",
+  "residual_inf_unscaled": 2489.2058470376815,
+  "sequence": 17,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a6aa1b9e324abf64b44aea92fa4c182e6ffe7ec23397090eb210c4ab36f9226d",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 4,
+   "jacobian_calls": 3,
+   "property_calls": 231,
+   "requested_evaluations": 677,
+   "residual_calls": 6
+  },
+  "homotopy_level": 1,
+  "iteration": 0,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 1.0275780364995016e-16,
+   "u_diag_max_abs": 2.023668900042895,
+   "u_diag_min_abs": 0.29646635707918
+  },
+  "merit": 0.0003098072874463291,
+  "message": "",
+  "residual_inf_unscaled": 2489.2058470376815,
+  "sequence": 18,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a6aa1b9e324abf64b44aea92fa4c182e6ffe7ec23397090eb210c4ab36f9226d",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 4,
+   "jacobian_calls": 3,
+   "property_calls": 240,
+   "requested_evaluations": 686,
+   "residual_calls": 7
+  },
+  "homotopy_level": 1,
+  "iteration": 0,
+  "kind": "step_accepted",
+  "merit": 1.1771317531974762e-07,
+  "message": "",
+  "residual_inf_unscaled": 0.003988564304740816,
+  "sequence": 19,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "64a1adef3c30eb0640820804abe9f83b0e94f5e5dc8ac412697b49a64c369628",
+  "step_index": 1,
+  "step_inf_scaled": 0.026173230159768763,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 4,
+   "jacobian_calls": 4,
+   "property_calls": 258,
+   "requested_evaluations": 704,
+   "residual_calls": 7
+  },
+  "homotopy_level": 1,
+  "iteration": 1,
+  "kind": "jacobian",
+  "merit": 1.1771317531974762e-07,
+  "message": "",
+  "residual_inf_unscaled": 0.003988564304740816,
+  "sequence": 20,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "64a1adef3c30eb0640820804abe9f83b0e94f5e5dc8ac412697b49a64c369628",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 5,
+   "jacobian_calls": 4,
+   "property_calls": 258,
+   "requested_evaluations": 704,
+   "residual_calls": 7
+  },
+  "homotopy_level": 1,
+  "iteration": 1,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 1.9014844449395276e-16,
+   "u_diag_max_abs": 2.077107552961653,
+   "u_diag_min_abs": 0.2964663570791802
+  },
+  "merit": 1.1771317531974762e-07,
+  "message": "",
+  "residual_inf_unscaled": 0.003988564304740816,
+  "sequence": 21,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "64a1adef3c30eb0640820804abe9f83b0e94f5e5dc8ac412697b49a64c369628",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 5,
+   "jacobian_calls": 4,
+   "property_calls": 267,
+   "requested_evaluations": 713,
+   "residual_calls": 8
+  },
+  "homotopy_level": 1,
+  "iteration": 1,
+  "kind": "step_accepted",
+  "merit": 2.977757499330857e-16,
+  "message": "",
+  "residual_inf_unscaled": 2.1723675169837975e-07,
+  "sequence": 22,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "e343ea6d9e97d2fbe6a17e0ea9a963f59d6ff84c0a09a7eb7744628e9992b9c0",
+  "step_index": 1,
+  "step_inf_scaled": 0.0002230291516500008,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 5,
+   "jacobian_calls": 5,
+   "property_calls": 285,
+   "requested_evaluations": 731,
+   "residual_calls": 8
+  },
+  "homotopy_level": 1,
+  "iteration": 2,
+  "kind": "jacobian",
+  "merit": 2.977757499330857e-16,
+  "message": "",
+  "residual_inf_unscaled": 2.1723675169837975e-07,
+  "sequence": 23,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "e343ea6d9e97d2fbe6a17e0ea9a963f59d6ff84c0a09a7eb7744628e9992b9c0",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 6,
+   "jacobian_calls": 5,
+   "property_calls": 285,
+   "requested_evaluations": 731,
+   "residual_calls": 8
+  },
+  "homotopy_level": 1,
+  "iteration": 2,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 7.080163569412178e-17,
+   "u_diag_max_abs": 2.0757553734925303,
+   "u_diag_min_abs": 0.2964663570791801
+  },
+  "merit": 2.977757499330857e-16,
+  "message": "",
+  "residual_inf_unscaled": 2.1723675169837975e-07,
+  "sequence": 24,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "e343ea6d9e97d2fbe6a17e0ea9a963f59d6ff84c0a09a7eb7744628e9992b9c0",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 6,
+   "jacobian_calls": 5,
+   "property_calls": 294,
+   "requested_evaluations": 740,
+   "residual_calls": 9
+  },
+  "homotopy_level": 1,
+  "iteration": 2,
+  "kind": "step_accepted",
+  "merit": 5.322202543226112e-32,
+  "message": "",
+  "residual_inf_unscaled": 9.094947017729282e-12,
+  "sequence": 25,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "c8bec5aebf84b54c6fbc889be1c5395248a23e471b08c5b941be2b7a27e41d49",
+  "step_index": 1,
+  "step_inf_scaled": 1.7535457164464173e-08,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 6,
+   "jacobian_calls": 5,
+   "property_calls": 294,
+   "requested_evaluations": 740,
+   "residual_calls": 9
+  },
+  "homotopy_level": 1,
+  "iteration": 3,
+  "kind": "attempt_closed",
+  "merit": 5.322202543226112e-32,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": 9.094947017729282e-12,
+  "sequence": 26,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "c8bec5aebf84b54c6fbc889be1c5395248a23e471b08c5b941be2b7a27e41d49",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "corrector_iterations": 3,
+  "corrector_outcome": "CONVERGED",
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 6,
+   "jacobian_calls": 5,
+   "property_calls": 294,
+   "requested_evaluations": 740,
+   "residual_calls": 9
+  },
+  "delta_lambda": "1/4",
+  "iteration": 1,
+  "kind": "homotopy_step",
+  "lambda_value": "1/4",
+  "level_constants_sha256": "a8e774f436e48e71d47229c06fb88db7648d26def227d76dfb41a7e2896b1642",
+  "merit": 5.322202543226112e-32,
+  "message": "",
+  "residual_inf_unscaled": 9.094947017729282e-12,
+  "sequence": 27,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "c8bec5aebf84b54c6fbc889be1c5395248a23e471b08c5b941be2b7a27e41d49",
+  "step_index": 1,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 6,
+   "jacobian_calls": 6,
+   "property_calls": 321,
+   "requested_evaluations": 767,
+   "residual_calls": 10
+  },
+  "homotopy_level": 2,
+  "iteration": 0,
+  "kind": "jacobian",
+  "merit": 0.0012392291497853164,
+  "message": "",
+  "residual_inf_unscaled": 4978.411694075363,
+  "sequence": 28,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "c8bec5aebf84b54c6fbc889be1c5395248a23e471b08c5b941be2b7a27e41d49",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 7,
+   "jacobian_calls": 6,
+   "property_calls": 321,
+   "requested_evaluations": 767,
+   "residual_calls": 10
+  },
+  "homotopy_level": 2,
+  "iteration": 0,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 1.375944419063966e-16,
+   "u_diag_max_abs": 2.075755294089104,
+   "u_diag_min_abs": 0.29646635707918023
+  },
+  "merit": 0.0012392291497853164,
+  "message": "",
+  "residual_inf_unscaled": 4978.411694075363,
+  "sequence": 29,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "c8bec5aebf84b54c6fbc889be1c5395248a23e471b08c5b941be2b7a27e41d49",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 7,
+   "jacobian_calls": 6,
+   "property_calls": 330,
+   "requested_evaluations": 776,
+   "residual_calls": 11
+  },
+  "homotopy_level": 2,
+  "iteration": 0,
+  "kind": "step_accepted",
+  "merit": 1.9401032378514287e-06,
+  "message": "",
+  "residual_inf_unscaled": 0.016330241802748002,
+  "sequence": 30,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a44d1870adad5fc802a340ab55d9f4f679da83661c1d136ca11a91c9cf128c86",
+  "step_index": 1,
+  "step_inf_scaled": 0.05214146511166585,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 7,
+   "jacobian_calls": 7,
+   "property_calls": 348,
+   "requested_evaluations": 794,
+   "residual_calls": 11
+  },
+  "homotopy_level": 2,
+  "iteration": 1,
+  "kind": "jacobian",
+  "merit": 1.9401032378514287e-06,
+  "message": "",
+  "residual_inf_unscaled": 0.016330241802748002,
+  "sequence": 31,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a44d1870adad5fc802a340ab55d9f4f679da83661c1d136ca11a91c9cf128c86",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 8,
+   "jacobian_calls": 7,
+   "property_calls": 348,
+   "requested_evaluations": 794,
+   "residual_calls": 11
+  },
+  "homotopy_level": 2,
+  "iteration": 1,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 1.0499532049493939e-16,
+   "u_diag_max_abs": 2.205219161653374,
+   "u_diag_min_abs": 0.29646635707918023
+  },
+  "merit": 1.9401032378514287e-06,
+  "message": "",
+  "residual_inf_unscaled": 0.016330241802748002,
+  "sequence": 32,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a44d1870adad5fc802a340ab55d9f4f679da83661c1d136ca11a91c9cf128c86",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 8,
+   "jacobian_calls": 7,
+   "property_calls": 357,
+   "requested_evaluations": 803,
+   "residual_calls": 12
+  },
+  "homotopy_level": 2,
+  "iteration": 1,
+  "kind": "step_accepted",
+  "merit": 8.32539810165842e-14,
+  "message": "",
+  "residual_inf_unscaled": 3.6396914007141845e-06,
+  "sequence": 33,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "edc7a709bbc2ca0019f18e3c3a2c8e7e6e7a0c2994a9016098519351794d215b",
+  "step_index": 1,
+  "step_inf_scaled": 0.0008624467221234136,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 8,
+   "jacobian_calls": 8,
+   "property_calls": 375,
+   "requested_evaluations": 821,
+   "residual_calls": 12
+  },
+  "homotopy_level": 2,
+  "iteration": 2,
+  "kind": "jacobian",
+  "merit": 8.32539810165842e-14,
+  "message": "",
+  "residual_inf_unscaled": 3.6396914007141845e-06,
+  "sequence": 34,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "edc7a709bbc2ca0019f18e3c3a2c8e7e6e7a0c2994a9016098519351794d215b",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 9,
+   "jacobian_calls": 8,
+   "property_calls": 375,
+   "requested_evaluations": 821,
+   "residual_calls": 12
+  },
+  "homotopy_level": 2,
+  "iteration": 2,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 1.3176681685358484e-16,
+   "u_diag_max_abs": 2.1991614958529544,
+   "u_diag_min_abs": 0.29646635707917995
+  },
+  "merit": 8.32539810165842e-14,
+  "message": "",
+  "residual_inf_unscaled": 3.6396914007141845e-06,
+  "sequence": 35,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "edc7a709bbc2ca0019f18e3c3a2c8e7e6e7a0c2994a9016098519351794d215b",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 9,
+   "jacobian_calls": 8,
+   "property_calls": 384,
+   "requested_evaluations": 830,
+   "residual_calls": 13
+  },
+  "homotopy_level": 2,
+  "iteration": 2,
+  "kind": "step_accepted",
+  "merit": 1.4302035638121996e-27,
+  "message": "",
+  "residual_inf_unscaled": 2.000888343900442e-11,
+  "sequence": 36,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "aecabe1d9c76f352caa843282f4e65377c8ddf3a35d3b88f50a57bc8ee44ce7f",
+  "step_index": 1,
+  "step_inf_scaled": 2.512893339753755e-07,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 9,
+   "jacobian_calls": 8,
+   "property_calls": 384,
+   "requested_evaluations": 830,
+   "residual_calls": 13
+  },
+  "homotopy_level": 2,
+  "iteration": 3,
+  "kind": "attempt_closed",
+  "merit": 1.4302035638121996e-27,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": 2.000888343900442e-11,
+  "sequence": 37,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "aecabe1d9c76f352caa843282f4e65377c8ddf3a35d3b88f50a57bc8ee44ce7f",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "corrector_iterations": 3,
+  "corrector_outcome": "CONVERGED",
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 9,
+   "jacobian_calls": 8,
+   "property_calls": 384,
+   "requested_evaluations": 830,
+   "residual_calls": 13
+  },
+  "delta_lambda": "1/2",
+  "iteration": 2,
+  "kind": "homotopy_step",
+  "lambda_value": "3/4",
+  "level_constants_sha256": "7e151bcece7cfa410c8a84a5389400aa00755d3a67217ede348e9ca6089af1a4",
+  "merit": 1.4302035638121996e-27,
+  "message": "",
+  "residual_inf_unscaled": 2.000888343900442e-11,
+  "sequence": 38,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "aecabe1d9c76f352caa843282f4e65377c8ddf3a35d3b88f50a57bc8ee44ce7f",
+  "step_index": 1,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 9,
+   "jacobian_calls": 9,
+   "property_calls": 411,
+   "requested_evaluations": 857,
+   "residual_calls": 14
+  },
+  "homotopy_level": 3,
+  "iteration": 0,
+  "kind": "jacobian",
+  "merit": 0.0003098072874463291,
+  "message": "",
+  "residual_inf_unscaled": 2489.2058470376815,
+  "sequence": 39,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "aecabe1d9c76f352caa843282f4e65377c8ddf3a35d3b88f50a57bc8ee44ce7f",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 10,
+   "jacobian_calls": 9,
+   "property_calls": 411,
+   "requested_evaluations": 857,
+   "residual_calls": 14
+  },
+  "homotopy_level": 3,
+  "iteration": 0,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 5.958160914087101e-17,
+   "u_diag_max_abs": 2.1991601903482967,
+   "u_diag_min_abs": 0.29646635707918007
+  },
+  "merit": 0.0003098072874463291,
+  "message": "",
+  "residual_inf_unscaled": 2489.2058470376815,
+  "sequence": 40,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "aecabe1d9c76f352caa843282f4e65377c8ddf3a35d3b88f50a57bc8ee44ce7f",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 10,
+   "jacobian_calls": 9,
+   "property_calls": 420,
+   "requested_evaluations": 866,
+   "residual_calls": 15
+  },
+  "homotopy_level": 3,
+  "iteration": 0,
+  "kind": "step_accepted",
+  "merit": 1.160017848316271e-07,
+  "message": "",
+  "residual_inf_unscaled": 0.003998252676934211,
+  "sequence": 41,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "2d19a221d8e8d39c960421ae64b8cec2666f9243cd55f0fced0e0b70a3b34a96",
+  "step_index": 1,
+  "step_inf_scaled": 0.02587308128514169,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 10,
+   "jacobian_calls": 10,
+   "property_calls": 438,
+   "requested_evaluations": 884,
+   "residual_calls": 15
+  },
+  "homotopy_level": 3,
+  "iteration": 1,
+  "kind": "jacobian",
+  "merit": 1.160017848316271e-07,
+  "message": "",
+  "residual_inf_unscaled": 0.003998252676934211,
+  "sequence": 42,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "2d19a221d8e8d39c960421ae64b8cec2666f9243cd55f0fced0e0b70a3b34a96",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 11,
+   "jacobian_calls": 10,
+   "property_calls": 438,
+   "requested_evaluations": 884,
+   "residual_calls": 15
+  },
+  "homotopy_level": 3,
+  "iteration": 1,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 7.64023530823574e-17,
+   "u_diag_max_abs": 2.271930107334905,
+   "u_diag_min_abs": 0.2964663570791799
+  },
+  "merit": 1.160017848316271e-07,
+  "message": "",
+  "residual_inf_unscaled": 0.003998252676934211,
+  "sequence": 43,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "2d19a221d8e8d39c960421ae64b8cec2666f9243cd55f0fced0e0b70a3b34a96",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 11,
+   "jacobian_calls": 10,
+   "property_calls": 447,
+   "requested_evaluations": 893,
+   "residual_calls": 16
+  },
+  "homotopy_level": 3,
+  "iteration": 1,
+  "kind": "step_accepted",
+  "merit": 3.264925880514665e-16,
+  "message": "",
+  "residual_inf_unscaled": 2.2820255285438407e-07,
+  "sequence": 44,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "cb1e23a405e3c818dd78a817812e15707146d714d0f51b933b714fde5fc8d807",
+  "step_index": 1,
+  "step_inf_scaled": 0.00020585411899554546,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 11,
+   "jacobian_calls": 11,
+   "property_calls": 465,
+   "requested_evaluations": 911,
+   "residual_calls": 16
+  },
+  "homotopy_level": 3,
+  "iteration": 2,
+  "kind": "jacobian",
+  "merit": 3.264925880514665e-16,
+  "message": "",
+  "residual_inf_unscaled": 2.2820255285438407e-07,
+  "sequence": 45,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "cb1e23a405e3c818dd78a817812e15707146d714d0f51b933b714fde5fc8d807",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 12,
+   "jacobian_calls": 11,
+   "property_calls": 465,
+   "requested_evaluations": 911,
+   "residual_calls": 16
+  },
+  "homotopy_level": 3,
+  "iteration": 2,
+  "kind": "linear_solve",
+  "linear": {
+   "nnz_L": 107,
+   "nnz_U": 148,
+   "residual_normalized": 8.670049402049722e-17,
+   "u_diag_max_abs": 2.2703731889683354,
+   "u_diag_min_abs": 0.2964663570791801
+  },
+  "merit": 3.264925880514665e-16,
+  "message": "",
+  "residual_inf_unscaled": 2.2820255285438407e-07,
+  "sequence": 46,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "cb1e23a405e3c818dd78a817812e15707146d714d0f51b933b714fde5fc8d807",
+  "step_index": 1
+ },
+ {
+  "alpha": 1.0,
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 12,
+   "jacobian_calls": 11,
+   "property_calls": 474,
+   "requested_evaluations": 920,
+   "residual_calls": 17
+  },
+  "homotopy_level": 3,
+  "iteration": 2,
+  "kind": "step_accepted",
+  "merit": 3.718685381992875e-32,
+  "message": "",
+  "residual_inf_unscaled": 1.2732925824820995e-11,
+  "sequence": 47,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a49850813026b2da9127097aa38fb3b962c71fb4f43e6d45e8712dd543a948cc",
+  "step_index": 1,
+  "step_inf_scaled": 1.4566851510277964e-08,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 12,
+   "jacobian_calls": 11,
+   "property_calls": 474,
+   "requested_evaluations": 920,
+   "residual_calls": 17
+  },
+  "homotopy_level": 3,
+  "iteration": 3,
+  "kind": "attempt_closed",
+  "merit": 3.718685381992875e-32,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": 1.2732925824820995e-11,
+  "sequence": 48,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a49850813026b2da9127097aa38fb3b962c71fb4f43e6d45e8712dd543a948cc",
+  "step_index": 1
+ },
+ {
+  "attempt": 2,
+  "corrector_iterations": 3,
+  "corrector_outcome": "CONVERGED",
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 12,
+   "jacobian_calls": 11,
+   "property_calls": 474,
+   "requested_evaluations": 920,
+   "residual_calls": 17
+  },
+  "delta_lambda": "1/4",
+  "iteration": 3,
+  "kind": "homotopy_step",
+  "lambda_value": "1",
+  "level_constants_sha256": "02c781ed5c472e597e255d8f7eb0d167192dac26d059d451e4866788d9df515d",
+  "merit": 3.718685381992875e-32,
+  "message": "",
+  "residual_inf_unscaled": 1.2732925824820995e-11,
+  "sequence": 49,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a49850813026b2da9127097aa38fb3b962c71fb4f43e6d45e8712dd543a948cc",
+  "step_index": 1,
+  "trial_status": "accepted"
+ },
+ {
+  "attempt": 2,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 12,
+   "jacobian_calls": 11,
+   "property_calls": 474,
+   "requested_evaluations": 920,
+   "residual_calls": 17
+  },
+  "iteration": 9,
+  "kind": "attempt_closed",
+  "merit": 3.718685381992875e-32,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": 1.2732925824820995e-11,
+  "sequence": 50,
+  "signature": [
+   [
+    "U-HEAT",
+    "TWO_PHASE"
+   ],
+   [
+    "U-FLASH",
+    "TWO_PHASE"
+   ]
+  ],
+  "state_sha256": "a49850813026b2da9127097aa38fb3b962c71fb4f43e6d45e8712dd543a948cc",
+  "step_index": 1
+ },
+ {
+  "attempt": 0,
+  "counters": {
+   "cache_hits": 446,
+   "factorizations": 12,
+   "jacobian_calls": 11,
+   "property_calls": 474,
+   "requested_evaluations": 920,
+   "residual_calls": 17
+  },
+  "eo_recovery": "taken",
+  "iteration": 0,
+  "kind": "region_closed",
+  "merit": null,
+  "message": "",
+  "outcome": "CONVERGED",
+  "residual_inf_unscaled": null,
+  "sequence": 51,
+  "signature": [],
+  "state_sha256": "",
+  "step_index": 1
+ }
+]

@@ -1,0 +1,79 @@
+{
+ "SYN-001-nominal": {
+  "outcome": "CONVERGED",
+  "attempts": [
+   [
+    {
+     "U-HEAT": "TWO_PHASE",
+     "U-FLASH": "TWO_PHASE"
+    },
+    "PHASE_UPDATE_REQUIRED",
+    1
+   ],
+   [
+    {
+     "U-HEAT": "LIQUID",
+     "U-FLASH": "TWO_PHASE"
+    },
+    "CONVERGED",
+    2
+   ]
+  ],
+  "screen": [
+   {
+    "attempt": 1,
+    "unit": "U-HEAT:LIQUID",
+    "opening": 1.0000109352052657,
+    "n_trials": 2,
+    "worst_trial": 0.9623165600352772,
+    "exceeds": []
+   }
+  ]
+ },
+ "SYN-001-high-recycle": {
+  "outcome": "CONVERGED",
+  "attempts": [
+   [
+    {
+     "U-HEAT": "LIQUID",
+     "U-FLASH": "TWO_PHASE"
+    },
+    "CONVERGED",
+    5
+   ]
+  ],
+  "screen": [
+   {
+    "attempt": 0,
+    "unit": "U-HEAT:LIQUID",
+    "opening": 0.965871272862204,
+    "n_trials": 11,
+    "worst_trial": 0.9077925608566403,
+    "exceeds": []
+   }
+  ]
+ },
+ "SYN-001-all-liquid-310K": {
+  "outcome": "CONVERGED",
+  "attempts": [
+   [
+    {
+     "U-HEAT": "TWO_PHASE",
+     "U-FLASH": "LIQUID"
+    },
+    "CONVERGED",
+    2
+   ]
+  ],
+  "screen": [
+   {
+    "attempt": 0,
+    "unit": "U-FLASH:LIQUID",
+    "opening": 0.32806972835518633,
+    "n_trials": 2,
+    "worst_trial": 0.32806972835518633,
+    "exceeds": []
+   }
+  ]
+ }
+}

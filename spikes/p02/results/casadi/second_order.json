@@ -1,0 +1,92 @@
+{
+ "opaque_blocks": [
+  {
+   "probe_id": "H1",
+   "form": "L",
+   "row": "eq_A",
+   "symbolic_block_jacobian": false,
+   "entries": {},
+   "outcome": "raised",
+   "exception_type": "RuntimeError",
+   "message": "Error in MX::hessian at .../casadi/core/mx.cpp:1944: Error in MX::jacobian at .../casadi/core/mx.cpp:1928: Error in XFunction::jac for 'helper_jacobian_MX' [MXFunction] at .../casadi/core/x_function.hpp:838: Error in MXFunction::ad_forward at .../casadi/core/mx_function.cpp:1013: Error in MX::ad_forward for node of type N6casadi4CallE at .../casadi/core/mx.cpp:3237: Error in Call::ad_forward for 'jac_blockH' [CallbackInternal] at .../casadi/core/casadi_call.cpp:134: .../casadi/core/function_internal.cpp:3227: Assertion \"has_derivative()\" failed: Derivatives cannot be calculated for jac_blockH"
+  },
+  {
+   "probe_id": "H2",
+   "form": "L",
+   "row": "kdef_A",
+   "symbolic_block_jacobian": false,
+   "entries": {},
+   "outcome": "raised",
+   "exception_type": "RuntimeError",
+   "message": "Error in MX::hessian at .../casadi/core/mx.cpp:1944: Error in MX::jacobian at .../casadi/core/mx.cpp:1928: Error in XFunction::jac for 'helper_jacobian_MX' [MXFunction] at .../casadi/core/x_function.hpp:838: Error in MXFunction::ad_forward at .../casadi/core/mx_function.cpp:1013: Error in MX::ad_forward for node of type N6casadi4CallE at .../casadi/core/mx.cpp:3237: Error in Call::ad_forward for 'jac_blockH' [CallbackInternal] at .../casadi/core/casadi_call.cpp:134: .../casadi/core/function_internal.cpp:3227: Assertion \"has_derivative()\" failed: Derivatives cannot be calculated for jac_blockH"
+  },
+  {
+   "probe_id": "H3",
+   "form": "L",
+   "row": "hdef_A",
+   "symbolic_block_jacobian": false,
+   "entries": {},
+   "outcome": "raised",
+   "exception_type": "RuntimeError",
+   "message": "Error in MX::hessian at .../casadi/core/mx.cpp:1944: Error in MX::jacobian at .../casadi/core/mx.cpp:1928: Error in XFunction::jac for 'helper_jacobian_MX' [MXFunction] at .../casadi/core/x_function.hpp:838: Error in MXFunction::ad_forward at .../casadi/core/mx_function.cpp:1013: Error in MX::ad_forward for node of type N6casadi4CallE at .../casadi/core/mx.cpp:3237: Error in Call::ad_forward for 'jac_blockH' [CallbackInternal] at .../casadi/core/casadi_call.cpp:134: .../casadi/core/function_internal.cpp:3227: Assertion \"has_derivative()\" failed: Derivatives cannot be calculated for jac_blockH"
+  },
+  {
+   "probe_id": "H4",
+   "form": "I",
+   "row": "eq_A",
+   "symbolic_block_jacobian": false,
+   "entries": {},
+   "outcome": "raised",
+   "exception_type": "RuntimeError",
+   "message": "Error in MX::hessian at .../casadi/core/mx.cpp:1944: Error in MX::jacobian at .../casadi/core/mx.cpp:1928: Error in XFunction::jac for 'helper_jacobian_MX' [MXFunction] at .../casadi/core/x_function.hpp:838: Error in MXFunction::ad_forward at .../casadi/core/mx_function.cpp:1013: Error in MX::ad_forward for node of type N6casadi4CallE at .../casadi/core/mx.cpp:3237: Error in Call::ad_forward for 'jac_blockH' [CallbackInternal] at .../casadi/core/casadi_call.cpp:134: .../casadi/core/function_internal.cpp:3227: Assertion \"has_derivative()\" failed: Derivatives cannot be calculated for jac_blockH"
+  }
+ ],
+ "supplementary_symbolic_blocks": [
+  {
+   "probe_id": "H1",
+   "form": "L",
+   "row": "eq_A",
+   "symbolic_block_jacobian": true,
+   "entries": {
+    "d2/dv_AdL": 1.0,
+    "d2/dlnK_AdlnK_A": -1.151078041905418
+   },
+   "outcome": "returned"
+  },
+  {
+   "probe_id": "H2",
+   "form": "L",
+   "row": "kdef_A",
+   "symbolic_block_jacobian": true,
+   "entries": {
+    "d2/dTdT": 0.00012889269873405998,
+    "d2/dTdP": 9.28027430885232e-11,
+    "d2/dPdP": -1e-10
+   },
+   "outcome": "returned"
+  },
+  {
+   "probe_id": "H3",
+   "form": "L",
+   "row": "hdef_A",
+   "symbolic_block_jacobian": true,
+   "entries": {
+    "d2/dl_AdT": -100.0,
+    "d2/dl_AdP": -0.0001
+   },
+   "outcome": "returned"
+  },
+  {
+   "probe_id": "H4",
+   "form": "I",
+   "row": "eq_A",
+   "symbolic_block_jacobian": true,
+   "entries": {
+    "d2/dTdl_A": -0.08968397695354713,
+    "d2/dTdT": -0.00047122731764580447
+   },
+   "outcome": "returned"
+  }
+ ],
+ "note": "The supplementary record (specification \u00a78, H5) replaces each block's opaque Jacobian Callback by a symbolic Function of the same closed forms. It is a capability fact for K01 and is never mixed with H1-H4."
+}

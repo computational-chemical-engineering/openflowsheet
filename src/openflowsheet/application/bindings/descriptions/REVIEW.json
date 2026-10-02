@@ -1,0 +1,345 @@
+{
+  "description": "T07 design note §11.3 (W6c, gate G15). The SHA-256 of each MCP tool description as served (the file's UTF-8 bytes) and its length in characters (at most 1500). A changed text changes its hash and fails G15 until this record is updated, which voids any review of the old text. Reviews: the design lane's (status pending_design_review until it reviews this exact hash) and the human review, Frank's, recorded separately (§17 F4; status pending). No agent marks a review done on its own work.",
+  "operations": {
+    "cancel_job": {
+      "tool": "cancel_job",
+      "file": "cancel_job.md",
+      "sha256": "e87d799cbe4c32f845772273180fc44d0571fc09a4071a41bd5ef299fab1e557",
+      "characters": 893,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "commit_change": {
+      "tool": "commit_change",
+      "file": "commit_change.md",
+      "sha256": "fd7ff7a808c6f0dbd3af2a45eb5b62c83c7e104a1ef433fc96a6fbbc6a05dd32",
+      "characters": 1500,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-10-01"
+        }
+      ]
+    },
+    "diff_revisions": {
+      "tool": "diff_revisions",
+      "file": "diff_revisions.md",
+      "sha256": "4a351ae2d7f67e5ff026cc5551109eeb19d7556eedbd2dd50298032858430fea",
+      "characters": 530,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "get_artifact": {
+      "tool": "get_artifact",
+      "file": "get_artifact.md",
+      "sha256": "22cb20636e1f01efa15af3458e83978ad762e5d5279229db8d8723e6e7122883",
+      "characters": 1253,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "get_job": {
+      "tool": "get_job",
+      "file": "get_job.md",
+      "sha256": "349d0218d98e272591986daddfd1a87474d37c6a7d473f355e90ddfbf14a56b7",
+      "characters": 904,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "get_job_result": {
+      "tool": "get_job_result",
+      "file": "get_job_result.md",
+      "sha256": "7eeab9bbee35cd31f55269dd2cd5de2ba4147d531a58ea4b5103e8c903f3520d",
+      "characters": 1181,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "get_project": {
+      "tool": "get_project",
+      "file": "get_project.md",
+      "sha256": "9ac0612f06676a8ebea3ff185df1fb942a3350efb79f63be53c1c05244aec6fb",
+      "characters": 857,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "get_revision": {
+      "tool": "get_revision",
+      "file": "get_revision.md",
+      "sha256": "02442571d8c73ce99121f9248e712214fde89cca7d493c88876f6eb018cae932",
+      "characters": 904,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "inspect_structure": {
+      "tool": "inspect_structure",
+      "file": "inspect_structure.md",
+      "sha256": "4e7c30320406679057dba4933e89a3e77f769538106b396961c1b677c45c9e8d",
+      "characters": 1175,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "list_job_events": {
+      "tool": "list_job_events",
+      "file": "list_job_events.md",
+      "sha256": "66b1ec26d3b22a53e17e43732d56496fd3e28db339298b0e3557987ef836c7d3",
+      "characters": 839,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "list_jobs": {
+      "tool": "list_jobs",
+      "file": "list_jobs.md",
+      "sha256": "ffe3183f0de54bcf71b90151d8170915af647182bea734a682719fd8e04a6e03",
+      "characters": 762,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "list_models": {
+      "tool": "list_models",
+      "file": "list_models.md",
+      "sha256": "941766bdd62094110bf39cacc25c6515efac4041e782f2cae8c5abcacd291db7",
+      "characters": 1178,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "list_revisions": {
+      "tool": "list_revisions",
+      "file": "list_revisions.md",
+      "sha256": "12c3e8f9c506c79fb7ef52e23630ac3cea548c04ed5b80b2e5f0a629a5beaec4",
+      "characters": 578,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "preview_change": {
+      "tool": "preview_change",
+      "file": "preview_change.md",
+      "sha256": "a90d23555bc367af9f91e62704f7f4bc3e5a41d386f99d36a65a89cb7e70b701",
+      "characters": 1280,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "submit_job": {
+      "tool": "submit_job",
+      "file": "submit_job.md",
+      "sha256": "61b8509cafb9b4ab101e54622b68b36cf8e938b54df65db105b29b5c36c1771d",
+      "characters": 1356,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    },
+    "validate": {
+      "tool": "validate_revision",
+      "file": "validate.md",
+      "sha256": "1025385ae14e0fb4dde1b65f79c71e1bff19eb87559e7fa740d3b3357e754d7e",
+      "characters": 1188,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-10-01"
+        }
+      ]
+    },
+    "wait_job": {
+      "tool": "wait_job",
+      "file": "wait_job.md",
+      "sha256": "4a5b99596c771bf6b3254fa9c294e8ad32077de45c3a2e64b93eda0dca37a01c",
+      "characters": 929,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
+          "reviewed_at": "2026-10-01"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-09-29"
+        }
+      ]
+    }
+  }
+}

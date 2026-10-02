@@ -1,0 +1,19 @@
+{
+ "mcpServers": {
+  "procsim": {
+   "args": [
+    "-m",
+    "process_runtime.application.cli",
+    "serve-mcp",
+    "--project",
+    "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/c1654ca5-cf40-4fac-b53a-1914bdd081e5/scratchpad/v17-work/v17-c1/V17-T05-2/project"
+   ],
+   "command": "/home/frankp/Codes/Process Simulator/.venv/bin/python",
+   "env": {
+    "PROCESS_RUNTIME_TOKEN_FILE": "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/c1654ca5-cf40-4fac-b53a-1914bdd081e5/scratchpad/v17-work/v17-c1/V17-T05-2/secret/token",
+    "PYTHONPATH": "/home/frankp/Codes/Process Simulator/.claude/worktrees/v17-campaign/src"
+   },
+   "type": "stdio"
+  }
+ }
+}

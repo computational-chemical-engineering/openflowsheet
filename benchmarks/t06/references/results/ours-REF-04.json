@@ -1,0 +1,43 @@
+{
+ "check_policy_id": "K04-check-policy-v1",
+ "compared_quantities": {
+  "S2.n.A": 0.702223286069486,
+  "S2.n.B": 0.45360302307438394,
+  "S2.n.C": 0.2049827600792817,
+  "S3.n.A": 0.2977767139305138,
+  "S3.n.B": 0.5463969769256161,
+  "S3.n.C": 0.7950172399207183,
+  "U-FLASH.Q": 56338.069446743524
+ },
+ "fixture": "REF-04",
+ "limitations": [],
+ "non_passing_checks": [],
+ "outcome": "CONVERGED",
+ "path": "revision",
+ "policy_id": "T06-revision-v2",
+ "revision": "benchmarks/t06/cases/SYN-001-T06-REF04.yaml",
+ "revision_file_sha256": "34b6038c58ffcfdbd02321e94d37d1b13776bfd52a3258784c3b3fb14aba2d90",
+ "revision_id": "SYN-001-T06-REF04-r1",
+ "side": "ours",
+ "state": {
+  "S1.P": 100000.0,
+  "S1.T": 300.0,
+  "S1.n.A": 1.0,
+  "S1.n.B": 1.0,
+  "S1.n.C": 1.0,
+  "S2.N": 1.3608090692231516,
+  "S2.P": 100000.0,
+  "S2.T": 360.0,
+  "S2.n.A": 0.702223286069486,
+  "S2.n.B": 0.45360302307438394,
+  "S2.n.C": 0.2049827600792817,
+  "S3.N": 1.6391909307768482,
+  "S3.P": 100000.0,
+  "S3.T": 360.0,
+  "S3.n.A": 0.2977767139305138,
+  "S3.n.B": 0.5463969769256161,
+  "S3.n.C": 0.7950172399207183,
+  "U-FLASH.Q": 56338.069446743524
+ },
+ "verification_status": "VERIFIED"
+}

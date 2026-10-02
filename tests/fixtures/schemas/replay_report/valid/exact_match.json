@@ -1,0 +1,48 @@
+{
+ "bitwise_floats": true,
+ "current_environment": {
+  "architecture": "x86_64",
+  "blas": {
+   "name": "scipy-openblas",
+   "version": "0.3.28"
+  },
+  "lock_sha256": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313",
+  "os_name": "Linux",
+  "os_release": "6.12.86+deb13-amd64",
+  "python_version": "3.13.5",
+  "superlu_options_ref": "ADR 0004 D1",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  }
+ },
+ "differences": [],
+ "integrity": {
+  "missing": [],
+  "ok": true,
+  "tampered": [],
+  "unexpected": []
+ },
+ "mode": "exact_replay",
+ "reasons": [],
+ "recorded_environment": {
+  "architecture": "x86_64",
+  "blas": {
+   "name": "scipy-openblas",
+   "version": "0.3.28"
+  },
+  "lock_sha256": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313",
+  "os_name": "Linux",
+  "os_release": "6.12.86+deb13-amd64",
+  "python_version": "3.13.5",
+  "superlu_options_ref": "ADR 0004 D1",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  }
+ },
+ "verdict": "MATCH",
+ "verdict_changed_near_threshold": []
+}

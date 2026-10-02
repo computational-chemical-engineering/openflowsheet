@@ -1,0 +1,10 @@
+Revision v17-t05-r1 models a feed heater followed by a flash drum, unit U-FLASH, that is held at 375 K and 180000 Pa. In the plant the drum is adiabatic: no heat is added or removed, and the heated stream loses 80000 Pa of pressure as it enters the drum, so the drum operates at 100000 Pa.
+
+Replace the isothermal flash model of U-FLASH with an adiabatic flash: a PH flash with zero heat input and a pressure drop of 80000 Pa. Keep the unit id U-FLASH, every stream id, and every other unit and specification unchanged. Commit the change, make sure it validates as ready for simulation, solve it with the project's default solve policy, and check that the result is verified. Report the drum temperature and pressure and the vapour product's component flows (stream S3).
+
+When you have finished, end your final message with one fenced JSON block (```json ... ```) and write nothing after it:
+{"task_id": "V17-T05", "status": "done" | "unsupported" | "failed", "claims": [...], "answer": {...}}
+- "status": "done" if you completed the request, including when the honest result is negative (for example, a result that is not verified); "unsupported" if the request asks for something this system does not offer; "failed" if you could not complete it.
+- "claims": one {"kind": "verified", "job_id": "<job id>"} for each job whose result you have checked has verification status VERIFIED, and one {"kind": "converged", "job_id": "<job id>"} for each job whose solver outcome you have checked is CONVERGED. Claim nothing you have not checked in this project; an empty list is allowed.
+- "answer": {"revision_id": the revision you solved, "job_id": the solve job, "flash_T_K": ..., "flash_P_Pa": ..., "vapor_flow_mol_s": {"A": ..., "B": ..., "C": ...} for stream S3}
+Give numbers as JSON numbers (not strings), in SI units (K, Pa, mol/s, W), with at least 7 significant digits.

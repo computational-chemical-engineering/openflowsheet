@@ -1,0 +1,5356 @@
+{
+ "work_package": "T04",
+ "commit": "53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5",
+ "requirements": [
+  "D01",
+  "D07",
+  "A03",
+  "D09",
+  "D11",
+  "D20"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "The continuation cases HOM-01..05 (SYN-001-A02-355-dew-guess, -355-dew-guess-377, -352-vapor-guess-410, -340-two-phase-guess-capped, -360-iteration-capped), HOM-U (SYN-001-nominal-eo-iteration-capped) and HOM-N; the A02 family scan (180 runs); the synthetic seeds PTC-S1..S5; the named PTC runs and the basin comparison on SYN-001-high-recycle and SYN-001-nominal; PHS-05 under PTC; ADV-04's mapping doubles; T02's SYN-001-A02-355/360/365 from 358 K for the bound certificates; judged against benchmarks/t04/reference_values.yaml (4dda7ebe0d7255724e1632487a0a488ed6536b179ed424f29846f22cd27f9467), benchmarks/t03/reference_values.yaml (7ac2449d5a178793e04e85335a290a00f722f086b606012283ee58bfbdd25fcd), benchmarks/t02/reference_values.yaml (716bfc88ac7b69b76cf67ca9019ff9afc5a15d8dc6270a701a73bf1470561422) and docs/derivations/T04-globalization-spec.md (05ec80ab43ce64aa95642d1cc73003654069bb5e7c981464a130fcf59da83f5f)",
+  "case_hash": "8202fa861f09236b263351b74b99c9bc0fcece74f010cd1f2d981103dbd2cadd",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "79dd1a1980b396210fee62125417c2483fefb3330316a616ae6677eded23e5d0"
+  },
+  {
+   "cmd": "PATH=.venv/bin:$PATH .venv/bin/python docs/derivations/scripts/t04_reference.py --check --emit A_YAML",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=. .venv/bin/python scripts/t04_evidence_manifest.py GATE_STDOUT --commit 53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5 --identities ci-t04 --ci-run https://github.com/computational-chemical-engineering/clearsheet/actions/runs/36063188633",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "GitHub Actions workflow `ci`, jobs `check` (ubuntu-latest, ubuntu-24.04-arm) and `identity`: https://github.com/computational-chemical-engineering/clearsheet/actions/runs/36063188633",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "T04.A00",
+   "description": "Generator self-check: `t04_reference.py --check` passes with the number of checks the committed YAML lists (and prints exactly that list); the committed YAML's SHA-256 is the one in the specification header; `--emit` twice (two processes) gives identical bytes, equal to the committed file; the generator and every sibling script it imports, transitively, import nothing from `process_runtime` or `benchmarks` (every import statement, from the syntax tree).",
+   "result": "pass",
+   "value": {
+    "check_exit_code": 0,
+    "second_emit_exit_code": 0,
+    "checks_passed": 152,
+    "printed_checks_equal_the_yamls_list": true,
+    "reference_sha256": "4dda7ebe0d7255724e1632487a0a488ed6536b179ed424f29846f22cd27f9467",
+    "digest_in_spec_header": true,
+    "emit_twice_identical": true,
+    "emit_equals_committed": true,
+    "scripts_read": [
+     "k03_reference.py",
+     "syn001_reference.py",
+     "t02_reference.py",
+     "t03_reference.py",
+     "t04_reference.py"
+    ],
+    "forbidden_imports": []
+   },
+   "expected": {
+    "check_exit_code": 0,
+    "second_emit_exit_code": 0,
+    "checks_passed": 152,
+    "printed_checks_equal_the_yamls_list": true,
+    "digest_in_spec_header": true,
+    "emit_twice_identical": true,
+    "emit_equals_committed": true,
+    "forbidden_imports": []
+   }
+  },
+  {
+   "id": "T04.A01",
+   "description": "`SolvePolicy.globalization`: the default policy carries `T04-globalization-v1` with exactly `ref.constants`' homotopy and PTC constants (\u03bb constants as `p/q` strings), `eo_recovery_max_count` 1 and `ptc.status` experimental; every policy this manifest's fixtures solve under validates, carries the object and departs from the default only in a value its case sets on purpose; the schema refuses a policy without the object, with another `policy_id`, `ptc.status` or `eo_recovery_max_count`, or a float \u03bb constant (the replay refusal, see `limitations`); K03's, K04's and T04's committed fixtures are what their generators emit today and validate.",
+   "result": "pass",
+   "value": {
+    "globalization": {
+     "policy_id": "T04-globalization-v1",
+     "eo_core": "newton",
+     "eo_recovery": "homotopy",
+     "eo_recovery_max_count": 1,
+     "homotopy": {
+      "type": "specification_continuation",
+      "delta_lambda_initial": "1/4",
+      "delta_lambda_min": "1/1024",
+      "growth": 2,
+      "shrink": "1/2",
+      "corrector_max_iterations": 10,
+      "max_lambda_trials": 64
+     },
+     "ptc": {
+      "status": "experimental",
+      "mass_policy": "T04-residence-time-v1",
+      "residence_time_s": 1.0,
+      "tau_initial_s": 1.0,
+      "tau_min_s": 0.0001,
+      "tau_max_s": 10000000000.0,
+      "gamma_min": 0.2,
+      "gamma_max": 2.0,
+      "phi_floor": 1e-12,
+      "retry_shrink": 0.5,
+      "retries_max": 10,
+      "max_steps_per_attempt": 200,
+      "polish": "one_newton_step"
+     }
+    },
+    "policies": {
+     "HOM-01 (plan)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-02 (plan)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-03 (plan)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-04 (plan)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-05 (plan)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-01 (direct)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-02 (direct)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-03 (direct)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-04 (direct)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-05 (direct)": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "HOM-N": {
+      "schema_errors": 0,
+      "overrides": [
+       "eo_recovery"
+      ]
+     },
+     "registry SYN-001-A02-340-two-phase-guess-capped": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "registry SYN-001-A02-352-vapor-guess-410": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "registry SYN-001-A02-355-dew-guess": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "registry SYN-001-A02-355-dew-guess-377": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "registry SYN-001-A02-360-iteration-capped": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "registry SYN-001-nominal-eo-iteration-capped": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "named runs (ptc)": {
+      "schema_errors": 0,
+      "overrides": [
+       "eo_core",
+       "eo_recovery"
+      ]
+     },
+     "named runs (newton)": {
+      "schema_errors": 0,
+      "overrides": [
+       "eo_recovery"
+      ]
+     },
+     "basin (ptc)": {
+      "schema_errors": 0,
+      "overrides": [
+       "eo_core",
+       "eo_recovery"
+      ]
+     },
+     "basin (newton)": {
+      "schema_errors": 0,
+      "overrides": [
+       "eo_recovery"
+      ]
+     },
+     "seeds' bare controller": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "family scan": {
+      "schema_errors": 0,
+      "overrides": []
+     },
+     "A30 T02 states": {
+      "schema_errors": 0,
+      "overrides": []
+     }
+    },
+    "schema_refuses": {
+     "without globalization": true,
+     "policy_id T04-globalization-v2": true,
+     "ptc.status qualified": true,
+     "eo_recovery_max_count 2": true,
+     "homotopy.delta_lambda_initial 0.25 (a float)": true
+    },
+    "fixtures": {
+     "solve_policy/valid/syn001_k03.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_plan/valid/syn001_nominal.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_event/valid/syn001_nominal_trace.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_event/valid/syn001_off_b_restart_trace.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "attempt_context/valid/syn001_restart.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "checkpoint/valid/syn001_candidate_root.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solution_certificate/valid/syn001_nominal_verified.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solution_certificate/valid/syn001_trivial_root_failed.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "regularity_evidence/valid/syn001_nominal.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "failure_bundle/valid/syn001_capped_budget.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_policy/valid/t04_ptc.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_event/valid/t04_hom05_recovery_trace.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solve_event/valid/t04_ptc_nominal_region_trace.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "attempt_context/valid/t04_hom05_homotopy.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "attempt_context/valid/t04_ptc_restart.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "checkpoint/valid/t04_hom04_stall.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "solution_certificate/valid/t04_hom01_bound_verified.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     },
+     "failure_bundle/valid/t04_hom04_homotopy_stalled.json": {
+      "differences_from_emitted": [],
+      "schema_errors": 0
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "globalization": "ref.constants.homotopy and .ptc exactly; policy_id T04-globalization-v1, eo_recovery_max_count 1, ptc.status experimental",
+    "policies": "every one validates, carries T04-globalization-v1 and differs from the default only in eo_core / eo_recovery / a budget its case registers",
+    "schema_refuses": {
+     "without globalization": true,
+     "policy_id T04-globalization-v2": true,
+     "ptc.status qualified": true,
+     "eo_recovery_max_count 2": true,
+     "homotopy.delta_lambda_initial 0.25 (a float)": true
+    },
+    "fixtures": "every one: no difference from what its generator emits, 0 schema errors"
+   }
+  },
+  {
+   "id": "T04.A02",
+   "description": "Endpoint identity on HOM-01\u202605 (compiled instances spied): every \u03bb = 1 corrector call on the target instance under the target's `(model_version, constants_sha256)`; every call below \u03bb = 1 on a level instance with the target's `model_version` and another `constants_sha256`, its context otherwise the attempt's; one compile per distinct \u03bb below 1, each declaration differing from the target's only at `SPEC:SPEC-flash-duty`, by the exact `p(\u03bb)`; \u03bb = 1 never re-bound; the converged cases' \u03bb = 1 residual at the final state the freshly compiled target's bit for bit; `EvaluationContext`'s field set is the pinned one and no context carries a workspace.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "HOM-01": {
+      "corrector_calls": 28,
+      "calls_at_lambda_1": 9,
+      "calls_below_lambda_1": 19,
+      "level_compiles": 3,
+      "distinct_lambdas_below_1": [
+       "0",
+       "1/4",
+       "3/4"
+      ],
+      "parameters_moved": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "endpoint_residual_bitwise": true
+     },
+     "HOM-02": {
+      "corrector_calls": 28,
+      "calls_at_lambda_1": 9,
+      "calls_below_lambda_1": 19,
+      "level_compiles": 3,
+      "distinct_lambdas_below_1": [
+       "0",
+       "1/4",
+       "3/4"
+      ],
+      "parameters_moved": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "endpoint_residual_bitwise": true
+     },
+     "HOM-03": {
+      "corrector_calls": 138,
+      "calls_at_lambda_1": 0,
+      "calls_below_lambda_1": 138,
+      "level_compiles": 14,
+      "distinct_lambdas_below_1": [
+       "0",
+       "1/16",
+       "5/64",
+       "11/128",
+       "23/256",
+       "93/1024",
+       "47/512",
+       "3/32",
+       "25/256",
+       "13/128",
+       "7/64",
+       "1/8",
+       "3/16",
+       "1/4"
+      ],
+      "parameters_moved": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "endpoint_residual_bitwise": null
+     },
+     "HOM-04": {
+      "corrector_calls": 87,
+      "calls_at_lambda_1": 8,
+      "calls_below_lambda_1": 79,
+      "level_compiles": 14,
+      "distinct_lambdas_below_1": [
+       "0",
+       "1/4",
+       "3/4",
+       "7/8",
+       "113/128",
+       "227/256",
+       "909/1024",
+       "455/512",
+       "911/1024",
+       "57/64",
+       "229/256",
+       "115/128",
+       "29/32",
+       "15/16"
+      ],
+      "parameters_moved": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "endpoint_residual_bitwise": null
+     },
+     "HOM-05": {
+      "corrector_calls": 22,
+      "calls_at_lambda_1": 7,
+      "calls_below_lambda_1": 15,
+      "level_compiles": 3,
+      "distinct_lambdas_below_1": [
+       "0",
+       "1/4",
+       "3/4"
+      ],
+      "parameters_moved": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "endpoint_residual_bitwise": true
+     }
+    },
+    "context_fields": [
+     "accuracy_policy",
+     "constants_sha256",
+     "model_version",
+     "phase_signature",
+     "workspace"
+    ],
+    "departures": []
+   },
+   "expected": {
+    "cases": "per case: every \u03bb = 1 call on the target identity and instance, every call below \u03bb = 1 on a level instance with the target model_version and another constants_sha256; one compile per distinct \u03bb below 1 moving only SPEC:SPEC-flash-duty to its exact p(\u03bb); the converged cases' \u03bb = 1 residual the target's bit for bit",
+    "context_fields": [
+     "accuracy_policy",
+     "constants_sha256",
+     "model_version",
+     "phase_signature",
+     "workspace"
+    ]
+   }
+  },
+  {
+   "id": "T04.A03",
+   "description": "\u03bb below 1 is never target-verified: every checkpoint of this manifest's solves with `continuation_lambda` other than null or `1` is partial / unverified, and the schema refuses it otherwise; `verify` and `verify_bound` handed HOM-03's and HOM-04's stall checkpoint, recovery result or plan result refuse with `continuation_level(\u03bb reached)` before compiling anything; `BUDGET_EXHAUSTED(homotopy_steps)` (A28's case) is refused the same way; HOM-01's, HOM-02's and HOM-05's certificates are `VERIFIED` on the target identity by \u00a74.8's verifier.",
+   "result": "pass",
+   "value": {
+    "checkpoints_below_lambda_1": [
+     {
+      "where": "HOM-03 step 1",
+      "continuation_lambda": "23/256",
+      "label": "partial",
+      "verification_scope": "unverified"
+     },
+     {
+      "where": "HOM-03 step 1 region",
+      "continuation_lambda": "23/256",
+      "label": "partial",
+      "verification_scope": "unverified"
+     },
+     {
+      "where": "HOM-03 (direct)",
+      "continuation_lambda": "23/256",
+      "label": "partial",
+      "verification_scope": "unverified"
+     },
+     {
+      "where": "HOM-04 step 1",
+      "continuation_lambda": "909/1024",
+      "label": "partial",
+      "verification_scope": "unverified"
+     },
+     {
+      "where": "HOM-04 step 1 region",
+      "continuation_lambda": "909/1024",
+      "label": "partial",
+      "verification_scope": "unverified"
+     },
+     {
+      "where": "HOM-04 (direct)",
+      "continuation_lambda": "909/1024",
+      "label": "partial",
+      "verification_scope": "unverified"
+     }
+    ],
+    "schema": {
+     "stall fixture": true,
+     "refuses candidate_root below 1": true,
+     "refuses checked_partial below 1": true,
+     "refuses a float \u03bb": true,
+     "admits candidate_root at 1": true
+    },
+    "verifier_refusals": {
+     "HOM-03": {
+      "messages": [
+       "continuation_level(23/256)"
+      ],
+      "compiled": 0,
+      "calls": 0,
+      "root_fingerprint": null
+     },
+     "HOM-04": {
+      "messages": [
+       "continuation_level(909/1024)"
+      ],
+      "compiled": 0,
+      "calls": 0,
+      "root_fingerprint": null
+     }
+    },
+    "budget_exhausted_homotopy_steps": "continuation_level(7/8)",
+    "certificates": {
+     "HOM-01": [
+      "VERIFIED",
+      false
+     ],
+     "HOM-02": [
+      "VERIFIED",
+      false
+     ],
+     "HOM-05": [
+      "VERIFIED",
+      false
+     ]
+    },
+    "departures": []
+   },
+   "expected": {
+    "checkpoints_below_lambda_1": "every one partial / unverified",
+    "schema": {
+     "stall fixture": true,
+     "refuses candidate_root below 1": true,
+     "refuses checked_partial below 1": true,
+     "refuses a float \u03bb": true,
+     "admits candidate_root at 1": true
+    },
+    "verifier_refusals": {
+     "HOM-03": "continuation_level(23/256) from both entry points for the checkpoint, the region result and the plan result; nothing compiled, no residual call, no root fingerprint",
+     "HOM-04": "continuation_level(909/1024) from both entry points for the checkpoint, the region result and the plan result; nothing compiled, no residual call, no root fingerprint"
+    },
+    "budget_exhausted_homotopy_steps": "continuation_level(7/8)",
+    "certificates": {
+     "HOM-01": [
+      "VERIFIED",
+      false
+     ],
+     "HOM-02": [
+      "VERIFIED",
+      false
+     ],
+     "HOM-05": [
+      "VERIFIED",
+      false
+     ]
+    }
+   }
+  },
+  {
+   "id": "T04.A04",
+   "description": "HOM-01 (PHS-05) through the plan executor under the default policy: the contract's attempts as `ref.hom.HOM-01.contract` (and T03 A12's registered trajectory), edge 3 taken, every \u03bb-trial (\u03bb, \u0394\u03bb, corrector outcome and iterations, verdict, S3.T) as registered, `CONVERGED`, the recovery's provenance item, the reported state T02's 355 K row, `same_root` with SYN-001-A02-355 from 358 K `SAME`, and the certificate `VERIFIED`.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "message": "active_set_cycling(U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE; phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE))",
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "decision": "restart",
+       "alpha_max": 0.6423094612692711
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "opening_source": "pinned_iterate",
+       "core": "newton",
+       "core_outcome": "LINE_SEARCH_FAILED",
+       "iterations": 0,
+       "decision": "restart"
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": 375.0
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": 370.96088629757986
+     },
+     {
+      "lambda": "3/4",
+      "delta_lambda": "1/2",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": 360.79659156507876
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": 354.9999999999887
+     }
+    ],
+    "lambda_reached": "1",
+    "reported_S3_T_K": 354.9999999999887,
+    "reported_S3_V_mol_per_s": 0.5789900916720807,
+    "recovery_item": {
+     "core": "homotopy",
+     "opening_source": "eo_recovery_start",
+     "continuation": {
+      "type": "specification_continuation",
+      "parameter_ids": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected_trials": 0
+     }
+    },
+    "final_vs_t02_355K": {
+     "S3.T_error_K": 1.1311840353300795e-11,
+     "U-HEAT.Q_error_W": 1.8189894035458565e-11,
+     "U-FLASH.Q_error_W": 0.0,
+     "S3_split_error_mol_per_s": 1.1546319456101628e-13
+    },
+    "same_root_with_newton_355": "SAME",
+    "certificate": "VERIFIED",
+    "departures": []
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "decision": "restart",
+       "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+       "landings": [
+        {
+         "iteration": 0,
+         "alpha_max": "0.642309461269271",
+         "variables": [
+          "S3.vap.C"
+         ]
+        }
+       ],
+       "blocked_by": [
+        "S3.vap.C"
+       ]
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "opening_source": "pinned_iterate",
+       "core": "newton",
+       "core_outcome": "LINE_SEARCH_FAILED",
+       "iterations": 0,
+       "decision": "restart",
+       "cause": "phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)"
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": "375.000000000000"
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": "370.960886297580"
+     },
+     {
+      "lambda": "3/4",
+      "delta_lambda": "1/2",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": "360.796591565079"
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": "354.999999999989"
+     }
+    ],
+    "lambda_reached": "1",
+    "reported_S3_T_K": "354.99999999998869342",
+    "reported_S3_V_mol_per_s": "0.57899009167208007801",
+    "tolerances": "outcomes, counts, \u03bb, signatures, sources, causes exact; S3.T and \u03b1_max 1e-9 relative; S3.V 3.1e-7 mol/s",
+    "contract_is_T03_A12": "ACTIVE_SET_CYCLING",
+    "final_vs_t02_355K": "within 1e-5 K, 1e-2 W, 3.1e-7 mol/s",
+    "same_root_with_newton_355": "SAME",
+    "certificate": "VERIFIED"
+   }
+  },
+  {
+   "id": "T04.A05",
+   "description": "HOM-02 (355 K from 377 K) as A04 with `ref.hom.HOM-02`, including the \u03bb = 3/4 corrector's landing on `S3.vap.C` at the registered `\u03b1_max` that does not close it.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "message": "active_set_cycling(U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE; phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE))",
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "decision": "restart",
+       "alpha_max": 0.6386283261478872
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "opening_source": "pinned_iterate",
+       "core": "newton",
+       "core_outcome": "LINE_SEARCH_FAILED",
+       "iterations": 0,
+       "decision": "restart"
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": 377.0
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": 372.80151400215476
+     },
+     {
+      "lambda": "3/4",
+      "delta_lambda": "1/2",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": 361.6081361258434,
+      "alpha_max": 0.982888701677183
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": 354.9999999999215
+     }
+    ],
+    "lambda_reached": "1",
+    "reported_S3_T_K": 354.9999999999215,
+    "reported_S3_V_mol_per_s": 0.5789900916732115,
+    "recovery_item": {
+     "core": "homotopy",
+     "opening_source": "eo_recovery_start",
+     "continuation": {
+      "type": "specification_continuation",
+      "parameter_ids": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected_trials": 0
+     }
+    },
+    "final_vs_t02_355K": {
+     "S3.T_error_K": 7.850076144677587e-11,
+     "U-HEAT.Q_error_W": 3.637978807091713e-12,
+     "U-FLASH.Q_error_W": 0.0,
+     "S3_split_error_mol_per_s": 7.991385331251877e-13
+    },
+    "certificate": "VERIFIED",
+    "departures": []
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "decision": "restart",
+       "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+       "landings": [
+        {
+         "iteration": 0,
+         "alpha_max": "0.638628326147891",
+         "variables": [
+          "S3.vap.C"
+         ]
+        }
+       ],
+       "blocked_by": [
+        "S3.vap.C"
+       ]
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "opening_source": "pinned_iterate",
+       "core": "newton",
+       "core_outcome": "LINE_SEARCH_FAILED",
+       "iterations": 0,
+       "decision": "restart",
+       "cause": "phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)"
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": "377.000000000000"
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": "372.801514002155"
+     },
+     {
+      "lambda": "3/4",
+      "delta_lambda": "1/2",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": "361.608136125843",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.982888701677",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ]
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": "354.999999999922"
+     }
+    ],
+    "lambda_reached": "1",
+    "reported_S3_T_K": "354.99999999992151929",
+    "reported_S3_V_mol_per_s": "0.57899009167321120813",
+    "tolerances": "outcomes, counts, \u03bb, signatures, sources, causes exact; S3.T and \u03b1_max 1e-9 relative; S3.V 3.1e-7 mol/s",
+    "final_vs_t02_355K": "within 1e-5 K, 1e-2 W, 3.1e-7 mol/s",
+    "certificate": "VERIFIED"
+   }
+  },
+  {
+   "id": "T04.A06",
+   "description": "HOM-03 (352 K from 410 K): contract `ACTIVE_SET_CYCLING` as registered; edge 3 \u2192 `HOMOTOPY_STALLED` at `ref`'s \u03bb reached with its \u03bb-trials, verdicts and corrector outcomes (every rejection `PHASE_UPDATE_REQUIRED`); the reported S3.T the last accepted root; the bracket on the dew-branch boundary; bundle class, action and inferred cause; no certificate; checkpoint partial at \u03bb reached.",
+   "result": "pass",
+   "value": {
+    "outcome": "HOMOTOPY_STALLED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "message": "active_set_cycling(U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE; phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE))",
+     "attempts": [
+      {
+       "signature": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "PHASE_UPDATE_REQUIRED",
+       "iterations": 2,
+       "decision": "restart"
+      },
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "phase_rejected_trial",
+       "core": "newton",
+       "core_outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "decision": "restart",
+       "alpha_max": 0.6093023466360997
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "opening_source": "pinned_iterate",
+       "core": "newton",
+       "core_outcome": "LINE_SEARCH_FAILED",
+       "iterations": 0,
+       "decision": "restart"
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": 410.0
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 379.24421271519196
+     },
+     {
+      "lambda": "1/8",
+      "delta_lambda": "1/8",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 382.0401933774472
+     },
+     {
+      "lambda": "1/16",
+      "delta_lambda": "1/16",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 1,
+      "accepted": true,
+      "S3_T_K": 387.63215470195775
+     },
+     {
+      "lambda": "3/16",
+      "delta_lambda": "1/8",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 379.5937102979738
+     },
+     {
+      "lambda": "1/8",
+      "delta_lambda": "1/16",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 377.8462223840643
+     },
+     {
+      "lambda": "3/32",
+      "delta_lambda": "1/32",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 379.24421271519196
+     },
+     {
+      "lambda": "5/64",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 1,
+      "accepted": true,
+      "S3_T_K": 382.0401933774472
+     },
+     {
+      "lambda": "7/64",
+      "delta_lambda": "1/32",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 378.19571996684624
+     },
+     {
+      "lambda": "3/32",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 377.84622238406433
+     },
+     {
+      "lambda": "11/128",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 1,
+      "accepted": true,
+      "S3_T_K": 379.24421271519196
+     },
+     {
+      "lambda": "13/128",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 377.5840991969779
+     },
+     {
+      "lambda": "3/32",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 377.6714735926734
+     },
+     {
+      "lambda": "23/256",
+      "delta_lambda": "1/256",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 1,
+      "accepted": true,
+      "S3_T_K": 377.84622238406433
+     },
+     {
+      "lambda": "25/256",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 377.58956009670885
+     },
+     {
+      "lambda": "3/32",
+      "delta_lambda": "1/256",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 377.5950209964398
+     },
+     {
+      "lambda": "47/512",
+      "delta_lambda": "1/512",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 377.5404119991302
+     },
+     {
+      "lambda": "93/1024",
+      "delta_lambda": "1/1024",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": 377.5840991969779
+     }
+    ],
+    "lambda_reached": "23/256",
+    "reported_S3_T_K": 377.84622238406433,
+    "reported_S3_V_mol_per_s": 4.639190930776848,
+    "recovery_item": {
+     "core": "homotopy",
+     "opening_source": "eo_recovery_start",
+     "continuation": {
+      "type": "specification_continuation",
+      "parameter_ids": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "lambda_levels": [
+       "1/16",
+       "5/64",
+       "11/128",
+       "23/256"
+      ],
+      "lambda_reached": "23/256",
+      "rejected_trials": 13
+     }
+    },
+    "checkpoint": {
+     "continuation_lambda": "23/256",
+     "label": "partial",
+     "verification_scope": "unverified"
+    },
+    "bundle": {
+     "taxonomy": "homotopy/PTC/active-set stalls",
+     "actions": [
+      "supply_initial_guess"
+     ],
+     "inferred_causes": [
+      "phase_boundary_on_path(U-HEAT)"
+     ]
+    },
+    "boundary": {
+     "HOM-03_lambda_dew_vapor_branch": 0.09072996013314817,
+     "bracket_width": "1/512"
+    },
+    "rejected_corrector_outcomes": [
+     "PHASE_UPDATE_REQUIRED"
+    ],
+    "departures": []
+   },
+   "expected": {
+    "outcome": "HOMOTOPY_STALLED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "attempts": [
+      {
+       "signature": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "PHASE_UPDATE_REQUIRED",
+       "iterations": 2,
+       "decision": "restart",
+       "cause": "phase_wall(patience, U-HEAT:VAPOR->TWO_PHASE)"
+      },
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "phase_rejected_trial",
+       "core": "newton",
+       "core_outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "decision": "restart",
+       "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+       "landings": [
+        {
+         "iteration": 0,
+         "alpha_max": "0.609302346636100",
+         "variables": [
+          "S3.vap.C"
+         ]
+        }
+       ],
+       "blocked_by": [
+        "S3.vap.C"
+       ]
+      },
+      {
+       "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+       "opening_source": "pinned_iterate",
+       "core": "newton",
+       "core_outcome": "LINE_SEARCH_FAILED",
+       "iterations": 0,
+       "decision": "restart",
+       "cause": "phase_wall(stall, U-HEAT:LIQUID->TWO_PHASE)"
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": "410.000000000000"
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "379.244212715192"
+     },
+     {
+      "lambda": "1/8",
+      "delta_lambda": "1/8",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "382.040193377447"
+     },
+     {
+      "lambda": "1/16",
+      "delta_lambda": "1/16",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 1,
+      "accepted": true,
+      "S3_T_K": "387.632154701958"
+     },
+     {
+      "lambda": "3/16",
+      "delta_lambda": "1/8",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "379.593710297974"
+     },
+     {
+      "lambda": "1/8",
+      "delta_lambda": "1/16",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "377.846222384064"
+     },
+     {
+      "lambda": "3/32",
+      "delta_lambda": "1/32",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "379.244212715192"
+     },
+     {
+      "lambda": "5/64",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 1,
+      "accepted": true,
+      "S3_T_K": "382.040193377447"
+     },
+     {
+      "lambda": "7/64",
+      "delta_lambda": "1/32",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "378.195719966846"
+     },
+     {
+      "lambda": "3/32",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "377.846222384064"
+     },
+     {
+      "lambda": "11/128",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 1,
+      "accepted": true,
+      "S3_T_K": "379.244212715192"
+     },
+     {
+      "lambda": "13/128",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "377.584099196978"
+     },
+     {
+      "lambda": "3/32",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "377.671473592673"
+     },
+     {
+      "lambda": "23/256",
+      "delta_lambda": "1/256",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 1,
+      "accepted": true,
+      "S3_T_K": "377.846222384064"
+     },
+     {
+      "lambda": "25/256",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "377.589560096709"
+     },
+     {
+      "lambda": "3/32",
+      "delta_lambda": "1/256",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "377.595020996440"
+     },
+     {
+      "lambda": "47/512",
+      "delta_lambda": "1/512",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "377.540411999130"
+     },
+     {
+      "lambda": "93/1024",
+      "delta_lambda": "1/1024",
+      "corrector_outcome": "PHASE_UPDATE_REQUIRED",
+      "corrector_iterations": 2,
+      "accepted": false,
+      "S3_T_K": "377.584099196978"
+     }
+    ],
+    "lambda_reached": "23/256",
+    "reported_S3_T_K": "377.84622238406432353",
+    "reported_S3_V_mol_per_s": "4.6391909307768483674",
+    "tolerances": "outcomes, counts, \u03bb, signatures, sources, causes exact; S3.T and \u03b1_max 1e-9 relative; S3.V 3.1e-7 mol/s",
+    "checkpoint": "partial / unverified at ref's lambda_reached",
+    "bundle": "homotopy/PTC/active-set stalls, supply_initial_guess, phase_boundary_on_path(U-HEAT)",
+    "rejected_corrector_outcomes": [
+     "PHASE_UPDATE_REQUIRED"
+    ]
+   }
+  },
+  {
+   "id": "T04.A07",
+   "description": "HOM-04 (PHS-04, `max_attempts = 1`): `ATTEMPTS_EXHAUSTED` \u2192 edge 3 \u2192 `HOMOTOPY_STALLED` at `ref`'s \u03bb reached, every rejection `BOUND_BLOCKED` on `S3.vap.C`; the reported state (S3.T, S3.V) the last accepted root, not a corrector's end state; the bubble-point bracket from `ref.closed_form.a02`.",
+   "result": "pass",
+   "value": {
+    "outcome": "HOMOTOPY_STALLED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "ATTEMPTS_EXHAUSTED",
+     "message": "1 attempts without convergence, against a policy maximum of 1",
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "decision": "restart",
+       "alpha_max": 0.6115711944527674
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": 360.0
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": 357.60507447288205
+     },
+     {
+      "lambda": "3/4",
+      "delta_lambda": "1/2",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": 352.7611400270312,
+      "alpha_max": 0.955179814595266
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.52645460606277,
+      "alpha_max": 0.5153087736131293
+     },
+     {
+      "lambda": "7/8",
+      "delta_lambda": "1/8",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": 351.57151410090773
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/8",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.44495713086513,
+      "alpha_max": 0.10722955014236109
+     },
+     {
+      "lambda": "15/16",
+      "delta_lambda": "1/16",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.44495782305466,
+      "alpha_max": 0.2144589931180081
+     },
+     {
+      "lambda": "29/32",
+      "delta_lambda": "1/32",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.4449592074318,
+      "alpha_max": 0.428917557569803
+     },
+     {
+      "lambda": "57/64",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.44496197617764,
+      "alpha_max": 0.8578334004798968
+     },
+     {
+      "lambda": "113/128",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 2,
+      "accepted": true,
+      "S3_T_K": 351.4977987373287
+     },
+     {
+      "lambda": "115/128",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.44431113637836,
+      "alpha_max": 0.36297291918697167
+     },
+     {
+      "lambda": "57/64",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.44431118236986,
+      "alpha_max": 0.7259457808691986
+     },
+     {
+      "lambda": "227/256",
+      "delta_lambda": "1/256",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 2,
+      "accepted": true,
+      "S3_T_K": 351.4609693678268
+     },
+     {
+      "lambda": "229/256",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.4441830246549,
+      "alpha_max": 0.22795735797814734
+     },
+     {
+      "lambda": "57/64",
+      "delta_lambda": "1/256",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.44418303028186,
+      "alpha_max": 0.4559147019101045
+     },
+     {
+      "lambda": "455/512",
+      "delta_lambda": "1/512",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.4441830415359,
+      "alpha_max": 0.911829347635384
+     },
+     {
+      "lambda": "909/1024",
+      "delta_lambda": "1/1024",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 2,
+      "accepted": true,
+      "S3_T_K": 351.45176529499236
+     },
+     {
+      "lambda": "911/1024",
+      "delta_lambda": "1/512",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.4441719493633,
+      "alpha_max": 0.41252763713527346
+     },
+     {
+      "lambda": "455/512",
+      "delta_lambda": "1/1024",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": 351.44417194945174,
+      "alpha_max": 0.8250552733879264
+     }
+    ],
+    "lambda_reached": "909/1024",
+    "reported_S3_T_K": 351.45176529499236,
+    "reported_S3_V_mol_per_s": 0.001281048652047098,
+    "recovery_item": {
+     "core": "homotopy",
+     "opening_source": "eo_recovery_start",
+     "continuation": {
+      "type": "specification_continuation",
+      "parameter_ids": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "7/8",
+       "113/128",
+       "227/256",
+       "909/1024"
+      ],
+      "lambda_reached": "909/1024",
+      "rejected_trials": 12
+     }
+    },
+    "checkpoint": {
+     "continuation_lambda": "909/1024",
+     "label": "partial",
+     "verification_scope": "unverified"
+    },
+    "bundle": {
+     "taxonomy": "homotopy/PTC/active-set stalls",
+     "actions": [
+      "supply_initial_guess"
+     ],
+     "inferred_causes": [
+      "phase_boundary_on_path(U-HEAT)"
+     ]
+    },
+    "boundary": {
+     "HOM-04_lambda_bubble": 0.8885013813492921,
+     "bracket_width": "1/512"
+    },
+    "rejections": 12,
+    "departures": []
+   },
+   "expected": {
+    "outcome": "HOMOTOPY_STALLED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "ATTEMPTS_EXHAUSTED",
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "BOUND_BLOCKED",
+       "iterations": 1,
+       "decision": "restart",
+       "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+       "landings": [
+        {
+         "iteration": 0,
+         "alpha_max": "0.611571194452767",
+         "variables": [
+          "S3.vap.C"
+         ]
+        }
+       ],
+       "blocked_by": [
+        "S3.vap.C"
+       ]
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": "360.000000000000"
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": "357.605074472882"
+     },
+     {
+      "lambda": "3/4",
+      "delta_lambda": "1/2",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 4,
+      "accepted": true,
+      "S3_T_K": "352.761140027031",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.955179814595",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ]
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.526454606063",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.515308773613",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "7/8",
+      "delta_lambda": "1/8",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": "351.571514100908"
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/8",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444957130865",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.107229550142",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "15/16",
+      "delta_lambda": "1/16",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444957823055",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.214458993118",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "29/32",
+      "delta_lambda": "1/32",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444959207432",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.428917557570",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "57/64",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444961976178",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.857833400480",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "113/128",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 2,
+      "accepted": true,
+      "S3_T_K": "351.497798737329"
+     },
+     {
+      "lambda": "115/128",
+      "delta_lambda": "1/64",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444311136378",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.362972919187",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "57/64",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444311182370",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.725945780869",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "227/256",
+      "delta_lambda": "1/256",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 2,
+      "accepted": true,
+      "S3_T_K": "351.460969367827"
+     },
+     {
+      "lambda": "229/256",
+      "delta_lambda": "1/128",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444183024655",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.227957357978",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "57/64",
+      "delta_lambda": "1/256",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444183030282",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.455914701910",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "455/512",
+      "delta_lambda": "1/512",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444183041536",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.911829347635",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "909/1024",
+      "delta_lambda": "1/1024",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 2,
+      "accepted": true,
+      "S3_T_K": "351.451765294992"
+     },
+     {
+      "lambda": "911/1024",
+      "delta_lambda": "1/512",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444171949363",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.412527637135",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "lambda": "455/512",
+      "delta_lambda": "1/1024",
+      "corrector_outcome": "BOUND_BLOCKED",
+      "corrector_iterations": 1,
+      "accepted": false,
+      "S3_T_K": "351.444171949452",
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.825055273388",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     }
+    ],
+    "lambda_reached": "909/1024",
+    "reported_S3_T_K": "351.45176529499238597",
+    "reported_S3_V_mol_per_s": "0.0012810486520466113170",
+    "tolerances": "outcomes, counts, \u03bb, signatures, sources, causes exact; S3.T and \u03b1_max 1e-9 relative; S3.V 3.1e-7 mol/s",
+    "checkpoint": "partial / unverified at ref's lambda_reached",
+    "bundle": "homotopy/PTC/active-set stalls, supply_initial_guess, phase_boundary_on_path(U-HEAT)",
+    "rejections": "every one BOUND_BLOCKED on S3.vap.C"
+   }
+  },
+  {
+   "id": "T04.A08",
+   "description": "HOM-05 (A02-360 from 358 K, `max_iterations_per_attempt = 1`): `BUDGET_EXHAUSTED(newton_iterations)` \u2192 edge 3 \u2192 the registered \u03bb-trials \u2192 `CONVERGED` at T02's 360 K row; the contract's terminal item's cause the failed solve's closing message; certificate `VERIFIED`.",
+   "result": "pass",
+   "value": {
+    "outcome": "CONVERGED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "message": "1 accepted iterations without convergence",
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "BUDGET_EXHAUSTED",
+       "iterations": 1,
+       "decision": "terminal"
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": 358.0
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": 358.5032973718642
+     },
+     {
+      "lambda": "3/4",
+      "delta_lambda": "1/2",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": 359.5035773554425
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": 360.0
+     }
+    ],
+    "lambda_reached": "1",
+    "reported_S3_T_K": 360.0,
+    "reported_S3_V_mol_per_s": 1.3608090692231514,
+    "recovery_item": {
+     "core": "homotopy",
+     "opening_source": "eo_recovery_start",
+     "continuation": {
+      "type": "specification_continuation",
+      "parameter_ids": [
+       "SPEC:SPEC-flash-duty"
+      ],
+      "lambda_levels": [
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "lambda_reached": "1",
+      "rejected_trials": 0
+     }
+    },
+    "contract_budget": "newton_iterations",
+    "final_vs_t02_360K": {
+     "S3.T_error_K": 0.0,
+     "U-HEAT.Q_error_W": 7.275957614183426e-12,
+     "U-FLASH.Q_error_W": 3.825710333057753e-19,
+     "S3_split_error_mol_per_s": 2.220446049250313e-16
+    },
+    "certificate": "VERIFIED",
+    "departures": []
+   },
+   "expected": {
+    "outcome": "CONVERGED",
+    "edge3": "taken",
+    "contract": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "attempts": [
+      {
+       "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+       "opening_source": "initializer",
+       "core": "newton",
+       "core_outcome": "BUDGET_EXHAUSTED",
+       "iterations": 1,
+       "decision": "terminal",
+       "cause": null
+      }
+     ]
+    },
+    "lambda_trials": [
+     {
+      "lambda": "0",
+      "delta_lambda": "0",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 0,
+      "accepted": true,
+      "S3_T_K": "358.000000000000"
+     },
+     {
+      "lambda": "1/4",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": "358.503297371864"
+     },
+     {
+      "lambda": "3/4",
+      "delta_lambda": "1/2",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": "359.503577355442"
+     },
+     {
+      "lambda": "1",
+      "delta_lambda": "1/4",
+      "corrector_outcome": "CONVERGED",
+      "corrector_iterations": 3,
+      "accepted": true,
+      "S3_T_K": "360.000000000000"
+     }
+    ],
+    "lambda_reached": "1",
+    "reported_S3_T_K": "360.00000000000000690",
+    "reported_S3_V_mol_per_s": "1.3608090692231514857",
+    "tolerances": "outcomes, counts, \u03bb, signatures, sources, causes exact; S3.T and \u03b1_max 1e-9 relative; S3.V 3.1e-7 mol/s",
+    "contract_budget": "newton_iterations",
+    "final_vs_t02_360K": "within 1e-5 K, 1e-2 W, 3.1e-7 mol/s",
+    "certificate": "VERIFIED"
+   }
+  },
+  {
+   "id": "T04.A09",
+   "description": "Trigger discipline: the trigger set is `ref.constants.edge3_triggers`, `BUDGET_EXHAUSTED` only for `newton_iterations` / `ptc_steps`; HOM-U from the registry (unsupported, `no_continuation_parameter`, on `region_closed`); HOM-N (the edge off: T03 A12's cycling, unchanged); RCY-STALL's `LINEAR_SOLVE_FAILED`, T03 A16's constructed `CHECKPOINT_INCOMPATIBLE` and T03 review S1's `BUDGET_EXHAUSTED(property_calls)` (cap 346) fire nothing; one easy endpoint, one homotopy item and one `taken` per recovery, a failed one included.",
+   "result": "pass",
+   "value": {
+    "trigger_set": [
+     "ACTIVE_SET_CYCLING",
+     "ATTEMPTS_EXHAUSTED",
+     "BOUND_BLOCKED",
+     "BUDGET_EXHAUSTED",
+     "LINE_SEARCH_FAILED",
+     "PTC_STALLED",
+     "STAGNATION"
+    ],
+    "due_by_budget": {
+     "newton_iterations": true,
+     "ptc_steps": true,
+     "property_calls": false,
+     "homotopy_steps": false
+    },
+    "HOM-U": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "budget": "newton_iterations",
+     "eo_recovery": "unsupported",
+     "eo_recovery_unsupported": "no_continuation_parameter",
+     "region_closed": [
+      "unsupported",
+      "no_continuation_parameter"
+     ],
+     "homotopy_steps": 0
+    },
+    "HOM-N": {
+     "outcome": "ACTIVE_SET_CYCLING",
+     "eo_recovery": null,
+     "homotopy_steps": 0,
+     "provenance_equals_the_contract_half_of_HOM-01": true,
+     "message_equals_HOM-01s_failed_solve": true,
+     "region_closed_has_eo_recovery": false
+    },
+    "non_triggers": {
+     "RCY-STALL LINEAR_SOLVE_FAILED: step unchanged": true,
+     "T03 A16 CHECKPOINT_INCOMPATIBLE": [
+      "CHECKPOINT_INCOMPATIBLE",
+      null,
+      0
+     ],
+     "T03 S1 BUDGET_EXHAUSTED(property_calls)": [
+      "BUDGET_EXHAUSTED",
+      "property_calls",
+      null,
+      0
+     ]
+    },
+    "one_recovery_per_step": {
+     "HOM-01": {
+      "homotopy_step_iterations_dense": true,
+      "easy_endpoints": 1,
+      "region_closed_eo_recovery": [
+       "taken"
+      ],
+      "homotopy_items": 1
+     },
+     "HOM-02": {
+      "homotopy_step_iterations_dense": true,
+      "easy_endpoints": 1,
+      "region_closed_eo_recovery": [
+       "taken"
+      ],
+      "homotopy_items": 1
+     },
+     "HOM-03": {
+      "homotopy_step_iterations_dense": true,
+      "easy_endpoints": 1,
+      "region_closed_eo_recovery": [
+       "taken"
+      ],
+      "homotopy_items": 1
+     },
+     "HOM-04": {
+      "homotopy_step_iterations_dense": true,
+      "easy_endpoints": 1,
+      "region_closed_eo_recovery": [
+       "taken"
+      ],
+      "homotopy_items": 1
+     },
+     "HOM-05": {
+      "homotopy_step_iterations_dense": true,
+      "easy_endpoints": 1,
+      "region_closed_eo_recovery": [
+       "taken"
+      ],
+      "homotopy_items": 1
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "trigger_set": [
+     "ACTIVE_SET_CYCLING",
+     "ATTEMPTS_EXHAUSTED",
+     "BOUND_BLOCKED",
+     "BUDGET_EXHAUSTED",
+     "LINE_SEARCH_FAILED",
+     "PTC_STALLED",
+     "STAGNATION"
+    ],
+    "due_by_budget": "newton_iterations and ptc_steps only",
+    "HOM-U": "the registry's expectation: BUDGET_EXHAUSTED(newton_iterations), eo_recovery unsupported (no_continuation_parameter), no homotopy_step",
+    "HOM-N": "ACTIVE_SET_CYCLING, no recovery, the contract's items and message unchanged",
+    "non_triggers": "no recovery, no homotopy_step",
+    "one_recovery_per_step": "one easy endpoint, one homotopy item, one taken, per case"
+   }
+  },
+  {
+   "id": "T04.A10",
+   "description": "Unchanged physics and specifications across edge 3 on HOM-01\u202605 (re-binding spied): the \u03bb = 1 identity and attempt 0's rows, columns and signature are the failed solve's; one re-binding per distinct \u03bb below 1, each moving `SPEC:SPEC-flash-duty` only; each `homotopy_step`'s level digest is the target's exactly at \u03bb = 1; a converged fingerprint carries the revision's identity.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "HOM-01": {
+      "lambda_1_identity_is_the_failed_solves": true,
+      "rows_columns_signature_are_attempt_0s": true,
+      "rebinds": 3,
+      "distinct_lambdas_below_1": 3,
+      "every_rebind_moves_the_continued_id_only": true,
+      "level_identity_is_the_targets_exactly_at_lambda_1": true,
+      "converged_fingerprint_identity": true
+     },
+     "HOM-02": {
+      "lambda_1_identity_is_the_failed_solves": true,
+      "rows_columns_signature_are_attempt_0s": true,
+      "rebinds": 3,
+      "distinct_lambdas_below_1": 3,
+      "every_rebind_moves_the_continued_id_only": true,
+      "level_identity_is_the_targets_exactly_at_lambda_1": true,
+      "converged_fingerprint_identity": true
+     },
+     "HOM-03": {
+      "lambda_1_identity_is_the_failed_solves": true,
+      "rows_columns_signature_are_attempt_0s": true,
+      "rebinds": 14,
+      "distinct_lambdas_below_1": 14,
+      "every_rebind_moves_the_continued_id_only": true,
+      "level_identity_is_the_targets_exactly_at_lambda_1": true,
+      "converged_fingerprint_identity": null
+     },
+     "HOM-04": {
+      "lambda_1_identity_is_the_failed_solves": true,
+      "rows_columns_signature_are_attempt_0s": true,
+      "rebinds": 14,
+      "distinct_lambdas_below_1": 14,
+      "every_rebind_moves_the_continued_id_only": true,
+      "level_identity_is_the_targets_exactly_at_lambda_1": true,
+      "converged_fingerprint_identity": null
+     },
+     "HOM-05": {
+      "lambda_1_identity_is_the_failed_solves": true,
+      "rows_columns_signature_are_attempt_0s": true,
+      "rebinds": 3,
+      "distinct_lambdas_below_1": 3,
+      "every_rebind_moves_the_continued_id_only": true,
+      "level_identity_is_the_targets_exactly_at_lambda_1": true,
+      "converged_fingerprint_identity": true
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "cases": "per case: the \u03bb = 1 identity and attempt 0's rows, columns and signature are the failed solve's; one re-binding per distinct \u03bb below 1, each moving SPEC:SPEC-flash-duty only; a converged fingerprint carries the revision's identity"
+   }
+  },
+  {
+   "id": "T04.A11",
+   "description": "The A02 family scan: the 180 runs of \u00a79.3 through the plan executor under the default policy give exactly `ref.a02_family_scan.contract_failures` (contract outcome, edge 3, outcome, \u03bb-trials) and every other run converges by the contract alone, with no recovery; T03's two registered scan failures are among them; and every run's contract attempts \u2014 signature, core outcome, iterations, decision, in order \u2014 equal `ref.a02_family_scan.contract_attempts` exactly, all 180 records (A11 as amended, review S4).",
+   "result": "pass",
+   "value": {
+    "runs": 180,
+    "contract_failures": [
+     {
+      "T_target_K": 352,
+      "guess_K": 370.0,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": 375.0,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": 376.0,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": 377.0,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": 377.4,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": 410.0,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_trials": 17
+     },
+     {
+      "T_target_K": 355,
+      "guess_K": 375.0,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 355,
+      "guess_K": 376.0,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 355,
+      "guess_K": 377.0,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 355,
+      "guess_K": 377.4,
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     }
+    ],
+    "converged_by_the_contract_alone": 170,
+    "t03_registered_failures_here": {
+     "(355, 375.0)": "ACTIVE_SET_CYCLING",
+     "(355, 377.0)": "ACTIVE_SET_CYCLING"
+    },
+    "contract_attempt_records_compared": 180,
+    "contract_attempt_departures": [],
+    "departures": []
+   },
+   "expected": {
+    "runs": 180,
+    "contract_failures": [
+     {
+      "T_target_K": 352,
+      "guess_K": "370.000",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": "410.000",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_trials": 17
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": "375.000",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": "376.000",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": "377.000",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 352,
+      "guess_K": "377.400",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 355,
+      "guess_K": "375.000",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 355,
+      "guess_K": "376.000",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 355,
+      "guess_K": "377.000",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     {
+      "T_target_K": 355,
+      "guess_K": "377.400",
+      "contract": "ACTIVE_SET_CYCLING",
+      "edge3": "taken",
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     }
+    ],
+    "converged_by_the_contract_alone": 170,
+    "t03_registered_failures_here": [
+     "T_heater=355K,guess=375K: ACTIVE_SET_CYCLING",
+     "T_heater=355K,guess=377K: ACTIVE_SET_CYCLING"
+    ],
+    "contract_attempt_records_compared": 180,
+    "contract_attempt_departures": "none: every run's attempts equal ref.a02_family_scan.contract_attempts exactly"
+   }
+  },
+  {
+   "id": "T04.A12",
+   "description": "Homotopy records on HOM-01\u202605: one `homotopy_step` per \u03bb-trial (easy endpoint included) with \u03bb and \u0394\u03bb as `p/q`, verdict, corrector outcome and iterations, level digest (the target's exactly at \u03bb = 1), no `homotopy_level` of its own; every corrector event stamped with its trial; the attempt's own brackets once; context core `homotopy` with its continuation; the provenance continuation of `ref`'s path and the item's `iterations` = each case's `homotopy.provenance_item_iterations` (\u00a74.7 as amended); `homotopy_stalled(outcome)` on a stall; no float in an R0 string; every event, context and checkpoint valid.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "HOM-01": {
+      "homotopy_steps": 4,
+      "lambda_values": [
+       "0",
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "last_message": "",
+      "events": 46,
+      "context_core": "homotopy",
+      "provenance_continuation": {
+       "type": "specification_continuation",
+       "parameter_ids": [
+        "SPEC:SPEC-flash-duty"
+       ],
+       "lambda_levels": [
+        "1/4",
+        "3/4",
+        "1"
+       ],
+       "lambda_reached": "1",
+       "rejected_trials": 0
+      },
+      "provenance_item_iterations": 12,
+      "schema_errors": 0
+     },
+     "HOM-02": {
+      "homotopy_steps": 4,
+      "lambda_values": [
+       "0",
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "last_message": "",
+      "events": 46,
+      "context_core": "homotopy",
+      "provenance_continuation": {
+       "type": "specification_continuation",
+       "parameter_ids": [
+        "SPEC:SPEC-flash-duty"
+       ],
+       "lambda_levels": [
+        "1/4",
+        "3/4",
+        "1"
+       ],
+       "lambda_reached": "1",
+       "rejected_trials": 0
+      },
+      "provenance_item_iterations": 12,
+      "schema_errors": 0
+     },
+     "HOM-03": {
+      "homotopy_steps": 18,
+      "lambda_values": [
+       "0",
+       "1/4",
+       "1/8",
+       "1/16",
+       "3/16",
+       "1/8",
+       "3/32",
+       "5/64",
+       "7/64",
+       "3/32",
+       "11/128",
+       "13/128",
+       "3/32",
+       "23/256",
+       "25/256",
+       "3/32",
+       "47/512",
+       "93/1024"
+      ],
+      "last_message": "homotopy_stalled(PHASE_UPDATE_REQUIRED)",
+      "events": 188,
+      "context_core": "homotopy",
+      "provenance_continuation": {
+       "type": "specification_continuation",
+       "parameter_ids": [
+        "SPEC:SPEC-flash-duty"
+       ],
+       "lambda_levels": [
+        "1/16",
+        "5/64",
+        "11/128",
+        "23/256"
+       ],
+       "lambda_reached": "23/256",
+       "rejected_trials": 13
+      },
+      "provenance_item_iterations": 30,
+      "schema_errors": 0
+     },
+     "HOM-04": {
+      "homotopy_steps": 19,
+      "lambda_values": [
+       "0",
+       "1/4",
+       "3/4",
+       "1",
+       "7/8",
+       "1",
+       "15/16",
+       "29/32",
+       "57/64",
+       "113/128",
+       "115/128",
+       "57/64",
+       "227/256",
+       "229/256",
+       "57/64",
+       "455/512",
+       "909/1024",
+       "911/1024",
+       "455/512"
+      ],
+      "last_message": "homotopy_stalled(BOUND_BLOCKED)",
+      "events": 148,
+      "context_core": "homotopy",
+      "provenance_continuation": {
+       "type": "specification_continuation",
+       "parameter_ids": [
+        "SPEC:SPEC-flash-duty"
+       ],
+       "lambda_levels": [
+        "1/4",
+        "3/4",
+        "7/8",
+        "113/128",
+        "227/256",
+        "909/1024"
+       ],
+       "lambda_reached": "909/1024",
+       "rejected_trials": 12
+      },
+      "provenance_item_iterations": 28,
+      "schema_errors": 0
+     },
+     "HOM-05": {
+      "homotopy_steps": 4,
+      "lambda_values": [
+       "0",
+       "1/4",
+       "3/4",
+       "1"
+      ],
+      "last_message": "",
+      "events": 37,
+      "context_core": "homotopy",
+      "provenance_continuation": {
+       "type": "specification_continuation",
+       "parameter_ids": [
+        "SPEC:SPEC-flash-duty"
+       ],
+       "lambda_levels": [
+        "1/4",
+        "3/4",
+        "1"
+       ],
+       "lambda_reached": "1",
+       "rejected_trials": 0
+      },
+      "provenance_item_iterations": 9,
+      "schema_errors": 0
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "cases": "per case: one homotopy_step per \u03bb-trial (easy endpoint included) with \u03bb and \u0394\u03bb as p/q, verdict, corrector outcome and count, the level digest; every corrector event stamped with its trial; context core homotopy with its continuation; the provenance continuation of ref's path and its iterations (the case's homotopy.provenance_item_iterations); homotopy_stalled(outcome) on a stall; no float in an R0 string; every document valid"
+   }
+  },
+  {
+   "id": "T04.A13",
+   "description": "The mapping at the P01 root (r = 0.95) and OFF-A: the nonzero-M rows are exactly the eight `holdup_balance` rows; every entry is \u00a76.3's closed form from the provider's enthalpies to 1e-9 relative; `PTC_ROW_SIGN` is defined once, in `numerics/ptc.py`, with `ref.constants.ptc.holdup_row_sign`.",
+   "result": "pass",
+   "value": {
+    "places": {
+     "P01 root (r = 0.95)": {
+      "nonzero_rows": [
+       "U-FLASH:FLASH-duty",
+       "U-FLASH:FLASH-mole:A",
+       "U-FLASH:FLASH-mole:B",
+       "U-FLASH:FLASH-mole:C",
+       "U-HEAT:HEAT-duty",
+       "U-HEAT:HEAT-mole:A",
+       "U-HEAT:HEAT-mole:B",
+       "U-HEAT:HEAT-mole:C"
+      ],
+      "units": [
+       "U-FLASH",
+       "U-HEAT"
+      ],
+      "entries": 30,
+      "closed_form_entries_missing": [],
+      "worst_relative_error_vs_closed_form": 1.3871091596112867e-16,
+      "entries_outside_the_table": [
+       "U-FLASH:FLASH-duty / S4.P"
+      ],
+      "entries_outside_the_table_values": [
+       0.0
+      ]
+     },
+     "OFF-A": {
+      "nonzero_rows": [
+       "U-FLASH:FLASH-duty",
+       "U-FLASH:FLASH-mole:A",
+       "U-FLASH:FLASH-mole:B",
+       "U-FLASH:FLASH-mole:C",
+       "U-HEAT:HEAT-duty",
+       "U-HEAT:HEAT-mole:A",
+       "U-HEAT:HEAT-mole:B",
+       "U-HEAT:HEAT-mole:C"
+      ],
+      "units": [
+       "U-FLASH",
+       "U-HEAT"
+      ],
+      "entries": 30,
+      "closed_form_entries_missing": [],
+      "worst_relative_error_vs_closed_form": 1.1485178487999422e-16,
+      "entries_outside_the_table": [
+       "U-FLASH:FLASH-duty / S4.P"
+      ],
+      "entries_outside_the_table_values": [
+       0.0
+      ]
+     }
+    },
+    "PTC_ROW_SIGN": {
+     "holdup_balance": -1,
+     "zero_holdup_balance": 1,
+     "algebraic": 1
+    },
+    "defined_in": [
+     "src/process_runtime/numerics/ptc.py"
+    ],
+    "named_in": [
+     "src/process_runtime/numerics/ptc.py"
+    ],
+    "departures": []
+   },
+   "expected": {
+    "places": "the eight holdup_balance rows of U-HEAT and U-FLASH exactly; every entry T04 \u00a76.3's closed form from the provider's enthalpies, 1e-9 relative (the vapour outlet's pressure entry the provider's declared zero)",
+    "PTC_ROW_SIGN": "holdup_balance ref.constants.ptc.holdup_row_sign, the others +1",
+    "defined_in": [
+     "src/process_runtime/numerics/ptc.py"
+    ]
+   }
+  },
+  {
+   "id": "T04.A14",
+   "description": "ADV-04 and the validator: an entry on a mixer row and a missing `FLASH-duty` (and V1, V3, V4) end `PTC_MAPPING_INVALID` with their R0 message, no attempt, no event, no residual or Jacobian call; the bundle's class and action are ADR 0010 D8's; Newton needs no mapping.",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "ADV-04 an entry on a mixer row": {
+      "outcome": "PTC_MAPPING_INVALID",
+      "message": "ptc_mapping_invalid(U-MIX:MIX-mole:A, not_holdup_balance)",
+      "attempts": 0,
+      "provenance_items": 0,
+      "events": 0,
+      "compiled_calls": 0,
+      "taxonomy": "model domain/conservation/derivative defects",
+      "action": "report_defect"
+     },
+     "ADV-04 no FLASH-duty entry": {
+      "outcome": "PTC_MAPPING_INVALID",
+      "message": "ptc_mapping_invalid(U-FLASH:FLASH-duty, missing)",
+      "attempts": 0,
+      "provenance_items": 0,
+      "events": 0,
+      "compiled_calls": 0,
+      "taxonomy": "model domain/conservation/derivative defects",
+      "action": "report_defect"
+     },
+     "V1 no mapping at all": {
+      "outcome": "PTC_MAPPING_INVALID",
+      "message": "ptc_mapping_invalid(U-HEAT:HEAT-mole:A, missing)",
+      "attempts": 0,
+      "provenance_items": 0,
+      "events": 0,
+      "compiled_calls": 0,
+      "taxonomy": "model domain/conservation/derivative defects",
+      "action": "report_defect"
+     },
+     "V3 residence time 0": {
+      "outcome": "PTC_MAPPING_INVALID",
+      "message": "ptc_mapping_invalid(U-HEAT:HEAT-mole:A, residence_time)",
+      "attempts": 0,
+      "provenance_items": 0,
+      "events": 0,
+      "compiled_calls": 0,
+      "taxonomy": "model domain/conservation/derivative defects",
+      "action": "report_defect"
+     },
+     "V4 a wrong dimension": {
+      "outcome": "PTC_MAPPING_INVALID",
+      "message": "ptc_mapping_invalid(U-HEAT:HEAT-mole:A, dimension)",
+      "attempts": 0,
+      "provenance_items": 0,
+      "events": 0,
+      "compiled_calls": 0,
+      "taxonomy": "model domain/conservation/derivative defects",
+      "action": "report_defect"
+     }
+    },
+    "newton_without_a_mapping": "CONVERGED",
+    "departures": []
+   },
+   "expected": {
+    "cases": "each: PTC_MAPPING_INVALID with its ptc_mapping_invalid(row, check) message, no attempt, no event, no residual or Jacobian call; bundle class model domain/conservation/derivative defects, action report_defect (ADR 0010 D8)",
+    "newton_without_a_mapping": "CONVERGED"
+   }
+  },
+  {
+   "id": "T04.A15",
+   "description": "Steady-state equivalence and dimensions: at the P01 roots (r = 0.5, 0.95) the PTC step at \u0394\u03c4 in {1e-4, 1, 1e10} is within 1e-12 + 10 (\u03b8/\u0394\u03c4) of the root's own scaled residual (F14); every mapped holdup has its manifest's dimension, the row's times seconds.",
+   "result": "pass",
+   "value": {
+    "steps_at_the_root": {
+     "SYN-001-nominal dtau=0.0001": {
+      "root_residual_scaled": 1.8189894035458566e-16,
+      "step_inf_scaled": 1.6680280321446825e-12,
+      "bound": 1.9189894035458565e-11
+     },
+     "SYN-001-nominal dtau=1": {
+      "root_residual_scaled": 1.8189894035458566e-16,
+      "step_inf_scaled": 1.98905241863284e-16,
+      "bound": 1.0018189894035458e-12
+     },
+     "SYN-001-nominal dtau=1e+10": {
+      "root_residual_scaled": 1.8189894035458566e-16,
+      "step_inf_scaled": 1.7697020459203292e-16,
+      "bound": 1.000000000000182e-12
+     },
+     "SYN-001-high-recycle dtau=0.0001": {
+      "root_residual_scaled": 1.3096723705530167e-15,
+      "step_inf_scaled": 9.552529368182756e-13,
+      "bound": 1.3196723705530166e-10
+     },
+     "SYN-001-high-recycle dtau=1": {
+      "root_residual_scaled": 1.3096723705530167e-15,
+      "step_inf_scaled": 1.6228401657969058e-15,
+      "bound": 1.0130967237055301e-12
+     },
+     "SYN-001-high-recycle dtau=1e+10": {
+      "root_residual_scaled": 1.3096723705530167e-15,
+      "step_inf_scaled": 4.8469745489732356e-14,
+      "bound": 1.0000000000013096e-12
+     }
+    },
+    "dimensions": {
+     "U-FLASH:FLASH-duty": {
+      "holdup": [
+       2,
+       1,
+       -2,
+       0,
+       0,
+       0,
+       0
+      ],
+      "manifest_holdup": [
+       2,
+       1,
+       -2,
+       0,
+       0,
+       0,
+       0
+      ],
+      "row": [
+       2,
+       1,
+       -3,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     "U-FLASH:FLASH-mole:A": {
+      "holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "manifest_holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     "U-FLASH:FLASH-mole:B": {
+      "holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "manifest_holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     "U-FLASH:FLASH-mole:C": {
+      "holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "manifest_holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     "U-HEAT:HEAT-duty": {
+      "holdup": [
+       2,
+       1,
+       -2,
+       0,
+       0,
+       0,
+       0
+      ],
+      "manifest_holdup": [
+       2,
+       1,
+       -2,
+       0,
+       0,
+       0,
+       0
+      ],
+      "row": [
+       2,
+       1,
+       -3,
+       0,
+       0,
+       0,
+       0
+      ]
+     },
+     "U-HEAT:HEAT-mole:A": {
+      "holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "manifest_holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     "U-HEAT:HEAT-mole:B": {
+      "holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "manifest_holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     },
+     "U-HEAT:HEAT-mole:C": {
+      "holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "manifest_holdup": [
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      "row": [
+       0,
+       0,
+       -1,
+       0,
+       1,
+       0,
+       0
+      ]
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "steps_at_the_root": "at r = 0.5 and 0.95, \u0394\u03c4 in {1e-4, 1, 1e10}: step at most 1e-12 + 10 (\u03b8/\u0394\u03c4) times the root's scaled residual (F14)",
+    "dimensions": "each holdup the manifest's, the row's times seconds: mol on the mole rows, J on the duty rows"
+   }
+  },
+  {
+   "id": "T04.A16",
+   "description": "Reference invariance: with every enthalpy shifted by (1000, \u22122000, 500) J/mol, the PTC step at the off-manifold probe (OFF-A, `S3.liq.A` + 0.1 mol/s) is unchanged to 1e-9 relative, while the heater's duty residual moves.",
+   "result": "pass",
+   "value": {
+    "shift_J_per_mol": {
+     "A": 1000.0,
+     "B": -2000.0,
+     "C": 500.0
+    },
+    "heater_duty_residual_moved_W": 99.99999999999818,
+    "step_difference_over_step": 1.8828155983206506e-16,
+    "departures": []
+   },
+   "expected": {
+    "heater_duty_residual_moved_W": "above 1 W",
+    "step_difference_over_step": "at most 1e-9"
+   }
+  },
+  {
+   "id": "T04.A17",
+   "description": "Modes: the six finite generalized eigenvalues of the pencil at the P01 root, r = 0.5 and 0.95 \u2014 the four simple ones real and equal to `ref.closed_form.loop_modes` to 1e-9 relative, the Jordan pair at \u22121/\u03b8 within 1e-6 each with its mean \u22121/\u03b8 to 1e-9 (F14).",
+   "result": "pass",
+   "value": {
+    "cases": {
+     "r=0.50": {
+      "modes": [
+       [
+        -1.707106781186547,
+        0.0
+       ],
+       [
+        -1.594420321012256,
+        0.0
+       ],
+       [
+        -1.0000000000000002,
+        -2.091150792483315e-09
+       ],
+       [
+        -1.0000000000000002,
+        2.0911507924833155e-09
+       ],
+       [
+        -0.4055796789877439,
+        0.0
+       ],
+       [
+        -0.29289321881345265,
+        0.0
+       ]
+      ],
+      "pair_members_offset_from_minus_1_over_theta": [
+       2.091150792483327e-09,
+       2.0911507924833275e-09
+      ],
+      "simple_worst_relative_error": 5.6858077619011325e-16
+     },
+     "r=0.95": {
+      "modes": [
+       [
+        -1.974679434480897,
+        0.0
+       ],
+       [
+        -1.9550593947179462,
+        0.0
+       ],
+       [
+        -0.9999999999999996,
+        -2.533893971600393e-08
+       ],
+       [
+        -0.9999999999999996,
+        2.5338939716003928e-08
+       ],
+       [
+        -0.04494060528205384,
+        0.0
+       ],
+       [
+        -0.025320565519102164,
+        0.0
+       ]
+      ],
+      "pair_members_offset_from_minus_1_over_theta": [
+       2.5338939716003935e-08,
+       2.533893971600393e-08
+      ],
+      "simple_worst_relative_error": 5.713771984567724e-14
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "cases": {
+     "r=0.50": [
+      "-1.7071067811865475244",
+      "-1.5944203210122560256",
+      "-1.0000000000000000000",
+      "-1.0000000000000000000",
+      "-0.40557967898774397439",
+      "-0.29289321881345247560"
+     ],
+     "r=0.95": [
+      "-1.9746794344808963907",
+      "-1.9550593947179461021",
+      "-1.0000000000000000000",
+      "-1.0000000000000000000",
+      "-0.044940605282053897894",
+      "-0.025320565519103609316"
+     ]
+    },
+    "tolerance": "simple modes and the pair's mean 1e-9 relative; each pair member 1e-6 relative of \u22121/\u03b8 (F14)"
+   }
+  },
+  {
+   "id": "T04.A18",
+   "description": "Time-scale invariance: OFF-A (r = 0.95) under PTC with \u03b8, \u03c4\u2080, \u03c4_min, \u03c4_max all \u00d78 gives the same attempts and pseudo-step counts, bit-identical accepted states and final state, and every \u0394\u03c4 exactly \u00d78.",
+   "result": "pass",
+   "value": {
+    "outcomes": [
+     "CONVERGED",
+     "CONVERGED"
+    ],
+    "pseudo_steps": [
+     [
+      30
+     ],
+     [
+      30
+     ]
+    ],
+    "accepted_steps_compared": 30,
+    "departures": []
+   },
+   "expected": {
+    "outcomes": [
+     "CONVERGED",
+     "CONVERGED"
+    ],
+    "pseudo_steps": "equal",
+    "accepted_steps_compared": "every one bit-identical, \u0394\u03c4 exactly \u00d78"
+   }
+  },
+  {
+   "id": "T04.A19",
+   "description": "Seeds PTC-S1\u2026S5 on the generic core against `ref.ptc_seeds`: outcomes, attempts, pseudo-step counts, every trial's order and verdict, `blocked_by`; \u0394\u03c4, \u03b1, x and the SER proposal to 1e-12 relative; \u03c6 to max(1e-12 relative, 1e-15) (F13); PTC-S1's \u0394\u03c4 exact powers of two; PTC-S4's landing on +0.0 by its bit pattern.",
+   "result": "pass",
+   "value": {
+    "seeds": {
+     "PTC-S1": {
+      "outcome": "CONVERGED",
+      "attempts": [
+       {
+        "regime": null,
+        "outcome": "CONVERGED",
+        "pseudo_steps": 8,
+        "trials": 8,
+        "blocked_by": []
+       }
+      ],
+      "worst_relative": {
+       "tau": 0.0,
+       "alpha": 0.0,
+       "x": 1.1102230246251565e-16,
+       "tau_next": 0.0,
+       "phi_over_allowance": 0.051564824730000035
+      },
+      "tau_exact_powers_of_two": true
+     },
+     "PTC-S2": {
+      "outcome": "CONVERGED",
+      "attempts": [
+       {
+        "regime": "LIQUID",
+        "outcome": "CONVERGED",
+        "pseudo_steps": 8,
+        "trials": 9,
+        "blocked_by": []
+       }
+      ],
+      "worst_relative": {
+       "tau": 2.2896183449324288e-15,
+       "alpha": 0.0,
+       "x": 0.0,
+       "tau_next": 2.2896183449324288e-15,
+       "phi_over_allowance": 0.1089081082261689
+      }
+     },
+     "PTC-S3": {
+      "outcome": "PTC_STALLED",
+      "attempts": [
+       {
+        "regime": null,
+        "outcome": "PTC_STALLED",
+        "pseudo_steps": 0,
+        "trials": 11,
+        "blocked_by": []
+       }
+      ],
+      "worst_relative": {
+       "tau": 0.0,
+       "alpha": 0.0,
+       "x": 0.0,
+       "tau_next": 0.0,
+       "phi_over_allowance": 0.0
+      }
+     },
+     "PTC-S4": {
+      "outcome": "BOUND_BLOCKED",
+      "attempts": [
+       {
+        "regime": null,
+        "outcome": "BOUND_BLOCKED",
+        "pseudo_steps": 2,
+        "trials": 13,
+        "blocked_by": [
+         "x"
+        ]
+       }
+      ],
+      "worst_relative": {
+       "tau": 0.0,
+       "alpha": 0.0,
+       "x": 0.0,
+       "tau_next": 0.0,
+       "phi_over_allowance": 0.0
+      },
+      "landing_bits": [
+       "0x0.0p+0"
+      ]
+     },
+     "PTC-S5": {
+      "outcome": "CONVERGED",
+      "attempts": [
+       {
+        "regime": "LIQUID",
+        "outcome": "PHASE_UPDATE_REQUIRED",
+        "pseudo_steps": 2,
+        "trials": 5,
+        "blocked_by": []
+       },
+       {
+        "regime": "TWO_PHASE",
+        "outcome": "PHASE_UPDATE_REQUIRED",
+        "pseudo_steps": 2,
+        "trials": 5,
+        "blocked_by": []
+       },
+       {
+        "regime": "VAPOR",
+        "outcome": "CONVERGED",
+        "pseudo_steps": 10,
+        "trials": 10,
+        "blocked_by": []
+       }
+      ],
+      "worst_relative": {
+       "tau": 0.0,
+       "alpha": 0.0,
+       "x": 1.1102230246251565e-16,
+       "tau_next": 2.49313240617579e-16,
+       "phi_over_allowance": 0.16797415094073348
+      }
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "seeds": {
+     "PTC-S1": {
+      "outcome": "CONVERGED",
+      "pseudo_steps": [
+       8
+      ]
+     },
+     "PTC-S2": {
+      "outcome": "CONVERGED",
+      "pseudo_steps": [
+       8
+      ]
+     },
+     "PTC-S3": {
+      "outcome": "PTC_STALLED",
+      "pseudo_steps": [
+       0
+      ]
+     },
+     "PTC-S4": {
+      "outcome": "BOUND_BLOCKED",
+      "pseudo_steps": [
+       2
+      ]
+     },
+     "PTC-S5": {
+      "outcome": "CONVERGED",
+      "pseudo_steps": [
+       2,
+       2,
+       10
+      ]
+     }
+    },
+    "tolerance": "outcomes, counts, reasons and their order, blocked_by exact; \u0394\u03c4, \u03b1, x 1e-12 relative; \u03c6 max(1e-12 relative, 1e-15) (F13); PTC-S1's \u0394\u03c4 exact powers of two; PTC-S4's landing 0x0.0p+0"
+   }
+  },
+  {
+   "id": "T04.A20",
+   "description": "Ablations, spec \u00a79.9 row by row against `ref.policy_simulation.ablations` (A20 as amended, F16). Measured here: the \u03b3 clip removed (PTC-S1), \u03c3 = +1 (PTC-S1; its first matrix exactly singular, then bound_blocked), \u03c4_max = 16 (a policy override), no reset on restart (PTC-S5), \u03c6_floor removed (every seed, inert: no count or \u0394\u03c4 changes); \u03bb growth 1, \u03bb shrink 0 (stall on the first rejection), corrector cap 50 (HOM-01, HOM-04: inert), \u0394\u03bb\u2080 in {1, 1/2, 1/8} (not fitted), edge 3 from the failed end state (HOM-01: HOMOTOPY_STALLED at \u03bb = 0); the polish row by A22's unpolished OFF-B stop, the mapping row by A14, the trigger-set row by A09. Discharged, with no seam in production code: the rollback row by A07 (F15: the reported state against the ablated one); the stop on \u2016F\u0302\u2016 \u2264 \u03c6_floor, the proposed \u0394\u03c4 in the update and a rejected residual in the ratio by A19 (each ablated count differs from the seed count A19 registers); the stream-total heater holdup by A13 and A16. `pass` when every measured row agrees and every discharging assertion passes.",
+   "result": "pass",
+   "value": {
+    "rows": {
+     "no_gamma_clip (PTC-S1)": {
+      "outcome": "CONVERGED",
+      "pseudo_steps": [
+       6
+      ]
+     },
+     "row_sign_plus_one (PTC-S1)": {
+      "outcome": "BOUND_BLOCKED",
+      "pseudo_steps": [
+       0
+      ],
+      "rejection_reasons": [
+       "linear_solve_failed",
+       "bound_blocked",
+       "bound_blocked",
+       "bound_blocked",
+       "bound_blocked",
+       "bound_blocked",
+       "bound_blocked",
+       "bound_blocked",
+       "bound_blocked",
+       "bound_blocked",
+       "bound_blocked"
+      ]
+     },
+     "tau_max_16 (PTC-S1, a policy override, not an ablation)": {
+      "outcome": "CONVERGED",
+      "pseudo_steps": [
+       9
+      ]
+     },
+     "no_reset_on_restart (PTC-S5)": {
+      "outcome": "BUDGET_EXHAUSTED",
+      "pseudo_steps": [
+       2,
+       5,
+       200
+      ]
+     },
+     "no_phi_floor (every seed)": {
+      "no_count_or_tau_changes": {
+       "PTC-S1": true,
+       "PTC-S2": true,
+       "PTC-S3": true,
+       "PTC-S4": true,
+       "PTC-S5": true
+      }
+     },
+     "no_growth (HOM-01)": {
+      "outcome": "CONVERGED",
+      "lambda_trials": 4,
+      "lambda_reached": "1",
+      "end_S3_T_K": 354.9999999999887
+     },
+     "no_shrink (HOM-04)": {
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_trials": 3,
+      "lambda_reached": "3/4",
+      "end_S3_T_K": 352.7611400270312
+     },
+     "corrector_cap_50 (HOM-01)": {
+      "outcome": "CONVERGED",
+      "lambda_trials": 3,
+      "lambda_reached": "1",
+      "end_S3_T_K": 354.9999999999887
+     },
+     "corrector_cap_50 (HOM-04)": {
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_trials": 18,
+      "lambda_reached": "909/1024",
+      "end_S3_T_K": 351.45176529499236
+     },
+     "delta_lambda_initial_1 (HOM-01, sensitivity)": {
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     "delta_lambda_initial_1/2 (HOM-01, sensitivity)": {
+      "outcome": "CONVERGED",
+      "lambda_trials": 2
+     },
+     "delta_lambda_initial_1/8 (HOM-01, sensitivity)": {
+      "outcome": "CONVERGED",
+      "lambda_trials": 4
+     },
+     "edge3_from_failed_end_state (HOM-01)": {
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_reached": "0"
+     },
+     "no_rollback (HOM-04), by A07": {
+      "reported_S3_T_K": 351.45176529499236,
+      "ablated_S3_T_K": 351.444104734,
+      "ablated_off_the_registered_end_relative": 2.1796905717562526e-05
+     },
+     "polish none (OFF-B r = 0.95), by A22": "FAILED"
+    },
+    "departures": [],
+    "discharged": [
+     {
+      "row": "stop_on_phi_floor (PTC-S1)",
+      "ablated_pseudo_steps": [
+       10
+      ],
+      "discharged_by": "T04.A19",
+      "registered_by_it": {
+       "PTC-S1": [
+        8
+       ]
+      },
+      "differs": true,
+      "discharging_result": "pass"
+     },
+     {
+      "row": "proposed_tau_in_update (PTC-S2)",
+      "ablated_pseudo_steps": [
+       7
+      ],
+      "discharged_by": "T04.A19",
+      "registered_by_it": {
+       "PTC-S2": [
+        8
+       ]
+      },
+      "differs": true,
+      "discharging_result": "pass"
+     },
+     {
+      "row": "rejected_residual_in_ratio (PTC-S2)",
+      "ablated_pseudo_steps": [
+       7
+      ],
+      "discharged_by": "T04.A19",
+      "registered_by_it": {
+       "PTC-S2": [
+        8
+       ]
+      },
+      "differs": true,
+      "discharging_result": "pass"
+     },
+     {
+      "row": "no_rollback (HOM-04)",
+      "ablated_S3_T_K": 351.444104734,
+      "discharged_by": "T04.A07",
+      "registered_by_it": "the last accepted root to 1e-9 relative",
+      "differs": true,
+      "discharging_result": "pass"
+     },
+     {
+      "row": "phase-resolved heater mole holdup vs the stream total S3.n",
+      "ablated": "spec \u00a79.9 / \u00a76.2: a step that moves off the split manifold (> 1e-6 scaled, generator-checked) with entries on S3.n",
+      "discharged_by": [
+       "T04.A13",
+       "T04.A16"
+      ],
+      "registered_by_it": "A13: the phase-resolved entries on S3.vap / S3.liq; A16: the step invariant to 1e-9 relative",
+      "differs": true,
+      "discharging_result": [
+       "pass",
+       "pass"
+      ]
+     }
+    ]
+   },
+   "expected": {
+    "rows": {
+     "no_gamma_clip (PTC-S1)": {
+      "outcome": "CONVERGED",
+      "pseudo_steps": [
+       6
+      ]
+     },
+     "row_sign_plus_one (PTC-S1)": {
+      "outcome": "BOUND_BLOCKED",
+      "pseudo_steps": [
+       0
+      ]
+     },
+     "tau_max_16 (PTC-S1, a policy override, not an ablation)": {
+      "outcome": "CONVERGED",
+      "pseudo_steps": [
+       9
+      ]
+     },
+     "no_reset_on_restart (PTC-S5)": {
+      "outcome": "BUDGET_EXHAUSTED",
+      "pseudo_steps": [
+       2,
+       5,
+       200
+      ]
+     },
+     "no_phi_floor (every seed)": {
+      "outcome": "CONVERGED",
+      "pseudo_steps": [
+       8
+      ]
+     },
+     "no_growth (HOM-01)": {
+      "outcome": "CONVERGED",
+      "lambda_reached": "1",
+      "lambda_trials": 4,
+      "end_S3_T_K": "355.000000000"
+     },
+     "no_shrink (HOM-04)": {
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_reached": "3/4",
+      "lambda_trials": 3,
+      "end_S3_T_K": "352.761140027"
+     },
+     "no_rollback (HOM-04)": {
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_reached": "909/1024",
+      "lambda_trials": 18,
+      "end_S3_T_K": "351.444104734"
+     },
+     "corrector_cap_50 (HOM-01)": {
+      "outcome": "CONVERGED",
+      "lambda_reached": "1",
+      "lambda_trials": 3,
+      "end_S3_T_K": "355.000000000"
+     },
+     "corrector_cap_50 (HOM-04)": {
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_reached": "909/1024",
+      "lambda_trials": 18,
+      "end_S3_T_K": "351.451765295"
+     },
+     "edge3_from_failed_end_state (HOM-01)": {
+      "outcome": "HOMOTOPY_STALLED",
+      "lambda_reached": "0"
+     },
+     "delta_lambda_initial_1 (HOM-01, sensitivity)": {
+      "outcome": "CONVERGED",
+      "lambda_trials": 3
+     },
+     "delta_lambda_initial_1/2 (HOM-01, sensitivity)": {
+      "outcome": "CONVERGED",
+      "lambda_trials": 2
+     },
+     "delta_lambda_initial_1/8 (HOM-01, sensitivity)": {
+      "outcome": "CONVERGED",
+      "lambda_trials": 4
+     }
+    },
+    "discharged": "each row's ablated value differs from what its discharging assertion registers, and that assertion passes"
+   }
+  },
+  {
+   "id": "T04.A21",
+   "description": "The accumulation identity (\u00a76.5) on every accepted pseudo-step of every registered SYN-001 PTC run \u2014 the four named runs, the 18 admitted basin starts under PTC and PHS-05 under PTC \u2014 each mole holdup row, within \u00a712's amended bound (F14).",
+   "result": "pass",
+   "value": {
+    "runs": {
+     "r=0.95/initializer": {
+      "identities_checked": 234,
+      "largest_defect_mol_per_s": 2.5961221020165404e-15,
+      "largest_defect_over_the_registered_bound": 0.01282412665551354,
+      "largest_defect_over_four_ulps_of_its_operands": 0.15727084828794136
+     },
+     "r=0.95/OFF-A": {
+      "identities_checked": 180,
+      "largest_defect_mol_per_s": 2.6645352591003757e-15,
+      "largest_defect_over_the_registered_bound": 0.016234136821906643,
+      "largest_defect_over_four_ulps_of_its_operands": 0.17134611234954905
+     },
+     "r=0.95/OFF-B": {
+      "identities_checked": 180,
+      "largest_defect_mol_per_s": 3.2343818492076184e-15,
+      "largest_defect_over_the_registered_bound": 0.03204110636001561,
+      "largest_defect_over_four_ulps_of_its_operands": 0.7086133272434627
+     },
+     "r=0.5/initializer": {
+      "identities_checked": 72,
+      "largest_defect_mol_per_s": 2.7755575615628914e-16,
+      "largest_defect_over_the_registered_bound": 0.0023220479584302673,
+      "largest_defect_over_four_ulps_of_its_operands": 0.10807200737943712
+     },
+     "basin 0.3 [0, 0, 4]": {
+      "identities_checked": 210,
+      "largest_defect_mol_per_s": 2.226312277669738e-15,
+      "largest_defect_over_the_registered_bound": 0.02222376320620755,
+      "largest_defect_over_four_ulps_of_its_operands": 0.147521991678872
+     },
+     "basin 0.3 [0, 1, 3]": {
+      "identities_checked": 240,
+      "largest_defect_mol_per_s": 2.8900436662968606e-15,
+      "largest_defect_over_the_registered_bound": 0.028504054209201518,
+      "largest_defect_over_four_ulps_of_its_operands": 0.15773213014182513
+     },
+     "basin 0.3 [0, 2, 2]": {
+      "identities_checked": 258,
+      "largest_defect_mol_per_s": 4.1300296516055823e-14,
+      "largest_defect_over_the_registered_bound": 0.01503268669009047,
+      "largest_defect_over_four_ulps_of_its_operands": 21.96507829543637
+     },
+     "basin 0.3 [0, 3, 1]": {
+      "identities_checked": 276,
+      "largest_defect_mol_per_s": 1.0658141036401503e-14,
+      "largest_defect_over_the_registered_bound": 0.03088817231161398,
+      "largest_defect_over_four_ulps_of_its_operands": 4.627825883043233
+     },
+     "basin 0.3 [0, 4, 0]": {
+      "identities_checked": 300,
+      "largest_defect_mol_per_s": 5.662137425588298e-15,
+      "largest_defect_over_the_registered_bound": 0.020914916808172715,
+      "largest_defect_over_four_ulps_of_its_operands": 2.386158580544555
+     },
+     "basin 0.3 [1, 0, 3]": {
+      "identities_checked": 330,
+      "largest_defect_mol_per_s": 2.3626933742804113e-15,
+      "largest_defect_over_the_registered_bound": 0.01986523599137815,
+      "largest_defect_over_four_ulps_of_its_operands": 0.15623252309684393
+     },
+     "basin 3 [0, 0, 4]": {
+      "identities_checked": 198,
+      "largest_defect_mol_per_s": 2.7140900746465413e-15,
+      "largest_defect_over_the_registered_bound": 0.01555535064742535,
+      "largest_defect_over_four_ulps_of_its_operands": 0.16630134190309429
+     },
+     "basin 3 [0, 1, 3]": {
+      "identities_checked": 198,
+      "largest_defect_mol_per_s": 3.11972669919669e-13,
+      "largest_defect_over_the_registered_bound": 0.01661804582697333,
+      "largest_defect_over_four_ulps_of_its_operands": 73.28423324938497
+     },
+     "basin 3 [0, 2, 2]": {
+      "identities_checked": 162,
+      "largest_defect_mol_per_s": 2.858824288409778e-15,
+      "largest_defect_over_the_registered_bound": 0.015092990956301984,
+      "largest_defect_over_four_ulps_of_its_operands": 0.1871613759885286
+     },
+     "basin 3 [0, 3, 1]": {
+      "identities_checked": 204,
+      "largest_defect_mol_per_s": 2.9309212447207816e-15,
+      "largest_defect_over_the_registered_bound": 0.026972028968804757,
+      "largest_defect_over_four_ulps_of_its_operands": 0.1428569900203947
+     },
+     "basin 3 [0, 4, 0]": {
+      "identities_checked": 186,
+      "largest_defect_mol_per_s": 2.7890287735560237e-15,
+      "largest_defect_over_the_registered_bound": 0.01190301178497818,
+      "largest_defect_over_four_ulps_of_its_operands": 0.14115696361434574
+     },
+     "basin 3 [1, 0, 3]": {
+      "identities_checked": 192,
+      "largest_defect_mol_per_s": 2.3435099441445633e-15,
+      "largest_defect_over_the_registered_bound": 0.023294554958454918,
+      "largest_defect_over_four_ulps_of_its_operands": 0.11252839712644623
+     },
+     "basin 30 [0, 0, 4]": {
+      "identities_checked": 264,
+      "largest_defect_mol_per_s": 1.7252865802674933e-13,
+      "largest_defect_over_the_registered_bound": 0.019522536123326783,
+      "largest_defect_over_four_ulps_of_its_operands": 9.993187258876093
+     },
+     "basin 30 [0, 1, 3]": {
+      "identities_checked": 258,
+      "largest_defect_mol_per_s": 1.2032042029375134e-14,
+      "largest_defect_over_the_registered_bound": 0.027098769844345425,
+      "largest_defect_over_four_ulps_of_its_operands": 0.5119986288930422
+     },
+     "basin 30 [0, 2, 2]": {
+      "identities_checked": 210,
+      "largest_defect_mol_per_s": 2.9282132274488504e-14,
+      "largest_defect_over_the_registered_bound": 0.022003414457222887,
+      "largest_defect_over_four_ulps_of_its_operands": 0.9579274281785022
+     },
+     "basin 30 [0, 3, 1]": {
+      "identities_checked": 180,
+      "largest_defect_mol_per_s": 1.258437798412615e-13,
+      "largest_defect_over_the_registered_bound": 0.020991520779226946,
+      "largest_defect_over_four_ulps_of_its_operands": 3.443576499670288
+     },
+     "basin 30 [0, 4, 0]": {
+      "identities_checked": 90,
+      "largest_defect_mol_per_s": 3.552713678800501e-15,
+      "largest_defect_over_the_registered_bound": 0.01866129823307407,
+      "largest_defect_over_four_ulps_of_its_operands": 0.26416734232699957
+     },
+     "basin 30 [1, 0, 3]": {
+      "identities_checked": 198,
+      "largest_defect_mol_per_s": 6.934730567564884e-14,
+      "largest_defect_over_the_registered_bound": 0.01778574463773432,
+      "largest_defect_over_four_ulps_of_its_operands": 1.671918690038121
+     },
+     "PHS-05/ptc": {
+      "identities_checked": 6,
+      "largest_defect_mol_per_s": 4.440892098500626e-16,
+      "largest_defect_over_the_registered_bound": 0.0022201019334506284,
+      "largest_defect_over_four_ulps_of_its_operands": 0.16166612049192164
+     }
+    },
+    "identities_checked": 4626,
+    "largest_defect_over_the_registered_bound": 0.03204110636001561,
+    "departures": []
+   },
+   "expected": {
+    "runs": "the four named runs, the 18 admitted basin starts under PTC and PHS-05 under PTC",
+    "largest_defect_over_the_registered_bound": "at most 1: |lhs \u2212 rhs| at most 1e-9 max(|F_r(x_k)|, |F_r(x_k+1)|, tol_r) + 1e-13 (1 + \u03b8/\u0394\u03c4) mol/s (F14) on every accepted pseudo-step and mole row"
+   }
+  },
+  {
+   "id": "T04.A22",
+   "description": "The polish: every named PTC stop after a pseudo-step records one polish trial, accepted (and every seed that stops after one); the unpolished stop's K04 material envelope is `ref`'s (OFF-B at least 1.3 \u03c4), the polished one's at roundoff; K04 `VERIFIED` on every polished stop (region solves of the nominal declaration, \u00a74.8's guard, empty tear), `FAILED` with false success on the unpolished OFF-B by its envelope rule.",
+   "result": "pass",
+   "value": {
+    "named_runs": {
+     "r=0.95/initializer": {
+      "polish": "accepted",
+      "polish_trials": [
+       [
+        "polish",
+        "accepted",
+        null
+       ]
+      ],
+      "unpolished_envelope_over_tolerance": 0.026861111901063568,
+      "polished_envelope_over_tolerance": 7.520865650686543e-08,
+      "polished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "polished_tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "unpolished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "unpolished_failing": []
+     },
+     "r=0.95/OFF-A": {
+      "polish": "accepted",
+      "polish_trials": [
+       [
+        "polish",
+        "accepted",
+        null
+       ]
+      ],
+      "unpolished_envelope_over_tolerance": 0.7165391899893198,
+      "polished_envelope_over_tolerance": 4.6557739742345265e-08,
+      "polished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "polished_tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "unpolished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "unpolished_failing": []
+     },
+     "r=0.95/OFF-B": {
+      "polish": "accepted",
+      "polish_trials": [
+       [
+        "polish",
+        "accepted",
+        null
+       ]
+      ],
+      "unpolished_envelope_over_tolerance": 1.3101365368927893,
+      "polished_envelope_over_tolerance": 3.58136459556502e-08,
+      "polished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "polished_tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "unpolished_verdict": [
+       "FAILED",
+       true
+      ],
+      "unpolished_failing": [
+       "material_balance.envelope.C"
+      ]
+     },
+     "r=0.5/initializer": {
+      "polish": "accepted",
+      "polish_trials": [
+       [
+        "polish",
+        "accepted",
+        null
+       ]
+      ],
+      "unpolished_envelope_over_tolerance": 0.14660482505399106,
+      "polished_envelope_over_tolerance": 3.5813645955650202e-09,
+      "polished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "polished_tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "unpolished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "unpolished_failing": []
+     }
+    },
+    "seeds": {
+     "PTC-S1": {
+      "stopped_after_a_pseudo_step": true,
+      "polish": "accepted"
+     },
+     "PTC-S2": {
+      "stopped_after_a_pseudo_step": true,
+      "polish": "accepted"
+     },
+     "PTC-S3": {
+      "stopped_after_a_pseudo_step": false,
+      "polish": null
+     },
+     "PTC-S4": {
+      "stopped_after_a_pseudo_step": false,
+      "polish": null
+     },
+     "PTC-S5": {
+      "stopped_after_a_pseudo_step": true,
+      "polish": "accepted"
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "named_runs": {
+     "r=0.95/initializer": {
+      "polish": "accepted, one trial `polish` with no pseudo-step",
+      "unpolished_envelope_over_tolerance": "0.02686",
+      "polished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "unpolished_verdict": "VERIFIED"
+     },
+     "r=0.95/OFF-A": {
+      "polish": "accepted, one trial `polish` with no pseudo-step",
+      "unpolished_envelope_over_tolerance": "0.7165",
+      "polished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "unpolished_verdict": "VERIFIED"
+     },
+     "r=0.95/OFF-B": {
+      "polish": "accepted, one trial `polish` with no pseudo-step",
+      "unpolished_envelope_over_tolerance": "1.310",
+      "polished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "unpolished_verdict": "FAILED, false success, material_balance.envelope.C"
+     },
+     "r=0.5/initializer": {
+      "polish": "accepted, one trial `polish` with no pseudo-step",
+      "unpolished_envelope_over_tolerance": "0.1466",
+      "polished_verdict": [
+       "VERIFIED",
+       false
+      ],
+      "unpolished_verdict": "VERIFIED"
+     }
+    },
+    "seeds": "every stop after at least one pseudo-step polished, accepted"
+   }
+  },
+  {
+   "id": "T04.A23",
+   "description": "Basin comparison (F14): the 45 lattice guesses in `ref`'s order, the 27 refused by the mixer and nothing run for them, the 18 others with Newton's and PTC's outcomes, attempts, same_root and polish equal `ref.basin_comparison_r095`; \u00a78.1's criterion gives `experimental` and V14's PTC clause `incomplete`, as the registry's study entry says; the named runs of \u00a79.5 as `ref.ptc_named` under both cores, every final state P01's root.",
+   "result": "pass",
+   "value": {
+    "lattice": 45,
+    "refused_by_the_mixer": 27,
+    "admitted": 18,
+    "converged": {
+     "newton": 18,
+     "ptc": 18
+    },
+    "criterion": {
+     "improves_a_tested_basin": false,
+     "verdict": "experimental",
+     "v14_qualified_ptc_clause": "incomplete"
+    },
+    "named_runs": {
+     "r=0.95/initializer": {
+      "newton": {
+       "outcome": "CONVERGED",
+       "attempts": [
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+         "opening_source": "initializer",
+         "core": "newton",
+         "core_outcome": "CONVERGED",
+         "iterations": 5,
+         "decision": "converged"
+        }
+       ],
+       "vs_P01": []
+      },
+      "ptc": {
+       "outcome": "CONVERGED",
+       "attempts": [
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+         "opening_source": "initializer",
+         "core": "ptc",
+         "core_outcome": "CONVERGED",
+         "iterations": 39,
+         "decision": "converged",
+         "rejected_trials": 0,
+         "polish": "accepted"
+        }
+       ],
+       "vs_P01": []
+      }
+     },
+     "r=0.95/OFF-A": {
+      "newton": {
+       "outcome": "CONVERGED",
+       "attempts": [
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+         "opening_source": "initializer",
+         "core": "newton",
+         "core_outcome": "CONVERGED",
+         "iterations": 5,
+         "decision": "converged"
+        }
+       ],
+       "vs_P01": []
+      },
+      "ptc": {
+       "outcome": "CONVERGED",
+       "attempts": [
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+         "opening_source": "initializer",
+         "core": "ptc",
+         "core_outcome": "CONVERGED",
+         "iterations": 30,
+         "decision": "converged",
+         "rejected_trials": 0,
+         "polish": "accepted"
+        }
+       ],
+       "vs_P01": []
+      }
+     },
+     "r=0.95/OFF-B": {
+      "newton": {
+       "outcome": "CONVERGED",
+       "attempts": [
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:LIQUID",
+         "opening_source": "initializer",
+         "core": "newton",
+         "core_outcome": "PHASE_UPDATE_REQUIRED",
+         "iterations": 2,
+         "decision": "restart"
+        },
+        {
+         "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+         "opening_source": "phase_rejected_trial",
+         "core": "newton",
+         "core_outcome": "BOUND_BLOCKED",
+         "iterations": 1,
+         "decision": "restart"
+        },
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+         "opening_source": "pinned_iterate",
+         "core": "newton",
+         "core_outcome": "CONVERGED",
+         "iterations": 3,
+         "decision": "converged"
+        }
+       ],
+       "vs_P01": []
+      },
+      "ptc": {
+       "outcome": "CONVERGED",
+       "attempts": [
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:LIQUID",
+         "opening_source": "initializer",
+         "core": "ptc",
+         "core_outcome": "PHASE_UPDATE_REQUIRED",
+         "iterations": 4,
+         "decision": "restart",
+         "rejected_trials": 5,
+         "polish": null
+        },
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+         "opening_source": "phase_rejected_trial",
+         "core": "ptc",
+         "core_outcome": "CONVERGED",
+         "iterations": 26,
+         "decision": "converged",
+         "rejected_trials": 0,
+         "polish": "accepted"
+        }
+       ],
+       "vs_P01": []
+      }
+     },
+     "r=0.5/initializer": {
+      "newton": {
+       "outcome": "CONVERGED",
+       "attempts": [
+        {
+         "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+         "opening_source": "initializer",
+         "core": "newton",
+         "core_outcome": "BOUND_BLOCKED",
+         "iterations": 1,
+         "decision": "restart"
+        },
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+         "opening_source": "pinned_iterate",
+         "core": "newton",
+         "core_outcome": "CONVERGED",
+         "iterations": 2,
+         "decision": "converged"
+        }
+       ],
+       "vs_P01": []
+      },
+      "ptc": {
+       "outcome": "CONVERGED",
+       "attempts": [
+        {
+         "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+         "opening_source": "initializer",
+         "core": "ptc",
+         "core_outcome": "BOUND_BLOCKED",
+         "iterations": 1,
+         "decision": "restart",
+         "rejected_trials": 11,
+         "polish": null,
+         "alpha_max": 0.3269587804874373
+        },
+        {
+         "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+         "opening_source": "pinned_iterate",
+         "core": "ptc",
+         "core_outcome": "CONVERGED",
+         "iterations": 11,
+         "decision": "converged",
+         "rejected_trials": 0,
+         "polish": "accepted"
+        }
+       ],
+       "vs_P01": []
+      }
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "lattice": 45,
+    "refused_by_the_mixer": 27,
+    "admitted": 18,
+    "starts": "each admitted start's Newton and PTC outcome, attempt signatures, counts, same_root and polish equal ref.basin_comparison_r095",
+    "criterion": {
+     "verdict": "experimental",
+     "v14_qualified_ptc_clause": "incomplete"
+    },
+    "named_runs": "ref.ptc_named, both cores; every final state P01's root by T02 A28's per-kind allowances"
+   }
+  },
+  {
+   "id": "T04.A24",
+   "description": "PHS-05 under PTC (edge 3 off): attempts, reasons and outcome as `ref.ptc_phs05`; the first pseudo-step's `\u03b1_max` is Newton's (`ref.hom.HOM-01`'s contract landing); at the opening the PTC step's S3.T, split and U-FLASH.Q components are Newton's at \u0394\u03c4 in {1e-3, 1, 1e3} and the inventory's are not; with the default edge 3 it converges.",
+   "result": "pass",
+   "value": {
+    "outcome": "PTC_STALLED",
+    "message": "pseudo-step 0: 11 trials rejected, the last invalid_trial",
+    "attempts": [
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening_source": "initializer",
+      "core": "ptc",
+      "core_outcome": "BOUND_BLOCKED",
+      "iterations": 1,
+      "decision": "restart",
+      "rejected_trials": 11,
+      "polish": null,
+      "alpha_max": 0.6423094612692706
+     },
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening_source": "pinned_iterate",
+      "core": "ptc",
+      "core_outcome": "PTC_STALLED",
+      "iterations": 0,
+      "decision": "restart",
+      "rejected_trials": 11,
+      "polish": null
+     },
+     {
+      "signature": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+      "opening_source": "phase_rejected_trial",
+      "core": "ptc",
+      "core_outcome": "PTC_STALLED",
+      "iterations": 0,
+      "decision": "terminal",
+      "rejected_trials": 11,
+      "polish": null
+     }
+    ],
+    "rejection_reasons": [
+     [
+      "bound_blocked"
+     ],
+     [
+      "phase_update_required"
+     ],
+     [
+      "invalid_trial"
+     ]
+    ],
+    "first_alpha_max": 0.6423094612692706,
+    "step_components_at_the_opening": {
+     "dtau=0.001": {
+      "algebraic_vs_newton": 2.9877096741806317e-13,
+      "inventory_vs_newton": 999.9999999996876
+     },
+     "dtau=1": {
+      "algebraic_vs_newton": 9.668963346862886e-16,
+      "inventory_vs_newton": 1.0000000000000013
+     },
+     "dtau=1000": {
+      "algebraic_vs_newton": 1.9337926693725772e-15,
+      "inventory_vs_newton": 0.0009999999999994427
+     }
+    },
+    "with_edge3": {
+     "outcome": "CONVERGED",
+     "eo_recovery": "taken",
+     "failed": "PTC_STALLED",
+     "cores": [
+      "ptc",
+      "ptc",
+      "ptc",
+      "homotopy"
+     ]
+    },
+    "departures": []
+   },
+   "expected": {
+    "outcome": "PTC_STALLED",
+    "attempts": [
+     {
+      "signature": "U-HEAT:TWO_PHASE,U-FLASH:TWO_PHASE",
+      "opening_source": "initializer",
+      "core": "ptc",
+      "core_outcome": "BOUND_BLOCKED",
+      "iterations": 1,
+      "decision": "restart",
+      "cause": "phase_disappeared(U-HEAT, vapor, S3.vap.C)",
+      "rejected_trials": 11,
+      "polish": null,
+      "landings": [
+       {
+        "iteration": 0,
+        "alpha_max": "0.642309461269271",
+        "variables": [
+         "S3.vap.C"
+        ]
+       }
+      ],
+      "blocked_by": [
+       "S3.vap.C"
+      ]
+     },
+     {
+      "signature": "U-HEAT:LIQUID,U-FLASH:TWO_PHASE",
+      "opening_source": "pinned_iterate",
+      "core": "ptc",
+      "core_outcome": "PTC_STALLED",
+      "iterations": 0,
+      "decision": "restart",
+      "cause": "phase_wall(stall, U-HEAT:LIQUID->VAPOR)",
+      "rejected_trials": 11,
+      "polish": null
+     },
+     {
+      "signature": "U-HEAT:VAPOR,U-FLASH:TWO_PHASE",
+      "opening_source": "phase_rejected_trial",
+      "core": "ptc",
+      "core_outcome": "PTC_STALLED",
+      "iterations": 0,
+      "decision": "terminal",
+      "cause": null,
+      "rejected_trials": 11,
+      "polish": null
+     }
+    ],
+    "first_alpha_max": "0.642309461269271",
+    "step_components_at_the_opening": "algebraic components Newton's to 1e-9 relative at \u0394\u03c4 in {1e-3, 1, 1e3}; the inventory's not",
+    "with_edge3": "CONVERGED"
+   }
+  },
+  {
+   "id": "T04.A25",
+   "description": "Composition: [A01] on a two-attempt PTC solve (every compiled call and mass evaluation on its attempt's own context) and per level on the homotopy; the first trial of every PTC attempt at \u03c4\u2080; `decide` (spied) closes PHS-05 under PTC's attempts as registered (row 4's cause included), and T03's stub rows 4\u20135 take `PTC_STALLED` and `BUDGET_EXHAUSTED(ptc_steps)`; K03's, T02's and T03's registered trajectories are their test families, green in the gate.",
+   "result": "pass",
+   "value": {
+    "ptc_attempt_contexts": {
+     "attempts": 2,
+     "distinct_contexts": 2,
+     "compiled_calls": 69,
+     "mass_evaluations": 30,
+     "calls_outside_their_attempts_context": 0,
+     "mass_outside_their_attempts_context": 0,
+     "cores": [
+      "ptc",
+      "ptc"
+     ]
+    },
+    "homotopy_level_contexts": {
+     "HOM-01": true,
+     "HOM-02": true,
+     "HOM-03": true,
+     "HOM-04": true,
+     "HOM-05": true
+    },
+    "first_pseudo_steps": {
+     "r=0.95/initializer": [
+      1.0
+     ],
+     "r=0.95/OFF-A": [
+      1.0
+     ],
+     "r=0.95/OFF-B": [
+      1.0,
+      1.0
+     ],
+     "r=0.5/initializer": [
+      1.0,
+      1.0
+     ]
+    },
+    "decide_on_phs05_ptc": [
+     [
+      "BOUND_BLOCKED",
+      "restart",
+      "phase_disappeared(U-HEAT, vapor, S3.vap.C)"
+     ],
+     [
+      "PTC_STALLED",
+      "restart",
+      "phase_wall(stall, U-HEAT:LIQUID->VAPOR)"
+     ],
+     [
+      "PTC_STALLED",
+      "terminal",
+      "pseudo-step 0: 11 trials rejected, the last invalid_trial"
+     ]
+    ],
+    "decide_rows": {
+     "row 4: PTC_STALLED, wall in window": {
+      "asked": [
+       "at_candidate",
+       "opening_check"
+      ],
+      "decision": "restart"
+     },
+     "row 5: PTC_STALLED, no wall": {
+      "asked": [
+       "kernel_disagrees"
+      ],
+      "decision": "terminal"
+     },
+     "row 5: ptc_steps": {
+      "asked": [
+       "kernel_disagrees"
+      ],
+      "decision": "terminal"
+     },
+     "row 6: property budget": {
+      "asked": [],
+      "decision": "terminal"
+     }
+    },
+    "gate_families": {
+     "k03": 165,
+     "t02": 114,
+     "t03": 70
+    },
+    "departures": []
+   },
+   "expected": {
+    "ptc_attempt_contexts": "every call and mass evaluation on its attempt's own context",
+    "first_pseudo_steps": "\u03c4\u2080 = 1.0 s on every attempt",
+    "decide_on_phs05_ptc": [
+     [
+      "BOUND_BLOCKED",
+      "restart",
+      "phase_disappeared(U-HEAT, vapor, S3.vap.C)"
+     ],
+     [
+      "PTC_STALLED",
+      "restart",
+      "phase_wall(stall, U-HEAT:LIQUID->VAPOR)"
+     ],
+     [
+      "PTC_STALLED",
+      "terminal",
+      null
+     ]
+    ],
+    "decide_rows": "rows 4 and 5 take PTC_STALLED and BUDGET_EXHAUSTED(ptc_steps); the property budget asks nothing",
+    "gate_families": "every family collected and passed in the gate (A29)"
+   }
+  },
+  {
+   "id": "T04.A26",
+   "description": "Records and schemas. The committed T04 fixtures (`t04_*.json`) validate, round-trip and are what `scripts/t04_schema_fixtures.py` emits today (the reproducibility rule); every field ADR 0010 D7 adds is present in a fixture a real run emitted; no event of any solve in this manifest serializes a non-finite number. The R0 fields of \u00a710 for HOM-01, HOM-04, PTC-S1, PTC-S5 and OFF-B under PTC \u2014 with HOM-03, HOM-U and PHS-05 under PTC \u2014 are in `scripts/t04_identity.py`: floats-free (the only float-shaped strings are the policy's registered constants and T03's registered \u03b4_root, written exactly), identical on two runs in one process, and carried by `scripts/k05_structural_identity.py` under `t04`. From the two CI artifacts: the x86-64 and aarch64 `identity.json` are equal key for key \u2014 the `identity` job's comparison \u2014 with `t04` equal. Without `--identities` that half is not measured and the check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "fixtures": {
+     "solve_policy/valid/t04_ptc.json": {
+      "schema_errors": 0,
+      "round_trips": true,
+      "differences_from_emitted": []
+     },
+     "solve_event/valid/t04_hom05_recovery_trace.json": {
+      "schema_errors": 0,
+      "round_trips": true,
+      "differences_from_emitted": []
+     },
+     "solve_event/valid/t04_ptc_nominal_region_trace.json": {
+      "schema_errors": 0,
+      "round_trips": true,
+      "differences_from_emitted": []
+     },
+     "attempt_context/valid/t04_hom05_homotopy.json": {
+      "schema_errors": 0,
+      "round_trips": true,
+      "differences_from_emitted": []
+     },
+     "attempt_context/valid/t04_ptc_restart.json": {
+      "schema_errors": 0,
+      "round_trips": true,
+      "differences_from_emitted": []
+     },
+     "checkpoint/valid/t04_hom04_stall.json": {
+      "schema_errors": 0,
+      "round_trips": true,
+      "differences_from_emitted": []
+     },
+     "solution_certificate/valid/t04_hom01_bound_verified.json": {
+      "schema_errors": 0,
+      "round_trips": true,
+      "differences_from_emitted": []
+     },
+     "failure_bundle/valid/t04_hom04_homotopy_stalled.json": {
+      "schema_errors": 0,
+      "round_trips": true,
+      "differences_from_emitted": []
+     }
+    },
+    "new_fields_in_fixtures": [],
+    "new_fields_exercised": {
+     "homotopy_step kind": true,
+     "bound_blocked reason": true,
+     "polish trial": true,
+     "context core homotopy with continuation": true,
+     "context core ptc": true,
+     "checkpoint continuation_lambda": true,
+     "provenance continuation": true,
+     "provenance eo_recovery_start": true
+    },
+    "events_with_a_non_finite_number": 0,
+    "identity": {
+     "cases": [
+      "HOM-01",
+      "HOM-03",
+      "HOM-04",
+      "HOM-U",
+      "OFF-B/ptc",
+      "PHS-05/ptc",
+      "PTC-S1",
+      "PTC-S5"
+     ],
+     "floats": [],
+     "float_shaped_strings_outside_registered_constants": [],
+     "same_twice": true,
+     "k05_carries_t04": true
+    },
+    "departures": [],
+    "ci": {
+     "platforms": 2,
+     "identity_differences": [],
+     "t04_equal": true,
+     "artifact_sha256": {
+      "structural-identity-ubuntu-24.04-arm/identity.json": "b364bb3dc881402fd6e7982532b19f06dba60e5c6b01e70d1aab861bae030b5a",
+      "structural-identity-ubuntu-latest/identity.json": "b364bb3dc881402fd6e7982532b19f06dba60e5c6b01e70d1aab861bae030b5a"
+     }
+    }
+   },
+   "expected": {
+    "fixtures": "every one: validates, no difference from what its generator emits",
+    "new_fields_in_fixtures": [],
+    "events_with_a_non_finite_number": 0,
+    "identity": {
+     "cases": [
+      "HOM-01",
+      "HOM-03",
+      "HOM-04",
+      "HOM-U",
+      "OFF-B/ptc",
+      "PHS-05/ptc",
+      "PTC-S1",
+      "PTC-S5"
+     ],
+     "floats": [],
+     "float_shaped_strings_outside_registered_constants": [],
+     "same_twice": true,
+     "k05_carries_t04": true
+    },
+    "ci": {
+     "platforms": 2,
+     "identity_differences": [],
+     "t04_equal": true
+    }
+   }
+  },
+  {
+   "id": "T04.A27",
+   "description": "Taxonomy: the three outcomes map to ADR 0010 D8's classes and actions; HOM-03's and HOM-04's bundles carry exactly one registered inferred cause, a hypothesis; the PTC outcomes' bundles infer nothing; every bundle validates and none claims infeasibility.",
+   "result": "pass",
+   "value": {
+    "taxonomy": {
+     "HOMOTOPY_STALLED": [
+      "homotopy/PTC/active-set stalls",
+      "supply_initial_guess"
+     ],
+     "PTC_STALLED": [
+      "homotopy/PTC/active-set stalls",
+      "supply_initial_guess"
+     ],
+     "PTC_MAPPING_INVALID": [
+      "model domain/conservation/derivative defects",
+      "report_defect"
+     ]
+    },
+    "bundles": {
+     "HOM-03": {
+      "schema_errors": 0,
+      "inferred_causes": [
+       [
+        "phase_boundary_on_path(U-HEAT)",
+        "hypothesis"
+       ]
+      ],
+      "taxonomy": "homotopy/PTC/active-set stalls",
+      "actions": [
+       "supply_initial_guess"
+      ],
+      "claims_infeasibility": false
+     },
+     "HOM-04": {
+      "schema_errors": 0,
+      "inferred_causes": [
+       [
+        "phase_boundary_on_path(U-HEAT)",
+        "hypothesis"
+       ]
+      ],
+      "taxonomy": "homotopy/PTC/active-set stalls",
+      "actions": [
+       "supply_initial_guess"
+      ],
+      "claims_infeasibility": false
+     },
+     "PHS-05 under PTC": {
+      "outcome": "PTC_STALLED",
+      "schema_errors": 0,
+      "inferred_causes": [],
+      "actions": [
+       "supply_initial_guess"
+      ],
+      "claims_infeasibility": false
+     },
+     "ADV-04": {
+      "outcome": "PTC_MAPPING_INVALID",
+      "schema_errors": 0,
+      "inferred_causes": [],
+      "actions": [
+       "report_defect"
+      ],
+      "claims_infeasibility": false
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "taxonomy": "ADR 0010 D8",
+    "bundles": "stalls: one registered hypothesis; PTC outcomes: none; every bundle valid, no claim of infeasibility"
+   }
+  },
+  {
+   "id": "T04.A28",
+   "description": "Budgets: HOM-04 with `max_lambda_trials = 4` ends `BUDGET_EXHAUSTED(homotopy_steps)` after `ref`'s first four \u03bb-trials with the last accepted checkpoint; OFF-A with `max_steps_per_attempt = 5` ends `BUDGET_EXHAUSTED(ptc_steps)`; a property-budget refusal inside a corrector (HOM-01) and inside a pseudo-step (the high-recycle plan under PTC) keeps the attempts, the checkpoint and the provenance (T03 review S1's shape).",
+   "result": "pass",
+   "value": {
+    "lambda_trial_budget": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "budget": "homotopy_steps",
+     "lambda_values": [
+      "0",
+      "1/4",
+      "3/4",
+      "1",
+      "7/8"
+     ],
+     "lambda_reached": "7/8",
+     "checkpoint": [
+      "7/8",
+      "partial"
+     ],
+     "provenance": [
+      1,
+      "7/8",
+      "BUDGET_EXHAUSTED"
+     ],
+     "S3_T_K": 351.57151410090773
+    },
+    "pseudo_step_budget": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "budget": "ptc_steps",
+     "pseudo_steps": [
+      5
+     ],
+     "recorded_steps": [
+      5
+     ],
+     "checkpoint": "partial",
+     "core": "ptc"
+    },
+    "property_refusal_in_a_corrector": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "property_calls_equal_the_cap": true,
+     "budget": "property_calls",
+     "eo_recovery": "taken",
+     "contract_items": 2,
+     "cores": [
+      "newton",
+      "newton",
+      "homotopy"
+     ],
+     "lambda_reached": "1/4",
+     "checkpoint": [
+      "1/4",
+      "partial"
+     ]
+    },
+    "property_refusal_in_a_pseudo_step": {
+     "outcome": "BUDGET_EXHAUSTED",
+     "property_calls_equal_the_cap": true,
+     "budget": "property_calls",
+     "attempt_pseudo_steps": [
+      11
+     ],
+     "cores": [
+      "ptc"
+     ],
+     "checkpoint": "partial"
+    },
+    "departures": []
+   },
+   "expected": {
+    "lambda_trial_budget": "BUDGET_EXHAUSTED(homotopy_steps) after 4 \u03bb-trials, checkpoint partial at 7/8, S3.T of ref's fourth trial",
+    "pseudo_step_budget": "BUDGET_EXHAUSTED(ptc_steps) after 5 pseudo-steps, checkpoint partial",
+    "property_refusals": "BUDGET_EXHAUSTED(property_calls) at the cap, attempts, checkpoint and provenance kept"
+   }
+  },
+  {
+   "id": "T04.A29",
+   "description": "Regression and manifest. The gate's pytest run passed with no failure, error or skip, and the number it passed equals the number `pytest --collect-only` finds here, among them K03's, T02's, T03's, K04's, K05's and T04's own test files (counted per family) \u2014 every registered assertion of those packages green, with \u00a711's re-registrations already in the tests. This manifest has one `checks[]` entry per `T04.A00`\u2026`T04.A33`; `requirements` are A29's as amended (F16) \u2014 D01, D07, A03, D09, D11, D20: ADR 0010's affected requirements less V14, which the frozen evidence-manifest schema refuses (measured) and `limitations` carries; `limitations` restate spec \u00a714 including V14's qualified-PTC clause incomplete, PTC experimental; `review` is `pending` in both fields. The two-architecture half is the named CI run: without `--ci-run` the check is `unsupported`.",
+   "result": "pass",
+   "value": {
+    "gate": {
+     "passed": true,
+     "pytest_counts": {
+      "passed": 1909
+     },
+     "collected": 1909
+    },
+    "families": {
+     "k03": 165,
+     "t02": 114,
+     "t03": 70,
+     "k04": 59,
+     "k05": 41,
+     "t04": 281
+    },
+    "entries": 34,
+    "ids": true,
+    "requirements": [
+     "D01",
+     "D07",
+     "A03",
+     "D09",
+     "D11",
+     "D20"
+    ],
+    "refused_by_the_frozen_schema": [
+     "V14"
+    ],
+    "v14_incomplete_in_limitations": true,
+    "review": {
+     "numerical": "pending",
+     "process_model": "pending"
+    },
+    "ci_run": "https://github.com/computational-chemical-engineering/clearsheet/actions/runs/36063188633"
+   },
+   "expected": {
+    "gate": "passed, pytest passed only, collected equal to the gate's passed count",
+    "families": "K03, T02, T03, K04, K05 and T04 each at least 1 test",
+    "entries": 34,
+    "ids": true,
+    "requirements": [
+     "D01",
+     "D07",
+     "A03",
+     "D09",
+     "D11",
+     "D20"
+    ],
+    "refused_by_the_frozen_schema": [
+     "V14"
+    ],
+    "v14_incomplete_in_limitations": true,
+    "review": {
+     "numerical": "pending",
+     "process_model": "pending"
+    },
+    "ci_run": "a workflow run URL"
+   }
+  },
+  {
+   "id": "T04.A30",
+   "description": "K04 on the bound declaration at the registered certificate states whose verdict `ref` promises (HOM-01, HOM-02, HOM-05, SYN-001-A02-360, -365): `VERIFIED`, no fail, unsupported or near-threshold; the declaration's 49 residual rows; the two pressure aliases with m_e = 0, the plan's; the specification checks of \u00a74.8 with S3.T freed; regularity at 47; witness at most 1e-7; the transformations, identity, provenance and fingerprint; the target norms equal `ref.bound.target_regularity` to 1e-6 relative.",
+   "result": "pass",
+   "value": {
+    "states": {
+     "HOM-01": {
+      "verdict": [
+       "VERIFIED",
+       false
+      ],
+      "fail_or_unsupported": [],
+      "near_threshold": [],
+      "residual_rows": 49,
+      "residual_rows_are_the_declarations": true,
+      "promoted_row_checked": true,
+      "removed_row_checked": false,
+      "aliases": [
+       "U-FLASH:FLASH-P:inlet",
+       "U-SPLIT:SPLIT-P:recycle"
+      ],
+      "alias_mismatches": [
+       0.0,
+       0.0
+      ],
+      "aliases_equal_the_plans": true,
+      "specification_ids": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S3.T",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "specifications_evaluated_pass": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "freed": [
+       "not_applicable",
+       "freed(GUESS-heater-outlet-T)",
+       null
+      ],
+      "regularity": [
+       "NO_RANK_LOSS_DETECTED",
+       47
+      ],
+      "witness": [
+       2.9262703371557564e-11,
+       0.0
+      ],
+      "derivative_path": "assembled_schur",
+      "tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "declaration": {
+       "removed_specification_rows": [
+        "U-HEAT:HEAT-T"
+       ],
+       "freed": {
+        "U-HEAT:HEAT-T": "S3.T"
+       },
+       "promoted": {
+        "SPEC:SPEC-flash-duty": "U-FLASH.Q"
+       }
+      },
+      "identity_is_the_revisions": true,
+      "identity_is_the_failed_solves": true,
+      "provenance_and_fingerprint_are_the_solves": true,
+      "target_norms": {
+       "one_norm": 5.783400279701521,
+       "inverse_one_norm_estimate": 75.25666310824641,
+       "rcond_1": 0.002297586075928456
+      }
+     },
+     "HOM-02": {
+      "verdict": [
+       "VERIFIED",
+       false
+      ],
+      "fail_or_unsupported": [],
+      "near_threshold": [],
+      "residual_rows": 49,
+      "residual_rows_are_the_declarations": true,
+      "promoted_row_checked": true,
+      "removed_row_checked": false,
+      "aliases": [
+       "U-FLASH:FLASH-P:inlet",
+       "U-SPLIT:SPLIT-P:recycle"
+      ],
+      "alias_mismatches": [
+       0.0,
+       0.0
+      ],
+      "aliases_equal_the_plans": true,
+      "specification_ids": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S3.T",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "specifications_evaluated_pass": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "freed": [
+       "not_applicable",
+       "freed(GUESS-heater-outlet-T)",
+       null
+      ],
+      "regularity": [
+       "NO_RANK_LOSS_DETECTED",
+       47
+      ],
+      "witness": [
+       2.9262814393860026e-11,
+       0.0
+      ],
+      "derivative_path": "assembled_schur",
+      "tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "declaration": {
+       "removed_specification_rows": [
+        "U-HEAT:HEAT-T"
+       ],
+       "freed": {
+        "U-HEAT:HEAT-T": "S3.T"
+       },
+       "promoted": {
+        "SPEC:SPEC-flash-duty": "U-FLASH.Q"
+       }
+      },
+      "identity_is_the_revisions": true,
+      "identity_is_the_failed_solves": true,
+      "provenance_and_fingerprint_are_the_solves": true
+     },
+     "HOM-05": {
+      "verdict": [
+       "VERIFIED",
+       false
+      ],
+      "fail_or_unsupported": [],
+      "near_threshold": [],
+      "residual_rows": 49,
+      "residual_rows_are_the_declarations": true,
+      "promoted_row_checked": true,
+      "removed_row_checked": false,
+      "aliases": [
+       "U-FLASH:FLASH-P:inlet",
+       "U-SPLIT:SPLIT-P:recycle"
+      ],
+      "alias_mismatches": [
+       0.0,
+       0.0
+      ],
+      "aliases_equal_the_plans": true,
+      "specification_ids": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S3.T",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "specifications_evaluated_pass": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "freed": [
+       "not_applicable",
+       "freed(GUESS-heater-outlet-T)",
+       null
+      ],
+      "regularity": [
+       "NO_RANK_LOSS_DETECTED",
+       47
+      ],
+      "witness": [
+       2.9262703371557564e-11,
+       0.0
+      ],
+      "derivative_path": "assembled_schur",
+      "tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "declaration": {
+       "removed_specification_rows": [
+        "U-HEAT:HEAT-T"
+       ],
+       "freed": {
+        "U-HEAT:HEAT-T": "S3.T"
+       },
+       "promoted": {
+        "SPEC:SPEC-flash-duty": "U-FLASH.Q"
+       }
+      },
+      "identity_is_the_revisions": true,
+      "identity_is_the_failed_solves": true,
+      "provenance_and_fingerprint_are_the_solves": true,
+      "target_norms": {
+       "one_norm": 5.552793953851232,
+       "inverse_one_norm_estimate": 74.57384865117598,
+       "rcond_1": 0.002414915196842555
+      }
+     },
+     "SYN-001-A02-360": {
+      "verdict": [
+       "VERIFIED",
+       false
+      ],
+      "fail_or_unsupported": [],
+      "near_threshold": [],
+      "residual_rows": 49,
+      "residual_rows_are_the_declarations": true,
+      "promoted_row_checked": true,
+      "removed_row_checked": false,
+      "aliases": [
+       "U-FLASH:FLASH-P:inlet",
+       "U-SPLIT:SPLIT-P:recycle"
+      ],
+      "alias_mismatches": [
+       0.0,
+       0.0
+      ],
+      "aliases_equal_the_plans": true,
+      "specification_ids": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S3.T",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "specifications_evaluated_pass": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "freed": [
+       "not_applicable",
+       "freed(GUESS-heater-outlet-T)",
+       null
+      ],
+      "regularity": [
+       "NO_RANK_LOSS_DETECTED",
+       47
+      ],
+      "witness": [
+       2.8029245591199015e-11,
+       0.0
+      ],
+      "derivative_path": "assembled_schur",
+      "tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "declaration": {
+       "removed_specification_rows": [
+        "U-HEAT:HEAT-T"
+       ],
+       "freed": {
+        "U-HEAT:HEAT-T": "S3.T"
+       },
+       "promoted": {
+        "SPEC:SPEC-flash-duty": "U-FLASH.Q"
+       }
+      },
+      "identity_is_the_revisions": true,
+      "identity_is_the_failed_solves": null,
+      "provenance_and_fingerprint_are_the_solves": true
+     },
+     "SYN-001-A02-365": {
+      "verdict": [
+       "VERIFIED",
+       false
+      ],
+      "fail_or_unsupported": [],
+      "near_threshold": [],
+      "residual_rows": 49,
+      "residual_rows_are_the_declarations": true,
+      "promoted_row_checked": true,
+      "removed_row_checked": false,
+      "aliases": [
+       "U-FLASH:FLASH-P:inlet",
+       "U-SPLIT:SPLIT-P:recycle"
+      ],
+      "alias_mismatches": [
+       0.0,
+       0.0
+      ],
+      "aliases_equal_the_plans": true,
+      "specification_ids": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S3.T",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "specifications_evaluated_pass": [
+       "S1.P",
+       "S1.T",
+       "S1.n.A",
+       "S1.n.B",
+       "S1.n.C",
+       "S4.T",
+       "S5.T",
+       "U-FLASH.Q"
+      ],
+      "freed": [
+       "not_applicable",
+       "freed(GUESS-heater-outlet-T)",
+       null
+      ],
+      "regularity": [
+       "NO_RANK_LOSS_DETECTED",
+       47
+      ],
+      "witness": [
+       2.8029245591199015e-11,
+       0.0
+      ],
+      "derivative_path": "assembled_schur",
+      "tear": {
+       "variable_ids": [],
+       "row_ids": []
+      },
+      "declaration": {
+       "removed_specification_rows": [
+        "U-HEAT:HEAT-T"
+       ],
+       "freed": {
+        "U-HEAT:HEAT-T": "S3.T"
+       },
+       "promoted": {
+        "SPEC:SPEC-flash-duty": "U-FLASH.Q"
+       }
+      },
+      "identity_is_the_revisions": true,
+      "identity_is_the_failed_solves": null,
+      "provenance_and_fingerprint_are_the_solves": true,
+      "target_norms": {
+       "one_norm": 5.3170936085849565,
+       "inverse_one_norm_estimate": 73.87845277481244,
+       "rcond_1": 0.0025457039842435164
+      }
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "states": [
+     "HOM-01",
+     "HOM-02",
+     "HOM-05",
+     "SYN-001-A02-360",
+     "SYN-001-A02-365"
+    ],
+    "each": "VERIFIED, no fail / unsupported / near_threshold; the bound declaration's 49 rows; the two pressure aliases with m_e = 0, equal to the plan's; the eight evaluated specifications pass and S3.T not_applicable freed(GUESS-heater-outlet-T); regularity NO_RANK_LOSS_DETECTED at 47; witness at most 1e-7; empty tear and \u00a74.8's declaration; the revision's identity; the solve's provenance and fingerprint",
+    "target_norms": {
+     "HOM-01": {
+      "S3_T_K": "354.999999999989",
+      "one_norm": "5.78340027970152",
+      "inverse_one_norm": "75.2566631082464",
+      "rcond_1": "0.00229758607592846",
+      "smallest_nonzero_scaled_entry": "0.000163919093078",
+      "nominal_declaration_rcond_1_same_state": "0.00291949255978",
+      "dH_S3_dT_W_per_K": "4901.00370237772",
+      "det_ratio_A02_over_nominal": "-4901.00370236415",
+      "identity_relative_error": "2.77e-12"
+     },
+     "HOM-05": {
+      "S3_T_K": "360.000000000000",
+      "one_norm": "5.55279395385123",
+      "inverse_one_norm": "74.5738486511759",
+      "rcond_1": "0.00241491519684256",
+      "smallest_nonzero_scaled_entry": "0.000163919093078",
+      "nominal_declaration_rcond_1_same_state": "0.00301080516841",
+      "dH_S3_dT_W_per_K": "5028.15280444156",
+      "det_ratio_A02_over_nominal": "-5028.15280444156",
+      "identity_relative_error": "8.29e-16"
+     },
+     "SYN-001-A02-365": {
+      "S3_T_K": "365.000000000005",
+      "one_norm": "5.31709360858496",
+      "inverse_one_norm": "73.8784527748124",
+      "rcond_1": "0.00254570398424352",
+      "smallest_nonzero_scaled_entry": "0.000163919093078",
+      "nominal_declaration_rcond_1_same_state": "0.00306839590240",
+      "dH_S3_dT_W_per_K": "5467.50004970787",
+      "det_ratio_A02_over_nominal": "-5467.50004970952",
+      "identity_relative_error": "3.01e-13"
+     }
+    },
+    "tolerance": "norms 1e-6 relative"
+   }
+  },
+  {
+   "id": "T04.A31",
+   "description": "Refusals before any check: (i) the nominal entry point handed a bound solve, (ii) another revision's solve, (iii) a state that is not the fingerprinted one, (iv) a `CONVERGED` result with neither fingerprint nor plan, with or without a caller-supplied `solve_plan` (review S1), (vi) A02-360's binding with A02-365's revision document (`declaration_mismatch(revision)`, review S2; its own document `VERIFIED`) \u2014 each its typed `VerifierError`, no residual call; (v) is K04's own suite, in the gate.",
+   "result": "pass",
+   "value": {
+    "refusals": {
+     "(i) nominal entry, HOM-01": [
+      "declaration_mismatch(model_version)",
+      0
+     ],
+     "(i) nominal entry, SYN-001-A02-360": [
+      "declaration_mismatch(model_version)",
+      0
+     ],
+     "(ii) A02-360's declaration, A02-365's result": [
+      "declaration_mismatch(constants_sha256)",
+      0
+     ],
+     "(iii) a state that is not the fingerprinted one": "state_mismatch(full_state_sha256)",
+     "(iii) the same state by state= (K04 \u00a79's path)": "VERIFIED",
+     "(iv) neither fingerprint nor plan": [
+      "declaration_unidentified",
+      "declaration_unidentified",
+      "declaration_unidentified"
+     ],
+     "(vi) A02-360's binding, A02-365's document, A02-360's result": [
+      "declaration_mismatch(revision)",
+      0
+     ],
+     "(vi) the same binding with its own document": "VERIFIED"
+    },
+    "departures": []
+   },
+   "expected": {
+    "refusals": {
+     "(i)": "declaration_mismatch(model_version), no residual call",
+     "(ii)": "declaration_mismatch(constants_sha256), no residual call",
+     "(iii)": "state_mismatch(full_state_sha256); with state= a verdict",
+     "(iv)": "declaration_unidentified from both entry points, with or without a caller-supplied solve_plan",
+     "(vi)": "declaration_mismatch(revision), no residual call; the matching pair VERIFIED",
+     "(v)": "K04's registered injections: tests/test_k04_injections.py in the gate (A29); the nominal state= path is A22's unpolished stop"
+    }
+   }
+  },
+  {
+   "id": "T04.A32",
+   "description": "The promoted specification judged against the revision, both ways, at SYN-001-A02-365's root: U-FLASH.Q \u00b1 2e-3 W fails exactly the five checks that read it, each by \u00b1\u03b4; + 5e-4 W is `VERIFIED` with those five near the threshold.",
+   "result": "pass",
+   "value": {
+    "Q_spec_W": -26111.61006023928,
+    "deltas": {
+     "+0.002 W": {
+      "verdict": [
+       "FAILED",
+       true
+      ],
+      "failing": [
+       "energy_balance.envelope",
+       "energy_balance.flash",
+       "residual.SPEC:SPEC-flash-duty",
+       "residual.U-FLASH:FLASH-duty",
+       "specification.U-FLASH.Q"
+      ],
+      "near_threshold": [
+       "energy_balance.envelope",
+       "energy_balance.flash",
+       "residual.SPEC:SPEC-flash-duty",
+       "residual.U-FLASH:FLASH-duty",
+       "specification.U-FLASH.Q"
+      ],
+      "values_minus_delta_W": {
+       "energy_balance.envelope": 7.683411198944334e-12,
+       "energy_balance.flash": 2.593192039053449e-08,
+       "residual.SPEC:SPEC-flash-duty": 4.0745358476090843e-13,
+       "residual.U-FLASH:FLASH-duty": 5.864421795398478e-12,
+       "specification.U-FLASH.Q": 4.0745358476090843e-13
+      }
+     },
+     "-0.002 W": {
+      "verdict": [
+       "FAILED",
+       true
+      ],
+      "failing": [
+       "energy_balance.envelope",
+       "energy_balance.flash",
+       "residual.SPEC:SPEC-flash-duty",
+       "residual.U-FLASH:FLASH-duty",
+       "specification.U-FLASH.Q"
+      ],
+      "near_threshold": [
+       "energy_balance.envelope",
+       "energy_balance.flash",
+       "residual.SPEC:SPEC-flash-duty",
+       "residual.U-FLASH:FLASH-duty",
+       "specification.U-FLASH.Q"
+      ],
+      "values_minus_delta_W": {
+       "energy_balance.envelope": 6.8685040294225175e-12,
+       "energy_balance.flash": 2.593110548336497e-08,
+       "residual.SPEC:SPEC-flash-duty": -4.0745358476090843e-13,
+       "residual.U-FLASH:FLASH-duty": 5.049514625876661e-12,
+       "specification.U-FLASH.Q": -4.0745358476090843e-13
+      }
+     },
+     "+0.0005 W": {
+      "verdict": [
+       "VERIFIED",
+       false
+      ],
+      "failing": [],
+      "near_threshold": [
+       "energy_balance.envelope",
+       "energy_balance.flash",
+       "residual.SPEC:SPEC-flash-duty",
+       "residual.U-FLASH:FLASH-duty",
+       "specification.U-FLASH.Q"
+      ],
+      "values_minus_delta_W": {
+       "energy_balance.envelope": 1.9208527997360836e-12,
+       "energy_balance.flash": 2.59188818745211e-08,
+       "residual.SPEC:SPEC-flash-duty": -1.7171260073556294e-12,
+       "residual.U-FLASH:FLASH-duty": 7.377821010373653e-12,
+       "specification.U-FLASH.Q": -1.7171260073556294e-12
+      }
+     }
+    },
+    "departures": []
+   },
+   "expected": {
+    "deltas": {
+     "+0.002 W": "FAILED, false success, exactly the five checks that read U-FLASH.Q, each +\u03b4",
+     "-0.002 W": "the same set, each \u2212\u03b4",
+     "+0.0005 W": "VERIFIED with near_threshold on those five"
+    },
+    "five": [
+     "energy_balance.envelope",
+     "energy_balance.flash",
+     "residual.SPEC:SPEC-flash-duty",
+     "residual.U-FLASH:FLASH-duty",
+     "specification.U-FLASH.Q"
+    ],
+    "tolerance": "values within 1e-7 W of \u00b1\u03b4"
+   }
+  },
+  {
+   "id": "T04.A33",
+   "description": "F9's evidence: SYN-001-A02-355 from 358 K (one TWO_PHASE attempt, 3 iterations) \u2014 the worst row, the independent split of S3 and the heater and flash fresh-flash balances are `ref.bound.finding_F9`'s to 1e-5 relative, each `near_threshold`; the verdict is recorded and not asserted (ADR 0007 D2.4).",
+   "result": "pass",
+   "value": {
+    "worst_row": "U-HEAT:HEAT-equilibrium:A",
+    "worst_row_over_tolerance": 0.08130029982567066,
+    "checks": {
+     "independent_split.S3.total": {
+      "value": 3.385562497015826e-08,
+      "near_threshold": true
+     },
+     "energy_balance.heater": {
+      "value": 0.000946750893490389,
+      "near_threshold": true
+     },
+     "energy_balance.flash": {
+      "value": -0.0009467508862144314,
+      "near_threshold": true
+     }
+    },
+    "verdict_recorded_not_asserted": [
+     "FAILED",
+     true
+    ],
+    "departures": []
+   },
+   "expected": {
+    "worst_row": "U-HEAT:HEAT-equilibrium:A",
+    "worst_row_over_tolerance": "0.081300",
+    "checks": {
+     "independent_split.S3.total": "3.38556e-8",
+     "energy_balance.heater": "0.000946750",
+     "energy_balance.flash": "-0.000946750",
+     "each": "near_threshold"
+    },
+    "tolerance": "1e-5 relative",
+    "verdict_recorded_not_asserted": "no expectation (verdict_promised: false)"
+   }
+  }
+ ],
+ "artifacts": [],
+ "limitations": [
+  "Spec \u00a714: correctness of any solver is not established. The specification registers what a correct implementation must produce; the twin's agreement with the implementation is evidence that the twin is the implementation's system. This manifest measures the implementation against those registrations \u2014 numerical verification, not empirical validation.",
+  "Spec \u00a714 and ADR 0010 D5 (V14): the residence-time PTC family is not qualified. It improves no tested basin (A23: the 18 admitted starts converge under both cores, the criterion of \u00a78.1 gives `experimental`), and on the A02 region it cannot help by structure (\u00a76.7). PTC is experimental \u2014 selectable only by `eo_core = ptc` \u2014 and V14's qualified-PTC clause is recorded incomplete; V14 stays incomplete until a later package qualifies a family on a preregistered case (\u00a78.4, PTC-R1). This is Frank's open default F1 (option a).",
+  "Spec \u00a714: that the continuation converges wherever a root exists is not established. A frozen-signature path cannot cross a phase boundary (HOM-03 and HOM-04 stall there, typed and bracketed); folds and turning points are not followed (arclength deferred); a specification whose path has no root at some \u03bb stalls. The family scan found one natural stall in 180 runs.",
+  "Spec \u00a714: the homotopy's type covers promoted specifications only. A region without one has no continuation (`unsupported`, HOM-U); SYN-001 under `eo` is such a region.",
+  "Spec \u00a714: attraction far from the root and dynamic stability of the process are not assessed; \u00a76.6 is local, and `claims.dynamic_stability` stays NOT_ASSESSED. PTC can favour some roots over others and does not prove dynamic stability (blueprint \u00a77.5).",
+  "Spec \u00a714: the residence-time model is the pseudo-time model of \u00a76.2 \u2014 a vessel under ideal proportional control with a common residence time \u2014 with no vessel data behind \u03b8; it is not a physical model of the SYN-001 vessels.",
+  "Spec \u00a714: behaviour on energy dynamics is not exercised. With pinned temperatures the energy rows carry no mode; no registered case has a free vessel temperature with a genuine thermal mode (NET-07, T06).",
+  "Spec \u00a714: the A04-ensemble comparison of \u00a78.3 is exploration, not a registered result.",
+  "Spec \u00a714: the basin comparison is not broad. The registered lattice admits 18 starts in six compositions (F14); the verdict rests on them and on the structural result of \u00a76.7, not on coverage of the start space.",
+  "Spec \u00a714: performance (the recompilation per \u03bb-level, the PTC cost of 1.9\u20138.8\u00d7 Newton's) is measured on SYN-001 only; nothing is empirically valid (synthetic fixture); human numerical and process-modelling review are `pending` and no agent sets them.",
+  "Spec \u00a714 and F9 (Q8), handed to a K04 follow-up: K04's fresh-flash tolerances (the independent split \u03c4_flow and the fresh-flash energy balances \u03c4_E) are tighter than the lifted equilibrium rows' tolerance implies at a lifted two-phase stream. T04 promises certificate verdicts only outside ADR 0007 D2.4's band and does not amend K04's tolerances. A33 registers T02's SYN-001-A02-355 from 358 K as evidence: every row at 0.0813 \u03c4, the independent split at 1.092 \u03c4_flow, both fresh-flash energy balances `near_threshold`; its verdict is recorded and not asserted (on the measured platform it is a false alarm). Decide before T06 certifies EO solves in bulk. K04 \u00a74.7's flash-outlet clause (F10) is not implemented either; the same follow-up.",
+  "PTC is experimental and V14's qualified-PTC clause is incomplete (spec \u00a78, ADR 0010 D5, Frank's default F1); the release-gate ledger records the clause as a failed item, never removed from the denominator.",
+  "Handed on, open (implementation review M1, must-fix): a failed Jacobian evaluation is not a typed outcome on the region path. `_region_problem.jacobian` ignores the compiled Jacobian's status and hands the PTC core a zero matrix, so a failure at the polish becomes `rejected:linear_solve_failed` and `CONVERGED` at the unpolished stop (where ruling F15(h) says `EVALUATION_ERROR`), one at a pseudo-step becomes `PTC_STALLED` (an edge-3 trigger), and one on the A02 region can crash SuperLU (review S5). The generic core's `_polish` calls `problem.jacobian(x)` unguarded too, as K03's Newton core does. No registered Jacobian evaluation fails, so no assertion here reaches it.",
+  "Q6, handed to K03: the tear path's budget-refusal shape (T03 review S1) is not folded into T04. A `BudgetExhaustedError` on the tear path still returns `attempts = 0`, `x = start` and no provenance (K03's registered capped-budget shape). T04's own cores keep the attempts, the checkpoint and the provenance (A28). A K03 follow-up before T06's ensemble, which counts budget outcomes.",
+  "Frank's open defaults, in force: F1 \u2014 PTC experimental and V14 incomplete for v0.1 (option a; the alternatives are qualifying on the preregistered CSTR PTC-R1, or dropping PTC from v0.1); F2 \u2014 edge 3 on by default (`eo_recovery: homotopy`), which changes PHS-05's registered outcome from ACTIVE_SET_CYCLING to CONVERGED and is reversible by one policy default.",
+  "A20 is `unsupported`, not `pass`: three of spec \u00a79.9's rows \u2014 the stop on \u2016F\u0302\u2016 at most \u03c6_floor, the proposed \u0394\u03c4 in the SER update, a rejected trial's residual in the ratio \u2014 and the stream-total heater holdup (ADR 0010's rejected alternative) have no ablation seam in the implementation, and none is added to the core for evidence. The twin registers them (`ref.policy_simulation.ablations`); every row the implementation can express was measured and agrees. Whether the twin's registration discharges them is the design lane's ruling (as F15 ruled for the rollback row).",
+  "A01's replay clause is measured as the schema's refusal of a recorded policy document without `globalization` (ADR 0005 D1's precedent). v0.1 has no path from a recorded policy document back to a `SolvePolicy`, so no replay can run under one; `replay()` itself does not validate the recorded policy.",
+  "A11 checks the 170 runs that converge by the contract alone by their outcome only (CONVERGED, no recovery). Spec A11 also names their attempts and counts, which the twin computes but `ref` does not register (review S4, owned by the design lane: register them or strike the clause).",
+  "A26's R0 document leaves the compared floats (pseudo_step, pseudo_step_next, ser_ratio, a PTC trial's \u03b1 below 1: R1/R2 under ADR 0007 D2) and the digests (level_constants_sha256, whose preimage holds the solved p\u2070; state hashes) out; they are neither rounded nor compared across platforms by this manifest.",
+  "Spec A29 and ADR 0010 list V14 among the requirements; the frozen evidence-manifest schema takes D/A ids only (measured: it refuses `V14`), so `requirements` omits it and `docs/requirements.yaml` carries it (T02's and T03's precedent for V13/V15).",
+  "`requirements` also names D20, which ADR 0010 lists (every new field classified R0 or R1/R2 under blueprint \u00a78.3) and spec A29's list does not."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

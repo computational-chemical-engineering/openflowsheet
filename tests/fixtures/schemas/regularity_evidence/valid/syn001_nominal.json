@@ -1,0 +1,41 @@
+{
+ "derivative_accuracy": "exact-ad-double",
+ "dimension": 47,
+ "escalation": null,
+ "factorization_source": "evaluated_at_final_state",
+ "ill_conditioned_reason": null,
+ "inconclusive_reason": null,
+ "inverse_one_norm_estimate": 144.8155534676199,
+ "inverse_one_norm_threshold": 958212.6866745737,
+ "jacobian_identity": {
+  "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+  "phase_signature": null,
+  "state_sha256": "8dc637985b0d2dbe80e71c9aec6565ba224a826a891920df4aea11140efeb84f"
+ },
+ "matrix": "target_after_alias_elimination",
+ "method": "splu_onenormest_rcond1",
+ "nnz": 151,
+ "one_norm": 5.946396976925617,
+ "rcond_1": 0.0011612638121767359,
+ "scales_provenance": "SolvePlan.row_scales and column_scales",
+ "solution_error_bound_scaled": 2.1437008237811606e-14,
+ "status": "NO_RANK_LOSS_DETECTED",
+ "superlu_options": {
+  "diag_pivot_thresh": 1.0,
+  "options": {
+   "Equil": false,
+   "IterRefine": "NOREFINE",
+   "SymmetricMode": false
+  },
+  "panel_size": 10,
+  "permc_spec": "COLAMD",
+  "relax": 1
+ },
+ "thresholds": {
+  "svd_dimension_cap": 2000,
+  "svd_rank_tolerance": "n eps sigma_max",
+  "tau_ill": 1e-08
+ },
+ "u_diagonal_ratio": 0.041399913470528786
+}

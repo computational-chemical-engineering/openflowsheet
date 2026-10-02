@@ -1,0 +1,39 @@
+{
+ "check_policy_id": "K04-check-policy-v1",
+ "compared_quantities": {
+  "S2.n.A": 0.4596080472834616,
+  "S2.n.B": 0.23852118148815854,
+  "S2.n.C": 0.09237528482174916
+ },
+ "fixture": "PC-2",
+ "limitations": [],
+ "non_passing_checks": [],
+ "outcome": "CONVERGED",
+ "path": "revision",
+ "policy_id": "T06-revision-v2",
+ "revision": "benchmarks/t06/cases/SYN-001-T06-PC2.yaml",
+ "revision_file_sha256": "0030112a49c71381372697e16e0bdb51f48a7b3cf52285a7fde96ec61e970034",
+ "revision_id": "SYN-001-T06-PC2-r1",
+ "side": "ours",
+ "state": {
+  "S1.P": 150000.0,
+  "S1.T": 300.0,
+  "S1.n.A": 1.0,
+  "S1.n.B": 1.0,
+  "S1.n.C": 1.0,
+  "S2.N": 0.7905045135933693,
+  "S2.P": 150000.0,
+  "S2.T": 370.0,
+  "S2.n.A": 0.4596080472834616,
+  "S2.n.B": 0.23852118148815854,
+  "S2.n.C": 0.09237528482174916,
+  "S3.N": 2.209495486406631,
+  "S3.P": 150000.0,
+  "S3.T": 370.0,
+  "S3.n.A": 0.5403919527165385,
+  "S3.n.B": 0.7614788185118415,
+  "S3.n.C": 0.9076247151782509,
+  "U-FLASH.Q": 42875.01907292455
+ },
+ "verification_status": "VERIFIED"
+}

@@ -1,0 +1,496 @@
+# T06 ProcessRevision: SYN-001-T06-NET03
+#
+# SYN-001-T06-NET03: nested recycle (an inner liquid loop inside an outer condensate loop).
+#
+# Written to docs/derivations/T06-corpus-spec.md §4.1, §4.3 and docs/design/T05-generalization.md
+# §1.3 (the revision encoding R1-R6): instances in flow order, feeds first (the declaration
+# order); material connections in the specification's stream order (the stream allocation
+# order). Every model instance and pin is copied from a registered case with only its id, target
+# and stated value changed. Validates against schemas/process-revision.schema.json; binds by
+# application.revision_binding. `content_hash` is absent, as in every registered revision.
+schema_version: 1
+revision_id: SYN-001-T06-NET03-r1
+parent_revision: null
+title: 'SYN-001-T06-NET03: nested recycle (an inner liquid loop inside an outer condensate loop).'
+description: Feed -> mixer 1 -> mixer 2 -> heater (358 K) -> PH flash (20 000 W); flash liquid -> splitter
+  (r = 0.5) back to mixer 2 and to a purge sink; flash vapour -> cooler (340 K) -> TP flash (340 K, P_r)
+  whose liquid returns to mixer 1 and whose vapour is a product. T06 spec §4.3 (corpus NET-03); expected
+  values in benchmarks/t06/reference_values.yaml closed_form.corpus_cases.SYN-001-T06-NET03.
+component_set:
+  record_source: benchmarks/syn001/components.yaml
+  components:
+  - A
+  - B
+  - C
+instances:
+- id: U-FEED
+  model:
+    id: syn001.feed_source
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: feed
+  parameters: {}
+  policy:
+    fidelity: boundary condition; the fresh feed state is fully specified
+    validity: SYN-001 declared domain 280-440 K, 50000-200000 Pa
+- id: U-MIX1
+  model:
+    id: syn001.adiabatic_mixer
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: mixer
+  parameters: {}
+  policy:
+    fidelity: adiabatic component and energy balance (K02, unchanged)
+    validity: every port liquid (R-038); the closure is restricted to the subcooled-liquid domain
+- id: U-MIX2
+  model:
+    id: syn001.adiabatic_mixer
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: mixer
+  parameters: {}
+  policy:
+    fidelity: adiabatic component and energy balance (K02, unchanged)
+    validity: every port liquid (R-038); the closure is restricted to the subcooled-liquid domain
+- id: U-HEAT
+  model:
+    id: syn001.tp_heater
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: heater
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the heater; zero here, imposed as an equation P_out = P_in
+        rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: TP-state outlet at the specified temperature (K02, unchanged)
+    validity: SYN-001 declared domain; a two-phase outlet is a supported result
+- id: U-PHF
+  model:
+    id: syn001.ph_flash
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: flash
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the PH flash; zero here, imposed as an equation P_out = P_in
+        rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: PH flash at a specified duty (duty.Q = 20000 W, pinned by SPEC-phf-Q); the temperature and
+      the phase split are calculated (T05 spec §5)
+    validity: SYN-001 declared domain; single-phase and zero-flow results are supported outcomes
+- id: U-SPLIT
+  model:
+    id: syn001.stream_splitter
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: splitter
+  parameters:
+    split_fraction:
+      value: 0.5
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: 'Fraction r of the flash liquid returned to the mixer; the purge takes 1 - r (0.6, not
+        0.5: T05 spec §11.3)'
+      role: fixed
+      bounds:
+        lower: 0.0
+        upper: 1.0
+  policy:
+    fidelity: linear split at constant T, P and composition (K02, unchanged)
+    validity: 0 <= r < 1
+- id: U-COOL
+  model:
+    id: syn001.tp_heater
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: heater
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the heater; zero here, imposed as an equation P_out = P_in
+        rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: TP-state outlet at the specified temperature (K02, unchanged)
+    validity: SYN-001 declared domain; a two-phase outlet is a supported result
+- id: U-FL2
+  model:
+    id: syn001.tp_flash
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: flash
+  parameters:
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the flash; zero in SYN-001, imposed as an equation P_out
+        = P_in rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: isothermal-isobaric equilibrium flash sharing the heater's TP-state kernel; duty calculated
+    validity: SYN-001 declared domain; single-phase and zero-flow results are supported outcomes, not
+      failures (ADR 0001 D3.4)
+- id: U-SINK-P
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+- id: U-SINK-V
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+connections:
+- id: S1
+  kind: material
+  from:
+    instance: U-FEED
+    port: outlet
+  to:
+    instance: U-MIX1
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Fresh feed: (1, 1, 1) mol/s at 300 K and P_r, liquid.'
+- id: S10
+  kind: material
+  from:
+    instance: U-FL2
+    port: liquid
+  to:
+    instance: U-MIX1
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Condensate recycle (outer loop).
+- id: S2
+  kind: material
+  from:
+    instance: U-MIX1
+    port: outlet
+  to:
+    instance: U-MIX2
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Mixer 1 outlet.
+- id: S7
+  kind: material
+  from:
+    instance: U-SPLIT
+    port: recycle
+  to:
+    instance: U-MIX2
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Liquid recycle (inner loop).
+- id: S3
+  kind: material
+  from:
+    instance: U-MIX2
+    port: outlet
+  to:
+    instance: U-HEAT
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Mixer 2 outlet, subcooled.
+- id: S4
+  kind: material
+  from:
+    instance: U-HEAT
+    port: outlet
+  to:
+    instance: U-PHF
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor_liquid
+  notes: Heater outlet at 358 K, lifted.
+- id: S6
+  kind: material
+  from:
+    instance: U-PHF
+    port: liquid
+  to:
+    instance: U-SPLIT
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: PH-flash liquid.
+- id: S5
+  kind: material
+  from:
+    instance: U-PHF
+    port: vapor
+  to:
+    instance: U-COOL
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor
+  notes: PH-flash vapour to the cooler.
+- id: S9
+  kind: material
+  from:
+    instance: U-COOL
+    port: outlet
+  to:
+    instance: U-FL2
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor_liquid
+  notes: Cooler outlet at 340 K, lifted.
+- id: S8
+  kind: material
+  from:
+    instance: U-SPLIT
+    port: purge
+  to:
+    instance: U-SINK-P
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Purge.
+- id: S11
+  kind: material
+  from:
+    instance: U-FL2
+    port: vapor
+  to:
+    instance: U-SINK-V
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor
+  notes: Second-flash vapour product.
+specifications:
+- id: SPEC-S1-n-A
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: A
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-n-B
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: B
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-n-C
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: C
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: Fresh-feed component molar flow.
+- id: SPEC-S1-T
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 300.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: Fresh-feed temperature.
+- id: SPEC-S1-P
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: Fresh-feed pressure.
+- id: SPEC-heater-outlet-T
+  target:
+    object_type: connection
+    object_id: S4
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 358.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: Heater outlet temperature; the duty is calculated.
+- id: SPEC-phf-Q
+  target:
+    object_type: instance
+    object_id: U-PHF
+    path: duty.Q
+    component: null
+  kind: heat_rate
+  unit: W
+  value: 20000.0
+  tolerance:
+    absolute: 1.0e-05
+    relative: 1.0e-08
+    scale: 100000.0
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: PH-flash duty, positive into the unit.
+- id: SPEC-cooler-outlet-T
+  target:
+    object_type: connection
+    object_id: S9
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 340.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: Cooler (a tp_heater with a vapour inlet) outlet temperature; the duty is calculated.
+- id: SPEC-fl2-T
+  target:
+    object_type: instance
+    object_id: U-FL2
+    path: outlet.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 340.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: TP-flash outlet temperature (both outlets).
+- id: SPEC-fl2-P
+  target:
+    object_type: instance
+    object_id: U-FL2
+    path: outlet.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  notes: TP-flash outlet pressure (both outlets).
+provenance:
+  actor: Opus 5.5 (T06 M1, build lane, from the design-lane specification)
+  operation: create
+  timestamp: '2026-09-25T00:00:00Z'
+  source_references:
+  - docs/derivations/T06-corpus-spec.md §4.1, §4.3
+  - docs/design/T05-generalization.md §1.3
+  - benchmarks/t06/reference_values.yaml closed_form.corpus_cases
+  notes: Hand-specified fixture input. No solver has run on this revision.

@@ -1,0 +1,82 @@
+{
+  "col_ids": [
+    "v_A",
+    "v_B",
+    "v_C",
+    "l_A",
+    "l_B",
+    "l_C",
+    "V",
+    "L",
+    "lnK_A",
+    "lnK_B",
+    "lnK_C",
+    "hL_A",
+    "hL_B",
+    "hL_C",
+    "T",
+    "P",
+    "Q"
+  ],
+  "constants_sha256": "d4ddcbf81bad6fc0c7e3e76a49cb15d214a5dd5a41e83a0e96cbe5850323f009",
+  "counters": {
+    "blockH": {
+      "jacobian_calls": 1,
+      "value_calls": 1
+    },
+    "blockK": {
+      "jacobian_calls": 0,
+      "value_calls": 1
+    }
+  },
+  "data": [],
+  "format": "csc",
+  "indices": [],
+  "indptr": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "message": "blockK: temperature 270.0 K outside [280.0, 440.0] K",
+  "model_version": "SYN-001-L-1@8e5930fc737e8e0b033a2fe35d06971c6cf911df2db5d9731e050cf1cb6fb98a",
+  "nnz": 0,
+  "pattern_provenance": "backend-declared",
+  "phase_signature": null,
+  "row_ids": [
+    "bal_A",
+    "bal_B",
+    "bal_C",
+    "Vdef",
+    "Ldef",
+    "eq_A",
+    "eq_B",
+    "eq_C",
+    "kdef_A",
+    "kdef_B",
+    "kdef_C",
+    "hdef_A",
+    "hdef_B",
+    "hdef_C",
+    "energy",
+    "tspec",
+    "pspec"
+  ],
+  "source_map": [],
+  "state_sha256": "7cd3d793d2cf04afdb5d4c157fd695dde1a245766b10dda0ab082ef7314c932b",
+  "status": "invalid_trial_state"
+}

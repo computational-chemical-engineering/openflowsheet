@@ -1,0 +1,49 @@
+{
+  "job_id": "job-000003",
+  "operation": "reproduce",
+  "request": {
+    "operation": "reproduce",
+    "idempotency_key": "fixture-reproduce",
+    "budgets": {
+      "wall_time_s": null
+    },
+    "body": {
+      "bundle_artifact_id": "job-000002:bundle",
+      "rerun": false
+    }
+  },
+  "request_sha256": "a9d272b4e5d0af639e092660468189a4e5634569dbc9affb68cf3fc9947c96dc",
+  "principal_id": "local-owner",
+  "capability_id": "local-owner",
+  "policy_sha256": "a3603643f8038f01b2890e15a180fce2ba9e25a3c56362da72b7c058109f6e78",
+  "status": "completed",
+  "outputs": [
+    {
+      "kind": "replay_report",
+      "artifact_id": "job-000003:replay-report.json",
+      "sha256": "c11a7d789d5b08fc5227d46d5206b78d133c4044208731b88045916ca1a3c36e",
+      "size_bytes": 994,
+      "name": "replay-report.json"
+    }
+  ],
+  "progress": {
+    "completed": 1,
+    "total": 2,
+    "stage": "compare"
+  },
+  "effective_budgets": {
+    "wall_time_s": null,
+    "max_property_calls": null
+  },
+  "cancel_requested": false,
+  "event_count": 6,
+  "created_at": "2026-09-27T11:59:55.061138Z",
+  "started_at": "2026-09-27T11:59:55.062491Z",
+  "ended_at": "2026-09-27T11:59:55.070385Z",
+  "ending": {
+    "status": "completed",
+    "reason": "operation_completed",
+    "interruption": null
+  },
+  "error": null
+}

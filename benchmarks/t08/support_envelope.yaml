@@ -1,0 +1,2426 @@
+# The v0.1 supported envelope (T08 release spec §5; T08 build-first spec §E.4, §E.5, B27).
+#
+# Machine-readable source of `docs/support-matrix.md`, which `scripts/t08_support_matrix.py --emit`
+# renders and `--check` holds to this file byte for byte (T08.A23). `--check` also compares the
+# enumerated axes with the code (T08.A20), requires every `unsupported` row to name a typed outcome
+# and test nodes that collect (T08.A22; `tests/test_t08_w2_support_envelope.py` runs them), and
+# checks the harvest (T08.A21).
+#
+# Unlisted is unsupported (blueprint §2.2). Evidence strings take three forms: a pytest node id
+# (`tests/<file>.py::<test>[<param>]`), a manifest check id (`check:<id>`, which must exist with
+# result `pass` in a manifest under `evidence/`), or a document (`doc:<path>` and an optional
+# ` §<section>`; the path must exist).
+#
+# Build-lane notes (T08 W2.1), for the design-lane review:
+# - L10 is the seed row restated: T08-warm-v1 built compatible warm starts (B40–B49), so "no warm
+#   starts across runs" is no longer true; the GUESS-role half stands.
+# - L18 onward are rows the harvest (W2.2) needed that §5.5's seed does not carry.
+
+envelope_id: v0.1-envelope-1
+release: 0.1.0
+
+axes:
+  - id: property_model
+    title: Property model
+    statement: >-
+      SYN-001 only: ideal vapour, incompressible ideal liquid, VLE; reference convention
+      SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no critical region, no extra phase.
+    providers: [syn001]
+    reference_convention: SYN-001-ref-v1
+    evidence:
+      - check:T05.A23
+      - check:K02.identity.property_package
+      - doc:docs/derivations/SYN-001.md
+      - doc:docs/adr/0011-unit-models-ph-closure-and-reaction-datum.md §D2
+
+  - id: components
+    title: Components
+    statement: >-
+      Exactly the three SYN-001 pseudo-components A, B, C, declared in any of the six orders and
+      mapped onto the provider's order at binding (T06 A59–A61); a proper subset, an extra or a
+      repeated component is refused `components_unsupported`. A mixture without one of them is
+      declared with all three and that component's flows exactly zero (ADR 0001 D3). Synthetic:
+      no real chemical identity.
+    members: [A, B, C]
+    evidence:
+      - tests/test_t06_w1b_order.py::test_every_permutation_maps_to_the_providers_order
+      - tests/test_t06_w1b_order.py::test_a60_a_non_permutation_is_refused_by_both_bindings
+      - check:T06.A59
+      - check:T06.A60
+      - check:T06.A61
+
+  - id: domain
+    title: Domain
+    statement: 280–440 K and 50–200 kPa, inclusive (the provider's predicate).
+    temperature_K: [280.0, 440.0]
+    pressure_Pa: [50000.0, 200000.0]
+    evidence:
+      - tests/test_k01_syn001_conformance.py::test_a_state_outside_the_domain_is_reported_not_extrapolated
+      - tests/test_t06_w11_initializer.py::test_a62_the_tear_path_returns_initialization_failed
+      - check:T06.A62
+
+  - id: unit_models
+    title: Unit models
+    statement: >-
+      The thirteen models of `MODEL_BUILDERS`, each with its registered limitations (L02, L27–L31,
+      L-CSTR-1..3). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
+    members:
+      - syn001.adiabatic_mixer
+      - syn001.component_separator
+      - syn001.conversion_reactor
+      - syn001.feed_source
+      - syn001.heat_exchanger
+      - syn001.kinetic_cstr
+      - syn001.liquid_pump
+      - syn001.ph_flash
+      - syn001.product_sink
+      - syn001.stream_splitter
+      - syn001.tp_flash
+      - syn001.tp_heater
+      - syn001.valve
+    evidence:
+      - tests/test_t05_w1b_revision.py::test_builders_hold_the_thirteen_models_of_the_table
+      - tests/test_t08_kinetic_cstr.py::test_b10_the_model_is_the_thirteenth_builder_with_its_signature
+      - check:T05.A17
+      - check:T05.A18
+      - check:T05.A19
+      - check:T05.A21
+
+  - id: topologies
+    title: Topologies
+    statement: >-
+      Acyclic flowsheets; recycles (single, nested, high-gain) by tear with safeguarded Anderson
+      and restart, or merged to EO; EO regions; cross-unit specifications promoted to EO; exact
+      zero-flow streams and components (ADR 0001 D3; the `ZERO_FLOW` regime). More than one loop
+      or region per plan is not exercised by a registered case (L23).
+    evidence:
+      - check:K03.G00.flowsheet_solved
+      - check:T02.A04
+      - check:T02.A14
+      - check:T02.A18
+      - check:T02.A21
+      - check:T02.A28
+      - check:K02.flowsheet.phase_signatures
+      - check:T05b.B16
+
+  - id: specifications
+    title: Specifications
+    statement: >-
+      The pins `list_models` publishes per model, in SI or in the units of ADR 0016's table (one
+      exact, case-sensitive spelling each; no aliases, no gauge pressure).
+    unit_spellings:
+      - [dimensionless, "%"]
+      - [heat_rate, kW]
+      - [heat_rate, MW]
+      - [molar_flow, g/s]
+      - [molar_flow, kg/h]
+      - [molar_flow, kg/s]
+      - [molar_flow, kmol/h]
+      - [molar_flow, kmol/s]
+      - [molar_flow, mmol/s]
+      - [molar_flow, mol/h]
+      - [mole_fraction, "%"]
+      - [power, kW]
+      - [power, MW]
+      - [pressure, atm]
+      - [pressure, bar]
+      - [pressure, kPa]
+      - [pressure, MPa]
+      - [pressure, psi]
+      - [temperature, degC]
+      - [temperature, degF]
+      - [temperature_difference, degC]
+      - [temperature_difference, degF]
+    evidence:
+      - tests/test_t07_w5a_inspection.py::test_list_models_is_the_signatures_and_constructs_nothing
+      - tests/test_t06_w12_units_v2.py::test_a67_the_table_is_the_registered_one
+      - check:T06.A67
+      - check:T06.A68
+      - doc:docs/adr/0016-unit-conversion-v2.md §D3
+
+  - id: solve_policies
+    title: Solve policies
+    statement: >-
+      The four offered policies of B27. `default` resolves to the route's registered policy
+      (`T06-revision-v2` on `revision_eo`, `T04-W12` on `legacy_eo`). PTC is selectable by explicit
+      policy only (`T08-ptc-v1`) and is experimental (L01); compatible warm starts by explicit
+      policy only (`T08-warm-v1`, R-124; L-WS-1, L-WS-2).
+    members: [T04-W12, T06-revision-v2, T08-ptc-v1, T08-warm-v1]
+    evidence:
+      - tests/test_t07_w5a_inspection.py::test_get_project_states_the_project_and_the_caller
+      - tests/test_t07_b3_policies.py::test_an_offered_policy_is_admitted
+      - tests/test_t08_ptc_r1_case.py::test_the_policies_are_t06_revision_v2_with_only_the_registered_changes
+      - tests/test_t08_w4_warm_starts.py::test_t08_warm_v1_is_t06_revision_v2_with_only_the_chain_changed
+      - doc:docs/reviews/T08-verdict-V14b.md
+
+  - id: globalization_and_recovery
+    title: Globalization and recovery
+    statement: >-
+      Damped Newton, with or without the terminal refinement (ADR 0018), Anderson recycle, specification continuation via
+      edge 3, sequential restart (ADR 0015); the recovery-edge inventory of spec §5.6 (T08.A33,
+      W2.4); PTC offered as `T08-ptc-v1`, experimental (V14 (b) carried as FAIL, ADR 0021 D3).
+    evidence:
+      - check:T02.A32
+      - check:T04.A04
+      - check:T04.A09
+      - check:T04.A10
+      - check:T06.A64
+      - check:T06.A88
+      - doc:docs/adr/0015-edge3-sequential-restart.md
+      - doc:docs/adr/0018-newton-terminal-refinement.md
+
+  - id: verification
+    title: Verification
+    statement: >-
+      The four-word certificate (VERIFIED, RELAXED, UNVERIFIED, FAILED); residual accuracy at
+      registered tolerances, not solution accuracy (ADR 0007 F3; L05); the [A08] regularity screen;
+      energy checks qualified as sharing the provider ([A09]; L06).
+    evidence:
+      - check:K04.A15.verdicts
+      - check:K04.A18.injected_false_success
+      - check:K04.A16.supplied_policy
+      - check:T06.A33
+      - doc:docs/adr/0007-reproducibility-certificate-policy.md
+
+  - id: reproducibility
+    title: Reproducibility
+    statement: >-
+      R0 structural identity on Linux x86-64 and aarch64; floats within the numerical policy each
+      record names (`T08-numerical-policy-v2` for v0.1 records, ADR 0025); bitwise agreement
+      reported, never promised (ADR 0007 F1; L07).
+    evidence:
+      - check:K05.G05.two_platform_structural_equality
+      - check:T06.A45
+      - check:T07.G1
+      - doc:docs/adr/0007-reproducibility-certificate-policy.md
+      - doc:docs/adr/0025-cross-platform-replay-comparison.md
+
+  - id: interfaces
+    title: Interfaces
+    statement: >-
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty operations of
+      `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
+    operations:
+      artifact_bytes: [python, cli, http]
+      cancel_job: [python, cli, http, mcp]
+      commit_change: [python, cli, http, mcp]
+      diff_revisions: [python, cli, http, mcp]
+      get_artifact: [python, cli, http, mcp]
+      get_job: [python, cli, http, mcp]
+      get_job_result: [python, cli, http, mcp]
+      get_project: [python, cli, http, mcp]
+      get_revision: [python, cli, http, mcp]
+      inspect_structure: [python, cli, http, mcp]
+      list_job_events: [python, cli, http, mcp]
+      list_jobs: [python, cli, http, mcp]
+      list_models: [python, cli, http, mcp]
+      list_revisions: [python, cli, http, mcp]
+      preview_change: [python, cli, http, mcp]
+      reproduce: [python, cli]
+      solve: [python, cli]
+      submit_job: [python, cli, http, mcp]
+      validate: [python, cli, http, mcp]
+      wait_job: [python, cli, http, mcp]
+    evidence:
+      - tests/test_t07_v17_reference.py::test_g16b_reference_run
+      - check:T07.G11
+      - check:T07.G14
+      - check:T07.D15(b)
+      - doc:docs/adr/0019-application-contract-v1.md
+
+  - id: platforms
+    title: Platforms
+    statement: Linux x86-64 and aarch64, Python 3.13, the one lock (L15).
+    architectures: [aarch64, x86-64]
+    python: "3.13"
+    lock_sha256: ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4
+    evidence:
+      - check:K05.G05.two_platform_structural_equality
+      - doc:.github/workflows/ci.yml
+      - doc:requirements.lock
+
+unsupported:
+  - id: U01
+    capability: Real components, or a component set that is not exactly a permutation of {A, B, C}
+    outcome: >-
+      `validate` INVALID with `COMP-03` FAIL naming the component (T06 A08); the bindings refuse
+      `components_unsupported` (T06 A60).
+    evidence:
+      - tests/test_t06_w1b_order.py::test_a60_a_non_permutation_is_refused_by_both_bindings
+      - tests/test_t05_w1b_revision.py::test_refusal[R2-components]
+      - check:T06.A08
+
+  - id: U02
+    capability: Any property method other than SYN-001
+    outcome: >-
+      Not representable: a revision has no property-method member, so naming one is `SCHEMA-01`
+      INVALID; a model of another package is `model_unsupported(<id>)` at binding.
+    evidence:
+      - tests/test_t08_w2_unsupported.py::test_u02_a_property_method_member_is_a_schema_refusal
+      - tests/test_t08_w2_unsupported.py::test_u02_a_model_of_another_property_package_is_model_unsupported
+
+  - id: U03
+    capability: A state outside 280–440 K or 50–200 kPa
+    outcome: >-
+      `INITIALIZATION_FAILED` at the start (T06 A62); `invalid_trial_state` from the compiled
+      residual inside a solve.
+    evidence:
+      - tests/test_t06_w11_initializer.py::test_a62_the_tear_path_returns_initialization_failed
+      - tests/test_k01_syn001_conformance.py::test_a_state_outside_the_domain_is_reported_not_extrapolated
+      - check:T06.A62
+
+  - id: U04
+    capability: A model id not in `MODEL_BUILDERS`
+    outcome: The revision binder refuses `model_unsupported(<id>)`.
+    evidence:
+      - tests/test_t05_w1b_revision.py::test_refusal[builders]
+      - tests/test_t07_w3f_tie_by_kind.py::test_q2_a2_an_unsupported_tie_reports_the_revision_binders_refusal
+
+  - id: U05
+    capability: >-
+      `validate(task="optimization")`; any study — optimization, parametric sensitivities,
+      sweeps, parameter estimation
+    outcome: >-
+      `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, detail
+      `task_unsupported(optimization)`, before any analysis; no v0.1 path returns
+      `READY_FOR_OPTIMIZATION` (the value stays in the frozen enum, unused); the other studies
+      have no operation among the twenty of `OPERATIONS`; no optimality claim anywhere.
+    evidence:
+      - tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported
+      - tests/test_t08_w2_unsupported.py::test_u05_a_change_for_optimization_is_refused_audited
+      - doc:docs/blueprint-v3.1.md
+
+  - id: U06
+    capability: Dynamics; time-varying specifications as a solve
+    outcome: Not representable (ADR 0008 D1); a profile value or a time member is `SCHEMA-01` INVALID.
+    evidence:
+      - tests/test_t08_w2_unsupported.py::test_u06_a_specification_profile_is_a_schema_refusal
+      - tests/test_t08_w2_unsupported.py::test_u06_a_time_member_is_a_schema_refusal
+      - doc:docs/adr/0008-transient-extension-readiness.md §D1
+
+  - id: U07
+    capability: PTC on a flowsheet whose `holdup_balance` rows lack a registered mapping entry
+    outcome: >-
+      `PTC_MAPPING_INVALID` with `ptc_mapping_invalid(<row>, missing)`. PTC is offered as
+      `T08-ptc-v1` on flowsheets whose every `holdup_balance` row has a registered mapping entry
+      (`tp_heater`, `tp_flash`, `kinetic_cstr`); T05 §12.4's refusal for T05 models is unchanged.
+    evidence:
+      - tests/test_t05_w12_discovery.py::test_ptc_over_a_t05_region_is_refused_before_any_call
+      - tests/test_t05_w12_discovery.py::test_ptc_through_the_plan_ends_with_the_same_refusal
+      - tests/test_t04_ptc_region.py::test_a14_an_invalid_mapping_is_refused_before_anything_runs
+      - tests/test_t08_kinetic_cstr.py::test_b13_a_t05_holdup_row_beside_the_cstr_is_still_refused
+
+  - id: U08
+    capability: >-
+      Resume, branches, in-band policy administration, MCP over HTTP, solve policies beyond the
+      offered four
+    outcome: >-
+      R-110: a resume request is outside the job-operation enum and refused by the request schema;
+      a change set naming a branch is refused by its schema; no operation administers policies
+      and no HTTP route serves MCP; a registered policy that is not offered is `unsupported`, an
+      unknown id `not_found`.
+    evidence:
+      - tests/test_t07_adr0008_jobs.py::test_c_an_operation_outside_the_enum_is_refused[solve_resume]
+      - tests/test_t08_w2_unsupported.py::test_u08_a_change_set_naming_a_branch_is_refused_by_its_schema
+      - tests/test_t08_w2_unsupported.py::test_u08_no_operation_administers_policies
+      - tests/test_t08_w2_unsupported.py::test_u08_mcp_is_not_served_over_http
+      - tests/test_t07_b3_policies.py::test_a_registered_policy_not_offered_is_refused_unsupported
+      - tests/test_t07_b3_policies.py::test_an_unknown_policy_stays_not_found
+      - doc:docs/decision-register.md §R-110
+
+  - id: U09
+    capability: Second-order derivatives through the property callback
+    outcome: The Hessian is reported `absent` and its call raises; never zeros (K01).
+    evidence:
+      - tests/test_k01_compiler.py::test_the_hessian_is_reported_absent_and_raises_rather_than_returning_zeros
+      - check:K01.D5.4.second_order
+
+  - id: U10
+    capability: Gauge pressure; unregistered unit spellings
+    outcome: Refused, typed, through the pure conversion, `validate()` and both bindings (T06 A68).
+    evidence:
+      - tests/test_t06_w12_units_v2.py::test_a68_every_registered_refusal_in_the_pure_function[1.0-barg-pressure-state.P-None]
+      - tests/test_t06_w12_units_v2.py::test_a68_every_registered_refusal_in_the_pure_function[14.7-psig-pressure-state.P-None]
+      - tests/test_t06_w12_units_v2.py::test_a68_every_registered_refusal_in_the_pure_function[26.85-degc-temperature-state.T-None]
+      - check:T06.A68
+
+  - id: U11
+    capability: A region needing EO derivatives a unit lacks
+    outcome: The plan is refused and the solve ends `CAPABILITY_UNAVAILABLE` naming the unit (T02 A27).
+    evidence:
+      - tests/test_t02_a02.py::test_a27_cap_1_the_plan_is_refused_and_no_loop_is_built_in_its_place
+      - check:T02.A27
+
+  - id: U12
+    capability: A specification pairing other than one freed column per promoted target
+    outcome: >-
+      `UNSUPPORTED_RANK_STRUCTURE` at plan construction; through the application
+      `plan_refused(UNSUPPORTED_RANK_STRUCTURE)`, a typed `unsupported` end (T07 rf6).
+    evidence:
+      - tests/test_t02_a02.py::test_a26_a_closed_but_non_square_region_is_refused_at_plan_construction
+      - tests/test_t07_r7_admission.py::test_a_route_bound_without_admission_ends_typed_at_plan_time
+
+  - id: U13
+    capability: Mode-B artifacts (container, installer, wheelhouse); container replay
+    outcome: >-
+      Not provided (ADR 0006 D1, Q3 default; ADR 0007 F5): no such artifact is tracked or built.
+      What is provided is the clean-environment replay of spec §8.
+    evidence:
+      - tests/test_t08_w2_unsupported.py::test_u13_no_mode_b_artifact_is_tracked
+      - doc:docs/adr/0006-distribution-data-rights.md §D1
+
+  - id: U14
+    capability: External benchmark comparisons (CRAFTS / OpenIDAES-450)
+    outcome: Not run in v0.1 (M06/W27); nothing is registered or shipped for them.
+    evidence:
+      - tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered
+
+limitations:
+  - id: L01
+    text: >-
+      PTC is experimental: selectable by explicit policy only (`T08-ptc-v1`); no qualified family.
+      V14 clause (b) is carried as FAIL (ADR 0021 D3; on PTC-R1, PTC ends at the saddle from 149
+      starts).
+    evidence:
+      - doc:docs/derivations/T04-globalization-spec.md §8
+      - doc:docs/adr/0010-globalization-homotopy-ptc.md
+      - doc:docs/reviews/T08-verdict-V14b.md
+      - doc:docs/adr/0021-v0.1-release-policy.md §D3
+  - id: L02
+    text: >-
+      A zero-duty lifted flash whose root lies exactly on its dew or bubble point is `UNVERIFIED`,
+      `RANK_DEFICIENT`; nearby two-phase-attempt stops are caught `FAILED(false_success_detected)`.
+    evidence:
+      - doc:docs/derivations/T05b-limitations-spec.md §17
+      - check:T06.A07
+      - check:T06.A92
+  - id: L03
+    text: >-
+      The alias-pressure-shift limit: the pressure column at 0-based position j is certifiable iff
+      997 (j + 1) <= max(200 000 - P, P - 50 000) Pa; beyond it the alias certificates are
+      `unsupported(pressure_shift_outside_domain)` and the verdict `UNVERIFIED` (spec §5.4).
+    evidence:
+      - tests/test_t08_w2_alias_threshold.py::test_a24_one_pressure_column_at_the_threshold_positions
+      - doc:docs/adr/0014-t06-corpus-ensemble-and-reference-policy.md §D5
+      - doc:docs/derivations/T06-corpus-spec.md §8.2
+  - id: L04
+    text: >-
+      A saturation-closure failure inside the rows' own window is `FAILED`, where
+      `UNVERIFIED(label_not_demonstrated)` would be exact (conservative).
+    evidence:
+      - doc:docs/derivations/T06-corpus-spec.md §16
+  - id: L05
+    text: >-
+      `VERIFIED` certifies residuals at registered tolerances; the solution-error bound is
+      recorded, not promised.
+    evidence:
+      - doc:docs/adr/0007-reproducibility-certificate-policy.md §F3
+  - id: L06
+    text: Energy checks share the property provider with the solver ([A09]).
+    evidence:
+      - check:T06.A33
+      - doc:docs/derivations/K04-certificate-spec.md
+  - id: L07
+    text: >-
+      Bitwise float reproduction is reported, never promised; per-start ensemble outcomes differ
+      across architectures. LU pivot-path diagnostics (`u_diag_min_abs`, `u_diag_max_abs`,
+      `u_diagonal_ratio`, `nnz_L`, `nnz_U`) are recorded and not compared across platforms (ADR
+      0025 D4).
+    evidence:
+      - doc:docs/adr/0007-reproducibility-certificate-policy.md §F1
+      - check:T06.A35
+  - id: L08
+    text: >-
+      Property-call counts are within-platform diagnostics; the terminal-refinement core (ADR 0018) can exhaust the
+      property budget where `newton` finishes.
+    evidence:
+      - doc:docs/adr/0007-reproducibility-certificate-policy.md §D5
+      - doc:docs/adr/0018-newton-terminal-refinement.md §D4′
+  - id: L09
+    text: The robustness claim is the nominal profile only; the stress profiles were not run.
+    evidence:
+      - doc:docs/derivations/T06-corpus-spec.md §6.7
+  - id: L10
+    text: >-
+      The initializer chain is partial (blueprint §7.4, K03 §10.1): GUESS-role specifications are
+      not bound by the revision binder (such revisions run on `legacy_eo`), the SYN-001 tear path
+      has its registered initializer only, and the one fallback between initializer sources is
+      `T08-warm-v1`'s compatible warm start → traversal (opt-in; L-WS-1, L-WS-2).
+    evidence:
+      - doc:docs/derivations/T03-phase-controller-spec.md §13
+      - doc:docs/derivations/K03-solver-spec.md §10.1
+      - check:K03.initializer_chain
+      - doc:docs/derivations/T08-build-first-spec.md §B4
+      - doc:docs/adr/0024-compatible-warm-starts.md
+  - id: L11
+    text: >-
+      Cancellation: `verify` has no cooperative checkpoint; a region's events are lost on
+      interrupt.
+    evidence:
+      - doc:docs/T07_DECISIONS.md
+  - id: L12
+    text: >-
+      Agent evidence: one pinned model and configuration, MCP only, not out of sample (CP lower
+      bound 0.681); T09 0/6, T10 1/3; INJ-4 never exposed.
+    evidence:
+      - doc:docs/reviews/T07-verdicts.md
+  - id: L13
+    text: "`worker.log` is readable through `get_artifact`."
+    evidence:
+      - doc:docs/T07_DECISIONS.md
+  - id: L14
+    text: The v0.1 rank rule is exactly one freed column per promoted target.
+    evidence:
+      - doc:docs/derivations/T02-recycle-spec.md §7.1
+      - tests/test_t07_r7_admission.py::test_a_route_bound_without_admission_ends_typed_at_plan_time
+  - id: L15
+    text: Linux x86-64 and aarch64 only; Python 3.13; the one lock.
+    evidence:
+      - doc:.github/workflows/ci.yml
+      - check:K05.G05.two_platform_structural_equality
+  - id: L16
+    text: IDAES agreement holds at the registered near-sharp SmoothVLE ε only.
+    evidence:
+      - check:T06.A83
+  - id: L17
+    text: The reference environment's DWSIM runs on .NET 8, end of life 2026-11-10.
+    evidence:
+      - doc:docs/reference-environments.md
+  - id: L-CSTR-1
+    text: >-
+      The kinetic CSTR's rate law and coolant model are synthetic (the Frank-Kamenetskii γ → ∞
+      form and a coolant capacity rate); no Arrhenius or physical-conductance claim is made.
+    evidence:
+      - doc:docs/derivations/T08-build-first-spec.md §A1.1
+      - doc:docs/adr/0023-kinetic-cstr-and-ptc-r1.md
+  - id: L-CSTR-2
+    text: >-
+      An adiabatic, dormant kinetic CSTR's outlet temperature is a singularity (T05 §4.7 (a));
+      v0.1 does not certify an EO solve in which it appears.
+    evidence:
+      - tests/test_t08_kinetic_cstr.py::test_b16_an_adiabatic_dormant_outlet_is_labelled_with_the_inlet_and_is_singular
+      - doc:docs/derivations/T08-build-first-spec.md §A1.4
+  - id: L-CSTR-3
+    text: >-
+      The kinetic CSTR's causal evaluator is a local model initializer (the isothermal state at
+      `T_init`), not a steady state.
+    evidence:
+      - tests/test_t08_kinetic_cstr.py::test_b18_the_initializer_at_the_ptc_r1_feed
+      - doc:docs/derivations/T08-build-first-spec.md §A1.4
+  - id: L-WS-1
+    text: >-
+      Warm-start compatibility is exact id-set identity; a topology edit is a typed rejection to
+      the next source, not a partial or adapted match.
+    evidence:
+      - tests/test_t08_w4_warm_starts.py::test_b43_an_incompatible_candidate_is_rejected_to_the_traversal
+      - doc:docs/adr/0024-compatible-warm-starts.md
+  - id: L-WS-2
+    text: >-
+      The warm-start source is chosen automatically (the lineage's latest VERIFIED state) under
+      an opt-in policy only; no request-named source exists in v0.1 (v0.2, M03).
+    evidence:
+      - tests/test_t08_w4_warm_starts.py::test_b48_the_latest_verified_state_of_the_lineage_is_selected
+      - doc:docs/adr/0024-compatible-warm-starts.md
+  - id: L18
+    text: >-
+      Nothing in v0.1 is empirically validated: SYN-001 is synthetic (pseudo-components, invented
+      constants, ideal VLE), and every result is numerical verification against the same equations.
+    evidence:
+      - doc:docs/derivations/T08-release-spec.md §3.3
+  - id: L19
+    text: >-
+      Certificates are local: the regularity screen and the error bound hold at the certified state
+      only. No root completeness, uniqueness, thermodynamic stability beyond the admissibility
+      check, or dynamic stability is assessed (`claims` stay NOT_ASSESSED).
+    evidence:
+      - check:T03.A21
+      - doc:docs/derivations/T06-corpus-spec.md §15
+  - id: L20
+    text: >-
+      Convergence is not guaranteed wherever a root exists: registered counterexamples end typed
+      (PHS-05 without edge 3; HOM-03/HOM-04 stall at a phase boundary); folds are not followed
+      (no arclength continuation).
+    evidence:
+      - check:T03.A12
+      - check:T04.A06
+      - check:T04.A07
+  - id: L21
+    text: >-
+      Specification continuation (edge 3's homotopy) exists only for regions with a promoted
+      specification; elsewhere it is `unsupported(no_continuation_parameter)`.
+    evidence:
+      - doc:docs/derivations/T04-globalization-spec.md §14
+  - id: L22
+    text: >-
+      Scope of the solver evidence: tear selection is greedy (minimality not claimed); behaviour
+      finer than the registered basin margins and trajectories below a residual of 1e-6 are not
+      established; several stated rules are exercised only by synthetic fixtures.
+    evidence:
+      - doc:docs/derivations/T02-recycle-spec.md §12
+      - doc:docs/derivations/T03-phase-controller-spec.md §13
+  - id: L36
+    text: >-
+      No performance claim at size: costs are within-platform measurements on registered cases of
+      at most tens of variables; compiles per plan run and the regularity screen's cost at size
+      are not measured.
+    evidence:
+      - doc:docs/derivations/T02-recycle-spec.md §12
+      - doc:docs/derivations/T03-phase-controller-spec.md §13
+      - doc:docs/derivations/T06-corpus-spec.md §15
+  - id: L37
+    text: >-
+      `verify` is not safe to run concurrently in threads of one process: the regularity screen
+      seeds and restores numpy's global generator around `onenormest` (T06 §8.1, R-069), so
+      concurrent calls can move the estimate, `rcond₁`, the bound and a regularity verdict near
+      its threshold; jobs run in separate processes and are unaffected.
+    evidence:
+      - doc:docs/derivations/T06-corpus-spec.md §16
+  - id: L38
+    text: >-
+      Structural analysis is generic: validation's STR checks and `inspect_structure` report
+      structural rank and the DM/BTF partition only; numerical rank, conditioning and feasibility
+      are judged by the certificate's regularity screen at a converged state (blueprint D05).
+    evidence:
+      - doc:docs/derivations/T01-structural-spec.md
+  - id: L39
+    text: >-
+      The structural-zero release (recovery edge E5) leaves no trace record: a trace does not
+      show that it ran.
+    evidence:
+      - doc:docs/recovery-edges.yaml §E5
+  - id: L23
+    text: >-
+      More than one recycle loop or region per plan is not exercised by any registered flowsheet;
+      the plan builder's single-loop reading is to be revisited when one is (T02 review N8).
+    evidence:
+      - doc:docs/reviews/T02-review.md
+  - id: L24
+    text: >-
+      Not implemented: Wegstein and Aitken acceleration, trust regions, Krylov linear solves,
+      arclength continuation.
+    evidence:
+      - doc:docs/derivations/T02-recycle-spec.md §12
+      - doc:docs/derivations/T04-globalization-spec.md §14
+  - id: L25
+    text: >-
+      Alias certificates cover pressure and temperature copies only (the kinds ADR 0001 D6 gives a
+      tolerance); any other affine redundancy is `uncertified_affine`, retained and listed.
+    evidence:
+      - check:T01.A19
+  - id: L26
+    text: >-
+      SYN-001's symmetric data leave paths unexercised: component discrimination in liquid
+      enthalpy, a liquid heat of reaction (every liquid reaction is thermoneutral), an exchanger
+      with a phase change or temperature-dependent c_p (refused).
+    evidence:
+      - doc:docs/derivations/T05-unit-models-spec.md §18
+  - id: L27
+    text: >-
+      An EO solve with a dormant PH-type outlet is never certified (UNVERIFIED, RANK_DEFICIENT;
+      T05 §4.7 (a), R-050).
+    evidence:
+      - check:T05.A28
+  - id: L28
+    text: >-
+      A single flowing component inside its latent jump is solved causally only; on the EO path
+      it ends typed or not VERIFIED, never VERIFIED (T05 §4.7 (b), R-050).
+    evidence:
+      - doc:docs/derivations/T05-unit-models-spec.md §4.7
+  - id: L29
+    text: >-
+      The PH kernel's accuracy for near-pure feeds is the energy tolerance's resolution; a target
+      inside the latent jump may be refused `ph_ill_conditioned` (T05 §4.4, R-049).
+    evidence:
+      - check:T05.A29
+  - id: L30
+    text: >-
+      Degenerate specifications are reported, not certified: a TP outlet of one component at
+      exactly T_sat, conditioning near β → 0 or 1, and a zero-flow SPECIFICATION_CONFLICT (not
+      searched past); a dormant exchanger side gets no second-law judgement.
+    evidence:
+      - doc:docs/derivations/T05b-limitations-spec.md §17
+  - id: L31
+    text: >-
+      A state whose verifier projection is refused is judged at its final state: a possible false
+      alarm, never a false pass.
+    evidence:
+      - doc:docs/derivations/K04-F9-spec.md §11
+  - id: L32
+    text: >-
+      The ensemble gate's run 2 is not out of sample for `T06-revision-v2` (its last change was
+      informed by these draws); the holdout (436 of 440 on every class) is the out-of-sample
+      estimate.
+    evidence:
+      - doc:docs/reviews/T06-verdicts.md
+  - id: L33
+    text: >-
+      Scope defaults of T06 §16: results are keyed by component id; a TWO_PHASE split with a
+      vanishing phase is not converted by the solver (the verifier catches the label); three
+      F-BUDGET starts have no cost remedy.
+    evidence:
+      - doc:docs/derivations/T06-corpus-spec.md §16
+  - id: L34
+    text: >-
+      A replay bundle references the CasADi wheel by hash and does not embed it; a replay needs the
+      wheel to remain fetchable.
+    evidence:
+      - doc:docs/adr/0006-distribution-data-rights.md §D1
+  - id: L35
+    text: >-
+      A tear-path solve that exhausts its budget records `attempts = 0`, the start state and no
+      provenance (K03's registered capped-budget shape).
+    evidence:
+      - doc:docs/derivations/T03-phase-controller-spec.md §13
+  - id: L40
+    text: >-
+      The reference-tool data (the IDAES and DWSIM environments, their downloads and their
+      outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's
+      own code, its package data and its licence files only, and every ComponentRecord is
+      synthetic (SYN-001).
+    evidence:
+      - tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel
+      - tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_with_rights
+      - doc:docs/adr/0006-distribution-data-rights.md §D1
+  - id: L41
+    text: >-
+      A bundle written by an installed package (wheel or sdist, not the source checkout) carries no
+      dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and
+      every replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is
+      unknown …"); replayable bundles are written from the source checkout at the lock
+      `ead4edf1…`.
+    evidence:
+      - tests/test_t08_r3_a19_lock_lookup.py::test_the_three_states_end_to_end
+      - tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none
+      - doc:docs/adr/0007-reproducibility-certificate-policy.md §D4
+      - doc:docs/derivations/T08-release-spec.md §5.5
+
+harvest:
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[0]
+  sha256: b7a70a4d0e3115a4dc5f62235e1dab9c57a2e717f98d7272233bc0c772eee798
+  class: E
+  to:
+  - L18
+  note: synthetic; no empirical validation
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[1]
+  sha256: 40d565a358139db19e8d817ecfdb6d12fba451e44e7bb8a31f511c54c7c1d5d0
+  class: S
+  to:
+  - check:K02.identity.property_package
+  note: D4.1 constants coverage closed in K02
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[2]
+  sha256: 0f3ea56324853e7b17892db0e0f392c25bc8e0b42100b8ffc84011d7a0b92da4
+  class: P
+  to: []
+  note: test-provenance note on the block closed forms
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[3]
+  sha256: 809ec3abda249f1e0fcf7680eed0e12f2d7dea4a50dc6c60b00d3e4b03b850ec
+  class: S
+  to:
+  - check:K03.G01.damped_newton
+  note: solving is K03's
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[4]
+  sha256: b76f7dae4f0e3b21d4274fd4131126cc5877cfe2c3bf3945ff52f29a81f6e5bf
+  class: E
+  to:
+  - U09
+  note: Hessian absent through the opaque callback
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[5]
+  sha256: 7dea6fd8e9fabaae060c696d8e6494ce89d899c16f6f04a41028576c60bae7d4
+  class: P
+  to: []
+  note: no performance measured in K01
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[6]
+  sha256: 5ef1183996a235356e4549bd48118e69f9fd27cac61910287ca52513decc6f7a
+  class: P
+  to: []
+  note: one host, no CI at K01's commit
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[7]
+  sha256: e8a1fe37247d9b4cb3947788e699aabcad513545827a818b6c211ca418c65c4f
+  class: P
+  to: []
+  note: CasADi stub shadowing for mypy (development)
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[8]
+  sha256: d21c995c3eb0aa986195c6c92f313fc01b65caa3a2eccb5726e4b9a07dfa10cc
+  class: S
+  to:
+  - doc:docs/adr/0002-canonicalization-and-schemas.md
+  note: ADR 0002 now written
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: limitations[9]
+  sha256: db24b3fdb3a384cc4d90154bae0e1fca594be27758ea63827dfecbed38e4b1a2
+  class: P
+  to: []
+  note: review fields pending
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: checks[7]
+  check_id: K01.D5.4.second_order
+  sha256: 2b6ab585a214615d8ed453ceefa7fcc42b9db3b2a05c35c363a29f864604e227
+  class: E
+  to:
+  - U09
+  note: second order unsupported
+- manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
+  item: checks[10]
+  check_id: K01.schemas.property_capabilities
+  sha256: a77265a715cff13fa8c3a34abb9ae0239e59ef26491c51ec81e65b9409997d1f
+  class: P
+  to: []
+  note: PropertyCapabilities schema added when serialized (repository rule)
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[0]
+  sha256: 20a90fe7f0b39f0a9deaffa8fe5e85e10226fe9470fc551fb07df08c76a4c57b
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[1]
+  sha256: 10f7bc37dfed3bed4bda225957f8d66125f8647f3f694f75deffb7b2a7939043
+  class: E
+  to:
+  - L06
+  note: energy identity shares the provider [A09]
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[2]
+  sha256: 229091a6795e2f4556e0282af3b1ef0734acc95a5a54ebd849ca6c6e22c7b5f1
+  class: S
+  to:
+  - check:K03.G00.flowsheet_solved
+  note: tear solved in K03
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[3]
+  sha256: 831b223b8682c510d7f9f3ec4447a86dd400a28254ed3e537bfdbcd74e25d362
+  class: S
+  to:
+  - check:K03.G00.flowsheet_solved
+  note: K03 solves from SYN-001-tear-init-v2
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[4]
+  sha256: 5fdde6fb94e711de386878ec88601939ae48a08b11fa372effdc934228a68d27
+  class: S
+  to:
+  - check:K03.plan.rank_policy
+  - check:T01.A04
+  note: redundant pressure rows eliminated (K03), counts reported (T01)
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[5]
+  sha256: 5965befac237ada5fe2138a5828a62bca26671027142281694a9e17ed8c41d05
+  class: P
+  to: []
+  note: 'design note: the saturated recycle and the enthalpy gate'
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[6]
+  sha256: 84220ceb90e3bdb83c6508c198a4bdfdcf7872efa129e250635fff5f0056bc9a
+  class: E
+  to:
+  - U05
+  note: lifted heater split; no sensitivity capability is offered in v0.1 (unlisted)
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[7]
+  sha256: 7fc624ac305c4b09bade8dba319a88dea76d91ec5acdd29850c024a25ef41cfe
+  class: P
+  to: []
+  note: identity-coverage route note
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[8]
+  sha256: 94c7a89a94e67107cc0e02fc74d17d1707960e672ba126decbec8291e6e00a84
+  class: P
+  to: []
+  note: no CI at K02's commit
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: limitations[9]
+  sha256: 5bff1cc6562e32ca76073c3061d88e45f0588be7a894bcbf61c7693bc9566b5d
+  class: P
+  to: []
+  note: 'PropertyCapabilities schema: repository rule'
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: checks[19]
+  check_id: K02.solver.tear
+  sha256: 8a625e2d513c30b36850c2a161d1473dc30ad606f136e87bdd0b581276a44e0c
+  class: S
+  to:
+  - check:K03.G00.flowsheet_solved
+  note: solver is K03's
+- manifest: evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
+  item: checks[20]
+  check_id: K02.structure.rank
+  sha256: e0685e64f6f679455b01aff7ce9094bf40ced8ded77674c0dc5bb1052a63c59b
+  class: S
+  to:
+  - check:T01.A12
+  - check:T01.A05
+  note: structural rank and DM partition reported by T01
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[0]
+  sha256: 8aed593dedec0434db52e5515383a985a3cb4b7d640f0496885f929af24ee7ce
+  class: S
+  to:
+  - check:T03.A05
+  - check:T06.A62
+  note: 'admissibility screen (T03) and typed pre-plan failure (T06 §8.7); A35''s factorization identity
+    moot (K04 refactorizes, K04 L6); review 2 N5: parts (2) and (4) closed by the cited checks, part
+    (1) moot (K04 factorizes its own Jacobian, K04 limitations[6]), part (3) (K03''s own assertions
+    without tests) is process — S stands'
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[1]
+  sha256: 7c41178dea6933a222a7bd3758cceb7bddd92772a1ce8448c0f1fdec59e0d7c0
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[2]
+  sha256: 1a0fd42061f1e7762aed71d95022145343c5b74613dffe88f3c185dc2a11f26b
+  class: P
+  to: []
+  note: which cases exercise the globalization
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[3]
+  sha256: 1aa3bd42af813a2b0d5bf1cde0c4b2e1e9d5d334925e602f2e483a13a6e91f1b
+  class: S
+  to:
+  - check:T04.A09
+  - check:T02.A32
+  - check:T06.A64
+  note: three edges delivered (T02, T04, ADR 0015)
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[4]
+  sha256: f3bf8a5f6aa807b1f9b7733a8c4daadc89cc6c93fe42ddd1abe6c0cea7581f1b
+  class: S
+  to:
+  - check:K04.A15.verdicts
+  note: certificates are K04's
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[5]
+  sha256: 968fb63d94903dbe5c07fe13b0b54242ec4752ebbefceb618e6c7e54247ec091
+  class: E
+  to:
+  - L10
+  note: initializer chain partial
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[6]
+  sha256: 89d6bb8501950297abec37211cb35a82e232bf20974cebc5f36c86b2b7f553f1
+  class: P
+  to: []
+  note: FD oracle note
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[7]
+  sha256: d80488c8294a057fd7ea960da83f003d203de740653671baf424b315f2a7d559
+  class: S
+  to:
+  - doc:docs/adr/0005-phase-attempt-contract.md
+  - check:T03.A02
+  note: ADR 0005 and T03's contract
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: limitations[8]
+  sha256: 9adedae12f9c6831ac53e07b9fc89600df9a8bc58f2ef07f4bb14fbd26df3eca
+  class: P
+  to: []
+  note: no CI at K03's commit
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: checks[15]
+  check_id: K03.certificate
+  sha256: 478cf74fdb7cea111603402a137095555e45c0652bf56931a6ce7cfb771b950e
+  class: S
+  to:
+  - check:K04.A15.verdicts
+  note: certificate is K04's
+- manifest: evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+  item: checks[16]
+  check_id: K03.initializer_chain
+  sha256: b738fa17c5a13f826a296e00f6fb85ae29eb6311d69c5a03a9de9bcecc648eaf
+  class: E
+  to:
+  - L10
+  note: initializer chain partial (V13 (d) reads it)
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: limitations[0]
+  sha256: e393c8767e75eee213d2b5a042f71ce4dc1fbc9cb4f3098cb15e9b5758160963
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: limitations[1]
+  sha256: 49de30bc49aa8e51c54ce855bb8dd5677a97663158d82507652de607c1293b1e
+  class: E
+  to:
+  - L06
+  note: '[A09]'
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: limitations[2]
+  sha256: 972a0c1795f0d8316f3bd18a195bdc818157993ff73adc3498d4fb1cc7ff52bd
+  class: E
+  to:
+  - L05
+  note: residual accuracy, bound disclosed
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: limitations[3]
+  sha256: 23cc41fc60d9dd83d24d218c7644af48117b9934a410461f2c39edadfe67a0df
+  class: E
+  to:
+  - L19
+  note: local evidence; no other roots
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: limitations[4]
+  sha256: 862d2275f690306b5f9bd83aef2c7771c053dfd76fe93795b28a741a80b543a3
+  class: S
+  to:
+  - check:T05.A21
+  - check:T06.A33
+  note: check sets for revision-built flowsheets (T05, T06)
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: limitations[5]
+  sha256: 2f1fd4aba5aa3dc2488a0c2041a7540b68c5d5a7306f93a46a14d01156894a37
+  class: S
+  to:
+  - check:T01.A09
+  note: STR-03 rejected at validation
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: limitations[6]
+  sha256: 6f74ba4b7799709701439e29d481139989d7ec62209e790e11c910175d13156e
+  class: P
+  to: []
+  note: verifier factorizes its own Jacobian; refusal path tested
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: limitations[7]
+  sha256: f1cb7f9a64b2506812f6682ed9969d0ee3a096ce34fd90687e9146b663d85686
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: checks[7]
+  check_id: K04.A22.structural_over_specification
+  sha256: b678eda237b1eda9c7903b95d01da34abc5922b56a7bc009bcc4c92456066ef3
+  class: S
+  to:
+  - check:T01.A09
+  note: STR-03 rejected at validation
+- manifest: evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+  item: checks[8]
+  check_id: K04.A12.oracle_cross_check
+  sha256: aae40c27c2072ae2cbdafc8df559f510b2a0e8bf3e9b7e65d964503a7571a885
+  class: E
+  to:
+  - L06
+  note: oracle is code, not data, independence [A09]
+- manifest: evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+  item: limitations[0]
+  sha256: ca8331b698450201658bdf27cd4913720dd8111c51ae6f57c2a331b415423c47
+  class: E
+  to:
+  - U13
+  note: container replay not provided; RC's clean-environment replay is §8's
+- manifest: evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+  item: limitations[1]
+  sha256: 3744a4750a65cae6826ef097957a29b25e8968d807537db1e85ca36aa862f845
+  class: P
+  to: []
+  note: two-platform equality named by CI run
+- manifest: evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+  item: limitations[2]
+  sha256: 6bc455ca9f1bcbd15db32048c33987402b596f9ea26ad50ea69cda52f48a9fa2
+  class: E
+  to:
+  - L07
+  note: bitwise not promised
+- manifest: evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+  item: limitations[3]
+  sha256: 31be22280f5fc2c24467bac886845aa16b97d4d044d2209969acd8e91ab6551d
+  class: E
+  to:
+  - L15
+  note: macOS arm64 never exercised; Linux only
+- manifest: evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+  item: limitations[4]
+  sha256: 59a7baa1a774a8729c5d9a031635bcd4abb59a3cbc8ba9bfeba1cbd914b0606c
+  class: E
+  to:
+  - L34
+  note: replay depends on the wheel remaining fetchable
+- manifest: evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+  item: limitations[5]
+  sha256: 6ceaa1affd59ac3659ebbab53c5474a5d51396ee55de4919a6de084d23d09210
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+  item: limitations[6]
+  sha256: 27a607fa8f799684b1f637ea91102e03dc09b01e97009f6710224a8196964c2b
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/K05/b0a7fe766c35f6491dfc53ecab3101199d221850/manifest.json
+  item: checks[7]
+  check_id: K05.clean_environment_replay_from_a_fresh_checkout
+  sha256: 2564a9d658838796e59cd2f950dfe5adbd82abe9930e5632cd51812ff45b7228
+  class: E
+  to:
+  - U13
+  note: clean-environment replay from a fresh container not performed
+- manifest: evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+  item: limitations[0]
+  sha256: cdff15b314391516d7265147274eeb29278a4a0046a278613eb9ba138cdff52a
+  class: S
+  to:
+  - check:T01.A09
+  note: over-specification detected at validation (T01)
+- manifest: evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+  item: limitations[1]
+  sha256: 7148dc78b427272b59de484da8f63e8b6ad2757c11b65005c107f773b7d41557
+  class: S
+  to:
+  - check:T01.A24
+  note: structural_counts present when the analysis ran
+- manifest: evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+  item: limitations[2]
+  sha256: 85f3a204f8bfcf245dd0013bd147f9156e2eae2fc4ef076eb10ef3f054c80618
+  class: S
+  to:
+  - check:T07.D15(b)
+  - check:T07.G2
+  note: jobs, HTTP and MCP delivered in T07
+- manifest: evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+  item: limitations[3]
+  sha256: 4e0229939df7d399a52fc2df6200f075dd09d57e614b94fd35d92316c4ee34e3
+  class: S
+  to:
+  - check:T07.G4
+  note: project store is sqlite (T07), multi-process
+- manifest: evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+  item: limitations[4]
+  sha256: 67faf429ea9ad9f3c82ff0e20476f2c96ab0fe28bef1cfdb0d1002ad8d81b4fe
+  class: S
+  to:
+  - check:T07.G8
+  note: arbitrary revisions solve through the contract
+- manifest: evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+  item: limitations[5]
+  sha256: f301c52640cabcb3fac3417700c937ff8bd7b7a01a88994f0961bb7655006ddf
+  class: P
+  to: []
+  note: v0.0 gates are acceptance evidence; review pending
+- manifest: evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+  item: checks[6]
+  check_id: K06.structural_over_specification
+  sha256: 95d587d0fedf409cdcb5755c5d7dff08cd1947aa1056f6556429ff30a635bb7b
+  class: S
+  to:
+  - check:T01.A09
+  note: over-specification detected (T01)
+- manifest: evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+  item: checks[7]
+  check_id: K06.jobs_and_remote_bindings
+  sha256: bbebdcb9ec991bcdb9d5b3e5ba993c0dfa1430fb59c4bbac1681f10d312d01e3
+  class: S
+  to:
+  - check:T07.D15(b)
+  note: jobs and remote bindings delivered in T07
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: limitations[0]
+  sha256: 114a807c0935ae08bc6c922dadb82eff943158343b14e186d447a81e5330805d
+  class: P
+  to: []
+  note: no D/A requirement
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: limitations[1]
+  sha256: a07cad120314f3a1cec4dcfe306271a35cb3de0833e2eb58cda899166d09dc24
+  class: P
+  to: []
+  note: scaffolding
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: limitations[2]
+  sha256: c1e26be7b741628bbaa72a5d0f825f6c66f164c0672812e029b8a4407f36c50a
+  class: P
+  to: []
+  note: no CI at P00
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: limitations[3]
+  sha256: 22c9d70f5943890ed27729d2b46ecbdf82591751bb6af63625b7fcf8da3852cc
+  class: P
+  to: []
+  note: single platform at P00
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: limitations[4]
+  sha256: 5d29d192a303c79e101a49f6d5c0a1d9c38a283ff4ed376461408c581bb9b1c9
+  class: P
+  to: []
+  note: skipped manifest tests at P00's commit
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: limitations[5]
+  sha256: 7174295022e63e5e265bc65e8d8a50bcf827b2e652de126a7739546bd87f07ff
+  class: P
+  to: []
+  note: scaffolding checks
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: limitations[6]
+  sha256: 33e3c14434d8ca785081e31848c6d25972aa6689d97960ff78bdf1d6d75ae7e5
+  class: P
+  to: []
+  note: D17 owner bookkeeping
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: limitations[7]
+  sha256: 2d4f8f438a8e4aac2ae398486937dd6fd4b6bcdb4d16875084279ea1c946e941
+  class: S
+  to:
+  - doc:LICENSE
+  - doc:NOTICE
+  note: LICENSE confirmed by Frank 2026-09-23 (120acb4)
+- manifest: evidence/P00/07a7ff01fd2767f7ad34a6442c5a817536ac0a6d/manifest.json
+  item: checks[13]
+  check_id: ci.workflow_execution
+  sha256: a2f18942b82733417dfdba51e7e0c27483354e7df3dbaf469b546e19c93edc9a
+  class: P
+  to: []
+  note: CI not executed at P00
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[0]
+  sha256: eaa4b44679de267a56054531ed70945b15b06f3fafd396ad41af4489483adf45
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[1]
+  sha256: 781ca2fb462f3c2d60acfda5aec6ed1e019d4b926d15884a39c2fe8284422415
+  class: E
+  to:
+  - L06
+  note: oracle shares SYN-001 definitions [A09]
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[2]
+  sha256: a6e3c7e81fceb9a385f98d8a701d6769525a1140844f0be62cd989e47d533700
+  class: P
+  to: []
+  note: authorship independence note
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[3]
+  sha256: 41a464236ef32d2c14b92768644b58ae1ccf8331aa9e3388469a8fd7941009ef
+  class: S
+  to:
+  - check:K02.identity.property_package
+  - check:T06.A25
+  note: provider (K02), ensemble generator (T06)
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[4]
+  sha256: a3dbc3b1c3ad54a4ae9bb681424a4621585ff976c882cda12c84f4afbaa47e86
+  class: S
+  to:
+  - tests/test_adr_0008_transient_readiness.py::test_a2_protocol_methods_take_exactly_x_and_context
+  note: Protocols introduced and pinned to the frozen document
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[5]
+  sha256: 29019d35fbaef1dd90935fb56e168dbdaf10b4efa7b707deb8609dcccf2d2ead
+  class: P
+  to: []
+  note: evidence convention
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[6]
+  sha256: dbbb97d0655bf13b10ec22caa7d05848be2a3c19207c55b76938e2bcd39c83eb
+  class: P
+  to: []
+  note: single platform at P01
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[7]
+  sha256: 56526b521d39de1dd30a7efc87cf6b32246bf655f768f0cd8c345ca2ca84001c
+  class: P
+  to: []
+  note: specification-error history
+- manifest: evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
+  item: limitations[8]
+  sha256: 8debb0b9cf12e4e3c00d6242ee558834b762901440e439ef561c2fe9ad7574c8
+  class: P
+  to: []
+  note: review
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[0]
+  sha256: 38ce529f48534cfe41cdf6e9637e64a9df0150576795a0c23f3928bb08d8f0b1
+  class: P
+  to: []
+  note: composition test scope
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[1]
+  sha256: 455c9309aa8a77c307747baac21da18a02bb05a4a8961679f54e833389a4d0e1
+  class: P
+  to: []
+  note: timing scope
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[2]
+  sha256: 225f73657fd5db15686c5430be732053d0500aa55d99c5c302f5f2f1531cf592
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[3]
+  sha256: 89b2c7b6a8ba4a927ce18f65fd281d6aacb64271b10aecee651b83c020a81d94
+  class: P
+  to: []
+  note: declared sparsity of P02's blocks
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[4]
+  sha256: e674c65e1bc6fc12031a066e4cce673019e9a80010c508f2448686d465e511a5
+  class: E
+  to:
+  - U09
+  note: second order absent
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[5]
+  sha256: e88e3026ebad223f49c9bc9e47f7ff934ba580462205fa7fa4012c2ce0dc0b0c
+  class: P
+  to: []
+  note: CasADi call-count note
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[6]
+  sha256: 5823bfab0441aef852e99463cdb1425ae8b9e3d90f2863d9c8cdf19f9cdb0b0d
+  class: P
+  to: []
+  note: Pyomo route build requirement (route not selected, P03)
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[7]
+  sha256: 75af8a633c1f0570de74c674ced241840497fead6cf27dde9724bdcb2f726c2b
+  class: P
+  to: []
+  note: grey-box sign adapter
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[8]
+  sha256: 20f55aa98458da4907dfe6cc0863c15e96a1b7dcb1393d1a4370c8ccbdbd8f71
+  class: P
+  to: []
+  note: one host
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: limitations[9]
+  sha256: cf85550d80bcdc38fb304eb3a5b95f8c1c88930bdacadad7935f4c8d883f996b
+  class: P
+  to: []
+  note: review
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: checks[39]
+  check_id: P02.A24.casadi
+  sha256: a21e05f32029bbc85c3c24f5714d0af3cee22df10f87d1b3b17a5c2aa4b50565
+  class: P
+  to: []
+  note: backend-comparison n/a
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: checks[53]
+  check_id: P02.A16.pyomo.L
+  sha256: bc9e8cfc7bdf594cd1d62ddbbaab1cf68242edba9de99956a3571ca6c517070c
+  class: P
+  to: []
+  note: backend-comparison n/a
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: checks[59]
+  check_id: P02.A13.pyomo
+  sha256: cd5557f39d0191100ebc18ea422bfd9ec42d350c841933ec0a75dc3c17f7cfc1
+  class: P
+  to: []
+  note: backend-comparison n/a
+- manifest: evidence/P02/507dccfaa46fa905b651ba96de65c2ea8c9f3ca1/manifest.json
+  item: checks[80]
+  check_id: P02.M03.pyomo
+  sha256: 518c9040e1e125c8ded078f30bfda3f55886f5597116b394cebd0d384a5a09e6
+  class: P
+  to: []
+  note: backend-comparison n/a
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[0]
+  sha256: 11b43a6acd80d15b5a9dcfa8f579739f38c5273c8ebc797d441e93a095ee46b5
+  class: P
+  to: []
+  note: decision on P02 evidence
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[1]
+  sha256: 7672fc9b360e7bce60f8fdb0a3ca386eb8129da218356032a5ea9c93ba60ff58
+  class: P
+  to: []
+  note: one host at P03
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[2]
+  sha256: ec1a1a6ec76aac1a80303915543161046641584b0e9d2e64a25bacddfc8efae6
+  class: E
+  to:
+  - U13
+  note: eight unresolved objects matter for mode B only (ADR 0006 D4)
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[3]
+  sha256: b0e6baeab63b2f9f659a3e06c4c8e463cbfd2e8de7690bcf6229e83b82a46801
+  class: P
+  to: []
+  note: notice mapping inferred from file names
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[4]
+  sha256: e388dbc071abc65a8cbce3817f793e07c38135dd4e72391b79ca667fb0ce2c93
+  class: P
+  to: []
+  note: the audit test is a regression guard
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[5]
+  sha256: 4f97b7f3480159c3b8a514f1cd59dd523e00f5baf391814a718f62c863d4a835
+  class: P
+  to: []
+  note: A05 judges recorded artifacts
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[6]
+  sha256: 70191e272438f86ac3a81355df2cb181ac96a6ab762fe6020e9143491176822c
+  class: P
+  to: []
+  note: ASL not re-derived
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[7]
+  sha256: 09e31d85fde3415263626e387242a2422ce761dfb24fa7533eebc433b1d65565
+  class: P
+  to: []
+  note: reproduction scope
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[8]
+  sha256: a4b7cecbf00e3f114469cd4328ecceeda783971382178556e0f9e48a131e3781
+  class: P
+  to: []
+  note: ADR 0006 Q1/Q2 are Frank's; Q1 answered (LGPL allowed); Q2 METIS default ships no wheel bytes
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: limitations[9]
+  sha256: b6202e22d5cd8a5e9cc52a0c29671cdbe91c907505856fb2e74f691356312f3f
+  class: P
+  to: []
+  note: review
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: checks[14]
+  check_id: P03.inventory.unresolved_notices
+  sha256: b893628c8a0b23a11fdb9f1d3a674ff3e7a236dbb6b1ba7a151b79c609bea180
+  class: E
+  to:
+  - U13
+  note: unresolved notices; mode B only
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: checks[15]
+  check_id: P03.inventory.asl_terms
+  sha256: e640bad7f213d59d5c358610592d8f1cc2a88b02c03b94f4a78d57f5ad5fc2e8
+  class: P
+  to: []
+  note: 'ASL terms: Pyomo route, not selected'
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: checks[16]
+  check_id: P03.reproduction.pyomo_asl
+  sha256: 3a8af48811140ae670e2c26848f3d2c464bf418da5d9ab019d9641c90fa15e5f
+  class: P
+  to: []
+  note: ASL not re-derived
+- manifest: evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
+  item: checks[17]
+  check_id: P03.platform.second
+  sha256: 6d80b0302406aaea814de4cc55c667af7241df74b5f8010ce5355812d70d3f6a
+  class: P
+  to: []
+  note: second-platform inventory is T08 W2.5 (T08.A30), open; reclassify S when it lands
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[0]
+  sha256: 5a02d12ef2a811e8270c1736ce8a8838eb7eb48707cd9ff5f76c62bcf0060981
+  class: P
+  to: []
+  note: self-describing manifest bootstrap
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[1]
+  sha256: b002f713cbe81aade49cc1346dcf48285162ac346a02cd098564762308bd1cfd
+  class: P
+  to: []
+  note: V-ids travel in requirements.yaml
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[2]
+  sha256: b428965f29022409a980aa25b52792659f4f83efd6901a70ecce25c0b27760a0
+  class: P
+  to: []
+  note: claim scope
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[3]
+  sha256: ae8cfa1468b9ed5795ab1780282a41990cf6ba07142b42c7f4ba1ec726d70928
+  class: S
+  to:
+  - check:T02.A26
+  note: under-specification now DRAFT with STR-02 FAIL (R-022)
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[4]
+  sha256: d804bfa3fd77e312cf8b9420607d67d2edfe83c291f7652cec8cd1c0c3dc3e76
+  class: S
+  to:
+  - check:T05.A17
+  - check:T07.G8
+  note: revision binder covers MODEL_BUILDERS
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[5]
+  sha256: f6adaf4442278bf0cc22d9f41e5dc76cee7af21a917ab90251ed3bec65333c06
+  class: E
+  to:
+  - L25
+  note: alias certificates cover P and T only
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[6]
+  sha256: db110d87f9789fbc59d13522691ec942bf6f1b30eff6b431607325dcee3de6cf
+  class: S
+  to:
+  - check:T02.A18
+  note: multi-edge feedback sets torn by T02's rule (NEST-1)
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[7]
+  sha256: b584fd4aa738d09dc4d2e9f5cfc82c570aaa2f62b1de55ccd73a5364c06d8144
+  class: E
+  to:
+  - L38
+  note: structural results diagnostic; rank is K04's
+- manifest: evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
+  item: limitations[8]
+  sha256: c9c475abe6b5125d8138dad17d3de343f7f42af09a1470f2432e77f901019b9c
+  class: E
+  to:
+  - L18
+  note: synthetic; review pending
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[0]
+  sha256: b86da1f69f5e0d35b5b28ba242213d79d29edfe0113933bf653eb73882dab4a8
+  class: E
+  to:
+  - L18
+  note: numerical verification only
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[1]
+  sha256: ea06d875b2fe1d7359564ffbf2a0bbf8ce07005149df2aec45c4c1dc688ac75a
+  class: E
+  to:
+  - L22
+  note: tear minimality not claimed
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[2]
+  sha256: 26c15348f8e5b7c627e632a3e6c08d0aa30b3874861a7900c9f8db369d9aeec1
+  class: E
+  to:
+  - L22
+  note: basin margins
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[3]
+  sha256: 4df10bf4fabd059bc943962efd3aac46edd6aa624c0557bd4a83aac18dfac4bc
+  class: E
+  to:
+  - L22
+  note: trajectories below 1e-6
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[4]
+  sha256: f92cf740d985b53870eb63d9a00e35b117a777436df8ce9d3ed716f388647a2d
+  class: S
+  to:
+  - check:T03.A07
+  note: phase appearance delivered by T03
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[5]
+  sha256: c5733b18732548fda83c252b6f608db8b3e44e203239eaa478996a02814117d4
+  class: E
+  to:
+  - L22
+  - L23
+  note: stated rules not exercised; more than one loop/region
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[6]
+  sha256: 755fd1315ba0bff82df6fa64278cd829ce03e4ccdac564d2c09f8428a10680fd
+  class: E
+  to:
+  - L22
+  note: BTF-block region not delivered
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[7]
+  sha256: a785123f4be7edfbbee7c9572f13d127075487531a1babaee975938acf9b53f3
+  class: E
+  to:
+  - L24
+  note: methods not implemented
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[8]
+  sha256: 2647cd7d6c2c275ede34388057afc5b90ff7fc729692ce175c7b99d817674078
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[9]
+  sha256: df7d5d4a8fe51eacf60d2d70d3d25f3b4263ac077d39e8301860a717083fc17f
+  class: P
+  to: []
+  note: review
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[10]
+  sha256: 355c1c256bdc72a7f33605456a1d2c3d08c520d5cf2246a84f919182e7cb6543
+  class: E
+  to:
+  - L36
+  note: cost at size
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[11]
+  sha256: a567af3dd745be1396d123c1134c0d38a23e2bc896205f6c6544175f07c2a2b5
+  class: P
+  to: []
+  note: review record
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[12]
+  sha256: 00288ebf081447ab655e2ef7f3c9f160070d61e84812ff9cf9c723716bc0f5d8
+  class: P
+  to: []
+  note: A11 measurement note
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[13]
+  sha256: 6483db0b1d77959a2cfb43f0f17549f0aae1c3b8383764d42e245e961f295ab8
+  class: P
+  to: []
+  note: measured counts within bounds
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[14]
+  sha256: ddadf723894b0786e026b4404d8d6209403dbc6f5133d69e3b9e2dbbd7a8c186
+  class: P
+  to: []
+  note: A14 recorded, not asserted
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[15]
+  sha256: a5d59f4885af53d1460b0bdcbcb48fd4140c2092957b7d33da684763e0e25f47
+  class: E
+  to:
+  - L23
+  note: single-loop assumptions (review N8)
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[16]
+  sha256: ffc7053de5a213a8827b1a744793407c4821aa16672aa0c5aa3a16fa655042cd
+  class: E
+  to:
+  - L36
+  note: compiles per plan run; cost at size
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[17]
+  sha256: efdf1b5db05c801a833d03f3ddfa124cdd44a10e5fd2de8a72a4f452c0502a15
+  class: S
+  to:
+  - tests/test_t03_phase.py::test_a24_a_freed_variable_with_no_guess_fails_initialization_and_is_never_kept_fixed
+  note: a freed variable without a guess ends INITIALIZATION_FAILED naming it
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[18]
+  sha256: cac4ae2963294a510ab568ed94ed0eaf6e42ea54e44ff69dc443ba6754d5cce1
+  class: P
+  to: []
+  note: A26 as amended
+- manifest: evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
+  item: limitations[19]
+  sha256: 105a91316ceb13d902d6f419a44690a8ca322b74cef1399b39c8a9be4dd670c2
+  class: P
+  to: []
+  note: V-ids travel in requirements.yaml
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[0]
+  sha256: e09025e1e5ea543b3c379dfd3d8be929f72cf38d17e50dc6e15a368b8d4cd8a9
+  class: E
+  to:
+  - L18
+  note: numerical verification only
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[1]
+  sha256: 7d0d21db4466722fc68e432359bb1e95552a9a4075dc9a2e55a3adc9f04c8017
+  class: E
+  to:
+  - L20
+  note: no global convergence claim
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[2]
+  sha256: a2d374335f65954477e4e54e5661bdef50df8f47c5a4fcbfc3abe0e0d45cc07f
+  class: P
+  to: []
+  note: 'no repeated signature: design rule'
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[3]
+  sha256: 2494cd60809a7a339870abb5410d0a5d895f0bf9b63cb3ba7b7ae3c00437d635
+  class: E
+  to:
+  - L22
+  note: stated rules not exercised
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[4]
+  sha256: 755e0615043e1878328ae99ac7a485ef403ba25894b114ca3dd17b7dbd3ccc74
+  class: E
+  to:
+  - L22
+  note: stated, not exercised on physics
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[5]
+  sha256: 1fad7f82a4cd61fbb6bf143b3fcd208b022dd7d69d5d5aa42e5be953d720f876
+  class: E
+  to:
+  - L19
+  note: root completeness, uniqueness, stability not assessed
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[6]
+  sha256: 98792f4302df1f524568b793be7b55cc7a7df928d9ac24fd0651d89c4caaa2c8
+  class: E
+  to:
+  - L10
+  note: compatible warm starts built in T08 (T08-warm-v1); V13 (e) verdict pending
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[7]
+  sha256: 46a0dc66f60dd568d4fc9464353b32ec86b3ddbd9ce03cacbe23f8ac32a67d5b
+  class: E
+  to:
+  - L36
+  note: screen cost at size
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[8]
+  sha256: 416517c28a3563d42447fe4f4e5541efbab00474179c69e7c6e49678798e30a7
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[9]
+  sha256: 46bffdeefb47c527601c54d57213a8fc69735bc2fae7ad987687f14c2b2cf596
+  class: P
+  to: []
+  note: review ruling
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[10]
+  sha256: 76ffe0e0d70773d38d29afedd5f2d4b223ba380b5b0bc82fa2fd0d72a2f8da50
+  class: P
+  to: []
+  note: review ruling (identity correction)
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[11]
+  sha256: b9b54220078ee6aa97b5114a73ce5d615b4e49934e891a7b51c68d16e1ca033b
+  class: P
+  to: []
+  note: review ruling
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[12]
+  sha256: 98c52aa7ca9cc17713eefbdde478c85f739402ee663819e28ad70b93b2f2aafb
+  class: P
+  to: []
+  note: review ruling
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[13]
+  sha256: 6c6108d500d6b60bd9fc04b639bd6849d22e21a807b2e887e241b982993c8377
+  class: P
+  to: []
+  note: review ruling
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[14]
+  sha256: aa35d390fbdb0a0f88f82b50cf302d557f26871dea14d74fba01f4716ef50152
+  class: P
+  to: []
+  note: review ruling
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[15]
+  sha256: b912e2e16a362df87dcd414c7db7c706c4beaaaf92a60f14414a627e00164802
+  class: S
+  to:
+  - check:T04.A04
+  note: PHS-05 converges through edge 3 (HOM-01)
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[16]
+  sha256: 9941312840a0d0e5cc723556eb23eaa5ded7980b86fb3a910b32b9be24bebced
+  class: B
+  to:
+  - B10
+  note: 'unreachable on every registered path; K04 follow-up not in §6.3 — reviewer: B?'
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[17]
+  sha256: e104a99a4b7a8904ef7aa8e85e223d775ebea0a4e52f5784be80f6f53b7dc353
+  class: E
+  to:
+  - L35
+  note: tear-path budget refusal shape
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[18]
+  sha256: f64d07e77b8b8fed402b050823ab5a1a9cb0265d4b0edef872c300eeab64f17d
+  class: P
+  to: []
+  note: A03 scope
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[19]
+  sha256: 7b770294989a46100cd287df04493e8035da4d92d60e36cdda39d98b0d771674
+  class: P
+  to: []
+  note: bundle class note
+- manifest: evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
+  item: limitations[20]
+  sha256: c9e6062921dbf9ca34f43989f3905983d598f4f03ad420a5cf7c1f9720717192
+  class: P
+  to: []
+  note: V-ids travel in requirements.yaml
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[0]
+  sha256: 912c6d504eac14aa864d0e5ba6e3bd673ce5d22bf1cff8f8d1fbddf203062c5c
+  class: E
+  to:
+  - L18
+  note: numerical verification only
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[1]
+  sha256: 535a328fd5faa8d21ad5448edd42273f9c283601d0aad63a1196a19604a08cd9
+  class: E
+  to:
+  - L01
+  note: PTC not qualified
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[2]
+  sha256: f1db3bb87be5efca579d90689d352c311bf57030cfaad813f59e6959fff27df7
+  class: E
+  to:
+  - L20
+  - L24
+  note: continuation stalls; no arclength
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[3]
+  sha256: 5cf40ca9caa8586728f920b0d082c6ac6e6ffce8440576bbb332d8ce181caf04
+  class: E
+  to:
+  - L21
+  note: homotopy needs a promoted specification
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[4]
+  sha256: dd4a377ae2eb9081d50f7703038a1c6073a90407e2c5b5289a19dc8bd6b3c587
+  class: E
+  to:
+  - L19
+  note: attraction and dynamic stability not assessed
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[5]
+  sha256: 515ad03da76f59423ec5a637b7c709112fe3cfa6df0a7a17552c61285ad8ebbf
+  class: E
+  to:
+  - L01
+  note: PTC's pseudo-time model has no vessel data
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[6]
+  sha256: 29a2f03abc58feae535f5a66f6691afeb2b292bfde2d763b79e5a9f0fcf82ef2
+  class: E
+  to:
+  - L01
+  note: PTC energy dynamics not exercised
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[7]
+  sha256: 1c56e64ccc99447134aae66ba86cc3cd4dfb200613cad035486c91cef048fa85
+  class: P
+  to: []
+  note: exploration, not a registered result
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[8]
+  sha256: 00164c055de3cd14eb646f04e7440d2b6d6a519aa14ff933ab97e04c35d8d8f3
+  class: P
+  to: []
+  note: scope of T04's basin comparison
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[9]
+  sha256: 16e2ece422513bfeb474cc77ad62956cff95dd06b85378b13c8bd52bf0d49f88
+  class: E
+  to:
+  - L18
+  - L36
+  note: performance on SYN-001 only; synthetic
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[10]
+  sha256: ad05bdcff48e1520888a8cf98ab66284918c3fa5af7ef9dfd8297c860318dcc4
+  class: S
+  to:
+  - check:K04F9.X04
+  - check:K04F9.X05
+  note: F9 closed by ADR 0013 (every A02-family root VERIFIED)
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[11]
+  sha256: 4944b06ea47beb64f8f87db8c872a4be170ee9dc1fea0a4a3a56e345e6538e78
+  class: E
+  to:
+  - L01
+  note: PTC experimental; V14 (b) FAIL carried
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[12]
+  sha256: 89d722cd7b8d3fca633bf10f5f9aa121cb444123a728ac9d4dd540c63a2298de
+  class: S
+  to:
+  - tests/test_t04_review.py::test_m1_j1_a_failed_polish_jacobian_ends_the_attempt_evaluation_error
+  - tests/test_t04_review.py::test_m1_j2_a_failed_pseudo_step_jacobian_is_not_a_stall
+  note: 'M1 fixed (0b4ceb4): a failed Jacobian ends EVALUATION_ERROR'
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[13]
+  sha256: 784b578cceb7dc3c3fa86ce913c27b6939ba94f4ca17f1968018a976616ac12d
+  class: E
+  to:
+  - L35
+  note: tear-path budget refusal shape
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[14]
+  sha256: de179360179d3ea4be186e7420219c45a755bb6a4e3328fe6be882e6d3f16ec9
+  class: P
+  to: []
+  note: Frank's defaults at T04 (F1 since carried as FAIL, L01)
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[15]
+  sha256: b3dbf9afb1737c5e8e757737fa55e962beef6b9ebf9e90e600e3675224ae22d4
+  class: P
+  to: []
+  note: A20 ablation scope
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[16]
+  sha256: fa12477702bf0bf452c39a75ea84ccadc8eaf2ee7c5c0a411459989a3619c9ff
+  class: S
+  to:
+  - tests/test_t08_w4_warm_starts.py::test_b47_warm_bundles_rerun_to_match_without_a_lookup
+  note: revision_run reruns from the recorded solve-policy.json
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[17]
+  sha256: 3e136aeba4fee19ed98b68219f088ee14da07988b3fa75c6e50504dbc6db61b3
+  class: P
+  to: []
+  note: A11 scope
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[18]
+  sha256: aa28d49024e63f86473d9477193e9973235ac4848fc59344e01c946012230f10
+  class: P
+  to: []
+  note: A26 R0 scope
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[19]
+  sha256: 16e19d12216e56ad92378067e65c2f0ccf1da49310b5e2b9a082ec0ba4c7d015
+  class: P
+  to: []
+  note: V-ids travel in requirements.yaml
+- manifest: evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
+  item: limitations[20]
+  sha256: ad706662ebfd4f57d2ff152d970b3270b67e06fa862de150d1c494f5d0137823
+  class: P
+  to: []
+  note: requirements note
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[0]
+  sha256: 429efebff89837266814c2fb679ea8a0eda348aa54bba72541baf93494196d48
+  class: E
+  to:
+  - L18
+  note: synthetic
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[1]
+  sha256: e2a2d1ae881f4c671134c670acfeb42ebd9dd1d4ad43374c80f892c835703867
+  class: E
+  to:
+  - L26
+  note: component discrimination in liquid enthalpy
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[2]
+  sha256: 637b440e30c4820c76dc43011c8ce25a080744f58854d11ee9a24503bc8e49d6
+  class: E
+  to:
+  - L26
+  note: liquid heat of reaction
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[3]
+  sha256: 255b2fff7571b8549f00bc301121d219a277e60b756bdfbafdfe23ef01922d60
+  class: E
+  to:
+  - L26
+  note: exchanger with phase change refused
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[4]
+  sha256: 606c33ed0013d7e024aee1a191c60c2ec20773d3f10d0e3bb5328701d3d57afe
+  class: E
+  to:
+  - L27
+  note: dormant PH-type outlet never certified
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[5]
+  sha256: 0efe6b620a31ae4728201eb5ef13786ebf80577dfdc975f73aabcb88754f2522
+  class: E
+  to:
+  - L28
+  note: single component in latent jump
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[6]
+  sha256: 9d948c01953f10e1bed0deb7c1f2a981df79d456ddbbe9636fa67ae55f68cd72
+  class: E
+  to:
+  - L29
+  note: near-pure PH kernel accuracy
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[7]
+  sha256: 9633aa92cd4d51ec6aa0a3e9cb2fc2dd045edb9ac419046c6da92f6314517dbd
+  class: E
+  to:
+  - L05
+  note: solution accuracy as far as the bound shows
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[8]
+  sha256: fb4fa2a5b48db958538d3fd5555a5d145892e85000c8595d4e6ef8ad612b5a79
+  class: P
+  to: []
+  note: external validation is T06's
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[9]
+  sha256: 52d1c60c77ebef566245acc81e77e01607defb8bd373fb1a0df83cbe87f1416f
+  class: P
+  to: []
+  note: C3 is NET-07
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[10]
+  sha256: 534d0a9b43ffe2cd26e9410a525106541dc8946a88b761c8533a192fb045830e
+  class: P
+  to: []
+  note: review
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[11]
+  sha256: a56fec3a09a2baa26a986f836a495efaec1b2cf6b3cc6cecb570b8d0d175f550
+  class: E
+  to:
+  - L05
+  note: recorded bound is onenormest's lower estimate
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[12]
+  sha256: 0452059963b520da57931056032b90eb7a3e7e7c1bd1325a012839aa7d0538b6
+  class: B
+  to:
+  - B10
+  note: 'latent K02 finding, harmless in SYN-001 — reviewer: confirm closed or B'
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[13]
+  sha256: c682e99d39ab80e2822caa999127d4c29805af755b48e34fd322b6bc10784da8
+  class: P
+  to: []
+  note: V-ids travel in requirements.yaml
+- manifest: evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
+  item: limitations[14]
+  sha256: f40ddcaaa05e2d6eee547dfbec461b3ef914cf7e6ce103b726ed5ec93a54f77b
+  class: P
+  to: []
+  note: CI measured at the run's head
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[0]
+  sha256: 414f0d9dcfd9272dff1c46bee6ef181581f313ba1f55cd965a80a56aad3cae7e
+  class: E
+  to:
+  - L02
+  note: dew/bubble-point flash not certified
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[1]
+  sha256: eade65546b5c2f1eb91b890e4e3a9856f7df82dd19ea571766e780da6371855e
+  class: E
+  to:
+  - L30
+  note: zero-flow conflict not searched past
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[2]
+  sha256: d5518469876666eb60b483ece7b54566c32db6a9439a201983c090a4f118fd78
+  class: E
+  to:
+  - L-CSTR-2
+  note: 'a model without a dormancy form: the kinetic CSTR in v0.1'
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[3]
+  sha256: 79b66e743c6dcde9dd905d3bb00a6d59dd9d59cfd2fbb4a90db3dce7fb897f53
+  class: E
+  to:
+  - L30
+  note: 'dormant exchanger side: no second-law judgement'
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[4]
+  sha256: 3062e4b5554f68681ec348b78960085db9f50034135d6f0b08c98957d84fedb3
+  class: P
+  to: []
+  note: traversal starts, not results
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[5]
+  sha256: 71cfaed10a7f414d68f208b653dc492519c4757502b2cf9b14ad280ad998791d
+  class: E
+  to:
+  - L30
+  note: TP outlet at exactly T_sat
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[6]
+  sha256: b2aa0c0838f21646ec00e7735d3a069608a11e8414e47939046db63de2ead656
+  class: E
+  to:
+  - L30
+  note: conditioning near beta 0 or 1
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[7]
+  sha256: a4563288d323a28da3771aab4184c65dc337acc1445c832dc156ff69e5d31a36
+  class: E
+  to:
+  - L18
+  - L36
+  note: no real substance; performance
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[8]
+  sha256: 79dc8b7c53756dbe585548d35886e3e362258c22d7f5c5493ea5328aeeeb2615
+  class: S
+  to:
+  - check:K04F9.X04
+  note: closed by ADR 0013
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[9]
+  sha256: 39669617143de1d4ba0a261f0843ea58fc5d152d4e65a451c2b25372ebc67183
+  class: E
+  to:
+  - L05
+  note: residual accuracy; b bounds nothing
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[10]
+  sha256: 4a86cb5cb9f8e7e1e043fc2b90d6570c90921b6be05ae2d5bc6fca5638cac9a3
+  class: E
+  to:
+  - L07
+  note: near_threshold verdicts not promised across platforms
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[11]
+  sha256: 9b7c3f03cf7a06c2e948e4abf957d34dbe659a8725efe1c6dffbcd67c98ef44b
+  class: E
+  to:
+  - L31
+  note: refused projection judged at the final state
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[12]
+  sha256: adf601db783d3eaf10ef1f11b67e04434a3e8414632a21f1da5486a99a695527
+  class: P
+  to: []
+  note: T05 §11.5 rule left to a revision
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[13]
+  sha256: efd12b5af41ef67dea00531dba238397408ade6ceb40392222c8ced0603d9a1d
+  class: E
+  to:
+  - L02
+  - B10
+  note: scope items at defaults (Q9 is L02)
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[14]
+  sha256: c4b605f69629c0d80f2613f495bdeff4ac5d19f327f0ef30908b83134753d4d5
+  class: B
+  to:
+  - B10
+  note: 'CheckPolicy.sha256 covers the tolerance table only; K04 revision not in §6.3 — reviewer: B?'
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[15]
+  sha256: de115a2a45b58a5e8c5725ae1ccdd456058f06062bcc3c3b48032e26cca8c4be
+  class: S
+  to:
+  - tests/test_t06_w3_regularity.py::test_a37_two_screens_with_random_use_between_them_agree_bit_for_bit
+  note: onenormest seeds from the global RNG; closed by ONENORMEST_SEED (T06 §8.1, R-069)
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[16]
+  sha256: 1b300e3b24c15f5719233c0544262f4f03e0722d43a2eb60cc9951e35ac63933
+  class: P
+  to: []
+  note: cited measurement
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[17]
+  sha256: 9490832c61da3c39d15f1141919d57247ee3a8def48c7f05b4d7336ac5a26765
+  class: P
+  to: []
+  note: review
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[18]
+  sha256: 7edaddec45e2812a4b21f5ecb9562b4975629e6e36f80fbeaedf0c3a3a5bbce8
+  class: P
+  to: []
+  note: V-ids travel in requirements.yaml
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[19]
+  sha256: 9231454c992847a4b6014b363d513bfa582fee612968e46a39735ec6a6600c44
+  class: P
+  to: []
+  note: V-ids travel in requirements.yaml
+- manifest: evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
+  item: limitations[20]
+  sha256: 4c8a3dd31fb6aa3c2b4b5381b78c9c9c5156e85b06524a0395c259c9b7506e65
+  class: P
+  to: []
+  note: CI measured at the run's head
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[0]
+  sha256: 5bce8d9f3ebe4cb66b65350753ecf9eb22a0addbe20efc05b2222d9e30b6b4a0
+  class: E
+  to:
+  - L18
+  note: evidence class
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[1]
+  sha256: df60b709693f4d197c25b307929bc2292dee2801536e6ae5f81ff9673d2bfb5e
+  class: P
+  to: []
+  note: V-ids travel in requirements.yaml
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[2]
+  sha256: aec7a43593d86515608329d3f5aaa6d21fe7c05781244d45d6efa76c30fbdca6
+  class: P
+  to: []
+  note: run 1 stands as recorded
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[3]
+  sha256: 62cb315ea406079f5dc798ea2f026e6b4250b6a71eece67fdace55843b25c744
+  class: E
+  to:
+  - L32
+  note: run 2 not out of sample
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[4]
+  sha256: beed207e5bd620e97dc9f55182fc456650662782c9113a268f457d877ef6d9a9
+  class: P
+  to: []
+  note: run 2r reproduction
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[5]
+  sha256: 65f82d3611a5eea588b1a37da210d3e9441264a22ad121a81e3b95493462f96d
+  class: E
+  to:
+  - L32
+  note: holdout is the out-of-sample estimate
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[6]
+  sha256: dfddd7cb7ffc49ed4ea0ff670fdcddadf64aff78cd7060e04fc04281739c8008
+  class: E
+  to:
+  - L07
+  note: per-start outcomes not portable
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[7]
+  sha256: 3676d6937b3f2197264a733185150c6b5b8a68c24504460507a638fb139c1791
+  class: P
+  to: []
+  note: run-file bytes as written
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[8]
+  sha256: 17576773f26b454da46961fc3a132f3d4c91d26fd38a3b72ae5759aadfe0d91e
+  class: P
+  to: []
+  note: closing vs measured commit
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[9]
+  sha256: a7d28107f194b6dc859d87c326bda998c5c86c800487b7d4b07f6f63ab1f0add
+  class: P
+  to: []
+  note: CI dispatch record
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[10]
+  sha256: 50ecbd4aefc4c06a5b6c5199ea4c805637fddf917721919d54ff86198d584b46
+  class: E
+  to:
+  - L16
+  note: IDAES at near-sharp epsilon only
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[11]
+  sha256: cf20bfeaf29bc2ab2eb16b0742c40381e8ffd911d3233b9df1a2e539f695db0b
+  class: E
+  to:
+  - L02
+  note: dew/bubble-point flash
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[12]
+  sha256: 6adb61383eaa4a132fd7ccfdf29aa228b3f4319d8986ebf92ebb4ae7d9a77074
+  class: E
+  to:
+  - L04
+  - L03
+  - L37
+  note: Q24, Q25; Q27 under ADR 0020, Q29 closed by validate (T07 G10) — reviewer
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[13]
+  sha256: 30029ced5231eca1f791c81e1b16a5a2a1e1d251dc3317d3962de7735a508a5b
+  class: E
+  to:
+  - L33
+  - U10
+  note: T06 §16 scope defaults
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[14]
+  sha256: 899ac7b772871bb513e6420cdef6ca9c67a2dd49ebee9ac74269438da874fcfc
+  class: E
+  to:
+  - L08
+  note: terminal refinement spends property budget
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[15]
+  sha256: 9a7be4bea27de918f0edf2fe215a8d18d2e3641adbccd08287ef70f89a308317
+  class: P
+  to: []
+  note: Frank's decisions
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[16]
+  sha256: 044064e9cab19ecc2290a1bb4b16dc00f25d2830bed9fe5bd81b728ad901e6e3
+  class: P
+  to: []
+  note: ADR status bookkeeping
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[17]
+  sha256: 042a914e58da16ee71c23d030c33cfcf2a4ad26600183d35256364476e62f6dc
+  class: E
+  to:
+  - L09
+  note: stress profiles not run
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[18]
+  sha256: 5b69eed0d7e1c85ba8bb5731fd125b8325d637eff06bb843c8805fbeb665598e
+  class: E
+  to:
+  - L19
+  - L36
+  note: no uniqueness; no performance or accuracy promise
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[19]
+  sha256: 2b78a62d86747bf5bc113f6c2820ec24b2ed547f07af0c40d518e5966dba149a
+  class: P
+  to: []
+  note: part-record assertions
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[20]
+  sha256: 1c2a56c4330e1fd8d7adbc9b3850998cfa077b89a25f14f96ad0cd8958b833fc
+  class: P
+  to: []
+  note: A09 n/a explained
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[21]
+  sha256: e5cca06ed7b6863b824f7af1ba9b0e81a8066e1dcafe7e39f0d02661701ac4ee
+  class: P
+  to: []
+  note: A10 n/a explained
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[22]
+  sha256: 12b15282f978e0be0a5c9db9d6d755f864cec8ce7a66f5e850f59e7f8770c81c
+  class: P
+  to: []
+  note: A58 n/a explained
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: limitations[23]
+  sha256: 0020674d09d3d1d4d83f3127c10e132e8cb44f2718e3185abf96a5ff726fe636
+  class: P
+  to: []
+  note: A94 n/a explained
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: checks[8]
+  check_id: T06.A09
+  sha256: 1f9c97ff860c6a6f774b5b502f647634422d051e0b9b565c32c93f1454f26e56
+  class: S
+  to:
+  - check:T06.A55
+  note: superseded by A55-A57
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: checks[9]
+  check_id: T06.A10
+  sha256: 860f3b17ea67184f395e715ba50dab555f033344308b6c970ef2b0c0847bf667
+  class: S
+  to:
+  - check:T06.A59
+  - check:T06.A60
+  note: superseded by A59-A60
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: checks[57]
+  check_id: T06.A58
+  sha256: 7176f0e58f418e7eeae901313af57334cebb3d540d5e5f9f56dfeed1e280637f
+  class: S
+  to:
+  - check:T06.A67
+  note: superseded by A67
+- manifest: evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
+  item: checks[93]
+  check_id: T06.A94
+  sha256: 6ca421292d75d9be5ad4c1da261f1708408e64efc33be08340885ea91931101f
+  class: P
+  to: []
+  note: no cost remedy proposed
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[0]
+  sha256: 4992f3915cba6f5b91192e7d7053d3bd7c91d78dee6494e4efc5ceac7eff76ee
+  class: P
+  to: []
+  note: evidence class
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[1]
+  sha256: d6d907a1639ef109c4152d7a5cfadea8589478716ce601b0d0edb80a0918fadc
+  class: P
+  to: []
+  note: V17 travels by check
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[2]
+  sha256: 2c832e584c2965241c88875602535226eb696e15fd4c5cbca0749c42a57b952a
+  class: S
+  to:
+  - tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes
+  note: Frank's human review recorded 2026-09-29 (17 reviewed)
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[3]
+  sha256: a264f1e9a8f0d076c43d7988ab57cf1898852634281ef24d94ccce6bb0b5493d
+  class: S
+  to:
+  - tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes
+  note: design-lane text review still pending_design_review (REVIEW.json); blocks the RC, not a limitation (review 2 Ruling 13)
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[4]
+  sha256: daa23de392281892cfc5ddf4fba299cfaecfb0612dcee3cb3a563a5e03271820
+  class: E
+  to:
+  - L04
+  - L03
+  note: R-088 Q24, Q25
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[5]
+  sha256: d79a97b3c27dd56dcd46ede162639574e9f7187428a11d5b6c80c0b088d50c28
+  class: B
+  to:
+  - B6
+  note: F6 not built
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[6]
+  sha256: 2a9772ec947ec6971a2aa164a065892902578a22d0cab0fe759ec0525e7c1ff0
+  class: B
+  to:
+  - B4
+  - B5
+  - B7
+  note: S-R5, S-G, R4-O1/R4-O2
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[7]
+  sha256: 20bcc4db96f1c048a0cce0c1f74b33faa77248c057077331f5cf3271acb44116
+  class: E
+  to:
+  - L11
+  note: cancellation limits
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[8]
+  sha256: c9ed83110908f3ad47b5e846651c993683b849111fa8120855bd043e82798d10
+  class: P
+  to: []
+  note: S3 kind choice
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[9]
+  sha256: d701571868099983379e679ea832be97c0381f1b543c780826ff840ba7626a38
+  class: P
+  to: []
+  note: earlier tests changed
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[10]
+  sha256: 646f69f6118ff1bc56b1ea2bb36b68490a0b6ac914ab9e04e613f1627382be61
+  class: P
+  to: []
+  note: review record
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[11]
+  sha256: e6b711baf194ae1889eeff8eeb5b35e751d78e379a8a4360c9ed3ba159b1d9ce
+  class: P
+  to: []
+  note: G18 cited
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[12]
+  sha256: 1791829879a07e49456968c122c86aa60b7f6ac536823574fb3ed21d23bb6607
+  class: E
+  to:
+  - L12
+  note: agent evidence scope
+- manifest: evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
+  item: limitations[13]
+  sha256: 61b8ff2cac32f483d074761885a09de059bf74311fa8c8268b76dd1bf90a9763
+  class: P
+  to: []
+  note: export lifecycles

@@ -1,0 +1,465 @@
+{
+ "blocks": [
+  "K",
+  "H"
+ ],
+ "protocol": "a call is one invocation of the block's Python value or Jacobian method (\u00a73.3); residual and jacobian counts are deltas across one boundary call (A18), compile_phase is the count accumulated by PyomoNLPWithGreyBoxBlocks construction (M07), and auxiliary_phases are the harness's own block and stencil probes, which are not part of A18",
+ "M07_compile_phase_fresh_process": {
+  "K": {
+   "value_calls": 0,
+   "jacobian_calls": 1
+  },
+  "H": {
+   "value_calls": 0,
+   "jacobian_calls": 1
+  }
+ },
+ "per_state": {
+  "S1": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 9,
+      "jacobian_calls": 1
+     },
+     "H": {
+      "value_calls": 21,
+      "jacobian_calls": 1
+     }
+    },
+    "directional_derivative": {
+     "K": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     },
+     "H": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     }
+    }
+   }
+  },
+  "S2": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 9,
+      "jacobian_calls": 1
+     },
+     "H": {
+      "value_calls": 21,
+      "jacobian_calls": 1
+     }
+    },
+    "directional_derivative": {
+     "K": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     },
+     "H": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     }
+    }
+   }
+  },
+  "S3": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 9,
+      "jacobian_calls": 1
+     },
+     "H": {
+      "value_calls": 21,
+      "jacobian_calls": 1
+     }
+    },
+    "directional_derivative": {
+     "K": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     },
+     "H": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     }
+    }
+   }
+  },
+  "S4": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 9,
+      "jacobian_calls": 1
+     },
+     "H": {
+      "value_calls": 21,
+      "jacobian_calls": 1
+     }
+    },
+    "directional_derivative": {
+     "K": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     },
+     "H": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     }
+    }
+   }
+  },
+  "S5": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 9,
+      "jacobian_calls": 1
+     },
+     "H": {
+      "value_calls": 21,
+      "jacobian_calls": 1
+     }
+    },
+    "directional_derivative": {
+     "K": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     },
+     "H": {
+      "value_calls": 4,
+      "jacobian_calls": 0
+     }
+    }
+   }
+  },
+  "S6": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 1,
+      "jacobian_calls": 1
+     },
+     "H": {
+      "value_calls": 1,
+      "jacobian_calls": 1
+     }
+    }
+   }
+  },
+  "S1p": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 1,
+      "jacobian_calls": 1
+     },
+     "H": {
+      "value_calls": 1,
+      "jacobian_calls": 1
+     }
+    }
+   }
+  },
+  "S7a": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 0,
+      "jacobian_calls": 0
+     },
+     "H": {
+      "value_calls": 0,
+      "jacobian_calls": 0
+     }
+    }
+   }
+  },
+  "S7b": {
+   "residual": {
+    "K": {
+     "value_calls": 1,
+     "jacobian_calls": 0
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "jacobian": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 0
+    }
+   },
+   "compile_phase": {
+    "K": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    },
+    "H": {
+     "value_calls": 0,
+     "jacobian_calls": 1
+    }
+   },
+   "auxiliary_phases": {
+    "block_probe": {
+     "K": {
+      "value_calls": 0,
+      "jacobian_calls": 0
+     },
+     "H": {
+      "value_calls": 0,
+      "jacobian_calls": 0
+     }
+    }
+   }
+  }
+ }
+}

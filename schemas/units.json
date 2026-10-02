@@ -1,0 +1,95 @@
+{
+  "$id": "https://github.com/frankp/process-runtime/schemas/units.json",
+  "title": "SI kind table",
+  "description": "The kinds a Quantity may declare, with the SI dimension exponent vector and the unprefixed SI unit each one must be stored in. Not a JSON Schema: a data table used by quantity validation (ADR 0001 D1.1-D1.3). `process_runtime.units` carries the same table and tests/test_units_p01.py asserts the two agree exactly. Adding, removing or re-typing a kind is a change to the P01 interface freeze and requires a Fable-authored ADR (docs/interfaces-frozen.md §3).",
+  "authority": "docs/adr/0001-state-units-zero-flow.md D1; blueprint v3.1 §4.2",
+  "dimension_order": [
+    "length",
+    "mass",
+    "time",
+    "temperature",
+    "amount",
+    "current",
+    "luminous_intensity"
+  ],
+  "kinds": {
+    "temperature": {
+      "dimension": [0, 0, 0, 1, 0, 0, 0],
+      "si_unit": "K",
+      "lower_bound_exclusive": 0.0,
+      "notes": "Absolute temperature. Distinct from temperature_difference although the dimension is the same (ADR 0001 D1.3). Converting from degC adds 273.15."
+    },
+    "temperature_difference": {
+      "dimension": [0, 0, 0, 1, 0, 0, 0],
+      "si_unit": "K",
+      "lower_bound_exclusive": null,
+      "notes": "Unbounded. Converting from degC is the identity. `temperature + temperature` is a validation error; see combine_kinds."
+    },
+    "pressure": {
+      "dimension": [-1, 1, -2, 0, 0, 0, 0],
+      "si_unit": "Pa",
+      "lower_bound_exclusive": null,
+      "notes": "Absolute pressure."
+    },
+    "molar_flow": {
+      "dimension": [0, 0, -1, 0, 1, 0, 0],
+      "si_unit": "mol/s",
+      "lower_bound_exclusive": null,
+      "notes": "The default extensive material variable (ADR 0001 D2.1). Component molar flows are bounded below by 0; that bound is declared per quantity, not implied by the kind."
+    },
+    "mass_flow": {
+      "dimension": [0, 1, -1, 0, 0, 0, 0],
+      "si_unit": "kg/s",
+      "lower_bound_exclusive": null,
+      "notes": "Derived through the component molecular weights; there is no independent mass state (ADR 0001 D1.4)."
+    },
+    "heat_rate": {
+      "dimension": [2, 1, -3, 0, 0, 0, 0],
+      "si_unit": "W",
+      "lower_bound_exclusive": null,
+      "notes": "Heat duty, positive into the unit (ADR 0001 D4.1). May be negative."
+    },
+    "power": {
+      "dimension": [2, 1, -3, 0, 0, 0, 0],
+      "si_unit": "W",
+      "lower_bound_exclusive": null,
+      "notes": "Shaft work rate, positive into the unit. Shares a dimension with heat_rate and is a distinct kind."
+    },
+    "molar_enthalpy": {
+      "dimension": [2, 1, -2, 0, -1, 0, 0],
+      "si_unit": "J/mol",
+      "lower_bound_exclusive": null,
+      "notes": "Comparable only within one provider implementation hash, data hash and reference convention (ADR 0001 D5.2)."
+    },
+    "mole_fraction": {
+      "dimension": [0, 0, 0, 0, 0, 0, 0],
+      "si_unit": "1",
+      "lower_bound_exclusive": null,
+      "notes": "Defined only where total flow is positive (ADR 0001 D2.2, D3.1). Values lie in [0, 1]."
+    },
+    "dimensionless": {
+      "dimension": [0, 0, 0, 0, 0, 0, 0],
+      "si_unit": "1",
+      "lower_bound_exclusive": null,
+      "notes": "Ratios that are not compositions, for example the SYN-001 split fraction r."
+    },
+    "molar_mass": {
+      "dimension": [0, 1, 0, 0, -1, 0, 0],
+      "si_unit": "kg/mol",
+      "lower_bound_exclusive": 0.0,
+      "notes": "ComponentRecord.molecular_weight. Strictly positive."
+    },
+    "molar_heat_capacity": {
+      "dimension": [2, 1, -2, -1, -1, 0, 0],
+      "si_unit": "J/(mol K)",
+      "lower_bound_exclusive": null,
+      "notes": "ADDED IN P01 BEYOND THE ADR 0001 D1.3 ENUMERATION, pending Fable's confirmation (docs/progress.md, 'Opus -> Fable, P01 handoff'). The SYN-001 ComponentRecord parameter c_p cannot be expressed with a registered kind otherwise. Dimension-only, exactly as D1.3 describes its non-temperature kinds: no arithmetic rule beyond the dimension check."
+    },
+    "molar_volume": {
+      "dimension": [3, 0, 0, 0, -1, 0, 0],
+      "si_unit": "m3/mol",
+      "lower_bound_exclusive": 0.0,
+      "notes": "ADDED IN P01 BEYOND THE ADR 0001 D1.3 ENUMERATION, pending Fable's confirmation (docs/progress.md, 'Opus -> Fable, P01 handoff'). The SYN-001 ComponentRecord parameter v_i cannot be expressed with a registered kind otherwise. Dimension-only, no new arithmetic rule."
+    }
+  }
+}

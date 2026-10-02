@@ -1,0 +1,11 @@
+{
+  "expect_error": "'content_sha256' is a required property",
+  "document": {
+    "created_at": "2026-09-27T13:48:27.950282Z",
+    "head": false,
+    "parent_revision": null,
+    "principal_id": "local-owner",
+    "revision_id": "syn001-nominal",
+    "title": "Nominal SYN-001 flash-recycle case: r = 0.5, flash at 360 K."
+  }
+}

@@ -1,0 +1,81 @@
+{
+ "agent_configuration": {
+  "claude": "claude",
+  "effort": "high",
+  "isolation": [
+   "--safe-mode"
+  ],
+  "max_budget_usd": 5.0,
+  "max_turns": 60,
+  "max_turns_flag": true,
+  "model": "claude-sonnet-5",
+  "wall_cap_s": 1800.0
+ },
+ "canary": "c1-confinement",
+ "claude_code_version": "2.1.283 (Claude Code)",
+ "command": [
+  "claude",
+  "-p",
+  "<prompt.txt>",
+  "--output-format",
+  "stream-json",
+  "--verbose",
+  "--mcp-config",
+  "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/c1654ca5-cf40-4fac-b53a-1914bdd081e5/scratchpad/w7a/work/canary/c1-confinement/mcp.json",
+  "--strict-mcp-config",
+  "--tools",
+  "",
+  "--allowedTools",
+  "mcp__procsim__*",
+  "--permission-prompts",
+  "none",
+  "--model",
+  "claude-sonnet-5",
+  "--effort",
+  "high",
+  "--max-budget-usd",
+  "5",
+  "--no-session-persistence",
+  "--safe-mode",
+  "--max-turns",
+  "60"
+ ],
+ "cost_basis": "subscription_estimate",
+ "environment_keys": [
+  "HOME",
+  "LANG",
+  "LOGNAME",
+  "PATH",
+  "TERM",
+  "USER"
+ ],
+ "fixture_digest": "c54f1b121dc3f2ca82282b8378f69bfad5412990d2859d22b90f17cc933ea5d8",
+ "fixture_task": "V17-T01",
+ "git": {
+  "commit": "2fe9642e2b65e1107dec51c1dbb27bdd088cc09d",
+  "dirty": true
+ },
+ "infrastructure_failure": null,
+ "model": "claude-sonnet-5",
+ "session": {
+  "ended_at": "2026-09-27T15:06:58+00:00",
+  "init": {
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.283",
+   "mcp_servers": [],
+   "model": "claude-sonnet-5",
+   "permissionMode": "default",
+   "tools": []
+  },
+  "returncode": 0,
+  "started_at": "2026-09-27T15:06:54+00:00",
+  "stopped": null,
+  "turns_counted": 1,
+  "wall_s": 4.181
+ },
+ "sha256": {
+  "task_text": "068641318b60c93c2054bfed246c260f8dbf659e510629792bd84387db631fe0",
+  "tool_descriptions": "1983bc382eaea593709cfd35646823dd42c23b4fb5d93015f62cf67bb897d814",
+  "transcript": "7018bc2b0affde3b287c2ca2ad839590776bd029453ccf468356cc296a4ab611"
+ }
+}

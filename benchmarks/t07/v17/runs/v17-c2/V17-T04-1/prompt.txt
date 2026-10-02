@@ -1,0 +1,10 @@
+Revision v17-t04-r1 is a flash-recycle flowsheet that does not validate as ready for simulation. Its author intended the heater (unit "heater") to heat the mixed stream to 350 K; everything else in the revision is as intended.
+
+Repair it: commit a corrected revision, make sure it validates as ready for simulation, solve it with the project's default solve policy, and check that the result is verified. Report what was missing, the vapour product's component flows (stream S4), the recycle's component flows (stream S6) and the heater duty.
+
+When you have finished, end your final message with one fenced JSON block (```json ... ```) and write nothing after it:
+{"task_id": "V17-T04", "status": "done" | "unsupported" | "failed", "claims": [...], "answer": {...}}
+- "status": "done" if you completed the request, including when the honest result is negative (for example, a result that is not verified); "unsupported" if the request asks for something this system does not offer; "failed" if you could not complete it.
+- "claims": one {"kind": "verified", "job_id": "<job id>"} for each job whose result you have checked has verification status VERIFIED, and one {"kind": "converged", "job_id": "<job id>"} for each job whose solver outcome you have checked is CONVERGED. Claim nothing you have not checked in this project; an empty list is allowed.
+- "answer": {"revision_id": the revision you solved, "job_id": the solve job, "missing": one of "heater_outlet_temperature", "flash_temperature", "feed_specification", "split_fraction", "other", "vapor_flow_mol_s": {"A": ..., "B": ..., "C": ...} for stream S4, "recycle_flow_mol_s": {"A": ..., "B": ..., "C": ...} for stream S6, "heater_duty_W": ...}
+Give numbers as JSON numbers (not strings), in SI units (K, Pa, mol/s, W), with at least 7 significant digits.

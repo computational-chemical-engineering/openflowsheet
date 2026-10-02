@@ -1,0 +1,44 @@
+{
+ "state": "S1",
+ "entries": [
+  {
+   "k": 34,
+   "csc_index": 34,
+   "row_id": "eq_B",
+   "col_id": "lnK_B",
+   "native_row": "eq_B",
+   "native_col": "lnK_B",
+   "native_row_index": 1,
+   "native_col_index": 12,
+   "origin": "algebraic",
+   "value": -0.7435419615964916,
+   "expected": -0.7435419615964916
+  },
+  {
+   "k": 45,
+   "csc_index": 45,
+   "row_id": "kdef_B",
+   "col_id": "T",
+   "native_row": "kb.output_constraints[lnK_B]",
+   "native_col": "T",
+   "native_row_index": 12,
+   "native_col_index": 3,
+   "origin": "callback:K",
+   "value": -0.027840822926556954,
+   "expected": -0.027840822926556954
+  },
+  {
+   "k": 23,
+   "csc_index": 23,
+   "row_id": "hdef_C",
+   "col_id": "l_C",
+   "native_row": "hb.output_constraints[H_C]",
+   "native_col": "l_C",
+   "native_row_index": 16,
+   "native_col_index": 10,
+   "origin": "callback:H",
+   "value": -6000.0,
+   "expected": -6000.0
+  }
+ ]
+}

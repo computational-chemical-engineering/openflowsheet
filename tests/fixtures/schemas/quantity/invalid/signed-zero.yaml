@@ -1,0 +1,19 @@
+# Invalid Quantity: a value of -0.0.
+#
+# ADR 0001 D1.5: -0.0 and +0.0 are the same physical state, and canonical form is +0.0.
+# Storing -0.0 would let canonical identity distinguish two identical states.
+expect_error: '-0.0'
+document:
+  value: -0.0
+  unit: mol/s
+  dimension:
+  - 0
+  - 0
+  - -1
+  - 0
+  - 1
+  - 0
+  - 0
+  kind: molar_flow
+  meaning: A dormant component flow written with a negative zero
+  role: free

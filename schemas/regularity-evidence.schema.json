@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/regularity-evidence.schema.json",
+  "title": "RegularityEvidence",
+  "description": "K04 \u00a712.3, blueprint [A08]. The screen on the unregularized target Jacobian at the final state. `u_diagonal_ratio` is recorded and never decides \u2014 ADR 0004 D3.4 and [A08] both call it a warning screen and not a rank-revealing test, and the registered triangular fixtures have it exactly 1.0 at three different statuses. `ill_conditioned_reason` distinguishes the relative limit (`rcond_1 < tau_ill`) from the absolute one (`||J^-1||_1 > tau_min/(n eps)`), which is what a scale-free condition number cannot see.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "matrix",
+    "dimension",
+    "nnz",
+    "scales_provenance",
+    "method",
+    "superlu_options",
+    "one_norm",
+    "inverse_one_norm_estimate",
+    "rcond_1",
+    "u_diagonal_ratio",
+    "status",
+    "ill_conditioned_reason",
+    "inverse_one_norm_threshold",
+    "solution_error_bound_scaled",
+    "escalation",
+    "inconclusive_reason",
+    "thresholds",
+    "factorization_source",
+    "jacobian_identity",
+    "derivative_accuracy"
+  ],
+  "properties": {
+    "matrix": {
+      "const": "target_after_alias_elimination"
+    },
+    "dimension": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "nnz": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "scales_provenance": {
+      "type": "string",
+      "minLength": 1
+    },
+    "method": {
+      "const": "splu_onenormest_rcond1"
+    },
+    "superlu_options": {
+      "type": "object"
+    },
+    "one_norm": {
+      "type": "number",
+      "minimum": 0
+    },
+    "inverse_one_norm_estimate": {
+      "type": "number"
+    },
+    "rcond_1": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "u_diagonal_ratio": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "NO_RANK_LOSS_DETECTED",
+        "RANK_DEFICIENT",
+        "ILL_CONDITIONED",
+        "INCONCLUSIVE"
+      ]
+    },
+    "ill_conditioned_reason": {
+      "enum": [
+        "relative",
+        "absolute",
+        null
+      ]
+    },
+    "inverse_one_norm_threshold": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "solution_error_bound_scaled": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "escalation": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "inconclusive_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "thresholds": {
+      "type": "object"
+    },
+    "factorization_source": {
+      "const": "evaluated_at_final_state"
+    },
+    "jacobian_identity": {
+      "type": "object"
+    },
+    "derivative_accuracy": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

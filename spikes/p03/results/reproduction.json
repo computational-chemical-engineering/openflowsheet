@@ -1,0 +1,40 @@
+{
+  "casadi": {
+    "clean_install_files": 2384,
+    "differing": [],
+    "generated_differing": [
+      "__pycache__/__init__.cpython-313.pyc",
+      "__pycache__/casadi.cpython-313.pyc",
+      "tools/__pycache__/__init__.cpython-313.pyc",
+      "tools/__pycache__/bounds.cpython-313.pyc",
+      "tools/__pycache__/in_out.cpython-313.pyc",
+      "tools/__pycache__/structure.cpython-313.pyc",
+      "tools/graph/__pycache__/__init__.cpython-313.pyc",
+      "tools/graph/__pycache__/graph.cpython-313.pyc"
+    ],
+    "identical": 2376,
+    "missing_from_clean_install": [],
+    "recorded_files": 2384,
+    "reproduced": true,
+    "root": "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/792f277d-c76e-49b7-b7c9-f63d51726398/scratchpad/venv-casadi-repro/lib/python3.13/site-packages/casadi",
+    "unexpected_in_clean_install": []
+  },
+  "method": "Each candidate was installed again from PyPI at its pinned version into a fresh virtual environment with `pip install --no-cache-dir`, so the wheel was re-downloaded rather than re-used, and every file was compared against the SHA-256 recorded by scripts/p03_binary_inventory.py.",
+  "pyomo_asl_not_attempted": "The PyNumero ASL library is built by `pyomo build-extensions` into the shared ~/.pyomo, so rebuilding it would overwrite the artifact the P02 evidence manifest references by hash. It is recorded as not re-derived, not as verified.",
+  "pyomo_wheel": {
+    "checked": [
+      {
+        "expected_sha256": "2cf52b15480ea9b70293c5a8388a30ac08396ff0cd560bee1077cd4101c7b34f",
+        "match": true,
+        "path": "contrib/appsi/cmodel/appsi_cmodel.cpython-313-x86_64-linux-gnu.so"
+      },
+      {
+        "expected_sha256": "a57ea3ac2d2dec65238989c17c7f4839481b9810bcec159c7977eac55fc75e69",
+        "match": true,
+        "path": "pyomo-6.10.1.dist-info/licenses/LICENSE.md"
+      }
+    ],
+    "reproduced": true,
+    "root": "/tmp/claude-1003/-home-frankp-Codes-Process-Simulator/792f277d-c76e-49b7-b7c9-f63d51726398/scratchpad/venv-pyomo-repro/lib/python3.13/site-packages/pyomo"
+  }
+}

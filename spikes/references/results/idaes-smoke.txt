@@ -1,0 +1,35 @@
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_in: Initialization Step 1 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_in: Initialization Step 2 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_in: Initialization Step 3 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_in: Initialization Step 4 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_in: Initialization Step 5 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_out: Initialization Step 1 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_out: Initialization Step 2 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_out: Initialization Step 3 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_out: Initialization Step 4 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_out: Initialization Step 5 optimal - Optimal Solution Found.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_out: State Released.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume: Initialization Complete
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash.control_volume.properties_in: State Released.
+2026-09-24 15:05:41 [INFO] idaes.init.fs.flash: Initialization Complete: optimal - Optimal Solution Found
+{
+  "check": "idaes-flash-btx-ideal",
+  "idaes_version": "2.13.0",
+  "pyomo_version": "6.10.1",
+  "ipopt_available": true,
+  "ipopt_version": "3.13.2.0",
+  "ipopt_path": "/home/frankp/Codes/Process Simulator/.claude/worktrees/agent-a6b911745d46ad3fe/.venv-idaes/idaes-data/bin/ipopt",
+  "ipopt_linear_solvers": {
+    "mumps": "optimal",
+    "ma27": "optimal",
+    "ma57": "optimal",
+    "ma97": "optimal"
+  },
+  "degrees_of_freedom": 0,
+  "termination_condition": "optimal",
+  "vap_flow_mol": 0.3961181748774178,
+  "liq_flow_mol": 0.6038818251225821,
+  "outlet_temperature_K": 368.0,
+  "wall_seconds": 1.56
+}
+SMOKE PASS

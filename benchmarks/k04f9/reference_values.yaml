@@ -1,0 +1,987 @@
+document: K04-F9 reference values (ADR 0013; docs/derivations/K04-F9-spec.md)
+generator: docs/derivations/scripts/k04f9_reference.py
+precision: mpmath 40 significant digits, written to 20 (ratios to 6)
+constants:
+  tau_flow_mol_per_s: '3.1000000000000000000e-8'
+  tau_eq_mol2_per_s2: '9.3000000000000000000e-8'
+  tau_E_W: '0.0010100000000000000000'
+  tau_T_K: '1.0000000000000000000e-6'
+  eps_adm: '1.0000000000000000000e-12'
+  near_threshold_margin: 10
+  routing_threshold_floor_over_tau_flow: '0.10000000000000000000'
+  ulp_one: '2.2204460492503130808e-16'
+  projected_bound_over_tolerance: '0.0010000000000000000000'
+closed_form:
+  routing:
+    SYN-001-nominal:U-HEAT.S3:
+      route: resolved
+      T_K: '350.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: false
+      degeneracy_K: '27.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-nominal:U-FLASH.S3:
+      route: resolved
+      T_K: '360.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: true
+      degeneracy_K: '17.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.26116e-7'
+    SYN-001-once-through:U-HEAT.S3:
+      route: resolved
+      T_K: '350.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: true
+      degeneracy_K: '24.2703041185'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '2.05037e-7'
+    SYN-001-once-through:U-FLASH.S3:
+      route: resolved
+      T_K: '360.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: true
+      degeneracy_K: '14.2703041185'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '2.05037e-7'
+    SYN-001-high-recycle:U-HEAT.S3:
+      route: resolved
+      T_K: '350.00000000000000000'
+      N_mol_per_s: '34.144627684760118980'
+      T_bubble_K: '358.72935204421562093'
+      T_dew_K: '382.14614926548060069'
+      width_K: '23.4167972213'
+      inside_band: false
+      degeneracy_K: '32.1461492655'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-high-recycle:U-FLASH.S3:
+      route: resolved
+      T_K: '360.00000000000000000'
+      N_mol_per_s: '34.144627684760118980'
+      T_bubble_K: '358.72935204421562093'
+      T_dew_K: '382.14614926548060069'
+      width_K: '23.4167972213'
+      inside_band: true
+      degeneracy_K: '22.1461492655'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '2.67370e-6'
+    SYN-001-all-liquid-310K:U-HEAT.S3:
+      route: resolved
+      T_K: '350.00000000000000000'
+      N_mol_per_s: '6.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: true
+      degeneracy_K: '24.2703041185'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '4.10075e-7'
+    SYN-001-all-liquid-310K:U-FLASH.S3:
+      route: resolved
+      T_K: '310.00000000000000000'
+      N_mol_per_s: '6.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: false
+      degeneracy_K: '64.2703041185'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-all-vapor-420K:U-HEAT.S3:
+      route: resolved
+      T_K: '350.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: true
+      degeneracy_K: '24.2703041185'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '2.05037e-7'
+    SYN-001-all-vapor-420K:U-FLASH.S3:
+      route: resolved
+      T_K: '420.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: false
+      degeneracy_K: '72.5588180186'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-A02-340:U-HEAT.S3:
+      route: resolved
+      T_K: '340.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: false
+      degeneracy_K: '37.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-A02-345:U-HEAT.S3:
+      route: resolved
+      T_K: '345.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: false
+      degeneracy_K: '32.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-A02-350:U-HEAT.S3:
+      route: resolved
+      T_K: '350.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: false
+      degeneracy_K: '27.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-A02-352:U-HEAT.S3:
+      route: resolved
+      T_K: '352.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: true
+      degeneracy_K: '25.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.26116e-7'
+    SYN-001-A02-355:U-HEAT.S3:
+      route: resolved
+      T_K: '355.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: true
+      degeneracy_K: '22.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.26116e-7'
+    SYN-001-A02-358:U-HEAT.S3:
+      route: resolved
+      T_K: '358.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: true
+      degeneracy_K: '19.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.26116e-7'
+    SYN-001-A02-360:U-HEAT.S3:
+      route: resolved
+      T_K: '360.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: true
+      degeneracy_K: '17.5290606055'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.26116e-7'
+    SYN-001-A02-365:U-HEAT.S3:
+      route: resolved
+      T_K: '365.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: true
+      degeneracy_K: '13.5558309086'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.26116e-7'
+    SYN-001-A02-370:U-HEAT.S3:
+      route: resolved
+      T_K: '370.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: true
+      degeneracy_K: '18.5558309086'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.26116e-7'
+    SYN-001-A02-375:U-HEAT.S3:
+      route: resolved
+      T_K: '375.00000000000000000'
+      N_mol_per_s: '4.6391909307768483674'
+      T_bubble_K: '351.44416909142989639'
+      T_dew_K: '377.52906060550727364'
+      width_K: '26.0848915141'
+      inside_band: true
+      degeneracy_K: '23.5558309086'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.26116e-7'
+    NP-1:U-PHF.S1:
+      route: degenerate
+      T_K: '359.99999999997870332'
+      N_mol_per_s: '2.0000000000010000000'
+      T_bubble_K: '359.99999999996694343'
+      T_dew_K: '359.99999999998836300'
+      width_K: '2.14195721333e-11'
+      inside_band: true
+      degeneracy_K: '1.17598855075e-11'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '171213.'
+    NP-2:U-PHF.S1:
+      route: degenerate
+      T_K: '360.00000023929887189'
+      N_mol_per_s: '2.0000000100000000000'
+      T_bubble_K: '360.00000012381463156'
+      T_dew_K: '360.00000039865648026'
+      width_K: '2.74841848699e-7'
+      inside_band: true
+      degeneracy_K: '1.59357608370e-7'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '13.3434'
+    NP-3:U-PHF.S1:
+      route: resolved
+      T_K: '359.99978703374131513'
+      N_mol_per_s: '2.0000100000000000000'
+      T_bubble_K: '359.99966943699807031'
+      T_dew_K: '359.99988363042125635'
+      width_K: '0.000214193423186'
+      inside_band: true
+      degeneracy_K: '0.000117596743245'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '0.0171216'
+    NP-G:U-PHF.S1:
+      route: unresolved
+      T_K: '360.00000234150323414'
+      N_mol_per_s: '2.0000001500000000000'
+      T_bubble_K: '360.00000185721939043'
+      T_dew_K: '360.00000597984618879'
+      width_K: '4.12262679836e-6'
+      inside_band: true
+      degeneracy_K: '3.63834295465e-6'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '0.889558'
+    NP-GC:U-PHF.S1:
+      route: unresolved
+      T_K: '360.00000234150323414'
+      N_mol_per_s: '2.0000001500000000000'
+      T_bubble_K: '360.00000185721939043'
+      T_dew_K: '360.00000597984618879'
+      width_K: '4.12262679836e-6'
+      inside_band: true
+      degeneracy_K: '3.63834295465e-6'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '0.889558'
+    SC-1:valve:
+      route: degenerate
+      T_K: '360.00000000000000000'
+      N_mol_per_s: '2.0000000000000000000'
+      T_bubble_K: '360.00000000000000000'
+      T_dew_K: '360.00000000000000000'
+      width_K: '0.0'
+      inside_band: true
+      degeneracy_K: '0.0'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: inf
+    SC-2:phf:
+      route: degenerate
+      T_K: '360.00000000000000000'
+      N_mol_per_s: '2.0000000000000000000'
+      T_bubble_K: '360.00000000000000000'
+      T_dew_K: '360.00000000000000000'
+      width_K: '0.0'
+      inside_band: true
+      degeneracy_K: '0.0'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: inf
+    SC-3:phf:
+      route: degenerate
+      T_K: '360.00000000000000000'
+      N_mol_per_s: '2.0000000000000000000'
+      T_bubble_K: '360.00000000000000000'
+      T_dew_K: '360.00000000000000000'
+      width_K: '0.0'
+      inside_band: true
+      degeneracy_K: '0.0'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: inf
+    DZ-3:U-PHF.S1:
+      route: resolved
+      T_K: '358.09051640358332349'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: true
+      degeneracy_K: '16.1797877149'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '2.05037e-7'
+    DZ-12:U-PHF.S1:
+      route: resolved
+      T_K: '352.00503598217342654'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: true
+      degeneracy_K: '22.2652681363'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '2.05037e-7'
+    DZ-10:U-PHF.S1:
+      route: resolved
+      T_K: '358.09051640358332349'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: true
+      degeneracy_K: '16.1797877149'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '2.05037e-7'
+    SYN-001-UL-C1:S1:
+      route: resolved
+      T_K: '300.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: false
+      degeneracy_K: '74.2703041185'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C1:S2:
+      route: resolved
+      T_K: '300.02666666666666667'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '370.70134659404605715'
+      T_dew_K: '396.19572776323665821'
+      width_K: '25.4943811692'
+      inside_band: false
+      degeneracy_K: '96.1690610966'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C1:S3:
+      route: resolved
+      T_K: '360.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '370.70134659404605715'
+      T_dew_K: '396.19572776323665821'
+      width_K: '25.4943811692'
+      inside_band: false
+      degeneracy_K: '36.1957277632'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C1:S4:
+      route: resolved
+      T_K: '348.49986441920892565'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: true
+      degeneracy_K: '25.7704396993'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '2.05037e-7'
+    SYN-001-UL-C1:S5:
+      route: resolved
+      T_K: '351.41352987876161211'
+      N_mol_per_s: '0.46268602560128715028'
+      T_bubble_K: '331.03364776767449271'
+      T_dew_K: '351.41352987876161211'
+      width_K: '20.3798821111'
+      inside_band: true
+      degeneracy_K: '20.3798821111'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '4.16297e-8'
+    SYN-001-UL-C1:S6:
+      route: resolved
+      T_K: '351.41352987876161211'
+      N_mol_per_s: '2.5373139743987128497'
+      T_bubble_K: '351.41352987876161211'
+      T_dew_K: '377.17025188727932097'
+      width_K: '25.7567220085'
+      inside_band: true
+      degeneracy_K: '25.7567220085'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '1.80635e-7'
+    SYN-001-UL-C2:S1:
+      route: resolved
+      T_K: '300.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '329.29248088019226522'
+      T_dew_K: '339.47114392176589395'
+      width_K: '10.1786630416'
+      inside_band: false
+      degeneracy_K: '39.4711439218'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C2:S2:
+      route: resolved
+      T_K: '306.25116279069767442'
+      N_mol_per_s: '5.1435406698564593301'
+      T_bubble_K: '328.29733192227981316'
+      T_dew_K: '342.06201470083443066'
+      width_K: '13.7646827786'
+      inside_band: false
+      degeneracy_K: '35.8108519101'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C2:S3:
+      route: resolved
+      T_K: '315.00000000000000000'
+      N_mol_per_s: '5.1435406698564593301'
+      T_bubble_K: '350.71863928256491286'
+      T_dew_K: '383.50670300041660459'
+      width_K: '32.7880637179'
+      inside_band: false
+      degeneracy_K: '68.5067030004'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C2:S4:
+      route: resolved
+      T_K: '315.00000000000000000'
+      N_mol_per_s: '2.1435406698564593301'
+      T_bubble_K: '326.94524167209268297'
+      T_dew_K: '345.23718543343133085'
+      width_K: '18.2919437613'
+      inside_band: false
+      degeneracy_K: '30.2371854334'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C2:S5:
+      route: resolved
+      T_K: '315.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '386.69920744756444101'
+      T_dew_K: '397.22667392677443714'
+      width_K: '10.5274664792'
+      inside_band: false
+      degeneracy_K: '82.2266739268'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C3:S1:
+      route: resolved
+      T_K: '300.00000000000000000'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: false
+      degeneracy_K: '74.2703041185'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C3:S2:
+      route: resolved
+      T_K: '327.36451370553362692'
+      N_mol_per_s: '3.0000000000000000000'
+      T_bubble_K: '347.44118198144020477'
+      T_dew_K: '374.27030411847760313'
+      width_K: '26.8291221370'
+      inside_band: false
+      degeneracy_K: '46.9057904129'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C3:S3:
+      route: resolved
+      T_K: '342.06649220846692136'
+      N_mol_per_s: '5.4647028946070063831'
+      T_bubble_K: '352.61270392550254514'
+      T_dew_K: '378.36756601235296214'
+      width_K: '25.7548620869'
+      inside_band: false
+      degeneracy_K: '36.3010738039'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    SYN-001-UL-C3:S4:
+      route: resolved
+      T_K: '359.96152353467977770'
+      N_mol_per_s: '1.3568647369286624113'
+      T_bubble_K: '336.32084177483020254'
+      T_dew_K: '359.96152353467977770'
+      width_K: '23.6406817598'
+      inside_band: true
+      degeneracy_K: '23.6406817598'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '1.05243e-7'
+    SYN-001-UL-C3:S5:
+      route: resolved
+      T_K: '359.96152353467977770'
+      N_mol_per_s: '4.1078381576783439719'
+      T_bubble_K: '359.96152353467977770'
+      T_dew_K: '382.79801053557964820'
+      width_K: '22.8364870009'
+      inside_band: true
+      degeneracy_K: '22.8364870009'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '3.29839e-7'
+    SYN-001-UL-C3:S6:
+      route: resolved
+      T_K: '359.96152353467977770'
+      N_mol_per_s: '2.4647028946070063831'
+      T_bubble_K: '359.96152353467977770'
+      T_dew_K: '382.79801053557964820'
+      width_K: '22.8364870009'
+      inside_band: true
+      degeneracy_K: '22.8364870009'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '1.97904e-7'
+    SYN-001-UL-C3:S7:
+      route: resolved
+      T_K: '359.96152353467977770'
+      N_mol_per_s: '1.6431352630713375887'
+      T_bubble_K: '359.96152353467977770'
+      T_dew_K: '382.79801053557964820'
+      width_K: '22.8364870009'
+      inside_band: true
+      degeneracy_K: '22.8364870009'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: '1.31936e-7'
+    SYN-001-UL-C3:S8:
+      route: resolved
+      T_K: '310.00000000000000000'
+      N_mol_per_s: '1.6431352630713375887'
+      T_bubble_K: '359.96152353467977770'
+      T_dew_K: '382.79801053557964820'
+      width_K: '22.8364870009'
+      inside_band: false
+      degeneracy_K: '72.7980105356'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+    INJ-B2':S2:
+      route: resolved
+      T_K: '360.00002000000000000'
+      N_mol_per_s: '2.0000000000000000000'
+      T_bubble_K: '360.00000000000000000'
+      T_dew_K: '360.00000000000000000'
+      width_K: '0.0'
+      inside_band: false
+      degeneracy_K: '2.00000000000e-5'
+      ulp_T_K: '5.68434188608e-14'
+      floor_over_tau_flow: null
+  kink:
+    NP-3:S2:
+      A_W_per_unit_excess: '4685179768.33'
+      per_ulp_of_excess_over_tau_E: '0.00103002'
+      excess_at_root: '-1.14794e-41'
+    NP-3:S3:
+      A_W_per_unit_excess: '3848515595.02'
+      per_ulp_of_excess_over_tau_E: '0.000846081'
+      excess_at_root: '0.0'
+    NP-G:S2:
+      A_W_per_unit_excess: '124389812877.'
+      per_ulp_of_excess_over_tau_E: '0.0273466'
+      excess_at_root: '-1.26274e-40'
+    NP-G:S3:
+      A_W_per_unit_excess: '934519768550.'
+      per_ulp_of_excess_over_tau_E: '0.205451'
+      excess_at_root: '1.37753e-40'
+    NP-GC:S4:
+      A_W_per_unit_excess: '467259884275.'
+      per_ulp_of_excess_over_tau_E: '0.102725'
+      excess_at_root: '1.37753e-40'
+    NP-GC:S5:
+      A_W_per_unit_excess: '467259884275.'
+      per_ulp_of_excess_over_tau_E: '0.102725'
+      excess_at_root: '1.37753e-40'
+    DZ-3:S2:
+      A_W_per_unit_excess: '36172.2629903'
+      per_ulp_of_excess_over_tau_E: '7.95233e-9'
+      excess_at_root: '0.0'
+    DZ-3:S3:
+      A_W_per_unit_excess: '62471.0200855'
+      per_ulp_of_excess_over_tau_E: '1.37340e-8'
+      excess_at_root: '2.29589e-41'
+    SYN-001-nominal:S4:
+      A_W_per_unit_excess: '44726.5745924'
+      per_ulp_of_excess_over_tau_E: '9.83296e-9'
+      excess_at_root: '2.29589e-41'
+    SYN-001-nominal:S5:
+      A_W_per_unit_excess: '109176.698968'
+      per_ulp_of_excess_over_tau_E: '2.40021e-8'
+      excess_at_root: '2.29589e-41'
+    SYN-001-nominal:S6:
+      A_W_per_unit_excess: '54588.3494839'
+      per_ulp_of_excess_over_tau_E: '1.20010e-8'
+      excess_at_root: '2.29589e-41'
+  a02_family_projection:
+    runs: 180
+    converged: 179
+    raw_counts:
+      fail: 15
+      near: 9
+      clear: 155
+    exposed_states:
+    - T_target_K: 352
+      guess_K: '360.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '27.2797'
+      projected_largest_over_threshold: '2.10680e-5'
+      scaled_residual_before: '4.072e-9'
+      scaled_residual_after: '3.145e-15'
+      scaled_step: '4.609e-8'
+    - T_target_K: 352
+      guess_K: '375.000'
+      recovered_by_edge3: true
+      raw_largest_over_threshold: '1.66300'
+      projected_largest_over_threshold: '7.82941e-8'
+      scaled_residual_before: '2.482e-10'
+      scaled_residual_after: '1.169e-17'
+      scaled_step: '2.810e-9'
+    - T_target_K: 352
+      guess_K: '376.000'
+      recovered_by_edge3: true
+      raw_largest_over_threshold: '4.04913'
+      projected_largest_over_threshold: '4.64160e-7'
+      scaled_residual_before: '6.044e-10'
+      scaled_residual_after: '6.928e-17'
+      scaled_step: '6.841e-9'
+    - T_target_K: 352
+      guess_K: '377.000'
+      recovered_by_edge3: true
+      raw_largest_over_threshold: '9.50235'
+      projected_largest_over_threshold: '2.55626e-6'
+      scaled_residual_before: '1.418e-9'
+      scaled_residual_after: '3.816e-16'
+      scaled_step: '1.606e-8'
+    - T_target_K: 352
+      guess_K: '377.400'
+      recovered_by_edge3: true
+      raw_largest_over_threshold: '13.2523'
+      projected_largest_over_threshold: '4.97196e-6'
+      scaled_residual_before: '1.978e-9'
+      scaled_residual_after: '7.421e-16'
+      scaled_step: '2.239e-8'
+    - T_target_K: 352
+      guess_K: '380.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.867714'
+      projected_largest_over_threshold: '2.13156e-8'
+      scaled_residual_before: '1.295e-10'
+      scaled_residual_after: '3.182e-18'
+      scaled_step: '1.466e-9'
+    - T_target_K: 352
+      guess_K: '390.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '4.05060'
+      projected_largest_over_threshold: '4.64497e-7'
+      scaled_residual_before: '6.046e-10'
+      scaled_residual_after: '6.933e-17'
+      scaled_step: '6.844e-9'
+    - T_target_K: 352
+      guess_K: '400.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.276031'
+      projected_largest_over_threshold: '2.15705e-9'
+      scaled_residual_before: '4.120e-11'
+      scaled_residual_after: '3.220e-19'
+      scaled_step: '4.664e-10'
+    - T_target_K: 352
+      guess_K: '420.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '15.7645'
+      projected_largest_over_threshold: '7.03642e-6'
+      scaled_residual_before: '2.357e-9'
+      scaled_residual_after: '1.050e-15'
+      scaled_step: '2.664e-8'
+    - T_target_K: 355
+      guess_K: '320.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '1.71479'
+      projected_largest_over_threshold: '7.08113e-9'
+      scaled_residual_before: '1.485e-9'
+      scaled_residual_after: '5.852e-18'
+      scaled_step: '3.032e-9'
+    - T_target_K: 358
+      guess_K: '370.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.181313'
+      projected_largest_over_threshold: '2.23993e-10'
+      scaled_residual_before: '2.810e-9'
+      scaled_residual_after: '1.338e-18'
+      scaled_step: '1.447e-9'
+    - T_target_K: 360
+      guess_K: '320.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '2.69700'
+      projected_largest_over_threshold: '4.28880e-9'
+      scaled_residual_before: '6.190e-9'
+      scaled_residual_after: '3.815e-17'
+      scaled_step: '5.066e-9'
+    - T_target_K: 360
+      guess_K: '350.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '2.89217'
+      projected_largest_over_threshold: '5.03687e-9'
+      scaled_residual_before: '6.379e-9'
+      scaled_residual_after: '4.231e-17'
+      scaled_step: '5.429e-9'
+    - T_target_K: 365
+      guess_K: '300.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.390965'
+      projected_largest_over_threshold: '2.31185e-10'
+      scaled_residual_before: '2.094e-9'
+      scaled_residual_after: '1.460e-18'
+      scaled_step: '6.542e-10'
+    - T_target_K: 365
+      guess_K: '320.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.188925'
+      projected_largest_over_threshold: '5.31925e-11'
+      scaled_residual_before: '1.120e-9'
+      scaled_residual_after: '3.859e-19'
+      scaled_step: '3.493e-10'
+    - T_target_K: 365
+      guess_K: '340.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.585383'
+      projected_largest_over_threshold: '5.17915e-10'
+      scaled_residual_before: '3.130e-9'
+      scaled_residual_after: '3.262e-18'
+      scaled_step: '9.780e-10'
+    - T_target_K: 370
+      guess_K: '340.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '1.40826'
+      projected_largest_over_threshold: '2.34430e-9'
+      scaled_residual_before: '9.705e-9'
+      scaled_residual_after: '2.544e-17'
+      scaled_step: '3.892e-9'
+    - T_target_K: 370
+      guess_K: '360.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.162284'
+      projected_largest_over_threshold: '5.96519e-11'
+      scaled_residual_before: '5.880e-10'
+      scaled_residual_after: '2.260e-19'
+      scaled_step: '2.509e-10'
+    - T_target_K: 370
+      guess_K: '400.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '1.44311'
+      projected_largest_over_threshold: '4.06466e-9'
+      scaled_residual_before: '9.305e-9'
+      scaled_residual_after: '2.817e-17'
+      scaled_step: '2.271e-9'
+    - T_target_K: 375
+      guess_K: '300.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '2.59141'
+      projected_largest_over_threshold: '2.64643e-8'
+      scaled_residual_before: '1.752e-9'
+      scaled_residual_after: '1.636e-17'
+      scaled_step: '3.346e-9'
+    - T_target_K: 375
+      guess_K: '310.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.361661'
+      projected_largest_over_threshold: '5.16042e-10'
+      scaled_residual_before: '1.588e-10'
+      scaled_residual_after: '2.253e-19'
+      scaled_step: '4.669e-10'
+    - T_target_K: 375
+      guess_K: '360.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '4.81337'
+      projected_largest_over_threshold: '9.12732e-8'
+      scaled_residual_before: '3.346e-9'
+      scaled_residual_after: '5.773e-17'
+      scaled_step: '6.214e-9'
+    - T_target_K: 375
+      guess_K: '377.400'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '0.138675'
+      projected_largest_over_threshold: '6.80978e-11'
+      scaled_residual_before: '3.305e-10'
+      scaled_residual_after: '1.360e-19'
+      scaled_step: '2.435e-10'
+    - T_target_K: 375
+      guess_K: '410.000'
+      recovered_by_edge3: false
+      raw_largest_over_threshold: '1.52972'
+      projected_largest_over_threshold: '9.22391e-9'
+      scaled_residual_before: '1.009e-9'
+      scaled_residual_after: '5.586e-18'
+      scaled_step: '1.975e-9'
+    projected_max_over_threshold: '2.10680e-5'
+    projected_flash_outlets_max_over_tau_flow: '2.96244e-33'
+  t02_states_from_358K:
+    SYN-001-A02-355:
+      outcome: CONVERGED
+      iterations:
+      - 3
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '0.0813003'
+      raw_largest_over_threshold: '1.09212'
+      projected_largest_over_threshold: '2.82081e-9'
+      scaled_residual_before: '8.401e-10'
+      scaled_residual_after: '2.384e-18'
+    SYN-001-A02-360:
+      outcome: CONVERGED
+      iterations:
+      - 3
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '0.00145487'
+      raw_largest_over_threshold: '0.00289516'
+      projected_largest_over_threshold: '2.38040e-15'
+      scaled_residual_before: '1.503e-11'
+      scaled_residual_after: '4.353e-23'
+    SYN-001-A02-365:
+      outcome: CONVERGED
+      iterations:
+      - 4
+      worst_row: U-HEAT:HEAT-equilibrium:A
+      worst_row_over_tolerance: '2.16791e-5'
+      raw_largest_over_threshold: '2.87801e-5'
+      projected_largest_over_threshold: '1.05628e-18'
+      scaled_residual_before: '2.240e-13'
+      scaled_residual_after: '1.136e-26'
+  injections:
+    INJ-B2-prime:
+      state: SC-1's root with S2.T = 360.00002 K (the lever-rule split kept)
+      T_K: '360.00002000000000000'
+      degeneracy_K: '0.000020000000000000000000'
+      compiled_energy_row_W: '-0.0040000000000000000000'
+      compiled_equilibrium_row_B: '-7.2321654107563949765e-8'
+      fresh_regime: VAPOR
+      independent_split_total_mol_per_s: '-1.9328000000000000000'
+      independent_split_B_mol_per_s: '-1.9328000000000000000'
+      energy_balance_U-VLV_W: '-57984.004000000000000'
+    INJ-F10:
+      state: SYN-001 once-through x(t*) with the flash split forced all-liquid (S4 = 0, S4.N = 0, S5 = S3.n, S5.N = 3, S7 = S5, S6 = 0) and U-FLASH.Q closed so FLASH-duty holds
+      S3_n_mol_per_s:
+      - '1.0000000000000000000'
+      - '1.0000000000000000000'
+      - '1.0000000000000000000'
+      fresh_regime_S5_at_360K: TWO_PHASE
+      S5_bubble_excess: '0.38374131925393851449'
+      Q_flash_true_W: '33100.219053674074186'
+      Q_flash_forced_W: '-5237.8503930694530451'
+      energy_balance_flash_W: '-38338.069446743527231'
+      energy_balance_envelope_W: '-38338.069446743527231'
+      latent_of_the_missing_vapour_W: '38338.069446743527231'
+      fresh_flash_vapour_mol_per_s: '1.3608090692231516326'
+  cases:
+    PRJ-B2:
+      state: SC-1's root with S2.T = 360.000002 K (was INJ-B2)
+      T_K: '360.00000200000000000'
+      compiled_energy_row_W: '-0.00040000000000000000000'
+      compiled_equilibrium_row_B: '-7.2321639602198889900e-9'
+      projection_target_T_K: '360.00000000000000000'
+    NP-GC:
+      flowsheet: NP-G (feed [0, 2, 1.5e-7] mol/s 300 K P_r liquid -> U-PHF, Q = 30 000 W, S2 vapour -> sink) with S3 liquid -> U-SPLIT (split_fraction 0.5) -> S4 (recycle port) -> sink, S5 (purge) -> sink
+      T_K: '360.00000234150323414'
+      S2_n_mol_per_s:
+      - '0.0'
+      - '0.59999993383277750909'
+      - '1.7620456936482694103e-8'
+      S3_n_mol_per_s:
+      - '0.0'
+      - '1.4000000661672224909'
+      - '1.3237954306351730590e-7'
+      S4_n_mol_per_s:
+      - '0.0'
+      - '0.70000003308361124545'
+      - '6.6189771531758652949e-8'
+      S5_n_mol_per_s:
+      - '0.0'
+      - '0.70000003308361124545'
+      - '6.6189771531758652949e-8'
+measured:
+  note: implementation, double precision, the rule prototyped around the verifier at ddbe446; regression data for tolerance arguments, never an expectation
+  a02_family:
+    converged: 179
+    current_rule:
+      fail: 15
+      near: 9
+      clear: 155
+      worst_ratio: '27.28'
+    new_rule:
+      verified: 179
+      states_with_a_near_threshold_flag: 15
+      flags_all_on: residual (29 flags, the heater's equilibrium rows at >= 0.1 tau_eq)
+      worst_fresh_flash_ratio_at_projection: 2.0916e-5 (352 K from 360 K, S3.total)
+      projection_applied: 179
+      max_scaled_residual_at_projection: '3.1148e-15'
+      max_row_over_tolerance_at_projection: '3.0143e-7'
+      max_scaled_step: '4.6092e-8'
+  t05b:
+    DZ-3:
+      current: 'FAILED: independent_split.U-PHF.S1.total -9.0870e-8 (2.931 tau), .A, .B; energy_balance.U-PHF and envelope -1.3272e-3 W (1.314 tau_E)'
+      new: VERIFIED; worst fresh-flash ratio at projection 2.220e-6; residual flags PHF-equilibrium A/B/C at 0.173/0.197/0.119 tau_eq; bound 3.679e-8
+    DZ-10:
+      new: as DZ-3 to the printed digit (the same PH flash, 34 x 34 form)
+    NP-G:
+      current: VERIFIED (energy -4.0409e-4 W, split 0.0 at x_final)
+      projection_only: 'FAILED: energy_balance.U-PHF and envelope -2.78e-3 W at the projection (products'' kink), independent split -1.35e-8 (0.44 tau)'
+      new: VERIFIED; independent_split.U-PHF.S1 not_applicable(fresh_flash_unresolved); floor ratio 0.8896; residual PHF-duty flag 0.400; bound 6.978e-8
+    NP-3:
+      new: VERIFIED; floor ratio 0.01712 (resolved); worst 2.391e-3 at projection
+    PRJ-B2:
+      new: VERIFIED; saturation 5.68e-14 K at the projection; residual VLV-energy flag -4.0e-4 W at x_final
+    INJ-B2p:
+      new: VERIFIED; energy balance 3.6e-12 W at the projection (was -1e-4 W)
+    INJ-B2':
+      new: FAILED at x_final (residual VLV-energy -4.0000e-3 W); fresh flash VAPOR; independent split -1.9328; energy -57984.004 W
+    INJ-F10:
+      new: FAILED; energy_balance.flash and envelope -38338.069446744 W; rcond_1 1.8508e-3; projection applied, values unchanged to 1e-13 relative
+    NP-GC:
+      new: VERIFIED, Newton at iteration 0; independent split not_applicable; energy balances <= 3.7e-12 W at the projection
+  suite_under_the_prototype: '2855 passed, 11 failed: exactly T04 A32 (5e-4 half), A33; T05 W1.d x3 (the pairing harness compares x_final with the projection); T05b B16 x2, B26 x2, B18 INJ-B2 and INJ-B2p.
+    Without the exact-zero rule two more fail (K04 A31, K05 fixtures) and W1.d''s pinned ids: SYN-001''s S3 bubble check becomes a closure check'
+  identity_under_the_prototype:
+    k05_identity_whole: 622463f5fbc8716f1196bc971633877e2d218e1c9744e3d4ad7d49608be0415b
+    minus_t05: b364bb3dc881402fd6e7982532b19f06dba60e5c6b01e70d1aab861bae030b5a
+    t05: ddbd0f7135ee5310a1ce65865fab69b69cafe542851a038086941740360687a3
+    structural: 4ce030cab1e4b4a2402897f480e5194961a1dbe9b8705316ddd4776cbd2d0082
+  guards_over_the_suite:
+    certificates_seen: 180
+    refused_residual_not_passed: 16
+    refused_other: 0
+    max_dropped_delta_at_exact_zero_flows_mol_per_s: '2.87e-22'
+generator_claims:
+  count: 25
+  names:
+  - the script imports nothing from process_runtime or benchmarks
+  - 'D3: NP-G''s split is unresolved, its floor ratio >= 0.8 (8x the 1/10 threshold) and its temperature inside a band of 4.12 microkelvin, not within tau_T of both ends'
+  - 'D3: NP-3''s split is resolved with its floor ratio <= 0.02 (5x under the threshold)'
+  - 'D3: NP-1, NP-2 and SC-1…SC-3 are degenerate (ADR 0012 D7 takes precedence)'
+  - 'D3: every other registered split and stream (SYN-001''s five variants, the ten A02 targets, DZ-3, DZ-10, DZ-12, C1–C3) is resolved, with its floor ratio <= 1e-5 where its temperature lies inside its
+    band'
+  - 'D3: INJ-B2'' (pure B 2e-5 K above T_sat) is neither degenerate nor unresolved — its temperature is outside its zero-width band, so the fresh flash judges it'
+  - 'D2: at NP-GC one ulp of bubble excess in each copy moves the envelope (which reads both) by >= 0.2 tau_E, inside ADR 0007 D2.4''s band: without D2 the copies'' checks measure roundoff'
+  - 'D2: NP-G''s liquid product has the largest amplification registered (>= 0.2 tau_E per ulp of excess)'
+  - 'D2: at NP-3''s products one ulp of excess moves the enthalpy by <= 2e-3 tau_E, and at DZ-3''s and SYN-001''s products and copies by <= 1e-7 tau_E: D2 is inert there'
+  - 'D2: the twin reproduces the recorded measurement: DZ-3''s liquid product''s amplification is 6.247e4 W per unit excess (the implementation''s 1.3272e-3 W over 2.125e-8, spec §4.2), to 1e-3 relative'
+  - 'D2: at every registered root the products and copies are exactly saturated (|excess| <= 1e-25): D2''s reading and the fresh flash agree there'
+  - 'D1: the twin''s family scan converges 179 of 180 runs, and the raw S3 checks classify 155 clear, 9 near, 15 failing — T04 §17 F9''s registered counts, re-derived'
+  - 'D1: at every one of the 24 exposed states the projected S3 values are <= 1e-3 of their tolerances (the spec''s F05 bound) and the raw ones >= 0.1: F05 discriminates by >= 100'
+  - 'D1: over all 179 states the projected S3 values are <= 3e-5 of their tolerances (second order; F05''s 1e-3 is >= 30x above it)'
+  - 'D1: the projection is second order: ‖F̂(x~)‖∞ <= 1e-13 at every converged state and <= ‖F̂(x)‖∞ wherever ‖F̂(x)‖∞ >= 1e-12'
+  - 'D1: every compiled row at the projection is within 1e-6 of its tolerance (guard 5 holds with a margin of >= 1e6)'
+  - 'D1 and F10: the flash outlets'' split at the projection is <= 1e-3 tau_flow at every converged state'
+  - 'D1: the 15 raw failures are exactly T04''s registered list (ref.bound.finding_F9.family_scan_converged_states.S3_failures)'
+  - 'D1: T02''s A02-355 from 358 K (T04 A33) — one attempt, 3 iterations, worst row U-HEAT:HEAT-equilibrium:A at 0.0813 tau (< 1/10: no residual flag), raw split 1.09 tau_flow and heater energy 0.94 tau_E
+    (F9''s evidence), projected S3 values <= 1e-3'
+  - 'D1: A02-360 and A02-365 from 358 K stay clear raw (< 0.1) and projected (<= 1e-3)'
+  - 'INJ-B2'': the compiled energy row fails (|row| > tau_E), the equilibrium row passes, the fresh flash says VAPOR, and the split and energy fail by >= 1e3 tau'
+  - 'PRJ-B2 (the old INJ-B2 state): every compiled row within its tolerance (energy 0.40 tau_E, equilibrium 0.078 tau_eq), so the certificate judges its projection'
+  - 'INJ-F10: the fresh flash of the forced liquid S5 at 360 K is two-phase; the flash and envelope balances both equal minus the latent heat of the missing vapour, >= 1e3 tau_E'
+  - 'INJ-F10: the twin reproduces the recorded measurement (-38 338.069 446 744 W, prototype pass) to 1e-9 relative'
+  - 'NP-GC: the copies carry exactly half of NP-G''s liquid product each'

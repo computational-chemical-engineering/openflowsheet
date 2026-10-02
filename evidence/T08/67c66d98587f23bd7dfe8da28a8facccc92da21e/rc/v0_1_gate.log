@@ -1,0 +1,29 @@
+v0.1 gates at C = 67c66d98587f23bd7dfe8da28a8facccc92da21e; candidate 67c66d98587f23bd7dfe8da28a8facccc92da21e
+V11  PASS       Semantic diff, drafts, task validation, units/references, real migration when applicable
+      limitations: L38
+V12  PASS       Required unit library with per-model definition of done
+      limitations: L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3
+V13  FAIL       DM/SCC/BTF, tear and EO, scaling and initialization
+      failing: V13 (e); limitations: L10, L22, L23, L24, L36, L38, L-WS-1, L-WS-2
+      not releasable: FAIL clause not accepted in ADR 0021 D3: ['V13 (e)'] (D2.3)
+V14  FAIL       Homotopy, qualified PTC/SER and three bounded recovery edges
+      failing: V14 (b); V14 (b) FAIL, accepted by Frank 2026-09-29 (ADR 0021 D3); limitations: L01, L08, L20, L21
+V15  PASS       Frozen phases, EO cross-unit spec, multiple-root evidence
+      limitations: L02, L14, L19, L20, L33
+V16  PASS       30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble
+      limitations: L16, L17, L18, L32
+V17  PASS       Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification
+      limitations: L11, L12, L13
+V18  PASS       Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested
+      limitations: L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41
+V19  BLOCKED    Real-chemistry dossier with usable data/kinetics/property/reference route
+      blocked: V19 (i): Frank's selection (F3), ADR 0022 still Proposed; V19 (iii): Frank's rights statements behind H5; V19 (v): Frank's statements on four rights-table rows (property-database sources, 4TU dataset use in curation, citing the MSc report and the 2D draft, the IDAES Ar and CH4 values for M01 records)
+      not releasable: BLOCKED blocks the tag (D2.2)
+V20  PASS       >=95% nominal robustness, correct invalid-structure handling, no adversarial false verification
+      limitations: L04, L07, L09, L31, L32, L38
+
+tree check (D2.4): equal to C
+RC record (§8.1 item 4): 1 problems
+v0.1.0 tag may be proposed: NO (3 reasons)
+  - docs/t08-rc-record.md (§8.1 item 4) is the record of C = ['78e92b708fb574d403f3c05ccccc3d1daa45e6a8'], not of 67c66d98587f23bd7dfe8da28a8facccc92da21e
+v0_1_gate exit status 1

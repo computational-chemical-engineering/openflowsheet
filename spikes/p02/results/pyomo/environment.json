@@ -1,0 +1,18 @@
+{
+ "backend": "pyomo",
+ "backend_version": "6.10.1",
+ "numpy_version": "2.2.4",
+ "python_version": "3.13.5",
+ "executable": "/home/frankp/Codes/Process Simulator/.venv-pyomo/bin/python",
+ "platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+ "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+ "git_commit": "7c6893b471a6a417a67603af4ab2180ebff7b30e",
+ "recorded_at_unix": 1789074102.7717059,
+ "asl_available": true,
+ "asl_library_path": "/home/frankp/.pyomo/lib/libpynumero_ASL.so",
+ "asl_library_sha256": "a63bc651c1c34967f6202828a406fbb5abb7936c7ddaa7ed0ff5128fc0ecc60e",
+ "asl_acquisition": "libpynumero_ASL.so was built with `pyomo build-extensions` (setuptools, cmake and a C/C++ compiler in the venv); `pyomo download-extensions` does not provide it on this platform. APPSI does not build for lack of pybind11 and is not used by this route (\u00a710.3)",
+ "scipy_version": "1.15.3",
+ "omp_num_threads": "1",
+ "openblas_num_threads": "1"
+}

@@ -1,0 +1,23 @@
+{
+  "check": "dwsim-sample-cavett",
+  "dwsim_version": "DWSIM version 9.0.5.0 (10/2/2025 11:49:46\u202fPM)",
+  "sample": "Cavett's Problem.dwxmz",
+  "display": null,
+  "object_counts": {
+    "Compressor": 3,
+    "EnergyStream": 7,
+    "MaterialStream": 20,
+    "Mixer": 2,
+    "Recycle": 3,
+    "Valve": 3,
+    "Vessel": 4
+  },
+  "all_objects_calculated": true,
+  "solver_errors": [],
+  "seconds": {
+    "start_runtime": 1.97,
+    "load": 1.68,
+    "calculate": 0.62
+  }
+}
+SMOKE PASS

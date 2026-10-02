@@ -1,0 +1,49 @@
+{
+ "bundle": "/home/runner/work/_temp/rc-install/bundle/SYN-001-nominal",
+ "checks": [
+  {
+   "id": "a19.a_the_checkouts_package",
+   "package": "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet",
+   "result": "pass"
+  },
+  {
+   "expected": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "found": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+   "id": "a19.a_lock_sha256_registered",
+   "result": "pass"
+  },
+  {
+   "found": "",
+   "id": "a19.c_bundle_written_without_a_lock",
+   "result": "pass"
+  },
+  {
+   "expected_side": "the archive's side",
+   "id": "a19.c_replay_by_checkout",
+   "mode": "inspected_archived_results",
+   "reasons": [
+    "the dependency set is unknown on the archive's side: no lock file was found, and two unknowns are not a match",
+    "no rerun was supplied"
+   ],
+   "result": "pass",
+   "verdict": "NOT_RUN"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "aarch64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "python": "3.13.15",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "state": "checkout",
+ "step": "lock-check"
+}

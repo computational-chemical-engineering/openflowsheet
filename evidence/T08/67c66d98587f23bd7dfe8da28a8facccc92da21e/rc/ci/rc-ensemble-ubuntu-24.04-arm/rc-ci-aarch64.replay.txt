@@ -1,0 +1,436 @@
+STR-01  00 MATCH
+STA-01  00 MATCH
+STA-02  00 MATCH
+STA-05  00 MATCH
+NUM-03  00 MATCH
+THM-01  00 MATCH
+THM-02  00 MATCH
+THM-03  00 MATCH
+THM-07  00 MATCH
+THM-08  00 MATCH
+THM-08  03 MATCH
+THM-08  12 MATCH
+THM-09  00 MATCH
+THM-09  03 MATCH
+THM-09  04 MATCH
+THM-09  18 MATCH
+THM-10  00 MATCH
+NET-01  00 MATCH
+NET-02  00 MATCH
+NET-03  00 MATCH
+NET-05  00 MATCH
+NET-06  00 MATCH
+NET-07  00 MATCH
+NET-08  00 MATCH
+NET-09  00 MATCH
+NET-10  00 MATCH
+NET-11  00 MATCH
+NET-11  16 MATCH
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S7_liquid: temperature 720.5764694787481 K outside [280.0, 440.0] K
+Function H_S7_liquid (0xaba5f4355f60)
+Input 0 (i0): [1, 0, 2, 720.576, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S7_liquid: temperature 547.5408920842517 K outside [280.0, 440.0] K
+Function H_S7_liquid (0xaba5f4355f60)
+Input 0 (i0): [0.628564, 1.45403e-20, 1.73573, 547.541, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S7_liquid: temperature 461.0231033870035 K outside [280.0, 440.0] K
+Function H_S7_liquid (0xaba5f4355f60)
+Input 0 (i0): [0.442846, 2.18104e-20, 1.60359, 461.023, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 102, in values
+    result = self._request(inputs, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 88, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: lnK_S2: temperature 449.99999999992497 K outside [280.0, 440.0] K
+Function lnK_S2 (0xaba5f437c0c0)
+Input 0 (i0): [450, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 86.40940678193022 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4325110)
+Input 0 (i0): [0, 2, 2.6759e-16, 86.4094, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 225.6530624905185 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4325110)
+Input 0 (i0): [0, 2.05864, 1.33795e-16, 225.653, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 85.93072874032566 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4325110)
+Input 0 (i0): [0, 2, 4.1811e-18, 85.9307, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 223.23804134926954 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4325110)
+Input 0 (i0): [0, 2.05772, 4.1811e-18, 223.238, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 110.17663750787636 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f43714e0)
+Input 0 (i0): [0, 2, 2.69665e-16, 110.177, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 235.94030002525122 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f43714e0)
+Input 0 (i0): [0, 2.15941, 1.34833e-16, 235.94, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 109.90683610353847 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f43714e0)
+Input 0 (i0): [0, 2, 5.41674e-16, 109.907, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 235.31413501637377 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f43714e0)
+Input 0 (i0): [0, 2.15879, 2.71364e-16, 235.314, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 37.148896910278154 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4366450)
+Input 0 (i0): [0, 1.97993, 1.20668e-16, 37.1489, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 203.01673209533047 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4366450)
+Input 0 (i0): [0, 1.83308, 6.03341e-17, 203.017, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 199.39525986171782 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4366450)
+Input 0 (i0): [0, 1.83745, 3.52709e-17, 199.395, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 40.7279461357835 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4366450)
+Input 0 (i0): [0, 1.97943, 3.27082e-16, 40.7279, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 200.39747237540485 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f4366450)
+Input 0 (i0): [0, 1.83675, 1.63679e-16, 200.397, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 24.614514820805937 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f437aca0)
+Input 0 (i0): [0, 1.99881, 3.31915e-16, 24.6145, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 199.20510393757354 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f437aca0)
+Input 0 (i0): [0, 1.86534, 1.65957e-16, 199.205, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 28.348673301476765 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f437aca0)
+Input 0 (i0): [0, 1.99847, 1.39732e-16, 28.3487, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 195.61622726800996 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f437aca0)
+Input 0 (i0): [0, 1.86934, 7.50523e-17, 195.616, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S2_vapor: temperature 279.25000425127655 K outside [280.0, 440.0] K
+Function H_S2_vapor (0xaba5f437aca0)
+Input 0 (i0): [0, 1.80477, 4.27123e-17, 279.25, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S3_liquid: temperature 442.6395593947319 K outside [280.0, 440.0] K
+Function H_S3_liquid (0xaba5f4335640)
+Input 0 (i0): [1.29778, 1.5464, 1.79502, 442.64, 100000]
+Traceback (most recent call last):
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+openflowsheet.compile.spec.DomainError: H_S3_liquid: temperature 442.6395593947319 K outside [280.0, 440.0] K
+Function H_S3_liquid (0xaba5f4335640)
+Input 0 (i0): [1.29778, 1.5464, 1.79502, 442.64, 100000]

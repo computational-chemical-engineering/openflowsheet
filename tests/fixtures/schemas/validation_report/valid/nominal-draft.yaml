@@ -1,0 +1,59 @@
+# Declared ValidationReport: what validation must conclude for the SYN-001 nominal case.
+#
+# Status DRAFT, not READY_FOR_SIMULATION: the schema and dimension stages are the only
+# ones P01 can actually run, and READY_FOR_SIMULATION requires the structural analysis
+# that arrives with T01. Claiming readiness on unrun checks is exactly the false
+# verification the blueprint forbids.
+revision_id: SYN-001-nominal-r1
+task: simulation
+status: DRAFT
+checks:
+- id: SCHEMA-01
+  stage: schema
+  result: PASS
+  message: The revision validates against schemas/process-revision.schema.json.
+  implicated_objects: []
+  evidence_class: structural
+- id: DIM-01
+  stage: dimensions
+  result: PASS
+  message: 'Every embedded Quantity passes process_runtime.units.check_quantity: kind, dimension and
+    internal SI unit agree and no value is nonfinite.'
+  implicated_objects: []
+  evidence_class: structural
+- id: GRAPH-01
+  stage: graph_connectivity
+  result: NOT_RUN
+  message: Graph connectivity analysis is work package T01. Not run, not assumed to pass.
+  implicated_objects: []
+- id: COMP-01
+  stage: component_reference_compatibility
+  result: NOT_RUN
+  message: Component and reference-convention compatibility checking is K02 (property provider) and
+    K04 (energy scope).
+  implicated_objects: []
+- id: COND-01
+  stage: conditional_classification
+  result: NOT_RUN
+  message: Conditional equation classification requires the compiled problem (K01).
+  implicated_objects: []
+- id: CAP-01
+  stage: capability
+  result: NOT_RUN
+  message: Capability negotiation needs PropertyCapabilities, delivered in P02/K01.
+  implicated_objects: []
+- id: STR-01
+  stage: structural_analysis
+  result: NOT_RUN
+  message: Matching and Dulmage-Mendelsohn decomposition are T01.
+  implicated_objects: []
+structural_counts: null
+structural_counts_absent_reason: No structural analysis exists in P01. Free-variable, equation, matched
+  and unmatched counts arrive with T01; reporting invented counts would be a false verification.
+provenance:
+  produced_by: hand-authored expectation document; no validator implementation exists
+  actor: Opus 5 (P01)
+  timestamp: '2026-09-07T00:00:00Z'
+  notes: 'Hand-authored expectation document (P01). No validator exists yet: the application validate()
+    entry point is K06 and structural analysis is T01. This document records what the validator must
+    conclude, and is not a verdict any code has produced.'

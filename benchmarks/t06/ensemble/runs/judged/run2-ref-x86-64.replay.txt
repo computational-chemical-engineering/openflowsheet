@@ -1,0 +1,368 @@
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 102, in values
+    result = self._request(inputs, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 88, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: lnK_S2: temperature 449.99999999992497 K outside [280.0, 440.0] K
+Function lnK_S2 (0x154621a0)
+Input 0 (i0): [450, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 86.40940678193022 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x1544e030)
+Input 0 (i0): [0, 2, 2.6759e-16, 86.4094, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 225.6530624905185 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x1544e030)
+Input 0 (i0): [0, 2.05864, 1.33795e-16, 225.653, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 85.93072874032566 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x1544e030)
+Input 0 (i0): [0, 2, 4.1811e-18, 85.9307, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 223.23804134926954 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x1544e030)
+Input 0 (i0): [0, 2.05772, 4.1811e-18, 223.238, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 110.17663750787636 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x15438db0)
+Input 0 (i0): [0, 2, 2.69665e-16, 110.177, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 235.94030002525122 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x15438db0)
+Input 0 (i0): [0, 2.15941, 1.34833e-16, 235.94, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 109.90683610353847 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x15438db0)
+Input 0 (i0): [0, 2, 5.41674e-16, 109.907, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 235.31413501637377 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x15438db0)
+Input 0 (i0): [0, 2.15879, 2.71364e-16, 235.314, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 37.148896910278154 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x154bdc20)
+Input 0 (i0): [0, 1.97993, 0, 37.1489, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 203.01673209533047 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x154bdc20)
+Input 0 (i0): [0, 1.83308, 0, 203.017, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 39.262790633214536 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x154bdc20)
+Input 0 (i0): [0, 1.97964, 0, 39.2628, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 201.48199403203222 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x154bdc20)
+Input 0 (i0): [0, 1.83523, 0, 201.482, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 24.614514820805937 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x153b6ce0)
+Input 0 (i0): [0, 1.99881, 2.92467e-16, 24.6145, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 199.20510393757354 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x153b6ce0)
+Input 0 (i0): [0, 1.86534, 1.46233e-16, 199.205, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 28.348673301476765 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x153b6ce0)
+Input 0 (i0): [0, 1.99847, 9.13958e-18, 28.3487, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 195.61622726800996 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x153b6ce0)
+Input 0 (i0): [0, 1.86934, 9.13958e-18, 195.616, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S2_vapor: temperature 279.25000425127655 K outside [280.0, 440.0] K
+Function H_S2_vapor (0x153b6ce0)
+Input 0 (i0): [0, 1.80477, 9.13958e-18, 279.25, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S3_liquid: temperature 442.639559394732 K outside [280.0, 440.0] K
+Function H_S3_liquid (0x15505ca0)
+Input 0 (i0): [1.29778, 1.5464, 1.79502, 442.64, 100000]
+Traceback (most recent call last):
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/compile/casadi_backend.py", line 225, in eval
+    return [ca.DM(list(self.block.values(inputs)))]
+                       ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 190, in values
+    result = self._request(state, ())
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 171, in _request
+    return _unwrap(
+        self._provider.evaluate_phase(
+    ...<8 lines>...
+        self._block_id,
+    )
+  File "/home/frankp/Codes/Process Simulator/src/process_runtime/models/syn001/blocks.py", line 46, in _unwrap
+    raise DomainError(f"{block_id}: {result.message}")
+process_runtime.compile.spec.DomainError: H_S3_liquid: temperature 442.639559394732 K outside [280.0, 440.0] K
+Function H_S3_liquid (0x15505ca0)
+Input 0 (i0): [1.29778, 1.5464, 1.79502, 442.64, 100000]
+STR-01  00 MATCH
+STA-01  00 MATCH
+STA-02  00 MATCH
+STA-05  00 MATCH
+NUM-03  00 MATCH
+THM-01  00 MATCH
+THM-02  00 MATCH
+THM-03  00 MATCH
+THM-07  00 MATCH
+THM-08  00 MATCH
+THM-08  03 MATCH
+THM-08  12 MATCH
+THM-09  00 MATCH
+THM-09  03 MATCH
+THM-09  04 MATCH
+THM-09  18 MATCH
+THM-10  00 MATCH
+NET-01  00 MATCH
+NET-02  00 MATCH
+NET-03  00 MATCH
+NET-05  00 MATCH
+NET-06  00 MATCH
+NET-07  00 MATCH
+NET-08  00 MATCH
+NET-09  00 MATCH
+NET-10  00 MATCH
+NET-11  00 MATCH
+NET-11  16 MATCH

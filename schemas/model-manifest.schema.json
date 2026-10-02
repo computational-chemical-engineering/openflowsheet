@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/model-manifest.schema.json",
+  "title": "ModelManifest",
+  "description": "Blueprint v3.1 §4.1: ports, mathematics, derivatives, initialization, validity, implementation artifact, execution requirements. §5.2 requires derivatives to be declared per output and operating regime, with `unavailable` an honest answer; §5.1 fixes the three execution classes. The `status` field separates a manifest that declares intended behavior from one describing implemented code: in P01 nothing is implemented, so every SYN-001 manifest is `declared` with `derivatives.method: unavailable`. ADR 0008 D3 added the required per-equation `accumulation` declaration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "status",
+    "ports",
+    "mathematics",
+    "derivatives",
+    "initialization",
+    "validity",
+    "implementation_artifact",
+    "execution_requirements"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "version": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": ["declared", "implemented", "tested", "reviewed", "released"],
+      "description": "`declared` means this manifest states intended behavior and no implementation exists yet. It is never evidence that the model works."
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "introduced_by_package": {
+      "type": "string",
+      "pattern": "^[PKTMSR][0-9]{2}$",
+      "description": "The work package that will implement the model, so a declared manifest names its owner."
+    },
+    "ports": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "kind",
+          "direction",
+          "multiplicity",
+          "component_mapping",
+          "state_definition",
+          "phase_capabilities"
+        ],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["material", "energy", "signal"] },
+          "direction": { "enum": ["inlet", "outlet"] },
+          "multiplicity": {
+            "oneOf": [
+              { "type": "integer", "minimum": 1 },
+              { "const": "many" }
+            ],
+            "description": "How many connections the port accepts; 'many' for a mixer inlet."
+          },
+          "component_mapping": {
+            "oneOf": [
+              { "const": "revision_component_set" },
+              { "type": "array", "items": { "type": "string", "minLength": 1 } },
+              { "type": "null" }
+            ],
+            "description": "How the port's component indices map to the revision's component set; null for a non-material port."
+          },
+          "state_definition": {
+            "oneOf": [{ "const": "nTP-v1" }, { "type": "null" }],
+            "description": "ADR 0001 D2.1. `nTP-v1` is component molar flows in mol/s, absolute T in K and P in Pa. An alternative definition enters only through an adapter that declares its own ID. Null for a non-material port."
+          },
+          "phase_capabilities": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "enum": ["liquid", "vapor", "vapor_liquid"] },
+            "description": "Declared capability, not a result. The phase *signature* of a stream is produced by evaluation (ADR 0001 D2.4)."
+          }
+        }
+      }
+    },
+    "mathematics": {
+      "type": "object",
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["equations"] },
+        { "required": ["evaluator_reference"] }
+      ],
+      "properties": {
+        "equations": {
+          "type": "array",
+          "minItems": 0,
+          "description": "An empty list is a positive assertion that the model contributes no equation to the system — the honest description of a boundary sink. It is not a placeholder for equations still to be written.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "statement", "dependencies", "conditional_class", "accumulation"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "statement": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Human-readable residual statement. The serialized expression vocabulary arrives with K01; P01 does not invent one."
+              },
+              "dependencies": {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 }
+              },
+              "dimension": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json#/$defs/dimension"
+              },
+              "conditional_class": {
+                "enum": ["unconditional", "phase_conditional", "regime_conditional"],
+                "description": "Blueprint §4.1 'conditional class': whether the equation is always present or belongs to an active set."
+              },
+              "source": { "type": "string" },
+              "accumulation": { "$ref": "#/$defs/accumulation" }
+            },
+            "if": {
+              "properties": {
+                "accumulation": {
+                  "properties": { "kind": { "enum": ["holdup_balance", "zero_holdup_balance"] } }
+                }
+              }
+            },
+            "then": { "required": ["dimension"] }
+          }
+        },
+        "evaluator_reference": { "type": "string", "minLength": 1 }
+      }
+    },
+    "derivatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["output", "with_respect_to", "method"],
+        "properties": {
+          "output": { "type": "string", "minLength": 1 },
+          "with_respect_to": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "method": {
+            "enum": [
+              "analytic",
+              "ad",
+              "implicit",
+              "finite_difference",
+              "unavailable"
+            ],
+            "description": "Blueprint §5.2, declared per output. `unavailable` is reported as absent and is never replaced with fabricated zeros."
+          },
+          "regime": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "initialization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "notes"],
+      "properties": {
+        "strategy": {
+          "enum": ["none", "registered_initializer", "local_initializer", "upstream_propagation"]
+        },
+        "registered_initializer": { "type": ["string", "null"] },
+        "notes": { "type": "string", "minLength": 1 }
+      },
+      "description": "An initializer supplies a guess. A guess is not a specification and a poor guess is not proof of infeasibility (blueprint §4.3)."
+    },
+    "validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "limitations"],
+      "properties": {
+        "domain": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "temperature_K": { "$ref": "#/$defs/interval" },
+            "pressure_Pa": { "$ref": "#/$defs/interval" },
+            "components": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "phases": {
+              "type": "array",
+              "items": { "enum": ["liquid", "vapor", "vapor_liquid", "zero_flow"] }
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Known limits of the declared model. An empty list asserts there are none, so it is used only when that is true."
+        }
+      }
+    },
+    "implementation_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "module", "artifact_hash"],
+      "properties": {
+        "state": {
+          "enum": ["not_implemented", "source", "compiled_artifact"],
+          "description": "`not_implemented` with a null module is the honest P01 answer; it must not be dressed up as a source reference."
+        },
+        "module": { "type": ["string", "null"] },
+        "artifact_hash": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+        "planned_package": { "type": "string", "pattern": "^[PKTMSR][0-9]{2}$" }
+      }
+    },
+    "execution_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["execution_class", "thread_safety", "evaluation_cost_class"],
+      "properties": {
+        "execution_class": {
+          "enum": ["native_equation", "explicit_reduced", "experiment_provider"],
+          "description": "Blueprint §5.1."
+        },
+        "thread_safety": { "enum": ["unknown", "not_thread_safe", "thread_safe"] },
+        "evaluation_cost_class": { "enum": ["unknown", "cheap", "moderate", "expensive"] },
+        "property_provider": { "type": ["string", "null"] },
+        "reference_convention": {
+          "type": ["string", "null"],
+          "description": "Enthalpy flows are comparable only within one provider implementation hash, data hash and reference convention (ADR 0001 D5.2)."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "accumulation": {
+      "description": "ADR 0008 D3. Every equation says what it conserves. `algebraic`: not a conservation row; a zero row of any mass matrix. `zero_holdup_balance`: a conservation balance whose holdup is identically zero by the model's definition (junction, divider) — a zero row of M by physics, with the reason stated. `holdup_balance`: a conservation balance whose steady-state form is the zero-accumulation limit of d(holdup)/dt = F_row; names the accumulated quantity and its dimension. Balance rows are written F_row = inflow − outflow + sources (D3.3). No default: a forgotten declaration is invalid, never `algebraic`.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "algebraic" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "reason"],
+          "properties": {
+            "kind": { "const": "zero_holdup_balance" },
+            "reason": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "holdup"],
+          "properties": {
+            "kind": { "const": "holdup_balance" },
+            "holdup": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["symbol", "quantity", "dimension"],
+              "properties": {
+                "symbol": { "type": "string", "minLength": 1 },
+                "quantity": { "type": "string", "minLength": 1 },
+                "dimension": {
+                  "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json#/$defs/dimension"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "interval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    }
+  }
+}

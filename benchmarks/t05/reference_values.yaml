@@ -1,0 +1,5625 @@
+generated_by: 'docs/derivations/scripts/t05_reference.py (design lane, T05): SYN-001 closed forms (cross-checked against syn001_reference.py), the six T05 models'' rows and causal evaluators, the three
+  coupled cases and the K04 injections, at 40 digits'
+specification: docs/derivations/T05-unit-models-spec.md
+independence: no solver, oracle, graph-layer, benchmarks or process_runtime code was used. `unit_cases`, `specification_errors`, `trial_states`, `coupled_cases` and `injections` are expectations; `measured`
+  is labelled and never an expectation.
+constants:
+  components:
+  - A
+  - B
+  - C
+  domain:
+    T_K:
+    - '280.00000000000000000'
+    - '440.00000000000000000'
+    P_Pa:
+    - '50000.000000000000000'
+    - '200000.00000000000000'
+  tolerances:
+    molar_flow: '3.10000e-8'
+    molar_flow_squared: '9.30000e-8'
+    heat_rate: '0.00101000'
+    temperature: '1.00000e-6'
+    pressure: '0.0100000'
+  scales:
+    molar_flow: '3.00000'
+    molar_flow_squared: '9.00000'
+    heat_rate: '100000.'
+    temperature: '100.000'
+    pressure: '100000.'
+  row_relative_tolerance: '1.00e-12'
+  jacobian_relative_tolerance: '1.00e-11'
+  detection_factor: '1.00e+3'
+  admissibility_K: '1.00e-6'
+  phase_margin: '0.00100'
+  fd_step_fraction_of_scale: '1.00e-5'
+  stoichiometry_nu:
+  - '-2.0000000000000000000'
+  - '-1.0000000000000000000'
+  - '3.0000000000000000000'
+  reaction_enthalpy_vapour_J_per_mol: '25000.000000000000000'
+  reaction_enthalpy_liquid_J_per_mol: '0.0'
+  reaction_consistent_conventions:
+  - SYN-001-ref-v1
+unit_cases:
+  PHF-1:
+    model: syn001.ph_flash
+    purpose: two-phase nominal
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '50000.000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      route: bracket
+      T_K: '358.09051640358332349'
+      P_Pa: '100000.00000000000000'
+      beta: '0.38840612116477945349'
+      duty_W: '50000.000000000000000'
+      vapor:
+        n_mol_per_s:
+        - '0.63308542930876247120'
+        - '0.37578867005784299029'
+        - '0.15634426412773289897'
+        T_K: '358.09051640358332349'
+        P_Pa: '100000.00000000000000'
+      liquid:
+        n_mol_per_s:
+        - '0.36691457069123752880'
+        - '0.62421132994215700971'
+        - '0.84365573587226710103'
+        T_K: '358.09051640358332349'
+        P_Pa: '100000.00000000000000'
+  PHF-3:
+    model: syn001.ph_flash
+    purpose: 'single-phase liquid result: vapour outlet dormant'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '10000.000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      route: bracket
+      T_K: '333.33333333333333333'
+      P_Pa: '100000.00000000000000'
+      beta: '0.0'
+      duty_W: '10000.000000000000000'
+      vapor:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '333.33333333333333333'
+        P_Pa: '100000.00000000000000'
+      liquid:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '333.33333333333333333'
+        P_Pa: '100000.00000000000000'
+  PHF-4:
+    model: syn001.ph_flash
+    purpose: 'single-phase vapour result: liquid outlet dormant'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '120000.00000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: VAPOR
+      route: bracket
+      T_K: '400.00000000000000000'
+      P_Pa: '100000.00000000000000'
+      beta: '1.0000000000000000000'
+      duty_W: '120000.00000000000000'
+      vapor:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '400.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      liquid:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '400.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  PHF-F1:
+    model: syn001.ph_flash
+    purpose: 'target below the domain: typed out_of_domain'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '-10000.000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: out_of_domain
+      code: ph_outside_domain(below)
+  PHF-F2:
+    model: syn001.ph_flash
+    purpose: 'target above the domain: typed out_of_domain'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '200000.00000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: out_of_domain
+      code: ph_outside_domain(above)
+  PHF-2:
+    model: syn001.ph_flash
+    purpose: the inverse of SYN-001's TP flash at 360 K (metamorphic PH o TP = identity)
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '56338.069446743527000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      route: bracket
+      T_K: '359.99999999999999993'
+      P_Pa: '100000.00000000000000'
+      beta: '0.45360302307438387518'
+      duty_W: '56338.069446743527000'
+      vapor:
+        n_mol_per_s:
+        - '0.70222328606948605000'
+        - '0.45360302307438387471'
+        - '0.20498276007928170085'
+        T_K: '359.99999999999999993'
+        P_Pa: '100000.00000000000000'
+      liquid:
+        n_mol_per_s:
+        - '0.29777671393051395000'
+        - '0.54639697692561612529'
+        - '0.79501723992071829915'
+        T_K: '359.99999999999999993'
+        P_Pa: '100000.00000000000000'
+  PHF-5:
+    model: syn001.ph_flash
+    purpose: a zero component (B) in a two-phase PH flash
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '0.0'
+        - '2.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '60000.000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      route: bracket
+      T_K: '374.71668592066455075'
+      P_Pa: '100000.00000000000000'
+      beta: '0.42916967832069702254'
+      duty_W: '60000.000000000000000'
+      vapor:
+        n_mol_per_s:
+        - '0.74778219998725525915'
+        - '0.0'
+        - '0.53972683497483580847'
+        T_K: '374.71668592066455075'
+        P_Pa: '100000.00000000000000'
+      liquid:
+        n_mol_per_s:
+        - '0.25221780001274474085'
+        - '0.0'
+        - '1.4602731650251641915'
+        T_K: '374.71668592066455075'
+        P_Pa: '100000.00000000000000'
+  PHF-6:
+    model: syn001.ph_flash
+    purpose: 'single component: T pinned at the boiling point, the split by the lever rule'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '2.0000000000000000000'
+        - '0.0'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '42000.000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      route: saturation
+      T_K: '360.00000000000000000'
+      P_Pa: '100000.00000000000000'
+      beta: '0.50000000000000000000'
+      duty_W: '42000.000000000000000'
+      vapor:
+        n_mol_per_s:
+        - '0.0'
+        - '1.0000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      liquid:
+        n_mol_per_s:
+        - '0.0'
+        - '1.0000000000000000000'
+        - '0.0'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  PHF-7:
+    model: syn001.ph_flash
+    purpose: adiabatic flash across a declared pressure drop (equals VLV-2)
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '360.00000000000000000'
+        P_Pa: '180000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '0.0'
+      pressure_drop: '80000.000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      route: bracket
+      T_K: '348.49986441920892565'
+      P_Pa: '100000.00000000000000'
+      beta: '0.042984057662572833620'
+      duty_W: '0.0'
+      vapor:
+        n_mol_per_s:
+        - '0.088299634938401678406'
+        - '0.031257806189761688393'
+        - '0.0093947318595551340614'
+        T_K: '348.49986441920892565'
+        P_Pa: '100000.00000000000000'
+      liquid:
+        n_mol_per_s:
+        - '0.91170036506159832159'
+        - '0.96874219381023831161'
+        - '0.99060526814044486594'
+        T_K: '348.49986441920892565'
+        P_Pa: '100000.00000000000000'
+  PHF-Z0:
+    model: syn001.ph_flash
+    purpose: 'dormant inlet, zero duty: ZERO_FLOW, a valid result'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '0.0'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: ZERO_FLOW
+      duty_W: '0.0'
+      vapor:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      liquid:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  PHF-Z1:
+    model: syn001.ph_flash
+    purpose: 'dormant inlet with a nonzero duty: typed error'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '1000.0000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: error
+      code: duty_into_dormant_stream
+  PHF-F3:
+    model: syn001.ph_flash
+    purpose: 'inlet declared LIQUID but two-phase: typed unsupported'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '0.0'
+      pressure_drop: '0.0'
+    expected:
+      status: unsupported
+      code: inadmissible_phase(inlet, LIQUID)
+  PHF-F4:
+    model: syn001.ph_flash
+    purpose: 'outlet pressure below the domain: typed out_of_domain'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      duty: '0.0'
+      pressure_drop: '60000.000000000000000'
+    expected:
+      status: out_of_domain
+      code: pressure_outside_domain(outlet)
+  VLV-1:
+    model: syn001.valve
+    purpose: 'liquid to liquid: throttling heats a SYN-001 liquid by v dP / c_p'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '180000.00000000000000'
+      inlet_phase: LIQUID
+      outlet_pressure: '100000.00000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      outlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.08000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: LIQUID
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        liquid_n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+  VLV-2:
+    model: syn001.valve
+    purpose: 'liquid to two-phase: flashing across the valve cools'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '360.00000000000000000'
+        P_Pa: '180000.00000000000000'
+      inlet_phase: LIQUID
+      outlet_pressure: '100000.00000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '348.49986441920892565'
+        P_Pa: '100000.00000000000000'
+        regime: TWO_PHASE
+        vapor_n_mol_per_s:
+        - '0.088299634938401678406'
+        - '0.031257806189761688393'
+        - '0.0093947318595551340614'
+        liquid_n_mol_per_s:
+        - '0.91170036506159832159'
+        - '0.96874219381023831161'
+        - '0.99060526814044486594'
+  VLV-3:
+    model: syn001.valve
+    purpose: 'vapour to vapour: SYN-001 vapour enthalpy is P-independent, so T is unchanged'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '150000.00000000000000'
+      inlet_phase: VAPOR
+      outlet_pressure: '60000.000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: VAPOR
+      outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '60000.000000000000000'
+        regime: VAPOR
+        vapor_n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        liquid_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+  VLV-4:
+    model: syn001.valve
+    purpose: 'zero pressure drop: the outlet is the inlet'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '180000.00000000000000'
+      inlet_phase: LIQUID
+      outlet_pressure: '180000.00000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      outlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '180000.00000000000000'
+        regime: LIQUID
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        liquid_n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+  VLV-5:
+    model: syn001.valve
+    purpose: a two-phase (lifted) inlet flashes further
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '348.49986441920890456'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: null
+      outlet_pressure: '60000.000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '332.02286107570845883'
+        P_Pa: '60000.000000000000000'
+        regime: TWO_PHASE
+        vapor_n_mol_per_s:
+        - '0.21407274969965496434'
+        - '0.076892614699345928916'
+        - '0.021979791805451944476'
+        liquid_n_mol_per_s:
+        - '0.78592725030034503566'
+        - '0.92310738530065407108'
+        - '0.97802020819454805552'
+  VLV-Z:
+    model: syn001.valve
+    purpose: 'dormant inlet: dormant outlet, the temperature a retained label'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      outlet_pressure: '90000.000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: ZERO_FLOW
+      outlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '90000.000000000000000'
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        liquid_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+  VLV-F1:
+    model: syn001.valve
+    purpose: 'outlet pressure above the inlet''s: typed out_of_domain'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      outlet_pressure: '120000.00000000000000'
+    expected:
+      status: out_of_domain
+      code: pressure_rise(valve)
+  PUMP-1:
+    model: syn001.liquid_pump
+    purpose: 'nominal: eta = 0.75 heats the liquid by (1/eta - 1) v dP / c_p'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      outlet_pressure: '180000.00000000000000'
+      efficiency: '0.75000000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      work_W: '25.600000000000000000'
+      work_ideal_W: '19.200000000000000000'
+      inlet_admissibility_K: '0.0'
+      outlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.02666666666666667'
+        P_Pa: '180000.00000000000000'
+  PUMP-2:
+    model: syn001.liquid_pump
+    purpose: 'eta = 1: isentropic is isothermal for SYN-001''s liquid, so no heating'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      outlet_pressure: '180000.00000000000000'
+      efficiency: '1.0000000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      work_W: '19.200000000000000000'
+      work_ideal_W: '19.200000000000000000'
+      inlet_admissibility_K: '0.0'
+      outlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '180000.00000000000000'
+  PUMP-3:
+    model: syn001.liquid_pump
+    purpose: 'zero pressure rise: zero work'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      outlet_pressure: '100000.00000000000000'
+      efficiency: '0.75000000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      work_W: '0.0'
+      work_ideal_W: '0.0'
+      inlet_admissibility_K: '0.0'
+      outlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  PUMP-4:
+    model: syn001.liquid_pump
+    purpose: a saturated liquid inlet (SYN-001's flash liquid) is admitted by R-007
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '0.29777671393051396986'
+        - '0.54639697692561617348'
+        - '0.79501723992071826608'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      outlet_pressure: '180000.00000000000000'
+      efficiency: '0.75000000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      work_W: '17.484703261619716367'
+      work_ideal_W: '13.113527446214787275'
+      inlet_admissibility_K: '1.2661655119290642653e-14'
+      outlet:
+        n_mol_per_s:
+        - '0.29777671393051396986'
+        - '0.54639697692561617348'
+        - '0.79501723992071826608'
+        T_K: '360.02666666666666667'
+        P_Pa: '180000.00000000000000'
+  PUMP-F1:
+    model: syn001.liquid_pump
+    purpose: 'vapour inlet: typed unsupported'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      outlet_pressure: '180000.00000000000000'
+      efficiency: '0.75000000000000000000'
+    expected:
+      status: unsupported
+      code: inadmissible_phase(inlet, LIQUID)
+  PUMP-F2:
+    model: syn001.liquid_pump
+    purpose: 'two-phase inlet: typed unsupported'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      outlet_pressure: '180000.00000000000000'
+      efficiency: '0.75000000000000000000'
+    expected:
+      status: unsupported
+      code: inadmissible_phase(inlet, LIQUID)
+  PUMP-F3:
+    model: syn001.liquid_pump
+    purpose: 'outlet pressure below the inlet''s: typed out_of_domain'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      outlet_pressure: '80000.000000000000000'
+      efficiency: '0.75000000000000000000'
+    expected:
+      status: out_of_domain
+      code: pressure_fall(pump)
+  PUMP-Z:
+    model: syn001.liquid_pump
+    purpose: 'dormant inlet: zero work'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      outlet_pressure: '180000.00000000000000'
+      efficiency: '0.75000000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: ZERO_FLOW
+      work_W: '0.0'
+      outlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '180000.00000000000000'
+  RX-1:
+    model: syn001.conversion_reactor
+    purpose: 'liquid, isothermal: the reaction is exactly thermoneutral (ADR 0011 D2)'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '0.50000000000000000000'
+      energy_specification: outlet_temperature
+      value: '300.00000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      duty_W: '0.0'
+      extent_mol_per_s: '0.30000000000000000000'
+      outlet:
+        n_mol_per_s:
+        - '0.60000000000000000000'
+        - '0.60000000000000000000'
+        - '1.2000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: LIQUID
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        liquid_n_mol_per_s:
+        - '0.60000000000000000000'
+        - '0.60000000000000000000'
+        - '1.2000000000000000000'
+  RX-2:
+    model: syn001.conversion_reactor
+    purpose: 'vapour, isothermal: Q = xi sum(nu L)'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: VAPOR
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '0.50000000000000000000'
+      energy_specification: outlet_temperature
+      value: '420.00000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: VAPOR
+      duty_W: '7500.0000000000000000'
+      extent_mol_per_s: '0.30000000000000000000'
+      outlet:
+        n_mol_per_s:
+        - '0.60000000000000000000'
+        - '0.60000000000000000000'
+        - '1.2000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: VAPOR
+        vapor_n_mol_per_s:
+        - '0.60000000000000000000'
+        - '0.60000000000000000000'
+        - '1.2000000000000000000'
+        liquid_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+  RX-3:
+    model: syn001.conversion_reactor
+    purpose: 'vapour, adiabatic: the endothermic reaction cools the stream'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: VAPOR
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '0.50000000000000000000'
+      energy_specification: duty
+      value: '0.0'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: VAPOR
+      duty_W: '0.0'
+      extent_mol_per_s: '0.30000000000000000000'
+      outlet:
+        n_mol_per_s:
+        - '0.60000000000000000000'
+        - '0.60000000000000000000'
+        - '1.2000000000000000000'
+        T_K: '388.75000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: VAPOR
+        vapor_n_mol_per_s:
+        - '0.60000000000000000000'
+        - '0.60000000000000000000'
+        - '1.2000000000000000000'
+        liquid_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+  RX-4:
+    model: syn001.conversion_reactor
+    purpose: 'two-phase TP-state outlet: the reaction moves the split'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '0.50000000000000000000'
+      energy_specification: outlet_temperature
+      value: '360.00000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      duty_W: '22535.640493889192418'
+      extent_mol_per_s: '0.30000000000000000000'
+      outlet:
+        n_mol_per_s:
+        - '0.60000000000000000000'
+        - '0.60000000000000000000'
+        - '1.2000000000000000000'
+        T_K: '360.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: TWO_PHASE
+        vapor_n_mol_per_s:
+        - '0.16901454274376041586'
+        - '0.072783599417235530199'
+        - '0.049336255507946174732'
+        liquid_n_mol_per_s:
+        - '0.43098545725623958414'
+        - '0.52721640058276446980'
+        - '1.1506637444920538253'
+  RX-5:
+    model: syn001.conversion_reactor
+    purpose: duty-specified, two-phase PH outlet
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '0.50000000000000000000'
+      energy_specification: duty
+      value: '40000.000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: TWO_PHASE
+      duty_W: '40000.000000000000000'
+      extent_mol_per_s: '0.30000000000000000000'
+      outlet:
+        n_mol_per_s:
+        - '0.60000000000000000000'
+        - '0.60000000000000000000'
+        - '1.2000000000000000000'
+        T_K: '367.61344835929877058'
+        P_Pa: '100000.00000000000000'
+        regime: TWO_PHASE
+        vapor_n_mol_per_s:
+        - '0.38254367310353562017'
+        - '0.23438864657382730780'
+        - '0.20507203339900243776'
+        liquid_n_mol_per_s:
+        - '0.21745632689646437983'
+        - '0.36561135342617269220'
+        - '0.99492796660099756224'
+  RX-6:
+    model: syn001.conversion_reactor
+    purpose: 'key B: the non-key reactant A exhausted exactly'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '0.50000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: VAPOR
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: B
+      conversion: '0.50000000000000000000'
+      energy_specification: outlet_temperature
+      value: '420.00000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: VAPOR
+      duty_W: '12500.000000000000000'
+      extent_mol_per_s: '0.50000000000000000000'
+      outlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.50000000000000000000'
+        - '2.0000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: VAPOR
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.50000000000000000000'
+        - '2.0000000000000000000'
+        liquid_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+  RX-7:
+    model: syn001.conversion_reactor
+    purpose: 'conversion 0: the reactor is the TP heater'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '0.0'
+      energy_specification: outlet_temperature
+      value: '330.00000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: LIQUID
+      duty_W: '7200.0000000000000000'
+      extent_mol_per_s: '0.0'
+      outlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: LIQUID
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        liquid_n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+  RX-8:
+    model: syn001.conversion_reactor
+    purpose: 'conversion 1: the key component exhausted exactly'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: VAPOR
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '1.0000000000000000000'
+      energy_specification: outlet_temperature
+      value: '420.00000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: VAPOR
+      duty_W: '15000.000000000000000'
+      extent_mol_per_s: '0.60000000000000000000'
+      outlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.30000000000000000000'
+        - '2.1000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: VAPOR
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.30000000000000000000'
+        - '2.1000000000000000000'
+        liquid_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+  RX-Z:
+    model: syn001.conversion_reactor
+    purpose: dormant inlet
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '0.50000000000000000000'
+      energy_specification: outlet_temperature
+      value: '330.00000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: ZERO_FLOW
+      duty_W: '0.0'
+      extent_mol_per_s: '0.0'
+      outlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        liquid_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+  RX-F1:
+    model: syn001.conversion_reactor
+    purpose: 'the non-key reactant would go negative: typed out_of_domain'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '0.50000000000000000000'
+        T_K: '420.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: VAPOR
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: B
+      conversion: '0.60000000000000000000'
+      energy_specification: outlet_temperature
+      value: '420.00000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: out_of_domain
+      code: reactant_exhausted(A)
+      extent_mol_per_s: '0.60000000000000000000'
+  RX-F5:
+    model: syn001.conversion_reactor
+    purpose: 'adiabatic target below the domain: typed out_of_domain'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      nu:
+      - '-2.0000000000000000000'
+      - '-1.0000000000000000000'
+      - '3.0000000000000000000'
+      key: A
+      conversion: '0.50000000000000000000'
+      energy_specification: duty
+      value: '-20000.000000000000000'
+      pressure_drop: '0.0'
+    expected:
+      status: out_of_domain
+      code: ph_outside_domain(below)
+  SEP-1:
+    model: syn001.component_separator
+    purpose: 'all liquid: the duty vanishes'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      split:
+      - '0.90000000000000000000'
+      - '0.50000000000000000000'
+      - '0.10000000000000000000'
+      top_phase: LIQUID
+      bottom_phase: LIQUID
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '0.0'
+      top:
+        n_mol_per_s:
+        - '1.0800000000000000000'
+        - '0.45000000000000000000'
+        - '0.030000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      bottom:
+        n_mol_per_s:
+        - '0.12000000000000000000'
+        - '0.45000000000000000000'
+        - '0.27000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  SEP-2:
+    model: syn001.component_separator
+    purpose: 'vapour top, liquid bottom: Q = sum_i top_i (h_i^V - h_i^L); C absent from the top'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '345.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      split:
+      - '0.95000000000000000000'
+      - '0.10000000000000000000'
+      - '0.0'
+      top_phase: VAPOR
+      bottom_phase: LIQUID
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '26750.000000000000000'
+      top:
+        n_mol_per_s:
+        - '0.95000000000000000000'
+        - '0.10000000000000000000'
+        - '0.0'
+        T_K: '345.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      bottom:
+        n_mol_per_s:
+        - '0.050000000000000000000'
+        - '0.90000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '345.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  SEP-3:
+    model: syn001.component_separator
+    purpose: 'split fraction 1: dormant bottom'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      split:
+      - '1.0000000000000000000'
+      - '1.0000000000000000000'
+      - '1.0000000000000000000'
+      top_phase: LIQUID
+      bottom_phase: LIQUID
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '0.0'
+      top:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      bottom:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  SEP-4:
+    model: syn001.component_separator
+    purpose: 'split fraction 0: dormant top'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      split:
+      - '0.0'
+      - '0.0'
+      - '0.0'
+      top_phase: LIQUID
+      bottom_phase: LIQUID
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '0.0'
+      top:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      bottom:
+        n_mol_per_s:
+        - '1.2000000000000000000'
+        - '0.90000000000000000000'
+        - '0.30000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  SEP-Z:
+    model: syn001.component_separator
+    purpose: dormant inlet
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      split:
+      - '0.90000000000000000000'
+      - '0.50000000000000000000'
+      - '0.10000000000000000000'
+      top_phase: LIQUID
+      bottom_phase: LIQUID
+    expected:
+      status: ok
+      code: ''
+      signature: ZERO_FLOW
+      duty_W: '0.0'
+      top:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      bottom:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '330.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  SEP-F2:
+    model: syn001.component_separator
+    purpose: 'top declared VAPOR but liquid: typed unsupported'
+    inputs:
+      inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '345.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      inlet_phase: LIQUID
+      split:
+      - '0.50000000000000000000'
+      - '0.50000000000000000000'
+      - '0.50000000000000000000'
+      top_phase: VAPOR
+      bottom_phase: LIQUID
+    expected:
+      status: unsupported
+      code: inadmissible_phase(top, VAPOR)
+      failures:
+      - inadmissible_phase(top, VAPOR)
+  HX-1:
+    model: syn001.heat_exchanger
+    purpose: liquid/liquid, cold-outlet specification
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: cold_outlet_temperature
+      value: '320.00000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '6000.0000000000000000'
+      hot_end_K: '20.000000000000000000'
+      cold_end_K: '28.000000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '328.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '320.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  HX-2:
+    model: syn001.heat_exchanger
+    purpose: the same state by its hot-outlet specification
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: hot_outlet_temperature
+      value: '328.00000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '6000.0000000000000000'
+      hot_end_K: '20.000000000000000000'
+      cold_end_K: '28.000000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '328.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '320.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  HX-3:
+    model: syn001.heat_exchanger
+    purpose: the same state by its duty
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: duty
+      value: '6000.0000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '6000.0000000000000000'
+      hot_end_K: '20.000000000000000000'
+      cold_end_K: '28.000000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '328.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '320.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  HX-4:
+    model: syn001.heat_exchanger
+    purpose: vapour hot side
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.40000000000000000000'
+        - '0.80000000000000000000'
+        - '1.3000000000000000000'
+        T_K: '430.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: VAPOR
+      cold_phase: LIQUID
+      specification: hot_outlet_temperature
+      value: '400.00000000000000000'
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '7500.0000000000000000'
+      hot_end_K: '105.00000000000000000'
+      cold_end_K: '100.00000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.40000000000000000000'
+        - '0.80000000000000000000'
+        - '1.3000000000000000000'
+        T_K: '400.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '325.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  HX-5:
+    model: syn001.heat_exchanger
+    purpose: 'zero duty: outlets are inlets'
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: duty
+      value: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '0.0'
+      hot_end_K: '40.000000000000000000'
+      cold_end_K: '40.000000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  HX-Z0:
+    model: syn001.heat_exchanger
+    purpose: 'dormant hot side, zero duty: valid'
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: duty
+      value: '0.0'
+    expected:
+      status: ok
+      code: ''
+      signature: null
+      duty_W: '0.0'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+  HX-Z1:
+    model: syn001.heat_exchanger
+    purpose: 'dormant hot side cannot heat the cold side: typed error'
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: cold_outlet_temperature
+      value: '320.00000000000000000'
+    expected:
+      status: error
+      code: specification_unsatisfiable_with_dormant_side
+  HX-F1:
+    model: syn001.heat_exchanger
+    purpose: temperature cross at the hot end only
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: cold_outlet_temperature
+      value: '345.00000000000000000'
+    expected:
+      status: out_of_domain
+      code: temperature_cross(hot_end)
+      duty_W: '13500.000000000000000'
+      hot_end_K: '-5.0000000000000000000'
+      cold_end_K: '13.000000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '313.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '345.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      failures:
+      - temperature_cross(hot_end)
+  HX-F2:
+    model: syn001.heat_exchanger
+    purpose: temperature cross at the cold end only
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.40000000000000000000'
+        - '0.80000000000000000000'
+        - '1.3000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: hot_outlet_temperature
+      value: '295.00000000000000000'
+    expected:
+      status: out_of_domain
+      code: temperature_cross(cold_end)
+      duty_W: '11250.000000000000000'
+      hot_end_K: '2.5000000000000000000'
+      cold_end_K: '-5.0000000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.40000000000000000000'
+        - '0.80000000000000000000'
+        - '1.3000000000000000000'
+        T_K: '295.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '337.50000000000000000'
+        P_Pa: '100000.00000000000000'
+      failures:
+      - temperature_cross(cold_end)
+  HX-F3:
+    model: syn001.heat_exchanger
+    purpose: heat would flow from cold to hot
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: LIQUID
+      cold_phase: LIQUID
+      specification: cold_outlet_temperature
+      value: '290.00000000000000000'
+    expected:
+      status: out_of_domain
+      code: heat_flow_reversed
+      duty_W: '-3000.0000000000000000'
+      hot_end_K: '50.000000000000000000'
+      cold_end_K: '46.000000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.80000000000000000000'
+        - '1.6000000000000000000'
+        - '2.6000000000000000000'
+        T_K: '346.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '290.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      failures:
+      - heat_flow_reversed
+  HX-F4:
+    model: syn001.heat_exchanger
+    purpose: 'the cold side would boil: typed unsupported'
+    inputs:
+      hot_inlet:
+        n_mol_per_s:
+        - '0.40000000000000000000'
+        - '0.80000000000000000000'
+        - '1.3000000000000000000'
+        T_K: '430.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_inlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '340.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      hot_phase: VAPOR
+      cold_phase: LIQUID
+      specification: cold_outlet_temperature
+      value: '350.00000000000000000'
+    expected:
+      status: unsupported
+      code: inadmissible_phase(cold_outlet, LIQUID)
+      duty_W: '3000.0000000000000000'
+      hot_end_K: '80.000000000000000000'
+      cold_end_K: '78.000000000000000000'
+      hot_outlet:
+        n_mol_per_s:
+        - '0.40000000000000000000'
+        - '0.80000000000000000000'
+        - '1.3000000000000000000'
+        T_K: '418.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      cold_outlet:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '350.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      failures:
+      - inadmissible_phase(cold_outlet, LIQUID)
+specification_errors:
+  PHF-S1:
+    model: syn001.ph_flash
+    code: negative_pressure_drop
+    change_from_nominal:
+      pressure_drop: -1000.0
+  VLV-S1:
+    model: syn001.valve
+    code: pressure_outside_domain(outlet_pressure)
+    change_from_nominal:
+      outlet_pressure: 40000.0
+  PUMP-S1:
+    model: syn001.liquid_pump
+    code: efficiency_outside_interval
+    change_from_nominal:
+      efficiency: 0.0
+  PUMP-S2:
+    model: syn001.liquid_pump
+    code: efficiency_outside_interval
+    change_from_nominal:
+      efficiency: 1.2
+  RX-S1:
+    model: syn001.conversion_reactor
+    code: conversion_outside_unit_interval
+    change_from_nominal:
+      conversion: 1.5
+  RX-S2:
+    model: syn001.conversion_reactor
+    code: key_not_reactant
+    change_from_nominal:
+      key: C
+  RX-S3:
+    model: syn001.conversion_reactor
+    code: stoichiometry_not_mass_conserving
+    change_from_nominal:
+      nu:
+      - -1.0
+      - 2.0
+      - 0.0
+  RX-S4:
+    model: syn001.conversion_reactor
+    code: reference_convention_not_reaction_consistent(SYN-001-ref-v0)
+    change_from_nominal:
+      provider_reference_convention: SYN-001-ref-v0
+  RX-S5:
+    model: syn001.conversion_reactor
+    code: outlet_temperature_outside_domain
+    change_from_nominal:
+      energy_specification: outlet_temperature
+      value: 450.0
+  SEP-S1:
+    model: syn001.component_separator
+    code: split_fraction_outside_unit_interval(A)
+    change_from_nominal:
+      split:
+      - 1.1
+      - 0.5
+      - 0.5
+  HX-S1:
+    model: syn001.heat_exchanger
+    code: unknown_specification(approach_temperature)
+    change_from_nominal:
+      specification: approach_temperature
+trial_states:
+  syn001.ph_flash:
+    states:
+      J1:
+        configuration:
+          unit: U-PHF
+          inlet: S1
+          vapor: S2
+          liquid: S3
+          inlet_regime: LIQUID
+        parameters:
+          duty: '24000.000000000000000'
+          pressure_drop: '20000.000000000000000'
+        x:
+          S1.n.A: '1.1999999999999999556'
+          S1.n.B: '0.90000000000000002220'
+          S1.n.C: '0.29999999999999998890'
+          S1.T: '330.00000000000000000'
+          S1.P: '150000.00000000000000'
+          S2.n.A: '0.45000000000000001110'
+          S2.n.B: '0.25000000000000000000'
+          S2.n.C: '0.050000000000000002776'
+          S2.T: '352.50000000000000000'
+          S2.P: '130000.00000000000000'
+          S3.n.A: '0.69999999999999995559'
+          S3.n.B: '0.59999999999999997780'
+          S3.n.C: '0.29999999999999998890'
+          S3.T: '351.00000000000000000'
+          S3.P: '128000.00000000000000'
+          S2.N: '0.80000000000000004441'
+          S3.N: '1.5500000000000000444'
+          U-PHF.Q: '25000.000000000000000'
+        rows:
+          U-PHF:PHF-mole:A:
+            kind: molar_flow
+            value: '0.049999999999999988898'
+            term_scale: '2.3499999999999999223'
+          U-PHF:PHF-mole:B:
+            kind: molar_flow
+            value: '0.050000000000000044409'
+            term_scale: '1.7500000000000000000'
+          U-PHF:PHF-mole:C:
+            kind: molar_flow
+            value: '-0.050000000000000002776'
+            term_scale: '0.64999999999999998057'
+          U-PHF:PHF-equilibrium:A:
+            kind: molar_flow_squared
+            value: '-0.32798360815329374378'
+            term_scale: '1.7229836081532938182'
+          U-PHF:PHF-equilibrium:B:
+            kind: molar_flow_squared
+            value: '0.088872619399570222593'
+            term_scale: '0.68612738060042979961'
+          U-PHF:PHF-equilibrium:C:
+            kind: molar_flow_squared
+            value: '0.032745439151269574041'
+            term_scale: '0.12225456084873043900'
+          U-PHF:PHF-T:
+            kind: temperature
+            value: '1.5000000000000000000'
+            term_scale: '703.50000000000000000'
+          U-PHF:PHF-pressure:vapor:
+            kind: pressure
+            value: '0.0'
+            term_scale: '300000.00000000000000'
+          U-PHF:PHF-pressure:liquid:
+            kind: pressure
+            value: '-2000.0000000000000000'
+            term_scale: '298000.00000000000000'
+          U-PHF:PHF-duty:
+            kind: heat_rate
+            value: '-389.98000000000015108'
+            term_scale: '64813.979999999999951'
+          U-PHF:PHF-Q:
+            kind: heat_rate
+            value: '1000.0000000000000000'
+            term_scale: '49000.000000000000000'
+          U-PHF:Ndef:vapor:
+            kind: molar_flow
+            value: '0.050000000000000030531'
+            term_scale: '1.5500000000000000583'
+          U-PHF:Ndef:liquid:
+            kind: molar_flow
+            value: '-0.049999999999999877875'
+            term_scale: '3.1499999999999999667'
+        jacobian:
+        - - U-PHF:PHF-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:A
+          - S3.n.A
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:B
+          - S3.n.B
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:C
+          - S3.n.C
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-equilibrium:A
+          - S2.N
+          - '-1.2818545101916171551'
+        - - U-PHF:PHF-equilibrium:A
+          - S2.P
+          - '7.8533461342520904463e-6'
+        - - U-PHF:PHF-equilibrium:A
+          - S2.T
+          - '-0.024812137846360940019'
+        - - U-PHF:PHF-equilibrium:A
+          - S2.n.A
+          - '1.5500000000000000444'
+        - - U-PHF:PHF-equilibrium:A
+          - S3.N
+          - '0.45000000000000001110'
+        - - U-PHF:PHF-equilibrium:A
+          - S3.n.A
+          - '-1.4649765830761340658'
+        - - U-PHF:PHF-equilibrium:B
+          - S2.N
+          - '-0.37328422575053721492'
+        - - U-PHF:PHF-equilibrium:B
+          - S2.P
+          - '2.2869445853391335785e-6'
+        - - U-PHF:PHF-equilibrium:B
+          - S2.T
+          - '-0.0086707171711410086243'
+        - - U-PHF:PHF-equilibrium:B
+          - S2.n.B
+          - '1.5500000000000000444'
+        - - U-PHF:PHF-equilibrium:B
+          - S3.N
+          - '0.25000000000000000000'
+        - - U-PHF:PHF-equilibrium:B
+          - S3.n.B
+          - '-0.49771230100071633260'
+        - - U-PHF:PHF-equilibrium:C
+          - S2.N
+          - '-0.055943201060913037496'
+        - - U-PHF:PHF-equilibrium:C
+          - S2.P
+          - '3.4273883525497305269e-7'
+        - - U-PHF:PHF-equilibrium:C
+          - S2.T
+          - '-0.0015160575578049089601'
+        - - U-PHF:PHF-equilibrium:C
+          - S2.n.C
+          - '1.5500000000000000444'
+        - - U-PHF:PHF-equilibrium:C
+          - S3.N
+          - '0.050000000000000002776'
+        - - U-PHF:PHF-equilibrium:C
+          - S3.n.C
+          - '-0.14918186949576811379'
+        - - U-PHF:PHF-T
+          - S2.T
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-T
+          - S3.T
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-pressure:vapor
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-pressure:vapor
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-pressure:liquid
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-pressure:liquid
+          - S3.P
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-duty
+          - S1.P
+          - '0.00023999999999999999667'
+        - - U-PHF:PHF-duty
+          - S1.T
+          - '239.99999999999999667'
+        - - U-PHF:PHF-duty
+          - S1.n.A
+          - '3005.0000000000000000'
+        - - U-PHF:PHF-duty
+          - S1.n.B
+          - '3005.0000000000000000'
+        - - U-PHF:PHF-duty
+          - S1.n.C
+          - '3005.0000000000000000'
+        - - U-PHF:PHF-duty
+          - S2.T
+          - '-75.000000000000001388'
+        - - U-PHF:PHF-duty
+          - S2.n.A
+          - '-30250.000000000000000'
+        - - U-PHF:PHF-duty
+          - S2.n.B
+          - '-35250.000000000000000'
+        - - U-PHF:PHF-duty
+          - S2.n.C
+          - '-40250.000000000000000'
+        - - U-PHF:PHF-duty
+          - S3.P
+          - '-0.00015999999999999999223'
+        - - U-PHF:PHF-duty
+          - S3.T
+          - '-159.99999999999999223'
+        - - U-PHF:PHF-duty
+          - S3.n.A
+          - '-5102.8000000000000000'
+        - - U-PHF:PHF-duty
+          - S3.n.B
+          - '-5102.8000000000000000'
+        - - U-PHF:PHF-duty
+          - S3.n.C
+          - '-5102.8000000000000000'
+        - - U-PHF:PHF-duty
+          - U-PHF.Q
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-Q
+          - U-PHF.Q
+          - '1.0000000000000000000'
+        - - U-PHF:Ndef:vapor
+          - S2.N
+          - '1.0000000000000000000'
+        - - U-PHF:Ndef:vapor
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:vapor
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:vapor
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:liquid
+          - S3.N
+          - '1.0000000000000000000'
+        - - U-PHF:Ndef:liquid
+          - S3.n.A
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:liquid
+          - S3.n.B
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:liquid
+          - S3.n.C
+          - '-1.0000000000000000000'
+        cancelling_partials: []
+      J2:
+        configuration:
+          unit: U-PHF
+          inlet: S1
+          vapor: S2
+          liquid: S3
+          inlet_regime: VAPOR
+        parameters:
+          duty: '-28000.000000000000000'
+          pressure_drop: '5000.0000000000000000'
+        x:
+          S1.n.A: '0.50000000000000000000'
+          S1.n.B: '1.1000000000000000888'
+          S1.n.C: '1.3999999999999999112'
+          S1.T: '410.00000000000000000'
+          S1.P: '90000.000000000000000'
+          S2.n.A: '0.34999999999999997780'
+          S2.n.B: '0.50000000000000000000'
+          S2.n.C: '0.29999999999999998890'
+          S2.T: '371.00000000000000000'
+          S2.P: '85000.000000000000000'
+          S3.n.A: '0.10000000000000000555'
+          S3.n.B: '0.55000000000000004441'
+          S3.n.C: '1.1999999999999999556'
+          S3.T: '372.00000000000000000'
+          S3.P: '86000.000000000000000'
+          S2.N: '1.1000000000000000888'
+          S3.N: '1.8999999999999999112'
+          U-PHF.Q: '-30000.000000000000000'
+        rows:
+          U-PHF:PHF-mole:A:
+            kind: molar_flow
+            value: '0.050000000000000016653'
+            term_scale: '0.94999999999999998335'
+          U-PHF:PHF-mole:B:
+            kind: molar_flow
+            value: '0.050000000000000044409'
+            term_scale: '2.1500000000000001332'
+          U-PHF:PHF-mole:C:
+            kind: molar_flow
+            value: '-0.10000000000000003331'
+            term_scale: '2.8999999999999998557'
+          U-PHF:PHF-equilibrium:A:
+            kind: molar_flow_squared
+            value: '0.19431709867964648466'
+            term_scale: '1.1356829013203533688'
+          U-PHF:PHF-equilibrium:B:
+            kind: molar_flow_squared
+            value: '-0.0075998549540218392019'
+            term_scale: '1.9075998549540217504'
+          U-PHF:PHF-equilibrium:C:
+            kind: molar_flow_squared
+            value: '-0.11184485458046038689'
+            term_scale: '1.2518448545804602914'
+          U-PHF:PHF-T:
+            kind: temperature
+            value: '-1.0000000000000000000'
+            term_scale: '743.00000000000000000'
+          U-PHF:PHF-pressure:vapor:
+            kind: pressure
+            value: '0.0'
+            term_scale: '180000.00000000000000'
+          U-PHF:PHF-pressure:liquid:
+            kind: pressure
+            value: '1000.0000000000000000'
+            term_scale: '181000.00000000000000'
+          U-PHF:PHF-duty:
+            kind: heat_rate
+            value: '41767.590000000000696'
+            term_scale: '213232.40999999999842'
+          U-PHF:PHF-Q:
+            kind: heat_rate
+            value: '-2000.0000000000000000'
+            term_scale: '58000.000000000000000'
+          U-PHF:Ndef:vapor:
+            kind: molar_flow
+            value: '-0.049999999999999877875'
+            term_scale: '2.2500000000000000555'
+          U-PHF:Ndef:liquid:
+            kind: molar_flow
+            value: '0.049999999999999905631'
+            term_scale: '3.7499999999999999167'
+        jacobian:
+        - - U-PHF:PHF-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:A
+          - S3.n.A
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:B
+          - S3.n.B
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-mole:C
+          - S3.n.C
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-equilibrium:A
+          - S2.N
+          - '-0.42789354665486673096'
+        - - U-PHF:PHF-equilibrium:A
+          - S2.P
+          - '5.5221870997678744429e-6'
+        - - U-PHF:PHF-equilibrium:A
+          - S2.T
+          - '-0.010282825907361023163'
+        - - U-PHF:PHF-equilibrium:A
+          - S2.n.A
+          - '1.8999999999999999112'
+        - - U-PHF:PHF-equilibrium:A
+          - S3.N
+          - '0.34999999999999997780'
+        - - U-PHF:PHF-equilibrium:A
+          - S3.n.A
+          - '-4.7068290132035341593'
+        - - U-PHF:PHF-equilibrium:B
+          - S2.N
+          - '-0.87054532268547428861'
+        - - U-PHF:PHF-equilibrium:B
+          - S2.P
+          - '0.000011234836767880735525'
+        - - U-PHF:PHF-equilibrium:B
+          - S2.T
+          - '-0.025104121965848896124'
+        - - U-PHF:PHF-equilibrium:B
+          - S2.n.B
+          - '1.8999999999999999112'
+        - - U-PHF:PHF-equilibrium:B
+          - S3.N
+          - '0.50000000000000000000'
+        - - U-PHF:PHF-equilibrium:B
+          - S3.n.B
+          - '-1.7410906453709485772'
+        - - U-PHF:PHF-equilibrium:C
+          - S2.N
+          - '-0.61985895870950934918'
+        - - U-PHF:PHF-equilibrium:C
+          - S2.P
+          - '7.9995998355687474565e-6'
+        - - U-PHF:PHF-equilibrium:C
+          - S2.T
+          - '-0.020854040844117286327'
+        - - U-PHF:PHF-equilibrium:C
+          - S2.n.C
+          - '1.8999999999999999112'
+        - - U-PHF:PHF-equilibrium:C
+          - S3.N
+          - '0.29999999999999998890'
+        - - U-PHF:PHF-equilibrium:C
+          - S3.n.C
+          - '-0.56820404548371697032'
+        - - U-PHF:PHF-T
+          - S2.T
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-T
+          - S3.T
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-pressure:vapor
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-pressure:vapor
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-pressure:liquid
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-PHF:PHF-pressure:liquid
+          - S3.P
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-duty
+          - S1.T
+          - '300.00000000000000000'
+        - - U-PHF:PHF-duty
+          - S1.n.A
+          - '36000.000000000000000'
+        - - U-PHF:PHF-duty
+          - S1.n.B
+          - '41000.000000000000000'
+        - - U-PHF:PHF-duty
+          - S1.n.C
+          - '46000.000000000000000'
+        - - U-PHF:PHF-duty
+          - S2.T
+          - '-114.99999999999999667'
+        - - U-PHF:PHF-duty
+          - S2.n.A
+          - '-32100.000000000000000'
+        - - U-PHF:PHF-duty
+          - S2.n.B
+          - '-37100.000000000000000'
+        - - U-PHF:PHF-duty
+          - S2.n.C
+          - '-42100.000000000000000'
+        - - U-PHF:PHF-duty
+          - S3.P
+          - '-0.00018500000000000000056'
+        - - U-PHF:PHF-duty
+          - S3.T
+          - '-185.00000000000000056'
+        - - U-PHF:PHF-duty
+          - S3.n.A
+          - '-7198.6000000000000000'
+        - - U-PHF:PHF-duty
+          - S3.n.B
+          - '-7198.6000000000000000'
+        - - U-PHF:PHF-duty
+          - S3.n.C
+          - '-7198.6000000000000000'
+        - - U-PHF:PHF-duty
+          - U-PHF.Q
+          - '1.0000000000000000000'
+        - - U-PHF:PHF-Q
+          - U-PHF.Q
+          - '1.0000000000000000000'
+        - - U-PHF:Ndef:vapor
+          - S2.N
+          - '1.0000000000000000000'
+        - - U-PHF:Ndef:vapor
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:vapor
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:vapor
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:liquid
+          - S3.N
+          - '1.0000000000000000000'
+        - - U-PHF:Ndef:liquid
+          - S3.n.A
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:liquid
+          - S3.n.B
+          - '-1.0000000000000000000'
+        - - U-PHF:Ndef:liquid
+          - S3.n.C
+          - '-1.0000000000000000000'
+        cancelling_partials: []
+    min_term_visibility: '0.0405113'
+    mutation_detection_ratio_min: '1.28009e+10'
+    mutations_invisible_by_fixture_degeneracy: []
+    mutations:
+      swap(S1.n, A<->B): '6.31579e+11'
+      swap(S1.n, B<->C): '9.23077e+11'
+      swap(S1.n, A<->C): '1.38462e+12'
+      swap(S2.n, A<->B): '4.51811e+11'
+      swap(S2.n, B<->C): '2.53569e+12'
+      swap(S2.n, A<->C): '5.07139e+12'
+      swap(S3.n, A<->B): '1.86502e+12'
+      swap(S3.n, B<->C): '5.93263e+11'
+      swap(S3.n, A<->C): '4.55894e+12'
+      h_vap_data(A<->B): '1.54288e+10'
+      lnk_data(A<->B): '8.55083e+11'
+      h_vap_data(B<->C): '1.54288e+10'
+      lnk_data(B<->C): '1.12431e+12'
+      h_vap_data(A<->C): '6.17151e+10'
+      lnk_data(A<->C): '3.96722e+12'
+      'phase(inlet_regime: L->V)': '1.04126e+12'
+      K at the liquid outlet's (T, P): '1.28009e+10'
+      'phase(inlet_regime: V->L)': '4.43192e+11'
+    h_liq_data_swaps_invisible_at_every_state:
+    - h_liq_data(A<->B)
+    - h_liq_data(A<->C)
+    - h_liq_data(B<->C)
+  syn001.valve:
+    states:
+      J1:
+        configuration:
+          unit: U-VLV
+          inlet: S1
+          outlet: S2
+          inlet_regime: LIQUID
+        parameters:
+          outlet_pressure: '105000.00000000000000'
+        x:
+          S1.n.A: '1.1999999999999999556'
+          S1.n.B: '0.90000000000000002220'
+          S1.n.C: '0.29999999999999998890'
+          S1.T: '355.00000000000000000'
+          S1.P: '160000.00000000000000'
+          S2.n.A: '1.1499999999999999112'
+          S2.n.B: '0.94999999999999995559'
+          S2.n.C: '0.28000000000000002665'
+          S2.T: '349.00000000000000000'
+          S2.P: '100000.00000000000000'
+          S2.vap.A: '0.29999999999999998890'
+          S2.vap.B: '0.11999999999999999556'
+          S2.vap.C: '0.020000000000000000416'
+          S2.liq.A: '0.80000000000000004441'
+          S2.liq.B: '0.84999999999999997780'
+          S2.liq.C: '0.27000000000000001776'
+          S2.V: '0.45000000000000001110'
+          S2.L: '1.8999999999999999112'
+        rows:
+          U-VLV:VLV-mole:A:
+            kind: molar_flow
+            value: '0.050000000000000044409'
+            term_scale: '2.3499999999999998668'
+          U-VLV:VLV-mole:B:
+            kind: molar_flow
+            value: '-0.049999999999999933387'
+            term_scale: '1.8499999999999999778'
+          U-VLV:VLV-mole:C:
+            kind: molar_flow
+            value: '0.019999999999999962252'
+            term_scale: '0.58000000000000001554'
+          U-VLV:VLV-P:
+            kind: pressure
+            value: '-5000.0000000000000000'
+            term_scale: '205000.00000000000000'
+          U-VLV:VLV-energy:
+            kind: heat_rate
+            value: '-10149.599999999999909'
+            term_scale: '36578.399999999999542'
+          U-VLV:VLV-equilibrium:A:
+            kind: molar_flow_squared
+            value: '-0.21594243900812965660'
+            term_scale: '1.3559424390081295611'
+          U-VLV:split:A:
+            kind: molar_flow
+            value: '-0.049999999999999877875'
+            term_scale: '2.2499999999999999445'
+          U-VLV:VLV-equilibrium:B:
+            kind: molar_flow_squared
+            value: '-0.050892681067820777901'
+            term_scale: '0.50689268106782073971'
+          U-VLV:split:B:
+            kind: molar_flow
+            value: '0.020000000000000017764'
+            term_scale: '1.9199999999999999289'
+          U-VLV:VLV-equilibrium:C:
+            kind: molar_flow_squared
+            value: '0.011897063126228257461'
+            term_scale: '0.064102936873771740569'
+          U-VLV:split:C:
+            kind: molar_flow
+            value: '0.0099999999999999915345'
+            term_scale: '0.57000000000000004483'
+          U-VLV:Vdef:
+            kind: molar_flow
+            value: '0.010000000000000026229'
+            term_scale: '0.88999999999999999598'
+          U-VLV:Ldef:
+            kind: molar_flow
+            value: '-0.020000000000000128786'
+            term_scale: '3.8199999999999999512'
+        jacobian:
+        - - U-VLV:VLV-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-VLV:VLV-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-VLV:VLV-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-VLV:VLV-P
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.P
+          - '0.00023999999999999999667'
+        - - U-VLV:VLV-energy
+          - S1.T
+          - '239.99999999999999667'
+        - - U-VLV:VLV-energy
+          - S1.n.A
+          - '5506.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.n.B
+          - '5506.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.n.C
+          - '5506.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.P
+          - '-0.00019200000000000000400'
+        - - U-VLV:VLV-energy
+          - S2.T
+          - '-236.00000000000000248'
+        - - U-VLV:VLV-energy
+          - S2.liq.A
+          - '-4900.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.liq.B
+          - '-4900.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.liq.C
+          - '-4900.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.vap.A
+          - '-29900.000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.vap.B
+          - '-34900.000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.vap.C
+          - '-39900.000000000000000'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.L
+          - '0.29999999999999998890'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.P
+          - '7.8323392473685362544e-6'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.T
+          - '-0.019401964693954035972'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.V
+          - '-1.7465387533513990877'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.liq.A
+          - '-0.98242804876016195654'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.vap.A
+          - '1.8999999999999999112'
+        - - U-VLV:split:A
+          - S2.liq.A
+          - '1.0000000000000000000'
+        - - U-VLV:split:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-VLV:split:A
+          - S2.vap.A
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.L
+          - '0.11999999999999999556'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.P
+          - '2.7793156130976326031e-6'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.T
+          - '-0.0082617744245630243494'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.V
+          - '-0.61976151348404611539'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.liq.B
+          - '-0.32810903655037737187'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.vap.B
+          - '1.8999999999999999112'
+        - - U-VLV:split:B
+          - S2.liq.B
+          - '1.0000000000000000000'
+        - - U-VLV:split:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-VLV:split:B
+          - S2.vap.B
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.L
+          - '0.020000000000000000416'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.P
+          - '2.6012980951383771919e-7'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.T
+          - '-0.00090213675747247484671'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.V
+          - '-0.058006526386159424245'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.liq.C
+          - '-0.096677543976932369766'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.vap.C
+          - '1.8999999999999999112'
+        - - U-VLV:split:C
+          - S2.liq.C
+          - '1.0000000000000000000'
+        - - U-VLV:split:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-VLV:split:C
+          - S2.vap.C
+          - '1.0000000000000000000'
+        - - U-VLV:Vdef
+          - S2.V
+          - '1.0000000000000000000'
+        - - U-VLV:Vdef
+          - S2.vap.A
+          - '-1.0000000000000000000'
+        - - U-VLV:Vdef
+          - S2.vap.B
+          - '-1.0000000000000000000'
+        - - U-VLV:Vdef
+          - S2.vap.C
+          - '-1.0000000000000000000'
+        - - U-VLV:Ldef
+          - S2.L
+          - '1.0000000000000000000'
+        - - U-VLV:Ldef
+          - S2.liq.A
+          - '-1.0000000000000000000'
+        - - U-VLV:Ldef
+          - S2.liq.B
+          - '-1.0000000000000000000'
+        - - U-VLV:Ldef
+          - S2.liq.C
+          - '-1.0000000000000000000'
+        cancelling_partials: []
+      J2:
+        configuration:
+          unit: U-VLV
+          inlet: S1
+          outlet: S2
+          inlet_regime: lifted
+        parameters:
+          outlet_pressure: '70000.000000000000000'
+        x:
+          S1.n.A: '1.1000000000000000888'
+          S1.n.B: '0.80000000000000004441'
+          S1.n.C: '0.42999999999999999334'
+          S1.T: '352.00000000000000000'
+          S1.P: '100000.00000000000000'
+          S1.vap.A: '0.20000000000000001110'
+          S1.vap.B: '0.10000000000000000555'
+          S1.vap.C: '0.029999999999999998890'
+          S1.liq.A: '0.90000000000000002220'
+          S1.liq.B: '0.69999999999999995559'
+          S1.liq.C: '0.40000000000000002220'
+          S1.V: '0.34999999999999997780'
+          S1.L: '2.0499999999999998224'
+          S2.n.A: '1.0500000000000000444'
+          S2.n.B: '0.84999999999999997780'
+          S2.n.C: '0.40000000000000002220'
+          S2.T: '343.00000000000000000'
+          S2.P: '72000.000000000000000'
+          S2.vap.A: '0.40000000000000002220'
+          S2.vap.B: '0.20000000000000001110'
+          S2.vap.C: '0.050000000000000002776'
+          S2.liq.A: '0.69999999999999995559'
+          S2.liq.B: '0.59999999999999997780'
+          S2.liq.C: '0.33000000000000001554'
+          S2.V: '0.59999999999999997780'
+          S2.L: '1.6999999999999999556'
+        rows:
+          U-VLV:VLV-mole:A:
+            kind: molar_flow
+            value: '0.050000000000000044409'
+            term_scale: '2.1500000000000001332'
+          U-VLV:VLV-mole:B:
+            kind: molar_flow
+            value: '-0.049999999999999933387'
+            term_scale: '1.6500000000000000222'
+          U-VLV:VLV-mole:C:
+            kind: molar_flow
+            value: '0.029999999999999971134'
+            term_scale: '0.83000000000000001554'
+          U-VLV:VLV-P:
+            kind: pressure
+            value: '2000.0000000000000000'
+            term_scale: '142000.00000000000000'
+          U-VLV:VLV-energy:
+            kind: heat_rate
+            value: '-6383.4360000000004350'
+            term_scale: '48715.436000000001407'
+          U-VLV:VLV-equilibrium:A:
+            kind: molar_flow_squared
+            value: '-0.41427581254691164380'
+            term_scale: '1.7742758125469116838'
+          U-VLV:split:A:
+            kind: molar_flow
+            value: '0.049999999999999933387'
+            term_scale: '2.1500000000000000222'
+          U-VLV:VLV-equilibrium:B:
+            kind: molar_flow_squared
+            value: '0.036046547192244528278'
+            term_scale: '0.64395345280775549171'
+          U-VLV:split:B:
+            kind: molar_flow
+            value: '-0.049999999999999988898'
+            term_scale: '1.6499999999999999667'
+          U-VLV:VLV-equilibrium:C:
+            kind: molar_flow_squared
+            value: '0.037204520748907569432'
+            term_scale: '0.13279547925109243556'
+          U-VLV:split:C:
+            kind: molar_flow
+            value: '-0.020000000000000003886'
+            term_scale: '0.78000000000000004052'
+          U-VLV:Vdef:
+            kind: molar_flow
+            value: '-0.050000000000000058287'
+            term_scale: '1.2500000000000000139'
+          U-VLV:Ldef:
+            kind: molar_flow
+            value: '0.070000000000000006661'
+            term_scale: '3.3299999999999999045'
+        jacobian:
+        - - U-VLV:VLV-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-VLV:VLV-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-VLV:VLV-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-VLV:VLV-P
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.P
+          - '0.00020000000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.T
+          - '233.00000000000000155'
+        - - U-VLV:VLV-energy
+          - S1.liq.A
+          - '5200.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.liq.B
+          - '5200.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.liq.C
+          - '5200.0000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.vap.A
+          - '30200.000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.vap.B
+          - '35200.000000000000000'
+        - - U-VLV:VLV-energy
+          - S1.vap.C
+          - '40200.000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.P
+          - '-0.00016299999999999999489'
+        - - U-VLV:VLV-energy
+          - S2.T
+          - '-227.99999999999999850'
+        - - U-VLV:VLV-energy
+          - S2.liq.A
+          - '-4297.2000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.liq.B
+          - '-4297.2000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.liq.C
+          - '-4297.2000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.vap.A
+          - '-29300.000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.vap.B
+          - '-34300.000000000000000'
+        - - U-VLV:VLV-energy
+          - S2.vap.C
+          - '-39300.000000000000000'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.L
+          - '0.40000000000000002220'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.P
+          - '0.000015159904582705428852'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.T
+          - '-0.027970035760559442531'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.V
+          - '-1.8237930209115195071'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.liq.A
+          - '-1.5632511607813024760'
+        - - U-VLV:VLV-equilibrium:A
+          - S2.vap.A
+          - '1.6999999999999999556'
+        - - U-VLV:split:A
+          - S2.liq.A
+          - '1.0000000000000000000'
+        - - U-VLV:split:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-VLV:split:A
+          - S2.vap.A
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.L
+          - '0.20000000000000001110'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.P
+          - '4.2109176583411775578e-6'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.T
+          - '-0.0093228016211779480931'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.V
+          - '-0.50658908801292582160'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.liq.B
+          - '-0.50658908801292582160'
+        - - U-VLV:VLV-equilibrium:B
+          - S2.vap.B
+          - '1.6999999999999999556'
+        - - U-VLV:split:B
+          - S2.liq.B
+          - '1.0000000000000000000'
+        - - U-VLV:split:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-VLV:split:B
+          - S2.vap.B
+          - '1.0000000000000000000'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.L
+          - '0.050000000000000002776'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.P
+          - '6.6215016052013472508e-7'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.T
+          - '-0.0017102798619362851327'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.V
+          - '-0.079659132085154058058'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.liq.C
+          - '-0.14483478560937100247'
+        - - U-VLV:VLV-equilibrium:C
+          - S2.vap.C
+          - '1.6999999999999999556'
+        - - U-VLV:split:C
+          - S2.liq.C
+          - '1.0000000000000000000'
+        - - U-VLV:split:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-VLV:split:C
+          - S2.vap.C
+          - '1.0000000000000000000'
+        - - U-VLV:Vdef
+          - S2.V
+          - '1.0000000000000000000'
+        - - U-VLV:Vdef
+          - S2.vap.A
+          - '-1.0000000000000000000'
+        - - U-VLV:Vdef
+          - S2.vap.B
+          - '-1.0000000000000000000'
+        - - U-VLV:Vdef
+          - S2.vap.C
+          - '-1.0000000000000000000'
+        - - U-VLV:Ldef
+          - S2.L
+          - '1.0000000000000000000'
+        - - U-VLV:Ldef
+          - S2.liq.A
+          - '-1.0000000000000000000'
+        - - U-VLV:Ldef
+          - S2.liq.B
+          - '-1.0000000000000000000'
+        - - U-VLV:Ldef
+          - S2.liq.C
+          - '-1.0000000000000000000'
+        cancelling_partials: []
+    min_term_visibility: '0.0291094'
+    mutation_detection_ratio_min: '7.18458e+9'
+    mutations_invisible_by_fixture_degeneracy:
+    - swap(S1.liq, A<->B)
+    - swap(S1.liq, A<->C)
+    - swap(S1.liq, B<->C)
+    mutations:
+      swap(S1.n, A<->B): '1.81818e+11'
+      swap(S1.n, B<->C): '1.03448e+12'
+      swap(S1.n, A<->C): '1.55172e+12'
+      swap(S2.liq, A<->B): '8.81064e+10'
+      swap(S2.liq, B<->C): '1.01754e+12'
+      swap(S2.liq, A<->C): '9.29825e+11'
+      swap(S2.n, A<->B): '1.21212e+11'
+      swap(S2.n, B<->C): '1.17544e+12'
+      swap(S2.n, A<->C): '1.52632e+12'
+      swap(S2.vap, A<->B): '6.74699e+11'
+      swap(S2.vap, B<->C): '2.96398e+12'
+      swap(S2.vap, A<->C): '8.29915e+12'
+      h_vap_data(A<->B): '2.46047e+10'
+      lnk_data(A<->B): '1.09722e+12'
+      h_vap_data(B<->C): '1.36693e+10'
+      lnk_data(B<->C): '9.74784e+11'
+      h_vap_data(A<->C): '7.65479e+10'
+      lnk_data(A<->C): '3.73076e+12'
+      'phase(inlet_regime: L->V)': '1.84496e+12'
+      swap(S1.liq, A<->B): '0.0'
+      swap(S1.liq, B<->C): '0.0'
+      swap(S1.liq, A<->C): '0.0'
+      swap(S1.vap, A<->B): '1.02637e+10'
+      swap(S1.vap, B<->C): '7.18458e+9'
+      swap(S1.vap, A<->C): '3.48965e+10'
+    h_liq_data_swaps_invisible_at_every_state:
+    - h_liq_data(A<->B)
+    - h_liq_data(A<->C)
+    - h_liq_data(B<->C)
+  syn001.liquid_pump:
+    states:
+      J1:
+        configuration:
+          unit: U-PUMP
+          inlet: S1
+          outlet: S2
+        parameters:
+          outlet_pressure: '175000.00000000000000'
+          efficiency: '0.75000000000000000000'
+        x:
+          S1.n.A: '1.1999999999999999556'
+          S1.n.B: '0.90000000000000002220'
+          S1.n.C: '0.29999999999999998890'
+          S1.T: '310.00000000000000000'
+          S1.P: '95000.000000000000000'
+          S2.n.A: '1.1000000000000000888'
+          S2.n.B: '0.94999999999999995559'
+          S2.n.C: '0.34999999999999997780'
+          S2.T: '311.00000000000000000'
+          S2.P: '170000.00000000000000'
+          U-PUMP.W: '30.000000000000000000'
+        rows:
+          U-PUMP:PUMP-mole:A:
+            kind: molar_flow
+            value: '0.099999999999999866773'
+            term_scale: '2.3000000000000000444'
+          U-PUMP:PUMP-mole:B:
+            kind: molar_flow
+            value: '-0.049999999999999933387'
+            term_scale: '1.8499999999999999778'
+          U-PUMP:PUMP-mole:C:
+            kind: molar_flow
+            value: '-0.049999999999999988898'
+            term_scale: '0.64999999999999996669'
+          U-PUMP:PUMP-P:
+            kind: pressure
+            value: '-5000.0000000000000000'
+            term_scale: '345000.00000000000000'
+          U-PUMP:PUMP-work:
+            kind: heat_rate
+            value: '4.5000000000000002498'
+            term_scale: '4838.0999999999999332'
+          U-PUMP:PUMP-energy:
+            kind: heat_rate
+            value: '-228.00000000000005787'
+            term_scale: '5085.5999999999999913'
+        jacobian:
+        - - U-PUMP:PUMP-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-PUMP:PUMP-P
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-PUMP:PUMP-work
+          - S1.P
+          - '0.00023999999999999999667'
+        - - U-PUMP:PUMP-work
+          - S1.n.A
+          - '-7.5000000000000000000'
+        - - U-PUMP:PUMP-work
+          - S1.n.B
+          - '-7.5000000000000000000'
+        - - U-PUMP:PUMP-work
+          - S1.n.C
+          - '-7.5000000000000000000'
+        - - U-PUMP:PUMP-work
+          - S2.P
+          - '-0.00023999999999999999667'
+        - - U-PUMP:PUMP-work
+          - U-PUMP.W
+          - '0.75000000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S1.P
+          - '0.00023999999999999999667'
+        - - U-PUMP:PUMP-energy
+          - S1.T
+          - '239.99999999999999667'
+        - - U-PUMP:PUMP-energy
+          - S1.n.A
+          - '999.50000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S1.n.B
+          - '999.50000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S1.n.C
+          - '999.50000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S2.P
+          - '-0.00024000000000000000222'
+        - - U-PUMP:PUMP-energy
+          - S2.T
+          - '-240.00000000000000222'
+        - - U-PUMP:PUMP-energy
+          - S2.n.A
+          - '-1107.0000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S2.n.B
+          - '-1107.0000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S2.n.C
+          - '-1107.0000000000000000'
+        - - U-PUMP:PUMP-energy
+          - U-PUMP.W
+          - '1.0000000000000000000'
+        cancelling_partials:
+        - - U-PUMP:PUMP-work
+          - S1.T
+          - '480.000'
+      J2:
+        configuration:
+          unit: U-PUMP
+          inlet: S1
+          outlet: S2
+        parameters:
+          outlet_pressure: '190000.00000000000000'
+          efficiency: '0.59999999999999997780'
+        x:
+          S1.n.A: '0.29999999999999998890'
+          S1.n.B: '0.55000000000000004441'
+          S1.n.C: '0.80000000000000004441'
+          S1.T: '355.00000000000000000'
+          S1.P: '60000.000000000000000'
+          S2.n.A: '0.34999999999999997780'
+          S2.n.B: '0.50000000000000000000'
+          S2.n.C: '0.84999999999999997780'
+          S2.T: '356.00000000000000000'
+          S2.P: '185000.00000000000000'
+          U-PUMP.W: '55.000000000000000000'
+        rows:
+          U-PUMP:PUMP-mole:A:
+            kind: molar_flow
+            value: '-0.049999999999999988898'
+            term_scale: '0.64999999999999996669'
+          U-PUMP:PUMP-mole:B:
+            kind: molar_flow
+            value: '0.050000000000000044409'
+            term_scale: '1.0500000000000000444'
+          U-PUMP:PUMP-mole:C:
+            kind: molar_flow
+            value: '-0.049999999999999933387'
+            term_scale: '1.6500000000000000222'
+          U-PUMP:PUMP-P:
+            kind: pressure
+            value: '-5000.0000000000000000'
+            term_scale: '375000.00000000000000'
+          U-PUMP:PUMP-work:
+            kind: heat_rate
+            value: '12.374999999999997807'
+            term_scale: '18190.425000000000854'
+          U-PUMP:PUMP-energy:
+            kind: heat_rate
+            value: '-411.04999999999932381'
+            term_scale: '18657.850000000000178'
+        jacobian:
+        - - U-PUMP:PUMP-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-PUMP:PUMP-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-PUMP:PUMP-P
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-PUMP:PUMP-work
+          - S1.P
+          - '0.00016500000000000000777'
+        - - U-PUMP:PUMP-work
+          - S1.n.A
+          - '-12.500000000000000000'
+        - - U-PUMP:PUMP-work
+          - S1.n.B
+          - '-12.500000000000000000'
+        - - U-PUMP:PUMP-work
+          - S1.n.C
+          - '-12.500000000000000000'
+        - - U-PUMP:PUMP-work
+          - S2.P
+          - '-0.00016500000000000000777'
+        - - U-PUMP:PUMP-work
+          - U-PUMP.W
+          - '0.59999999999999997780'
+        - - U-PUMP:PUMP-energy
+          - S1.P
+          - '0.00016500000000000000777'
+        - - U-PUMP:PUMP-energy
+          - S1.T
+          - '165.00000000000000777'
+        - - U-PUMP:PUMP-energy
+          - S1.n.A
+          - '5496.0000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S1.n.B
+          - '5496.0000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S1.n.C
+          - '5496.0000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S2.P
+          - '-0.00016999999999999999556'
+        - - U-PUMP:PUMP-energy
+          - S2.T
+          - '-169.99999999999999556'
+        - - U-PUMP:PUMP-energy
+          - S2.n.A
+          - '-5608.5000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S2.n.B
+          - '-5608.5000000000000000'
+        - - U-PUMP:PUMP-energy
+          - S2.n.C
+          - '-5608.5000000000000000'
+        - - U-PUMP:PUMP-energy
+          - U-PUMP.W
+          - '1.0000000000000000000'
+        cancelling_partials:
+        - - U-PUMP:PUMP-work
+          - S1.T
+          - '330.000'
+    min_term_visibility: '0.00465059'
+    mutation_detection_ratio_min: '2.48031e+9'
+    mutations_invisible_by_fixture_degeneracy: []
+    mutations:
+      swap(S1.n, A<->B): '3.84615e+11'
+      swap(S1.n, B<->C): '9.23077e+11'
+      swap(S1.n, A<->C): '1.38462e+12'
+      swap(S2.n, A<->B): '2.30769e+11'
+      swap(S2.n, B<->C): '9.23077e+11'
+      swap(S2.n, A<->C): '1.15385e+12'
+      work relation eta on the ideal work: '2.48031e+9'
+    h_liq_data_swaps_invisible_at_every_state:
+    - h_liq_data(A<->B)
+    - h_liq_data(A<->C)
+    - h_liq_data(B<->C)
+  syn001.conversion_reactor:
+    states:
+      J1:
+        configuration:
+          unit: U-RX
+          inlet: S1
+          outlet: S2
+          inlet_regime: LIQUID
+          key: 0
+          mode: outlet_temperature
+        parameters:
+          nu:
+          - '-2.0000000000000000000'
+          - '-1.0000000000000000000'
+          - '3.0000000000000000000'
+          conversion: '0.50000000000000000000'
+          pressure_drop: '3000.0000000000000000'
+          outlet_temperature: '365.00000000000000000'
+        x:
+          S1.n.A: '1.1999999999999999556'
+          S1.n.B: '0.90000000000000002220'
+          S1.n.C: '0.29999999999999998890'
+          S1.T: '320.00000000000000000'
+          S1.P: '110000.00000000000000'
+          S2.n.A: '0.65000000000000002220'
+          S2.n.B: '0.55000000000000004441'
+          S2.n.C: '1.2500000000000000000'
+          S2.T: '362.00000000000000000'
+          S2.P: '104000.00000000000000'
+          S2.vap.A: '0.25000000000000000000'
+          S2.vap.B: '0.14999999999999999445'
+          S2.vap.C: '0.20000000000000001110'
+          S2.liq.A: '0.34999999999999997780'
+          S2.liq.B: '0.45000000000000001110'
+          S2.liq.C: '1.1000000000000000888'
+          S2.V: '0.55000000000000004441'
+          S2.L: '1.9499999999999999556'
+          U-RX.Q: '41000.000000000000000'
+          U-RX.xi: '0.28000000000000002665'
+        rows:
+          U-RX:RX-mole:A:
+            kind: molar_flow
+            value: '-0.010000000000000119904'
+            term_scale: '2.4100000000000000311'
+          U-RX:RX-mole:B:
+            kind: molar_flow
+            value: '0.069999999999999951150'
+            term_scale: '1.7300000000000000933'
+          U-RX:RX-mole:C:
+            kind: molar_flow
+            value: '-0.10999999999999993117'
+            term_scale: '2.3900000000000000688'
+          U-RX:RX-conversion:
+            kind: molar_flow
+            value: '-0.019999999999999962252'
+            term_scale: '0.58000000000000001554'
+          U-RX:RX-pressure:
+            kind: pressure
+            value: '-3000.0000000000000000'
+            term_scale: '217000.00000000000000'
+          U-RX:RX-equilibrium:A:
+            kind: molar_flow_squared
+            value: '-0.063196702449881777137'
+            term_scale: '1.0381967024498817549'
+          U-RX:split:A:
+            kind: molar_flow
+            value: '-0.050000000000000044409'
+            term_scale: '1.2500000000000000000'
+          U-RX:RX-equilibrium:B:
+            kind: molar_flow_squared
+            value: '0.040936163866741047136'
+            term_scale: '0.54406383613325891789'
+          U-RX:split:B:
+            kind: molar_flow
+            value: '0.049999999999999961142'
+            term_scale: '1.1500000000000000500'
+          U-RX:RX-equilibrium:C:
+            kind: molar_flow_squared
+            value: '0.19724323788866183071'
+            term_scale: '0.58275676211133819482'
+          U-RX:split:C:
+            kind: molar_flow
+            value: '0.050000000000000099920'
+            term_scale: '2.5500000000000000999'
+          U-RX:Vdef:
+            kind: molar_flow
+            value: '-0.049999999999999961142'
+            term_scale: '1.1500000000000000500'
+          U-RX:Ldef:
+            kind: molar_flow
+            value: '0.049999999999999877875'
+            term_scale: '3.8500000000000000333'
+          U-RX:RX-duty:
+            kind: heat_rate
+            value: '12551.639999999999195'
+            term_scale: '79053.160000000000672'
+          U-RX:RX-spec:
+            kind: temperature
+            value: '-3.0000000000000000000'
+            term_scale: '727.00000000000000000'
+        jacobian:
+        - - U-RX:RX-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-RX:RX-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-RX:RX-mole:A
+          - U-RX.xi
+          - '-2.0000000000000000000'
+        - - U-RX:RX-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-RX:RX-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-RX:RX-mole:B
+          - U-RX.xi
+          - '-1.0000000000000000000'
+        - - U-RX:RX-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-RX:RX-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-RX:RX-mole:C
+          - U-RX.xi
+          - '3.0000000000000000000'
+        - - U-RX:RX-conversion
+          - S1.n.A
+          - '-0.25000000000000000000'
+        - - U-RX:RX-conversion
+          - U-RX.xi
+          - '1.0000000000000000000'
+        - - U-RX:RX-pressure
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-RX:RX-pressure
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-RX:RX-equilibrium:A
+          - S2.L
+          - '0.25000000000000000000'
+        - - U-RX:RX-equilibrium:A
+          - S2.P
+          - '5.2768640288448504211e-6'
+        - - U-RX:RX-equilibrium:A
+          - S2.T
+          - '-0.012635551719361732134'
+        - - U-RX:RX-equilibrium:A
+          - S2.V
+          - '-1.0012667317270576756'
+        - - U-RX:RX-equilibrium:A
+          - S2.liq.A
+          - '-1.5734191498568051456'
+        - - U-RX:RX-equilibrium:A
+          - S2.vap.A
+          - '1.9499999999999999556'
+        - - U-RX:split:A
+          - S2.liq.A
+          - '1.0000000000000000000'
+        - - U-RX:split:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-RX:split:A
+          - S2.vap.A
+          - '1.0000000000000000000'
+        - - U-RX:RX-equilibrium:B
+          - S2.L
+          - '0.14999999999999999445'
+        - - U-RX:RX-equilibrium:B
+          - S2.P
+          - '2.4105249803463745242e-6'
+        - - U-RX:RX-equilibrium:B
+          - S2.T
+          - '-0.0069264762063877633029'
+        - - U-RX:RX-equilibrium:B
+          - S2.V
+          - '-0.45738879296956166376'
+        - - U-RX:RX-equilibrium:B
+          - S2.liq.B
+          - '-0.55903074696279762038'
+        - - U-RX:RX-equilibrium:B
+          - S2.vap.B
+          - '1.9499999999999999556'
+        - - U-RX:split:B
+          - S2.liq.B
+          - '1.0000000000000000000'
+        - - U-RX:split:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-RX:split:B
+          - S2.vap.B
+          - '1.0000000000000000000'
+        - - U-RX:RX-equilibrium:C
+          - S2.L
+          - '0.20000000000000001110'
+        - - U-RX:RX-equilibrium:C
+          - S2.P
+          - '1.8470261757096577230e-6'
+        - - U-RX:RX-equilibrium:C
+          - S2.T
+          - '-0.0061918635512503311117'
+        - - U-RX:RX-equilibrium:C
+          - S2.V
+          - '-0.35046684020243302999'
+        - - U-RX:RX-equilibrium:C
+          - S2.liq.C
+          - '-0.17523342010121651499'
+        - - U-RX:RX-equilibrium:C
+          - S2.vap.C
+          - '1.9499999999999999556'
+        - - U-RX:split:C
+          - S2.liq.C
+          - '1.0000000000000000000'
+        - - U-RX:split:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-RX:split:C
+          - S2.vap.C
+          - '1.0000000000000000000'
+        - - U-RX:Vdef
+          - S2.V
+          - '1.0000000000000000000'
+        - - U-RX:Vdef
+          - S2.vap.A
+          - '-1.0000000000000000000'
+        - - U-RX:Vdef
+          - S2.vap.B
+          - '-1.0000000000000000000'
+        - - U-RX:Vdef
+          - S2.vap.C
+          - '-1.0000000000000000000'
+        - - U-RX:Ldef
+          - S2.L
+          - '1.0000000000000000000'
+        - - U-RX:Ldef
+          - S2.liq.A
+          - '-1.0000000000000000000'
+        - - U-RX:Ldef
+          - S2.liq.B
+          - '-1.0000000000000000000'
+        - - U-RX:Ldef
+          - S2.liq.C
+          - '-1.0000000000000000000'
+        - - U-RX:RX-duty
+          - S1.P
+          - '0.00023999999999999999667'
+        - - U-RX:RX-duty
+          - S1.T
+          - '239.99999999999999667'
+        - - U-RX:RX-duty
+          - S1.n.A
+          - '2001.0000000000000000'
+        - - U-RX:RX-duty
+          - S1.n.B
+          - '2001.0000000000000000'
+        - - U-RX:RX-duty
+          - S1.n.C
+          - '2001.0000000000000000'
+        - - U-RX:RX-duty
+          - S2.P
+          - '-0.00019000000000000000777'
+        - - U-RX:RX-duty
+          - S2.T
+          - '-250.00000000000000833'
+        - - U-RX:RX-duty
+          - S2.liq.A
+          - '-6200.4000000000000000'
+        - - U-RX:RX-duty
+          - S2.liq.B
+          - '-6200.4000000000000000'
+        - - U-RX:RX-duty
+          - S2.liq.C
+          - '-6200.4000000000000000'
+        - - U-RX:RX-duty
+          - S2.vap.A
+          - '-31200.000000000000000'
+        - - U-RX:RX-duty
+          - S2.vap.B
+          - '-36200.000000000000000'
+        - - U-RX:RX-duty
+          - S2.vap.C
+          - '-41200.000000000000000'
+        - - U-RX:RX-duty
+          - U-RX.Q
+          - '1.0000000000000000000'
+        - - U-RX:RX-spec
+          - S2.T
+          - '1.0000000000000000000'
+        cancelling_partials: []
+      J2:
+        configuration:
+          unit: U-RX
+          inlet: S1
+          outlet: S2
+          inlet_regime: VAPOR
+          key: 1
+          mode: duty
+        parameters:
+          nu:
+          - '-2.0000000000000000000'
+          - '-1.0000000000000000000'
+          - '3.0000000000000000000'
+          conversion: '0.40000000000000002220'
+          pressure_drop: '0.0'
+          duty: '-5000.0000000000000000'
+        x:
+          S1.n.A: '1.3000000000000000444'
+          S1.n.B: '1.1000000000000000888'
+          S1.n.C: '0.59999999999999997780'
+          S1.T: '425.00000000000000000'
+          S1.P: '95000.000000000000000'
+          S2.n.A: '0.50000000000000000000'
+          S2.n.B: '0.69999999999999995559'
+          S2.n.C: '1.8000000000000000444'
+          S2.T: '405.00000000000000000'
+          S2.P: '95500.000000000000000'
+          S2.vap.A: '0.45000000000000001110'
+          S2.vap.B: '0.59999999999999997780'
+          S2.vap.C: '1.3000000000000000444'
+          S2.liq.A: '0.029999999999999998890'
+          S2.liq.B: '0.080000000000000001665'
+          S2.liq.C: '0.45000000000000001110'
+          S2.V: '2.3999999999999999112'
+          S2.L: '0.59999999999999997780'
+          U-RX.Q: '-4000.0000000000000000'
+          U-RX.xi: '0.42999999999999999334'
+        rows:
+          U-RX:RX-mole:A:
+            kind: molar_flow
+            value: '-0.059999999999999942268'
+            term_scale: '2.6600000000000000311'
+          U-RX:RX-mole:B:
+            kind: molar_flow
+            value: '-0.029999999999999860112'
+            term_scale: '2.2300000000000000377'
+          U-RX:RX-mole:C:
+            kind: molar_flow
+            value: '0.089999999999999913403'
+            term_scale: '3.6900000000000000022'
+          U-RX:RX-conversion:
+            kind: molar_flow
+            value: '-0.010000000000000066613'
+            term_scale: '0.87000000000000005329'
+          U-RX:RX-pressure:
+            kind: pressure
+            value: '500.00000000000000000'
+            term_scale: '190500.00000000000000'
+          U-RX:RX-equilibrium:A:
+            kind: molar_flow_squared
+            value: '-0.27165794920916794493'
+            term_scale: '0.81165794920916793827'
+          U-RX:split:A:
+            kind: molar_flow
+            value: '-0.019999999999999990008'
+            term_scale: '0.98000000000000000999'
+          U-RX:RX-equilibrium:B:
+            kind: molar_flow_squared
+            value: '-0.25218748990047303017'
+            term_scale: '0.97218748990047297688'
+          U-RX:split:B:
+            kind: molar_flow
+            value: '-0.019999999999999976130'
+            term_scale: '1.3799999999999999351'
+          U-RX:RX-equilibrium:C:
+            kind: molar_flow_squared
+            value: '-0.50761952475935300020'
+            term_scale: '2.0676195247593529958'
+          U-RX:split:C:
+            kind: molar_flow
+            value: '-0.049999999999999988898'
+            term_scale: '3.5500000000000000999'
+          U-RX:Vdef:
+            kind: molar_flow
+            value: '0.049999999999999877875'
+            term_scale: '4.7499999999999999445'
+          U-RX:Ldef:
+            kind: molar_flow
+            value: '0.039999999999999966138'
+            term_scale: '1.1599999999999999895'
+          U-RX:RX-duty:
+            kind: heat_rate
+            value: '14695.252000000002748'
+            term_scale: '233304.74800000000602'
+          U-RX:RX-spec:
+            kind: heat_rate
+            value: '1000.0000000000000000'
+            term_scale: '9000.0000000000000000'
+        jacobian:
+        - - U-RX:RX-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-RX:RX-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-RX:RX-mole:A
+          - U-RX.xi
+          - '-2.0000000000000000000'
+        - - U-RX:RX-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-RX:RX-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-RX:RX-mole:B
+          - U-RX.xi
+          - '-1.0000000000000000000'
+        - - U-RX:RX-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-RX:RX-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-RX:RX-mole:C
+          - U-RX.xi
+          - '3.0000000000000000000'
+        - - U-RX:RX-conversion
+          - S1.n.B
+          - '-0.40000000000000002220'
+        - - U-RX:RX-conversion
+          - U-RX.xi
+          - '1.0000000000000000000'
+        - - U-RX:RX-pressure
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-RX:RX-pressure
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-RX:RX-equilibrium:A
+          - S2.L
+          - '0.45000000000000001110'
+        - - U-RX:RX-equilibrium:A
+          - S2.P
+          - '5.6557254365626932235e-6'
+        - - U-RX:RX-equilibrium:A
+          - S2.T
+          - '-0.0099295305312588230309'
+        - - U-RX:RX-equilibrium:A
+          - S2.V
+          - '-0.22569081217048665069'
+        - - U-RX:RX-equilibrium:A
+          - S2.liq.A
+          - '-18.055264973638932055'
+        - - U-RX:RX-equilibrium:A
+          - S2.vap.A
+          - '0.59999999999999997780'
+        - - U-RX:split:A
+          - S2.liq.A
+          - '1.0000000000000000000'
+        - - U-RX:split:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-RX:split:A
+          - S2.vap.A
+          - '1.0000000000000000000'
+        - - U-RX:RX-equilibrium:B
+          - S2.L
+          - '0.59999999999999997780'
+        - - U-RX:RX-equilibrium:B
+          - S2.P
+          - '6.3921601513107989953e-6'
+        - - U-RX:RX-equilibrium:B
+          - S2.T
+          - '-0.013466910942202473193'
+        - - U-RX:RX-equilibrium:B
+          - S2.V
+          - '-0.25507812079186376091'
+        - - U-RX:RX-equilibrium:B
+          - S2.liq.B
+          - '-7.6523436237559123848'
+        - - U-RX:RX-equilibrium:B
+          - S2.vap.B
+          - '0.59999999999999997780'
+        - - U-RX:split:B
+          - S2.liq.B
+          - '1.0000000000000000000'
+        - - U-RX:split:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-RX:split:B
+          - S2.vap.B
+          - '1.0000000000000000000'
+        - - U-RX:RX-equilibrium:C
+          - S2.L
+          - '1.3000000000000000444'
+        - - U-RX:RX-equilibrium:C
+          - S2.P
+          - '0.000013444688681166278709'
+        - - U-RX:RX-equilibrium:C
+          - S2.T
+          - '-0.033045851740452958751'
+        - - U-RX:RX-equilibrium:C
+          - S2.V
+          - '-0.53650813531639710235'
+        - - U-RX:RX-equilibrium:C
+          - S2.liq.C
+          - '-2.8613767216874510360'
+        - - U-RX:RX-equilibrium:C
+          - S2.vap.C
+          - '0.59999999999999997780'
+        - - U-RX:split:C
+          - S2.liq.C
+          - '1.0000000000000000000'
+        - - U-RX:split:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-RX:split:C
+          - S2.vap.C
+          - '1.0000000000000000000'
+        - - U-RX:Vdef
+          - S2.V
+          - '1.0000000000000000000'
+        - - U-RX:Vdef
+          - S2.vap.A
+          - '-1.0000000000000000000'
+        - - U-RX:Vdef
+          - S2.vap.B
+          - '-1.0000000000000000000'
+        - - U-RX:Vdef
+          - S2.vap.C
+          - '-1.0000000000000000000'
+        - - U-RX:Ldef
+          - S2.L
+          - '1.0000000000000000000'
+        - - U-RX:Ldef
+          - S2.liq.A
+          - '-1.0000000000000000000'
+        - - U-RX:Ldef
+          - S2.liq.B
+          - '-1.0000000000000000000'
+        - - U-RX:Ldef
+          - S2.liq.C
+          - '-1.0000000000000000000'
+        - - U-RX:RX-duty
+          - S1.T
+          - '300.00000000000001110'
+        - - U-RX:RX-duty
+          - S1.n.A
+          - '37500.000000000000000'
+        - - U-RX:RX-duty
+          - S1.n.B
+          - '42500.000000000000000'
+        - - U-RX:RX-duty
+          - S1.n.C
+          - '47500.000000000000000'
+        - - U-RX:RX-duty
+          - S2.P
+          - '-0.000056000000000000001166'
+        - - U-RX:RX-duty
+          - S2.T
+          - '-291.00000000000000450'
+        - - U-RX:RX-duty
+          - S2.liq.A
+          - '-10499.550000000000000'
+        - - U-RX:RX-duty
+          - S2.liq.B
+          - '-10499.550000000000000'
+        - - U-RX:RX-duty
+          - S2.liq.C
+          - '-10499.550000000000000'
+        - - U-RX:RX-duty
+          - S2.vap.A
+          - '-35500.000000000000000'
+        - - U-RX:RX-duty
+          - S2.vap.B
+          - '-40500.000000000000000'
+        - - U-RX:RX-duty
+          - S2.vap.C
+          - '-45500.000000000000000'
+        - - U-RX:RX-duty
+          - U-RX.Q
+          - '1.0000000000000000000'
+        - - U-RX:RX-spec
+          - U-RX.Q
+          - '1.0000000000000000000'
+        cancelling_partials: []
+    min_term_visibility: '0.0138249'
+    mutation_detection_ratio_min: '7.50092e+9'
+    mutations_invisible_by_fixture_degeneracy: []
+    mutations:
+      swap(S1.n, A<->B): '1.73410e+11'
+      swap(S1.n, B<->C): '3.46821e+11'
+      swap(S1.n, A<->C): '3.87931e+11'
+      swap(S2.liq, A<->B): '1.11225e+12'
+      swap(S2.liq, B<->C): '2.91237e+12'
+      swap(S2.liq, A<->C): '9.34287e+12'
+      swap(S2.n, A<->B): '2.04082e+11'
+      swap(S2.n, B<->C): '7.97101e+11'
+      swap(S2.n, A<->C): '1.32653e+12'
+      swap(S2.vap, A<->B): '3.58414e+11'
+      swap(S2.vap, B<->C): '5.07246e+11'
+      swap(S2.vap, A<->C): '8.67347e+11'
+      h_vap_data(A<->B): '7.50092e+9'
+      lnk_data(A<->B): '8.56042e+11'
+      h_vap_data(B<->C): '2.57174e+10'
+      lnk_data(B<->C): '1.04271e+12'
+      h_vap_data(A<->C): '6.64367e+10'
+      lnk_data(A<->C): '3.30682e+12'
+      'phase(inlet_regime: L->V)': '8.53825e+11'
+      nu(A<->B): '5.17241e+11'
+      nu(B<->C): '7.71300e+11'
+      nu(A<->C): '8.62069e+11'
+      key(A->B): '2.58621e+11'
+      conversion(X -> 1 - X): '2.52874e+11'
+      extent without 1/|nu_key|: '5.17241e+11'
+      'phase(inlet_regime: V->L)': '3.70766e+11'
+      key(B->A): '2.06897e+11'
+    h_liq_data_swaps_invisible_at_every_state:
+    - h_liq_data(A<->B)
+    - h_liq_data(A<->C)
+    - h_liq_data(B<->C)
+  syn001.component_separator:
+    states:
+      J1:
+        configuration:
+          unit: U-SEP
+          inlet: S1
+          top: S2
+          bottom: S3
+          inlet_regime: LIQUID
+          top_phase: VAPOR
+          bottom_phase: LIQUID
+        parameters:
+          split:
+          - '0.94999999999999995559'
+          - '0.29999999999999998890'
+          - '0.050000000000000002776'
+        x:
+          S1.n.A: '1.0000000000000000000'
+          S1.n.B: '1.1000000000000000888'
+          S1.n.C: '0.90000000000000002220'
+          S1.T: '344.00000000000000000'
+          S1.P: '100000.00000000000000'
+          S2.n.A: '0.90000000000000002220'
+          S2.n.B: '0.34999999999999997780'
+          S2.n.C: '0.059999999999999997780'
+          S2.T: '345.00000000000000000'
+          S2.P: '101000.00000000000000'
+          S3.n.A: '0.11999999999999999556'
+          S3.n.B: '0.80000000000000004441'
+          S3.n.C: '0.82999999999999996003'
+          S3.T: '343.00000000000000000'
+          S3.P: '99000.000000000000000'
+          U-SEP.Q: '30000.000000000000000'
+        rows:
+          U-SEP:SEP-mole:A:
+            kind: molar_flow
+            value: '-0.020000000000000017764'
+            term_scale: '2.0200000000000000178'
+          U-SEP:SEP-mole:B:
+            kind: molar_flow
+            value: '-0.049999999999999933387'
+            term_scale: '2.2500000000000001110'
+          U-SEP:SEP-mole:C:
+            kind: molar_flow
+            value: '0.010000000000000064393'
+            term_scale: '1.7899999999999999800'
+          U-SEP:SEP-split:A:
+            kind: molar_flow
+            value: '-0.049999999999999933387'
+            term_scale: '1.8499999999999999778'
+          U-SEP:SEP-split:B:
+            kind: molar_flow
+            value: '0.019999999999999963363'
+            term_scale: '0.67999999999999999223'
+          U-SEP:SEP-split:C:
+            kind: molar_flow
+            value: '0.014999999999999994171'
+            term_scale: '0.10500000000000000139'
+          U-SEP:SEP-T:top:
+            kind: temperature
+            value: '1.0000000000000000000'
+            term_scale: '689.00000000000000000'
+          U-SEP:SEP-T:bottom:
+            kind: temperature
+            value: '-1.0000000000000000000'
+            term_scale: '687.00000000000000000'
+          U-SEP:SEP-P:top:
+            kind: pressure
+            value: '1000.0000000000000000'
+            term_scale: '201000.00000000000000'
+          U-SEP:SEP-P:bottom:
+            kind: pressure
+            value: '-1000.0000000000000000'
+            term_scale: '199000.00000000000000'
+          U-SEP:SEP-duty:
+            kind: heat_rate
+            value: '-5319.8249999999993128'
+            term_scale: '91719.825000000000290'
+        jacobian:
+        - - U-SEP:SEP-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:A
+          - S3.n.A
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:B
+          - S3.n.B
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:C
+          - S3.n.C
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-split:A
+          - S1.n.A
+          - '-0.94999999999999995559'
+        - - U-SEP:SEP-split:A
+          - S2.n.A
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-split:B
+          - S1.n.B
+          - '-0.29999999999999998890'
+        - - U-SEP:SEP-split:B
+          - S2.n.B
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-split:C
+          - S1.n.C
+          - '-0.050000000000000002776'
+        - - U-SEP:SEP-split:C
+          - S2.n.C
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-T:top
+          - S1.T
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-T:top
+          - S2.T
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-T:bottom
+          - S1.T
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-T:bottom
+          - S3.T
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-P:top
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-P:top
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-P:bottom
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-P:bottom
+          - S3.P
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.P
+          - '0.00030000000000000001110'
+        - - U-SEP:SEP-duty
+          - S1.T
+          - '300.00000000000001110'
+        - - U-SEP:SEP-duty
+          - S1.n.A
+          - '4400.0000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.n.B
+          - '4400.0000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.n.C
+          - '4400.0000000000000000'
+        - - U-SEP:SEP-duty
+          - S2.T
+          - '-130.99999999999999978'
+        - - U-SEP:SEP-duty
+          - S2.n.A
+          - '-29500.000000000000000'
+        - - U-SEP:SEP-duty
+          - S2.n.B
+          - '-34500.000000000000000'
+        - - U-SEP:SEP-duty
+          - S2.n.C
+          - '-39500.000000000000000'
+        - - U-SEP:SEP-duty
+          - S3.P
+          - '-0.00017500000000000000000'
+        - - U-SEP:SEP-duty
+          - S3.T
+          - '-175.00000000000000000'
+        - - U-SEP:SEP-duty
+          - S3.n.A
+          - '-4299.9000000000000000'
+        - - U-SEP:SEP-duty
+          - S3.n.B
+          - '-4299.9000000000000000'
+        - - U-SEP:SEP-duty
+          - S3.n.C
+          - '-4299.9000000000000000'
+        - - U-SEP:SEP-duty
+          - U-SEP.Q
+          - '1.0000000000000000000'
+        cancelling_partials: []
+      J2:
+        configuration:
+          unit: U-SEP
+          inlet: S1
+          top: S2
+          bottom: S3
+          inlet_regime: lifted
+          top_phase: LIQUID
+          bottom_phase: LIQUID
+        parameters:
+          split:
+          - '0.59999999999999997780'
+          - '0.45000000000000001110'
+          - '0.20000000000000001110'
+        x:
+          S1.n.A: '1.1999999999999999556'
+          S1.n.B: '0.90000000000000002220'
+          S1.n.C: '0.50000000000000000000'
+          S1.T: '352.00000000000000000'
+          S1.P: '120000.00000000000000'
+          S1.vap.A: '0.25000000000000000000'
+          S1.vap.B: '0.14999999999999999445'
+          S1.vap.C: '0.050000000000000002776'
+          S1.liq.A: '0.90000000000000002220'
+          S1.liq.B: '0.80000000000000004441'
+          S1.liq.C: '0.45000000000000001110'
+          S1.V: '0.45000000000000001110'
+          S1.L: '2.1000000000000000888'
+          S2.n.A: '0.69999999999999995559'
+          S2.n.B: '0.40000000000000002220'
+          S2.n.C: '0.11999999999999999556'
+          S2.T: '350.00000000000000000'
+          S2.P: '118000.00000000000000'
+          S3.n.A: '0.45000000000000001110'
+          S3.n.B: '0.55000000000000004441'
+          S3.n.C: '0.40000000000000002220'
+          S3.T: '351.00000000000000000'
+          S3.P: '119000.00000000000000'
+          U-SEP.Q: '-9000.0000000000000000'
+        rows:
+          U-SEP:SEP-mole:A:
+            kind: molar_flow
+            value: '0.049999999999999988898'
+            term_scale: '2.3499999999999999223'
+          U-SEP:SEP-mole:B:
+            kind: molar_flow
+            value: '-0.050000000000000044409'
+            term_scale: '1.8500000000000000888'
+          U-SEP:SEP-mole:C:
+            kind: molar_flow
+            value: '-0.020000000000000017764'
+            term_scale: '1.0200000000000000178'
+          U-SEP:SEP-split:A:
+            kind: molar_flow
+            value: '-0.019999999999999991118'
+            term_scale: '1.4199999999999999023'
+          U-SEP:SEP-split:B:
+            kind: molar_flow
+            value: '-0.0049999999999999977796'
+            term_scale: '0.80500000000000004219'
+          U-SEP:SEP-split:C:
+            kind: molar_flow
+            value: '0.019999999999999990008'
+            term_scale: '0.22000000000000000111'
+          U-SEP:SEP-T:top:
+            kind: temperature
+            value: '-2.0000000000000000000'
+            term_scale: '702.00000000000000000'
+          U-SEP:SEP-T:bottom:
+            kind: temperature
+            value: '-1.0000000000000000000'
+            term_scale: '703.00000000000000000'
+          U-SEP:SEP-P:top:
+            kind: pressure
+            value: '-2000.0000000000000000'
+            term_scale: '238000.00000000000000'
+          U-SEP:SEP-P:bottom:
+            kind: pressure
+            value: '-1000.0000000000000000'
+            term_scale: '239000.00000000000000'
+          U-SEP:SEP-duty:
+            kind: heat_rate
+            value: '3779.4440000000000572'
+            term_scale: '48269.156000000000584'
+        jacobian:
+        - - U-SEP:SEP-mole:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-mole:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:A
+          - S3.n.A
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-mole:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:B
+          - S3.n.B
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-mole:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-mole:C
+          - S3.n.C
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-split:A
+          - S1.n.A
+          - '-0.59999999999999997780'
+        - - U-SEP:SEP-split:A
+          - S2.n.A
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-split:B
+          - S1.n.B
+          - '-0.45000000000000001110'
+        - - U-SEP:SEP-split:B
+          - S2.n.B
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-split:C
+          - S1.n.C
+          - '-0.20000000000000001110'
+        - - U-SEP:SEP-split:C
+          - S2.n.C
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-T:top
+          - S1.T
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-T:top
+          - S2.T
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-T:bottom
+          - S1.T
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-T:bottom
+          - S3.T
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-P:top
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-P:top
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-P:bottom
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-SEP:SEP-P:bottom
+          - S3.P
+          - '1.0000000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.P
+          - '0.00021500000000000000777'
+        - - U-SEP:SEP-duty
+          - S1.T
+          - '260.00000000000000749'
+        - - U-SEP:SEP-duty
+          - S1.liq.A
+          - '5202.0000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.liq.B
+          - '5202.0000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.liq.C
+          - '5202.0000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.vap.A
+          - '30200.000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.vap.B
+          - '35200.000000000000000'
+        - - U-SEP:SEP-duty
+          - S1.vap.C
+          - '40200.000000000000000'
+        - - U-SEP:SEP-duty
+          - S2.P
+          - '-0.00012199999999999999734'
+        - - U-SEP:SEP-duty
+          - S2.T
+          - '-121.99999999999999734'
+        - - U-SEP:SEP-duty
+          - S2.n.A
+          - '-5001.8000000000000000'
+        - - U-SEP:SEP-duty
+          - S2.n.B
+          - '-5001.8000000000000000'
+        - - U-SEP:SEP-duty
+          - S2.n.C
+          - '-5001.8000000000000000'
+        - - U-SEP:SEP-duty
+          - S3.P
+          - '-0.00014000000000000000777'
+        - - U-SEP:SEP-duty
+          - S3.T
+          - '-140.00000000000000777'
+        - - U-SEP:SEP-duty
+          - S3.n.A
+          - '-5101.9000000000000000'
+        - - U-SEP:SEP-duty
+          - S3.n.B
+          - '-5101.9000000000000000'
+        - - U-SEP:SEP-duty
+          - S3.n.C
+          - '-5101.9000000000000000'
+        - - U-SEP:SEP-duty
+          - U-SEP.Q
+          - '1.0000000000000000000'
+        cancelling_partials: []
+    min_term_visibility: '0.0389111'
+    mutation_detection_ratio_min: '1.03586e+10'
+    mutations_invisible_by_fixture_degeneracy:
+    - swap(S1.liq, A<->B)
+    - swap(S1.liq, A<->C)
+    - swap(S1.liq, B<->C)
+    mutations:
+      swap(S1.n, A<->B): '1.67702e+11'
+      swap(S1.n, B<->C): '3.92157e+11'
+      swap(S1.n, A<->C): '6.86275e+11'
+      swap(S2.n, A<->B): '8.08824e+11'
+      swap(S2.n, B<->C): '2.76190e+12'
+      swap(S2.n, A<->C): '8.00000e+12'
+      swap(S3.n, A<->B): '3.36634e+11'
+      swap(S3.n, B<->C): '1.47059e+11'
+      swap(S3.n, A<->C): '3.96648e+11'
+      h_vap_data(A<->B): '2.99826e+10'
+      h_vap_data(B<->C): '1.58090e+10'
+      h_vap_data(A<->C): '9.15833e+10'
+      'phase(inlet_regime: L->V)': '9.75798e+11'
+      'phase(top_phase: V->L)': '3.82686e+11'
+      'phase(bottom_phase: L->V)': '8.64886e+11'
+      split applied to the bottom: '7.33333e+12'
+      swap(S1.liq, A<->B): '0.0'
+      swap(S1.liq, B<->C): '0.0'
+      swap(S1.liq, A<->C): '0.0'
+      swap(S1.vap, A<->B): '1.03586e+10'
+      swap(S1.vap, B<->C): '1.03586e+10'
+      swap(S1.vap, A<->C): '4.14343e+10'
+      'phase(top_phase: L->V)': '6.98123e+11'
+    h_liq_data_swaps_invisible_at_every_state:
+    - h_liq_data(A<->B)
+    - h_liq_data(A<->C)
+    - h_liq_data(B<->C)
+  syn001.heat_exchanger:
+    states:
+      J1:
+        configuration:
+          unit: U-HX
+          hot_inlet: S1
+          hot_outlet: S2
+          cold_inlet: S3
+          cold_outlet: S4
+          hot_phase: LIQUID
+          cold_phase: LIQUID
+          specification: cold_outlet_temperature
+        parameters:
+          value: '322.00000000000000000'
+        x:
+          S1.n.A: '0.80000000000000004441'
+          S1.n.B: '1.6000000000000000888'
+          S1.n.C: '2.6000000000000000888'
+          S1.T: '341.00000000000000000'
+          S1.P: '105000.00000000000000'
+          S2.n.A: '0.75000000000000000000'
+          S2.n.B: '1.6499999999999999112'
+          S2.n.C: '2.5499999999999998224'
+          S2.T: '327.00000000000000000'
+          S2.P: '104000.00000000000000'
+          S3.n.A: '1.0000000000000000000'
+          S3.n.B: '1.1000000000000000888'
+          S3.n.C: '0.90000000000000002220'
+          S3.T: '301.00000000000000000'
+          S3.P: '98000.000000000000000'
+          S4.n.A: '1.0500000000000000444'
+          S4.n.B: '1.0000000000000000000'
+          S4.n.C: '0.94999999999999995559'
+          S4.T: '319.00000000000000000'
+          S4.P: '97000.000000000000000'
+          U-HX.Q: '6500.0000000000000000'
+        rows:
+          U-HX:HX-mole-hot:A:
+            kind: molar_flow
+            value: '0.050000000000000044409'
+            term_scale: '1.5500000000000000444'
+          U-HX:HX-mole-hot:B:
+            kind: molar_flow
+            value: '-0.049999999999999822364'
+            term_scale: '3.2500000000000000000'
+          U-HX:HX-mole-hot:C:
+            kind: molar_flow
+            value: '0.050000000000000266454'
+            term_scale: '5.1499999999999999112'
+          U-HX:HX-mole-cold:A:
+            kind: molar_flow
+            value: '-0.050000000000000044409'
+            term_scale: '2.0500000000000000444'
+          U-HX:HX-mole-cold:B:
+            kind: molar_flow
+            value: '0.10000000000000008882'
+            term_scale: '2.1000000000000000888'
+          U-HX:HX-mole-cold:C:
+            kind: molar_flow
+            value: '-0.049999999999999933387'
+            term_scale: '1.8499999999999999778'
+          U-HX:HX-pressure:hot:
+            kind: pressure
+            value: '-1000.0000000000000000'
+            term_scale: '209000.00000000000000'
+          U-HX:HX-pressure:cold:
+            kind: pressure
+            value: '-1000.0000000000000000'
+            term_scale: '195000.00000000000000'
+          U-HX:HX-energy-hot:
+            kind: heat_rate
+            value: '635.52000000000163003'
+            term_scale: '40369.480000000000191'
+          U-HX:HX-energy-cold:
+            kind: heat_rate
+            value: '1100.3000000000000111'
+            term_scale: '12498.500000000000011'
+          U-HX:HX-spec:
+            kind: temperature
+            value: '-3.0000000000000000000'
+            term_scale: '641.00000000000000000'
+        jacobian:
+        - - U-HX:HX-mole-hot:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-hot:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-hot:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-hot:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-hot:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-hot:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-cold:A
+          - S3.n.A
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-cold:A
+          - S4.n.A
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-cold:B
+          - S3.n.B
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-cold:B
+          - S4.n.B
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-cold:C
+          - S3.n.C
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-cold:C
+          - S4.n.C
+          - '-1.0000000000000000000'
+        - - U-HX:HX-pressure:hot
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-HX:HX-pressure:hot
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-HX:HX-pressure:cold
+          - S3.P
+          - '-1.0000000000000000000'
+        - - U-HX:HX-pressure:cold
+          - S4.P
+          - '1.0000000000000000000'
+        - - U-HX:HX-energy-hot
+          - S1.P
+          - '0.00050000000000000002220'
+        - - U-HX:HX-energy-hot
+          - S1.T
+          - '500.00000000000002220'
+        - - U-HX:HX-energy-hot
+          - S1.n.A
+          - '4100.5000000000000000'
+        - - U-HX:HX-energy-hot
+          - S1.n.B
+          - '4100.5000000000000000'
+        - - U-HX:HX-energy-hot
+          - S1.n.C
+          - '4100.5000000000000000'
+        - - U-HX:HX-energy-hot
+          - S2.P
+          - '-0.00049499999999999997335'
+        - - U-HX:HX-energy-hot
+          - S2.T
+          - '-494.99999999999997335'
+        - - U-HX:HX-energy-hot
+          - S2.n.A
+          - '-2700.4000000000000000'
+        - - U-HX:HX-energy-hot
+          - S2.n.B
+          - '-2700.4000000000000000'
+        - - U-HX:HX-energy-hot
+          - S2.n.C
+          - '-2700.4000000000000000'
+        - - U-HX:HX-energy-hot
+          - U-HX.Q
+          - '-1.0000000000000000000'
+        - - U-HX:HX-energy-cold
+          - S3.P
+          - '0.00030000000000000001110'
+        - - U-HX:HX-energy-cold
+          - S3.T
+          - '300.00000000000001110'
+        - - U-HX:HX-energy-cold
+          - S3.n.A
+          - '99.800000000000000000'
+        - - U-HX:HX-energy-cold
+          - S3.n.B
+          - '99.800000000000000000'
+        - - U-HX:HX-energy-cold
+          - S3.n.C
+          - '99.800000000000000000'
+        - - U-HX:HX-energy-cold
+          - S4.P
+          - '-0.00030000000000000000000'
+        - - U-HX:HX-energy-cold
+          - S4.T
+          - '-300.00000000000000000'
+        - - U-HX:HX-energy-cold
+          - S4.n.A
+          - '-1899.7000000000000000'
+        - - U-HX:HX-energy-cold
+          - S4.n.B
+          - '-1899.7000000000000000'
+        - - U-HX:HX-energy-cold
+          - S4.n.C
+          - '-1899.7000000000000000'
+        - - U-HX:HX-energy-cold
+          - U-HX.Q
+          - '1.0000000000000000000'
+        - - U-HX:HX-spec
+          - S4.T
+          - '1.0000000000000000000'
+        cancelling_partials: []
+      J2:
+        configuration:
+          unit: U-HX
+          hot_inlet: S1
+          hot_outlet: S2
+          cold_inlet: S3
+          cold_outlet: S4
+          hot_phase: VAPOR
+          cold_phase: LIQUID
+          specification: duty
+        parameters:
+          value: '7200.0000000000000000'
+        x:
+          S1.n.A: '0.40000000000000002220'
+          S1.n.B: '0.80000000000000004441'
+          S1.n.C: '1.3000000000000000444'
+          S1.T: '431.00000000000000000'
+          S1.P: '101000.00000000000000'
+          S2.n.A: '0.42999999999999999334'
+          S2.n.B: '0.75000000000000000000'
+          S2.n.C: '1.3600000000000000977'
+          S2.T: '399.00000000000000000'
+          S2.P: '100500.00000000000000'
+          S3.n.A: '0.90000000000000002220'
+          S3.n.B: '1.1999999999999999556'
+          S3.n.C: '1.0000000000000000000'
+          S3.T: '302.00000000000000000'
+          S3.P: '150000.00000000000000'
+          S4.n.A: '0.94999999999999995559'
+          S4.n.B: '1.1000000000000000888'
+          S4.n.C: '1.0500000000000000444'
+          S4.T: '326.00000000000000000'
+          S4.P: '149000.00000000000000'
+          U-HX.Q: '7600.0000000000000000'
+        rows:
+          U-HX:HX-mole-hot:A:
+            kind: molar_flow
+            value: '-0.029999999999999971134'
+            term_scale: '0.83000000000000001554'
+          U-HX:HX-mole-hot:B:
+            kind: molar_flow
+            value: '0.050000000000000044409'
+            term_scale: '1.5500000000000000444'
+          U-HX:HX-mole-hot:C:
+            kind: molar_flow
+            value: '-0.060000000000000053291'
+            term_scale: '2.6600000000000001421'
+          U-HX:HX-mole-cold:A:
+            kind: molar_flow
+            value: '-0.049999999999999933387'
+            term_scale: '1.8499999999999999778'
+          U-HX:HX-mole-cold:B:
+            kind: molar_flow
+            value: '0.099999999999999866773'
+            term_scale: '2.3000000000000000444'
+          U-HX:HX-mole-cold:C:
+            kind: molar_flow
+            value: '-0.050000000000000044409'
+            term_scale: '2.0500000000000000444'
+          U-HX:HX-pressure:hot:
+            kind: pressure
+            value: '-500.00000000000000000'
+            term_scale: '201500.00000000000000'
+          U-HX:HX-pressure:cold:
+            kind: pressure
+            value: '-1000.0000000000000000'
+            term_scale: '299000.00000000000000'
+          U-HX:HX-energy-hot:
+            kind: heat_rate
+            value: '-1345.9999999999992581'
+            term_scale: '225846.00000000000905'
+          U-HX:HX-energy-cold:
+            kind: heat_rate
+            value: '160.30999999999976409'
+            term_scale: '16310.690000000000227'
+          U-HX:HX-spec:
+            kind: heat_rate
+            value: '400.00000000000000000'
+            term_scale: '14800.000000000000000'
+        jacobian:
+        - - U-HX:HX-mole-hot:A
+          - S1.n.A
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-hot:A
+          - S2.n.A
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-hot:B
+          - S1.n.B
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-hot:B
+          - S2.n.B
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-hot:C
+          - S1.n.C
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-hot:C
+          - S2.n.C
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-cold:A
+          - S3.n.A
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-cold:A
+          - S4.n.A
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-cold:B
+          - S3.n.B
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-cold:B
+          - S4.n.B
+          - '-1.0000000000000000000'
+        - - U-HX:HX-mole-cold:C
+          - S3.n.C
+          - '1.0000000000000000000'
+        - - U-HX:HX-mole-cold:C
+          - S4.n.C
+          - '-1.0000000000000000000'
+        - - U-HX:HX-pressure:hot
+          - S1.P
+          - '-1.0000000000000000000'
+        - - U-HX:HX-pressure:hot
+          - S2.P
+          - '1.0000000000000000000'
+        - - U-HX:HX-pressure:cold
+          - S3.P
+          - '-1.0000000000000000000'
+        - - U-HX:HX-pressure:cold
+          - S4.P
+          - '1.0000000000000000000'
+        - - U-HX:HX-energy-hot
+          - S1.T
+          - '250.00000000000001110'
+        - - U-HX:HX-energy-hot
+          - S1.n.A
+          - '38100.000000000000000'
+        - - U-HX:HX-energy-hot
+          - S1.n.B
+          - '43100.000000000000000'
+        - - U-HX:HX-energy-hot
+          - S1.n.C
+          - '48100.000000000000000'
+        - - U-HX:HX-energy-hot
+          - S2.T
+          - '-254.00000000000000910'
+        - - U-HX:HX-energy-hot
+          - S2.n.A
+          - '-34900.000000000000000'
+        - - U-HX:HX-energy-hot
+          - S2.n.B
+          - '-39900.000000000000000'
+        - - U-HX:HX-energy-hot
+          - S2.n.C
+          - '-44900.000000000000000'
+        - - U-HX:HX-energy-hot
+          - U-HX.Q
+          - '-1.0000000000000000000'
+        - - U-HX:HX-energy-cold
+          - S3.P
+          - '0.00030999999999999999778'
+        - - U-HX:HX-energy-cold
+          - S3.T
+          - '309.99999999999999778'
+        - - U-HX:HX-energy-cold
+          - S3.n.A
+          - '205.00000000000000000'
+        - - U-HX:HX-energy-cold
+          - S3.n.B
+          - '205.00000000000000000'
+        - - U-HX:HX-energy-cold
+          - S3.n.C
+          - '205.00000000000000000'
+        - - U-HX:HX-energy-cold
+          - S4.P
+          - '-0.00031000000000000000888'
+        - - U-HX:HX-energy-cold
+          - S4.T
+          - '-310.00000000000000888'
+        - - U-HX:HX-energy-cold
+          - S4.n.A
+          - '-2604.9000000000000000'
+        - - U-HX:HX-energy-cold
+          - S4.n.B
+          - '-2604.9000000000000000'
+        - - U-HX:HX-energy-cold
+          - S4.n.C
+          - '-2604.9000000000000000'
+        - - U-HX:HX-energy-cold
+          - U-HX.Q
+          - '1.0000000000000000000'
+        - - U-HX:HX-spec
+          - U-HX.Q
+          - '1.0000000000000000000'
+        cancelling_partials: []
+    min_term_visibility: '0.0113116'
+    mutation_detection_ratio_min: '2.40029e+7'
+    mutations_invisible_by_fixture_degeneracy: []
+    mutations:
+      swap(S1.n, A<->B): '5.16129e+11'
+      swap(S1.n, B<->C): '3.22581e+11'
+      swap(S1.n, A<->C): '1.16129e+12'
+      swap(S2.n, A<->B): '5.80645e+11'
+      swap(S2.n, B<->C): '3.93548e+11'
+      swap(S2.n, A<->C): '1.16129e+12'
+      swap(S3.n, A<->B): '1.62162e+11'
+      swap(S3.n, B<->C): '1.08108e+11'
+      swap(S3.n, A<->C): '5.40541e+10'
+      swap(S4.n, A<->B): '8.10811e+10'
+      swap(S4.n, B<->C): '2.70270e+10'
+      swap(S4.n, A<->C): '5.40541e+10'
+      h_vap_data(A<->B): '1.77112e+9'
+      h_vap_data(B<->C): '2.43529e+9'
+      h_vap_data(A<->C): '1.32834e+9'
+      'phase(hot_phase: L->V)': '3.71439e+10'
+      'phase(cold_phase: L->V)': '2.40029e+7'
+      'phase(hot_phase: V->L)': '5.97807e+9'
+    h_liq_data_swaps_invisible_at_every_state:
+    - h_liq_data(A<->B)
+    - h_liq_data(A<->C)
+    - h_liq_data(B<->C)
+coupled_cases:
+  SYN-001-UL-C1:
+    streams:
+      S1:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S2:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.02666666666666667'
+        P_Pa: '180000.00000000000000'
+      S3:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '360.00000000000000000'
+        P_Pa: '180000.00000000000000'
+        regime: LIQUID
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        liquid_n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+      S4:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '348.49986441920892565'
+        P_Pa: '100000.00000000000000'
+        regime: TWO_PHASE
+        vapor_n_mol_per_s:
+        - '0.088299634938401678406'
+        - '0.031257806189761688393'
+        - '0.0093947318595551340614'
+        liquid_n_mol_per_s:
+        - '0.91170036506159832159'
+        - '0.96874219381023831161'
+        - '0.99060526814044486594'
+      S5:
+        n_mol_per_s:
+        - '0.29695061016910077046'
+        - '0.12491275159650523779'
+        - '0.040822663835681142029'
+        T_K: '351.41352987876161211'
+        P_Pa: '100000.00000000000000'
+      S6:
+        n_mol_per_s:
+        - '0.70304938983089922954'
+        - '0.87508724840349476221'
+        - '0.95917733616431885797'
+        T_K: '351.41352987876161211'
+        P_Pa: '100000.00000000000000'
+    duty_W:
+      U-HEAT: '17992.000000000000000'
+      U-PHF: '10000.000000000000000'
+    work_W:
+      U-PUMP: '32.000000000000000000'
+    signatures:
+      U-HEAT: LIQUID
+      U-VLV: TWO_PHASE
+      U-PHF: TWO_PHASE
+    envelope_residual_W: '2.70834e-35'
+  SYN-001-UL-C2:
+    streams:
+      S1:
+        n_mol_per_s:
+        - '2.0000000000000000000'
+        - '1.0000000000000000000'
+        - '0.0'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S2:
+        n_mol_per_s:
+        - '3.6363636363636363636'
+        - '1.3636363636363636364'
+        - '0.14354066985645933014'
+        T_K: '306.25116279069767442'
+        P_Pa: '100000.00000000000000'
+      S3:
+        n_mol_per_s:
+        - '1.8181818181818181818'
+        - '0.45454545454545454545'
+        - '2.8708133971291866029'
+        T_K: '315.00000000000000000'
+        P_Pa: '100000.00000000000000'
+        regime: LIQUID
+        vapor_n_mol_per_s:
+        - '0.0'
+        - '0.0'
+        - '0.0'
+        liquid_n_mol_per_s:
+        - '1.8181818181818181818'
+        - '0.45454545454545454545'
+        - '2.8708133971291866029'
+      S4:
+        n_mol_per_s:
+        - '1.6363636363636363636'
+        - '0.36363636363636363636'
+        - '0.14354066985645933014'
+        T_K: '315.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S5:
+        n_mol_per_s:
+        - '0.18181818181818181818'
+        - '0.090909090909090909091'
+        - '2.7272727272727272727'
+        T_K: '315.00000000000000000'
+        P_Pa: '100000.00000000000000'
+    duty_W:
+      U-RX: '4500.0000000000000000'
+      U-SEP: '-9.4039548065783000637e-38'
+    extent_mol_per_s:
+      U-RX: '0.90909090909090909091'
+    signatures:
+      U-RX: LIQUID
+    envelope_residual_W: '2.82119e-37'
+  SYN-001-UL-C3:
+    streams:
+      S1:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S2:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '327.36451370553362692'
+        P_Pa: '100000.00000000000000'
+      S3:
+        n_mol_per_s:
+        - '1.4486118377753172140'
+        - '1.8219657020752566840'
+        - '2.1941253547564324851'
+        T_K: '342.06649220846692136'
+        P_Pa: '100000.00000000000000'
+      S4:
+        n_mol_per_s:
+        - '0.70092544148312185734'
+        - '0.45202286528316221066'
+        - '0.20391643016237834325'
+        T_K: '359.96152353467977770'
+        P_Pa: '100000.00000000000000'
+      S5:
+        n_mol_per_s:
+        - '0.74768639629219535664'
+        - '1.3699428367920944733'
+        - '1.9902089245940541419'
+        T_K: '359.96152353467977770'
+        P_Pa: '100000.00000000000000'
+      S6:
+        n_mol_per_s:
+        - '0.44861183777531721399'
+        - '0.82196570207525668401'
+        - '1.1941253547564324851'
+        T_K: '359.96152353467977770'
+        P_Pa: '100000.00000000000000'
+      S7:
+        n_mol_per_s:
+        - '0.29907455851687814266'
+        - '0.54797713471683778934'
+        - '0.79608356983762165675'
+        T_K: '359.96152353467977770'
+        P_Pa: '100000.00000000000000'
+      S8:
+        n_mol_per_s:
+        - '0.29907455851687814266'
+        - '0.54797713471683778934'
+        - '0.79608356983762165675'
+        T_K: '310.00000000000000000'
+        P_Pa: '100000.00000000000000'
+    duty_W:
+      U-PHF: '48000.000000000000000'
+      U-HX: '8209.3541116600880768'
+    signatures:
+      U-PHF: TWO_PHASE
+    envelope_residual_W: '9.78011e-36'
+    T_flash_K: '359.96152353467977770'
+    exchanger_hot_end_K: '32.597009829146150776'
+    exchanger_cold_end_K: '10.000000000000000000'
+    exchanger_failures: []
+    tear_map_jacobian:
+      coordinates:
+      - S3.n.A
+      - S3.n.B
+      - S3.n.C
+      - S3.T
+      matrix:
+      - - '0.370971007850'
+        - '0.0692646173214'
+        - '0.0660604205062'
+        - '-0.00409765915268'
+      - - '0.0671676006210'
+        - '0.517700865304'
+        - '0.0580329539518'
+        - '-0.00393798872116'
+      - - '0.0417723834317'
+        - '0.0370308674438'
+        - '0.573627093768'
+        - '-0.00219117890709'
+      - - '-3.12023675622'
+        - '4.66602325570'
+        - '9.73733376596'
+        - '-0.0256463903394'
+      spectral_radius: '0.526511389387'
+  SYN-001-UL-C3X:
+    streams:
+      S1:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '300.00000000000000000'
+        P_Pa: '100000.00000000000000'
+      S2:
+        n_mol_per_s:
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        - '1.0000000000000000000'
+        T_K: '336.74790461747066494'
+        P_Pa: '100000.00000000000000'
+      S3:
+        n_mol_per_s:
+        - '1.4074537995897212114'
+        - '1.7702414271177288427'
+        - '2.1579904807777219216'
+        T_K: '347.27647792341023752'
+        P_Pa: '100000.00000000000000'
+      S4:
+        n_mol_per_s:
+        - '0.72836413360685252574'
+        - '0.48650571525484743819'
+        - '0.22800634614818538558'
+        T_K: '360.79958157412658232'
+        P_Pa: '100000.00000000000000'
+      S5:
+        n_mol_per_s:
+        - '0.67908966598286868565'
+        - '1.2837357118628814045'
+        - '1.9299841346295365361'
+        T_K: '360.79958157412658232'
+        P_Pa: '100000.00000000000000'
+      S6:
+        n_mol_per_s:
+        - '0.40745379958972121139'
+        - '0.77024142711772884272'
+        - '1.1579904807777219216'
+        T_K: '360.79958157412658232'
+        P_Pa: '100000.00000000000000'
+      S7:
+        n_mol_per_s:
+        - '0.27163586639314747426'
+        - '0.51349428474515256181'
+        - '0.77199365385181461442'
+        T_K: '360.79958157412658232'
+        P_Pa: '100000.00000000000000'
+      S8:
+        n_mol_per_s:
+        - '0.27163586639314747426'
+        - '0.51349428474515256181'
+        - '0.77199365385181461442'
+        T_K: '290.00000000000000000'
+        P_Pa: '100000.00000000000000'
+    duty_W:
+      U-PHF: '48000.000000000000000'
+      U-HX: '11024.371385241199481'
+    signatures:
+      U-PHF: TWO_PHASE
+    envelope_residual_W: '-4.51390e-36'
+    T_flash_K: '360.79958157412658232'
+    exchanger_hot_end_K: '24.051676956655917385'
+    exchanger_cold_end_K: '-10.000000000000000000'
+    exchanger_failures:
+    - temperature_cross(cold_end)
+injections:
+  INJ-T1:
+    state: 'VLV-2 with the outlet split forced to LIQUID (V = 0): the classical trivial root'
+    T_trivial_K: '360.08000000000000000'
+    max_abs_row_valve: '5.6423728839469800382e-37'
+    admissibility_sum_xK_minus_1: '0.38651240922981119863'
+    fresh_flash_energy_gap_W: '38581.847479409153988'
+    independent_split_V_gap_mol_s: '1.3690112427403260808'
+    true_T_K: '348.49986441920892565'
+  INJ-T2:
+    state: 'HX-F1 solved by its rows: T_co = 345 K above T_hi = 340 K'
+    hot_end_K: '-5.0000000000000000000'
+    cold_end_K: '13.000000000000000000'
+    duty_W: '13500.000000000000000'
+  INJ-T3:
+    state: 'RX-2 with outlet flows from nu'' = (-1, -2, 3): moles and mass conserved'
+    component_balance_mol_s:
+    - '-0.30000000000000000000'
+    - '0.30000000000000000000'
+    - '0.0'
+    mass_balance_kg_s: '-1.4349296274686126806e-42'
+    total_moles_mol_s: '-4.5917748078995605780e-41'
+  INJ-T4:
+    state: PUMP-1 with W = W_ideal and the outlet temperature that balances it
+    work_relation_W: '-4.8000000000000000000'
+    energy_balance_W: '0.0'
+dormant_temperature_columns:
+  note: At exactly zero flow, the rows that still read each outlet temperature fixed by an energy balance (T05 §4.7). An empty list is a zero Jacobian column.
+  structure:
+    syn001.valve:
+      S2.T: []
+    syn001.ph_flash:
+      S2.T:
+      - U-PHF:PHF-T
+      S3.T:
+      - U-PHF:PHF-T
+    syn001.conversion_reactor(duty):
+      S2.T: []
+    syn001.conversion_reactor(outlet_temperature):
+      S2.T:
+      - U-RX:RX-spec
+    syn001.liquid_pump:
+      S2.T: []
+    syn001.component_separator:
+      S2.T:
+      - U-SEP:SEP-T:top
+      S3.T:
+      - U-SEP:SEP-T:bottom
+    syn001.heat_exchanger(hot side dormant):
+      S2.T: []
+      S4.T:
+      - U-HX:HX-energy-cold
+measured:
+  floors_53_bit:
+    rows_relative_to_term_scale:
+      syn001.ph_flash: '3.04e-16'
+      syn001.valve: '5.97e-16'
+      syn001.liquid_pump: '5.15e-17'
+      syn001.conversion_reactor: '5.49e-16'
+      syn001.component_separator: '3.10e-17'
+      syn001.heat_exchanger: '4.09e-17'
+    jacobian_relative:
+      syn001.ph_flash: '5.45e-16'
+      syn001.valve: '1.12e-15'
+      syn001.liquid_pump: '1.29e-16'
+      syn001.conversion_reactor: '1.09e-15'
+      syn001.component_separator: '1.45e-16'
+      syn001.heat_exchanger: '1.46e-16'
+    ph_kernel_T_K:
+      PHF-1: '9.83e-14'
+      PHF-2: '6.91e-17'
+      PHF-5: '1.95e-14'
+      PHF-7: '2.11e-14'
+      VLV-2: '2.11e-14'
+      VLV-5: '3.91e-14'
+      RX-5: '4.12e-14'
+      RX-3: '0.0'
+  fd_witness_scaled:
+    syn001.ph_flash:
+      1e-4: '1.87e-9'
+      1e-5: '2.36e-11'
+      1e-6: '2.51e-10'
+    syn001.valve:
+      1e-4: '3.25e-9'
+      1e-5: '3.17e-11'
+      1e-6: '7.10e-11'
+    syn001.liquid_pump:
+      1e-4: '2.18e-13'
+      1e-5: '5.68e-12'
+      1e-6: '6.02e-11'
+    syn001.conversion_reactor:
+      1e-4: '1.93e-9'
+      1e-5: '2.36e-11'
+      1e-6: '2.51e-10'
+    syn001.component_separator:
+      1e-4: '9.09e-13'
+      1e-5: '2.36e-11'
+      1e-6: '2.51e-10'
+    syn001.heat_exchanger:
+      1e-4: '9.09e-13'
+      1e-5: '2.36e-11'
+      1e-6: '2.51e-10'
+generator_claims:
+  count: 438
+  names:
+  - thermo_agrees_with_syn001_reference(T=280.0,P=50000.0,A)
+  - thermo_agrees_with_syn001_reference(T=280.0,P=50000.0,B)
+  - thermo_agrees_with_syn001_reference(T=280.0,P=50000.0,C)
+  - thermo_agrees_with_syn001_reference(T=280.0,P=100000.0,A)
+  - thermo_agrees_with_syn001_reference(T=280.0,P=100000.0,B)
+  - thermo_agrees_with_syn001_reference(T=280.0,P=100000.0,C)
+  - thermo_agrees_with_syn001_reference(T=280.0,P=200000.0,A)
+  - thermo_agrees_with_syn001_reference(T=280.0,P=200000.0,B)
+  - thermo_agrees_with_syn001_reference(T=280.0,P=200000.0,C)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=50000.0,A)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=50000.0,B)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=50000.0,C)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=100000.0,A)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=100000.0,B)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=100000.0,C)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=200000.0,A)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=200000.0,B)
+  - thermo_agrees_with_syn001_reference(T=347.0,P=200000.0,C)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=50000.0,A)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=50000.0,B)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=50000.0,C)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=100000.0,A)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=100000.0,B)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=100000.0,C)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=200000.0,A)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=200000.0,B)
+  - thermo_agrees_with_syn001_reference(T=360.0,P=200000.0,C)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=50000.0,A)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=50000.0,B)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=50000.0,C)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=100000.0,A)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=100000.0,B)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=100000.0,C)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=200000.0,A)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=200000.0,B)
+  - thermo_agrees_with_syn001_reference(T=440.0,P=200000.0,C)
+  - tp_split_agrees_with_syn001_reference
+  - adr0001_duty_identity_56338_069W
+  - H_TP_strictly_increasing_with_slope_at_least_n_cp((1, 1, 1))
+  - H_TP_strictly_increasing_with_slope_at_least_n_cp((1, 0, 2))
+  - H_TP_strictly_increasing_with_slope_at_least_n_cp((mpf('1.200000000000000000000000000000000000000009'), mpf('0.8999999999999999999999999999999999999999954'), mpf('0.3000000000000000000000000000000000000000023')))
+  - H_TP_strictly_increasing_with_slope_at_least_n_cp((mpf('0.25'), mpf('0.25'), mpf('0.5')))
+  - latent_heat_positive_on_domain(A,P=50000.0)
+  - latent_heat_positive_on_domain(B,P=50000.0)
+  - latent_heat_positive_on_domain(C,P=50000.0)
+  - latent_heat_positive_on_domain(A,P=100000.0)
+  - latent_heat_positive_on_domain(B,P=100000.0)
+  - latent_heat_positive_on_domain(C,P=100000.0)
+  - latent_heat_positive_on_domain(A,P=200000.0)
+  - latent_heat_positive_on_domain(B,P=200000.0)
+  - latent_heat_positive_on_domain(C,P=200000.0)
+  - every_case_has_a_registered_outcome
+  - outcome(PHF-1)=ok
+  - outcome(PHF-2)=ok
+  - outcome(PHF-3)=ok
+  - outcome(PHF-4)=ok
+  - outcome(PHF-5)=ok
+  - outcome(PHF-6)=ok
+  - outcome(PHF-7)=ok
+  - outcome(PHF-Z0)=ok
+  - outcome(PHF-Z1)=error/duty_into_dormant_stream
+  - outcome(PHF-F1)=out_of_domain/ph_outside_domain(below)
+  - outcome(PHF-F2)=out_of_domain/ph_outside_domain(above)
+  - outcome(PHF-F3)=unsupported/inadmissible_phase(inlet, LIQUID)
+  - outcome(PHF-F4)=out_of_domain/pressure_outside_domain(outlet)
+  - outcome(VLV-1)=ok
+  - outcome(VLV-2)=ok
+  - outcome(VLV-3)=ok
+  - outcome(VLV-4)=ok
+  - outcome(VLV-5)=ok
+  - outcome(VLV-Z)=ok
+  - outcome(VLV-F1)=out_of_domain/pressure_rise(valve)
+  - outcome(PUMP-1)=ok
+  - outcome(PUMP-2)=ok
+  - outcome(PUMP-3)=ok
+  - outcome(PUMP-4)=ok
+  - outcome(PUMP-Z)=ok
+  - outcome(PUMP-F1)=unsupported/inadmissible_phase(inlet, LIQUID)
+  - outcome(PUMP-F2)=unsupported/inadmissible_phase(inlet, LIQUID)
+  - outcome(PUMP-F3)=out_of_domain/pressure_fall(pump)
+  - outcome(RX-1)=ok
+  - outcome(RX-2)=ok
+  - outcome(RX-3)=ok
+  - outcome(RX-4)=ok
+  - outcome(RX-5)=ok
+  - outcome(RX-6)=ok
+  - outcome(RX-7)=ok
+  - outcome(RX-8)=ok
+  - outcome(RX-Z)=ok
+  - outcome(RX-F1)=out_of_domain/reactant_exhausted(A)
+  - outcome(RX-F5)=out_of_domain/ph_outside_domain(below)
+  - outcome(SEP-1)=ok
+  - outcome(SEP-2)=ok
+  - outcome(SEP-3)=ok
+  - outcome(SEP-4)=ok
+  - outcome(SEP-Z)=ok
+  - outcome(SEP-F2)=unsupported/inadmissible_phase(top, VAPOR)
+  - outcome(HX-1)=ok
+  - outcome(HX-2)=ok
+  - outcome(HX-3)=ok
+  - outcome(HX-4)=ok
+  - outcome(HX-5)=ok
+  - outcome(HX-Z0)=ok
+  - outcome(HX-Z1)=error/specification_unsatisfiable_with_dormant_side
+  - outcome(HX-F1)=out_of_domain/temperature_cross(hot_end)
+  - outcome(HX-F2)=out_of_domain/temperature_cross(cold_end)
+  - outcome(HX-F3)=out_of_domain/heat_flow_reversed
+  - outcome(HX-F4)=unsupported/inadmissible_phase(cold_outlet, LIQUID)
+  - fails_for_exactly_one_reason(HX-F1)
+  - fails_for_exactly_one_reason(HX-F2)
+  - fails_for_exactly_one_reason(HX-F3)
+  - fails_for_exactly_one_reason(HX-F4)
+  - fails_for_exactly_one_reason(SEP-F2)
+  - all_checks_pass(HX-1)
+  - all_checks_pass(HX-2)
+  - all_checks_pass(HX-3)
+  - all_checks_pass(HX-4)
+  - all_checks_pass(HX-5)
+  - PHF-3_closed_form_T=300+Q/(n cp)
+  - PHF-3_liquid_vapour_dormant
+  - PHF-4_closed_form_T=400K
+  - PHF-4_vapour_liquid_dormant
+  - PHF-2_inverts_the_TP_flash_at_360K
+  - PHF-2_split_is_syn001_single_flash
+  - PHF-5_B_exactly_absent_in_both_outlets
+  - PHF-6_saturation_route_T=360K_beta=1/2
+  - PHF-7_equals_VLV-2
+  - VLV-1_closed_form_T=T_in+v dP/cp
+  - VLV-2_two_phase_and_colder
+  - VLV-3_vapour_T_unchanged
+  - VLV-4_zero_drop_identity
+  - VLV-5_further_flashing
+  - PUMP-1_closed_forms
+  - PUMP-2_eta_1_no_heating
+  - PUMP-3_zero_rise_zero_work
+  - PUMP-4_saturated_inlet_admitted_by_R-007
+  - RX-1_liquid_reaction_exactly_thermoneutral
+  - RX-1_extent_and_outlet
+  - vapour_reaction_enthalpy_sum_nu_L=+25000
+  - RX-2_Q=xi*sum(nu L)=7500W
+  - RX-3_adiabatic_T=388.75K
+  - RX-4_two_phase
+  - RX-5_two_phase_duty_specified
+  - RX-6_A_exactly_exhausted_Q=12500W
+  - RX-7_equals_TP_heater
+  - RX-8_key_exactly_exhausted_Q=15000W
+  - RX-8_double_arithmetic_exhausts_exactly
+  - RX-6_double_arithmetic_exhausts_exactly
+  - SEP-1_all_liquid_duty_vanishes
+  - SEP-2_closed_form_Q=26750W
+  - SEP-3_bottom_dormant
+  - SEP-4_top_dormant
+  - HX-1_state_T_ho=328_T_co=320_Q=6000
+  - HX-2_state_T_ho=328_T_co=320_Q=6000
+  - HX-3_state_T_ho=328_T_co=320_Q=6000
+  - HX-4_closed_form
+  - HX-5_zero_duty_identity
+  - HX-F1_hot_end_K=-5
+  - HX-F2_cold_end_K=-5
+  - HX-F3_duty=-3000W
+  - specification_error_registered(PHF-S1)
+  - specification_error_registered(VLV-S1)
+  - specification_error_registered(PUMP-S1)
+  - specification_error_registered(PUMP-S2)
+  - specification_error_registered(RX-S1)
+  - specification_error_registered(RX-S2)
+  - specification_error_registered(RX-S3)
+  - specification_error_registered(RX-S4)
+  - specification_error_registered(RX-S5)
+  - specification_error_registered(SEP-S1)
+  - specification_error_registered(HX-S1)
+  - registered_nu_conserves_mass
+  - RX-S3_nu_violates_mass
+  - mass_check_threshold_1000x_above_double_rounding
+  - regime(PHF-1.inlet)=LIQUID
+  - regime(VLV-1.outlet)=LIQUID
+  - regime(VLV-2.inlet)=LIQUID
+  - regime(VLV-3.inlet)=VAPOR
+  - regime(VLV-3.outlet)=VAPOR
+  - regime(RX-2.inlet)=VAPOR
+  - regime(RX-2.outlet)=VAPOR
+  - regime(RX-3.outlet)=VAPOR
+  - regime(RX-6.outlet)=VAPOR
+  - regime(RX-8.outlet)=VAPOR
+  - regime(SEP-2.inlet)=LIQUID
+  - regime(SEP-2.top)=VAPOR
+  - regime(SEP-2.bottom)=LIQUID
+  - regime(HX-1.hot_inlet)=LIQUID
+  - regime(HX-1.hot_outlet)=LIQUID
+  - regime(HX-1.cold_outlet)=LIQUID
+  - regime(HX-4.hot_inlet)=VAPOR
+  - regime(HX-4.hot_outlet)=VAPOR
+  - regime(HX-4.cold_outlet)=LIQUID
+  - regime(HX-F1.cold_outlet)=LIQUID
+  - regime(HX-F1.hot_outlet)=LIQUID
+  - regime(HX-F2.cold_outlet)=LIQUID
+  - regime(HX-F2.hot_outlet)=LIQUID
+  - regime(HX-F3.hot_outlet)=LIQUID
+  - regime(HX-F4.cold_inlet)=LIQUID
+  - regime(HX-F4.hot_outlet)=VAPOR
+  - regime(PHF-1.outlet)=TWO_PHASE
+  - regime(PHF-2.outlet)=TWO_PHASE
+  - regime(PHF-5.outlet)=TWO_PHASE
+  - regime(PHF-7.outlet)=TWO_PHASE
+  - regime(VLV-2.outlet)=TWO_PHASE
+  - regime(VLV-5.outlet)=TWO_PHASE
+  - regime(RX-4.outlet)=TWO_PHASE
+  - regime(RX-5.outlet)=TWO_PHASE
+  - regime(C1.S3)=LIQUID
+  - regime(C1.S4)=TWO_PHASE
+  - regime(C1.U-PHF)=TWO_PHASE
+  - regime(SYN-001-UL-C3.U-PHF)=TWO_PHASE
+  - regime(SYN-001-UL-C3.S8)=LIQUID
+  - regime(SYN-001-UL-C3X.U-PHF)=TWO_PHASE
+  - regime(SYN-001-UL-C3X.S8)=LIQUID
+  - every_registered_regime_is_at_least_1e-3_from_its_boundary
+  - fd_stencils_inside_T_domain_by_10_steps
+  - fd_stencils_inside_P_domain_by_10_steps
+  - rows_vanish_at_causal_solution(PHF-1)
+  - rows_vanish_at_causal_solution(PHF-5)
+  - rows_vanish_at_causal_solution(PHF-6)
+  - rows_vanish_at_causal_solution(VLV-2)
+  - rows_vanish_at_causal_solution(VLV-5)
+  - rows_vanish_at_causal_solution(PUMP-1)
+  - rows_vanish_at_causal_solution(RX-3)
+  - rows_vanish_at_causal_solution(RX-4)
+  - rows_vanish_at_causal_solution(RX-5)
+  - rows_vanish_at_causal_solution(SEP-2)
+  - rows_vanish_at_causal_solution(HX-1)
+  - rows_vanish_at_causal_solution(HX-4)
+  - every_term_visible(syn001.ph_flash)
+  - jacobian_rows_pairwise_distinct(syn001.ph_flash,J1)
+  - jacobian_rows_pairwise_distinct(syn001.ph_flash,J2)
+  - mutation_detected(syn001.ph_flash,swap(S1.n, A<->B))
+  - mutation_detected(syn001.ph_flash,swap(S1.n, B<->C))
+  - mutation_detected(syn001.ph_flash,swap(S1.n, A<->C))
+  - mutation_detected(syn001.ph_flash,swap(S2.n, A<->B))
+  - mutation_detected(syn001.ph_flash,swap(S2.n, B<->C))
+  - mutation_detected(syn001.ph_flash,swap(S2.n, A<->C))
+  - mutation_detected(syn001.ph_flash,swap(S3.n, A<->B))
+  - mutation_detected(syn001.ph_flash,swap(S3.n, B<->C))
+  - mutation_detected(syn001.ph_flash,swap(S3.n, A<->C))
+  - mutation_detected(syn001.ph_flash,h_vap_data(A<->B))
+  - mutation_detected(syn001.ph_flash,lnk_data(A<->B))
+  - mutation_detected(syn001.ph_flash,h_vap_data(B<->C))
+  - mutation_detected(syn001.ph_flash,lnk_data(B<->C))
+  - mutation_detected(syn001.ph_flash,h_vap_data(A<->C))
+  - mutation_detected(syn001.ph_flash,lnk_data(A<->C))
+  - 'mutation_detected(syn001.ph_flash,phase(inlet_regime: L->V))'
+  - mutation_detected(syn001.ph_flash,K at the liquid outlet's (T, P))
+  - 'mutation_detected(syn001.ph_flash,phase(inlet_regime: V->L))'
+  - registered_invisible_mutations_exist(syn001.ph_flash)
+  - fixture_degeneracy_invisible(syn001.ph_flash,h_liq_data(A<->B))
+  - fixture_degeneracy_invisible(syn001.ph_flash,h_liq_data(B<->C))
+  - fixture_degeneracy_invisible(syn001.ph_flash,h_liq_data(A<->C))
+  - every_term_visible(syn001.valve)
+  - jacobian_rows_pairwise_distinct(syn001.valve,J1)
+  - jacobian_rows_pairwise_distinct(syn001.valve,J2)
+  - mutation_detected(syn001.valve,swap(S1.n, A<->B))
+  - mutation_detected(syn001.valve,swap(S1.n, B<->C))
+  - mutation_detected(syn001.valve,swap(S1.n, A<->C))
+  - mutation_detected(syn001.valve,swap(S2.liq, A<->B))
+  - mutation_detected(syn001.valve,swap(S2.liq, B<->C))
+  - mutation_detected(syn001.valve,swap(S2.liq, A<->C))
+  - mutation_detected(syn001.valve,swap(S2.n, A<->B))
+  - mutation_detected(syn001.valve,swap(S2.n, B<->C))
+  - mutation_detected(syn001.valve,swap(S2.n, A<->C))
+  - mutation_detected(syn001.valve,swap(S2.vap, A<->B))
+  - mutation_detected(syn001.valve,swap(S2.vap, B<->C))
+  - mutation_detected(syn001.valve,swap(S2.vap, A<->C))
+  - mutation_detected(syn001.valve,h_vap_data(A<->B))
+  - mutation_detected(syn001.valve,lnk_data(A<->B))
+  - mutation_detected(syn001.valve,h_vap_data(B<->C))
+  - mutation_detected(syn001.valve,lnk_data(B<->C))
+  - mutation_detected(syn001.valve,h_vap_data(A<->C))
+  - mutation_detected(syn001.valve,lnk_data(A<->C))
+  - 'mutation_detected(syn001.valve,phase(inlet_regime: L->V))'
+  - mutation_invisible_by_fixture_degeneracy(syn001.valve,swap(S1.liq, A<->B))
+  - mutation_invisible_by_fixture_degeneracy(syn001.valve,swap(S1.liq, B<->C))
+  - mutation_invisible_by_fixture_degeneracy(syn001.valve,swap(S1.liq, A<->C))
+  - mutation_detected(syn001.valve,swap(S1.vap, A<->B))
+  - mutation_detected(syn001.valve,swap(S1.vap, B<->C))
+  - mutation_detected(syn001.valve,swap(S1.vap, A<->C))
+  - registered_invisible_mutations_exist(syn001.valve)
+  - fixture_degeneracy_invisible(syn001.valve,h_liq_data(A<->B))
+  - fixture_degeneracy_invisible(syn001.valve,h_liq_data(B<->C))
+  - fixture_degeneracy_invisible(syn001.valve,h_liq_data(A<->C))
+  - every_term_visible(syn001.liquid_pump)
+  - jacobian_rows_pairwise_distinct(syn001.liquid_pump,J1)
+  - jacobian_rows_pairwise_distinct(syn001.liquid_pump,J2)
+  - mutation_detected(syn001.liquid_pump,swap(S1.n, A<->B))
+  - mutation_detected(syn001.liquid_pump,swap(S1.n, B<->C))
+  - mutation_detected(syn001.liquid_pump,swap(S1.n, A<->C))
+  - mutation_detected(syn001.liquid_pump,swap(S2.n, A<->B))
+  - mutation_detected(syn001.liquid_pump,swap(S2.n, B<->C))
+  - mutation_detected(syn001.liquid_pump,swap(S2.n, A<->C))
+  - mutation_detected(syn001.liquid_pump,work relation eta on the ideal work)
+  - registered_invisible_mutations_exist(syn001.liquid_pump)
+  - fixture_degeneracy_invisible(syn001.liquid_pump,h_liq_data(A<->B))
+  - fixture_degeneracy_invisible(syn001.liquid_pump,h_liq_data(B<->C))
+  - fixture_degeneracy_invisible(syn001.liquid_pump,h_liq_data(A<->C))
+  - every_term_visible(syn001.conversion_reactor)
+  - jacobian_rows_pairwise_distinct(syn001.conversion_reactor,J1)
+  - jacobian_rows_pairwise_distinct(syn001.conversion_reactor,J2)
+  - mutation_detected(syn001.conversion_reactor,swap(S1.n, A<->B))
+  - mutation_detected(syn001.conversion_reactor,swap(S1.n, B<->C))
+  - mutation_detected(syn001.conversion_reactor,swap(S1.n, A<->C))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.liq, A<->B))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.liq, B<->C))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.liq, A<->C))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.n, A<->B))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.n, B<->C))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.n, A<->C))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.vap, A<->B))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.vap, B<->C))
+  - mutation_detected(syn001.conversion_reactor,swap(S2.vap, A<->C))
+  - mutation_detected(syn001.conversion_reactor,h_vap_data(A<->B))
+  - mutation_detected(syn001.conversion_reactor,lnk_data(A<->B))
+  - mutation_detected(syn001.conversion_reactor,h_vap_data(B<->C))
+  - mutation_detected(syn001.conversion_reactor,lnk_data(B<->C))
+  - mutation_detected(syn001.conversion_reactor,h_vap_data(A<->C))
+  - mutation_detected(syn001.conversion_reactor,lnk_data(A<->C))
+  - 'mutation_detected(syn001.conversion_reactor,phase(inlet_regime: L->V))'
+  - mutation_detected(syn001.conversion_reactor,nu(A<->B))
+  - mutation_detected(syn001.conversion_reactor,nu(B<->C))
+  - mutation_detected(syn001.conversion_reactor,nu(A<->C))
+  - mutation_detected(syn001.conversion_reactor,key(A->B))
+  - mutation_detected(syn001.conversion_reactor,conversion(X -> 1 - X))
+  - mutation_detected(syn001.conversion_reactor,extent without 1/|nu_key|)
+  - 'mutation_detected(syn001.conversion_reactor,phase(inlet_regime: V->L))'
+  - mutation_detected(syn001.conversion_reactor,key(B->A))
+  - registered_invisible_mutations_exist(syn001.conversion_reactor)
+  - fixture_degeneracy_invisible(syn001.conversion_reactor,h_liq_data(A<->B))
+  - fixture_degeneracy_invisible(syn001.conversion_reactor,h_liq_data(B<->C))
+  - fixture_degeneracy_invisible(syn001.conversion_reactor,h_liq_data(A<->C))
+  - every_term_visible(syn001.component_separator)
+  - jacobian_rows_pairwise_distinct(syn001.component_separator,J1)
+  - jacobian_rows_pairwise_distinct(syn001.component_separator,J2)
+  - mutation_detected(syn001.component_separator,swap(S1.n, A<->B))
+  - mutation_detected(syn001.component_separator,swap(S1.n, B<->C))
+  - mutation_detected(syn001.component_separator,swap(S1.n, A<->C))
+  - mutation_detected(syn001.component_separator,swap(S2.n, A<->B))
+  - mutation_detected(syn001.component_separator,swap(S2.n, B<->C))
+  - mutation_detected(syn001.component_separator,swap(S2.n, A<->C))
+  - mutation_detected(syn001.component_separator,swap(S3.n, A<->B))
+  - mutation_detected(syn001.component_separator,swap(S3.n, B<->C))
+  - mutation_detected(syn001.component_separator,swap(S3.n, A<->C))
+  - mutation_detected(syn001.component_separator,h_vap_data(A<->B))
+  - mutation_detected(syn001.component_separator,h_vap_data(B<->C))
+  - mutation_detected(syn001.component_separator,h_vap_data(A<->C))
+  - 'mutation_detected(syn001.component_separator,phase(inlet_regime: L->V))'
+  - 'mutation_detected(syn001.component_separator,phase(top_phase: V->L))'
+  - 'mutation_detected(syn001.component_separator,phase(bottom_phase: L->V))'
+  - mutation_detected(syn001.component_separator,split applied to the bottom)
+  - mutation_invisible_by_fixture_degeneracy(syn001.component_separator,swap(S1.liq, A<->B))
+  - mutation_invisible_by_fixture_degeneracy(syn001.component_separator,swap(S1.liq, B<->C))
+  - mutation_invisible_by_fixture_degeneracy(syn001.component_separator,swap(S1.liq, A<->C))
+  - mutation_detected(syn001.component_separator,swap(S1.vap, A<->B))
+  - mutation_detected(syn001.component_separator,swap(S1.vap, B<->C))
+  - mutation_detected(syn001.component_separator,swap(S1.vap, A<->C))
+  - 'mutation_detected(syn001.component_separator,phase(top_phase: L->V))'
+  - registered_invisible_mutations_exist(syn001.component_separator)
+  - fixture_degeneracy_invisible(syn001.component_separator,h_liq_data(A<->B))
+  - fixture_degeneracy_invisible(syn001.component_separator,h_liq_data(B<->C))
+  - fixture_degeneracy_invisible(syn001.component_separator,h_liq_data(A<->C))
+  - every_term_visible(syn001.heat_exchanger)
+  - jacobian_rows_pairwise_distinct(syn001.heat_exchanger,J1)
+  - jacobian_rows_pairwise_distinct(syn001.heat_exchanger,J2)
+  - mutation_detected(syn001.heat_exchanger,swap(S1.n, A<->B))
+  - mutation_detected(syn001.heat_exchanger,swap(S1.n, B<->C))
+  - mutation_detected(syn001.heat_exchanger,swap(S1.n, A<->C))
+  - mutation_detected(syn001.heat_exchanger,swap(S2.n, A<->B))
+  - mutation_detected(syn001.heat_exchanger,swap(S2.n, B<->C))
+  - mutation_detected(syn001.heat_exchanger,swap(S2.n, A<->C))
+  - mutation_detected(syn001.heat_exchanger,swap(S3.n, A<->B))
+  - mutation_detected(syn001.heat_exchanger,swap(S3.n, B<->C))
+  - mutation_detected(syn001.heat_exchanger,swap(S3.n, A<->C))
+  - mutation_detected(syn001.heat_exchanger,swap(S4.n, A<->B))
+  - mutation_detected(syn001.heat_exchanger,swap(S4.n, B<->C))
+  - mutation_detected(syn001.heat_exchanger,swap(S4.n, A<->C))
+  - mutation_detected(syn001.heat_exchanger,h_vap_data(A<->B))
+  - mutation_detected(syn001.heat_exchanger,h_vap_data(B<->C))
+  - mutation_detected(syn001.heat_exchanger,h_vap_data(A<->C))
+  - 'mutation_detected(syn001.heat_exchanger,phase(hot_phase: L->V))'
+  - 'mutation_detected(syn001.heat_exchanger,phase(cold_phase: L->V))'
+  - 'mutation_detected(syn001.heat_exchanger,phase(hot_phase: V->L))'
+  - registered_invisible_mutations_exist(syn001.heat_exchanger)
+  - fixture_degeneracy_invisible(syn001.heat_exchanger,h_liq_data(A<->B))
+  - fixture_degeneracy_invisible(syn001.heat_exchanger,h_liq_data(B<->C))
+  - fixture_degeneracy_invisible(syn001.heat_exchanger,h_liq_data(A<->C))
+  - the_only_cancelling_partial_is_the_pump_work_relation_in_T_in
+  - dormant_temperature_columns_are_the_registered_structure
+  - C1_envelope_closes
+  - C1_heater_liquid_valve_and_flash_two_phase
+  - C1_pump_heats_by_8/300_K
+  - C2_recycle_closes
+  - C2_envelope_closes
+  - C2_reactor_duty=4500W_exactly
+  - C2_separator_duty_vanishes
+  - C2_all_liquid_every_K_below_1_at_315K
+  - C3_reduction_root
+  - C3_flash_reproduces_T_f
+  - C3_flash_liquid_reproduces_loop
+  - C3_envelope_closes
+  - C3_hx_passes_every_check
+  - C3X_reduction_root
+  - C3X_envelope_closes
+  - C3X_flash_reproduces_T_f
+  - C3X_exchanger_fails_only_at_the_cold_end
+  - C3X_cold_end=-10K
+  - C3X_mixer_outlet_subcooled_by_1e-3
+  - C3X_cold_outlet_subcooled_by_1e-3
+  - C3_recycle_and_purge_differ
+  - C3_reduction_increasing_on_bracket
+  - C3_mixer_outlet_subcooled_by_1e-3
+  - C3_cold_outlet_subcooled_by_1e-3
+  - C3_tear_map_couples_temperature_to_composition
+  - C3_tear_map_couples_composition_to_temperature
+  - C3_tear_map_contracting
+  - rows_vanish_at_coupled_solution(C1.U-PUMP)
+  - rows_vanish_at_coupled_solution(C1.U-VLV)
+  - rows_vanish_at_coupled_solution(C1.U-PHF)
+  - rows_vanish_at_coupled_solution(C2.U-RX)
+  - rows_vanish_at_coupled_solution(C2.U-SEP)
+  - rows_vanish_at_coupled_solution(C3.U-PHF)
+  - rows_vanish_at_coupled_solution(C3.U-HX)
+  - INJ-T1_every_valve_row_satisfied
+  - INJ-T1_caught_by_admissibility
+  - INJ-T1_caught_by_fresh_flash_energy
+  - INJ-T1_caught_by_independent_split
+  - INJ-T3_mass_and_moles_blind
+  - INJ-T3_component_balance_catches
+  - INJ-T4_work_relation_catches
+  - row_tolerance_1e-12_at_least_100x_above_53bit_floor
+  - jacobian_tolerance_1e-11_at_least_100x_above_53bit_floor
+  - fd_witness_1e-7_at_least_100x_above_floor_at_1e-5
+  - ph_kernel_T_1e-6_at_least_100x_above_53bit_floor
+  - imports_nothing_from_process_runtime_or_benchmarks

@@ -1,0 +1,810 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  # T06 W6: the robustness ensemble runs on demand only; a push must never start it. Since W28
+  # (spec §17 (A5)) the dispatch runs the closing records, run 2r and holdout1.
+  workflow_dispatch:
+    inputs:
+      ensemble:
+        description: "Run T06's closing records (run 2r and holdout1, 2 × 440 starts) on both architectures"
+        type: boolean
+        default: false
+      # T08 W5 (build-first §A4.5, §A4.6): PTC-R1's comparison, dispatched only after the
+      # design-lane review and Frank's go-ahead; a push must never start it.
+      ptc_r1:
+        description: "T08 W5: run PTC-R1 (441 registered starts × 2 arms) on both architectures"
+        type: boolean
+        default: false
+      # T08 W2.5 (spec §4.8, T08.A30): the [A10] inventory's aarch64 half; x86-64 is run locally.
+      a30_inventory:
+        description: "T08 W2.5: run the T08.A30 binary inventory on ubuntu-24.04-arm"
+        type: boolean
+        default: false
+      # T08 W1.6 (spec §6.1, T08.A15): T06 A89's case repeated on the aarch64 class.
+      a89_repeats:
+        description: "T08 W1.6: repeat T06 A89's case (THM-09 start 2) 20 times on ubuntu-24.04-arm"
+        type: boolean
+        default: false
+      # T08 W4.3 (release spec §8.2 steps 3–5; T08.A43–A45): the distribution half of the RC job,
+      # dispatched on its own or as part of `rc`. A push never starts it.
+      rc_distribution:
+        description: "T08 W4.3: sdist/wheel twice (A43), clean install on both architectures (A44), RC bundle set written on x86-64 and replayed on fresh x86-64 and aarch64 runners (A45)"
+        type: boolean
+        default: false
+      # T08 W4.4 (release spec §8.2): the whole release-candidate job at this commit — `check` and
+      # `identity` (they run on every dispatch: A41, A42), `rc_distribution`'s jobs (A43–A45),
+      # `rc-steps` on both architectures (A42's version trial, A47–A49, A30, A34) and the
+      # aarch64 ensemble (A46). Dispatched by the session at the RC commit only.
+      rc:
+        description: "T08 W4.4: the release-candidate job (release spec §8.2) at this commit; includes rc_distribution"
+        type: boolean
+        default: false
+
+jobs:
+  check:
+    # Plan §4.2 K05: the two structural-hash platforms are one Linux x86-64 and one of
+    # {Linux aarch64, macOS arm64}. Linux aarch64 chosen (Frank, 2026-09-22); it is the
+    # registered option, so no ADR is needed, and it varies the instruction set rather than
+    # merely the distribution.
+    #
+    # Gate **G05** itself — structural equality *compared* across the two — is K05's and is
+    # not claimed by this workflow. What the second runner buys today is evidence: the x86-64
+    # runners already disagree with each other on converged floats (2026-09-21), and a second
+    # architecture is how we find out which artifacts are genuinely structural.
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    env:
+      # ADR 0007 D6: a differing thread count is a differing environment, and replay in that
+      # case is `compatible_reproduction` at best. Pinned to 1 so the two runners are
+      # comparable at all; this does not make single-threaded a product requirement.
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: tests/test_evidence_manifests.py checks that each manifest's
+          # recorded commit object exists in the repository.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # The lock carries the base, `dev` and `server` extras (T07 W6d), so both architectures
+      # install the HTTP/MCP libraries and W6's binding tests run rather than skip.
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      # T07 gate G19 on this architecture: the server extra is installed, and its closure, read
+      # from the installed metadata, has no GPL-family, unresolved or unlisted licence.
+      - name: The server extra and its licences (G19)
+        run: |
+          python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
+          python scripts/t07_licence_inventory.py
+
+      - name: Run checks
+        run: ./scripts/check.sh
+
+      # Gate G05's second clause: two-platform structural equality. Each runner emits the R0
+      # artifacts blueprint §8.3 promises identical across supported platforms; the `identity`
+      # job below compares them. Floats are deliberately absent — §8.3 excludes adaptive
+      # floating-point decisions from any cross-platform bitwise promise, and two x86-64
+      # runners were measured disagreeing on a converged state's last bits.
+      - name: Emit the R0 structural identity
+        run: PYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json
+
+      # T02 A34: the recycle's two R1/R2 floats, compared under ADR 0007 D2 rather than for
+      # equality, and so kept out of the floats-free identity document.
+      - name: Emit T02's R1/R2 floats
+        run: PYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: structural-identity-${{ matrix.runner }}
+          path: |
+            identity.json
+            t02-floats.json
+          if-no-files-found: error
+
+  default-install:
+    # T07 §11.1: the default install is unchanged. The base and `dev` requirements at the lock's
+    # versions (the lock as constraints, so the `server` extra is not installed), then the whole
+    # suite: `openflowsheet` imports and every test that does not need the extra passes, and
+    # those that do skip. One architecture suffices; the extra is a pure-Python question here.
+    runs-on: ubuntu-latest
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install the project with the dev extra only, at the locked versions
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -c requirements.lock -e '.[dev]'
+
+      - name: The server extra is absent
+        run: |
+          python - <<'PY'
+          import importlib.util, sys
+          present = [m for m in ("mcp", "starlette", "uvicorn") if importlib.util.find_spec(m)]
+          sys.exit(f"the default install carries {present}" if present else 0)
+          PY
+
+      - name: Run the tests without the extra
+        run: python -m pytest -q
+
+  identity:
+    # G05: the comparison itself, which no single runner can perform. It compares every
+    # top-level key, so each package's key is gated by being added to the document: `t02` …
+    # `t06`, and T07 G1's `t07` (`scripts/t07_identity.py`: the contract's inline jobs).
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: structural-identity-*
+          path: identities
+
+      # T02 A34: `t02_floats` is compared under ADR 0007 D2 by the registered comparator, which
+      # reads the numerical policy from benchmarks/k04/reference_values.yaml.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install the comparator's dependencies
+        # `run.compare` imports `canonical` (numpy) since ADR 0025 W2 (`a12ec2b`); RC F4.
+        run: python -m pip install -c requirements.lock pyyaml numpy
+
+      - name: Compare the structural identity across platforms
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys
+          found = sorted(pathlib.Path("identities").rglob("identity.json"))
+          if len(found) < 2:
+              sys.exit(f"G05 needs two platforms; found {len(found)}")
+          documents = {path.parent.name: json.loads(path.read_text()) for path in found}
+          names = sorted(documents)
+          first = documents[names[0]]
+          failures = []
+          sys.path.insert(0, "src")
+          from openflowsheet.run.compare import differences
+          floats = {
+              path.parent.name: json.loads(path.read_text())
+              for path in pathlib.Path("identities").rglob("t02-floats.json")
+          }
+          if sorted(floats) != names:
+              failures.append(f"t02-floats.json from {sorted(floats)}, identities from {names}")
+          for name in names[1:]:
+              other = documents[name]
+              for key in sorted(set(first) | set(other)):
+                  if first.get(key) != other.get(key):
+                      failures.append(f"{key}: {names[0]} != {name}")
+              if name in floats and names[0] in floats:
+                  failures += [
+                      f"{found} ({names[0]} vs {name})"
+                      for found in differences(
+                          floats[name],
+                          floats[names[0]],
+                          "t02_floats",
+                          # ADR 0025 W5: registered comparisons keep v1 (RC F4).
+                          policy_id="K04-numerical-policy-v1",
+                      )
+                  ]
+          for name in names:
+              print(f"{name}: {documents[name]['structural_sha256']}")
+          if failures:
+              sys.exit("R0 structural artifacts differ across platforms:\n  " + "\n  ".join(failures))
+          print(f"G05: R0 structural identity equal across {len(names)} platforms")
+          PY
+
+  ensemble:
+    # T06 spec §6.6 (A5), §7.6 (A5), A98, A99: the closing records on both CI architectures, at
+    # one commit — run 2r (run 2's 440 published starts re-run with the v2 record, for A90) and
+    # holdout1 (the 440 holdout starts, reported and never gated). Neither is a new gate result:
+    # V20's verdict is run 2's (§7.3 (A5)). Every platform scores the committed starts (§6.5) and
+    # never regenerates them; `check` reports a regeneration against them, it never replaces them.
+    # The machine class is the harness's `machine_class()` (§7.5 (A5)), and the run files are
+    # written outside the checkout so that both runs record the same clean tree.
+    if: github.event_name == 'workflow_dispatch' && inputs.ensemble
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    # 2 × 440 starts at a registered ceiling of 60 s each is the worst case; ~0.2 s is typical.
+    timeout-minutes: 180
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONPATH: "."
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: The machine class (spec §7.5 (A5)) and the output directory
+        run: |
+          echo "CLASS=$(python -c 'from benchmarks.t06.ensemble import machine_class; print(machine_class())')" >> "$GITHUB_ENV"
+          echo "OUT=$RUNNER_TEMP/t06" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/t06"
+
+      - name: Regenerate both starts files (byte-identical on ref-x86-64 only; reported elsewhere)
+        run: |
+          python scripts/t06_ensemble.py check
+          python scripts/t06_ensemble.py check --holdout
+
+      - name: Run 2r — the 440 published starts (spec §6.6 (A5), A98)
+        run: python scripts/t06_ensemble.py run --run-id run2r --out "$OUT/run2r-$CLASS.json"
+
+      - name: holdout1 — the 440 holdout starts (spec §7.6 (A5), A99)
+        if: always()
+        run: python scripts/t06_ensemble.py run --run-id holdout1 --out "$OUT/holdout1-$CLASS.json"
+
+      - name: Reports (spec §7.4; the holdout's without a gate line)
+        if: always()
+        run: |
+          python scripts/t06_ensemble.py report "$OUT/run2r-$CLASS.json" --out "$OUT/run2r-$CLASS.report.txt"
+          python scripts/t06_ensemble.py report "$OUT/holdout1-$CLASS.json" --out "$OUT/holdout1-$CLASS.report.txt"
+
+      - name: Replay each case's first start and every retained failure (spec §10, T6-A34)
+        if: always()
+        run: |
+          status=0
+          python scripts/t06_ensemble.py replay "$OUT/run2r-$CLASS.json" | tee "$OUT/run2r-$CLASS.replay.txt" || status=1
+          python scripts/t06_ensemble.py replay "$OUT/holdout1-$CLASS.json" | tee "$OUT/holdout1-$CLASS.replay.txt" || status=1
+          exit "$status"
+
+      - name: A98 — run 2r against run 2's committed same-class file
+        if: always()
+        run: python scripts/t06_ensemble.py a98 "$OUT/run2r-$CLASS.json" | tee "$OUT/run2r-$CLASS.a98.txt"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ensemble-${{ matrix.runner }}
+          path: ${{ runner.temp }}/t06/
+          if-no-files-found: warn
+
+  ensemble-compare:
+    # T6-A35: the per-start classification across the two architectures — counted and listed,
+    # reported, never promised (spec §10). The three-class comparison with ref-x86-64 is made
+    # locally from the committed files (§7.6 (A5): `holdout1.compare.txt`).
+    needs: ensemble
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.ensemble
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: "."
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies and the project
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+          python -m pip install -e .
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ensemble-*
+          path: ensembles
+
+      - name: Compare the two runs' classifications, run 2r and holdout1
+        run: |
+          python scripts/t06_ensemble.py compare ensembles/ensemble-ubuntu-latest/run2r-ci-x86-64.json ensembles/ensemble-ubuntu-24.04-arm/run2r-ci-aarch64.json
+          python scripts/t06_ensemble.py compare ensembles/ensemble-ubuntu-latest/holdout1-ci-x86-64.json ensembles/ensemble-ubuntu-24.04-arm/holdout1-ci-aarch64.json
+
+  ptc-r1:
+    # T08 W5 (build-first spec §A4.5–§A4.6, B21): `compare --run` — the 441 registered starts
+    # under both arms, one invocation per CI architecture, on the same two machine classes as
+    # `ensemble`. The harness refuses unless `case.json` recomputes, the tree is clean and no
+    # result exists (review S3), so the results are written outside the checkout and uploaded;
+    # the session commits them at `C_res`. Nothing here judges: B21–B23 are the design lane's
+    # `verdict`.
+    if: github.event_name == 'workflow_dispatch' && inputs.ptc_r1
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    # No PTC-R1 timing exists before W5 (§A4.6 forbids the runs); the GitHub-hosted maximum, so
+    # that a slow runner is not cut short and the 882 runs are not repeated.
+    timeout-minutes: 360
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONPATH: "."
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: The output directory, outside the checkout
+        run: |
+          echo "OUT=$RUNNER_TEMP/t08" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/t08"
+
+      - name: The registration recomputes (B20)
+        run: python -m benchmarks.t08.ptc_r1.compare --check-case
+
+      - name: W5 — PTC-R1, 441 starts × 2 arms (§A4.5)
+        run: python -m benchmarks.t08.ptc_r1.compare --run --out-dir "$OUT"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ptc-r1-${{ matrix.runner }}
+          path: ${{ runner.temp }}/t08/
+          if-no-files-found: warn
+
+  a30-inventory:
+    # T08 W2.5 (T08 release spec §4.8, §9 T08.A30; ADR 0006 D5.4): the [A10] refresh on the aarch64
+    # wheels — every compiled distribution of the default install and the `server` extra at the
+    # lock's versions, per object path, sha256, DT_NEEDED and notice attribution, the METIS closure
+    # and the project's measured load. The record and its summary are uploaded; the session commits
+    # the summary as `docs/t08-a30/t08-a30-aarch64.json` and the record under
+    # `evidence/T08/artifacts/` by hash. The step's exit status is the record's verdict and does not
+    # fail the job: a FAIL is a licence reading for Frank (spec §4.8), recorded, not hidden.
+    if: github.event_name == 'workflow_dispatch' && inputs.a30_inventory
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: binutils (objdump, nm) are present
+        run: objdump --version | head -n 1 && nm --version | head -n 1
+
+      - name: T08.A30 — the inventory
+        run: |
+          OUT="$RUNNER_TEMP/a30"
+          mkdir -p "$OUT"
+          set +e
+          python scripts/p03_binary_inventory.py --a30 --out "$OUT" --summary-dir "$OUT" | tee "$OUT/a30.log"
+          echo "a30 exit status ${PIPESTATUS[0]}" | tee -a "$OUT/a30.log"
+          ls "$OUT"/a30-inventory-aarch64.json "$OUT"/t08-a30-aarch64.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a30-inventory-ubuntu-24.04-arm
+          path: ${{ runner.temp }}/a30/
+          if-no-files-found: error
+
+  a89-repeats:
+    # T08 W1.6 (T08 release spec §6.1, §9 T08.A15): T06 A89's case — THM-09 start 2 under
+    # `T06-revision-v2` — 20 times on the aarch64 class, each repetition in a fresh interpreter,
+    # recording outcome, VERIFIED, S3's worst ratio and the refinement count. The record is
+    # uploaded; the session commits it as `benchmarks/t08/a89/ci-aarch64.json`. Nothing here
+    # judges: a repetition that misses A89's outcome is a defect for the design lane, so the
+    # step's exit status does not fail the job and the record is uploaded either way.
+    if: github.event_name == 'workflow_dispatch' && inputs.a89_repeats
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: T08.A15 — 20 repetitions
+        run: |
+          OUT="$RUNNER_TEMP/a89"
+          mkdir -p "$OUT"
+          set +e
+          python scripts/t08_a89_repeats.py --label ci-aarch64 --repetitions 20 --out "$OUT/ci-aarch64.json" | tee "$OUT/a89.log"
+          echo "a89 exit status ${PIPESTATUS[0]}" | tee -a "$OUT/a89.log"
+          ls "$OUT/ci-aarch64.json"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a89-repeats-ubuntu-24.04-arm
+          path: ${{ runner.temp }}/a89/
+          if-no-files-found: error
+
+  dist:
+    # T08.A43 (release spec §8.2 step 3): the sdist and the wheel built twice from this commit, with
+    # SOURCE_DATE_EPOCH = its commit time and setuptools pinned, contents and Requires-Dist checked
+    # and the two builds compared member by member (`scripts/t08_dist.py`). The wheel is pure
+    # Python, so this one build serves both architectures' clean installs. Nothing is published.
+    if: github.event_name == 'workflow_dispatch' && (inputs.rc_distribution || inputs.rc)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: T08.A43 — build twice and inspect
+        run: python scripts/t08_dist.py --out "$RUNNER_TEMP/rc-dist"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rc-dist
+          path: |
+            ${{ runner.temp }}/rc-dist/t08-a43-dist.json
+            ${{ runner.temp }}/rc-dist/dist/
+          if-no-files-found: error
+
+  clean-install:
+    # T08.A44 (step 4): on a fresh runner of each architecture, outside the source tree, a virtual
+    # environment with the wheel's own requirements at the lock's versions (the lock as
+    # constraints) and the RC wheel `--no-deps`. `install-check` runs with that environment's
+    # interpreter from a directory outside the checkout; the checkout is read as data only (the
+    # lock, the audited CasADi hashes, the registered certificate). It checks the versions against
+    # the lock, `pip check`, CasADi's installed files against T08.A30's digest (and P03's per-file
+    # hashes on x86-64), and solves SYN-001-nominal through the `openflowsheet` console script.
+    # T08.A19 (step 4, release spec Amendment R3 5): the environment sits in a scratch directory
+    # that also holds an unrelated `requirements.lock`; `lock-check` asserts (b) the installed
+    # package records no lock, (a) the checkout records `ead4edf1…`, and (c) the smoke bundle the
+    # installed CLI wrote replays `inspected_archived_results` / `NOT_RUN` from both.
+    needs: dist
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: rc-dist
+          path: ${{ runner.temp }}/rc-dist
+
+      - name: A clean environment outside the tree, at the lock's versions, the wheel --no-deps
+        run: |
+          # T08.A19 (b): an unrelated file named requirements.lock above the environment.
+          printf 'unrelated-project==1.0\n' > "$RUNNER_TEMP/requirements.lock"
+          CLEAN="$RUNNER_TEMP/clean"
+          python -m venv "$CLEAN"
+          "$CLEAN/bin/python" -m pip install --upgrade pip
+          WHEEL=$(ls "$RUNNER_TEMP"/rc-dist/dist/*.whl)
+          "$CLEAN/bin/python" - "$WHEEL" > "$RUNNER_TEMP/requires.txt" <<'PY'
+          import email.parser, sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as wheel:
+              (name,) = [n for n in wheel.namelist() if n.endswith(".dist-info/METADATA")]
+              metadata = email.parser.Parser().parsestr(wheel.read(name).decode())
+          print("\n".join(r for r in metadata.get_all("Requires-Dist") if "extra ==" not in r))
+          PY
+          cat "$RUNNER_TEMP/requires.txt"
+          "$CLEAN/bin/python" -m pip install -c requirements.lock -r "$RUNNER_TEMP/requires.txt"
+          "$CLEAN/bin/python" -m pip install --no-deps "$WHEEL"
+
+      - name: T08.A44 — install-check from outside the tree
+        run: |
+          OUTSIDE="$RUNNER_TEMP/outside"
+          mkdir -p "$OUTSIDE" "$RUNNER_TEMP/rc-install"
+          cd "$OUTSIDE"
+          "$RUNNER_TEMP/clean/bin/python" "$GITHUB_WORKSPACE/scripts/t08_rc.py" install-check \
+            --out "$RUNNER_TEMP/rc-install/install-${{ matrix.runner }}.json" \
+            --keep "$RUNNER_TEMP/rc-install/bundle"
+
+      - name: T08.A19 — the lock lookup, installed and checkout, and the bundle's replay
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/outside"
+          status=0
+          for state in installed checkout; do
+            "$RUNNER_TEMP/clean/bin/python" "$GITHUB_WORKSPACE/scripts/t08_rc.py" lock-check \
+              --state "$state" --bundle "$RUNNER_TEMP/rc-install/bundle/SYN-001-nominal" \
+              --out "$RUNNER_TEMP/rc-install/lock-$state-${{ matrix.runner }}.json" || status=1
+          done
+          exit $status
+
+      # T08.A34 (step 10) on the certificate this step emitted.
+      - name: T08.A34 — audit the smoke solve's certificate
+        if: always()
+        run: |
+          "$RUNNER_TEMP/clean/bin/python" scripts/t08_rc.py certificates \
+            --out "$RUNNER_TEMP/rc-install/certificates-${{ matrix.runner }}.json" \
+            "$RUNNER_TEMP/rc-install/bundle"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rc-install-${{ matrix.runner }}
+          path: ${{ runner.temp }}/rc-install/
+          if-no-files-found: error
+
+  bundle-set:
+    # T08.A45 (step 5), the writing half: the RC bundle set on CI x86-64 — K05's registered
+    # SYN-001 runs (the CLI's registered variants) and T07 G8's revision bundles (`ELIGIBLE`
+    # under `default`), with an index naming each set and its count. T06 A34 is not in this set
+    # (release spec Amendment R3 1): it writes no bundle, and `rc-ensemble` carries it (T08.A46).
+    if: github.event_name == 'workflow_dispatch' && (inputs.rc_distribution || inputs.rc)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONPATH: "."
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies and the project
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+          python -m pip install -e .
+
+      - name: T08.A45 — write the RC bundle set
+        run: python scripts/t08_rc.py bundles-write --out "$RUNNER_TEMP/rc-bundles"
+
+      - name: T08.A34 — audit the bundle set's certificates
+        run: |
+          python scripts/t08_rc.py certificates --out "$RUNNER_TEMP/rc-certificates.json" \
+            "$RUNNER_TEMP/rc-bundles"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rc-bundle-set-certificates
+          path: ${{ runner.temp }}/rc-certificates.json
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rc-bundles
+          path: ${{ runner.temp }}/rc-bundles/
+          if-no-files-found: error
+
+  bundle-replay:
+    # T08.A45, the replaying half: every bundle of the set rerun and compared on a fresh runner of
+    # each architecture (`reproduce_bundle`, the CLI's `replay --rerun`); `MATCH` in
+    # `exact_replay` or `compatible_reproduction` required, `inspected_archived_results` a
+    # failure, near-threshold flags listed. This discharges ADR 0007 F5's clean-environment
+    # replay (release spec §8.2).
+    needs: bundle-set
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONPATH: "."
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies and the project
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+          python -m pip install -e .
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: rc-bundles
+          path: ${{ runner.temp }}/rc-bundles
+
+      - name: T08.A45 — replay the RC bundle set
+        run: |
+          python scripts/t08_rc.py bundles-replay --bundles "$RUNNER_TEMP/rc-bundles" \
+            --out "$RUNNER_TEMP/rc-replay/replay-${{ matrix.runner }}.json"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rc-replay-${{ matrix.runner }}
+          path: ${{ runner.temp }}/rc-replay/
+          if-no-files-found: error
+
+  rc-steps:
+    # T08 W4.4: the RC job's per-architecture steps (release spec §8.2 steps 2, 7–10) on both
+    # registered CI classes. Every step runs even when an earlier one failed, and every record is
+    # uploaded; the session commits the small ones under benchmarks/t08/rc/ (§8.1 item 4). The
+    # A30 inventory's exit status is logged, not raised: a FAIL there is a licence reading for
+    # Frank (spec §4.8), recorded, not hidden — as in `a30-inventory`.
+    if: github.event_name == 'workflow_dispatch' && inputs.rc
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONPATH: "src:."
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies and the project
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+          python -m pip install -e .
+          echo "OUT=$RUNNER_TEMP/rc" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/rc"
+
+      - name: T08.A42 — identity, and unchanged under the trial version 0.1.0
+        run: python scripts/t08_rc.py identity --out "$OUT/identity"
+
+      - name: T08.A47, A48 — the registered corpus and reference assertions
+        if: always()
+        run: python scripts/t08_rc.py corpus --out "$OUT/corpus-${{ matrix.runner }}.json"
+
+      - name: T08.A49 — the agent surface and G16-b over four transports
+        if: always()
+        run: python scripts/t08_rc.py surface --out "$OUT/surface"
+
+      - name: T08.A30 — the [A10] inventory
+        if: always()
+        run: |
+          set +e
+          python scripts/p03_binary_inventory.py --a30 --out "$OUT/a30" --summary-dir "$OUT/a30" | tee "$OUT/a30.log"
+          echo "a30 exit status ${PIPESTATUS[0]}" | tee -a "$OUT/a30.log"
+
+      - name: T08.A34 — audit the certificates these steps emitted
+        if: always()
+        run: python scripts/t08_rc.py certificates --out "$OUT/certificates-${{ matrix.runner }}.json" "$OUT"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rc-steps-${{ matrix.runner }}
+          path: ${{ runner.temp }}/rc/
+          if-no-files-found: error
+
+  rc-ensemble:
+    # T08.A46 (step 6): the registered ensemble (`T06-ens-v1`, the committed starts,
+    # `T06-revision-v2`) at this commit on `ci-aarch64`, then T06 A34's same-class replay of the
+    # run's first starts and retained failures (Amendment R3 1); `ref-x86-64` is run locally by
+    # the session (`t08_rc.py ensemble`). Run 1, run 2 and the holdout are never rewritten: the RC
+    # run is a new file outside the checkout, uploaded for the session to commit.
+    if: github.event_name == 'workflow_dispatch' && inputs.rc
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 180
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      PYTHONPATH: "."
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies and the project
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+          python -m pip install -e .
+
+      - name: T08.A46, A47 (S3) — the registered ensemble and T06 A34's replay on ci-aarch64
+        run: python scripts/t08_rc.py ensemble --out "$RUNNER_TEMP/rc-ensemble"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rc-ensemble-ubuntu-24.04-arm
+          path: ${{ runner.temp }}/rc-ensemble/
+          if-no-files-found: error

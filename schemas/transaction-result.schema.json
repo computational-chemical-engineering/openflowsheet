@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/transaction-result.schema.json",
+  "title": "TransactionResult",
+  "description": "T07 design note §5.2, ADR 0019 D1–D2; blueprint §11: validation, semantic diff and downstream invalidations. `commit_change`'s return and `preview_change`'s (`previewed`, no write). `rejected` carries `error`; `conflict` carries `conflict`. A conflicted or rejected transaction is a domain result, not an error.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "revision_id",
+    "validation",
+    "diff",
+    "invalidations",
+    "conflict",
+    "idempotency_key",
+    "error"
+  ],
+  "properties": {
+    "status": {
+      "enum": [
+        "committed",
+        "replayed",
+        "conflict",
+        "rejected",
+        "previewed"
+      ]
+    },
+    "revision_id": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "validation": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/validation-report.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "diff": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "added",
+            "removed",
+            "changed"
+          ],
+          "properties": {
+            "added": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "changed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "invalidations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "`run-<job_id>` for every solve job whose `revision_id` equals the expected revision."
+    },
+    "conflict": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "expected",
+            "actual"
+          ],
+          "properties": {
+            "expected": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "actual": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/api-error.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

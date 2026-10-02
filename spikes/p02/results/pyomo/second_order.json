@@ -1,0 +1,69 @@
+{
+ "state": "S1",
+ "declared_hessian_capability": "absent",
+ "blocks_implement": "first derivatives only; no Hessian method is defined on either block",
+ "probes": [
+  {
+   "probe": "H1",
+   "lambda_row": "eq_A",
+   "native_lambda_row": "eq_A",
+   "native_lambda_value": 1.0,
+   "requested_entries": [
+    "d2phi/dv_A dL",
+    "d2phi/dlnK_A2"
+   ],
+   "mechanism": "nlp.set_primals(x); nlp.set_duals(lambda); nlp.evaluate_hessian_lag()",
+   "set_duals": "ok",
+   "outcome": "raised",
+   "exception_type": "NotImplementedError",
+   "exception_message": "Hessians not supported for all of the external grey box models. Therefore, Hessians are not supported overall.",
+   "classification": "absent",
+   "values_returned": null
+  },
+  {
+   "probe": "H2",
+   "lambda_row": "kdef_A",
+   "native_lambda_row": "kb.output_constraints[lnK_A]",
+   "native_lambda_value": -1.0,
+   "requested_entries": [
+    "d2phi/dT2",
+    "d2phi/dT dP",
+    "d2phi/dP2"
+   ],
+   "mechanism": "nlp.set_primals(x); nlp.set_duals(lambda); nlp.evaluate_hessian_lag()",
+   "set_duals": "ok",
+   "outcome": "raised",
+   "exception_type": "NotImplementedError",
+   "exception_message": "Hessians not supported for all of the external grey box models. Therefore, Hessians are not supported overall.",
+   "classification": "absent",
+   "values_returned": null
+  },
+  {
+   "probe": "H3",
+   "lambda_row": "hdef_A",
+   "native_lambda_row": "hb.output_constraints[H_A]",
+   "native_lambda_value": -1.0,
+   "requested_entries": [
+    "d2phi/dl_A dT",
+    "d2phi/dl_A dP"
+   ],
+   "mechanism": "nlp.set_primals(x); nlp.set_duals(lambda); nlp.evaluate_hessian_lag()",
+   "set_duals": "ok",
+   "outcome": "raised",
+   "exception_type": "NotImplementedError",
+   "exception_message": "Hessians not supported for all of the external grey box models. Therefore, Hessians are not supported overall.",
+   "classification": "absent",
+   "values_returned": null
+  }
+ ],
+ "H4": {
+  "probe": "H4",
+  "status": "not_applicable",
+  "reason": "H4 is an I-form entry and this route has no I-form (\u00a710.3)"
+ },
+ "H5": {
+  "probe": "H5",
+  "status": "not_applicable",
+  "reason": "H5 is the supplementary CasADi symbolic-Jacobian variant (\u00a78)"
+ }
+}

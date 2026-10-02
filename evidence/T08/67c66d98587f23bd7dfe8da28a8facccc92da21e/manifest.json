@@ -1,0 +1,2225 @@
+{
+ "work_package": "T08",
+ "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+ "requirements": [
+  "D04",
+  "A10",
+  "D17",
+  "D20"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "T08's acceptance: plan row T08 (gates V11–V20, the V19 dossier, a reproducible release candidate) at C; one check per assertion of docs/derivations/T08-release-spec.md §9 (d6f0747cad789c0ff07a8dfe9be32d7b0153a4de6df298ed340792408b0915e4) and docs/derivations/T08-build-first-spec.md's catalogue (d76e175ce6067c4bb81b490e4d2858f837ea5060eb94a8d741dc4c4930fd404f), as amended",
+  "case_hash": "01ed6ea01fbed05ece7fd7644cf0daf1da80fe18fbf9e107f0d25dfb7a0b8509",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "gh run view 37008077757 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "7b3092b077f31f653a117c35b116ed6f6d228465858f0f9322ae57b0871f2170"
+  },
+  {
+   "cmd": "gh run view 37008077056 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "e111c5544fa57c39621676c9fcf3066b80b2e588616eb32305dc3122251614b7"
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/t08-tests.junit.xml tests/test_t08_adr0025.py tests/test_t08_b24_ptc_job.py tests/test_t08_b50_surface_content.py tests/test_t08_evidence_manifest.py tests/test_t08_kinetic_cstr.py tests/test_t08_ptc_r1_case.py tests/test_t08_ptc_r1_diagnostic.py tests/test_t08_r3_a19_lock_lookup.py tests/test_t08_rc_records.py tests/test_t08_reference_generators.py tests/test_t08_rename_substitution.py tests/test_t08_w1_a89_repeats.py tests/test_t08_w1_d1_instance_ids.py tests/test_t08_w1_d2_replay_identity.py tests/test_t08_w1_d3_counters.py tests/test_t08_w1_identity_substitution.py tests/test_t08_w1_ledger.py tests/test_t08_w1_records.py tests/test_t08_w1_typed_ends.py tests/test_t08_w2_alias_threshold.py tests/test_t08_w2_cli_rerun.py tests/test_t08_w2_description_reviews.py tests/test_t08_w2_edge_identity.py tests/test_t08_w2_inventory.py tests/test_t08_w2_recovery_edges.py tests/test_t08_w2_support_envelope.py tests/test_t08_w2_surface_digest.py tests/test_t08_w2_unsupported.py tests/test_t08_w2_v000_probe.py tests/test_t08_w3_v19_records.py tests/test_t08_w4_changelog.py tests/test_t08_w4_package_data.py tests/test_t08_w4_rc.py tests/test_t08_w4_v0_1_gate.py tests/test_t08_w4_warm_starts.py tests/test_t04_ptc.py tests/test_t04_ptc_region.py tests/test_t07_b3_policies.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "176409e6323a11e1237f74571319565d550a5bddfb9f20cfdf17d87f2b227701"
+  },
+  {
+   "cmd": ".venv/bin/python scripts/v0_1_gate.py --rc 67c66d98587f23bd7dfe8da28a8facccc92da21e --json",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "552f5ee6b7498d934c3914a22f9d0352e895654e2b2fc0034cdf683998d05e06"
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/t08_evidence_manifest.py --commit 67c66d98587f23bd7dfe8da28a8facccc92da21e --ci-run 37008077757 --ci-run 37008077056 (run at 2b9d04d5b26525fda2f79afc9d9f136436415524)",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "T08.A00",
+   "description": "`t08_reference.py --check`",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A01",
+   "description": "The fourteen cited manifests (§3.1)",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_reference.py]",
+      "tests/test_t08_w1_ledger.py::test_a02_v_gate_evidence*"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A02",
+   "description": "`docs/requirements.yaml` V11–V20",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_ledger.py"
+     ],
+     "nodes": 15,
+     "outcomes": {
+      "passed": 14,
+      "skipped": 1
+     },
+     "failed": [],
+     "skipped": [
+      "tests/test_t08_w1_ledger.py::test_a02_the_t08_manifest_is_listed_once_it_exists[V19]"
+     ],
+     "missing": [],
+     "skipped_by_design": {
+      "tests/test_t08_w1_ledger.py::test_a02_the_t08_manifest_is_listed_once_it_exists[V19]": "not in A02"
+     }
+    },
+    "measured": {
+     "manifest_listed": {
+      "V18": true,
+      "V19": true,
+      "V20": true
+     },
+     "verdicts_equal_document": true
+    }
+   }
+  },
+  {
+   "id": "T08.A03",
+   "description": "`docs/reviews/T08-verdicts.md`",
+   "result": "pass",
+   "value": {
+    "judged_by": "verdict",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_v0_1_gate.py"
+     ],
+     "nodes": 87,
+     "outcomes": {
+      "passed": 87
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "verdicts": {
+      "V11": "PASS",
+      "V12": "PASS",
+      "V13": "PASS",
+      "V14": "FAIL",
+      "V15": "PASS",
+      "V16": "PASS",
+      "V17": "PASS",
+      "V18": "PASS",
+      "V19": "PASS",
+      "V20": "PASS"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A10",
+   "description": "D1. States: (i) the registered `SYN-001-conflicting-heater-spec` (STR-03; heater instance id `heater`); (ii) the same revision with the heater instance renamed `h-2` and its two specifications re-pointed",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_d1_instance_ids.py"
+     ],
+     "nodes": 12,
+     "outcomes": {
+      "passed": 12
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A11",
+   "description": "D2. States: (a) a region failure bundle (NET-02 edge-off, `BOUND_BLOCKED`, T06 A63); (b) a revision-path `VERIFIED` certificate (a registered revision that binds on `revision_eo`, e.g. T05's C1); (c) a tear-path failure bundle (`SYN-001-capped-budget`, control)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_d2_replay_identity.py"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A12",
+   "description": "D3. States: (a) `SYN-001-A02-352-vapor-guess-410` (`HOMOTOPY_STALLED`; trace meter 202); (b) a region failure without homotopy (NET-02 edge-off); (c) `SYN-001-capped-budget` (control; cap 20)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_d3_counters.py"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A13",
+   "description": "Identity after W1.3/W1.4",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_identity_substitution.py::test_a13*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A14",
+   "description": "Typed-ends sweep: a revision reaching `eliminate_alias_rows`' rank error; a verifier whose own property call fails; U+FFFE/U+FDD0 in a document string",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_typed_ends.py"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A15",
+   "description": "T06 A89's case (THM-09 start 2 under `T06-revision-v2`) repeated 20 times on the aarch64 class, and once on `ref-x86-64`",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_a89_repeats.py"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A16",
+   "description": "Every campaign record the RC job writes (ensemble, G16-b, bundle set)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_records.py",
+      "tests/test_t08_rc_records.py"
+     ],
+     "nodes": 7,
+     "outcomes": {
+      "passed": 7
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "records": 27,
+     "not_attributable": []
+    }
+   }
+  },
+  {
+   "id": "T08.A17",
+   "description": "CLI `replay --rerun` on (a) a revision-built bundle, (b) a K05 bundle whose `run_id` is no registered case",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_cli_rerun.py"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A18",
+   "description": "`src/process_runtime/application/bindings/descriptions/REVIEW.json`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_description_reviews.py"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A19",
+   "description": "The lock lookup. States: (a) the source checkout at `C`; (b) the RC wheel installed (`--no-deps`, dependencies at the lock's versions) into a virtual environment inside a scratch directory that also holds an unrelated file named `requirements.lock`; (c) a `SYN-001-nominal` bundle written by (b)'s CLI, replayed by (b) and by (a)",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_r3_a19_lock_lookup.py"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "ci/rc-install-ubuntu-latest/lock-installed-ubuntu-latest.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-install-ubuntu-latest/lock-checkout-ubuntu-latest.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-install-ubuntu-24.04-arm/lock-installed-ubuntu-24.04-arm.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-install-ubuntu-24.04-arm/lock-checkout-ubuntu-24.04-arm.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "clean-install (ubuntu-latest)": "success",
+      "clean-install (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A20",
+   "description": "`support_envelope.yaml` against the code",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_support_envelope.py::test_a20*"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A21",
+   "description": "The harvest (§5.7) over every `evidence/**/manifest.json`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_support_envelope.py::test_a21*"
+     ],
+     "nodes": 12,
+     "outcomes": {
+      "passed": 12
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A22",
+   "description": "Every `unsupported` row",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_support_envelope.py::test_a22*",
+      "tests/test_t08_w2_unsupported.py"
+     ],
+     "nodes": 19,
+     "outcomes": {
+      "passed": 19
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A23",
+   "description": "`docs/support-matrix.md`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_support_envelope.py::test_a23*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A24",
+   "description": "The alias rule in the verifier. States: P = 100 kPa, `j` = 99 and 100; P = 180 kPa, `j` = 19, 20, 129, 130 (pressure columns placed at those positions in a constructed declaration)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_alias_threshold.py"
+     ],
+     "nodes": 13,
+     "outcomes": {
+      "passed": 13
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A30",
+   "description": "[A10] refresh: `scripts/p03_binary_inventory.py`, generalized, over every compiled distribution of the default install and the `server` extra at the lock's versions, on the x86-64 and aarch64 wheels",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_inventory.py::test_a30*"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "a30/t08-a30-x86_64.json": "verdict.pass True",
+      "ci/rc-steps-ubuntu-latest/a30/t08-a30-x86_64.json": "verdict.pass True",
+      "ci/rc-steps-ubuntu-24.04-arm/a30/t08-a30-aarch64.json": "verdict.pass True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A31",
+   "description": "Mode A hygiene",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_inventory.py::test_a31*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "ci/rc-dist/t08-a43-dist.json": "passed True, checks {'pass': 8}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A32",
+   "description": "Data provenance",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_inventory.py::test_a32*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A33",
+   "description": "The recovery-edge inventory (§5.6)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_recovery_edges.py",
+      "tests/test_t08_w2_edge_identity.py"
+     ],
+     "nodes": 31,
+     "outcomes": {
+      "passed": 31
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A34",
+   "description": "Every certificate the RC job emits",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_rc.py::test_the_audit*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "certificates-ref-x86-64.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-steps-ubuntu-latest/certificates-ubuntu-latest.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-install-ubuntu-latest/certificates-ubuntu-latest.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-install-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-bundle-set-certificates/rc-certificates.json": "passed True, checks {'pass': 2}, at C True",
+      "ensemble/rc-ensemble-ref-x86-64.json": "passed True, checks {'pass': 7}, at C True",
+      "ci/rc-ensemble-ubuntu-24.04-arm/rc-ensemble-ci-aarch64.json": "passed True, checks {'pass': 7}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success",
+      "clean-install (ubuntu-latest)": "success",
+      "clean-install (ubuntu-24.04-arm)": "success",
+      "bundle-set": "success",
+      "rc-ensemble": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A35",
+   "description": "The `SYN-001-nominal` bundle written by the CLI at tag `v0.0.0` (a worktree at `9a4391f`, its own lock)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_v000_probe.py"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A40",
+   "description": "`requirements.lock` at `C`",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+     "t07_environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+    }
+   }
+  },
+  {
+   "id": "T08.A41",
+   "description": "`scripts/check.sh` at `C`",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "ci/job-logs/check-ubuntu-latest.log": "contains '=== check.sh: PASSED ===': True",
+      "ci/job-logs/check-ubuntu-24.04-arm.log": "contains '=== check.sh: PASSED ===': True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success"
+     }
+    },
+    "measured": {
+     "push_runs": {
+      "37008077056": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A42",
+   "description": "The identity document at `C`",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_identity_substitution.py",
+      "tests/test_t08_rename_substitution.py"
+     ],
+     "nodes": 14,
+     "outcomes": {
+      "passed": 14
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/rc-steps-ubuntu-latest/identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/job-logs/identity.log": "contains 'G05: R0 structural identity equal across 2 platforms': True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "identity": "success",
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A43",
+   "description": "sdist and wheel built twice",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_package_data.py"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "ci/rc-dist/t08-a43-dist.json": "passed True, checks {'pass': 8}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "dist": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A44",
+   "description": "Clean install outside the tree, both architectures",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "ci/rc-install-ubuntu-latest/install-ubuntu-latest.json": "passed True, checks {'pass': 10}, at C True",
+      "ci/rc-install-ubuntu-24.04-arm/install-ubuntu-24.04-arm.json": "passed True, checks {'pass': 9}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "clean-install (ubuntu-latest)": "success",
+      "clean-install (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A45",
+   "description": "The RC bundle set, written on CI x86-64 from the source checkout at `C`: (i) K05's registered SYN-001 runs — the 5 `variants` of `benchmarks/syn001/reference_values.yaml`, each by the CLI's `solve {case_id}`; (ii) T07 G8's revision bundles — `ELIGIBLE` of `tests/test_t07_w3a_revision_runs.py` under the `default` policy, as its `runs` fixture writes them",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_adr0025.py",
+      "tests/test_t08_w4_rc.py::test_a45*"
+     ],
+     "nodes": 41,
+     "outcomes": {
+      "passed": 41
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "ci/rc-bundles/index.json": "n_b 52, exits {0: 52}, at C True",
+      "ci/rc-replay-ubuntu-latest/replay-ubuntu-latest.json": "passed True, checks {'pass': 8}, at C True",
+      "ci/rc-replay-ubuntu-24.04-arm/replay-ubuntu-24.04-arm.json": "passed True, checks {'pass': 8}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "bundle-set": "success",
+      "bundle-replay (ubuntu-latest)": "success",
+      "bundle-replay (ubuntu-24.04-arm)": "success"
+     }
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "halves": [
+      "met",
+      "met",
+      "met"
+     ]
+    }
+   }
+  },
+  {
+   "id": "T08.A46",
+   "description": "The registered ensemble (`T06-ens-v1`, starts `3a7bd49c…`, `T06-revision-v2`, classifier unchanged) at `C`",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_rc.py::test_a46*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "ensemble/rc-ensemble-ref-x86-64.json": "passed True, checks {'pass': 7}, at C True",
+      "ci/rc-ensemble-ubuntu-24.04-arm/rc-ensemble-ci-aarch64.json": "passed True, checks {'pass': 7}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "rc-ensemble": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A47",
+   "description": "The corpus at `C`",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_rc.py::test_a47*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "corpus-ref-x86-64.json": "passed True, checks {'pass': 12}, at C True",
+      "ci/rc-steps-ubuntu-latest/corpus-ubuntu-latest.json": "passed True, checks {'pass': 12}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/corpus-ubuntu-24.04-arm.json": "passed True, checks {'pass': 12}, at C True",
+      "ensemble/rc-ensemble-ref-x86-64.json": "passed True, checks {'pass': 7}, at C True",
+      "ci/rc-ensemble-ubuntu-24.04-arm/rc-ensemble-ci-aarch64.json": "passed True, checks {'pass': 7}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success",
+      "rc-ensemble": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A48",
+   "description": "Our side of REF-01…REF-08 at `C`",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_rc.py::test_a47*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "corpus-ref-x86-64.json": "passed True, checks {'pass': 12}, at C True",
+      "ci/rc-steps-ubuntu-latest/corpus-ubuntu-latest.json": "passed True, checks {'pass': 12}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/corpus-ubuntu-24.04-arm.json": "passed True, checks {'pass': 12}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A49",
+   "description": "The agent surface at `C`",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_surface_digest.py"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "surface/rc-surface.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-steps-ubuntu-latest/surface/rc-surface.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/surface/rc-surface.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.A50",
+   "description": "`scripts/v0_1_gate.py`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_v0_1_gate.py"
+     ],
+     "nodes": 87,
+     "outcomes": {
+      "passed": 87
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "exit_code": 0,
+     "tree_differences": [],
+     "rc_record_problems": [],
+     "reasons": []
+    }
+   }
+  },
+  {
+   "id": "T08.A60",
+   "description": "The dossier (§7.1) for the selected chemistry",
+   "result": "pass",
+   "value": {
+    "judged_by": "verdict",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w3_v19_records.py::test_a60*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "gate": "V19",
+     "gate_verdict": "PASS",
+     "clause": "V19 (ii)",
+     "judgement": "met"
+    }
+   }
+  },
+  {
+   "id": "T08.A61",
+   "description": "The selected PyMRM reactor (C1: the group's release `ammonia_synthesis_reactor` `main` @ `6089593464fc9bc2c0a0cb58e30ad5433ece6332`) in a pinned environment separate from the default install",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w3_v19_records.py::test_a61*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "gate": "V19",
+     "gate_verdict": "PASS",
+     "clause": "V19 (iv)",
+     "judgement": "met"
+    }
+   }
+  },
+  {
+   "id": "T08.A62",
+   "description": "The nonideal route in the independent tool (C1: PR in IDAES 2.13) at two states: a two-phase separator state and a single-phase reactor-inlet state",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w3_v19_records.py::test_a62*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "gate": "V19",
+     "gate_verdict": "PASS",
+     "clause": "V19 (iv)",
+     "judgement": "met"
+    }
+   }
+  },
+  {
+   "id": "T08.A63",
+   "description": "Representability of the loop skeleton in the independent tool",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w3_v19_records.py::test_a62_a63*",
+      "tests/test_t08_w3_v19_records.py::test_a63*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "gate": "V19",
+     "gate_verdict": "PASS",
+     "clause": "V19 (iv)",
+     "judgement": "met"
+    }
+   }
+  },
+  {
+   "id": "T08.A64",
+   "description": "The rights table",
+   "result": "pass",
+   "value": {
+    "judged_by": "verdict",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w3_v19_records.py::test_a64*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "gate": "V19",
+     "gate_verdict": "PASS",
+     "clause": "V19 (v)",
+     "judgement": "met"
+    }
+   }
+  },
+  {
+   "id": "T08.A65",
+   "description": "The dossier arithmetic",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.A70",
+   "description": "V14 clause (b)",
+   "result": "fail",
+   "value": {
+    "judged_by": "verdict",
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "gate": "V14",
+     "gate_verdict": "FAIL",
+     "clause": "V14 (b)",
+     "judgement": "not met",
+     "accepted_fail": true,
+     "accepted_in": "ADR 0021 D3: 2026-09-29, answering \"carry as FAIL, or hold the tag\": **\"One the PTC: 1 and 3\"** — option 1, carry V14 (b) as FAIL into v0.1 with PTC experimental; option 3, a diagnostic run recording step-size histories of the 149 saddle runs (diagnostic only; no new criterion; the verdict stands)"
+    },
+    "accepted_fail": true
+   }
+  },
+  {
+   "id": "T08.A71",
+   "description": "V13 clause (e)",
+   "result": "pass",
+   "value": {
+    "judged_by": "verdict",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b4*"
+     ],
+     "nodes": 14,
+     "outcomes": {
+      "passed": 14
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "gate": "V13",
+     "gate_verdict": "PASS",
+     "clause": "V13 (e)",
+     "judgement": "met"
+    }
+   }
+  },
+  {
+   "id": "T08.B00",
+   "description": "`t08_build_first_reference.py --check`",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B01",
+   "description": "realization identities and SYN-001 records",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B02",
+   "description": "the three roots and their physical eigenvalues",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B03",
+   "description": "dimensional rows at the roots; the pencil; the saddle",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B04",
+   "description": "single steps at the three off-grid states, Δτ ∈ {0.5, 4, 10⁶} and Newton",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B05",
+   "description": "reference shift",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B06",
+   "description": "margins",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B07",
+   "description": "the starts",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B08",
+   "description": "physical geometry",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B09",
+   "description": "classification radius",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B10",
+   "description": "CSTR contract",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b10*"
+     ],
+     "nodes": 17,
+     "outcomes": {
+      "passed": 17
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B11",
+   "description": "CSTR rows at the three roots (binary64 of the YAML states)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b11*"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B12",
+   "description": "CSTR Jacobian at the three roots and the three off-grid states",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b12*"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B13",
+   "description": "mapping on the PTC-R1 region",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b13*"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B14",
+   "description": "implementation pencil at the three roots (scaled `Ĵ_σ`, `M̂`, finite eigenvalues from the dense generalized problem)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b14*"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B15",
+   "description": "implementation's single PTC step (Δτ ∈ {0.5, 4, 10⁶}) and Newton step at the three off-grid states",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b15*"
+     ],
+     "nodes": 24,
+     "outcomes": {
+      "passed": 24
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B16",
+   "description": "zero flow",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b16*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B17",
+   "description": "out-of-domain `T_out` = 441 K and 1e4 K",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b17*"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B18",
+   "description": "causal evaluator at the PTC-R1 feed",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b18*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B19",
+   "description": "liquid variant (§A5)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b19*",
+      "tests/test_t08_kinetic_cstr.py::test_b11_b19*"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B20",
+   "description": "(b2) git order",
+   "result": "pass",
+   "value": {
+    "judged_by": "verdict",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_ptc_r1_case.py::test_b20*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdict-V14b.md",
+     "judgement": "INSUFFICIENT EVIDENCE",
+     "outstanding_clause": "the manifest attests §A4.6's prohibitions up to C_case",
+     "supplied_by": "this manifest (B20's value `attestation`, and its limitations)"
+    },
+    "measured": {
+     "commits": {
+      "C_reg": "9f5f29d7063ae5102c535d94d5f18f20db6480c2",
+      "C_A1": "30243f9c9956fb7ec6970f62156f864cd35d0aa0",
+      "C_case": "c337fa1143a96ca83b98c632097ddddab3bddfc7",
+      "C_res": "b11d7b36252c68fbc462cc9c6e6e7f919b5d6194"
+     },
+     "links": {
+      "C_reg ⊑ C_A1": true,
+      "C_A1 ⊑ C_case": true,
+      "C_case ⊑ C_res": true
+     },
+     "result_files_added_by": {
+      "b11d7b36252c": true
+     },
+     "attestation": "§A4.6 attestation (build lane, T08 close, from the records): before `C_case` = `c337fa1` no PTC run was made on the PTC-R1 flowsheet from any start, and no Newton run from a registered start. Basis: the git order `C_reg` `9f5f29d` → `C_A1` `30243f9` → `C_case` `c337fa1` → `C_res` `b11d7b3` holds (measured here), and every commit that added a `benchmarks/t08/ptc_r1/results-*` file (`b11d7b36252c`) descends from `C_case`; build-first Amendment 1's preamble records the only pre-`C_case` evaluations — W2's rows and Jacobians at the three roots and single steps at the three off-grid states, and the design lane's single-step directions at the same six states — both inside §A4.6's allowance; review 1 (`docs/reviews/T08-review.md`, at `C_case`) records that no PTC-R1 result existed and none was produced there. Disclosed after `C_case`, none forbidden by §A4.6: (1) the reviewer's LOW-root probe, one run per arm from the LOW root (not a registered start), both `CONVERGED` at step 0, class LOW (`docs/reviews/T08-review.md`); (2) the aborted first local `ref-x86-64` invocation at `8d311b9`, which computed and failed to write (its output directory was missing), was re-run unchanged, and printed no summary, so there was no choice between runs (`docs/reviews/T08-verdict-V14b.md` §3.1); (3) the `src/` changes after `C_case` (`c337fa1..4e92e0d`), found inert on every path the arms execute — nothing under `numerics/`, `thermo/`, `models/`, `orchestrator/region*`, `revision_binding.py` or `verify/certificate.py`; `executor.py`'s `_warm_start` runs only without a `user_start`, which the harness always passes; `policies.py` adds `T08-ptc-v1`, and both arms' `policy_sha256` recompute; the failure-bundle and STR-naming changes are not called on a solve (`docs/reviews/T08-verdict-V14b.md` §1)."
+    }
+   }
+  },
+  {
+   "id": "T08.B21",
+   "description": "the 882 runs on each platform",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_ptc_r1_case.py::test_b21*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdict-V14b.md",
+     "judgement": "MET"
+    },
+    "measured": {
+     "committed": {
+      "results-ref-x86-64.json": true,
+      "results-ci-aarch64.json": true,
+      "results-ci-x86-64.json": true
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.B22",
+   "description": "V14 (b1) containment",
+   "result": "pass",
+   "value": {
+    "judged_by": "verdict",
+    "verdict": {
+     "source": "docs/reviews/T08-verdict-V14b.md",
+     "judgement": "MET"
+    }
+   }
+  },
+  {
+   "id": "T08.B23",
+   "description": "saddle clause and mechanism",
+   "result": "fail",
+   "value": {
+    "judged_by": "verdict",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_kinetic_cstr.py::test_b14*"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdict-V14b.md",
+     "judgement": "NOT MET",
+     "accepted_fail": true,
+     "accepted_in": "ADR 0021 D3, as V14 (b) (B23 is its saddle clause): 2026-09-29, answering \"carry as FAIL, or hold the tag\": **\"One the PTC: 1 and 3\"** — option 1, carry V14 (b) as FAIL into v0.1 with PTC experimental; option 3, a diagnostic run recording step-size histories of the 149 saddle runs (diagnostic only; no new criterion; the verdict stands)"
+    },
+    "accepted_fail": true
+   }
+  },
+  {
+   "id": "T08.B24",
+   "description": "(b3)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_b24_ptc_job.py"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B25",
+   "description": "(b4)",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t04_ptc.py::test_a19*",
+      "tests/test_t04_ptc.py::test_a20*",
+      "tests/test_t04_ptc_region.py::test_a21*",
+      "tests/test_t04_ptc_region.py::test_a22*"
+     ],
+     "nodes": 42,
+     "outcomes": {
+      "passed": 42
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "ci": {
+     "ci_runs": [
+      37008077757,
+      37008077056
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.B26",
+   "description": "identity",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w1_identity_substitution.py",
+      "tests/test_t08_rename_substitution.py"
+     ],
+     "nodes": 14,
+     "outcomes": {
+      "passed": 14
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/rc-steps-ubuntu-latest/identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.B27",
+   "description": "envelope",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w2_support_envelope.py::test_a20*",
+      "tests/test_t08_w2_support_envelope.py::test_a22*",
+      "tests/test_t07_b3_policies.py"
+     ],
+     "nodes": 29,
+     "outcomes": {
+      "passed": 29
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "models": 13,
+     "offered_policies": [
+      "T04-W12",
+      "T06-revision-v2",
+      "T08-ptc-v1",
+      "T08-warm-v1"
+     ],
+     "u07_names_kinetic_cstr": true,
+     "l_cstr_rows": [
+      "L-CSTR-1",
+      "L-CSTR-2",
+      "L-CSTR-3"
+     ]
+    }
+   }
+  },
+  {
+   "id": "T08.B28",
+   "description": "the trace component C (generator)",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[t08_build_first_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "verdict": {
+     "source": "docs/reviews/T08-verdict-V14b.md",
+     "judgement": "MET"
+    }
+   }
+  },
+  {
+   "id": "T08.B40",
+   "description": "absent",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b40*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B41",
+   "description": "accepted",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b41*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B42",
+   "description": "never changes the problem",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b42*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B43",
+   "description": "incompatible",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b43*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B44",
+   "description": "integrity",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b44*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B45",
+   "description": "evaluation",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b45*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B46",
+   "description": "projection",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b46*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B47",
+   "description": "replay",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b47*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B48",
+   "description": "selection",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b48*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B49",
+   "description": "byte identity",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_warm_starts.py::test_b49*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T08.B50",
+   "description": "agent surface",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_b50_surface_content.py",
+      "tests/test_t08_w2_surface_digest.py"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "surface/rc-surface.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-steps-ubuntu-latest/surface/rc-surface.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/surface/rc-surface.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "T08.B51",
+   "description": "V13 (e)",
+   "result": "pass",
+   "value": {
+    "judged_by": "verdict",
+    "verdict": {
+     "source": "docs/reviews/T08-verdicts.md",
+     "gate": "V13",
+     "gate_verdict": "PASS",
+     "clause": "V13 (e)",
+     "judgement": "met"
+    }
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/t08-rc-record.md",
+   "sha256": "14ce495dc228eb1b583bdb20b0e4f66346ca978be91311b508086a7882bb856b",
+   "description": "the RC record at C (§8.1 item 4)"
+  },
+  {
+   "path": "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/rc/records.json",
+   "sha256": "c60e3604e911e5d182090b24e4569062ff97a7d61a83a81c7d0bf68e3ac83ca3",
+   "description": "the RC records: sha256, size and where each is kept"
+  },
+  {
+   "path": "docs/reviews/T08-verdicts.md",
+   "sha256": "2d9131efa34a64eb9ddde3b815a2f9b4d9d1410380225d96e80a35a1ada11dd4",
+   "description": "the design lane's verdicts V11–V20 at C"
+  },
+  {
+   "path": "docs/reviews/T08-verdict-V14b.md",
+   "sha256": "6bff32c5d7af05fa8c33fa2bd95c8954ff354ba11506f4730d15f4e9f7811c0f",
+   "description": "the design lane's verdict on V14 (b), PTC-R1 (B20–B23, B28)"
+  },
+  {
+   "path": "benchmarks/t08/support_envelope.yaml",
+   "sha256": "01c46401933cc17d57315ff738c7f729e61fd823831df24f15b3b6d65d705e33",
+   "description": "the v0.1 support envelope (limitations L-rows, unsupported U-rows)"
+  },
+  {
+   "path": "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/artifacts/t08-tests.junit.xml",
+   "sha256": "49332dfe3aec6fc6e6807cfd0dd47464c7108947bfcda97b0d0552f961be94c7",
+   "description": "the tests run here, per node (not committed)"
+  },
+  {
+   "path": "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/artifacts/v0_1_gate.json",
+   "sha256": "552f5ee6b7498d934c3914a22f9d0352e895654e2b2fc0034cdf683998d05e06",
+   "description": "the gate script's report at C, run here (not committed)"
+  }
+ ],
+ "limitations": [
+  "Evidence class: numerical and software verification at the release candidate `C` (tests, the RC job's records on ref-x86-64, ci-x86-64 and ci-aarch64, CI), and the design lane's verdicts (`docs/reviews/T08-verdicts.md`, `docs/reviews/T08-verdict-V14b.md`); V19 is a selection's feasibility, not validation; nothing here is empirical validation of a process model, and there is no optimality evidence. Status `tested` is the build lane's; `reviewed` is never set by this generator, and `review.numerical` and `review.process_model` stay `pending` for Frank.",
+  "Gates V11–V20 are not requirement ids the frozen evidence schema accepts; their verdicts travel in `docs/requirements.yaml` and here: V11 PASS; V12 PASS; V13 PASS; V14 FAIL (V14 (b)); V15 PASS; V16 PASS; V17 PASS; V18 PASS; V19 PASS; V20 PASS.",
+  "FAIL: V14 (b) — one PTC family qualified by §7.5 with tested SER — is FAIL on PTC-R1 (the saddle clause: PTC ends `MID` from 149 of 441 starts on ref-x86-64 and on ci-aarch64; T08.A70 and T08.B23 `fail`), accepted by Frank on 2026-09-29 in ADR 0021 D3, and printed FAIL everywhere, never \"met with limitations\". PTC is experimental (L01).",
+  "The tests were run by this generator at the commit that carries it, whose ADR 0021 D2.4 trees equal `C`'s (checked before anything ran), so the code under test is `C`'s; `tests/` differs from `C`'s in: tests/test_t08_b24_ptc_job.py, tests/test_t08_evidence_manifest.py, tests/test_t08_rc_records.py, tests/test_t08_w4_v0_1_gate.py. Among them `tests/test_t08_b24_ptc_job.py`, T08.B24's test, was written at T08 close: B24 had no test before (a DECISION recorded in its commit).",
+  "§A4.6 attestation (build lane, T08 close, from the records): before `C_case` = `c337fa1` no PTC run was made on the PTC-R1 flowsheet from any start, and no Newton run from a registered start. Basis: the git order `C_reg` `9f5f29d` → `C_A1` `30243f9` → `C_case` `c337fa1` → `C_res` `b11d7b3` holds (measured here), and every commit that added a `benchmarks/t08/ptc_r1/results-*` file (`b11d7b36252c`) descends from `C_case`; build-first Amendment 1's preamble records the only pre-`C_case` evaluations — W2's rows and Jacobians at the three roots and single steps at the three off-grid states, and the design lane's single-step directions at the same six states — both inside §A4.6's allowance; review 1 (`docs/reviews/T08-review.md`, at `C_case`) records that no PTC-R1 result existed and none was produced there. Disclosed after `C_case`, none forbidden by §A4.6: (1) the reviewer's LOW-root probe, one run per arm from the LOW root (not a registered start), both `CONVERGED` at step 0, class LOW (`docs/reviews/T08-review.md`); (2) the aborted first local `ref-x86-64` invocation at `8d311b9`, which computed and failed to write (its output directory was missing), was re-run unchanged, and printed no summary, so there was no choice between runs (`docs/reviews/T08-verdict-V14b.md` §3.1); (3) the `src/` changes after `C_case` (`c337fa1..4e92e0d`), found inert on every path the arms execute — nothing under `numerics/`, `thermo/`, `models/`, `orchestrator/region*`, `revision_binding.py` or `verify/certificate.py`; `executor.py`'s `_warm_start` runs only without a `user_start`, which the harness always passes; `policies.py` adds `T08-ptc-v1`, and both arms' `policy_sha256` recompute; the failure-bundle and STR-naming changes are not called on a solve (`docs/reviews/T08-verdict-V14b.md` §1).",
+  "T08.A45 is met at `C` under `T08-numerical-policy-v2` (ADR 0025), adopted after A45 failed at `814e151` under `K04-numerical-policy-v1`; that FAIL stands. Pivot-path diagnostics are recorded and not compared (control C3 is a deliberate blind spot); on aarch64 34 of 52 bundles agree within the policy, not bitwise.",
+  "V13 (e)'s PASS rests on B50 as amended twice by Frank after it was first found not met (R-134, the digest; R-144, the package version).",
+  "V19's PASS is feasibility: light gases vapour-only (dissolved gases not represented); K_NH₃ pending Frank's check against Rossetti et al. 2006; `k_ij` = 0 in the smoke runs; property values to be chosen by M01 from open, cited sources; no experimental VLE data identified; three group tests not reproduced; the dossier is an unreviewed draft.",
+  "`library-only`: V13 clause (b)'s safeguarded Anderson recycle and V14 (c)'s edges E1 and E2 are tested library capabilities, not application paths.",
+  "T08.A34's audit did not separately cover the certificates the replays re-emit.",
+  "The RC records: 42 of the 44 the RC record cites are committed under `evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/rc/` (Amendment R7 1); the two ensemble run files (2.4 MB each) exist on one host (git-ignored) and as CI artifacts with finite retention.",
+  "Bitwise reproduction is reported, never promised (ADR 0007 F1); portability beyond Linux x86-64 and aarch64, Python 3.13 and the one lock is not established.",
+  "L01: PTC is experimental: selectable by explicit policy only (`T08-ptc-v1`); no qualified family. V14 clause (b) is carried as FAIL (ADR 0021 D3; on PTC-R1, PTC ends at the saddle from 149 starts).",
+  "L02: A zero-duty lifted flash whose root lies exactly on its dew or bubble point is `UNVERIFIED`, `RANK_DEFICIENT`; nearby two-phase-attempt stops are caught `FAILED(false_success_detected)`.",
+  "L03: The alias-pressure-shift limit: the pressure column at 0-based position j is certifiable iff 997 (j + 1) <= max(200 000 - P, P - 50 000) Pa; beyond it the alias certificates are `unsupported(pressure_shift_outside_domain)` and the verdict `UNVERIFIED` (spec §5.4).",
+  "L04: A saturation-closure failure inside the rows' own window is `FAILED`, where `UNVERIFIED(label_not_demonstrated)` would be exact (conservative).",
+  "L05: `VERIFIED` certifies residuals at registered tolerances; the solution-error bound is recorded, not promised.",
+  "L06: Energy checks share the property provider with the solver ([A09]).",
+  "L07: Bitwise float reproduction is reported, never promised; per-start ensemble outcomes differ across architectures. LU pivot-path diagnostics (`u_diag_min_abs`, `u_diag_max_abs`, `u_diagonal_ratio`, `nnz_L`, `nnz_U`) are recorded and not compared across platforms (ADR 0025 D4).",
+  "L08: Property-call counts are within-platform diagnostics; the terminal-refinement core (ADR 0018) can exhaust the property budget where `newton` finishes.",
+  "L09: The robustness claim is the nominal profile only; the stress profiles were not run.",
+  "L10: The initializer chain is partial (blueprint §7.4, K03 §10.1): GUESS-role specifications are not bound by the revision binder (such revisions run on `legacy_eo`), the SYN-001 tear path has its registered initializer only, and the one fallback between initializer sources is `T08-warm-v1`'s compatible warm start → traversal (opt-in; L-WS-1, L-WS-2).",
+  "L11: Cancellation: `verify` has no cooperative checkpoint; a region's events are lost on interrupt.",
+  "L12: Agent evidence: one pinned model and configuration, MCP only, not out of sample (CP lower bound 0.681); T09 0/6, T10 1/3; INJ-4 never exposed.",
+  "L13: `worker.log` is readable through `get_artifact`.",
+  "L14: The v0.1 rank rule is exactly one freed column per promoted target.",
+  "L15: Linux x86-64 and aarch64 only; Python 3.13; the one lock.",
+  "L16: IDAES agreement holds at the registered near-sharp SmoothVLE ε only.",
+  "L17: The reference environment's DWSIM runs on .NET 8, end of life 2026-11-10.",
+  "L-CSTR-1: The kinetic CSTR's rate law and coolant model are synthetic (the Frank-Kamenetskii γ → ∞ form and a coolant capacity rate); no Arrhenius or physical-conductance claim is made.",
+  "L-CSTR-2: An adiabatic, dormant kinetic CSTR's outlet temperature is a singularity (T05 §4.7 (a)); v0.1 does not certify an EO solve in which it appears.",
+  "L-CSTR-3: The kinetic CSTR's causal evaluator is a local model initializer (the isothermal state at `T_init`), not a steady state.",
+  "L-WS-1: Warm-start compatibility is exact id-set identity; a topology edit is a typed rejection to the next source, not a partial or adapted match.",
+  "L-WS-2: The warm-start source is chosen automatically (the lineage's latest VERIFIED state) under an opt-in policy only; no request-named source exists in v0.1 (v0.2, M03).",
+  "L18: Nothing in v0.1 is empirically validated: SYN-001 is synthetic (pseudo-components, invented constants, ideal VLE), and every result is numerical verification against the same equations.",
+  "L19: Certificates are local: the regularity screen and the error bound hold at the certified state only. No root completeness, uniqueness, thermodynamic stability beyond the admissibility check, or dynamic stability is assessed (`claims` stay NOT_ASSESSED).",
+  "L20: Convergence is not guaranteed wherever a root exists: registered counterexamples end typed (PHS-05 without edge 3; HOM-03/HOM-04 stall at a phase boundary); folds are not followed (no arclength continuation).",
+  "L21: Specification continuation (edge 3's homotopy) exists only for regions with a promoted specification; elsewhere it is `unsupported(no_continuation_parameter)`.",
+  "L22: Scope of the solver evidence: tear selection is greedy (minimality not claimed); behaviour finer than the registered basin margins and trajectories below a residual of 1e-6 are not established; several stated rules are exercised only by synthetic fixtures.",
+  "L36: No performance claim at size: costs are within-platform measurements on registered cases of at most tens of variables; compiles per plan run and the regularity screen's cost at size are not measured.",
+  "L37: `verify` is not safe to run concurrently in threads of one process: the regularity screen seeds and restores numpy's global generator around `onenormest` (T06 §8.1, R-069), so concurrent calls can move the estimate, `rcond₁`, the bound and a regularity verdict near its threshold; jobs run in separate processes and are unaffected.",
+  "L38: Structural analysis is generic: validation's STR checks and `inspect_structure` report structural rank and the DM/BTF partition only; numerical rank, conditioning and feasibility are judged by the certificate's regularity screen at a converged state (blueprint D05).",
+  "L39: The structural-zero release (recovery edge E5) leaves no trace record: a trace does not show that it ran.",
+  "L23: More than one recycle loop or region per plan is not exercised by any registered flowsheet; the plan builder's single-loop reading is to be revisited when one is (T02 review N8).",
+  "L24: Not implemented: Wegstein and Aitken acceleration, trust regions, Krylov linear solves, arclength continuation.",
+  "L25: Alias certificates cover pressure and temperature copies only (the kinds ADR 0001 D6 gives a tolerance); any other affine redundancy is `uncertified_affine`, retained and listed.",
+  "L26: SYN-001's symmetric data leave paths unexercised: component discrimination in liquid enthalpy, a liquid heat of reaction (every liquid reaction is thermoneutral), an exchanger with a phase change or temperature-dependent c_p (refused).",
+  "L27: An EO solve with a dormant PH-type outlet is never certified (UNVERIFIED, RANK_DEFICIENT; T05 §4.7 (a), R-050).",
+  "L28: A single flowing component inside its latent jump is solved causally only; on the EO path it ends typed or not VERIFIED, never VERIFIED (T05 §4.7 (b), R-050).",
+  "L29: The PH kernel's accuracy for near-pure feeds is the energy tolerance's resolution; a target inside the latent jump may be refused `ph_ill_conditioned` (T05 §4.4, R-049).",
+  "L30: Degenerate specifications are reported, not certified: a TP outlet of one component at exactly T_sat, conditioning near β → 0 or 1, and a zero-flow SPECIFICATION_CONFLICT (not searched past); a dormant exchanger side gets no second-law judgement.",
+  "L31: A state whose verifier projection is refused is judged at its final state: a possible false alarm, never a false pass.",
+  "L32: The ensemble gate's run 2 is not out of sample for `T06-revision-v2` (its last change was informed by these draws); the holdout (436 of 440 on every class) is the out-of-sample estimate.",
+  "L33: Scope defaults of T06 §16: results are keyed by component id; a TWO_PHASE split with a vanishing phase is not converted by the solver (the verifier catches the label); three F-BUDGET starts have no cost remedy.",
+  "L34: A replay bundle references the CasADi wheel by hash and does not embed it; a replay needs the wheel to remain fetchable.",
+  "L35: A tear-path solve that exhausts its budget records `attempts = 0`, the start state and no provenance (K03's registered capped-budget shape).",
+  "L40: The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's own code, its package data and its licence files only, and every ComponentRecord is synthetic (SYN-001).",
+  "L41: A bundle written by an installed package (wheel or sdist, not the source checkout) carries no dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and every replay of it is `inspected_archived_results` / `NOT_RUN` (\"the dependency set is unknown …\"); replayable bundles are written from the source checkout at the lock `ead4edf1…`."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

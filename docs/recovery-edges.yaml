@@ -1,0 +1,505 @@
+# The v0.1 recovery-edge inventory (T08 release spec §5.6; V18 clause (d); T08.A33).
+#
+# A recovery edge is any path that, on a detected failure or insufficiency of one method, runs a
+# different method or a re-initialization within the same solve or verification, without changing
+# fixed physics or specifications ("a fallback may change the method, never the problem").
+#
+# Why this file is under docs/ and not benchmarks/t08/ (W2.4 decision, reversible by a move): the
+# labels must spell the policy literals the code emits, and three registered guards forbid those
+# literals in any `benchmarks/**` or `tests/fixtures/**` YAML or JSON — the registered cases,
+# fixtures and references (tests/test_t05b_literal.py::test_b06_no_registered_policy_names_v2,
+# tests/test_t06_f4_literals.py::test_wo1_no_committed_document_names_the_new_policy_value,
+# tests/test_t06_w18_literal.py::test_w18_no_committed_fixture_names_the_new_value). This inventory
+# is none of those; nothing reads it to solve.
+#
+# `tests/test_t08_w2_recovery_edges.py` holds this file to the code:
+# - the bijection: the labels the code can emit — read from the code itself, never from this file
+#   (the test's `code_labels`) — each sit in exactly one row's `labels` or in `not_an_edge`, and
+#   every label written here is one the code emits;
+# - every cited test node is collected and passes (run, not skipped);
+# - every `enabled: default`, `policy-only` or `library-only` row cites a direct injected-failure
+#   test and non-null `unchanged_physics` evidence, and a `library-only` row its
+#   `reachability_tests`. A null there fails that row's node of T08.A33 on purpose (brief W2.4: an
+#   honest gap stays visible; the design lane rules on it).
+#
+# Label spelling, `<source>:<value>`:
+#   eo_core:<v>, eo_recovery:<v>        `GlobalizationPolicy`'s Literal annotations (orchestrator/trace.py)
+#   eo_recovery_unsupported:<v>         `trace.EoRecoveryUnsupported`
+#   opening_source:<v>                  `phase_contract.OpeningSource`
+#   decision:<v>                        `phase_contract.DecisionKind`
+#   ph_route:<v>                        `models/syn001/ph_kernel.Route`
+#   projection_judged_at:<v>            `verify/projection.JudgedAt`
+#   projection_refused:<v>              every `_refused(state, "<code>")` in verify/projection.py (an
+#                                       f-string code is its literal head and `*`)
+#   event:<kind>@<module>.<function>    every call in src/ that passes a constant `restart`,
+#                                       `acceleration`, `homotopy_step` or `initializer_rejected`
+#                                       (the event producers; `Decision(...)` is `decision:`)
+#   fallback:<v>                        every non-empty `_KernelAnswer(..., <fallback>)` literal; the
+#                                       `fallbacks` entries of a restart message
+#                                       (`fallback(<unit>, <kernel>)`) and of `Conversion.fallbacks`
+#                                       carry exactly these values (region.py `_settle`, `_settled`)
+#   produced_by:<v>                     `application/validation.FALLBACK_PRODUCED_BY`
+#   initializer_source:<v>              `orchestrator/warm_start.WARM_START_SOURCE` (brief W2.4)
+#   route_fallback:<v>                  every `Route(<v>, binding, reason)` given a reason (a third
+#                                       positional argument or `reason=` that is not the constant
+#                                       `None`): the revision binder's refusal sending the document
+#                                       to route <v> (T08 review 2, M1)
+#
+# `enabled`: `default` — `SolvePolicy()`'s defaults or a route's registered default policy
+# (`application/policies.ROUTE_DEFAULT_POLICY`) take the edge; `policy-only` — only a policy that
+# is not a route's default does; `library-only` — no application-offered policy and no
+# `MODEL_BUILDERS` unit reaches the edge, pinned by the row's `reachability_tests` (T08 review 2,
+# Ruling 8); `absent` — not built.
+#
+# `unchanged_physics.kind`: `identity_compared` — a test compares `model_version`,
+# `constants_sha256` and the specification (rows, parameters or the revision document) of the edge's
+# instance with the failed or target one (T04 §5.4's pattern); `verified_certificate` — a test takes
+# the edge and gets `VERIFIED` from `verify_revision` / `verify_bound`, whose guard
+# (`verify/certificate.py` `_guard`) refuses a result whose root fingerprint or solve plan differs
+# from the declaration in `model_version` or `constants_sha256`, or whose revision document differs
+# (`declaration_mismatch(...)`); `guard` — a test injects a changed identity at the edge and it is
+# refused. All three meet T08.A33, each under release spec §5.6's condition (T08 review 2,
+# Ruling 6); a cross-binder fallback is held to the problem, not to `model_version`.
+
+inventory_id: v0.1-recovery-edges-1
+spec: docs/derivations/T08-release-spec.md §5.6
+
+rows:
+  - id: E1
+    title: Anderson restart / damping on stagnation
+    source: T02 §5.6; T02 A09, A13–A15
+    trigger: >-
+      `anderson` recycle: `stagnation_window` (5) consecutive accepted iterates with
+      `‖F̂_k‖/‖F̂_{k−1}‖ > stagnation_ratio` (0.99) — the history is dropped and the iteration
+      restarts; an oscillation flag switches plain steps to the substitution damping.
+    precondition: >-
+      `recycle.method` resolves to `anderson` for the loop (`anderson`, or `auto` with a unit
+      that does not declare exact derivatives; execution.py `build_execution_plan`).
+    max_count: '`RecyclePolicy.max_restarts` = 2 restarts per recycle solve; the third stagnation closes RECYCLE_STAGNATION'
+    enabled: library-only
+    reachability_tests:
+      - tests/test_t08_w2_edge_identity.py::test_e1_e2_no_offered_policy_or_unit_reaches_a_recycle_iteration
+    labels:
+      - event:restart@openflowsheet.numerics.anderson.solve_recycle
+      - event:acceleration@openflowsheet.numerics.anderson.solve_recycle
+    failure_tests:
+      - tests/test_t02_recycle.py::test_a14_rec_05_with_the_tail_stagnates_under_substitution
+      - tests/test_t02_recycle.py::test_a15_rcy_div_the_stagnation_rule_is_the_divergence_rule
+      - tests/test_t02_recycle.py::test_a09_rec_01_substitution_detects_oscillation_and_damps
+    unchanged_physics:
+      kind: identity_compared
+      tests:
+        - tests/test_t08_w2_edge_identity.py::test_e1_an_anderson_restart_reevaluates_the_same_map
+      note: >-
+        The edge acts inside one `solve_recycle` call on a caller-owned problem (§5.6 (i)'s second
+        form): on REC-05 (A14's run) a `restart` fires, and every map evaluation before and after
+        it is a call of the same map object with equal parameters.
+    notes: >-
+      `acceleration` is recorded on every Anderson step, not only after a failure. It sits here
+      because it records the damping this row names (`beta_substitution`, `oscillation_flag`).
+      Every v0.1 unit that can sit in a loop declares exact derivatives, so `auto` resolves to
+      `newton_tear`, and no application policy requests `anderson`: only a library-level policy
+      with `recycle.method: anderson` reaches this edge (`reachability_tests`).
+
+  - id: E2
+    title: stalled recycle → EO merge
+    source: T02 §4.4; T02 A14–A17, A32
+    trigger: >-
+      an `anderson` converge step closes in `MERGE_TRIGGERS` (RECYCLE_STAGNATION,
+      LINE_SEARCH_FAILED, BOUND_BLOCKED, BUDGET_EXHAUSTED); merge.py `merge_due`.
+    precondition: >-
+      every loop unit is derivative-capable (else `merge_into_eo: unsupported(<unit>, …)`);
+      the plan carries `region_on_merge`; the recycle's best iterate opens the region
+      (`merge_best_iterate`).
+    max_count: 1 merge per loop (T02 A32)
+    enabled: library-only
+    reachability_tests:
+      - tests/test_t08_w2_edge_identity.py::test_e1_e2_no_offered_policy_or_unit_reaches_a_recycle_iteration
+    labels:
+      - opening_source:merge_best_iterate
+    failure_tests:
+      - tests/test_t02_merge.py::test_a15_rcy_div_merges_in_exactly_one_newton_iteration
+      - tests/test_t02_merge.py::test_a32_merge_u_a_non_capable_unit_ends_the_step_with_the_recycles_own_outcome
+    unchanged_physics:
+      kind: identity_compared
+      tests:
+        - tests/test_t02_merge.py::test_a32_the_merge_region_is_the_loop_with_nothing_added
+      note: >-
+        Plan level: `region_on_merge`'s solve plan has the loop's `model_version` and
+        `constants_sha256`. Its rows, solved and eliminated, are exactly the loop units' rows,
+        and it has no specification row.
+    notes: Reachable only when E1's precondition holds. See E1's notes.
+
+  - id: E3a
+    title: EO globalization failure → specification continuation (recovery edge 3)
+    source: T04 §5; ADR 0010 D3; HOM-04, HOM-05
+    trigger: a region solve ends in `EO_RECOVERY_TRIGGERS` (orchestrator/recovery.py)
+    precondition: >-
+      `eo_recovery` ∈ {homotopy, homotopy_or_sequential_restart}; the region has a continuation
+      parameter (a promoted specification), else `unsupported(no_continuation_parameter)` under
+      `homotopy`; an attempt was opened to recover from.
+    max_count: '1 per region step (`eo_recovery_max_count: 1`; never on its own recovery)'
+    enabled: default
+    labels:
+      - eo_recovery:homotopy
+      - eo_recovery_unsupported:no_continuation_parameter
+      - opening_source:eo_recovery_start
+      - event:homotopy_step@openflowsheet.orchestrator.homotopy.continue_specification.record
+    failure_tests:
+      - tests/test_t04_edge3.py::test_a04_a08_edge_3_takes_the_registered_path[HOM-04]
+      - tests/test_t04_edge3.py::test_a04_a08_edge_3_takes_the_registered_path[HOM-05]
+    unchanged_physics:
+      kind: identity_compared
+      tests:
+        - tests/test_t04_edge3.py::test_a10_the_recovery_solves_the_same_problem[HOM-04]
+        - tests/test_t04_edge3.py::test_a10_the_recovery_solves_the_same_problem[HOM-05]
+      note: >-
+        T04 §5.4 / T04.A10: the λ = 1 instance has the failed solve's `(model_version,
+        constants_sha256)`, rows and columns. Every λ < 1 level differs only at the continued id,
+        and a converged recovery's fingerprint is the revision's.
+    notes: >-
+      `opening_source:eo_recovery_start` is shared with E3b, whose restart's item 0 opens with
+      the same source (executor.py `_sequential_restart`, `item0_opening_source`). It is listed
+      once, here, where ADR 0010 D7.5 introduced it.
+
+  - id: E3b
+    title: EO failure on a revision region → sequential restart (recovery edge 3, second action)
+    source: ADR 0015; T06 A63, A64
+    trigger: as E3a, when the region has no continuation parameter
+    precondition: >-
+      `eo_recovery = homotopy_or_sequential_restart`; P3 revision-built flowsheet (else
+      `no_restart_initializer`); P4 `traversal-G0-pass8-v1` builds (else
+      `restart_initializer_failed`); P5 the restart start is not the failed item 0's
+      (else `restart_start_unchanged`).
+    max_count: '1 per region step (shared with E3a: edge 3 runs once)'
+    enabled: default
+    labels:
+      - eo_recovery:homotopy_or_sequential_restart
+      - eo_recovery_unsupported:no_restart_initializer
+      - eo_recovery_unsupported:restart_start_unchanged
+      - eo_recovery_unsupported:restart_initializer_failed
+    failure_tests:
+      - tests/test_t06_f4_edge3.py::test_g1_net02_is_solved_through_the_restart_and_certified[T06-revision-v2]
+      - tests/test_t06_f4_edge3.py::test_p4_a_refused_restart_initializer_is_recorded_and_the_failure_stands
+    unchanged_physics:
+      kind: verified_certificate
+      tests:
+        - tests/test_t06_f4_edge3.py::test_g1_net02_is_solved_through_the_restart_and_certified[T06-revision-v2]
+      note: >-
+        NET-02's recovered solve is certified `VERIFIED` by `verify_revision` against the bound
+        revision. The guard would refuse a changed `model_version`, `constants_sha256` or
+        revision document. No test compares the restart instance's identity directly
+        (T04 §5.4's pattern). Manifest check T06.A64 (pass).
+    notes: >-
+      P4's refusal and each rejected pass are recorded through E9's producer
+      (`executor._reject_initializer`).
+
+  - id: E4
+    title: bounded phase-attempt restart
+    source: ADR 0005; T03 (§4.8)
+    trigger: >-
+      the phase contract's decision `restart` (`PHASE_UPDATE_REQUIRED`) after an attempt's
+      phase-rejected trial, pinned iterate or closure projection (phase_contract.py `decide`).
+    precondition: >-
+      the new opening passes T03 §5.1's six opening checks (`check_opening`: identity, step,
+      scale_segment, coverage, active_set, bounds), else `CHECKPOINT_INCOMPATIBLE`.
+    max_count: '`max_attempts` = 5 (`REGISTERED_MAX_ATTEMPTS`), then ATTEMPTS_EXHAUSTED'
+    enabled: default
+    labels:
+      - decision:restart
+      - opening_source:phase_rejected_trial
+      - opening_source:pinned_iterate
+      - opening_source:closure_projection
+    failure_tests:
+      - tests/test_t03_phase.py::test_a06_a09_the_liquid_guess_cases_converge_through_an_adjacent_restart[SYN-001-A02-355-liquid-guess]
+      - tests/test_t03_phase.py::test_a06_a09_the_liquid_guess_cases_converge_through_an_adjacent_restart[SYN-001-A02-360-liquid-guess]
+    unchanged_physics:
+      kind: guard
+      tests:
+        - tests/test_t03_contract.py::test_a16_an_incompatible_opening_is_refused_and_opens_nothing[identity-model_version-None-<lambda>]
+        - tests/test_t03_contract.py::test_a16_an_incompatible_opening_is_refused_and_opens_nothing[identity-constants_sha256]
+        - tests/test_t05b_openings.py::test_b31i_off_the_dew_point_the_restart_certifies[CH-UP-DP]
+      note: >-
+        Every restart opening passes `check_opening`'s identity check, which compares
+        `model_version`, then `constants_sha256`. T03 A16 injects a changed `model_version` and,
+        separately, a changed `constants_sha256` at a restart opening, and each is refused
+        (specification values enter through `constants_sha256`). Separately, CH-UP-DP restarts
+        once and is certified `VERIFIED` by `verify_revision` (a `verified_certificate`).
+
+  - id: E5
+    title: structural-zero release (where Newton would end BOUND_BLOCKED)
+    source: K03 §5.3 as amended by T05b (Q-S11 (b), R-064)
+    trigger: '`α_max = 0` at a Newton iterate (numerics/newton.py `_bound_aware_step`)'
+    precondition: >-
+      the released set `Z*` (`_released`) is non-empty — components on their bound at the attempt's
+      opening and at the iterate, with their rows closed — and no component outside `Z*` still
+      blocks.
+    max_count: once per Newton iteration at which `α_max = 0`; bounded by the iteration budget
+    enabled: default
+    labels: []
+    failure_tests:
+      - tests/test_t05b_release_opening.py::test_b35a_the_calls_start_is_the_default_opening_and_releases
+      - tests/test_t05b_release_opening.py::test_b35a_off_its_bound_at_the_opening_it_is_not_released_and_blocks
+    unchanged_physics:
+      kind: identity_compared
+      tests:
+        - tests/test_t08_w2_edge_identity.py::test_e5_the_release_reevaluates_the_same_problem
+      note: >-
+        The edge acts inside one `solve_newton` call on a caller-owned problem (§5.6 (i)'s second
+        form): on B35a's problem `_released` returns a non-empty set, and every residual and
+        Jacobian evaluation of the call is made on the same `Problem` with equal pinned values.
+    notes: >-
+      A declared unlabeled edge (brief W2.4). It emits no label: the step record and the trace
+      carry no marker that a release happened, so a trace reader cannot tell this edge ran.
+      Adding one is a trace/identity change and is not made here.
+
+  - id: E6
+    title: PH kernel temperature route → band route
+    source: T05b §5; ADR 0012 D2, D10 (F1)
+    trigger: >-
+      the temperature route's answer fails the PH closure's own rows at K04's registered
+      tolerances (T05b §5.3)
+    precondition: at least two components flow
+    max_count: once per kernel call (deterministic)
+    enabled: default
+    labels:
+      - ph_route:band
+      - fallback:ph-band
+    failure_tests:
+      - tests/test_t05b_kernel.py::test_b04_biased_is_caught_by_the_equilibrium_rows_and_answered_by_the_band
+    unchanged_physics:
+      kind: verified_certificate
+      tests:
+        - tests/test_t05b_near_pure_restarts.py::test_b33b_near_pure_from_the_liquid_form_start[NP-1]
+        - tests/test_t05b_near_pure_restarts.py::test_b33b_near_pure_from_the_liquid_form_start[NP-2]
+      note: >-
+        NP-1 and NP-2 record `fallback(U-PHF, ph-band)` on the restart's opening and are
+        certified `VERIFIED` by `verify_revision`.
+
+  - id: E7
+    title: phase-contract v2 TP fallback and the recorded fallback chain
+    source: ADR 0012 D4; T05b spec §6.2, §6.5, §7.4
+    trigger: >-
+      a PH-type split's PH closure returns no answer (the TP flash answers, recorded `tp`); also
+      recorded `tp`: a PH-type split leaving `ZERO_FLOW`, whose pinned split carries no enthalpy
+      (§7.4, Q-S14).
+    precondition: '`phase_contract: T05b-phase-contract-v2` (the revision route''s default policy)'
+    max_count: once per split per kernel call
+    enabled: default
+    labels:
+      - fallback:tp
+    failure_tests:
+      - tests/test_t05b_band_screen.py::test_b32a_the_contract_kernel_states[KS-3]
+    unchanged_physics:
+      kind: verified_certificate
+      tests:
+        - tests/test_t08_w2_edge_identity.py::test_e7_a_ph_closure_without_an_answer_certifies_the_same_declaration
+      note: >-
+        T08 description review, Ruling 1 as ruled in its addendum (2026-10-01). B31 (i)'s CH-UP-DP
+        start (`test_b31i`'s `CASES`, bit-equal across builds) through the full revision solve
+        (`plan_revision` + `execute_plan(user_start=...)`) under `T06-revision-v2`, with
+        `region._ph_closure` patched to give no answer: it is called on `U-PHF` with a flowing feed
+        (the no-answer branch, not a `ZERO_FLOW` split) and `fallback(U-PHF, tp)` is recorded, which
+        the unpatched run does not record; the patched run ends `CONVERGED` and `VERIFIED`, its
+        certificate and solve plan carrying the bound declaration's `model_version` and
+        `constants_sha256` and the guard seeing the bound revision. This shows the certified root
+        is one of the unchanged problem; it does not show that the fallback preserves convergence.
+        Observed counter-case: the same patched start through the region-level entry
+        (`t05b_support.solve_from_v2` → `solve_region`, reachable only through the library) ends
+        `ACTIVE_SET_CYCLING`. `U-PHF2`'s `fallback(U-PHF2, tp)` is not evidence here: the
+        leaving-`ZERO_FLOW` producer records the same label.
+    notes: >-
+      `fallback:tp` has two producers in region.py `_contract_kernel`. Only the PH-closure branch
+      is a response to a failure.
+
+  - id: E8
+    title: terminal Newton refinement
+    source: ADR 0018; T06 A88, A89
+    trigger: >-
+      a `CONVERGED` Newton exit whose chord correction exceeds the kind tolerance (ADR 0018)
+    precondition: '`eo_core: newton_refined` (`T06-revision-v2`, the revision route''s default)'
+    max_count: 1 per attempt (T06 A88 (a)); abandoned or reverted, typed, otherwise
+    enabled: default
+    labels:
+      - eo_core:newton_refined
+    failure_tests:
+      - tests/test_t06_w18_refinement.py::test_a88_a_the_refinement_fires_once_and_is_kept
+      - tests/test_t06_w18_refinement.py::test_a88_d_a_double_root_does_not_contract_and_is_reverted
+    unchanged_physics:
+      kind: verified_certificate
+      tests:
+        - tests/test_t06_w18_policy.py::test_a89_thm09_ends_within_a_tenth_of_s3s_allowance[1]
+      note: >-
+        THM-09 start 1: exactly one `terminal_refinement(accepted …)` fires, and the run is
+        certified `VERIFIED` by the ensemble's `verify_revision`.
+
+  - id: E9
+    title: initializer candidate rejected → next source
+    source: K03 §10.1; T08 build-first spec §B2 (ADR 0024)
+    trigger: >-
+      a candidate fails a check: `compatible_warm_start`'s integrity, compatibility, evaluation or
+      opening (`warm_start_rejected(<check>)`)
+    precondition: >-
+      the policy's `initializer_chain` names a further source (`T08-warm-v1`:
+      `compatible_warm_start` → `traversal-G0-v1`); no `user_start`.
+    max_count: once per source in the chain (one, under `T08-warm-v1`)
+    enabled: policy-only
+    labels:
+      - event:initializer_rejected@openflowsheet.orchestrator.executor._reject_initializer
+    failure_tests:
+      - tests/test_t08_w4_warm_starts.py::test_b43_an_incompatible_candidate_is_rejected_to_the_traversal
+      - tests/test_t08_w4_warm_starts.py::test_b44_a_tampered_candidate_is_rejected_for_integrity
+    unchanged_physics:
+      kind: identity_compared
+      tests:
+        - tests/test_t08_w4_warm_starts.py::test_b43_an_incompatible_candidate_is_rejected_to_the_traversal
+      note: >-
+        After the rejection, every artifact except events and policy equals the same revision's
+        default run, up to the policy id: `revision.json` and `solution-certificate.json`
+        (`model_version`, `constants_sha256`) included.
+    notes: >-
+      The producer is shared. It also records terminal rejections that start no next source
+      (`missing_initial_guess`, a traversal that fails: `INITIALIZATION_FAILED`) and E3b's P4
+      rejections. K03 §10.1's chain on the SYN-001 tear path (user guess → registered
+      initializer) is specified and not implemented (K03 manifest limitation), so the warm-start
+      source is the only place this edge runs. Under the shared producer only
+      `warm_start_rejected(<check>)` is this edge (a next source runs); E3b's P4 rejection and the
+      terminal rejections (`missing_initial_guess`, a failed traversal) start no next source and
+      are not edges (T08 review 2, Ruling 10).
+
+  - id: E10
+    title: 'verifier: fresh-flash check at x_final when the projection is refused'
+    source: ADR 0013 D1; K04-F9 §5.1; T06 Q24
+    trigger: >-
+      the first failing precondition of the verifier's Newton projection: residual_not_passed,
+      regularity_<STATUS>, linear_solve_failed, projection_outside_domain,
+      projection_rows_not_passed
+    precondition: a converged state under `verify_*` (never `run_checks`, ADR 0013 D5)
+    max_count: 1 per certificate
+    enabled: default
+    labels:
+      - projection_judged_at:final_state
+      - projection_refused:residual_not_passed
+      - projection_refused:regularity_*
+      - projection_refused:linear_solve_failed
+      - projection_refused:projection_outside_domain
+      - projection_refused:projection_rows_not_passed
+    failure_tests:
+      - tests/test_k04f9_projection.py::test_x02_a_failing_residual_refuses_first
+      - tests/test_k04f9_projection.py::test_x02_each_regularity_status_names_its_refusal
+      - tests/test_k04f9_projection.py::test_x02_a_factorization_that_raises_is_linear_solve_failed
+      - tests/test_k04f9_projection.py::test_x02_a_step_that_makes_a_flow_negative_is_outside_the_domain
+      - tests/test_k04f9_projection.py::test_x02_a_step_after_which_a_row_fails_is_refused
+    unchanged_physics:
+      kind: identity_compared
+      tests:
+        - tests/test_t08_w2_edge_identity.py::test_e10_a_refused_projection_certifies_the_same_declaration
+      note: >-
+        SYN-001-nominal's revision-route solve, verified twice: with the projection's
+        factorization raising, the certificate is judged at `final_state` (`linear_solve_failed`),
+        and without, at `projection`. Both carry the bound declaration's `model_version`,
+        `constants_sha256` and the check policy's hash, and the guard's revision comparison
+        holds on both calls.
+
+  - id: E11
+    title: revision-binder refusal → `legacy_eo` (validate's fallback and the solve route)
+    source: ADR 0020 F5; T07 ruling rounds 3, 6, 7; T08 review 2 M1
+    trigger: >-
+      validate(): `bind_revision_or_reason` refuses `unsupported` or `incomplete` (not `conflict`,
+      not `inadmissible`); the solve route: `bind_revision_flowsheet` refuses and the legacy
+      binder binds (`select_route`).
+    precondition: >-
+      validate(): the revision binder binds the document (else the higher-ranked refusal is
+      reported); the solve route: `legacy_admission` admits the document (C0–C5), else no route.
+    max_count: 1 per validate() call; 1 route per solve (`select_route`)
+    enabled: default
+    labels:
+      - 'produced_by:; revision binder fallback (T07)'
+      - route_fallback:legacy_eo
+    failure_tests:
+      - tests/test_t07_w3b_validation.py::test_a_legacy_unsupported_or_incomplete_falls_back
+      - tests/test_t07_w3b_validation.py::test_a_legacy_conflict_never_falls_back
+      - tests/test_t07_r7_admission.py::test_g_r7_1_routes_over_the_corpus
+    unchanged_physics:
+      kind: guard
+      tests:
+        - tests/test_t07_r7_admission.py::test_c0_a_refusal_outside_round_6s_class_is_returned_as_it_is
+        - tests/test_t07_r7_admission.py::test_c1_a_free_specification_that_reaches_no_coordinate
+        - tests/test_t07_r7_admission.py::test_c3_a_free_coordinate_the_legacy_binding_does_not_free
+        - tests/test_t07_r7_admission.py::test_c4_a_target_the_legacy_binding_does_not_promote
+        - tests/test_t07_r7_admission.py::test_c5_every_other_count_is_refused
+        - tests/test_t07_r7_admission.py::test_every_admitted_corpus_route_plans_with_one_pair_on_legacy_eo
+      note: >-
+        Held to the problem, not to `model_version`, which differs by construction: the legacy
+        binder is a different binder. The guard is `legacy_admission`'s C0–C5 (T07 ruling round
+        7), which `select_route` applies before the `legacy_eo` route is used.
+    notes: >-
+      Two producers: `validate()`'s structural stage analyses the revision binder's fallback
+      (`produced_by:`), and `select_route` (`application/revision_run.py`) sends a document the
+      revision binder refuses to `legacy_eo` under the default policy, the refusal kept as the
+      route's reason (`route_fallback:legacy_eo`; `bind_route` re-binds a recorded route the same
+      way).
+
+  - id: E12
+    title: PTC core (policy-only, experimental)
+    source: T04 §7; ADR 0023; `T08-ptc-v1`
+    trigger: >-
+      selected by policy (`eo_core: ptc`), not by a failure. Inside the core a rejected
+      pseudo-step (`bound_blocked`, `linear_solve_failed`) is retried at a smaller one where
+      Newton's would end the attempt (trace.py `RejectionReason`).
+    precondition: '`eo_core: ptc` and a valid mass mapping (else `PTC_MAPPING_INVALID` before any attempt)'
+    max_count: the PTC step budget (T04 §7.3); `PTC_STALLED` ends it
+    enabled: policy-only
+    labels:
+      - eo_core:ptc
+    failure_tests:
+      - tests/test_t04_ptc.py::test_a19_ptc_s4_lands_on_plus_zero_and_is_blocked
+      - tests/test_t04_ptc.py::test_a19_ptc_s3_the_algebraic_stall
+      - tests/test_t04_ptc.py::test_the_row_sign_ablations_failed_factorization_is_a_trial_not_an_event
+    unchanged_physics:
+      kind: identity_compared
+      tests:
+        - tests/test_t08_w2_edge_identity.py::test_e12_a_ptc_solve_keeps_the_declaration
+      note: >-
+        The lowest-index PTC-R1 start W5's committed reference records list `CONVERGED` on the PTC
+        arm, solved under `T08-ptc-v1`: the solve plan's and the root fingerprint's
+        `model_version` and `constants_sha256` equal the bound declaration's.
+
+  - id: E13
+    title: outcome fallback revision_eo → legacy_eo
+    source: T07 D-Q3; T07 F6
+    trigger: none (not built)
+    precondition: none
+    max_count: '0'
+    enabled: absent
+    labels: []
+    failure_tests: []
+    unchanged_physics: null
+    notes: Not built (T07 F6). No code path emits a label for it.
+
+# Code labels that are not recovery edges, each with the reason.
+not_an_edge:
+  - label: eo_core:newton
+    reason: the primary EO core, not a response to a failure
+  - label: eo_recovery:none
+    reason: the policy value that turns edge 3 off
+  - label: decision:converged
+    reason: the contract's success verdict
+  - label: decision:terminal
+    reason: the contract's terminal verdict. It ends the solve and runs nothing else.
+  - label: opening_source:initializer
+    reason: attempt 0's opening from the initializer chain's accepted source, the primary path
+  - label: ph_route:saturation
+    reason: >-
+      the primary route for a single flowing component (the two-phase region collapses to
+      T_sat), chosen by the state and not after a failure (ph_kernel.py step 2)
+  - label: ph_route:bracket
+    reason: the primary temperature route
+  - label: projection_judged_at:projection
+    reason: the primary judgement at the projected state x̃
+  - label: initializer_source:compatible_warm_start
+    reason: >-
+      A policy-chosen initializer source (`T08-warm-v1`, source 2), not a response to a failure.
+      T08 build-first spec §B2 "No new fallback": a warm-started solve that fails keeps the
+      policy's edges and gains none, so §5.6 is unchanged. Its rejection → next source is E9, which
+      carries the rejection producer's label.

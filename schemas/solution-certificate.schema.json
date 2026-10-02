@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/solution-certificate.schema.json",
+  "title": "SolutionCertificate",
+  "description": "K04 \u00a712.1. What was checked, what it was compared against, and what is still not claimed. `verification_status` is one of four words and never a boolean: a green badge that meant three different things is what blueprint \u00a78.1 forbids. `solution_error_bound_scaled` is recorded evidence and never a check (\u00a77.4 as amended 2026-09-22): a certificate certifies residual accuracy at the registered tolerances, and `statements` carries the sentence saying so.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "certificate_id",
+    "model_version",
+    "constants_sha256",
+    "policy_id",
+    "plan_id",
+    "target_state_sha256",
+    "check_policy_id",
+    "check_policy_sha256",
+    "verification_status",
+    "false_success_detected",
+    "checks",
+    "regularity",
+    "solution_error_bound_scaled",
+    "phase_branch",
+    "branch_provenance",
+    "transformations",
+    "derivative_provenance",
+    "independence_qualifications",
+    "limitations",
+    "statements",
+    "numerical_policy_id",
+    "root_fingerprint"
+  ],
+  "properties": {
+    "certificate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_version": {
+      "type": "string",
+      "pattern": "^.+@[0-9a-f]{64}$"
+    },
+    "constants_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policy_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "target_state_sha256": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "check_policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "check_policy_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "verification_status": {
+      "enum": [
+        "VERIFIED",
+        "RELAXED",
+        "UNVERIFIED",
+        "FAILED"
+      ]
+    },
+    "false_success_detected": {
+      "type": "boolean"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "category",
+          "subject",
+          "result",
+          "scope",
+          "reason",
+          "near_threshold"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "enum": [
+              "residual",
+              "alias_certificate",
+              "material_balance",
+              "energy_balance",
+              "specification",
+              "bounds_and_domain",
+              "phase_admissibility",
+              "independent_split",
+              "derivative_witness"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "unsupported",
+              "not_applicable"
+            ]
+          },
+          "scope": {
+            "enum": [
+              "evaluated",
+              "unsupported",
+              "not_applicable"
+            ]
+          },
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "tolerance": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reference": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "near_threshold": {
+            "type": "boolean"
+          },
+          "independence_qualification": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "regularity": {
+      "$ref": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/regularity-evidence.schema.json"
+    },
+    "solution_error_bound_scaled": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "phase_branch": {
+      "type": "object"
+    },
+    "branch_provenance": {
+      "type": "array",
+      "description": "ADR 0005 D7 (T03 \u00a78.1): one item per attempt, in order; item 0 is the starting point.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "attempt",
+          "signature",
+          "core",
+          "opening_source",
+          "initializer_source",
+          "opening_trial",
+          "opening_state_sha256",
+          "core_outcome",
+          "iterations",
+          "decision",
+          "cause",
+          "continuation"
+        ],
+        "properties": {
+          "attempt": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "signature": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "enum": [
+                    "LIQUID",
+                    "VAPOR",
+                    "TWO_PHASE",
+                    "ZERO_FLOW"
+                  ]
+                }
+              ]
+            }
+          },
+          "core": {
+            "enum": [
+              "newton",
+              "anderson",
+              "ptc",
+              "homotopy"
+            ]
+          },
+          "opening_source": {
+            "enum": [
+              "initializer",
+              "phase_rejected_trial",
+              "pinned_iterate",
+              "closure_projection",
+              "merge_best_iterate",
+              "eo_recovery_start"
+            ]
+          },
+          "initializer_source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "opening_trial": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "iteration",
+              "halving"
+            ],
+            "properties": {
+              "iteration": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "halving": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "opening_state_sha256": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{64})?$"
+          },
+          "core_outcome": {
+            "type": "string",
+            "minLength": 1
+          },
+          "iterations": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "decision": {
+            "enum": [
+              "converged",
+              "restart",
+              "terminal"
+            ]
+          },
+          "cause": {
+            "type": "string"
+          },
+          "continuation": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "parameter_ids",
+              "lambda_levels",
+              "lambda_reached",
+              "rejected_trials"
+            ],
+            "properties": {
+              "type": {
+                "const": "specification_continuation"
+              },
+              "parameter_ids": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true
+              },
+              "lambda_levels": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+                }
+              },
+              "lambda_reached": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)(/[1-9][0-9]*)?$"
+              },
+              "rejected_trials": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "description": "ADR 0010 D7.5 (T04 \u00a74.7): a homotopy attempt's continuation history \u2014 the accepted \u03bb-levels and the \u03bb reached as exact `p/q` strings, and the rejected \u03bb-trials; null on every other item. R0."
+          }
+        }
+      }
+    },
+    "transformations": {
+      "type": "object"
+    },
+    "derivative_provenance": {
+      "type": "object"
+    },
+    "independence_qualifications": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "statements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 3
+    },
+    "numerical_policy_id": {
+      "enum": [
+        "K04-numerical-policy-v1",
+        "T08-numerical-policy-v2"
+      ]
+    },
+    "root_fingerprint": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "ADR 0005 D7 (T03 \u00a78.2): issued on a converged, admissible solve; null otherwise. Every field R0 except full_state_sha256, a digest never compared for value.",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "model_version",
+        "constants_sha256",
+        "variable_ids_sha256",
+        "branch_found",
+        "full_state_sha256",
+        "delta_scaled_inf",
+        "claims"
+      ],
+      "properties": {
+        "policy": {
+          "const": "T03-root-fingerprint-v1"
+        },
+        "model_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constants_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "variable_ids_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "branch_found": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "prefixItems": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "enum": [
+                  "LIQUID",
+                  "VAPOR",
+                  "TWO_PHASE",
+                  "ZERO_FLOW"
+                ]
+              }
+            ]
+          }
+        },
+        "full_state_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "delta_scaled_inf": {
+          "const": 0.0001
+        },
+        "claims": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "uniqueness",
+            "dynamic_stability"
+          ],
+          "properties": {
+            "uniqueness": {
+              "const": "NOT_ASSESSED"
+            },
+            "dynamic_stability": {
+              "const": "NOT_ASSESSED"
+            }
+          }
+        }
+      }
+    }
+  }
+}

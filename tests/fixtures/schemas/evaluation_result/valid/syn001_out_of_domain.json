@@ -1,0 +1,39 @@
+{
+  "accuracy": "exact-double",
+  "constants_sha256": "d4ddcbf81bad6fc0c7e3e76a49cb15d214a5dd5a41e83a0e96cbe5850323f009",
+  "counters": {
+    "blockH": {
+      "jacobian_calls": 0,
+      "value_calls": 0
+    },
+    "blockK": {
+      "jacobian_calls": 0,
+      "value_calls": 1
+    }
+  },
+  "equation_ids": [
+    "bal_A",
+    "bal_B",
+    "bal_C",
+    "Vdef",
+    "Ldef",
+    "eq_A",
+    "eq_B",
+    "eq_C",
+    "kdef_A",
+    "kdef_B",
+    "kdef_C",
+    "hdef_A",
+    "hdef_B",
+    "hdef_C",
+    "energy",
+    "tspec",
+    "pspec"
+  ],
+  "message": "blockK: temperature 270.0 K outside [280.0, 440.0] K",
+  "model_version": "SYN-001-L-1@8e5930fc737e8e0b033a2fe35d06971c6cf911df2db5d9731e050cf1cb6fb98a",
+  "phase_signature": null,
+  "state_sha256": "7cd3d793d2cf04afdb5d4c157fd695dde1a245766b10dda0ab082ef7314c932b",
+  "status": "invalid_trial_state",
+  "values": null
+}

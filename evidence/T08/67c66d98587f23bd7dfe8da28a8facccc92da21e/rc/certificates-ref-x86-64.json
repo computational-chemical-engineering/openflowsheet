@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "certificates": 72,
+   "id": "a34.certificates_audited",
+   "result": "pass"
+  },
+  {
+   "first": {},
+   "id": "a34.violations",
+   "result": "pass",
+   "violations": 0
+  }
+ ],
+ "format": "t08-rc-v1",
+ "inputs": [
+  "/home/frankp/Codes/Process Simulator/evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/artifacts/rc/identity",
+  "/home/frankp/Codes/Process Simulator/evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/artifacts/rc/corpus-ref-x86-64.json",
+  "/home/frankp/Codes/Process Simulator/evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/artifacts/rc/surface",
+  "/home/frankp/Codes/Process Simulator/evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/artifacts/rc/ensemble"
+ ],
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "67c66d98587f23bd7dfe8da28a8facccc92da21e",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "certificates"
+}

@@ -1,0 +1,40 @@
+{
+  "_why_invalid": "status 'ok' with no values: a success that reports nothing.",
+  "accuracy": "exact-double",
+  "constants_sha256": "1372993ccab8e94b023d75e4e89cbf0b5713abb90720dae4c5df10e9732fe8cd",
+  "counters": {
+    "blockH": {
+      "jacobian_calls": 0,
+      "value_calls": 1
+    },
+    "blockK": {
+      "jacobian_calls": 0,
+      "value_calls": 1
+    }
+  },
+  "equation_ids": [
+    "bal_A",
+    "bal_B",
+    "bal_C",
+    "Vdef",
+    "Ldef",
+    "eq_A",
+    "eq_B",
+    "eq_C",
+    "kdef_A",
+    "kdef_B",
+    "kdef_C",
+    "hdef_A",
+    "hdef_B",
+    "hdef_C",
+    "energy",
+    "tspec",
+    "pspec"
+  ],
+  "message": "",
+  "model_version": "SYN-001-L-1@8e5930fc737e8e0b033a2fe35d06971c6cf911df2db5d9731e050cf1cb6fb98a",
+  "phase_signature": null,
+  "state_sha256": "bc4c5ffa3aca7e37f1c70880ae9d0a36e019c8766171e8503c2889e7d626b805",
+  "status": "ok",
+  "values": null
+}

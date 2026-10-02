@@ -1,0 +1,70 @@
+# Declared ModelManifest: SYN-001 product sink
+#
+# `status: declared` and `implementation_artifact.state: not_implemented` mean this document
+# states intended behavior for work package K02. No code implements it, no test exercises it,
+# and it is not evidence that the model works. Every derivative is declared `unavailable`
+# because none exists yet (blueprint §5.2).
+id: syn001.product_sink
+version: 0.0.0-declared
+status: declared
+title: SYN-001 product sink
+description: Boundary that accepts a product stream and imposes no equation.
+introduced_by_package: K02
+ports:
+- name: inlet
+  kind: material
+  direction: inlet
+  multiplicity: 1
+  component_mapping: revision_component_set
+  state_definition: nTP-v1
+  phase_capabilities:
+  - liquid
+  - vapor
+  - vapor_liquid
+mathematics:
+  equations: []
+derivatives:
+- output: none
+  with_respect_to:
+  - inlet.state
+  method: unavailable
+  regime: all
+  notes: The sink has no output. The entry records that fact explicitly rather than leaving the derivative
+    declaration empty, which would be indistinguishable from an omission.
+initialization:
+  strategy: none
+  registered_initializer: null
+  notes: Nothing to initialize.
+validity:
+  domain:
+    temperature_K:
+      min: 280.0
+      max: 440.0
+    pressure_Pa:
+      min: 50000.0
+      max: 200000.0
+    components:
+    - A
+    - B
+    - C
+    phases:
+    - liquid
+    - vapor
+    - vapor_liquid
+    - zero_flow
+  limitations:
+  - Contributes no equation and no variable. The empty equation list is a positive assertion, not
+    a placeholder.
+  - 'Accepts a dormant inlet: the vapor product is dormant in the 310 K variant and the purge is dormant
+    in the 420 K variant.'
+implementation_artifact:
+  state: not_implemented
+  module: null
+  artifact_hash: null
+  planned_package: K02
+execution_requirements:
+  execution_class: native_equation
+  thread_safety: unknown
+  evaluation_cost_class: unknown
+  property_provider: syn001
+  reference_convention: SYN-001-ref-v1

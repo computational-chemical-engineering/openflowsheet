@@ -1,0 +1,720 @@
+{
+ "work_package": "T01",
+ "commit": "00a71f4562b7bd80441df50cf64b53064d832b78",
+ "requirements": [
+  "D05"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "The six registered SYN-001 revisions, plus the registered 150 kPa parameter set and the synthetic fixtures of specification \u00a713, judged against benchmarks/t01/reference_values.yaml (71d5ec9245095536d120da822f93ed7c6fe50ff562d1927ba0ab266987b81e55) and docs/derivations/T01-structural-spec.md (d9f63e4fe826fb9a477dbcdfaa1fbdfcbc80866a2242d3e09a02f6f8eeddb08a)",
+  "case_hash": "a17db88443173eefaec8e31d246557439b90e65dddba2aba4de084878fd56644",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "8eb34ce1208251243235b2522a8360f0d7461eff0de7776feaadf3a5636bba35"
+  },
+  {
+   "cmd": "PATH=.venv/bin:$PATH .venv/bin/python docs/derivations/scripts/t01_reference.py --check",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "T01.A01",
+   "description": "The incidence traced from the row builders equals Fable's hand transcription, row by row. Two derivations of the same object, not a recording of this repository's own output.",
+   "result": "pass",
+   "value": {
+    "rows": 49,
+    "columns": 47,
+    "nnz": 170
+   },
+   "expected": {
+    "rows": 49,
+    "columns": 47,
+    "nnz": 170
+   }
+  },
+  {
+   "id": "T01.A02",
+   "description": "The compiled sparsity is a subset of the traced incidence at every registered variant, and equal except at r = 0, where CasADi folds `0.0 * n_i` away and exactly the three recycle-split entries vanish. Registered *because* it vanishes: a pattern that moves with a parameter value is unfit as a structural source.",
+   "result": "pass",
+   "value": {
+    "subset_everywhere": true,
+    "differences": {
+     "SYN-001-nominal": 0,
+     "SYN-001-once-through": 3,
+     "SYN-001-high-recycle": 0,
+     "SYN-001-all-liquid-310K": 0,
+     "SYN-001-all-vapor-420K": 0
+    }
+   },
+   "expected": {
+    "subset_everywhere": true,
+    "differences_at_r0": 3,
+    "differences_elsewhere": 0
+   }
+  },
+  {
+   "id": "T01.A03",
+   "description": "No evaluation. `compile_problem`, `flash` and `evaluate_phase` are replaced by functions that raise, and validation of all six registered revisions still produces its counts. A structural claim obtained from numbers at a state is not a structural claim, and this is the only way to hold a layer to that.",
+   "result": "pass",
+   "value": {
+    "raised": 0,
+    "cases": 6
+   },
+   "expected": {
+    "raised": 0,
+    "cases": 6
+   }
+  },
+  {
+   "id": "T01.A04",
+   "description": "`structural_counts` on the full declaration, against the registered table. Four keys, integers; `unmatched` counts unmatched columns as well as rows (Q5), so a square-by-totals defect does not read as zero.",
+   "result": "pass",
+   "value": {
+    "SYN-001-nominal": {
+     "free_variables": 47,
+     "equations": 49,
+     "matched": 47,
+     "unmatched": 2
+    },
+    "SYN-001-conflicting-heater-spec": {
+     "free_variables": 47,
+     "equations": 50,
+     "matched": 47,
+     "unmatched": 3
+    }
+   },
+   "expected": {
+    "SYN-001-nominal": {
+     "free_variables": 47,
+     "equations": 49,
+     "matched": 47,
+     "unmatched": 2
+    },
+    "SYN-001-conflicting-heater-spec": {
+     "free_variables": 47,
+     "equations": 50,
+     "matched": 47,
+     "unmatched": 3
+    }
+   }
+  },
+  {
+   "id": "T01.A05",
+   "description": "The coarse Dulmage-Mendelsohn partition of the full declaration, as sets and in declaration order, and the same partition from twenty seeded alternative maximum matchings.",
+   "result": "pass",
+   "value": {
+    "nominal_over": [
+     7,
+     5
+    ],
+    "conflicting_over": [
+     44,
+     41
+    ],
+    "matching_independent_over_seeds": 20
+   },
+   "expected": {
+    "nominal_over": [
+     7,
+     5
+    ],
+    "conflicting_over": [
+     44,
+     41
+    ],
+    "matching_independent": true
+   }
+  },
+  {
+   "id": "T01.A06",
+   "description": "The affine-copy certificates, issued from the declaration and the parameters with no state: the same two rows K03 eliminates from a Jacobian, the same signed-row sets, and a mismatch of exactly zero. K03 needed two evaluated states to witness that the mismatch is constant; the declaration does not.",
+   "result": "pass",
+   "value": {
+    "rows": [
+     "U-FLASH:FLASH-P:inlet",
+     "U-SPLIT:SPLIT-P:recycle"
+    ],
+    "constant_mismatch_Pa": [
+     0.0,
+     0.0
+    ],
+    "agrees_with_k03_at_variants": 5
+   },
+   "expected": {
+    "rows": [
+     "U-FLASH:FLASH-P:inlet",
+     "U-SPLIT:SPLIT-P:recycle"
+    ],
+    "constant_mismatch_Pa": [
+     0.0,
+     0.0
+    ],
+    "agrees_with_k03_at_variants": 5
+   }
+  },
+  {
+   "id": "T01.A07",
+   "description": "The registered 150 kPa parameter set: both certificates carry `P_feed - P_f` exactly and the finding is `SPECIFICATION_CONFLICT`. An inconsistent row has an identity but not a certificate, so the certified set is empty.",
+   "result": "pass",
+   "value": {
+    "finding": "SPECIFICATION_CONFLICT",
+    "mismatches": [
+     -50000.0,
+     -50000.0
+    ],
+    "certified_rows": []
+   },
+   "expected": {
+    "finding": "SPECIFICATION_CONFLICT",
+    "mismatches": [
+     -50000.0,
+     -50000.0
+    ],
+    "certified_rows": []
+   }
+  },
+  {
+   "id": "T01.A08",
+   "description": "The valid flowsheet is *not* rejected although it is over-determined. All five registered variants declare 49 rows over 47 columns with a seven-row over-determined block, and the excess is exactly the certified rows. A validator that rejected an over-determined block would reject the flowsheet this project is built on.",
+   "result": "pass",
+   "value": {
+    "variants": 5,
+    "finding": [
+     "STRUCTURALLY_CLOSED"
+    ],
+    "full_excess": 2,
+    "certified_in_over_part": 2
+   },
+   "expected": {
+    "variants": 5,
+    "finding": [
+     "STRUCTURALLY_CLOSED"
+    ],
+    "full_excess": 2,
+    "certified_in_over_part": 2
+   }
+  },
+  {
+   "id": "T01.A09",
+   "description": "The registered acceptance case, rejected at validation. Before T01 this revision validated READY_FOR_SIMULATION and was refused downstream as UNSUPPORTED_RANK_STRUCTURE, a sentence about the tool. It is now STRUCTURAL_OVER_SPECIFICATION naming the heater and both its specifications, which is what `benchmarks/registry.yaml` has expected since P01, with nothing compiled or solved to reach it.",
+   "result": "pass",
+   "value": {
+    "status": "INVALID",
+    "check": "STR-03",
+    "result": "FAIL",
+    "implicated_objects": [
+     "SPEC-heater-duty",
+     "SPEC-heater-outlet-T",
+     "heater"
+    ],
+    "excess": 1,
+    "candidate_specification_rows": 10,
+    "candidate_specifications": 9,
+    "over_specified_units": [
+     "U-HEAT"
+    ]
+   },
+   "expected": {
+    "status": "INVALID",
+    "check": "STR-03",
+    "result": "FAIL",
+    "implicated_objects": [
+     "SPEC-heater-duty",
+     "SPEC-heater-outlet-T",
+     "heater"
+    ],
+    "excess": 1,
+    "candidate_specification_rows": 10,
+    "candidate_specifications": 9,
+    "over_specified_units": [
+     "U-HEAT"
+    ]
+   }
+  },
+  {
+   "id": "T01.A10",
+   "description": "Unit-local degrees of freedom, and the identity that ties them to the global partition: sum(specs) + sum(local excess) - sum(dof) = excess - deficit. The Dulmage-Mendelsohn partition alone cannot name the heater, because relaxing any one of ten specification rows closes the system; this second count can, and the identity is why it can be trusted rather than merely believed.",
+   "result": "pass",
+   "value": {
+    "SYN-001-nominal": {
+     "specifications": 10,
+     "local_excess": 1,
+     "degrees_of_freedom": 11,
+     "identity": 0,
+     "target": 0,
+     "balances": true,
+     "over_specified_units": []
+    },
+    "SYN-001-conflicting-heater-spec": {
+     "specifications": 11,
+     "local_excess": 1,
+     "degrees_of_freedom": 11,
+     "identity": 1,
+     "target": 1,
+     "balances": true,
+     "over_specified_units": [
+      "U-HEAT"
+     ]
+    }
+   },
+   "expected": {
+    "SYN-001-nominal": {
+     "balances": true,
+     "target": 0
+    },
+    "SYN-001-conflicting-heater-spec": {
+     "balances": true,
+     "target": 1
+    }
+   }
+  },
+  {
+   "id": "T01.A11",
+   "description": "The canonical matching is the lexicographically least maximum matching under declaration order \u2014 a defined object, not an algorithm's accident, because gate G05 compares it between two architectures.",
+   "result": "pass",
+   "value": {
+    "pairs": 47
+   },
+   "expected": {
+    "pairs": 47
+   }
+  },
+  {
+   "id": "T01.A13",
+   "description": "The block-triangular form: block count, size multiset, largest-block fraction and the canonical order block for block, including every `depends_on`.",
+   "result": "pass",
+   "value": {
+    "block_count": 24,
+    "block_sizes_sorted": [
+     17,
+     8
+    ],
+    "largest_block_fraction": 0.3617021276595745
+   },
+   "expected": {
+    "block_count": 24,
+    "block_sizes_sorted": [
+     17,
+     8
+    ],
+    "largest_block_fraction": 0.3617021276595745
+   }
+  },
+  {
+   "id": "T01.A14",
+   "description": "The three-variable tear, rediscovered. Plan \u00a73.2 obliges T01 to derive the tear dimension from the incidence graph rather than read it from the flowsheet module; the candidates all have dimension 3 and the boundary-distance tie-break picks the recycle. The result equals K03's declared partition by id at all five variants.",
+   "result": "pass",
+   "value": {
+    "loops": 1,
+    "candidates": [
+     [
+      "S2",
+      3,
+      2
+     ],
+     [
+      "S3",
+      3,
+      3
+     ],
+     [
+      "S5",
+      3,
+      4
+     ],
+     [
+      "S6",
+      3,
+      1
+     ]
+    ],
+    "chosen": "S6",
+    "tie_break_used": "boundary_distance",
+    "tear_variables": [
+     "S6.n.A",
+     "S6.n.B",
+     "S6.n.C"
+    ],
+    "inner": [
+     44,
+     44
+    ],
+    "agrees_with_k03_at_variants": 5
+   },
+   "expected": {
+    "loops": 1,
+    "candidates": [
+     [
+      "S2",
+      3,
+      2
+     ],
+     [
+      "S3",
+      3,
+      3
+     ],
+     [
+      "S5",
+      3,
+      4
+     ],
+     [
+      "S6",
+      3,
+      1
+     ]
+    ],
+    "chosen": "S6",
+    "tie_break_used": "boundary_distance",
+    "tear_variables": [
+     "S6.n.A",
+     "S6.n.B",
+     "S6.n.C"
+    ],
+    "inner": [
+     44,
+     44
+    ],
+    "agrees_with_k03_at_variants": 5
+   }
+  },
+  {
+   "id": "T01.A16",
+   "description": "The attempt-signature rule, derived. K03 \u00a79.1 declared the instance and left the general rule here: a phase-selecting unit \u2014 one declaring an equilibrium row, which the `molar_flow_squared` kind marks \u2014 is in the signature iff its lifted block is an ancestor of a block the tear rows read. Ancestry, not membership: the heater is in the loop and is correctly out.",
+   "result": "pass",
+   "value": {
+    "inner_blocks": 30,
+    "inner_block_sizes_sorted": [
+     8,
+     8
+    ],
+    "phase_selecting": [
+     [
+      "U-HEAT",
+      [
+       15
+      ],
+      false
+     ],
+     [
+      "U-FLASH",
+      [
+       19
+      ],
+      true
+     ]
+    ],
+    "signature_units": [
+     "U-FLASH"
+    ]
+   },
+   "expected": {
+    "inner_blocks": 30,
+    "inner_block_sizes_sorted": [
+     8,
+     8
+    ],
+    "phase_selecting": [
+     [
+      "U-HEAT",
+      [
+       15
+      ],
+      false
+     ],
+     [
+      "U-FLASH",
+      [
+       19
+      ],
+      true
+     ]
+    ],
+    "signature_units": [
+     "U-FLASH"
+    ]
+   }
+  },
+  {
+   "id": "T01.A17",
+   "description": "Zero flow is not a structural event. The analysis takes no state, so the five registered variants \u2014 two with dormant streams and one with a dormant recycle \u2014 produce identical R0 projections.",
+   "result": "pass",
+   "value": {
+    "variants": 5,
+    "distinct_projections": 1
+   },
+   "expected": {
+    "variants": 5,
+    "distinct_projections": 1
+   }
+  },
+  {
+   "id": "T01.A19",
+   "description": "An affine redundancy this policy does not read is `uncertified_affine`: retained, listed, never silently certified or dropped, and carried by a `STR-06` warning that never fails. Reached by the registered synthetic fixtures `UNC-1` and `UNC-2`, which are synthetic on purpose: no registered revision declares such a row.",
+   "result": "pass",
+   "value": {
+    "UNC-1": [
+     "p4"
+    ],
+    "UNC-2": [
+     "p3"
+    ],
+    "certified": [],
+    "str_06": "WARN"
+   },
+   "expected": {
+    "UNC-1": [
+     "p4"
+    ],
+    "UNC-2": [
+     "p3"
+    ],
+    "certified": [],
+    "str_06": "WARN"
+   }
+  },
+  {
+   "id": "T01.A20",
+   "description": "Unsupported is a result. A row whose builder branches on a value is `structure_unavailable` with the row named, every STR check `NOT_RUN` and `structural_counts` null with the row in the reason; a revision that cannot be bound is the same; a declaration that is not closed has no square system and says so rather than decomposing part of one.",
+   "result": "pass",
+   "value": {
+    "conflicting_unsupported_kinds": [
+     "not_applicable"
+    ],
+    "conflicting_has_block_form": false,
+    "nominal_unsupported": 0
+   },
+   "expected": {
+    "conflicting_unsupported_kinds": [
+     "not_implemented"
+    ],
+    "conflicting_has_block_form": false,
+    "nominal_unsupported": 0
+   }
+  },
+  {
+   "id": "T01.A22",
+   "description": "The structural report is written into every run bundle and projected into R0, so the gate G05 identity job compares it between x86-64 and aarch64 on every push. The projection carries no float at any depth.",
+   "result": "pass",
+   "value": {
+    "in_bundle": true,
+    "in_projection": true,
+    "floats": 0,
+    "signature_units": []
+   },
+   "expected": {
+    "in_bundle": true,
+    "in_projection": true,
+    "floats": 0
+   }
+  },
+  {
+   "id": "T01.A23",
+   "description": "Every T01 check is `stage: structural_analysis` with `evidence_class: structural`, the six statements appear verbatim in every report, and no output claims `local_numerical` or `verified_minimal_subset` \u2014 those are K04's and T06's.",
+   "result": "pass",
+   "value": {
+    "classes": [
+     "structural"
+    ],
+    "forbidden": 0,
+    "statements": 6
+   },
+   "expected": {
+    "classes": [
+     "structural"
+    ],
+    "statements": 6,
+    "forbidden": 0
+   }
+  },
+  {
+   "id": "T01.A15",
+   "description": "The answer is not hard-coded: relabelling every id by a bijection yields the image of the registered tear, certificates, block sizes and signature, and the package contains no unit, stream or row id and imports no unit model. This assertion found a defect rather than confirming the code \u2014 the row-to-unit attribution parsed an id prefix, and relabelling emptied it silently.",
+   "result": "pass",
+   "value": {
+    "relabelled_agrees": true,
+    "forbidden_names_in_package": 0
+   },
+   "expected": {
+    "relabelled_agrees": true,
+    "forbidden_names_in_package": 0
+   }
+  },
+  {
+   "id": "T01.A00",
+   "description": "The reference generator's own self-check passes, the committed YAML's digest equals the one in the specification header, and two emissions are byte-identical. The expectations this package is judged by are reproducible from the repository.",
+   "result": "pass",
+   "value": {
+    "check_exit_code": 0,
+    "digest_matches_header": true,
+    "byte_reproducible": true,
+    "reference_sha256": "71d5ec9245095536d120da822f93ed7c6fe50ff562d1927ba0ab266987b81e55",
+    "reference_lines": 3009
+   },
+   "expected": {
+    "check_exit_code": 0,
+    "digest_matches_header": true,
+    "byte_reproducible": true
+   }
+  },
+  {
+   "id": "T01.A12",
+   "description": "The invariant objects survive twenty seeded permutations of the declaration: the structural rank, the four DM parts as sets, the excess and the certified count. The sequences are canonical *given* the declaration order, and a permutation of the declaration changes `model_version`, so nothing compares them across orders.",
+   "result": "pass",
+   "value": {
+    "invariant_over_seeds": 20,
+    "structural_rank": 47
+   },
+   "expected": {
+    "invariant_over_seeds": 20
+   }
+  },
+  {
+   "id": "T01.A18",
+   "description": "Each finding has a fixture that reaches it, and D05's two halves sit side by side: `SQ-1` is square by totals and defective in both directions, `SQ-2` is structurally perfect and numerically singular with no rank word in the report, `UND-1` is a deficit and `OVR-1` an excess in a 2x1 block that defeats a size threshold.",
+   "result": "pass",
+   "value": {
+    "SQ-1": {
+     "structural_rank": 2,
+     "excess": 1,
+     "deficit": 1,
+     "agrees": true
+    },
+    "SQ-2": {
+     "structural_rank": 2,
+     "excess": 0,
+     "deficit": 0,
+     "agrees": true
+    },
+    "UND-1": {
+     "structural_rank": 2,
+     "excess": 0,
+     "deficit": 1,
+     "agrees": true
+    },
+    "OVR-1": {
+     "structural_rank": 2,
+     "excess": 1,
+     "deficit": 0,
+     "agrees": true
+    }
+   },
+   "expected": {
+    "SQ-1": {
+     "agrees": true
+    },
+    "SQ-2": {
+     "agrees": true
+    },
+    "UND-1": {
+     "agrees": true
+    },
+    "OVR-1": {
+     "agrees": true
+    }
+   }
+  },
+  {
+   "id": "T01.A21",
+   "description": "\u00a75.1's specification promotion: the conflicting revision binds to the nominal declaration plus one assembler-authored row over the heater's duty column, `algebraic`, origin `revision#\u2026`. The heater's own refusal of a `specified_duty` is a `SpecificationError` from a constructor, not a structural finding, and the binding does not reach it.",
+   "result": "pass",
+   "value": {
+    "promoted": [
+     "SPEC:SPEC-heater-duty"
+    ],
+    "column": "U-HEAT.Q",
+    "accumulation": "algebraic",
+    "origin": "revision#SPEC-heater-duty",
+    "nominal_promotes_nothing": true,
+    "heater_guard_fires_when_reached": true
+   },
+   "expected": {
+    "promoted": [
+     "SPEC:SPEC-heater-duty"
+    ],
+    "column": "U-HEAT.Q",
+    "accumulation": "algebraic",
+    "nominal_promotes_nothing": true,
+    "heater_guard_fires_when_reached": true
+   }
+  },
+  {
+   "id": "T01.A24",
+   "description": "`structural_counts` is present exactly when the analysis ran, and `structural_counts_absent_reason` exactly when it is null. A revision nobody could analyse is not ready, and is `DRAFT` rather than `INVALID` because the tool could not read it and no defect was found (register R-022, decided by Frank 2026-09-24).",
+   "result": "pass",
+   "value": {
+    "consistent": true,
+    "unanalysable_is_not_ready": true,
+    "unanalysable_status": "DRAFT",
+    "draft_status": "DRAFT"
+   },
+   "expected": {
+    "consistent": true,
+    "unanalysable_is_not_ready": true
+   }
+  },
+  {
+   "id": "T01.A25",
+   "description": "This manifest carries one entry per registered assertion it claims, `commands` is the gate actually run on this tree, `limitations` restates \u00a716, and `review` is unset \u2014 no agent may set it. The assertions not listed here are the ones `tests/test_t01_structural.py` owns; A25 itself is the shape of this file and is not self-certified beyond its own arithmetic.",
+   "result": "pass",
+   "value": {
+    "entries": 25,
+    "ids": [
+     "T01.A00",
+     "T01.A01",
+     "T01.A02",
+     "T01.A03",
+     "T01.A04",
+     "T01.A05",
+     "T01.A06",
+     "T01.A07",
+     "T01.A08",
+     "T01.A09",
+     "T01.A10",
+     "T01.A11",
+     "T01.A12",
+     "T01.A13",
+     "T01.A14",
+     "T01.A15",
+     "T01.A16",
+     "T01.A17",
+     "T01.A18",
+     "T01.A19",
+     "T01.A20",
+     "T01.A21",
+     "T01.A22",
+     "T01.A23",
+     "T01.A24"
+    ]
+   },
+   "expected": {
+    "entries": 25,
+    "unique": true
+   }
+  }
+ ],
+ "artifacts": [],
+ "limitations": [
+  "Measured with this manifest already cited by `docs/requirements.yaml`: the ledger names the manifest by its commit path, so the gate run whose stdout is recorded here was made on the tree at that commit plus the citation and this file. The ordinary bootstrap of a self-describing artifact, stated rather than hidden.",
+  "The frozen evidence-manifest schema takes D/A requirement ids only, so this manifest's `requirements` names D05 alone. The verification items V11 (task validation) and V13 (DM/SCC/BTF, tear) that T01 also serves are recorded in `docs/requirements.yaml`, which points back at this file.",
+  "Assertions A00-A25 of the specification are implemented and this manifest carries a check for each one it claims. What it does not claim: A25 is the shape of this file and is verified only by its own arithmetic, and `STR-06` and the synthetic fixtures are reached by no registered revision \u2014 they are synthetic on purpose.",
+  "The four must-fixes and the should-fixes S1-S4 and S7 of `docs/reviews/T01-review.md` are closed; the remaining should-fixes are recorded there and in `docs/T01_STATE.md` rather than silently dropped. S8 in particular: structural under-specification is not reachable through `validate()`, because the narrow binding needs every specification the flowsheet is parameterized by, so a revision omitting one is `INVALID` for the honest but weaker reason that the analysis could not run.",
+  "The binding from a `ProcessRevision` to a compiled declaration covers the registered SYN-001 revisions only. Assembling unit equations from `ModelManifest` documents is not delivered by T01 (specification \u00a716), and the ADR 0002 D2.7 obligation that comes with it is still owed by whichever package first does it.",
+  "The certificate class covers `pressure` and `temperature` copies only, because ADR 0001 D6 registers a tolerance for those two kinds and no other. A duty alias would be `uncertified_affine` rather than certified against an invented bound; no registered revision declares one, so that branch is reached by a synthetic fixture.",
+  "Multi-edge feedback sets are reported `unsupported` and not torn. SYN-001's single loop is a simple cycle, so the branch is reached by a synthetic fixture and by no registered revision.",
+  "Structural results are diagnostic (blueprint D05). Nothing here establishes numerical rank, conditioning or nonlinear feasibility; that verdict is K04's [A08] screen on the unregularized target Jacobian at a converged state and stays there.",
+  "SYN-001 is synthetic. Nothing in this package is empirically validated, and `review.numerical` and `review.process_model` are `pending`; no agent may set them."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

@@ -1,0 +1,2065 @@
+{
+ "specification": "\u00a73.1, \u00a73.2; A02, A04, A05, A06, A07",
+ "finite_difference_states": [
+  "S1",
+  "S2",
+  "S3",
+  "S4",
+  "S5"
+ ],
+ "note": "values and Jacobians are read from the block objects after nlp.set_primals, i.e. through the backend's own set_input_values; the stencil calls are made after the A18 per-call counters are recorded and their cost is in callback_counts.json -> per_state -> auxiliary_phases",
+ "states": {
+  "S1": {
+   "status": "ok",
+   "K": {
+    "block": "K",
+    "inputs": {
+     "T": 360.0,
+     "P": 100000.0
+    },
+    "outputs": {
+     "lnK_A": 1.044030859745886,
+     "lnK_B": 0.0,
+     "lnK_C": -1.1693145629153923
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      2
+     ],
+     "nnz": 6,
+     "declared_jacobian_nnz": 6,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 0.023200685772130795
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 0,
+       "value": 0.027840822926556954
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 0,
+       "value": 0.03248096008098311
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 1,
+       "value": -9.966591012488133e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 1,
+       "value": -9.966591012488133e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 1,
+       "value": -9.966591012488133e-06
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "T": 0.1,
+      "P": 100.0
+     },
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.023200685772133963,
+       "declared": true,
+       "reported": 0.023200685772130795
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.027840822926560694,
+       "declared": true,
+       "reported": 0.027840822926556954
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.0324809600809874,
+       "declared": true,
+       "reported": 0.03248096008098311
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.966591012480393e-06,
+       "declared": true,
+       "reported": -9.966591012488133e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.966591012480542e-06,
+       "declared": true,
+       "reported": -9.966591012488133e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.966591012480764e-06,
+       "declared": true,
+       "reported": -9.966591012488133e-06
+      }
+     ]
+    }
+   },
+   "H": {
+    "block": "H",
+    "inputs": {
+     "l_A": 0.29777671393051397,
+     "l_B": 0.5463969769256162,
+     "l_C": 0.7950172399207183,
+     "T": 360.0,
+     "P": 100000.0
+    },
+    "outputs": {
+     "H_A": 1786.6602835830838,
+     "H_B": 3278.381861553697,
+     "H_C": 4770.10343952431
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      5
+     ],
+     "nnz": 9,
+     "declared_jacobian_nnz": 9,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 6000.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "block_row": 1,
+       "block_col": 1,
+       "value": 6000.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "block_row": 2,
+       "block_col": 2,
+       "value": 6000.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 3,
+       "value": 29.777671393051396
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 3,
+       "value": 54.63969769256162
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 3,
+       "value": 79.50172399207183
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 4,
+       "value": 2.9777671393051397e-05
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 4,
+       "value": 5.463969769256162e-05
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 4,
+       "value": 7.950172399207183e-05
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "l_A": 0.01,
+      "l_B": 0.01,
+      "l_C": 0.01,
+      "T": 0.1,
+      "P": 5000.0
+     },
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 5999.999999999996,
+       "declared": true,
+       "reported": 6000.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 1.1368683772161603e-11,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 1.5158245029548805e-11,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": -1.8947806286936006e-12,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 6000.000000000012,
+       "declared": true,
+       "reported": 6000.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 1.5158245029548805e-11,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": -1.8947806286936006e-12,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 1.1368683772161603e-11,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 6000.0000000000155,
+       "declared": true,
+       "reported": 6000.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 29.777671393059105,
+       "declared": true,
+       "reported": 29.777671393051396
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 54.63969769257838,
+       "declared": true,
+       "reported": 54.63969769256162
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 79.50172399209728,
+       "declared": true,
+       "reported": 79.50172399207183
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 2.977767139303751e-05,
+       "declared": true,
+       "reported": 2.9777671393051397e-05
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 5.463969769252799e-05,
+       "declared": true,
+       "reported": 5.463969769256162e-05
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 7.9501723992189e-05,
+       "declared": true,
+       "reported": 7.950172399207183e-05
+      }
+     ]
+    }
+   }
+  },
+  "S2": {
+   "status": "ok",
+   "K": {
+    "block": "K",
+    "inputs": {
+     "T": 347.0,
+     "P": 60000.0
+    },
+    "outputs": {
+     "lnK_A": 1.2405616741927337,
+     "lnK_B": 0.13394913755141696,
+     "lnK_C": -1.0979471022594056
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      2
+     ],
+     "nnz": 6,
+     "declared_jacobian_nnz": 6,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 0.024975624459038125
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 0,
+       "value": 0.029969950258717803
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 0,
+       "value": 0.03496427605839748
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 1,
+       "value": -1.663200604561689e-05
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 1,
+       "value": -1.663200604561689e-05
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 1,
+       "value": -1.663200604561689e-05
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "T": 0.1,
+      "P": 100.0
+     },
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.0249756244590484,
+       "declared": true,
+       "reported": 0.024975624459038125
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.029969950258731504,
+       "declared": true,
+       "reported": 0.029969950258717803
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.03496427605841327,
+       "declared": true,
+       "reported": 0.03496427605839748
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -1.6632006045512553e-05,
+       "declared": true,
+       "reported": -1.663200604561689e-05
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -1.6632006045513685e-05,
+       "declared": true,
+       "reported": -1.663200604561689e-05
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -1.6632006045512553e-05,
+       "declared": true,
+       "reported": -1.663200604561689e-05
+      }
+     ]
+    }
+   },
+   "H": {
+    "block": "H",
+    "inputs": {
+     "l_A": 0.15798242490148925,
+     "l_B": 0.36199757799944765,
+     "l_C": 0.660425661569524,
+     "T": 347.0,
+     "P": 60000.0
+    },
+    "outputs": {
+     "H_A": 741.8854673373935,
+     "H_B": 1699.940626285406,
+     "H_C": 3101.3589067304847
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      5
+     ],
+     "nnz": 9,
+     "declared_jacobian_nnz": 9,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 4696.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "block_row": 1,
+       "block_col": 1,
+       "value": 4696.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "block_row": 2,
+       "block_col": 2,
+       "value": 4696.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 3,
+       "value": 15.798242490148926
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 3,
+       "value": 36.19975779994476
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 3,
+       "value": 66.0425661569524
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 4,
+       "value": 1.5798242490148926e-05
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 4,
+       "value": 3.619975779994477e-05
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 4,
+       "value": 6.60425661569524e-05
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "l_A": 0.01,
+      "l_B": 0.01,
+      "l_C": 0.01,
+      "T": 0.1,
+      "P": 5000.0
+     },
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 4696.000000000005,
+       "declared": true,
+       "reported": 4696.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 1.8947806286936006e-12,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 7.579122514774403e-12,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 4696.0000000000055,
+       "declared": true,
+       "reported": 4696.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 7.579122514774403e-12,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 1.8947806286936006e-12,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 4695.999999999996,
+       "declared": true,
+       "reported": 4696.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 15.798242490152743,
+       "declared": true,
+       "reported": 15.798242490148926
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 36.19975779995438,
+       "declared": true,
+       "reported": 36.19975779994476
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 66.04256615696839,
+       "declared": true,
+       "reported": 66.0425661569524
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 1.5798242490147157e-05,
+       "declared": true,
+       "reported": 1.5798242490148926e-05
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 3.619975779994699e-05,
+       "declared": true,
+       "reported": 3.619975779994477e-05
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 6.604256615695097e-05,
+       "declared": true,
+       "reported": 6.60425661569524e-05
+      }
+     ]
+    }
+   }
+  },
+  "S3": {
+   "status": "ok",
+   "K": {
+    "block": "K",
+    "inputs": {
+     "T": 310.0,
+     "P": 100000.0
+    },
+    "outputs": {
+     "lnK_A": -0.3031057334746115,
+     "lnK_B": -1.616563911864597,
+     "lnK_C": -3.055305793424089
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      2
+     ],
+     "nnz": 6,
+     "declared_jacobian_nnz": 6,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 0.031288333778024466
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 0,
+       "value": 0.03754600053362936
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 0,
+       "value": 0.04380366728923425
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 1,
+       "value": -9.96120246611525e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 1,
+       "value": -9.96120246611525e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 1,
+       "value": -9.96120246611525e-06
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "T": 0.1,
+      "P": 100.0
+     },
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.031288333778030315,
+       "declared": true,
+       "reported": 0.031288333778024466
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.037546000533636985,
+       "declared": true,
+       "reported": 0.03754600053362936
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.04380366728924093,
+       "declared": true,
+       "reported": 0.04380366728923425
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.961202466107443e-06,
+       "declared": true,
+       "reported": -9.96120246611525e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.96120246610721e-06,
+       "declared": true,
+       "reported": -9.96120246611525e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.961202466112206e-06,
+       "declared": true,
+       "reported": -9.96120246611525e-06
+      }
+     ]
+    }
+   },
+   "H": {
+    "block": "H",
+    "inputs": {
+     "l_A": 1.0,
+     "l_B": 1.0,
+     "l_C": 1.0,
+     "T": 310.0,
+     "P": 100000.0
+    },
+    "outputs": {
+     "H_A": 1000.0,
+     "H_B": 1000.0,
+     "H_C": 1000.0
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      5
+     ],
+     "nnz": 9,
+     "declared_jacobian_nnz": 9,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 1000.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "block_row": 1,
+       "block_col": 1,
+       "value": 1000.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "block_row": 2,
+       "block_col": 2,
+       "value": 1000.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 3,
+       "value": 100.0
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 3,
+       "value": 100.0
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 3,
+       "value": 100.0
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 4,
+       "value": 0.0001
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 4,
+       "value": 0.0001
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 4,
+       "value": 0.0001
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "l_A": 0.01,
+      "l_B": 0.01,
+      "l_C": 0.01,
+      "T": 0.1,
+      "P": 5000.0
+     },
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 1000.0,
+       "declared": true,
+       "reported": 1000.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 1000.0,
+       "declared": true,
+       "reported": 1000.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 1000.0,
+       "declared": true,
+       "reported": 1000.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 100.000000000032,
+       "declared": true,
+       "reported": 100.0
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 100.000000000032,
+       "declared": true,
+       "reported": 100.0
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 100.000000000032,
+       "declared": true,
+       "reported": 100.0
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 0.0001,
+       "declared": true,
+       "reported": 0.0001
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 0.0001,
+       "declared": true,
+       "reported": 0.0001
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 0.0001,
+       "declared": true,
+       "reported": 0.0001
+      }
+     ]
+    }
+   }
+  },
+  "S4": {
+   "status": "ok",
+   "K": {
+    "block": "K",
+    "inputs": {
+     "T": 420.0,
+     "P": 100000.0
+    },
+    "outputs": {
+     "lnK_A": 2.2372089851697554,
+     "lnK_B": 1.431813750508643,
+     "lnK_C": 0.5011348126780245
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      2
+     ],
+     "nnz": 6,
+     "declared_jacobian_nnz": 6,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 0.017045401791769565
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 0,
+       "value": 0.02045448215012348
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 0,
+       "value": 0.02386356250847739
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 1,
+       "value": -9.971363724989828e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 1,
+       "value": -9.971363724989828e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 1,
+       "value": -9.971363724989828e-06
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "T": 0.1,
+      "P": 100.0
+     },
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.01704540179177538,
+       "declared": true,
+       "reported": 0.017045401791769565
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.02045448215012864,
+       "declared": true,
+       "reported": 0.02045448215012348
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.02386356250848283,
+       "declared": true,
+       "reported": 0.02386356250847739
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.971363724986526e-06,
+       "declared": true,
+       "reported": -9.971363724989828e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.971363724980605e-06,
+       "declared": true,
+       "reported": -9.971363724989828e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -9.97136372498241e-06,
+       "declared": true,
+       "reported": -9.971363724989828e-06
+      }
+     ]
+    }
+   },
+   "H": {
+    "block": "H",
+    "inputs": {
+     "l_A": 0.0,
+     "l_B": 0.0,
+     "l_C": 0.0,
+     "T": 420.0,
+     "P": 100000.0
+    },
+    "outputs": {
+     "H_A": 0.0,
+     "H_B": 0.0,
+     "H_C": 0.0
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      5
+     ],
+     "nnz": 9,
+     "declared_jacobian_nnz": 9,
+     "stored_explicit_zeros": 6,
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 12000.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "block_row": 1,
+       "block_col": 1,
+       "value": 12000.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "block_row": 2,
+       "block_col": 2,
+       "value": 12000.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 3,
+       "value": 0.0
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 3,
+       "value": 0.0
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 3,
+       "value": 0.0
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 4,
+       "value": 0.0
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 4,
+       "value": 0.0
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 4,
+       "value": 0.0
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "l_A": 0.01,
+      "l_B": 0.01,
+      "l_C": 0.01,
+      "T": 0.1,
+      "P": 5000.0
+     },
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 12000.0,
+       "declared": true,
+       "reported": 12000.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 12000.0,
+       "declared": true,
+       "reported": 12000.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 12000.0,
+       "declared": true,
+       "reported": 12000.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.0,
+       "declared": true,
+       "reported": 0.0
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.0,
+       "declared": true,
+       "reported": 0.0
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.0,
+       "declared": true,
+       "reported": 0.0
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 0.0,
+       "declared": true,
+       "reported": 0.0
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 0.0,
+       "declared": true,
+       "reported": 0.0
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 0.0,
+       "declared": true,
+       "reported": 0.0
+      }
+     ]
+    }
+   }
+  },
+  "S5": {
+   "status": "ok",
+   "K": {
+    "block": "K",
+    "inputs": {
+     "T": 372.0,
+     "P": 130000.0
+    },
+    "outputs": {
+     "lnK_A": 1.0520638522696129,
+     "lnK_B": 0.06191845625254686,
+     "lnK_C": -1.0535106429340257
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      2
+     ],
+     "nnz": 6,
+     "declared_jacobian_nnz": 6,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 0.021725402206924378
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 0,
+       "value": 0.026071004120538886
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 0,
+       "value": 0.030416606034153398
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 1,
+       "value": -7.6599764140704e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 1,
+       "value": -7.6599764140704e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 1,
+       "value": -7.6599764140704e-06
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "T": 0.1,
+      "P": 100.0
+     },
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.021725402206934637,
+       "declared": true,
+       "reported": 0.021725402206924378
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.026071004120551834,
+       "declared": true,
+       "reported": 0.026071004120538886
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 0.03041660603416836,
+       "declared": true,
+       "reported": 0.030416606034153398
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -7.659976414068162e-06,
+       "declared": true,
+       "reported": -7.6599764140704e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -7.659976414068631e-06,
+       "declared": true,
+       "reported": -7.6599764140704e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "step": 100.0,
+       "finite_difference": -7.659976414068162e-06,
+       "declared": true,
+       "reported": -7.6599764140704e-06
+      }
+     ]
+    }
+   },
+   "H": {
+    "block": "H",
+    "inputs": {
+     "l_A": 0.25,
+     "l_B": 0.65,
+     "l_C": 1.2,
+     "T": 372.0,
+     "P": 130000.0
+    },
+    "outputs": {
+     "H_A": 1800.75,
+     "H_B": 4681.95,
+     "H_C": 8643.6
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      5
+     ],
+     "nnz": 9,
+     "declared_jacobian_nnz": 9,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 7203.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "block_row": 1,
+       "block_col": 1,
+       "value": 7203.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "block_row": 2,
+       "block_col": 2,
+       "value": 7203.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 3,
+       "value": 25.0
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 3,
+       "value": 65.0
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 3,
+       "value": 120.0
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 4,
+       "value": 2.5e-05
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 4,
+       "value": 6.500000000000001e-05
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 4,
+       "value": 0.00012
+      }
+     ]
+    },
+    "finite_difference": {
+     "stencil": "five-point fourth-order central",
+     "steps": {
+      "l_A": 0.01,
+      "l_B": 0.01,
+      "l_C": 0.01,
+      "T": 0.1,
+      "P": 5000.0
+     },
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": 7202.999999999999,
+       "declared": true,
+       "reported": 7203.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": -2.2737367544323206e-11,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_A",
+       "step": 0.01,
+       "finite_difference": -1.5158245029548805e-11,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": 7203.00000000002,
+       "declared": true,
+       "reported": 7203.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_B",
+       "step": 0.01,
+       "finite_difference": -1.5158245029548805e-11,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_A",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 0.0,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_B",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": -2.2737367544323206e-11,
+       "declared": false,
+       "reported": null
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "step": 0.01,
+       "finite_difference": 7202.9999999999745,
+       "declared": true,
+       "reported": 7203.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 25.00000000000625,
+       "declared": true,
+       "reported": 25.0
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 65.00000000001894,
+       "declared": true,
+       "reported": 65.0
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "step": 0.1,
+       "finite_difference": 120.00000000003637,
+       "declared": true,
+       "reported": 120.0
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 2.5e-05,
+       "declared": true,
+       "reported": 2.5e-05
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 6.50000000001152e-05,
+       "declared": true,
+       "reported": 6.500000000000001e-05
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "step": 5000.0,
+       "finite_difference": 0.00011999999999989086,
+       "declared": true,
+       "reported": 0.00012
+      }
+     ]
+    }
+   }
+  },
+  "S6": {
+   "status": "ok",
+   "K": {
+    "block": "K",
+    "inputs": {
+     "T": 440.0,
+     "P": 200000.0
+    },
+    "outputs": {
+     "lnK_A": 1.8722074832491098,
+     "lnK_B": 1.1318946917929364,
+     "lnK_C": 0.26629819716725633
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      2
+     ],
+     "nnz": 6,
+     "declared_jacobian_nnz": 6,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 0.01552482516796345
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 0,
+       "value": 0.01863103268456278
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 0,
+       "value": 0.02173724020116211
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 1,
+       "value": -4.9726653738539264e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 1,
+       "value": -4.9726653738539264e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 1,
+       "value": -4.9726653738539264e-06
+      }
+     ]
+    }
+   },
+   "H": {
+    "block": "H",
+    "inputs": {
+     "l_A": 0.1,
+     "l_B": 0.3,
+     "l_C": 0.4,
+     "T": 440.0,
+     "P": 200000.0
+    },
+    "outputs": {
+     "H_A": 1401.0,
+     "H_B": 4203.0,
+     "H_C": 5604.0
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      5
+     ],
+     "nnz": 9,
+     "declared_jacobian_nnz": 9,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 14010.0
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "block_row": 1,
+       "block_col": 1,
+       "value": 14010.0
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "block_row": 2,
+       "block_col": 2,
+       "value": 14010.0
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 3,
+       "value": 10.0
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 3,
+       "value": 30.0
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 3,
+       "value": 40.0
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 4,
+       "value": 1e-05
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 4,
+       "value": 3e-05
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 4,
+       "value": 4e-05
+      }
+     ]
+    }
+   }
+  },
+  "S1p": {
+   "status": "ok",
+   "K": {
+    "block": "K",
+    "inputs": {
+     "T": 365.0,
+     "P": 105000.0
+    },
+    "outputs": {
+     "lnK_A": 1.1098197930212672,
+     "lnK_B": 0.08867180143419533,
+     "lnK_C": -1.057759893322383
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      2
+     ],
+     "nnz": 6,
+     "declared_jacobian_nnz": 6,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "lnK_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 0.022568952823348695
+      },
+      {
+       "output": "lnK_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 0,
+       "value": 0.02708283366563528
+      },
+      {
+       "output": "lnK_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 0,
+       "value": 0.03159671450792186
+      },
+      {
+       "output": "lnK_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 1,
+       "value": -9.490858193660832e-06
+      },
+      {
+       "output": "lnK_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 1,
+       "value": -9.490858193660832e-06
+      },
+      {
+       "output": "lnK_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 1,
+       "value": -9.490858193660832e-06
+      }
+     ]
+    }
+   },
+   "H": {
+    "block": "H",
+    "inputs": {
+     "l_A": 0.3126655496270397,
+     "l_B": 0.573716825771897,
+     "l_C": 0.8347681019167542,
+     "T": 365.0,
+     "P": 105000.0
+    },
+    "outputs": {
+     "H_A": 2032.4824053505715,
+     "H_B": 3729.4462259302163,
+     "H_C": 5426.410046509861
+    },
+    "declared_jacobian": {
+     "shape": [
+      3,
+      5
+     ],
+     "nnz": 9,
+     "declared_jacobian_nnz": 9,
+     "stored_explicit_zeros": 0,
+     "entries": [
+      {
+       "output": "H_A",
+       "input": "l_A",
+       "block_row": 0,
+       "block_col": 0,
+       "value": 6500.5
+      },
+      {
+       "output": "H_B",
+       "input": "l_B",
+       "block_row": 1,
+       "block_col": 1,
+       "value": 6500.5
+      },
+      {
+       "output": "H_C",
+       "input": "l_C",
+       "block_row": 2,
+       "block_col": 2,
+       "value": 6500.5
+      },
+      {
+       "output": "H_A",
+       "input": "T",
+       "block_row": 0,
+       "block_col": 3,
+       "value": 31.266554962703967
+      },
+      {
+       "output": "H_B",
+       "input": "T",
+       "block_row": 1,
+       "block_col": 3,
+       "value": 57.371682577189695
+      },
+      {
+       "output": "H_C",
+       "input": "T",
+       "block_row": 2,
+       "block_col": 3,
+       "value": 83.47681019167543
+      },
+      {
+       "output": "H_A",
+       "input": "P",
+       "block_row": 0,
+       "block_col": 4,
+       "value": 3.126655496270397e-05
+      },
+      {
+       "output": "H_B",
+       "input": "P",
+       "block_row": 1,
+       "block_col": 4,
+       "value": 5.73716825771897e-05
+      },
+      {
+       "output": "H_C",
+       "input": "P",
+       "block_row": 2,
+       "block_col": 4,
+       "value": 8.347681019167543e-05
+      }
+     ]
+    }
+   }
+  },
+  "S7a": {
+   "status": "invalid_trial_state",
+   "message": "T = 450.0 K is outside the closed domain [280.0, 440.0] K"
+  },
+  "S7b": {
+   "status": "invalid_trial_state",
+   "message": "P = 40000.0 Pa is outside the closed domain [50000.0, 200000.0] Pa"
+  }
+ }
+}

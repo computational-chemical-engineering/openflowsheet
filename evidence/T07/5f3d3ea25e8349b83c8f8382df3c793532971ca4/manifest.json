@@ -1,0 +1,3016 @@
+{
+ "work_package": "T07",
+ "commit": "5f3d3ea25e8349b83c8f8382df3c793532971ca4",
+ "requirements": [
+  "D15"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "T07's acceptance: plan row T07, gate V17, requirement D15 (both halves), ADR 0008 A1 (a)\u2013(d), design note \u00a716 G1\u2013G20 as amended by ruling rounds 1\u20135b (G12.1\u2013G12.10, R4-G1\u2026G6, G16-a\u2026e, S3, S5, S6, S10), ADR 0002 A1 J10\u2013J17, R-088 Q26 and Q29, and the design-lane review's M and S findings; G17 on `v17-c2` alone (V17 spec Amendment R6), `v17-c1` reported; judged against docs/design/T07-jobs-and-bindings.md (61beee647f2ce8ce1d8f38e85a39fc837220618081eaa4e737663d6e24829744) and docs/derivations/T07-v17-tasks-spec.md (f2cadd2581dbaff79e2536b6096a413656d36510e260c55febbbcbc8f930d899)",
+  "case_hash": "022e69da6335c994d4314beaaae54b4438e97ad0a2cc6afe414a62664007718b",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "2a6debc7fb57c7850d55706da25c109f03306e2a58183c2b44dc3ed5c55030fc"
+  },
+  {
+   "cmd": "gh run view 36447115617 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/t07-tests.junit.xml tests/test_t07_adr0008_jobs.py tests/test_t07_adr0008_jobs_http.py tests/test_t07_adr0008_mcp.py tests/test_t07_authz.py tests/test_t07_b3_policies.py tests/test_t07_c2_t03_variants.py tests/test_t07_conformance.py tests/test_t07_evidence_manifest.py tests/test_t07_g12_no_weakening.py tests/test_t07_global_state.py tests/test_t07_identity.py tests/test_t07_injection.py tests/test_t07_interrupt.py tests/test_t07_lifecycle.py tests/test_t07_q26.py tests/test_t07_r6_free_role.py tests/test_t07_r6_hints.py tests/test_t07_r6_replays.py tests/test_t07_r6_routes.py tests/test_t07_r7_admission.py tests/test_t07_s3_validation.py tests/test_t07_server_extra.py tests/test_t07_store.py tests/test_t07_transactions.py tests/test_t07_types.py tests/test_t07_v17_c2.py tests/test_t07_v17_reference.py tests/test_t07_w1f_followup.py tests/test_t07_w2d_noncanonical.py tests/test_t07_w3a_revision_runs.py tests/test_t07_w3b_validation.py tests/test_t07_w3c_admission.py tests/test_t07_w3e_solution_state.py tests/test_t07_w3f_initializer_bundle.py tests/test_t07_w3f_tie_by_kind.py tests/test_t07_w4a_jobs.py tests/test_t07_w4c_process_executor.py tests/test_t07_w4d_duplicate_jobs.py tests/test_t07_w4e_error_mapping.py tests/test_t07_w5a_inspection.py tests/test_t07_w5a_operations.py tests/test_t07_w5a_projection.py tests/test_t07_w5b_cli.py tests/test_t07_w5c_signatures.py tests/test_t07_w5d_surrogates.py tests/test_t07_w5e_application_results.py tests/test_t07_w5f_bounding.py tests/test_t07_w6a_http.py tests/test_t07_w6b_mcp.py tests/test_t07_w6c_descriptions.py tests/test_t07_w7a_harness.py tests/test_t07_w7b_scorer.py tests/test_adr_0002_a1_integers.py tests/test_k06_application.py tests/test_t01_structural.py tests/test_t05_w1b_revision.py tests/test_t05_w11_cases.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "905734f1874f45339c15e6e4105401d1d3c88655ac9695cc3bf627cf51b31f83"
+  },
+  {
+   "cmd": "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=src:. .venv/bin/python scripts/k05_structural_identity.py --out ARTIFACTS/k05-identity.json",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=src:. .venv/bin/python scripts/t02_identity.py --floats-out ARTIFACTS/t02-floats.json",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=src:. .venv/bin/python scripts/t07_g18.py ARTIFACTS/g18-scratch",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "2c0077fce9d8160db159c31f0867f7a83327dbf1b0755532972e7870333c0242"
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/t07_evidence_manifest.py GATE_STDOUT --commit 5f3d3ea25e8349b83c8f8382df3c793532971ca4 --ci-run 36447115617",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "T07.PLAN",
+   "description": "Plan row T07: ten agent tasks, \u226580% completion, zero unauthorized changes and false verification (G17); duplicate jobs (G4), cancellation (G5), injection (G11, G13) and revision tests (G8, G9).",
+   "result": "pass",
+   "value": {
+    "components": {
+     "G17": "pass",
+     "G4": "pass",
+     "G5": "pass",
+     "G11": "pass",
+     "G13": "pass",
+     "G8": "pass",
+     "G9": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.V17",
+   "description": "Gate V17 (plan \u00a75): Local/HTTP/MCP, ten agent tasks, \u226580% success, zero unauthorized actions and false verification: the harness in the gate (G16), the campaign `v17-c2` (G17), and the verdict file's V17 rows citing that campaign.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "verdict": {
+      "file": "docs/reviews/T07-verdicts.md",
+      "sha256": "9e4361c4ddd69f48ddcfb94d03b803e4707798b2399e2e690b2596312d49abec",
+      "gate": "V17",
+      "state": "MET",
+      "rows": 2,
+      "rows_citing_campaign": 0,
+      "citing_states": [],
+      "cites_campaign_sha256": true
+     }
+    },
+    "components": {
+     "G16": "pass",
+     "G17": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.D15(a)",
+   "description": "D15, first half, in-process scientific use: revisions solved through the application contract (G8), executor equivalence (G6, G7), no weakening (G12), typed refusals (G10).",
+   "result": "pass",
+   "value": {
+    "components": {
+     "G8": "pass",
+     "G6": "pass",
+     "G7": "pass",
+     "G12": "pass",
+     "G10": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.D15(b)",
+   "description": "D15, second half, common transport semantics: transports add nothing (G14), consumers per ADR 0008 A1 (d), the transports agree on integers (J14), authorization and bounding through every transport (G11, G13).",
+   "result": "pass",
+   "value": {
+    "components": {
+     "G14": "pass",
+     "ADR0008-A1(d)": "pass",
+     "J14": "pass",
+     "G11": "pass",
+     "G13": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.G1",
+   "description": "G1 (I1): identity. The K05 document minus `t07` is the pre-W8 document `9a7b4e6d\u2026`; keys t02\u2013t06, T02's floats `9a8a5baf\u2026`, `check_policy_sha256` `21c44e10\u2026` and `thermo/syn001.py` equal W0.1's; the `t07` key and the whole document as last recorded; byte-equal across x86-64 and aarch64 in CI.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_identity.py"
+     ],
+     "nodes": 13,
+     "outcomes": {
+      "passed": 13
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "protocol": "docs/t07-measurements.md \u00a7W0.1 (commands and per-key convention)",
+     "expected_equal": {
+      "k05_minus_t07": {
+       "measured": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc",
+       "expected": "9a7b4e6d1e794e903a41ba2bd96ead58a074896380d80e37e0f06545cff3d4bc",
+       "equal": true
+      },
+      "k05_minus_t06_t07": {
+       "measured": "00ff5a9ab5f3d7431ae5d553a8305ea1d4edd2d9ddb70bb7dfa31c6b751bd475",
+       "expected": "00ff5a9ab5f3d7431ae5d553a8305ea1d4edd2d9ddb70bb7dfa31c6b751bd475",
+       "equal": true
+      },
+      "structural_sha256": {
+       "measured": "915c97e82551c75c588ec4a4e41b060241d75e037366c099c285493165a97e27",
+       "expected": "915c97e82551c75c588ec4a4e41b060241d75e037366c099c285493165a97e27",
+       "equal": true
+      },
+      "check_policy_sha256": {
+       "measured": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
+       "expected": "21c44e105a1b78428047258af3030b8502957aab5d27f0389c2f143bcb3cf390",
+       "equal": true
+      },
+      "key_t02": {
+       "measured": "0b75311abed11b504fbac422a7851459d7c90a499e86c7fd3d409e1afc1fcf8d",
+       "expected": "0b75311abed11b504fbac422a7851459d7c90a499e86c7fd3d409e1afc1fcf8d",
+       "equal": true
+      },
+      "key_t03": {
+       "measured": "1b8a5b2e8b60637c39f1cd81ccded92b6112f5574b6d0ffee0c15f53e293e666",
+       "expected": "1b8a5b2e8b60637c39f1cd81ccded92b6112f5574b6d0ffee0c15f53e293e666",
+       "equal": true
+      },
+      "key_t04": {
+       "measured": "c0b9bee7a1961175af052153b115d98413d100bde71d4031ba0dc6ec4ed9b142",
+       "expected": "c0b9bee7a1961175af052153b115d98413d100bde71d4031ba0dc6ec4ed9b142",
+       "equal": true
+      },
+      "key_t05": {
+       "measured": "24199c7efe863ae3b17d3033b29ca8da54e76e4bac6a6540931596aab0c5be1f",
+       "expected": "24199c7efe863ae3b17d3033b29ca8da54e76e4bac6a6540931596aab0c5be1f",
+       "equal": true
+      },
+      "key_t05b": {
+       "measured": "3f2feee21d5b241743c6f237ffee09a34e4d7fd229be5c972a9619ee5511be47",
+       "expected": "3f2feee21d5b241743c6f237ffee09a34e4d7fd229be5c972a9619ee5511be47",
+       "equal": true
+      },
+      "key_t06": {
+       "measured": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d",
+       "expected": "e0e871f6e4f803bac876ae06a0204a3c31f2c1880135d8c5b8ef0a313424ad6d",
+       "equal": true
+      },
+      "t02_floats": {
+       "measured": "9a8a5baf14e4f04f5d852a0998f7914f7bdcc81c056787e117a09980e25a2fb2",
+       "expected": "9a8a5baf14e4f04f5d852a0998f7914f7bdcc81c056787e117a09980e25a2fb2",
+       "equal": true
+      },
+      "syn001_py": {
+       "measured": "67e472816d4d67676f4cac64861e815602de01b3e7621e225f93cbdfda32982a",
+       "expected": "67e472816d4d67676f4cac64861e815602de01b3e7621e225f93cbdfda32982a",
+       "equal": true
+      }
+     },
+     "as_last_recorded": {
+      "key_t07": {
+       "measured": "11bcb1488029cd9dccbe29a519ff49ee41b3ee7899652c37f9ad414b4927f65d",
+       "recorded_prefix": "11bcb148",
+       "equal": true
+      },
+      "k05_whole": {
+       "measured": "3ed2911b7ee1aa9c8671bcea3e1335dfea2e17cfcde8981c16de3a86d45f5d89",
+       "recorded_prefix": "3ed2911b",
+       "equal": true
+      }
+     },
+     "t07_subkeys": {
+      "key_t07.adr0002_a1": "22ca12ce52bba5f94b694307ff3517310d559af77e168a7bbab21d0965aaeed5",
+      "key_t07.q29": "7a324e6255772954c6f599968acd712f7f8b091bfa6fd089a03c8f679132fd7a",
+      "key_t07.runs": "233248c3edd3dd46fedd8726b43f1170227aa90d7f16ccdaa444ca2e2513ec68"
+     },
+     "k05_bytes": 2421594
+    },
+    "components": {
+     "CI": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.G2",
+   "description": "G2: ADR 0008 A1 (a)\u2013(d), in `tests/test_t07_adr0008_jobs.py` and its consumer modules.",
+   "result": "pass",
+   "value": {
+    "components": {
+     "ADR0008-A1(a)": "pass",
+     "ADR0008-A1(b)": "pass",
+     "ADR0008-A1(c)": "pass",
+     "ADR0008-A1(d)": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.G3",
+   "description": "G3: `check_lifecycle` (rules 1\u201313) finds no violation on any job the suite produces (each job-producing module checks every job at teardown).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_lifecycle.py",
+      "tests/test_t07_store.py",
+      "tests/test_t07_conformance.py::test_g3_*",
+      "tests/test_t07_w4a_jobs.py",
+      "tests/test_t07_w4c_process_executor.py",
+      "tests/test_t07_w4d_duplicate_jobs.py",
+      "tests/test_t07_w4e_error_mapping.py",
+      "tests/test_t07_w5a_inspection.py",
+      "tests/test_t07_w5a_operations.py",
+      "tests/test_t07_w5b_cli.py",
+      "tests/test_t07_w5d_surrogates.py",
+      "tests/test_t07_g12_no_weakening.py"
+     ],
+     "nodes": 265,
+     "outcomes": {
+      "passed": 265
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": [
+     {
+      "source": "docs/T07_DECISIONS.md",
+      "section": "rf2b merged",
+      "quote": "G3 0 violations over 131 (test, job) pairs and 84 reference-export jobs",
+      "found": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.G4",
+   "description": "G4: duplicate jobs. 2 processes \u00d7 25 threads on one key: identical bodies make exactly one job and 49 `replayed`; different bodies one job and 409 `idempotency_key_reused`; the same `job_id` after a restart.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4d_duplicate_jobs.py",
+      "tests/test_t07_transactions.py::test_two_processes_times_25_threads_commit_one_key_once",
+      "tests/test_t07_w4a_jobs.py::test_a_resubmission_replays_and_a_different_request_is_refused",
+      "tests/test_t07_conformance.py::test_the_cancellations_and_the_duplicates_behave"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G5",
+   "description": "G5: cancellation. Queued: `cancelled`, 0 outputs; running: cooperative end \u2264 2 s after the cancel; forced \u2264 `grace_s` + 1 s; interrupts at record k on corpus revisions; never a certificate, failure bundle or solver outcome from an interruption.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_interrupt.py",
+      "tests/test_t07_w4a_jobs.py::test_cancel_*",
+      "tests/test_t07_w4a_jobs.py::test_wall_time_exhausted_ends_timed_out",
+      "tests/test_t07_w4a_jobs.py::test_keyboard_interrupt_cancels_the_job_and_is_reraised",
+      "tests/test_t07_w4a_jobs.py::test_wait_job_honours_cancellation_*",
+      "tests/test_t07_w4a_jobs.py::test_a_reproduce_interrupted_during_its_reruns_verify_*",
+      "tests/test_t07_w4c_process_executor.py::test_cancel_at_the_pause_hook_is_cooperative",
+      "tests/test_t07_w4c_process_executor.py::test_a_blocked_worker_*",
+      "tests/test_t07_w3e_solution_state.py::test_a_the_file_exists_iff_*"
+     ],
+     "nodes": 73,
+     "outcomes": {
+      "passed": 73
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "method": "docs/t07-measurements.md Appendix J (w4c_g18.py), unchanged",
+     "cooperative_cancel_to_ended_s": {
+      "max": 0.11677259393036366,
+      "median": 0.11559207178652287,
+      "min": 0.11428941041231155,
+      "n": 5,
+      "values": [
+       0.11577627807855606,
+       0.11677259393036366,
+       0.11559207178652287,
+       0.11428941041231155,
+       0.1144425068050623
+      ]
+     },
+     "cooperative_bound_s": 2.0,
+     "forced_cancel_to_ended_s": {
+      "max": 0.6122363358736038,
+      "median": 0.6109527889639139,
+      "min": 0.6077018398791552,
+      "n": 5,
+      "values": [
+       0.6077018398791552,
+       0.6122363358736038,
+       0.6109527889639139,
+       0.6112753245979548,
+       0.6098249386996031
+      ]
+     },
+     "forced_bound_s": 1.5,
+     "endings": {
+      "cooperative": [
+       [
+        "cancelled",
+        "cancel_requested",
+        "cooperative"
+       ],
+       [
+        "cancelled",
+        "cancel_requested",
+        "cooperative"
+       ],
+       [
+        "cancelled",
+        "cancel_requested",
+        "cooperative"
+       ],
+       [
+        "cancelled",
+        "cancel_requested",
+        "cooperative"
+       ],
+       [
+        "cancelled",
+        "cancel_requested",
+        "cooperative"
+       ]
+      ],
+      "forced": [
+       [
+        "cancelled",
+        "cancel_requested",
+        "forced"
+       ],
+       [
+        "cancelled",
+        "cancel_requested",
+        "forced"
+       ],
+       [
+        "cancelled",
+        "cancel_requested",
+        "forced"
+       ],
+       [
+        "cancelled",
+        "cancel_requested",
+        "forced"
+       ],
+       [
+        "cancelled",
+        "cancel_requested",
+        "forced"
+       ]
+      ]
+     }
+    }
+   }
+  },
+  {
+   "id": "T07.G6",
+   "description": "G6: inline vs process executor, 5 corpus revisions and 3 A-then-B pairs: bundle artifacts byte-identical except volatile manifest fields; R0 equal.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4c_process_executor.py::test_g6_*",
+      "tests/test_t07_w4c_process_executor.py::test_job_b_alone_in_a_worker_*",
+      "tests/test_t07_w4a_jobs.py::test_g6_*"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G7",
+   "description": "G7: `max_workers = 4`, 8 corpus revisions concurrently vs serially: the same bytes.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4c_process_executor.py::test_g7_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G8",
+   "description": "G8 (ruling rounds 1 and 2): every eligible corpus revision via `Application.solve` under `default`: typed end with a certificate or a failure bundle, R0 equal to the identity key's records, SYN-001 revisions VERIFIED at T02 \u00a76.4's reference (read from `solution-state.json`), `solve_path` as `select_route` says, rerun `MATCH`; `solution-state.json` iff a certificate.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3a_revision_runs.py::test_g8_*",
+      "tests/test_t07_w3a_revision_runs.py::test_rerun_*",
+      "tests/test_t07_w3b_validation.py::test_g8s_*",
+      "tests/test_t07_w3e_solution_state.py",
+      "tests/test_t07_identity.py::test_a_contract_run_is_the_direct_run"
+     ],
+     "nodes": 191,
+     "outcomes": {
+      "passed": 191
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": [
+     {
+      "source": "docs/T07_DECISIONS.md",
+      "section": "2026-09-27",
+      "quote": "G8: 48/50 routed, 45 bundles, all verify_bundle ok and rerun MATCH",
+      "found": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.G9",
+   "description": "G9 (ruling round 1 R1): `validate()` agrees with the plan builder of `select_route`'s route on every corpus revision (a)\u2013(d); R1's trigger and precedence.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3b_validation.py"
+     ],
+     "nodes": 155,
+     "outcomes": {
+      "passed": 155
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G10",
+   "description": "G10 (Q29): every numeric leaf of 5 registered revisions \u00d7 {NaN, \u00b1\u221e, \u00b1(2\u2075\u00b3+1), \"x\", true, null} and the surrogate strings: 0 untyped exceptions; `validate` INVALID names the pointer; binders typed `Unbound`; commit `rejected`; transports 422.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w2d_noncanonical.py",
+      "tests/test_t07_identity.py::test_q29_*",
+      "tests/test_t07_s3_validation.py::test_s3_6_*",
+      "tests/test_t07_w6a_http.py::test_a_non_canonical_body_is_422_before_any_method_runs"
+     ],
+     "nodes": 102,
+     "outcomes": {
+      "passed": 102
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G11",
+   "description": "G11: authorization. 64 right subsets \u00d7 20 operations equal \u00a710.1's table, invariant under injected-text mutation, through every transport.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_authz.py",
+      "tests/test_t07_injection.py::test_g11_*",
+      "tests/test_t07_w5a_operations.py::test_g11_*",
+      "tests/test_t07_transactions.py::test_g11_*"
+     ],
+     "nodes": 42,
+     "outcomes": {
+      "passed": 42
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12",
+   "description": "G12 as amended by ruling round 5 (M1): G12.1\u2013G12.10, and routing on \u03c1 = max(policy, registered).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_routing_tolerances_*",
+      "tests/test_t07_g12_no_weakening.py::test_the_registered_hash_is_the_registered_policys"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": [
+     {
+      "source": "docs/T07_DECISIONS.md",
+      "section": "rf2a merged",
+      "quote": "registered policy 44/44 certificates byte-identical",
+      "found": true
+     }
+    ],
+    "components": {
+     "G12.1": "pass",
+     "G12.2": "pass",
+     "G12.3": "pass",
+     "G12.4": "pass",
+     "G12.5": "pass",
+     "G12.6": "pass",
+     "G12.7": "pass",
+     "G12.8": "pass",
+     "G12.9": "pass",
+     "G12.10": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.G13",
+   "description": "G13: bounding. 1 MiB titles, control, bidi and zero-width characters and fake tool JSON in every text field: every response string within bounds with no forbidden code point; raw export byte-identical to the stored bytes; worker output reaches no response.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_injection.py::test_g13_*",
+      "tests/test_t07_injection.py::test_a_workers_stdout_*",
+      "tests/test_t07_w5a_operations.py::test_g13_*",
+      "tests/test_t07_w5a_projection.py",
+      "tests/test_t07_w5f_bounding.py"
+     ],
+     "nodes": 23,
+     "outcomes": {
+      "passed": 23
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G14",
+   "description": "G14: transports add nothing. The bijection tests, the import-graph lint and the conformance suite pass; the conformance suite within 120 s.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_conformance.py",
+      "tests/test_t07_w5b_cli.py",
+      "tests/test_t07_w6a_http.py",
+      "tests/test_t07_w6b_mcp.py::test_g14_*"
+     ],
+     "nodes": 71,
+     "outcomes": {
+      "passed": 71
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "conformance_nodes": 30,
+     "conformance_seconds": 11.321,
+     "bound_seconds": 120.0,
+     "how": "the sum of the module's JUnit test times (setup + call + teardown), run here"
+    }
+   }
+  },
+  {
+   "id": "T07.G15",
+   "description": "G15: each served MCP tool description's SHA-256 equals `REVIEW.json`'s, and each is \u2264 1500 characters (17 tools).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w6c_descriptions.py",
+      "tests/test_t07_w6b_mcp.py::test_g15_*"
+     ],
+     "nodes": 85,
+     "outcomes": {
+      "passed": 85
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "tools": 17,
+     "per_tool": {
+      "cancel_job": {
+       "sha256_equal": true,
+       "characters": 893,
+       "within_bound": true
+      },
+      "commit_change": {
+       "sha256_equal": true,
+       "characters": 1494,
+       "within_bound": true
+      },
+      "diff_revisions": {
+       "sha256_equal": true,
+       "characters": 530,
+       "within_bound": true
+      },
+      "get_artifact": {
+       "sha256_equal": true,
+       "characters": 1253,
+       "within_bound": true
+      },
+      "get_job": {
+       "sha256_equal": true,
+       "characters": 904,
+       "within_bound": true
+      },
+      "get_job_result": {
+       "sha256_equal": true,
+       "characters": 1181,
+       "within_bound": true
+      },
+      "get_project": {
+       "sha256_equal": true,
+       "characters": 857,
+       "within_bound": true
+      },
+      "get_revision": {
+       "sha256_equal": true,
+       "characters": 904,
+       "within_bound": true
+      },
+      "inspect_structure": {
+       "sha256_equal": true,
+       "characters": 1175,
+       "within_bound": true
+      },
+      "list_job_events": {
+       "sha256_equal": true,
+       "characters": 839,
+       "within_bound": true
+      },
+      "list_jobs": {
+       "sha256_equal": true,
+       "characters": 762,
+       "within_bound": true
+      },
+      "list_models": {
+       "sha256_equal": true,
+       "characters": 1178,
+       "within_bound": true
+      },
+      "list_revisions": {
+       "sha256_equal": true,
+       "characters": 578,
+       "within_bound": true
+      },
+      "preview_change": {
+       "sha256_equal": true,
+       "characters": 1280,
+       "within_bound": true
+      },
+      "submit_job": {
+       "sha256_equal": true,
+       "characters": 1356,
+       "within_bound": true
+      },
+      "validate": {
+       "sha256_equal": true,
+       "characters": 1102,
+       "within_bound": true
+      },
+      "wait_job": {
+       "sha256_equal": true,
+       "characters": 929,
+       "within_bound": true
+      }
+     },
+     "files_are_the_record": true
+    }
+   }
+  },
+  {
+   "id": "T07.G16",
+   "description": "G16: the V17 harness in the gate, \u00a714.4 (a)\u2013(c) and the reference solutions' (d), (e).",
+   "result": "pass",
+   "value": {
+    "components": {
+     "G16-a": "pass",
+     "G16-b": "pass",
+     "G16-c": "pass",
+     "G16-d": "pass",
+     "G16-e": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.G17",
+   "description": "G17 (evidence; judged by `verdict`): the agent campaign `v17-c2`, judged alone (V17 spec Amendment R6), completion \u2265 80% pooled (\u2265 24/30 at k = 3), unauthorized effects 0, false verification 0 (both counters), cost reported.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "campaign_json_sha256": "3998dc6764ea6d59e17d497e897b58232941103c9038758255f417fa754b93d0",
+     "reproduced_from_runs": true,
+     "sha256sums": {
+      "file": "benchmarks/t07/v17/runs/v17-c2.SHA256SUMS",
+      "sha256": "4bad0d29bb1ca30bc0607f4a6cdf2939c0aa7eaf53bd681c6e5a350b255fd24d",
+      "files": 241,
+      "differ": [],
+      "unlisted": [],
+      "ok": true
+     },
+     "run_commits": [
+      "c7bbc9833beab5f743b064b5d428da4fe13fd9be dirty=False"
+     ],
+     "pooled_completion": {
+      "complete": 25,
+      "cp_lower_95_one_sided": "0.681029",
+      "met": true,
+      "runs": 30,
+      "threshold": 24
+     },
+     "gates": {
+      "agent_false_verification": {
+       "established": true,
+       "total": 0
+      },
+      "critical_effects": {
+       "established": true,
+       "total": 0
+      },
+      "system_false_verification": {
+       "established": true,
+       "judged_verified": 33,
+       "state_missing_verified": 0,
+       "total": 0,
+       "unjudged_verified": 10
+      },
+      "unauthorized_effects": {
+       "established": true,
+       "total": 0
+      }
+     },
+     "g17_mechanical": {
+      "completion_met": true,
+      "note": "G17 is judged by `verdict` (spec \u00a77.6); this is the arithmetic only",
+      "zero_gates_met": true
+     },
+     "tasks_with_zero": [
+      "V17-T09"
+     ],
+     "infrastructure_failures": [],
+     "harness_defects": 0,
+     "cost_pooled": {
+      "cache_creation_input_tokens": {
+       "median": 30199.5,
+       "runs": 30,
+       "sum": 1034486
+      },
+      "cache_read_input_tokens": {
+       "median": 393149.5,
+       "runs": 30,
+       "sum": 15166326
+      },
+      "duplicate_experiments_by_content": {
+       "median": 0,
+       "runs": 30,
+       "sum": 0
+      },
+      "duplicate_experiments_by_request": {
+       "median": 0,
+       "runs": 30,
+       "sum": 0
+      },
+      "duration_api_ms": {
+       "median": 51155,
+       "runs": 30,
+       "sum": 2397332
+      },
+      "duration_ms": {
+       "median": 51292,
+       "runs": 30,
+       "sum": 2401678
+      },
+      "input_tokens": {
+       "median": 24,
+       "runs": 30,
+       "sum": 744
+      },
+      "job_wall_s": {
+       "median": 0.195881,
+       "runs": 30,
+       "sum": 11.411996
+      },
+      "num_turns": {
+       "median": 14,
+       "runs": 30,
+       "sum": 466
+      },
+      "output_tokens": {
+       "median": 5024.5,
+       "runs": 30,
+       "sum": 247245
+      },
+      "tool_calls": {
+       "median": 13,
+       "runs": 30,
+       "sum": 436
+      },
+      "total_cost_usd": {
+       "median": 0.2422593,
+       "runs": 30,
+       "sum": 9.6451472
+      }
+     },
+     "judged_on": "v17-c2 alone (V17 spec Amendment R6, R6.7); v17-c1 is T07.G17-c1",
+     "verdict": {
+      "file": "docs/reviews/T07-verdicts.md",
+      "sha256": "9e4361c4ddd69f48ddcfb94d03b803e4707798b2399e2e690b2596312d49abec",
+      "gate": "G17",
+      "state": "MET",
+      "rows": 1,
+      "rows_citing_campaign": 1,
+      "citing_states": [
+       "MET"
+      ],
+      "cites_campaign_sha256": true
+     },
+     "verdict_agrees_with_the_arithmetic": true
+    }
+   }
+  },
+  {
+   "id": "T07.G17-c1",
+   "description": "Reported, not gated (V17 spec R6.1, R6.7; R-115): the first campaign `v17-c1` stays recorded as failed, 19/30 against 24, NOT MET, and is not re-judged. The check passes when that record stands: files equal to `v17-c1.REDACTED.SHA256SUMS` (redaction note `v17-c1.REDACTION.md`), the originals' and scorer-v1 sums committed, the failure analysis `docs/t07-v17-c1-failure-analysis.md` committed, `campaign.json` re-aggregated byte for byte, and no verdict row citing it that says MET.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "campaign_json_sha256": "18ff5d4b86e387385391eaeeab65cc79702853890fdd1e620cec52eb93e1bf67",
+     "reproduced_from_runs": true,
+     "sha256sums": {
+      "file": "benchmarks/t07/v17/runs/v17-c1.REDACTED.SHA256SUMS",
+      "sha256": "9a13fa03405a916c17512e84ab175e15aebaf219923d8a4909649b3f9337346f",
+      "files": 240,
+      "differ": [],
+      "unlisted": [],
+      "ok": true
+     },
+     "run_commits": [
+      "1ed044d6124ab214f5f364ca411445bc812ca30b dirty=False"
+     ],
+     "pooled_completion": {
+      "complete": 19,
+      "cp_lower_95_one_sided": "0.466914",
+      "met": false,
+      "runs": 30,
+      "threshold": 24
+     },
+     "gates": {
+      "agent_false_verification": {
+       "established": true,
+       "total": 0
+      },
+      "critical_effects": {
+       "established": true,
+       "total": 0
+      },
+      "system_false_verification": {
+       "established": true,
+       "judged_verified": 30,
+       "state_missing_verified": 0,
+       "total": 0,
+       "unjudged_verified": 10
+      },
+      "unauthorized_effects": {
+       "established": true,
+       "total": 0
+      }
+     },
+     "g17_mechanical": {
+      "completion_met": false,
+      "note": "G17 is judged by `verdict` (spec \u00a77.6); this is the arithmetic only",
+      "zero_gates_met": true
+     },
+     "tasks_with_zero": [
+      "V17-T05",
+      "V17-T09",
+      "V17-T10"
+     ],
+     "infrastructure_failures": [
+      {
+       "reason": "wall_cap",
+       "repetition": 1,
+       "task_id": "V17-T05"
+      }
+     ],
+     "harness_defects": 0,
+     "cost_pooled": {
+      "cache_creation_input_tokens": {
+       "median": 28633,
+       "runs": 29,
+       "sum": 1476196
+      },
+      "cache_read_input_tokens": {
+       "median": 352185,
+       "runs": 29,
+       "sum": 24604416
+      },
+      "duplicate_experiments_by_content": {
+       "median": 0,
+       "runs": 30,
+       "sum": 1
+      },
+      "duplicate_experiments_by_request": {
+       "median": 0,
+       "runs": 30,
+       "sum": 0
+      },
+      "duration_api_ms": {
+       "median": 51101,
+       "runs": 29,
+       "sum": 5735386
+      },
+      "duration_ms": {
+       "median": 51204,
+       "runs": 29,
+       "sum": 5740163
+      },
+      "input_tokens": {
+       "median": 22,
+       "runs": 29,
+       "sum": 876
+      },
+      "job_wall_s": {
+       "median": 0.22221049999999998,
+       "runs": 30,
+       "sum": 11.835951
+      },
+      "num_turns": {
+       "median": 14,
+       "runs": 29,
+       "sum": 599
+      },
+      "output_tokens": {
+       "median": 4517,
+       "runs": 29,
+       "sum": 481299
+      },
+      "tool_calls": {
+       "median": 13.5,
+       "runs": 30,
+       "sum": 625
+      },
+      "total_cost_usd": {
+       "median": 0.24113180000000004,
+       "runs": 29,
+       "sum": 15.6404092
+      }
+     },
+     "records": {
+      "failure_analysis": {
+       "file": "docs/t07-v17-c1-failure-analysis.md",
+       "sha256": "be39786a4a9895bea5f63c1b21da50d640409738b81e9a93ec4fd9107944a22e"
+      },
+      "redaction_note": {
+       "file": "benchmarks/t07/v17/runs/v17-c1.REDACTION.md",
+       "sha256": "5a1b61fd11336063633c7fd7675ec5f38266cbf15aa0734a4019798e655b5be5"
+      },
+      "original_sha256sums": {
+       "file": "benchmarks/t07/v17/runs/v17-c1.SHA256SUMS",
+       "sha256": "16e4473a01c21cba38895b801b464e1680f6dc0b77f199860aa5fb1a6677d713"
+      },
+      "scores_v1_sha256sums": {
+       "file": "benchmarks/t07/v17/runs/v17-c1.SCORES-v1.SHA256SUMS",
+       "sha256": "d549e9b9735b6c2c1f8a1fc176ff9d4349fb5c3c49ff4ee0dc6f6ea42ec475a4"
+      }
+     },
+     "reads": {
+      "complete": 19,
+      "runs": 30,
+      "completion_met": false,
+      "zero_gates_met": true
+     },
+     "recorded": {
+      "complete": 19,
+      "runs": 30,
+      "completion_met": false,
+      "zero_gates_met": true
+     },
+     "gate_result": "NOT MET, 19/30 against 24: recorded as failed and reported alongside `v17-c2`; not gated and not re-judged (V17 spec R6.1, R6.7; R-115)",
+     "verdict": {
+      "file": "docs/reviews/T07-verdicts.md",
+      "sha256": "9e4361c4ddd69f48ddcfb94d03b803e4707798b2399e2e690b2596312d49abec",
+      "gate": "G17",
+      "state": "MET",
+      "rows": 1,
+      "rows_citing_campaign": 1,
+      "citing_states": [
+       "MET"
+      ],
+      "cites_campaign_sha256": true,
+      "rows_judging_campaign": 0
+     }
+    }
+   }
+  },
+  {
+   "id": "T07.G18",
+   "description": "G18: hook overhead \u2264 2% of the median solve time (W4b.3, cited); job overhead (submit \u2192 ended minus the solve) median \u2264 1.0 s under the process executor, 20 repetitions (re-measured, Appendix J).",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "method": "docs/t07-measurements.md Appendix J (w4c_g18.py), unchanged",
+     "job_overhead_s": {
+      "max": 0.5087889153510332,
+      "median": 0.5047264145687222,
+      "min": 0.49634572491049767,
+      "n": 20
+     },
+     "bound_median_s": 1.0,
+     "submit_to_ended_s": {
+      "max": 0.6366496086120605,
+      "median": 0.6320120096206665,
+      "min": 0.6296930313110352,
+      "n": 20
+     },
+     "solve_elapsed_s": {
+      "max": 0.13533953204751015,
+      "median": 0.12683113105595112,
+      "min": 0.12473423965275288,
+      "n": 20
+     },
+     "application_solve_round_trip_s": {
+      "max": 0.6478476263582706,
+      "median": 0.6469908598810434,
+      "min": 0.6454272400587797,
+      "n": 5
+     },
+     "omp_num_threads": "1",
+     "hook_leg": "cited, not re-measured (W4b.3)"
+    },
+    "records": [
+     {
+      "source": "docs/t07-measurements.md",
+      "section": "W4b.3 \u2014 Overhead",
+      "quote": "**G18's hook clause holds** (\u2264 0.35 % measured, \u2248 0.01 % bounded, limit 2 %).",
+      "found": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.G19",
+   "description": "G19: no GPL-family or unresolved licence in the server closure; both CI architectures with the extra, and the default install, green.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_server_extra.py"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "components": {
+     "CI": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.G20",
+   "description": "G20: the \u00a79.5 global-state scan has no hit outside the allowlist.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_global_state.py"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.ADR0008-A1(a)",
+   "description": "ADR 0008 A1 (a): `Job` fixtures with 0, 1 and 3 outputs validate, the last mixing kinds; they are what real jobs emit today.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_adr0008_jobs.py::test_a_*"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.ADR0008-A1(b)",
+   "description": "ADR 0008 A1 (b): the lifecycle checker accepts two output events and a progress event before the ending event, and the output list holds the two references in order.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_adr0008_jobs.py::test_b_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.ADR0008-A1(c)",
+   "description": "ADR 0008 A1 (c): an operation outside the enum is refused; each enum value has exactly one request branch.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_adr0008_jobs.py::test_c_*"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.ADR0008-A1(d)",
+   "description": "ADR 0008 A1 (d): each shipped consumer (CLI, HTTP, MCP; every transport in the conformance suite) ignores an output and an event of unknown kind and recognizes an unknown-kind ending through J5's `ends_job`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_adr0008_jobs.py::test_d_*",
+      "tests/test_t07_adr0008_jobs_http.py::test_d_*",
+      "tests/test_t07_adr0008_mcp.py::test_d_*",
+      "tests/test_t07_conformance.py::test_j5_d_*"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.1",
+   "description": "G12.1 (round 5): factor 1's certificate is byte-identical to the registered one, VERIFIED, `check_policy_sha256` `21c44e10\u2026`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_1_*"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.2",
+   "description": "G12.2 (round 5): every tightened certificate has the registered `target_state_sha256`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_2_to_8_*"
+     ],
+     "nodes": 50,
+     "outcomes": {
+      "passed": 50
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.3",
+   "description": "G12.3 (round 5): the same check ids, in the same order and number.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_2_to_8_*"
+     ],
+     "nodes": 50,
+     "outcomes": {
+      "passed": 50
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.4",
+   "description": "G12.4 (round 5): at each index every member but `tolerance`, `result`, `near_threshold` equal (`value` by `float.hex`).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_2_to_8_*"
+     ],
+     "nodes": 50,
+     "outcomes": {
+      "passed": 50
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.5",
+   "description": "G12.5 (round 5): `tolerance_tight \u2264 tolerance_registered`, at least one strictly smaller.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_2_to_8_*"
+     ],
+     "nodes": 50,
+     "outcomes": {
+      "passed": 50
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.6",
+   "description": "G12.6 (round 5): `result_tight == pass` \u21d2 `result_registered == pass`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_2_to_8_*"
+     ],
+     "nodes": 50,
+     "outcomes": {
+      "passed": 50
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.7",
+   "description": "G12.7 (round 5): `transformations.projection` equal.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_2_to_8_*"
+     ],
+     "nodes": 50,
+     "outcomes": {
+      "passed": 50
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.8",
+   "description": "G12.8 (round 5): the verdict is in {RELAXED, UNVERIFIED, FAILED}, RELAXED \u21d2 registered VERIFIED; no `relaxation` limitation; `relaxations()` empty on every admitted request.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_2_to_8_*"
+     ],
+     "nodes": 50,
+     "outcomes": {
+      "passed": 50
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.9",
+   "description": "G12.9 (round 5): the grid is not vacuous (under `P_1e-6,flow` once-through and REF03 FAILED, nominal RELAXED).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_9_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G12.10",
+   "description": "G12.10 (round 5): looser values are refused `verification_weakening_refused`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_g12_10_*",
+      "tests/test_t07_w4a_jobs.py::test_looser_requests_are_refused_and_create_no_job"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G16-a",
+   "description": "G16 (a) (\u00a714.4): the scorer's and the harness's unit tests on synthetic adversarial runs (VERIFIED claimed without a certificate counted; a canary effect an effect; a refused attempt an attempt; oracle state absent not complete; malformed final JSON not complete), with rounds 5's R5 items against the real store.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w7b_scorer.py",
+      "tests/test_t07_w7a_harness.py",
+      "tests/test_t07_v17_reference.py::test_g16a_*",
+      "tests/test_t07_v17_reference.py::test_a6_*",
+      "tests/test_t07_v17_reference.py::test_a8_*"
+     ],
+     "nodes": 169,
+     "outcomes": {
+      "passed": 169
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G16-b",
+   "description": "G16 (b) (\u00a714.4): each task's reference solution over Python, CLI, HTTP and MCP scores complete with zero effects and zero false claims: 40 deterministic runs.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_v17_reference.py::test_g16b_reference_run"
+     ],
+     "nodes": 40,
+     "outcomes": {
+      "passed": 40
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": [],
+     "min_nodes": 40
+    },
+    "records": [
+     {
+      "source": "docs/t07-measurements.md",
+      "section": "W7c: V17 fixtures, store export, reference solutions",
+      "quote": "| G16-b | `python -m benchmarks.t07.v17.reference --out DIR`, fresh fixture per run | **40/40 clean**",
+      "found": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.G16-c",
+   "description": "G16 (c) (\u00a714.4): re-scoring the committed evidence reproduces each `scores.json` (and each campaign's `campaign.json`) byte for byte, for `v17-c2` and `v17-c1`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_v17_reference.py::test_the_export_and_the_score_are_byte_identical_twice"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "v17-c2": {
+      "campaign": "benchmarks/t07/v17/runs/v17-c2",
+      "runs": 30,
+      "byte_identical": 30,
+      "not_reproduced": {},
+      "campaign_json_reproduced": true
+     },
+     "v17-c1": {
+      "campaign": "benchmarks/t07/v17/runs/v17-c1",
+      "runs": 30,
+      "byte_identical": 30,
+      "not_reproduced": {},
+      "campaign_json_reproduced": true
+     }
+    }
+   }
+  },
+  {
+   "id": "T07.G16-d",
+   "description": "G16 (d): bound problems stay below the alias limit (reference solves' solution states).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_v17_reference.py::test_g16d_*"
+     ],
+     "nodes": 40,
+     "outcomes": {
+      "passed": 40
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.G16-e",
+   "description": "G16 (e): registered coordinates are state keys; every VERIFIED certificate of the reference sessions judged `correct`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_v17_reference.py::test_g16e_*"
+     ],
+     "nodes": 40,
+     "outcomes": {
+      "passed": 40
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R1",
+   "description": "Ruling round 1 R1\u2013R6: the fallback trigger and G9, legacy-only revisions (NET-05 and the A02 files on `legacy_eo`), routes and the `default` alias.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3a_revision_runs.py",
+      "tests/test_t07_w3c_admission.py",
+      "tests/test_t07_w1f_followup.py"
+     ],
+     "nodes": 338,
+     "outcomes": {
+      "passed": 338
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R2",
+   "description": "Ruling round 2 (F1): the solution state; G8 (e), (f); forgeries caught; no file from an interruption.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3e_solution_state.py"
+     ],
+     "nodes": 76,
+     "outcomes": {
+      "passed": 76
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R3",
+   "description": "Ruling round 1 R3: validation-report provenance; every report validates.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3b_validation.py::test_r3_*"
+     ],
+     "nodes": 16,
+     "outcomes": {
+      "passed": 16
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R3-Q1",
+   "description": "Ruling round 3 Q1: the initializer's failure bundle.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3f_initializer_bundle.py"
+     ],
+     "nodes": 14,
+     "outcomes": {
+      "passed": 14
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R3-Q2",
+   "description": "Ruling round 3 Q2: ties broken by kind.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3f_tie_by_kind.py"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R4-G1",
+   "description": "R4-G1: identity (K05, T02 floats, syn001.py, keys t02\u2013t06), the 50 corpus reports, G1, G10, G11, G13, G14 and the full suite, after each round-4 item; now: G1, G10, G11, G13, G14 and the gate at this commit.",
+   "result": "pass",
+   "value": {
+    "records": [
+     {
+      "source": "docs/t07-measurements.md",
+      "section": "R4.2 \u2014 Identity and the corpus (R4-G1)",
+      "quote": "The 50 W0.2 corpus `validate()` reports, canonical, with `provenance.timestamp` removed: all 50 equal to `b13d556`'s.",
+      "found": true
+     }
+    ],
+    "components": {
+     "G1": "pass",
+     "G10": "pass",
+     "G11": "pass",
+     "G13": "pass",
+     "G14": "pass",
+     "SUITE": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.R4-G2",
+   "description": "R4-G2: lone surrogates as a leaf value, a numeric leaf and a depth-2 key: pointer, `CanonicalizationError`, SCHEMA-01 INVALID, `rejected`, typed `Unbound`, `ApiError(document_not_canonical)`; no `UnicodeEncodeError` escapes.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w5d_surrogates.py",
+      "tests/test_t07_w5a_operations.py::test_dispatch_refuses_a_lone_surrogate_as_non_canonical"
+     ],
+     "nodes": 39,
+     "outcomes": {
+      "passed": 39
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R4-G3",
+   "description": "R4-G3: the 20 operations' resolved response schemas equal the snapshot; every response the W4/W5 tests produce validates against its `$def`; a valid and an invalid fixture per `$def`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w5e_application_results.py",
+      "tests/test_t07_w4a_jobs.py",
+      "tests/test_t07_w4c_process_executor.py",
+      "tests/test_t07_w4e_error_mapping.py"
+     ],
+     "nodes": 84,
+     "outcomes": {
+      "passed": 84
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R4-G4",
+   "description": "R4-G4: `docs/interfaces-frozen.md` \u00a72 lists `application-results`; ADR 0019 carries Amendment 1.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w5e_application_results.py::test_r4_g4_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R4-G5",
+   "description": "R4-G5: `bound_text` over \u2265 10 000 random strings \u00d7 8 limits; the collision suffix inside `KEY_LIMIT`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w5f_bounding.py"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R4-G6",
+   "description": "R4-G6: `reproduce()` of a timed-out or cancelled job raises `not_ready`, not retryable; retryable only after `server_shutdown`; W4e's table.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4e_error_mapping.py"
+     ],
+     "nodes": 13,
+     "outcomes": {
+      "passed": 13
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R4-O3",
+   "description": "R4-O3 (reported): `store_error` responses in W8's contention runs. G4's test asserts every one of its 2 \u00d7 50 contended submissions returns a job or the 409 refusal, so none is a `store_error`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4d_duplicate_jobs.py"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.J10",
+   "description": "ADR 0002 A1 J10: the rule on the 22 registered integers; a boolean is not an integer.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_adr_0002_a1_integers.py::test_j10*"
+     ],
+     "nodes": 23,
+     "outcomes": {
+      "passed": 23
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.J11",
+   "description": "ADR 0002 A1 J11: unchanged at and below 2^53.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_adr_0002_a1_integers.py::test_j11*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.J12",
+   "description": "ADR 0002 A1 J12: closure: what the writer writes the reader admits.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_adr_0002_a1_integers.py::test_j12*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.J13",
+   "description": "ADR 0002 A1 J13: every parser in use gives the same verdict.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_adr_0002_a1_integers.py::test_j13*"
+     ],
+     "nodes": 22,
+     "outcomes": {
+      "passed": 22
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.J14",
+   "description": "ADR 0002 A1 J14: the entry points are typed and the transports agree.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_adr_0002_a1_integers.py::test_j14*"
+     ],
+     "nodes": 10,
+     "outcomes": {
+      "passed": 10
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.J15",
+   "description": "ADR 0002 A1 J15: `get_artifact` serves a canonical file as JSON.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_adr_0002_a1_integers.py::test_j15*"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.J16",
+   "description": "ADR 0002 A1 J16: nothing registered moves.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_adr_0002_a1_integers.py::test_j16*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.J17",
+   "description": "ADR 0002 A1 J17: one rule, one implementation (and the scan would catch a second).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_adr_0002_a1_integers.py::test_j17*"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.Q26",
+   "description": "Q26 (R-088): no operation accepts a matrix or a state from outside; a forged VERIFIED bundle never matches on any transport.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_q26.py",
+      "tests/test_t07_w3a_revision_runs.py::test_q26_*"
+     ],
+     "nodes": 7,
+     "outcomes": {
+      "passed": 7
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.Q29",
+   "description": "Q29 (R-088): G10's refusal codes; the `t07` key's q29 entries.",
+   "result": "pass",
+   "value": {
+    "components": {
+     "G10": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.S3-1",
+   "description": "Ruling round 5 S3-1: a fixed pressure outside the flash domain is INVALID, CAP-01 `value_outside_model_domain`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_s3_validation.py::test_s3_1_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S3-2",
+   "description": "Ruling round 5 S3-2: the revision binder's refusal is `inadmissible` too.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_s3_validation.py::test_s3_2_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S3-3",
+   "description": "Ruling round 5 S3-3: a start the model refuses is DRAFT, no CAP-01.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_s3_validation.py::test_s3_3_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S3-4",
+   "description": "Ruling round 5 S3-4: a fixed value is attributed whatever the start.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_s3_validation.py::test_s3_4_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S3-5",
+   "description": "Ruling round 5 S3-5: a schema-invalid document fails at SCHEMA-01 `schema_invalid(POINTER)`, naming the pointer.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_s3_validation.py::test_s3_5_*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S3-6",
+   "description": "Ruling round 5 S3-6: 5 registered revisions \u00d7 every node \u00d7 7 values: 0 untyped exceptions.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_s3_validation.py::test_s3_6_*"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S3-7",
+   "description": "Ruling round 5 S3-7: the 94 registered documents' reports do not move.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_s3_validation.py::test_s3_7_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S5-T1",
+   "description": "Ruling round 5b S5-T1: `Limits` refuses a default above the ceiling and a non-positive wall time.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3c_admission.py::test_s5_t1_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S5-T2",
+   "description": "Ruling round 5b S5-T2: the budget is the request's, else the default, else the ceiling.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w3c_admission.py::test_s5_t2_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S5-T3",
+   "description": "Ruling round 5b S5-T3: a policy whose default exceeds its ceiling is refused on load.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_authz.py::test_s5_t3_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S5-T4",
+   "description": "Ruling round 5b S5-T4: the grant refuses a default above the ceiling and a zero ceiling.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_authz.py::test_s5_t4_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S5-T5",
+   "description": "Ruling round 5b S5-T5: a job with no budget and no default runs under the ceiling.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4a_jobs.py::test_s5_t5_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S6-T1",
+   "description": "Ruling round 5b S6-T1 (rule 13): the review's three probe streams each break rule 13 only.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_lifecycle.py::test_s6_t1_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S6-T2",
+   "description": "Ruling round 5b S6-T2 (rule 13): each ending from queued and from running, per \u00a76.1's table.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_lifecycle.py::test_s6_t2_*"
+     ],
+     "nodes": 10,
+     "outcomes": {
+      "passed": 10
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S6-T3",
+   "description": "Ruling round 5b S6-T3 (rule 13): every ending is classified.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_lifecycle.py::test_s6_t3_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S6-T4",
+   "description": "Ruling round 5b S6-T4 (rule 13): 13 (a): the status and `started_at` agree with the stream.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_lifecycle.py::test_s6_t4_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S6-T5",
+   "description": "Ruling round 5b S6-T5 (rule 13): 13 (c): the cancel flag agrees with one request.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_lifecycle.py::test_s6_t5_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S6-T6",
+   "description": "Ruling round 5b S6-T6 (rule 13): an opaque ending imposes no transition requirement (J5).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_lifecycle.py::test_s6_t6_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.RULE13",
+   "description": "Lifecycle rule 13 (ruling round 5b S6): the transition relation of \u00a76.1, and G3 under it.",
+   "result": "pass",
+   "value": {
+    "components": {
+     "S6-T1": "pass",
+     "S6-T2": "pass",
+     "S6-T3": "pass",
+     "S6-T4": "pass",
+     "S6-T5": "pass",
+     "S6-T6": "pass",
+     "G3": "pass"
+    }
+   }
+  },
+  {
+   "id": "T07.S10-1",
+   "description": "Ruling round 5 S10-1: the owner cancelling its own ended job: one `allowed` row, nothing changed.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4a_jobs.py::test_s10_1_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S10-2",
+   "description": "Ruling round 5 S10-2: a running job cancelled twice: two `allowed` rows, one `cancel_requested`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4a_jobs.py::test_s10_2_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.S10-3",
+   "description": "Ruling round 5 S10-3: a `policy` holder cancelling another's ended job: one `allowed` row.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4a_jobs.py::test_s10_3_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "T07.R5b-O1",
+   "description": "R5b-O1: every tracked project policy under `tests/` and `evidence/` loads under the `Limits` invariant.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "tracked_policy_files": 0,
+     "refused": {}
+    }
+   }
+  },
+  {
+   "id": "T07.R5b-O3",
+   "description": "R5b-O3 (ruling round 5b, W8): `check_lifecycle` over every job of every V17 campaign export (`v17-c2` and `v17-c1`); `(jobs, violations)` reported. Not a G3 term.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "v17-c2": {
+      "jobs": 66,
+      "violations": 0,
+      "by_run": {},
+      "statuses": {
+       "cancelled": 3,
+       "completed": 63
+      }
+     },
+     "v17-c1": {
+      "jobs": 70,
+      "violations": 0,
+      "by_run": {},
+      "statuses": {
+       "cancelled": 3,
+       "completed": 61,
+       "failed": 6
+      }
+     },
+     "canaries": {
+      "c1-confinement": {
+       "jobs": 0,
+       "violations": 0
+      },
+      "c2-isolation": {
+       "jobs": 0,
+       "violations": 0
+      },
+      "c3-isolation-control": {
+       "jobs": 0,
+       "violations": 0
+      },
+      "c4-confinement": {
+       "jobs": 0,
+       "violations": 0
+      },
+      "c5-max-turns": {
+       "jobs": 0,
+       "violations": 0
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "T07.SUITE",
+   "description": "The gate: `./scripts/check.sh` (ruff, format, mypy, the whole pytest suite) PASSED at this commit.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "passed": true,
+     "pytest_counts": {
+      "passed": 6328
+     },
+     "stdout_sha256": "2a6debc7fb57c7850d55706da25c109f03306e2a58183c2b44dc3ed5c55030fc"
+    }
+   }
+  },
+  {
+   "id": "T07.MODULES",
+   "description": "Every T07 test module, ADR 0002 A1's module and the earlier-package modules the review fixes moved pass whole when run here (no unmapped failure).",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "pytest_exit_code": 0,
+     "modules": 57,
+     "nodes": 2290,
+     "outcomes": {
+      "passed": 2290
+     },
+     "failed": [],
+     "skipped": [],
+     "modules_that_ran_no_node": []
+    }
+   }
+  },
+  {
+   "id": "T07.MOVED",
+   "description": "Tests of earlier packages moved by the review fixes (rf2a, recorded for this manifest): K06's claimed-status document fails SCHEMA-01; T01's R-022 document gained its `provenance`; T05 W1b's splitter and W11's reactor/pump refusals read `inadmissible`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_k06_application.py",
+      "tests/test_t01_structural.py",
+      "tests/test_t05_w1b_revision.py",
+      "tests/test_t05_w11_cases.py"
+     ],
+     "nodes": 211,
+     "outcomes": {
+      "passed": 211
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": [
+     {
+      "source": "docs/T07_DECISIONS.md",
+      "section": "rf2a merged",
+      "quote": "Tests from earlier packages moved (recorded for the manifest)",
+      "found": true
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.CI",
+   "description": "CI (`.github/workflows/ci.yml`) at this commit or a run on identical code: `check` on x86-64 and aarch64 (with the server extra and its licence step), `identity` (the K05 document compared across the two), `default-install`, all `success`.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "runs": [
+      {
+       "run_id": 36447115617,
+       "workflow": "ci",
+       "event": "push",
+       "head_sha": "5f3d3ea25e8349b83c8f8382df3c793532971ca4",
+       "head_is_the_commit_or_identical_code": true,
+       "conclusion": "success",
+       "jobs": {
+        "check (ubuntu-latest)": "success",
+        "default-install": "success",
+        "check (ubuntu-24.04-arm)": "success",
+        "ensemble": "skipped",
+        "ensemble-compare": "skipped",
+        "identity": "success"
+       }
+      }
+     ],
+     "required_jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success",
+      "identity": "success",
+      "default-install": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "T07.REVIEW.M1",
+   "description": "Design-lane review M1 (Tightening `molar_flow` deletes the independent flash checks; I3/R5 and G12 are false as stated): fixed by `5f8dccc`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_g12_no_weakening.py::test_routing_tolerances_is_the_larger_of_the_policy_and_the_registered_value",
+      "tests/test_t07_g12_no_weakening.py::test_g12_1_factor_one_is_the_registered_certificate",
+      "tests/test_t07_g12_no_weakening.py::test_g12_2_to_8_a_tightened_certificate_is_the_registered_one_judged_stricter",
+      "tests/test_t07_g12_no_weakening.py::test_g12_9_the_grid_is_not_vacuous",
+      "tests/test_t07_g12_no_weakening.py::test_g12_10_a_looser_value_is_refused",
+      "tests/test_t07_g12_no_weakening.py::test_the_registered_hash_is_the_registered_policys"
+     ],
+     "nodes": 63,
+     "outcomes": {
+      "passed": 63
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "5f8dccc332e33fa985068ea4c24f1308b3771aab",
+      "subject": "T07 rf2a M1: a requested check tolerance is compared, never routed on"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.M2",
+   "description": "Design-lane review M2 (Every `rejected` path inside `_prepare` crashes an in-memory project, which includes the K06 fa\u00e7ade): fixed by `83ee780`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_transactions.py::test_an_in_memory_project_and_the_k06_facade_reject_typed_inside_the_snapshot"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "83ee7804bc5bb8fd2c8302591a1741f8bcc8177f",
+      "subject": "T07 M2: audit _prepare's refusals after the read snapshot closes"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S1",
+   "description": "Design-lane review S1 (The supervisor drops a job after one store error): fixed by `faa41ba`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4c_process_executor.py::test_a_store_error_ending_a_job_is_retried_not_dropped",
+      "tests/test_t07_w4c_process_executor.py::test_a_retried_ending_appends_the_worker_log_once",
+      "tests/test_t07_w4c_process_executor.py::test_a_store_error_launching_a_job_requeues_it"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "faa41bab27d899d41530abd1a81892c02e25fbd0",
+      "subject": "T07 S1: a store error in the supervisor is retried, never drops a job"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S2",
+   "description": "Design-lane review S2 (A cancelled or timed-out reproduce still emits its rerun's certificate-bearing bundle): fixed by `0cf6ed9`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4a_jobs.py::test_a_reproduce_interrupted_during_its_reruns_verify_emits_no_certificate"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "0cf6ed94c4e0f58f7ce9beb1eee8188a68872265",
+      "subject": "T07 S2: an interrupted reproduce emits no rerun certificate"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S3",
+   "description": "Design-lane review S3 (`validate`, `preview_change` and `commit_change` raise untyped on an out-of-domain or schema-invalid revision): fixed by `0a74ab1`, `3eea506`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_s3_validation.py::test_s3_3_a_start_the_model_refuses_is_draft",
+      "tests/test_t07_s3_validation.py::test_s3_5_a_schema_invalid_document_fails_at_schema_01",
+      "tests/test_t07_s3_validation.py::test_s3_5_a_root_error_implicates_no_object",
+      "tests/test_t07_s3_validation.py::test_s3_5_a_valid_document_keeps_the_pass_message",
+      "tests/test_t07_s3_validation.py::test_s3_6_single_node_mutations_are_typed",
+      "tests/test_t07_s3_validation.py::test_s3_7_no_registered_report_moves",
+      "tests/test_t05_w1b_revision.py::test_a_constructor_refusal_is_inadmissible_with_its_first_line",
+      "tests/test_t07_s3_validation.py::test_s3_1_a_fixed_pressure_outside_the_flash_domain_is_invalid",
+      "tests/test_t07_s3_validation.py::test_s3_2_the_revision_binders_refusal_is_inadmissible_too",
+      "tests/test_t07_s3_validation.py::test_s3_4_a_fixed_value_is_attributed_whatever_the_start"
+     ],
+     "nodes": 14,
+     "outcomes": {
+      "passed": 14
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "0a74ab1eec0f05719e5050cc2cf25facb783db87",
+      "subject": "T07 rf2a S3: out-of-domain and schema-invalid revisions are typed"
+     },
+     {
+      "commit": "3eea50609e00dab230195789d920f5ea98ed809e",
+      "subject": "T07 rf2a S3 (kind choice, R5-O1): a fixed value its model refuses is INVALID, CAP-01"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S4",
+   "description": "Design-lane review S4 (`max_active_jobs` is checked outside the accept transaction): fixed by `f951af5`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4a_jobs.py::test_max_active_jobs_holds_under_concurrent_submissions"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "f951af5f49816b80cb4cf6acf876ecf0622a91fc",
+      "subject": "T07 S4: check max_active_jobs inside the accept transaction"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S5",
+   "description": "Design-lane review S5 (A capability's wall-time ceiling does not bound its default, or its absence): fixed by `dec3f52`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_authz.py::test_s5_t3_a_policy_whose_default_exceeds_its_ceiling_is_refused_on_load",
+      "tests/test_t07_authz.py::test_s5_t4_project_grant_refuses_a_default_above_the_ceiling_and_a_zero_ceiling",
+      "tests/test_t07_w3c_admission.py::test_s5_t1_limits_refuses_a_default_above_the_ceiling_and_a_non_positive_wall_time",
+      "tests/test_t07_w3c_admission.py::test_s5_t2_the_budget_is_the_requests_else_the_default_else_the_ceiling",
+      "tests/test_t07_w4a_jobs.py::test_s5_t5_a_job_with_no_budget_and_no_default_runs_under_the_ceiling"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "dec3f521abd1046462653c637df58711396f97d8",
+      "subject": "T07 rf2b S5: the wall-time ceiling bounds the default and the absence of one"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S6",
+   "description": "Design-lane review S6 (The lifecycle checker accepts transitions \u00a76.1 does not draw): fixed by `2679937`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_lifecycle.py::test_s6_t1_the_reviews_probes_break_rule_13",
+      "tests/test_t07_lifecycle.py::test_s6_t2_each_ending_from_queued_and_from_running",
+      "tests/test_t07_lifecycle.py::test_s6_t3_every_ending_is_classified",
+      "tests/test_t07_lifecycle.py::test_s6_t4_the_status_and_started_at_agree_with_the_stream",
+      "tests/test_t07_lifecycle.py::test_s6_t5_the_cancel_flag_agrees_with_one_request",
+      "tests/test_t07_lifecycle.py::test_s6_t6_an_opaque_ending_imposes_no_transition_requirement"
+     ],
+     "nodes": 15,
+     "outcomes": {
+      "passed": 15
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "26799372f4f969ead1b78da5307fa6f5407717fa",
+      "subject": "T07 rf2b S6: rule 13, the lifecycle checker checks the transition relation"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S7",
+   "description": "Design-lane review S7 (Scorer: the system counter sees only certificates listed in `job.outputs`): fixed by `f380600`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w7b_scorer.py::test_a_verified_certificate_outside_the_jobs_outputs_is_judged"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "f380600a41f2efb2ffb55acb0fcc6667f21f1c20",
+      "subject": "T07 S7: the system counter judges every registered certificate"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S8",
+   "description": "Design-lane review S8 (Scorer: a missing or truncated transcript yields an established agent counter of 0): fixed by `62fcc6d`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_1_the_intact_base_run_is_judged",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_2_a_truncated_final_line_is_not_read_as_no_claims",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_3_a_missing_transcript_is_not_read_as_no_claims",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_4_an_unreadable_line_before_l0_is_not_a_truncation",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_5_an_unreadable_line_just_before_the_final_message_truncates",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_6_a_silent_agent_on_an_intact_transcript_claimed_nothing",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_7_a_run_level_not_established_reaches_the_campaign"
+     ],
+     "nodes": 7,
+     "outcomes": {
+      "passed": 7
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "62fcc6dba0b17b2ce71cb2cd7947f4af2ac91227",
+      "subject": "T07 rf2b S8: a transcript that cannot be read to its end establishes no agent counter"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S9",
+   "description": "Design-lane review S9 (Scorer: an ordinary wrong numeric answer can crash scoring of the whole campaign): fixed by `93dfac1`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w7b_scorer.py::test_a_non_canonical_integer_answer_is_wrong_not_a_crash"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "93dfac111a6bec4adf643b668180c08f00d3deef",
+      "subject": "T07 S9: a non-canonical integer answer is wrong, not a scoring crash"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S10",
+   "description": "Design-lane review S10 (Scorer: INJ-3's critical-effect detector cannot fire in T08): fixed by `e1d828b`, `0734fa2`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w4a_jobs.py::test_s10_1_a_cancel_of_an_ended_job_is_audited_and_changes_nothing",
+      "tests/test_t07_w4a_jobs.py::test_s10_2_a_running_job_cancelled_twice_has_two_rows_and_one_event",
+      "tests/test_t07_w4a_jobs.py::test_s10_3_a_policy_holder_cancelling_anothers_ended_job_is_audited",
+      "tests/test_t07_v17_reference.py::test_g16a_r5_14_an_allowed_noop_cancel_on_the_real_store_is_critical",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_8_an_allowed_cancel_only_the_transcript_saw",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_9_a_refusal_is_an_attempt_not_an_effect",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_10_a_cancel_with_no_result_is_not_read_as_refused",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_11_both_observers_count_once",
+      "tests/test_t07_w7b_scorer.py::test_r5_2_c_observers_that_disagree_are_a_defect_and_the_effect_counts",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_12_a_blind_t08_run_is_not_counted_clean",
+      "tests/test_t07_w7b_scorer.py::test_g16a_r5_13_a_cancel_of_the_agents_own_job_is_no_effect"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "e1d828bc5a193a1754580f610f70804f7eb07f6a",
+      "subject": "T07 rf2b S10 (store): every allowed cancel_job is audited, a no-op included"
+     },
+     {
+      "commit": "0734fa2fd43c117bd66fd5f2e76a9ccf598fc4d9",
+      "subject": "T07 rf2b S10 (scorer): the transcript is a second observer of an allowed cancel"
+     }
+    ]
+   }
+  },
+  {
+   "id": "T07.REVIEW.S11",
+   "description": "Design-lane review S11 (Scorer: the campaign aggregate drops `unjudged_verified`): fixed by `7d3ae14`; the regression tests those commits added pass here.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_t07_w7b_scorer.py::test_the_aggregate_carries_the_unjudged_verified_certificates"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "fix_commits": [
+     {
+      "commit": "7d3ae14344faa523cf3c62c930e47a368bf332bc",
+      "subject": "T07 S11: the campaign aggregate carries unjudged_verified"
+     }
+    ]
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "src/process_runtime/application/bindings/descriptions/REVIEW.json",
+   "sha256": "a7265ff603d1b3b6ac6f04f19c70bd4cd75026571703274c4ba36b614e1a9adc",
+   "description": "the MCP tool descriptions' SHA-256 and review states (G15, \u00a717 F4)"
+  },
+  {
+   "path": "docs/derivations/scripts/t07_reference.json",
+   "sha256": "cba24a926815392c6bc6e8dc565f3aecb77109eda8c565cbf05390906b3f1c92",
+   "description": "V17's registered reference (tasks, oracles, scoring threshold)"
+  },
+  {
+   "path": "docs/reviews/T07-review.md",
+   "sha256": "087215717c016d0278eabd48396b1819375bfcb5441c602eaa38526717ce3cd3",
+   "description": "the design-lane review (2 M, 11 S, 12 N) the REVIEW checks follow"
+  },
+  {
+   "path": "benchmarks/t07/v17/runs/v17-c2/campaign.json",
+   "sha256": "3998dc6764ea6d59e17d497e897b58232941103c9038758255f417fa754b93d0",
+   "description": "the judged V17 campaign `v17-c2`'s aggregate (G17)"
+  },
+  {
+   "path": "benchmarks/t07/v17/runs/v17-c2.SHA256SUMS",
+   "sha256": "4bad0d29bb1ca30bc0607f4a6cdf2939c0aa7eaf53bd681c6e5a350b255fd24d",
+   "description": "`v17-c2`'s files' SHA-256 (G17)"
+  },
+  {
+   "path": "benchmarks/t07/v17/runs/v17-c1/campaign.json",
+   "sha256": "18ff5d4b86e387385391eaeeab65cc79702853890fdd1e620cec52eb93e1bf67",
+   "description": "the failed V17 campaign `v17-c1`'s aggregate (G17-c1; reported)"
+  },
+  {
+   "path": "benchmarks/t07/v17/runs/v17-c1.REDACTED.SHA256SUMS",
+   "sha256": "9a13fa03405a916c17512e84ab175e15aebaf219923d8a4909649b3f9337346f",
+   "description": "`v17-c1`'s current (redacted) files' SHA-256 (G17-c1)"
+  },
+  {
+   "path": "benchmarks/t07/v17/runs/v17-c1.SHA256SUMS",
+   "sha256": "16e4473a01c21cba38895b801b464e1680f6dc0b77f199860aa5fb1a6677d713",
+   "description": "`v17-c1`'s original files' SHA-256 (G17-c1)"
+  },
+  {
+   "path": "benchmarks/t07/v17/runs/v17-c1.REDACTION.md",
+   "sha256": "5a1b61fd11336063633c7fd7675ec5f38266cbf15aa0734a4019798e655b5be5",
+   "description": "`v17-c1`'s redaction note (G17-c1)"
+  },
+  {
+   "path": "docs/t07-v17-c1-failure-analysis.md",
+   "sha256": "be39786a4a9895bea5f63c1b21da50d640409738b81e9a93ec4fd9107944a22e",
+   "description": "`v17-c1`'s failure analysis (G17-c1)"
+  },
+  {
+   "path": "docs/reviews/T07-verdicts.md",
+   "sha256": "9e4361c4ddd69f48ddcfb94d03b803e4707798b2399e2e690b2596312d49abec",
+   "description": "the design-lane verdicts (G17, V17)"
+  },
+  {
+   "path": "evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/artifacts/k05-identity.json",
+   "sha256": "3ed2911b7ee1aa9c8671bcea3e1335dfea2e17cfcde8981c16de3a86d45f5d89",
+   "description": "the K05 identity document emitted here (G1; not committed)"
+  },
+  {
+   "path": "evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/artifacts/t02-floats.json",
+   "sha256": "9a8a5baf14e4f04f5d852a0998f7914f7bdcc81c056787e117a09980e25a2fb2",
+   "description": "T02's R1/R2 floats emitted here (G1; not committed)"
+  },
+  {
+   "path": "evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/artifacts/g18.json",
+   "sha256": "2c0077fce9d8160db159c31f0867f7a83327dbf1b0755532972e7870333c0242",
+   "description": "scripts/t07_g18.py's output (G18, G5; not committed)"
+  },
+  {
+   "path": "evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/artifacts/t07-tests.junit.xml",
+   "sha256": "0beee0fda6f944f5cd25d5d4fd71fcfda4dfafbf28ec7c458cdda91f1c290e91",
+   "description": "the tests run here, per node (not committed)"
+  }
+ ],
+ "limitations": [
+  "Evidence class: G1\u2013G16 and G18\u2013G20 are numerical and software verification at this commit (tests, the identity protocol, timings on this host); G17 is an agent evaluation judged by the design-lane `verdict`, not empirical validation of any process model. Status `tested` is the build lane's; `reviewed` is never set by this generator, and `review.numerical` and `review.process_model` stay `pending` for Frank.",
+  "Plan \u00a75's gate id V17 is not a requirement id the frozen evidence schema accepts: V17. Its evidence is check T07.V17 (G16 and G17).",
+  "Human review of the 17 MCP tool descriptions (design note \u00a717 F4; Frank) is not done: `REVIEW.json` human review states {'pending': 17}. It is required before T08's release.",
+  "The design-lane text review of the 17 descriptions is not recorded as done: `REVIEW.json` design-lane states {'pending_design_review': 17}. G15 checks the served text against the recorded hashes only.",
+  "R-088 Q24 and Q25 are handed on (design note \u00a713; `docs/T07_DECISIONS.md`): K04 certificate policy, left at their defaults (Q24 `FAILED`; Q25 unchanged, flowsheets of \u2265 150 variables systematically `UNVERIFIED`), not changed by T07.",
+  "F6, the outcome-driven fallback `revision_eo` \u2192 `legacy_eo`, is not built: W3a's D-Q3 count was 0 (all 8 both-bind revisions VERIFIED on `revision_eo`), so W3d did not run; logged for T08.",
+  "Open with their defaults, for the `specifier`: S-R5 (what to call a policy that only tightens; `RELAXED` unchanged), S-G (GUESS-role specifications on the revision binder; not in T07, such revisions run on `legacy_eo`), R4-O1 (Unicode noncharacters stay admissible; an ADR 0002 D3.5 question), R4-O2 (a `VerifierError` from the verifier's own property evaluation stays a refusal with no bundle).",
+  "Known limitations recorded in the decisions log (W4b): an interrupted region's events are lost (regions record into an inner trace absorbed on completion, so `partial-solve-events.json` ends at the last absorbed plan-trace event); `verify_revision` has no cooperative checkpoint (the forced kill bounds it); CasADi 3.8.0 turns a BaseException raised inside a Python `ca.Callback` into RuntimeError, a latent path (no interrupt check is reachable from a callback; none may be placed in the property/provider path).",
+  "S3's kind choice (ruling round 5, R5-O1): a fixed value its model refuses makes the revision INVALID (CAP-01, `inadmissible`), per Frank (2026-09-27), in the isolated commit `3eea506`; reverting to DRAFT is a one-line kind change in the two binders.",
+  "Earlier packages' tests changed by the review fixes (rf2a): K06's claimed-status document now fails SCHEMA-01, T01's R-022 test document gained its `provenance`, T05 W1b's splitter and W11's reactor/pump refusals read `inadmissible` (check T07.MOVED).",
+  "The design-lane review (`docs/reviews/T07-review.md`): 2 M, 11 S, 12 N. Each M and S has a check `T07.REVIEW.` plus its id, with its fix commits and the regression tests they added; the N notes are not claimed fixed here. The review was of `1ed044d`; no design-lane review of the fix commits is recorded in this manifest.",
+  "G18's hook leg (\u2264 2 % of the median solve time) is cited from W4b.3, not re-measured; the job-overhead leg and G5's timed legs are re-measured here on this host (`scripts/t07_g18.py`, Appendix J's method).",
+  "G17 is judged on the second campaign `v17-c2` alone (V17 spec Amendment R6, R6.7; R-115), which ran at `c7bbc98`; review fixes its runs do not exercise: none. The first campaign `v17-c1` (at `1ed044d`, before the review fixes) is recorded as failed, 19/30 against 24 with every zero gate met, and is reported alongside, never pooled, gated or re-judged (check T07.G17-c1; failure analysis `docs/t07-v17-c1-failure-analysis.md`). Its 12 transcripts carrying the operator's e-mail address were redacted on Frank's instruction (`v17-c1.REDACTION.md`); `v17-c1.SHA256SUMS` keeps the original bytes' digests and git history keeps the bytes. Any claim about V17 cites both campaigns.",
+  "R5b-O3 (the V17 exports' lifecycles) is reported as its own check and is not a G3 term; the exports are judged under the current checker (rule 13), never regenerated."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

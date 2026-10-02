@@ -1,0 +1,226 @@
+{
+ "work_package": "K06",
+ "commit": "cda68cd446be27992051d43422336ad5f9430fe8",
+ "requirements": [
+  "D15",
+  "D16"
+ ],
+ "status": "reviewed",
+ "inputs": {
+  "case_id": "The registered SYN-001 revisions driven through the application layer: nominal committed, retried, conflicted and drafted; the conflicting-heater revision validated; and the CLI run end to end on SYN-001-nominal",
+  "case_hash": "a68317dd0a5ef596160eb220a26c1c90ace3548bb0698e65b29c6b6e73817905",
+  "environment_lock_hash": "b9c509b5d13aef089cf2de4c6b394463c0c5f687ff343a490d6812499c14a313"
+ },
+ "commands": [
+  {
+   "cmd": "PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "a029318f048ebcda6e3283c03957cbbb1cc8f4561f6e489fe14278b41679b726"
+  },
+  {
+   "cmd": "PYTHONPATH=. python scripts/v0_0_gate.py",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "K06.transactions",
+   "description": "Blueprint \u00a711's three properties. An **expected revision** refuses a stale commit and names both ids, so a concurrent agent's work is not silently overwritten. An **idempotency key** returns the original result on a retry \u2014 the same revision id, and no second revision in the store \u2014 so a client that timed out does not pay twice for an expensive solve. A **change set** applies whole or not at all. A committed edit names the runs it invalidated.",
+   "result": "pass",
+   "value": {
+    "committed": "committed",
+    "invalidations": [
+     "run-a"
+    ],
+    "idempotent_retry": "replayed",
+    "retry_same_revision": true,
+    "revisions_after_retry": 2,
+    "stale_commit": "conflict",
+    "conflict": {
+     "expected": "SYN-001-nominal-r1",
+     "actual": "rev-2"
+    },
+    "head_after_conflict": "draft-1",
+    "draft_commit": "committed",
+    "draft_status": "DRAFT",
+    "content_hash_ignores_title": true,
+    "content_hash_sees_content": true
+   },
+   "expected": "committed / replayed / conflict, with the invalidated run named"
+  },
+  {
+   "id": "K06.D16.drafts",
+   "description": "D16: an incomplete draft is persistable and \"a syntactically valid draft can be committed without being executable\". A tool that refuses to hold an unfinished thought gets worked around, and the work then happens somewhere with no provenance at all. `DRAFT` and `INVALID` are different answers: one means incomplete, the other means it is not a revision.",
+   "result": "pass",
+   "value": {
+    "draft": "DRAFT",
+    "invalid": "INVALID"
+   },
+   "expected": "an under-specified revision commits and reports DRAFT"
+  },
+  {
+   "id": "K06.validation.not_a_badge",
+   "description": "Blueprint \u00a74.3: statuses are \"validation results tied to a revision and task, not editable badges\". There is no setter; the report is frozen and recomputed from the revision every time. A revision that asserts its own readiness is still judged on its contents.",
+   "result": "pass",
+   "value": {
+    "SYN-001-nominal": {
+     "status": "READY_FOR_SIMULATION",
+     "checks": 7,
+     "unsupported": [
+      "structure.over_specification"
+     ],
+     "structural_counts": null
+    },
+    "SYN-001-conflicting-heater-spec": {
+     "status": "READY_FOR_SIMULATION",
+     "checks": 7,
+     "unsupported": [
+      "structure.over_specification"
+     ],
+     "structural_counts": null
+    },
+    "draft": "DRAFT",
+    "invalid": "INVALID"
+   },
+   "expected": "computed per revision and task, never stored"
+  },
+  {
+   "id": "K06.G02.cli",
+   "description": "Gate **G02**'s Python/CLI clause and the canonical revision. `content_hash` is computed and never accepted from a caller \u2014 the P01 case files leave it absent with a note saying a hash written before ADR 0002's encoding existed would be a fabricated identity. It ignores the title and description, because two revisions differing only in their title are the same process, and it moves when the content does. Four CLI commands exit 0.",
+   "result": "pass",
+   "value": {
+    "cli": {
+     "solve": 0,
+     "inspect": 0,
+     "replay": 0,
+     "validate": 0
+    },
+    "content_hash": {
+     "ignores_description": true,
+     "sees_content": true
+    }
+   },
+   "expected": "validate, solve, inspect and replay all exit 0"
+  },
+  {
+   "id": "K06.G06.inspectable",
+   "description": "Gate **G06**: the end-to-end example is inspectable without unrelated code. Three commands and no imports: solve a registered case, inspect what the run claimed *and did not claim*, replay the bundle. The section a reader needs most is the one headed \"what this certificate does not claim\", which carries the three required statements and the [A09] shared-provider qualification in full.",
+   "result": "pass",
+   "value": {
+    "sections": [
+     "=== run",
+     "=== environment (provenance; recorded, not part of the identity)",
+     "=== certificate  VERIFIED",
+     "=== what this certificate does not claim",
+     "=== trace  8 events"
+    ],
+    "lines": {
+     "solve": 5,
+     "inspect": 38,
+     "replay": 5,
+     "validate": 12
+    }
+   },
+   "expected": "run, environment, certificate, what-is-not-claimed and trace sections"
+  },
+  {
+   "id": "K06.v0_0.gates",
+   "description": "Measured with this manifest already on disk: G02 is owned by K01 and K06 jointly, so the summary cannot see it until K06's evidence exists. The generator is therefore run twice and the second run is what is recorded \u2014 the ordinary bootstrap of any self-describing artifact, stated rather than hidden.\n\nThe v0.0 acceptance summary, read from the committed evidence manifests rather than re-derived. Plan \u00a77 forbids claiming release completion from a demo, copied golden outputs, skipped cases or relaxed checks, and a gate script that recomputed everything in memory would be a demo. A gate inherits its packages' `unsupported` checks as limitations rather than shedding them; no gate is upgraded here and none is averaged. G06 is the one exception that re-runs, because its claim is about what a reader can do.",
+   "result": "pass",
+   "value": {
+    "met": [
+     "G00",
+     "G01",
+     "G02",
+     "G03",
+     "G04",
+     "G05",
+     "G06"
+    ],
+    "not_met": [],
+    "with_limitations": [
+     "G00",
+     "G01",
+     "G02",
+     "G03",
+     "G04",
+     "G05"
+    ],
+    "per_gate": {
+     "G00": "met_with_limitations",
+     "G01": "met_with_limitations",
+     "G02": "met_with_limitations",
+     "G03": "met_with_limitations",
+     "G04": "met_with_limitations",
+     "G05": "met_with_limitations",
+     "G06": "met"
+    }
+   },
+   "expected": "G00 through G06 met, limitations carried not dropped"
+  },
+  {
+   "id": "K06.structural_over_specification",
+   "description": "The registered case `SYN-001-conflicting-heater-spec` specifies the heater twice \u2014 an outlet temperature and a duty \u2014 and this validator reports it READY_FOR_SIMULATION. K04 recorded this as `unsupported(no validator before K06)`; K06 has a validator and the reason is now different and narrower: detecting it needs blueprint \u00a74.3's matching and Dulmage-Mendelsohn decomposition, which is T01. The validator says so in its own report, as an `unsupported` check, so a reader is not misled by the status. K03 rejects that revision with SPECIFICATION_CONFLICT when it reaches the solver, which is a proof rather than a validation.",
+   "result": "unsupported",
+   "value": {
+    "case": "SYN-001-conflicting-heater-spec",
+    "reported": "READY_FOR_SIMULATION",
+    "unsupported_checks": [
+     "structure.over_specification"
+    ],
+    "owner": "T01"
+   },
+   "expected": "a validator that rejects structural over-specification"
+  },
+  {
+   "id": "K06.jobs_and_remote_bindings",
+   "description": "Blueprint \u00a711 also describes long work as a job with budgets, progress, cancellation and checkpoint/resume, and a small HTTP/MCP binding over the same contract. Plan \u00a74.2 puts both in T07, not K06, and D15 is explicit that the local path needs no network round trip. Nothing here is a job.",
+   "result": "not_applicable",
+   "value": {
+    "owner": "T07"
+   },
+   "expected": "out of scope for v0.0"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "src/process_runtime/application/revisions.py",
+   "sha256": "b65bd1ccbb5fa140affa50119219f91b1e3768cae0884ae6e67adb9cc0595893",
+   "description": "Immutable content-addressed revisions."
+  },
+  {
+   "path": "src/process_runtime/application/validation.py",
+   "sha256": "06e8328954471281df6bf61faeb35ffb4b35f2239b558d3de0879f0d794f66ee",
+   "description": "Task validation, \u00a74.3."
+  },
+  {
+   "path": "src/process_runtime/application/transactions.py",
+   "sha256": "95655eb253567b802e211dc01843c18a84ff80c188bc666a14983d3d42a0a3b5",
+   "description": "Local transactions, \u00a711."
+  },
+  {
+   "path": "src/process_runtime/application/cli.py",
+   "sha256": "62972b9f6a6816650e506cf771180d695c005d5756e694f1b08522f4fba2a735",
+   "description": "The CLI, D15 and G06."
+  },
+  {
+   "path": "scripts/v0_0_gate.py",
+   "sha256": "9e28b72977390b0d34bfb3542b9bf28ab90a4a22fba3e9dbf6c8a592099a7912",
+   "description": "The v0.0 gate summary."
+  }
+ ],
+ "limitations": [
+  "Structural over-specification is not detected. The registered conflicting-heater revision validates READY_FOR_SIMULATION here and is rejected by the solver with SPECIFICATION_CONFLICT; detecting it at validation needs blueprint \u00a74.3's matching and Dulmage-Mendelsohn decomposition, which is T01. The validator says so in its own report rather than leaving the status to mislead.",
+  "`structural_counts` is null in every validation report, for the same reason. A variable-against-equation count would not distinguish a structurally singular system whose totals agree, so none is produced.",
+  "There are no jobs, no HTTP or MCP binding and no authorization model. Blueprint \u00a711 describes all three and plan \u00a74.2 puts them in T07.",
+  "The revision store is in memory. Persistence, concurrent access from separate processes and any durability claim are not implemented and not tested.",
+  "The CLI solves *registered* cases only. There is no path from an arbitrary revision document to a solve, because the compiler binding for a general revision is T01's.",
+  "v0.0's gates are acceptance evidence and not a release. Every manifest carries `review.numerical` and `review.process_model` as `pending`, and no agent may set them. SYN-001 is synthetic: nothing in this repository is empirically validated."
+ ],
+ "review": {
+  "numerical": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more.",
+  "process_model": "E.A.J.F. Peters, 2026-09-23 \u2014 read and found sound. Not a guarantee of correctness: the signer's stated position is that defects surface in verification and validation studies, not in a signature, and that signing off too much asserts guarantees that are not there. This records that a human with the relevant expertise examined the evidence and raised no objection, and nothing more."
+ }
+}

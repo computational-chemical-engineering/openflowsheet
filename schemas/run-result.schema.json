@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/run-result.schema.json",
+  "title": "RunResult",
+  "description": "T07 design note §5.7, ADR 0019 D2; the frozen result-type name of `Application.solve`, whose field set is fixed at its first use. What a solve job produced, read from its artifacts. `job_status = completed` says only that the operation ran to its end; `outcome` and `verification_status` say what the solve found. `verification_status` is non-null only when a `solution_certificate` output exists, and is copied from that document. `outputs` equals the job's `outputs` (J1).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id",
+    "run_id",
+    "revision_id",
+    "revision_content_sha256",
+    "policy_id",
+    "policy_sha256",
+    "check_policy_sha256",
+    "solve_path",
+    "job_status",
+    "outcome",
+    "verification_status",
+    "structural_sha256",
+    "outputs",
+    "error"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^run-job-[0-9]{6,}$",
+      "description": "`run-<job_id>`."
+    },
+    "revision_id": {
+      "type": "string"
+    },
+    "revision_content_sha256": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+    },
+    "policy_id": {
+      "type": "string"
+    },
+    "policy_sha256": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The effective policy's (§8.3)."
+    },
+    "check_policy_sha256": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "solve_path": {
+      "enum": [
+        "revision_eo",
+        "legacy_eo"
+      ],
+      "description": "The route `select_route` chose (ruling round 1 R2.4); the bundle's `solve-path.json` records the same."
+    },
+    "job_status": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/terminal_status"
+    },
+    "outcome": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/solve-event.schema.json#/properties/outcome"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The K03 outcome word."
+    },
+    "verification_status": {
+      "description": "The certificate's own verdict, copied, never mapped (ruling round 1 R5): a tightened check policy is not registered, so its best verdict is `RELAXED`.",
+      "enum": [
+        "VERIFIED",
+        "RELAXED",
+        "UNVERIFIED",
+        "FAILED",
+        null
+      ]
+    },
+    "structural_sha256": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The run manifest's."
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/artifact_ref"
+      }
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/api-error.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

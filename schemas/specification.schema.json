@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/specification.schema.json",
+  "title": "Specification",
+  "description": "Blueprint v3.1 §4.1: target/expression, value or bounds, units, tolerance, fixed/free/decision role, provenance. A specification pins a quantity, so it carries the same `kind` vocabulary as Quantity (ADR 0001 D1.3). Whether a set of specifications closes the system is structural analysis (T01), not something this schema decides; the deliberately conflicting SYN-001 heater case is a valid Specification document whose *set* is rejected at validation (plan §3.3, STR-03).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "target", "kind", "unit", "tolerance", "role", "provenance"],
+  "oneOf": [
+    { "required": ["value"], "not": { "required": ["bounds"] } },
+    { "required": ["bounds"], "not": { "required": ["value"] } }
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["object_type", "object_id", "path"],
+      "properties": {
+        "object_type": {
+          "enum": ["instance", "connection"],
+          "description": "What the path is rooted at: a model instance or a connection (stream)."
+        },
+        "object_id": { "type": "string", "minLength": 1 },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Dotted path within the object, for example 'outlet.T', 'state.n' or 'parameters.split_fraction'."
+        },
+        "component": {
+          "type": ["string", "null"],
+          "description": "Component id when the target is one entry of a component-indexed quantity; null otherwise."
+        }
+      }
+    },
+    "kind": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json#/$defs/kind"
+    },
+    "unit": { "type": "string", "minLength": 1 },
+    "value": { "type": "number" },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lower": { "type": ["number", "null"] },
+        "upper": { "type": ["number", "null"] }
+      },
+      "minProperties": 1
+    },
+    "tolerance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["absolute"],
+      "properties": {
+        "absolute": { "type": "number", "minimum": 0 },
+        "relative": { "type": "number", "minimum": 0 },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Registered physical scale the relative part multiplies. A scale is registered, never taken from an iterate (ADR 0001 D3.5)."
+        }
+      },
+      "description": "Registered tolerance in the form absolute + relative x scale (derivation SYN-001 §9). Case-specific; not applicable to a real process."
+    },
+    "role": {
+      "enum": ["fixed", "free", "decision"],
+      "description": "Blueprint §4.1. `derived` is a Quantity role, not a specification role: a derived value is a result, not a specification."
+    },
+    "provenance": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  }
+}

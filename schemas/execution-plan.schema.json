@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/execution-plan.schema.json",
+  "title": "ExecutionPlan",
+  "description": "ADR 0009 D1 (T02): the ordered plan of acyclic unit evaluations, tear loops and equation-oriented regions, built from T01's StructuralReport, the unit manifests and the SolvePolicy, before any numerics. Every converge and solve_eo step carries a K03 SolvePlan, unchanged in shape (ADR 0009 D5). R0 entire: ids, integers, orderings, declared scales and bounds; it joins the G05 identity comparison beside the StructuralReport.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id",
+    "model_version",
+    "constants_sha256",
+    "policy_id",
+    "structural_report_ref",
+    "steps",
+    "estimates"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}@[0-9a-f]{64}$"
+    },
+    "constants_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "structural_report_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_version",
+        "constants_sha256"
+      ],
+      "properties": {
+        "model_version": {
+          "type": "string"
+        },
+        "constants_sha256": {
+          "type": "string"
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "index",
+              "units"
+            ],
+            "properties": {
+              "kind": {
+                "const": "evaluate"
+              },
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "units": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 1
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "index",
+              "units",
+              "tear_streams",
+              "method",
+              "solve_plan",
+              "region_on_merge"
+            ],
+            "properties": {
+              "kind": {
+                "const": "converge"
+              },
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "units": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "tear_streams": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "method": {
+                "enum": [
+                  "newton_tear",
+                  "anderson"
+                ]
+              },
+              "solve_plan": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/solve-plan.schema.json"
+              },
+              "region_on_merge": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "index",
+                      "units",
+                      "solve_plan",
+                      "specification_rows",
+                      "adjusted_variables",
+                      "target_variables",
+                      "removed_specification_rows",
+                      "signature_units"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "solve_eo"
+                      },
+                      "index": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "units": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "minItems": 1
+                      },
+                      "solve_plan": {
+                        "$ref": "https://github.com/frankp/process-runtime/schemas/solve-plan.schema.json"
+                      },
+                      "specification_rows": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "adjusted_variables": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "target_variables": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "removed_specification_rows": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "signature_units": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "merge_unsupported": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "unit",
+                  "method"
+                ],
+                "properties": {
+                  "unit": {
+                    "type": "string"
+                  },
+                  "method": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "index",
+              "units",
+              "solve_plan",
+              "specification_rows",
+              "adjusted_variables",
+              "target_variables",
+              "removed_specification_rows",
+              "signature_units"
+            ],
+            "properties": {
+              "kind": {
+                "const": "solve_eo"
+              },
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "units": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "solve_plan": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/solve-plan.schema.json"
+              },
+              "specification_rows": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "adjusted_variables": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "target_variables": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "removed_specification_rows": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "signature_units": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "estimates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "loop_count",
+        "region_count",
+        "largest_region_dimension"
+      ],
+      "properties": {
+        "loop_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "region_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "largest_region_dimension": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

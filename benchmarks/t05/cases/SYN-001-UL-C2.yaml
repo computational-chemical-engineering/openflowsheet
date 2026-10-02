@@ -1,0 +1,362 @@
+# T05 ProcessRevision: SYN-001-UL-C2
+#
+# SYN-001-UL-C2: reaction with recycle (mixer, conversion reactor, component separator).
+#
+# Written to docs/design/T05-generalization.md §1.3 (the revision encoding R1-R6 and the per-model
+# table) and §2.4 (this case's instances in declaration order, connections in stream order, pins
+# and parameters); the case is docs/derivations/T05-unit-models-spec.md §11.2, registered in
+# benchmarks/registry.yaml (family SYN-001-UL, spec §21). Validates against
+# schemas/process-revision.schema.json, and each embedded Quantity against
+# process_runtime.units.check_quantity; binds by application.revision_binding. `content_hash` is
+# absent, as in every registered revision.
+schema_version: 1
+revision_id: SYN-001-UL-C2-r1
+parent_revision: null
+title: 'SYN-001-UL-C2: reaction with recycle (mixer, conversion reactor, component separator).'
+description: Feed (2, 1, 0) -> mixer with the separator-top recycle -> reactor (2A + B -> 3C, X_A = 1/2,
+  315 K) -> separator (s = 0.9, 0.8, 0.05) -> recycle and product. T05 spec §11.2; expected values in
+  benchmarks/t05/reference_values.yaml coupled_cases.SYN-001-UL-C2.
+component_set:
+  record_source: benchmarks/syn001/components.yaml
+  components:
+  - A
+  - B
+  - C
+instances:
+- id: U-FEED
+  model:
+    id: syn001.feed_source
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: feed
+  parameters: {}
+  policy:
+    fidelity: boundary condition; the fresh feed state is fully specified
+    validity: SYN-001 declared domain 280-440 K, 50000-200000 Pa
+- id: U-MIX
+  model:
+    id: syn001.adiabatic_mixer
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: mixer
+  parameters: {}
+  policy:
+    fidelity: adiabatic component and energy balance (K02, unchanged)
+    validity: every port liquid (R-038); the closure is restricted to the subcooled-liquid domain
+- id: U-RX
+  model:
+    id: syn001.conversion_reactor
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: reactor
+  parameters:
+    nu.A:
+      value: -2.0
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Stoichiometric coefficient of A in the one reaction 2A + B -> 3C (T05 spec §6.4)
+      role: fixed
+    nu.B:
+      value: -1.0
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Stoichiometric coefficient of B in the one reaction 2A + B -> 3C (T05 spec §6.4)
+      role: fixed
+    nu.C:
+      value: 3.0
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Stoichiometric coefficient of C in the one reaction 2A + B -> 3C (T05 spec §6.4)
+      role: fixed
+    conversion.A:
+      value: 0.5
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Conversion X of the key reactant A (the key is the name's suffix, design note §1.3)
+      role: fixed
+      bounds:
+        lower: 0.0
+        upper: 1.0
+    pressure_drop:
+      value: 0.0
+      unit: Pa
+      dimension:
+      - -1
+      - 1
+      - -2
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: pressure
+      meaning: Declared pressure drop across the reactor; zero here, imposed as an equation P_out = P_in
+        rather than assumed (ADR 0001 D4.5)
+      role: fixed
+  policy:
+    fidelity: one reaction at a specified conversion of the key reactant and a specified outlet temperature;
+      duty calculated (T05 spec §6, ADR 0011 D2)
+    validity: SYN-001 declared domain; lifted outlet
+- id: U-SEP
+  model:
+    id: syn001.component_separator
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: separator
+  parameters:
+    split.A:
+      value: 0.9
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Fraction of A sent to the top outlet (T05 spec §7)
+      role: fixed
+      bounds:
+        lower: 0.0
+        upper: 1.0
+    split.B:
+      value: 0.8
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Fraction of B sent to the top outlet (T05 spec §7)
+      role: fixed
+      bounds:
+        lower: 0.0
+        upper: 1.0
+    split.C:
+      value: 0.05
+      unit: '1'
+      dimension:
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      kind: dimensionless
+      meaning: Fraction of C sent to the top outlet (T05 spec §7)
+      role: fixed
+      bounds:
+        lower: 0.0
+        upper: 1.0
+  policy:
+    fidelity: per-component split to declared-phase outlets; duty calculated (T05 spec §7)
+    validity: top and bottom declared liquid; inlet lifted
+- id: U-PROD
+  model:
+    id: syn001.product_sink
+    version: 0.0.0-declared
+    artifact_ref: null
+  semantic_role: product_sink
+  parameters: {}
+  policy:
+    fidelity: boundary; accepts a stream and imposes no equation on it
+    validity: accepts any phase signature including ZERO_FLOW
+connections:
+- id: S1
+  kind: material
+  from:
+    instance: U-FEED
+    port: outlet
+  to:
+    instance: U-MIX
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Fresh feed: (2, 1, 0) mol/s at 300 K and P_r, liquid (C absent).'
+- id: S2
+  kind: material
+  from:
+    instance: U-MIX
+    port: outlet
+  to:
+    instance: U-RX
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: Mixer outlet.
+- id: S3
+  kind: material
+  from:
+    instance: U-RX
+    port: outlet
+  to:
+    instance: U-SEP
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: vapor_liquid
+  notes: Reactor outlet at 315 K, lifted; LIQUID at the solution.
+- id: S4
+  kind: material
+  from:
+    instance: U-SEP
+    port: top
+  to:
+    instance: U-MIX
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Separator top: the material recycle.'
+- id: S5
+  kind: material
+  from:
+    instance: U-SEP
+    port: bottom
+  to:
+    instance: U-PROD
+    port: inlet
+  state_definition: nTP-v1
+  component_mapping: revision_component_set
+  phase_capability: liquid
+  notes: 'Separator bottom: the product.'
+specifications:
+- id: SPEC-feed-n-A
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: A
+  kind: molar_flow
+  unit: mol/s
+  value: 2.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.2; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed component molar flow.
+- id: SPEC-feed-n-B
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: B
+  kind: molar_flow
+  unit: mol/s
+  value: 1.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.2; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed component molar flow.
+- id: SPEC-feed-n-C
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.n
+    component: C
+  kind: molar_flow
+  unit: mol/s
+  value: 0.0
+  tolerance:
+    absolute: 1.0e-09
+    relative: 1.0e-08
+    scale: 3.0
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.2; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed component molar flow.
+- id: SPEC-feed-T
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 300.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.2; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed temperature, T_r.
+- id: SPEC-feed-P
+  target:
+    object_type: connection
+    object_id: S1
+    path: state.P
+    component: null
+  kind: pressure
+  unit: Pa
+  value: 100000.0
+  tolerance:
+    absolute: 0.01
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.2; docs/design/T05-generalization.md §2.4
+  notes: Fresh-feed pressure, P_r.
+- id: SPEC-reactor-outlet-T
+  target:
+    object_type: connection
+    object_id: S3
+    path: state.T
+    component: null
+  kind: temperature
+  unit: K
+  value: 315.0
+  tolerance:
+    absolute: 1.0e-06
+  role: fixed
+  provenance: docs/derivations/T05-unit-models-spec.md §11.2; docs/design/T05-generalization.md §2.4
+  notes: Reactor outlet temperature (the reactor's energy specification); the duty is calculated.
+provenance:
+  actor: Opus 5.5 (T05 W11, build lane, from the design-lane specification)
+  operation: create
+  timestamp: '2026-09-25T00:00:00Z'
+  source_references:
+  - docs/derivations/T05-unit-models-spec.md §11.2, §21
+  - docs/design/T05-generalization.md §1.3, §2.4
+  - benchmarks/t05/reference_values.yaml coupled_cases
+  notes: Hand-specified fixture input. No solver has run on this revision.

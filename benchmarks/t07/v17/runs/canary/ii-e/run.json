@@ -1,0 +1,64 @@
+{
+ "acceptance": "CAN-ii-e",
+ "agent_configuration": {
+  "claude": "claude",
+  "effort": "high",
+  "isolation": [
+   "--setting-sources",
+   ""
+  ],
+  "max_budget_usd": 5.0,
+  "max_turns": 60,
+  "max_turns_flag": true,
+  "model": "claude-sonnet-5",
+  "operator_isolation": true,
+  "wall_cap_s": 1800.0
+ },
+ "apiKeySource": "none",
+ "artifacts": {
+  "directory": "evidence/T07/33d51cbd814f49a66e81fe2620a5d2529ad90107/artifacts/canary/ii-e",
+  "sha256": {
+   "mcp.json": "4beea7a8bf945cfe33dbba97a2877e5a337b87b1651d00549c8dbfb6426562b6",
+   "prompt.txt": "ea88607c5dec2841b28abaf4a6da2100df3976090d2e44cafd1c2eeebbbecb90",
+   "result.json": "01381cc9172e459f3ba08b1b5fb7609e8466427e3cab2cba0964d34a0550c9da",
+   "run.json": "a7c00ade19a07d15050c07afa76b4d9bec41df090ee5705fd8108f8586f01ca3",
+   "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "store-export.json": "75d6776db4a5acc0670c09b73b27ee70a95fd45397f8a628c43abab9a6e07ffd",
+   "transcript.jsonl": "359ef4e314729d405c36a9dbfed2b20c019b5a7514acab7cb9532a62d0b9eb79"
+  }
+ },
+ "canary": "ii-e",
+ "claude_code_version": "2.1.283 (Claude Code)",
+ "cost_basis": "subscription_estimate",
+ "environment_keys": [
+  "CLAUDE_CODE_OAUTH_TOKEN",
+  "CLAUDE_CONFIG_DIR",
+  "HOME",
+  "LANG",
+  "LOGNAME",
+  "PATH",
+  "TERM",
+  "USER"
+ ],
+ "fixture_task": "V17-T01",
+ "git": {
+  "commit": "33d51cbd814f49a66e81fe2620a5d2529ad90107",
+  "dirty": false
+ },
+ "infrastructure_failure": null,
+ "listed_count": 0,
+ "model": "claude-sonnet-5",
+ "operator_address_listed": false,
+ "operator_identifier_hits": 0,
+ "operator_identifier_hits_by_file": {
+  "result.json": 0,
+  "stderr.txt": 0,
+  "store-export.json": 0,
+  "transcript.jsonl": 0
+ },
+ "parsed": true,
+ "passed": true,
+ "probe_sha256": "ea88607c5dec2841b28abaf4a6da2100df3976090d2e44cafd1c2eeebbbecb90",
+ "session_checks": [],
+ "total_cost_usd": 0.0261588
+}

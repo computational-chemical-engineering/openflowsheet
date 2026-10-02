@@ -1,0 +1,22 @@
+# Invalid Quantity: stored in a display unit rather than the internal SI unit.
+#
+# ADR 0001 D1.1: internal units are unprefixed SI and no internal quantity is stored in a
+# display unit. 76.85 degC is the same temperature as 350 K, which is the point: the value
+# is not wrong, the storage convention is, and only the convention keeps mixed-unit
+# arithmetic out of residual evaluation.
+expect_error: is not the internal SI unit
+document:
+  value: 76.85
+  unit: degC
+  dimension:
+  - 0
+  - 0
+  - 0
+  - 1
+  - 0
+  - 0
+  - 0
+  kind: temperature
+  meaning: Heater outlet temperature stored in degrees Celsius
+  role: fixed
+  display_unit: degC

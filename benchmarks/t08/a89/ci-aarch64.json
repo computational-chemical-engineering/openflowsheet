@@ -1,0 +1,327 @@
+{
+ "all_meet_a89_outcome": true,
+ "assertion": "T08.A15",
+ "case": "THM-09",
+ "commit": "3b4a6132d1869de3eb4f94714a11877a0e43b3f0",
+ "format": "t08-a89-repeats-v1",
+ "host": {
+  "cpu": "CPU part: 0xd49",
+  "machine": "aarch64",
+  "platform": "Linux-6.17.0-1022-azure-aarch64-with-glibc2.39",
+  "python": "3.13.15",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  }
+ },
+ "label": "ci-aarch64",
+ "policy": "T06-revision-v2",
+ "ratio_bound": 0.1,
+ "refinement_counts": {
+  "1": 20
+ },
+ "repetitions": [
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 1,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 2,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 3,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 4,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 5,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 6,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 7,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 8,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 9,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 10,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 11,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 12,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 13,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 14,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 15,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 16,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 17,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 18,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 19,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  },
+  {
+   "classification": "SUCCESS",
+   "crash": null,
+   "meets_a89_outcome": true,
+   "outcome": "CONVERGED",
+   "refinement_count": 1,
+   "refinements": [
+    "terminal_refinement(accepted: chord 0.00021660614997218776 at S3.T): chord 34.29957391329277 at S3.T"
+   ],
+   "repetition": 20,
+   "s3_worst_ratio": 2.166302692785393e-05,
+   "solves": 1,
+   "verification": "VERIFIED",
+   "worst_at": "S4.T"
+  }
+ ],
+ "start": 2
+}

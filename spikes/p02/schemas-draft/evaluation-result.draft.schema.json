@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://process-runtime.invalid/p02/evaluation-result.draft.schema.json",
+  "title": "EvaluationResult (P02 draft)",
+  "description": "Specification §10.4. `values` is null exactly when the status is not ok: a failed evaluation returns no numbers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status", "message", "phase_signature", "model_version", "constants_sha256", "state_sha256",
+    "equation_ids", "values", "counters", "accuracy"
+  ],
+  "properties": {
+    "status": { "enum": ["ok", "invalid_trial_state", "unsupported", "error"] },
+    "message": { "type": "string" },
+    "phase_signature": {
+      "oneOf": [{ "enum": ["LIQUID", "VAPOR", "TWO_PHASE", "ZERO_FLOW"] }, { "type": "null" }]
+    },
+    "model_version": { "type": "string", "minLength": 1 },
+    "constants_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "state_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "equation_ids": { "type": "array", "items": { "type": "string" } },
+    "values": {
+      "oneOf": [{ "type": "array", "items": { "type": "number" } }, { "type": "null" }]
+    },
+    "counters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value_calls", "jacobian_calls"],
+        "properties": {
+          "value_calls": { "type": "integer", "minimum": 0 },
+          "jacobian_calls": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "accuracy": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "ok" } } },
+      "then": { "properties": { "values": { "type": "array" } } },
+      "else": { "properties": { "values": { "type": "null" } } }
+    }
+  ]
+}

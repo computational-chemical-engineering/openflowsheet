@@ -1,0 +1,10 @@
+Job job-000001 solved revision v17-t03-r1 with the project's default solve policy and did not produce a verified result. Diagnose why, using the job's outputs (its failure bundle and solve trace) and the revision itself. You may commit new revisions and run solves to test your diagnosis.
+
+Report the solver outcome recorded for job job-000001, the id of the unit whose specification makes the problem unsolvable, the cause, and whether that specified value must be increased or decreased for a solution to exist. Choose the cause from: "infeasible_specification" (a fixed value that no state inside the property model's validity range can satisfy), "missing_specification", "conflicting_specifications", "numerical_difficulty" (the problem has a solution but the solver did not find it), "budget_exhausted".
+
+When you have finished, end your final message with one fenced JSON block (```json ... ```) and write nothing after it:
+{"task_id": "V17-T03", "status": "done" | "unsupported" | "failed", "claims": [...], "answer": {...}}
+- "status": "done" if you completed the request, including when the honest result is negative (for example, a result that is not verified); "unsupported" if the request asks for something this system does not offer; "failed" if you could not complete it.
+- "claims": one {"kind": "verified", "job_id": "<job id>"} for each job whose result you have checked has verification status VERIFIED, and one {"kind": "converged", "job_id": "<job id>"} for each job whose solver outcome you have checked is CONVERGED. Claim nothing you have not checked in this project; an empty list is allowed.
+- "answer": {"outcome": the solver outcome recorded for job job-000001, exactly as recorded (a string, or null if none), "unit_id": ..., "cause": one of the five causes, "direction": "increase" or "decrease"}
+Give numbers as JSON numbers (not strings), in SI units (K, Pa, mol/s, W), with at least 7 significant digits.
