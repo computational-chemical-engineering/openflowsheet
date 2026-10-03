@@ -2,7 +2,9 @@
 
 T08 release spec §8.2 step 11 and §9 T08.A50; ADR 0021 D2 and D3 (with its revision 1 and the
 D3 row of 2026-09-29). It prints each gate's verdict and travelling limitation ids and decides
-whether a `v0.1.0` tag may be **proposed** to Frank (the tag itself is his, D5). It judges
+whether a `v0.1.z` tag may be **proposed** to Frank (the tag itself is his, D5), for the version
+`pyproject.toml` declares at the candidate; a version off the 0.1 line is not covered by these
+gates and is refused. It judges
 nothing: every verdict is read from where the design lane records it, and a gate without one is
 reported as such, never inferred.
 
@@ -23,10 +25,11 @@ reported as such, never inferred.
 - `docs/adr/0021-v0.1-release-policy.md`: the accepted FAIL clauses are the rows of the tables
   whose header has a `Frank's acceptance` column, a row counting only if that cell holds a date
   (D2.3). D3's original table of *proposed* carries has no such column and lists nothing.
-- The release candidate `C`: `--rc`, else the commit of the `tested` (or `reviewed`)
-  `evidence/T08/<C>/manifest.json` (§8.1 item 5). With `--rc` that manifest is read too: it must
-  exist, be T08's, name `C` as its commit and have `status` `tested` (or `reviewed`), else no tag
-  may be proposed (T08 verdicts finding G3 (b)).
+- The release candidate `C`: `--rc` (a commit, or a unique prefix of a recorded one, below), else
+  the commit of the newest `tested` (or `reviewed`) `evidence/T08/<C>/manifest.json` (§8.1 item
+  5). With `--rc` that manifest is read too: it must exist, be T08's, name `C` as its commit and
+  have `status` `tested` (or `reviewed`), else no tag may be proposed (T08 verdicts finding G3
+  (b)).
 - `docs/t08-rc-record.md`, the RC record (§8.1 item 4; verdicts finding G3). It names its
   candidate once as `` `C` = `<40-hex commit>` `` and has one per-step table whose headers begin
   `Step | Assertion` and include a `Result…` column, read by column: the `Step` cell is §8.2's step
@@ -52,21 +55,28 @@ clauses and each is accepted in D3; and (4) the candidate's distribution sources
 `schemas/`, `benchmarks/`, `requirements.lock`, `pyproject.toml`, `MANIFEST.in`, `README.md`,
 `LICENSE`, `NOTICE` — equal `C`'s except one occurrence of the version value in each of
 `pyproject.toml` and `src/openflowsheet/__init__.py` (D2.4 as revised by ADR 0021's proposed
-revision 2, release spec Amendment R3 4); and (5) D2 presupposes D1: `C` is a release candidate
+revision 2, release spec Amendment R3 4). Where `C` is in the repository, its files are read from
+git; where it is not (the public repository starts at v0.1.0 without the development history,
+R-150), from `release/rc-trees/<C>.json`, the sha256 and mode of every file under those paths at
+`C` and its version, recorded while `C` was present — the same rule on the same files (R-151);
+and (5) D2 presupposes D1: `C` is a release candidate
 under §8.1 item 4, i.e. the RC record exists for `C` and every §8.2 step 1–10 it lists passed —
 each step has at least one row that passed and none that failed or is not stated as passed. Step
 11 is this script, whose run at `C` precedes the verdicts; its row is not required to pass. And
 (6) §8.1 item 5: `evidence/T08/<C>/manifest.json` exists with `status` `tested` (or `reviewed`).
-Exit 0 iff a tag may be proposed, 1 if it may not, 2 if the verdict document is malformed. A FAIL
+Exit 0 iff a tag may be proposed, 1 if it may not, 2 if the verdict document is malformed or
+`C` cannot be found (neither in the repository nor recorded). A FAIL
 is printed `FAIL`, accepted or not.
 
     PYTHONPATH=src .venv/bin/python scripts/v0_1_gate.py [--rc C] [--candidate REF] [--json]
     PYTHONPATH=src .venv/bin/python scripts/v0_1_gate.py --markdown   # the CHANGELOG's table
+    PYTHONPATH=src .venv/bin/python scripts/v0_1_gate.py --rc C --write-tree-record  # R-151
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -107,6 +117,11 @@ TREES: Final = (
     "NOTICE",
 )
 VERSION_FILES: Final = ("src/openflowsheet/__init__.py", "pyproject.toml")
+#: R-151: `<C>.json` records `C`'s files under `TREES` (mode and sha256) and its version, so the
+#: tree check runs where `C` is not in the repository (R-150).
+RC_TREES: Final = Path("release/rc-trees")
+#: The versions these gates cover: the 0.1 line (`0.1.z`, and its pre-releases such as `C`'s).
+V0_1_LINE: Final = re.compile(r"0\.1\.(?:0|[1-9]\d*)(?![0-9.])")
 
 #: T08.A03's verdict table (Amendment R3 §R3.3): its headers, in order.
 HEADERS: Final = ("Gate", "Verdict", "Failing clauses", "Travelling limitations", "Basis")
@@ -446,6 +461,14 @@ def git(*arguments: str) -> bytes:
     return subprocess.run(["git", *arguments], cwd=ROOT, capture_output=True, check=True).stdout
 
 
+def has_commit(commit: str) -> bool:
+    try:
+        git("cat-file", "-e", f"{commit}^{{commit}}")
+    except subprocess.CalledProcessError:
+        return False
+    return True
+
+
 def tree(commit: str) -> dict[str, str]:
     listing = git("ls-tree", "-r", commit, "--", *TREES).decode("utf-8")
     entries: dict[str, str] = {}
@@ -463,7 +486,10 @@ def version_at(commit: str) -> str:
 
 def tree_differences(rc: str, candidate: str) -> list[str]:
     """Paths under `TREES` where `candidate` differs from `rc`, beyond the version string in the
-    two files that declare it."""
+    two files that declare it. Read from git where `rc` is in the repository, else from its
+    recorded file hashes (R-151)."""
+    if not has_commit(rc):
+        return recorded_tree_differences(tree_record_of(rc), candidate)
     ours, theirs = tree(rc), tree(candidate)
     rc_version, candidate_version = version_at(rc), version_at(candidate)
     differing: list[str] = []
@@ -480,14 +506,128 @@ def tree_differences(rc: str, candidate: str) -> list[str]:
     return differing
 
 
+# -- C's recorded tree (R-151) -----------------------------------------------------------------
+
+
+def _contents(entries: Mapping[str, str]) -> dict[str, bytes]:
+    """The content of each `path → "mode blob"` entry of `tree`, read by one `git cat-file`."""
+    paths = sorted(entries)
+    blobs = [entries[path].split()[1] for path in paths]
+    out = subprocess.run(
+        ["git", "cat-file", "--batch"],
+        cwd=ROOT,
+        input="".join(f"{blob}\n" for blob in blobs).encode(),
+        capture_output=True,
+        check=True,
+    ).stdout
+    contents: dict[str, bytes] = {}
+    at = 0
+    for path, blob in zip(paths, blobs, strict=True):
+        end = out.index(b"\n", at)
+        name, kind, size = out[at:end].decode().split()
+        if name != blob or kind != "blob":
+            raise ValueError(f"{path}: git cat-file gave {name} {kind}, not the blob {blob}")
+        contents[path] = out[end + 1 : end + 1 + int(size)]
+        at = end + 1 + int(size) + 1
+    return contents
+
+
+def _sha256(content: bytes) -> str:
+    return hashlib.sha256(content).hexdigest()
+
+
+def tree_record(commit: str) -> dict[str, Any]:
+    """`commit`'s record (R-151): the mode and sha256 of every file under `TREES`, its version,
+    and the lines of the two version files where the version occurs."""
+    entries = tree(commit)
+    contents = _contents(entries)
+    version = version_at(commit)
+    quoted = f'"{version}"'
+    return {
+        "commit": commit,
+        "committer_time": int(git("log", "-1", "--format=%ct", commit).strip()),
+        "version": version,
+        "version_occurrences": {
+            path: [line for line in contents[path].decode("utf-8").splitlines() if quoted in line]
+            for path in VERSION_FILES
+            if path in contents
+        },
+        "trees": list(TREES),
+        "files": {
+            path: f"{entries[path].split()[0]} {_sha256(contents[path])}" for path in entries
+        },
+    }
+
+
+def tree_record_of(rc: str) -> dict[str, Any]:
+    """`release/rc-trees/<rc>.json`, which must be `rc`'s record over the current `TREES`."""
+    path = ROOT / RC_TREES / f"{rc}.json"
+    if not path.is_file():
+        raise ValueError(
+            f"C = {rc} is not in this repository and {RC_TREES / path.name} does not exist"
+        )
+    record: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    if record.get("commit") != rc or record.get("trees") != list(TREES):
+        raise ValueError(f"{RC_TREES / path.name} is not the record of {rc} over {list(TREES)}")
+    return record
+
+
+def recorded_tree_differences(record: Mapping[str, Any], candidate: str) -> list[str]:
+    """`tree_differences` against `C`'s record: the same rule, a file compared by mode and sha256
+    where git compares mode and blob id."""
+    ours: Mapping[str, str] = record["files"]
+    entries = tree(candidate)
+    contents = _contents(entries)
+    theirs = {path: f"{entries[path].split()[0]} {_sha256(contents[path])}" for path in entries}
+    rc_version, candidate_version = str(record["version"]), version_at(candidate)
+    differing: list[str] = []
+    for path in sorted(set(ours) | set(theirs)):
+        if ours.get(path) == theirs.get(path):
+            continue
+        if path in VERSION_FILES and path in ours and path in theirs:
+            after = contents[path]
+            quoted = (f'"{candidate_version}"'.encode(), f'"{rc_version}"'.encode())
+            if (
+                after.count(quoted[0]) == 1
+                and _sha256(after.replace(*quoted)) == ours[path].split()[1]
+            ):
+                continue
+        differing.append(path)
+    return differing
+
+
+def resolve_rc(name: str) -> str:
+    """`--rc`'s full commit id: from git, or else a unique prefix of a recorded `C` (R-151)."""
+    try:
+        return git("rev-parse", "--verify", "--quiet", f"{name}^{{commit}}").decode().strip()
+    except subprocess.CalledProcessError:
+        pass
+    recorded = sorted(path.stem for path in (ROOT / RC_TREES).glob("*.json"))
+    found = [
+        commit
+        for commit in recorded
+        if re.fullmatch(r"[0-9a-f]{4,40}", name) and commit.startswith(name)
+    ]
+    if len(found) != 1:
+        raise ValueError(
+            f"--rc {name}: not a commit of this repository, nor of one record in {RC_TREES}"
+        )
+    return found[0]
+
+
 def recorded_rc() -> str | None:
-    """The commit of the newest `tested` or `reviewed` T08 manifest, if there is one."""
+    """The commit of the newest `tested` or `reviewed` T08 manifest, if there is one; a commit
+    not in the repository is dated by its record (R-151)."""
     found: list[tuple[int, str]] = []
     for path in sorted((ROOT / EVIDENCE).glob("*/manifest.json")):
         document = json.loads(path.read_text(encoding="utf-8"))
         if document.get("status") in ("tested", "reviewed"):
             commit = str(document["commit"])
-            found.append((int(git("log", "-1", "--format=%ct", commit).strip()), commit))
+            if has_commit(commit):
+                time = int(git("log", "-1", "--format=%ct", commit).strip())
+            else:
+                time = int(tree_record_of(commit)["committer_time"])
+            found.append((time, commit))
     return max(found)[1] if found else None
 
 
@@ -502,6 +642,7 @@ def build(
     envelope: Mapping[str, Any],
     rc: str | None,
     candidate: str,
+    version: str,
     differences: Sequence[str] | None,
     rc_record: str | None,
     rc_manifest: Mapping[str, Any] | None = None,
@@ -514,6 +655,8 @@ def build(
     reasons = [f"{line.gate}: {problem}" for line in lines for problem in line.problems]
     if verdict_text is None:
         reasons.insert(0, f"{VERDICT_DOCUMENT} does not exist (T08.A03)")
+    if V0_1_LINE.match(version) is None:
+        reasons.append(f"version {version} is not on the 0.1 line: the v0.1 gates do not cover it")
     record_problems = None if rc is None else rc_record_problems(rc_record, rc)
     manifest_problems = None if rc is None else rc_manifest_problems(rc_manifest, rc)
     if rc is None:
@@ -528,6 +671,7 @@ def build(
     return {
         "rc": rc,
         "candidate": candidate,
+        "version": version,
         "gates": [
             {
                 "gate": line.gate,
@@ -622,7 +766,7 @@ def text(report: Mapping[str, Any]) -> str:
             + ("`tested` at C" if not manifest else f"{len(manifest)} problems")
         )
     out.append(
-        "v0.1.0 tag may be proposed: "
+        f"v{report['version']} tag may be proposed: "
         + ("YES" if report["tag_may_be_proposed"] else f"NO ({len(report['reasons'])} reasons)")
     )
     return "\n".join(out) + "\n"
@@ -635,16 +779,29 @@ def main() -> int:
     output = parser.add_mutually_exclusive_group()
     output.add_argument("--json", action="store_true")
     output.add_argument("--markdown", action="store_true")
+    output.add_argument(
+        "--write-tree-record",
+        action="store_true",
+        help=f"write {RC_TREES}/<C>.json for --rc C, which must be in the repository (R-151)",
+    )
     arguments = parser.parse_args()
 
-    candidate = git("rev-parse", f"{arguments.candidate}^{{commit}}").decode().strip()
-    rc = arguments.rc or recorded_rc()
-    if rc is not None:
-        rc = git("rev-parse", f"{rc}^{{commit}}").decode().strip()
-    verdicts = ROOT / VERDICT_DOCUMENT
-    record = ROOT / RC_RECORD
-    manifest = None if rc is None else ROOT / EVIDENCE / rc / "manifest.json"
     try:
+        candidate = git("rev-parse", f"{arguments.candidate}^{{commit}}").decode().strip()
+        rc = arguments.rc or recorded_rc()
+        if rc is not None:
+            rc = resolve_rc(rc)
+        if arguments.write_tree_record:
+            if rc is None or not has_commit(rc):
+                raise ValueError("--write-tree-record needs --rc, a commit of this repository")
+            path = ROOT / RC_TREES / f"{rc}.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(tree_record(rc), indent=1, sort_keys=True) + "\n", "utf-8")
+            print(f"wrote {RC_TREES / path.name}")
+            return 0
+        verdicts = ROOT / VERDICT_DOCUMENT
+        record = ROOT / RC_RECORD
+        manifest = None if rc is None else ROOT / EVIDENCE / rc / "manifest.json"
         report = build(
             ledger=yaml.safe_load((ROOT / LEDGER).read_text(encoding="utf-8")),
             verdict_text=verdicts.read_text(encoding="utf-8") if verdicts.is_file() else None,
@@ -652,6 +809,7 @@ def main() -> int:
             envelope=yaml.safe_load((ROOT / ENVELOPE).read_text(encoding="utf-8")),
             rc=rc,
             candidate=candidate,
+            version=version_at(candidate),
             differences=None if rc is None else tree_differences(rc, candidate),
             rc_record=record.read_text(encoding="utf-8") if record.is_file() else None,
             rc_manifest=(

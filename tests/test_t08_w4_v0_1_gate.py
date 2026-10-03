@@ -12,6 +12,11 @@ cell such as "PASS: Failed to upload" fails (G3 (a)). The ledger, verdict docume
 record and manifest are constructed here; the tree check runs on a scratch git
 repository; the real ADR 0021 is read once for its accepted clauses, the real RC record (`C` =
 `814e151`, F2) once for its failed step.
+
+R-151: where `C` is not in the repository (the public line, R-150) the tree check compares the
+candidate with `release/rc-trees/<C>.json`, `C`'s recorded file hashes; it gives git's answer on
+every scratch candidate, and on the real `C` at the v0.1.0 commits. The line the gate prints names
+the candidate's version, which must be on the 0.1 line.
 """
 
 from __future__ import annotations
@@ -24,7 +29,7 @@ from typing import Any
 
 import pytest
 import yaml
-from conftest import REPO_ROOT
+from conftest import PUBLIC_ROOT, REPO_ROOT, require_archived_history
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import v0_1_gate  # noqa: E402
@@ -100,6 +105,7 @@ def report(
     adr: str = ADR,
     record: str | None = None,
     manifest: dict[str, Any] | None = TESTED,
+    version: str = "0.1.0",
 ) -> dict[str, Any]:
     words = {gate: word for gate, (word, _, _) in verdicts.items()}
     return v0_1_gate.build(
@@ -109,6 +115,7 @@ def report(
         envelope=ENVELOPE,
         rc=RC,
         candidate="d" * 40,
+        version=version,
         differences=[] if differences is None else differences,
         rc_record=rc_record() if record is None else record,
         rc_manifest=manifest,
@@ -171,6 +178,7 @@ def test_a_tree_difference_or_no_rc_blocks() -> None:
         envelope=ENVELOPE,
         rc=None,
         candidate="d" * 40,
+        version="0.1.0",
         differences=None,
         rc_record=rc_record(),
     )
@@ -189,6 +197,7 @@ def _record_reasons(record: str | None) -> list[str]:
         envelope=ENVELOPE,
         rc=RC,
         candidate="d" * 40,
+        version="0.1.0",
         differences=[],
         rc_record=record,
         rc_manifest=TESTED,
@@ -405,13 +414,14 @@ def test_g3b_main_reads_the_manifest_of_c(
     monkeypatch.setattr(v0_1_gate, "git", lambda *a: RC.encode() + b"\n")
     monkeypatch.setattr(sys, "argv", ["v0_1_gate.py", "--rc", RC])
     monkeypatch.setattr(v0_1_gate, "tree_differences", lambda rc, candidate: [])
+    monkeypatch.setattr(v0_1_gate, "version_at", lambda commit: "0.1.1")
     assert v0_1_gate.main() == 1
     assert "no T08 manifest" in capsys.readouterr().out
     manifest = tmp_path / v0_1_gate.EVIDENCE / RC / "manifest.json"
     manifest.parent.mkdir(parents=True)
     manifest.write_text(json.dumps(TESTED), encoding="utf-8")
     assert v0_1_gate.main() == 0
-    assert capsys.readouterr().out.rstrip().endswith("v0.1.0 tag may be proposed: YES")
+    assert capsys.readouterr().out.rstrip().endswith("v0.1.1 tag may be proposed: YES")
 
 
 def test_r3_the_814e151_record_reads_as_the_ruling_states() -> None:
@@ -513,6 +523,7 @@ def test_a_malformed_document_exits_2(tmp_path: Path, monkeypatch: pytest.Monkey
     monkeypatch.setattr(v0_1_gate, "git", lambda *a: b"e" * 40 + b"\n")
     monkeypatch.setattr(sys, "argv", ["v0_1_gate.py", "--rc", "e" * 40])
     monkeypatch.setattr(v0_1_gate, "tree_differences", lambda rc, candidate: [])
+    monkeypatch.setattr(v0_1_gate, "version_at", lambda commit: "0.1.0")
     assert v0_1_gate.main() == 2
 
 
@@ -590,6 +601,182 @@ def test_the_tree_check_allows_the_version_string_only(
         "pyproject.toml",
         "src/openflowsheet/x.py",
     ]
+    # R-151: from the recorded hashes, the same answers.
+    for older, newer in [(rc, rc), (rc, bumped), (rc, pinned), (rc, edited), (bumped, noticed)]:
+        record = v0_1_gate.tree_record(older)
+        assert v0_1_gate.recorded_tree_differences(record, newer) == (
+            v0_1_gate.tree_differences(older, newer)
+        )
+
+
+def test_the_recorded_tree_gives_git_s_answer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-151 beyond the version rule: a file added, removed, made executable, or a version
+    string occurring twice; and the record stands in for `C` once `C` is gone."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    base = {
+        "pyproject.toml": '[project]\nname = "p"\nversion = "0.1.0rc1"\n',
+        "src/openflowsheet/__init__.py": '__version__ = "0.1.0rc1"\n',
+        "src/openflowsheet/x.py": "X = 1\n",
+        "schemas/a.schema.json": "{}\n",
+        "docs/elsewhere.md": "not a D2.4 path\n",
+    }
+    rc = _commit(tmp_path, base, "rc")
+    monkeypatch.setattr(v0_1_gate, "ROOT", tmp_path)
+    record = v0_1_gate.tree_record(rc)
+    assert record["commit"] == rc and record["version"] == "0.1.0rc1"
+    assert record["version_occurrences"] == {
+        "pyproject.toml": ['version = "0.1.0rc1"'],
+        "src/openflowsheet/__init__.py": ['__version__ = "0.1.0rc1"'],
+    }
+    assert sorted(record["files"]) == [
+        "pyproject.toml",
+        "schemas/a.schema.json",
+        "src/openflowsheet/__init__.py",
+        "src/openflowsheet/x.py",
+    ]
+    added = _commit(
+        tmp_path, {"src/openflowsheet/y.py": "Y = 1\n", "docs/elsewhere.md": "x\n"}, "add"
+    )
+    (tmp_path / "src/openflowsheet/y.py").unlink()
+    (tmp_path / "schemas/a.schema.json").chmod(0o755)
+    changed = _commit(tmp_path, {}, "remove and chmod")
+    (tmp_path / "schemas/a.schema.json").unlink()
+    removed = _commit(tmp_path, {}, "remove")
+    twice = _commit(
+        tmp_path,
+        {
+            "schemas/a.schema.json": "{}\n",
+            "src/openflowsheet/__init__.py": '__version__ = "0.1.1"  # "0.1.1"\n',
+            "pyproject.toml": base["pyproject.toml"].replace("0.1.0rc1", "0.1.1"),
+        },
+        "twice",
+    )
+    answers = {
+        added: ["src/openflowsheet/y.py"],
+        changed: ["schemas/a.schema.json"],
+        removed: ["schemas/a.schema.json"],
+        twice: ["src/openflowsheet/__init__.py"],
+    }
+    for candidate, expected in answers.items():
+        assert v0_1_gate.tree_differences(rc, candidate) == expected
+        assert v0_1_gate.recorded_tree_differences(record, candidate) == expected
+    # Without the commit (its record committed under release/rc-trees), the same answers.
+    (tmp_path / v0_1_gate.RC_TREES).mkdir(parents=True)
+    (tmp_path / v0_1_gate.RC_TREES / f"{rc}.json").write_text(json.dumps(record), "utf-8")
+    monkeypatch.setattr(v0_1_gate, "has_commit", lambda commit: commit != rc)
+    for candidate, expected in answers.items():
+        assert v0_1_gate.tree_differences(rc, candidate) == expected
+
+
+def test_a_missing_c_without_its_record_is_an_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(v0_1_gate, "ROOT", tmp_path)
+    monkeypatch.setattr(v0_1_gate, "has_commit", lambda commit: False)
+    with pytest.raises(ValueError, match="is not in this repository"):
+        v0_1_gate.tree_differences(RC, "d" * 40)
+    (tmp_path / v0_1_gate.RC_TREES).mkdir(parents=True)
+    other = {"commit": "e" * 40, "trees": list(v0_1_gate.TREES), "files": {}, "version": "0"}
+    (tmp_path / v0_1_gate.RC_TREES / f"{RC}.json").write_text(json.dumps(other), "utf-8")
+    with pytest.raises(ValueError, match="is not the record of"):
+        v0_1_gate.tree_differences(RC, "d" * 40)
+
+
+def test_rc_resolves_by_git_or_by_a_unique_recorded_prefix(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(v0_1_gate, "ROOT", tmp_path)  # not a git repository: git finds nothing
+    (tmp_path / v0_1_gate.RC_TREES).mkdir(parents=True)
+    for commit in (RC, "c" * 39 + "d", "a" * 40):
+        (tmp_path / v0_1_gate.RC_TREES / f"{commit}.json").write_text("{}", "utf-8")
+    assert v0_1_gate.resolve_rc("aaaaaaa") == "a" * 40
+    assert v0_1_gate.resolve_rc(RC) == RC
+    for name in ("ccccccc", "bbbbbbb", "a"):  # ambiguous, unknown, too short
+        with pytest.raises(ValueError, match="--rc"):
+            v0_1_gate.resolve_rc(name)
+
+
+def test_a_commit_not_in_the_repository_is_dated_by_its_record(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(v0_1_gate, "ROOT", tmp_path)
+    monkeypatch.setattr(v0_1_gate, "has_commit", lambda commit: False)
+    for commit, time in (("a" * 40, 2), ("b" * 40, 1)):
+        manifest = tmp_path / v0_1_gate.EVIDENCE / commit / "manifest.json"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(json.dumps({"commit": commit, "status": "tested"}), "utf-8")
+        record = {"commit": commit, "trees": list(v0_1_gate.TREES), "committer_time": time}
+        (tmp_path / v0_1_gate.RC_TREES).mkdir(parents=True, exist_ok=True)
+        (tmp_path / v0_1_gate.RC_TREES / f"{commit}.json").write_text(json.dumps(record), "utf-8")
+    assert v0_1_gate.recorded_rc() == "a" * 40
+
+
+#: The release candidate of v0.1 (`evidence/T08/<C>/manifest.json`), and the archive's v0.1.0
+#: bump commit, whose tree is `PUBLIC_ROOT`'s (R-150).
+C_V0_1 = "67c66d98587f23bd7dfe8da28a8facccc92da21e"
+V0_1_0_BUMP = "a3bc53480b1ea108038e693a347c267a2f945165"
+
+
+def test_the_committed_record_of_c_is_c_s() -> None:
+    require_archived_history(C_V0_1)
+    committed = json.loads(
+        (REPO_ROOT / v0_1_gate.RC_TREES / f"{C_V0_1}.json").read_text(encoding="utf-8")
+    )
+    assert committed == v0_1_gate.tree_record(C_V0_1)
+
+
+def test_git_and_the_record_agree_at_the_v0_1_0_bump() -> None:
+    require_archived_history(C_V0_1, V0_1_0_BUMP, "e51e4585e29db94172cc79cb57a1e2f0a03deecf")
+    record = v0_1_gate.tree_record_of(C_V0_1)
+    assert v0_1_gate.tree_differences(C_V0_1, V0_1_0_BUMP) == []
+    assert v0_1_gate.recorded_tree_differences(record, V0_1_0_BUMP) == []
+    # The parent of `5018fa3` (the last rename commit before `C` to touch `src/`) differs from
+    # `C` in eight paths, the same eight either way.
+    older = "e51e4585e29db94172cc79cb57a1e2f0a03deecf"
+    differing = v0_1_gate.tree_differences(C_V0_1, older)
+    assert len(differing) == 8
+    assert v0_1_gate.recorded_tree_differences(record, older) == differing
+
+
+@pytest.mark.skipif(
+    subprocess.run(
+        ["git", "cat-file", "-e", f"{PUBLIC_ROOT}^{{commit}}"], cwd=REPO_ROOT, capture_output=True
+    ).returncode
+    != 0,
+    reason="the public line's root (v0.1.0) is not in this repository",
+)
+def test_the_record_finds_v0_1_0_equal_to_c() -> None:
+    """The public v0.1.0 commit carries `C`'s files but for the version, without `C` at hand."""
+    record = v0_1_gate.tree_record_of(C_V0_1)
+    assert v0_1_gate.recorded_tree_differences(record, PUBLIC_ROOT) == []
+
+
+@pytest.mark.parametrize(
+    ("version", "covered"),
+    [
+        ("0.1.0", True),
+        ("0.1.1", True),
+        ("0.1.12", True),
+        ("0.1.0rc1", True),
+        ("0.2.0", False),
+        ("1.0.0", False),
+        ("0.10.0", False),
+        ("0.1.0.1", False),
+    ],
+)
+def test_the_line_names_the_version_and_only_the_0_1_line_is_covered(
+    version: str, covered: bool
+) -> None:
+    result = report(ALL_PASS, version=version)
+    assert result["version"] == version and result["tag_may_be_proposed"] is covered
+    verdict = "YES" if covered else "NO (1 reasons)"
+    assert v0_1_gate.text(result).rstrip().endswith(f"v{version} tag may be proposed: {verdict}")
+    if not covered:
+        assert result["reasons"] == [
+            f"version {version} is not on the 0.1 line: the v0.1 gates do not cover it"
+        ]
 
 
 def test_the_tree_list_is_adr_0021_d2_4_revision_2() -> None:
