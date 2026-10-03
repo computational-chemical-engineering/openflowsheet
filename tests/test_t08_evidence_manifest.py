@@ -23,7 +23,7 @@ from types import ModuleType
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import REPO_ROOT, require_archived_history
 
 C = "67c66d98587f23bd7dfe8da28a8facccc92da21e"
 MANIFEST = REPO_ROOT / "evidence" / "T08" / C / "manifest.json"
@@ -75,6 +75,8 @@ def _ci(head: str = C) -> list[dict[str, Any]]:
 
 
 def _inputs(**overrides: Any) -> Any:
+    # The generator reads git at `C` (the tests changed since) and at §A4.6's commits.
+    require_archived_history(C, *(commit for _, commit in generator.PTC_R1_ORDER))
     stated: dict[str, Any] = {
         "commit": C,
         "tests": _tests(),

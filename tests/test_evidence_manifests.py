@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from conftest import in_public_root, require_archived_history
 from jsonschema import Draft202012Validator
 
 ANGLE_PLACEHOLDER = re.compile(r"<[^<>]*>")
@@ -117,6 +118,10 @@ def test_manifest_commit_exists_in_repository(manifest_path: Path, repo_root: Pa
     if inside.returncode != 0:
         pytest.skip("not a git working tree; commit existence cannot be checked here")
     commit = load(manifest_path)["commit"]
+    if in_public_root(manifest_path):
+        # A manifest released in v0.1.0 cites a commit of the archived history (R-150); a
+        # manifest written since must cite a commit of this repository.
+        require_archived_history(commit)
     result = subprocess.run(
         ["git", "-C", str(repo_root), "cat-file", "-e", f"{commit}^{{commit}}"],
         capture_output=True,

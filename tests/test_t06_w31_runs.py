@@ -41,7 +41,7 @@ from types import ModuleType
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT, load_yaml
+from conftest import REPO_ROOT, load_yaml, require_archived_history
 from t06_ensemble_support import HOLDOUT_FILE, RUNS_DIR
 
 from benchmarks.t06 import ensemble
@@ -132,6 +132,7 @@ def _without_docstrings(source: str) -> str:
 
 def test_a98a_src_differs_from_run_2s_only_by_w24_and_w25() -> None:
     closing = _closing_commit()
+    require_archived_history(RUN2_COMMIT, closing)
     changed = set(_git("diff", "--name-only", RUN2_COMMIT, closing, "--", "src/").split())
     commits = [
         line.split(" ", 1)
@@ -233,6 +234,10 @@ def test_a98d_a34_every_replay_matches_and_covers_the_first_starts_and_failures(
 
 
 def test_a99b_the_holdout_starts_commit_precedes_every_holdout_run() -> None:
+    require_archived_history(
+        *(_document(ensemble.HOLDOUT_RUN_ID, machine)["commit"] for machine in CLASSES),
+        in_history_of_head=True,
+    )
     relative = str(HOLDOUT_FILE.relative_to(REPO_ROOT))
     (added,) = _git("log", "--diff-filter=A", "--format=%H", "--", relative).split()
     at_addition = _git(

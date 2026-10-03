@@ -26,7 +26,7 @@ from types import ModuleType
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import REPO_ROOT, require_archived_history
 
 
 def _load() -> ModuleType:
@@ -118,6 +118,8 @@ AGGREGATE_C1 = {
 
 @pytest.fixture(scope="module")
 def review() -> dict[str, Any]:
+    # The review's fix commits are `git log REVIEW_COMMIT..HEAD`.
+    require_archived_history(generator.REVIEW_COMMIT, in_history_of_head=True)
     return generator.review_findings()  # type: ignore[no-any-return]
 
 

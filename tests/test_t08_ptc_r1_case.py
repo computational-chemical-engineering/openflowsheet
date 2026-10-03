@@ -21,7 +21,7 @@ from typing import Any
 
 import pytest
 import test_t07_w5c_signatures as signatures
-from conftest import REPO_ROOT
+from conftest import REPO_ROOT, require_archived_history
 from t08_cstr_support import ptc_r1_revision
 
 from benchmarks.t08.ptc_r1 import compare
@@ -92,6 +92,7 @@ def test_b20_case_json_carries_the_amended_registration() -> None:
     }
     assert case["starts"] == {"count": 441, "sha256_of_compact_json": STARTS_SHA256}
     # The YAML's sha256 as committed at `C_A1` (§A4.6 as amended).
+    require_archived_history(compare.C_A1)
     at_c_a1 = subprocess.run(
         ["git", "show", f"{compare.C_A1}:benchmarks/t08/build_first_reference.yaml"],
         cwd=REPO_ROOT,
@@ -138,6 +139,7 @@ def test_the_policies_are_t06_revision_v2_with_only_the_registered_changes() -> 
 def test_b20_git_order() -> None:
     """`C_reg → C_A1 → C_case`, and every committed result file descends from `C_case`, the
     commit that added `case.json` (§A4.6 as amended). No result file exists at `C_case`."""
+    require_archived_history(compare.C_REG, compare.C_A1, in_history_of_head=True)
     assert _is_ancestor(compare.C_REG, compare.C_A1)
     case_path = str(compare.CASE_FILE.relative_to(REPO_ROOT))
     (c_case,) = _git("log", "--diff-filter=A", "--format=%H", "--", case_path).split()
