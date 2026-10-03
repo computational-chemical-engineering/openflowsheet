@@ -1,211 +1,134 @@
 # Releasing OpenFlowsheet
 
-Releases are made by two GitHub workflows (Frank's decision, 2026-10-03). The one-time setup and
-the two approval clicks are Frank's; everything else is automated and refuses to run unless the
-release gate says YES.
+OpenFlowsheet is developed and released in one repository,
+`computational-chemical-engineering/openflowsheet` (public): branches, pull requests, CI, tags and
+releases all live there (Frank's decision, 2026-10-03; R-150). Its history starts at v0.1.0
+(`5a35019`); the development history before it is archived, read-only, in the private
+`openflowsheet-dev` — see `docs/HISTORY.md`.
 
-| Repository | Visibility | Holds | Workflow |
-| --- | --- | --- | --- |
-| `computational-chemical-engineering/openflowsheet-dev` | private | the full development history; the authority | `.github/workflows/cut-release.yml` — dispatched by hand |
-| `computational-chemical-engineering/openflowsheet` | public | one squashed commit per release, nothing else | `.github/workflows/release.yml` — started by the release tag |
+A release is one GitHub workflow, `.github/workflows/release.yml`, dispatched by hand. It is a
+**dry run by default**. The one-time setup and the approval of the PyPI upload are Frank's;
+everything else is automated and refuses to run unless the release gate says YES.
 
-**What happens.** `cut-release.yml` runs `scripts/release_snapshot.py check` (the release gate at
-the development commit), tags that commit `vX.Y.Z`, and runs `scripts/release_snapshot.py build`:
-one commit on the public `main` whose tree is the tagged tree minus `release/public-exclude.txt`,
-whose parent is the previous release (none for the first), by `OpenFlowsheet release
-<e.a.j.f.peters@tue.nl>` at the tagged commit's date, with the message `OpenFlowsheet vX.Y.Z` and the
-development commit id, plus an annotated tag `vX.Y.Z` on it. No development history reaches the
-public repository: only the files of the release are copied, the commit is written anew, and the
-build refuses a public `main` holding anything but earlier release snapshots. The same development
-commit always gives the same public commit id. The push of the public tag starts the public
-`release.yml`, which checks the tag against the package version, builds the sdist and the wheel
-(`scripts/t08_dist.py`: built twice and inspected), uploads them to PyPI by trusted publishing, and
-creates the GitHub release with the version's `CHANGELOG.md` section as its notes.
+| Job | Runs on a dry run | What it does |
+| --- | --- | --- |
+| `gate` | yes | The version is `pyproject.toml`'s and of the form `X.Y.Z`; a tag `vX.Y.Z`, if it exists, is on this commit; `CHANGELOG.md` has a `## vX.Y.Z` section (the release notes); the gate of the version's minor line, `scripts/v<major>_<minor>_gate.py --rc <rc>`, exits 0 **and** prints `vX.Y.Z tag may be proposed: YES`. Uploads `release-record` (`gate.txt`, `notes.md`). |
+| `tag` | no | Tags the gated commit `vX.Y.Z` (annotated, by `github-actions[bot]`) and pushes the tag with the workflow's `GITHUB_TOKEN`. An existing tag on the same commit is accepted; on another commit, refused. |
+| `build` | yes | The sdist and the wheel from the gated commit, built twice and inspected (`scripts/t08_dist.py`, T08.A43). Uploads `dist` and `build-record`. |
+| `pypi` | no | Waits for approval in the GitHub environment `pypi`, then uploads `dist` to PyPI by trusted publishing (no token). |
+| `github-release` | no | Creates the GitHub release `vX.Y.Z` with the `CHANGELOG.md` section as its notes and the sdist and wheel attached. |
 
-`cut-release.yml` has two jobs. **`snapshot`** needs no secret and no approval: it checks, tags
-locally, builds the snapshot from an anonymous clone of the public repository and uploads the
-record. With `dry_run` (the default) that is all. Otherwise **`publish`** waits for approval in the
-`release` environment, repeats the check, clones the public repository with the deploy key,
-rebuilds the snapshot and refuses unless its commit id equals the one `snapshot` recorded, then
-pushes the private tag and the public `main` and tag together (`git push --atomic`).
-
-## Where things stand (2026-10-03)
-
-`https://github.com/computational-chemical-engineering/openflowsheet` already serves one commit,
-`5a35019` ("OpenFlowsheet v0.1.0 — initial public release", by Frank, the exact tree of the
-development commit `a3bc534`) on `main`, with the tag `v0.1.0`. It was made by hand, so
-`release/public-history.txt` lists it as the public v0.1.0 and `build` builds the next release on
-it; any other foreign commit on the public `main` is refused. Consequences:
-
-- **v0.1.0 cannot go through these workflows.** Its public tag exists, and its tree has no
-  `release.yml`, so pushing that tag started nothing and v0.1.0 is not on PyPI by this route. The
-  first automated release is the next version (`0.1.1` or `0.2.0`), from a development commit that
-  contains this automation. Whether v0.1.0 itself should reach PyPI is Frank's call.
-- The development checkout's `origin` may still name `…/openflowsheet.git`; if that URL now
-  serves the public repository, **a push from that checkout publishes private history** — see the
-  warning under step 1.
+Every job runs only in `computational-chemical-engineering/openflowsheet` (a fork skips them all).
+The gate judges the release candidate `C` given as `rc` (default
+`67c66d98587f23bd7dfe8da28a8facccc92da21e`, the v0.1 candidate): the released files under the
+ADR 0021 D2.4 paths must equal `C`'s but for the version. `C` is a commit of the archived history,
+so in this repository the gate reads `C`'s files from `release/rc-trees/<C>.json`, their recorded
+sha256 (R-151).
 
 ## One-time setup
 
-Do these in order. Step 1 must be finished before step 2 (see the warning there).
+### 1. The `pypi` environment (the approval gate)
 
-### 1. Rename the private repository to `openflowsheet-dev`
+1. `openflowsheet` → **Settings** → **Environments** → **New environment**, name `pypi` →
+   **Configure environment**.
+2. **Required reviewers**: tick, add Frank → **Save protection rules**.
+3. **Deployment branches and tags**: **Selected branches and tags** → **Add deployment branch or
+   tag rule** → **Branch**, `main`; add a second rule → **Tag**, `v*`. The workflow is dispatched
+   from `main`, so its `pypi` job deploys from `main`; the tag rule admits a run dispatched from a
+   release tag.
 
-1. On GitHub, open `computational-chemical-engineering/openflowsheet` → **Settings** → **General**.
-2. Under **Repository name** enter `openflowsheet-dev` → **Rename**.
-3. In **every** local clone and worktree, point `origin` at the new name:
+No secret is needed: the upload uses the job's OIDC token, and the tag is pushed with the
+workflow's own `GITHUB_TOKEN`.
 
-   ```sh
-   git remote set-url origin git@github.com:computational-chemical-engineering/openflowsheet-dev.git
-   git remote -v   # check
-   ```
+### 2. Actions
 
-> **Warning.** After the rename GitHub redirects the old name to `openflowsheet-dev` — but only
-> until a repository named `openflowsheet` exists again. Once step 2 creates the public one, a
-> clone still configured with the old URL pushes to the **public** repository, and Frank's own
-> account has write access there: a `git push` of a development branch would publish private
-> history. Update every remote (and any CI, script or bookmark that uses the URL) before step 2.
+**Settings** → **Actions** → **General**: allow GitHub Actions. If the organization allows only
+selected actions, allow `actions/checkout`, `actions/setup-python`, `actions/upload-artifact`,
+`actions/download-artifact` and `pypa/gh-action-pypi-publish`. If a ruleset protects tags `v*`,
+let GitHub Actions bypass it (the `tag` job creates the tag).
 
-### 2. Create the empty public repository `openflowsheet`
+### 3. PyPI trusted publisher (done)
 
-1. GitHub → **New repository**. Owner `computational-chemical-engineering`, name `openflowsheet`,
-   **Public**.
-2. Leave **Add a README**, **.gitignore** and **license** all unset: the repository must be empty.
-   (A first commit made by GitHub is not a release snapshot, and `build` refuses to build on it.)
-3. **Create repository**.
-4. **Settings** → **Actions** → **General**: allow GitHub Actions. If the organization allows only
-   selected actions, allow `actions/checkout`, `actions/setup-python`, `actions/upload-artifact`,
-   `actions/download-artifact` and `pypa/gh-action-pypi-publish`.
-
-### 3. The deploy key (write access to the public repository, held by the private one)
-
-1. On your machine, in a scratch directory:
-
-   ```sh
-   ssh-keygen -t ed25519 -N "" -C "openflowsheet release deploy key" -f openflowsheet_deploy
-   ```
-
-   This writes `openflowsheet_deploy` (private half) and `openflowsheet_deploy.pub` (public half).
-2. Public repository `openflowsheet` → **Settings** → **Deploy keys** → **Add deploy key**. Title
-   `release (openflowsheet-dev cut-release.yml)`; key: the contents of `openflowsheet_deploy.pub`;
-   tick **Allow write access** → **Add key**.
-3. Private repository `openflowsheet-dev` → **Settings** → **Environments** → open `release`
-   (create it first, step 4) → **Environment secrets** → **Add environment secret**. Name
-   `PUBLIC_REPO_DEPLOY_KEY`; value: the entire contents of `openflowsheet_deploy` (from
-   `-----BEGIN OPENSSH PRIVATE KEY-----` to `-----END OPENSSH PRIVATE KEY-----`) → **Add secret**.
-   An environment secret is readable only by a job that passed the environment's approval; a
-   repository secret (**Settings** → **Secrets and variables** → **Actions**) also works but is
-   readable by any workflow in the repository.
-4. Delete both files from your machine (`rm openflowsheet_deploy openflowsheet_deploy.pub`). A new
-   key can always be made the same way; the old one is then deleted under **Deploy keys**.
-
-### 4. The approval environments
-
-1. Private repository `openflowsheet-dev` → **Settings** → **Environments** → **New environment**,
-   name `release` → **Configure environment**:
-   - **Required reviewers**: tick, add Frank → **Save protection rules**.
-   - **Deployment branches and tags**: **Selected branches and tags** → **Add deployment branch or
-     tag rule** → branch `main`. The workflow must then be dispatched from `main` (the branch whose
-     `cut-release.yml` runs) for the publish job to start.
-2. Public repository `openflowsheet` → **Settings** → **Environments** → **New environment**, name
-   `pypi` → **Configure environment**:
-   - **Required reviewers**: tick, add Frank → **Save protection rules**.
-   - **Deployment branches and tags**: **Selected branches and tags** → **Add deployment branch or
-     tag rule** → **Tag**, pattern `v*`.
-
-### 5. PyPI trusted publisher (done)
-
-Frank has registered the pending publisher on pypi.org (**Your account** → **Publishing** → **Add a
-new pending publisher** → **GitHub**): PyPI project `openflowsheet`, owner
+Frank has registered the pending publisher on pypi.org: PyPI project `openflowsheet`, owner
 `computational-chemical-engineering`, repository `openflowsheet`, workflow `release.yml`, and **no
-environment** — so PyPI accepts an upload from any job of that workflow, and the approval gate is
-the GitHub environment `pypi` alone. To tighten it, edit the publisher on PyPI and set its
-environment to `pypi`. The name entered on PyPI **must equal** `PYPI_ENVIRONMENT` at the top of
-`.github/workflows/release.yml` (now `pypi`); if they differ, the upload is refused by PyPI.
+environment** — PyPI then accepts an upload from any job of that workflow, and the approval gate
+is the GitHub environment `pypi` alone. To tighten it, edit the publisher on PyPI and set its
+environment to `pypi` (it must equal the `environment.name` of the `pypi` job).
+
+### 4. The archive
+
+The private `openflowsheet-dev` stays as the read-only archive of the pre-0.1.0 history (its
+commit ids are cited in `evidence/`). **Settings** → **General** → **Archive this repository**
+makes it read-only on GitHub; that is Frank's call.
 
 ## Per release
 
-1. **Locally**, on the development `main`, confirm the gate:
-   `PYTHONPATH=src .venv/bin/python scripts/v0_1_gate.py --rc <C>` ends with
-   `v0.1.0 tag may be proposed: YES`. (`CHANGELOG.md` must have a `## vX.Y.Z` section; it becomes
-   the release notes.)
-2. **Dry run.** `openflowsheet-dev` → **Actions** → **cut-release** → **Run workflow**. Use workflow
-   from `main`; `version` `X.Y.Z`; `rc_commit` the full id of `C`; `ref` `main` (or the commit to
-   release); **dry_run ticked** → **Run workflow**.
-3. **Inspect** the run's artifact `release-snapshot-vX.Y.Z`:
-   - `gate.txt` — the gate's report, ending `… tag may be proposed: YES`;
-   - `snapshot.json` — `public_commit` (the would-be public commit id), `parent` (the previous
-     release, `null` for the first), `development_commit`, `file_count`, `excluded`;
-   - `files.txt` — every path that will be public; `excluded.txt` — every path left out.
-   Check that `files.txt` holds nothing that must stay private. If it does, add a pattern to
-   `release/public-exclude.txt` on `main` and start again.
-4. **Release.** Run the workflow again with the same inputs and **dry_run unticked**. Its `snapshot`
-   job must print the same `public_commit` as the dry run (it is reproducible). The `publish` job
-   then waits: **Review deployments** → tick `release` → **Approve and deploy**. It pushes the
-   private tag, then the public `main` and tag.
-5. **Publish.** In `openflowsheet` → **Actions**, the `release` run has started on the tag. When
-   `build` has passed, the `pypi` job waits: **Review deployments** → `pypi` → **Approve and
-   deploy**. After the upload, `github-release` creates the GitHub release with the notes and the
-   sdist and wheel attached.
-6. **Verify.** In a fresh environment `pip install openflowsheet==X.Y.Z`, and look at the release
+1. **Prepare** on a branch and merge to `main` by pull request: the version in `pyproject.toml`,
+   `src/openflowsheet/__init__.py` and the version-carrying test fixtures
+   (`tests/fixtures/schemas/application_results/project_summary/*/*.json`), and a `## vX.Y.Z`
+   section in `CHANGELOG.md`. Check the gate locally:
+
+   ```sh
+   PYTHONPATH=src .venv/bin/python scripts/v0_1_gate.py --rc 67c66d98587f23bd7dfe8da28a8facccc92da21e
+   ```
+
+   It must end with `vX.Y.Z tag may be proposed: YES`.
+2. **Dry run.** `openflowsheet` → **Actions** → **release** → **Run workflow**. Use workflow from
+   `main`; `version` `X.Y.Z`; `rc` as given (the v0.1 candidate); **dry_run ticked** → **Run
+   workflow**. `gate` and `build` run; `tag`, `pypi` and `github-release` are skipped.
+3. **Inspect** the run's artifacts: `release-record` (`gate.txt`, the gate's report ending
+   `vX.Y.Z tag may be proposed: YES`; `notes.md`, the release notes), `dist` (the sdist and the
+   wheel) and `build-record` (`t08-a43-dist.json`, every check passed).
+4. **Release.** Run the workflow again with the same inputs and **dry_run unticked**. `gate`
+   repeats, `tag` pushes `vX.Y.Z`, `build` rebuilds, and `pypi` waits: **Review deployments** →
+   tick `pypi` → **Approve and deploy**. After the upload `github-release` creates the release.
+5. **Verify.** In a fresh environment `pip install openflowsheet==X.Y.Z`, and look at the release
    page and https://pypi.org/project/openflowsheet/.
 
-Pushing to the public `main` also starts the public copy of `ci.yml` (it runs on every branch
-push); that is expected and does not affect the release.
-
-## What the workflows refuse
+## What the workflow refuses
 
 | Refusal | Enforced by |
 | --- | --- |
-| Running outside its repository | every job's `if: github.repository == '…'` (private: `openflowsheet-dev`; public: `openflowsheet`) |
-| Any push or secret without approval | only `cut-release.yml`'s `publish` job pushes or reads `PUBLIC_REPO_DEPLOY_KEY`; it runs only with `dry_run` unticked and behind the `release` environment |
-| A gate that is not YES | `release_snapshot.py check`: the gate script must exit 0 **and** print `vX.Y.Z tag may be proposed: YES` |
-| A version `pyproject.toml` does not declare | `check` and `build` (development commit); `verify-tag` in `release.yml` (the pushed tag) |
-| A version not of the form `X.Y.Z` | `check`, `build`, `verify-tag`, `changelog_section.py` |
-| A modified checkout, or a commit other than the checked-out one | `check` (the gate reads the working tree) |
-| A private tag `vX.Y.Z` on another commit | `check` |
-| A public `main` holding anything but release snapshots | `build` (author, committer, subject, one parent, increasing versions), except the commits listed in `release/public-history.txt` |
-| A version not newer than the last public release; a public tag `vX.Y.Z` that exists | `build` |
-| A snapshot differing from the dry-run job's | `build --expect-commit` in the `publish` job |
-| A tree whose snapshot differs from the tagged tree minus exclusions | `build` compares the written tree with the tagged tree entry by entry |
-| A submodule; an exclusion pattern with `!` | `build` |
-| A missing deploy key | `publish` job, before cloning |
-| A release without its `CHANGELOG.md` section | `changelog_section.py`, before anything is built or uploaded |
-| Artifacts that fail T08.A43's inspection | `t08_dist.py`, before the PyPI job |
+| Running outside `computational-chemical-engineering/openflowsheet` | every job's `if: github.repository == '…'` |
+| Tagging, uploading or publishing on a dry run | `tag`, `pypi`, `github-release`: `if: … && !inputs.dry_run` |
+| An upload without approval | `pypi` runs in the environment `pypi` (required reviewer Frank) |
+| A version not of the form `X.Y.Z`, or not `pyproject.toml`'s | `gate`, first step |
+| A tag `vX.Y.Z` on another commit | `gate` (before anything is built) and `tag` |
+| A release without its `CHANGELOG.md` section | `scripts/changelog_section.py` in `gate` |
+| A gate that is not YES for this version | `gate`: the minor line's gate script must exist, exit 0 **and** print `vX.Y.Z tag may be proposed: YES` |
+| Files under the D2.4 paths that differ from `C`'s beyond the version | the gate's tree check (by git where `C` is present, else by `release/rc-trees/<C>.json`) |
+| Artifacts that fail T08.A43's inspection | `build` (`scripts/t08_dist.py`), before `pypi` |
+| A build after a failed or cancelled `tag` | `build`'s `if` |
 
 ## Rolling back
 
-- **Before approving `release`**: reject the deployment or cancel the run. Nothing was pushed.
-- **After the public push, before approving `pypi`**: reject the `pypi` deployment. To withdraw the
-  tag, delete it from a clone with write access (`git push origin :refs/tags/vX.Y.Z`, or the tag's
-  page on GitHub → **Delete**) and delete the private tag the same way. The snapshot commit stays
-  on the public `main`; rewriting `main` would need a force-push. Re-running `cut-release.yml` for
-  the same development commit re-creates the identical tag (and so restarts `release.yml`);
-  releasing different content needs a new version.
+- **Before approving `pypi`**: reject the deployment or cancel the run. On a real run the tag is
+  already pushed; delete it if the release is abandoned (the tag's page → **Delete**, or
+  `git push origin :refs/tags/vX.Y.Z` from a clone with write access). Re-running the workflow on
+  the same commit accepts an existing tag on that commit.
 - **After the PyPI upload**: PyPI never accepts the same file name twice, so a version cannot be
   replaced. **Yank** it: pypi.org → `openflowsheet` → **Manage** → **Releases** → `X.Y.Z` →
   **Options** → **Yank** (with a reason), then release `X.Y.Z+1`. Mark the GitHub release as such
-  or delete it (the release page → **Delete**); leave the tag, which names what PyPI shipped.
+  or delete it; leave the tag, which names what PyPI shipped.
 
 ## Notes
 
-- **Hand-made public commits.** A commit put on the public `main` by hand (as v0.1.0 was) must be
-  listed in `release/public-history.txt` as `<commit id> <version>` on the development `main`
-  before the next release, or `build` refuses it.
-- **What becomes public** is the whole tagged tree except `release/public-exclude.txt` (gitignore
-  patterns, read from the tagged commit; now only `.github/workflows/cut-release.yml`). That
-  includes `docs/`, `evidence/`, `scripts/` and this file. Add a pattern there before a release
-  to keep a path private.
-- **The gate script is per minor line**: `check` runs `scripts/v<major>_<minor>_gate.py` and
-  requires the line with the version being released. `scripts/v0_1_gate.py` prints `v0.1.0`
-  literally, so a `0.1.1` release needs that line to follow the version first; `0.2.x` needs a
-  `scripts/v0_2_gate.py`.
-- A local dry run, without GitHub:
+- **The gate is per minor line.** `scripts/v0_1_gate.py` covers `0.1.z` and refuses any other
+  version; a `0.2.x` release needs a `scripts/v0_2_gate.py` and its own release candidate.
+- **A tag pushed with `GITHUB_TOKEN` starts no other workflow.** Nothing here is tag-triggered;
+  `ci.yml` runs on branch pushes and pull requests.
+- **v0.1.0** is on GitHub (tag `v0.1.0`, the root commit) but was not published to PyPI; `0.1.1`
+  is the first release through this workflow. Whether v0.1.0 itself should reach PyPI is Frank's
+  call.
+- **Tests that read the archived history** skip in this repository with the reason "pre-0.1.0
+  development history is archived in openflowsheet-dev (R-150)", and run unchanged where that
+  history is present (`tests/conftest.py`, `require_archived_history`).
+- A local rehearsal of the `gate` job, in a clone with the project environment:
 
   ```sh
-  git init --bare -b main /tmp/public.git          # or: git clone --bare <public url>
-  python scripts/release_snapshot.py build --version X.Y.Z --commit <commit> \
-      --public /tmp/public.git --out /tmp/snapshot
+  VERSION=X.Y.Z; RC=67c66d98587f23bd7dfe8da28a8facccc92da21e
+  python scripts/changelog_section.py "v$VERSION" > /tmp/notes.md
+  python scripts/v0_1_gate.py --rc "$RC" | tee /tmp/gate.txt
+  grep -qxF "v$VERSION tag may be proposed: YES" /tmp/gate.txt && echo gate YES
+  python scripts/t08_dist.py --out /tmp/dist --commit HEAD
   ```
-
-  For a commit older than the exclusion list, add `--exclude-list release/public-exclude.txt`.

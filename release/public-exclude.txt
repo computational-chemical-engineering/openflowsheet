@@ -1,7 +1,0 @@
-# Paths of a tagged development tree that its public release snapshot omits
-# (scripts/release_snapshot.py `build`; docs/RELEASING.md). One gitignore-style pattern per line:
-# `#` comments, a trailing `/` for directories only, a `/` before the end anchors at the root,
-# `*`, `?`, `[...]` and `**`. Negation (`!`) is refused. The list is read from the tagged commit.
-
-# The private repository's dispatch-only release workflow.
-.github/workflows/cut-release.yml

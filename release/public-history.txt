@@ -1,7 +1,0 @@
-# Public commits made by hand before the release automation that scripts/release_snapshot.py
-# `build` accepts on the public `main` as release snapshots: `<commit id> <version>` per line.
-# Any other commit there that is not an automated snapshot refuses the build. Read from the
-# tagged commit.
-
-# OpenFlowsheet v0.1.0 — initial public release (Frank, 2026-10-02): the tree of a3bc534.
-5a350199f1334e52cfd789109a0e1dc944ef328c 0.1.0
