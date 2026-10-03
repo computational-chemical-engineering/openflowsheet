@@ -60,6 +60,7 @@ def test_the_gate_table_is_what_the_gate_script_prints() -> None:
         envelope=yaml.safe_load((REPO_ROOT / v0_1_gate.ENVELOPE).read_text(encoding="utf-8")),
         rc=None,
         candidate="0" * 40,
+        version="0.1.0",
         differences=None,
         rc_record=None,
     )
