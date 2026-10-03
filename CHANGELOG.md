@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.1.1 — the single public repository; release by workflow; no change to the simulator
+
+*The code and data of the simulator are v0.1.0's: under the ADR 0021 D2.4 paths (`src/`,
+`schemas/`, `benchmarks/`, `requirements.lock`, `pyproject.toml`, `MANIFEST.in`, `README.md`,
+`LICENSE`, `NOTICE`) this release differs from the release candidate `C` = `67c66d9` only in the
+version, as v0.1.0 did, and `scripts/v0_1_gate.py --rc 67c66d9…` proposes it under the v0.1 gates.
+0.1.1 is the first release published through the release workflow.*
+
+- **One repository.** `computational-chemical-engineering/openflowsheet` is now the working
+  repository — branches, pull requests, CI, tags and releases (R-150). Its history starts at
+  v0.1.0; the development history before it is archived, read-only, in `openflowsheet-dev`, and the
+  commit ids cited under `evidence/` refer to that archive (`docs/HISTORY.md`).
+- **Release workflow.** `.github/workflows/release.yml`, dispatched by hand and a dry run by
+  default: the release gate, the tag, the sdist and the wheel (built twice and inspected), the
+  PyPI upload by trusted publishing behind an approval, and the GitHub release with this section as
+  its notes (`docs/RELEASING.md`). The two-repository snapshot release that preceded it is removed.
+- **The gate without `C`.** Where `C` is not in the repository, `scripts/v0_1_gate.py` compares
+  the candidate with `C`'s recorded file hashes, `release/rc-trees/<C>.json`, by the same rule
+  (R-151); it prints the version it judges (`vX.Y.Z tag may be proposed`) and covers the 0.1 line.
+- **Pre-push guard.** `scripts/install-hooks.sh` installs a hook that refuses to push to the public
+  repository any commit that does not descend from v0.1.0.
+- **T08 manifest generator.** §A4.6's ancestry rule is judged on the development history only; a
+  release commit without that history (the public v0.1.0) is listed as unrelated, not counted
+  against it.
+- **Tests without the archived history.** Tests that read pre-0.1.0 commits skip explicitly where
+  those commits are absent, with the reason "pre-0.1.0 development history is archived in
+  openflowsheet-dev (R-150)", and run unchanged where they are present.
+
 ## v0.1.0 — release candidate `C` = `67c66d9` (`0.1.0rc1`), version-only change to `0.1.0`; tag and publication by Frank
 
 *ADR 0021 D4. The gate table below is what `scripts/v0_1_gate.py --markdown` prints for the release

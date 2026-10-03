@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openflowsheet"
-version = "0.1.0"
+version = "0.1.1"
 description = "OpenFlowsheet: an agent-native open process simulator"
 requires-python = ">=3.13"
 readme = "README.md"
