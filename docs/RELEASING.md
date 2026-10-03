@@ -55,7 +55,25 @@ environment** — PyPI then accepts an upload from any job of that workflow, and
 is the GitHub environment `pypi` alone. To tighten it, edit the publisher on PyPI and set its
 environment to `pypi` (it must equal the `environment.name` of the `pypi` job).
 
-### 4. The archive
+### 4. The pre-push guard (every clone that also holds the archive)
+
+A clone that holds both the archived history and the public line — the old development checkout,
+or any clone that has fetched `openflowsheet-dev` — can publish the private history with one
+`git push`. In every such clone, once:
+
+```sh
+scripts/install-hooks.sh          # writes $(git rev-parse --git-path hooks)/pre-push
+```
+
+The hook (a copy of `scripts/pre_push_guard.py`; the hooks directory is shared by all worktrees
+of the clone) refuses a push to any URL naming `computational-chemical-engineering/openflowsheet…`
+other than the archive `openflowsheet-dev` unless every commit it could send descends from v0.1.0
+(`5a35019`); a merge that brings in an archived commit is refused although its tip descends. It
+fails closed: without `5a35019` in the clone nothing is shown to descend, and the push is refused.
+A different existing `pre-push` hook is kept unless `--force` is given. A fresh clone of the public
+repository holds no archived commit and needs no guard, but the hook does no harm there.
+
+### 5. The archive
 
 The private `openflowsheet-dev` stays as the read-only archive of the pre-0.1.0 history (its
 commit ids are cited in `evidence/`). **Settings** → **General** → **Archive this repository**
