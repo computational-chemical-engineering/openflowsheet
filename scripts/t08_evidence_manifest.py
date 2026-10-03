@@ -738,11 +738,22 @@ def ptc_r1_order() -> dict[str, Any]:
     added = _git(
         "log", "--all", "--diff-filter=A", "--format=%H", "--", "benchmarks/t08/ptc_r1/results-*"
     ).split()
+    # A public release snapshot (an orphan commit of a released tree, `scripts/release_snapshot.py`)
+    # shares no history with the development line; it is a copy, not a commit that produced a
+    # result, so §A4.6's ancestry rule is judged on the development history only and the
+    # unrelated commits are listed, not dropped silently.
+    related = [c for c in added if _git_ok("merge-base", full["C_reg"], c)]
+    unrelated = sorted(c[:12] for c in added if c not in related)
     after = {
         commit[:12]: _git_ok("merge-base", "--is-ancestor", full["C_case"], commit)
-        for commit in added
+        for commit in related
     }
-    return {"commits": full, "links": links, "result_files_added_by": after}
+    return {
+        "commits": full,
+        "links": links,
+        "result_files_added_by": after,
+        "unrelated_history_ignored": unrelated,
+    }
 
 
 def attestation(order: Mapping[str, Any]) -> str:

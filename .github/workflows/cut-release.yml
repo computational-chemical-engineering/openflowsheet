@@ -1,0 +1,156 @@
+name: cut-release
+
+# The private half of a release (docs/RELEASING.md; scripts/release_snapshot.py). Dispatched by
+# hand in computational-chemical-engineering/openflowsheet-dev only; never part of the public
+# snapshot (release/public-exclude.txt). Job `snapshot` checks the release gate, tags locally,
+# builds the public snapshot from an anonymous clone of the public repository and uploads its
+# record — a dry run, without secrets or approval. Unless `dry_run` is unchecked nothing more
+# happens. Otherwise job `publish` waits for approval in the `release` environment, repeats the
+# check, rebuilds the snapshot from an SSH clone, refuses unless its commit id equals the one
+# `snapshot` recorded, and pushes the private tag, then the public `main` and tag (atomically).
+# The public tag push starts the public repository's `release.yml` (PyPI and GitHub release).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, X.Y.Z (pyproject.toml must declare it)"
+        required: true
+        type: string
+      rc_commit:
+        description: "The release candidate C the gate judges (full commit id)"
+        required: true
+        type: string
+      ref:
+        description: "The development commit to release (branch, tag or commit id)"
+        required: false
+        type: string
+        default: main
+      dry_run:
+        description: "Dry run: check, build and upload the snapshot record; push nothing"
+        required: false
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: cut-release
+  cancel-in-progress: false
+
+env:
+  PRIVATE_REPOSITORY: computational-chemical-engineering/openflowsheet-dev
+  PUBLIC_REPOSITORY: computational-chemical-engineering/openflowsheet
+  VERSION: ${{ inputs.version }}
+  RC_COMMIT: ${{ inputs.rc_commit }}
+  RELEASE_NAME: OpenFlowsheet release
+  RELEASE_EMAIL: e.a.j.f.peters@tue.nl
+
+jobs:
+  snapshot:
+    if: github.repository == 'computational-chemical-engineering/openflowsheet-dev'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      development_commit: ${{ steps.build.outputs.development_commit }}
+      public_commit: ${{ steps.build.outputs.public_commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install the gate's dependency
+        run: python -m pip install -c requirements.lock pyyaml
+      - name: Check the release gate
+        run: |
+          mkdir -p "$RUNNER_TEMP/snapshot"
+          python scripts/release_snapshot.py check --version "$VERSION" --rc "$RC_COMMIT" \
+            | tee "$RUNNER_TEMP/snapshot/gate.txt"
+      - name: Tag the development commit (locally)
+        run: |
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "tag v$VERSION exists at $(git rev-parse "v$VERSION^{commit}")"
+          else
+            git -c user.name="$RELEASE_NAME" -c user.email="$RELEASE_EMAIL" \
+              tag -a "v$VERSION" -m "OpenFlowsheet v$VERSION" HEAD
+          fi
+      - name: Clone the public repository (anonymous, read-only)
+        run: git clone --bare --quiet "https://github.com/$PUBLIC_REPOSITORY.git" "$RUNNER_TEMP/public.git"
+      - name: Build the public snapshot
+        id: build
+        run: |
+          python scripts/release_snapshot.py build --version "$VERSION" --commit "v$VERSION" \
+            --public "$RUNNER_TEMP/public.git" --out "$RUNNER_TEMP/snapshot"
+          {
+            echo "development_commit=$(git rev-parse "v$VERSION^{commit}")"
+            echo "public_commit=$(python -c 'import json, sys; print(json.load(open(sys.argv[1]))["public_commit"])' "$RUNNER_TEMP/snapshot/snapshot.json")"
+          } >> "$GITHUB_OUTPUT"
+      - name: Upload the snapshot record
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-snapshot-v${{ inputs.version }}
+          path: ${{ runner.temp }}/snapshot/
+          if-no-files-found: warn
+
+  publish:
+    needs: snapshot
+    if: github.repository == 'computational-chemical-engineering/openflowsheet-dev' && !inputs.dry_run
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    env:
+      DEVELOPMENT_COMMIT: ${{ needs.snapshot.outputs.development_commit }}
+      PUBLIC_COMMIT: ${{ needs.snapshot.outputs.public_commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.snapshot.outputs.development_commit }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install the gate's dependency
+        run: python -m pip install -c requirements.lock pyyaml
+      - name: Check the release gate
+        run: python scripts/release_snapshot.py check --version "$VERSION" --rc "$RC_COMMIT"
+      - name: Tag the development commit
+        run: |
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "tag v$VERSION exists at $(git rev-parse "v$VERSION^{commit}")"
+          else
+            git -c user.name="$RELEASE_NAME" -c user.email="$RELEASE_EMAIL" \
+              tag -a "v$VERSION" -m "OpenFlowsheet v$VERSION" HEAD
+          fi
+      - name: Set up the deploy key
+        env:
+          DEPLOY_KEY: ${{ secrets.PUBLIC_REPO_DEPLOY_KEY }}
+        run: |
+          if [ -z "$DEPLOY_KEY" ]; then
+            echo "refused: the secret PUBLIC_REPO_DEPLOY_KEY is not set" >&2
+            exit 1
+          fi
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/openflowsheet_deploy"
+          chmod 600 "$HOME/.ssh/openflowsheet_deploy"
+          # GitHub's published host key (https://api.github.com/meta), pinned rather than scanned.
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" \
+            > "$HOME/.ssh/known_hosts_github"
+          echo "GIT_SSH_COMMAND=ssh -i $HOME/.ssh/openflowsheet_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts_github" \
+            >> "$GITHUB_ENV"
+      - name: Clone the public repository (deploy key)
+        run: git clone --bare --quiet "git@github.com:$PUBLIC_REPOSITORY.git" "$RUNNER_TEMP/public.git"
+      - name: Rebuild the snapshot; it must be the one the dry-run job recorded
+        run: |
+          python scripts/release_snapshot.py build --version "$VERSION" --commit "v$VERSION" \
+            --public "$RUNNER_TEMP/public.git" --expect-commit "$PUBLIC_COMMIT"
+      - name: Push the private tag
+        run: git push origin "refs/tags/v$VERSION"
+      - name: Push the public main and tag
+        run: git -C "$RUNNER_TEMP/public.git" push --atomic origin refs/heads/main "refs/tags/v$VERSION"

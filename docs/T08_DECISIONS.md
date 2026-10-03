@@ -668,3 +668,9 @@ does not exist. Findings G4–G8 + G3 residuals → close-out brief `docs/briefs
 RC records under `evidence/T08/<C>/rc/` — DECISION G6: outside the D2.4 trees (`src/`, `schemas/`, `benchmarks/`, …;
 `scripts/` and `evidence/` are not checked), alternative: commit under `benchmarks/t08/rc/` and cut a new C each time,
 reversible by moving the files; ADR 0022 Accepted; dossier sync; manifest; ADR 0021/0023/0024/0025 Accepted).
+
+## 2026-10-02 — Merged to main; v0.1.0 bump; gate YES
+
+`wp/T08` merged into `main` (`9bfd9f8`, CI green at `ebe430e`); version bump `a3bc534` (version only in the D2.4 trees;
+CHANGELOG header and two version-carrying fixtures). check.sh 6864 passed; `v0_1_gate.py --rc 67c66d9…` on `a3bc534`:
+tree equal to C, RC steps 1–10 passed, T08 manifest `tested` → **YES**. Tag and publication are Frank's (ADR 0021 D5).

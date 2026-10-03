@@ -1,0 +1,100 @@
+name: release
+
+# The public half of a release (docs/RELEASING.md): started by the push of a tag `v*` to
+# computational-chemical-engineering/openflowsheet, which only the private repository's
+# cut-release.yml makes. In any other repository (the private one carries this file too) every
+# job is skipped. Job `build` refuses a tag that is not `v` + pyproject.toml's version or a
+# CHANGELOG.md without that version's section, and builds the sdist and the wheel with
+# scripts/t08_dist.py (built twice and inspected; T08.A43). Job `pypi` waits for approval in the
+# GitHub environment named below and uploads by trusted publishing; job `github-release` then
+# creates the GitHub release with the CHANGELOG section as its notes and the artifacts attached.
+# PyPI's trusted publisher for `openflowsheet` names this file, `release.yml`.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # The GitHub environment of the PyPI upload; its required reviewer is the approval gate. If
+  # PyPI's trusted publisher names an environment, this must equal the name entered on PyPI.
+  PYPI_ENVIRONMENT: pypi
+
+jobs:
+  build:
+    if: github.repository == 'computational-chemical-engineering/openflowsheet'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      pypi_environment: ${{ env.PYPI_ENVIRONMENT }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: The tag names the package version
+        run: python scripts/release_snapshot.py verify-tag --tag "$GITHUB_REF_NAME"
+      - name: The release notes (the CHANGELOG section)
+        run: |
+          mkdir -p "$RUNNER_TEMP/record"
+          python scripts/changelog_section.py "$GITHUB_REF_NAME" > "$RUNNER_TEMP/record/notes.md"
+      - name: Build the sdist and the wheel (twice, inspected)
+        run: |
+          python scripts/t08_dist.py --out "$RUNNER_TEMP/dist" --commit HEAD
+          cp "$RUNNER_TEMP/dist/t08-a43-dist.json" "$RUNNER_TEMP/record/"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: ${{ runner.temp }}/dist/dist/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-record
+          path: ${{ runner.temp }}/record/
+          if-no-files-found: error
+
+  pypi:
+    needs: build
+    if: github.repository == 'computational-chemical-engineering/openflowsheet'
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ needs.build.outputs.pypi_environment }}
+      url: https://pypi.org/project/openflowsheet/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+
+  github-release:
+    needs: [build, pypi]
+    if: github.repository == 'computational-chemical-engineering/openflowsheet'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: build-record
+          path: record/
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "OpenFlowsheet $GITHUB_REF_NAME" --notes-file record/notes.md dist/*
