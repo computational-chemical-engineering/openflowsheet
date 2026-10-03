@@ -9,7 +9,7 @@ This file states the **current position**, not the history that produced it. Clo
 the P00, P01 and P02 handoffs, reviews and findings — is in `docs/progress-archive.md`, which is
 not read at session start.
 
-Last updated: 28 September 2026.
+Last updated: 3 October 2026.
 
 ## Start here
 
@@ -19,7 +19,7 @@ Last updated: 28 September 2026.
 | Name | **OpenFlowsheet** (R-149, 2026-10-02): distribution, import package and console script `openflowsheet`; environment variables `OPENFLOWSHEET_*`. Install `.venv/bin/pip install -e . --no-deps`; run `openflowsheet solve SYN-001-nominal --out ./bundle` (or `python -m openflowsheet.application.cli …`). Records before 2026-10-02 say `process_runtime` / `process-runtime` |
 | Gate | `PATH=.venv/bin:$PATH ./scripts/check.sh` — ruff, ruff format, mypy strict, pytest. Last run green, **4245 tests** (3141 before T06) |
 | Done | P00–P03 `tested` and merged — **Phase 0 complete**. **K01 `tested`** and reviewed by Fable, findings closed. **K02 `tested`**, reviewed by Fable, all findings closed including the row-shape consolidation. ADR 0001, 0002, 0003, 0006 and 0008 accepted and applied |
-| Next | **v0.1.0 is public** (Frank, by hand: `computational-chemical-engineering/openflowsheet` = one squashed commit `5a35019` + tag `v0.1.0`; development continues in the private `openflowsheet-dev`, which `origin` points to). Release automation merged (`4650ada`): `cut-release.yml` (private) → `release.yml` (public, PyPI trusted publishing); setup and procedure in `docs/RELEASING.md`. Open with Frank: v0.1.0 to PyPI by hand, or 0.1.1 as the first automated release (then the gate script must print the released version); the GitHub environments and deploy key; what to exclude from public snapshots. Then v0.2: **M06** first, then M01 |
+| Next | **One public repository (R-150, Frank 2026-10-03).** `computational-chemical-engineering/openflowsheet` is the working repository; its history starts at v0.1.0 (`5a35019`); the pre-0.1.0 history is archived in the private `openflowsheet-dev` (`docs/HISTORY.md`). Branch `single-repo` (from `5a35019`, not pushed) carries the port of the post-0.1.0 work, tests that skip without the archived history, the gate reading `C` from `release/rc-trees/<C>.json` (R-151), one release workflow `release.yml` (dispatch, dry run by default; `docs/RELEASING.md`), the pre-push guard (`scripts/install-hooks.sh`) and version **0.1.1** (gate: `v0.1.1 tag may be proposed: YES`). Next: Frank pushes `single-repo` to the public `main` (after installing the pre-push hook in any clone that holds the archive), sets up the `pypi` environment, then dry-runs and runs `release.yml` for 0.1.1. Then v0.2: **M06** first, then M01 |
 | Not done | No package is `reviewed` — that needs human numerical and process-modeling sign-off, which no agent may claim. Nothing is empirically validated |
 | Pushing | You authorised pushing and merging at milestones on 2026-09-17; that is the standing instruction being followed. `main` is current on `origin/main` |
 
