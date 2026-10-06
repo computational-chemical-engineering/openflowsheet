@@ -20,7 +20,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M03 | Design | T08 | W24 (part) | not started |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
-| M06 | Build | T08 | W26, W27 | `architect` writing `docs/design/M06-web-shell.md` on `wp/M06` (brief `docs/briefs/M06-design.md`; ADR 0030+, R-170+ to avoid collisions) |
+| M06 | Build | T08 | W26, W27 | design done on `wp/M06` (`44098b0`, `03f3f13`: note `docs/design/M06-web-shell.md`, ADR 0030 + ADR 0019 Amendment 3 Proposed, R-170…R-175); WO-4…6 building (opus-engineer); WO-1…3 wait for Frank's approval of Amendment 3 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
 ## Milestone 0 (housekeeping)
@@ -38,6 +38,11 @@ PR parameter set (T_c, P_c, ω, c_p, ΔH_f per value from open, cited sources: `
 with CoolProp or Cantera; group database a cross-check only); a cited k_ij source; high-pressure NH₃–H₂–N₂ VLE data;
 the loop's pressure-drop convention (ADR 0022 D2); whether the reactor keeps its own fugacity correlations or takes
 PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
+
+## Needs Frank
+
+- Approve ADR 0019 Amendment 3 (additive contract widening: structure index + unroutable analysis, element-level `diff_revisions`, `list_audit`); default: build it on the branch, merge only after approval.
+- M06 F1 W27 spend [45 runs at M07, USD 15–45]; F2 agent model [`v17-c2` config]; F3 fonts [system]; F4 scenario = run comparison [yes]; F5 education mode [deferred].
 
 ## Next action
 
