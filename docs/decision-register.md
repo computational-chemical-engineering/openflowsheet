@@ -3569,3 +3569,142 @@ route would stay unpublished until the end of v0.2.
 own (the W gates that apply at that point), designed before the pre-release, not by relaxing the v0.1 one.
 
 ---
+
+## R-170 — The web shell is hand-written ES modules with no build, no framework and nothing third-party, served same-origin by `serve-http --ui`
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); **Proposed** until M06's review |
+| Normative text | `docs/adr/0030-diagnostic-web-shell.md`; `docs/design/M06-web-shell.md` §5, §8 |
+| Evidence | — (an architecture decision); gates G1, G10–G12 of the design note when built |
+| Affected packages | M06 and every later UI change |
+
+**Decision.** Source in `apps/web/`, shipped as package data through `_data/web`; rendering through an in-house
+builder that can only create text nodes; one `fetch` call site with a route table generated from `OPERATIONS`;
+`serve-http --ui` (off by default) adds a static mount at `/ui/` with a strict CSP; no CORS. Tests: Python
+contract and static scans, Node's built-in runner (test-time only, no npm), a headless-Chromium smoke test.
+
+**Rejected alternative, and why.** An npm toolchain (Vite/TypeScript/React): committed build output cannot be
+reviewed against its source or the sdist build needs Node, and the supply chain and licence inventory grow by
+hundreds of packages. A vendored micro-framework: an opaque file for a benefit the screens do not need. A
+separate port with CORS. Playwright in the default gate (kept as the fallback for a flaky smoke test).
+
+**Watch for.** Adding a JS dependency, a build step or a framework later reverses this and takes a new ADR.
+
+---
+
+## R-171 — The browser holds the existing bearer token in Web Storage and sends it only as a header; never a cookie
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); **Proposed** |
+| Normative text | ADR 0030 D3–D4; design note §7 |
+| Evidence | — ; gate G8 when built |
+| Affected packages | M06 |
+
+**Decision.** Login form → `sessionStorage` (opt-in `localStorage`); `Authorization: Bearer` only; never placed
+in a URL the app builds; no Host-header check, because without ambient authority DNS rebinding gains nothing.
+
+**Rejected alternative, and why.** A cookie session with a login endpoint: an endpoint outside `OPERATIONS` and
+ambient authority for CSRF and rebinding. A token in the query string: it lands in logs and history.
+
+**Watch for.** Any move to cookies needs CSRF and Host defences designed first.
+
+---
+
+## R-172 — ADR 0019 Amendment 3: the structure index and unroutable analysis (Asks 1, 2), element-level `diff_revisions` (Ask 6), `list_audit` (Ask 4); Ask 3 deferred, Ask 5 rejected
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); **Proposed** until M06's tested evidence and review |
+| Normative text | `docs/adr/0019-application-contract-v1.md` Amendment 3; design note §4 |
+| Evidence | probes at `67029fa` (design note §3); gates G2–G6 when built |
+| Affected packages | M06; every client of the contract |
+
+**Decision.** `inspect_structure` gains `rows`/`columns` beside the report (never inside it) and, when no route
+binds, `validation_structural_report`; `diff_revisions` gains `elements`, pairing list items by `id`;
+`list_audit` (Python, CLI, HTTP) with `read` for one's own rows and `read`+`policy` for others' (`cancel_job`'s
+`target_principal` rule). `blocked_by` in failure bundles is deferred (a hashed artifact; solver-record work);
+rights in `get_project` are rejected (the UI's route table is generated and checked).
+
+**Rejected alternative, and why.** Computing a finer diff, a row index or an audit view in the browser: each is a
+second implementation of contract semantics that humans would see and agents would not. Putting the index inside
+`structural_report`: it would move `structural_sha256` and R0. Exposing `list_audit` over MCP now: no agent task
+needs it and a tool description needs its own review (G15).
+
+**Watch for.** `elements` must stay out of `TransactionResult.diff` (ledger replays); the index must come from the
+same declaration as the report; nothing in it may be parsed from an id (R-019).
+
+---
+
+## R-173 — D1–D3 of the web-shell gap triage are closed by T08 Phase 1; Q1–Q5 ruled; the equation view is a row index without symbolic text
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06) |
+| Normative text | design note §3, §4, §6.5 |
+| Evidence | live probe at `67029fa`: STR-03 message names `heater`; the A02-352 bundle's `replay_identity` is filled (`T04-W12`) and `property_calls` = 2104; `tests/test_t08_w1_d{1,2,3}_*.py` |
+| Affected packages | M06 |
+
+**Decision.** No M06 work on D1–D3 beyond UI-level regression checks. Q1: no structured redundant/excess counts in
+the frozen validation report (the structure index serves them). Q2: the equation view shows a row's instance,
+role, specification, residual kind and SI unit, incidence with values, matched column, block, redundancy, DOF
+row and certificate residual — no symbolic text. Q3: no per-event or per-attempt wall time (it would make
+`solve-events.json` differ run to run and so the bundle irreproducible). Q4: no reference-root comparison in run
+records. Q5: own audit rows need `read`, other principals' `read`+`policy`.
+
+**Rejected alternative, and why.** Re-fixing D1–D3 (already fixed and tested). Per-event timing as telemetry
+inside the event schema (closed and hashed).
+
+**Watch for.** The gap triage's "take identity from the manifest until D2 is fixed" is obsolete.
+
+---
+
+## R-174 — The "scenario view" of the M06 plan row is the run comparison: two finished solves, differences displayed, never judged
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); scope default pending Frank (design note §12 F4) |
+| Normative text | design note §6.7 |
+| Evidence | — (a definition); the revision IR has no scenario object in v0.2 |
+| Affected packages | M06 |
+
+**Decision.** A scenario in v0.2 is one revision solved under one policy; the view compares two such runs
+(outcome, verification, path, structure identity, counters, certificate summary, state differences Δ and
+|Δ|/max(|a|,|b|)) with the banner that no registered comparison or allowance is applied.
+
+**Rejected alternative, and why.** Waiting for an IR scenario concept (none planned in v0.2). Showing
+AGREE/MATCH on this screen: that vocabulary belongs to registered comparisons (Q4).
+
+**Watch for.** When the IR gains scenarios, this definition is revisited by a new entry.
+
+---
+
+## R-175 — W27: Tier 0 coverage and access report for all 450 OpenIDAES-450 cases without spend; a registered 45-run agent campaign at M07 by Frank's spend decision
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); spend and model are Frank's (design note §12 F1, F2) |
+| Normative text | design note §9; the W27 registration (`docs/derivations/M06-W27-registration.md`, to be written by the `specifier`) |
+| Evidence | audit `study/openidaes450:docs/openidaes450-audit.md`; V17 cost USD 0.32–0.54 per run |
+| Affected packages | M06, M07 |
+
+**Decision.** Tier 0: provenance, artifact-access report with inaccessible assets, deterministic coverage classes
+for all 450 against the 450 and the 82-split, re-run at M07. Tier 1 default: 45 stratified cases, k = 1, the
+V17 `v17-c2` agent configuration, est. USD 15–45, at M07 on the v0.2 candidate. System false verification must
+be 0; agent terms reported. No headline score, no comparison with CRAFTS' results.
+
+**Rejected alternative, and why.** All 450 runs by default (USD 150–450 for 450 near-identical limitation
+measurements while v0.2's domain is narrow). Running the campaign now (0.1.x has SYN-001 components only, so
+coverage would not reflect v0.2).
+
+**Watch for.** The classification maps are semantic judgements; they are the design lane's, not the classifier's
+implementer's.
+
+---
