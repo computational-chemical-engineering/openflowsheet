@@ -15,7 +15,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
-| M01 | Design | T08 | W22, W21 (part) | **halted for budget 2026-10-06**: no specification written yet; only an exploratory reactor probe `b25c7e2` on `wp/M01` (`benchmarks/m01/`). Resume: a fresh `specifier` with `docs/briefs/M01-specification.md`, on `wp/M01` |
+| M01 | Design | T08 | W22, W21 (part) | **halted for budget 2026-10-06**: no specification yet; WIP note `docs/derivations/M01-spec-WIP.md` (`daea823` on `wp/M01`: measured findings, tentative decisions, where to resume — incl. a dossier §6 error: the reactor uses ideal-gas density). Resume: a fresh `specifier` with the brief and that WIP note, on `wp/M01` |
 | M02 | Build | M01 | W21 | not started |
 | M03 | Design | T08 | W24 (part) | not started |
 | M04 | Design | M02 | W23 | not started |
