@@ -1,0 +1,439 @@
+{
+ "record": "m01-reactor-probe",
+ "version": 1,
+ "status": "measured",
+ "judged": false,
+ "specification": "docs/derivations/M01-spec.md \u00a79.3",
+ "reactor_commit": "6089593464fc9bc2c0a0cb58e30ad5433ece6332",
+ "environment": {
+  "python": "3.13.5",
+  "platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+  "packages": {
+   "pymrm": "2.5.0",
+   "numpy": "2.5.3",
+   "scipy": "1.18.1",
+   "pandas": "3.0.6"
+  },
+  "threads": "OMP/OPENBLAS/MKL_NUM_THREADS=1"
+ },
+ "configuration": {
+  "geometry_case": "G2 \u2014 GHSV sweep_1000",
+  "nominal": {
+   "T_in_K": 673.15,
+   "p_ret_out_Pa": 10000000.0,
+   "H2_N2_ratio": 3.0,
+   "y_NH3_in": 0.03,
+   "GHSV_h": 1000.0
+  },
+  "species": [
+   "H2",
+   "N2",
+   "NH3"
+  ],
+  "permeance_prefactors": "P0_H2 = P0_N2 = P0_NH3 = 0"
+ },
+ "grid": [
+  {
+   "num_z": 100,
+   "solve_wall_s": 17.088,
+   "solve_converged": false,
+   "solver_accepted": false,
+   "steady_state_norm": 4.400434656946127,
+   "steps_attempted": 400,
+   "certificate_kpi_drift_ok": false,
+   "certificate_kpi_drift_rel_max": 0.004317143484347192,
+   "certificate_achieved_residual": 4.400434651607179,
+   "retentate_in_mol_s": [
+    0.005199414345242281,
+    0.0017331381150807602,
+    0.00021440883897906311
+   ],
+   "retentate_out_mol_s": [
+    0.0016601178254761252,
+    0.0005533726084910827,
+    6.853495397589144e-05
+   ],
+   "permeate_in_mol_s": [
+    0.0,
+    0.007146961299302104,
+    0.0
+   ],
+   "permeate_out_mol_s": [
+    0.0,
+    0.007138474244391127,
+    0.0
+   ],
+   "T_ret_last_cell_K": 673.1719564877554,
+   "T_ret_max_K": 673.1719565324132,
+   "T_perm_last_cell_K": 673.1500916610304,
+   "p_ret_first_cell_Pa": 10000218.359385993,
+   "p_ret_out_Pa": 10000000.0,
+   "element_H_rel": -0.6806898311366815,
+   "element_N_rel": -0.1403301287365986,
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "y_ret_in": [
+    0.7275,
+    0.2425,
+    0.03
+   ]
+  },
+  {
+   "num_z": 200,
+   "solve_wall_s": 18.747,
+   "solve_converged": false,
+   "solver_accepted": false,
+   "steady_state_norm": 4.410525801467809,
+   "steps_attempted": 400,
+   "certificate_kpi_drift_ok": false,
+   "certificate_kpi_drift_rel_max": 0.004334249113433593,
+   "certificate_achieved_residual": 4.410525795296568,
+   "retentate_in_mol_s": [
+    0.005199414345242281,
+    0.0017331381150807602,
+    0.00021440883897906311
+   ],
+   "retentate_out_mol_s": [
+    0.0016429741253369632,
+    0.0005476580417770249,
+    6.782720740344586e-05
+   ],
+   "permeate_in_mol_s": [
+    0.0,
+    0.007146961299302104,
+    0.0
+   ],
+   "permeate_out_mol_s": [
+    0.0,
+    0.0071363351692456875,
+    0.0
+   ],
+   "T_ret_last_cell_K": 673.1719564875523,
+   "T_ret_max_K": 673.1719565339155,
+   "T_perm_last_cell_K": 673.1500915815662,
+   "p_ret_first_cell_Pa": 10000218.013699966,
+   "p_ret_out_Pa": 10000000.0,
+   "element_H_rel": -0.6839872824998289,
+   "element_N_rel": -0.14124336315010388,
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "y_ret_in": [
+    0.7275,
+    0.2425,
+    0.03
+   ]
+  },
+  {
+   "num_z": 400,
+   "solve_wall_s": 21.756,
+   "solve_converged": false,
+   "solver_accepted": false,
+   "steady_state_norm": 4.416867315422221,
+   "steps_attempted": 400,
+   "certificate_kpi_drift_ok": false,
+   "certificate_kpi_drift_rel_max": 0.004341293089261913,
+   "certificate_achieved_residual": 4.4168673158129765,
+   "retentate_in_mol_s": [
+    0.005199414345242281,
+    0.0017331381150807602,
+    0.00021440883897906311
+   ],
+   "retentate_out_mol_s": [
+    0.0016349853178989546,
+    0.0005449951025923704,
+    6.749740397385759e-05
+   ],
+   "permeate_in_mol_s": [
+    0.0,
+    0.007146961299302104,
+    0.0
+   ],
+   "permeate_out_mol_s": [
+    0.0,
+    0.00713504438681458,
+    0.0
+   ],
+   "T_ret_last_cell_K": 673.1719564874096,
+   "T_ret_max_K": 673.1719565346222,
+   "T_perm_last_cell_K": 673.1500915295799,
+   "p_ret_first_cell_Pa": 10000217.846076231,
+   "p_ret_out_Pa": 10000000.0,
+   "element_H_rel": -0.6855238646709972,
+   "element_N_rel": -0.1417016344411037,
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "y_ret_in": [
+    0.7275,
+    0.2425,
+    0.03
+   ]
+  },
+  {
+   "num_z": 800,
+   "solve_wall_s": 28.002,
+   "solve_converged": false,
+   "solver_accepted": false,
+   "steady_state_norm": 4.419762974235276,
+   "steps_attempted": 400,
+   "certificate_kpi_drift_ok": false,
+   "certificate_kpi_drift_rel_max": 0.004343043552726931,
+   "certificate_achieved_residual": 4.419762965826941,
+   "retentate_in_mol_s": [
+    0.005199414345242281,
+    0.0017331381150807602,
+    0.00021440883897906311
+   ],
+   "retentate_out_mol_s": [
+    0.0016311189477982149,
+    0.0005437063159247795,
+    6.733778789450606e-05
+   ],
+   "permeate_in_mol_s": [
+    0.0,
+    0.007146961299302104,
+    0.0
+   ],
+   "permeate_out_mol_s": [
+    0.0,
+    0.007134337807332107,
+    0.0
+   ],
+   "T_ret_last_cell_K": 673.1719564874162,
+   "T_ret_max_K": 673.17195653496,
+   "T_perm_last_cell_K": 673.1500914999165,
+   "p_ret_first_cell_Pa": 10000217.792001888,
+   "p_ret_out_Pa": 10000000.0,
+   "element_H_rel": -0.6862675295309606,
+   "element_N_rel": -0.14193253507917042,
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "y_ret_in": [
+    0.7275,
+    0.2425,
+    0.03
+   ]
+  },
+  {
+   "num_z": 1600,
+   "solve_wall_s": 39.928,
+   "solve_converged": false,
+   "solver_accepted": false,
+   "steady_state_norm": 4.421236247820978,
+   "steps_attempted": 400,
+   "certificate_kpi_drift_ok": false,
+   "certificate_kpi_drift_rel_max": 0.004342982889292241,
+   "certificate_achieved_residual": 4.421236246498254,
+   "retentate_in_mol_s": [
+    0.005199414345242281,
+    0.0017331381150807602,
+    0.00021440883897906311
+   ],
+   "retentate_out_mol_s": [
+    0.0016291577534200785,
+    0.0005430525844578589,
+    6.72568235380612e-05
+   ],
+   "permeate_in_mol_s": [
+    0.0,
+    0.007146961299302104,
+    0.0
+   ],
+   "permeate_out_mol_s": [
+    0.0,
+    0.007133966928813497,
+    0.0
+   ],
+   "T_ret_last_cell_K": 673.1719564873955,
+   "T_ret_max_K": 673.171956535123,
+   "T_perm_last_cell_K": 673.1500914844565,
+   "p_ret_first_cell_Pa": 10000217.75600421,
+   "p_ret_out_Pa": 10000000.0,
+   "element_H_rel": -0.6866447493281237,
+   "element_N_rel": -0.14205104583428008,
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "y_ret_in": [
+    0.7275,
+    0.2425,
+    0.03
+   ]
+  },
+  {
+   "num_z": 3200,
+   "solve_wall_s": 64.31,
+   "solve_converged": false,
+   "solver_accepted": false,
+   "steady_state_norm": 4.42198337014461,
+   "steps_attempted": 400,
+   "certificate_kpi_drift_ok": false,
+   "certificate_kpi_drift_rel_max": 0.004343805000757474,
+   "certificate_achieved_residual": 4.421983380328904,
+   "retentate_in_mol_s": [
+    0.005199414345242281,
+    0.0017331381150807602,
+    0.00021440883897906311
+   ],
+   "retentate_out_mol_s": [
+    0.0016281056413061587,
+    0.0005427018804072121,
+    6.721338899219906e-05
+   ],
+   "permeate_in_mol_s": [
+    0.0,
+    0.007146961299302104,
+    0.0
+   ],
+   "permeate_out_mol_s": [
+    0.0,
+    0.007133776889840103,
+    0.0
+   ],
+   "T_ret_last_cell_K": 673.1719564873861,
+   "T_ret_max_K": 673.1719565351988,
+   "T_perm_last_cell_K": 673.150091476463,
+   "p_ret_first_cell_Pa": 10000217.724629635,
+   "p_ret_out_Pa": 10000000.0,
+   "element_H_rel": -0.6868471145421577,
+   "element_N_rel": -0.14211362970897357,
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "y_ret_in": [
+    0.7275,
+    0.2425,
+    0.03
+   ]
+  }
+ ],
+ "repeats": {
+  "num_z": 1600,
+  "runs": [
+   {
+    "num_z": 1600,
+    "solve_wall_s": 40.179,
+    "solve_converged": false,
+    "solver_accepted": false,
+    "steady_state_norm": 4.421236247820978,
+    "steps_attempted": 400,
+    "certificate_kpi_drift_ok": false,
+    "certificate_kpi_drift_rel_max": 0.004342982889292241,
+    "certificate_achieved_residual": 4.421236246498254,
+    "retentate_in_mol_s": [
+     0.005199414345242281,
+     0.0017331381150807602,
+     0.00021440883897906311
+    ],
+    "retentate_out_mol_s": [
+     0.0016291577534200785,
+     0.0005430525844578589,
+     6.72568235380612e-05
+    ],
+    "permeate_in_mol_s": [
+     0.0,
+     0.007146961299302104,
+     0.0
+    ],
+    "permeate_out_mol_s": [
+     0.0,
+     0.007133966928813497,
+     0.0
+    ],
+    "T_ret_last_cell_K": 673.1719564873955,
+    "T_ret_max_K": 673.171956535123,
+    "T_perm_last_cell_K": 673.1500914844565,
+    "p_ret_first_cell_Pa": 10000217.75600421,
+    "p_ret_out_Pa": 10000000.0,
+    "element_H_rel": -0.6866447493281237,
+    "element_N_rel": -0.14205104583428008,
+    "F_ret_in_mol_s": 0.007146961299302104,
+    "y_ret_in": [
+     0.7275,
+     0.2425,
+     0.03
+    ]
+   },
+   {
+    "num_z": 1600,
+    "solve_wall_s": 40.258,
+    "solve_converged": false,
+    "solver_accepted": false,
+    "steady_state_norm": 4.421236247820978,
+    "steps_attempted": 400,
+    "certificate_kpi_drift_ok": false,
+    "certificate_kpi_drift_rel_max": 0.004342982889292241,
+    "certificate_achieved_residual": 4.421236246498254,
+    "retentate_in_mol_s": [
+     0.005199414345242281,
+     0.0017331381150807602,
+     0.00021440883897906311
+    ],
+    "retentate_out_mol_s": [
+     0.0016291577534200785,
+     0.0005430525844578589,
+     6.72568235380612e-05
+    ],
+    "permeate_in_mol_s": [
+     0.0,
+     0.007146961299302104,
+     0.0
+    ],
+    "permeate_out_mol_s": [
+     0.0,
+     0.007133966928813497,
+     0.0
+    ],
+    "T_ret_last_cell_K": 673.1719564873955,
+    "T_ret_max_K": 673.171956535123,
+    "T_perm_last_cell_K": 673.1500914844565,
+    "p_ret_first_cell_Pa": 10000217.75600421,
+    "p_ret_out_Pa": 10000000.0,
+    "element_H_rel": -0.6866447493281237,
+    "element_N_rel": -0.14205104583428008,
+    "F_ret_in_mol_s": 0.007146961299302104,
+    "y_ret_in": [
+     0.7275,
+     0.2425,
+     0.03
+    ]
+   },
+   {
+    "num_z": 1600,
+    "solve_wall_s": 40.011,
+    "solve_converged": false,
+    "solver_accepted": false,
+    "steady_state_norm": 4.421236247820978,
+    "steps_attempted": 400,
+    "certificate_kpi_drift_ok": false,
+    "certificate_kpi_drift_rel_max": 0.004342982889292241,
+    "certificate_achieved_residual": 4.421236246498254,
+    "retentate_in_mol_s": [
+     0.005199414345242281,
+     0.0017331381150807602,
+     0.00021440883897906311
+    ],
+    "retentate_out_mol_s": [
+     0.0016291577534200785,
+     0.0005430525844578589,
+     6.72568235380612e-05
+    ],
+    "permeate_in_mol_s": [
+     0.0,
+     0.007146961299302104,
+     0.0
+    ],
+    "permeate_out_mol_s": [
+     0.0,
+     0.007133966928813497,
+     0.0
+    ],
+    "T_ret_last_cell_K": 673.1719564873955,
+    "T_ret_max_K": 673.171956535123,
+    "T_perm_last_cell_K": 673.1500914844565,
+    "p_ret_first_cell_Pa": 10000217.75600421,
+    "p_ret_out_Pa": 10000000.0,
+    "element_H_rel": -0.6866447493281237,
+    "element_N_rel": -0.14205104583428008,
+    "F_ret_in_mol_s": 0.007146961299302104,
+    "y_ret_in": [
+     0.7275,
+     0.2425,
+     0.03
+    ]
+   }
+  ],
+  "bitwise_identical": true
+ }
+}
