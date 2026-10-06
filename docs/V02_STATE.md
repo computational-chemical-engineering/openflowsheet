@@ -15,7 +15,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
-| M01 | Design | T08 | W22, W21 (part) | **halted for budget 2026-10-06**: specifier WIP on `wp/M01` (worktree `.claude/worktrees/agent-a94d84cd26a293bc0`; `docs/derivations/M01-spec-WIP.md` + `benchmarks/m01/` if the halt commit landed). Resume: a fresh `specifier` with `docs/briefs/M01-specification.md` + the WIP note |
+| M01 | Design | T08 | W22, W21 (part) | **halted for budget 2026-10-06**: no specification written yet; only an exploratory reactor probe `b25c7e2` on `wp/M01` (`benchmarks/m01/`). Resume: a fresh `specifier` with `docs/briefs/M01-specification.md`, on `wp/M01` |
 | M02 | Build | M01 | W21 | not started |
 | M03 | Design | T08 | W24 (part) | not started |
 | M04 | Design | M02 | W23 | not started |
@@ -46,7 +46,7 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Next action
 
-**Halted 2026-10-06 at Frank's request (token budget).** Resume only when Frank says so. Then: (1) check that the
+**Halted 2026-10-06 at Frank's request (token budget).** Resume only when Frank says so (he plans to continue on his Max x20 account once its budget resets). Then: (1) check that the
 two halt commits landed (`git log -1 wp/M01`, `git log -1 wp/M06-build`); if not, commit the worktrees' files as WIP;
 (2) M01: a fresh `specifier` (the old agent's context is large) with the brief and the WIP note; (3) M06: WO-4…6 on
 `wp/M06-build`, then check.sh. At most 4 agents. Nothing is pushed: `main` is ahead of `origin/main` by local
