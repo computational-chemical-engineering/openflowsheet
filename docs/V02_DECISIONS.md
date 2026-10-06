@@ -21,3 +21,10 @@ Grep, don't read whole. Newest at the bottom.
 - Stale worktrees (public-line, showcase, the CI agent's) are clean; removing them was refused by the permission
   classifier — left for Frank.
 - Frank: the Claude Design web-shell design was not revised after 2026-09-29; the imported prototype is final input.
+
+## 2026-10-06 — halt
+
+- M06 architect done (`wp/M06` `44098b0`, `03f3f13`). Corrections from it: the project is Apache-2.0 (the brief said
+  MIT); D1–D3 already fixed by T08 Phase 1; the command is `serve-http`.
+- Specifier (M01) and engineer (M06 WO-4…6) both hit the account session limit, were resumed, then halted at
+  Frank's request ("The task requires too many tokens. Try to get it to a save state and then halt.").
