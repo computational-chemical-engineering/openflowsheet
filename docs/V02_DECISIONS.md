@@ -28,3 +28,10 @@ Grep, don't read whole. Newest at the bottom.
   MIT); D1–D3 already fixed by T08 Phase 1; the command is `serve-http`.
 - Specifier (M01) and engineer (M06 WO-4…6) both hit the account session limit, were resumed, then halted at
   Frank's request ("The task requires too many tokens. Try to get it to a save state and then halt.").
+- M06 WIP `f8fa5e5` on `wp/M06-build` (untested). WO-4 partial: `resources.py` (`PACKAGED` + `web`, `REPOSITORY_PATHS`
+  web→apps/web, `DIRECTORIES`), `_data/web` symlink, pyproject globs, `apps/web/index.html`, `favicon.svg`. Known
+  breakage: `tests/test_t08_w4_package_data.py` (assumes packaged path = repo path). Engineer's next steps: fix that
+  test via `repository_path()`; `bindings/web.py` with security headers as `/ui`-scoped middleware (not a mount
+  wrapper: 404/405 would lack the CSP); `serve-http --ui` (exit 1 if web files missing); import rule in
+  `tests/test_t07_w6a_http.py`; serving tests; then WO-5, WO-6. `actions/setup-node` v7.0.0 =
+  `820762786026740c76f36085b0efc47a31fe5020`. Planned: G1 equality as `xfail(strict=True)` until WO-3/9/10.
