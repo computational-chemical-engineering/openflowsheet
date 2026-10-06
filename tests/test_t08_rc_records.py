@@ -4,13 +4,15 @@ record's hashes resolve to committed records.
 `docs/t08-rc-record.md` cites each record of the RC job by its sha256. Amendment R7 1 puts the
 records of 1 MB or less under `evidence/T08/<C>/rc/`, outside the trees ADR 0021 D2.4 compares,
 and `rc/records.json` lists every cited record with its sha256, size and whether it is committed;
-a larger one stays git-ignored under `evidence/T08/<C>/artifacts/rc/` and is cited by hash only.
-Here: the per-step table's hashes are exactly the listed ones, each listed record sits on the row
-that cites it, every committed file hashes to its entry, and the size rule holds both ways.
+a larger one stays git-ignored under `evidence/T08/<C>/artifacts/rc/` and, by Amendment R8 1, is
+committed gzip-compressed beside its path (`<path>.gz`). Here: the per-step table's hashes are
+exactly the listed ones, each listed record sits on the row that cites it, every committed file
+hashes to its entry (a compressed one after decompression), and the size rule holds both ways.
 """
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import re
@@ -87,13 +89,22 @@ def test_committed_records_hash_to_their_entries_and_the_size_rule_holds() -> No
             assert _sha256(committed) == entry["sha256"], entry["path"]
         else:
             assert not committed.exists(), entry["path"]
+            # Amendment R8 1: the record is committed gzip-compressed beside its path; the
+            # entry's sha256 and size are those of the uncompressed bytes.
+            compressed = RECORDS / f"{entry['path']}.gz"
+            assert compressed.is_file(), entry["path"]
+            raw = gzip.decompress(compressed.read_bytes())
+            assert len(raw) == entry["bytes"], entry["path"]
+            assert hashlib.sha256(raw).hexdigest() == entry["sha256"], entry["path"]
             local = ARTIFACTS / entry["path"]
             if local.is_file():  # on the host that ran the RC job only (git-ignored)
                 assert _sha256(local) == entry["sha256"], entry["path"]
 
 
 def test_the_directory_holds_only_the_listed_records() -> None:
-    listed = {entry["path"] for entry in _index()["files"] if entry["committed"]}
+    files = _index()["files"]
+    listed = {entry["path"] for entry in files if entry["committed"]}
+    listed |= {f"{entry['path']}.gz" for entry in files if not entry["committed"]}
     present = {
         path.relative_to(RECORDS).as_posix() for path in RECORDS.rglob("*") if path.is_file()
     }

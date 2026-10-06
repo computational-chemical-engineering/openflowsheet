@@ -469,7 +469,7 @@ Tolerance column: **exact** means equality of integers, strings, hashes or sets;
 | T08.A18 | `src/process_runtime/application/bindings/descriptions/REVIEW.json` | for each of the 17 operations both reviews (`design-lane`, `human`) are `reviewed`, with `reviewed_by` and `reviewed_at` set, at the recorded hash, which equals the served text's | exact | test |
 | T08.A19 | The lock lookup. States: (a) the source checkout at `C`; (b) the RC wheel installed (`--no-deps`, dependencies at the lock's versions) into a virtual environment inside a scratch directory that also holds an unrelated file named `requirements.lock`; (c) a `SYN-001-nominal` bundle written by (b)'s CLI, replayed by (b) and by (a) | (a) `RunManifest` `lock_sha256` = `ead4edf1…`; (b) `lock_sha256` = `""` — the stray file is not read; (c) both replays `inspected_archived_results`, verdict `NOT_RUN`, the reason naming the dependency set unknown (on both sides from (b); on the archive's side from (a)); never `MATCH`; no exception *(added 2026-10-01, Amendment R3 5)* | exact. (a) catches a fix that empties the hash everywhere; (b) the parent-directory walk; (c) a silent `MATCH` | ci |
 | T08.A20 | `support_envelope.yaml` against the code | operations = the 20 of `OPERATIONS`; models = the 13 of `MODEL_BUILDERS` *(amended 2026-09-29, T08 build-first §E.4)*; policies = the offered list; unit spellings = ADR 0016's table; providers = {`syn001`}; components = {A, B, C} | exact set equality | test |
-| T08.A21 | The harvest (§5.7) over every `evidence/**/manifest.json` | every limitation and non-pass check classified exactly once (E/S/P/B), every pointer resolves, every text hash current | exact | test |
+| T08.A21 | The harvest (§5.7) over P00–T07's manifests (§5.7; `HARVEST_PACKAGES`); T08's own manifest, written after `C`, is the next harvest's *(amended 2026-10-06, Amendment R8 2)* | every limitation and non-pass check classified exactly once (E/S/P/B), every pointer resolves, every text hash current | exact | test |
 | T08.A22 | Every `unsupported` row | names a typed outcome and a test node that exists and passes at `C` | exact | test |
 | T08.A23 | `docs/support-matrix.md` | regenerates byte for byte from the YAML | exact | test |
 | T08.A24 | The alias rule in the verifier. States: P = 100 kPa, `j` = 99 and 100; P = 180 kPa, `j` = 19, 20, 129, 130 (pressure columns placed at those positions in a constructed declaration) | up, unsupported; up, down, down, unsupported (§5.4) | exact integers | test |
@@ -947,3 +947,36 @@ under `## R-148`.
 ### R7 2 — V19 clause (i) (§4.9)
 
 *Transcribed by the build lane from verdict finding G4.* §4.9 (i) read "Frank's selection is recorded (ADR 0022 accepted)", while ADR 0022's own Status line, written with it, makes the ADR Accepted *when* Frank records the choice there *and* V19 is `PASS`. Read literally the pair is circular: V19 could pass only after the ADR was Accepted, and the ADR could be Accepted only after V19 passed. Clause (i) therefore reads "Frank's selection recorded in ADR 0022" — the verdict's reading 1 at `C` = `67c66d9` (`docs/reviews/T08-verdicts.md`, `f22f3cf`) and the order Frank set in R-145: the choice recorded, then V19 `PASS`, then Accepted. ADR 0022 is marked Accepted with that `PASS` (2026-10-02), pointing at the dossier's "Frank's statements, 2026-10-02". Nothing else in §4.9 changes.
+
+## Amendment R8 (2026-10-06) — after the close-out review
+
+**Author:** transcribed by the build lane from the design lane's close-out review `docs/reviews/T08-closeout-review.md`
+(2026-10-06), which confirmed Amendments R6 1, R7 1, R7 2 and the close-out decisions Q1 (B24) and Q2 (A21) with no
+must-fix item. v0.1.0 and v0.1.1 are unaffected. The body marker *(amended 2026-10-06, Amendment R8 n)* points back here.
+
+### R8 1 — the RC records over 1 MB (review finding F1)
+
+*Decision.* R7 1's 1 MB limit left the two per-start ensemble records behind V20 (d)'s S = 434 —
+`ensemble/rc-ref-x86-64.json` (2 366 257 bytes) and `ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.json`
+(2 365 831 bytes) — only on the RC host and in expiring CI artifacts. They are committed gzip-compressed beside their
+paths (`<path>.gz`, `gzip -9 -n`, about 120 KB each); `rc/records.json` is unchanged (its sha256 and size are of the
+uncompressed bytes, and `committed: false` keeps saying the raw file is not in the tree). `tests/test_t08_rc_records.py`
+decompresses each and checks size and sha256. *Rejected:* a durable store named by hash outside the repository (the
+private archive or a release asset) — it splits the evidence from the record that cites it.
+
+### R8 2 — T08.A21's row text (review finding F2, erratum)
+
+§9's A21 row said "over every `evidence/**/manifest.json`", which the code (`1305f87`) and §5.7's count ("today 18
+manifests") do not do; it now reads "over P00–T07's manifests (§5.7; `HARVEST_PACKAGES`); T08's own manifest, written
+after `C`, is the next harvest's". No denominator moved: `C`'s tree has 18 manifests, none under `evidence/T08/`.
+
+### R8 3 — R6's authorship and lettering (review notes N1, N2)
+
+R6 1's edits to §3.2, `reference_values.yaml` and `t08_reference.py` are design-lane edits under R-149's "Watch for";
+`docs/reviews/T08-closeout-review.md` item 1 is their design-lane confirmation. R6's "As R5 1 (b)–(d)" refers to the
+lettering of Ruling 1 in `docs/reviews/T08-review-3.md`.
+
+### R8 4 — T08's own limitations hand on to v0.2 (review finding F3)
+
+T08's manifest (`evidence/T08/67c66d9…/manifest.json`: 58 limitations, 16 without an L/U row id, and the non-pass
+A70 and B23) is classified by no harvest. It is an input to v0.2's support-envelope harvest (`docs/V02_STATE.md`).

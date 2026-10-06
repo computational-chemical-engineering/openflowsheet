@@ -15,20 +15,21 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
-| M01 | Design | T08 | W22, W21 (part) | specification next (`specifier`) |
+| M01 | Design | T08 | W22, W21 (part) | `specifier` writing `docs/derivations/M01-spec.md` on `wp/M01` (brief `docs/briefs/M01-specification.md`; ADR 0026+, R-154+) |
 | M02 | Build | M01 | W21 | not started |
 | M03 | Design | T08 | W24 (part) | not started |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
-| M06 | Build | T08 | W26, W27 | design inputs on `main` (`docs/design/web-shell*`); design note next (`architect`) |
+| M06 | Build | T08 | W26, W27 | `architect` writing `docs/design/M06-web-shell.md` on `wp/M06` (brief `docs/briefs/M06-design.md`; ADR 0030+, R-170+ to avoid collisions) |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
 ## Milestone 0 (housekeeping)
 
 - [x] Web-shell design inputs ported from `design/web-shell-brief` (pre-0.1.0 base, cannot be pushed) onto `main`
 - [x] Frank's K_NH₃ decision (R-152), the order (R-153), the dossier statement
-- [ ] `ci.yml` actions pinned by SHA
-- [ ] Design-lane look at T08 release spec Amendments R6/R7 and close-out Q1 (B24 test), Q2 (A21 harvest excludes `evidence/T08/`)
+- [x] `ci.yml` actions pinned by SHA (`67029fa`; 44 lines; inputs checked against the new majors; test added)
+- [x] T08 close-out review (`docs/reviews/T08-closeout-review.md`): all five confirmed, no must-fix; F1/F2/N1/N2/N5 applied as T08 spec Amendment R8
+- [ ] **F3 hand-on:** T08's own manifest (58 limitations, 16 without L/U id; A70, B23) is an input to v0.2's support-envelope harvest
 - [ ] Schema `$id` move (deferred to v0.2 by ADR; R-149) — with M01's or M06's first schema change
 
 ## Open inputs (M01, dossier `needs_fact`)
@@ -40,4 +41,4 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Next action
 
-Recon digest for M01 → `specifier` brief `docs/briefs/M01-specification.md`; in parallel the M06 `architect` brief.
+Wait for the specifier (M01), the architect (M06) and the close-out reviewer; then the session reviews each, commits, and plans M01's build. Stale worktrees `.claude/worktrees/{public-line,showcase,agent-a3fc35fa5df8ef915}` are clean; removal needs Frank (permission).
