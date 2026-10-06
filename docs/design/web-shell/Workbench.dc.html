@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f6f6f3;color:#16181b;font-family:'IBM Plex Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:#2b5ca8;text-decoration:none}a:hover{color:#1d4380;text-decoration:underline}
+button{font-family:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid #2b5ca8;outline-offset:2px}
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;font-size:13px;line-height:1.45">
+
+<sc-if value="{{ shellA }}" hint-placeholder-val="{{ true }}">
+<aside style="width:248px;flex:none;background:#eeeeea;border-right:1px solid #dcdcd5;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto">
+  <div style="padding:16px 18px 12px;display:flex;align-items:baseline;gap:8px">
+    <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;letter-spacing:-0.01em">clearsheet</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#686d73">workbench · M06</span>
+  </div>
+  <div style="padding:4px 12px 12px;display:flex;flex-direction:column;gap:2px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.08em;color:#686d73;padding:6px 6px 4px">REVISIONS</div>
+    <sc-for list="{{ revs }}" as="r" hint-placeholder-count="2">
+      <button onClick="{{ r.onClick }}" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:7px 8px;border:1px solid {{ r.bd }};border-radius:5px;background:{{ r.bg }};cursor:pointer;color:#16181b">
+        <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12.5px">{{ r.id }}</span>
+        <span style="flex:1;min-width:0;font-size:11.5px;color:#464b51;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.desc }}</span>
+        <span title="{{ r.pill.label }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ r.pill.fg }}">{{ r.pill.glyph }}</span>
+      </button>
+    <sc-if value="{{ r.showRuns }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:2px;margin:2px 0 4px 14px;padding-left:10px;border-left:1px solid #cdcdc5">
+        <sc-for list="{{ r.runs }}" as="u" hint-placeholder-count="2">
+          <button onClick="{{ u.onClick }}" style="display:flex;align-items:center;gap:8px;text-align:left;padding:5px 8px;border:none;border-radius:4px;background:{{ u.bg }};cursor:pointer;color:#16181b;font-size:12px">
+            <span style="flex:1">{{ u.label }}</span>
+            <span title="{{ u.pill.label }}" style="font-family:'IBM Plex Mono',monospace;color:{{ u.pill.fg }}">{{ u.pill.glyph }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+    </sc-for>
+  </div>
+  <nav style="padding:4px 12px;display:flex;flex-direction:column;gap:10px;flex:1">
+    <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="3">
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.08em;color:#686d73;padding:6px 6px 4px">{{ g.label }}</div>
+        <sc-for list="{{ g.items }}" as="n" hint-placeholder-count="3">
+          <button onClick="{{ n.onClick }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border:none;border-radius:4px;background:{{ n.bg }};color:#16181b;font-weight:{{ n.fw }};font-size:13px;text-align:left;cursor:pointer;box-shadow:{{ n.shadow }}">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#686d73;width:14px">{{ n.num }}</span>
+            <span style="flex:1">{{ n.label }}</span>
+            <span title="{{ n.pill.label }}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ n.pill.fg }}">{{ n.pill.glyph }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-for>
+  </nav>
+  <div style="padding:12px 18px 16px;border-top:1px solid #dcdcd5;display:flex;flex-direction:column;gap:8px">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12.5px"><input type="checkbox" checked="{{ edu }}" onChange="{{ toggleEdu }}"></input>Education mode</label>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12.5px"><input type="checkbox" checked="{{ showGaps }}" onChange="{{ toggleGaps }}"></input>Show data-gap notes</label>
+    <div style="font-size:11.5px;color:#686d73">Signed in as <span style="font-family:'IBM Plex Mono',monospace;color:#464b51">engineer · read, draft edit, execute</span></div>
+  </div>
+</aside>
+</sc-if>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+<sc-if value="{{ shellA }}" hint-placeholder-val="{{ true }}">
+  <header style="position:sticky;top:0;z-index:5;background:#f6f6f3ee;backdrop-filter:blur(6px);border-bottom:1px solid #e2e2dc;padding:10px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#464b51;flex-wrap:wrap">
+      <span style="color:#16181b;font-weight:600">{{ ctx.rev }}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600;line-height:18px;color:{{ ctx.revPill.fg }};background:{{ ctx.revPill.bg }};border:1px solid {{ ctx.revPill.bd }}"><span aria-hidden="true">{{ ctx.revPill.glyph }}</span>{{ ctx.revPill.label }}</span>
+      <span style="color:#a0a39f">/</span>
+      <span>{{ ctx.runLabel }}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600;line-height:18px;color:{{ ctx.runPill.fg }};background:{{ ctx.runPill.bg }};border:1px solid {{ ctx.runPill.bd }}"><span aria-hidden="true">{{ ctx.runPill.glyph }}</span>{{ ctx.runPill.label }}</span>
+      <span style="color:#a0a39f">/</span>
+      <span>{{ ctx.certLabel }}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600;line-height:18px;color:{{ ctx.certPill.fg }};background:{{ ctx.certPill.bg }};border:1px solid {{ ctx.certPill.bd }}"><span aria-hidden="true">{{ ctx.certPill.glyph }}</span>{{ ctx.certPill.label }}</span>
+      <button onClick="{{ gap.G1 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G1</button>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <sc-for list="{{ ops }}" as="o" hint-placeholder-count="4">
+        <button title="{{ o.title }}" disabled="{{ o.disabled }}" style="display:flex;flex-direction:column;align-items:flex-start;padding:4px 10px;border-radius:5px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};cursor:{{ o.cursor }};line-height:1.2">
+          <span style="font-size:12.5px;font-weight:500">{{ o.label }}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:{{ o.sub }}">{{ o.op }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </header>
+</sc-if>
+
+<sc-if value="{{ shellB }}" hint-placeholder-val="{{ false }}">
+  <header style="position:sticky;top:0;z-index:5;background:#ffffff;border-bottom:1px solid #e2e2dc">
+    <div style="padding:10px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;border-bottom:1px solid #eeeeea">
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px">clearsheet</span>
+      <div style="display:flex;gap:2px;padding:2px;background:#f0f0ec;border-radius:6px">
+        <sc-for list="{{ revs }}" as="r" hint-placeholder-count="2">
+          <button onClick="{{ r.onClick }}" style="display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid {{ r.bd }};border-radius:4px;background:{{ r.bgB }};cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#16181b;white-space:nowrap"><span style="color:{{ r.pill.fg }}">{{ r.pill.glyph }}</span>{{ r.id }}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ isNet }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:2px;padding:2px;background:#f0f0ec;border-radius:6px">
+          <sc-for list="{{ runs }}" as="u" hint-placeholder-count="2">
+            <button onClick="{{ u.onClick }}" style="display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid {{ u.bd }};border-radius:4px;background:{{ u.bgB }};cursor:pointer;font-size:12px;color:#16181b;white-space:nowrap" title="{{ u.label }}"><span style="font-family:'IBM Plex Mono',monospace;color:{{ u.pill.fg }}">{{ u.pill.glyph }}</span>{{ u.short }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <div style="flex:1"></div>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px"><input type="checkbox" checked="{{ edu }}" onChange="{{ toggleEdu }}"></input>Education</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px"><input type="checkbox" checked="{{ showGaps }}" onChange="{{ toggleGaps }}"></input>Gap notes</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <sc-for list="{{ ops }}" as="o" hint-placeholder-count="4">
+          <button title="{{ o.title }}" disabled="{{ o.disabled }}" style="padding:5px 10px;border-radius:5px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};cursor:{{ o.cursor }};font-size:12.5px;font-weight:500">{{ o.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="padding:12px 28px 0;display:flex;align-items:stretch;gap:0;flex-wrap:wrap">
+      <sc-for list="{{ trail }}" as="t" hint-placeholder-count="4">
+        <div style="display:flex;align-items:center">
+          <span style="display:{{ t.arrow }};width:28px;height:1px;background:#cdcdc5;margin:0 2px"></span>
+          <button onClick="{{ t.onClick }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:8px 12px 10px;border:1px solid {{ t.bd }};border-bottom:2px solid {{ t.under }};border-radius:6px 6px 0 0;background:{{ t.bg }};cursor:pointer;text-align:left;margin-bottom:-1px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#686d73">{{ t.kicker }}</span>
+            <span style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600;color:#16181b;white-space:nowrap">{{ t.label }}</span><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ t.pill.fg }};background:{{ t.pill.bg }};border:1px solid {{ t.pill.bd }}"><span aria-hidden="true">{{ t.pill.glyph }}</span>{{ t.pill.label }}</span></span>
+          </button>
+        </div>
+      </sc-for>
+      <div style="flex:1;min-width:24px"></div>
+      <div style="display:flex;align-items:flex-end;gap:2px">
+        <sc-for list="{{ tabsB }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.onClick }}" style="padding:8px 12px;border:none;border-bottom:2px solid {{ t.under }};background:transparent;cursor:pointer;font-size:13px;font-weight:{{ t.fw }};color:#16181b">{{ t.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </header>
+</sc-if>
+
+<main style="padding:24px 28px 80px;max-width:1320px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:18px">
+
+<!-- 1 OVERVIEW -->
+<sc-if value="{{ s.overview }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="01 Revision overview" style="display:flex;flex-direction:column;gap:18px">
+  <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:280px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;color:#686d73">01 · REVISION OVERVIEW · inspect.summary</div>
+      <h1 style="margin:4px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.01em">{{ ctx.rev }} <span style="font-weight:400;color:#464b51">— {{ ctx.revDesc }}</span></h1>
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#464b51">SYN-001 · components A, B, C · commit 78d3647</div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+    <div style="flex:3 1 600px;display:flex;flex-direction:column;gap:18px;min-width:0">
+      <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #eeeeea">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">FLOWSHEET</span>
+          <span style="font-size:12px;color:#686d73">auto-layout · click a unit or stream for its equations</span>
+        </div>
+        <sc-if value="{{ isNet }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:10px 14px 4px;overflow-x:auto">
+            <svg viewBox="0 0 780 220" style="width:100%;min-width:620px;height:auto;display:block;font-family:'IBM Plex Mono',monospace">
+              <g style="stroke:#16181b;stroke-width:1.25;fill:none">
+                <line x1="90" y1="110" x2="140" y2="110"></line><line x1="210" y1="110" x2="270" y2="110"></line><line x1="340" y1="110" x2="400" y2="110"></line><line x1="470" y1="110" x2="540" y2="110"></line><line x1="610" y1="110" x2="670" y2="110"></line><line x1="435" y1="90" x2="435" y2="44"></line>
+                <polyline points="575,130 575,188 175,188 175,130" style="stroke:#2b5ca8;stroke-dasharray:5 3"></polyline>
+              </g>
+              <g style="fill:#16181b">
+                <polygon points="133,106 140,110 133,114"></polygon><polygon points="263,106 270,110 263,114"></polygon><polygon points="393,106 400,110 393,114"></polygon><polygon points="533,106 540,110 533,114"></polygon><polygon points="663,106 670,110 663,114"></polygon><polygon points="431,51 435,44 439,51"></polygon>
+                <polygon points="171,137 175,130 179,137" style="fill:#2b5ca8"></polygon>
+              </g>
+              <g style="fill:#ffffff;stroke:#16181b;stroke-width:1.25">
+                <rect x="20" y="90" width="70" height="40" rx="3"></rect><rect x="140" y="90" width="70" height="40" rx="3"></rect><rect x="270" y="90" width="70" height="40" rx="3"></rect><rect x="400" y="90" width="70" height="40" rx="3"></rect><rect x="540" y="90" width="70" height="40" rx="3"></rect>
+                <rect x="670" y="90" width="90" height="40" rx="20" style="stroke-dasharray:3 3"></rect><rect x="390" y="8" width="90" height="36" rx="18" style="stroke-dasharray:3 3"></rect>
+              </g>
+              <g style="font-size:12px;font-weight:600;fill:#16181b;text-anchor:middle">
+                <text x="55" y="114">FEED</text><text x="175" y="114">MIX</text><text x="305" y="114">HEAT</text><text x="435" y="114">PHF</text><text x="575" y="114">SPLIT</text>
+              </g>
+              <g style="font-size:11px;fill:#464b51;text-anchor:middle">
+                <text x="715" y="114">product</text><text x="435" y="30">vapour</text>
+                <text x="115" y="102">S1</text><text x="240" y="102">S2</text><text x="370" y="102">S3</text><text x="505" y="102">S5</text><text x="640" y="102">S7</text><text x="449" y="72" style="text-anchor:start">S4</text>
+                <text x="375" y="206" style="fill:#2b5ca8">S6 · recycle</text>
+              </g>
+              <g style="font-size:10px;fill:#686d73;text-anchor:middle">
+                <text x="305" y="146">Q 31487.6 W</text><text x="435" y="146">Q 20000 W</text><text x="370" y="126">vf 0.01541</text>
+              </g>
+            </svg>
+          </div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;padding:8px 14px 12px;font-size:12px;color:#464b51;border-top:1px solid #eeeeea">
+            <span>5 units · 7 streams · 1 recycle</span><span>path <span style="font-family:'IBM Plex Mono',monospace">revision_eo</span></span><span>policy <span style="font-family:'IBM Plex Mono',monospace">T06-revision-v2</span></span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isStr }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:14px;height:200px;border-radius:4px;border:1px dashed #cdcdc5;background:repeating-linear-gradient(135deg,#f6f6f3 0 8px,#efefeb 8px 16px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#464b51">STR-03 topology not in the export · only U-HEAT is named</span>
+            <button onClick="{{ gap.G4 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G4</button>
+          </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ edu }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid #a9d6d1;background:#e2f2f0;color:#0e4f4c;border-radius:6px;padding:12px 14px;line-height:1.55;text-wrap:pretty">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.08em;margin-bottom:4px">EDUCATION · UNITS → EQUATIONS</div>
+          Each unit contributes equations: a mole balance per component, an energy balance, and any specifications attached to it. Each stream contributes variables: component flows, T, P and phase state. The compiler assembles all of them into one system and, on the <span style="font-family:'IBM Plex Mono',monospace">revision_eo</span> path, solves it simultaneously. The recycle S6 is why a sequential pass cannot finish in one sweep: MIX needs S6, which depends on everything downstream.
+        </div>
+      </sc-if>
+    </div>
+    <div style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:14px">
+      <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">LAST RUN</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ ctx.runPill.fg }};background:{{ ctx.runPill.bg }};border:1px solid {{ ctx.runPill.bd }}"><span aria-hidden="true">{{ ctx.runPill.glyph }}</span>{{ ctx.runPill.label }}</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ ctx.certPill.fg }};background:{{ ctx.certPill.bg }};border:1px solid {{ ctx.certPill.bd }}"><span aria-hidden="true">{{ ctx.certPill.glyph }}</span>{{ ctx.certPill.label }}</span>
+        </div>
+        <div style="font-size:12.5px;color:#464b51;text-wrap:pretty">{{ ctx.runSummary }}</div>
+        <div style="display:flex;gap:14px;font-size:12.5px;flex-wrap:wrap">
+          <sc-for list="{{ ctx.runLinks }}" as="l" hint-placeholder-count="2"><a href="#" onClick="{{ l.onClick }}">{{ l.label }} →</a></sc-for>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px">
+        <div style="padding:12px 14px 6px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">OPEN ISSUES · {{ ctx.issueCount }}</div>
+        <sc-for list="{{ ctx.issues }}" as="i" hint-placeholder-count="2">
+          <button onClick="{{ i.onClick }}" style="display:flex;flex-direction:column;gap:5px;width:100%;text-align:left;padding:10px 14px;border:none;border-top:1px solid #eeeeea;background:transparent;cursor:pointer;color:#16181b">
+            <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ i.pill.fg }};background:{{ i.pill.bg }};border:1px solid {{ i.pill.bd }}"><span aria-hidden="true">{{ i.pill.glyph }}</span>{{ i.pill.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#686d73">{{ i.kind }}</span></span>
+            <span style="font-size:12.5px;text-wrap:pretty">{{ i.text }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73;flex:1">YOU MAY</span><button onClick="{{ gap.G9 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G9</button></div>
+        <sc-for list="{{ perms }}" as="p" hint-placeholder-count="6">
+          <div style="display:flex;gap:8px;font-size:12.5px;color:{{ p.fg }}"><span style="font-family:'IBM Plex Mono',monospace;width:12px">{{ p.glyph }}</span><span style="flex:1">{{ p.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">{{ p.state }}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<!-- 2 VALIDATION -->
+<sc-if value="{{ s.validation }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="02 Validation and DOF" style="display:flex;flex-direction:column;gap:18px">
+  <div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;color:#686d73">02 · VALIDATION &amp; DEGREES OF FREEDOM · edit.validate · inspect.dof_report</div>
+    <h1 style="margin:4px 0 0;font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap">{{ ctx.rev }} <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ ctx.revPill.fg }};background:{{ ctx.revPill.bg }};border:1px solid {{ ctx.revPill.bd }}"><span aria-hidden="true">{{ ctx.revPill.glyph }}</span>{{ ctx.revPill.label }}</span></h1>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+    <div style="flex:3 1 520px;min-width:0;background:#fff;border:1px solid #e2e2dc;border-radius:6px;overflow:auto">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #eeeeea"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73;flex:1">CHECKS · IN ORDER</span><sc-if value="{{ isNet }}" hint-placeholder-val="{{ false }}"><button onClick="{{ gap.G4 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G4</button></sc-if></div>
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead><tr style="text-align:left;color:#686d73;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em">
+          <th style="padding:7px 14px;font-weight:500;border-bottom:1px solid #e2e2dc;width:26px">#</th><th style="padding:7px 8px;font-weight:500;border-bottom:1px solid #e2e2dc">CHECK</th><th style="padding:7px 8px;font-weight:500;border-bottom:1px solid #e2e2dc">GROUP</th><th style="padding:7px 8px;font-weight:500;border-bottom:1px solid #e2e2dc">RESULT</th><th style="padding:7px 14px 7px 8px;font-weight:500;border-bottom:1px solid #e2e2dc">MESSAGE</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ checks }}" as="c" hint-placeholder-count="8">
+            <tr style="background:{{ c.bg }}">
+              <td style="padding:8px 14px;border-bottom:1px solid #eeeeea;font-family:'IBM Plex Mono',monospace;color:#686d73">{{ c.n }}</td>
+              <td style="padding:8px;border-bottom:1px solid #eeeeea;font-family:'IBM Plex Mono',monospace;font-weight:600">{{ c.id }}</td>
+              <td style="padding:8px;border-bottom:1px solid #eeeeea;color:#464b51">{{ c.group }}</td>
+              <td style="padding:8px;border-bottom:1px solid #eeeeea"><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ c.pill.fg }};background:{{ c.pill.bg }};border:1px solid {{ c.pill.bd }}"><span aria-hidden="true">{{ c.pill.glyph }}</span>{{ c.pill.label }}</span></td>
+              <td style="padding:8px 14px 8px 8px;border-bottom:1px solid #eeeeea;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#464b51">{{ c.msg }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:14px">
+      <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73;flex:1">STRUCTURE</span><button onClick="{{ gap.G2 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G2</button></div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px">
+          <sc-for list="{{ ctx.counts }}" as="k" hint-placeholder-count="4">
+            <div><div style="font-size:11.5px;color:#686d73">{{ k.label }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;color:{{ k.fg }}">{{ k.v }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ isStr }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #e7b7b0;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:#a1261c;background:#f8e3e0;border:1px solid #e7b7b0"><span aria-hidden="true">✕</span>FAIL</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600">STR-03</span></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600">STRUCTURAL_OVER_SPECIFICATION · excess 1</div>
+          <div>
+            <div style="font-size:11.5px;color:#686d73;margin-bottom:4px">Over-specified units</div>
+            <a href="#" onClick="{{ gap.G3 }}" style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">U-HEAT → equations</a>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11.5px;color:#686d73;flex:1">Candidate specifications (remove one)</span><button onClick="{{ gap.G3 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G3</button></div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <sc-for list="{{ candidates }}" as="c" hint-placeholder-count="4">
+                <label style="display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid {{ c.bd }};border-radius:4px;background:{{ c.bg }};cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12px"><input type="radio" name="cand" checked="{{ c.checked }}" onChange="{{ c.onPick }}"></input><span style="flex:1">{{ c.id }}</span><a href="#" onClick="{{ gap.G3 }}" style="font-size:11px">eq →</a></label>
+              </sc-for>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#686d73;padding:2px 8px">… list truncated in report</div>
+            </div>
+          </div>
+          <button disabled="{{ noCand }}" style="align-self:flex-start;padding:6px 12px;border-radius:5px;border:1px solid #16181b;background:#16181b;color:#fff;font-size:12.5px;cursor:pointer;opacity:{{ candOpacity }}">Preview removal <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;opacity:0.75">edit.preview</span></button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ edu }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid #a9d6d1;background:#e2f2f0;color:#0e4f4c;border-radius:6px;padding:12px 14px;line-height:1.55;text-wrap:pretty">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.08em;margin-bottom:4px">EDUCATION · DEGREES OF FREEDOM</div>
+          A well-posed steady-state model is square: every free variable is fixed by exactly one equation. The structural check pairs equations with variables (a matching). Here all 47 variables found a partner, but equations remain with nothing left to determine, so they either repeat information or contradict it. That is over-specification. Removing one specification on U-HEAT, such as a feed flow or temperature that is also implied elsewhere, restores a square system.
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<!-- 3 RUN -->
+<sc-if value="{{ s.run }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="03 Solve run" style="display:flex;flex-direction:column;gap:18px">
+  <div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;color:#686d73">03 · SOLVE RUN · execute.solve · inspect.trace_slice</div>
+    <h1 style="margin:4px 0 0;font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap">{{ ctx.runLabel }} <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ ctx.runPill.fg }};background:{{ ctx.runPill.bg }};border:1px solid {{ ctx.runPill.bd }}"><span aria-hidden="true">{{ ctx.runPill.glyph }}</span>{{ ctx.runPill.label }}</span></h1>
+  </div>
+  <sc-if value="{{ isStr }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px dashed #c9c9c1;border-radius:6px;padding:28px;text-align:center;color:#464b51">No run. Solve is blocked because the revision is <span style="font-family:'IBM Plex Mono',monospace;color:#a1261c">INVALID</span>. <a href="#" onClick="{{ go.validation }}">See validation →</a></div>
+  </sc-if>
+  <sc-if value="{{ isNet }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:#e2e2dc;border:1px solid #e2e2dc;border-radius:6px;overflow:hidden">
+      <sc-for list="{{ ctx.counters }}" as="k" hint-placeholder-count="7">
+        <div style="background:#fff;padding:10px 12px"><div style="font-size:11.5px;color:#686d73">{{ k.label }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:500;color:{{ k.fg }}">{{ k.v }}</div></div>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+      <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:14px">
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73;margin-bottom:10px">ATTEMPT TREE</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;padding:6px 8px;background:#f0f0ec;border-radius:4px">region solve_eo · FEED MIX HEAT PHF SPLIT</div>
+          <div style="margin-left:12px;padding-left:14px;border-left:1px solid #cdcdc5;display:flex;flex-direction:column;gap:10px;padding-top:10px">
+            <sc-for list="{{ ctx.attempts }}" as="a" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <sc-if value="{{ a.via }}" hint-placeholder-val="{{ false }}"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#2b5ca8">↳ recovery path {{ a.via }}</div></sc-if>
+                <button onClick="{{ a.onClick }}" style="text-align:left;border:1px solid {{ a.bd }};border-radius:5px;background:#fff;padding:9px 10px;cursor:pointer;display:flex;flex-direction:column;gap:6px;color:#16181b">
+                  <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12.5px">attempt {{ a.n }}</span><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ a.pill.fg }};background:{{ a.pill.bg }};border:1px solid {{ a.pill.bd }}"><span aria-hidden="true">{{ a.pill.glyph }}</span>{{ a.pill.label }}</span></span>
+                  <span style="font-size:12px;color:#464b51">{{ a.steps }}</span>
+                  <span style="font-size:12px;text-wrap:pretty">{{ a.reason }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#686d73">phase · {{ a.phase }}</span>
+                </button>
+              </div>
+            </sc-for>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#464b51">{{ ctx.regionClose }}</div>
+          </div>
+        </div>
+        <sc-if value="{{ edu }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #a9d6d1;background:#e2f2f0;color:#0e4f4c;border-radius:6px;padding:12px 14px;line-height:1.55;text-wrap:pretty">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.08em;margin-bottom:4px">EDUCATION · ONE NEWTON ITERATION</div>
+            <span style="font-family:'IBM Plex Mono',monospace">jacobian</span> linearises every residual around the current point; <span style="font-family:'IBM Plex Mono',monospace">linear_solve</span> factorises it and returns a step; a <span style="font-family:'IBM Plex Mono',monospace">trial</span> tests a shortened step; <span style="font-family:'IBM Plex Mono',monospace">step_accepted</span> moves the point. BOUND_BLOCKED means the step would push a mole flow below zero and no shortened step helps, so the attempt stops and the policy may start another from a different path.
+          </div>
+        </sc-if>
+      </div>
+      <div style="flex:2 1 480px;background:#fff;border:1px solid #e2e2dc;border-radius:6px;overflow:hidden;min-width:0">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid #eeeeea">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">TRACE · {{ traceShown }} / {{ traceTotal }} EVENTS</span>
+          <button onClick="{{ gap.G5 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G5</button>
+          <div style="flex:1"></div>
+          <div role="group" aria-label="Attempt" style="display:flex;gap:4px;align-items:center"><span style="font-size:11.5px;color:#686d73">attempt</span>
+            <sc-for list="{{ attemptChips }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.onClick }}" aria-pressed="{{ c.on }}" style="padding:2px 8px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font-family:'IBM Plex Mono',monospace;font-size:11.5px;cursor:pointer">{{ c.label }}</button></sc-for>
+          </div>
+          <div role="group" aria-label="Kind" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><span style="font-size:11.5px;color:#686d73">kind</span>
+            <sc-for list="{{ kindChips }}" as="c" hint-placeholder-count="5"><button onClick="{{ c.onClick }}" aria-pressed="{{ c.on }}" style="padding:2px 8px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font-family:'IBM Plex Mono',monospace;font-size:11.5px;cursor:pointer">{{ c.label }}</button></sc-for>
+          </div>
+        </div>
+        <div style="max-height:620px;overflow:auto">
+          <table style="width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12px">
+            <thead><tr style="text-align:left;color:#686d73;font-size:10.5px;letter-spacing:0.06em;position:sticky;top:0;background:#fafaf8">
+              <th style="padding:6px 14px;font-weight:500;border-bottom:1px solid #e2e2dc;width:30px;text-align:right">#</th><th style="padding:6px 8px;font-weight:500;border-bottom:1px solid #e2e2dc;width:40px">ATT</th><th style="padding:6px 8px;font-weight:500;border-bottom:1px solid #e2e2dc">EVENT</th><th style="padding:6px 14px 6px 8px;font-weight:500;border-bottom:1px solid #e2e2dc">DETAIL</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ trace }}" as="e" hint-placeholder-count="12">
+                <tr style="background:{{ e.bg }}">
+                  <td style="padding:5px 14px;border-bottom:1px solid #f0f0ec;text-align:right;color:#8a8e93">{{ e.n }}</td>
+                  <td style="padding:5px 8px;border-bottom:1px solid #f0f0ec;color:#464b51">{{ e.a }}</td>
+                  <td style="padding:5px 8px 5px {{ e.indent }};border-bottom:1px solid #f0f0ec;font-weight:{{ e.fw }};color:{{ e.fg }}">{{ e.k }}</td>
+                  <td style="padding:5px 14px 5px 8px;border-bottom:1px solid #f0f0ec;color:#464b51">
+                    <sc-if value="{{ e.pill }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;padding:0 7px;border-radius:4px;font-size:11px;font-weight:600;line-height:17px;color:{{ e.pill.fg }};background:{{ e.pill.bg }};border:1px solid {{ e.pill.bd }}"><span aria-hidden="true">{{ e.pill.glyph }}</span>{{ e.pill.label }}</span></sc-if>
+                    {{ e.d }}
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<!-- 4 CERTIFICATE -->
+<sc-if value="{{ s.certificate }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="04 Certificate" style="display:flex;flex-direction:column;gap:18px">
+  <div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;color:#686d73">04 · VERIFICATION CERTIFICATE · execute.verify</div>
+    <h1 style="margin:4px 0 0;font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap">{{ ctx.certLabel }} <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:{{ ctx.certPill.fg }};background:{{ ctx.certPill.bg }};border:1px solid {{ ctx.certPill.bd }}"><span aria-hidden="true">{{ ctx.certPill.glyph }}</span>{{ ctx.certPill.label }}</span></h1>
+  </div>
+  <sc-if value="{{ noCert }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px dashed #c9c9c1;border-radius:6px;padding:28px;text-align:center;color:#464b51;text-wrap:pretty">{{ ctx.noCertText }} <a href="#" onClick="{{ ctx.noCertLink.onClick }}">{{ ctx.noCertLink.label }} →</a></div>
+  </sc-if>
+  <sc-if value="{{ isNetOn }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+      <div style="flex:4 1 480px;min-width:0;background:#fff;border:1px solid #b7d9c2;border-radius:6px;overflow:hidden">
+        <div style="padding:16px 18px;background:#f3f9f5;border-bottom:1px solid #d6eadd;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:#1c6a39;background:#e4f1e8;border:1px solid #b7d9c2"><span aria-hidden="true">✓</span>VERIFIED</span>
+          <span style="font-size:12.5px;color:#1f4d30;flex:1;min-width:220px;text-wrap:pretty">Numerical verification of this root of the model. It says nothing about empirical validation against plant or literature data.</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div style="padding:14px 18px;border-right:1px solid #eeeeea;border-bottom:1px solid #eeeeea">
+            <div style="font-size:11.5px;color:#686d73">Checks</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500">144 <span style="font-size:13px;color:#686d73">/ 144 pass</span></div>
+            <div style="height:6px;border-radius:3px;background:#1c6a39;margin-top:8px"></div>
+            <div style="display:flex;gap:12px;margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#464b51;align-items:center"><span>PASS 144</span><span>FAIL 0</span><span>NOT_RUN 0</span><button onClick="{{ gap.G6 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G6</button></div>
+          </div>
+          <div style="padding:14px 18px;border-bottom:1px solid #eeeeea">
+            <div style="font-size:11.5px;color:#686d73">Local regularity</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;margin-top:4px">NO_RANK_LOSS_DETECTED</div>
+            <div style="font-size:12px;color:#464b51;margin-top:4px">The Jacobian at the root keeps full rank.</div>
+          </div>
+          <div style="padding:14px 18px;border-right:1px solid #eeeeea">
+            <div style="font-size:11.5px;color:#686d73">Scaled error bound</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500">4.74e-6</div>
+          </div>
+          <div style="padding:14px 18px">
+            <div style="font-size:11.5px;color:#686d73">Limitations</div>
+            <div style="display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:#7a5600;background:#faf0d4;border:1px solid #e6d29a"><span aria-hidden="true">!</span>near_threshold</span><button onClick="{{ gap.G6 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G6</button></div>
+            <div style="font-size:12px;color:#464b51;margin-top:6px">Verified, with a quantity close to its acceptance threshold.</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:3 1 320px;min-width:0;display:flex;flex-direction:column;gap:14px">
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">REGISTERED ROOT COMPARISON</div>
+          <div style="font-size:12.5px;color:#464b51">43 coordinates compared. Worst coordinate uses 1.86e-2 of its allowance.</div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#686d73"><span>0</span><span>allowance = 1</span></div>
+            <div style="position:relative;height:10px;border-radius:2px;background:#f0f0ec;border:1px solid #e2e2dc;margin-top:3px">
+              <div style="position:absolute;left:0;top:0;bottom:0;width:1.86%;min-width:3px;background:#1c6a39"></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:12px"><a href="#" onClick="{{ go.streams }}">S3.liq.C</a><span style="color:#464b51">1.86e-2</span></div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px">
+          <span style="color:#686d73">Certificate</span><span style="font-family:'IBM Plex Mono',monospace">cert-1cf23ff02335</span>
+          <span style="color:#686d73">Run</span><span style="font-family:'IBM Plex Mono',monospace">{{ ctx.runLabel }}</span>
+          <span style="color:#686d73">Replay</span><span><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:#464b51;background:#f0f0ec;border:1px dashed #c9c9c1"><span aria-hidden="true">–</span>NOT_RUN</span></span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<!-- 5 STREAMS -->
+<sc-if value="{{ s.streams }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="05 Streams and units" style="display:flex;flex-direction:column;gap:18px">
+  <div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;color:#686d73">05 · STREAMS &amp; UNITS · inspect.stream_view · inspect.unit_view</div>
+    <h1 style="margin:4px 0 0;font-size:22px;font-weight:600">{{ ctx.rev }} · {{ ctx.runLabel }}</h1>
+  </div>
+  <sc-if value="{{ noStreams }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px dashed #c9c9c1;border-radius:6px;padding:28px;text-align:center;color:#464b51;text-wrap:pretty">{{ ctx.noStreamsText }}</div>
+  </sc-if>
+  <sc-if value="{{ isNetOn }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+      <div style="flex:3 1 720px;display:flex;flex-direction:column;gap:18px;min-width:0">
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;overflow:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:720px">
+            <thead>
+              <tr style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#686d73">
+                <th style="padding:8px 14px;text-align:left;font-weight:500;border-bottom:1px solid #e2e2dc">STREAM</th><th style="padding:8px;text-align:left;font-weight:500;border-bottom:1px solid #e2e2dc">FROM → TO</th>
+                <th style="padding:8px;text-align:right;font-weight:500;border-bottom:1px solid #e2e2dc">A<br><span style="color:#8a8e93">mol/s</span></th><th style="padding:8px;text-align:right;font-weight:500;border-bottom:1px solid #e2e2dc">B<br><span style="color:#8a8e93">mol/s</span></th><th style="padding:8px;text-align:right;font-weight:500;border-bottom:1px solid #e2e2dc">C<br><span style="color:#8a8e93">mol/s</span></th>
+                <th style="padding:8px;text-align:right;font-weight:500;border-bottom:1px solid #e2e2dc">T<br><span style="color:#8a8e93">K</span></th><th style="padding:8px;text-align:right;font-weight:500;border-bottom:1px solid #e2e2dc">P<br><span style="color:#8a8e93">kPa</span></th><th style="padding:8px 14px 8px 8px;text-align:right;font-weight:500;border-bottom:1px solid #e2e2dc">VAPOUR<br><span style="color:#8a8e93">fraction</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ streams }}" as="r" hint-placeholder-count="7">
+                <tr>
+                  <td style="padding:0 14px;border-bottom:1px solid #eeeeea;font-family:'IBM Plex Mono',monospace;font-weight:600;height:34px">{{ r.id }}</td>
+                  <td style="padding:0 8px;border-bottom:1px solid #eeeeea;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#464b51;white-space:nowrap">{{ r.route }}</td>
+                  <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
+                    <td style="padding:0;border-bottom:1px solid #eeeeea;text-align:right"><button onClick="{{ c.onClick }}" style="width:100%;padding:8px;border:none;background:{{ c.bg }};box-shadow:{{ c.ring }};font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;cursor:pointer;color:{{ c.fg }}">{{ c.v }}</button></td>
+                  </sc-for>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;overflow:auto">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #eeeeea"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73;flex:1">UNITS · DUTIES, WORK, EXTENTS</span><button onClick="{{ gap.G10 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G10</button></div>
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+            <thead><tr style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#686d73;text-align:left">
+              <th style="padding:7px 14px;font-weight:500;border-bottom:1px solid #e2e2dc">UNIT</th><th style="padding:7px 8px;font-weight:500;border-bottom:1px solid #e2e2dc">KIND</th><th style="padding:7px 8px;font-weight:500;border-bottom:1px solid #e2e2dc;text-align:right">DUTY Q <span style="color:#8a8e93">W</span></th><th style="padding:7px 8px;font-weight:500;border-bottom:1px solid #e2e2dc;text-align:right">WORK <span style="color:#8a8e93">W</span></th><th style="padding:7px 14px 7px 8px;font-weight:500;border-bottom:1px solid #e2e2dc;text-align:right">EXTENT <span style="color:#8a8e93">mol/s</span></th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ units }}" as="u" hint-placeholder-count="5">
+                <tr><td style="padding:7px 14px;border-bottom:1px solid #eeeeea;font-family:'IBM Plex Mono',monospace;font-weight:600">{{ u.id }}</td><td style="padding:7px 8px;border-bottom:1px solid #eeeeea;color:#464b51">{{ u.kind }}</td><td style="padding:7px 8px;border-bottom:1px solid #eeeeea;text-align:right;font-family:'IBM Plex Mono',monospace">{{ u.q }}</td><td style="padding:7px 8px;border-bottom:1px solid #eeeeea;text-align:right;font-family:'IBM Plex Mono',monospace;color:#8a8e93">—</td><td style="padding:7px 14px 7px 8px;border-bottom:1px solid #eeeeea;text-align:right;font-family:'IBM Plex Mono',monospace;color:#8a8e93">—</td></tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <aside style="flex:1 1 280px;min-width:0;background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;position:sticky;top:{{ stickyTop }}">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">VALUE → EQUATIONS</div>
+        <sc-if value="{{ sel }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#464b51">{{ sel.path }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500">{{ sel.v }} <span style="font-size:13px;color:#686d73">{{ sel.unit }}</span></div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:12.5px">
+            <span style="color:#686d73">Full precision</span><span style="font-family:'IBM Plex Mono',monospace;color:#8a8e93">not in export</span>
+            <span style="color:#686d73">Fixed by</span><span style="font-family:'IBM Plex Mono',monospace;color:#8a8e93">equation rows not in export</span>
+            <span style="color:#686d73">Raw residual</span><span style="font-family:'IBM Plex Mono',monospace;color:#8a8e93">—</span>
+            <span style="color:#686d73">Scaled residual</span><span style="font-family:'IBM Plex Mono',monospace;color:#8a8e93">—</span>
+          </div>
+          <button onClick="{{ gap.G7 }}" style="display:{{ gapDisplay }};align-self:flex-start;align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G7</button>
+        </sc-if>
+        <sc-if value="{{ noSel }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:12.5px;color:#464b51;text-wrap:pretty">Select any value to see the equation rows that fix it, its raw and scaled residuals, and full precision.</div>
+        </sc-if>
+      </aside>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<!-- 6 FAILURE -->
+<sc-if value="{{ s.failure }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="06 Failure bundle" style="display:flex;flex-direction:column;gap:18px">
+  <div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;color:#686d73">06 · FAILURE BUNDLE · inspect.failure_evidence</div>
+    <h1 style="margin:4px 0 0;font-size:22px;font-weight:600">{{ ctx.rev }} · {{ ctx.runLabel }}</h1>
+  </div>
+  <sc-if value="{{ noBundle }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px dashed #c9c9c1;border-radius:6px;padding:28px;text-align:center;color:#464b51;text-wrap:pretty">{{ ctx.noBundleText }} <a href="#" onClick="{{ ctx.noBundleLink.onClick }}">{{ ctx.noBundleLink.label }} →</a></div>
+  </sc-if>
+  <sc-if value="{{ isNetOff }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px solid #e7b7b0;border-radius:6px;padding:14px 18px;display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:#a1261c;background:#f8e3e0;border:1px solid #e7b7b0"><span aria-hidden="true">✕</span>BOUND_BLOCKED</span>
+      <div><div style="font-size:11.5px;color:#686d73">Taxonomy</div><div style="font-size:13px">rank / linear / globalization failures</div></div>
+      <div><div style="font-size:11.5px;color:#686d73">Attempts</div><div style="font-family:'IBM Plex Mono',monospace;font-size:16px">1</div></div>
+      <div><div style="font-size:11.5px;color:#686d73">Iterations</div><div style="font-family:'IBM Plex Mono',monospace;font-size:16px">1</div></div>
+      <div><div style="font-size:11.5px;color:#686d73">Unscaled residual</div><div style="font-family:'IBM Plex Mono',monospace;font-size:16px">1116.72</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:18px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">OBSERVATIONS · RECORDED BY THE SOLVER</div>
+          <div style="font-size:12.5px;text-wrap:pretty;padding:8px 10px;background:#fafaf8;border-radius:4px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#686d73">attempt 0 · attempt_closed</span><br>A component sits on its lower bound and the Newton direction points out of the feasible set; no trial can be taken along it.</div>
+          <div style="font-size:12.5px;padding:8px 10px;background:#fafaf8;border-radius:4px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#686d73">attempt 0 · phase signature</span><br><span style="font-family:'IBM Plex Mono',monospace">HEAT TWO_PHASE · PHF TWO_PHASE</span></div>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">INFERRED CAUSES</div>
+          <div style="font-size:12.5px;color:#464b51;border:1px dashed #d6d6cf;border-radius:4px;padding:10px;text-wrap:pretty">None recorded. The bundle reports observations only; it does not claim a cause.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73;flex:1">SUGGESTED ACTIONS · RANKED</span><button onClick="{{ gap.G8 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G8</button></div>
+          <div style="font-size:12.5px;color:#464b51;border:1px dashed #d6d6cf;border-radius:4px;padding:10px;text-wrap:pretty">None in this bundle. Related evidence: Run 1 of this revision used recovery path <span style="font-family:'IBM Plex Mono',monospace">traversal-G0-pass8-v1</span> and converged. <a href="#" onClick="{{ go.compare }}">Compare runs →</a></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73;margin-bottom:10px">ATTEMPT TREE</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;padding:6px 8px;background:#f0f0ec;border-radius:4px">region solve_eo · FEED MIX HEAT PHF SPLIT</div>
+          <div style="margin-left:12px;padding:10px 0 0 14px;border-left:1px solid #cdcdc5">
+            <div style="border:1px solid #e7b7b0;border-radius:5px;padding:9px 10px;display:flex;flex-direction:column;gap:4px"><span style="display:flex;gap:8px;align-items:center"><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12.5px">attempt 0</span><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:#a1261c;background:#f8e3e0;border:1px solid #e7b7b0"><span aria-hidden="true">✕</span>BOUND_BLOCKED</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#686d73">phase · HEAT TWO_PHASE, PHF TWO_PHASE</span></div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#686d73;padding-top:8px">no further attempts · recovery off</div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73;flex:1">BEST CHECKPOINT</span><button onClick="{{ gap.G8 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G8</button></div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px">
+            <span style="color:#686d73">Id</span><span style="font-family:'IBM Plex Mono',monospace">region-attempt-0</span>
+            <span style="color:#686d73">Variables</span><span style="font-family:'IBM Plex Mono',monospace">47 · S1.n.A … S5.N</span>
+            <span style="color:#686d73">State hash</span><span style="font-family:'IBM Plex Mono',monospace;color:#8a8e93">recorded; value not in export</span>
+            <span style="color:#686d73">Verified for</span><span style="font-family:'IBM Plex Mono',monospace;color:#8a8e93">not in export</span>
+          </div>
+          <button style="align-self:flex-start;padding:5px 10px;border-radius:5px;border:1px solid #cdcdc5;background:#fff;font-size:12.5px;cursor:pointer">Resume from checkpoint <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#686d73">execute.resume</span></button>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#686d73">REPLAY</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;line-height:18px;color:#464b51;background:#f0f0ec;border:1px dashed #c9c9c1"><span aria-hidden="true">–</span>NOT_RUN</span><span style="font-size:12.5px;color:#464b51">replay identity not in export</span><button style="margin-left:auto;padding:5px 10px;border-radius:5px;border:1px solid #cdcdc5;background:#fff;font-size:12.5px;cursor:pointer">Replay <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#686d73">compare.replay</span></button></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<!-- 7 COMPARE -->
+<sc-if value="{{ s.compare }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="07 Compare" style="display:flex;flex-direction:column;gap:18px">
+  <div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;color:#686d73">07 · COMPARE RUNS · compare.compare_runs</div>
+    <h1 style="margin:4px 0 0;font-size:22px;font-weight:600">NET-02 · Run 1 vs Run 2</h1>
+    <div style="font-size:13px;color:#464b51;margin-top:4px;text-wrap:pretty">Same revision, same start. Rows align on solver structure, so the first differing row is where the runs diverge.</div>
+  </div>
+  <div style="background:#fff;border:1px solid #e2e2dc;border-radius:6px;overflow:auto">
+    <div style="display:grid;grid-template-columns:200px minmax(0,1fr) 40px minmax(0,1fr);min-width:720px">
+      <div style="padding:10px 14px;border-bottom:1px solid #e2e2dc;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;color:#686d73">ROW</div>
+      <div style="padding:10px 14px;border-bottom:1px solid #e2e2dc;font-weight:600">Run 1 · recovery on</div>
+      <div style="border-bottom:1px solid #e2e2dc"></div>
+      <div style="padding:10px 14px;border-bottom:1px solid #e2e2dc;font-weight:600">Run 2 · recovery off</div>
+      <sc-for list="{{ cmpRows }}" as="r" hint-placeholder-count="9">
+        <div style="padding:9px 14px;border-bottom:1px solid #eeeeea;background:{{ r.bg }};font-size:12.5px;color:#464b51;border-left:3px solid {{ r.mark }}">{{ r.label }}</div>
+        <div style="padding:9px 14px;border-bottom:1px solid #eeeeea;background:{{ r.bg }};font-family:'IBM Plex Mono',monospace;font-size:12.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><sc-if value="{{ r.pa }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;padding:0 7px;border-radius:4px;font-size:11px;font-weight:600;line-height:18px;color:{{ r.pa.fg }};background:{{ r.pa.bg }};border:1px solid {{ r.pa.bd }}"><span aria-hidden="true">{{ r.pa.glyph }}</span>{{ r.pa.label }}</span></sc-if>{{ r.a }}</div>
+        <div style="padding:9px 0;border-bottom:1px solid #eeeeea;background:{{ r.bg }};text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ r.relFg }}" title="{{ r.relTitle }}">{{ r.rel }}</div>
+        <div style="padding:9px 14px;border-bottom:1px solid #eeeeea;background:{{ r.bg }};font-family:'IBM Plex Mono',monospace;font-size:12.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><sc-if value="{{ r.pb }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;padding:0 7px;border-radius:4px;font-size:11px;font-weight:600;line-height:18px;color:{{ r.pb.fg }};background:{{ r.pb.bg }};border:1px solid {{ r.pb.bd }}"><span aria-hidden="true">{{ r.pb.glyph }}</span>{{ r.pb.label }}</span></sc-if>{{ r.b }}</div>
+      </sc-for>
+    </div>
+  </div>
+  <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#464b51;align-items:center">
+    <span><span style="font-family:'IBM Plex Mono',monospace">=</span> identical</span><span><span style="font-family:'IBM Plex Mono',monospace;color:#a1261c">≠</span> differs</span><span><span style="font-family:'IBM Plex Mono',monospace;color:#2b5ca8">▸</span> first divergence</span><span><span style="font-family:'IBM Plex Mono',monospace;color:#8a8e93">?</span> not comparable from export</span>
+    <button onClick="{{ gap.G11 }}" style="display:{{ gapDisplay }};align-items:center;padding:0 6px;border-radius:3px;border:1px dashed #b9a6dc;background:#f1ecf9;color:#5d3f98;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:18px;cursor:pointer;white-space:nowrap">GAP G11</button>
+  </div>
+</section>
+</sc-if>
+
+</main>
+</div>
+
+<sc-if value="{{ gapsOpen }}" hint-placeholder-val="{{ false }}">
+  <aside aria-label="Data gaps for M06" style="position:fixed;top:0;right:0;bottom:0;width:400px;max-width:92vw;background:#fff;border-left:1px solid #dcdcd5;box-shadow:-12px 0 32px rgba(20,20,20,0.08);z-index:20;display:flex;flex-direction:column">
+    <div style="padding:14px 18px;border-bottom:1px solid #eeeeea;display:flex;align-items:center;gap:10px">
+      <div style="flex:1"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#5d3f98">DATA GAPS · FEEDBACK FOR M06</div><div style="font-size:12px;color:#686d73">Where the §6 data does not give a screen what it needs</div></div>
+      <button onClick="{{ closeGaps }}" aria-label="Close" style="border:1px solid #cdcdc5;background:#fff;border-radius:4px;width:28px;height:28px;cursor:pointer">✕</button>
+    </div>
+    <div style="overflow:auto;padding:10px 18px 24px;display:flex;flex-direction:column;gap:8px">
+      <sc-for list="{{ gapList }}" as="g" hint-placeholder-count="6">
+        <div style="border:1px solid {{ g.bd }};background:{{ g.bg }};border-radius:5px;padding:10px 12px;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;gap:8px;align-items:baseline"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#5d3f98">{{ g.id }}</span><span style="font-size:13px;font-weight:600;flex:1">{{ g.title }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#686d73">{{ g.where }}</span></div>
+          <div style="font-size:12.5px;color:#464b51;text-wrap:pretty">{{ g.text }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </aside>
+</sc-if>
+
+<div style="position:fixed;left:{{ switchLeft }};bottom:16px;z-index:15;display:flex;gap:2px;padding:3px;background:#16181b;border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,0.18)">
+  <sc-for list="{{ shellChips }}" as="c" hint-placeholder-count="2">
+    <button onClick="{{ c.onClick }}" style="padding:5px 10px;border:none;border-radius:5px;background:{{ c.bg }};color:{{ c.fg }};font-family:'IBM Plex Mono',monospace;font-size:11.5px;cursor:pointer">{{ c.label }}</button>
+  </sc-for>
+  <button onClick="{{ openGaps }}" style="padding:5px 10px;border:none;border-radius:5px;background:transparent;color:#c9b8ec;font-family:'IBM Plex Mono',monospace;font-size:11.5px;cursor:pointer">gaps · 11</button>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;shell&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;'A'|'B'&quot;,&quot;section&quot;:&quot;Shell&quot;},&quot;education&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Modes&quot;},&quot;showGaps&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Modes&quot;}}">
+const TONE = {
+  ok:   { fg:'#1c6a39', bg:'#e4f1e8', bd:'#b7d9c2', glyph:'✓' },
+  info: { fg:'#24508f', bg:'#e5ecf7', bd:'#bccae4', glyph:'◐' },
+  warn: { fg:'#7a5600', bg:'#faf0d4', bd:'#e6d29a', glyph:'!' },
+  bad:  { fg:'#a1261c', bg:'#f8e3e0', bd:'#e7b7b0', glyph:'✕' },
+  none: { fg:'#464b51', bg:'#f0f0ec', bd:'#c9c9c1', glyph:'–' }
+};
+const TONE_OF = { VERIFIED:'ok', PASS:'ok', MATCH:'ok', CONVERGED:'info', READY_FOR_SIMULATION:'info', RELAXED:'warn', UNVERIFIED:'warn', DRAFT:'none', NOT_RUN:'none', NONE:'none', INVALID:'bad', FAIL:'bad', FAILED:'bad', MISMATCH:'bad' };
+const P = (label, tone) => ({ label, ...TONE[tone || TONE_OF[label] || 'bad'] });
+
+const GAPS = [
+  ['G1','Identity','all','No revision id, run id, author or timestamps are in the data. The shell uses case id + commit 78d3647 and "Run 1 / Run 2" as stand-ins; every screen header needs a stable revision and run id.'],
+  ['G2','Structural counts disagree','02','STR-03 reports 47 free variables, 50 equations, 47 matched, but "excess 1". 50 − 47 = 3. The report needs to say what excess counts (independent equations, unmatched rows after rank analysis, or specifications only).'],
+  ['G3','Candidate list truncated, no equation links','02','Candidate specifications end in "…", and neither the unit U-HEAT nor the specs carry equation-row ids, so "clickable to their equations" has no target.'],
+  ['G4','Missing per-case reports','01 02','No validation report or structural counts for NET-02, and no flowsheet topology for STR-03 (only U-HEAT is named, with a U- prefix that NET-02 does not use).'],
+  ['G5','Trace detail','03','The listed events add up to 25 against the stated 27; the prototype assumes one attempt_opened per attempt. Events carry no residual norm, step length, bound hit or timestamp, and the phase signature of attempt 1 is not given. The recovery-off trace is not given; it is shown as attempt 0 of Run 1.'],
+  ['G6','Certificate breakdown','04','144 checks have no categories or names, "allowance" is not defined, the threshold behind near_threshold is not named, and the scaled error bound has no tolerance to compare against.'],
+  ['G7','Value provenance','05','Stream values have no equation-row links, no raw/scaled residuals and no full-precision form. S4 and S5 vapour fractions are blank although they are the vapour and liquid products; the S3 phase split is not given.'],
+  ['G8','Failure bundle fields','06','State hash value, "verified for", replay identity and suggested actions are absent; the policy name of the recovery-off run is not given.'],
+  ['G9','Permissions','01','No permission set for the current user or agent. The "You may" card is illustrative.'],
+  ['G10','Unit results','05','Only HEAT.Q and PHF.Q are given. MIX and SPLIT results, the split fraction r (which the case description says the fixed point depends on), work and extents are missing.'],
+  ['G11','Per-attempt counters','07','Counters and wall time are totals for Run 1 only; Run 2 has iterations and unscaled residual but no call counts, so most compare rows cannot be diffed.']
+].map(([id,title,where,text]) => ({ id, title, where, text }));
+
+function buildTrace(on) {
+  const e = []; let n = 1;
+  const add = (a, k, d, out) => e.push({ n: n++, a, k, d: d || '', out });
+  add('–','plan_built','path revision_eo · policy ' + (on ? 'T06-revision-v2' : '(recovery off)'));
+  add('–','region_opened','solve_eo over FEED, MIX, HEAT, PHF, SPLIT');
+  add('0','attempt_opened','assumed');
+  ['jacobian','linear_solve','step_accepted','jacobian','linear_solve'].forEach(k => add('0', k));
+  add('0','attempt_closed','bound hit, direction infeasible','BOUND_BLOCKED');
+  if (on) {
+    add('1','attempt_opened','recovery traversal-G0-pass8-v1 · assumed');
+    ['jacobian','linear_solve','trial','trial','step_accepted'].forEach(k => add('1', k));
+    for (let i = 0; i < 3; i++) ['jacobian','linear_solve','step_accepted'].forEach(k => add('1', k));
+    add('1','attempt_closed','','CONVERGED');
+    add('–','region_closed','','CONVERGED');
+    add('–','solve_closed','173 ms','CONVERGED');
+  } else {
+    add('–','region_closed','','BOUND_BLOCKED');
+    add('–','solve_closed','','BOUND_BLOCKED');
+  }
+  return e;
+}
+const LIFE = ['plan_built','region_opened','attempt_opened','attempt_closed','region_closed','solve_closed'];
+const kindOf = k => LIFE.includes(k) ? 'lifecycle' : (k === 'trial' || k === 'step_accepted') ? 'step' : k;
+
+const STREAMS = [
+  ['S1','FEED → MIX',  '1','1','1','300','100','—'],
+  ['S6','SPLIT → MIX', '6.64427','11.5137','15.8258','358.541','100','—'],
+  ['S2','MIX → HEAT',  '7.64427','12.5137','16.8258','353.792','100','—'],
+  ['S3','HEAT → PHF',  '7.64427','12.5137','16.8258','358','100','0.01541'],
+  ['S4','PHF → vapour','0.650302','0.394016','0.167065','358.541','100','—'],
+  ['S5','PHF → SPLIT', '6.99396','12.1197','16.6587','358.541','100','—'],
+  ['S7','SPLIT → product','0.349698','0.605984','0.832935','358.541','100','—']
+];
+const COLS = [['n.A','mol/s'],['n.B','mol/s'],['n.C','mol/s'],['T','K'],['P','kPa'],['vf','']];
+
+class Component extends DCLogic {
+  state = { screen:'overview', rev:'net', run:'on', edu:null, gaps:null, gapsOpen:false, gapFocus:null, shell:null, attF:'all', kindF:'all', sel:{ s:'S3', c:3 }, cand:null };
+
+  renderVals() {
+    const st = this.state, pr = this.props;
+    const shell = st.shell ?? pr.shell ?? 'A';
+    const edu = st.edu ?? pr.education ?? false;
+    const showGaps = st.gaps ?? pr.showGaps ?? true;
+    const set = o => () => this.setState(o);
+    const isStr = st.rev === 'str', isNet = !isStr;
+    const isNetOn = isNet && st.run === 'on', isNetOff = isNet && st.run === 'off';
+    const go = {}; ['overview','validation','run','certificate','streams','failure','compare'].forEach(k => go[k] = e => { e && e.preventDefault && e.preventDefault(); this.setState({ screen:k }); window.scrollTo(0,0); });
+
+    const revPill = P(isStr ? 'INVALID' : 'READY_FOR_SIMULATION');
+    const valPill = P(isStr ? 'FAIL' : 'PASS');
+    const runPill = isStr ? P('NOT_RUN') : isNetOn ? P('CONVERGED') : P('BOUND_BLOCKED');
+    const certPill = isNetOn ? P('VERIFIED') : P('NONE','none');
+
+    const ctx = {
+      rev: isStr ? 'STR-03' : 'NET-02',
+      revDesc: isStr ? 'excess specification' : 'high recycle whose fixed point depends on r',
+      revPill, runPill, certPill,
+      runLabel: isStr ? 'no run' : isNetOn ? 'Run 1 · recovery on' : 'Run 2 · recovery off',
+      certLabel: isNetOn ? 'cert-1cf23ff02335' : 'no certificate',
+      runSummary: isNetOn ? 'Attempt 0 closed BOUND_BLOCKED; recovery path traversal-G0-pass8-v1 converged in 5 Newton iterations, 173 ms. Certificate: 144 of 144 checks pass, limitation near_threshold.'
+        : isNetOff ? 'One attempt, one iteration, closed BOUND_BLOCKED with unscaled residual 1116.72. No certificate, because verification needs a converged root.'
+        : 'Solve is blocked while the revision is INVALID.',
+      runLinks: isNetOn ? [{label:'Run',onClick:go.run},{label:'Certificate',onClick:go.certificate},{label:'Streams',onClick:go.streams}]
+        : isNetOff ? [{label:'Failure bundle',onClick:go.failure},{label:'Compare with Run 1',onClick:go.compare}]
+        : [{label:'Validation',onClick:go.validation}],
+      issues: isNetOn ? [
+          { pill:P('near_threshold','warn'), kind:'certificate limitation', text:'Verified with a quantity near its acceptance threshold.', onClick:go.certificate },
+          { pill:P('BOUND_BLOCKED'), kind:'attempt 0 · recovered', text:'First attempt hit a lower bound; the recorded recovery path converged.', onClick:go.run } ]
+        : isNetOff ? [
+          { pill:P('BOUND_BLOCKED'), kind:'run outcome', text:'Run closed BOUND_BLOCKED. A failure bundle is available.', onClick:go.failure } ]
+        : [ { pill:P('FAIL'), kind:'check STR-03', text:'STRUCTURAL_OVER_SPECIFICATION: excess 1 on U-HEAT.', onClick:go.validation } ],
+      counts: isStr ? [
+          { label:'Free variables', v:'47', fg:'#16181b' }, { label:'Equations', v:'50', fg:'#16181b' },
+          { label:'Matched', v:'47', fg:'#16181b' }, { label:'Excess (reported)', v:'1', fg:'#a1261c' } ]
+        : [ { label:'Free variables', v:'—', fg:'#8a8e93' }, { label:'Equations', v:'—', fg:'#8a8e93' }, { label:'Matched', v:'—', fg:'#8a8e93' }, { label:'Excess', v:'—', fg:'#8a8e93' } ],
+      counters: isNetOn ? [['Newton iterations','5'],['Residual calls','9'],['Jacobians','6'],['Factorizations','6'],['Property calls','338'],['Wall time','173 ms']].map(([label,v]) => ({ label, v, fg:'#16181b' }))
+        : [['Newton iterations','1'],['Unscaled residual','1116.72'],['Residual calls','—'],['Jacobians','—'],['Property calls','—'],['Wall time','—']].map(([label,v]) => ({ label, v, fg: v === '—' ? '#8a8e93' : '#16181b' })),
+      attempts: [
+        { n:0, pill:P('BOUND_BLOCKED'), bd:'#e7b7b0', via:null, steps:'1 step accepted · 2 Jacobians', reason:'A component sits on its lower bound and the Newton direction points out of the feasible set; no trial can be taken along it.', phase:'HEAT TWO_PHASE, PHF TWO_PHASE', onClick:() => this.setState({ attF:'0' }) },
+        ...(isNetOn ? [{ n:1, pill:P('CONVERGED'), bd:'#bccae4', via:'traversal-G0-pass8-v1', steps:'4 steps accepted · 2 trials · 4 Jacobians', reason:'Residual and step tolerances met.', phase:'not in export', onClick:() => this.setState({ attF:'1' }) }] : [])
+      ],
+      regionClose: isNetOn ? 'region_closed CONVERGED → solve_closed CONVERGED' : 'region_closed BOUND_BLOCKED → solve_closed BOUND_BLOCKED',
+      noCertText: isStr ? 'No certificate: the revision has not been solved.' : 'No certificate. Verification needs a converged root; this run closed BOUND_BLOCKED.',
+      noCertLink: isStr ? { label:'Validation', onClick:go.validation } : { label:'Failure bundle', onClick:go.failure },
+      noStreamsText: isStr ? 'No results: the revision is INVALID and has not been solved.' : 'No converged values. The best checkpoint region-attempt-0 holds 47 variables, but its values are not in the export (G8).',
+      noBundleText: isStr ? 'No run, so no failure bundle. The structural failure is reported by validation.' : 'This run has no failure bundle. Attempt 0 closed BOUND_BLOCKED and the recovery path converged.',
+      noBundleLink: isStr ? { label:'Validation', onClick:go.validation } : { label:'Open Run 2 (recovery off) bundle', onClick:() => this.setState({ run:'off', screen:'failure' }) }
+    };
+    ctx.issueCount = ctx.issues.length;
+
+    const checkRows = [['SCHEMA-01','schema'],['DIM-01','dimensions'],['GRAPH-01','graph'],['GRAPH-02','graph'],['COMP-01','components'],['COMP-02','components'],['COMP-03','components'],['STR-03','structure']];
+    const checks = checkRows.map(([id,group],i) => {
+      const fail = isStr && id === 'STR-03';
+      return { n:i+1, id, group, pill:P(fail ? 'FAIL' : 'PASS'), bg: fail ? '#fdf5f4' : 'transparent', msg: fail ? 'STRUCTURAL_OVER_SPECIFICATION: excess 1' : isNet ? 'assumed' : '' };
+    });
+    const candidates = ['SPEC-feed-n-A','SPEC-feed-n-B','SPEC-feed-n-C','SPEC-feed-T'].map(id => ({
+      id, checked: st.cand === id, onPick: () => this.setState({ cand:id }),
+      bg: st.cand === id ? '#eef3fb' : '#fff', bd: st.cand === id ? '#9fb5dc' : '#e2e2dc'
+    }));
+
+    const all = buildTrace(isNetOn);
+    const trace = all.filter(e => (st.attF === 'all' || e.a === st.attF) && (st.kindF === 'all' || kindOf(e.k) === st.kindF)).map(e => {
+      const life = kindOf(e.k) === 'lifecycle';
+      return { ...e, pill: e.out ? P(e.out) : null, fw: life ? 600 : 400, fg: life ? '#16181b' : '#464b51', indent: life ? '8px' : '22px', bg: e.out ? (e.out === 'CONVERGED' ? '#f5f8fc' : '#fdf6f5') : 'transparent' };
+    });
+    const chip = (label, on, onClick) => ({ label, on, onClick, bg: on ? '#16181b' : '#fff', fg: on ? '#fff' : '#16181b', bd: on ? '#16181b' : '#cdcdc5' });
+    const attemptChips = (isNetOn ? ['all','0','1'] : ['all','0']).map(a => chip(a, st.attF === a, () => this.setState({ attF:a })));
+    const kindChips = ['all','lifecycle','jacobian','linear_solve','step'].map(k => chip(k, st.kindF === k, () => this.setState({ kindF:k })));
+
+    const streams = STREAMS.map(r => ({ id:r[0], route:r[1], cells: r.slice(2).map((v,ci) => {
+      const on = st.sel && st.sel.s === r[0] && st.sel.c === ci;
+      return { v, fg: v === '—' ? '#8a8e93' : '#16181b', bg: on ? '#e5ecf7' : 'transparent', ring: on ? 'inset 0 0 0 1.5px #2b5ca8' : 'none', onClick: () => this.setState({ sel:{ s:r[0], c:ci } }) };
+    }) }));
+    let sel = null;
+    if (st.sel) { const r = STREAMS.find(x => x[0] === st.sel.s); sel = { path: r[0] + '.' + COLS[st.sel.c][0], v: r[2 + st.sel.c], unit: COLS[st.sel.c][1] }; }
+    const units = [['FEED','feed','—'],['MIX','mixer','—'],['HEAT','heater','31487.6'],['PHF','PH flash','20000'],['SPLIT','splitter','—']].map(([id,kind,q]) => ({ id, kind, q }));
+
+    const eq = (label,a,b,rel,extra) => ({ label, a, b, rel, ...(extra||{}) });
+    const cmpRows = [
+      eq('Plan','path revision_eo','path revision_eo','='),
+      eq('Policy','T06-revision-v2','recovery off (name ?)','≠'),
+      eq('Region','solve_eo · 5 units','solve_eo · 5 units','='),
+      eq('Attempt 0','1 step','1 step','=',{ pa:P('BOUND_BLOCKED'), pb:P('BOUND_BLOCKED') }),
+      eq('Recovery','traversal-G0-pass8-v1','—','▸',{ div:true }),
+      eq('Attempt 1','4 steps · 2 trials','—','≠',{ pa:P('CONVERGED') }),
+      eq('Outcome','','','≠',{ pa:P('CONVERGED'), pb:P('BOUND_BLOCKED') }),
+      eq('Certificate','cert-1cf23ff02335','none','≠',{ pa:P('VERIFIED') }),
+      eq('Newton iterations','5','1','≠'),
+      eq('Residual calls','9','—','?'),
+      eq('Final unscaled residual','—','1116.72','?')
+    ].map(r => ({ pa:null, pb:null, ...r,
+      bg: r.div ? '#eef3fb' : 'transparent', mark: r.div ? '#2b5ca8' : 'transparent',
+      relFg: r.rel === '=' ? '#8a8e93' : r.rel === '▸' ? '#2b5ca8' : r.rel === '?' ? '#8a8e93' : '#a1261c',
+      relTitle: { '=':'identical','≠':'differs','▸':'first divergence','?':'not comparable' }[r.rel] }));
+
+    const revs = [['net','NET-02','high recycle', isNet ? P('READY_FOR_SIMULATION') : P('READY_FOR_SIMULATION')],['str','STR-03','excess specification',P('INVALID')]].map(([k,id,desc,pill]) => {
+      const on = st.rev === k;
+      return { id, desc, pill, onClick: () => this.setState({ rev:k, run:'on' }), bg: on ? '#ffffff' : 'transparent', bgB: on ? '#ffffff' : 'transparent', bd: on ? '#cdcdc5' : 'transparent' };
+    });
+    const runs = [['on','Run 1 · recovery on',P('VERIFIED')],['off','Run 2 · recovery off',P('BOUND_BLOCKED')]].map(([k,label,pill]) => {
+      const on = st.run === k;
+      return { label, short: k === 'on' ? 'Run 1' : 'Run 2', pill, onClick: () => this.setState({ run:k }), bg: on ? '#e2e2dc' : 'transparent', bgB: on ? '#ffffff' : 'transparent', bd: on ? '#cdcdc5' : 'transparent' };
+    });
+
+    const navDef = [
+      ['INSPECT', [['overview','Revision overview','1',revPill],['validation','Validation & DOF','2',valPill],['streams','Streams & units','5',isNetOn ? P('CONVERGED') : P('NOT_RUN')]]],
+      ['EXECUTE', [['run','Solve run','3',runPill],['certificate','Certificate','4',certPill],['failure','Failure bundle','6',isNetOff ? P('BOUND_BLOCKED') : P('NONE','none')]]],
+      ['COMPARE', [['compare','Compare runs','7',P('NONE','none')]]]
+    ];
+    const navGroups = navDef.map(([label,items]) => ({ label, items: items.map(([k,l,num,pill]) => {
+      const on = st.screen === k;
+      return { label:l, num, pill, onClick: go[k], current: on ? 'page' : 'false', bg: on ? '#ffffff' : 'transparent', fw: on ? 600 : 400, shadow: on ? '0 0 0 1px #d6d6cf' : 'none' };
+    }) }));
+
+    const trailDef = [['overview','REVISION',ctx.rev,revPill],['validation','VALIDATION','8 checks',valPill],['run','RUN',isStr ? '—' : (isNetOn ? 'Run 1' : 'Run 2'),runPill],['certificate','CERTIFICATE',isNetOn ? 'cert-1cf2…' : '—',certPill]];
+    const trail = trailDef.map(([k,kicker,label,pill],i) => {
+      const on = st.screen === k;
+      return { kicker, label, pill, onClick: go[k], arrow: i ? 'block' : 'none', bg: on ? '#f6f6f3' : '#fff', bd: on ? '#e2e2dc' : 'transparent', under: on ? '#16181b' : 'transparent' };
+    });
+    const tabsB = [['streams','Streams & units'],['failure','Failure bundle'],['compare','Compare']].map(([k,label]) => {
+      const on = st.screen === k;
+      return { label, onClick: go[k], under: on ? '#16181b' : 'transparent', fw: on ? 600 : 400 };
+    });
+
+    const op = (label, opn, disabled, why) => ({ label, op:opn, disabled, title: opn + (why ? ' — ' + why : ''), bg: disabled ? '#f0f0ec' : (label === 'Solve' ? '#16181b' : '#fff'), fg: disabled ? '#8a8e93' : (label === 'Solve' ? '#fff' : '#16181b'), bd: disabled ? '#e2e2dc' : (label === 'Solve' ? '#16181b' : '#cdcdc5'), sub: label === 'Solve' && !disabled ? '#b8bbbf' : '#8a8e93', cursor: disabled ? 'not-allowed' : 'pointer' });
+    const ops = [op('Validate','edit.validate',false), op('Solve','execute.solve',isStr,'blocked: revision INVALID'), op('Verify','execute.verify',!isNetOn,'needs a converged root'), op('Branch','compare.branch',false)];
+
+    const perms = [['read',1],['draft edit',1],['execute',1],['model installation',0],['policy administration',0],['publication',0]].map(([label,ok]) => ({ label, glyph: ok ? '✓' : '–', state: ok ? 'may' : 'may not', fg: ok ? '#16181b' : '#8a8e93' }));
+
+    const gap = {}; GAPS.forEach(g => gap[g.id] = e => { e && e.preventDefault && e.preventDefault(); this.setState({ gapsOpen:true, gapFocus:g.id }); });
+    const gapList = GAPS.map(g => ({ ...g, bg: st.gapFocus === g.id ? '#f1ecf9' : '#fff', bd: st.gapFocus === g.id ? '#b9a6dc' : '#e2e2dc' }));
+
+    const shellChips = [['A','A · operations rail'],['B','B · evidence trail']].map(([k,label]) => ({ label, onClick: () => this.setState({ shell:k }), bg: shell === k ? '#ffffff' : 'transparent', fg: shell === k ? '#16181b' : '#d6d6cf' }));
+
+    const s = {}; ['overview','validation','run','certificate','streams','failure','compare'].forEach(k => s[k] = st.screen === k);
+
+    return {
+      shellA: shell === 'A', shellB: shell === 'B', s, go, ctx, isNet, isStr, isNetOn, isNetOff,
+      edu, showGaps, gapDisplay: showGaps ? 'inline-flex' : 'none',
+      toggleEdu: () => this.setState({ edu: !edu }), toggleGaps: () => this.setState({ gaps: !showGaps }),
+      revs: revs.map(r => ({ ...r, runs, showRuns: r.id === 'NET-02' && isNet })), runs, navGroups, trail, tabsB, ops, perms,
+      checks, candidates, noCand: !st.cand, candOpacity: st.cand ? 1 : 0.4,
+      trace, traceShown: trace.length, traceTotal: all.length, attemptChips, kindChips,
+      noCert: !isNetOn, noStreams: !isNetOn, noBundle: !isNetOff,
+      streams, units, sel, noSel: !sel, stickyTop: shell === 'A' ? '72px' : '150px',
+      cmpRows, gap, gapList, gapsOpen: st.gapsOpen,
+      openGaps: () => this.setState({ gapsOpen: !st.gapsOpen, gapFocus:null }), closeGaps: () => this.setState({ gapsOpen:false }),
+      shellChips, switchLeft: shell === 'A' ? '264px' : '16px'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -9,7 +9,7 @@ This file states the **current position**, not the history that produced it. Clo
 the P00, P01 and P02 handoffs, reviews and findings — is in `docs/progress-archive.md`, which is
 not read at session start.
 
-Last updated: 3 October 2026.
+Last updated: 6 October 2026.
 
 ## Start here
 
@@ -19,7 +19,7 @@ Last updated: 3 October 2026.
 | Name | **OpenFlowsheet** (R-149, 2026-10-02): distribution, import package and console script `openflowsheet`; environment variables `OPENFLOWSHEET_*`. Install `.venv/bin/pip install -e . --no-deps`; run `openflowsheet solve SYN-001-nominal --out ./bundle` (or `python -m openflowsheet.application.cli …`). Records before 2026-10-02 say `process_runtime` / `process-runtime` |
 | Gate | `PATH=.venv/bin:$PATH ./scripts/check.sh` — ruff, ruff format, mypy strict, pytest. Last run green, **4245 tests** (3141 before T06) |
 | Done | P00–P03 `tested` and merged — **Phase 0 complete**. **K01 `tested`** and reviewed by Fable, findings closed. **K02 `tested`**, reviewed by Fable, all findings closed including the row-shape consolidation. ADR 0001, 0002, 0003, 0006 and 0008 accepted and applied |
-| Next | **OpenFlowsheet 0.1.1 is released** (2026-10-03): PyPI `openflowsheet==0.1.1` (trusted publishing), GitHub release and tag `v0.1.1` on `5473b51`, via `release.yml` run 37156676531 (dry run 37156335393 first). Development is in the public repository (`origin`); pre-0.1.0 history in the private archive (`archive`, R-150). The `pypi` environment has no required reviewer yet (Frank may add himself). Next: v0.2 — **M06** (web shell) first, then M01 (`docs/v02-real-chemistry-dossier.md`) |
+| Next | **v0.2 started 2026-10-06** (`docs/V02_STATE.md`, log `docs/V02_DECISIONS.md`). Order R-153: M01's design lane first (specifier), M06 built alongside, pre-release `0.2.0a1` after M02. K_NH₃ pinned to the code's value (R-152). 0.1.1 is released (PyPI, tag `v0.1.1` on `5473b51`). At most 4 agents at a time |
 | Not done | No package is `reviewed` — that needs human numerical and process-modeling sign-off, which no agent may claim. Nothing is empirically validated |
 | Pushing | You authorised pushing and merging at milestones on 2026-09-17; that is the standing instruction being followed. `main` is current on `origin/main` |
 

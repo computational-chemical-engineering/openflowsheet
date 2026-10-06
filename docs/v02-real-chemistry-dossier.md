@@ -389,3 +389,11 @@ Status after these statements: items 1, 2 and 8 and H2/H5 have no remaining `nee
 are `needs_fact` (M01 work: per-value property sources and identifiers, VLE data and a `k_ij` source, the PR
 parameter set). *(Corrected 2026-10-02, G5: this sentence named items 6 and 7; the item table has 7 `met (proposed)`
 and 11 `needs_fact`.)*
+
+## Frank's statement, 2026-10-06
+
+5. **K_NH₃ (item 5, §11; question 4).** *"For K_NH3 use the code's value."* M01 pins the code's enthalpy term at
+   `6089593`, 7000 cal/mol (29 288 J/mol, `exp(-8.3/R + 7000/RT)` with R in cal). This is Frank's decision; the
+   check against Rossetti et al. 2006 itself was **not** performed, so §12's "K_NH₃ rests on Frank's statement"
+   stands, and Gargiulo 2025 Table 1's 29 228 J/mol stays recorded as a discrepancy (0.35 %), not as resolved.
+   Register R-152.
