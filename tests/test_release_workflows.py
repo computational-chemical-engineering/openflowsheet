@@ -26,6 +26,7 @@ from conftest import REPO_ROOT
 
 WORKFLOWS = REPO_ROOT / ".github" / "workflows"
 RELEASE = "release.yml"
+CI = "ci.yml"
 PUBLIC = "computational-chemical-engineering/openflowsheet"
 GUARD = f"github.repository == '{PUBLIC}'"
 C = "67c66d98587f23bd7dfe8da28a8facccc92da21e"
@@ -53,6 +54,14 @@ def test_one_release_workflow_and_no_other() -> None:
 
 def test_every_action_is_pinned_by_commit_id() -> None:
     lines = (WORKFLOWS / RELEASE).read_text(encoding="utf-8").splitlines()
+    uses = [line for line in lines if re.match(r"^\s*(?:-\s*)?uses:", line)]
+    assert uses
+    for line in uses:
+        assert PINNED.match(line), f"not pinned by commit id: {line.strip()}"
+
+
+def test_ci_every_action_is_pinned_by_commit_id() -> None:
+    lines = (WORKFLOWS / CI).read_text(encoding="utf-8").splitlines()
     uses = [line for line in lines if re.match(r"^\s*(?:-\s*)?uses:", line)]
     assert uses
     for line in uses:
