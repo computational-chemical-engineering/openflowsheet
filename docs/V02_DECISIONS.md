@@ -35,3 +35,8 @@ Grep, don't read whole. Newest at the bottom.
   wrapper: 404/405 would lack the CSP); `serve-http --ui` (exit 1 if web files missing); import rule in
   `tests/test_t07_w6a_http.py`; serving tests; then WO-5, WO-6. `actions/setup-node` v7.0.0 =
   `820762786026740c76f36085b0efc47a31fe5020`. Planned: G1 equality as `xfail(strict=True)` until WO-3/9/10.
+- Frank (2026-10-06), M06 F2: the W27 agent campaign uses the most recent model available at campaign time ("This
+  should be 5.5 (or preferably the most recent version)"), pinned by exact ID and recorded; the design note's default
+  (V17 `v17-c2`'s `claude-sonnet-5`, for comparability) is overridden; the loss of direct comparability is stated.
+  Development agents are unaffected (frontmatter aliases `opus`/`sonnet`/`haiku` resolve to the latest; the API saw
+  `claude-opus-5-5`).

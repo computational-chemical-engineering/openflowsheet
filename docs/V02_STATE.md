@@ -42,7 +42,7 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 ## Needs Frank
 
 - Approve ADR 0019 Amendment 3 (additive contract widening: structure index + unroutable analysis, element-level `diff_revisions`, `list_audit`); default: build it on the branch, merge only after approval.
-- M06 F1 W27 spend [45 runs at M07, USD 15–45]; F2 agent model [`v17-c2` config]; F3 fonts [system]; F4 scenario = run comparison [yes]; F5 education mode [deferred].
+- M06 F1 W27 spend [45 runs at M07, USD 15–45]; F2 agent model — **answered (Frank, 2026-10-06): the most recent model at campaign time**, pinned by exact model ID and recorded (not V17's `claude-sonnet-5`; direct comparability with `v17-c2` is lost and is stated); F3 fonts [system]; F4 scenario = run comparison [yes]; F5 education mode [deferred].
 
 ## Next action
 
