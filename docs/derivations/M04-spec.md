@@ -6,7 +6,7 @@
 register R-240…R-249.
 **Machine-readable expectations:** `benchmarks/m04/reference_values.json` and the registered plan
 `benchmarks/m04/plan-it1.json`, both from `docs/derivations/scripts/m04_reference.py` (`--check` re-derives every
-claim this document makes about its own numbers and requires both files byte-identical; 5268 claims at this commit).
+claim this document makes about its own numbers and requires both files byte-identical; 5269 claims at this commit).
 **Built on:** M01 (`main`: the boundary, ADR 0027, DX-01), M02 (`wp/M02`: ADRs 0033–0035, the records, the coupling,
 the replacement check), M03 (`wp/M03`: ADR 0031's vocabulary, R-184's seeded-data convention).
 
@@ -275,6 +275,12 @@ Beta(k, n+1−k) law; q̂ is finite iff U_(k) < 1 − f, and then the band's cov
 result and it lies in the band" is C = U_(k). Failures therefore widen the band instead of eroding the claim, and
 when they exceed n − k = 4 calibration draws there is no finite band (`band_not_finite`).
 
+*What failures cost* (`finite_sample.registered_plan_with_failures`, exact under the same law): at a parent failure
+rate of 1 % in the box the band is finite with probability 0.9931 and the plan passes the coverage test with
+probability 0.8966; at 2 %, 0.9111 and 0.8146; at 5 %, 0.2919 and 0.1997. A parent that fails on more than a few
+percent of the reference box cannot support a 95 % band there — a measured property of the parent, reported as
+`band_not_finite`, not a defect of the plan.
+
 ### 5.4 Budget and the refusal before running
 
 The approved budget is a number of **cold** experiments (cache hits cost nothing; ADR 0033's exact cache). At study
@@ -442,7 +448,8 @@ sensitivities (they are the surrogate-backed flowsheet's; M03 C3 currently refus
 
 ### 8.1 A native unit, not an experiment provider
 
-`c1.reactor_surrogate` enters `MODEL_BUILDERS` with the rows of §3.2. Its ModelManifest: `execution_class`
+`c1.reactor_surrogate` enters `MODEL_BUILDERS` with the rows of §3.2 and the instance configuration N_tubes (as
+M02's embedded unit; the surrogate's input F = n_tot/N_tubes). Its ModelManifest: `execution_class`
 `explicit_reduced`; `evaluation_cost_class` `cheap`; ports, components and accumulation declarations identical to
 M02's embedded unit; `derivatives` = residuals w.r.t. free variables `analytic` and **outlet.state w.r.t.
 inlet.state `analytic`**, with the note "derivative of the surrogate; agreement with the parent is the gradient
@@ -607,7 +614,8 @@ validation scope". A scope record that points into the manifest rather than repe
 ### 10.3 The `surrogate_study` job operation (ADR 0019 Amendment 5, in ADR 0037)
 
 Right `execute`. Request `{parent: {model_id, variant_id, variant_sha256}, plan_id: "it1" | "it1-prefix" | "it<i>",
-budget: {max_cold_experiments}}`. It runs the plan's experiments through M02's runner one by one (cache first; M02 D12
+budget: {max_cold_experiments}}`. `it1-prefix` (§9.3) is accepted only for a synthetic parent. For `it<i>`, i ≥ 2, the
+training set is every `ok` P_ref record of `it1` … `it<i−1>` of the same parent (§5.5). It runs the plan's experiments through M02's runner one by one (cache first; M02 D12
 left batch sampling to M04), then fits, calibrates, tests, checks gradients, writes the manifest and the evidence as
 artifacts (kinds `surrogate_manifest`, `model_evidence`), and returns `{verdict, surrogate_id, manifest_sha256,
 evidence_sha256, cold_experiments, cache_hits}`. A cancelled job keeps its experiment artifacts; resuming re-reads them
@@ -626,8 +634,9 @@ manifest with its command, never in the default gate.
 - **M04.A02** — The production sampler and request builder reproduce every `u` and every request (n, T, P) of
   `plan-it1.json` **bitwise** (562 draws, 5 centres, 70 stencils), and the 632 experiment keys are distinct. Exact:
   identity is exact (ADR 0033), so any difference is a different experiment.
-- **M04.A03** — A plan whose any request leaves the box, the hard domain or the data domain is refused at study start
-  (`plan_invalid`, nothing executed): checked with a copy of the plan with one T set to 700.0 K.
+- **M04.A03** — A plan any of whose requests leaves the box, the hard domain or the data domain is refused at study
+  start (`plan_invalid`, nothing executed): checked with a copy of the plan with one T set to 700.0 K. The plan
+  `it1-prefix` requested for a non-synthetic parent is refused (`plan_not_registered_for_parent`).
 
 **Finite-sample rule and verdicts (default gate, pure functions)**
 
@@ -663,9 +672,11 @@ manifest with its command, never in the default gate.
 - **M04.A14** — Domain: J1, J2 `within_reference_domain` (excess 0); J3 `outside_reference_domain`, excess 0.5 within
   10⁻¹², offending coordinate `T`; J4 refused `surrogate_outside_hard_domain(<unit>:T)`; J5 refused
   `surrogate_input_undefined`; J6 ξ = 0 and T_out = T_in exactly.
-- **M04.A15** — Admissibility (fixture manifests): β_X = (−0.01, 0, …) refused `surrogate_output_inadmissible(:X)` at
-  J1; β_X = (0.96, 0, …) likewise; β_X = (0.5, 0, …) at J1 with r = 1.2 (H₂/N₂ inside the hard domain, r/3 = 0.4)
-  likewise — the r/3 bound, which a [0, 0.95]-only check misses; β_T = (260, 0, …) refused `(:dT)`.
+- **M04.A15** — Admissibility (fixture manifests with constant predictors, every other coefficient 0): β_X[0] = −0.01
+  refused `surrogate_output_inadmissible(<unit>:X)` at J1; β_X[0] = 0.96 likewise; β_X[0] = 0.5 at J1's flows with
+  n_H₂ replaced by 1.2 n_N₂ (H₂/N₂ = 1.2 inside the hard domain, r/3 = 0.4 < 0.5) likewise — the H₂ bound, which a
+  [0, 0.95]-only check misses — while β_X[0] = 0.5 at J1 itself is admitted; β_T[0] = 260 refused
+  `(<unit>:dT)`.
 
 **The study end to end (default gate, in-process parents)**
 
@@ -682,12 +693,14 @@ manifest with its command, never in the default gate.
 - **M04.A19** — Smooth, prefix plan: q̂ within 10⁻¹⁰ of 0.024916065269; H = 59 (= h_min(60): one miss allowed, one
   taken — the integer count is exact, the nearest test score being 3.2 × 10⁻³ from q̂); verdict PROMOTABLE. (This manifest is
   the promoted surrogate of A25–A29 and the source of the schema fixtures.)
-- **M04.A20** — Budget: the smooth prefix study with `max_cold_experiments` one below the cache misses ends
-  INSUFFICIENT_EVIDENCE `["budget_below_plan"]` with zero attempts written; afterwards, with all 199 records cached,
-  budget 0 reproduces A19's manifest bitwise (A32's rule) with zero new attempts.
-- **M04.A21** — Plan incomplete: one stencil experiment forced to fail transiently beyond its retries (M02's test
-  hook) ends INSUFFICIENT_EVIDENCE with `plan_incomplete` in the IE list; no run of an incomplete plan is ever
-  PROMOTABLE.
+- **M04.A20** — Budget: on a store without records, the smooth prefix study with `max_cold_experiments` = 198 (one
+  below its 199 cache misses) ends INSUFFICIENT_EVIDENCE `["budget_below_plan"]` with zero attempts written; on A19's
+  store (all 199 records cached), `max_cold_experiments` = 0 reproduces A19's manifest bitwise (A32's rule) with zero
+  new attempts.
+- **M04.A21** — Plan incomplete: a variant of the smooth test-only parent that returns `ExecutionFailure` (transient,
+  M02 design note §5.1) for one designated stencil request, on every attempt, ends the prefix study
+  INSUFFICIENT_EVIDENCE with `plan_incomplete` in the IE list and that request named; no run of an incomplete plan is
+  ever PROMOTABLE.
 - **M04.A22** — Every registered failure of A17 is in its split's `failed` list with status `not_converged` and code
   `reactor_not_accepted(synthetic_failure_region)`, a `null` score, and no outlet values in its experiment result; the
   manifest's n = 118 and m = 300.
@@ -696,7 +709,8 @@ manifest with its command, never in the default gate.
   bitwise.
 - **M04.A24** — The manifest checker accepts A17's manifest and rejects each single mutation: q̂ not the k-th
   smallest stored score; H ≠ #{score ≤ q̂}; a verdict inconsistent with the stored metrics; a missing qualification;
-  overlapping splits; a non-finite number.
+  a qualification with an unfilled `<…>` field; overlapping splits; n or m different from the plan's counts; a
+  non-finite number.
 
 **Promotion and rollback (default gate, the synthetic loop)** — a project whose C1 loop revision binds the reactor to
 `m04-synthetic-smooth-v1` (as M02 G8 binds its test-only variant), solved once on the coupled route.

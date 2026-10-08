@@ -212,6 +212,23 @@
    "60": 59,
    "300": 279
   },
+  "registered_plan_with_failures": [
+   {
+    "failure_fraction": "0.01",
+    "p_band_finite": "0.993111",
+    "power": "0.896643"
+   },
+   {
+    "failure_fraction": "0.02",
+    "p_band_finite": "0.91111",
+    "power": "0.814643"
+   },
+   {
+    "failure_fraction": "0.05",
+    "p_band_finite": "0.291922",
+    "power": "0.199721"
+   }
+  ],
   "n_min": 19,
   "m_min": 29,
   "registered_plan": {
@@ -3458,7 +3475,7 @@
   }
  },
  "claims": {
-  "count": 5268,
+  "count": 5269,
   "distinct_statements": [
    "CP bound brackets 0.90 at h = 279 / 278",
    "J1: chain-rule Jacobian equals mpmath differentiation (err 1.75e-51)",
@@ -3533,6 +3550,7 @@
    "test[i] lies in the reference box",
    "test[i].u[i] is the affine sample to within 2 ulp",
    "the decision boundary is not knife-edge",
+   "the failure-aware power reduces to the beta-binomial power at f = 0",
    "the full quadratic in 7 inputs has 36 terms",
    "the registered plan's power exceeds 0.90",
    "the vectors reach all three verdicts",

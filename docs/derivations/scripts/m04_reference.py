@@ -468,6 +468,23 @@ def power(n: int, m: int) -> dict[str, Any]:
     }
 
 
+def power_with_failures(n: int, m: int, f: Any) -> dict[str, Any]:
+    """Spec §5.3: an atom of mass f at +inf. The band is finite iff U_(k) < 1 - f, and then its
+    coverage of P_ref is C = U_(k) ~ Beta(k, n + 1 - k); H | C ~ Bin(m, C)."""
+    k = k_index(n)
+    a, b = k, n + 1 - k
+    hm = h_min(m)
+    assert hm is not None
+    dens = lambda c: c ** (a - 1) * (1 - c) ** (b - 1) / mp.beta(a, b)  # noqa: E731
+    tail = lambda c: mp.betainc(hm, m - hm + 1, 0, c, regularized=True)  # noqa: E731
+    pw = mp.quad(lambda c: dens(c) * tail(c), [0, mpf("0.8"), mpf("0.9"), 1 - f])
+    return {
+        "failure_fraction": s(f, 6),
+        "p_band_finite": s(mp.betainc(a, b, 0, 1 - f, regularized=True), 6),
+        "power": s(pw, 6),
+    }
+
+
 # -- verdict logic (spec §7) ----------------------------------------------------------------------
 
 
@@ -1186,6 +1203,18 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
     claim(
         cp_lower(279, 300) >= C_MIN > cp_lower(278, 300), "CP bound brackets 0.90 at h = 279 / 278"
     )
+    failure_power = [
+        power_with_failures(COUNTS["calibration"], COUNTS["test"], mpf(f))
+        for f in ("0.01", "0.02", "0.05")
+    ]
+    claim(
+        abs(
+            mpf(power_with_failures(COUNTS["calibration"], COUNTS["test"], mpf("1e-30"))["power"])
+            - mpf(pw["power_no_failures"])
+        )
+        < mpf("1e-5"),
+        "the failure-aware power reduces to the beta-binomial power at f = 0",
+    )
     nearest = min(abs(mpf(r["lower_bound"]) - C_MIN) for r in cp_table)
     claim(nearest > mpf("7e-4"), "no registered CP bound lies within 7e-4 of 0.90")
     vectors = verdict_vectors()
@@ -1279,6 +1308,7 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
         "finite_sample": {
             "k": {str(n): k_index(n) for n in (18, 19, 39, 99, 118, 119, 149, 199)},
             "h_min": {str(m): h_min(m) for m in (29, 60, 300)},
+            "registered_plan_with_failures": failure_power,
             "n_min": n_min(),
             "m_min": m_min(),
             "registered_plan": pw,
