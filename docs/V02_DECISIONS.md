@@ -176,3 +176,9 @@ Grep, don't read whole. Newest at the bottom.
   enthalpy refusal → stream_enthalpy_refused; reactor_not_accepted(<stage>); boundary check order); ADR 0026's note in
   `docs/interfaces-frozen.md` (no WO covers it). Then `reviewer` on M01 (derivatives, phase logic), then WO-7 manifest.
 - `opus-engineer` M01 WO-5 (IDAES conformance, A37) launched on `wp/M01-idaes` (from `f595179`).
+- M01 WO-5 done (`13bcef7`, fast-forwarded into `wp/M01`): IDAES 2.13 conformance A37 — V1/V2 Z 0, ln φ 1.9e-16; L1 Z
+  4.3e-16, ln φ 3.6e-14; F1 β 4.2e-12, y* 7.1e-11; F11 β 8.2e-13, y* 3.7e-11 (y* gap = SmoothVLE T_eq offset; 1.7e-13 at
+  T_eq). Nothing within 10×. `.venv-idaes` fingerprint identical to T06's. check.sh 7047 passed. The env lives in the
+  `m01-idaes` worktree (git-ignored); keep it for M02.
+- `specifier` M01 Amendment 1 launched on `wp/M01` (items A26, A09, A12, synthetic marker, stand-in envelope row, added
+  refusals, interfaces-frozen note; R-195+).
