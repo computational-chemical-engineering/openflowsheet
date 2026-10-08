@@ -786,14 +786,21 @@ class PrC1Provider:
 
         y* solves h(y) = ln y + ln φ_NH3^V(T, P; y, (1 − y) w) − ln φ_NH3^L = 0 for the light-gas
         proportions w alone, so it never depends on the feed's NH3 (M01.A21) and the trivial
-        solution does not exist in this formulation (spec §5.5). Flash derivatives are not
-        offered; `FlashResult` has no field to carry them.
+        solution does not exist in this formulation (spec §5.5). Flash derivatives are
+        refused; `FlashResult` has no field to carry them (R-197).
         """
         del context
         if request.specification != "TP":
             return _flash_refused(
                 "unsupported",
                 f"unsupported_specification: {request.specification!r}; pr-c1-v1 offers TP only",
+            )
+        if request.derivatives:
+            # Amendment 1 (R-197): silence would read as an answer.
+            return _flash_refused(
+                "unsupported",
+                f"flash_derivatives_unsupported: {list(request.derivatives)}; "
+                "FlashResult carries no derivatives",
             )
         state = request.state
         if len(state.n) != len(COMPONENTS):

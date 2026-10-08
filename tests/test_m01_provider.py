@@ -1,4 +1,4 @@
-"""M01.A03-A14, A35, A36: the provider `pr-c1-v1` against its closed forms (M01 spec §4, §5.2-5.3).
+"""M01.A03-A14, A35, A36, A50: the provider `pr-c1-v1` against its closed forms (spec §4, §5.2-5.4).
 
 The expectations are `benchmarks/m01/reference_values.yaml` → `closed_form`, written at 50 digits
 by `docs/derivations/scripts/m01_reference.py` (whose `--check` is M01.A34) and never imported by
@@ -20,7 +20,14 @@ import pytest
 from conftest import REPO_ROOT, load_yaml
 
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.thermo import PropertyProvider, PropertyRequest, StreamState
+from openflowsheet.thermo import (
+    FlashRequest,
+    FlashResult,
+    PropertyProvider,
+    PropertyRequest,
+    PropertyResult,
+    StreamState,
+)
 from openflowsheet.thermo.cache import ExactPropertyCache
 from openflowsheet.thermo.pr_c1 import (
     COMPONENTS,
@@ -349,6 +356,102 @@ def test_the_domain_bounds_are_inclusive() -> None:
             properties=("h",),
         )
         assert PROVIDER.evaluate_phase(request, CONTEXT).status == "ok"
+
+
+# -- A50: request checks (Amendment 1, spec §5.3, §5.4 step 0) -------------------------------------
+
+V1 = _state("V1")
+F1_STATE = CLOSED["flash_states"]["F1"]
+F1 = StreamState(
+    n=tuple(F1_STATE["n_mol_s"]), temperature=F1_STATE["T_K"], pressure=F1_STATE["P_Pa"]
+)
+#: One defect each: V1's T and P with one flow too few or too many; V1 with one bad coordinate.
+SHORT_OR_LONG = {"4_flows": V1.n[:4], "6_flows": (*V1.n, 0.0)}
+OUTSIDE = {
+    "n_N2_negative": StreamState(
+        n=(0.7, -0.235, 0.03, 0.015, 0.02), temperature=673.15, pressure=1e7
+    ),
+    "n_NH3_inf": StreamState(
+        n=(0.7, 0.235, math.inf, 0.015, 0.02), temperature=673.15, pressure=1e7
+    ),
+    "T_nan": StreamState(n=V1.n, temperature=math.nan, pressure=V1.pressure),
+}
+
+
+def _phase_refusal(result: PropertyResult, status: str, prefix: str) -> None:
+    assert result.status == status, result.message
+    assert result.message.startswith(f"{prefix}:"), result.message
+    assert result.phase_signature is None
+    assert result.values == {} and result.derivatives == {}
+
+
+def _flash_refusal(result: FlashResult, status: str, prefix: str) -> None:
+    assert result.status == status, result.message
+    assert result.message.startswith(f"{prefix}:"), result.message
+    assert result.phase_signature is None and result.vapor_fraction is None
+    assert result.vapor is None and result.liquid is None
+    assert result.k_values == {}
+
+
+def test_a50_the_states_have_one_defect_each() -> None:
+    assert V1.n == (0.7, 0.235, 0.03, 0.015, 0.02) and (V1.temperature, V1.pressure) == (
+        673.15,
+        1e7,
+    )
+    assert PHASE_STATES["V1"]["phase"] == "VAPOR"
+    for state in OUTSIDE.values():
+        assert len(state.n) == len(COMPONENTS)
+        defects = [i for i, (a, b) in enumerate(zip(state.n, V1.n, strict=True)) if a != b]
+        defects += ["T"] if not state.temperature == V1.temperature else []
+        defects += ["P"] if state.pressure != V1.pressure else []
+        assert len(defects) == 1, defects
+
+
+def test_a50_an_unknown_property_is_unsupported() -> None:
+    request = PropertyRequest(state=V1, phase="VAPOR", properties=("h", "s"))
+    _phase_refusal(PROVIDER.evaluate_phase(request, CONTEXT), "unsupported", "unknown_property")
+
+
+@pytest.mark.parametrize("case", sorted(SHORT_OR_LONG))
+def test_a50_a_wrong_state_length_is_an_error_in_either_method(case: str) -> None:
+    state = StreamState(n=SHORT_OR_LONG[case], temperature=V1.temperature, pressure=V1.pressure)
+    request = PropertyRequest(state=state, phase="VAPOR", properties=("h",))
+    _phase_refusal(PROVIDER.evaluate_phase(request, CONTEXT), "error", "state_length")
+    _flash_refusal(PROVIDER.flash(FlashRequest(state=state), CONTEXT), "error", "state_length")
+
+
+@pytest.mark.parametrize("case", sorted(OUTSIDE))
+def test_a50_a_negative_or_non_finite_coordinate_is_out_of_domain_in_either_method(
+    case: str,
+) -> None:
+    state = OUTSIDE[case]
+    request = PropertyRequest(state=state, phase="VAPOR", properties=("h",))
+    _phase_refusal(PROVIDER.evaluate_phase(request, CONTEXT), "out_of_domain", "out_of_domain")
+    _flash_refusal(
+        PROVIDER.flash(FlashRequest(state=state), CONTEXT), "out_of_domain", "out_of_domain"
+    )
+
+
+def test_a50_a_ph_flash_is_unsupported() -> None:
+    result = PROVIDER.flash(FlashRequest(state=F1, specification="PH"), CONTEXT)
+    _flash_refusal(result, "unsupported", "unsupported_specification")
+
+
+def test_a50_flash_derivatives_are_refused_not_ignored() -> None:
+    assert PROVIDER.flash(FlashRequest(state=F1), CONTEXT).phase_signature == "TWO_PHASE"
+    result = PROVIDER.flash(FlashRequest(state=F1, derivatives=("T",)), CONTEXT)
+    _flash_refusal(result, "unsupported", "flash_derivatives_unsupported")
+
+
+def test_a50_the_derivatives_check_follows_the_specification_and_precedes_the_state_length() -> (
+    None
+):
+    # WO-8 item 1: after the specification check, before the state-length check.
+    both = FlashRequest(state=F1, specification="PH", derivatives=("T",))
+    _flash_refusal(PROVIDER.flash(both, CONTEXT), "unsupported", "unsupported_specification")
+    short = StreamState(n=F1.n[:4], temperature=F1.temperature, pressure=F1.pressure)
+    result = PROVIDER.flash(FlashRequest(state=short, derivatives=("T",)), CONTEXT)
+    _flash_refusal(result, "unsupported", "flash_derivatives_unsupported")
 
 
 # -- A35, A36: no new runtime dependency; exact caching -------------------------------------------
