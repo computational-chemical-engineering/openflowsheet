@@ -584,6 +584,24 @@ def boundary_states() -> dict[str, Any]:
 # -- toys (spec §5) --------------------------------------------------------------------------------
 
 
+#: Spec §5 (Amendment 1): the x^2 - p toy states as binary64 inputs (p, x).
+X_SQUARED_STATES: tuple[tuple[float, float], ...] = ((0.25, 0.5), (1e-20, 1e-10), (0.0, 0.0))
+#: The unit roundoff of binary64, for the a priori error estimate of A12 (spec §5, Amendment 1).
+UNIT_ROUNDOFF = mpf(2) ** -53
+
+
+def x_squared_residuals(p: float, x: float) -> dict[str, str]:
+    """The toy's residual at binary64 inputs: as binary64 evaluates `x*x - p` (two roundings),
+    and exactly (the real value of the binary64 inputs, at 60 digits). Neither is an expectation
+    of any assertion except where it is exactly zero (A13); spec §5, Amendment 1."""
+    evaluated = x * x - p
+    exact_value = exact(x) ** 2 - exact(p)
+    return {
+        "residual_binary64": repr(evaluated),
+        "residual_exact": "0.0" if exact_value == 0 else str(mp.nstr(exact_value, 20)),
+    }
+
+
 def toys() -> dict[str, Any]:
     a1 = mp.matrix([[1, 2], [3, 7]])
     inv = a1**-1
@@ -599,26 +617,54 @@ def toys() -> dict[str, Any]:
         list(wrong) == [mpf(-13), mpf(7)],
         "C6 the missing-transpose value is [-13, 7], which differs",
     )
+
+    # A12's tolerance (Amendment 1): above the a priori normwise estimate of a backward-stable
+    # 2 x 2 solve, n u rho kappa_1(A) ||C||_1 ||A^-1||_1 with partial-pivoting growth rho <= 2,
+    # and far below the O(1) errors the assertion exists to catch.
+    def norm_1(matrix: Any) -> Any:
+        return max(sum(abs(matrix[i, j]) for i in range(matrix.rows)) for j in range(matrix.cols))
+
+    kappa_1 = norm_1(a1) * norm_1(inv)
+    claim(kappa_1 == 90, "C6 kappa_1(A(1)) = 90")
+    estimate = 2 * 2 * UNIT_ROUNDOFF * kappa_1 * sum(abs(v) for v in c) * norm_1(inv)
+    claim(
+        estimate < TAU_ABS,
+        f"C6 A12's tolerance tau_abs = 1e-11 exceeds the a priori error estimate "
+        f"{mp.nstr(estimate, 3)} of the 2 x 2 solve",
+    )
+    claim(
+        min(abs(a - b) for a, b in zip(adjoint_value, wrong, strict=True)) >= 10**10 * TAU_ABS,
+        "C6 the missing-transpose value is at least 1e10 tau_abs from C A(1)^-1 in every entry",
+    )
+    x_squared = []
+    for (p, x), expected, extra in zip(
+        X_SQUARED_STATES,
+        ("QUALIFIED", "ILL_CONDITIONED", "RANK_DEFICIENT"),
+        ({"dx_dp": "1.0"}, {"screen_reason": "absolute"}, {}),
+        strict=True,
+    ):
+        residuals = x_squared_residuals(p, x)
+        x_squared.append({"p": repr(p), "x": repr(x), "expected": expected, **extra, **residuals})
+    evaluated = [state["residual_binary64"] for state in x_squared]
+    claim(
+        evaluated == ["0.0", "1.504632769052528e-36", "0.0"],
+        "C6 x^2 - p is exactly 0.0 in binary64 at (0.25, 0.5) and (0, 0), and 1.5e-36 (not 0) at "
+        "(1e-20, 1e-10), whose decimal inputs are not binary64 numbers",
+    )
+    claim(
+        0 < abs(mpf(x_squared[1]["residual_binary64"])) < TAU_ROOT * mpf("1e-20"),
+        "C6 the (1e-20, 1e-10) residual is non-zero and more than 20 orders below tau_root: Q1 "
+        "passes there, and the refusal is the screen's",
+    )
     return {
         "x_squared": {
             "residual": "x^2 - p",
-            "states": [
-                {
-                    "p": "0.25",
-                    "x": "0.5",
-                    "expected": "QUALIFIED",
-                    "dx_dp": "1.0",
-                    "residual": "0.0",
-                },
-                {
-                    "p": "1e-20",
-                    "x": "1e-10",
-                    "expected": "ILL_CONDITIONED",
-                    "screen_reason": "absolute",
-                    "residual": "0.0",
-                },
-                {"p": "0.0", "x": "0.0", "expected": "RANK_DEFICIENT", "residual": "0.0"},
-            ],
+            "note": (
+                "residual_binary64 is x*x - p evaluated in binary64 (two roundings); "
+                "residual_exact is the real value at the binary64 inputs. Only the exact zeros "
+                "are asserted (A13)."
+            ),
+            "states": x_squared,
         },
         "linear_2x2": {
             "residual": "A(delta) x - p, A(delta) = [[1, 2], [3, 6 + delta]], F_p = -I",
@@ -979,27 +1025,76 @@ def estimation() -> dict[str, Any]:
                     "expected_status": "UNIDENTIFIABLE",
                     "estimate": {THETA[1][0]: s(theta[1])},
                     "not_determined": [THETA[0][0]],
+                    "final_iterate_not_registered": [THETA[0][0]],
                     "null_direction_scaled": [s(x) for x in null],
                 }
             )
-            preds = []
-            for vname, _, _ in VALIDATION:
-                jv = jac_theta(theta, [vname])
-                along = jv[0, 0] * THETA[0][2] * null[0] + jv[0, 1] * THETA[1][2] * null[1]
-                norm = mp.sqrt((jv[0, 0] * THETA[0][2]) ** 2 + (jv[0, 1] * THETA[1][2]) ** 2)
-                determined = abs(along) <= mpf("1e-3") * norm
-                preds.append(
-                    {
-                        "id": vname,
-                        "determined": bool(determined),
-                        "null_projection_relative": s(abs(along) / norm),
-                    }
-                )
+            # Amendment 1 (spec §7.4): the estimator leaves an undetermined parameter wherever its
+            # path ends along the null direction, so nothing registered may depend on where. The
+            # fit above holds r at its start; these claims show that every registered FIT-U number
+            # is the same at every r of the box, and register the one r-dependent diagnostic (the
+            # undetermined prediction's null projection) as its range over the box.
+            names_u = list(names) + [v[0] for v in VALIDATION]
+            invariant_rows = list(range(len(names))) + [names_u.index("S4.N")]
+            held = predict(theta, names_u)
+            jac_held = jac_theta(theta, names_u)
+            projections: dict[str, list[Any]] = {v[0]: [] for v in VALIDATION}
+            moved: list[str] = []
+            for k in range(48):
+                r = BOX["r"][0] + mpf(k) / 100
+                at_r = [r, theta[1]]
+                y_r = predict(at_r, names_u)
+                jac_r = jac_theta(at_r, names_u)
+                for i in invariant_rows:
+                    if (
+                        abs(y_r[i] - held[i]) >= ZERO * (1 + abs(held[i]))
+                        or abs(jac_r[i, 0]) >= ZERO
+                        or abs(jac_r[i, 1] - jac_held[i, 1]) >= ZERO
+                    ):
+                        moved.append(f"{names_u[i]} at r = {mp.nstr(r, 3)}")
+                for vi, (vname, _, _) in enumerate(VALIDATION):
+                    row = len(names) + vi
+                    along = jac_r[row, 0] * THETA[0][2] * null[0]
+                    along += jac_r[row, 1] * THETA[1][2] * null[1]
+                    norm = mp.sqrt(
+                        (jac_r[row, 0] * THETA[0][2]) ** 2 + (jac_r[row, 1] * THETA[1][2]) ** 2
+                    )
+                    projections[vname].append(abs(along) / norm)
             claim(
-                [p["determined"] for p in preds] == [False, True],
-                "C9[FIT-U] the heater-duty prediction is not determined and the vapour-flow "
-                "prediction is",
+                not moved,
+                "C9[FIT-U] on the grid r = 0.50, 0.51, ..., 0.97 the six product measurements, "
+                "their theta-Jacobian (r column below 1e-35, T_f column unchanged) and the vapour-"
+                "flow prediction are independent of r, so chi2, the singular values, the null "
+                "direction, the T_f estimate and the determined prediction do not depend on the "
+                f"estimator's final r{(' (moved: ' + ', '.join(moved[:3]) + ')') if moved else ''}",
             )
+            heat = projections["U-HEAT.Q"]
+            claim(
+                all(a < b for a, b in zip(heat, heat[1:], strict=False))
+                and heat[0] > 100 * mpf("1e-3")
+                and heat[-1] <= 1,
+                f"C9[FIT-U] the heater-duty prediction's null projection rises monotonically on "
+                f"the grid from {mp.nstr(heat[0], 6)} (r = 0.50) to {mp.nstr(heat[-1], 6)} "
+                f"(r = 0.97), above 100 x 1e-3 everywhere: it is not determined wherever r ends",
+            )
+            claim(
+                max(projections["S4.N"]) < ZERO,
+                "C9[FIT-U] the vapour-flow prediction's null projection is below 1e-35 at every "
+                "grid r: it is determined wherever r ends",
+            )
+            preds = [
+                {
+                    "id": "U-HEAT.Q",
+                    "determined": False,
+                    "null_projection_relative_range_over_box": [s(heat[0]), s(heat[-1])],
+                },
+                {
+                    "id": "S4.N",
+                    "determined": True,
+                    "predicted": s(held[len(names) + 1]),
+                    "null_projection_relative": s(max(projections["S4.N"])),
+                },
+            ]
             fit["validation"] = preds
             fit["numerical_tolerance_scaled"] = "1e-8"
         fits[label] = fit

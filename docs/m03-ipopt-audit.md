@@ -277,7 +277,7 @@ declaration) makes the object `unresolved`; this was measured, and is how the ca
 
 G6: `pyproject.toml` at this commit has no `nlp` extra and names neither library;
 `tests/test_m03_nlp_isolation.py::test_the_default_modules_import_no_nlp_library` walks every module
-except `openflowsheet.study.nlp.greybox` (WO-8's adapter, the one module allowed to import them).
+except `openflowsheet.studies.nlp.greybox` (WO-8's adapter, the one module allowed to import them).
 
 G7, measured on 2026-10-08:
 

@@ -37,7 +37,7 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 REPO_ROOT: Final = Path(__file__).resolve().parent.parent
 REFERENCE_PATH: Final = REPO_ROOT / "benchmarks" / "m03" / "reference_values.json"
 #: The SHA-256 `docs/derivations/M03-studies-spec.md`'s header records for the JSON.
-REFERENCE_SHA256: Final = "5f3fc150032157d31042f8b17ca5560e4c0e7233384a3eaade0404bde5915981"
+REFERENCE_SHA256: Final = "81d1d79ae11ba4a9da353a3856c80aec305fae25287a330486d315902730f35e"
 GENERATOR_PATH: Final = REPO_ROOT / "docs" / "derivations" / "scripts" / "m03_reference.py"
 
 

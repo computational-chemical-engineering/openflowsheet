@@ -998,26 +998,30 @@
  "toys": {
   "x_squared": {
    "residual": "x^2 - p",
+   "note": "residual_binary64 is x*x - p evaluated in binary64 (two roundings); residual_exact is the real value at the binary64 inputs. Only the exact zeros are asserted (A13).",
    "states": [
     {
      "p": "0.25",
      "x": "0.5",
      "expected": "QUALIFIED",
      "dx_dp": "1.0",
-     "residual": "0.0"
+     "residual_binary64": "0.0",
+     "residual_exact": "0.0"
     },
     {
      "p": "1e-20",
      "x": "1e-10",
      "expected": "ILL_CONDITIONED",
      "screen_reason": "absolute",
-     "residual": "0.0"
+     "residual_binary64": "1.504632769052528e-36",
+     "residual_exact": "1.2771112317678591283e-36"
     },
     {
      "p": "0.0",
      "x": "0.0",
      "expected": "RANK_DEFICIENT",
-     "residual": "0.0"
+     "residual_binary64": "0.0",
+     "residual_exact": "0.0"
     }
    ]
   },
@@ -1399,6 +1403,9 @@
     "not_determined": [
      "U-SPLIT.split_fraction"
     ],
+    "final_iterate_not_registered": [
+     "U-SPLIT.split_fraction"
+    ],
     "null_direction_scaled": [
      "1.0",
      "0.0"
@@ -1407,11 +1414,15 @@
      {
       "id": "U-HEAT.Q",
       "determined": false,
-      "null_projection_relative": "0.86853418044926018843"
+      "null_projection_relative_range_over_box": [
+       "0.85959902505661175246",
+       "0.99761483948515808323"
+      ]
      },
      {
       "id": "S4.N",
       "determined": true,
+      "predicted": "1.4649025903220597423",
       "null_projection_relative": "0.0"
      }
     ],
@@ -1711,6 +1722,11 @@
   "C6 A(1)^-1 = [[7, -2], [-3, 1]]",
   "C6 C A(1)^-1 = [-23, 8]",
   "C6 the missing-transpose value is [-13, 7], which differs",
+  "C6 kappa_1(A(1)) = 90",
+  "C6 A12's tolerance tau_abs = 1e-11 exceeds the a priori error estimate 4.4e-12 of the 2 x 2 solve",
+  "C6 the missing-transpose value is at least 1e10 tau_abs from C A(1)^-1 in every entry",
+  "C6 x^2 - p is exactly 0.0 in binary64 at (0.25, 0.5) and (0, 0), and 1.5e-36 (not 0) at (1e-20, 1e-10), whose decimal inputs are not binary64 numbers",
+  "C6 the (1e-20, 1e-10) residual is non-zero and more than 20 orders below tau_root: Q1 passes there, and the refusal is the screen's",
   "C7 sweep 310.0 K heater margin > 10 tau_regime",
   "C7 sweep 310.0 K flash margin > 10 tau_regime",
   "C7 sweep 310.0 K mixer subcooled",
@@ -1755,7 +1771,9 @@
   "C9[FIT-U] unidentifiable at the start",
   "C9[FIT-U] the smaller singular value vanishes in closed form (2.98e-43)",
   "C9[FIT-U] the null direction is the split fraction alone",
-  "C9[FIT-U] the heater-duty prediction is not determined and the vapour-flow prediction is",
+  "C9[FIT-U] on the grid r = 0.50, 0.51, ..., 0.97 the six product measurements, their theta-Jacobian (r column below 1e-35, T_f column unchanged) and the vapour-flow prediction are independent of r, so chi2, the singular values, the null direction, the T_f estimate and the determined prediction do not depend on the estimator's final r",
+  "C9[FIT-U] the heater-duty prediction's null projection rises monotonically on the grid from 0.859599 (r = 0.50) to 0.997615 (r = 0.97), above 100 x 1e-3 everywhere: it is not determined wherever r ends",
+  "C9[FIT-U] the vapour-flow prediction's null projection is below 1e-35 at every grid r: it is determined wherever r ends",
   "C9 the two fits' flash-temperature estimates differ (the recycle and mixer data move it)",
   "C10 on the 21 x 21 grid of the box every margin exceeds 1e-3 (smallest 0.01086)",
   "C11 the recovery constraint is active at the reference optimum",

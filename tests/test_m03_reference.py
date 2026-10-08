@@ -1,6 +1,6 @@
 """M03 A42: the closed-form reference generator re-derives every claim (spec §11, §13).
 
-``docs/derivations/scripts/m03_reference.py --check`` recomputes the 257 instantiated claims of the
+``docs/derivations/scripts/m03_reference.py --check`` recomputes the 264 instantiated claims of the
 specification at 60 digits and requires the committed ``benchmarks/m03/reference_values.json`` to
 equal its output byte for byte. It runs in about 25 s, so it runs on every gate: the M03 tests judge
 the implementation against that file, and the file is only an expectation while the generator that
@@ -23,7 +23,7 @@ from m03_support import (
 )
 
 #: Spec §13 and A42: the generator's own count of instantiated claims.
-REGISTERED_CLAIMS = 257
+REGISTERED_CLAIMS = 264
 
 _PASSED = re.compile(r"^(\d+) claims passed$", re.MULTILINE)
 _IDENTICAL = re.compile(

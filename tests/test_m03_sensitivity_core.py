@@ -51,7 +51,9 @@ from openflowsheet.verify.certificate import verify
 #: Spec §4.7 and §5.
 TAU_ABS = 1e-11
 TAU_REL = 1e-10
-TOY_LINEAR = 1e-13
+#: A12 (spec §5, Amendment 1): §4.7's tau_abs. Measured 2.13e-14 (C = [1, 10]) and 6.2e-15
+#: (X); the a priori estimate of the 2 x 2 solve is 4.4e-12 (generator claim C6).
+TOY_LINEAR = TAU_ABS
 
 
 def x_squared(p: float, x: float, *, mode: str = "both", convert: bool = False) -> Any:
