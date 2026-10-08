@@ -3673,7 +3673,12 @@ NASA-7 coefficients).
 question for Frank (spec Q-N1); NASA TM-4513 is a U.S. Government work. NASA's or JANAF's Δ_fH: ATcT is more accurate
 (NH₃ 340 J/mol from JANAF). The group's database: a cross-check only (Frank, 2026-10-02).
 
-**Watch for.** CH₄'s NASA c_p is 1.1 % from CoolProp's ideal part at 1000 K; recorded, not corrected.
+**Also decided.** T08.A32's synthetic-only rule is amended for real records (spec §3.5): `synthetic: false` records must
+be the five M01 records, with identifiers, rights and per-value provenance, covered by M01.A02. Not a relaxation:
+synthetic records keep the rule; real ones get a stricter one.
+
+**Watch for.** CH₄'s NASA c_p is 1.1 % from CoolProp's ideal part at 1000 K; recorded, not corrected. Shipping the
+records in the v0.2 wheel is Frank's release decision (spec Q-N4).
 
 ---
 

@@ -1,33 +1,38 @@
-"""M01 reactor probe: the pinned 1D ammonia reactor (no membrane) at M01's nominal point, five species.
+"""M01 reactor probe: the pinned 1D ammonia reactor (no membrane) at M01's nominal point, five
+species.
 
-Specification: ``docs/derivations/M01-spec.md`` section 8 (the boundary, the start strategy, the solver profile)
-and section 10 (the refinement evidence). This is a *measurement* of the group's model: nothing here is an
-expectation for this repository's code, and nothing in ``openflowsheet`` imports it. Its record,
-``benchmarks/m01/reactor-probe.json``, is a regression record for M02 (status ``measured``, ``judged: false``).
+Specification: ``docs/derivations/M01-spec.md`` section 8 (the boundary, the start strategy, the
+solver profile) and section 10 (the refinement evidence). This is a *measurement* of the group's
+model: nothing here is an expectation for this repository's code, and nothing in ``openflowsheet``
+imports it. Its record, ``benchmarks/m01/reactor-probe.json``, is a regression record for M02
+(status ``measured``, ``judged: false``).
 
-**Environment.** A separate virtual environment outside this repository with ``pymrm==2.5.0`` and a FRESH
-clone of github.com/computational-chemical-engineering/ammonia_synthesis_reactor at
-6089593464fc9bc2c0a0cb58e30ad5433ece6332 installed by ``pip install -e "<clone>[test]"``. Run it from a
-``git archive`` export of the pinned commit (the model reads data relative to the project root, and nothing is
-then written into the clone), with this file outside the export::
+**Environment.** A separate virtual environment outside this repository with ``pymrm==2.5.0`` and
+a FRESH clone of github.com/computational-chemical-engineering/ammonia_synthesis_reactor at
+6089593464fc9bc2c0a0cb58e30ad5433ece6332 installed by ``pip install -e "<clone>[test]"``. Run it
+from a ``git archive`` export of the pinned commit (the model reads data relative to the project
+root, and nothing is then written into the clone), with this file outside the export::
 
     git -C <clone> archive 6089593464fc9bc2c0a0cb58e30ad5433ece6332 | tar -x -C <export>
-    cd <export> && OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 \\
-        <venv>/bin/python <repo>/benchmarks/m01/reactor_probe.py --clone <clone> --export <export> \\
-        --overlay <repo>/benchmarks/m01/reactor-overlay.json --out <repo>/benchmarks/m01/reactor-probe.json
+    cd <export> && OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \\
+        PYTHONDONTWRITEBYTECODE=1 \\
+        <venv>/bin/python <repo>/benchmarks/m01/reactor_probe.py --clone <clone> \\
+        --export <export> --overlay <repo>/benchmarks/m01/reactor-overlay.json \\
+        --out <repo>/benchmarks/m01/reactor-probe.json
 
-**What it runs.** The base configuration of spec section 8.5 (the geometry, catalyst and coolant of the group's
-case ``G2 — GHSV sweep_1000``, every permeance pre-factor zero, five species with M01's overlay rows), the inlet
-of spec section 8.4 per tube, the start strategy of section 8.7 (S1 cold at the trace inlet, S2 warm at the true
-inlet, S3 polish under M01's solver profile) and its acceptance; then a grid sequence, and at the pinned grid:
-an alternative start (path independence), repeats (bitwise), the backflow override's inertness, the
-inert-transport surrogate's sensitivity, and two neighbouring inlet temperatures.
+**What it runs.** The base configuration of spec section 8.5 (the geometry, catalyst and coolant
+of the group's case ``G2 — GHSV sweep_1000``, every permeance pre-factor zero, five species with
+M01's overlay rows), the inlet of spec section 8.4 per tube, the start strategy of section 8.7 (S1
+cold at the trace inlet, S2 warm at the true inlet, S3 polish under M01's solver profile) and its
+acceptance; then a grid sequence, and at the pinned grid: an alternative start (path
+independence), repeats (bitwise), the backflow override's inertness, the inert-transport
+surrogate's sensitivity, and two neighbouring inlet temperatures.
 """
 
 from __future__ import annotations
 
 import argparse
-import copy
+import importlib
 import importlib.metadata
 import json
 import math
@@ -49,23 +54,36 @@ GEOMETRY_CASE = "G2 — GHSV sweep_1000"
 TRACE_NH3 = 1e-9  # the group's settings.TRACE_NH3
 GRIDS = (100, 200, 400, 800, 1600, 3200)
 #: M01's solver profile for the polish stage S3 (spec section 8.7).
-#: The steady-state target scales with num_z^2 because the norm's roundoff floor does (measured: 7.7e-8, 1.7e-7,
-#: 5.9e-7, 2.2e-6 at num_z = 100, 200, 400, 800); the target keeps a factor of at least 10 above it.
-PROFILE = {"newton_rtol": 1e-12, "newton_atol_factor": 0.1, "steady_state_atol_at_100": 1e-6, "dt_init": 1.0, "num_timesteps": 400}
+#: The steady-state target scales with num_z^2 because the norm's roundoff floor does (measured:
+#: 7.7e-8, 1.7e-7, 5.9e-7, 2.2e-6 at num_z = 100, 200, 400, 800); the target keeps a factor of at
+#: least 10 above it.
+PROFILE = {
+    "newton_rtol": 1e-12,
+    "newton_atol_factor": 0.1,
+    "steady_state_atol_at_100": 1e-6,
+    "dt_init": 1.0,
+    "num_timesteps": 400,
+}
 
 
 def ss_target(num_z: int) -> float:
     return PROFILE["steady_state_atol_at_100"] * (num_z / 100.0) ** 2
+
+
 EPS_P = 1e-3  # zero-pressure-drop convention's admissibility bound on dP / P_in (ADR 0027 D2)
 FLOOR_GRIDS = (100, 400)
 FLOOR_STEPS = 25
-#: Grids where the profile's state is not accepted; a fixed extra polish records how far the outlet still moves.
+#: Grids where the profile's state is not accepted; a fixed extra polish records how far the outlet
+#: still moves.
 FINE_POLISH_GRIDS = (1600,)
 
 
 def merged_database(clone_db: Path, overlay_path: Path, variant: str = "N2") -> dict[str, Any]:
-    """The pinned database plus M01's overlay rows; variant 'H2' swaps the transport surrogate (sensitivity only)."""
-    db = json.loads(clone_db.read_text(encoding="utf-8"))
+    """The pinned database plus M01's overlay rows.
+
+    Variant 'H2' swaps the transport surrogate (sensitivity only).
+    """
+    db: dict[str, Any] = json.loads(clone_db.read_text(encoding="utf-8"))
     ov = json.loads(overlay_path.read_text(encoding="utf-8"))
     sp = db["species_properties"]["data"]
     for name, row in ov["species_properties"].items():
@@ -80,43 +98,83 @@ def merged_database(clone_db: Path, overlay_path: Path, variant: str = "N2") -> 
         if variant != "N2":
             a, b = pair.split("/")
             other = a if b in ("Ar", "CH4") else b
-            src = "H2/NH3" if other in ("NH3",) else ("H2/N2" if other in ("N2", "Ar", "CH4") else "H2/N2")
+            src = (
+                "H2/NH3"
+                if other in ("NH3",)
+                else ("H2/N2" if other in ("N2", "Ar", "CH4") else "H2/N2")
+            )
         bp[pair] = dict(bp[src])
     return db
 
 
-def dippr107_H(row: dict[str, float], T: float) -> float:
-    """Antiderivative of the group's DIPPR-107 c_p (J/kmol/K): C1 T + C2 C3 coth(C3/T) - C4 C5 tanh(C5/T)."""
+def dippr107_h(row: dict[str, float], temp: float) -> float:
+    """Antiderivative of the group's DIPPR-107 c_p (J/kmol/K).
+
+    C1 T + C2 C3 coth(C3/T) - C4 C5 tanh(C5/T).
+    """
     c1, c2, c3, c4, c5 = (row[f"c_p_C{k}"] for k in range(1, 6))
-    return c1 * T + c2 * c3 / math.tanh(c3 / T) - c4 * c5 * math.tanh(c5 / T)
+    return c1 * temp + c2 * c3 / math.tanh(c3 / temp) - c4 * c5 * math.tanh(c5 / temp)
 
 
-def h_group(db: dict[str, Any], sp: str, T: float) -> float:
+def h_group(db: dict[str, Any], sp: str, temp: float) -> float:
     row = db["species_properties"]["data"][sp]
-    return row["dH_f"] + (dippr107_H(row, T) - dippr107_H(row, 298.15)) / 1000.0
+    return float(row["dH_f"] + (dippr107_h(row, temp) - dippr107_h(row, 298.15)) / 1000.0)
 
 
-def build(num_z: int, y_in: list[float], T_in: float, p_out: float, db_path: Path) -> tuple[Any, dict[str, float]]:
-    from reactor import DEFAULTS, ReactorConfig
-    from reactor.paper import case_setup, cases, settings
+def build(
+    num_z: int, y_in: list[float], t_in: float, p_out: float, db_path: Path
+) -> tuple[Any, dict[str, float]]:
+    reactor: Any = importlib.import_module("reactor")
+    case_setup: Any = importlib.import_module("reactor.paper.case_setup")
+    cases: Any = importlib.import_module("reactor.paper.cases")
+    settings: Any = importlib.import_module("reactor.paper.settings")
 
     t = cases.load_case_table()
     row = t[t["Case_ID"] == GEOMETRY_CASE].iloc[0]
-    r_min, r_max = DEFAULTS["r_min"], float(row["r_max_m"])
-    L_mem, L_seal = float(row["L_m"]), DEFAULTS["Lsealing"]
+    r_min, r_max = reactor.DEFAULTS["r_min"], float(row["r_max_m"])
+    l_mem, l_seal = float(row["L_m"]), reactor.DEFAULTS["Lsealing"]
     fl = case_setup.calculate_flows(
-        GHSV=GHSV, eps=DEFAULTS["eps"], Dcat=float(row["Dcat"]), rho_c=DEFAULTS["rho_c"], L_membrane=L_mem,
-        Lsealing=L_seal, r_max=r_max, r_min=r_min, Nm=int(row["N_mem"]), sweep_ratio=float(row["Sweep_Ratio"]),
+        GHSV=GHSV,
+        eps=reactor.DEFAULTS["eps"],
+        Dcat=float(row["Dcat"]),
+        rho_c=reactor.DEFAULTS["rho_c"],
+        L_membrane=l_mem,
+        Lsealing=l_seal,
+        r_max=r_max,
+        r_min=r_min,
+        Nm=int(row["N_mem"]),
+        sweep_ratio=float(row["Sweep_Ratio"]),
         H2_N2_ratio=3.0,
     )
     y_perm = [0.0, 1.0, 0.0, 0.0, 0.0]
-    cfg = ReactorConfig.from_defaults(
-        L=L_mem + L_seal, Lsealing=L_seal, r_min=r_min, r_max=r_max, p_ret_out=p_out,
-        p_perm_out=float(row["p_perm_bar"]) * 1e5, T_ret_in=T_in, T_perm_in=T_in, T_ret_init=T_in, T_perm_init=T_in,
-        F_ret_in=fl[0], F_perm_in=fl[1], y_ret_in=list(y_in), y_ret_init=list(y_in), y_perm_in=y_perm,
-        y_perm_init=y_perm, Nm=int(row["N_mem"]), Dcat=float(row["Dcat"]),
-        is_counter_current=bool(row["Is_Counter_Current"]), factor_react=1.0, factor_p=1.0, factor_T=1e-1,
-        num_z=num_z, is_isothermal=False, species=list(SPECIES), database=str(db_path), **settings.SOLVER_1D,
+    cfg = reactor.ReactorConfig.from_defaults(
+        L=l_mem + l_seal,
+        Lsealing=l_seal,
+        r_min=r_min,
+        r_max=r_max,
+        p_ret_out=p_out,
+        p_perm_out=float(row["p_perm_bar"]) * 1e5,
+        T_ret_in=t_in,
+        T_perm_in=t_in,
+        T_ret_init=t_in,
+        T_perm_init=t_in,
+        F_ret_in=fl[0],
+        F_perm_in=fl[1],
+        y_ret_in=list(y_in),
+        y_ret_init=list(y_in),
+        y_perm_in=y_perm,
+        y_perm_init=y_perm,
+        Nm=int(row["N_mem"]),
+        Dcat=float(row["Dcat"]),
+        is_counter_current=bool(row["Is_Counter_Current"]),
+        factor_react=1.0,
+        factor_p=1.0,
+        factor_T=1e-1,
+        num_z=num_z,
+        is_isothermal=False,
+        species=list(SPECIES),
+        database=str(db_path),
+        **settings.SOLVER_1D,
     )
     for sp in SPECIES:
         setattr(cfg, f"P0_{sp}", 0.0)
@@ -126,48 +184,68 @@ def build(num_z: int, y_in: list[float], T_in: float, p_out: float, db_path: Pat
 
 
 def reactor_class(backflow: list[float]) -> Any:
-    """The pinned 1D class with one instance attribute set for five species (finding F-R1, spec section 8.5)."""
-    import numpy as np
-    from reactor.paper import runner, settings
+    """The pinned 1D class with one instance attribute set for five species.
+
+    Finding F-R1, spec section 8.5.
+    """
+    np: Any = importlib.import_module("numpy")
+    runner: Any = importlib.import_module("reactor.paper.runner")
+    settings: Any = importlib.import_module("reactor.paper.settings")
 
     base = runner._one_d_class(settings.MODEL_1D)
 
-    class FiveSpecies1D(base):  # type: ignore[misc, valid-type]
-        def _init_derived(self) -> None:
-            super()._init_derived()
-            bf = np.asarray(backflow, dtype=float).reshape((1, 1, self.num_c))
-            self.inflow_conc_ret_backflow = self.p_ret_out / (self.Rg * self.T_ret_in) * bf
+    def _init_derived(self: Any) -> None:
+        base._init_derived(self)
+        bf = np.asarray(backflow, dtype=float).reshape((1, 1, self.num_c))
+        self.inflow_conc_ret_backflow = self.p_ret_out / (self.Rg * self.T_ret_in) * bf
 
-    return FiveSpecies1D
-
-
-BACKFLOW_DEFAULT = [0.0, 1.0 - 1e-4, 1e-4, 0.0, 0.0]  # the pinned code's three-species value, padded with zeros
+    return type("FiveSpecies1D", (base,), {"_init_derived": _init_derived})
 
 
-def outlet(r: Any, db: dict[str, Any], meta: dict[str, float], T_in: float) -> dict[str, Any]:
-    import numpy as np
+BACKFLOW_DEFAULT = [
+    0.0,
+    1.0 - 1e-4,
+    1e-4,
+    0.0,
+    0.0,
+]  # the pinned code's three-species value, padded with zeros
+
+
+def outlet(r: Any, db: dict[str, Any], meta: dict[str, float], t_in: float) -> dict[str, Any]:
+    np: Any = importlib.import_module("numpy")
 
     fr, _, fp, _ = r.compute_flows()
     n_in, n_out = fr[0, :].astype(float), fr[-1, :].astype(float)
-    E = {"H": [2, 0, 3, 0, 4], "N": [0, 2, 1, 0, 0], "C": [0, 0, 0, 0, 1], "Ar": [0, 0, 0, 1, 0]}
-    elem = {e: float((np.dot(w, n_out) - np.dot(w, n_in)) / np.dot(w, n_in)) for e, w in E.items()}
-    T_out = float(r.cpT[-1, 1, -1])
-    Tp_in, Tp_out = T_in, float(r.cpT[-1, 0, -1])
-    F_perm = float(np.sum(fp[0, :]))
-    q_cool = F_perm * (h_group(db, "N2", Tp_out) - h_group(db, "N2", Tp_in))
-    dH_ret = sum(float(n_out[i]) * h_group(db, s, T_out) - float(n_in[i]) * h_group(db, s, T_in) for i, s in enumerate(SPECIES))
+    elem_matrix = {
+        "H": [2, 0, 3, 0, 4],
+        "N": [0, 2, 1, 0, 0],
+        "C": [0, 0, 0, 0, 1],
+        "Ar": [0, 0, 0, 1, 0],
+    }
+    elem = {
+        e: float((np.dot(w, n_out) - np.dot(w, n_in)) / np.dot(w, n_in))
+        for e, w in elem_matrix.items()
+    }
+    t_out = float(r.cpT[-1, 1, -1])
+    tp_in, tp_out = t_in, float(r.cpT[-1, 0, -1])
+    f_perm = float(np.sum(fp[0, :]))
+    q_cool = f_perm * (h_group(db, "N2", tp_out) - h_group(db, "N2", tp_in))
+    dh_ret = sum(
+        float(n_out[i]) * h_group(db, s, t_out) - float(n_in[i]) * h_group(db, s, t_in)
+        for i, s in enumerate(SPECIES)
+    )
     p_first = float(r.cpT[0, 1, -2])
     return {
         "inlet_face_n_mol_s": [float(v) for v in n_in],
         "outlet_n_mol_s": [float(v) for v in n_out],
-        "T_out_K": T_out,
+        "T_out_K": t_out,
         "T_max_K": float(np.max(r.cpT[:, 1, -1])),
         "p_first_cell_Pa": p_first,
         "dP_over_P": (p_first - r.p_ret_out) / r.p_ret_out,
-        "coolant_out_T_K": Tp_out,
-        "coolant_flow_mol_s": F_perm,
+        "coolant_out_T_K": tp_out,
+        "coolant_flow_mol_s": f_perm,
         "coolant_heat_uptake_W": q_cool,
-        "reactor_energy_defect_rel": (dH_ret + q_cool) / q_cool if q_cool != 0 else None,
+        "reactor_energy_defect_rel": (dh_ret + q_cool) / q_cool if q_cool != 0 else None,
         "element_defect_rel": elem,
         "permeate_composition_change": float(np.max(np.abs(fp[-1, :] - fp[0, :]))),
         "u_ret_min": float(np.min(r.u_ret_ax)),
@@ -175,63 +253,155 @@ def outlet(r: Any, db: dict[str, Any], meta: dict[str, float], T_in: float) -> d
     }
 
 
-def strategy(num_z: int, y_in: list[float], T_in: float, db: dict[str, Any], db_path: Path,
-             s2_dt: float | None = None, backflow: list[float] = BACKFLOW_DEFAULT) -> dict[str, Any]:
-    from reactor.paper import kpis as kpi_mod
-    from reactor.paper import runner, settings
+def cold_start_true_inlet(num_z: int, dt_init: float, db_path: Path) -> dict[str, Any]:
+    """The group's cold start at the true inlet (real NH3), no continuation: what S1-S2 avoid."""
+    kpi_mod: Any = importlib.import_module("reactor.paper.kpis")
+    settings: Any = importlib.import_module("reactor.paper.settings")
+    cfg, _meta = build(num_z, Y_IN, T_IN, P_IN, db_path)
+    r = reactor_class(BACKFLOW_DEFAULT)(config=cfg)
+    st = r.solve(dt_init=dt_init, return_status=True, verbose=0)
+    acc = kpi_mod.solver_acceptance(st, cfg.steady_state_atol, settings.STEADY_STATE_ACCEPT_FACTOR)
+    fr = r.compute_flows()[0]
+    return {
+        "num_z": num_z,
+        "dt_init": dt_init,
+        "accepted": bool(acc["accepted"]),
+        "steady_state_norm": float(st.steady_state_norm),
+        "steps": int(st.num_steps_attempted),
+        "NH3_out_mol_s": float(fr[-1, 2]),
+    }
+
+
+def strategy(
+    num_z: int,
+    y_in: list[float],
+    t_in: float,
+    db: dict[str, Any],
+    db_path: Path,
+    s2_dt: float | None = None,
+    backflow: list[float] = BACKFLOW_DEFAULT,
+) -> dict[str, Any]:
+    kpi_mod: Any = importlib.import_module("reactor.paper.kpis")
+    runner: Any = importlib.import_module("reactor.paper.runner")
+    settings: Any = importlib.import_module("reactor.paper.settings")
 
     cls = reactor_class(backflow)
     s = sum(y_in[:2] + [TRACE_NH3] + y_in[3:])
     y_tr = [v / s for v in (y_in[:2] + [TRACE_NH3] + y_in[3:])]
     stages: dict[str, Any] = {}
-    cfg1, meta = build(num_z, y_tr, T_in, P_IN, db_path)
+    cfg1, meta = build(num_z, y_tr, t_in, P_IN, db_path)
     t0 = time.perf_counter()
     r1 = cls(config=cfg1)
     st1 = r1.solve(dt_init=settings.DT_INIT_1D, return_status=True, verbose=0)
-    acc1 = kpi_mod.solver_acceptance(st1, cfg1.steady_state_atol, settings.STEADY_STATE_ACCEPT_FACTOR)
-    stages["S1"] = {"accepted": bool(acc1["accepted"]), "steady_state_norm": float(st1.steady_state_norm),
-                    "steps": int(st1.num_steps_attempted)}
-    cfg2, meta = build(num_z, y_in, T_in, P_IN, db_path)
+    acc1 = kpi_mod.solver_acceptance(
+        st1, cfg1.steady_state_atol, settings.STEADY_STATE_ACCEPT_FACTOR
+    )
+    stages["S1"] = {
+        "accepted": bool(acc1["accepted"]),
+        "steady_state_norm": float(st1.steady_state_norm),
+        "steps": int(st1.num_steps_attempted),
+    }
+    cfg2, meta = build(num_z, y_in, t_in, P_IN, db_path)
     nc = len(SPECIES)
-    r = cls(config=cfg2, c=r1.cpT[..., :nc].copy(), p=r1.cpT[..., -2].copy(), T=r1.cpT[..., -1].copy())
-    st2 = r.solve(dt_init=settings.DT_INIT_1D if s2_dt is None else s2_dt, return_status=True, verbose=0)
-    acc2 = kpi_mod.solver_acceptance(st2, cfg2.steady_state_atol, settings.STEADY_STATE_ACCEPT_FACTOR)
-    stages["S2"] = {"accepted": bool(acc2["accepted"]), "steady_state_norm": float(st2.steady_state_norm),
-                    "steps": int(st2.num_steps_attempted), "outlet_at_group_tolerance": outlet(r, db, meta, T_in)["outlet_n_mol_s"]}
+    r = cls(
+        config=cfg2, c=r1.cpT[..., :nc].copy(), p=r1.cpT[..., -2].copy(), T=r1.cpT[..., -1].copy()
+    )
+    st2 = r.solve(
+        dt_init=settings.DT_INIT_1D if s2_dt is None else s2_dt, return_status=True, verbose=0
+    )
+    acc2 = kpi_mod.solver_acceptance(
+        st2, cfg2.steady_state_atol, settings.STEADY_STATE_ACCEPT_FACTOR
+    )
+    stages["S2"] = {
+        "accepted": bool(acc2["accepted"]),
+        "steady_state_norm": float(st2.steady_state_norm),
+        "steps": int(st2.num_steps_attempted),
+        "outlet_at_group_tolerance": outlet(r, db, meta, t_in)["outlet_n_mol_s"],
+    }
     r.rtol, r.atol = PROFILE["newton_rtol"], PROFILE["newton_atol_factor"] * ss_target(num_z)
-    st3 = r.solve(num_timesteps=PROFILE["num_timesteps"], dt_init=PROFILE["dt_init"],
-                  steady_state_atol=ss_target(num_z), return_status=True, verbose=0)
+    st3 = r.solve(
+        num_timesteps=PROFILE["num_timesteps"],
+        dt_init=PROFILE["dt_init"],
+        steady_state_atol=ss_target(num_z),
+        return_status=True,
+        verbose=0,
+    )
     wall = time.perf_counter() - t0
     cert = runner.certify_convergence_1d(r, st3, meta)
-    out = outlet(r, db, meta, T_in)
+    out = outlet(r, db, meta, t_in)
     drift = cert.get("kpi_drift_rel") or {}
-    accepted = (bool(st3.converged) and cert.get("kpi_drift_ok") is True and out["u_ret_min"] > 0
-                and out["min_axial_flow_mol_s"] > 0 and abs(out["dP_over_P"]) <= EPS_P)
-    stages["S3"] = {"converged": bool(st3.converged), "steady_state_target": ss_target(num_z), "steady_state_norm": float(st3.steady_state_norm),
-                    "steps": int(st3.num_steps_attempted), "certificate_kpi_drift_ok": cert.get("kpi_drift_ok"),
-                    "certificate_kpi_drift_rel_max": max(drift.values()) if drift else None,
-                    "certificate_residual": float(cert.get("achieved_residual", float("nan")))}
-    return {"num_z": num_z, "T_in_K": T_in, "P_in_Pa": P_IN, "y_in": list(y_in), "F_ret_in_mol_s": meta["F_ret_in"],
-            "F_perm_in_mol_s": meta["F_perm_in"], "inlet_n_mol_s": [meta["F_ret_in"] * v for v in y_in],
-            "stages": stages, "m01_accepted": accepted, "wall_s": round(wall, 2), **out, "_reactor": r}
+    accepted = (
+        bool(st3.converged)
+        and cert.get("kpi_drift_ok") is True
+        and out["u_ret_min"] > 0
+        and out["min_axial_flow_mol_s"] > 0
+        and abs(out["dP_over_P"]) <= EPS_P
+    )
+    stages["S3"] = {
+        "converged": bool(st3.converged),
+        "steady_state_target": ss_target(num_z),
+        "steady_state_norm": float(st3.steady_state_norm),
+        "steps": int(st3.num_steps_attempted),
+        "certificate_kpi_drift_ok": cert.get("kpi_drift_ok"),
+        "certificate_kpi_drift_rel_max": max(drift.values()) if drift else None,
+        "certificate_residual": float(cert.get("achieved_residual", float("nan"))),
+    }
+    return {
+        "num_z": num_z,
+        "T_in_K": t_in,
+        "P_in_Pa": P_IN,
+        "y_in": list(y_in),
+        "F_ret_in_mol_s": meta["F_ret_in"],
+        "F_perm_in_mol_s": meta["F_perm_in"],
+        "inlet_n_mol_s": [meta["F_ret_in"] * v for v in y_in],
+        "stages": stages,
+        "m01_accepted": accepted,
+        "wall_s": round(wall, 2),
+        **out,
+        "_reactor": r,
+    }
 
 
 def floor(r: Any) -> dict[str, Any]:
-    st = r.solve(num_timesteps=FLOOR_STEPS, dt_init=PROFILE["dt_init"], steady_state_atol=1e-14,
-                 return_status=True, verbose=0)
-    return {"steps": FLOOR_STEPS, "best_steady_state_norm": float(st.best_steady_state_norm or st.steady_state_norm)}
+    st = r.solve(
+        num_timesteps=FLOOR_STEPS,
+        dt_init=PROFILE["dt_init"],
+        steady_state_atol=1e-14,
+        return_status=True,
+        verbose=0,
+    )
+    return {
+        "steps": FLOOR_STEPS,
+        "best_steady_state_norm": float(st.best_steady_state_norm or st.steady_state_norm),
+    }
 
 
-def fine_polish(r: Any, db: dict[str, Any], rounds: int = 4, steps: int = 10) -> list[dict[str, Any]]:
-    """Beyond the profile: Newton atol 1e-12, fixed rounds of `steps` pseudo-time steps; the outlet's trajectory."""
+def fine_polish(
+    r: Any, db: dict[str, Any], rounds: int = 4, steps: int = 10
+) -> list[dict[str, Any]]:
+    """Beyond the profile: Newton atol 1e-12, fixed rounds of `steps` pseudo-time steps.
+
+    Returns the outlet's trajectory.
+    """
     r.atol = 1e-12
     hist = []
     for _ in range(rounds):
-        st = r.solve(num_timesteps=steps, dt_init=PROFILE["dt_init"], steady_state_atol=1e-14, return_status=True, verbose=0)
+        st = r.solve(
+            num_timesteps=steps,
+            dt_init=PROFILE["dt_init"],
+            steady_state_atol=1e-14,
+            return_status=True,
+            verbose=0,
+        )
         o = outlet(r, db, {}, T_IN)
-        hist.append({"best_steady_state_norm": float(st.best_steady_state_norm or st.steady_state_norm),
-                     "NH3_out_mol_s": o["outlet_n_mol_s"][2], "T_out_K": o["T_out_K"],
-                     "element_defect_H": o["element_defect_rel"]["H"]})
+        hist.append(
+            {
+                "best_steady_state_norm": float(st.best_steady_state_norm or st.steady_state_norm),
+                "NH3_out_mol_s": o["outlet_n_mol_s"][2],
+                "T_out_K": o["T_out_K"],
+                "element_defect_H": o["element_defect_rel"]["H"],
+            }
+        )
     return hist
 
 
@@ -248,8 +418,18 @@ def main() -> int:
     ap.add_argument("--pinned", type=int, default=800)
     ap.add_argument("--grids", type=str, default=",".join(str(g) for g in GRIDS))
     args = ap.parse_args()
-    head = subprocess.run(["git", "-C", str(args.clone), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
-    dirty = subprocess.run(["git", "-C", str(args.clone), "status", "--porcelain"], capture_output=True, text=True, check=True).stdout.strip()
+    head = subprocess.run(
+        ["git", "-C", str(args.clone), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    dirty = subprocess.run(
+        ["git", "-C", str(args.clone), "status", "--porcelain"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
     if head != PIN or dirty:
         print(f"clone at {head} (dirty={bool(dirty)}), expected clean {PIN}", file=sys.stderr)
         return 2
@@ -277,7 +457,13 @@ def main() -> int:
         if nz == args.pinned:
             pinned = rec
         grid.append(strip(rec))
-        print(f"num_z={nz} accepted={rec['m01_accepted']} wall={rec['wall_s']} NH3_out={rec['outlet_n_mol_s'][2]:.10e} T_out={rec['T_out_K']:.6f}", flush=True)
+        print(
+            (
+                f"num_z={nz} accepted={rec['m01_accepted']} wall={rec['wall_s']} "
+                f"NH3_out={rec['outlet_n_mol_s'][2]:.10e} T_out={rec['T_out_K']:.6f}"
+            ),
+            flush=True,
+        )
     if pinned is None:
         pinned = strategy(args.pinned, Y_IN, T_IN, db, db_path)
     nzp = args.pinned
@@ -286,11 +472,15 @@ def main() -> int:
     bfl = strategy(nzp, Y_IN, T_IN, db, db_path, backflow=[0.0, 0.0, 0.0, 1.0, 0.0])
     h2v = strategy(nzp, Y_IN, T_IN, dbh, dbh_path)
     neighbours = [strip(strategy(nzp, Y_IN, t, db, db_path)) for t in (653.15, 693.15)]
+    cold = [cold_start_true_inlet(100, dt, db_path) for dt in (1e-6, 1e-3, 1e-1)]
     keys = ("outlet_n_mol_s", "T_out_K", "p_first_cell_Pa")
 
     def rel(a: dict[str, Any], b: dict[str, Any]) -> float:
-        da = max(abs(x - y) / abs(y) for x, y in zip(a["outlet_n_mol_s"], b["outlet_n_mol_s"]))
-        return max(da, abs(a["T_out_K"] - b["T_out_K"]) / b["T_out_K"])
+        da = max(
+            abs(x - y) / abs(y)
+            for x, y in zip(a["outlet_n_mol_s"], b["outlet_n_mol_s"], strict=False)
+        )
+        return float(max(da, abs(a["T_out_K"] - b["T_out_K"]) / b["T_out_K"]))
 
     record = {
         "record": "m01-reactor-probe",
@@ -301,26 +491,59 @@ def main() -> int:
         "reactor_commit": head,
         "overlay": str(args.overlay.name),
         "environment": {
-            "python": platform.python_version(), "platform": platform.platform(),
-            "packages": {p: importlib.metadata.version(p) for p in ("pymrm", "numpy", "scipy", "pandas")},
+            "python": platform.python_version(),
+            "platform": platform.platform(),
+            "packages": {
+                p: importlib.metadata.version(p) for p in ("pymrm", "numpy", "scipy", "pandas")
+            },
             "threads": "OMP/OPENBLAS/MKL_NUM_THREADS=1",
         },
-        "configuration": {"geometry_case": GEOMETRY_CASE, "species": SPECIES, "y_in": Y_IN, "T_in_K": T_IN,
-                          "P_in_Pa": P_IN, "p_ret_out_Pa": P_IN, "GHSV_h": GHSV, "permeance_prefactors": "all zero",
-                          "coolant": "pure N2, co-current, F_perm_in = sweep_ratio (1) x F_ret_in, T_perm_in = T_in, 1 bar",
-                          "start": "S1 cold at the trace inlet (y_NH3 := 1e-9, renormalized), group SOLVER_1D and DT_INIT_1D; S2 warm at the true inlet from S1's fields, group settings; S3 polish under PROFILE",
-                          "profile": PROFILE, "eps_P": EPS_P, "trace_NH3": TRACE_NH3},
+        "configuration": {
+            "geometry_case": GEOMETRY_CASE,
+            "species": SPECIES,
+            "y_in": Y_IN,
+            "T_in_K": T_IN,
+            "P_in_Pa": P_IN,
+            "p_ret_out_Pa": P_IN,
+            "GHSV_h": GHSV,
+            "permeance_prefactors": "all zero",
+            "coolant": (
+                "pure N2, co-current, F_perm_in = sweep_ratio (1) x F_ret_in, T_perm_in = T_in, 1 "
+                "bar"
+            ),
+            "start": (
+                "S1 cold at the trace inlet (y_NH3 := 1e-9, renormalized), group SOLVER_1D and "
+                "DT_INIT_1D; S2 warm at the true inlet from S1's fields, group settings; S3 polish "
+                "under PROFILE"
+            ),
+            "profile": PROFILE,
+            "eps_P": EPS_P,
+            "trace_NH3": TRACE_NH3,
+        },
         "grid": grid,
         "pinned_num_z": nzp,
         "pinned": strip(pinned),
-        "path_independence": {"alternative": "S2 with dt_init = 1e-1", "max_rel_diff": rel(alt, pinned),
-                              "alternative_S2_outlet_at_group_tolerance": alt["stages"]["S2"]["outlet_at_group_tolerance"]},
-        "repeats": {"runs": 2, "bitwise_identical": all(all(r[k] == pinned[k] for k in keys) for r in reps)},
-        "backflow_override": {"alternative_backflow": [0.0, 0.0, 0.0, 1.0, 0.0],
-                              "bitwise_identical": all(bfl[k] == pinned[k] for k in keys)},
-        "inert_transport_variant": {"variant": "transport columns and pairs from H2 instead of N2",
-                                    "max_rel_diff": rel(h2v, pinned)},
+        "path_independence": {
+            "alternative": "S2 with dt_init = 1e-1",
+            "max_rel_diff": rel(alt, pinned),
+            "alternative_S2_outlet_at_group_tolerance": alt["stages"]["S2"][
+                "outlet_at_group_tolerance"
+            ],
+        },
+        "repeats": {
+            "runs": 2,
+            "bitwise_identical": all(all(r[k] == pinned[k] for k in keys) for r in reps),
+        },
+        "backflow_override": {
+            "alternative_backflow": [0.0, 0.0, 0.0, 1.0, 0.0],
+            "bitwise_identical": all(bfl[k] == pinned[k] for k in keys),
+        },
+        "inert_transport_variant": {
+            "variant": "transport columns and pairs from H2 instead of N2",
+            "max_rel_diff": rel(h2v, pinned),
+        },
         "neighbouring_inlet_temperatures": neighbours,
+        "cold_start_true_inlet": cold,
     }
     args.out.write_text(json.dumps(record, indent=1) + "\n", encoding="utf-8")
     return 0

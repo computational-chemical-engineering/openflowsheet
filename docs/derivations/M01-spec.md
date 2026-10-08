@@ -28,7 +28,8 @@ orders. It is bound by ADR 0001 (state, zero flow, signs, reference conventions)
 ADR 0008 (no time at the evaluation boundary), ADR 0011 (formation datum; reactors balance total enthalpy), ADR 0013
 (the verifier's fresh flash), ADR 0019/0020 (application contract, frozen), ADR 0022 and R-143 (C1, PR with the light
 gases vapour-only, the pin), R-152 (K_NH₃ = the code's 7000 cal/mol), R-153 (order). It changes no frozen interface
-or schema (§2.2 of the plan): every addition is a new provider, new records, new modules.
+or schema (§2.2 of the plan): every addition is a new provider, new records, new modules. With no schema change, the
+deferred schema `$id` move (R-149) does not ride on M01.
 
 Out of scope (brief §10): M02's execution adapter mechanics beyond the contract of §8, M03–M05, the web shell, full PR
 VLE with dissolved gases, columns, DWSIM, re-selecting the chemistry, production code.
@@ -99,6 +100,19 @@ Published numerical constants quoted with their citations, a handful per compone
 database); NASA TM-4513 is a work of the U.S. Government; `chemicals` (MIT) and Cantera (BSD-3-Clause) are retrieval
 tools, CoolProp (MIT) a cross-check tool; none is a runtime dependency of the solver. **No rights grant is relied
 on.** The Poling (5th ed.) c_p polynomials were not used because they would need one (§15 Q-N1).
+
+### 3.5 T08.A32 amended for real records (finding of this specification's own gate run)
+
+T08.A32 (release spec, v0.1) requires every ComponentRecord in the repository to be `synthetic: true`; its test
+(`tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_with_rights`) fails as soon as
+`components.yaml` is committed (measured on `wp/M01`: 1 failed, 6877 passed). The premise "no real component data"
+ends with M01 by design; the assertion is **amended, not relaxed**: a record with `synthetic: true` keeps T08.A32's
+rule unchanged; a record with `synthetic: false` must (i) be one of the five records of `benchmarks/m01/components.yaml`
+(no other real record may appear unvetted), (ii) carry `identifiers` with `cas`, `inchi`, `inchikey`, (iii) carry
+non-empty `rights.source`, `rights.redistribution` and a `provenance` on every parameter and on the molecular weight,
+and (iv) be covered by M01.A02 (retrieval equality). WO-1 makes this change to the test first, citing this section and
+R-158. Shipping the records in the v0.2 wheel (as package data, like SYN-001's) ends T08.A32's "no third-party data in
+sdist or wheel" for v0.2; that is a release-policy question for Frank (Q-N4).
 
 ## 4. Peng–Robinson closed forms (provider `pr-c1-v1`)
 
@@ -192,8 +206,8 @@ the only liquid is pure NH₃. Light gases never dissolve (the v0.2 limitation).
 **Pure NH₃ at (T, P)** (the composition of a LIQUID request, or a VAPOR request with no light gas flowing):
 1. T ≥ T_c,EOS: one real root (the cubic is monotone for θ ≤ θ_c); it is the vapour. No liquid root.
 2. T < T_c,EOS, three real roots (Δ > 0): liquid = smallest, vapour = largest (the middle root is never used).
-3. T < T_c,EOS, one real root: **liquid iff v = ZRT/P < v_c,EOS**, else vapour. Exact because NH₃'s two spinodal
-   volumes straddle v_c,EOS at every T < T_c,EOS (generator claims PR-06 at 200–405 K; at 268.15 K they are
+3. T < T_c,EOS, one real root: **liquid iff v = ZRT/P < v_c,EOS**, else vapour. Exact wherever NH₃'s two spinodal
+   volumes straddle v_c,EOS, which the generator checks at 200, 240, 268.15, 300, 350, 400 and 405 K (claims PR-06; at 268.15 K they are
    3.7657 × 10⁻⁵ and 4.0729 × 10⁻⁴ m³/mol around v_c,EOS = 9.1224 × 10⁻⁵): a single root lies outside the spinodal
    interval, on the liquid branch iff it is left of it.
 4. The stable pure phase: the existing root of lower ln φ_NH₃; ties go to the liquid; with one root, that root's phase.
@@ -309,7 +323,8 @@ The units on `pr-c1-v1` (flash, heater/cooler, mixer, splitter; M02) use `T05b-p
    E = n_V,NH₃ · φ_NH₃^V(T, P, n_V) − n_V,tot · φ_NH₃^L(T, P) = 0** (mol/s; it is y φ^V = φ^L multiplied by n_V,tot),
    scaled by the registered flow scale. VAPOR: n_L,i = 0 rows, no equilibrium row. LIQUID: n_V,i = 0 rows.
 3. **Admissibility** (ADR 0005 D3, the screen): VAPOR is admissible iff the provider's flash of the split's (n, T, P)
-   is VAPOR, or TWO_PHASE with l_NH₃ ≤ τ_flow (the dew-point band, F4); TWO_PHASE iff n_L,NH₃ ≥ 0 and n_V,NH₃ ≥ 0 at the
+   is VAPOR, or TWO_PHASE with l_NH₃ within the C1 loop's registered flow tolerance (registered by M02; the dew-point
+   band, F4); TWO_PHASE iff n_L,NH₃ ≥ 0 and n_V,NH₃ ≥ 0 at the
    solution; LIQUID iff the feed has no light gas and the stable pure phase is liquid.
 4. **Saturation band (ADR 0012 D1).** For a feed with light gas the band in T at fixed (n, P) is half-open: no bubble
    point exists (light gases never dissolve), the dew temperature T_d solves n_NH₃ = n_light y*(T_d)/(1 − y*(T_d)).
@@ -399,8 +414,9 @@ pinned checkout, never copied into this repository). The surrogate's effect is m
 
 ### 8.7 Start strategy, solver profile and acceptance
 
-Cold starts with real NH₃ in the inlet fail (measured: every `dt_init` 10⁻⁶…10⁻¹ stalls at a steady-state norm ≈ 3.6
-after 400 steps; the outlet barely reacts). The registered strategy:
+Cold starts with real NH₃ in the inlet fail (`reactor-probe.json` → `cold_start_true_inlet`, num_z = 100: `dt_init`
+10⁻⁶, 10⁻³, 10⁻¹ all end after 400 steps at steady-state norms 3.59, 3.58, 3.90, rejected by the group's own
+acceptance, two of them with less NH₃ at the outlet than at the inlet — lost states). The registered strategy:
 
 - **S1** (cold): the inlet with y_NH₃ := 10⁻⁹ (the group's `TRACE_NH3`), renormalized; the group's `SOLVER_1D` and
   `DT_INIT_1D = 10⁻⁶`; must be accepted by the group's `solver_acceptance`.
@@ -468,7 +484,7 @@ the violated bounds), and the identity (reactor commit, pymrm version, overlay S
 | component set or order ≠ (H2, N2, NH3, Ar, CH4) | `unsupported`, `component_set_mismatch` | stand-in |
 | n_tot,in = 0 | `ok`, `ZERO_FLOW`: outlet +0.0, Q = +0.0, T_out = T_in, P_out = P_in, ξ = 0 | stand-in |
 | y_NH₃,in < 10⁻⁹ (incl. zero NH₃) | `unsupported`, `nh3_below_trace` (the rate carries a negative power of a_NH₃, regularized in the code by A_SMALL = 10⁻⁴ bar; the group feeds 10⁻⁹) | stand-in |
-| T_in ∉ [573.15, 773.15] K or P_in ∉ [5×10⁶, 1.5×10⁷] Pa or H₂/N₂ ∉ [1, 4] or y_inert > 0.2 | `out_of_domain` (the adapter's hard domain: where the start strategy is registered to run, around the group's case envelope 548–698 K) | stand-in |
+| T_in ∉ [573.15, 773.15] K or P_in ∉ [5×10⁶, 1.5×10⁷] Pa or H₂/N₂ ∉ [1, 4] or y_inert > 0.2 | `out_of_domain` (the adapter's hard domain, around the group's case envelope 548–698 K; M01 measured the start strategy at 653.15–693.15 K and 10⁷ Pa only — inside the hard domain a failure is `not_converged`, never a silent result; Q-F4) | stand-in |
 | |ΔP|/P_in > 10⁻³ | `unsupported`, `pressure_drop_exceeds_convention` | stand-in (reported ΔP), M02 (real) |
 | the reactor's result fails §8.7's acceptance | `not_converged`, `reactor_not_accepted(<stage>)`, no outlet values | M02 (real) |
 | defect_rel > 10⁻⁶ | `not_converged`, `element_balance_defect` | stand-in (injected) |
@@ -626,7 +642,8 @@ states the loop uses, and implementation bugs are caught by A05–A22 at 10⁻�
 Values from `benchmarks/m01/reactor-probe.json` (version 2). These are regression values of the group's model on one
 machine (the probe's environment record); M02's adapter must reproduce them.
 
-- **M01.A41** — The start strategy is accepted (§8.7) at the design grid num_z = 800 for T_in ∈ {653.15, 673.15, 693.15} K.
+- **M01.A41** — The start strategy is accepted (§8.7) at the design grid num_z = 800 for T_in ∈ {653.15, 673.15, 693.15} K,
+  and the group's cold start at the true inlet is rejected for `dt_init` ∈ {10⁻⁶, 10⁻³, 10⁻¹} (the failure S1–S2 exist for).
 - **M01.A42** — Path independence at the design grid: S2 with `dt_init` 10⁻⁶ and 10⁻¹ give outlets (n_out, T_out) within
   10⁻⁶ relative (§10.3; measured 1.6 × 10⁻⁸).
 - **M01.A43** — Repeatability: two repeats at the design grid are bitwise identical (one machine, one environment).
@@ -765,8 +782,8 @@ Status vocabulary: `implemented` (code merged), `tested` (gate and every row abo
 
 ## 14. Work orders (build lane, in order)
 
-- **WO-1 Records loader.** Load `benchmarks/m01/components.yaml` into typed C1 records (package data like SYN-001's).
-  Gate: A01, A03.
+- **WO-1 Records loader.** First amend T08.A32's test as §3.5 states (the gate is red on `wp/M01` until then). Then
+  load `benchmarks/m01/components.yaml` into typed C1 records (package data like SYN-001's). Gate: A01, A03, §3.5.
 - **WO-2 Provider `pr-c1-v1`** (`src/openflowsheet/thermo/pr_c1.py`): §4 closed forms, §5.2–5.3 rules, derivatives of
   §4.6, `describe()` of A04. Pure Python + numpy; no new runtime dependency. Gate: A04–A14, A35, A36.
 - **WO-3 Flash and the datum registry.** §5.4 flash; `thermo/conventions.py` (or equivalent) holding the
@@ -794,6 +811,14 @@ units under §7's rules, the loop.
   to be checked) and compare y* at their states. *Default:* W22 claims pure-component validation only (§11).
 - **Q-F3 (needs a fact).** The asymptotic grid-convergence order of the outlet (§10.1); *measurement:* the probe's grid
   sequence extended if the order estimate is unstable. *Default:* the design grid and its estimate of §10.
+- **Q-F4 (needs a fact).** The start strategy's coverage of the hard domain (573.15–773.15 K, 5–15 MPa): M01 measured
+  three inlet temperatures at 10⁷ Pa. *Measurement:* M02's adapter sweep over the hard domain's corners and centre.
+  *Default:* keep the hard domain; any failure inside it is `not_converged` (typed), and M02 narrows the domain by a new
+  entry if a region fails systematically.
+- **Q-N4 (needs Frank's decision — distribution).** The v0.2 wheel would ship the five C1 records (published constants
+  with citations; NASA TM-4513 a U.S. Government work) as package data, ending v0.1's "no third-party data in sdist or
+  wheel" (T08.A32). *Default:* ship them with their citations and rights fields; M07's release specification records
+  it; if Frank declines, the provider reads the records from a user-supplied path and the wheel carries none.
 - **Q-N1 (needs Frank's preference — rights).** Poling 5th ed. c_p polynomials could replace NASA TM-4513 if Frank
   wants the "properties book" source; it needs his view on redistributing book tables. *Default:* NASA (no grant needed).
 - **Q-N2 (needs Frank's preference).** The F-R1/F-R2 findings and the overlay concern the group's code: Frank may prefer a

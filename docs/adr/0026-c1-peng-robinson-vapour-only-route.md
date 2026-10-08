@@ -92,6 +92,7 @@ phases `(LIQUID, VAPOR)`; properties `h`, `Z`, `v`, `lnphi_<id>`; flashes `("TP"
   document, T06's corpus values) are untouched: the provider is additive (assertion M01.A33).
 - C3. The units that consume the provider (PR flash, heater/cooler, mixer, splitter on `pr-c1-v1`) are M02's; their
   phase-contract rules are specified in M01 spec §7.
+- C5. T08.A32's synthetic-only rule is amended for real records (spec §3.5, R-158); its test is changed by WO-1.
 - C4. Limitations stated, not fixed: no dissolved light gases (R-143); k_ij = 0; PR's saturated-liquid volume of NH₃
   is 11–30 % high (the Poynting term carries it into ln f^L: +0.025 at the separator); no mixture VLE validation.
 

@@ -100,7 +100,7 @@
     }
    },
    "m01_accepted": true,
-   "wall_s": 5.88,
+   "wall_s": 5.99,
    "inlet_face_n_mol_s": [
     0.0050028729095114724,
     0.0016795359053359943,
@@ -186,7 +186,7 @@
     }
    },
    "m01_accepted": true,
-   "wall_s": 5.41,
+   "wall_s": 5.45,
    "inlet_face_n_mol_s": [
     0.0050028729095114724,
     0.0016795359053359943,
@@ -268,7 +268,7 @@
     }
    },
    "m01_accepted": true,
-   "wall_s": 6.66,
+   "wall_s": 6.73,
    "inlet_face_n_mol_s": [
     0.0050028729095114724,
     0.0016795359053359943,
@@ -354,7 +354,7 @@
     }
    },
    "m01_accepted": true,
-   "wall_s": 9.03,
+   "wall_s": 9.1,
    "inlet_face_n_mol_s": [
     0.0050028729095114724,
     0.0016795359053359943,
@@ -436,7 +436,7 @@
     }
    },
    "m01_accepted": false,
-   "wall_s": 12.74,
+   "wall_s": 12.95,
    "inlet_face_n_mol_s": [
     0.0050028729095114724,
     0.0016795359053359943,
@@ -544,7 +544,7 @@
     }
    },
    "m01_accepted": false,
-   "wall_s": 21.54,
+   "wall_s": 21.33,
    "inlet_face_n_mol_s": [
     0.0050028729095114724,
     0.0016795359053359943,
@@ -628,7 +628,7 @@
    }
   },
   "m01_accepted": true,
-  "wall_s": 9.03,
+  "wall_s": 9.1,
   "inlet_face_n_mol_s": [
    0.0050028729095114724,
    0.0016795359053359943,
@@ -740,7 +740,7 @@
     }
    },
    "m01_accepted": true,
-   "wall_s": 9.53,
+   "wall_s": 9.68,
    "inlet_face_n_mol_s": [
     0.0050028729095114724,
     0.0016795359053359943,
@@ -822,7 +822,7 @@
     }
    },
    "m01_accepted": true,
-   "wall_s": 8.32,
+   "wall_s": 8.45,
    "inlet_face_n_mol_s": [
     0.0050028729095114724,
     0.0016795359053359943,
@@ -854,6 +854,32 @@
    "permeate_composition_change": 1.3413228860947868e-12,
    "u_ret_min": 0.0014315774023998529,
    "min_axial_flow_mol_s": 0.00010577764982009113
+  }
+ ],
+ "cold_start_true_inlet": [
+  {
+   "num_z": 100,
+   "dt_init": 1e-06,
+   "accepted": false,
+   "steady_state_norm": 3.5885172296233296,
+   "steps": 400,
+   "NH3_out_mol_s": 6.146304181418992e-05
+  },
+  {
+   "num_z": 100,
+   "dt_init": 0.001,
+   "accepted": false,
+   "steady_state_norm": 3.575213378087928,
+   "steps": 400,
+   "NH3_out_mol_s": 4.208649336462167e-05
+  },
+  {
+   "num_z": 100,
+   "dt_init": 0.1,
+   "accepted": false,
+   "steady_state_norm": 3.902130594593967,
+   "steps": 400,
+   "NH3_out_mol_s": 0.0002207669216403101
   }
  ]
 }
