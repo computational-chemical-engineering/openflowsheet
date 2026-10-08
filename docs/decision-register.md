@@ -3848,3 +3848,30 @@ would say "v0.1.0" while listing an operation 0.1.0 does not have. A frozen copy
 the tags already preserve it, and two live envelopes would need two A20 checks.
 
 **Watch for.** The release gate for `0.2.0a1` and `0.2.0` must check that `release` matches the version being cut.
+
+---
+
+## R-194 — In v0.2, T08's U14 row claims that no external benchmark comparison is run, registered or shipped, and that W27's adaptation records are confined to `benchmarks/m06/openidaes450/`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on WO-15's finding F6 |
+| Normative text | This entry; `benchmarks/t08/support_envelope.yaml` U14 (v0.2's working envelope, R-193); R-175…R-179 |
+| Evidence | `tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered` |
+| Affected packages | M06 (W27), M07 |
+
+**Decision.** v0.1's U14 ("nothing is registered or shipped") failed as soon as W27's approved Tier 0 records were
+committed (`e268ed8`). WO-14's green gate ran before those files were tracked. The premise changed by design (R-175),
+so the claim is restated for v0.2 and the test is pinned to the new claim, which is no weaker than the old one:
+- `benchmarks/registry.yaml` names no OpenIDAES/CRAFTS benchmark;
+- no tracked path under `src/` mentions them;
+- every tracked `benchmarks/` path that does lies under `benchmarks/m06/openidaes450/`;
+- no run or campaign record exists there;
+- `pyproject.toml` (package data) does not reference them.
+
+**Rejected alternative, and why.** Narrowing the test to `registry.yaml` and `src/` (WO-15's suggestion): it would
+let adaptation records spread anywhere in `benchmarks/`, and it would not detect a campaign record committed before
+M07. Moving the records out of the repository: R-175 and G13 require them committed, referenced by hash.
+
+**Watch for.** M07's campaign records change this claim again. U14 is then rewritten with the campaign, not relaxed.

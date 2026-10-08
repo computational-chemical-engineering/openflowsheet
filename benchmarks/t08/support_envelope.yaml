@@ -375,7 +375,11 @@ unsupported:
 
   - id: U14
     capability: External benchmark comparisons (CRAFTS / OpenIDAES-450)
-    outcome: Not run in v0.1 (M06/W27); nothing is registered or shipped for them.
+    outcome: >-
+      No comparison is run (W27's campaign is M07's, R-175). v0.2's adaptation records (provenance,
+      access report, registration; R-176 to R-179) are committed under
+      `benchmarks/m06/openidaes450/` only; nothing is registered in `benchmarks/registry.yaml` and
+      nothing ships in the package (R-194).
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered
 

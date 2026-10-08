@@ -661,8 +661,10 @@ score; report completion, false verification, unauthorized actions, semantic err
 **Tier 1 — the registered campaign (Frank's spend decision, F1).** Registration by the `specifier` before any
 run (WO-15): stratified sample of 45 distinct cases, all `CANDIDATE` cases first (expected few at v0.2), the rest
 proportional to family with at least one per family of ≥ 4 cases (largest remainder), seeded; k = 1. Agent
-configuration as V17 `v17-c2` (`claude-sonnet-5`, effort high, `--max-turns 60`, 1800 s wall, USD 5 guard,
-MCP tools only, operator isolation, pinned Claude Code version) unless Frank chooses otherwise (F2). Prompt
+configuration as V17 `v17-c2` (effort high, `--max-turns 60`, 1800 s wall, USD 5 guard,
+MCP tools only, operator isolation, pinned Claude Code version) except the model: by Frank's answer to F2
+(2026-10-06) the most recent model at campaign time, pinned by exact ID and recorded, not `v17-c2`'s
+`claude-sonnet-5`; direct comparability with `v17-c2` is lost and stated. Prompt
 template: the case's description, specification, topology, unit and property configuration, enveloped as
 untrusted data, with the instruction to build it through the tools or report a typed limitation, and a
 structured final answer `{status: built|limitation, revision_id, job_id, limitation, claims}`. Harness: the V17
@@ -795,7 +797,7 @@ WO-15 in parallel, WO-16 after both, WO-17 after Frank.
 | **G11** smoke | every screen renders in a real browser | §8 A6 | all §6 routes: ready marker 1, no fatal, marker texts present |
 | **G12** gate | the repository gate | `./scripts/check.sh`, CI | green, both architectures; Node step ran (not skipped) in CI |
 | **G13** W27 provenance/access | exact provenance; disclosure | WO-14 script `--check` | archive size and SHA-256 match `provenance.json` (220 802 919 bytes; the audit's 220 433 394 was an earlier upload, disclosed there); 450 rows; residual-check split 425/24/1 and full82 = 82 (41/20/20/1) reproduce the audit; every inaccessible asset listed with where it was sought |
-| **G14** W27 coverage | every case classified | WO-16 | 450/450 rows with a class; every non-`CANDIDATE` row has ≥ 1 reason; summaries against 450 and 82 sum correctly; registry SHA-256 recorded |
+| **G14** W27 coverage | every case classified | WO-16 | 450/450 rows with a class; every non-`CANDIDATE` row has ≥ 1 reason; summaries against 450 and 82 sum correctly; `list_models` SHA-256 and the registry-snapshot SHA-256 (components and property routes, which `list_models` does not name; WO-15 F2) recorded |
 | **G15** W27 harness | ready to run, nothing spent | dry run with a stub session | preflight passes; `run.json` carries commit, tree-clean, lock hash, interpreter environment, model id, Claude Code version; scorer classifies the stub runs as registered |
 | **G16** W27 campaign (if approved) | attempted, honest | `verdict` on the campaign record | all registered runs recorded (infrastructure failures counted); system false verification 0; unauthorized effects 0; agent terms and cost reported with bounds |
 
