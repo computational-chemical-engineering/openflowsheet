@@ -2424,3 +2424,72 @@ harvest:
   class: P
   to: []
   note: export lifecycles
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[0]
+  sha256: 7add8a7d7f4abd01cae49e3d48a3108350c8baeaf86d0f6521794081802c3075
+  class: P
+  to: []
+  note: N1 pending; A35-A40 rest on the provisional extra and acceptance (review F4)
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[1]
+  sha256: f6cad1cc35d29c2973a6bc5a4c16b7d8b38da89267e3aa43a24527bba856a887
+  class: P
+  to: []
+  note: default gate on one x86-64 machine; both CI runners not yet observed (review F1)
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[2]
+  sha256: 20d8959b3fc24444f47972db5a309abb24b94e214a59f8f905d145ef6dab6181
+  class: P
+  to: []
+  note: NLP evidence single-threaded on the audited host; recorded, not enforced (ruling Q2)
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[3]
+  sha256: 791f6725722ffd6e000219d55b093ca1c017b9fbadd18f15c5153609766fc1cf
+  class: P
+  to: []
+  note: W24 outside the requirements pattern; verdict is the verdict lane's
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[4]
+  sha256: 557e94309908b3170245c2b14a54581a7d487b7b4b7c968597ff774e029f1bdc
+  class: E
+  to:
+  - L18
+  note: synthetic flowsheet and synthetic data; numerical verification only
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[5]
+  sha256: 4c1e822247d3ee426fa5e27ddbcacc49a7cd79b46ebde51f826df1ec50ae9c2d
+  class: P
+  to: []
+  note: local stationarity, not global optimality; second order not assessed
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[6]
+  sha256: aa21a103e5f5921f43001c2df19282cf63055eb6fcb55d1601072ab98456bd09
+  class: P
+  to: []
+  note: M03 comparison rules for policy gaps live in a test module; design lane registers
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[7]
+  sha256: 119e60d4c528d2fee51b99d8ead4a192f9a1fb8a94ef9306ca873789c9179bd9
+  class: P
+  to: []
+  note: review notes F6, F8.2-F8.4 open
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[8]
+  sha256: 598b9fdb4bc667f1d08467f8efe1f4f968b7e62259339ca9dc4ad082684aa7b5
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: checks[50]
+  check_id: M03.N1
+  sha256: 80a83c9e51b1edc069499e4ca7034f65c293596f72e0ecb3b2b32cb9dc9e5f28
+  class: P
+  to: []
+  note: Frank's N1 licence answer pending (review F4); passes when stated
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: checks[51]
+  check_id: M03.ci_both_runners
+  sha256: 730778aa9fa701602b69579a7a560853829d5bb0b04dcafd82f2c15abd8e38bb
+  class: P
+  to: []
+  note: both CI runners not yet observed (review F1); passes when stated

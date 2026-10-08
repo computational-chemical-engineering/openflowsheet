@@ -1,0 +1,1536 @@
+{
+ "work_package": "M03",
+ "commit": "fd1683472549b52067608b7259c0fc259803cef4",
+ "requirements": [
+  "A06",
+  "D16"
+ ],
+ "status": "implemented",
+ "inputs": {
+  "case_id": "M03 registered states (P1-P3, B1-B3, the sweep, FIT-I, FIT-U, NLP-1, NLP-INF) and the toy problems of spec §5, from benchmarks/m03/reference_values.json",
+  "case_hash": "81d1d79ae11ba4a9da353a3856c80aec305fae25287a330486d315902730f35e",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "PYTHONPATH=src PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "9c9ce13ad780a228da991b9cc879d59263660653174456da485de11fc2ba7582"
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -o junit_family=xunit1 --junitxml=ARTIFACTS/m03-tests.junit.xml tests/test_m03_estimation.py tests/test_m03_linear.py tests/test_m03_nlp_formulation.py tests/test_m03_nlp_greybox.py tests/test_m03_nlp_isolation.py tests/test_m03_nlp_status.py tests/test_m03_reference.py tests/test_m03_schemas.py tests/test_m03_sensitivity_core.py tests/test_m03_sensitivity_syn001.py tests/test_m03_sweep.py tests/test_m03_twin.py tests/test_t08_w4_package_data.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "a484c63edec8f1e71f981d256e7c4cbb649672a978addc0e84e5b979985ddfcf"
+  },
+  {
+   "cmd": "scripts/m03_nlp_check.sh PREFIX CACHE -- -o junit_family=xunit1 --junitxml=ARTIFACTS/m03-nlp.junit.xml  (PREFIX: the audited environment of docs/m03-ipopt-audit.md; the script sets OMP_NUM_THREADS=1, PYTHONNOUSERSITE=1 and PYOMO_CONFIG_DIR, and runs the inventory --check)",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "856f76bd49fec65b69757b337f354795c84a531321a00d9101d68bf97540cc0a"
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python docs/derivations/scripts/m03_reference.py --check",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "63ff10839a608402bba46c0e06dba02dbc4962627dd12960a2f6fab195484e25"
+  }
+ ],
+ "checks": [
+  {
+   "id": "M03.A01",
+   "description": "M03 spec §11, A01: Twin identity: at P1, P2, P3, B1, B2, B3 and every converged sweep point, the twin's residual and x-Jacobian at `(x*, p₀)` equal the base's after signed-zero normalization; `twin.model_version == base.model_version`. Tolerance: 0 (bitwise). A twin built with one row builder altered (test double) is refused `TWIN_MISMATCH`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a01_*"
+     ],
+     "passed": 25,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A02",
+   "description": "M03 spec §11, A02: At P1 the parameter Jacobian's non-zeros are exactly JSON `parameter_jacobian_P1` (pattern equal; the −1 entries exact; the split-fraction entries within 1e-15 relative of ∓S5.n_i).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a02_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "max relative error of the split-fraction entries (<= 1e-15)": {
+      "value": 4.1894299980307533e-16,
+      "tolerance": 1e-15,
+      "sense": "<=",
+      "within": true,
+      "margin": 2.39
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A03",
+   "description": "M03 spec §11, A03: No differencing: a core request (WO-2's function, the certificate already supplied) at P1 for 5 parameters and 12 outputs (the 11 variables and `Q_total`) evaluates the twin's `residual`, `jacobian_x` and `jacobian_p` exactly once each and the base problem's `residual` and `jacobian` exactly once each, and performs zero flowsheet solves.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a03_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A04",
+   "description": "M03 spec §11, A04: `UNKNOWN_PARAMETER` for an id not in `parameter_ids`; `PARAMETER_NOT_DIFFERENTIABLE` for a toy spec whose builder calls `float()` on the parameter; neither raises.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a04_*"
+     ],
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A05",
+   "description": "M03 spec §11, A05: Forward mode at P1, P2, P3: all 12 × 5 scaled entries within `1e-11 + 1e-10 |Ŝ*|` of the JSON.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a05_*"
+     ],
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "P1: max over entries of |S - S*| / (1e-11 + 1e-10 |S*|), scaled (<= 1)": {
+      "value": 0.0006520003411593656,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 1530.0
+     },
+     "P2: max over entries of |S - S*| / (1e-11 + 1e-10 |S*|), scaled (<= 1)": {
+      "value": 0.000510702591327572,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 1960.0
+     },
+     "P3: max over entries of |S - S*| / (1e-11 + 1e-10 |S*|), scaled (<= 1)": {
+      "value": 0.00027719927307730025,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 3610.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A06",
+   "description": "M03 spec §11, A06: Adjoint mode: the same.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a06_*"
+     ],
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "P1: max over entries of |S - S*| / (1e-11 + 1e-10 |S*|), scaled (<= 1)": {
+      "value": 0.000671003004587096,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 1490.0
+     },
+     "P2: max over entries of |S - S*| / (1e-11 + 1e-10 |S*|), scaled (<= 1)": {
+      "value": 0.003235320023298111,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 309.0
+     },
+     "P3: max over entries of |S - S*| / (1e-11 + 1e-10 |S*|), scaled (<= 1)": {
+      "value": 0.00026651350302458283,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 3750.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A07",
+   "description": "M03 spec §11, A07: Mode `both`: `|Ŝ_fwd − Ŝ_adj| ≤ 1e-11 + 1e-10 max|Ŝ|` per entry at P1–P3, and the recorded `consistency` equals the observed maximum.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a07_*"
+     ],
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "P1: max |S_fwd - S_adj| (<= 6.93449e-10)": {
+      "value": 8.881784197001252e-16,
+      "tolerance": 6.934492258986984e-10,
+      "sense": "<=",
+      "within": true,
+      "margin": 781000.0
+     },
+     "P2: max |S_fwd - S_adj| (<= 2.18659e-08)": {
+      "value": 8.526512829121202e-14,
+      "tolerance": 2.1865879077024517e-08,
+      "sense": "<=",
+      "within": true,
+      "margin": 256000.0
+     },
+     "P3: max |S_fwd - S_adj| (<= 5.18851e-10)": {
+      "value": 8.271161533457416e-15,
+      "tolerance": 5.188505708170294e-10,
+      "sense": "<=",
+      "within": true,
+      "margin": 62700.0
+     },
+     "toy linear_c: max |S_fwd - S_adj| (<= 2.31e-09)": {
+      "value": 0.0,
+      "tolerance": 2.3100000000000026e-09,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     },
+     "toy linear_identity: max |S_fwd - S_adj| (<= 7.1e-10)": {
+      "value": 8.881784197001252e-16,
+      "tolerance": 7.100000000000007e-10,
+      "sense": "<=",
+      "within": true,
+      "margin": 799000.0
+     },
+     "toy x_squared: max |S_fwd - S_adj| (<= 1.1e-10)": {
+      "value": 0.0,
+      "tolerance": 1.1000000000000001e-10,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A08",
+   "description": "M03 spec §11, A08: Every registered structural zero (JSON `structural_zeros`) has `|Ŝ| ≤ 1e-11`; at P3 the S3.V row entries that are zero at P1 are non-zero (|Ŝ| ≥ 1e-3, values in the JSON).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a08_*"
+     ],
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "P1: max |S| over the registered zeros (<= 1e-11)": {
+      "value": 6.5200034115936564e-15,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 1530.0
+     },
+     "P2: max |S| over the registered zeros (<= 1e-11)": {
+      "value": 5.10702591327572e-15,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 1960.0
+     },
+     "P3: max |S| over the registered zeros (<= 1e-11)": {
+      "value": 2.7719927307730022e-15,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 3610.0
+     },
+     "P3: min |S| on the live S3.V row (>= 0.001)": {
+      "value": 0.305218162749689,
+      "tolerance": 0.001,
+      "sense": ">=",
+      "within": true,
+      "margin": 305.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A09",
+   "description": "M03 spec §11, A09: FD oracle (§4.5) at P1 and P3: `|Ŝ_FD − Ŝ| ≤ 1e-9` for all 12 × 5 entries.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a09_*"
+     ],
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "P1: max |S_FD - S| (<= 1e-09)": {
+      "value": 3.7149727738494676e-12,
+      "tolerance": 1e-09,
+      "sense": "<=",
+      "within": true,
+      "margin": 269.0
+     },
+     "P3: max |S_FD - S| (<= 1e-09)": {
+      "value": 5.540456982089381e-12,
+      "tolerance": 1e-09,
+      "sense": "<=",
+      "within": true,
+      "margin": 180.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A10",
+   "description": "M03 spec §11, A10: Factorization count: a request with (5 parameters, 12 outputs, mode `both`) and one with (1, 1, `forward`) make the same number of `factorize` calls, and it is 2 at P1.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a10_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "factorizations, (1, 1, forward) (== 2)": {
+      "value": 2.0,
+      "tolerance": 2.0,
+      "sense": "==",
+      "within": true
+     },
+     "factorizations, (5, 12, both) (== 2)": {
+      "value": 2.0,
+      "tolerance": 2.0,
+      "sense": "==",
+      "within": true
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A11",
+   "description": "M03 spec §11, A11: Toy `x² − p` at p = 0.25: `QUALIFIED`, ∂x/∂p within 1e-15 of 1.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a11_*"
+     ],
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "adjoint: |dx/dp - 1| (<= 1e-15)": {
+      "value": 0.0,
+      "tolerance": 1e-15,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     },
+     "both: |dx/dp - 1| (<= 1e-15)": {
+      "value": 0.0,
+      "tolerance": 1e-15,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     },
+     "forward: |dx/dp - 1| (<= 1e-15)": {
+      "value": 0.0,
+      "tolerance": 1e-15,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A12",
+   "description": "M03 spec §11, A12: Toy linear at δ = 1: X within `τ_abs = 1e-11` of [[7, −2], [−3, 1]]; with C = [1, 10] both modes give [−23, 8] within `τ_abs`; neither is within 0.5 of [−13, 7] in any entry. *(Amendment 1: was 1e-13; §5 gives the floor, 2.13e-14, and the a priori estimate, 4.4e-12.)*",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a12_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "adjoint: max |S - [-23, 8]| (<= 1e-11)": {
+      "value": 2.1316282072803006e-14,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 469.0
+     },
+     "adjoint: min |S - [-13, 7]| (> 0.5)": {
+      "value": 1.000000000000007,
+      "tolerance": 0.5,
+      "sense": ">",
+      "within": true,
+      "margin": 2.0
+     },
+     "forward: max |S - [-23, 8]| (<= 1e-11)": {
+      "value": 2.1316282072803006e-14,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 469.0
+     },
+     "forward: min |S - [-13, 7]| (> 0.5)": {
+      "value": 1.000000000000007,
+      "tolerance": 0.5,
+      "sense": ">",
+      "within": true,
+      "margin": 2.0
+     },
+     "max |X - A^-1| (<= 1e-11)": {
+      "value": 6.217248937900877e-15,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 1610.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A13",
+   "description": "M03 spec §11, A13: `x² − p` at p = 0, x = 0: residual exactly 0, status `REFUSED`, refusals `[RANK_DEFICIENT]`, sensitivity values `null`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a13_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A14",
+   "description": "M03 spec §11, A14: Linear toy at δ = 0: `REFUSED`, `[RANK_DEFICIENT]`, values `null`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a14_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A15",
+   "description": "M03 spec §11, A15: `x² − p` at p = 1e-20: `[ILL_CONDITIONED]` with the screen's reason `absolute`; linear toy at δ = 1e-12: `[ILL_CONDITIONED]`, reason `relative`; values `null`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a15_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A16",
+   "description": "M03 spec §11, A16: B1 and B2: `REFUSED` with refusals exactly `[PHASE_BOUNDARY]`; the recorded flash margin within 1e-12 of the JSON, the regime label equal; certificate `VERIFIED` and screen `NO_RANK_LOSS_DETECTED` recorded; values `null`. B3: refusals contain `ROOT_NOT_VERIFIED`, `ILL_CONDITIONED` and `PHASE_BOUNDARY` in the §3.5 order (its root residual, measured 1.7e-11, is only 6× below `τ_root`, so whether `ROOT_NOT_CONVERGED` also appears is not asserted).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a16_*"
+     ],
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "B1: |flash margin - registered| (<= 1e-12)": {
+      "value": 1.4209863686653716e-14,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 70.4
+     },
+     "B2: |flash margin - registered| (<= 1e-12)": {
+      "value": 2.771077096085095e-14,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 36.1
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A17",
+   "description": "M03 spec §11, A17: Alias: at P1 with the five registered parameters plus both pressure specifications, status `PARTIALLY_QUALIFIED`; the pressure columns `INCONSISTENT_WITH_ELIMINATED_ROWS` with recorded alias residual within 1e-12 of 1.0 and `null` values; the five other columns' alias residuals ≤ 1e-8 and their values equal (bitwise) to a request for those five alone.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a17_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "max alias residual over the five qualified columns (<= 1e-08)": {
+      "value": 0.0,
+      "tolerance": 1e-08,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     },
+     "max |alias residual - 1| over the pressure columns (<= 1e-12)": {
+      "value": 0.0,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A18",
+   "description": "M03 spec §11, A18: `ROOT_NOT_CONVERGED`: P1's state with `S2.T` raised by 1 K is refused with refusals beginning `[ROOT_NOT_CONVERGED]` and the screen `not_evaluated`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a18_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A19",
+   "description": "M03 spec §11, A19: Regime margins at P1, P2, P3: labels equal to the JSON; margins within 1e-12.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a19_*"
+     ],
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "P1 U-FLASH: |m - m*| (<= 1e-12)": {
+      "value": 8.326672684688674e-17,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 12000.0
+     },
+     "P1 U-HEAT: |m - m*| (<= 1e-12)": {
+      "value": 5.412337245047638e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 1850.0
+     },
+     "P2 U-FLASH: |m - m*| (<= 1e-12)": {
+      "value": 1.3877787807814457e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 7210.0
+     },
+     "P2 U-HEAT: |m - m*| (<= 1e-12)": {
+      "value": 4.440892098500626e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 2250.0
+     },
+     "P3 U-FLASH: |m - m*| (<= 1e-12)": {
+      "value": 3.885780586188048e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 2570.0
+     },
+     "P3 U-HEAT: |m - m*| (<= 1e-12)": {
+      "value": 4.0419056990259605e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 2470.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A20",
+   "description": "M03 spec §11, A20: `IDENTITY_MISMATCH`: a request whose context's `constants_sha256` differs from the base's is refused before any evaluation; a qualified result's pairing identity equals the base evaluation's at `x*` and its `policy_id` is `M03-sensitivity-v1`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a20_*"
+     ],
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A21",
+   "description": "M03 spec §11, A21: The registered sweep yields 9 records in input order: 8 `CONVERGED` with certificates `VERIFIED`, `S4.N` and `S5.N` within `1e-9 + 1e-10|y|` of the JSON; the 445 K point `SPECIFICATION_REFUSED`, message containing \"outside the declared domain\", outputs `null`; summary `{total 9, converged 8, verified 8, sensitivity_qualified 8, failed 1, not_run 0}`; status `COMPLETE`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a21_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "max over converged points of |y - y*| / (1e-9 + 1e-10 |y*|), S4.N and S5.N (<= 1)": {
+      "value": 9.034373599217555e-06,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 111000.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A22",
+   "description": "M03 spec §11, A22: The sweep's ∂S4.N/∂T_f at each converged point within `1e-11 + 1e-10|Ŝ*|` (scaled) of the JSON — zero at 310, 340, 380, 420 K, non-zero elsewhere.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a22_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "max over converged points of |S - S*| / (1e-11 + 1e-10 |S*|), scaled (<= 1)": {
+      "value": 0.00021798930858101762,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 4590.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A23",
+   "description": "M03 spec §11, A23: The same sweep run in reverse order yields point records bitwise equal to the forward run's, point by point.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a23_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A24",
+   "description": "M03 spec §11, A24: A sweep whose budget allows 4 points is `INCOMPLETE` with 5 records `NOT_RUN` and no outputs for them.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a24_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A25",
+   "description": "M03 spec §11, A25: The observations the fit uses are bitwise the JSON's `observed` values; the implementation contains no noise generator for them.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a25_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A26",
+   "description": "M03 spec §11, A26: FIT-I: `IDENTIFIABLE`; θ̂ within 1e-8 (scaled) of the JSON; σ₂/σ₁, covariance entries, standard errors and χ² within 1e-6 relative; correlation within 1e-6; dof 6; no bound active.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a26_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "max relative error: sigma ratio, chi2, singular values, covariance (<= 1e-06)": {
+      "value": 4.821034933611292e-14,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 20700000.0
+     },
+     "max |theta - theta*| / s_theta (<= 1e-08)": {
+      "value": 1.1102230246251565e-16,
+      "tolerance": 1e-08,
+      "sense": "<=",
+      "within": true,
+      "margin": 90100000.0
+     },
+     "|correlation - correlation*| (<= 1e-06)": {
+      "value": 1.1102230246251565e-16,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 9010000000.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A27",
+   "description": "M03 spec §11, A27: FIT-U: `UNIDENTIFIABLE`; σ₂/σ₁ ≤ 1e-12; null direction within 1e-8 of (1, 0); r reported `determined: false` with no estimate and no standard error; T̂_f within 1e-8 (scaled) of the JSON and `determined: true`; dof 5. *Amendment 1:* χ² within 1e-6 relative of the JSON; r's `final_iterate` inside [0.50, 0.97] and compared with no other value (§7.4: it is arbitrary along the null direction).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a27_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "max |n - (1, 0)| (<= 1e-08)": {
+      "value": 1.3130539680664914e-14,
+      "tolerance": 1e-08,
+      "sense": "<=",
+      "within": true,
+      "margin": 762000.0
+     },
+     "r final iterate (<= 0.97)": {
+      "value": 0.9690555399030523,
+      "tolerance": 0.97,
+      "sense": "<=",
+      "within": true,
+      "margin": 1.0
+     },
+     "r final iterate (>= 0.5)": {
+      "value": 0.9690555399030523,
+      "tolerance": 0.5,
+      "sense": ">=",
+      "within": true,
+      "margin": 1.94
+     },
+     "sigma_2 / sigma_1 (<= 1e-12)": {
+      "value": 9.085839713082678e-15,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 110.0
+     },
+     "|T_f - T_f*| / s_T (<= 1e-08)": {
+      "value": 6.2254912336356936e-12,
+      "tolerance": 1e-08,
+      "sense": "<=",
+      "within": true,
+      "margin": 1610.0
+     },
+     "|chi2 / chi2* - 1| (<= 1e-06)": {
+      "value": 9.095554687732925e-12,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 110000.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A28",
+   "description": "M03 spec §11, A28: Validation: FIT-I predictions, their standard errors (1e-6 relative) and normalized residuals (1e-6 absolute) as in the JSON; FIT-U `U-HEAT.Q` `determined: false` with no value, `S4.N` `determined: true`. *Amendment 1:* FIT-U `U-HEAT.Q`'s recorded `null_projection_relative` lies in the JSON's `null_projection_relative_range_over_box` widened by 1e-6 on each side; FIT-U `S4.N`'s predicted value within 1e-6 relative of the JSON's `predicted`, with no standard error and no normalized residual.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a28_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "FIT-I max relative error, predictions and their SEs (<= 1e-06)": {
+      "value": 4.033806288956508e-15,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 248000000.0
+     },
+     "FIT-I max |normalized residual - registered| (<= 1e-06)": {
+      "value": 1.84430248850731e-12,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 542000.0
+     },
+     "FIT-U S4.N |predicted / registered - 1| (<= 1e-06)": {
+      "value": 4.364019872837148e-11,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 22900.0
+     },
+     "FIT-U U-HEAT.Q projection: distance inside the registered range's nearer end (>= -1e-06)": {
+      "value": 0.00014704367992346423,
+      "tolerance": -1e-06,
+      "sense": ">=",
+      "within": true
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A29",
+   "description": "M03 spec §11, A29: Both reports carry `evidence_class = \"numerical_verification\"`, the JSON statement verbatim, the seed, the noise model, θ*, the bounds, the declared σ and `covariance_basis = \"declared_sigma\"`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a29_*"
+     ],
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A30",
+   "description": "M03 spec §11, A30: Fault injection: when the sensitivity at FIT-I's second Jacobian evaluation is forced to `REFUSED([PHASE_BOUNDARY])`, the fit ends `FAILED` with that refusal and the iterate recorded, and `least_squares` is never called with a finite-difference `jac` (`'2-point'`, `'3-point'`, `'cs'`).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a30_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A31",
+   "description": "M03 spec §11, A31: At the start (0.6, 360 K) the full-space formulation's equality residual and its Jacobian's state columns equal the twin's (bitwise), its decision columns equal the twin's `jacobian_p`, and its bounds follow §8.2 (S3.vap.A/B/C and S3.V unbounded; every other flow ≥ 0; T and P in the provider domain; decisions in the box).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a31_*"
+     ],
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A32",
+   "description": "M03 spec §11, A32: The V5 verifier at the reference optimum (the flowsheet re-solved at the JSON's r*, T_f* rounded to binary64): active set `{recovery_A}`; μ within 1e-6 relative of μ*; stationarity residual ≤ 1e-8; LICQ true; `second_order = \"not_assessed\"`. At the start (0.6, 360 K) the same verifier reports stationarity residual ≥ 1e-2. *Amendment 1:* at the reference optimum V1, V3, V4 and V5 are `pass`, V2 is `not_evaluated` (no optimizer state) and the verification is **not** `passed`; supplied the re-solved state as the optimizer state, V2 is `pass` and the verification is `passed` (§8.5).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a32_*"
+     ],
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "stationarity residual at the reference optimum (<= 1e-08)": {
+      "value": 8.205830324604201e-16,
+      "tolerance": 1e-08,
+      "sense": "<=",
+      "within": true,
+      "margin": 12200000.0
+     },
+     "stationarity residual at the start (0.6, 360 K) (>= 0.01)": {
+      "value": 2.569680450042666,
+      "tolerance": 0.01,
+      "sense": ">=",
+      "within": true,
+      "margin": 257.0
+     },
+     "|mu / mu* - 1| (<= 1e-06)": {
+      "value": 1.5714618497952523e-15,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 636000000.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.A33",
+   "description": "M03 spec §11, A33: `optimization_readiness` returns each §8.7 reason for a formulation that violates exactly that condition (one test per reason), and `READY_FOR_OPTIMIZATION` for NLP-1 only when the audited extra is present. In the default environment it returns `unsupported` with `[NLP_SOLVER_UNAVAILABLE]`, naming the audit document. `Application.validate(…, task=\"optimization\")` is still R-129's typed `unsupported`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a33_*"
+     ],
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A34",
+   "description": "M03 spec §11, A34: `optimize(NLP-1)` without the extra returns an `OptimizationReport` with status `UNSUPPORTED`, reasons `[NLP_SOLVER_UNAVAILABLE]`, no candidate, and does not raise.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a34_*"
+     ],
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A35",
+   "description": "M03 spec §11, A35: NLP-1 from each of the three starts: `KKT_POINT_VERIFIED`; decisions within 1e-6 (scaled) of (r*, T_f*); φ within 1e-5 of φ*; `distinct_local_solutions = 1`; the report's `hessian_policy` is §8.3's and its options equal §8.4's verbatim.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a35_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "max over starts of |d - d*| / s_d (<= 1e-06)": {
+      "value": 2.6716406864579767e-12,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 374000.0
+     },
+     "max over starts of |phi - phi*| (<= 1e-05)": {
+      "value": 9.089839991816007e-12,
+      "tolerance": 1e-05,
+      "sense": "<=",
+      "within": true,
+      "margin": 1100000.0
+     }
+    },
+    "nlp_gate": {
+     "exit_code": 0,
+     "passed": true,
+     "pytest": "18 passed, 7091 deselected",
+     "inventory_check_exit_0": true
+    },
+    "q_f2": {
+     "source": "benchmarks/m03/nlp-measurements.json (reproduced by the nlp gate's test_the_q_f2_and_q_f4_measurements_reproduce_and_keep_their_margin)",
+     "closest": {
+      "quantity": "ipopt_primal_infeasibility",
+      "ratio": 105.72227190153846,
+      "start": 1
+     },
+     "margin_factor": 10.0,
+     "within_margin_factor": []
+    }
+   }
+  },
+  {
+   "id": "M03.A36",
+   "description": "M03 spec §11, A36: NLP-1's candidate: V1 certificate `VERIFIED`; V2 ≤ 1e-6; V3 `|ĝ| ≤ 1e-6` and `ĝ ≥ −1e-8`; V4 margins ≥ 1e-4 with the start's regimes; V5 μ within 1e-4 relative of μ*, stationarity ≤ 1e-6, `second_order = \"not_assessed\"`; `claims.global_optimality = false`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a36_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "V2 scaled difference (<= 1e-06)": {
+      "value": 2.473825588822365e-15,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 404000000.0
+     },
+     "V3 g of the active constraint (>= -1e-08)": {
+      "value": 2.680078381445128e-12,
+      "tolerance": -1e-08,
+      "sense": ">=",
+      "within": true
+     },
+     "V3 |g| of the active constraint (<= 1e-06)": {
+      "value": 2.680078381445128e-12,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 373000.0
+     },
+     "V4 min regime margin (>= 0.0001)": {
+      "value": 0.08160527266773565,
+      "tolerance": 0.0001,
+      "sense": ">=",
+      "within": true,
+      "margin": 816.0
+     },
+     "V5 stationarity residual (<= 1e-06)": {
+      "value": 1.3160128349882077e-09,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 760.0
+     },
+     "V5 |mu / mu* - 1| (<= 0.0001)": {
+      "value": 8.556377828483619e-11,
+      "tolerance": 0.0001,
+      "sense": "<=",
+      "within": true,
+      "margin": 1170000.0
+     }
+    },
+    "nlp_gate": {
+     "exit_code": 0,
+     "passed": true,
+     "pytest": "18 passed, 7091 deselected",
+     "inventory_check_exit_0": true
+    }
+   }
+  },
+  {
+   "id": "M03.A37",
+   "description": "M03 spec §11, A37: NLP-INF: status ∈ {`INFEASIBLE_REPORTED`, `NOT_VERIFIED`, `SOLVER_FAILED`}; never `KKT_POINT_VERIFIED`; no candidate.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a37_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "nlp_gate": {
+     "exit_code": 0,
+     "passed": true,
+     "pytest": "18 passed, 7091 deselected",
+     "inventory_check_exit_0": true
+    }
+   }
+  },
+  {
+   "id": "M03.A38",
+   "description": "M03 spec §11, A38: NLP-1 with `hessian = \"exact\"`: `UNSUPPORTED`, `[HESSIAN_UNAVAILABLE]`, zero Ipopt calls.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a38_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "nlp_gate": {
+     "exit_code": 0,
+     "passed": true,
+     "pytest": "18 passed, 7091 deselected",
+     "inventory_check_exit_0": true
+    }
+   }
+  },
+  {
+   "id": "M03.A39",
+   "description": "M03 spec §11, A39: During A35, no mapped object comes from the CasADi wheel's METIS closure and `casadi.nlpsol` is never called (G2, enforced per test run, not only at audit time).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a39_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "nlp_gate": {
+     "exit_code": 0,
+     "passed": true,
+     "pytest": "18 passed, 7091 deselected",
+     "inventory_check_exit_0": true
+    }
+   }
+  },
+  {
+   "id": "M03.A40",
+   "description": "M03 spec §11, A40: Every start, of every report (NLP-1's and NLP-INF's), records Ipopt's return status, iterations, evaluation counters and wall time, each within §8.4's per-run limits (`max_iter`, `max_wall_time`). *Amendment 2 (review ruling Q1):* the budget is per Ipopt run, for every run; a multistart sum is recorded cost, not a gate (was: \"their sum is within the §8.4 budget\", which would hold for NLP-1's 54 iterations only by accident and fail for NLP-INF's 597).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a40_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "measured": {
+     "NLP-1: max over starts of iterations (<= 500)": {
+      "value": 21.0,
+      "tolerance": 500.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 23.8
+     },
+     "NLP-1: max over starts of wall time, s (<= 120)": {
+      "value": 0.07677409500320209,
+      "tolerance": 120.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 1560.0
+     },
+     "NLP-INF: max over starts of iterations (<= 500)": {
+      "value": 317.0,
+      "tolerance": 500.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 1.58
+     },
+     "NLP-INF: max over starts of wall time, s (<= 120)": {
+      "value": 1.9313638469975558,
+      "tolerance": 120.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 62.1
+     }
+    },
+    "nlp_gate": {
+     "exit_code": 0,
+     "passed": true,
+     "pytest": "18 passed, 7091 deselected",
+     "inventory_check_exit_0": true
+    }
+   }
+  },
+  {
+   "id": "M03.A41",
+   "description": "M03 spec §11, A41: `docs/m03-ipopt-audit.md` and its inventory JSON exist, the inventory script's `--check` passes, and each of G1–G8 is recorded with an outcome; the verdict is `PASS` or `FAIL` (never absent).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_m03_nlp_isolation.py::test_the_audit_records_every_gate_item_and_a_verdict",
+      "tests/test_m03_nlp_isolation.py::test_the_inventory_was_taken_from_the_committed_locks",
+      "tests/test_m03_nlp_isolation.py::test_the_inventory_was_taken_on_nlp_1",
+      "tests/test_m03_nlp_isolation.py::test_the_adapter_requires_the_audited_pynumero_asl_build"
+     ],
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "nlp_gate": {
+     "exit_code": 0,
+     "passed": true,
+     "pytest": "18 passed, 7091 deselected",
+     "inventory_check_exit_0": true
+    }
+   }
+  },
+  {
+   "id": "M03.A42",
+   "description": "M03 spec §11, A42: `python docs/derivations/scripts/m03_reference.py --check` exits 0 (264 claims after Amendment 1, was 257; the committed JSON byte-identical), and is run by a default-gate test.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a42_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    },
+    "generator": {
+     "exit_code": 0,
+     "claims": 264,
+     "last_line": "benchmarks/m03/reference_values.json is byte-identical to the generator's output"
+    }
+   }
+  },
+  {
+   "id": "M03.A43",
+   "description": "M03 spec §11, A43: Unevaluable residual (§3.5 Q1). State: P1's converged state with `S2.T` set to 500 K, outside the provider's declared domain [280, 440] K. The test first asserts the precondition, that the base problem's `residual` there has a status other than `ok` (*measured* `invalid_trial_state`, the `H_S2_liquid` block refusing 500 K), so the case cannot pass vacuously. Then: `REFUSED`; refusals begin `[ROOT_NOT_CONVERGED]`; the Q1 refusal's detail contains the evaluation status; Q0′, Q2 and Q3 `not_evaluated`; values `null`; nothing raises.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a43_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A44",
+   "description": "M03 spec §11, A44: `LINEAR_SOLVE_FAILED` (§3.5 Q2′), by fault injection at P1 with the five registered parameters and the twelve outputs. (a) Mode `both`, with the forward solve's `solve_linear_kept` (as the sensitivity module calls it) replaced by a double raising `LinearSolveFailedError(\"residual\", …)`: `REFUSED`, refusals exactly `[LINEAR_SOLVE_FAILED]` with reason `residual`; Q2 `pass` with the screen `NO_RANK_LOSS_DETECTED` recorded; Q3 `not_evaluated`; values `null`; nothing raises. (b) Mode `adjoint`, with `KeptFactorization.solve_transposed` replaced by such a double: `REFUSED`, `[LINEAR_SOLVE_FAILED]`, Q3 `pass` (it needs only the forward solve), values `null`. (c) Mode `forward` with the same transpo…",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a44_*"
+     ],
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A45",
+   "description": "M03 spec §11, A45: Non-square reduced system (§3.3). The linear toy at δ = 1 on a host that declares row `R2` eliminated (1 kept row, 2 variables): `REFUSED`, refusals exactly `[UNSUPPORTED_RANK_STRUCTURE]`; Q2 `fail` with detail `reduced_shape = \"1x2\"` and no `RegularityEvidence`; Q3 `not_evaluated`; values `null` (*measured* so at `5cf4160`).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a45_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A46",
+   "description": "M03 spec §11, A46: Estimator non-convergence (§7.3). FIT-I with the pinned `max_nfev` overridden to 2 in the test (*measured*: the registered fit needs 8 residual evaluations, so `least_squares` returns status 0): `FAILED`, stage `estimator`, codes `[ESTIMATOR_NOT_CONVERGED]`. The recorded estimator status is 0, and the last iterate is recorded. There are no estimates, standard errors, covariance, identifiability verdict or predictions.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a46_*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A47",
+   "description": "M03 spec §11, A47: Optimization status precedence (§8.5), on the pure classification and aggregation function, with synthetic per-start inputs (no Ipopt). Each row is a list of starts `(Ipopt status, V1–V5 all pass)` → the start classifications → the report status; `K`, `NV`, `IR`, `SF` abbreviate `KKT_POINT_VERIFIED`, `NOT_VERIFIED`, `INFEASIBLE_REPORTED`, `SOLVER_FAILED`:",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a47_*"
+     ],
+     "passed": 16,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.A48",
+   "description": "M03 spec §11, A48: Schema registry (§10, WO-9). `schemas/registry.json` is sorted and duplicate-free. It equals the set of `schemas/*.schema.json`, the file names of `published_schemas()`'s `$id`s, and the packaged schema names. It contains `study.schema.json` and `optimization-report.schema.json`. `tests/test_t08_w4_package_data.py` contains no literal schema count.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": [
+      "tests/test_*.py::test_a48_*"
+     ],
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0,
+     "missing": 0
+    }
+   }
+  },
+  {
+   "id": "M03.gate",
+   "description": "`./scripts/check.sh` green at C: ruff, ruff format, mypy and the default pytest gate, which holds every M03 assertion but A35-A40.",
+   "result": "pass",
+   "value": "check.sh PASSED; pytest: 7060 passed, 31 skipped, 18 deselected"
+  },
+  {
+   "id": "M03.nlp_gate",
+   "description": "`scripts/m03_nlp_check.sh` green at C in the audited environment: the `nlp`-marked tests (A35-A40, the F2 thread record, the NLP fixtures and the Q-F2/Q-F4 measurements under the numerical policy) and the inventory --check (A41).",
+   "result": "pass",
+   "value": {
+    "gate": {
+     "exit_code": 0,
+     "passed": true,
+     "pytest": "18 passed, 7091 deselected",
+     "inventory_check_exit_0": true
+    },
+    "environment": {
+     "interpreter": "PREFIX/bin/python, the audited environment (docs/m03-ipopt-audit.md)",
+     "prefix_name": "nlp",
+     "locks_sha256": {
+      "nlp-conda-explicit.txt": "bacf060e1dafa92f1332086c2210cebc6ac248a18708a4a940026647184af2d1",
+      "nlp-build-conda-explicit.txt": "dd0b680cbaa069ff90a69cd27b2725ec68df9e15d745d9dca3de5b39f14b5269",
+      "nlp-pip.lock": "591bfa6003577c05c9e8269c325815d31750960d456496d524fa3ced5b5cf154",
+      "nlp-test.lock": "b4ed9c1dee7c118f6bda42b203cde563d2405902d8cb06d072236c672daea280"
+     },
+     "inventory_sha256": "720147cb7dd05c77f22b465d413c70984b784ea674d6c69c566823cc84c424b3",
+     "inventory_host": {
+      "libc": "glibc 2.41",
+      "machine": "x86_64"
+     },
+     "inventory_pass_g1_to_g6": true,
+     "solver": {
+      "ipopt": "3.14.20",
+      "cyipopt": "1.7.0",
+      "pyomo": "6.10.1",
+      "linear_solver": "mumps"
+     },
+     "recorded_environment": {
+      "openmp": [
+       {
+        "library": "libomp.so",
+        "max_threads": 1
+       }
+      ],
+      "pynumero_asl": {
+       "sha256": "6646bbdd51332c3a5b306604fe0f6bd572d7cec352af994c76bfe1cdf550161c"
+      },
+      "thread_variables": {
+       "MKL_NUM_THREADS": null,
+       "OMP_NUM_THREADS": "1",
+       "OPENBLAS_NUM_THREADS": null
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "M03.N1",
+   "description": "Frank's answer N1 on the licences of the `nlp` extra's stack (audit §7-§8; ADR 0032 D5's acceptance evidence). A35-A40 rest on it: `NLP_LICENCES_ACCEPTED` is provisionally True (commit 2b6e350), and declining is the revert of 2b6e350 and 91537b0 plus a re-taken inventory (M03 review F4).",
+   "result": "unsupported",
+   "value": {
+    "n1": "pending"
+   }
+  },
+  {
+   "id": "M03.ci_both_runners",
+   "description": "M03 review F1's acceptance: the default gate green on both registered CI runners, ubuntu-latest (x86-64) and ubuntu-24.04-arm (aarch64), before the manifest says `tested`. This script runs the gate on one machine; the runners' verdict is stated on its command line.",
+   "result": "unsupported",
+   "value": {
+    "ci_both_runners": "unconfirmed"
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/derivations/M03-studies-spec.md",
+   "sha256": "3f09c0225fdfd28a3907ed524bc5781c0c79a92092470e975425edcae83989bb",
+   "description": "The specification, Amendments 1 and 2 included."
+  },
+  {
+   "path": "benchmarks/m03/reference_values.json",
+   "sha256": "81d1d79ae11ba4a9da353a3856c80aec305fae25287a330486d315902730f35e",
+   "description": "The generator's 60-digit expectations."
+  },
+  {
+   "path": "docs/adr/0031-m03-parametric-sensitivities-and-studies.md",
+   "sha256": "b5a454b3ad9e677f9b2a50fcaf5cec33455e0ccbb7682f5eda816ba0f9da5563",
+   "description": "ADR 0031 (sensitivities, sweeps, estimation)."
+  },
+  {
+   "path": "docs/adr/0032-m03-general-nlp-adapter.md",
+   "sha256": "d8f787fe8a51b4a27472b1a1f18eb31f5f931455a2939b942d836cbcd7b759b3",
+   "description": "ADR 0032 (the NLP adapter)."
+  },
+  {
+   "path": "docs/m03-ipopt-audit.md",
+   "sha256": "42a1fc5de3b39e77524886a78e9f4dfbf473391814884e6eeb9066e0a17e8c61",
+   "description": "The [A10] audit of the Ipopt route (A41)."
+  },
+  {
+   "path": "benchmarks/m03/ipopt-inventory-x86_64.json",
+   "sha256": "720147cb7dd05c77f22b465d413c70984b784ea674d6c69c566823cc84c424b3",
+   "description": "The audited inventory (A41, G1-G8)."
+  },
+  {
+   "path": "benchmarks/m03/nlp-measurements.json",
+   "sha256": "c4aad88b14ba0e21acca56b38f58c5825199753d42c990f46d4777eedcbad0c0",
+   "description": "The Q-F2 and Q-F4 measurements (A35-A36)."
+  },
+  {
+   "path": "docs/reviews/M03-review.md",
+   "sha256": "99c73b29525f703f108d3db42a137df95e8b185afba701a570440233209c7fe2",
+   "description": "The design-lane review this build answers."
+  },
+  {
+   "path": "tests/m03_fixture_compare.py",
+   "sha256": "e4ad339541bb111bdfc45bf70878f17ad9de3887f6e33e2af0c9e2429ddd29b5",
+   "description": "The fixture comparison under the numerical policy (review F1)."
+  },
+  {
+   "path": "schemas/study.schema.json",
+   "sha256": "44bfaad091b1c94c3ce59d6d55e11f4c288cb512e59a411cd23c7e7783be7454",
+   "description": "The study schema (spec §10)."
+  },
+  {
+   "path": "schemas/optimization-report.schema.json",
+   "sha256": "6eb49477a22a0153900b714f98fcffec79fa87f8c0f660b4ca986363ce1b9ba5",
+   "description": "The optimization-report schema."
+  }
+ ],
+ "limitations": [
+  "N1 is pending. The `nlp` extra (91537b0) and the licence acceptance NLP_LICENCES_ACCEPTED (2b6e350) are provisional, and A35-A40 rest on them; the M03.N1 check says so. Declining is the revert of both commits and a re-taken inventory, after which A35-A40 are recorded unsupported (the review's BLOCKED) and optimize() reports UNSUPPORTED everywhere.",
+  "The default gate was run on one x86-64 machine. M03 review F1's acceptance, both registered CI runners green, is not established here; the M03.ci_both_runners check says so. The fixture comparison was shown to tolerate cross-platform noise by regenerating every fixture with each linear back-solve perturbed by 1-64 ulps, not on aarch64.",
+  "The NLP evidence (A35-A41) is valid only in the audited environment on its host and under OMP_NUM_THREADS=1 (review ruling Q2): each report records its thread configuration and the loaded ASL (review F2), and the adapter enforces nothing. Whether single-threading is a product requirement is open for Frank (ADR 0007 D6).",
+  "W24 is a gate id that the manifest schema's `requirements` pattern ([DA]nn) cannot carry. This evidence bears on W24's M03 part (fixed-topology optimization); M05 supplies the trust-region half, and the gate's verdict is the verdict lane's.",
+  "Synthetic only: SYN-001 is a synthetic flowsheet, and the estimation data are generated from the model itself, so FIT-I and FIT-U are numerical verification of the estimation machinery, not empirical validation.",
+  "Local stationarity is not global optimality. NLP-1's candidate is a verified KKT point from three starts; second-order conditions are not assessed (limited-memory Hessian, spec §8.3).",
+  "The fixture comparison's rules for values T08-numerical-policy-v2 has no row for (the scaled-sensitivity floor tau_abs = 1e-11 among them) live in tests/m03_fixture_compare.py, not in the registered policy data; the design lane registers them (review F1).",
+  "Review notes left open: F6 (one CasADi Function for [F_x F_p]; caching the twin, for M05), F8.2 (the formulation record states the first verified start's regimes), F8.3 (Q0 is structurally vacuous in syn001_sensitivity) and F8.4 (tp_margin assumes ideal, composition-independent K; a non-ideal host needs a new margin).",
+  "Human numerical and process-modeling review remain `pending`; `reviewed` is never self-set."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}
