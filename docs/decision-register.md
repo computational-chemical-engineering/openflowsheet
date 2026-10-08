@@ -4576,3 +4576,9 @@ the alpha's release candidate `C_α`. The v0.1 records themselves stay as releas
 - The envelope's `release` left at `0.2.0.dev0` at `C_α`.
 - A `## v0.2.0a1` limitation list built by hand rather than from the envelope.
 - `HARVEST_EXCLUDED` holding anything but the alpha's own manifest after `C_α`.
+
+> **Amendment note (2026-10-09, alpha-gate review F1/F2, `docs/reviews/V02-alpha-gate-review.md`; spec Amendment 1 §17):**
+> R-238's "each starting `accepted` with a date" is tightened. A cell counts only if it matches
+> `^accepted[\s,;:]*(\d{4}-\d{2}-\d{2})(?![0-9])` with a real calendar date, so `accepted (i), …` (a chosen alternative)
+> refuses. Frank's three answers must also be dated on or after the verdict's `Judged` date (Table T6), which makes them
+> per-release in fact as well as in name. ADR 0028's cell rule and its answers-table intro are aligned.
