@@ -376,7 +376,14 @@ def test_c5_the_two_pair_revision_validates_draft_with_no_route() -> None:
         "unsupported", "legacy_route_not_admitted(specification_pairing_unsupported)"
     )
     structure = route_structure(two_pairs())
-    assert set(structure) == {"not_run_reason", "hint"}
+    # ADR 0019 Amendment 3 (A3.1) adds three members, by addition only (M06 WO-1).
+    assert set(structure) == {
+        "not_run_reason",
+        "hint",
+        "validation_structural_report",
+        "rows",
+        "columns",
+    }
     assert detail in structure["not_run_reason"]
     assert structure["hint"] == reported.hint
 

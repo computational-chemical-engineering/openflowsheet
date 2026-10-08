@@ -231,7 +231,14 @@ def test_a_revision_no_route_binds_has_a_structure_reason(app: LocalApplication)
     # Ruling round 6, B1: with no route, `{not_run_reason, hint}`; a document refused before the
     # structural stage reports no hint.
     assert app.inspect_structure(revision_id).value["hint"] is None
-    assert set(app.inspect_structure(revision_id).value) == {"not_run_reason", "hint"}
+    # ADR 0019 Amendment 3 (A3.1) adds three members, by addition only (M06 WO-1).
+    assert set(app.inspect_structure(revision_id).value) == {
+        "not_run_reason",
+        "hint",
+        "validation_structural_report",
+        "rows",
+        "columns",
+    }
 
 
 # ============================================================================ artifacts
