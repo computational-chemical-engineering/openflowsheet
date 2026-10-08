@@ -281,11 +281,12 @@ def mapped_paths() -> set[str]:
 
 
 def test_a40_every_start_records_status_iterations_counters_and_time_within_budget(
-    nlp_1: OptimizationReport, nlp_inf: OptimizationReport
+    nlp_1: OptimizationReport, nlp_inf: OptimizationReport, record_property: Any
 ) -> None:
-    """A40 on A35's run: every start's record, and the starts' sum within one solve's §8.4 budget.
-    NLP-INF's starts are each within it (Ipopt enforces that per run) but not their sum (597
-    iterations, measured): whether A40's sum covers NLP-INF is the design lane's to read."""
+    """A40 (Amendment 2, review ruling Q1): every start of both reports records its status,
+    iterations, counters and wall time, each within §8.4's per-run limits. The budget is per Ipopt
+    run, for every run; a multistart sum is recorded cost, not a gate, so the sums are recorded as
+    observations (`record_property`), never asserted."""
     for report in (nlp_1, nlp_inf):
         starts = report.as_document()["starts"]
         for start in starts:
@@ -299,9 +300,13 @@ def test_a40_every_start_records_status_iterations_counters_and_time_within_budg
             assert start["ipopt_final"] is not None
             assert start["iterations"] <= IPOPT_OPTIONS["max_iter"]
             assert start["wall_time_s"] <= IPOPT_OPTIONS["max_wall_time"]
-    starts = nlp_1.as_document()["starts"]
-    assert sum(start["iterations"] for start in starts) <= IPOPT_OPTIONS["max_iter"]
-    assert sum(start["wall_time_s"] for start in starts) <= IPOPT_OPTIONS["max_wall_time"]
+        problem = report.as_document()["formulation"]["problem_id"]
+        record_property(
+            f"{problem} iterations over all starts", sum(s["iterations"] for s in starts)
+        )
+        record_property(
+            f"{problem} wall time over all starts", sum(s["wall_time_s"] for s in starts)
+        )
     # D1: per Ipopt iteration at most one twin Jacobian; residuals beyond one per iteration are
     # line-search trials. Two Jacobians are taken before the first iteration (PyNumero's and
     # cyipopt's structure probes).
