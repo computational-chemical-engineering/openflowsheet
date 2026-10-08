@@ -1,8 +1,10 @@
 """M06 (design note §5.3): generate the web shell's route table from the HTTP binding's rows.
 
 `apps/web/js/routes.js` is the only place the shell learns a verb, a path or a request member:
-`api.js` builds every URL from it. It is generated from `bindings.http.HTTP_OPERATIONS` (the
-`OPERATIONS` rows whose transports include `http`), keys sorted, one entry per row:
+`api.js` builds every URL from it. It is generated from the `OPERATIONS` rows whose transports
+include `http` — the rows `bindings.http.HTTP_OPERATIONS` serves, read here from `operations` so
+the script needs no server extra (the binding adds nothing to a row, R-096) — keys sorted, one
+entry per row:
 `{verb, path, right, path_params, members}` — `path_params` the `{name}` segments of the path in
 order, `members` every member of the request schema (a top-level `$ref` followed into the
 published schema it names), sorted. Nothing in it is written by hand.
@@ -21,8 +23,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Final
 
-from openflowsheet.application.bindings.http import HTTP_OPERATIONS
-from openflowsheet.application.operations import Operation
+from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import published_schemas
 
 ROOT: Final[Path] = Path(__file__).resolve().parents[1]
@@ -32,6 +33,11 @@ HEADER: Final[str] = (
     "// edit. Regenerate with `python scripts/m06_web_routes.py --write` (a test runs --check).\n"
 )
 _PATH_PARAMETER: Final[re.Pattern[str]] = re.compile(r"\{([a-z_]+)\}")
+#: The HTTP rows: `bindings.http.HTTP_OPERATIONS`' definition, without importing the binding
+#: (which needs uvicorn and starlette); a test holds the two equal where the extra is installed.
+HTTP_OPERATIONS: Final[tuple[Operation, ...]] = tuple(
+    operation for operation in OPERATIONS.values() if "http" in operation.transports
+)
 
 
 def _resolve(schema: Mapping[str, Any]) -> Mapping[str, Any]:

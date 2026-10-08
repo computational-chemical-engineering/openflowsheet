@@ -171,6 +171,19 @@ def test_the_route_table_is_generated_from_the_http_rows() -> None:
         assert entry["right"] == OPERATIONS[name].right
 
 
+def test_the_generator_s_http_rows_are_the_binding_s() -> None:
+    # The generator reads the rows from `OPERATIONS` so it needs no server extra (review F2b);
+    # where the extra is installed, they are the rows the binding serves, in the same order.
+    http = pytest.importorskip("openflowsheet.application.bindings.http")
+    scripts = str(REPO_ROOT / "scripts")
+    sys.path.insert(0, scripts)
+    try:
+        import m06_web_routes
+    finally:
+        sys.path.remove(scripts)
+    assert m06_web_routes.HTTP_OPERATIONS == http.HTTP_OPERATIONS
+
+
 def test_every_called_operation_is_a_listed_route() -> None:
     called = _called()
     assert called <= UI_OPERATIONS, called - UI_OPERATIONS
