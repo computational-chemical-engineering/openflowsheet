@@ -29,6 +29,9 @@ from typing import Final
 EXPECTED: Final[dict[str, str]] = {
     "/ui/": "text/html; charset=utf-8",
     "/ui/favicon.svg": "image/svg+xml",
+    "/ui/js/main.js": "text/javascript; charset=utf-8",
+    "/ui/js/routes.js": "text/javascript; charset=utf-8",
+    "/ui/css/tokens.css": "text/css; charset=utf-8",
 }
 CSP_PREFIX: Final[str] = "default-src 'none'; script-src 'self';"
 START_SECONDS: Final[float] = 60.0

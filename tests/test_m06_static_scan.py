@@ -2,8 +2,8 @@
 
 Design note §8 Layer A 3 and §2 (1, 5). A scan of `apps/web/`: no second network or markup sink
 anywhere (`XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon`, `innerHTML`, `outerHTML`,
-`insertAdjacentHTML`, `document.write`, `eval(`, `new Function`, `import(`); `fetch(` only in
-`js/api.js`; no absolute URL except the SVG namespace name in `js/h.js` and `favicon.svg`; the
+`insertAdjacentHTML`, `document.write`, `eval(`, `new Function`, `import(`); `fetch(` exactly once,
+in `js/api.js`; no absolute URL except the SVG namespace name in `js/h.js` and `favicon.svg`; the
 pure modules (`js/model/`) touch no `document`, `window`, `fetch` or storage; `index.html` has no
 inline script, style or handler; every relative module import resolves; the operation names the
 sources call are `ROUTES` keys from the design's list of 17, and `routes.js` is what
@@ -88,9 +88,9 @@ def test_no_second_network_or_markup_sink(token: str) -> None:
     assert found == []
 
 
-def test_fetch_appears_only_in_api_js() -> None:
+def test_fetch_appears_exactly_once_in_api_js() -> None:
     found = {name: text.count("fetch(") for name, text in _files().items() if "fetch(" in text}
-    assert set(found) <= {"js/api.js"}, found
+    assert found == {"js/api.js": 1}
 
 
 def test_no_absolute_url_but_the_svg_namespace_name() -> None:
