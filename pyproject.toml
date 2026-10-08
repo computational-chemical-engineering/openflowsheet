@@ -68,6 +68,8 @@ openflowsheet = [
 ]
 # The MCP tool descriptions and their review record are served text (T07 W6c, gate G15).
 "openflowsheet.application.bindings" = ["descriptions/*.md", "descriptions/REVIEW.json"]
+# M02 design note §3.1: the registered variants and their registry (append-only package data).
+"openflowsheet.adapters" = ["variants/*.json"]
 
 [tool.ruff]
 line-length = 100

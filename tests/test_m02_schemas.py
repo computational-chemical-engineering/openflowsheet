@@ -19,7 +19,7 @@ import pytest
 from conftest import REPO_ROOT, load_json, load_yaml
 from jsonschema import Draft202012Validator
 
-from openflowsheet.application.types import SCHEMA_BASE, published_schemas
+from openflowsheet.application.types import SCHEMA_BASE, published_schemas, schema_errors
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import t08_numerical_policy  # noqa: E402
@@ -75,3 +75,35 @@ def test_g1_the_partition_refuses_an_unclassified_and_a_reclassified_name() -> N
     doubled = {**EXTERNAL, "exact_sha256": [*EXTERNAL["exact_sha256"], "request_sha256"]}
     problems = t08_numerical_policy.external_audit(policy, doubled)
     assert any(entry.startswith("(m02) already classified by v2") for entry in problems)
+
+
+# -- G1 (a): the fixtures -------------------------------------------------------------------------
+
+FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"
+
+
+def _fixture_module() -> Any:
+    import m02_schema_fixtures
+
+    return m02_schema_fixtures
+
+
+@pytest.mark.parametrize("directory", sorted(_fixture_module().REFERENCES))
+def test_g1a_every_def_has_a_valid_and_an_invalid_fixture(directory: str) -> None:
+    reference = _fixture_module().REFERENCES[directory]
+    valid = sorted((FIXTURES / directory / "valid").glob("*.json"))
+    invalid = sorted((FIXTURES / directory / "invalid").glob("*.json"))
+    assert valid and invalid, directory
+    for path in valid:
+        assert schema_errors(reference, load_json(path)) == [], path
+    for path in invalid:
+        fixture = load_json(path)
+        assert set(fixture) == {"expect_error", "document"}, path
+        errors = schema_errors(reference, fixture["document"])
+        assert any(fixture["expect_error"] in error for error in errors), (path, errors)
+
+
+def test_g1a_the_fixtures_are_what_the_code_emits_today() -> None:
+    emitted = _fixture_module().documents()
+    for name, document in emitted.items():
+        assert load_json(FIXTURES / name) == document, name

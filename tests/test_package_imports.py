@@ -27,6 +27,9 @@ LAYERS = [
     # K05's runs, manifests and replay. Above both, because a run is a solve *and* its
     # verification and must not be a subpackage of either.
     "run",
+    # M02's external-model adapters and experiment records (blueprint §15): below `application`,
+    # which runs them, and above `models`, whose boundary they evaluate.
+    "adapters",
     "application",
 ]
 
