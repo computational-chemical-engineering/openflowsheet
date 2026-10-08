@@ -389,3 +389,12 @@ Grep, don't read whole. Newest at the bottom.
   D24 (`job_result.experiment` null before any attempt), D23 (every experiment job records through
   ArtifactTableSink), D18 (model exception → crashed), D14 (frozen handshake failure recorded per experiment).
 - `opus-engineer` M02 merge-main + WO-7, WO-8 (+WO-9) launched on `wp/M02`.
+- M03 review fixes + WO-10 done on `wp/M03` (`ca3d833`…`71b3c37`): F1 policy comparison (`tests/m03_fixture_compare.py`;
+  8 perturbed regenerations compare clean; a 3e-9 χ² change is caught; 8 permanent must-catch mutations); F2
+  `solver.environment` (thread vars, libomp max_threads, ASL path/sha); A40 per run (Amendment 2); F4
+  `NLP_LICENCES_ACCEPTED` (`bf753ae` gate, `2b6e350` set True pending N1 — revert with `91537b0` to decline); F5
+  twin bitwise at moved inputs. check.sh 7066 passed; nlp gate 18 passed. Manifest
+  `evidence/M03/fd16834…/manifest.json` **implemented** (A01–A48 pass; `M03.N1` and `M03.ci_both_runners`
+  unsupported until stated). Design lane to register the test-module comparison rules (review F1). Pushed
+  `wp/M03` → CI 37846362678.
+- M02 architect asked for rulings D14, D18, D22 (timing), D23, D24 (R-250+; R-238/239 alpha gate, R-240…249 M04).
