@@ -493,3 +493,10 @@ Grep, don't read whole. Newest at the bottom.
   Finding: Pyomo's EFReplacement.exitNode swallows start-value exceptions (bare except → 0); holder now records them.
   Open for the M05 architect: omitted pressure-alias rows (PROJECTION_DOF otherwise); G4/Ipopt scaling in K03's scales;
   unassigned affine basis (§6.6), readiness halves, TruthBox meta. Architect asked.
+- M05 WO-1 done on `wp/M05-audit` (`a28d6a8`): the `ipopt` executable passes G1–G8 (audit §11 in
+  `docs/m03-ipopt-audit.md`; record `benchmarks/m05/trsp-inventory-x86_64.json`). New objects only `bin/ipopt` and
+  `libipoptamplinterface.so.3.14.20` (conda-forge ipopt-3.14.20, EPL-2.0 read / EPL-1.0 declared, as libipopt). The
+  `libgomp.so.1` loaded is a symlink to LLVM libomp 23.1.3 (already inventoried) — ADR 0006 Amendment 1 not engaged.
+  Method: `LD_DEBUG=files` in the workload's children, union equals `ldd` closure. No licence class added for N1
+  (Ipopt now also runs as a separate process, noted). G7 narrower (no second-prefix rebuild). check.sh 7908 passed.
+  To merge into `wp/M05` after the M05 architect's rulings commit; then a test that WO-3's pin hashes equal WO-1's record.
