@@ -3786,3 +3786,111 @@ own (the W gates that apply at that point), designed before the pre-release, not
 **Watch for.** `READY_FOR_OPTIMIZATION` returned with the extra absent; R-129's refusal removed without a formulation behind it.
 
 ---
+
+## R-210 — M03 Amendment 1: the sensitivity refusal vocabulary is complete; a failed linear solve after a clean screen is the typed refusal `LINEAR_SOLVE_FAILED`, not an exception; the forward–adjoint consistency is recorded and never refuses
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 |
+| Normative text | ADR 0031 D3, D4 and its Amendment 1; `docs/derivations/M03-studies-spec.md` §3.3, §3.5 (Q1, Q2, Q2′), §3.6, §16 |
+| Evidence | Specification A43, A44, A45 (planned, WO-2a). Measured at `5cf4160`: P1 with `S2.T` = 500 K gives the residual status `invalid_trial_state` and the refusal `ROOT_NOT_CONVERGED`; the linear toy with one row eliminated gives `UNSUPPORTED_RANK_STRUCTURE`; the registered states' rcond₁ ≥ 1.33e-4 |
+| Affected packages | M03, M04, M05 (every consumer of `M03-sensitivity-v1`) |
+
+**Decision.** An unevaluable residual fails Q1 as `ROOT_NOT_CONVERGED`, with the status in the detail. A non-square reduced system is `UNSUPPORTED_RANK_STRUCTURE` at Q2, and the screen is not run. A `LinearSolveFailedError` from the forward or the transposed solve is the request refusal `LINEAR_SOLVE_FAILED` at the new Q2′, with ADR 0004's reason. Mode `both` records `{max_abs_difference, tolerance, within_tolerance}` and never refuses on it. Mode `adjoint` performs the forward solve, because Q3 needs `X̂`, and does not publish it. Mode `forward` performs no transposed solve. No state or factorization makes a request raise.
+
+**Rejected alternatives, and why.** Letting `LinearSolveFailedError` propagate: a sweep, fit or verifier would crash instead of recording a result, against ADR 0004 D3.3's "singularity is a typed result". Refusing on forward–adjoint inconsistency: that would be a hidden conditioning threshold near κ ≈ 1e6, below Q2's registered `τ_ill`. A distinct code for an unevaluable residual: no consumer acts on it differently.
+
+**Watch for.** A raise reaching a study from a state-dependent failure; `QUALIFIED` read as `within_tolerance`; a third factorization added for the adjoint.
+
+---
+
+## R-211 — M03 Amendment 1: an unidentifiable fit does not hold its undetermined parameters; their final iterate is arbitrary and only recorded; registered FIT-U values are those invariant along the null direction; `ESTIMATOR_NOT_CONVERGED` when `least_squares` status ≤ 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 |
+| Normative text | ADR 0031 D6 and its Amendment 1; specification §7.3, §7.4, §7.5, §14 D-3 |
+| Evidence | Measured: FIT-U's r went from 0.6 to 0.96906 under trf, where U-HEAT.Q's null projection is 0.99747, against the JSON's former 0.869 at r = θ₀. Generator claims C9[FIT-U] (r-invariance on r = 0.50 … 0.97; the projection's monotone range [0.85960, 0.99761]); A27, A28 as amended; A46 (planned) |
+| Affected packages | M03, M04 |
+
+**Decision.** The estimator moves every parameter. An undetermined parameter's final iterate is set by the optimizer's path, not by the data. It is recorded as `final_iterate`, checked only to lie in its bounds, and nothing may be derived from it. Reportable with values: determined estimates, singular values, null directions, χ², dof, and determined predictions. Undefined: the undetermined estimates and their SEs, the covariance, the correlation, and undetermined predictions' values. An undetermined prediction's null projection is reported, but registered only as its range over the box. A fit whose `least_squares` status is ≤ 0 is `FAILED(ESTIMATOR_NOT_CONVERGED)`, with no estimates.
+
+**Rejected alternatives, and why.** Holding undetermined parameters at their start (the generator's former implicit choice): it needs the identifiability decision before the fit and fails for a null direction that is not a coordinate axis. Projecting steps onto the identifiable subspace: the null space can turn with θ, and the registered fits do not need it. Registering the projection at θ₀: it depends on where the estimator stops.
+
+**Watch for.** An undetermined parameter's value quoted as an estimate; an expectation registered at an arbitrary final iterate; a FAILED fit caused by a wandering undetermined parameter (§14 D-3's revisit trigger).
+
+---
+
+## R-212 — M03 Amendment 1: an optimization report's status is its starts' highest classification, `KKT_POINT_VERIFIED` > `NOT_VERIFIED` > `INFEASIBLE_REPORTED` > `SOLVER_FAILED`; verification decides whatever Ipopt returned
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 |
+| Normative text | ADR 0032 D3, D6 and its Amendment 1; specification §8.5, §8.7 |
+| Evidence | Specification A47 (planned, WO-7a; synthetic per-start table, default gate), A32 as amended (V2 `not_evaluated` without an optimizer state), A33 (the pressure decision at 1e5 Pa, alias residual 1.0) |
+| Affected packages | M03 (WO-7a, WO-8), M05 |
+
+**Decision.** V1–V6 run on every start's decisions. A start is classified by the first rule that applies: V1–V5 pass → `KKT_POINT_VERIFIED`; Ipopt status 0 or 1 → `NOT_VERIFIED`; status 2 → `INFEASIBLE_REPORTED`; otherwise `SOLVER_FAILED`. The report takes the highest-precedence classification, and `reasons` lists every non-verified start. Without an optimizer's state V2 is `not_evaluated`, so the candidate is never `passed`. `SIMULATION_NOT_READY` covers four start conditions, distinguished by the start record's fields: the flowsheet does not build; the decisions are refused before a solve (including a pressure moved alone); the start does not converge or certify; Q3 cannot be evaluated. A pressure id is accepted only at its current value.
+
+**Rejected alternatives, and why.** `INFEASIBLE_REPORTED` before `NOT_VERIFIED`: a heuristic, local statement about the problem would mask a refuted claim about a point. Requiring Ipopt success for `KKT_POINT_VERIFIED`: the re-solved simulation is the truth (R-188). One readiness code per sub-condition: no consumer acts on them differently.
+
+**Watch for.** WO-8 computing its own status; a refuted start missing from `reasons` beside a verified candidate; a candidate verified without an optimizer state.
+
+---
+
+## R-213 — The schema count is a registered list (`schemas/registry.json`), not a number in a test
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 (item for WO-9; affects every package that adds a schema) |
+| Normative text | specification §10 (Amendment 1), A48; `docs/interfaces-frozen.md` §2 stays the authority for the list |
+| Evidence | `tests/test_t08_w4_package_data.py` asserts `32 + 3` and `32`; M01, M03 and M06 add schemas on separate branches |
+| Affected packages | M01, M03, M06, every later schema-adding package, T08's package-data tests |
+
+**Decision.** `schemas/registry.json` (not packaged, like `units.json`) is a sorted, duplicate-free JSON array of schema file names, one per line. The test asserts that it equals the directory's `*.schema.json`, the published `$id`s' file names and the packaged schema names. Every count is derived from it. Adding a schema adds one line, in the commit that cites its ADR.
+
+**Rejected alternatives, and why.** A literal count: two branches that each bump it merge cleanly to a wrong number. Parsing `docs/interfaces-frozen.md` or `schemas/README.md`: prose, and README's tables list 21 of the 32 files.
+
+**Watch for.** A literal schema count reintroduced; a registry line added without its ADR.
+
+---
+
+## R-214 — M03 Amendment 1: A12's tolerance is §4.7's τ_abs = 1e-11 (was 1e-13); the x² − p toy residual at (1e-20, 1e-10) is 1.5e-36 in binary64, not 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 (rule 6: the document is amended, the test is not bent) |
+| Normative text | specification §5, A12, §13 C6 |
+| Evidence | Measured (WO-2, deterministic): Ŝ error 2.13e-14 against 1e-13 (4.7×, inside the amend-first window), X error 6.2e-15. A priori estimate `n u ρ κ₁ ‖C‖₁ ‖A⁻¹‖₁` = 4.4e-12 with κ₁ = 90 (claim C6). `fl(fl(x·x) − p)` = 1.504632769052528e-36; exact at the binary64 inputs 1.277e-36 (C6) |
+| Affected packages | M03 |
+
+**Decision.** A12 judges X and Ŝ within 1e-11. That is 2.3× above the a priori estimate, 470× above the measured floor, and 10¹¹ below the O(1) missing-transpose error. The generator computes the toy residuals at the binary64 inputs instead of writing `"0.0"`.
+
+**Rejected alternatives, and why.** Keeping 1e-13: it sat below the a priori estimate, so a different but equally backward-stable LU could fail it. A relative form `τ_rel |Ŝ*|`: looser than needed, and τ_abs already clears every floor.
+
+**Watch for.** A12 tightened again below the a priori estimate; a toy expectation written by hand rather than computed.
+
+---
+
+## R-215 — M03 Amendment 1: a sweep's only budget is a point count; M03 has no interrupt path; the model's construction is the only domain check
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 (confirming the build) |
+| Normative text | ADR 0031 D5 and its Amendment 1; specification §6 |
+| Evidence | A21 (the 445 K point `SPECIFICATION_REFUSED` by the flash), A23, A24 (`max_points = 4`) |
+| Affected packages | M03, M04 (sampling), M07 |
+
+**Decision.** `max_points` is the budget, and the rest are `NOT_RUN`. A `KeyboardInterrupt` propagates and yields no `SweepResult`; job-level cancellation, if sweeps become jobs, is ADR 0020's. Values are not pre-checked against any domain: the unit refuses them, and the point is a result. An ill-formed request raises before any point runs. That covers an unknown id, an empty list, a negative budget, and a pressure moved alone.
+
+**Rejected alternatives, and why.** A wall-time budget: the outcome would depend on the machine, against A23. A study-level domain pre-check: a second copy of the model's domain, free to drift. A partial result on interrupt: it could be read as complete.
+
+**Watch for.** A sweep that drops the points it did not run; a domain table copied into the study layer.
+
+---

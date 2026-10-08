@@ -1,6 +1,6 @@
 # ADR 0032 — M03: the general NLP bridge is a full-space PyNumero gray box over the parametric twin, solved by an audited cyipopt with Ipopt's limited-memory Hessian, and judged only on the re-solved, certified simulation
 
-**Status:** Proposed, 2026-10-08. Accepted when M03's evidence manifest is `tested` for A31–A41 of the specification (A35–A40 in the audited environment) and the design-lane review of WO-7 and WO-8 has closed its must-fix items. If the [A10] audit fails, D1–D4 stay Proposed, D5 and D6 are accepted on A31–A34 and A41, and A35–A40 are recorded `BLOCKED`.
+**Status:** Proposed, 2026-10-08; Amendment 1 the same day (below). Accepted when M03's evidence manifest is `tested` for A31–A41 and A47 of the specification (A35–A40 in the audited environment) and the design-lane review of WO-7 and WO-8 has closed its must-fix items. If the [A10] audit fails, D1–D4 stay Proposed, D5 and D6 are accepted on A31–A34 and A41, and A35–A40 are recorded `BLOCKED`.
 **Date:** 2026-10-08
 **Author:** design lane (`specifier`); brief `docs/briefs/M03-specification.md`.
 **Normative text:** `docs/derivations/M03-studies-spec.md` §8, §9, §10, §11 (A31–A41).
@@ -9,7 +9,7 @@
 **Reverses:** nothing. R-129 stands.
 **Affected requirements:** A06 (M03's bridge, tested separately from M05's), W24 (M03's part), D16 (the optimization closure), D04 and A10 (a new binary closure, audited before use), blueprint §10 ("a penalty is not … constraint satisfaction"; "local stationarity is not global optimality"), §6.3.
 **Affected packages:** M03 (builds it), M05 (must not claim trust-region guarantees from this bridge, plan L271), T08-style release gates (the extra's notices).
-**Register:** R-186 (D1), R-187 (D2), R-188 (D3), R-189 (D4), R-190 (D5), R-191 (D6).
+**Register:** R-186 (D1), R-187 (D2), R-188 (D3), R-189 (D4), R-190 (D5), R-191 (D6); Amendment 1: R-212 (D3, D6).
 
 ## Context
 
@@ -21,7 +21,7 @@ Blueprint [A06] names the default general NLP bridge: `CompiledProblem` wrapped 
 
 **D2. Hessian policy.** The exact Hessian stays `absent`. The adapter configures `hessian_approximation = limited-memory`, history 6, and records it; a request for an exact Hessian is refused `HESSIAN_UNAVAILABLE` before any solver call; no finite-difference, Gauss–Newton or zero Hessian is supplied. The report's `second_order` is `"not_assessed"`, or `"vacuous_at_vertex"` when the active set has as many members as there are decisions, LICQ holds and every multiplier is strictly positive. ADR 0003's trigger T5 does not fire.
 
-**D3. The candidate is the decision vector; the truth is the re-solved, certified simulation.** For every start: re-solve at the returned decisions with the production solver (V1, `VERIFIED` required); a gross-error comparison of Ipopt's state (V2); bounds and inequalities evaluated on the re-solved state (V3); regimes and margins unchanged and ≥ `τ_regime` (V4); a reduced-space KKT check built from M03's adjoint sensitivities at the re-solved state, independent of Ipopt's multipliers and measures (V5). Statuses `KKT_POINT_VERIFIED`, `NOT_VERIFIED`, `INFEASIBLE_REPORTED`, `SOLVER_FAILED`, `UNSUPPORTED`; Ipopt's return status is recorded and never sufficient. Three registered starts give `distinct_local_solutions`; `claims.global_optimality` is always `false`.
+**D3. The candidate is the decision vector; the truth is the re-solved, certified simulation.** For every start: re-solve at the returned decisions with the production solver (V1, `VERIFIED` required); a gross-error comparison of Ipopt's state (V2); bounds and inequalities evaluated on the re-solved state (V3); regimes and margins unchanged and ≥ `τ_regime` (V4); a reduced-space KKT check built from M03's adjoint sensitivities at the re-solved state, independent of Ipopt's multipliers and measures (V5). Statuses `KKT_POINT_VERIFIED`, `NOT_VERIFIED`, `INFEASIBLE_REPORTED`, `SOLVER_FAILED`, `UNSUPPORTED`; Ipopt's return status is recorded and never sufficient. Each start is classified (V1–V5 pass → `KKT_POINT_VERIFIED` whatever Ipopt returned; else Ipopt status 0 or 1 → `NOT_VERIFIED`; else status 2 → `INFEASIBLE_REPORTED`; else `SOLVER_FAILED`), and the report's status is the highest of its starts' in the order `KKT_POINT_VERIFIED` > `NOT_VERIFIED` > `INFEASIBLE_REPORTED` > `SOLVER_FAILED` (Amendment 1). Without an optimizer's state V2 is `not_evaluated`, so no candidate is verified without one. Three registered starts give `distinct_local_solutions`; `claims.global_optimality` is always `false`.
 
 **D4. True domain restrictions, never penalties.** Decisions carry their declared box; temperatures and pressures the property provider's declared domain; molar flows a lower bound of 0 except a flow that is exactly zero at the verified start (pinned there by its regime's own rows; a bound would be degenerate and break LICQ), which V2 and V4 then police. `bound_relax_factor = 0`. Inequalities are constraints with bounds; no penalty term is ever added.
 
@@ -54,4 +54,13 @@ None. The extra and the schema are new.
 
 ## Acceptance evidence
 
-Specification assertions A31–A34 and A41 `tested` in the default environment; A35–A40 `tested` in the audited environment (or `BLOCKED` with the audit as evidence); the design-lane review of WO-7 and WO-8; Frank's answer to N1 recorded before the extra is declared.
+Specification assertions A31–A34, A41 and A47 `tested` in the default environment; A35–A40 `tested` in the audited environment (or `BLOCKED` with the audit as evidence); the design-lane review of WO-7 and WO-8; Frank's answer to N1 recorded before the extra is declared.
+
+## Amendment 1 (design lane, 2026-10-08)
+
+After the build of WO-7 and before WO-8 (specification §16). No decision is reversed.
+
+- **D3, status precedence.** When one start's claimed solution is refuted (`NOT_VERIFIED`) and another start reports infeasibility (`INFEASIBLE_REPORTED`), the report is `NOT_VERIFIED`. The refutation is the more specific evidence. Ipopt's infeasibility verdict is local and heuristic, and it must not mask "the optimizer's answer is wrong". Every non-verified start is listed in `reasons`, under every status. The classification and the aggregation are one pure function in default-gate code (A47), and WO-8's adapter computes no status of its own. Rejected: `INFEASIBLE_REPORTED` first. A heuristic statement about the problem would then hide a refuted claim about a point. Rejected: requiring Ipopt success for `KKT_POINT_VERIFIED`. D3 makes the re-solved simulation the truth, so Ipopt's status is neither sufficient nor necessary.
+- **D3, V2.** V2 compares an optimizer's state with the re-solved simulation; without such a state it is `not_evaluated`, and the candidate is not `passed`. A32 judges the reference optimum on V1 and V3–V5 accordingly.
+- **D6, readiness.** `SIMULATION_NOT_READY` covers every way a start fails to be a qualified root: the flowsheet does not build; the decision values are refused before a solve (including a pressure specification moved alone, which SYN-001's single pressure field cannot represent); the start does not converge or certify; or Q3 cannot be evaluated because the start's sensitivity is refused at request level. The start record's `outcome`, `certificate_status` and `alias_residuals` determine which. Rejected: one code per sub-condition, because no consumer acts on them differently.
+
