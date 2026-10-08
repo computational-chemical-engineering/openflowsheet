@@ -270,11 +270,14 @@ def validate(
     connections = list(document.get("connections") or [])
     specifications = list(document.get("specifications") or [])
 
+    from openflowsheet.models.revision_flowsheet import component_basis
+
     checks.append(
         _dimensions(
             list((document.get("component_set") or {}).get("components") or []),
             instances,
             specifications,
+            component_basis(document).molecular_weights,
         )
     )
     checks.append(
@@ -860,6 +863,7 @@ def _dimensions(
     components: Sequence[str],
     instances: Sequence[Mapping[str, Any]],
     specifications: Sequence[Mapping[str, Any]],
+    molecular_weights: Mapping[str, float],
 ) -> Check:
     """`DIM-01` (ADR 0016; T06 spec §8.5, reader R4; register R-077): `unit-conversion-v2`
     applied to every specification value and, through R6, to every instance parameter.
@@ -901,7 +905,7 @@ def _dimensions(
         # code. Its unit and kind are still judged.
         value = read_number(raw)
         try:
-            _, conversion = convert_specification(entry, value)
+            _, conversion = convert_specification(entry, value, molecular_weights)
         except RevisionError as error:
             refusals.append((name, _with_hint(error)))
             continue
@@ -912,7 +916,9 @@ def _dimensions(
         parameters = instance.get("parameters") or {}
         for parameter in sorted(str(name) for name in parameters):
             try:
-                _, conversion = read_parameter(unit, parameter, parameters[parameter])
+                _, conversion = read_parameter(
+                    unit, parameter, parameters[parameter], molecular_weights
+                )
             except RevisionError as error:
                 refusals.append((f"{unit}.{parameter}", _with_hint(error)))
                 continue

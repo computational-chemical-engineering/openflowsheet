@@ -29,6 +29,7 @@ from dataclasses import dataclass, field, replace
 from functools import partial
 from typing import Any, Final, Literal
 
+from openflowsheet.adapters import variants
 from openflowsheet.application.binding import Unbound, _column_owners
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import ProblemSpec
@@ -46,7 +47,9 @@ from openflowsheet.models import (
 )
 from openflowsheet.models.revision_flowsheet import (
     PHASE_CAPABILITIES,
+    SYN001_BASIS,
     TARGET_PATH_KINDS,
+    ComponentBasis,
     InputMapping,
     InstanceView,
     RevisionError,
@@ -96,6 +99,7 @@ __all__ = [
     "PinColumn",
     "RevisionBinding",
     "SpecificationChoice",
+    "basis_provider",
     "bind_revision_flowsheet",
     "instance_contract",
     "pin_encodings",
@@ -1190,10 +1194,28 @@ def _refusing_unit(flowsheet: RevisionFlowsheet) -> str | None:
     return None
 
 
+def _variant_backed_models() -> frozenset[str]:
+    """The model ids a registered variant names (M02 design note §6.1): their instances must pin
+    a registered variant by id and SHA-256. Read per call (≈ 2 ms, measured), not cached: no
+    process-global state (T07 G20)."""
+    return frozenset(variants.registered_variant(name).model_id for name in variants.registry())
+
+
+def basis_provider(basis: ComponentBasis) -> PropertyProvider:
+    """A fresh provider of `basis` (ADR 0034 D8): `pr-c1-v1` or SYN-001's."""
+    from openflowsheet.thermo.pr_c1 import PROVIDER_ID, PrC1Provider
+    from openflowsheet.thermo.syn001 import Syn001Provider
+
+    if basis.provider_id == PROVIDER_ID:
+        return PrC1Provider()
+    if basis != SYN001_BASIS:
+        raise ValueError(f"no provider for basis {basis.provider_id!r}")
+    return Syn001Provider()
+
+
 def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Unbound:
     """Build and bind a revision's flowsheet, or say which of R-022's kinds prevented it (§1.4)."""
     from openflowsheet.orchestrator.budget import PropertyMeter
-    from openflowsheet.thermo.syn001 import Syn001Provider
 
     # R-088 Q29 (T07 design note §12.5): a non-canonical number is refused typed at entry,
     # whether or not a reader reads its field; in a field nothing reads, a digest would
@@ -1209,12 +1231,22 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
         return Unbound(error.kind, error.code, hint=error.hint)
 
     for instance in view.instances:
+        # M02 design note §6.1 (ADR 0035 D1): a variant-backed model is pinned by variant id
+        # and SHA-256, resolved against the registry; a native model's `version` is unread.
+        if instance.model_id in _variant_backed_models() and (
+            variants.resolve(instance.model_id, instance.model_version, instance.model_artifact_ref)
+            is None
+        ):
+            return Unbound("unsupported", f"model_variant_mismatch({instance.unit_id})")
+    for instance in view.instances:
         if instance.model_id not in MODEL_BUILDERS:
             return Unbound("unsupported", f"model_unsupported({instance.model_id})")
 
     # Metered from construction: the declaration's property blocks capture the provider here,
-    # and a plan run counts their calls (T02; `PropertyMeter`).
-    provider = PropertyMeter(Syn001Provider())
+    # and a plan run counts their calls (T02; `PropertyMeter`). The provider is the one the
+    # revision's `record_source` selects (ADR 0034 D8): `pr-c1-v1` for the C1 records, SYN-001
+    # for every other value, exactly as before.
+    provider = PropertyMeter(basis_provider(view.basis))
     built: list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] = []
     for instance in view.instances:
         reader = _PinReader(instance.pins)
