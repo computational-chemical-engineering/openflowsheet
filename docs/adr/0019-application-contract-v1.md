@@ -159,7 +159,8 @@ transactions. Register entries R-091 onward are added on acceptance.
 
 ## Amendment 3 (Proposed 2026-10-06; approved by Frank 2026-10-08, M06) — what the diagnostic web shell needs: a structure index, element-level diffs, and the audit
 
-**Status:** **Approved by Frank 2026-10-08; Accepted on a green CI run (review F1/F2).** Proposed 2026-10-06
+**Status:** **Accepted, 2026-10-08**: approved by Frank 2026-10-08; accepted on the green CI runs 37839253802 and
+37839266960 (review F1/F2 closed; `evidence/M06/4719a1a…/manifest.json` tested). Proposed 2026-10-06
 by the design lane (`architect`), M06. Design note `docs/design/M06-web-shell.md` §4, where the detail and
 rationale are; register R-172, R-192. The design-lane review (`docs/reviews/M06-review.md` §5) found it built as
 designed; it moves to Accepted when the M06 manifest records G10 measured and a green CI run on both legs and

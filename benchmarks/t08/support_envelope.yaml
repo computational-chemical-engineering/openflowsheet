@@ -2519,20 +2519,6 @@ harvest:
   to: []
   note: evidence class; review pending
 - manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
-  item: checks[2]
-  check_id: M06.G3
-  sha256: 19bce1b93020cd0de7fee2fd8de7672cc10f8afb3e2d80717f7f66ef5c82f98a
-  class: P
-  to: []
-  note: pending the green CI run (review F2); recorded with --add-ci
-- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
-  item: checks[11]
-  check_id: M06.G12
-  sha256: fc6a8442e3718f1b3e941ef70900f9d612d8153a2883c756cd28aaf1754d8c48
-  class: P
-  to: []
-  note: pending the green CI run (review F2); recorded with --add-ci
-- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
   item: checks[15]
   check_id: M06.G16
   sha256: c5b5f14b6d0264373d3ee589d5304a0c701cf100d444ac19a2c1bafed44dfa8a

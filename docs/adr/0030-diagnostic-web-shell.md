@@ -1,7 +1,8 @@
 # ADR 0030 — The diagnostic web shell: a no-build browser client of the HTTP binding
 
-**Status:** **Proposed**, 2026-10-06 (design lane, `architect`, M06). Becomes Accepted with M06's tested evidence
-and the design-lane review (W26).
+**Status:** **Accepted, 2026-10-08**, with M06's tested evidence (`evidence/M06/4719a1a…/manifest.json`, CI runs
+37839253802 and 37839266960 green on both architectures) and the design-lane review (`docs/reviews/M06-review.md`,
+all must-fixes closed). Proposed 2026-10-06 (design lane, `architect`, M06).
 **Normative text:** `docs/design/M06-web-shell.md` §5 (architecture), §7 (security), §8 (testing).
 **Companion:** ADR 0019 Amendment 3 (the contract widening the shell needs).
 **Affected requirements:** blueprint §12 (web workbench), §14.4 (W26), §15 (repository layout; one installable
