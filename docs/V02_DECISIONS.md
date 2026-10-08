@@ -335,3 +335,21 @@ Grep, don't read whole. Newest at the bottom.
   manifest `evidence/M01/3c80392…/manifest.json` tested. M02 items: boundary.py hash in the reactor identity;
   `Boundary.__post_init__` validating n_tubes; §8.15 A45 restricted to A41's points; no A10 check at a three-root
   state or for pure-vapour n-derivatives. M01 reviewer asked to confirm closure.
+- M06 review fixes done on `wp/M06-build` (`f47a243`…`c5e6890`): F2a exact repr from the run's own bundle; F2b routes
+  from OPERATIONS; F2c module-level skips moved; F4 h() brands its trees (WeakSet); F5 registration §20 (ten → nine;
+  scorer rules W27-R59…R61; P2 pin `dd0b7f02…`); F3 Amendment 3 text + R-192 recorded; F8 as-built §14; F9;
+  `4719a1a` cherry-picks M01's `7e0eb67`. check.sh at C=`4719a1a` 7469 passed, Node 92/92, browser 31/31;
+  default-install reproduced locally (7203 passed, 0 failed). G10 measured locally on a clean wheel install: PASSED.
+  Manifest `evidence/M06/4719a1a…/manifest.json` status **implemented** (G3, G12 wait for CI; G16 n/a). Preflight
+  P1–P8 pass (P6/P7 by stub canaries). F5's ratification text wants `specifier` eyes before WO-17's first canary.
+  F14 → M07 list: register v0.2's served surface, retarget A49.
+- Pushed `wp/M06-build` @ `c5e6890`; CI push run 37839253802 and dispatch (rc_distribution) 37839266960. After green:
+  `scripts/m06_evidence_manifest.py --commit 4719a1a… --add-ci --ci-run <ids> --harvest`, commit, then ADR 0030 and
+  Amendment 3 → Accepted, merge.
+- M01 review closure (`9098f14`): all five findings closed; Amendment 2 ratified; ADR 0026 → **Accepted** (`ab57fcc`);
+  R-219 (session) records the declared no-walk-up exception. ADR 0027 stays Proposed (needs M02's adapter halves +
+  review, the A49 supersession record, the boundary.py identity choice).
+- **M01 merged into main** (`997c7da`). check.sh on main after the merge: 7142 passed, 31 skipped, PASSED.
+- M04 recon done (digest inline): no M04 code/schema/ADR/register entry; no approved experiment budget or registered
+  reference distribution; surrogate seam = M02's pinned (X̂, ΔT̂) (ADR 0034 D1). Brief `docs/briefs/M04-specification.md`
+  (`418a891` on `wp/M04`). `specifier` M04 launched on `wp/M04` (ADR 0036+, R-240+).
