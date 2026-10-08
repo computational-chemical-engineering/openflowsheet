@@ -316,8 +316,11 @@ def stub_operator(directory: Path) -> v17.Operator:
     return v17.Operator(address=STUB_ADDRESS, token_file=token)
 
 
-def harness_run(state: State, root: Path, campaign: str = "dry-run") -> Path:
-    """One harness stub: the production `harness.run` over the stand-in `claude`."""
+def harness_run(
+    state: State, root: Path, campaign: str = "dry-run", work: Path | None = None
+) -> Path:
+    """One harness stub: the production `harness.run` over the stand-in `claude`. The session's
+    work directory (`work`, default `root/work`) must lie outside the repository."""
     config = harness.agent_config(STUB_MODEL, claude=str(write_fake_claude(root / "bin", state)))
     if state.killed:
         config = replace(config, wall_cap_s=SHORT_WALL_S)
@@ -325,7 +328,7 @@ def harness_run(state: State, root: Path, campaign: str = "dry-run") -> Path:
         state.case,
         int(state.state_id.removeprefix("W27-S")),
         campaign,
-        work=root / "work",
+        work=root / "work" if work is None else work,
         config=config,
         coverage_path=registration.COVERAGE_JSON,
         pinned_claude_code_version=STUB_VERSION,
@@ -637,8 +640,11 @@ def scripted_run(state: State, root: Path, coverage: Mapping[str, Any]) -> Path:
 # =================================================================================================
 
 
-def run_states(root: Path, selected: Sequence[str] | None = None) -> dict[str, dict[str, Any]]:
-    """Build and score every state (or `selected`) under `root`: `{state: {run_dir, scores}}`."""
+def run_states(
+    root: Path, selected: Sequence[str] | None = None, work: Path | None = None
+) -> dict[str, dict[str, Any]]:
+    """Build and score every state (or `selected`) under `root`: `{state: {run_dir, scores}}`.
+    Harness sessions run in `work` (default `root/work`), outside the repository."""
     results: dict[str, dict[str, Any]] = {}
     coverage = candidate_coverage()
     (root / "candidate-coverage.json").parent.mkdir(parents=True, exist_ok=True)
@@ -652,7 +658,7 @@ def run_states(root: Path, selected: Sequence[str] | None = None) -> dict[str, d
             scores = w27_scorer.score(run_dir, coverage, cases_root=cases_root.parent)
             (run_dir / w27_scorer.SCORES_FILE).write_bytes(w27_scorer.dump(scores))
         else:
-            run_dir = harness_run(state, root)
+            run_dir = harness_run(state, root, work=work)
             scores = json.loads((run_dir / w27_scorer.SCORES_FILE).read_bytes())
         results[state.state_id] = {"run_dir": str(run_dir), "scores": scores}
     return results

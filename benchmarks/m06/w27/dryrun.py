@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -32,7 +33,8 @@ from benchmarks.m06.w27 import facts, harness, preflight, registration, sample, 
 CAMPAIGN = "dry-run"
 
 
-def run(out: Path) -> dict[str, Any]:
+def run(out: Path, work: Path) -> dict[str, Any]:
+    """The dry run into `out`; sessions run in `work`, outside the repository (V17 §14.1)."""
     if out.exists():
         raise harness.HarnessError(f"{out} exists; a dry run is never repeated in place")
     inputs = out / "inputs"
@@ -53,7 +55,7 @@ def run(out: Path) -> dict[str, Any]:
     canaries = harness.canaries(
         CAMPAIGN,
         drawn,
-        work=out / "work",
+        work=work / "canaries",
         config=config,
         coverage_path=coverage_path,
         runs_root=runs_root,
@@ -71,7 +73,7 @@ def run(out: Path) -> dict[str, Any]:
         claude_code_version=stubs.STUB_VERSION,
     )
     checks = preflight.run_all(context)
-    results = stubs.run_states(out / "states")
+    results = stubs.run_states(out / "states", work=work / "states")
     g15 = stubs.g15(results)
     records = {
         k: json.loads((Path(v["run_dir"]) / "run.json").read_bytes())
@@ -103,8 +105,10 @@ def run(out: Path) -> dict[str, Any]:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="W27 dry run (G14, G15), no model call")
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--work", type=Path, help="session work directory (default: a temp dir)")
     args = parser.parse_args(argv)
-    summary = run(args.out)
+    work = args.work or Path(tempfile.mkdtemp(prefix="w27-dry-run-"))
+    summary = run(args.out, work)
     print(f"commit {summary['commit']}")
     print(f"G14 {'PASS' if summary['g14']['passed'] else 'FAIL'}: {summary['coverage']}")
     for name, verdict in summary["preflight"].items():
