@@ -455,3 +455,4 @@ Grep, don't read whole. Newest at the bottom.
   t08_rc.py empty diff. A dry `t08_dist.py` at `0.2.0a1` passes T08.A43; clean pip install reports 0.2.0a1. Open: A42
   (plain `replay` gives NOT_RUN; test judges `replay --rerun`). WO-5…11 need M02.
 - `reviewer` alpha gate (WO-2 + the rest) launched.
+- M03 CI 37851614039 on `2ed3f22`: **all green** (check both architectures, default-install, identity). `M03.ci_both_runners` can be stated green; the manifest's `tested` status still waits for N1. (The main-merge onto wp/M03 will need its own CI run.)
