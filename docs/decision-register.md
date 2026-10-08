@@ -3708,3 +3708,95 @@ coverage would not reflect v0.2).
 implementer's.
 
 ---
+
+## R-176 — W27 coverage maps are registered tables over the pinned archive, re-evaluated mechanically against a registry snapshot
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | Design lane (`specifier`, M06 WO-15) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §4–§5; `benchmarks/m06/openidaes450/registration.json` |
+| Evidence | `case_facts.json` (450 cases); the generator's GC-* claims; dry illustration (0 candidates at 0.1.1 and in a hypothetical v0.2 snapshot) |
+| Affected packages | M06, M07 |
+
+**Decision.** Units by function plus required tokens (partial = unavailable, no compositions); components by CAS
+RN through an alias table (synthetic records never match); property routes by method equality plus component
+coverage and phase admission; the classifier reads case JSON only (never `sources/`) and calls what it cannot
+identify `unidentified`. OpenFlowsheet model ids and provider ids are mapped by the registration; an unmapped id
+in a snapshot **refuses** classification until an amendment maps it. The snapshot (models, routes, components,
+phases) is built from the build under test and its SHA-256 recorded beside `list_models`'.
+
+**Rejected alternative, and why.** Hard-coding today's registry (stale at M07). Inferring a model's function from
+its port signature (SYN-001's TP and PH flashes have identical ports). Name matching for components (SYN-001's
+`A` would match a case's `A`). Treating unmapped ids as unavailable (silently under-counts v0.2).
+
+**Watch for.** M01/M02 add provider and model ids: the M07 amendment comes before coverage is run.
+
+---
+
+## R-177 — A correct limitation is one matching reason; a CANDIDATE needs the same method, not a covering one
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | Design lane (`specifier`, M06 WO-15) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §10.3, §11.5, §5.6 |
+| Evidence | — (definitions) |
+| Affected packages | M06, M07 |
+
+**Decision.** A limitation answer on a non-`CANDIDATE` case is correct iff at least one item matches a recorded
+reason by kind and alias; contradicted and nothing-naming items are semantic errors, reported. A property route
+serves a case only with the case's own method class.
+
+**Rejected alternative, and why.** Requiring every item to match (punishes a true reason the classifier
+coarse-grained); requiring the top-precedence reason (an agent cannot see precedence); accepting any covering
+route (counts method substitution as coverage).
+
+**Watch for.** An agent that lists everything: its semantic error rate shows it.
+
+---
+
+## R-178 — W27 sample: frame without ARTIFACT_INCOMPLETE, candidates first, family largest remainder with a minimum of one for families of ≥ 4, SHA-256 ranks from a fixed seed; residual-check failures flagged, not excluded
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | Design lane (`specifier`, M06 WO-15) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §6, §7 |
+| Evidence | GC-SAMPLE-1/2; dry draw (§15.2) |
+| Affected packages | M07 |
+
+**Decision.** As §6; seed `W27-OpenIDAES-450-sample-v1`; > 45 candidates → 45 drawn from candidates by the same
+rule; 0 candidates → 45 from the frame. Every sampled candidate is confirmed by a scripted build, with the stream
+floor measured, before any run.
+
+**Rejected alternative, and why.** Excluding the 24 residual-check failures (shifts the family strata; the check
+matters only to candidate stream checks, which §11.3 then leaves unjudged). A library RNG (not byte-stable across
+versions).
+
+**Watch for.** A re-draw after a §7 amendment uses the same seed.
+
+---
+
+## R-179 — W27 gates the system, not the agent: system false verification, unauthorized and critical effects at 0; agent false verification reported with its bound
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | Design lane (`specifier`, M06 WO-15); gating of the agent term pending Frank (§17 Q4) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §11.6–§11.9, §12 |
+| Evidence | — (policy) |
+| Affected packages | M07 (G16) |
+
+**Decision.** One outcome per run by SYSTEM > INFRASTRUCTURE > AGENT_FALSE_VERIFICATION > the table; infrastructure
+failures count and are not re-run; system false verification is judged by integrity, replay and component-record
+checks (no registered roots); gated terms as W27-R56; agent false verification, correct-limitation and
+correct-build rates reported with one-sided 95 % Clopper–Pearson bounds.
+
+**Rejected alternative, and why.** Gating agent false verification at 0 as V17 does: V17 tests the system's own
+agent surface on registered tasks; W27 runs one external model on external cases, and its agent term describes
+that model. A headline score: blueprint §11.4.
+
+**Watch for.** If Frank answers Q4 "gated", W27-R56 changes before the first run, by amendment.
+
+---
