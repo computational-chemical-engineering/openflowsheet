@@ -456,3 +456,19 @@ Grep, don't read whole. Newest at the bottom.
   (plain `replay` gives NOT_RUN; test judges `replay --rerun`). WO-5…11 need M02.
 - `reviewer` alpha gate (WO-2 + the rest) launched.
 - M03 CI 37851614039 on `2ed3f22`: **all green** (check both architectures, default-install, identity). `M03.ci_both_runners` can be stated green; the manifest's `tested` status still waits for N1. (The main-merge onto wp/M03 will need its own CI run.)
+- `main` merged into `wp/M03` (`8d4069c` + `086bf2b` inventory skip of the `web` binding; check.sh 7904 passed, nlp gate
+  18 passed, G1–G6 PASS). Pushed. Register now holds every entry (224 headings on wp/M05). M03 manifest must be
+  regenerated (audit doc + inventory hashes moved) when N1 arrives.
+- `wp/M03` merged into `wp/M05` (`d124e2c`; register = M03's + M05's appended R-260…273).
+- M02 WO-7 done (`3c5df9f`: ComponentBasis by `record_source`; 50 corpus revisions bind byte-identically before/after,
+  sha `d7ff979b…`), R-252 tests (`11d3882`), n_tubes check (`a19fdfd`), R-251 `model_exception` → new variant
+  `pymrm-6089593-g2-nz800-s123-v2` (v1 superseded; G10 re-recorded bitwise equal, `6a46cdd`). check.sh 7902 passed.
+  **WO-8 blocked before code** (D30): F1 liquid light-gas flows are variables in frozen `assemble`; F2 `check_agreement`
+  expects SYN-001's split rows; F3 region admissibility is lnK/3-wide; F4 the verifier's revision path is SYN-001-only
+  (PR checks = certificate policy); F5 no solve-time phase screen for non-lifted vapour outlets; F6 PR enthalpy-flow
+  Jacobian undefined at exact dormancy. Plus D27 (API wording), D33 (env manifest variant id).
+- Alpha gate review (`c8fd848`): sound, no must-fix; should-fix F1 T4 acceptance-cell rule too loose; F2 Frank's answers
+  need the date rule per release; F3 `differences=None` skips the tree check; F4 six refusals untested; A42 `--rerun`
+  confirmed. All six build choices accepted.
+- Launched: fresh `architect` M02 WO-8 rulings (R-254+); `opus-engineer` M05 WO-2, WO-3 (`wp/M05`); `sonnet-implementer`
+  M05 WO-1 ipopt-executable audit (`wp/M05-audit`); `opus-engineer` alpha gate review fixes.
