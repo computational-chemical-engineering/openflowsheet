@@ -25,6 +25,8 @@ at `C`:
    changes only this manifest's files. G3's identity job and G12's two `check` legs and
    `default-install` are CI's; without a recorded green run those halves are unmet and G3 and
    G12 fail with that reason. A run that holds the `clean-install` jobs adds CI's G10 record.
+   With `--add-ci`, the runs are recorded in the manifest already written for `C`, from such a
+   descendant, without re-running anything.
 
 G16 is the W27 campaign, M07's (WO-17): `not_applicable` here. Status is `tested` only if every
 other check is `pass` and every command exited 0; otherwise `implemented`. `reviewed` is never
@@ -38,6 +40,8 @@ Usage:
     PYTHONPATH=src .venv/bin/python scripts/m06_evidence_manifest.py --commit C \\
         --gate-log GATE_STDOUT --default-install-log LOG --g10-dir DIR --g10-log LOG \\
         --dryrun DIR [--ci-run ID ...] [--harvest]
+    PYTHONPATH=src .venv/bin/python scripts/m06_evidence_manifest.py --commit C --add-ci \\
+        --ci-run ID [--ci-run ID ...] [--harvest]
 """
 
 from __future__ import annotations
@@ -288,11 +292,14 @@ def read_g10(directory: Path, log: Path) -> dict[str, Any]:
     tracked = _git("ls-files", "apps/web").split()
     lines = [line for line in served_text.splitlines() if line.startswith(("PASS ", "FAIL "))]
     served = served_text.strip().splitlines()[-1] if served_text.strip() else ""
+    served = re.sub(r"\(\S*/", "(.../", served)
     return {
         "built_from": commit[1] if commit else None,
         "wheel": wheel[1] if wheel else None,
         "wheel_sha256": wheel[2] if wheel else None,
-        "installed_package": imported[1] if imported else None,
+        "installed_package": re.sub(r"^.*/(site-packages/)", r".../\1", imported[1])
+        if imported
+        else None,
         "dist_record_sha256": _sha256(directory / "rc-dist" / "t08-a43-dist.json"),
         "dist_checks_failing": failing,
         # Every tracked `apps/web` file is runtime data of the wheel and the sdist with the
@@ -425,10 +432,8 @@ def check(gate: str, inputs: Inputs) -> dict[str, Any]:
         return entry
     ok, tests = _tests(gate, inputs)
     value: dict[str, Any] = {"tests": tests} if tests else {}
-    ci = inputs.ci
     if gate == "G3":
-        value["ci_identity_job"] = "green" if ci and ci["identity_green"] else "not recorded"
-        ok = ok and inputs.gate["passed"] and bool(ci and ci["identity_green"])
+        ok = ok and inputs.gate["passed"]
     if gate == "G7":
         value["node"] = inputs.node
         ok = (
@@ -440,8 +445,6 @@ def check(gate: str, inputs: Inputs) -> dict[str, Any]:
         )
     if gate == "G10":
         value["local"] = inputs.g10
-        if ci:
-            value["ci_clean_install_g10_steps"] = "green" if ci["g10_green"] else "not recorded"
         ok = (
             ok
             and inputs.g10["built_from"] == inputs.commit
@@ -455,16 +458,10 @@ def check(gate: str, inputs: Inputs) -> dict[str, Any]:
     if gate == "G12":
         value["gate"] = inputs.gate
         value["default_install_local"] = inputs.default_install
-        value["ci"] = (
-            {"checks_and_default_install": "green" if ci["checks_green"] else "not green"}
-            if ci
-            else "not recorded: the session dispatches CI and re-runs this generator with --ci-run"
-        )
         ok = (
             inputs.gate["passed"]
             and inputs.gate["node_step_ran"]
             and inputs.default_install["passed"]
-            and bool(ci and ci["checks_green"])
         )
     if gate == "G15":
         value["dry_run"] = inputs.dryrun
@@ -481,7 +478,43 @@ def check(gate: str, inputs: Inputs) -> dict[str, Any]:
         ok = ok and inputs.dryrun["g14_passed"]
     entry["result"] = "pass" if ok else "fail"
     entry["value"] = value
+    if gate in CI_GATES:
+        value["local_passed"] = ok
+        apply_ci(entry, inputs.ci)
     return entry
+
+
+#: The gates with a CI half: G3's identity job and G12's legs are required; G10's clean-install
+#: steps are recorded when a run holds them (the local wheel install is G10's measurement).
+CI_GATES = ("G3", "G10", "G12")
+NOT_RECORDED = "not recorded: the session dispatches CI and records it with --add-ci"
+
+
+def apply_ci(entry: dict[str, Any], ci: Mapping[str, Any] | None) -> None:
+    """Decide a CI gate from its local half (`value.local_passed`) and the CI runs."""
+    gate, value = entry["id"].removeprefix("M06."), entry["value"]
+    ok = bool(value["local_passed"])
+    if gate == "G3":
+        value["ci_identity_job"] = (
+            ("green" if ci["identity_green"] else "not green") if ci else NOT_RECORDED
+        )
+        ok = ok and bool(ci and ci["identity_green"])
+    elif gate == "G10":
+        if ci:
+            value["ci_clean_install_g10_steps"] = "green" if ci["g10_green"] else "not recorded"
+    elif gate == "G12":
+        value["ci"] = (
+            {
+                "checks_and_default_install": "green" if ci["checks_green"] else "not green",
+                "runs": ci["runs"],
+                "browser_module": "check (ubuntu-latest) sets OPENFLOWSHEET_REQUIRE_BROWSER=1, "
+                "so its success means the browser module ran and passed there",
+            }
+            if ci
+            else NOT_RECORDED
+        )
+        ok = ok and bool(ci and ci["checks_green"])
+    entry["result"] = "pass" if ok else "fail"
 
 
 def status(checks: Sequence[Mapping[str, Any]], commands: Sequence[Mapping[str, Any]]) -> str:
@@ -527,14 +560,11 @@ def harvest_entries(path: str, manifest: Mapping[str, Any]) -> list[dict[str, An
             kind, to, note = "E", ["U14"], "W27 campaign is M07's (G16)"
         elif (
             entry["id"] in ("M06.G3", "M06.G12")
-            and isinstance(entry["value"], Mapping)
-            and ("not recorded" in json.dumps(entry["value"]))
+            and entry["value"].get("local_passed") is True
+            and NOT_RECORDED in json.dumps(entry["value"])
         ):
-            kind, to, note = (
-                "P",
-                [],
-                "pending the green CI run (review F2); regenerated with --ci-run",
-            )
+            # Its local half passed; only the CI half is missing (review F2).
+            kind, to, note = "P", [], "pending the green CI run (review F2); recorded with --add-ci"
         else:
             raise SystemExit(f"{entry['id']} is {entry['result']}: not classified; fix it first")
         entries.append(
@@ -629,16 +659,79 @@ def build(
 def main() -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--commit", required=True)
-    parser.add_argument("--gate-log", required=True, type=Path)
-    parser.add_argument("--default-install-log", required=True, type=Path)
-    parser.add_argument("--g10-dir", required=True, type=Path)
-    parser.add_argument("--g10-log", required=True, type=Path)
-    parser.add_argument("--dryrun", required=True, type=Path)
+    parser.add_argument("--gate-log", type=Path)
+    parser.add_argument("--default-install-log", type=Path)
+    parser.add_argument("--g10-dir", type=Path)
+    parser.add_argument("--g10-log", type=Path)
+    parser.add_argument("--dryrun", type=Path)
     parser.add_argument("--ci-run", action="append", default=[])
+    parser.add_argument(
+        "--add-ci",
+        action="store_true",
+        help="record --ci-run runs in the existing manifest of --commit (G3, G10, G12)",
+    )
     parser.add_argument("--harvest", action="store_true")
     arguments = parser.parse_args()
-
     commit = arguments.commit
+    destination = ROOT / "evidence" / "M06" / commit / "manifest.json"
+    if arguments.add_ci:
+        manifest = add_ci(commit, destination, arguments.ci_run)
+    else:
+        local = ("gate_log", "default_install_log", "g10_dir", "g10_log", "dryrun")
+        missing = [f"--{n.replace('_', '-')}" for n in local if getattr(arguments, n) is None]
+        if missing:
+            parser.error(f"a full run needs {', '.join(missing)}")
+        manifest = generate(commit, destination, arguments)
+    return finish(destination, manifest, arguments.harvest)
+
+
+def own_paths(commit: str) -> list[str]:
+    """What may change between `C` and a CI run's head: this manifest's files."""
+    return [
+        f"evidence/M06/{commit}/",
+        "benchmarks/t08/support_envelope.yaml",
+        "docs/support-matrix.md",
+    ]
+
+
+def add_ci(commit: str, destination: Path, run_ids: Sequence[str]) -> dict[str, Any]:
+    """The manifest of `C` with CI's halves of G3, G10 and G12 decided from `run_ids`. Runs at
+    `C` or at a descendant of `C` that changes only `own_paths`; the local halves stand as
+    measured at `C` (nothing is re-run)."""
+    if not run_ids:
+        raise SystemExit("--add-ci needs at least one --ci-run")
+    head = _git("rev-parse", "HEAD").strip()
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", commit, head], cwd=ROOT, check=False
+    )
+    changed = _git("diff", "--name-only", commit, head).split() if ancestor.returncode == 0 else []
+    foreign = [p for p in changed if not any(p.startswith(o) for o in own_paths(commit))]
+    if ancestor.returncode != 0 or foreign:
+        raise SystemExit(f"HEAD must be C or C plus this manifest's files only: {foreign}")
+    manifest: dict[str, Any] = json.loads(destination.read_text(encoding="utf-8"))
+    ci = read_ci(run_ids, commit, own_paths(commit))
+    for entry in manifest["checks"]:
+        if entry["id"].removeprefix("M06.") in CI_GATES:
+            apply_ci(entry, ci)
+    manifest["commands"] = [
+        c for c in manifest["commands"] if not c["cmd"].startswith("gh run view")
+    ] + _ci_commands(ci)
+    manifest["status"] = status(manifest["checks"], manifest["commands"])
+    return manifest
+
+
+def _ci_commands(ci: Mapping[str, Any] | None) -> list[dict[str, Any]]:
+    return [
+        {
+            "cmd": f"gh run view {run['run']} --json databaseId,headSha,conclusion,event,jobs",
+            "cwd": ".",
+            "exit_code": 0,
+        }
+        for run in (ci or {}).get("runs", [])
+    ]
+
+
+def generate(commit: str, destination: Path, arguments: argparse.Namespace) -> dict[str, Any]:
     if _git("rev-parse", "HEAD").strip() != commit or _git(
         "status",
         "--porcelain",
@@ -656,7 +749,6 @@ def main() -> int:
     if set(SELECTORS) - set(gates):
         raise SystemExit(f"selectors without a gate: {set(SELECTORS) - set(gates)}")
 
-    destination = ROOT / "evidence" / "M06" / commit / "manifest.json"
     artifacts = destination.parent / "artifacts"
     artifacts.mkdir(parents=True, exist_ok=True)
 
@@ -665,11 +757,6 @@ def main() -> int:
     if set(tests.nodes) - set(assigned):
         raise SystemExit(f"M06 nodes under no gate: {sorted(set(tests.nodes) - set(assigned))}")
     node, node_command = run_node(artifacts)
-    own = [
-        f"evidence/M06/{commit}/",
-        "benchmarks/t08/support_envelope.yaml",
-        "docs/support-matrix.md",
-    ]
     inputs = Inputs(
         commit=commit,
         tests=tests,
@@ -678,7 +765,7 @@ def main() -> int:
         default_install=read_default_install(arguments.default_install_log),
         g10=read_g10(arguments.g10_dir, arguments.g10_log),
         dryrun=read_dryrun(arguments.dryrun),
-        ci=read_ci(arguments.ci_run, commit, own) if arguments.ci_run else None,
+        ci=read_ci(arguments.ci_run, commit, own_paths(commit)) if arguments.ci_run else None,
         gates=gates,
     )
     checks = [check(gate, inputs) for gate in gates]
@@ -716,23 +803,21 @@ def main() -> int:
         },
         test_command,
         node_command,
-        *[
-            {
-                "cmd": f"gh run view {run['run']} --json databaseId,headSha,conclusion,event,jobs",
-                "cwd": ".",
-                "exit_code": 0,
-            }
-            for run in (inputs.ci or {}).get("runs", [])
-        ],
+        *_ci_commands(inputs.ci),
     ]
-    manifest = build(commit, checks, commands)
+    return build(commit, checks, commands)
+
+
+def finish(destination: Path, manifest: Mapping[str, Any], harvest: bool) -> int:
+    """Write the manifest, report it, and with `harvest` classify it in the envelope."""
     destination.write_text(json.dumps(manifest, indent=1, ensure_ascii=False) + "\n", "utf-8")
+    checks = manifest["checks"]
     counts = {r: sum(c["result"] == r for c in checks) for r in RESULTS}
     print(f"wrote {destination.relative_to(ROOT)}: status {manifest['status']}")
     print(", ".join(f"{n} {r}" for r, n in counts.items()))
     for entry in checks:
         print(f"  {entry['id']}: {entry['result']}")
-    if arguments.harvest:
+    if harvest:
         path = destination.relative_to(ROOT).as_posix()
         write_harvest(harvest_entries(path, manifest))
         emitted = subprocess.run(
