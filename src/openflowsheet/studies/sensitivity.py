@@ -12,6 +12,10 @@ part of that sentence is a claim this module checks before it is allowed to publ
   by `S_F,K` and `S_x` — the matrix the [A08] screen judges; it must be `NO_RANK_LOSS_DETECTED`
   (Q2). Residual satisfaction is not regularity (blueprint §8.1): `x² − p` at `p = 0` has residual
   exactly 0 and is refused.
+- **"using"** that Jacobian means solving with it: the forward solve, and in modes `adjoint` and
+  `both` the transposed solve, must each pass ADR 0004 D3 (Q2′, Amendment 1). After a clean screen
+  a failed solve contradicts the screen, so it is the typed refusal `LINEAR_SOLVE_FAILED`, never an
+  exception escaping into a sweep, a fit or a verifier, and never a re-solve.
 - The eliminated alias rows are not part of the solve, but a direction `X_j` that leaves them is
   the derivative along a direction off the solution set, so each column is checked against them
   (Q3) and refused alone when it fails.
@@ -19,7 +23,8 @@ part of that sentence is a claim this module checks before it is allowed to publ
   §6.3), so the caller's phase-split margins are judged too (Q4, Q4′).
 
 Every failing qualification is listed in the specification's table order; a refused request or
-column carries `None`, never zeros and never the values the solve would have produced. Forward and
+column carries `None`, never zeros and never the values the solve would have produced, and nothing
+a state or a factorization can do raises — only a malformed request does. Forward and
 adjoint solves share **one** factorization (`KeptFactorization.solve_transposed`), and the
 regularity screen factorizes what it judges: two factorizations per request, whatever the number of
 parameters and outputs (A10).
@@ -31,6 +36,7 @@ requested (A17 holds them bitwise equal).
 
 from __future__ import annotations
 
+import dataclasses
 import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -55,7 +61,12 @@ from openflowsheet.compiled import (
     EvaluationResult,
     JacobianResult,
 )
-from openflowsheet.numerics.linear import LinearSolveRecord, solve_linear_kept
+from openflowsheet.numerics.linear import (
+    RESIDUAL_THRESHOLD,
+    LinearSolveFailedError,
+    LinearSolveRecord,
+    solve_linear_kept,
+)
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.verify.regularity import PAIRING_FIELDS, RegularityEvidence, screen
 
@@ -90,6 +101,7 @@ RefusalCode = Literal[
     "RANK_DEFICIENT",
     "ILL_CONDITIONED",
     "REGULARITY_INCONCLUSIVE",
+    "LINEAR_SOLVE_FAILED",
     "INCONSISTENT_WITH_ELIMINATED_ROWS",
     "PHASE_BOUNDARY",
     "REGIME_MARGIN_UNSUPPORTED",
@@ -97,7 +109,7 @@ RefusalCode = Literal[
 Regime = Literal["LIQUID", "VAPOR", "TWO_PHASE", "ZERO_FLOW"]
 
 #: Spec §3.5's table order, which is the order refusals are listed in.
-QUALIFICATIONS: Final = ("Q0", "Q0'", "Q0''", "Q1", "Q1'", "Q2", "Q3", "Q4", "Q4'")
+QUALIFICATIONS: Final = ("Q0", "Q0'", "Q0''", "Q1", "Q1'", "Q2", "Q2'", "Q3", "Q4", "Q4'")
 
 _SCREEN_REFUSAL: Final[Mapping[str, RefusalCode]] = {
     "RANK_DEFICIENT": "RANK_DEFICIENT",
@@ -406,6 +418,9 @@ def evaluate_sensitivity(
 
     The base problem's `residual` and `jacobian` are evaluated once each, and the twin's
     `residual`, `jacobian_x` and `jacobian_p` once each (A03). Nothing is solved by differencing.
+
+    Raises `ValueError` only for a malformed request (a state of the wrong length, an output
+    naming an unknown variable); every failure a state or a factorization causes is a refusal.
     """
     variable_ids = host.spec.variable_ids
     if x.shape != (len(variable_ids),):
@@ -442,6 +457,8 @@ class _Run:
         self.twin_factory = twin_factory
         self.outcomes: dict[str, QualificationOutcome] = {}
         self.refusals: list[Refusal] = []
+        #: The records of the solves that completed before a Q2′ failure left no `_Solved`.
+        self.completed_records: tuple[LinearSolveRecord, ...] = ()
         eliminated = set(host.eliminated_rows)
         self.kept_rows = tuple(name for name in host.spec.equation_ids if name not in eliminated)
         self.alias_rows = tuple(name for name in host.spec.equation_ids if name in eliminated)
@@ -503,10 +520,15 @@ class _Run:
 
         solved: _Solved | None = None
         if target is not None and parameter_jacobian is not None:
-            solved = _solve(self.host, target, jacobian, parameter_jacobian, self.request)
-            self._aliases(solved)
+            solved = self._solves(target, jacobian, parameter_jacobian)
+            if solved is not None:
+                self._aliases(solved)
+            else:
+                self._record("Q3", "not_evaluated", reason="forward_solve_failed")
         else:
-            self._record("Q3", "not_evaluated", reason=_not_evaluated_reason(target, twin))
+            reason = _not_evaluated_reason(target, twin)
+            self._record("Q2'", "not_evaluated", reason=reason)
+            self._record("Q3", "not_evaluated", reason=reason)
         self._regimes()
         return self._assemble(identity, scaled_residual, regularity, solved)
 
@@ -693,6 +715,72 @@ class _Run:
         )
         return None, evidence
 
+    def _solves(
+        self,
+        target: sp.csc_matrix,
+        jacobian: JacobianResult,
+        parameter_jacobian: TwinMatrix,
+    ) -> _Solved | None:
+        """Q2′ (Amendment 1): the solves on the qualified target pass ADR 0004 D3.
+
+        The forward solve always (Q3 is a statement about `X̂`, so mode `adjoint` needs it too);
+        the transposed solve, on the same factorization, in modes `adjoint` and `both` only.
+        Returns `None` when the forward solve failed: there is then no `X̂` for Q3 to judge."""
+        transposed: Outcome = (
+            "not_evaluated" if self.request.mode in ("adjoint", "both") else "not_applicable"
+        )
+        try:
+            solved, adjoint = _solve(self.host, target, jacobian, parameter_jacobian, self.request)
+        except LinearSolveFailedError as error:
+            self._solve_failed("forward", error, (), transposed=transposed)
+            return None
+        if transposed == "not_applicable":
+            self._solve_passed(solved.records, transposed=transposed)
+            return solved
+        try:
+            values, record = adjoint()
+        except LinearSolveFailedError as error:
+            self._solve_failed("transposed", error, solved.records, transposed="fail")
+            return solved
+        solved = dataclasses.replace(solved, adjoint=values, records=(*solved.records, record))
+        self._solve_passed(solved.records, transposed="pass")
+        return solved
+
+    def _solve_passed(self, records: tuple[LinearSolveRecord, ...], *, transposed: Outcome) -> None:
+        self._record(
+            "Q2'",
+            "pass",
+            solves={"forward": "pass", "transposed": transposed},
+            residual_normalized=[record.residual_normalized for record in records],
+            threshold=RESIDUAL_THRESHOLD,
+        )
+
+    def _solve_failed(
+        self,
+        solve: Literal["forward", "transposed"],
+        error: LinearSolveFailedError,
+        completed: tuple[LinearSolveRecord, ...],
+        *,
+        transposed: Outcome,
+    ) -> None:
+        """A failed solve after a clean screen: the request refusal `LINEAR_SOLVE_FAILED` with ADR
+        0004's reason; the records of the solves that did complete are kept (spec §3.5 Q2′)."""
+        self.completed_records = completed
+        self._record(
+            "Q2'",
+            "fail",
+            solves={"forward": "fail" if solve == "forward" else "pass", "transposed": transposed},
+            failed_solve=solve,
+            reason=error.reason,
+            residual_normalized=[record.residual_normalized for record in completed],
+            threshold=RESIDUAL_THRESHOLD,
+        )
+        self._refuse(
+            "Q2'",
+            "LINEAR_SOLVE_FAILED",
+            f"the {solve} linear solve failed ADR 0004 D3 ({error.reason}): {error}",
+        )
+
     def _aliases(self, solved: _Solved) -> None:
         """Q3, per column: `‖Ĵ_E X̂_j + F̂_p,E,j‖_∞ ≤ τ_alias`."""
         failing = []
@@ -794,16 +882,14 @@ class _Run:
 
         mode = self.request.mode
         forward_scaled = adjoint_scaled = None
-        records: tuple[LinearSolveRecord, ...] = ()
+        records = solved.records if solved is not None else self.completed_records
         consistency: dict[str, Any] | None = None
-        if solved is not None:
-            records = (solved.forward_record,)
         if solved is not None and status != "REFUSED":
+            # Every solve already ran during qualification (Q2′); nothing is solved here.
             if mode in ("forward", "both"):
                 forward_scaled = solved.forward
             if mode in ("adjoint", "both"):
-                adjoint_scaled, transposed_record = solved.adjoint()
-                records = (solved.forward_record, transposed_record)
+                adjoint_scaled = solved.adjoint
             if mode == "both" and forward_scaled is not None and adjoint_scaled is not None:
                 consistency = _consistency(forward_scaled, adjoint_scaled, qualified)
 
@@ -841,13 +927,19 @@ class _Run:
 
 @dataclass(frozen=True)
 class _Solved:
-    """The forward solve on the qualified target, and the adjoint it can still do on the same
-    factorization."""
+    """The solves on the qualified target, all on one factorization (spec §3.6)."""
 
+    #: `Ŝ_fwd = Ĉ X̂`; in mode `adjoint` a qualification input only, never published.
     forward: npt.NDArray[np.float64]
-    forward_record: LinearSolveRecord
     alias_residuals: npt.NDArray[np.float64]
-    adjoint: Callable[[], tuple[npt.NDArray[np.float64], LinearSolveRecord]]
+    #: Every completed solve's ADR 0004 record: the forward one, then the transposed one.
+    records: tuple[LinearSolveRecord, ...]
+    #: `Ŝ_adj`, in modes `adjoint` and `both` once the transposed solve has passed.
+    adjoint: npt.NDArray[np.float64] | None = None
+
+
+#: The transposed solve still to do on the forward solve's factorization.
+_Adjoint = Callable[[], tuple[npt.NDArray[np.float64], LinearSolveRecord]]
 
 
 def _solve(
@@ -856,8 +948,11 @@ def _solve(
     jacobian: JacobianResult,
     parameter_jacobian: TwinMatrix,
     request: SensitivityRequest,
-) -> _Solved:
-    """Spec §3.6: factorize `Ĵ` once; `Ĵ X̂ = −F̂_p` for every column at once; Q3 on `X̂`."""
+) -> tuple[_Solved, _Adjoint]:
+    """Spec §3.6: factorize `Ĵ` once; `Ĵ X̂ = −F̂_p` for every column at once; Q3 on `X̂`.
+
+    Returns the forward solve and the transposed solve on the same factorization; each raises
+    `LinearSolveFailedError` when its solve fails ADR 0004 D3."""
     kept = [name for name in host.spec.equation_ids if name not in set(host.eliminated_rows)]
     eliminated = [name for name in host.spec.equation_ids if name in set(host.eliminated_rows)]
     parameter_scales = np.array([parameter.scale for parameter in request.parameters])
@@ -882,7 +977,7 @@ def _solve(
         values = np.asarray((sp.csr_matrix(f_p_kept.T) @ lam).T, dtype=np.float64)
         return values, transposed
 
-    return _Solved(forward, record, np.asarray(alias, dtype=np.float64), adjoint)
+    return _Solved(forward, np.asarray(alias, dtype=np.float64), (record,)), adjoint
 
 
 def _entries(matrix: TwinMatrix | JacobianResult) -> tuple[list[int], list[int], list[float]]:

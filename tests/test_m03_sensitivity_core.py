@@ -1,4 +1,5 @@
-"""M03 WO-2: the sensitivity core (spec §3.3-§3.7, §5) — A03, A07 (toy), A10-A15, A18, A20, A04.
+"""M03 WO-2: the sensitivity core (spec §3.3-§3.7, §5) — A03, A07 (toy), A10-A15, A18, A20, A04;
+and WO-2a (Amendment 1): A43-A45.
 
 The toys test the qualification mapping and the transposition, not the [A08] screen (K04's tests
 own the screen; spec §15). `x² − p` at `p = 0` is the case the whole policy exists for: its
@@ -37,6 +38,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics import linear
 from openflowsheet.orchestrator import tear as tear_module
+from openflowsheet.studies import sensitivity as sensitivity_module
 from openflowsheet.studies.sensitivity import (
     POLICY_ID,
     CertificateEvidence,
@@ -46,6 +48,7 @@ from openflowsheet.studies.sensitivity import (
     SensitivityResult,
     evaluate_sensitivity,
 )
+from openflowsheet.studies.syn001 import syn001_sensitivity
 from openflowsheet.verify.certificate import verify
 
 #: Spec §4.7 and §5.
@@ -412,3 +415,125 @@ def test_a20_a_qualified_result_carries_the_base_evaluations_identity() -> None:
     )
     assert result.derivative_provenance == "implicit-exact"
     assert [column.parameter_id for column in result.parameters] == list(REGISTERED_PARAMETERS)
+
+
+# -- Amendment 1: A43, A44, A45 -------------------------------------------------------------------
+
+
+def test_a43_a_residual_that_cannot_be_evaluated_is_not_shown_to_be_a_root() -> None:
+    host, tear, x = syn001_host("P1")
+    moved = x.copy()
+    moved[tear.spec.variable_ids.index("S2.T")] = 500.0  # outside the provider's [280, 440] K
+    # The precondition, so that the case cannot pass vacuously: the base cannot evaluate there.
+    evaluation = tear.compiled.residual(moved, tear.context)
+    assert evaluation.status != "ok"
+    request = SensitivityRequest(
+        tear.context, registered_parameters(), registered_outputs(), "both"
+    )
+    result = evaluate_sensitivity(host, moved, request)
+    assert result.status == "REFUSED"
+    assert result.refusal_codes[0] == "ROOT_NOT_CONVERGED"
+    assert evaluation.status in result.refusals[0].detail
+    assert result.outcome("Q1").detail["residual_status"] == evaluation.status
+    for qualification in ("Q0'", "Q2", "Q2'", "Q3"):
+        assert result.outcome(qualification).outcome == "not_evaluated", qualification
+    assert result.regularity is None
+    assert result.linear_solves == ()
+    assert all_null(result)
+
+
+def failing_solve(*arguments: Any, **keywords: Any) -> Any:
+    """ADR 0004 D3.2's failure, as `solve_linear_kept` or `solve_transposed` would raise it."""
+    raise linear.LinearSolveFailedError("residual", "injected: normalized linear residual 1e-3")
+
+
+def p1_sensitivity(mode: str) -> SensitivityResult:
+    """P1 at the study level (certificate, regimes) with the five parameters and twelve outputs."""
+    sheet, result = solved("P1")
+    return syn001_sensitivity(
+        sheet,
+        result,
+        parameters=registered_parameters(),
+        outputs=registered_outputs(),
+        mode=mode,  # type: ignore[arg-type]
+        certificate=certificate_for("P1"),
+    )
+
+
+def test_a44_a_failed_forward_solve_after_a_clean_screen_is_a_typed_refusal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(sensitivity_module, "solve_linear_kept", failing_solve)
+    result = p1_sensitivity("both")
+    assert result.status == "REFUSED"
+    assert result.refusal_codes == ("LINEAR_SOLVE_FAILED",)
+    assert result.refusals[0].scope == "request"
+    assert "(residual)" in result.refusals[0].detail
+    solves = result.outcome("Q2'")
+    assert solves.outcome == "fail"
+    assert solves.detail["reason"] == "residual"
+    assert solves.detail["failed_solve"] == "forward"
+    assert solves.detail["solves"] == {"forward": "fail", "transposed": "not_evaluated"}
+    assert result.outcome("Q2").outcome == "pass"
+    assert result.regularity is not None
+    assert result.regularity.status == "NO_RANK_LOSS_DETECTED"
+    assert result.outcome("Q3").outcome == "not_evaluated"
+    assert all(column.alias_residual is None for column in result.parameters)
+    assert result.linear_solves == ()
+    assert result.consistency is None
+    assert all_null(result)
+
+
+def test_a44_a_failed_transposed_solve_refuses_mode_adjoint_after_q3_passed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(linear.KeptFactorization, "solve_transposed", failing_solve)
+    result = p1_sensitivity("adjoint")
+    assert result.status == "REFUSED"
+    assert result.refusal_codes == ("LINEAR_SOLVE_FAILED",)
+    solves = result.outcome("Q2'")
+    assert solves.outcome == "fail"
+    assert solves.detail["reason"] == "residual"
+    assert solves.detail["solves"] == {"forward": "pass", "transposed": "fail"}
+    # Q3 needs only the forward solve, which passed and whose record is kept.
+    assert result.outcome("Q3").outcome == "pass"
+    assert [record.dimension for record in result.linear_solves] == [47]
+    assert result.forward is None
+    assert all_null(result)
+
+
+def test_a44_mode_forward_performs_no_transposed_solve(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[int] = []
+
+    def counted(*arguments: Any, **keywords: Any) -> Any:
+        calls.append(1)
+        return failing_solve(*arguments, **keywords)
+
+    monkeypatch.setattr(linear.KeptFactorization, "solve_transposed", counted)
+    result = p1_sensitivity("forward")
+    assert result.status == "QUALIFIED"
+    assert calls == []
+    assert result.outcome("Q2'").detail["solves"] == {
+        "forward": "pass",
+        "transposed": "not_applicable",
+    }
+    assert len(result.linear_solves) == 1
+
+
+def test_a45_a_non_square_reduced_system_is_refused_without_a_screen() -> None:
+    host, context = toy_host(linear_spec(1.0))
+    eliminated = dataclasses.replace(host, eliminated_rows=("R2",))
+    request = SensitivityRequest(
+        context, (toy_parameter("p1"), toy_parameter("p2")), C_OUTPUT, "both"
+    )
+    result = evaluate_sensitivity(eliminated, np.array([1.0, 0.0]), request)
+    assert result.status == "REFUSED"
+    assert result.refusal_codes == ("UNSUPPORTED_RANK_STRUCTURE",)
+    screen_outcome = result.outcome("Q2")
+    assert screen_outcome.outcome == "fail"
+    assert screen_outcome.detail["reduced_shape"] == "1x2"
+    assert result.regularity is None
+    assert result.outcome("Q2'").outcome == "not_evaluated"
+    assert result.outcome("Q3").outcome == "not_evaluated"
+    assert result.linear_solves == ()
+    assert all_null(result)
