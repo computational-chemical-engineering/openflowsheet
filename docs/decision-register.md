@@ -4133,3 +4133,209 @@ review's F4. A user-supplied path for installed packages is not built; Q-N4 says
 
 **Watch for.** If Q-N4 is declined, an installed package without the records raises rather than refusing with a
 typed result. Revisit with Frank's answer.
+
+---
+
+## R-240 — The reactor surrogate is a native extent-fixed unit solved on `revision_eo`, not the experiment inside M02's coupling
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | `docs/adr/0037-m04-surrogate-unit-promotion-and-rollback.md` D1, D7; `docs/derivations/M04-spec.md` §8.1, §8.5 |
+| Evidence | ADR 0034 D4 (the coupled route refuses every sensitivity) |
+| Affected packages | M04, M05, M07 |
+
+**Decision.** `c1.reactor_surrogate` is M02's embedded unit with (X̂, ΔT̂) replaced by the frozen quadratic of the
+scaled inlet; analytic derivatives; `explicit_reduced`; solved without experiments.
+
+**Rejected alternative, and why.** The surrogate as the coupling's experiment: its analytic derivative would be thrown
+away by ADR 0034 D4, and an outer fixed point around an analytic map is what Newton does directly. A surrogate as a
+model variant: variants are shipped run-descriptions and would route it to the coupled path.
+
+**Watch for.** M05 may still choose to warm-start the coupling from the surrogate; that is M05's, not a reversal.
+
+---
+
+## R-241 — Surrogate inputs: seven affine-scaled inlet coordinates; outputs: M02's (X, ΔT); inadmissible predictions refused, never projected
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | `docs/derivations/M04-spec.md` §3.1–§3.4; ADR 0036 |
+| Evidence | M01 spec §8.3 (homogeneity in (n_in, N_tubes)); `benchmarks/m04/reference_values.json` → `jacobian_states` |
+| Affected packages | M04, M05 |
+
+**Decision.** u = (T, P, H₂/N₂, y_NH₃, y_Ar, y_CH₄, per-tube F), z = (u − c)/h on the reference box; full quadratic
+(36 terms) fitted by Householder QR; outputs X = ξ/n_N₂,in and ΔT; admissible set X ∈ [0, min(0.95, r/3)],
+ΔT ∈ [−50, 250] K, refused outside.
+
+**Rejected alternative, and why.** Five inputs (lumped inerts, fixed P): a direction of the inlet silently held fixed.
+ξ in mol/s as output: scales with the flow. Clipping or smooth saturation: a fabricated output or an unmeasured
+representation change.
+
+**Watch for.** A test that checks only X ∈ [0, 0.95] misses the H₂ limit r/3 (M04.A15).
+
+---
+
+## R-242 — The reference distribution is uniform on a registered box inside the data domain (`m04-c1-box7-v1`)
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D1; `docs/derivations/M04-spec.md` §4 |
+| Evidence | M01.A41 (start strategy accepted at 653.15–693.15 K); generator claims (every draw in hard and data domain) |
+| Affected packages | M04, M05, M07 |
+
+**Decision.** P_ref = uniform on T 653.15–693.15 K, P 9–10 MPa, H₂/N₂ 2.5–3.0, y_NH₃ 0.02–0.04, y_Ar 0.01–0.03,
+y_CH₄ 0.01–0.04, F 0.0057–0.0086 mol/s.
+
+**Rejected alternative, and why.** The data domain or the hard domain: a quadratic over 90–200 K of an
+equilibrium-limited reactor, and pressures the loop does not visit.
+
+**Watch for.** Needs a fact (spec N4): if the real loop's reactor inlet or M07's T_in range lies outside the box,
+register a new box by amendment **before** iteration 1 runs.
+
+---
+
+## R-243 — One joint conformal score whose scales are the declared width limits
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D4; `docs/derivations/M04-spec.md` §6.1–§6.2 |
+| Evidence | DX-01 (M01 spec §10.1): w_X/X_nom = 1.58 % in ξ's 1.44–1.94 %, w_ΔT = 1.5 K in T_out's 1.24–1.67 K (generator claims) |
+| Affected packages | M04, M05, M07 |
+
+**Decision.** s = max(|e_X|/0.0025, |e_ΔT|/1.5 K); k = ⌈(n+1)·19/20⌉ in integers; q̂ the k-th smallest; width
+criterion q̂ ≤ 1.
+
+**Rejected alternative, and why.** Two scalar scores (two marginal claims); training-residual scales (decoupled from
+the width limits); the uncorrected index ⌈0.95 n⌉ (wrong: 113 instead of 114 at n = 118).
+
+**Watch for.** The scales are frozen with the predictor: changing them after calibration is tuning on the test set.
+
+---
+
+## R-244 — A failed draw scores +∞ and stays in n or m; a draw without a deterministic result makes the plan incomplete
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D3; `docs/derivations/M04-spec.md` §5.3 |
+| Evidence | the Beta(k, n+1−k) law of the band's coverage with an atom at +∞ (spec §5.3) |
+| Affected packages | M04, every later surrogate |
+
+**Decision.** Deterministic failures: excluded from the fit, +∞ in calibration and test. No result (transient beyond
+retries, cancelled): INSUFFICIENT_EVIDENCE `plan_incomplete` until resumed.
+
+**Rejected alternative, and why.** Dropping failures and conditioning the claim on success: a narrowed denominator
+with a hidden conditioning event.
+
+**Watch for.** More than n − k (= 4 at n = 118) calibration failures leave no finite band.
+
+---
+
+## R-245 — The iteration-1 plan: 144 / 118 / 300 draws and 5 gradient centres, registered by seed before the parent runs
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04; the budget is Frank's (spec N1, default 632 cold experiments) |
+| Normative text | ADR 0036 D2; `docs/derivations/M04-spec.md` §5 |
+| Evidence | `benchmarks/m04/plan-it1.json`; `reference_values.json` → `finite_sample.registered_plan` (power 0.9035) |
+| Affected packages | M04 |
+
+**Decision.** Seeds 20261008011–014, SplitMix64, U = (w >> 11)·2⁻⁵³, binary64 order registered; 632 cold experiments
+(≈ 95 min); refused before running when the cache misses exceed the approved budget; never truncated or stopped
+early.
+
+**Rejected alternative, and why.** (149, 400): power 0.901 for 131 more experiments. (99, 300): power 0.819.
+
+**Watch for.** The plan file is an expectation, not package data: production derives the plan from the constants.
+
+---
+
+## R-246 — Promotion: an integer coverage test against 0.90, q̂ ≤ 1, admissibility and a 25 % gradient limit; IE > NP > PROMOTABLE
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D5–D6; `docs/derivations/M04-spec.md` §6.4, §7 |
+| Evidence | `reference_values.json` → `verdict_vectors` V01–V16, `finite_sample` (h_min(300) = 279, m_min = 29) |
+| Affected packages | M04, M05, M07 |
+
+**Decision.** Pass the coverage test iff H ≥ h_min(m) (Clopper–Pearson one-sided 95 % ≥ 0.90). Every reason is
+recorded; the verdict follows the precedence.
+
+**Rejected alternative, and why.** Observed coverage ≥ 0.95 (blueprint L419); a floating-point beta quantile as the
+decision (the integer rule is exact and equivalent).
+
+**Watch for.** A correct pipeline fails the coverage test with probability ≈ 0.10 at the registered plan; that is not
+evidence of a broken guarantee.
+
+---
+
+## R-247 — The empirical domain is the reference box, flagged with its scaled excess; the hard domain is the parent's
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D7; `docs/derivations/M04-spec.md` §3.6 |
+| Evidence | generator claim: fewer than 30 of 300 registered test draws lie in the training draws' convex hull |
+| Affected packages | M04, M05 |
+
+**Decision.** Outside the box: limitation `surrogate_outside_reference_domain` with max(0, ‖z‖∞ − 1), no coverage
+claim. Outside the parent's hard domain or the admissible output set: refused.
+
+**Rejected alternative, and why.** Convex hull (blueprint §9.2; disagrees with P_ref's support), nearest-neighbour
+density, leverage (they measure local sampling or noise amplification, not a deterministic parent's model-form bias).
+
+**Watch for.** A distance criterion is not an accuracy claim at a point (spec §7.4).
+
+---
+
+## R-248 — Surrogate promotion and rollback are ADR 0035's checked commit plus the facet `surrogate_evidence` and one `derivatives` exception
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | `docs/adr/0037-m04-surrogate-unit-promotion-and-rollback.md` D2–D4; `docs/derivations/M04-spec.md` §8.2–§8.4 |
+| Evidence | ADR 0035 D2's `derivatives` facet would refuse surrogate → parent |
+| Affected packages | M02 (replacement module, schema enum), M04, M05 |
+
+**Decision.** A new surrogate needs a PROMOTABLE verdict re-derived by the manifest checker and the replaced model as
+its parent (or a surrogate of the same parent); replacing a surrogate is allowed only by its parent (rollback), and
+then the parent's `unavailable` outlet derivative is not a loss.
+
+**Rejected alternative, and why.** A separate promotion operation (bypassable through `commit_change`); trusting the
+manifest's verdict field (a hand-edited manifest could be promoted).
+
+**Watch for.** Void if ADR 0035 is withdrawn.
+
+---
+
+## R-249 — A further iteration redraws calibration and test, trains on all earlier reference draws, and is automatic only after a coverage-only failure
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D2; `docs/derivations/M04-spec.md` §5.5 |
+| Evidence | — |
+| Affected packages | M04, M05 |
+
+**Decision.** Iteration i ≥ 2: fresh seeds, fresh calibration (118), test (300) and gradient (5); training = every
+`ok` P_ref record of earlier iterations; at most three; family-wise false-pass bound 0.05 × iterations tested.
+
+**Rejected alternative, and why.** Re-testing the same predictor on a new test set: repeated selection on test sets.
+Automatic iteration after a width failure: more data cannot fix a model-form limitation; that needs an amendment.
+
+**Watch for.** Each iteration's plan file is committed before it runs.

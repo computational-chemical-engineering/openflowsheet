@@ -793,6 +793,23 @@ def plan_claims(plan: Mapping[str, Any]) -> dict[str, Any]:
         "box corners in both domains",
     )
     claim(HI[4] + HI[5] <= HARD["inert_max"], "max inerts within hard domain")
+    # The convex hull of the training draws covers little of the support of P_ref (spec §3.6):
+    # count the test draws inside it by LP feasibility (HiGHS). Only the bound is asserted, so a
+    # borderline point flipping with the LP solver's version cannot change the emitted bytes.
+    import numpy as np
+    from scipy.optimize import linprog
+
+    def zf(row: Mapping[str, Any]) -> list[float]:
+        return [float(x) for x in z_of_u(row["u"])]
+
+    tz = np.array([zf(r) for r in plan["training"]])
+    a_eq = np.vstack([tz.T, np.ones(len(tz))])
+    inside = 0
+    for row in plan["test"]:
+        b_eq = np.concatenate([np.array(zf(row)), [1.0]])
+        res = linprog(np.zeros(len(tz)), A_eq=a_eq, b_eq=b_eq, bounds=(0, None), method="highs")
+        inside += int(res.status == 0)
+    claim(inside < 30, "fewer than 30 of the 300 test draws lie in the training draws' convex hull")
     return {"min_inf_distance_training_to_heldout": s(dmin, 6), "experiments": n_exp}
 
 
@@ -970,6 +987,18 @@ def synthetic_claims(
     claim("width_limit_exceeded" not in smooth["result"]["not_promotable"], "smooth: width passes")
     claim(mpf(smooth["result"]["q_hat"]) > mpf("1e-3"), "smooth: q_hat does not vanish (rule 3)")
     claim("width_limit_exceeded" in rough["result"]["not_promotable"], "rough: width fails")
+    for o in ("X", "dT"):
+        beta = [mpf(x) for x in smooth["coefficients"][o]]
+        top = max(abs(b) for b in beta)
+        gap = min(abs(a - b) for i, a in enumerate(beta) for b in beta[i + 1 :])
+        claim(
+            gap / top > mpf("1e-8"),
+            f"smooth {o}: coefficients pairwise distinct beyond 1e-8 of max",
+        )
+        claim(
+            min(abs(b) for b in beta) / top > mpf("1e-8"),
+            f"smooth {o}: no coefficient below 1e-8 of max",
+        )
     claim(
         all(mpf(x) == 0 or abs(mpf(x)) < mpf("1e-30") for x in standin["coefficients"]["X"][1:])
         and mpf(standin["coefficients"]["X"][0]) == mpf("0.25"),
@@ -1157,6 +1186,8 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
     claim(
         cp_lower(279, 300) >= C_MIN > cp_lower(278, 300), "CP bound brackets 0.90 at h = 279 / 278"
     )
+    nearest = min(abs(mpf(r["lower_bound"]) - C_MIN) for r in cp_table)
+    claim(nearest > mpf("7e-4"), "no registered CP bound lies within 7e-4 of 0.90")
     vectors = verdict_vectors()
     smooth = run_case(
         plan, SYNTHETIC["m04-synthetic-smooth-v1"], COUNTS, "m04-synthetic-smooth-v1/full"
@@ -1174,6 +1205,9 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
         fmargin > mpf("1e-6"),
         "no registered request lies within 1e-6 of the synthetic failure boundary",
     )
+    smooth_prefix["band"] = {
+        o: s(mpf(smooth_prefix["result"]["q_hat"]) * mpf(W[o]), 12) for o in ("X", "dT")
+    }
     standin = {
         key: standin[key]
         for key in ("case", "parent", "counts", "failed_indices", "training_ok", "coefficients")
@@ -1244,6 +1278,7 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
         "plan_summary": plan_summary,
         "finite_sample": {
             "k": {str(n): k_index(n) for n in (18, 19, 39, 99, 118, 119, 149, 199)},
+            "h_min": {str(m): h_min(m) for m in (29, 60, 300)},
             "n_min": n_min(),
             "m_min": m_min(),
             "registered_plan": pw,

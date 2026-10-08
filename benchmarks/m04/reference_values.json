@@ -207,6 +207,11 @@
    "149": 143,
    "199": 190
   },
+  "h_min": {
+   "29": 29,
+   "60": 59,
+   "300": 279
+  },
   "n_min": 19,
   "m_min": 29,
   "registered_plan": {
@@ -3032,6 +3037,10 @@
     "order_statistic_gap": "0.00140479",
     "test_to_q_hat": "0.00322358",
     "q_hat_to_width_limit": "0.975084"
+   },
+   "band": {
+    "X": "6.22901631722e-5",
+    "dT": "0.0373740979033"
    }
   },
   "rough_prefix": {
@@ -3449,7 +3458,7 @@
   }
  },
  "claims": {
-  "count": 5262,
+  "count": 5268,
   "distinct_statements": [
    "CP bound brackets 0.90 at h = 279 / 278",
    "J1: chain-rule Jacobian equals mpmath differentiation (err 1.75e-51)",
@@ -3491,6 +3500,7 @@
    "calibration[i] lies in the reference box",
    "calibration[i].u[i] is the affine sample to within 2 ulp",
    "every held-out draw is >= 0.05 (inf-norm, scaled) from every training draw",
+   "fewer than 30 of the 300 test draws lie in the training draws' convex hull",
    "gradient[i] stencil inside the box",
    "h_min is the exact Clopper-Pearson decision boundary at m = 300",
    "h_min(300) = 279",
@@ -3504,9 +3514,14 @@
    "max inerts within hard domain",
    "n = 118: corrected k = 114, uncorrected 113",
    "n_min = 19 at alpha = 1/20",
+   "no registered CP bound lies within 7e-4 of 0.90",
    "no registered request lies within 1e-6 of the synthetic failure boundary",
    "rough: width fails",
    "smooth (full plan): PROMOTABLE, the end-to-end promotion case",
+   "smooth X: coefficients pairwise distinct beyond 1e-8 of max",
+   "smooth X: no coefficient below 1e-8 of max",
+   "smooth dT: coefficients pairwise distinct beyond 1e-8 of max",
+   "smooth dT: no coefficient below 1e-8 of max",
    "smooth: q_hat does not vanish (rule 3)",
    "smooth: the failure region removes at least one draw from every split",
    "smooth: width passes",
