@@ -65,8 +65,8 @@ export function fmt(x, mode = "short") {
 // §5.5's status tones. Green (ok) only for evidence that passed. A certificate check records its
 // `result` in lower case (`solution-certificate.schema.json`: pass, fail, unsupported,
 // not_applicable): `pass` is ok and `fail` bad, as PASS and FAIL; `unsupported` and
-// `not_applicable` record that no check was evaluated, the none tone of NOT_RUN. (M06 build
-// lane, pending design-lane confirmation: §5.5's list names only the upper-case labels.)
+// `not_applicable` record that no check was evaluated, the none tone of NOT_RUN. (§5.5's list
+// names only the upper-case labels; this mapping is confirmed (M06 review).)
 const TONES = {
   ok: { glyph: "✓", labels: ["VERIFIED", "PASS", "MATCH", "pass"] },
   info: {

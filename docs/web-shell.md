@@ -174,7 +174,8 @@ The local, single-user model of design note §7:
 
 ## As built: departures from the design note
 
-Recorded for the design-lane review (WO-13). None widens what the shell may call or show. Each is within
+Recorded for the design-lane review (WO-13), which ruled on each (`docs/reviews/M06-review.md` §3; the
+design note's §14 lists the rulings). None widens what the shell may call or show. Each is within
 the 17 operations, the static scan and the CSP.
 
 1. **Reads beyond §6's table.** All are calls to operations already among the 17:
@@ -199,8 +200,8 @@ the 17 operations, the static scan and the CSP.
    - `fail` → bad (✕), as `FAIL`;
    - `unsupported` and `not_applicable` → none (–), the tone of `NOT_RUN`: no check was evaluated.
 
-   This is a build-session decision pending the design-lane review. §5.5 lists only the upper-case labels,
-   and would show every unlisted label as bad.
+   §5.5 lists only the upper-case labels, and would show every unlisted label as bad. The design-lane review
+   confirmed this mapping (`docs/reviews/M06-review.md` §3); the design note's §14 records it.
 5. **A wrong method on `/ui` answers 422 `invalid_request`, not 405.** This is the binding's one error
    shape, the `ApiError` document the API gives for a method it does not route. It carries the shell's
    headers (`tests/test_m06_wo4_serving.py`).

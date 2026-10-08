@@ -843,3 +843,29 @@ Each item says whether it needs a **fact** or **Frank's preference**, and the de
   comparison with CRAFTS' reported results, no numerical agreement with IDAES, no empirical validation.
 - `blocked_by` (Ask 3), operation rights in `get_project` (Ask 5), per-event timing (Q3) and run-level
   reference comparison (Q4) are not provided.
+
+## 14. As built (M06 review, 2026-10-08)
+
+The build departed from this note in the places below. Each was recorded by the build lane
+(`docs/web-shell.md`, "As built") and ruled on by the design-lane review (`docs/reviews/M06-review.md` §3).
+Where a ruling says "accepted", the as-built behaviour is the normative one from here on. None widens what the
+shell may call or show: every departure stays within the 17 operations, the static scan and the CSP.
+
+| Section | As built | Ruling |
+| --- | --- | --- |
+| §2 item 2 | The served MCP tool-list digest moves, `171dd768…` → `6c4375b4…`, by A3.2's `elements` alone (R-192). | Recorded in ADR 0019 Amendment 3 and `docs/interfaces-frozen.md` (review F3b). |
+| §4.1 / A3.1 | On the routed branch, a declaration that cannot be traced gives the UNSUPPORTED report with `rows`/`columns: null`. | Accepted; A3.1 amended to "null on either branch when no declaration was traced" (F3a). |
+| §4.1 (R3) | The binder records specification pins per column, read only by `specification_rows`. | Accepted: R3's sanctioned route; G3 50/50 and the cross-check against the legacy binder on 8 revisions. |
+| §5.1 | `h.js`'s HTML attribute whitelist gains `autocomplete`, for §7's `autocomplete=off` on the token field. | Accepted. |
+| §5.1 | `js/frame.js` holds the frame's pure views (header, error panel, not-found, the fatal marker's text), so they run under Node. | Accepted. |
+| §5.1 | `h` brands the trees it makes and refuses any other, in a child or on mount; `create` re-checks tag and attributes (review F4). | The builder now enforces ADR 0030 D1 itself, not only its callers. |
+| §5.2 | A wrong method under `/ui` answers 422 `invalid_request` (the binding's `ApiError` mapping, with the shell headers), not 405. | Accepted. |
+| §5.4 | The expander's literal-marker guard is a same-pointer check (a view of `at` that is a marker of `at` is literal content), not `deepEqual`. | Accepted: stronger, and saves a request. |
+| §5.5 | Certificate check results in lower case: `pass` → ok, `fail` → bad, `unsupported` and `not_applicable` → none. | Confirmed (`apps/web/js/text.js`). |
+| §6 | Screens read more than the table lists, all within the 17 (the per-screen list is in `docs/web-shell.md`, "As built", item 1). | Accepted: necessary joins; G1 holds the 17 statically and on the live request log. |
+| §8 | Three bundle kinds (`check_policy`, `solve_path`, `structural_report`) have no published record schema; they are held to being JSON objects, and a fourth kind without a schema fails. | Accepted (`NO_RECORD_SCHEMA` is a closed set). |
+| §8 | JSON trees open only the top level. | Accepted. |
+| §8 A6 | The browser harness drives Chromium over the DevTools protocol on a pipe (same binary and flags, a readiness wait, real clicks, console/CSP/dialog collection), not `--dump-dom`. | Accepted as A6; R1's Playwright fallback is moot. |
+| §9 | W27's code lives in `benchmarks/m06/w27/`, apart from the committed records. | Accepted. |
+| §9 | The scorer's three choices where the registration was silent. | Ratified as W27-R59…R61 by the registration's Amendment 1 (its §20; review F5). |
+
