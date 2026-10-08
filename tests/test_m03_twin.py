@@ -101,6 +101,44 @@ def test_a01_the_twin_is_the_base_problem_bit_for_bit(state: str, subset: str) -
     assert_bitwise_twin(tear, x, chosen)
 
 
+#: M03 review F5: a twin built at one registered state, evaluated at another, and the pinned
+#: inputs that move between the two.
+MOVED: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    ("P1", "P2", ("U-SPLIT.split_fraction",)),
+    ("P1", "P3", ("U-SPLIT.split_fraction", "U-FLASH.T_spec")),
+    ("P1", "P2", REGISTERED_PARAMETERS + PRESSURE_PARAMETERS),
+)
+
+
+@pytest.mark.parametrize(("built", "moved", "subset"), MOVED, ids=lambda value: str(value)[:24])
+def test_the_twin_built_at_one_state_is_the_base_problem_compiled_at_another(
+    built: str, moved: str, subset: tuple[str, ...]
+) -> None:
+    """M03 review F5: Q0′ proves the twin equal to the base only at the base's own pinned values,
+    and the NLP evaluates the twin at d ≠ d₀ on every iteration. A row builder that reached a
+    pinned value by closure rather than through `parameters` would pass Q0′ with a twin that does
+    not move with p. So: the twin compiled at `built`, evaluated at `moved`'s root and pinned
+    values, equals `moved`'s own base problem bit for bit (tolerance 0, signed zeros
+    normalized)."""
+    tear, _ = at_state(built)
+    target, x = at_state(moved)
+    p = pinned_values(target, subset)
+    assert p != pinned_values(tear, subset)
+    twin = compile_parametric_twin(tear.spec, subset)
+    base_residual = target.compiled.residual(x, target.context)
+    base_jacobian = target.compiled.jacobian(x, target.context)
+    assert base_residual.status == "ok" and base_residual.values is not None
+    assert base_jacobian.status == "ok"
+    assert np.array_equal(normalized(twin.residual(x, p)), normalized(base_residual.values))
+    assert np.array_equal(
+        normalized(dense(twin.jacobian_x(x, p))), normalized(dense(base_jacobian))
+    )
+    assert twin.constants_sha256(p) == target.compiled.metadata.constants_sha256
+    # The comparison sees p: a twin frozen at `built`'s values (the closure defect) differs here.
+    frozen = normalized(twin.residual(x, pinned_values(tear, subset)))
+    assert not np.array_equal(frozen, normalized(base_residual.values))
+
+
 def test_a01_the_twin_and_its_parameter_columns_come_from_one_graph() -> None:
     """`jacobian_p`'s rows are the base's rows and its columns the requested ids, in order."""
     tear, x = at_state("P1")
