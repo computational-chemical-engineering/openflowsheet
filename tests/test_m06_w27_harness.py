@@ -239,7 +239,8 @@ def test_p1_reads_the_recorded_approval(tmp_path: Path) -> None:
         "# log\n- **W27 Tier 1 approved** (Frank, date): 45 runs.\n", encoding="utf-8"
     )
     assert preflight.p1(campaign)["passed"]
-    assert not preflight.p1(replace(campaign, approval_file=preflight.APPROVAL_FILE))["passed"]
+    # Frank's approval is recorded in the repository's file (main, merged for M06 review F7).
+    assert preflight.p1(replace(campaign, approval_file=preflight.APPROVAL_FILE))["passed"]
 
 
 def test_p2_pins_and_checks_pass_at_registration(tmp_path: Path) -> None:
