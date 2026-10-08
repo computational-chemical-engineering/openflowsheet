@@ -207,8 +207,12 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
         for key in claimed
         if claimed[key] != facts[key]
     ]
-    if len(claimed["operations"]) != 20 or len(claimed["models"]) != 13:
-        problems.append("A20: spec §9 registers 20 operations and 13 models")
+    # ADR 0019 Amendment 3 (M06, approved by Frank on 2026-10-08) adds `list_audit` to spec §9's
+    # 20 operations; pending the session's record of that move on the v0.1 envelope.
+    if len(claimed["operations"]) != 21 or len(claimed["models"]) != 13:
+        problems.append(
+            "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models"
+        )
     return problems
 
 

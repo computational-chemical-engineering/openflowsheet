@@ -198,7 +198,7 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty operations of
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of
       `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
     operations:
       artifact_bytes: [python, cli, http]
@@ -211,6 +211,7 @@ axes:
       get_project: [python, cli, http, mcp]
       get_revision: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
+      list_audit: [python, cli, http]
       list_job_events: [python, cli, http, mcp]
       list_jobs: [python, cli, http, mcp]
       list_models: [python, cli, http, mcp]
@@ -284,7 +285,7 @@ unsupported:
       `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, detail
       `task_unsupported(optimization)`, before any analysis; no v0.1 path returns
       `READY_FOR_OPTIMIZATION` (the value stays in the frozen enum, unused); the other studies
-      have no operation among the twenty of `OPERATIONS`; no optimality claim anywhere.
+      have no operation among the twenty-one of `OPERATIONS`; no optimality claim anywhere.
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported
       - tests/test_t08_w2_unsupported.py::test_u05_a_change_for_optimization_is_refused_audited
