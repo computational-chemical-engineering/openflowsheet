@@ -234,3 +234,18 @@ Grep, don't read whole. Newest at the bottom.
   R-195…R-200; interfaces-frozen §3 note. New Q-N5 for Frank: structured `synthetic` field in ModelManifest? default
   no. M02 architect told.
 - `opus-engineer` M01 WO-8 (amendment build items, A49–A52) + WO-7 manifest launched on `wp/M01`.
+- M02 design done on `wp/M02` (`e5af61d`, `98eaaff`, `a7230ff` merge of wp/M01 @ `4142471`, `a507c99`):
+  `docs/design/M02-pymrm-adapter.md`, ADR 0033 (external execution + experiment records), 0034 (external models in a
+  flowsheet solve: compiled unit pins X̂, ΔT̂; outer Broyden one experiment/iteration; route `revision_coupled`,
+  outcome `COUPLING_NOT_CONVERGED`), 0035 (replacement/promotion: 8 §5.3 facets at commit,
+  `model_replacement_incompatible`), R-220…R-233. Fresh child per attempt; 3-layer kill chain (adapter poll, worker
+  process group + `killpg` amending ADR 0020 D3, child stdin/deadline); profile `external-subprocess-v1` not a
+  sandbox; exact process-level cache serving deterministic outcomes only; one retry, none after timeout; 120 s
+  timeout; coupled runs R3, replayed from record. New schemas experiment, model-variant, model-replacement. G1–G9 in
+  the default gate, G10–G12 opt-in with the reactor. Conflict noted: M01.A49's "stand-in not bound" clause is
+  replaced by M02 G8(e) (R-199 left binding to M02). Loop case `C1-LOOP-M02-v1` uses estimated numbers (escalate,
+  don't adjust).
+- M02 "Needs Frank" (defaults proceed): N1 accept "not a sandbox" locally; N2 no CI job for the reactor env; N3
+  `v0.2-alpha-gate-v1` = v0.1 gate unchanged + W21, W22 met, no other claims; N4 ship the stand-in, listed synthetic;
+  N5 defer PR LIQUID regime + pure-NH₃ flash; N6 no reactor warm start.
+- `opus-engineer` M02 WO-1…4 (+ optional 5, 6) launched on `wp/M02`. M02 merges only after M01 `tested`.

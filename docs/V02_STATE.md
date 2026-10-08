@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | spec + Amendment 1 (`1e8aecd`, R-195…200); WO-1…6 done; WO-8 + WO-7 manifest running; then `reviewer` → merge → M02 build |
-| M02 | Build | M01 | W21 | design started 2026-10-08 (`architect` on `wp/M02`, ADR 0033+, R-220+); build after M01 `tested` |
+| M02 | Build | M01 | W21 | design done (`a507c99`: note, ADR 0033–0035, R-220…233, WO-1…13, G1–G12); WO-1…4 running; merges after M01 `tested` |
 | M03 | Design | T08 | W24 (part) | spec + Amendment 1 (`8154baa`, R-210…215); WO-0…7 done; WO-2a/5a/7a/9 running; WO-8 waits for N1; then WO-10 manifest, `reviewer` |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
@@ -57,6 +57,11 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 - **W27 (defaults set):** Q3 up to 3 re-canaries within the approved budget; Q4 agent false verification reported
   with its bound, not gated; Q5 run the approved 45 even if 0 cases are candidates (alternative: 15 runs).
 
+- **M02 (defaults set):** N1 accept "not a sandbox" (`external-subprocess-v1`) for local v0.2 use; N2 no CI job for
+  the reactor environment; N3 `v0.2-alpha-gate-v1` = v0.1 gate unchanged + W21, W22 met, no other claims (for
+  `0.2.0a1`); N4 ship the synthetic stand-in, listed synthetic; N5 defer the PR LIQUID regime and pure-NH₃ flash;
+  N6 no reactor warm start.
+
 Otherwise nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
 `origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
 F5 education mode deferred.
@@ -70,7 +75,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | `opus-engineer` | M01 WO-8 (A49–A52) + WO-7 manifest | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `opus-engineer` | M06 WO-11, 12 security/browser gates, docs | `wp/M06-finish` (`m06-finish`) |
 | `opus-engineer` | M03 WO-2a, 5a, 7a, 9 (post-amendment, schemas) | `wp/M03` (`m03`) |
-| `architect` | M02 design note (brief `docs/briefs/M02-design.md`) | `wp/M02` (`m02`) |
+| `opus-engineer` | M02 WO-1…4 (+5, 6) schemas, variants, kill chain, runner | `wp/M02` (`m02`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
