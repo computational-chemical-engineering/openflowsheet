@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | design + rulings R-234…237; WO-1…6 done (`2e63211`; **G10 all pass, A47 bitwise**); WO-7, 8 running; open design questions D14/D18/D22/D23/D24 (architect, next slot); then WO-9…13 |
+| M02 | Build | M01 | W21 | design + rulings R-234…237; WO-1…6 done (`2e63211`; **G10 all pass, A47 bitwise**); WO-7, 8 running; rulings round 2 R-250…252 (`e4d1b82`); then WO-9…13 |
 | M03 | Design | T08 | W24 (part) | all WOs + review fixes done (`71b3c37`); manifest `implemented` (`evidence/M03/fd16834…`) → `tested` on N1 + CI both runners (run 37846362678); merge waits for N1 |
 | M04 | Design | M02 | W23 | spec done (`6e48ffb`: A01–A35, ADR 0036/0037, R-240…249, plan it.1 = 632 experiments ≈ 95 min); WO-1, 2, 3, 10 running; WO-4…9 need M02's WO-4/6/7/11; WO-11 real run needs M02 WO-5 |
 | M05 | Design | M03, M04 | W24 | not started |
@@ -81,7 +81,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 merge main + WO-7, 8 (+9): C1 binding, PR units | `wp/M02` (`m02`) |
-| `architect` | M02 rulings D14, D18, D22–D24 | `wp/M02` (`m02`) |
+| `reviewer` | M03 closure check | `wp/M03` (`m03`) |
 | `opus-engineer` | M04 WO-1, 2, 3, 10 (sampler, conformal, fit) | `wp/M04` (`m04`) |
 | `specifier` | v0.2 alpha release gate (`0.2.0a1`) | `wp/V02-alpha-gate` (`alpha-gate`) |
 

@@ -398,3 +398,11 @@ Grep, don't read whole. Newest at the bottom.
   unsupported until stated). Design lane to register the test-module comparison rules (review F1). Pushed
   `wp/M03` → CI 37846362678.
 - M02 architect asked for rulings D14, D18, D22 (timing), D23, D24 (R-250+; R-238/239 alpha gate, R-240…249 M04).
+- M02 rulings round 2 (`e4d1b82`, note §14.1 B6–B10, R-250…R-252): D22 the KPI certificate stays (part of ADR 0027 D6
+  acceptance; produces A47's bits; no cheaper equal claim); timeout 120 s until G11 re-registers it; 25–45 s per
+  evaluation, 2–6 min per coupled solve; G12 runs with wall_time_s 3600; **M04 lever: distinct-key experiments may run
+  concurrently (≤ physical cores) without changing any bit**. D24 confirmed (null iff no experiment artifact). D23
+  confirmed. D18 changed: new deterministic stage `model_exception` (cached, not retried, coupling backtracks). D14
+  confirmed. Note: `e4d1b82` also concluded the WO-7/8 engineer's in-progress merge of main (parents `2e63211`,
+  `e100b68`); engineer told to commit on top.
+- M03 reviewer asked to confirm closure and rule on registering the test-module comparison rules.
