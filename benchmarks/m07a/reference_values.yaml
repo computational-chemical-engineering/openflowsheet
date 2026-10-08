@@ -1,0 +1,281 @@
+# Reference values of docs/derivations/V02-alpha-release-spec.md (package M07a,
+# ADR 0028), emitted by docs/derivations/scripts/v02a_reference.py. Do not edit by hand.
+# Re-derive with --check; regenerate with --emit.
+assertions:
+  M07a.A00: generator
+  M07a.A01: test
+  M07a.A02: test
+  M07a.A03: test
+  M07a.A04: test
+  M07a.A05: test
+  M07a.A06: test
+  M07a.A07: test
+  M07a.A08: test
+  M07a.A09: test
+  M07a.A10: test
+  M07a.A11: test
+  M07a.A12: test
+  M07a.A13: generator, test
+  M07a.A20: test
+  M07a.A21: test
+  M07a.A22: test
+  M07a.A23: test
+  M07a.A24: test
+  M07a.A30: ci
+  M07a.A31: ci
+  M07a.A32: ci
+  M07a.A33: ci
+  M07a.A34: ci
+  M07a.A35: ci
+  M07a.A36: ci
+  M07a.A37: test, ci
+  M07a.A38: ci
+  M07a.A39: ci
+  M07a.A40: record
+  M07a.A41: record
+  M07a.A42: test
+  M07a.A43: test
+  M07a.A44: test
+  M07a.A50: test
+  M07a.A51: test
+  M07a.A52: test
+  M07a.A53: test
+  M07a.A60: verdict
+  M07a.A61: verdict
+  M07a.A62: verdict
+  M07a.A63: verdict
+  M07a.A64: test
+registered:
+  adr_0021_accepted_fail_clauses:
+    V14 (b): '2026-09-29'
+  lock_sha256: ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4
+  m01_manifest:
+    checks: 53
+    path: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+    status: tested
+    w22:
+      M01.A38:
+        band: 0.02
+        band_over_measured: '1.58'
+        measured: 0.012675
+      M01.A39:
+        band: 0.05
+        band_over_measured: '1.25'
+        measured: 0.040096
+      M01.A40:
+        band: 0.05
+        band_over_measured: '1.18'
+        measured: 0.042371
+  m06_manifest:
+    path: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+    status: tested
+  surface:
+    r133_carried: 171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14
+    r192_served: 6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9
+    v17_c2_served: 6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d
+  t08_manifest:
+    checks: 85
+    failing:
+    - T08.A70
+    - T08.B23
+    limitations: 58
+    path: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+    status: tested
+  t08_rc_steps:
+    '1': T08.A41
+    '10': T08.A34
+    '11': T08.A50
+    '2': T08.A42
+    '3': T08.A43
+    '4': T08.A44, A19
+    '5': T08.A45
+    '6': T08.A46
+    '7': T08.A47, A48
+    '8': T08.A49
+    '9': T08.A30
+  tree_check:
+    trees:
+    - src
+    - schemas
+    - benchmarks
+    - requirements.lock
+    - pyproject.toml
+    - MANIFEST.in
+    - README.md
+    - LICENSE
+    - NOTICE
+    version_files:
+    - src/openflowsheet/__init__.py
+    - pyproject.toml
+  v0_1_gate_files_sha256:
+    base: 3eca9c8
+    scripts/v0_1_gate.py: 4810fdcf9c6dc29b86b0447f4f737c7fdabf3e281755f57fef2d4d69bb4543d5
+    tests/test_t08_w4_v0_1_gate.py: 4caa7d865ae86133897edc2c0ca9235a2107b9dcc3e2ede0ab91a18ef186de55
+  v0_1_line: 0\.1\.(?:0|[1-9]\d*)(?![0-9.])
+targets:
+  changelog_tag_pattern: v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:(?:a|b|rc)[1-9]\d*)?
+  claimed:
+  - V11
+  - V12
+  - V13
+  - V14
+  - V15
+  - V16
+  - V17
+  - V18
+  - V19
+  - V20
+  - W21
+  - W22
+  covers: 0\.2\.0a[1-9][0-9]*
+  d3_clauses:
+  - V14 (b)
+  envelope_id: v0.2-alpha-envelope-1
+  frank_items:
+  - N3
+  - V17 carry
+  - M02 N1
+  gate_set: v0.2-alpha-gate-v1
+  moved_records:
+  - MR-1
+  - MR-2
+  - MR-3
+  - MR-4
+  - MR-5
+  - MR-6
+  - MR-7
+  - MR-8
+  - MR-9
+  - MR-10
+  - MR-11
+  - MR-12
+  not_claimed:
+  - W23
+  - W24
+  - W25
+  - W26
+  - W27
+  paths:
+    adr: docs/adr/0028-v0.2-pre-release-policy.md
+    gate_script: scripts/v0_2_gate.py
+    manifest: evidence/M07a/<C_alpha>/manifest.json
+    rc_record: docs/v02-alpha-rc-record.md
+    rc_records: evidence/M07a/<C_alpha>/rc/
+    tree_record: release/rc-trees/<C_alpha>.json
+    verdict_document: docs/reviews/V02-alpha-verdicts.md
+  rc_steps:
+    '1': M07a.A30
+    '10': M07a.A39
+    '11': M07a.A40
+    '12': M07a.A41
+    '13': M07a.A12
+    '2': M07a.A31
+    '3': M07a.A32
+    '4': M07a.A33
+    '5': M07a.A34
+    '6': M07a.A35
+    '7': M07a.A36
+    '8': M07a.A37
+    '9': M07a.A38
+  rc_steps_required:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  required_adrs:
+  - '0022'
+  - '0026'
+  - '0027'
+  - 0028
+  - '0033'
+  - '0034'
+  - '0035'
+  workflow_version_pattern: ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)((a|b|rc)[1-9][0-9]*)?$
+truth_tables:
+  T1_coverage:
+    0.1.0rc1: false
+    0.1.1: false
+    0.2.0: false
+    0.2.0-a1: false
+    0.2.0.dev0: false
+    0.2.0A1: false
+    0.2.0a0: false
+    0.2.0a01: false
+    0.2.0a1: true
+    0.2.0a1.dev1: false
+    0.2.0a1.post1: false
+    0.2.0a10: true
+    0.2.0a2: true
+    0.2.0alpha1: false
+    0.2.0b1: false
+    0.2.0rc1: false
+    0.2.1a1: false
+    1.2.0a1: false
+  T2_workflow_version:
+    0.1.1: true
+    '0.2': false
+    0.2.0: true
+    0.2.0-a1: false
+    0.2.0.dev0: false
+    0.2.0A1: false
+    0.2.0a0: false
+    0.2.0a01: false
+    0.2.0a1: true
+    0.2.0a1.post1: false
+    0.2.0alpha1: false
+    0.2.0b2: true
+    0.2.0rc0: false
+    0.2.0rc1: true
+    01.2.0: false
+    1.0.0: true
+    10.20.30rc12: true
+    v0.2.0a1: false
+  T3_changelog_section:
+  - - v0.2.0a1
+    - '## v0.2.0a1'
+    - true
+  - - v0.2.0a1
+    - '## v0.2.0a1 — release candidate C = 0123abc'
+    - true
+  - - v0.2.0a1
+    - '## v0.2.0a10 — later'
+    - false
+  - - v0.2.0a1
+    - '## v0.2.0 — unreleased'
+    - false
+  - - v0.2.0
+    - '## v0.2.0a1 — release candidate C = 0123abc'
+    - false
+  - - v0.2.0
+    - '## v0.2.0 — unreleased'
+    - true
+  - - v0.1.1
+    - '## v0.1.1 — the single public repository'
+    - true
+  T3_malformed_tags:
+  - v0.2.0a0
+  - v0.2.0.dev0
+  - 0.2.0a1
+  T4_frank_cell:
+    '**accepted**, 2026-10-12': true
+    2026-10-12, accepted: false
+    Accepted 2026-10-12: true
+    accepted: false
+    accepted, 2026-10-12 ("go"): true
+    alternative (i), 2026-10-12: false
+    not accepted, 2026-10-12: false
+    pending: false
+  T5_adr_status:
+    '**Status:** **Accepted**, 2026-10-08 — on M01 tested': true
+    '**Status:** **Accepted, 2026-10-02**, with its Proposed revision 1': true
+    '**Status:** Accepted': true
+    '**Status:** Proposed, 2026-10-08; amended before acceptance by Amendment 1 (2026-10-08, below), and still Proposed.': false
+    '**Status:** Proposed; Accepted when M02 is tested': false

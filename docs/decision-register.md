@@ -673,7 +673,7 @@ now written (R-003, R-A04, R-004), 0005 is accepted (R-028), 0008 is used by R-0
 R-035 (T04's globalization: specification continuation, edge 3, the residence-time PTC family,
 experimental; certificates of a bound declaration; Proposed 2026-09-24). 0011 is used by R-036 to
 R-043 (T05's unit models: the PH closure in the unit layer, `SYN-001-ref-v1` as a formation datum,
-SYN-001 bit-identical; accepted 2026-09-25). 0012 is used by R-052 to R-058 (T05b: the saturation band and the PH kernel's band route, the phase contract `T05b-phase-contract-v2` with its `ZERO_FLOW` regime, the verifier's temperature-degenerate judgement, R-007's and R-029's amendments, what stays registered, and the zero-flow form of dormant non-lifted outlets; accepted 2026-09-25). 0013 is used by R-059 to R-062 (K04's fresh-flash checks at the verifier's projection; accepted 2026-09-25). 0014 is used by R-066 to R-074 (T06: the corpus and NET-07, the sampling law, the gate, a deterministic regularity estimate, the verifier's domain-safe alias shift, validation's dimension and component checks, the reference semantics, identity and replay; accepted 2026-09-27) and, from its Amendment 1 (2026-09-26), R-076 to R-080 (component-order mapping, unit conversion by ADR 0001 D1.3–D1.4, the typed tear-path initializer failure, the reference-tool qualification rulings, the shared-provider qualification's field). 0015 is used by R-075 (T06 F4: recovery edge 3's second action, the sequential restart of a revision-built region from `traversal-G0-pass8-v1`; accepted 2026-09-27). 0016 is used by R-081 (input units by recorded conversion, `unit-conversion-v2`, widening ADR 0001 D1.1/D1.4 by Frank's Q11; accepted 2026-09-27). 0017 is used by R-082 (SYN-001's TP flash classified by its Rachford–Rice bracket when the binary64 tests disagree, and SYN-001's identity re-baselined by substitution; accepted 2026-09-27; Frank approved the identity move 2026-09-26). ADR 0014's Amendment 2 carries R-083 (IDAES SmoothVLE) and R-084 (the screen's identity refusal). 0018 is used by R-085 (the solver's terminal refinement, `globalization.eo_core = newton_refined`; accepted 2026-09-27; the enum widening approved by Frank 2026-09-26; Amendment 1, 2026-09-27: the outcome claim under the property budget). ADR 0014's Amendment 4 carries R-086 (the saturation closure) and R-087 (scoring run 1 stands; nothing that scores a start changes after it). Its Amendment 5 (2026-09-27) carries R-088 (six questions handed to T07), R-089 (the holdout ensemble) and R-090 (run records as committed evidence). 0019 is used by R-091 to R-096 (T07's application contract: the sibling protocols, the frozen schemas with Amendments 1 (`application-results`) and 2 (`list_models` `specifications`), idempotency, authorization, the error shape, transports adding nothing; approved by Frank 2026-09-27, Accepted with T07's tested evidence). 0020 is used by R-097 to R-104 (job execution, R-088 Q27, cancellation and budgets, revision-built runs and their routes with the solution state, validate's fallback, R-088 Q29, Q26, Q28). ADR 0002's Amendment 1 (integer canonicity) is recorded in R-A02, and ADR 0013's Amendment 2 (routing on registered tolerances) in R-059 and R-061. T07's decisions outside an ADR are R-105 to R-116: the design note's ruling rounds 3–7 (R-105 to R-109), Frank's v0.1 exclusions (R-110), the V17 specification's four entries (R-111 to R-114), its Amendment R6 and `v17-c2` (R-115), and operator identity isolation (R-116). 0021 is used by R-117, R-118, R-119, R-121, R-125 (the v0.1 release policy; accepted 2026-10-02 with its proposed revisions 1 and 2 and T08's tested evidence). 0022 is used by R-120 (the v0.2 real-chemistry selection, the ammonia loop; accepted 2026-10-02 with V19 PASS). 0023 is used by R-123 (the kinetic CSTR and PTC-R1; accepted 2026-10-02 with T08's tested evidence) and, from its Amendment 1 (2026-09-29), R-126 (the `2⁻¹⁰` C trace). 0024 is used by R-124 (compatible warm starts; accepted 2026-10-02 with T08's tested evidence). T08's decisions outside an ADR: R-122, R-127 (build-first Amendment 1's other rulings), R-128 (build-first Amendment 2: the review's P-budget and P-trace rulings), and, from review 2 (`docs/reviews/T08-review-2.md`, 2026-10-01), R-129 (U05's refusal), R-130 (recovery-edge evidence kinds and `library-only`), R-131 (CLI `replay --rerun`, reversing T07 D-Q6) and R-132 (the description review blocks the RC); R-133 (Frank, 2026-10-01: V17 carried across U05 and the description review's two fixes). R-134 (Frank, 2026-10-01: B50 amended to the carried surface). ADR 0006 Amendment 1 carries R-135 (the GCC runtime library; LGPL-2.1). T08 release spec Amendment R3 (2026-10-01) carries R-136 (A45's bundle set; T06 A34 by A46), R-137 (A49's digest), R-138 (the verdict table, read by column), R-139 (ADR 0021 D2.4's tree list, proposed revision 2), R-140 (no lock in the wheel, L41; the lock lookup confined to the checkout), R-141 (T06 A89 by machine class, T06 Amendment T08-1), R-142 (ADR 0006 Amendment 2: D4 on aarch64) and R-143 (V19 for C1; ADR 0022 proposed revision 1). R-144 (B50 excludes the package version) and R-145 (ADR 0022: Frank's choice recorded). ADR 0025 is used by R-146 (`T08-numerical-policy-v2`; accepted 2026-10-02 with T08's tested evidence; entered at its W9 as amended by R-147, its Correction of 2026-10-02) and R-147 (Frank, 2026-10-02: Q4, a record is compared under the policy it records; an unknown policy is refused). R-148 (Frank, 2026-10-02: the K05 identity re-registered for recording `T08-numerical-policy-v2`, substitution only). R-149 (Frank, 2026-10-02: the project is named OpenFlowsheet; the rename's identity move re-registered, substitution only). R-150 (Frank, 2026-10-03: the public repository is the one working repository; the pre-0.1.0 history archived in `openflowsheet-dev`) and R-151 (the release gate identifies `C` by its recorded file hashes where `C` is absent). R-152 (Frank, 2026-10-06: M01 pins the code's K_NH₃ enthalpy term) and R-153 (Frank, 2026-10-06: the v0.2 order — M01's design first with M06 built alongside — and a `0.2.0a1` pre-release after M02). ADR 0026 is used by R-154 to R-160 (M01: the C1 property route; accepted 2026-10-08 with M01's tested evidence and the review closure `9098f14`) and ADR 0027 by R-161 to R-169 (M01: the C1 reactor boundary; Proposed 2026-10-08, still Proposed). Their Amendments 1 (M01 spec Amendment 1, §19) carry R-196 and R-197 (0026: the ln φ block's bounds, the request checks) and R-195, R-198, R-199 and R-200 (0027: the projection's defect assertion, the boundary's check order, the stand-in's label, M02's bitwise probe). M01's decisions outside an ADR: R-217 (T08's manifest-count and review-table tests scoped to the v0.1 packages) and R-219 (the C1 records' declared no-walk-up exception). ADR 0030 is used by R-170 and R-171 (M06: the diagnostic web shell, hand-written ES modules served same-origin; the bearer token in Web Storage, never a cookie; accepted 2026-10-08 with M06's tested evidence), with R-173 and R-174 (the gap triage closed; the scenario view is the run comparison) from its design note. ADR 0019 Amendment 3 (approved by Frank 2026-10-08, accepted with M06's tested evidence) carries R-172 (the structure index, element-level `diff_revisions`, `list_audit`) and R-192 (the served MCP tool-list digest moves to `6c4375b4…`). M06's W27 registration carries R-175 to R-179, and its decisions outside an ADR are R-193 (v0.2's working envelope `v0.2-envelope-dev`), R-194 (T08's U14 restated for v0.2) and R-216 (the v0.1.0 CHANGELOG-limitations test reads the envelope as released). **R-180 to R-191 and R-210 to R-218 (less M06's R-216 and M01's R-217) are held by M03, R-220 to R-237 by M02 and R-240 onward by M04; R-238 is the next free R number. ADRs 0031–0032 are held by M03 and 0033–0035 by M02; 0028 is the next free ADR number.**
+SYN-001 bit-identical; accepted 2026-09-25). 0012 is used by R-052 to R-058 (T05b: the saturation band and the PH kernel's band route, the phase contract `T05b-phase-contract-v2` with its `ZERO_FLOW` regime, the verifier's temperature-degenerate judgement, R-007's and R-029's amendments, what stays registered, and the zero-flow form of dormant non-lifted outlets; accepted 2026-09-25). 0013 is used by R-059 to R-062 (K04's fresh-flash checks at the verifier's projection; accepted 2026-09-25). 0014 is used by R-066 to R-074 (T06: the corpus and NET-07, the sampling law, the gate, a deterministic regularity estimate, the verifier's domain-safe alias shift, validation's dimension and component checks, the reference semantics, identity and replay; accepted 2026-09-27) and, from its Amendment 1 (2026-09-26), R-076 to R-080 (component-order mapping, unit conversion by ADR 0001 D1.3–D1.4, the typed tear-path initializer failure, the reference-tool qualification rulings, the shared-provider qualification's field). 0015 is used by R-075 (T06 F4: recovery edge 3's second action, the sequential restart of a revision-built region from `traversal-G0-pass8-v1`; accepted 2026-09-27). 0016 is used by R-081 (input units by recorded conversion, `unit-conversion-v2`, widening ADR 0001 D1.1/D1.4 by Frank's Q11; accepted 2026-09-27). 0017 is used by R-082 (SYN-001's TP flash classified by its Rachford–Rice bracket when the binary64 tests disagree, and SYN-001's identity re-baselined by substitution; accepted 2026-09-27; Frank approved the identity move 2026-09-26). ADR 0014's Amendment 2 carries R-083 (IDAES SmoothVLE) and R-084 (the screen's identity refusal). 0018 is used by R-085 (the solver's terminal refinement, `globalization.eo_core = newton_refined`; accepted 2026-09-27; the enum widening approved by Frank 2026-09-26; Amendment 1, 2026-09-27: the outcome claim under the property budget). ADR 0014's Amendment 4 carries R-086 (the saturation closure) and R-087 (scoring run 1 stands; nothing that scores a start changes after it). Its Amendment 5 (2026-09-27) carries R-088 (six questions handed to T07), R-089 (the holdout ensemble) and R-090 (run records as committed evidence). 0019 is used by R-091 to R-096 (T07's application contract: the sibling protocols, the frozen schemas with Amendments 1 (`application-results`) and 2 (`list_models` `specifications`), idempotency, authorization, the error shape, transports adding nothing; approved by Frank 2026-09-27, Accepted with T07's tested evidence). 0020 is used by R-097 to R-104 (job execution, R-088 Q27, cancellation and budgets, revision-built runs and their routes with the solution state, validate's fallback, R-088 Q29, Q26, Q28). ADR 0002's Amendment 1 (integer canonicity) is recorded in R-A02, and ADR 0013's Amendment 2 (routing on registered tolerances) in R-059 and R-061. T07's decisions outside an ADR are R-105 to R-116: the design note's ruling rounds 3–7 (R-105 to R-109), Frank's v0.1 exclusions (R-110), the V17 specification's four entries (R-111 to R-114), its Amendment R6 and `v17-c2` (R-115), and operator identity isolation (R-116). 0021 is used by R-117, R-118, R-119, R-121, R-125 (the v0.1 release policy; accepted 2026-10-02 with its proposed revisions 1 and 2 and T08's tested evidence). 0022 is used by R-120 (the v0.2 real-chemistry selection, the ammonia loop; accepted 2026-10-02 with V19 PASS). 0023 is used by R-123 (the kinetic CSTR and PTC-R1; accepted 2026-10-02 with T08's tested evidence) and, from its Amendment 1 (2026-09-29), R-126 (the `2⁻¹⁰` C trace). 0024 is used by R-124 (compatible warm starts; accepted 2026-10-02 with T08's tested evidence). T08's decisions outside an ADR: R-122, R-127 (build-first Amendment 1's other rulings), R-128 (build-first Amendment 2: the review's P-budget and P-trace rulings), and, from review 2 (`docs/reviews/T08-review-2.md`, 2026-10-01), R-129 (U05's refusal), R-130 (recovery-edge evidence kinds and `library-only`), R-131 (CLI `replay --rerun`, reversing T07 D-Q6) and R-132 (the description review blocks the RC); R-133 (Frank, 2026-10-01: V17 carried across U05 and the description review's two fixes). R-134 (Frank, 2026-10-01: B50 amended to the carried surface). ADR 0006 Amendment 1 carries R-135 (the GCC runtime library; LGPL-2.1). T08 release spec Amendment R3 (2026-10-01) carries R-136 (A45's bundle set; T06 A34 by A46), R-137 (A49's digest), R-138 (the verdict table, read by column), R-139 (ADR 0021 D2.4's tree list, proposed revision 2), R-140 (no lock in the wheel, L41; the lock lookup confined to the checkout), R-141 (T06 A89 by machine class, T06 Amendment T08-1), R-142 (ADR 0006 Amendment 2: D4 on aarch64) and R-143 (V19 for C1; ADR 0022 proposed revision 1). R-144 (B50 excludes the package version) and R-145 (ADR 0022: Frank's choice recorded). ADR 0025 is used by R-146 (`T08-numerical-policy-v2`; accepted 2026-10-02 with T08's tested evidence; entered at its W9 as amended by R-147, its Correction of 2026-10-02) and R-147 (Frank, 2026-10-02: Q4, a record is compared under the policy it records; an unknown policy is refused). R-148 (Frank, 2026-10-02: the K05 identity re-registered for recording `T08-numerical-policy-v2`, substitution only). R-149 (Frank, 2026-10-02: the project is named OpenFlowsheet; the rename's identity move re-registered, substitution only). R-150 (Frank, 2026-10-03: the public repository is the one working repository; the pre-0.1.0 history archived in `openflowsheet-dev`) and R-151 (the release gate identifies `C` by its recorded file hashes where `C` is absent). R-152 (Frank, 2026-10-06: M01 pins the code's K_NH₃ enthalpy term) and R-153 (Frank, 2026-10-06: the v0.2 order — M01's design first with M06 built alongside — and a `0.2.0a1` pre-release after M02). ADR 0026 is used by R-154 to R-160 (M01: the C1 property route; accepted 2026-10-08 with M01's tested evidence and the review closure `9098f14`) and ADR 0027 by R-161 to R-169 (M01: the C1 reactor boundary; Proposed 2026-10-08, still Proposed). Their Amendments 1 (M01 spec Amendment 1, §19) carry R-196 and R-197 (0026: the ln φ block's bounds, the request checks) and R-195, R-198, R-199 and R-200 (0027: the projection's defect assertion, the boundary's check order, the stand-in's label, M02's bitwise probe). M01's decisions outside an ADR: R-217 (T08's manifest-count and review-table tests scoped to the v0.1 packages) and R-219 (the C1 records' declared no-walk-up exception). ADR 0030 is used by R-170 and R-171 (M06: the diagnostic web shell, hand-written ES modules served same-origin; the bearer token in Web Storage, never a cookie; accepted 2026-10-08 with M06's tested evidence), with R-173 and R-174 (the gap triage closed; the scenario view is the run comparison) from its design note. ADR 0019 Amendment 3 (approved by Frank 2026-10-08, accepted with M06's tested evidence) carries R-172 (the structure index, element-level `diff_revisions`, `list_audit`) and R-192 (the served MCP tool-list digest moves to `6c4375b4…`). M06's W27 registration carries R-175 to R-179, and its decisions outside an ADR are R-193 (v0.2's working envelope `v0.2-envelope-dev`), R-194 (T08's U14 restated for v0.2) and R-216 (the v0.1.0 CHANGELOG-limitations test reads the envelope as released). ADR 0028 is used by R-238 and R-239 (the pre-release `0.2.0a1`: its gate set `v0.2-alpha-gate-v1`, Frank's per-release answers and W21's reading; the v0.2 counterparts of the moved v0.1 records; Proposed 2026-10-08, N3 pending Frank). **R-180 to R-191 and R-210 to R-218 (less M06's R-216 and M01's R-217) are held by M03, R-220 to R-237 by M02 and R-240 onward by M04; the next free R number follows M04's range. ADRs 0031–0032 are held by M03 and 0033–0035 by M02; 0029 is the next free ADR number.**
 
 ## R-018 — Structural analysis reads the declaration, never the compiled sparsity pattern
 
@@ -4470,3 +4470,109 @@ review's F4. A user-supplied path for installed packages is not built; Q-N4 says
 
 **Watch for.** If Q-N4 is declined, an installed package without the records raises rather than refusing with a
 typed result. Revisit with Frank's answer.
+
+---
+
+## R-238 — `0.2.0a1` is gated by `v0.2-alpha-gate-v1`: V11–V20 re-judged at its own release candidate by T08's criteria unchanged, plus W21 and W22; nothing of W23–W27 is claimed; Frank's per-release answers are preconditions the gate checks
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), on the M02 architect's N3 default; **N3 pending Frank**, as are the V14 (b) acceptance, the V17 carry and M02 N1 for this release |
+| Normative text | ADR 0028 D1, D2, D4–D7; `docs/derivations/V02-alpha-release-spec.md` §3, §4, §6, §7, §9 |
+| Evidence | — (a policy); its executable claims: `docs/derivations/scripts/v02a_reference.py --check` (`benchmarks/m07a/reference_values.yaml`) |
+| Affected packages | M07a (the alpha's release evidence), M01, M02, M07 (adds `v0.2-gate-v1` beside this set); every later 0.2 pre-release |
+
+**Decision.** `0.2.0a1` claims V11–V20 and W21, W22, and nothing else.
+
+*How each claim is judged.*
+- V11–V20 are judged at the alpha's own release candidate `C_α` by T08 release spec §4, unchanged.
+- W21 is judged by blueprint §14.4 bullet 1's six clauses. The plan row omits three of them: port mapping, timeout and
+  parent-model validation.
+- W22 is judged by R-160's meaning of "validated", plus "sufficient for the selected chemistry".
+
+*W21's parent-model validation.* The PyMRM reactor's own validation is carried, not re-made: the adapter reproduces
+the standalone model (M01.A47); the group's regression suite at the pin is reproduced (T08.A61); the model's numerical
+error is carried with every result; and the group's published comparison with data is cited, with the statement that
+this project has compared no reactor result with data.
+
+*The gate.* `scripts/v0_2_gate.py` holds a registry of gate sets and covers `0.2.0aN` only. It reuses ADR 0021 D2, the
+D2.4 tree check and the RC-record grammar. `scripts/v0_1_gate.py` is not edited.
+
+*Frank's per-release answers.* The gate refuses until four are recorded in ADR 0028, each starting `accepted` with a
+date:
+- N3, the claim set;
+- V14 (b) FAIL for this release, dated on or after the alpha verdict (ADR 0021 D3 is per release);
+- the carry of V17's agent evidence across R-192 and R-234 (T08 §4.7 makes V17 `BLOCKED` otherwise);
+- M02 N1, publishing an unsandboxed execution profile.
+
+*The version.* `C_α` declares `0.2.0a1` itself, and the gate requires `C`'s version to equal the candidate's.
+
+*The mechanics.* `release.yml` and `changelog_section.py` accept canonical PEP 440 pre-releases, and the GitHub release
+is marked as a pre-release.
+
+**Rejected alternatives, and why.**
+- Relaxing or editing the v0.1 gate. R-153 forbids it.
+- A W-only alpha that does not re-judge V11–V20. The alpha's code differs from v0.1's. This is offered to Frank as N3
+  (ii), not recommended.
+- Carrying ADR 0021's 2026-09-29 acceptance into the alpha. An acceptance must not predate its evidence.
+- Treating R-192 as V17's carry. T08 §4.7 makes the carry Frank's.
+- A separate alpha gate script dispatched by the pre-release segment. The release workflow resolves one gate per minor
+  line.
+- An RC version `0.2.0a1.dev1` with a bump at the tag. It adds a second version string and no evidence.
+- The stronger reading of W21 (f), in which this project compares the reactor with data inside W21. That evidence
+  belongs to M07's truth checks, and the data's use awaits Frank. It is offered to him as F-α4.
+
+**Watch for.**
+- A `FAIL` released on ADR 0021's acceptance.
+- V17 printed `PASS` without the carry row.
+- A W23–W27 row in the alpha's verdict document.
+- `0.2.0`, `bN` or `rcN` admitted before M07 registers its gate set.
+- `C_α` squash-merged, which breaks the ancestry check.
+- A W21 verdict that describes the reactor as validated by this project.
+
+---
+
+## R-239 — On the v0.2 line every moved v0.1 release record has a counterpart at least as strict, and the v0.1 records stay as released
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`); answers the watch-fors of R-192, R-193, R-216 and R-217, and M02 note §14 B1 |
+| Normative text | ADR 0028 D3; `docs/derivations/V02-alpha-release-spec.md` §5.2 (MR-1 to MR-12) and §5.3 |
+| Evidence | — (a policy); its executable claims: `v02a_reference.py --check` (L2, L5, M4, C3) |
+| Affected packages | M07a, M02 (B50's content; the chain's link c_2), M07 (re-uses each counterpart for 0.2.0) |
+
+**Decision.** Every v0.1 record that v0.2 moved on purpose has a counterpart at least as strict, judged in its place at
+the alpha's release candidate `C_α`. The v0.1 records themselves stay as released, at the tags.
+
+**The counterparts.**
+- **The agent surface.** The digest served at `C_α` must decompose, link by link and each strip applied to the
+  previous one's output, through R-234 and R-192 to R-133's `171dd768…` and then to `v17-c2`'s `6d13e13d…`. The 17
+  description texts must be R-133's. `scripts/t08_rc.py`'s A49 constant stays a 0.1 record. A new MCP-visible change
+  is a new link: it needs a register entry, a strip function, a digest, and Frank's carry.
+- **T08.B50.** Its digest and schemas are covered by the same chain. Its content differences must be exactly B50's
+  three entries plus the v0.2 additions named by register entries; Frank's F5 ruling covers content-only additions.
+- **The envelope.** At `C_α` it is pinned as `v0.2-alpha-envelope-1`, with `release` equal to the version cut. Its
+  harvest includes T08's manifest. After the tag it returns to R-193's working form.
+- **The `## v0.2.0a1` notes.** They name exactly the alpha envelope's limitation ids, L42 and L-WEB-1…4 among them.
+  Their review table covers every package manifest at the candidate. The harvest size at `C_α` is quoted and tested.
+  Their gate table is `v0_2_gate.py --markdown`'s.
+- **The v0.1.0 notes.** Their gate-table test reads the ledger and `T08-verdicts.md` as v0.1.0 released them.
+- **V11 (e).** It also covers a v0.1.1-emitted bundle.
+- **T08.A34.** It also covers the coupled-route certificates.
+- **T08.A30.** It also covers every extra that is new since v0.1.1, through that extra's own audit.
+
+**Rejected alternatives, and why.**
+- Editing the 0.1 records (A49's constant, the v0.1.0 notes, `v0.1-envelope-1`) to v0.2's values. That rewrites
+  release records.
+- Recording the moves without counterparts. That is a relaxation.
+- Two separate strips of the served list. These do not prove that the links compose.
+- Leaving T08's manifest out of the harvest. Its limitations are true of the alpha.
+
+**Watch for.**
+- A surface change with no link.
+- A link whose strip removes more than its change added (negative control (ii)).
+- The envelope's `release` left at `0.2.0.dev0` at `C_α`.
+- A `## v0.2.0a1` limitation list built by hand rather than from the envelope.
+- `HARVEST_EXCLUDED` holding anything but the alpha's own manifest after `C_α`.
