@@ -347,6 +347,7 @@ MALFORMED = {
     "a W22 row missing": document({g: v for g, v in ALL_PASS.items() if g != "W22"}),
     "a header naming another C": document(ALL_PASS, rc="e" * 40),
     "no Judged date": document(ALL_PASS, judged=None),
+    "Judged twice": document(ALL_PASS, after="\n**Judged:** 2026-10-13\n"),
     "a Judged date that is not a date": document(ALL_PASS, judged="2026-13-01"),
     "C named twice": document(ALL_PASS, after=f"\n**Release candidate:** `{RC}`\n"),
     "no C": document(ALL_PASS).replace("**Release candidate:**", "**Candidate:**"),
@@ -464,6 +465,54 @@ def test_a04_h_the_d3_cell_rule_is_table_t4(cell: str, counts: bool) -> None:
     assert _fail_report(cell)["tag_may_be_proposed"] is counts
 
 
+D3_ROW = "| V14 (b) | the alpha verdict | {cell} | later |"
+RULE = "| --- | --- | --- | --- |\n"
+D3_TABLE = "\n| Clause | Evidence | Frank's acceptance | Owner after 0.2.0a1 |\n" + RULE
+DECISIONS_TABLE = "\n| Item | Question | Default | Frank's answer |\n" + RULE
+
+
+def _v14_fail_reasons(policy_text: str) -> list[str]:
+    words = {gate: word for gate, (word, _, _) in V14_FAIL.items()}
+    return report(files(ledger=ledger(words), verdicts=document(V14_FAIL), adr_0028=policy_text))[
+        "reasons"
+    ]
+
+
+def test_a04_i_a_d3_row_counts_only_if_its_first_cell_is_exactly_a_clause() -> None:
+    """Review F4.1 (the build lane's choice 3, alone): the acceptance cell passes Table T4, and
+    only the first cell carries prose after the clause."""
+    accepted = adr_0028(d3=ACCEPTED)
+    assert _v14_fail_reasons(accepted) == []
+    prose = accepted.replace("| V14 (b) | the alpha verdict |", "| V14 (b) one PTC family | … |")
+    assert _v14_fail_reasons(prose) == [
+        "V14: FAIL clause not accepted in ADR 0028 D3: ['V14 (b)'] (D2.3)"
+    ]
+
+
+def test_a04_j_two_d3_tables_are_refused() -> None:
+    """Review F4.2: even with every gate PASS, so no D3 row is needed."""
+    second = D3_TABLE + D3_ROW.format(cell=ACCEPTED) + "\n"
+    result = report(files(adr_0028=adr_0028(d3=ACCEPTED, extra=second)))
+    assert result["reasons"] == [
+        f'{ADR_0028}: D3: 2 tables with a "frank\'s acceptance" column, not 1'
+    ]
+
+
+def test_a04_k_a_d3_clause_listed_twice_is_refused() -> None:
+    """Review F4.4: two rows for V14 (b), both acceptances on the judged date."""
+    row = D3_ROW.format(cell=ACCEPTED)
+    doubled = adr_0028(d3=ACCEPTED).replace(row, f"{row}\n{row}")
+    assert _v14_fail_reasons(doubled) == [f"{ADR_0028}: D3 lists V14 (b) twice"]
+
+
+def test_a04_l_a_d3_acceptance_on_a_non_calendar_date_is_refused() -> None:
+    """Review F4.6: `2026-02-30` matches Table T4's pattern and is no date."""
+    assert v0_2_gate.acceptance_date("accepted, 2026-02-30") is None
+    assert _v14_fail_reasons(adr_0028(d3="accepted, 2026-02-30")) == [
+        "V14: FAIL clause not accepted in ADR 0028 D3: ['V14 (b)'] (D2.3)"
+    ]
+
+
 def test_a04_a_missing_ledger_gate_or_verdict_is_refused() -> None:
     gates = yaml.safe_load(ledger({gate: "PASS" for gate in CLAIMED}))["gates"]
     without_w22 = yaml.safe_dump({"gates": [g for g in gates if g["id"] != "W22"]})
@@ -557,6 +606,37 @@ def test_a05_a_later_alpha_is_not_proposable_on_the_earlier_alpha_s_answers() ->
         f"Frank's answer to {item}: accepted {JUDGED}, before the verdict's Judged date {later} "
         "(§7.3 item 11)"
         for item in ALPHA.frank_items
+    ]
+
+
+def test_a05_two_decisions_tables_are_refused() -> None:
+    """Review F4.3: a second table with a `Frank's answer` column, itself all accepted."""
+    second = DECISIONS_TABLE + "".join(
+        f"| {item} | q | d | {ACCEPTED} |\n" for item in ALPHA.frank_items
+    )
+    result = report(files(adr_0028=adr_0028(extra=second)))
+    assert result["reasons"] == [
+        f"{ADR_0028}: Frank's answers: 2 tables with a \"frank's answer\" column, not 1"
+    ]
+
+
+@pytest.mark.parametrize("item", ["N3", "V17 carry", "M02 N1"])
+def test_a05_a_doubled_decisions_row_is_refused(item: str) -> None:
+    """Review F4.4: two rows for one item, both acceptances on the judged date."""
+    row = f"| {item} | q | d | {ACCEPTED} |"
+    doubled = adr_0028().replace(row, f"{row}\n{row}")
+    assert report(files(adr_0028=doubled))["reasons"] == [
+        f"Frank's answer to {item}: 2 rows in {ADR_0028}, not 1"
+    ]
+
+
+@pytest.mark.parametrize("item", ["N3", "V17 carry", "M02 N1"])
+def test_a05_an_answer_on_a_non_calendar_date_is_refused(item: str) -> None:
+    """Review F4.6, for the decisions table."""
+    result = report(files(adr_0028=adr_0028(answers={item: "accepted, 2026-02-30"})))
+    assert result["reasons"] == [
+        f"Frank's answer to {item} is not an acceptance of the default; "
+        "amend the alpha specification for it"
     ]
 
 
