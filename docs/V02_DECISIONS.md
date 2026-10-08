@@ -209,3 +209,12 @@ Grep, don't read whole. Newest at the bottom.
   `327edcd`; the WO-13 reviewer confirms.
 - DECISION: G2 (HTTP contract tests of all 17 operations; no WO owned it) → WO-11. Alternative: a separate WO.
 - `opus-engineer` M06 WO-11, WO-12 launched on `wp/M06-finish` (from `6fc69ef`).
+- M02 recon done (digest delivered inline; key facts pasted into `docs/briefs/M02-design.md`, `58e1906`). Findings: no
+  M02 code or schema; the seam is `ExternalEvaluation` (`wp/M01` `models/c1/boundary.py:164`); no subprocess call
+  in `src/`; the T08 runner's subprocess has no timeout; no promotion/freeze/invalidation mechanism; no test reads
+  `reactor-probe.json`; M01 §8.14 says A45–A50 (A49/A50 undefined) vs A41–A48 elsewhere → sent to M01 Amendment 1.
+- DECISION: M02 is designed by the `architect` (design note + ADRs) although the plan's lane is Build/Design — it fixes
+  the external-model process boundary, the experiment records (frozen §2.2 schema list → ADR) and promotion
+  semantics that M04/M05/M07 inherit. Alternative: build-lane design by opus-engineer. Reversible by: none needed
+  (the note is input to the build lane either way).
+- `architect` M02 launched on `wp/M02` (from `wp/M01` `13bcef7`; ADR 0033+, R-220+), concurrent with M01 Amendment 1.
