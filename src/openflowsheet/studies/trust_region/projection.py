@@ -23,19 +23,26 @@ the retained rows imply — SYN-001's two certified pressure alias rows, which m
 47 variables redundant by two — with a reason; they are not projected, and the source map lists
 them under `omitted_rows`. With every row, such a spec is refused `PROJECTION_DOF`, correctly.
 
-**Scales.** Variables carry `1/column_scale`, rows `1/row_scale`, the objective `1/scale` (Ipopt's
-`user-scaling`). Each `ExternalFunction` output k has the power-of-two scale
-s_k = 2^⌈log₂ max(|y_k(x₀)|, 1e-6)⌉: the holder returns `value / s_k`, the defining constraint
-multiplies by s_k, so the scaling is exact and TRF's θ = Σ|y − d(w)| over the holder variables is a
-sum of relative discrepancies (§6.1). The output variable and its defining constraint carry
-`1/s_k` as well.
+**Scales** (R-275, design note §16.2). One source: K03's `Scaling.from_spec(spec)`, the scales
+M03's full-space NLP and the certificate use. They give the Ipopt `scaling_factor` suffixes —
+variables `1/S_x`, rows `1/S_F` (Ipopt's `user-scaling`) — the scales recorded in the source map,
+and `Projection.scaling`, which G4's denominators and P2's state comparison read.
+`ProblemSpec.row_scales` and `column_scales` are not read. A spec that declares no kinds at all
+(the test-only TR-E1) gets unit scales, recorded as `scale_provenance: "unit_no_kinds"`; a spec
+that declares some kinds but not a registered one for every variable and row is refused
+`PROJECTION_SCALES_UNAVAILABLE(<ids>)`. The objective carries `1/scale`. Each `ExternalFunction`
+output k has the power-of-two scale s_k = 2^⌈log₂ max(|y_k(x₀)|, 1e-6)⌉: the holder returns
+`value / s_k`, the defining constraint multiplies by s_k, so the scaling is exact and TRF's
+θ = Σ|y − d(w)| over the holder variables is a sum of relative discrepancies (§6.1). The output
+variable and its defining constraint carry `1/s_k` as well.
 
-**Refusals** (typed, raised before TRF runs): `PARAMETER_NOT_DIFFERENTIABLE(<equation_id>)` — a row
-builder cannot take a decision or link symbol (ADR 0031 D2's meaning); `PROJECTION_NONSMOOTH(<id>)`
-— a row, inequality or objective contains `abs`, `Expr_if`, `min`/`max`, `ceil`/`floor` or a
-piecewise node; `PROJECTION_STRUCTURE(<id>)` — a variable appears in no constraint (or a row in no
-variable); `PROJECTION_DOF(<n>)` — n_vars − n_equalities = n ≠ n_decisions, TRF's own count,
-repeated here so the failure is typed.
+**Refusals** (typed, raised before TRF runs): `PROJECTION_SCALES_UNAVAILABLE(<ids>)` — above;
+`PARAMETER_NOT_DIFFERENTIABLE(<equation_id>)` — a row builder cannot take a decision or link
+symbol (ADR 0031 D2's meaning); `PROJECTION_NONSMOOTH(<id>)` — a row, inequality or objective
+contains `abs`, `Expr_if`, `min`/`max`, `ceil`/`floor` or a piecewise node;
+`PROJECTION_STRUCTURE(<id>)` — a variable appears in no constraint (or a row in no variable);
+`PROJECTION_DOF(<n>)` — n_vars − n_equalities = n ≠ n_decisions, TRF's own count, repeated here so
+the failure is typed.
 """
 
 from __future__ import annotations
@@ -63,6 +70,7 @@ from openflowsheet.canonical import (
     structure_sha256,
 )
 from openflowsheet.compile.spec import Expr, ProblemSpec, RowBuilder
+from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, ScaleUnavailableError, Scaling
 from openflowsheet.studies.trust_region.holders import (
     EFHolder,
     PropertyBlockBox,
@@ -79,10 +87,13 @@ LINK_COORDINATES: Final = ("X", "dT")
 LINK_BOUNDS: Final[Mapping[str, tuple[float, float]]] = {"X": (0.0, 0.95), "dT": (-50.0, 250.0)}
 #: §6.1: the inlet order of an external link, (n_H₂, n_N₂, n_NH₃, n_Ar, n_CH₄, T, P).
 LINK_INLET_SIZE: Final = 7
+#: R-275: the provenance of the unit scales a spec without any declared kind is projected with.
+UNIT_NO_KINDS: Final = "unit_no_kinds"
 _NONSMOOTH_FUNCTIONS: Final = frozenset({"abs", "ceil", "floor"})
 _NONSMOOTH_NODES: Final = (AbsExpression, Expr_ifExpression, MaxExpression, MinExpression)
 
 RefusalCode = Literal[
+    "PROJECTION_SCALES_UNAVAILABLE",
     "PARAMETER_NOT_DIFFERENTIABLE",
     "PROJECTION_NONSMOOTH",
     "PROJECTION_STRUCTURE",
@@ -216,6 +227,8 @@ class Projection:
     row_expressions: tuple[Any, ...]
     ef_names: Mapping[Callable[..., float], str]
     source_map: Mapping[str, Any]
+    #: R-275: the row and column scales of every projected quantity — the suffixes', G4's and P2's.
+    scaling: Scaling
 
     @property
     def source_map_sha256(self) -> str:
@@ -285,6 +298,7 @@ def project(
     it, and the source map records it."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
+    scaling = projection_scaling(spec)
     omitted = dict(omitted_rows or {})
     unknown_rows = sorted(set(omitted) - set(spec.equation_ids))
     if unknown_rows:
@@ -456,7 +470,7 @@ def project(
     # Scaling (Ipopt `user-scaling`).
     model.scaling_factor = pyo.Suffix(direction=pyo.Suffix.EXPORT)
     for index, name in enumerate(variable_ids):
-        model.scaling_factor[model.x[index]] = 1.0 / spec.column_scales.get(name, 1.0)
+        model.scaling_factor[model.x[index]] = 1.0 / scaling.column[name]
     for k, scale in enumerate(link_scales):
         model.scaling_factor[model.w[k]] = 1.0 / scale
         model.scaling_factor[model.link[k]] = 1.0 / scale
@@ -464,7 +478,7 @@ def project(
         model.scaling_factor[model.y[g]] = 1.0 / scale
         model.scaling_factor[model.ydef[g]] = 1.0 / scale
     for index, name in enumerate(row_ids):
-        model.scaling_factor[model.row[index]] = 1.0 / spec.row_scales.get(name, 1.0)
+        model.scaling_factor[model.row[index]] = 1.0 / scaling.row[name]
     model.scaling_factor[model.obj] = 1.0 / objective.scale
 
     # Refusals, in §6.1's order (PARAMETER_NOT_DIFFERENTIABLE was raised by `_build`).
@@ -483,6 +497,7 @@ def project(
 
     source_map = _source_map(
         spec,
+        scaling,
         bounds,
         row_ids,
         output_rows,
@@ -505,10 +520,38 @@ def project(
         row_expressions=tuple(expressions),
         ef_names=ef_names,
         source_map=source_map,
+        scaling=scaling,
     )
 
 
 # -- helpers --------------------------------------------------------------------------------------
+
+
+def projection_scaling(spec: ProblemSpec) -> Scaling:
+    """R-275: K03's `Scaling.from_spec(spec)`; unit scales, provenance `unit_no_kinds`, for a spec
+    that declares no kind at all; `PROJECTION_SCALES_UNAVAILABLE(<ids>)` for one that declares
+    some, naming every variable and row without a kind that has a registered nominal."""
+    if not spec.variable_kinds and not spec.row_kinds:
+        return Scaling(
+            column={name: 1.0 for name in spec.variable_ids},
+            row={name: 1.0 for name in spec.equation_ids},
+            provenance=UNIT_NO_KINDS,
+        )
+    try:
+        return Scaling.from_spec(spec)
+    except ScaleUnavailableError as error:
+        missing = [
+            name
+            for ids, kinds in (
+                (spec.variable_ids, spec.variable_kinds),
+                (spec.equation_ids, spec.row_kinds),
+            )
+            for name in ids
+            if kinds.get(name) not in REGISTERED_NOMINALS
+        ]
+        raise ProjectionRefusedError(
+            "PROJECTION_SCALES_UNAVAILABLE", ",".join(missing), str(error)
+        ) from error
 
 
 def _check_call(
@@ -638,6 +681,7 @@ def _check_structure(
 
 def _source_map(
     spec: ProblemSpec,
+    scaling: Scaling,
     bounds: Sequence[tuple[float | None, float | None]],
     row_ids: Sequence[str],
     output_rows: Sequence[Mapping[str, Any]],
@@ -667,7 +711,7 @@ def _source_map(
                 "pyomo": f"x[{index}]",
                 "variable_id": name,
                 "kind": spec.variable_kinds.get(name),
-                "column_scale": spec.column_scales.get(name, 1.0),
+                "column_scale": scaling.column[name],
                 "bounds": list(bounds[index]),
             }
             for index, name in enumerate(spec.variable_ids)
@@ -677,7 +721,7 @@ def _source_map(
                 "pyomo": f"row[{index}]",
                 "equation_id": name,
                 "origin": origins[name],
-                "row_scale": spec.row_scales.get(name, 1.0),
+                "row_scale": scaling.row[name],
             }
             for index, name in enumerate(row_ids)
         ],
@@ -715,5 +759,6 @@ def _source_map(
             "sense": objective.sense,
             "scale": objective.scale,
         },
+        "scale_provenance": scaling.provenance,
         "trf": [],
     }

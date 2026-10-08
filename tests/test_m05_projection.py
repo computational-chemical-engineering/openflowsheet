@@ -98,11 +98,11 @@ def structure(projection: Any) -> None:
         assert find_nonsmooth_node(expression) is None
 
 
-def equivalence(projection: Any, x0: Mapping[str, float], scaling: Any = None) -> dict[str, float]:
+def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     """G4 (a)-(e) for one projection at its start; returns the worst measured ratios.
 
-    The row and column scales are the spec's own, or, with `scaling`, the K03 `Scaling` the
-    system judges that spec's residuals by (a spec that declares kinds instead of scales)."""
+    The row and column scales are the projection's own (R-275): K03's `Scaling.from_spec`, or
+    unit scales for a spec without kinds — the scales its Ipopt suffixes carry."""
     import pyomo.environ as pyo
     from pyomo.core.expr.calculus.derivatives import Modes, differentiate
 
@@ -119,12 +119,8 @@ def equivalence(projection: Any, x0: Mapping[str, float], scaling: Any = None) -
     residual = np.array(twin.residual(x, parameters))
     jacobian_x = dense(twin.jacobian_x(x, parameters))
     rows = [spec.equation_ids.index(name) for name in projection.row_ids]
-    if scaling is None:
-        row_scales = np.array([spec.row_scales.get(name, 1.0) for name in projection.row_ids])
-        column_scales = np.array([spec.column_scales.get(n, 1.0) for n in spec.variable_ids])
-    else:
-        row_scales = np.asarray(scaling.row_vector(projection.row_ids))
-        column_scales = np.asarray(scaling.column_vector(spec.variable_ids))
+    row_scales = projection.scaling.row_vector(projection.row_ids)
+    column_scales = projection.scaling.column_vector(spec.variable_ids)
 
     # (b) residuals.
     pyomo_rows = np.array([float(pyo.value(e)) for e in projection.row_expressions])
@@ -235,6 +231,80 @@ def test_the_output_scale_is_the_next_power_of_two(value: float, expected: float
     from openflowsheet.studies.trust_region.projection import output_scale
 
     assert output_scale(value) == expected
+
+
+# -- the scales (R-275) ---------------------------------------------------------------------------
+
+
+def suffix(projection: Any) -> tuple[list[float], list[float]]:
+    """The Ipopt `scaling_factor` suffix of every `x` and every projected row."""
+    model = projection.model
+    factors = model.scaling_factor
+    return (
+        [factors[model.x[i]] for i in range(len(projection.spec.variable_ids))],
+        [factors[model.row[i]] for i in range(len(projection.row_ids))],
+    )
+
+
+def test_a_spec_without_kinds_is_projected_with_unit_scales_and_says_so() -> None:
+    projection = tr_e1_projection()
+    assert projection.scaling.provenance == "unit_no_kinds"
+    assert projection.source_map["scale_provenance"] == "unit_no_kinds"
+    assert [v["column_scale"] for v in projection.source_map["variables"]] == [1.0, 1.0]
+    assert [r["row_scale"] for r in projection.source_map["rows"]] == [1.0, 1.0]
+    assert suffix(projection) == ([1.0, 1.0], [1.0, 1.0])
+
+
+def test_a_spec_without_kinds_ignores_its_own_scales() -> None:
+    """`ProblemSpec.row_scales` and `column_scales` are never read (R-275)."""
+    from openflowsheet.studies.trust_region.projection import DecisionSpec, ObjectiveSpec, project
+
+    base = tr_e1_spec()
+    spec = ProblemSpec(**{**base.__dict__, "row_scales": {"c1": 8.0}, "column_scales": {"x0": 4.0}})
+    projection = project(
+        spec,
+        TR_E1_START,
+        decisions=[DecisionSpec(name, None, None) for name in TR_E1_DECISIONS],
+        objective=ObjectiveSpec("tr-e1-objective", "minimize", tr_e1_objective_build, 1.0),
+        domain={},
+    )
+    assert suffix(projection) == ([1.0, 1.0], [1.0, 1.0])
+    assert projection.source_map == tr_e1_projection().source_map
+
+
+def test_a_spec_with_partial_kinds_is_refused() -> None:
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    base = tr_e1_spec()
+    with pytest.raises(ProjectionRefusedError) as refused:
+        tr_e1_variant(
+            variable_kinds={"x0": "temperature", "x1": "no_such_kind"},
+            row_kinds={"c1": "heat_rate"},
+        )
+    assert refused.value.reason == "PROJECTION_SCALES_UNAVAILABLE(x1,c2)"
+    assert base.variable_kinds == {}  # TR-E1 itself declares none
+
+
+def test_syn001_is_projected_in_k03s_scales() -> None:
+    """The suffixes and the source map carry K03's `Scaling.from_spec`, and nothing else."""
+    from openflowsheet.numerics.scaling import SCALE_PROVENANCE, Scaling
+
+    projection, _ = syn001_projection("P1", omitted_rows=syn001_alias_rows("P1"))
+    spec = projection.spec
+    k03 = Scaling.from_spec(spec)
+    assert projection.scaling == k03
+    source = projection.source_map
+    assert source["scale_provenance"] == SCALE_PROVENANCE
+    assert [v["column_scale"] for v in source["variables"]] == [
+        k03.column[name] for name in spec.variable_ids
+    ]
+    assert [r["row_scale"] for r in source["rows"]] == [
+        k03.row[name] for name in projection.row_ids
+    ]
+    columns, rows = suffix(projection)
+    assert columns == [1.0 / k03.column[name] for name in spec.variable_ids]
+    assert rows == [1.0 / k03.row[name] for name in projection.row_ids]
+    assert set(columns) != {1.0} and set(rows) != {1.0}
 
 
 # -- refusals (§6.1) ------------------------------------------------------------------------------
@@ -433,19 +503,14 @@ def test_syn001_without_its_alias_rows_projects_with_dof_equal_to_the_decisions(
 
 @pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
 def test_g4_syn001_at_the_registered_states(state: str, record_property: Any) -> None:
-    """G4 (a)-(e) at M03's registered states, judged in K03's registered scales.
-
-    SYN-001's spec declares row and variable *kinds* and no scales; the scales the system judges
-    its residuals by are K03's registered nominals for those kinds (`Scaling.from_spec`; M03's
-    full-space NLP and the certificate's root test use the same). The heat-rate rows sum terms of
-    order 1e4-1e5 W, so the two evaluation orders differ by a few ulps of those terms — measured
-    up to 2.2e-11 W absolute at P2 — which is 2.2e-16 in the registered 1e5 W scale and above
-    1e-12 only in watts."""
-    from openflowsheet.numerics.scaling import Scaling
-
+    """G4 (a)-(e) at M03's registered states, judged in the projection's scales, which are K03's
+    registered nominals for SYN-001's declared kinds (R-275; `Scaling.from_spec`, as M03's
+    full-space NLP and the certificate's root test use). The heat-rate rows sum terms of order
+    1e4-1e5 W, so the two evaluation orders differ by a few ulps of those terms — measured up to
+    2.2e-11 W absolute at P2 — which is 2.2e-16 in the registered 1e5 W scale and above 1e-12
+    only in watts."""
     projection, x0 = syn001_projection(state, omitted_rows=syn001_alias_rows(state))
-    assert not projection.spec.row_scales and not projection.spec.column_scales
-    measured = equivalence(projection, x0, Scaling.from_spec(projection.spec))
+    measured = equivalence(projection, x0)
     for name, value in measured.items():
         record_property(f"M05.G4.syn001.{state}.{name}", value)
 
