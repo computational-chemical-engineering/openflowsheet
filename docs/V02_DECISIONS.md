@@ -378,3 +378,14 @@ Grep, don't read whole. Newest at the bottom.
   parent model if not promotable. N4 (reference box vs the real loop inlet) and N5 (runner concurrency) are facts
   for M02's measurements.
 - `opus-engineer` M04 WO-1, 2, 3, 10 launched on `wp/M04`.
+- M02 WO-1b, rulings, WO-5, WO-6 done on `wp/M02` (`100fd12`, `3f37c2e`, `d0eb848`, `2e63211`; check.sh 7236
+  passed, 2 pymrm deselected). Reactor env built from pins (fresh clone, 20.6 s): lock `032a050c…` (85 dists), variant
+  `pymrm-6089593-g2-nz800-s123-v1` = `2302cddf…`, fingerprint `238123dc…`. **G10 all pass**: A41 3/3; A42
+  1.559285305616933e-08 (= probe); A43/A44 bitwise; A45 3.84e-8 ≤ 1e-7; A46 5.06e-5 ≤ 1e-3; **A47(a) bitwise**; A47(b)
+  1.43e-8 ≤ 1e-6; A48 3/3. G5 15 tests over 4 transports. Real experiment job: 31.7 s; cache hit 1.88 s.
+- **Finding (D22): one real evaluation costs 25–45 s, not ~9 s** — the probe's wall_s omitted the group's KPI
+  certificate (12–35 s). 120 s timeout keeps 2.7×. Consequence: M04's iteration 1 (632 experiments) ≈ 4.4–7.9 h, not
+  95 min; three iterations ≈ 12–20 h. Frank's M04 N1 restated. Open for the design lane: D22 (timing, R-224/§5.2/G12),
+  D24 (`job_result.experiment` null before any attempt), D23 (every experiment job records through
+  ArtifactTableSink), D18 (model exception → crashed), D14 (frozen handshake failure recorded per experiment).
+- `opus-engineer` M02 merge-main + WO-7, WO-8 (+WO-9) launched on `wp/M02`.
