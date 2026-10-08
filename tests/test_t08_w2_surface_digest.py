@@ -14,6 +14,13 @@ exactly those two files:
 - serving `v17-c2`'s two texts (byte copies in `tests/fixtures/t08/v17_c2_descriptions/`) in their
   place reproduces `6d13e13d…`, so nothing else on the served tool list (names, input schemas,
   the other 15 texts) moved.
+
+**ADR 0019 Amendment 3 (M06, A3.2; approved by Frank on 2026-10-08).** `diff_revisions`'s
+`outputSchema` gains the required member `elements`, so the served tool list moves again, to
+`M06_A3_SERVED_SHA256`. With that one member taken out of that one tool's `outputSchema`
+(`_without_a3_2`), the served list is R-133's `171dd768…` exactly, and with `v17-c2`'s two texts as
+well it is `6d13e13d…`: nothing else moved. (Registered here pending the register entry the
+amendment's surface move needs; M06 WO-2.)
 """
 
 from __future__ import annotations
@@ -26,6 +33,7 @@ import pytest
 from conftest import REPO_ROOT, load_yaml
 
 from openflowsheet.application.operations import OPERATIONS, Operation
+from openflowsheet.canonical import canonical_json
 
 DESCRIPTIONS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings" / "descriptions"
 V17_C2_TEXTS = REPO_ROOT / "tests" / "fixtures" / "t08" / "v17_c2_descriptions"
@@ -33,6 +41,8 @@ MCP_OPERATIONS = sorted(name for name, op in OPERATIONS.items() if "mcp" in op.t
 
 #: R-133: the served descriptions' digest after N1 and N2 (`harness.tool_descriptions_sha256`).
 T08_DESCRIPTIONS_SHA256 = "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14"
+#: ADR 0019 Amendment 3 (A3.2): the served tool list with `diff_revisions`'s `elements`.
+M06_A3_SERVED_SHA256 = "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -63,6 +73,18 @@ def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _without_a3_2(mcp: ModuleType) -> str:
+    """The served tool list's digest (`harness.tool_descriptions_sha256`'s rule) with ADR 0019
+    Amendment 3's `elements` taken out of `diff_revisions`'s `outputSchema` alone."""
+    tools = [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
+    (diff,) = [tool for tool in tools if tool["name"] == "diff_revisions"]
+    schema = diff["outputSchema"]
+    assert schema["required"] == ["added", "changed", "elements", "removed"]
+    del schema["properties"]["elements"]
+    schema["required"].remove("elements")
+    return hashlib.sha256(canonical_json(tools)).hexdigest()
+
+
 def _v17_c2_digest() -> str:
     """`v17-c2`'s served digest as registered (not changed by R-133)."""
     reference = load_yaml(REPO_ROOT / "benchmarks" / "t08" / "reference_values.yaml")
@@ -87,7 +109,8 @@ def test_the_served_digest_is_registered(mcp: ModuleType) -> None:
     from benchmarks.t07.v17 import harness
 
     assert _v17_c2_digest() == "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d"
-    assert harness.tool_descriptions_sha256() == T08_DESCRIPTIONS_SHA256 != _v17_c2_digest()
+    assert harness.tool_descriptions_sha256() == M06_A3_SERVED_SHA256
+    assert _without_a3_2(mcp) == T08_DESCRIPTIONS_SHA256 != _v17_c2_digest()
 
 
 def test_the_served_files_differ_from_v17_c2_in_exactly_the_two_reviewed_files() -> None:
@@ -118,4 +141,5 @@ def test_restoring_the_two_files_reproduces_v17_c2s_digest(
 
     monkeypatch.setattr(mcp, "description", v17_c2_description)
     mcp.tools.cache_clear()
-    assert harness.tool_descriptions_sha256() == _v17_c2_digest()
+    assert harness.tool_descriptions_sha256() != _v17_c2_digest()
+    assert _without_a3_2(mcp) == _v17_c2_digest()
