@@ -472,3 +472,9 @@ Grep, don't read whole. Newest at the bottom.
   confirmed. All six build choices accepted.
 - Launched: fresh `architect` M02 WO-8 rulings (R-254+); `opus-engineer` M05 WO-2, WO-3 (`wp/M05`); `sonnet-implementer`
   M05 WO-1 ipopt-executable audit (`wp/M05-audit`); `opus-engineer` alpha gate review fixes.
+- Alpha gate review fixes done (`4d6891b`…`178a070`): F1 acceptance-cell regex + calendar check (3 new "no" rows); F2
+  Frank's answers dated ≥ `Judged` (new Table T6; `0.2.0a2` refused on `0.2.0a1`'s answers); F3 `differences=None`
+  refuses "tree check not run"; F4 six refusal tests (each removal fails only its own tests); A42 line; RELEASING.md
+  clause. check.sh 7889 passed; generator 67 claims. Session aligned ADR 0028's cell rule + answers intro and appended an
+  R-238 amendment note (`c97da19`). Left: F6 (close 0.1-line pre-releases? Frank's call), F7 for M07, F8 aarch64
+  `--rerun` MATCH to confirm in CI before `C_α`, WO-5 must check the V17-carry row names every surface link.

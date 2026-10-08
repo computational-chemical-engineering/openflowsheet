@@ -95,7 +95,6 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | `architect` | M02 WO-8 rulings F1–F6 (phase machinery + verifier for PR units) | `wp/M02` (`m02`) |
 | `opus-engineer` | M05 WO-2, WO-3 (projection compiler, TRF runner) | `wp/M05` (`m05`) |
 | `sonnet-implementer` | M05 WO-1 (`ipopt` executable audit) | `wp/M05-audit` (`m05-audit`) |
-| `opus-engineer` | alpha gate review fixes F1–F4 | `wp/V02-alpha-gate` (`alpha-gate`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
