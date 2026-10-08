@@ -125,7 +125,7 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 
 ## Harvest (T08.A21)
 
-256 items — every `limitations[]` entry and non-`pass` check of the 18 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
+263 items — every `limitations[]` entry and non-`pass` check of the 19 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
 
 | Package | E | S | P | B |
 | --- | --- | --- | --- | --- |
@@ -135,6 +135,7 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 | K04 | 5 | 3 | 2 | 0 |
 | K05 | 6 | 0 | 2 | 0 |
 | K06 | 0 | 7 | 1 | 0 |
+| M01 | 0 | 0 | 7 | 0 |
 | P00 | 0 | 1 | 8 | 0 |
 | P01 | 2 | 2 | 5 | 0 |
 | P02 | 2 | 0 | 12 | 0 |
@@ -147,4 +148,4 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 | T05b | 11 | 2 | 7 | 1 |
 | T06 | 11 | 3 | 14 | 0 |
 | T07 | 3 | 2 | 7 | 2 |
-| **all** | 93 | 42 | 116 | 5 |
+| **all** | 93 | 42 | 123 | 5 |
