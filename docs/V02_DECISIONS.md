@@ -358,3 +358,7 @@ Grep, don't read whole. Newest at the bottom.
   (G1–G15 pass, G16 n/a). ADR 0030 and ADR 0019 Amendment 3 → **Accepted** (`19a1379`).
 - `opus-engineer` merging `wp/M06-build` into main on `merge/M06` (reconcile register, envelope, matrix, changelog
   test with M01); main fast-forwards after a green gate.
+- **M06 merged into main**: `7473f35` (merge onto M01; register rebuilt in numerical order, 190 entries, next free
+  R-238; envelope + matrix regenerated, 51 limitations, 278 harvest rows; changelog test takes R-216's form and drops
+  M01's `ADDED_AFTER_V0_1_0`, R-217 merge note; package data both kinds) — gate on that tree: 7717 passed, 52 skipped,
+  Node 92/92, browser 34/34, matrix --check 0. `47baa4d` brings main's two state-file commits (docs only). Pushed.

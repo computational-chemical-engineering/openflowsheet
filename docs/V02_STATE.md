@@ -20,7 +20,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M03 | Design | T08 | W24 (part) | spec + Amendment 1; WO-0…9 done (`e9de5ee`; `nlp` extra isolated in `91537b0`); review: sound, 1 must-fix (`ceb5e15`); fixes + manifest running; merge waits for N1 |
 | M04 | Design | M02 | W23 | specification started 2026-10-08 (`specifier` on `wp/M04`; brief in `docs/briefs/M04-specification.md` there; ADR 0036+, R-240+) |
 | M05 | Design | M03, M04 | W24 | not started |
-| M06 | Build | T08 | W26, W27 | **tested** (`evidence/M06/4719a1a…`, CI green both architectures); review closed; ADR 0030 + Amendment 3 Accepted (`19a1379`); merging into main; WO-17 (canaries + campaign) at M07 |
+| M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
 ## Milestone 0 (housekeeping)
@@ -78,7 +78,6 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | `opus-engineer` | M02 WO-1b + rulings, WO-5 (reactor env, G10), WO-6 | `wp/M02` (`m02`) |
 | `opus-engineer` | M03 review fixes + WO-10 manifest | `wp/M03` (`m03`) |
 | `specifier` | M04 specification | `wp/M04` (`m04`) |
-| `opus-engineer` | merge M06 into main (reconcile with M01) | `merge/M06` (`merge-m06`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
