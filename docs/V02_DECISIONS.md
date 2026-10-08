@@ -21,3 +21,22 @@ Grep, don't read whole. Newest at the bottom.
 - Stale worktrees (public-line, showcase, the CI agent's) are clean; removing them was refused by the permission
   classifier — left for Frank.
 - Frank: the Claude Design web-shell design was not revised after 2026-09-29; the imported prototype is final input.
+
+## 2026-10-06 — halt
+
+- M06 architect done (`wp/M06` `44098b0`, `03f3f13`). Corrections from it: the project is Apache-2.0 (the brief said
+  MIT); D1–D3 already fixed by T08 Phase 1; the command is `serve-http`.
+- Specifier (M01) and engineer (M06 WO-4…6) both hit the account session limit, were resumed, then halted at
+  Frank's request ("The task requires too many tokens. Try to get it to a save state and then halt.").
+- M06 WIP `f8fa5e5` on `wp/M06-build` (untested). WO-4 partial: `resources.py` (`PACKAGED` + `web`, `REPOSITORY_PATHS`
+  web→apps/web, `DIRECTORIES`), `_data/web` symlink, pyproject globs, `apps/web/index.html`, `favicon.svg`. Known
+  breakage: `tests/test_t08_w4_package_data.py` (assumes packaged path = repo path). Engineer's next steps: fix that
+  test via `repository_path()`; `bindings/web.py` with security headers as `/ui`-scoped middleware (not a mount
+  wrapper: 404/405 would lack the CSP); `serve-http --ui` (exit 1 if web files missing); import rule in
+  `tests/test_t07_w6a_http.py`; serving tests; then WO-5, WO-6. `actions/setup-node` v7.0.0 =
+  `820762786026740c76f36085b0efc47a31fe5020`. Planned: G1 equality as `xfail(strict=True)` until WO-3/9/10.
+- Frank (2026-10-06), M06 F2: the W27 agent campaign uses the most recent model available at campaign time ("This
+  should be 5.5 (or preferably the most recent version)"), pinned by exact ID and recorded; the design note's default
+  (V17 `v17-c2`'s `claude-sonnet-5`, for comparability) is overridden; the loss of direct comparability is stated.
+  Development agents are unaffected (frontmatter aliases `opus`/`sonnet`/`haiku` resolve to the latest; the API saw
+  `claude-opus-5-5`).
