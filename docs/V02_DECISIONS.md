@@ -162,3 +162,4 @@ Grep, don't read whole. Newest at the bottom.
   forward for Q3); spec §5 toy residual "exactly 0" is 1.5e-36 in binary64; plus Q-F2/Q-F3 measurements.
   Alternative: amend now. Reversible by: consulting sooner.
 - `opus-engineer` M03 WO-4, 5, 7 (+ optional WO-9) launched on `wp/M03`.
+- check.sh on `wp/M06-build` `b8a0518` (W27 merged, R-194): 7189 passed, 31 skipped, 1 xfailed; PASSED. The U14 red is closed.
