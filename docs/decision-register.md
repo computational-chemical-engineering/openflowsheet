@@ -3708,3 +3708,53 @@ coverage would not reflect v0.2).
 implementer's.
 
 ---
+
+---
+
+## R-192 — The served MCP tool-list digest moves from R-133's `171dd768…` to `6c4375b4…`, as the direct consequence of ADR 0019 Amendment 3's `diff_revisions` `elements` (A3.2); the move is bound to that member alone
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M06 WO-2 engineer's escalation; Amendment 3 approved by Frank 2026-10-08 |
+| Normative text | This entry; ADR 0019 Amendment 3 (A3.2); `docs/design/M06-web-shell.md` §2 item 2 (superseded on this point) |
+| Evidence | `7b36f4a` `tests/test_t08_w2_surface_digest.py`: served `6c4375b4…`; with `elements` removed from `diff_revisions`' `outputSchema` it is `171dd768…`; with `v17-c2`'s two texts as well, `6d13e13d…` |
+| Affected packages | M06, M07 (the v0.2 gate registers its own surface), W27 |
+
+**Decision.** Amendment 3 puts `elements` into `diff_revisions`' result schema, and the MCP binding serves each
+tool's `outputSchema`, so the served tool-list digest moves. The design note's "every registered digest stays
+bit-identical" (§2 item 2) did not foresee this. The new digest is registered beside the old one, bound by the
+decomposition test to exactly that one member. No tool *description* text changes, so Frank's description review
+(T08.A18) is not reopened. R-133, R-134 and R-137 remain the record of the 0.1 surface. `scripts/t08_rc.py`'s A49 check
+(`R133_DESCRIPTIONS_SHA256`) belongs to the 0.1 line's RC and is not edited. Run on a v0.2 tree it reports the
+move, which is correct. The v0.2 release gate registers v0.2's surface (M07).
+
+**Rejected alternative, and why.** Keeping `elements` out of the MCP `outputSchema`: transports must add nothing and
+omit nothing (R-096), so MCP would describe a different contract from Python, CLI and HTTP. Editing the A49 constant
+to the new digest: that rewrites a 0.1 release record.
+
+**Watch for.** Any other served-surface change in v0.2 needs its own entry and decomposition test. W27's campaign
+runs on the v0.2 surface and states its digest.
+
+---
+
+## R-193 — During v0.2, `benchmarks/t08/support_envelope.yaml` is v0.2's working envelope (`v0.2-envelope-dev`, release `0.2.0.dev0`); v0.1's envelope stays as released, at tag `v0.1.1`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M06 WO-3 engineer's escalation |
+| Normative text | This entry; T08 release spec §5 (its `envelope_id: v0.1-envelope-1` holds for the 0.1 line) |
+| Evidence | `4415e3e` (`list_audit` on the interface axis, A20 count 21) and the following commit (id and release renamed, `docs/support-matrix.md` re-emitted; `t08_support_matrix.py --check` 0 problems; envelope tests 65 passed) |
+| Affected packages | M01–M07 (every package that adds models, components or operations), M07 (finalises the 0.2.0 envelope with the T08 F3 harvest) |
+
+**Decision.** T08.A20 holds the envelope to the live code, so every v0.2 addition (M06's `list_audit` now, M01's
+models next) must enter it. A release record must not describe more than its release shipped. So the file is renamed
+in place to v0.2's working envelope, and v0.1's stays byte-for-byte at the release tags. M07 finalises it as
+`v0.2-envelope-1` for 0.2.0, with the harvest of T08's manifest limitations (milestone 0 item F3).
+
+**Rejected alternative, and why.** Amending `v0.1-envelope-1` in place (`4415e3e` alone): `docs/support-matrix.md`
+would say "v0.1.0" while listing an operation 0.1.0 does not have. A frozen copy of v0.1's file beside a new one:
+the tags already preserve it, and two live envelopes would need two A20 checks.
+
+**Watch for.** The release gate for `0.2.0a1` and `0.2.0` must check that `release` matches the version being cut.

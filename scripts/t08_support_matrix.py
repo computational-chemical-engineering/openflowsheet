@@ -57,7 +57,8 @@ CI: Final = ROOT / ".github" / "workflows" / "ci.yml"
 
 #: Spec §5.1: the envelope's top-level keys, in order.
 TOP_LEVEL: Final = ("envelope_id", "release", "axes", "unsupported", "limitations", "harvest")
-ENVELOPE_ID: Final = "v0.1-envelope-1"
+#: R-193: v0.2's working envelope; v0.1's (`v0.1-envelope-1`) is the one at tag v0.1.1.
+ENVELOPE_ID: Final = "v0.2-envelope-dev"
 #: The CI runners and the architecture each is (`.github/workflows/ci.yml`'s matrix).
 RUNNER_ARCHITECTURE: Final[Mapping[str, str]] = {
     "ubuntu-latest": "x86-64",
