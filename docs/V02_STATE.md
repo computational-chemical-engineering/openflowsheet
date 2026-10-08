@@ -50,6 +50,9 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   Poling; Q-N2 fix F-R1/F-R2 upstream at a new pin? default: keep `6089593` + subclass/overlay; Q-N3 design grid —
   default num_z = 800 (~9 s/solve); Q-N4 ship the real C1 records in the wheel — default yes, with citations.
 
+- **W27 (defaults set):** Q3 up to 3 re-canaries within the approved budget; Q4 agent false verification reported
+  with its bound, not gated; Q5 run the approved 45 even if 0 cases are candidates (alternative: 15 runs).
+
 Otherwise nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
 `origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
 F5 education mode deferred.
@@ -61,11 +64,11 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M01 WO-1…4, 6 (PR provider, flash, boundary) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
-| `specifier` | M06 WO-15 W27 registration | `wp/M06-w27` (`m06-w27`) |
+| `opus-engineer` | M06 WO-7…10 fixtures, view models, screens | `wp/M06-ui` (`m06-ui`) |
 | `opus-engineer` | M03 WO-0…3 sensitivity core | `wp/M03` (`m03`) |
 | `opus-engineer` | M03 WO-6 Ipopt [A10] audit | `wp/M03-audit` (`m03-audit`) |
 
-Done today: M06 WO-1…6 (`wp/M06-build`, contract merged in; R-192, R-193), M06 WO-14, the M03 specification.
-Next free slot: M01 WO-5 (IDAES conformance) if ready, else M06 WO-7 (fixtures), then WO-8…12 on
-`wp/M06-build`. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
+Done today: M06 WO-1…6, WO-14, WO-15 (all merged into `wp/M06-build`; R-192…R-194), the M01 and M03 specifications.
+Next free slot: M01 WO-5 (IDAES conformance, own env) and WO-7; then M06 WO-16 (W27 classifier/harness/scorer);
+then M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
 Push `main` at milestones (authorised).

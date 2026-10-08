@@ -127,3 +127,15 @@ Grep, don't read whole. Newest at the bottom.
   TM-4513 (not Poling); Q-N2 upstream fixes → keep `6089593` + subclass/overlay; Q-N3 design grid → 800 (~9 s/solve);
   Q-N4 ship real C1 records in the wheel → yes, with citations.
 - `opus-engineer` M01 WO-1…4, WO-6 launched on `wp/M01`. WO-5 (IDAES conformance, own env) and WO-7 (manifest) next.
+- M06 WO-15 done (`5dde77f`…`f6a03c7` on `wp/M06-w27`): `docs/derivations/M06-W27-registration.md` (R01–R58,
+  W27-A01…A40, S01…S18), generator `m06_w27_registration.py`, `case_facts/registration/dry_illustration.json`,
+  R-176…R-179. Dry coverage today: 0 CANDIDATE of 450 (and of 82); a hypothetical v0.2 PR route still gives 0.
+  Specifier defaults for Frank: Q3 up to 3 re-canaries within the approved budget; Q4 agent false verification
+  reported with bound, not gated (R-179); Q5 run the approved 45 even with 0 candidates (alt: 15 runs).
+- Finding F6: T08 U14 test red since `e268ed8` (WO-14's "green" gate ran before its files were tracked).
+  DECISION R-194 (`b8a0518`): U14 restated for v0.2 — no comparison run/registered/shipped; adaptation records
+  confined to `benchmarks/m06/openidaes450/`, no run records there, nothing in package data. Rejected: narrowing the
+  test to registry.yaml + src/ (WO-15's suggestion). Design note: W27 model per Frank's F2; G14 records the registry
+  snapshot SHA (WO-15 F1, F2).
+- `wp/M06-w27` merged into `wp/M06-build` (`5ceb32c`; register conflict resolved by concatenation). Worktrees
+  `m06-contract`, `m06-w27` removed. `opus-engineer` M06 WO-7…10 launched on `wp/M06-ui` (from `b8a0518`).
