@@ -101,8 +101,17 @@ jobs:
         with:
           node-version: "22"
 
+      # M06 WO-11 (design note §8 A6, Layer C): on the x86-64 leg the browser smoke test must
+      # run — Chrome is on the GitHub Ubuntu image — so a missing browser fails it rather than
+      # skipping it. The aarch64 image has no browser; there it is skipped with its reason.
       - name: Run checks
-        run: ./scripts/check.sh
+        run: |
+          if [ "${{ matrix.runner }}" = "ubuntu-latest" ]; then
+            export OPENFLOWSHEET_REQUIRE_BROWSER=1
+            OPENFLOWSHEET_BROWSER="$(command -v google-chrome || command -v chromium || true)"
+            export OPENFLOWSHEET_BROWSER
+          fi
+          ./scripts/check.sh
 
       # Gate G05's second clause: two-platform structural equality. Each runner emits the R0
       # artifacts blueprint §8.3 promises identical across supported platforms; the `identity`

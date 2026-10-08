@@ -8,7 +8,15 @@ pure modules (`js/model/`) touch no `document`, `window`, `fetch` or storage; `i
 inline script, style or handler; every relative module import resolves; the operation names the
 sources call are `ROUTES` keys from the design's list of 17, and `routes.js` is what
 `scripts/m06_web_routes.py` generates; the JS `FORBIDDEN_RANGES` block is Python's; and no
-`OPERATIONS` path is under `/ui`. The browser half (a request recorder) is WO-11's smoke test.
+`OPERATIONS` path is under `/ui`. The browser half (a request recorder) is WO-11's smoke test
+(`tests/test_m06_browser_smoke.py`).
+
+WO-11 closes the list with the sinks §5.1 and §7 rule out but §8 A3 does not name: no `console`
+use at all (§7: the token is never logged), no cookie, `window.open`, `postMessage`, `srcdoc`,
+inline-style or `src` property; storage only where the token (`js/auth.js`) and the theme
+(`js/main.js`) live; elements and attributes made only by `mount` (`js/h.js`) and the readiness
+markers (`js/main.js`) — except the two download buttons, whose anchor's `href` is the blob URL
+they just made; and no `url(`, `@import` or `expression(` in the style sheets.
 """
 
 from __future__ import annotations
@@ -184,3 +192,68 @@ def test_the_js_forbidden_ranges_are_the_projection_s() -> None:
     block = text.split("// BEGIN FORBIDDEN_RANGES", 1)[1].split("// END FORBIDDEN_RANGES", 1)[0]
     pairs = re.findall(r"\[\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+)\s*\]", block)
     assert tuple((int(low, 16), int(high, 16)) for low, high in pairs) == FORBIDDEN_RANGES
+
+
+# ================================================================= WO-11: the final list
+
+#: Tokens that occur nowhere in the shell (§5.1: no way to set `style` or `src`; §7: no
+#: logging, no ambient credential, no second window or channel).
+NOWHERE = (
+    "console.",
+    ".cookie",
+    "window.open",
+    "postMessage",
+    "srcdoc",
+    ".style",
+    ".src",
+    "setHTML",
+    "createContextualFragment",
+    "DOMParser",
+)
+#: Tokens allowed only in the files named.
+PLACED = {
+    "localStorage": {"js/auth.js", "js/main.js"},
+    "sessionStorage": {"js/auth.js", "js/main.js"},
+    "createElement(": {"js/h.js", "js/screens/file.js", "js/screens/job.js"},
+    "createElementNS(": {"js/h.js"},
+    "setAttribute(": {"js/h.js", "js/main.js"},
+    "setAttributeNS(": set(),
+    "createObjectURL(": {"js/screens/file.js", "js/screens/job.js"},
+    ".href": {"js/screens/file.js", "js/screens/job.js"},
+}
+#: The download buttons' anchor, exactly: a blob URL of the bytes just read, clicked, revoked.
+DOWNLOAD_ANCHOR = re.compile(
+    r"const url = URL\.createObjectURL\("
+    r"new Blob\(\[[a-z.]+\], \{ type: \"application/json\" \}\)\);\n"
+    r"\s*const anchor = globalThis\.document\.createElement\(\"a\"\);\n"
+    r"\s*anchor\.href = url;\n"
+    r"\s*anchor\.download = [a-z.]+;\n"
+    r"\s*anchor\.click\(\);\n"
+    r"\s*URL\.revokeObjectURL\(url\);"
+)
+
+
+@pytest.mark.parametrize("token", NOWHERE)
+def test_no_logging_cookie_window_style_or_src_sink(token: str) -> None:
+    found = [name for name, text in _files(".js", ".html").items() if token in text]
+    assert found == []
+
+
+@pytest.mark.parametrize("token", sorted(PLACED))
+def test_storage_elements_and_attributes_only_where_named(token: str) -> None:
+    found = {name for name, text in _files(".js").items() if token in text}
+    assert found <= PLACED[token], found - PLACED[token]
+
+
+def test_the_download_anchors_are_blob_urls_and_nothing_else() -> None:
+    for name in ("js/screens/file.js", "js/screens/job.js"):
+        text = (WEB / name).read_text(encoding="utf-8")
+        assert len(DOWNLOAD_ANCHOR.findall(text)) == 1, name
+        for token in ("createElement(", "createObjectURL(", ".href"):
+            assert text.count(token) == 1, (name, token)
+
+
+def test_the_style_sheets_load_nothing() -> None:
+    for name, text in _files(".css").items():
+        for token in ("url(", "@import", "expression("):
+            assert token not in text, (name, token)

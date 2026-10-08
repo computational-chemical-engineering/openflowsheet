@@ -115,3 +115,6 @@ testpaths = ["tests"]
 # The repository root on sys.path so `benchmarks.syn001.oracle` imports without installing it;
 # the oracle is deliberately not part of the `openflowsheet` distribution.
 pythonpath = ["."]
+markers = [
+    "browser: drives a headless Chromium (M06 design note §8 A6); skipped without one, failed without one when OPENFLOWSHEET_REQUIRE_BROWSER=1",
+]
