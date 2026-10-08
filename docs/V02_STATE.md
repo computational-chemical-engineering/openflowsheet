@@ -41,7 +41,11 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
-Nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
+- **M03 N1:** accept the licences of an optional, non-default `nlp` extra (cyipopt + Ipopt + PyNumero ASL: EPL-2.0,
+  CeCILL-C, the ASL notice, Apache-2.0 METIS 5, BSD, GCC runtime), once the [A10] audit lists exactly what is loaded.
+  Default: accept for the optional extra; without it W24's M03 optimizer part stays BLOCKED.
+
+Otherwise nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
 `origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
 F5 education mode deferred.
 
