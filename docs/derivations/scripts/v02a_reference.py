@@ -15,7 +15,7 @@ Emitted, and labelled as such in the YAML:
 * ``targets`` -- what the alpha registers: the gate set, its coverage pattern, the claimed and
   unclaimed gates, the pinned envelope id, the paths of its records, the required ADRs and Frank's
   items, the workflow and tag patterns, the RC steps.
-* ``truth_tables`` -- Tables T1-T5, each row re-derived from the stated rule.
+* ``truth_tables`` -- Tables T1-T6, each row re-derived from the stated rule.
 * ``assertions`` -- the catalogue of numbered assertions, cross-checked with the specification's own
   table in both directions.
 
@@ -190,7 +190,7 @@ CATALOGUE = {
 }
 
 # ---------------------------------------------------------------------------------------------
-# Truth tables (spec Tables T1-T5): expected answers, re-derived from the rules below.
+# Truth tables (spec Tables T1-T6): expected answers, re-derived from the rules below.
 # ---------------------------------------------------------------------------------------------
 
 T1 = {
@@ -264,6 +264,15 @@ T5 = {
     "below), and still Proposed.": False,
     "**Status:** Proposed; Accepted when M02 is tested": False,
 }
+#: Amendment 1 (review) F2: (cell, Judged, counts) -- a D3 row and each of Frank's three answers
+#: count iff the cell passes Table T4 and its date is on or after the verdict's `Judged` date.
+T6 = (
+    ("accepted, 2026-10-12", "2026-10-12", True),
+    ("accepted, 2026-10-13", "2026-10-12", True),
+    ("accepted, 2026-10-11", "2026-10-12", False),
+    ("accepted, 2026-10-12", "2026-11-02", False),
+    ("accepted (i), 2026-10-12", "2026-10-12", False),
+)
 #: ADRs whose first status line is stably Accepted, read from the repository as further T5 rows.
 T5_REAL_ACCEPTED = (
     "docs/adr/0021-v0.1-release-policy.md",
@@ -295,18 +304,28 @@ def is_section(tag: str, heading: str) -> bool:
     return re.fullmatch(rf"## {re.escape(tag)}(?:\s.*)?", heading) is not None
 
 
-def frank_accepts(cell: str) -> bool:
+def frank_date(cell: str) -> datetime.date | None:
     """Spec §7.2 item 3 (Amendment 1 (review) F1): `*` and backticks removed, stripped and
-    lower-cased, the cell matches `FRANK_CELL_PATTERN` at its start with a calendar date."""
+    lower-cased, the cell matches `FRANK_CELL_PATTERN` at its start with a calendar date, which
+    is returned; `None` otherwise."""
     bare = cell.replace("*", "").replace("`", "").strip().lower()
     match = re.match(FRANK_CELL_PATTERN, bare)
     if match is None:
-        return False
+        return None
     try:
-        datetime.date.fromisoformat(match.group(1))
+        return datetime.date.fromisoformat(match.group(1))
     except ValueError:
-        return False
-    return True
+        return None
+
+
+def frank_accepts(cell: str) -> bool:
+    return frank_date(cell) is not None
+
+
+def frank_counts(cell: str, judged: str) -> bool:
+    """Spec §7.2 item 3 (Amendment 1 (review) F2): Table T4's rule, dated on or after `judged`."""
+    date = frank_date(cell)
+    return date is not None and date >= datetime.date.fromisoformat(judged)
 
 
 def status_accepted(line: str) -> bool:
@@ -566,7 +585,7 @@ def build(claims: Claims) -> dict[str, Any]:  # noqa: PLR0915 - one claim after 
         gate_id,
     )
 
-    # T1-T5 -- the truth tables: the spec's rows equal ours, and the rules give every row.
+    # T1-T6 -- the truth tables: the spec's rows equal ours, and the rules give every row.
     t1 = {unquote(row[0]): yes_no(row[1]) for row in table_after(spec, "**Table T1")}
     claims.check("T1.table", t1 == T1)
     claims.check("T1.rule", all(covered(v) == want for v, want in T1.items()))
@@ -593,6 +612,12 @@ def build(claims: Claims) -> dict[str, Any]:  # noqa: PLR0915 - one claim after 
     claims.check("T4.table", t4 == T4)
     claims.check("T4.rule", all(frank_accepts(cell) == want for cell, want in T4.items()))
     claims.check("T4.rule_stated", f"`{FRANK_CELL_PATTERN}`" in spec)
+    t6 = tuple(
+        (unquote(row[0]), unquote(row[1]), yes_no(row[2]))
+        for row in table_after(spec, "**Table T6")
+    )
+    claims.check("T6.table", t6 == T6, str(t6))
+    claims.check("T6.rule", all(frank_counts(cell, on) == want for cell, on, want in T6))
     t5 = {unquote(row[0]): yes_no(row[1]) for row in table_after(spec, "**Table T5")}
     claims.check("T5.table", t5 == T5)
     claims.check("T5.rule", all(status_accepted(line) == want for line, want in T5.items()))
@@ -682,6 +707,7 @@ def build(claims: Claims) -> dict[str, Any]:  # noqa: PLR0915 - one claim after 
             "T3_malformed_tags": list(MALFORMED_TAGS),
             "T4_frank_cell": T4,
             "T5_adr_status": T5,
+            "T6_frank_dated": [list(row) for row in T6],
         },
         "assertions": CATALOGUE,
     }

@@ -9,9 +9,9 @@ fails its own test.
 The inputs are of two kinds, and each says which it is:
 
 - **real records**: ADR 0028, ADR 0021 and ADR 0022 as committed, today's support envelope, the
-  committed record of the v0.1 candidate `67c66d9` (R-151), the spec's truth tables T1, T4 and T5
-  as `benchmarks/m07a/reference_values.yaml` registers them (M07a.A00 re-derives them), and the v0.1
-  gate's file hashes there (M07a.A13);
+  committed record of the v0.1 candidate `67c66d9` (R-151), the spec's truth tables T1, T4, T5
+  and T6 as `benchmarks/m07a/reference_values.yaml` registers them (M07a.A00 re-derives them), and
+  the v0.1 gate's file hashes there (M07a.A13);
 - **constructed test inputs**: minimal ledgers, verdict documents, ADR tables, RC records,
   manifests and envelopes, each carrying the marker `MARK` so that none can be mistaken for a
   record. The end-to-end tests run `main` on a scratch git repository built the same way.
@@ -485,9 +485,17 @@ def test_a04_a_missing_ledger_gate_or_verdict_is_refused() -> None:
 @pytest.mark.parametrize(
     "state",
     # `accepted (i), …` is a chosen alternative, not the default (Amendment 1 (review) F1).
-    ["pending", "alternative (i), 2026-10-12", "accepted (i), 2026-10-12", None],
+    ["pending", "alternative (i), 2026-10-12", "accepted (i), 2026-10-12", None, "2026-10-11"],
 )
 def test_a05_each_of_frank_s_answers_must_be_an_acceptance(item: str, state: str | None) -> None:
+    """The last state is an acceptance dated the day before `Judged` (Amendment 1 (review) F2)."""
+    if state == "2026-10-11":
+        result = report(files(adr_0028=adr_0028(answers={item: f"accepted, {state}"})))
+        assert result["reasons"] == [
+            f"Frank's answer to {item}: accepted 2026-10-11, before the verdict's Judged date "
+            f"{JUDGED} (§7.3 item 11)"
+        ]
+        return
     result = report(files(adr_0028=adr_0028(answers={item: state})))
     if state is None:
         expected = f"Frank's answer to {item}: no row {item!r} in {ADR_0028}"
@@ -497,6 +505,59 @@ def test_a05_each_of_frank_s_answers_must_be_an_acceptance(item: str, state: str
             "amend the alpha specification for it"
         )
     assert result["reasons"] == [expected]
+
+
+@pytest.mark.parametrize(("cell", "judged", "counts"), TRUTH["T6_frank_dated"])
+def test_a05_table_t6_dates_d3_and_each_answer_against_judged(
+    cell: str, judged: str, counts: bool
+) -> None:
+    """Table T6 (Amendment 1 (review) F2) for the D3 row and for each of the three answers in
+    turn, the other cells accepted on the judged date."""
+    on_judged = f"accepted, {judged}"
+    answers = dict.fromkeys(ALPHA.frank_items, on_judged)
+    verdicts = document(V14_FAIL, judged=judged)
+    words = {gate: word for gate, (word, _, _) in V14_FAIL.items()}
+    d3 = report(
+        files(
+            ledger=ledger(words),
+            verdicts=verdicts,
+            adr_0028=adr_0028(d3=cell, answers=answers),
+        )
+    )
+    assert d3["tag_may_be_proposed"] is counts, d3["reasons"]
+    for item in ALPHA.frank_items:
+        result = report(
+            files(
+                ledger=ledger(words),
+                verdicts=verdicts,
+                adr_0028=adr_0028(d3=on_judged, answers={**answers, item: cell}),
+            )
+        )
+        assert result["tag_may_be_proposed"] is counts, (item, result["reasons"])
+        if not counts:
+            frank = [r for r in result["reasons"] if r.startswith("Frank's answer to")]
+            assert frank and all(r.startswith(f"Frank's answer to {item}") for r in frank)
+
+
+def test_a05_a_later_alpha_is_not_proposable_on_the_earlier_alpha_s_answers() -> None:
+    """Review F2: `0.2.0a2`, with a new verdict judged after `0.2.0a1`'s answers, refuses on each
+    of the three answers, though the same ADR tables pass for `0.2.0a1`."""
+    first = adr_0028()  # the three answers accepted on 0.2.0a1's Judged date
+    assert report(files(adr_0028=first))["tag_may_be_proposed"]
+    later = "2026-11-02"
+    result = report(
+        files(
+            adr_0028=first,
+            verdicts=document(ALL_PASS, judged=later),
+            envelope=envelope(release="0.2.0a2"),
+        ),
+        version="0.2.0a2",
+    )
+    assert result["reasons"] == [
+        f"Frank's answer to {item}: accepted {JUDGED}, before the verdict's Judged date {later} "
+        "(§7.3 item 11)"
+        for item in ALPHA.frank_items
+    ]
 
 
 def test_a05_the_real_adr_0028_is_pending_on_all_three() -> None:

@@ -283,3 +283,19 @@ truth_tables:
     '**Status:** Accepted': true
     '**Status:** Proposed, 2026-10-08; amended before acceptance by Amendment 1 (2026-10-08, below), and still Proposed.': false
     '**Status:** Proposed; Accepted when M02 is tested': false
+  T6_frank_dated:
+  - - accepted, 2026-10-12
+    - '2026-10-12'
+    - true
+  - - accepted, 2026-10-13
+    - '2026-10-12'
+    - true
+  - - accepted, 2026-10-11
+    - '2026-10-12'
+    - false
+  - - accepted, 2026-10-12
+    - '2026-11-02'
+    - false
+  - - accepted (i), 2026-10-12
+    - '2026-10-12'
+    - false

@@ -23,7 +23,9 @@ working tree (§7.2):
   rows `N3`, `V17 carry`, `M02 N1`). A cell counts iff, with `*` and backticks removed, stripped
   and lower-cased, it matches `ACCEPTANCE` at its start: `accepted`, then only spaces or `,;:`,
   then a calendar date, which is the acceptance date (Table T4, Amendment 1 (review) F1). A D3
-  row counts only if that date is on or after the verdicts' `Judged` date.
+  row and each of the three answers count only if that date is on or after the verdicts' `Judged`
+  date (Table T6, Amendment 1 (review) F2), so an answer given for one release is not read for a
+  later one.
 - `docs/v02-alpha-rc-record.md`, by `v0_1_gate.py`'s RC-record grammar (T08 review 3, Ruling 3)
   with this set's steps: 1–12 must each have a row that passed and none that failed or is not
   stated as passed; step 13 is this script and is not required.
@@ -41,10 +43,10 @@ candidate's (2); every claimed gate has a verdict in the ledger and the same in 
 document (D2.1, 3), none `BLOCKED` (D2.2, 4), and every `FAIL` names its clauses, each accepted in
 ADR 0028's D3 table (D2.3, 5); the candidate's D2.4 paths equal `C`'s (`v0_1_gate.py`'s rule and
 code, 6); the RC record shows the set's steps passed (7); the manifests hold (8, 9); the envelope is
-pinned (10); Frank's three answers are acceptances (11); and every required ADR is Accepted (12).
-Unclaimed gates are printed `not claimed (<set>)` and never checked. A `FAIL` is printed `FAIL`,
-accepted or not. Exit 0 iff a tag may be proposed, 1 if it may not, 2 if the verdict document is
-malformed or `C` cannot be found.
+pinned (10); Frank's three answers are acceptances dated on or after `Judged` (11); and every
+required ADR is Accepted (12). Unclaimed gates are printed `not claimed (<set>)` and never checked.
+A `FAIL` is printed `FAIL`, accepted or not. Exit 0 iff a tag may be proposed, 1 if it may not, 2
+if the verdict document is malformed or `C` cannot be found.
 
     PYTHONPATH=src .venv/bin/python scripts/v0_2_gate.py --rc C [--candidate REF] [--json]
     PYTHONPATH=src .venv/bin/python scripts/v0_2_gate.py --rc C --markdown   # the notes' table
@@ -350,8 +352,10 @@ class Policy:
     frank: list[str]
 
 
-def policy(text: str | None, gate_set: GateSet) -> Policy:
-    """ADR 0028's two tables (§7.2 item 3): the D3 acceptances, and Frank's answers."""
+def policy(text: str | None, gate_set: GateSet, judged: datetime.date | None) -> Policy:
+    """ADR 0028's two tables (§7.2 item 3): the D3 acceptances, and Frank's answers, each of
+    which must be dated on or after the verdict's `judged` date (Table T6); the D3 dates are
+    compared in `judge_gate`, clause by clause."""
     where = gate_set.policy_adr
     if text is None:
         missing = f"{where} does not exist at the candidate"
@@ -380,10 +384,15 @@ def policy(text: str | None, gate_set: GateSet) -> Policy:
                 frank.append(f"Frank's answer to {item}: no row {item!r} in {where}")
             elif len(cells) > 1:
                 frank.append(f"Frank's answer to {item}: {len(cells)} rows in {where}, not 1")
-            elif acceptance_date(cells[0]) is None:
+            elif (date := acceptance_date(cells[0])) is None:
                 frank.append(
                     f"Frank's answer to {item} is not an acceptance of the default; "
                     "amend the alpha specification for it"
+                )
+            elif judged is None or date < judged:
+                frank.append(
+                    f"Frank's answer to {item}: accepted {date.isoformat()}, before the verdict's "
+                    f"Judged date {judged.isoformat() if judged else '(none)'} (§7.3 item 11)"
                 )
     return Policy(accepted, problems, frank)
 
@@ -653,7 +662,7 @@ def build(
     verdict_text = files.get(gate_set.verdict_document)
     document = None if verdict_text is None else verdict_document(verdict_text, gate_set, rc)
     rows = document.rows if document else {}
-    found = policy(files.get(gate_set.policy_adr), gate_set)
+    found = policy(files.get(gate_set.policy_adr), gate_set, document.judged if document else None)
     envelope_text = files.get(ENVELOPE)
     known = {str(item["id"]) for item in envelope_document(envelope_text).get("limitations", [])}
     lines = [
