@@ -3893,3 +3893,175 @@ decision variable's likely optimum.
 **Watch for.** M05 must treat `extrapolated` results as such (a constraint or a stated limit), not as validated.
 
 ---
+
+## R-195 — M01.A26 asserts the projection's defect vector, defect_rel and element balances at 10⁻¹³ × n_tot,in, not relative to the defect
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01 spec Amendment 1; Proposed with ADR 0027 |
+| Normative text | `docs/derivations/M01-spec.md` §9.6 A26, §19 item 1; ADR 0027 Amendment 1 A1.4 |
+| Evidence | build lane at `f595179`: 2.5 × 10⁻¹¹ relative (5.5 × 10⁻¹⁷ mol/s) by either arithmetic route; generator claims BD-04, BD-05, `reference_values.yaml` → `assertion_margins.A26_projection` |
+| Affected packages | M01, M02 (inherits the projection) |
+
+**Decision.** A defect of ~10⁻⁶ mol/s is a difference of flows near 0.5 mol/s. Its binary64 floor is the raw
+outlet's own rounding: 5.6 × 10⁻¹⁷ × n_tot,in, which is 2.5 × 10⁻¹¹ of the defect. The defect vector and defect_rel are
+therefore asserted at 10⁻¹³ × n_tot,in (defect_rel at 10⁻¹³). The element balances move to the same scale, from
+10⁻¹⁵: the worst-case bound of their five-term float sums is 1.7 × 10⁻¹⁵. The CH₄ defect is exactly 0. ξ and the
+projected outlet stay at relative 10⁻¹².
+
+**Rejected alternatives, and why.** Relative 10⁻¹²: no binary64 implementation reaches it. Feeding the projection exact
+decimals: it would test the harness, not the code.
+
+**Watch for.** 10⁻¹³ sits 1.8 × 10³ above the measured floor and 10⁶ below the nearest listed wrong projection
+(BD-05). A different registered perturbation must keep both claims true.
+
+---
+
+## R-196 — M01.A12 bounds the ln φ block's homogeneity, Gibbs–Duhem and symmetry by 10⁻¹² × its largest scaled entry
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01 spec Amendment 1; Proposed with ADR 0026 |
+| Normative text | `docs/derivations/M01-spec.md` §9.3 A12, §19 item 3; ADR 0026 Amendment 1 A1.3 |
+| Evidence | build lane at `13bcef7`: Gibbs–Duhem 1.0 × 10⁻¹³ at V1 under the draft's self-normalization; re-measured at the same commit: ≤ 2.5 × 10⁻¹⁶ M (Gibbs–Duhem), ≤ 3.8 × 10⁻¹⁶ M (symmetry), ≤ 2.9 × 10⁻¹⁷ M (homogeneity) |
+| Affected packages | M01; any later provider whose derivatives are checked the same way |
+
+**Decision.** Let J_ij = n_tot ∂ln φ_i/∂n_j and M = max |J_ij|. All three identities of the block are bounded by
+10⁻¹² M. A computed J_ij carries a few ulp of the block's largest terms, not of its own size. By symmetry, a
+Gibbs–Duhem column is a homogeneity row, so the two share one floor. V1's N₂ column has a magnitude of 1.0 × 10⁻⁴
+against M = 0.078, so the draft's self-normalized floor sat only 10× below 10⁻¹². Homogeneity of Z, v and h keeps its
+own row scale.
+
+**Rejected alternatives, and why.** Keeping the self-normalization and loosening the tolerance to 10⁻¹⁰: that is the
+same check on the wrong scale, and it would hide that the floor is set by M. Keeping 10⁻¹² self-normalized: it is
+10× above the floor, against §9's 10³.
+
+**Watch for.** An implementation with derivatives built from O(1) intermediates may sit nearer 10⁻¹⁵ M. That is
+still ≥ 10³ below the bound.
+
+---
+
+## R-197 — `pr-c1-v1`'s request checks are ratified as built, except that a flash asked for derivatives is refused (`flash_derivatives_unsupported`), not ignored; two admissible roots are treated as three
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01 spec Amendment 1; Proposed with ADR 0026 |
+| Normative text | `docs/derivations/M01-spec.md` §5.2, §5.3, §5.4 step 0, A50; ADR 0026 Amendment 1 A1.1, A1.2 |
+| Evidence | generator claim PR-07 (the cubic at Z = B is −2B²); no caller in `src/` passes `derivatives` to `flash` |
+| Affected packages | M01, M02 (its units call `flash` without derivatives) |
+
+**Decision.** Ratified:
+- a negative or non-finite flow, or a non-finite T or P → `out_of_domain`;
+- an unknown property → `unsupported`, `unknown_property`;
+- a wrong state length → `error`, `state_length`;
+- a non-TP flash → `unsupported`, `unsupported_specification`;
+- more than one admissible root → the three-root rules.
+
+Replaced: a `flash` with non-empty `derivatives` → `unsupported`, `flash_derivatives_unsupported`.
+
+**Rejected alternatives, and why.** Ignoring flash derivatives, as SYN-001 does: `FlashResult` has no field for them,
+so an `ok` without them would read as an answer, and the same provider refuses undeclared derivatives in
+`evaluate_phase` (A13). SYN-001 is not changed, because its identity is frozen. Refusing two admissible roots as
+degenerate: that would give a discontinuous rule at a measure-zero set that no registered state reaches.
+
+**Watch for.** The request-check order and the two-root case are ratified but not asserted (no registered state
+has two defects or a near-double root).
+
+---
+
+## R-198 — The C1 reactor boundary checks the inlet phase before the hard domain; `stream_enthalpy_refused` is `error`; `reactor_not_accepted(<stage>)` has a grammar and registered stages
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01 spec Amendment 1; Proposed with ADR 0027 |
+| Normative text | `docs/derivations/M01-spec.md` §8.7, §8.12, A51; ADR 0027 Amendment 1 A1.1, A1.2 |
+| Evidence | generator claim BD-06 (573.15 K > T_c,EOS(NH₃) = 405.55 K); M01.A30's F7 inlet |
+| Affected packages | M01, M02 (the adapter returns `NotAccepted(<stage>)`) |
+
+**Decision.** The order is:
+1. component set;
+2. zero flow;
+3. inlet flash (provider refusals pass through);
+4. trace;
+5. hard domain;
+6. evaluation;
+7. pressure;
+8. defect;
+9. enthalpies;
+10. `ok`.
+
+A provider refusal of an enthalpy flow is `error`, `stream_enthalpy_refused`. `<stage>` matches `[A-Za-z0-9_]+`, and
+the registered stages are `S1`, `S2`, `S3`, `certificate`, `backflow` and `nonpositive_flow`.
+
+**Rejected alternatives, and why.** The hard domain first: no liquid exists inside it, so `liquid_at_reactor_inlet`
+would be dead. `out_of_domain` or `not_converged` for an enthalpy refusal: the request was admissible and the
+evaluation converged, so the boundary failed to form its answer.
+
+**Watch for.** If the hard domain is ever widened below NH₃'s T_c,EOS, the inlet-phase check becomes reachable
+inside it, and the order still holds.
+
+---
+
+## R-199 — The stand-in `c1.reactor_standin` is labelled synthetic in the frozen `ModelManifest`'s own fields and in every result's `identity.synthetic`; it is not in the v0.2 envelope at M01
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01 spec Amendment 1; Proposed with ADR 0027 |
+| Normative text | `docs/derivations/M01-spec.md` §8.13, §8.14, A49, Q-N5; ADR 0027 Amendment 1 A1.3 |
+| Evidence | `schemas/model-manifest.schema.json` (`additionalProperties: false`, no `synthetic`); T08 U04 (`model_unsupported(<id>)`) |
+| Affected packages | M01, M02 (decides whether the stand-in is bound), M07 (the 0.2.0 envelope) |
+
+**Decision.** The label lives in four places:
+- the manifest's `title`;
+- its `description`, which begins `SYNTHETIC`;
+- its first limitation, which begins `SYNTHETIC:`;
+- `identity.synthetic: true` in every `ok` result, which is the machine-readable form.
+
+There is no schema change. The stand-in is not in `MODEL_BUILDERS`, so the envelope's `unit_models` axis (T08.A20)
+stays true and U04 refuses it. If M02 binds it, the envelope lists it as synthetic, with a limitation saying it
+certifies nothing about the reactor. It is never listed as a supported reactor model.
+
+**Rejected alternatives, and why.** Widening `ModelManifest` with a `synthetic` field: a frozen-schema migration for
+one test model (Q-N5 keeps the question open for Frank). Listing the stand-in in the envelope now: the envelope
+describes what a revision can use, and a revision cannot use it.
+
+**Watch for.** Evidence citing a reactor result must carry its identity. A W21 claim built on a result with
+`identity.synthetic: true` is invalid.
+
+---
+
+## R-200 — M02 reproduces the probe bitwise at the evaluation (the record's tube inputs), within 10⁻⁶ through the boundary; the probe record is a gate-checked regression record, never re-run by the gate
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01 spec Amendment 1 item 9 (from the session's M02 recon); Proposed with ADR 0027 |
+| Normative text | `docs/derivations/M01-spec.md` §8.15, A47, A52, §10.1, Q-F4, Q-F5; ADR 0027 Amendment 1 A1.5 |
+| Evidence | `reactor-probe.json` `pinned`: §8.3's mapping of `inlet_n_mol_s` gives Σn 1 ulp below `F_ret_in_mol_s` and four of five y_i 1 ulp off `y_in`; `derived_from_measured.probe_sha256` already pins the record through M01.A34; claim DX-01 |
+| Affected packages | M01 (A52), M02 (the adapter half of A41–A48, the Q-F4 sweep, Q-F5), M07 |
+
+**Decision.** M01.A41–A48 each have a record half and an adapter half.
+- The record half is M01's. M01.A52 checks it in the gate on the committed record, whose bytes A34 already pins.
+- The adapter half is M02's. It runs as evidence-manifest rows in the probe's kind of environment, not in the
+  default gate.
+- A47 (a), bitwise: M02's `ExternalEvaluation` with the record's (F, y, T_in, p_ret_out), when the environment block
+  is equal to the record's.
+- A47 (b), 10⁻⁶ relative: through the full boundary, or in another environment with the same pins.
+- Every reactor result's discretization estimate is `derived_from_measured.discretization_estimate`.
+- Q-F4's sweep is 16 corners plus the centre at num_z = 800.
+
+**Rejected alternatives, and why.**
+- Bitwise through the boundary: unachievable, because the record was made from (F, y) and not from n.
+- Re-recording the probe from n: that re-runs a validated record to fit a test.
+- Leaving the record unread by tests: the spec's claims about it would rot silently.
+- Running PyMRM in the default gate: the gate has no PyMRM dependency, by ADR 0027 D5's out-of-process design.
+
+**Watch for.** Q-F5: the per-tube flow is not bounded by the hard domain. M02 adds the bound or measures it. §10.1's
+T_out range was corrected to 1.2–1.7 K (the draft printed 1.3).
+
+---

@@ -1,13 +1,15 @@
 # M01 specification — the C1 property route and the PyMRM reactor boundary
 
-**Status:** design lane (`specifier`), 2026-10-08. **Draft for review**; the build lane implements against it, a
+**Status:** design lane (`specifier`), 2026-10-08. **Draft for review**, **amended once** (Amendment 1, 2026-10-08,
+§19: rulings on the build lane's measurements at `13bcef7`); the build lane implements against it, a
 `reviewer` reviews the implementation, a `verdict` judges W22 and M01's part of W21 from the evidence.
 **Package:** M01 (plan v1.2 §4.4: *pin the selected PyMRM reactor and one required nonideal property route; derive
 process boundary mappings. Acceptance: model/source/data rights, numerical refinement evidence,
 ports/DOF/reference-state compatibility, known invalid requests*). Gates fed: **W22**, **W21** (M01's part).
 **Brief:** `docs/briefs/M01-specification.md` (authoritative for scope). Supersedes `docs/derivations/M01-spec-WIP.md`
 (the previous specifier's halt note; its measured leads are re-measured here, §18).
-**Decisions:** ADR 0026 (the property route), ADR 0027 (the reactor boundary); register R-154 to R-169.
+**Decisions:** ADR 0026 (the property route), ADR 0027 (the reactor boundary); register R-154 to R-169; Amendment 1:
+R-195 to R-200.
 **Machine-readable values:**
 
 | File | Produced by | Class |
@@ -51,6 +53,7 @@ VLE with dissolved gases, columns, DWSIM, re-selecting the chemistry, production
 | 11 | W22: what "validated" means and the evidence | §11 | R-160 |
 | 12 | The M01/M02 split and a synthetic stand-in reactor for the in-repo gate | §8.13–8.14 | ADR 0027 D8; R-168 |
 | 13 | Out-of-data-domain inlets are flagged, not refused | §8.12 | ADR 0027 D9; R-169 |
+| 14 | Amendment 1: A09, A12 and A26 re-stated on measured floors; request checks and boundary paths ratified (flash derivatives refused); the boundary's check order normative; where "synthetic" is written | §19 | ADR 0026, 0027 Amendment 1; R-195–R-200 |
 
 ## 3. Component records (`benchmarks/m01/components.yaml`)
 
@@ -221,6 +224,13 @@ Determining Δ's sign: the implementation may use the discriminant or the count 
 registered states the margin is wide (no registered state has a near-double root). A near-degenerate state is not
 registered and its classification is not asserted (§17).
 
+**Two admissible roots (Amendment 1).** The cubic at Z = B equals −2B² < 0 (claim PR-07) and tends to +∞, so its roots
+above B, counted with multiplicity, are odd in number: one or three. Two *distinct* admissible roots therefore occur
+only at a double root (Δ = 0), or where roundoff splits a near-double root. Whenever more than one admissible root is
+found, the rules above apply as for three: smallest = liquid (pure NH₃), largest = vapour, and the guard compares the
+smallest with the largest. This is the continuous extension of the three-root rule; no registered state reaches it
+and it is not asserted.
+
 ### 5.3 `evaluate_phase` rules and refusals
 
 | Request | Result |
@@ -232,8 +242,15 @@ registered and its classification is not asserted (§17).
 | `VAPOR` with light gas, guard fails | `unsupported`, `vapour_root_metastable: ...` |
 | `LIQUID` asking for `lnphi_<light gas>` | `unsupported`, `light_gas_in_liquid: ...` |
 | a derivative input not declared | `unsupported`, `undeclared_derivative_input: <id>` |
+| a property not in `describe().properties` (Amendment 1) | `unsupported`, `unknown_property: ...` |
+| a state whose `n` has other than five entries (Amendment 1) | `error`, `state_length: ...` (a malformed request, not a capability or domain limit) |
+| T or P not finite, or a component flow negative or not finite (−0.0 is zero; Amendment 1) | `out_of_domain`, `out_of_domain: ...` (outside the declared box or nTP-v1's state space, ADR 0001 D2) |
 | a dormant state (n_tot = 0) | `unsupported`, `dormant_state: composition undefined` (ADR 0001 D3.1) |
 | otherwise | `ok`, values and requested derivatives |
+
+Check order (ratified by Amendment 1 as built): undeclared derivative input, unknown property, state length, domain
+(T, P, flows), dormant state, then the phase rules of the table's upper rows. Every registered refusal state has one
+defect, so the order is not asserted.
 
 A metastable pure-NH₃ liquid (L2: three roots, the vapour stable) is evaluable: `evaluate_phase` answers "what is the
 liquid's h at this state", deciding which phase exists is `flash`'s job (the protocol's own split).
@@ -242,8 +259,13 @@ liquid's h at this state", deciding which phase exists is `flash`'s job (the pro
 
 Given n (mol/s), T, P:
 
-1. Out of domain → `out_of_domain`. n_tot = 0 → `ok`, `ZERO_FLOW`, `vapor_fraction` None, both outlets dormant
-   (all flows +0.0, labels T and P), `k_values` empty (ADR 0001 D3.4).
+0. Request checks (Amendment 1), in this order: a `specification` other than `TP` → `unsupported`,
+   `unsupported_specification: ...`; a non-empty `derivatives` → `unsupported`, `flash_derivatives_unsupported: ...`
+   (`FlashResult` has no field to carry derivatives and `describe()` declares derivative orders for `evaluate_phase`
+   only, so an ignored request would read as an answer; a unit takes the derivatives of its equilibrium row from
+   `evaluate_phase`, §7); a state of other than five flows → `error`, `state_length: ...`. No refusal carries a split.
+1. Out of domain (as §5.3, including negative or non-finite flows) → `out_of_domain`. n_tot = 0 → `ok`, `ZERO_FLOW`,
+   `vapor_fraction` None, both outlets dormant (all flows +0.0, labels T and P), `k_values` empty (ADR 0001 D3.4).
 2. n_light = 0 (pure NH₃): phase = VAPOR if T ≥ T_c,EOS else the stable pure phase (§5.2 item 4); `vapor_fraction`
    1.0 or 0.0; the present phase carries the feed bitwise, the absent phase is dormant; `k_values` empty.
 3. n_NH₃ = 0: VAPOR (no liquid can exist).
@@ -335,7 +357,9 @@ The units on `pr-c1-v1` (flash, heater/cooler, mixer, splitter; M02) use `T05b-p
 6. **The verifier (ADR 0013)** fresh-flashes each stream with `pr-c1-v1`'s `flash`; a vapour product at its own dew
    point may come back TWO_PHASE with an O(ulp) liquid (F4) and is admissible by rule 3.
 
-M02 registers these as tests of its units; M01's provider supplies everything they read (ln φ, h, the flash).
+M02 registers these as tests of its units; M01's provider supplies everything they read (ln φ, h, the flash). The
+equilibrium row's derivatives come from `evaluate_phase`'s ln φ derivatives (§4.6); `flash` is called without
+`derivatives`, which it refuses (§5.4 step 0, Amendment 1).
 
 ## 8. The reactor boundary (ADR 0027)
 
@@ -396,7 +420,7 @@ point.
   adapter subclasses the pinned class and, after `_init_derived()`, sets that attribute to the padded
   `[0, 1 − 10⁻⁴, 10⁻⁴, 0, 0]` × p/(RT). It enters only where the retentate velocity reverses at the outlet face; the
   probe asserts u_ret > 0 on every face and that replacing it by `[0, 0, 0, 1, 0]` changes nothing bitwise
-  (M01.A47). The code is not patched (used by reference).
+  (M01.A44; Amendment 1 corrects the pointer, which read A47). The code is not patched (used by reference).
 - `P0_Ar`, `P0_CH4` (and `EA_*`) are set on the config (zero); `y_perm_in` and `y_perm_init` are given with five
   entries (pure N₂).
 - **F-R2.** The kinetics evaluate their fugacity-coefficient correlations at the sum of the **reactive** partial
@@ -424,8 +448,11 @@ acceptance, two of them with less NH₃ at the outlet than at the inlet — lost
 - **S3** (polish, M01's profile): on S2's reactor, Newton `rtol = 10⁻¹²`, `atol = 0.1 × target`, `dt_init = 1`,
   ≤ 400 steps, steady-state target **10⁻⁶ × (num_z/100)²** (the norm's roundoff floor grows as num_z²; §10.2).
 - **Acceptance (M01):** S3 converged at its target; the group's KPI-drift certificate passes after S3; u_ret > 0 on
-  every face; every axial flow > 0; |ΔP|/P_in ≤ ε_P (§8.8); the element defect ≤ 10⁻⁶ (§8.9). Otherwise the result is
-  `not_converged` and carries no outlet values (§8.12).
+  every face; every axial flow > 0; |ΔP|/P_in ≤ ε_P (§8.8); the element defect ≤ 10⁻⁶ (§8.9). A failed criterion
+  carries no outlet values (§8.12). *Who judges what (Amendment 1):* the evaluation (M02's adapter) judges the first
+  four and reports a failure as `NotAccepted(<stage>)`, which the boundary returns as `not_converged`,
+  `reactor_not_accepted(<stage>)`; the boundary judges the last two on the evaluation's output, with their own codes
+  (`unsupported`, `pressure_drop_exceeds_convention`; `not_converged`, `element_balance_defect`).
 
 Why S3: at the group's tolerance (absolute norm 10⁻³) two accepted, certified states from different starts differ by
 0.45 % in outlet y_NH₃ and 0.5 K in T_out at num_z = 100 (the Newton exits on `atol = 10⁻³` at its first iterate, so
@@ -486,10 +513,29 @@ the violated bounds), and the identity (reactor commit, pymrm version, overlay S
 | y_NH₃,in < 10⁻⁹ (incl. zero NH₃) | `unsupported`, `nh3_below_trace` (the rate carries a negative power of a_NH₃, regularized in the code by A_SMALL = 10⁻⁴ bar; the group feeds 10⁻⁹) | stand-in |
 | T_in ∉ [573.15, 773.15] K or P_in ∉ [5×10⁶, 1.5×10⁷] Pa or H₂/N₂ ∉ [1, 4] or y_inert > 0.2 | `out_of_domain` (the adapter's hard domain, around the group's case envelope 548–698 K; M01 measured the start strategy at 653.15–693.15 K and 10⁷ Pa only — inside the hard domain a failure is `not_converged`, never a silent result; Q-F4) | stand-in |
 | |ΔP|/P_in > 10⁻³ | `unsupported`, `pressure_drop_exceeds_convention` | stand-in (reported ΔP), M02 (real) |
-| the reactor's result fails §8.7's acceptance | `not_converged`, `reactor_not_accepted(<stage>)`, no outlet values | M02 (real) |
+| the reactor's result fails §8.7's acceptance | `not_converged`, `reactor_not_accepted(<stage>)`, no outlet values | M02 (real); stand-in boundary with an evaluation returning `NotAccepted` |
 | defect_rel > 10⁻⁶ | `not_converged`, `element_balance_defect` | stand-in (injected) |
+| the provider's inlet flash refuses (out of its domain, a negative or non-finite flow, a metastable vapour; Amendment 1) | the provider's status and reason code, passed through with its message | stand-in |
+| the provider refuses Ḣ_in or Ḣ_out (`evaluate_phase` not `ok`; Amendment 1) | `error`, `stream_enthalpy_refused`, the provider's message carried | stand-in boundary with a refusing provider |
 | a liquid with dissolved light gas anywhere | not representable: refused by the provider (§5.3) | provider |
 | inside the hard domain but outside the kinetics' data domain (T_in 643.15–733.15 K, P_in 5×10⁶–10⁷ Pa, H₂/N₂ ∈ [1.5, 3]) | `ok` with `domain_status: extrapolated` and the list | stand-in |
+
+**`<stage>` (Amendment 1)** matches `[A-Za-z0-9_]+`. The registered stages: `S1`, `S2`, `S3` (that stage did not reach
+its target, or the group's acceptance rejected its state), `certificate` (S3 converged; the KPI-drift certificate
+failed), `backflow` (u_ret ≤ 0 on a face), `nonpositive_flow` (an axial flow ≤ 0). M02 may register further stages
+(a timeout, say) in its own specification, each with a test; the boundary passes the stage through verbatim.
+
+**Check order (normative, Amendment 1).** (1) component set and order, including the flow vector's length
+(`component_set_mismatch`); (2) a dormant inlet (`ZERO_FLOW`, before any composition is formed; its T and P are
+labels, ADR 0001 D3.1); (3) the inlet's TP flash by `pr-c1-v1` (a refusal passes through; a result other than VAPOR is
+`liquid_at_reactor_inlet`); (4) the NH₃ trace; (5) the hard domain; (6) the evaluation (`NotAccepted` →
+`reactor_not_accepted(<stage>)`); (7) the pressure convention; (8) the element defect; (9) the two enthalpy flows
+(`stream_enthalpy_refused`); (10) `ok`, with the data-domain flag. *Why this order:* every other registered refusal
+has a single defect and gives its own code under any order. A liquid inlet cannot have a single defect. No liquid
+exists inside the hard domain: its lowest inlet temperature, 573.15 K, lies above NH₃'s T_c,EOS = 405.55 K (claim
+BD-06), and the flash is VAPOR there for any feed (§5.4 step 4). If the hard domain came before the inlet phase,
+`liquid_at_reactor_inlet` could never be returned. M01.A30's liquid inlet (F7's state, also outside the hard domain)
+asserts the order. Steps 7–9 judge the evaluation's output and so follow it.
 
 The data domain flags rather than refuses (ADR 0027 D9): the design variable of v0.2 is the reactor inlet temperature,
 whose optimum may lie below 643 K (the group's draft reports 573 K for its membrane reactor), and the bed's own
@@ -501,11 +547,24 @@ the journey asks; the flag keeps it visible to M04/M05.
 Model id `c1.reactor_standin` (M01-build), same ports, rows, refusals and envelope as §8.2–8.12, with the external
 evaluation replaced by closed forms: **ξ_s = X n_N₂,in, X = 0.25 (per-pass N₂ conversion); T_out = T_in**; an
 optional injected raw-outlet perturbation d (test-only parameter) and an optional reported ΔP (test-only parameter).
-It is labelled synthetic in its manifest (`synthetic: true`, never `validated`), exercises every boundary path, and
-certifies nothing about the real reactor. Registered: inlet V1's n at 673.15 K, 10⁷ Pa → ξ = 0.05875, n_out =
-(0.52375, 0.17625, 0.1475, 0.015, 0.02), Q = −6205.800878966381 W (Ḣ_in = 8411.091539543166 W, Ḣ_out =
-2205.290660576785 W, Q/ξ = −105 630.65325900223 J/mol); with d = (2, −1, 3, 0.1, 0) × 10⁻⁶ mol/s: ξ = 0.05875 +
-10⁻⁶/14, defect as in `reference_values.yaml` → `closed_form.boundary.projection`.
+It exercises every boundary path and certifies nothing about the real reactor. Registered: inlet V1's n at 673.15 K,
+10⁷ Pa → ξ = 0.05875, n_out = (0.52375, 0.17625, 0.1475, 0.015, 0.02), Q = −6205.800878966381 W (Ḣ_in =
+8411.091539543166 W, Ḣ_out = 2205.290660576785 W, Q/ξ = −105 630.65325900223 J/mol); with d = (2, −1, 3, 0.1, 0) ×
+10⁻⁶ mol/s: ξ = 0.05875 + 10⁻⁶/14, defect as in `reference_values.yaml` → `closed_form.boundary.projection`.
+
+*Where "synthetic" is written (Amendment 1).* The frozen `ModelManifest` schema has no `synthetic` field
+(`additionalProperties: false`), and adding one is a schema change M01 does not make. The label is therefore carried
+by the fields that exist, and is checkable (M01.A49):
+- the manifest's `title` names a synthetic stand-in;
+- its `description` begins `SYNTHETIC`;
+- its first `validity.limitations` entry begins `SYNTHETIC:`;
+- every `ok` result's `identity.synthetic` is `true` (M02's adapter writes `false`). This is the machine-readable
+  label, and every piece of evidence that cites a result carries it. A refusal carries no values and so nothing that
+  could be cited as reactor output.
+
+The manifest's `status` is a software status (`tested`), never a validation claim. The stand-in is not in
+`MODEL_BUILDERS`, so a revision that names it is refused `model_unsupported(c1.reactor_standin)` (T08 U04). The v0.2
+working envelope (`benchmarks/t08/support_envelope.yaml`) therefore does not list it at M01 (§8.14).
 
 ### 8.14 The M01/M02 boundary
 
@@ -513,7 +572,62 @@ M01 (this package): the provider, the records, the boundary module (mapping, pro
 refusal codes), the stand-in, the overlay and the probe. M02: the out-of-process execution adapter (environment
 creation from pins, the subclass of F-R1, the S1–S3 strategy, timeouts, caching keyed on exact inputs and the
 configuration hash, failed runs retained, frozen model versions, promotion), the PR-capable unit models of §7, and the
-re-measurement of §10's regression values through its adapter (M01.A45–A50 run by M02).
+re-measurement of §10's regression values through its adapter (M01.A41–A48 run by M02, §8.15; Amendment 1 corrects
+the range, which read A45–A50. M01.A49–A52 are Amendment 1's in-gate assertions, §9.10, and are not M02's).
+
+What M02 inherits from Amendment 1:
+- The adapter is an `ExternalEvaluation` of the boundary module. It returns `NotAccepted(<stage>)` with §8.12's
+  registered stages, and it leaves |ΔP| and the element defect to the boundary (§8.7).
+- §8.12's check order and codes hold for the real unit unchanged.
+- Its result identity has `synthetic: false` and the reactor fields filled.
+- The real reactor model enters `MODEL_BUILDERS`, and with it the envelope's `unit_models` axis, with its
+  limitations (§10's discretization estimate, `extrapolated` results, F-R2, F-R3).
+- If M02 also binds the stand-in for in-repo loop tests, the envelope lists it as synthetic, with a limitation row
+  saying it certifies nothing about the reactor. It is never listed as a supported reactor model (R-199).
+
+### 8.15 The M02 hand-off: what is reproduced, where, and what the gate checks (Amendment 1)
+
+Two halves of each probe assertion. The **record half** is M01's: `benchmarks/m01/reactor-probe.json` (version 2),
+made once by `reactor_probe.py` in its own environment. The **adapter half** is M02's: the same quantity re-measured
+through M02's `ExternalEvaluation`.
+
+| Assertion | Record half (M01, in the gate: M01.A52) | Adapter half (M02) |
+| --- | --- | --- |
+| A41 | `pinned` and both neighbouring inlet temperatures: num_z 800, accepted; the three cold starts at the true inlet (num_z 100): rejected | S1–S3 accepted at num_z = 800 for T_in ∈ {653.15, 673.15, 693.15} K; the failing cold start is not re-run |
+| A42 | `path_independence.max_rel_diff` ≤ 10⁻⁶ (recorded 1.56 × 10⁻⁸) | S2 with `dt_init` 10⁻⁶ and 10⁻¹ at the nominal point: outlets within 10⁻⁶ relative |
+| A43 | `repeats`: 2 runs, bitwise identical | two adapter runs with the cache bypassed: bitwise identical |
+| A44 | `backflow_override` bitwise identical; `u_ret_min` > 0 in every entry | the same, through M02's own F-R1 subclass |
+| A45 | max \|element defect\| ≤ 10⁻⁷ in every accepted entry | every accepted adapter run |
+| A46 | \|ΔP\|/P_in ≤ 10⁻³ in every entry | every accepted adapter run |
+| A47 | — | (a) bitwise and (b) within 10⁻⁶, as A47 states |
+| A48 | grid sequence 100–3200, accepted exactly for 100–800; the estimate recomputed by claim DX-01 | every `ok` result's `discretization_estimate` equals `reference_values.yaml` → `derived_from_measured.discretization_estimate` |
+
+**Environment.** The adapter half runs in the probe's kind of environment: a venv built from the pins of
+`reactor_probe.py`, with the pinned reactor clone exported by `git archive` and one thread. It is recorded as
+evidence-manifest rows (as M01's probe row, §13), not as default-gate tests, because PyMRM is not a dependency of the
+gate. Whether M02 adds a separate CI job for it is M02's decision. M02's record states its `environment` block in the
+probe's format, plus the CPU model, which the probe record lacks.
+
+**Is the probe record a gate-checked regression?** Yes, in two ways, and never as an expectation for this repository's
+code.
+- Its bytes are pinned by A34: `derived_from_measured.probe_sha256`. An edited record fails `--check` until the
+  generator is re-emitted, which shows in review.
+- M01.A52 (WO-8) checks every record half above against the record's own numbers, so the spec and the record cannot
+  drift apart.
+
+The gate never re-runs the reactor.
+
+**Q-F4's sweep, defined.** The 16 corners of T_in × P_in × H₂/N₂ × y_inert, with values {573.15, 773.15} K ×
+{5 × 10⁶, 1.5 × 10⁷} Pa × {1, 4} × {0, 0.2}, plus the centre (673.15 K, 10⁷ Pa, 2.5, 0.1). At every point:
+y_NH₃ = 0.03; Ar:CH₄ = 3:4 (the nominal ratio); the nominal per-tube flow F_ret_in = 0.007146961299302104 mol/s;
+num_z = 800; S1–S3 through the adapter. That is 17 solves, ≈ 2.5 min. Each corner's inlet is built so that it
+satisfies `hard_domain_violations` in floating point. If the exact construction rounds outside a bound (y_inert = 0.2,
+say), the value is moved inward by at most 2⁻⁴⁰ relative. An `out_of_domain` at a corner is a construction error,
+not a result. For each point M02 records the status, the code
+and stage, the wall time, and, when `ok`, A45's and A46's values. The sweep is a measurement, not a pass/fail gate:
+every point must end `ok` or in a typed refusal, never silently. If any point inside the hard domain is not accepted,
+M02 narrows the hard domain by a register entry and an ADR 0027 amendment, and registers the failing point as a
+refusal test (Q-F4's default). The per-tube flow is not a dimension of the hard domain today (Q-F5).
 
 ## 9. Assertions
 
@@ -522,7 +636,9 @@ for dimensionless or J/mol quantities, and |impl/ref − 1| ≤ ε for molar vol
 a straightforward transcription is measured by the generator (`measured.transcription_floor`): ≤ 4.1 × 10⁻¹⁶ for Z, h
 (J/mol, relative) and every ln φ at V1, V2, L1. Each tolerance below sits ≥ 10³ above that floor and ≥ 10³ below the
 smallest defect worth catching (a dropped mixing term, a permuted component or a one-digit error in a constant moves
-these values by ≥ 10⁻⁶; Ω_a's fifth digit moves ln φ_NH₃ at V2 by ~10⁻⁵).
+these values by ≥ 10⁻⁶; Ω_a's fifth digit moves ln φ_NH₃ at V2 by ~10⁻⁵). Two assertions are about quantities with a
+floor of their own: the ln φ derivative identities (A12) and the projection's defect (A26). Amendment 1 states those
+floors there, measured on those quantities, with their margins in `reference_values.yaml` → `assertion_margins`.
 
 ### 9.1 Records and declaration
 
@@ -546,8 +662,11 @@ these values by ≥ 10⁻⁶; Ω_a's fifth digit moves ln φ_NH₃ at V2 by ~10�
 - **M01.A07** — Phase states V1, V2, V3, V4, V5, L1, L2: Z, h, every reported ln φ rel 10⁻¹²; v rel 10⁻¹².
 - **M01.A08** — Roots and labels: L2 and V3 (one state, three roots) have distinct Z equal to the reference's smallest and
   largest; L1 is a single liquid-like root (v < v_c,EOS); V4 is the single supercritical root. Values as A07.
-- **M01.A09** — V1's five ln φ are pairwise distinct and nonzero, and V2's likewise (a permuted component index changes
-  A07's comparison by ≥ 10⁻³); every |h^dep| at V1–V5, L1, L2 exceeds 1 J/mol (a dropped departure term fails A07).
+- **M01.A09** — V1's five ln φ are nonzero and differ pairwise by at least 10⁻⁶, and V2's likewise; every |h^dep| at
+  V1–V5, L1, L2 exceeds 1 J/mol (a dropped departure term fails A07). *Why 10⁻⁶ (Amendment 1):* it is 10⁶ times A07's
+  tolerance, so a permuted component index fails A07 by at least that factor. The reference's smallest gaps are
+  4.35 × 10⁻⁴ (V1, H₂/CH₄) and 0.046 (V2, N₂/Ar) (`assertion_margins.A09_min_pairwise_lnphi_gap`; claim PH-GAP holds
+  the 10⁻⁶ bound on the reference). The draft's parenthetical, "changes A07's comparison by ≥ 10⁻³", was false at V1.
 
 ### 9.3 Derivatives
 
@@ -558,9 +677,31 @@ these values by ≥ 10⁻⁶; Ω_a's fifth digit moves ln φ_NH₃ at V2 by ~10�
   ≥ 10⁻³ relative.
 - **M01.A11** — L1's n-derivatives are exactly 0.0 (pure-liquid properties are composition-free); V1's and V2's are all
   nonzero (DER-NZ: each > 10⁻¹² in magnitude), so A10 is not met by zeros.
-- **M01.A12** — On the implementation at V1 and V2: |Σ_j n_j ∂X/∂n_j| ≤ 10⁻¹²·Σ_j |n_j ∂X/∂n_j| for every X;
-  Gibbs–Duhem |Σ_i n_i ∂ln φ_i/∂n_j| ≤ 10⁻¹²·Σ_i |n_i ∂ln φ_i/∂n_j| for every j; symmetry |∂ln φ_i/∂n_j − ∂ln φ_j/∂n_i|
-  ≤ 10⁻¹²·max(|·|) for every i, j. (Identities of the implementation itself, independent of the reference.)
+- **M01.A12** — Identities of the implementation itself, independent of the reference, at V1 and V2 (as amended by
+  Amendment 1). Homogeneity of X ∈ {Z, v, h}: |Σ_j n_j ∂X/∂n_j| ≤ 10⁻¹²·Σ_j |n_j ∂X/∂n_j|. The ln φ block: with the
+  dimensionless J_ij = n_tot ∂ln φ_i/∂n_j, y = n/n_tot and **M = max_{i,j} |J_ij|**:
+  - homogeneity |Σ_j y_j J_ij| ≤ 10⁻¹² M for every i;
+  - Gibbs–Duhem |Σ_i y_i J_ij| ≤ 10⁻¹² M for every j;
+  - symmetry |J_ij − J_ji| ≤ 10⁻¹² M for every i, j.
+
+  *Floor.* A computed J_ij carries a few ulp of the terms it is built from, and those terms are the size of the
+  block's largest entries, not of J_ij itself. By symmetry, column j of Gibbs–Duhem is row j of homogeneity in exact
+  arithmetic, so the two identities share one floor, ≈ c·u·M (u = 2⁻⁵³). The draft divided each column by its own
+  Σ_i |y_i J_ij|. At V1 that sum is 1.0 × 10⁻⁴ for N₂'s column against M = 0.078, which put the floor at ≈ 10⁻¹³
+  (measured 9.97 × 10⁻¹⁴ at `13bcef7`). The draft's tolerance of 10⁻¹² sat only 10× above that, not the 10³ §9 requires.
+
+  *Margin.* Measured at `13bcef7`:
+
+  | Identity | Measured | Location |
+  | --- | --- | --- |
+  | ln φ homogeneity | ≤ 2.9 × 10⁻¹⁷ M | V1 |
+  | Gibbs–Duhem | ≤ 2.5 × 10⁻¹⁶ M | V1 |
+  | symmetry | ≤ 3.8 × 10⁻¹⁶ M | V1 |
+  | homogeneity of Z, v, h | ≤ 6.1 × 10⁻¹⁶ of their own row scales | V1 (v) |
+
+  10⁻¹² sits ≥ 2.6 × 10³ above the largest of these. A sign error or a dropped term in one derivative moves that
+  entry by ≥ 10⁻³ of itself. Even at the smallest entry, J_N₂N₂ at V1 (2.1 × 10⁻⁵), such an error moves homogeneity
+  and Gibbs–Duhem by 4.9 × 10⁻⁹, which is 6 × 10⁴ times the bound.
 - **M01.A13** — A derivative request for an undeclared input returns `unsupported` with `undeclared_derivative_input`.
 
 ### 9.4 Refusals
@@ -595,8 +736,25 @@ these values by ≥ 10⁻⁶; Ω_a's fifth digit moves ln φ_NH₃ at V2 by ~10�
   raises `reference_convention_not_reaction_consistent(<convention>)`.
 - **M01.A25** — Stand-in at V1's inlet: ξ = 0.05875 rel 10⁻¹⁴; n_out as §8.13 rel 10⁻¹⁴; T_out = T_in, P_out = P_in
   bitwise; Q = −6205.800878966381 W rel 10⁻¹⁰ (Ḣ_in, Ḣ_out rel 10⁻¹¹; the difference amplifies by 1.4).
-- **M01.A26** — Projection with the registered d: ξ, the projected outlet, the defect vector rel 10⁻¹² (absolute 10⁻¹⁸
-  mol/s on zero entries); the projected outlet conserves Ar, C, H, N within 10⁻¹⁵ × n_tot,in.
+- **M01.A26** — Projection with the registered d (as amended by Amendment 1):
+  - ξ and the projected outlet: rel 10⁻¹² (measured 2.2 × 10⁻¹⁶);
+  - the inerts' projected flows equal their inlet flows bitwise, and the CH₄ defect is exactly 0.0 (raw and inlet are
+    the same double and ν_CH₄ = 0);
+  - the defect vector: |d_i − d_i,ref| ≤ **10⁻¹³ × n_tot,in** for every i, and |defect_rel − defect_rel,ref| ≤ 10⁻¹³;
+  - the projected outlet conserves Ar, C, H and N: |Σ_i E_ki (n_out,i − n_in,i)| ≤ **10⁻¹³ × n_tot,in** for each
+    element.
+
+  *Floor.* The defect is about 10⁻⁶ mol/s, a difference of flows near 0.5 mol/s, so its 53-bit floor is the raw
+  outlet's own rounding: 5.6 × 10⁻¹⁷ × n_tot,in, which is 2.5 × 10⁻¹¹ of the defect itself (claim BD-04;
+  `assertion_margins.A26_projection`). No binary64 implementation can reach the draft's relative 10⁻¹². The element
+  balances have a floor of 2.8 × 10⁻¹⁷ × n_tot,in in exact sums over the double outlet. Evaluated as float sums, though,
+  each may add up to γ₅·Σ_i |E_ki n_i|, ≈ 1.7 × 10⁻¹⁵ for the H row (a worst-case bound, not a measurement), which is
+  above the draft's 10⁻¹⁵.
+
+  *Margin.* 10⁻¹³ × n_tot,in sits 1.8 × 10³ above the measured floors and 57 times above that worst-case bound. It
+  sits at least 10⁶ below the nearest listed wrong projection. Dropping the inert defect moves d by 10⁻⁷ × n_tot,in, a
+  one-species extent moves it by ≥ 2.2 × 10⁻⁶, and a reversed sign, divisor 13 or permuted H₂/N₂ stoichiometry moves it
+  by more (claim BD-05). The build measured 2.5 × 10⁻¹¹ relative (5.5 × 10⁻¹⁷ mol/s) at `f595179`.
 - **M01.A27** — Pressure convention: reported ΔP 5000 Pa at P_in 10⁷ → `ok`; 20 000 Pa → `unsupported`,
   `pressure_drop_exceeds_convention`.
 - **M01.A28** — Zero-flow inlet → `ZERO_FLOW` result per §8.12; Q is +0.0 exactly.
@@ -615,7 +773,8 @@ these values by ≥ 10⁻⁶; Ω_a's fifth digit moves ln φ_NH₃ at V2 by ~10�
 - **M01.A33** — Existing identities unchanged: the gate passes with no edit to any registered value under
   `benchmarks/syn001/`, `benchmarks/t05/`, `benchmarks/t05b/`, `benchmarks/t06/`, `benchmarks/t08/`, the K05 identity
   fixtures, or `models/syn001/`; SYN-001's structural hash and the K05 identity document are reproduced bit for bit.
-- **M01.A34** — `m01_reference.py --check` exits 0 (82 claims hold, files byte-identical).
+- **M01.A34** — `m01_reference.py --check` exits 0 (88 claims hold, files byte-identical; 82 before Amendment 1 added
+  PR-07, PH-GAP, BD-04, BD-05, BD-06, DX-01).
 - **M01.A35** — No runtime import of `chemicals`, `thermo`, `CoolProp`, `cantera` or `mpmath` from `openflowsheet`;
   `pyproject.toml`'s runtime dependencies unchanged.
 - **M01.A36** — Exact caching: two `evaluate_phase` requests differing by one ulp in T produce different cache keys and
@@ -652,10 +811,69 @@ machine (the probe's environment record); M02's adapter must reproduce them.
 - **M01.A45** — Raw element defects |Δ(H, N, C, Ar)|/inlet ≤ 10⁻⁷ at every accepted grid (measured ≤ 2.7 × 10⁻⁸ at
   800, ≤ 9.2 × 10⁻¹⁰ at 100–400); the refusal threshold 10⁻⁶ of §8.9 sits 37 times above the design grid's value.
 - **M01.A46** — |ΔP|/P_in ≤ 10⁻³ at every registered point (measured 4.90–5.06 × 10⁻⁵).
-- **M01.A47** — M02's adapter reproduces the probe's design-grid nominal outlet (n_out, T_out) bitwise in the probe's
-  environment, and within the path-independence bound of §10.3 in any other environment with the same pins.
+- **M01.A47** — M02's adapter reproduces the probe's design-grid nominal outlet (as amended by Amendment 1). The
+  outlet means the evaluation's raw `TubeOutlet`, at N_tubes = 1, before projection: five flows and T_out.
+  - (a) *Bitwise.* M02's `ExternalEvaluation` is called with the record's tube inputs exactly: `pinned.F_ret_in_mol_s`,
+    `pinned.y_in`, T_in, p_ret_out = P_in, and §8.3's coolant. The environment block equals the record's (python, the
+    four packages, the platform string, one thread). The call then returns flows and T_out equal to
+    `pinned.outlet_n_mol_s` and `pinned.T_out_K` bitwise. If the environment block is equal and the bits are not,
+    that is reported as a finding naming both CPU models, and (b) decides acceptance.
+  - (b) *Within 10⁻⁶ relative* on each of the five flows and on T_out, in two cases: the same call in any environment
+    with the same pins (reactor commit, `pymrm` 2.5.0, overlay bytes, configuration, profile), and the full boundary
+    at N_tubes = 1 with the process inlet n = `pinned.inlet_n_mol_s`.
+
+  *Why the full boundary is under (b):* the record was made from (F, y), not from n. §8.3's mapping of the recorded n
+  differs from F by 1 ulp in Σn and from y by 1 ulp in four components (M01.A52). 10⁻⁶ is §10.3's path-independence
+  bound, 64 times the measured iteration noise.
 - **M01.A48** — The refinement record holds the grid sequence of §10.1 with its order estimate and the design grid's
   discretization estimate; every reactor result reports that estimate (§8.12).
+
+### 9.10 Amendment 1: request checks, boundary paths, the synthetic label, the probe record (in the gate)
+
+- **M01.A49** — The stand-in is labelled as §8.13 states. Its manifest validates against
+  `model-manifest.schema.json`. Its `title` contains `synthetic` (case-insensitive), its `description` begins
+  `SYNTHETIC`, and its `validity.limitations[0]` begins `SYNTHETIC:`. Every `ok` result has `identity.synthetic` exactly
+  `true`. `MODEL_BUILDERS` has no key `c1.reactor_standin`, and the revision binder refuses a revision naming it
+  `model_unsupported(c1.reactor_standin)`. Exact. The stand-in's status as an unsupported model is checked, not
+  assumed.
+- **M01.A50** — Provider request checks (§5.3, §5.4 step 0):
+
+  | Request | Status | Message matches |
+  | --- | --- | --- |
+  | `evaluate_phase` at V1 with properties `("h", "s")` | `unsupported` | `^unknown_property:` |
+  | either method with a state of 4 or of 6 flows | `error` | `^state_length:` |
+  | either method with V1's flows and N₂ = −0.235, or NH₃ = +inf, or T = NaN | `out_of_domain` | `^out_of_domain:` |
+  | `flash` with `specification="PH"` | `unsupported` | `^unsupported_specification:` |
+  | `flash` of F1's state with `derivatives=("T",)` | `unsupported` | `^flash_derivatives_unsupported:` |
+
+  No refusal carries values, derivatives or a split (`phase_signature`, `vapor_fraction`, `vapor`, `liquid` all
+  `None`). Exact. Each state has exactly one defect.
+- **M01.A51** — Boundary paths beyond A30 (§8.12):
+  - (i) an evaluation that returns `NotAccepted("S3")` → `not_converged`, code `reactor_not_accepted(S3)`; every code
+    of this kind matches `^reactor_not_accepted\([A-Za-z0-9_]+\)$`;
+  - (ii) a provider whose `flash` answers as `pr-c1-v1` but whose `evaluate_phase` refuses → `error`,
+    `stream_enthalpy_refused`, and the message contains the provider's message;
+  - (iii) V1's inlet with N₂ = −0.235 → `out_of_domain`, code `out_of_domain`, passed through from the inlet flash;
+  - (iv) the check order: F7's state as the inlet → `liquid_at_reactor_inlet`, although it is also outside the hard
+    domain (A30's case; claim BD-06).
+
+  No refusal carries outlet values. Exact.
+- **M01.A52** — The probe record, as committed, holds §8.15's record halves:
+  - `version` 2; `reactor_commit` the pin of §8.1; `environment.packages.pymrm` `2.5.0`;
+  - A41: `pinned` and both `neighbouring_inlet_temperatures` at num_z 800 with `m01_accepted` true;
+    `cold_start_true_inlet` with `dt_init` exactly {10⁻⁶, 10⁻³, 10⁻¹}, all `accepted` false;
+  - A42: `path_independence.max_rel_diff` ≤ 10⁻⁶;
+  - A43: `repeats.runs` 2 with `bitwise_identical` true;
+  - A44: `backflow_override.bitwise_identical` true, and `u_ret_min` > 0 in every grid entry and both neighbours;
+  - A45: max |`element_defect_rel`| ≤ 10⁻⁷ in every entry with `m01_accepted` true;
+  - A46: |`dP_over_P`| ≤ 10⁻³ in every entry;
+  - A48: the grid's num_z is (100, 200, 400, 800, 1600, 3200), with `m01_accepted` true exactly for the first four;
+  - §10.1's design-grid row equals the record to its printed digits (n_NH₃,out 7.451757058514 × 10⁻⁴ mol/s,
+    T_out 757.335312 K);
+  - the boundary's `tube_inlet` of `pinned.inlet_n_mol_s` at N_tubes = 1 gives F and y within 2 ulp of
+    `pinned.F_ret_in_mol_s` and `pinned.y_in` (the reason A47 (a) is stated at the evaluation).
+
+  Exact unless stated. A regression record of the group's model, never an expectation for this repository's code.
 
 ## 10. Numerical refinement evidence (W21, M01's part)
 
@@ -681,7 +899,17 @@ loss (F-R3), which converges slowly with the grid, is the leading candidate (the
 
 **Registered discretization estimate at the design grid num_z = 800** (Richardson with p ∈ [0.62, 0.78], from the
 400/800 and 800/1600 differences): n_NH₃,out is **high by 1.0–1.4 %** (NH₃ production, ξ, high by 1.4–1.9 %), T_out
-**low by 1.3–1.7 K**. An estimate, not a bound (Q-F3). At the group's publication grid num_z = 100 the outlet NH₃ is
+**low by 1.2–1.7 K**. An estimate, not a bound (Q-F3). *Amendment 1:* the estimate is registered machine-readably,
+recomputed from the record, in `reference_values.yaml` → `derived_from_measured.discretization_estimate`:
+- p 0.619–0.783;
+- NH₃ 1.02–1.38 %;
+- ξ 1.44–1.94 %;
+- T_out 1.24–1.67 K.
+
+Claim DX-01 holds these printed ranges to the record. The draft printed T_out's lower end as 1.3 K; the recomputed value
+is 1.24 K. The recipe: for each p and each of the two differences, the 800 error is the 400→800 difference × 2⁻ᵖ/(1 − 2⁻ᵖ),
+or the 800→1600 difference × 1/(1 − 2⁻ᵖ), with 1600 the record's last fine-polish state. The range is over the four
+values, relative to the extrapolated value. At the group's publication grid num_z = 100 the outlet NH₃ is
 ≈ 5.5 % high and T_out ≈ 7 K low.
 
 Element defects are ≤ 2.7 × 10⁻⁸ at every accepted grid and equal across H, N, C and Ar (a common total-flow factor,
@@ -760,17 +988,19 @@ loop decision in v0.2 (no unit in the C1 journey is sensitive to liquid density;
 
 ## 12. Known invalid requests (consolidated)
 
-Provider (§5.3): out-of-domain T or P; a liquid with light gas; a liquid where no liquid root exists; a vapour of pure
-NH₃ where no vapour root exists; a metastable light-gas vapour; an undeclared derivative; a dormant state in
-`evaluate_phase`. Reactor boundary (§8.12): a non-vapour inlet; a component-set mismatch; y_NH₃ below the trace;
-outside the hard domain; a pressure drop above ε_P; an unaccepted reactor state; an element defect above 10⁻⁶. Each has
-a code, each code an assertion (M01.A13, A14, A27, A30), and none returns values.
+Provider (§5.3, §5.4): out-of-domain T or P, or a negative or non-finite flow; a liquid with light gas; a liquid where
+no liquid root exists; a vapour of pure NH₃ where no vapour root exists; a metastable light-gas vapour; an undeclared
+derivative; an unknown property; a state of the wrong length; a dormant state in `evaluate_phase`; a flash for another
+specification, or with derivatives requested. Reactor boundary (§8.12): a non-vapour inlet; a component-set mismatch;
+y_NH₃ below the trace; outside the hard domain; the provider's refusal of the inlet flash (passed through) or of an
+enthalpy flow; a pressure drop above ε_P; an unaccepted reactor state; an element defect above 10⁻⁶. Each has a code,
+each code an assertion (M01.A13, A14, A27, A30, A50, A51), and none returns values.
 
 ## 13. Evidence manifest catalogue (`evidence/M01/<commit>/manifest.json`)
 
 | Check | Command | Expect |
 | --- | --- | --- |
-| gate | `./scripts/check.sh` | green; M01.A01, A03–A36 among the tests |
+| gate | `./scripts/check.sh` | green; M01.A01, A03–A36 and A49–A52 among the tests |
 | generator | `python docs/derivations/scripts/m01_reference.py --check` | exit 0 (A34) |
 | records cross-check | `python -I benchmarks/m01/external_crosscheck.py --check` (its venv; pins in the script) | exit 0 (A02, A38–A40) |
 | IDAES conformance | the WO-5 script in the IDAES venv (`spikes/references/idaes-requirements.lock`) | A37's record committed |
@@ -797,6 +1027,21 @@ Status vocabulary: `implemented` (code merged), `tested` (gate and every row abo
   A25–A32.
 - **WO-7 Evidence manifest** for M01 with the catalogue of §13, `status: tested` when every row passes. A33 checked
   there.
+- **WO-8 Amendment 1** (before WO-7's manifest; the rulings of §19). The design lane has already changed the generator,
+  `reference_values.yaml`, and the A09, A12, A26 and A34 tests.
+  1. `PrC1Provider.flash`: after the specification check and before the state-length check, a non-empty
+     `request.derivatives` returns `unsupported`, `flash_derivatives_unsupported: ...` with no split. Change the
+     docstring's "not offered" to "refused".
+  2. Add `NotAccepted.__post_init__`: it raises `ValueError` for a stage outside `[A-Za-z0-9_]+`.
+  3. Correct `models/c1/boundary.py`'s module docstring. Its sentence "each registered refusal has one defect, so the
+     order decides only unregistered combinations" is false (F7's state has two). Cite §8.12's normative order and
+     its reason (claim BD-06).
+  4. Add the tests M01.A49, A50 and A51 (§9.10). Each state has one defect; each refusal asserts that it carries no
+     values. A51 (ii) uses a provider double that delegates `describe` and `flash` to `pr-c1-v1` and refuses
+     `evaluate_phase`. A49's binder half uses T08 U04's refusal path.
+  5. Add the test M01.A52, a form test of `benchmarks/m01/reactor-probe.json` (§8.15), in a new module
+     `tests/test_m01_reactor_probe_record.py`. It reads the record and never runs the reactor.
+  6. WO-7's manifest records A49–A52, A12's and A26's amended bounds with the measured values, and A34's 88 claims.
 
 M02 (its own brief, after M01 `tested`): the adapter that reproduces the probe (A41–A48 through the adapter), the PR
 units under §7's rules, the loop.
@@ -814,7 +1059,12 @@ units under §7's rules, the loop.
 - **Q-F4 (needs a fact).** The start strategy's coverage of the hard domain (573.15–773.15 K, 5–15 MPa): M01 measured
   three inlet temperatures at 10⁷ Pa. *Measurement:* M02's adapter sweep over the hard domain's corners and centre.
   *Default:* keep the hard domain; any failure inside it is `not_converged` (typed), and M02 narrows the domain by a new
-  entry if a region fails systematically.
+  entry if a region fails systematically. The sweep's points are defined in §8.15 (Amendment 1).
+- **Q-F5 (needs a fact; Amendment 1).** The hard domain does not bound the per-tube flow (GHSV), yet the start
+  strategy was measured at GHSV 1000 h⁻¹ only, and M07 chooses N_tubes. *Measurement:* M02 solves §8.15's centre point
+  at 0.5 and 2 times the nominal per-tube flow. *Default:* M02 adds a per-tube-flow bound of [0.5, 2] × the nominal
+  F_ret_in to the hard domain by an ADR 0027 amendment (outside it: `out_of_domain`), and widens it only on measured
+  acceptance.
 - **Q-N4 (needs Frank's decision — distribution).** The v0.2 wheel would ship the five C1 records (published constants
   with citations; NASA TM-4513 a U.S. Government work) as package data, ending v0.1's "no third-party data in sdist or
   wheel" (T08.A32). *Default:* ship them with their citations and rights fields; M07's release specification records
@@ -823,6 +1073,10 @@ units under §7's rules, the loop.
   wants the "properties book" source; it needs his view on redistributing book tables. *Default:* NASA (no grant needed).
 - **Q-N2 (needs Frank's preference).** The F-R1/F-R2 findings and the overlay concern the group's code: Frank may prefer a
   new pin with five-species support upstream. *Default:* keep `6089593` with the subclass and the overlay.
+- **Q-N5 (needs Frank's preference; Amendment 1).** Should a later schema change give `ModelManifest` a structured
+  `synthetic` field (or an evidence class)? Today a synthetic model is marked in prose fields only, plus
+  `identity.synthetic` in its results (§8.13). *Default:* no schema change in v0.2. Revisit only if a synthetic model is
+  ever bound into `MODEL_BUILDERS`, which M02 decides (R-199).
 - **Q-N3 (needs Frank's preference).** The design grid's cost/accuracy trade (§10.5). *Default:* num_z = 800 (≈ 9 s per
   solve, NH₃ 1.0–1.4 % high); 400 halves nothing that matters (6.7 s) and doubles the error.
 
@@ -853,6 +1107,23 @@ DECISION: units on `pr-c1-v1` → M02. Alternative: M01-build. Reversible by: mo
 DECISION: T08.A32 → amended for real records (§3.5), not relaxed. Alternative: keep the records out of the repository
 until v0.2's release spec. Reversible by: reverting §3.5 and WO-1's test change.
 
+Amendment 1 (§19):
+DECISION: A26's defect vector and element balances → 10⁻¹³ × n_tot,in. Alternative: relative 10⁻¹² (unreachable in
+binary64). Reversible by: A26 and three lines of its test (R-195).
+DECISION: A12's ln φ identities → bounded by 10⁻¹² × the block's largest scaled entry. Alternative: each sum by its own
+magnitude at a looser tolerance. Reversible by: A12 and its test (R-196).
+DECISION: A09's permutation guard → pairwise gap ≥ 10⁻⁶ (10⁶ × A07's tolerance). Alternative: the draft's 10⁻³ at
+another state. Reversible by: A09 and claim PH-GAP.
+DECISION: provider request checks → ratified as built; a flash asked for derivatives → refused
+`flash_derivatives_unsupported`. Alternative: ignore them as SYN-001 does. Reversible by: §5.4 step 0 (R-197).
+DECISION: boundary → inlet phase checked before the hard domain; an enthalpy refusal is `error`,
+`stream_enthalpy_refused`; registered `<stage>` names. Alternative: hard domain first. Reversible by: §8.12 (R-198).
+DECISION: stand-in → labelled in the manifest's prose fields and `identity.synthetic`; not in the envelope at M01.
+Alternative: a schema widening; listing it now. Reversible by: §8.13 (R-199).
+DECISION: A47 → bitwise at the evaluation with the record's (F, y); within 10⁻⁶ through the boundary; the probe record
+gate-checked (A34's hash and A52), never re-run by the gate. Alternative: bitwise through the boundary (unachievable:
+the mapping is 1 ulp off). Reversible by: A47 and §8.15 (R-200).
+
 ## 17. What M01 does not establish
 
 - **No mixture VLE validation.** The separator's y* is validated only through its pure-component ingredients (§11);
@@ -870,6 +1141,12 @@ until v0.2's release spec. Reversible by: reverting §3.5 and WO-1's test change
 - **Not K_NH₃ against Rossetti 2006** (R-152: a decision, not a verification).
 - **Not the overlay's transport surrogates** beyond the measured sensitivity of §10.4.
 - **Not reproduction across machines** of the reactor's bits (A43 is one machine; A47 states the cross-environment bound).
+- **Not a structured synthetic flag in `ModelManifest`** (Amendment 1). The stand-in's manifest says SYNTHETIC in its
+  prose fields; only its results carry the machine-readable `identity.synthetic` (§8.13, Q-N5). A consumer that reads
+  only the manifest's structured fields cannot tell a synthetic model from another.
+- **Not the order of the provider's request checks, nor its root rules at two admissible roots** (Amendment 1; §5.2,
+  §5.3). Both are ratified as built. Neither is asserted, because no registered state has two defects or a
+  near-double root.
 
 ## 18. Corrections and the WIP note's leads, re-measured
 
@@ -883,3 +1160,61 @@ until v0.2's release spec. Reversible by: reverting §3.5 and WO-1's test change
   group's loose tolerance; with S3 the element defect is ~6 × 10⁻¹⁰ and the grid study is §10.
 - WIP 6 (cold start fails with real NH₃ inlet; trace works): confirmed (§8.7).
 - `benchmarks/m01/reactor-probe.json` version 1 held failed solves; version 2 replaces it.
+
+## 19. Amendment 1 (2026-10-08): rulings on the build lane's measurements
+
+The build lane implemented WO-1 to WO-6 and measured against §9 at `f595179` / `13bcef7`. A05–A08, A10, A11, A15–A22,
+A25 and A29 are worst 2.2 × 10⁻¹⁶ to 8.7 × 10⁻¹⁵, far inside their tolerances; A37 is in its record. Eight items came
+back to the design lane, and a ninth came from the session's M02 recon. This amendment rules on each and changes the
+text in place, marked "Amendment 1". No settled design is reopened: no closed form, registered state, expectation
+value, refusal code of the draft or frozen interface changes.
+
+| # | Item | Ruling | Reason | Where |
+| --- | --- | --- | --- | --- |
+| 1 | A26's defect vector at relative 10⁻¹² | Amended: 10⁻¹³ × n_tot,in for the defect vector and defect_rel. The element balances move to the same scale (10⁻¹⁵ → 10⁻¹³ × n_tot,in). The CH₄ defect is exactly 0. | The floor is the raw outlet's rounding, 2.5 × 10⁻¹¹ of the defect, so the draft's tolerance was unreachable. The element sums' worst-case float bound, 1.7 × 10⁻¹⁵, exceeded the draft's 10⁻¹⁵. | A26; BD-04, BD-05; R-195 |
+| 2 | A09's "≥ 10⁻³" | Amended: gap ≥ 10⁻⁶ = 10⁶ × A07's tolerance. The build's test already asserts this. | V1's H₂/CH₄ gap is 4.35 × 10⁻⁴; a permutation still fails A07 by ≥ 4 × 10⁸. | A09; PH-GAP |
+| 3 | A12 Gibbs–Duhem 1.0 × 10⁻¹³ against 10⁻¹² | Scaling changed: the ln φ identities are bounded by 10⁻¹² × M (the block's largest scaled entry). The tolerance is unchanged. | Confirmed as roundoff. The self-normalized floor at V1's N₂ column is u·M/1.0 × 10⁻⁴ ≈ 10⁻¹³, only 10× below the old bound. On M's scale the worst is 3.8 × 10⁻¹⁶. | A12; R-196 |
+| 4 | No `synthetic` field in `ModelManifest` | Sufficient as built, with no schema change. §8.13 now says where the label lives, and A49 checks it. | The schema is frozen. `identity.synthetic` is the machine-readable label, and the prose prefix `SYNTHETIC:` is checkable. | §8.13, A49, Q-N5; R-199 |
+| 5 | The stand-in and the v0.2 envelope | No envelope change at M01; decided at M02. | The stand-in is not bound, so T08.A20's axis is true as it stands, and U04 already refuses it (A49 checks that). If M02 binds it, it is listed as synthetic only. | §8.13, §8.14; R-199 |
+| 6a | Negative or non-finite flows → `out_of_domain` | Ratified | Outside nTP-v1's state space, and the `thermo` contract answers nothing outside its domain. | §5.3, A50 |
+| 6b | Unknown property → `unsupported`, `unknown_property:` | Ratified | A typed, coded refusal, as SYN-001 refuses. | §5.3, A50 |
+| 6c | Wrong state length → `error`, `state_length:` | Ratified | A malformed request, not a capability or domain limit. | §5.3–5.4, A50 |
+| 6d | Non-TP flash → `unsupported_specification:` | Ratified | `describe().flashes` is `("TP",)`. | §5.4, A50 |
+| 6e | Flash derivatives ignored | **Replaced:** refused `unsupported`, `flash_derivatives_unsupported:` | `FlashResult` cannot carry them, so silence would read as an answer. The same provider refuses undeclared derivatives in `evaluate_phase` (A13). No caller passes them. SYN-001 is not changed (A33). | §5.4, §7, A50; R-197 |
+| 6f | Enthalpy refusal at the boundary → `error`, `stream_enthalpy_refused` | Ratified | An admissible request whose answer cannot be formed; typed, carrying the provider's message, with no values. | §8.12, A51; R-198 |
+| 6g | `reactor_not_accepted(<stage>)` via `NotAccepted` | Ratified. The stage grammar and the registered stages are added. | §8.12 named the code but not `<stage>`, and M02 needs both. | §8.7, §8.12, A51; R-198 |
+| 6h | Two admissible roots treated as three | Ratified | f(B) = −2B² (PR-07), so two distinct admissible roots mean a double root; this is the continuous extension of the three-root rule. | §5.2; R-197 |
+| 6i | Boundary check order | Ratified and made normative | No liquid exists inside the hard domain (BD-06), so checking the inlet phase first is the only order in which `liquid_at_reactor_inlet` can be returned. A30's F7 state asserts it. | §8.12, A51; R-198 |
+| 7 | ADR 0026 C1's note for `interfaces-frozen.md` | Written in this amendment (§3 of that file) | One paragraph in the design lane's own document; no work order needed. | `docs/interfaces-frozen.md` §3 |
+| 8 | §7 and the M02 hand-off | Made consistent | §7 states where the equilibrium row's derivatives come from. §8.14 lists what M02 inherits. Two pointers are corrected: §8.14's A45–A50 → A41–A48 and §8.5's A47 → A44. | §7, §8.5, §8.7, §8.14 |
+| 9 | §8.14's A45–A50, and the M02 hand-off's completeness (coordinator) | Corrected to A41–A48; §8.15 added; A47 and §10.1 amended; A52, DX-01, Q-F5 added | See "Item 9" below. | §8.14, §8.15, A47, A52, §10.1, Q-F5 |
+
+**Tolerances changed (old → new):**
+- A26 defect vector: relative 10⁻¹² (absolute 10⁻¹⁸ on zero entries) → 10⁻¹³ × n_tot,in absolute (zero entry: exactly 0).
+- A26 defect_rel: — → 10⁻¹³ (newly registered).
+- A26 element balances: 10⁻¹⁵ × n_tot,in → 10⁻¹³ × n_tot,in.
+- A12 ln φ homogeneity and Gibbs–Duhem: 10⁻¹² × each sum's own magnitude → 10⁻¹² × M. Symmetry: 10⁻¹² × max|·|, now stated
+  as the same M.
+- A09 permutation gap: "≥ 10⁻³" → ≥ 10⁻⁶.
+- A47: "bitwise in the probe's environment" → bitwise at the evaluation, with the record's tube inputs, when the
+  environment block is equal. 10⁻⁶ relative applies through the full boundary and in any other environment with the
+  same pins. The bound is unchanged; its place is stated.
+
+Unchanged: A26's ξ and projected outlet (relative 10⁻¹²); A12's Z, v, h homogeneity; every other tolerance.
+
+**Generator.** `m01_reference.py` gains the claims PR-07, PH-GAP, BD-04, BD-05, BD-06 and DX-01 (82 → 88). It also
+gains the YAML section `assertion_margins` and `derived_from_measured.discretization_estimate`. No `closed_form`
+value moves. `--check` reproduces the files byte-for-byte.
+
+**Item 9 (the coordinator, from the M02 recon).**
+- §8.14's "A45–A50 run by M02" named assertions that did not exist. The true set is A41–A48, as §9.9 and ADR 0027
+  state. It is corrected, and A49–A52 are now this amendment's in-gate assertions.
+- The hand-off is completed in the new §8.15:
+  - per assertion, a record half (M01, in the gate, A52) and an adapter half (M02);
+  - A47 is restated at the evaluation level. A measured fact made the draft's "bitwise in the probe's environment"
+    unachievable through the boundary: §8.3's mapping of the recorded n is 1 ulp off the recorded (F, y);
+  - Q-F4's 17-point sweep is defined;
+  - Q-F5 is new: the per-tube flow is not bounded by the hard domain;
+  - the probe record is a gate-checked regression (A34's hash, plus A52), never re-run by the gate;
+  - A48's estimate is now machine-readable for M02's results (DX-01), and §10.1's T_out range is corrected from
+    1.3–1.7 K to 1.2–1.7 K.

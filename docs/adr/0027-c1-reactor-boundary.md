@@ -1,6 +1,7 @@
 # ADR 0027 — The C1 reactor boundary: the group's 1D reactor behind a zero-pressure-drop, extent-projected, process-side-duty contract
 
-**Status:** Proposed, 2026-10-08. Accepted when M01's evidence manifest is `tested` (WO-6, the stand-in) and M02's
+**Status:** Proposed, 2026-10-08; amended before acceptance by Amendment 1 (2026-10-08, below), and still Proposed.
+Accepted when M01's evidence manifest is `tested` (WO-6 and WO-8, the stand-in) and M02's
 adapter reproduces the probe's design-grid regression values (M01.A41–A48 through the adapter).
 **Date:** 2026-10-08
 **Author:** design lane (`specifier`), M01.
@@ -59,7 +60,8 @@ are never copied into this repository.
 **D6. Start strategy and solver profile.** S1 cold at the trace inlet (y_NH₃ := 10⁻⁹) with the group's settings; S2
 warm at the true inlet; S3 polish with Newton rtol 10⁻¹², atol 0.1 × target, steady-state target
 10⁻⁶ (num_z/100)². Accepted iff S3 converged, the group's KPI-drift certificate passes, the retentate velocity is
-positive on every face, every flow is positive, D2 and D3 hold. Anything else is `not_converged` with no outlet.
+positive on every face, every flow is positive, D2 and D3 hold. A failure of D2 or D3 carries that decision's own
+code. Any other failure is `not_converged`, `reactor_not_accepted(<stage>)`, with no outlet (Amendment 1, A1.2).
 
 **D7. The design grid is num_z = 800**, the finest grid at which the profile's state is accepted; every result reports
 the registered discretization estimate (spec §10). The profile is registered for num_z ≤ 800; at 1600 and 3200 the
@@ -69,7 +71,9 @@ the refinement estimate.
 **D8. The M01/M02 split and the stand-in.** M01 implements the boundary module (mapping, projection, convention
 checks, envelope, refusal codes) and a synthetic stand-in reactor `c1.reactor_standin` (ξ = 0.25 n_N₂,in, T_out = T_in)
 that exercises every boundary path in the in-repo gate without PyMRM; M02 implements the out-of-process adapter (D5's
-subclass, D6's strategy, timeouts, caching, retained failures, frozen versions, promotion) and the PR units.
+subclass, D6's strategy, timeouts, caching, retained failures, frozen versions, promotion) and the PR units. The
+stand-in is labelled synthetic in the fields the frozen `ModelManifest` schema has, and in every `ok`
+result's `identity.synthetic` (Amendment 1, A1.3).
 
 **D9. The kinetics' data domain is flagged, not refused.** Inlets outside 643–733 K, 50–100 bar or H₂/N₂ ∈ [1.5, 3] but
 inside the adapter's hard domain (573.15–773.15 K, 5–15 MPa, H₂/N₂ ∈ [1, 4], inerts ≤ 20 %) return `ok` with
@@ -107,5 +111,48 @@ None: no existing unit, identity or record changes.
 
 ## Acceptance evidence
 
-M01.A25–A32 (stand-in, in the gate); M01.A41–A48 (the probe's record; M02 reproduces them through its adapter);
-a `reviewer` pass on M02's adapter against spec §8.
+M01.A25–A32, A49, A51 and A52 (stand-in and the probe record's form, in the gate); M01.A41–A48 (the probe's record;
+M02 reproduces them through its adapter, spec §8.15); a `reviewer` pass on M02's adapter against spec §8.
+
+## Amendment 1 (2026-10-08): the build lane's measurements, ruled
+
+**Status:** Proposed with this ADR; design lane (`specifier`), M01 spec Amendment 1 (§19); register R-195, R-198,
+R-199, R-200. No port, row, convention, threshold or refusal code of the draft changes.
+
+- A1.1 (D1–D3, the check order). The boundary checks a request in a fixed order:
+  1. component set, including the flow vector's length;
+  2. a dormant inlet;
+  3. the inlet's TP flash (a provider refusal passes through; a result other than VAPOR is
+     `liquid_at_reactor_inlet`);
+  4. the NH₃ trace;
+  5. the hard domain;
+  6. the evaluation;
+  7. the pressure convention;
+  8. the element defect;
+  9. the two enthalpy flows;
+  10. `ok`, with the data-domain flag.
+
+  The inlet phase comes before the hard domain because no liquid exists inside the hard domain: 573.15 K lies above
+  NH₃'s T_c,EOS (claim BD-06). In the other order, `liquid_at_reactor_inlet` could never be returned (spec §8.12).
+- A1.2 (D6, the codes). The evaluation reports its own acceptance failures as `NotAccepted(<stage>)`, which the
+  boundary returns as `not_converged`, `reactor_not_accepted(<stage>)`. `<stage>` matches `[A-Za-z0-9_]+`. The
+  registered stages are `S1`, `S2`, `S3`, `certificate`, `backflow` and `nonpositive_flow`, and M02 may register more.
+  A provider refusal of Ḣ_in or Ḣ_out is `error`, `stream_enthalpy_refused`, carrying the provider's message.
+- A1.3 (D8, the synthetic label). The frozen `ModelManifest` schema has no `synthetic` field. The label lives in:
+  - the manifest's `title`;
+  - its `description`, which begins `SYNTHETIC`;
+  - its first limitation, which begins `SYNTHETIC:`;
+  - every `ok` result's `identity.synthetic` (`true`).
+
+  The stand-in is not in `MODEL_BUILDERS`, so a revision naming it is refused (T08 U04). The v0.2 envelope does not
+  list it at M01. If M02 binds it, the envelope lists it as synthetic only (M01.A49).
+- A1.4 (verification). M01.A26's defect vector and element balances are asserted at 10⁻¹³ × n_tot,in. The relative
+  10⁻¹² was below the binary64 floor of a difference of O(n_tot) flows (claims BD-04, BD-05). New assertions:
+  M01.A49 (the label) and M01.A51 (the boundary paths beyond A30).
+- A1.5 (D7 and the acceptance clause, the M02 hand-off). Spec §8.15 splits each of M01.A41–A48 into two halves. The
+  record half is checked in the gate on `reactor-probe.json` (M01.A52; the record's bytes are already pinned through
+  A34). The adapter half is re-measured by M02. A47's bitwise reproduction is stated at the evaluation, with the
+  record's tube inputs (F, y), because §8.3's mapping of the recorded n is 1 ulp off them. Through the full boundary,
+  the 10⁻⁶ bound of §10.3 applies. The design grid's discretization estimate is registered machine-readably for every
+  result (`derived_from_measured.discretization_estimate`, claim DX-01). Q-F4's corner sweep is defined. The per-tube
+  flow, which no hard-domain bound covers, is Q-F5.

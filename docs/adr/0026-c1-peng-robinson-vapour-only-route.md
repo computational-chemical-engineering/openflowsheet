@@ -1,6 +1,7 @@
 # ADR 0026 — The C1 property route: Peng–Robinson with the light gases vapour-only, its root and phase rules, the equilibrium-vapour flash, and the formation datum `PR-C1-ref-v1`
 
-**Status:** Proposed, 2026-10-08. Accepted when M01's evidence manifest is `tested` with the work orders of
+**Status:** Proposed, 2026-10-08; amended before acceptance by Amendment 1 (2026-10-08, below), and still Proposed.
+Accepted when M01's evidence manifest is `tested` with the work orders of
 `docs/derivations/M01-spec.md` §14 WO-1 to WO-4 and a `reviewer` pass on the provider.
 **Date:** 2026-10-08
 **Author:** design lane (`specifier`), M01.
@@ -38,7 +39,9 @@ smallest has the lower G^dep. A liquid carrying any light gas is refused (`light
 for the equilibrium vapour composition, not for the split: with w the light-gas proportions, y* is the smallest root
 on (0, 1) of h(y) = ln y + ln φ_NH₃^V(T, P; y, w) − ln φ_NH₃^L,pure(T, P), bracketed by a fixed sample sequence and
 bisected; the feed is two-phase iff n_NH₃ > n_light y*/(1 − y*). No liquid forms at T ≥ T_c,EOS or where pure NH₃'s
-stable phase is vapour (P ≤ P_sat,EOS). Every refusal is a typed result with a registered reason code.
+stable phase is vapour (P ≤ P_sat,EOS). Every refusal is a typed result with a registered reason code. More than one
+admissible root is treated as three (Amendment 1): the cubic at Z = B is −2B², so two distinct admissible roots form a
+double root.
 
 **D3. k_ij = 0 for every pair**, with the stated effect: at the C1 separator (F1) k_ij = 0.1 for H₂–NH₃ moves y* by
 −3.1 %, for N₂–NH₃ by −2.1 %, every other pair by less than 0.4 % (spec §4.2). No cited k_ij set for the H₂/N₂/Ar/CH₄–NH₃
@@ -61,7 +64,9 @@ dependencies; the values live in `benchmarks/m01/components.yaml` with their cit
 **D6. Provider surface.** Provider id `pr-c1-v1`; `state_definition` `nTP-v1`; components `(H2, N2, NH3, Ar, CH4)`;
 phases `(LIQUID, VAPOR)`; properties `h`, `Z`, `v`, `lnphi_<id>`; flashes `("TP",)`; derivatives in `T`, `P`,
 `n_<id>` (order 1); domain T ∈ [200, 1000] K, P ∈ [1e4, 3e7] Pa. Refusals carry `status` `unsupported` or
-`out_of_domain` and a `message` that begins with the reason code and a colon.
+`out_of_domain` and a `message` that begins with the reason code and a colon. A malformed request (a state of the
+wrong length) is `error`, `state_length` (Amendment 1). A `flash` request that asks for derivatives is refused
+`flash_derivatives_unsupported`, because `FlashResult` cannot carry them (Amendment 1).
 
 ## Alternatives considered
 
@@ -87,7 +92,8 @@ phases `(LIQUID, VAPOR)`; properties `h`, `Z`, `v`, `lnphi_<id>`; flashes `("TP"
 ## Consequences
 
 - C1. No frozen interface, schema, quantity kind or check category changes. `docs/interfaces-frozen.md` §3 gains a note
-  that ADR 0001 D5's convention list includes `PR-C1-ref-v1` and that ADR 0011 D2's set has two members.
+  that ADR 0001 D5's convention list includes `PR-C1-ref-v1` and that ADR 0011 D2's set has two members (written by
+  Amendment 1).
 - C2. SYN-001's provider, its oracle and every registered identity (SYN-001 structural hash, the K05 identity
   document, T06's corpus values) are untouched: the provider is additive (assertion M01.A33).
 - C3. The units that consume the provider (PR flash, heater/cooler, mixer, splitter on `pr-c1-v1`) are M02's; their
@@ -102,6 +108,28 @@ None: no existing record, identity or registered value moves.
 
 ## Acceptance evidence
 
-- `docs/derivations/scripts/m01_reference.py --check` (82 claims) and `benchmarks/m01/external_crosscheck.py --check`.
-- M01.A01, A03–A24 and A33–A36 pass in the gate; the IDAES conformance record (M01.A37) and the W22 comparison (M01.A38–A40) committed.
+- `docs/derivations/scripts/m01_reference.py --check` (88 claims since Amendment 1) and
+  `benchmarks/m01/external_crosscheck.py --check`.
+- M01.A01, A03–A24, A33–A36 and A50 pass in the gate; the IDAES conformance record (M01.A37) and the W22 comparison (M01.A38–A40) committed.
 - `reviewer` pass on the provider against spec §4–§7.
+
+## Amendment 1 (2026-10-08): the build lane's measurements, ruled
+
+**Status:** Proposed with this ADR; design lane (`specifier`), M01 spec Amendment 1 (§19); register R-196, R-197.
+No closed form, registered state, expectation value or refusal code of the draft changes.
+
+- A1.1 (D2). More than one admissible root is treated as three: smallest = liquid, largest = vapour, and the guard
+  compares the two. The cubic at Z = B is −2B² (generator claim PR-07), so two distinct admissible roots are a double
+  root. The case is not registered and not asserted (spec §5.2).
+- A1.2 (D6). The provider's request checks are ratified as built:
+  - a negative or non-finite flow, or a non-finite T or P → `out_of_domain`;
+  - an unknown property → `unsupported`, `unknown_property`;
+  - a state of the wrong length → `error`, `state_length`;
+  - a non-TP flash → `unsupported`, `unsupported_specification`.
+
+  One behaviour is replaced: a `flash` that asks for derivatives is refused (`flash_derivatives_unsupported`), not
+  ignored. SYN-001's provider is not changed (spec §5.3, §5.4 step 0; M01.A50).
+- A1.3 (verification). M01.A09, A12 and A26 are restated on measured floors (spec §19). A12's ln φ identities are
+  bounded by 10⁻¹² times the block's largest scaled entry. The generator gains PR-07, PH-GAP, BD-04, BD-05, BD-06
+  and DX-01 (88 claims).
+- A1.4 (C1). The note for `docs/interfaces-frozen.md` §3 is written.
