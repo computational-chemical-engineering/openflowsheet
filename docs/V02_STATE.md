@@ -53,7 +53,7 @@ F5 education mode deferred.
 
 **Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", max 4 agents).** Running: `specifier` M01 on `wp/M01`
 (worktree `.claude/worktrees/agent-a94d84cd26a293bc0`); M06 WO-4…6 **done** on `wp/M06-build` (`5d0261a`, gate green);
-M06 WO-14 **done** on `wp/M06-w27` (`e268ed8`); `specifier` M06 WO-15 on `wp/M06-w27` (worktree `m06-w27`); `opus-engineer` M06 WO-1…3 on `wp/M06-contract` (`m06-contract`; Amendment 3 approved
-2026-10-08); `opus-engineer` M03 WO-0…3 on `wp/M03` (worktree `m03`). Next: M03 WO-6 (Ipopt [A10] audit) in the next free slot; after WO-1…3: merge `wp/M06-contract` into
-`wp/M06-build`, regenerate routes, then WO-7…12.
+M06 WO-14 **done** on `wp/M06-w27` (`e268ed8`); `specifier` M06 WO-15 on `wp/M06-w27` (worktree `m06-w27`); M06 WO-1…3 **done** on `wp/M06-contract` and merged into `wp/M06-build` (R-192, R-193);
+`opus-engineer` M03 WO-6 Ipopt audit on `wp/M03-audit` (worktree `m03-audit`); `opus-engineer` M03 WO-0…3 on `wp/M03` (worktree `m03`). Next free slot: M01 build if its spec is done (critical path), else M06 WO-7 (fixtures) → WO-8…12 on
+`wp/M06-build`.
 In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`. Push `main` at milestones (authorised).

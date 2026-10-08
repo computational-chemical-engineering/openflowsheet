@@ -99,3 +99,17 @@ Grep, don't read whole. Newest at the bottom.
 - `opus-engineer` M03 WO-0…3 launched on `wp/M03`. Next M03 slot: WO-6 (the [A10] Ipopt audit).
 - At merge: register index paragraph + ADR index need R-154…R-191 and ADRs 0026…0032; register appends from M01,
   M03, M06 branches resolve by concatenation.
+- M06 WO-1…3 done on `wp/M06-contract`: `b570179` (binder records specification pins per column; isolated),
+  `6b3a899` (WO-1 structure index, trace+analyse split, unroutable branch; G3, G4), `c0f3d25` (WO-2 element_diff;
+  G5), `7b36f4a` (served MCP digest; isolated), `852b47b` (WO-3 list_audit; G6; R2 precondition holds),
+  `4415e3e` (envelope list_audit; isolated). check.sh after WO-3: 7124 passed, 31 skipped. Engineer's contract
+  detail for review: a routed declaration that cannot be traced gives `rows`/`columns: null` (not in corpus).
+- Two escalations decided by the session on the contract branch (`90f4c0b`):
+  - R-192: the served MCP tool-list digest moves `171dd768…` → `6c4375b4…`, bound to A3.2's `elements` by the
+    decomposition test; R-133/R-134/R-137 stay the 0.1 record; `t08_rc.py` A49 not edited. Rejected: dropping
+    `elements` from MCP (transports must agree, R-096), editing the 0.1 A49 constant.
+  - R-193: `support_envelope.yaml` becomes v0.2's working envelope `v0.2-envelope-dev` / `0.2.0.dev0`; v0.1's stays
+    at tag v0.1.1; M07 finalises `v0.2-envelope-1`. Rejected: amending v0.1's record in place.
+  - R numbers: R-192+ are the session's (M03 holds R-180…R-191, WO-15 R-176…R-179).
+- `wp/M06-contract` merged into `wp/M06-build`; `js/routes.js` regenerated (19 routes).
+- `opus-engineer` M03 WO-6 (Ipopt [A10] audit) launched on `wp/M03-audit` (from `17cec07`).
