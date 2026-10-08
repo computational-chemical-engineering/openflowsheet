@@ -834,8 +834,11 @@ machine (the probe's environment record); M02's adapter must reproduce them.
 - **M01.A43** — Repeatability: two repeats at the design grid are bitwise identical (one machine, one environment).
 - **M01.A44** — The backflow override is inert: replacing it by `[0, 0, 0, 1, 0]` leaves the outlet bitwise unchanged,
   and u_ret > 0 on every face.
-- **M01.A45** — Raw element defects |Δ(H, N, C, Ar)|/inlet ≤ 10⁻⁷ at every accepted grid (measured ≤ 2.7 × 10⁻⁸ at
-  800, ≤ 9.2 × 10⁻¹⁰ at 100–400); the refusal threshold 10⁻⁶ of §8.9 sits 37 times above the design grid's value.
+- **M01.A45** — Raw element defects |Δ(H, N, C, Ar)|/inlet ≤ 10⁻⁷ at every accepted grid (measured at 800: 2.66 × 10⁻⁸
+  at the nominal T_in 673.15 K, 1.72 × 10⁻⁸ at 653.15 K and 2.98 × 10⁻⁸ at 693.15 K; ≤ 9.2 × 10⁻¹⁰ at 100–400); the
+  refusal threshold 10⁻⁶ of §8.9 sits 37 times above the nominal design-grid value and 33.6 times above the worst
+  accepted one. *(Amendment 2, review F7: the draft's "≤ 2.7 × 10⁻⁸ at 800" and "37 times" held at the nominal T_in
+  only.)*
 - **M01.A46** — |ΔP|/P_in ≤ 10⁻³ at every registered point (measured 4.90–5.06 × 10⁻⁵).
 - **M01.A47** — M02's adapter reproduces the probe's design-grid nominal outlet (as amended by Amendment 1). The
   outlet means the evaluation's raw `TubeOutlet`, at N_tubes = 1, before projection: five flows and T_out.
@@ -1288,3 +1291,4 @@ output of `evaluate_phase` and `flash` at the registered states compared as `flo
 | F3 (should-fix): the boundary tested dormancy before the inlet's state space, so (0.5, −0.5, 0, 0, 0) and an all-zero inlet with T = NaN answered `ok` | Step 2 of §8.12's order (state space: flows finite and ≥ 0, T and P finite and > 0 → `out_of_domain`) inserted before the dormant check, in the text and in `Boundary.evaluate`. A51 (iii) is restated with a refusing-flash double, because its negative-flow state now stops at step 2; A51 (v) is new. BD-06 and A51 (iv) are unaffected: F7's state is inside the state space, so the inlet phase still precedes the hard domain. | §8.12, A51; `boundary.py` `state_space_violation`; R-198 (note) |
 | F4 (should-fix): "declining Q-N4 is a revert of `1621d65`" was false, because the loader reads through `packaged()`, which raises `KeyError` without the entry | `load_records` falls back to the source checkout's single copy when `PACKAGED` lacks the entry, and raises `FileNotFoundError` naming Q-N4 outside a checkout. Tested by simulating the absent entry; the revert itself was trial-applied to a copy of the tree, and the M01 and T08 package-data tests pass there. The "user-supplied path" for installed packages stays unbuilt (Q-N4 states so). | §15 Q-N4; `pr_c1.py` `load_records`; `tests/test_m01_records.py::test_f4_*` |
 | F5 (should-fix, documentation): the flash's fixed samples miss a genuine crossing near T_c,EOS; the declared limitation did not say where | §17's limitation quantified with the review's measurement and the build lane's map (T = 362.5–401 K, P = 1.00–1.38 × 10⁷ Pa, missed y* = 0.71–0.998, h ≤ 9.6 × 10⁻³), and `describe().numerical_limitations` states the same box. The optional detection of the branch switch (the review's design-lane option) is not built. | §17; `pr_c1.py` `describe` |
+| F7 (note): A45's measured value and wording held at the nominal inlet only | A45's parenthesis states the three design-grid values (2.66, 1.72, 2.98 × 10⁻⁸) and both margins (37× nominal, 33.6× worst); the manifest's limitation on A45 quotes the worst accepted value, 2.98 × 10⁻⁸, which is what its A45 check measures. No tolerance changes. | A45; `scripts/m01_evidence_manifest.py` |

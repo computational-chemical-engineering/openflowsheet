@@ -1047,7 +1047,9 @@ def build(
         "commands": commands,
         "checks": checks,
         "artifacts": [
-            _artifact("docs/derivations/M01-spec.md", "The specification, Amendment 1 included."),
+            _artifact(
+                "docs/derivations/M01-spec.md", "The specification, Amendments 1 and 2 included."
+            ),
             _artifact("benchmarks/m01/components.yaml", "The five C1 records (A01, A03)."),
             _artifact(
                 "benchmarks/m01/reference_values.yaml", "The generator's 50-digit expectations."
@@ -1081,10 +1083,11 @@ def build(
             "W22 is validated for pure-component behaviour only (A38-A40, spec §11); there is no "
             "mixture VLE validation, and k_ij = 0.",
             "The probe record's numbers come from one machine and one environment. Two record "
-            "values sit within 10x of their bounds by the spec's own registration: A45's element "
-            "defect at the design grid (2.66e-8 against 1e-7; the refusal threshold 1e-6 is 37x "
-            "above it) and A52's mapping of the recorded n (1 ulp against 2). Both are constants "
-            "of a committed record, not computations the gate repeats.",
+            "values sit within 10x of their bounds by the spec's own registration: A45's worst "
+            "accepted element defect, 2.98e-8 at the design grid's 693.15 K neighbour (2.66e-8 at "
+            "the nominal inlet), against 1e-7, with the refusal threshold 1e-6 33.6x above it; and "
+            "A52's mapping of the recorded n (1 ulp against 2). Both are constants of a committed "
+            "record, not computations the gate repeats.",
             "Human numerical and process-modeling review remain `pending`; `reviewed` is never "
             "self-set.",
         ],
