@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import datetime
 import hashlib
 import json
 import re
@@ -250,6 +251,10 @@ T4 = {
     "alternative (i), 2026-10-12": False,
     "not accepted, 2026-10-12": False,
     "2026-10-12, accepted": False,
+    # Amendment 1 (review) F1: a chosen alternative after the word, and an unbounded date.
+    "accepted (i), 2026-10-12": False,
+    "accepted alternative (ii), 2026-10-12": False,
+    "accepted, 2026-10-123": False,
 }
 T5 = {
     "**Status:** **Accepted, 2026-10-02**, with its Proposed revision 1": True,
@@ -266,6 +271,8 @@ T5_REAL_ACCEPTED = (
 )
 
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+#: Spec §7.2 item 3's cell rule as amended (Amendment 1 (review) F1), quoted there verbatim.
+FRANK_CELL_PATTERN = r"^accepted[\s,;:]*(\d{4}-\d{2}-\d{2})(?![0-9])"
 CLAUSE = re.compile(r"\b(?:V(?:1[1-9]|20)|W2[12]) \([a-z0-9]+\)")
 
 
@@ -289,10 +296,17 @@ def is_section(tag: str, heading: str) -> bool:
 
 
 def frank_accepts(cell: str) -> bool:
-    """Spec §7.2 item 3: `*` and backticks removed, stripped; lower-cased it starts `accepted` and
-    holds a date."""
+    """Spec §7.2 item 3 (Amendment 1 (review) F1): `*` and backticks removed, stripped and
+    lower-cased, the cell matches `FRANK_CELL_PATTERN` at its start with a calendar date."""
     bare = cell.replace("*", "").replace("`", "").strip().lower()
-    return bare.startswith("accepted") and DATE.search(bare) is not None
+    match = re.match(FRANK_CELL_PATTERN, bare)
+    if match is None:
+        return False
+    try:
+        datetime.date.fromisoformat(match.group(1))
+    except ValueError:
+        return False
+    return True
 
 
 def status_accepted(line: str) -> bool:
@@ -578,6 +592,7 @@ def build(claims: Claims) -> dict[str, Any]:  # noqa: PLR0915 - one claim after 
     t4 = {unquote(row[0]): yes_no(row[1]) for row in table_after(spec, "**Table T4")}
     claims.check("T4.table", t4 == T4)
     claims.check("T4.rule", all(frank_accepts(cell) == want for cell, want in T4.items()))
+    claims.check("T4.rule_stated", f"`{FRANK_CELL_PATTERN}`" in spec)
     t5 = {unquote(row[0]): yes_no(row[1]) for row in table_after(spec, "**Table T5")}
     claims.check("T5.table", t5 == T5)
     claims.check("T5.rule", all(status_accepted(line) == want for line, want in T5.items()))
@@ -651,6 +666,7 @@ def build(claims: Claims) -> dict[str, Any]:  # noqa: PLR0915 - one claim after 
             "envelope_id": ENVELOPE_ID,
             "required_adrs": list(REQUIRED_ADRS),
             "frank_items": list(FRANK_ITEMS),
+            "frank_cell_pattern": FRANK_CELL_PATTERN,
             "d3_clauses": list(D3_CLAUSES),
             "paths": PATHS,
             "rc_steps": {str(step): ident for step, ident in STEP_ASSERTIONS.items()},

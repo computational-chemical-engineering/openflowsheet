@@ -8,6 +8,7 @@ mechanics, the release-candidate (RC) job and the evidence manifest `evidence/M0
 **Status:** Proposed. Binding on the build lane and on the `verdict` agent once committed. It is written against the
 default of N3, which Frank has not answered (§14 F-α0). A defect found in it is amended here, dated, and never worked
 around downstream.
+Amended 2026-10-09 by Amendment 1 (review), §17.
 **Requirements served:** D17 (every release gate judged, none substituted) and D20 (a reproducible release candidate).
 Gates V11–V20, W21 and W22. The evidence-manifest schema carries D/A ids only, so the gates travel in
 `docs/requirements.yaml` and in the verdict document, as in T08.
@@ -497,8 +498,10 @@ commit is unambiguous.
      its acceptance cell passes the cell rule below **and** its date is on or after the judged date.
    - **The decisions table** has a header column `Frank's answer`, and its rows are `N3`, `V17 carry` and `M02 N1`.
      Each of the three must pass the cell rule.
-   - **The cell rule.** Remove `*` and backticks from the cell and strip it. Lower-cased, it must start with `accepted`
-     and contain a date `\d{4}-\d{2}-\d{2}`. Its first such date is the acceptance date. Table T4 fixes the rule.
+   - **The cell rule.** Remove `*` and backticks from the cell and strip it. Lower-cased, it must match
+     `^accepted[\s,;:]*(\d{4}-\d{2}-\d{2})(?![0-9])` at its start, so the date comes right after the word, and that
+     date must be a calendar date. It is the acceptance date. Table T4 fixes the rule. *(amended 2026-10-09,
+     Amendment 1 (review) F1)*
 4. **The RC record.** `docs/v02-alpha-rc-record.md`, read by `v0_1_gate.py`'s RC-record grammar unchanged (T08 review
    3, Ruling 3).
    - It names `C` once, as `` `C` = `<40 hex>` ``.
@@ -517,7 +520,7 @@ commit is unambiguous.
 8. **`C`.** `--rc` resolves through git, or else through a unique prefix of a record in `release/rc-trees/` (R-151,
    unchanged). `C`'s version is read from git, or from the record's `version`.
 
-**Table T4 — Frank's cell rule**
+**Table T4 — Frank's cell rule** *(three `no` rows added 2026-10-09, Amendment 1 (review) F1)*
 
 | Cell (as written) | Counts as Frank's acceptance |
 | --- | --- |
@@ -529,6 +532,9 @@ commit is unambiguous.
 | `alternative (i), 2026-10-12` | no |
 | `not accepted, 2026-10-12` | no |
 | `2026-10-12, accepted` | no |
+| `accepted (i), 2026-10-12` | no |
+| `accepted alternative (ii), 2026-10-12` | no |
+| `accepted, 2026-10-123` | no |
 
 **Table T5 — the ADR status rule**
 
@@ -1000,3 +1006,20 @@ Branch `wp/M07a`, from `main` after M02's merge. WO-1 to WO-4 and WO-7 do not de
   (WO-8).
 - **FD-α8.** The RC-record grammar fails any row that reads "not measured". An unmeasured platform is therefore stated
   in the envelope and the notes, never as an RC row (§4 item 4).
+
+---
+
+## 17. Amendment 1 (review), 2026-10-09
+
+**Author:** design lane (`reviewer`), `docs/reviews/V02-alpha-gate-review.md` (verdict "sound, no must-fix"),
+transcribed by the build lane. The rulings below are the reviewer's recommended rules and are binding. The body
+markers *(amended 2026-10-09, Amendment 1 (review) F<n>)* point back here.
+
+**F1 — Table T4's cell rule (review F1).** The rule "starts with `accepted` and contains a date" counted a chosen
+alternative written after the word as an acceptance of the default (`accepted (i), 2026-10-12`), and its unbounded
+date read `2026-10-123` as 2026-10-12. §7.2 item 3's cell rule is replaced: the bare, lower-cased cell must match
+`^accepted[\s,;:]*(\d{4}-\d{2}-\d{2})(?![0-9])` at its start, and the captured date, a calendar date, is the
+acceptance date. Table T4's three `yes` rows and five `no` rows keep their answers; three `no` rows are added:
+`accepted (i), 2026-10-12`, `accepted alternative (ii), 2026-10-12` and `accepted, 2026-10-123`. The rule governs
+both of ADR 0028's tables, so the D3 cell for V14 (b) is read by it too. Rejected: keeping the rule and telling Frank
+in `RELEASING.md` to write exactly `accepted, <date>`, which relies on the writer.

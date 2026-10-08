@@ -21,8 +21,9 @@ working tree (§7.2):
 - `docs/adr/0028-v0.2-pre-release-policy.md`, and not ADR 0021: its D3 table (a `Frank's
   acceptance` column, first cell a clause) and its decisions table (a `Frank's answer` column,
   rows `N3`, `V17 carry`, `M02 N1`). A cell counts iff, with `*` and backticks removed, stripped
-  and lower-cased, it starts with `accepted` and holds a date; its first date is the acceptance
-  date (Table T4). A D3 row counts only if that date is on or after the verdicts' `Judged` date.
+  and lower-cased, it matches `ACCEPTANCE` at its start: `accepted`, then only spaces or `,;:`,
+  then a calendar date, which is the acceptance date (Table T4, Amendment 1 (review) F1). A D3
+  row counts only if that date is on or after the verdicts' `Judged` date.
 - `docs/v02-alpha-rc-record.md`, by `v0_1_gate.py`'s RC-record grammar (T08 review 3, Ruling 3)
   with this set's steps: 1–12 must each have a row that passed and none that failed or is not
   stated as passed; step 13 is this script and is not required.
@@ -98,6 +99,9 @@ NONE: Final = "—"
 CLAUSE: Final = re.compile(r"\b(?:V(?:1[1-9]|20)|W2[12]) \([a-z0-9]+\)")
 LIMITATION: Final = re.compile(r"\bL(?:\d{2}|-[A-Z]+-\d+)\b")
 DATE: Final = re.compile(r"\d{4}-\d{2}-\d{2}")
+#: Table T4's cell rule (§7.2 item 3, Amendment 1 (review) F1), matched against the bare,
+#: lower-cased cell: the date comes right after the word, so `accepted (i), …` is no acceptance.
+ACCEPTANCE: Final = re.compile(r"^accepted[\s,;:]*(\d{4}-\d{2}-\d{2})(?![0-9])")
 RC_COMMIT: Final = re.compile(r"`C` = `([0-9a-f]{40})`")
 RELEASE_CANDIDATE: Final = "**Release candidate:**"
 RELEASE_CANDIDATE_VALUE: Final = re.compile(r"\*\*Release candidate:\*\* `([0-9a-f]{40})`")
@@ -309,14 +313,13 @@ def verdict_document(text: str, gate_set: GateSet, rc: str) -> VerdictDocument:
 
 def acceptance_date(cell: str) -> datetime.date | None:
     """Table T4's cell rule: with `*` and backticks removed, stripped and lower-cased, the cell
-    starts with `accepted` and holds a date; its first date is the acceptance date. `None` if
-    the cell is not an acceptance (or its first date is not a calendar date)."""
-    bare = _bare(cell).lower()
-    date = DATE.search(bare)
-    if not bare.startswith("accepted") or date is None:
+    matches `ACCEPTANCE` at its start, and the date it captures is the acceptance date. `None` if
+    the cell is not an acceptance (or that date is not a calendar date)."""
+    date = ACCEPTANCE.match(_bare(cell).lower())
+    if date is None:
         return None
     try:
-        return datetime.date.fromisoformat(date.group(0))
+        return datetime.date.fromisoformat(date.group(1))
     except ValueError:
         return None
 

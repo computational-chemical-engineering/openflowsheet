@@ -131,6 +131,7 @@ targets:
   d3_clauses:
   - V14 (b)
   envelope_id: v0.2-alpha-envelope-1
+  frank_cell_pattern: ^accepted[\s,;:]*(\d{4}-\d{2}-\d{2})(?![0-9])
   frank_items:
   - N3
   - V17 carry
@@ -269,7 +270,10 @@ truth_tables:
     2026-10-12, accepted: false
     Accepted 2026-10-12: true
     accepted: false
+    accepted (i), 2026-10-12: false
+    accepted alternative (ii), 2026-10-12: false
     accepted, 2026-10-12 ("go"): true
+    accepted, 2026-10-123: false
     alternative (i), 2026-10-12: false
     not accepted, 2026-10-12: false
     pending: false

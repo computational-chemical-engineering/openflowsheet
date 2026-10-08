@@ -264,6 +264,7 @@ def test_the_registry_is_the_specification_s() -> None:
     assert ALPHA.envelope_id == TARGETS["envelope_id"]
     assert list(ALPHA.required_adrs) == TARGETS["required_adrs"]
     assert list(ALPHA.frank_items) == TARGETS["frank_items"]
+    assert v0_2_gate.ACCEPTANCE.pattern == TARGETS["frank_cell_pattern"]
     assert list(ALPHA.rc_steps) == TARGETS["rc_steps_required"]
     assert ALPHA.rc_last_step == max(int(step) for step in TARGETS["rc_steps"])
     assert ALPHA.verdict_document == TARGETS["paths"]["verdict_document"]
@@ -481,7 +482,11 @@ def test_a04_a_missing_ledger_gate_or_verdict_is_refused() -> None:
 
 
 @pytest.mark.parametrize("item", ["N3", "V17 carry", "M02 N1"])
-@pytest.mark.parametrize("state", ["pending", "alternative (i), 2026-10-12", None])
+@pytest.mark.parametrize(
+    "state",
+    # `accepted (i), …` is a chosen alternative, not the default (Amendment 1 (review) F1).
+    ["pending", "alternative (i), 2026-10-12", "accepted (i), 2026-10-12", None],
+)
 def test_a05_each_of_frank_s_answers_must_be_an_acceptance(item: str, state: str | None) -> None:
     result = report(files(adr_0028=adr_0028(answers={item: state})))
     if state is None:
