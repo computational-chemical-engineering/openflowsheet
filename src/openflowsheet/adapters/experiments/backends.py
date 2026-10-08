@@ -354,8 +354,8 @@ class OutOfProcessBackend:
                 self._environment = Environment(fingerprint, document_sha256(fingerprint))
                 return self._environment
         assert failure is not None
-        # Not frozen: a later call of the same job may find the environment (the failure is
-        # transient by definition, §3.3).
+        # Not frozen here, so the runner can retry the handshake within its own budget; the
+        # runner keeps the final outcome, failure included, for the job's life (R-236).
         return Environment(
             None, document_sha256(unmeasured_fingerprint(self.variant, failure.status)), failure
         )

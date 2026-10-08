@@ -6,7 +6,8 @@ keeps every fact it produces:
 
 1. **Environment and key.** The backend's environment fingerprint is measured once per runner
    (the handshake, one per job) and its SHA-256 enters the request; the key is the request's own
-   hash (§3.2).
+   hash (§3.2). The handshake's outcome — success or failure, after its own retries — is kept for
+   the runner's life: a job never handshakes twice (R-236).
 2. **Lock, then cache.** The key's `flock` is held for the rest of the call and the cache is read
    after it is taken, so two jobs on one key execute it once: the second is a cache hit.
 3. **Deterministic or transient (§3.3).** An evaluation that completed — any boundary status,
@@ -16,7 +17,8 @@ keeps every fact it produces:
    **transient**: attempts only, never cached, never with outlet values.
 4. **Retry (§5.2).** Once more after `crashed`, `protocol_error` or `spawn_failed` (the variant's
    `max_retries`), as a new attempt inside the same lock; never after `timed_out`,
-   `environment_*` or a cancellation.
+   `environment_*` or a cancellation. The handshake and the evaluation have **separate** budgets,
+   each `max_retries` (R-236): the handshake is the job's, the evaluation the experiment's.
 5. **Bypass (§5.3)** executes although a result exists, records the new attempt as a repeat of
    the producing one with whether its outlet is bitwise equal, and never overwrites the result;
    a deterministic repeat that differs appends a determinism finding.
@@ -30,6 +32,7 @@ unmetered provider.
 
 from __future__ import annotations
 
+import dataclasses
 import os
 import time
 import uuid
@@ -171,6 +174,13 @@ def supported(variant: Variant, capabilities: PropertyCapabilities) -> None:
         raise ValueError(f"{variant.variant_id}: boundary.data_domain is not M01's")
 
 
+def _frozen(failure: Execution) -> Execution:
+    """The job's failed handshake as a later experiment of the job records it: the same status
+    and logs, said to be the job's outcome, not a new execution (R-236)."""
+    message = f"the job's handshake failed and is not repeated (R-236): {failure.message}"
+    return dataclasses.replace(failure, message=message, timing={"wall_s": 0.0})
+
+
 class ExperimentRunner:
     """Runs experiments into one project's records, for one job (or none)."""
 
@@ -191,6 +201,8 @@ class ExperimentRunner:
         self._backend_for = backend_for
         self._check = check
         self._backends: dict[str, Backend] = {}
+        #: Per variant: the handshake's outcome and the failed handshakes before it (R-236).
+        self._handshakes: dict[str, tuple[Environment, tuple[Execution, ...]]] = {}
 
     def backend(self, variant: Variant) -> Backend:
         """One backend per variant for the runner's life: its handshake is the job's (§6.1)."""
@@ -221,8 +233,7 @@ class ExperimentRunner:
         backend = self.backend(variant)
         check = self.check()
         retries = int(variant.execution["max_retries"])
-        environment, failed = self._environment(variant, backend, retries)
-        retries -= len(failed)
+        environment, failed, first = self._environment(variant, backend, retries)
         request = build_request(
             variant, capabilities, n_tubes, components, inlet, environment.sha256
         )
@@ -232,9 +243,14 @@ class ExperimentRunner:
             written: list[Mapping[str, Any]] = []
             self.records.write_request(request, self.job_id)  # once; byte-equal if present
             # Every execution is an attempt (§3.3): a handshake that failed is one, under the key
-            # its fingerprint (measured after a retry, or not at all) gave the request.
-            for failure in failed:
-                written.append(self._failed_handshake(key, failure, existing))
+            # its fingerprint (measured after a retry, or not at all) gave the request. A later
+            # experiment of the same job is not handshaken again (R-236); when the job's handshake
+            # failed, its attempt records that frozen failure, which it did not execute.
+            if first:
+                for failure in failed:
+                    written.append(self._failed_handshake(key, failure, existing))
+            elif environment.failure is not None:
+                written.append(self._failed_handshake(key, _frozen(environment.failure), existing))
             if environment.failure is not None:
                 failure = environment.failure
                 envelope = refused("error", f"external_{failure.status}", failure.message)
@@ -275,22 +291,31 @@ class ExperimentRunner:
 
     def _environment(
         self, variant: Variant, backend: Backend, retries: int
-    ) -> tuple[Environment, list[Execution]]:
-        """The backend's environment, the handshake retried after a transient failure within the
-        experiment's retry budget (§5.2) — before any key exists, so a fingerprint measured on a
-        retry is the one the key carries. The failed handshakes are returned for the record."""
+    ) -> tuple[Environment, tuple[Execution, ...], bool]:
+        """The backend's environment and the failed handshakes before it, and whether this call
+        handshook. The handshake is retried after a transient failure within its own budget
+        (`retries`, R-236) — before any key exists, so a fingerprint measured on a retry is the one
+        the key carries. Its outcome, success or failure, is kept for the runner's life (one job):
+        a later call returns it without handshaking again."""
+        if variant.sha256 in self._handshakes:
+            environment, failed = self._handshakes[variant.sha256]
+            return environment, failed, False
         folder = self.records.base / "handshakes" / variant.sha256[:16]
-        failed: list[Execution] = []
+        found: list[Execution] = []
         while True:
             # Named, not created: only a handshake that runs creates it (a frozen or an
             # in-process environment needs none).
             directory = folder / f"{self.job_id or 'nojob'}-{os.getpid()}-{uuid.uuid4().hex[:12]}"
             environment = backend.environment(directory)
-            if environment.failure is None:
-                return environment, failed
-            failed.append(environment.failure)
-            if environment.failure.status not in RETRYABLE or len(failed) > retries:
-                return environment, failed
+            if environment.failure is not None:
+                found.append(environment.failure)
+            if (
+                environment.failure is None
+                or environment.failure.status not in RETRYABLE
+                or len(found) > retries
+            ):
+                self._handshakes[variant.sha256] = (environment, tuple(found))
+                return environment, tuple(found), True
 
     def _failed_handshake(
         self, key: str, failure: Execution, existing: Mapping[str, Any] | None

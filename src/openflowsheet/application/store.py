@@ -33,6 +33,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
+from openflowsheet._files import atomic_write_bytes as atomic_write_bytes  # re-export, R-237
 from openflowsheet.application.revisions import Revision, content_hash
 from openflowsheet.application.types import (
     LOCAL_OWNER_PRINCIPAL,
@@ -129,19 +130,46 @@ def _load(blob: bytes | str | None) -> Any:
     return None if blob is None else json.loads(blob)
 
 
-def atomic_write_bytes(path: Path, data: bytes) -> None:
-    """Write a temporary file beside `path`, `fsync` it, rename it over `path`, `fsync` the dir."""
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
-    with open(temporary, "wb") as handle:
-        handle.write(data)
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temporary, path)
-    directory = os.open(path.parent, os.O_RDONLY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
+class ArtifactTableSink:
+    """The `artifacts` table as an experiment store's `ArtifactSink` (M02 design note §14 B4,
+    R-237): each `record` is one row, inserted in its own write transaction. The id is the owning
+    job (or `nojob`), the kind, the name and the file's stem, with `-<n>` added when a row of that
+    id exists (a cache hit or a determinism finding names the result file again)."""
+
+    def __init__(self, store: ProjectStore) -> None:
+        self.store = store
+
+    def record(
+        self,
+        *,
+        job_id: str | None,
+        kind: str,
+        name: str,
+        relpath: str,
+        sha256: str,
+        size_bytes: int,
+        parent_artifact_id: str | None,
+    ) -> str:
+        base = f"{job_id if job_id is not None else 'nojob'}:{kind}:{name}:{Path(relpath).stem}"
+        with self.store.writing() as connection:
+            artifact_id, number = base, 1
+            while connection.execute(
+                "SELECT 1 FROM artifacts WHERE artifact_id = ?", (artifact_id,)
+            ).fetchone():
+                number += 1
+                artifact_id = f"{base}-{number}"
+            row = ArtifactRow(
+                artifact_id=artifact_id,
+                job_id=job_id,
+                kind=kind,
+                name=name,
+                sha256=sha256,
+                size_bytes=size_bytes,
+                relpath=relpath,
+                parent_artifact_id=parent_artifact_id,
+            )
+            self.store.register_artifacts(connection, [row])
+        return artifact_id
 
 
 def policy_file_bytes(policy: ProjectPolicy) -> bytes:

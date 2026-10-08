@@ -7,11 +7,15 @@ child's working directory: its logs and raw `result.json`). Every write is atomi
 deleted, and a result is written once**: the one permitted update is appending a determinism
 finding (§5.3), recorded as a new artifact row.
 
-Each file a job writes gets a row in the project's existing `artifacts` table (`kind` ∈
+Each file a job writes is recorded through an injected **`ArtifactSink`** (R-237, design note
+§14 B4): the application passes one that writes a row of its `artifacts` table (`kind` ∈
 {`experiment_request`, `experiment_result`, `experiment_attempt`}, `name` = the key, `relpath`
-relative to the project); a cache hit adds a row for the consuming job whose `parent_artifact_id`
-is the producing row, so call accounting is a query and the store schema does not change. Without
-a store (no project database) the files are written and no rows.
+relative to the project); tests and the in-memory path pass `ListArtifactSink`. A cache hit is
+recorded for the consuming job with `parent_artifact_id` = the producing result's artifact id,
+which the store keeps beside the result (`result.artifact_id`, written once) because the sink
+assigns it; so call accounting is a query and the store schema does not change. Without a sink the
+files are written and nothing is recorded. `adapters` never imports `application`, which sits
+above it.
 
 **Concurrency.** `experiments/locks/<key>.lock` is taken with `flock(LOCK_EX | LOCK_NB)`, retried
 every 0.2 s with the cooperative check between tries; the kernel drops it when its holder dies, so
@@ -29,14 +33,12 @@ import time
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final
+from typing import Any, Final, Protocol
 
-from openflowsheet.canonical import canonical_json
+from openflowsheet._files import atomic_write_bytes
+from openflowsheet.canonical import canonical_json, file_sha256
 
-if TYPE_CHECKING:
-    from openflowsheet.application.store import ProjectStore
-
-__all__ = ["EXPERIMENTS_DIR", "LOCK_POLL_S", "ExperimentStore"]
+__all__ = ["EXPERIMENTS_DIR", "LOCK_POLL_S", "ArtifactSink", "ExperimentStore", "ListArtifactSink"]
 
 EXPERIMENTS_DIR: Final = "experiments"
 LOCKS_DIR: Final = "locks"
@@ -45,12 +47,63 @@ LOCK_POLL_S: Final = 0.2
 REQUEST_KIND: Final = "experiment_request"
 RESULT_KIND: Final = "experiment_result"
 ATTEMPT_KIND: Final = "experiment_attempt"
+#: Beside `result.json`: the artifact id its producing record received from the sink.
+RESULT_ARTIFACT_FILE: Final = "result.artifact_id"
+
+
+class ArtifactSink(Protocol):
+    """Where an experiment store records the files a job writes (R-237): one call per file,
+    returning the artifact id the record received."""
+
+    def record(
+        self,
+        *,
+        job_id: str | None,
+        kind: str,
+        name: str,
+        relpath: str,
+        sha256: str,
+        size_bytes: int,
+        parent_artifact_id: str | None,
+    ) -> str: ...
+
+
+@dataclasses.dataclass
+class ListArtifactSink:
+    """An `ArtifactSink` that keeps its records in a list (tests and the in-memory path); the id
+    of record `i` is `artifact-<i + 1>`."""
+
+    records: list[dict[str, Any]] = dataclasses.field(default_factory=list)
+
+    def record(
+        self,
+        *,
+        job_id: str | None,
+        kind: str,
+        name: str,
+        relpath: str,
+        sha256: str,
+        size_bytes: int,
+        parent_artifact_id: str | None,
+    ) -> str:
+        artifact_id = f"artifact-{len(self.records) + 1}"
+        self.records.append(
+            {
+                "artifact_id": artifact_id,
+                "job_id": job_id,
+                "kind": kind,
+                "name": name,
+                "relpath": relpath,
+                "sha256": sha256,
+                "size_bytes": size_bytes,
+                "parent_artifact_id": parent_artifact_id,
+            }
+        )
+        return artifact_id
 
 
 def _atomic_write(path: Path, data: bytes) -> None:
     """Write beside `path`, fsync, rename over it, fsync the directory."""
-    from openflowsheet.application.store import atomic_write_bytes
-
     path.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_bytes(path, data)
 
@@ -61,11 +114,11 @@ def encode(document: Any) -> bytes:
 
 
 class ExperimentStore:
-    """The experiment records of one project directory, and their rows in its store."""
+    """The experiment records of one project directory, and their records in its sink."""
 
-    def __init__(self, root: Path, store: ProjectStore | None = None) -> None:
+    def __init__(self, root: Path, sink: ArtifactSink | None = None) -> None:
         self.root = root
-        self.store = store
+        self.sink = sink
         self.base = root / EXPERIMENTS_DIR
 
     # -- paths ---------------------------------------------------------------------------------
@@ -147,7 +200,7 @@ class ExperimentStore:
                 raise RuntimeError(f"experiment {key}: request.json differs from its key's request")
             return
         _atomic_write(path, data)
-        self._register(REQUEST_KIND, key, path, job_id, suffix="request")
+        self._register(REQUEST_KIND, key, path, job_id)
 
     def write_attempt(self, attempt: Mapping[str, Any], job_id: str | None) -> None:
         key, number = attempt["experiment_key"], attempt["attempt"]
@@ -155,7 +208,7 @@ class ExperimentStore:
         if path.exists():
             raise RuntimeError(f"experiment {key}: attempt {number} exists; attempts are kept")
         _atomic_write(path, encode(attempt))
-        self._register(ATTEMPT_KIND, key, path, job_id, suffix=f"attempt-{number}")
+        self._register(ATTEMPT_KIND, key, path, job_id)
 
     def write_result(self, result: Mapping[str, Any], job_id: str | None) -> None:
         """Write the deterministic result, once (§3.3: never overwritten)."""
@@ -164,7 +217,9 @@ class ExperimentStore:
         if path.exists():
             raise RuntimeError(f"experiment {key}: result.json exists; a result is written once")
         _atomic_write(path, encode(result))
-        self._register(RESULT_KIND, key, path, job_id, suffix="result")
+        artifact_id = self._register(RESULT_KIND, key, path, job_id)
+        if artifact_id is not None:
+            _atomic_write(self.directory(key) / RESULT_ARTIFACT_FILE, artifact_id.encode("utf-8"))
 
     def append_finding(self, key: str, finding: Mapping[str, Any], job_id: str | None) -> None:
         """§5.3: the one permitted update of a result — a determinism finding appended."""
@@ -173,59 +228,30 @@ class ExperimentStore:
         assert document is not None
         document["determinism_findings"] = [*document["determinism_findings"], dict(finding)]
         _atomic_write(path, encode(document))
-        self._register(RESULT_KIND, key, path, job_id, suffix=f"finding-{finding['attempt']}")
+        self._register(RESULT_KIND, key, path, job_id)
 
     def record_hit(self, key: str, job_id: str | None) -> None:
-        """A cache hit: a row for the consuming job whose parent is the producing result row."""
-        if self.store is None:
+        """A cache hit: a record for the consuming job whose parent is the producing result's
+        (none when the result was written without a sink)."""
+        if self.sink is None:
             return
-        producing = self._producing_row(key)
-        path = self.result_path(key)
-        self._register(RESULT_KIND, key, path, job_id, suffix="hit", parent=producing)
+        marker = self.directory(key) / RESULT_ARTIFACT_FILE
+        producing = marker.read_text("utf-8") if marker.is_file() else None
+        self._register(RESULT_KIND, key, self.result_path(key), job_id, parent=producing)
 
-    # -- rows ----------------------------------------------------------------------------------
-
-    def _producing_row(self, key: str) -> str | None:
-        assert self.store is not None
-        with self.store.reading() as connection:
-            row = connection.execute(
-                "SELECT artifact_id FROM artifacts WHERE kind = ? AND name = ?"
-                " AND parent_artifact_id IS NULL ORDER BY rowid LIMIT 1",
-                (RESULT_KIND, key),
-            ).fetchone()
-        return None if row is None else str(row[0])
+    # -- records -------------------------------------------------------------------------------
 
     def _register(
-        self,
-        kind: str,
-        key: str,
-        path: Path,
-        job_id: str | None,
-        *,
-        suffix: str,
-        parent: str | None = None,
-    ) -> None:
-        if self.store is None:
-            return
-        from openflowsheet.application.store import ArtifactRow
-        from openflowsheet.canonical import file_sha256
-
-        owner = job_id if job_id is not None else "nojob"
-        base = f"{owner}:experiment:{key}:{suffix}"
-        row = ArtifactRow(
-            artifact_id=base,
+        self, kind: str, key: str, path: Path, job_id: str | None, *, parent: str | None = None
+    ) -> str | None:
+        if self.sink is None:
+            return None
+        return self.sink.record(
             job_id=job_id,
             kind=kind,
             name=key,
+            relpath=self.relpath(path),
             sha256=file_sha256(path),
             size_bytes=path.stat().st_size,
-            relpath=self.relpath(path),
             parent_artifact_id=parent,
         )
-        with self.store.writing() as connection:
-            taken = connection.execute(
-                "SELECT COUNT(*) FROM artifacts WHERE artifact_id LIKE ?", (f"{base}%",)
-            ).fetchone()[0]
-            if taken:
-                row = dataclasses.replace(row, artifact_id=f"{base}-{taken + 1}")
-            self.store.register_artifacts(connection, [row])

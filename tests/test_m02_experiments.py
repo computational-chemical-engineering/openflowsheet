@@ -43,7 +43,7 @@ from openflowsheet.adapters.experiments.runner import ExperimentOutcome, Experim
 from openflowsheet.adapters.experiments.store import ExperimentStore
 from openflowsheet.application.jobs.interrupt import JobInterrupted, interruptible
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.store import ProjectStore
+from openflowsheet.application.store import ArtifactTableSink, ProjectStore
 from openflowsheet.application.types import schema_errors
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS
@@ -72,7 +72,7 @@ class Project:
 
     def runner(self, job_id: str | None = None) -> ExperimentRunner:
         return ExperimentRunner(
-            ExperimentStore(self.root, self.store),
+            ExperimentStore(self.root, ArtifactTableSink(self.store)),
             PROVIDER,
             CONTEXT,
             job_id=job_id,
@@ -80,7 +80,7 @@ class Project:
         )
 
     def records(self) -> ExperimentStore:
-        return ExperimentStore(self.root, self.store)
+        return ExperimentStore(self.root, ArtifactTableSink(self.store))
 
     def rows(self, key: str) -> list[tuple[Any, ...]]:
         with self.store.reading() as connection:
@@ -406,3 +406,81 @@ def test_a_handshake_measured_on_its_retry_is_the_one_the_key_carries(project: P
     assert measured.sha256 != unmeasured
     logs = outcome.attempts[0]["execution"]["logs"]["relpaths"]["stderr"]
     assert logs.startswith("experiments/handshakes/") and (project.root / logs).is_file()
+
+
+# -- R-236: the handshake's own budget, and one handshake per job ---------------------------------
+
+
+def test_the_handshake_and_the_evaluation_have_separate_retry_budgets(project: Project) -> None:
+    """R-236: a job whose handshake needed its retry still gives the experiment its own."""
+    variant = synthetic_variant("flaky-env-abort", ["handshake:abort_first", "abort"])
+    outcome = _run(project.runner(), variant)
+    _valid(outcome)
+    assert _statuses(outcome) == ["crashed", "crashed", "crashed"]
+    assert [a["execution"]["tube_inlet"] is None for a in outcome.attempts] == [True, False, False]
+    assert outcome.transient and outcome.envelope["code"] == "external_crashed"
+
+
+def test_a_job_keeps_its_failed_handshake_and_never_handshakes_again(project: Project) -> None:
+    """R-236: after the job's handshake failed (with its retry), a second experiment of the job
+    is not handshaken again; its one attempt records the job's frozen failure, keyed on the same
+    unmeasured fingerprint."""
+    variant = synthetic_variant("bad-env-twice", ["handshake:abort"])
+    runner = project.runner()
+    first = _run(runner, variant)
+    handshakes = sorted((project.records().base / "handshakes").glob("*/*"))
+    assert _statuses(first) == ["crashed", "crashed"] and len(handshakes) == 2
+    inlet = nominal_inlet()
+    other = StreamState(n=inlet.n, temperature=683.15, pressure=inlet.pressure)
+    second = _run(runner, variant, inlet=other)
+    _valid(second)
+    assert sorted((project.records().base / "handshakes").glob("*/*")) == handshakes
+    assert second.key != first.key and second.transient
+    (attempt,) = second.attempts
+    execution = attempt["execution"]
+    assert execution["status"] == "crashed" and execution["tube_inlet"] is None
+    assert "not repeated (R-236)" in execution["message"]
+    assert execution["logs"] == first.attempts[-1]["execution"]["logs"]
+    fingerprints = {o.request["environment_fingerprint_sha256"] for o in (first, second)}
+    assert len(fingerprints) == 1
+
+
+def test_a_job_keeps_its_measured_handshake(project: Project) -> None:
+    """R-236 / §6.1: one handshake per job and variant, however many experiments it runs."""
+    variant = synthetic_variant("ok-twice", ["ok"])
+    runner = project.runner()
+    inlet = nominal_inlet()
+    first = _run(runner, variant)
+    second = _run(runner, variant, inlet=StreamState(inlet.n, 683.15, inlet.pressure))
+    assert _statuses(first) == _statuses(second) == ["completed"]
+    assert len(sorted((project.records().base / "handshakes").glob("*/*"))) == 1
+
+
+# -- R-237: the store records through an injected sink -------------------------------------------
+
+
+def test_the_store_records_through_a_list_sink_without_an_application(tmp_path: Path) -> None:
+    """R-237: the store and the runner run with no application at all; a list-backed sink sees
+    one record per file the job wrote, and a hit's parent is the producing result's id."""
+    from openflowsheet.adapters.experiments.store import ListArtifactSink
+
+    sink = ListArtifactSink()
+    records = ExperimentStore(tmp_path, sink)
+    first = ExperimentRunner(records, PROVIDER, CONTEXT, job_id="job-a").run(
+        STANDIN, nominal_inlet(), COMPONENTS, N_TUBES
+    )
+    second = ExperimentRunner(records, PROVIDER, CONTEXT, job_id="job-b").run(
+        STANDIN, nominal_inlet(), COMPONENTS, N_TUBES
+    )
+    assert (first.cache_hit, second.cache_hit) == (False, True)
+    kinds = [(r["job_id"], r["kind"], r["parent_artifact_id"]) for r in sink.records]
+    produced = next(r["artifact_id"] for r in sink.records if r["kind"] == "experiment_result")
+    assert kinds == [
+        ("job-a", "experiment_request", None),
+        ("job-a", "experiment_attempt", None),
+        ("job-a", "experiment_result", None),
+        ("job-b", "experiment_result", produced),
+    ]
+    for record in sink.records:
+        path = tmp_path / record["relpath"]
+        assert record["name"] == first.key and path.stat().st_size == record["size_bytes"]

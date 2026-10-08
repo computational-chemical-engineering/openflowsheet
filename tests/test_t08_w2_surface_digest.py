@@ -18,11 +18,12 @@ exactly those two files:
 **M02 (ADR 0033-0035) widens the served tool list additively** — the `experiment` operation and
 its body, five artifact kinds, `revision_coupled`, `COUPLING_NOT_CONVERGED`,
 `model_replacement_incompatible`, two widened descriptions — so the served digest moves again.
-Proposed by the build lane, pending the design lane (R-133's "a further change of the surface is a
-new decision"): the new digest is registered beside R-133's (`M02_DESCRIPTIONS_SHA256`), and both
-claims above are held on the served list **with M02's additions removed** (`without_m02`,
-`tests/m02_schema_support.py`), which reproduces `171dd768…` and, with `v17-c2`'s two texts,
-`6d13e13d…` exactly.
+R-234 (design note M02 §14 B1, following R-192) rules how: this file's 0.1 constants and
+`scripts/t08_rc.py`'s A49 constant are not edited; the move is bound to M02's additions by a
+decomposition test — with M02's additions removed (`without_m02`, `tests/m02_schema_support.py`)
+the served list is the base's registered digest (`M02_BASE_SERVED_SHA256`), and the served tool
+descriptions are byte-identical. M02's own served digest is registered at the merge commit, on the
+combined tree; the value measured without M06 (`8de83946…`) is evidence, not a pin.
 """
 
 from __future__ import annotations
@@ -44,8 +45,10 @@ MCP_OPERATIONS = sorted(name for name, op in OPERATIONS.items() if "mcp" in op.t
 
 #: R-133: the served descriptions' digest after N1 and N2 (`harness.tool_descriptions_sha256`).
 T08_DESCRIPTIONS_SHA256 = "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14"
-#: M02's served digest (the surface above plus M02's additive members); see the module docstring.
-M02_DESCRIPTIONS_SHA256 = "8de83946703c054c75e9ebbee0e5db7dd0dc97d2d6fc503a42cc041d6746123b"
+#: R-234: the base's registered served digest that M02's surface move decomposes onto. R-133's while
+#: M06's Amendment 3 (R-192, `6c4375b4…`) is not on `main`; the session updates this one constant
+#: at merge. (Evidence, not a pin: served with M02 and without M06, the digest was `8de83946…`.)
+M02_BASE_SERVED_SHA256 = T08_DESCRIPTIONS_SHA256
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -107,8 +110,27 @@ def test_the_served_digest_is_registered(mcp: ModuleType) -> None:
     from benchmarks.t07.v17 import harness
 
     assert _v17_c2_digest() == "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d"
-    assert harness.tool_descriptions_sha256() == M02_DESCRIPTIONS_SHA256
     assert _served_without_m02(mcp) == T08_DESCRIPTIONS_SHA256 != _v17_c2_digest()
+    assert harness.tool_descriptions_sha256() != T08_DESCRIPTIONS_SHA256  # R-234: M02 moved it
+
+
+def test_m02s_surface_move_decomposes_onto_the_base(mcp: ModuleType) -> None:
+    """R-234: the served list minus M02's additions is the base's registered list, and M02 changed
+    no tool's name or description text (T08.A18 is not reopened)."""
+    from benchmarks.t07.v17 import harness
+
+    served = [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
+    stripped = without_m02(served)
+    assert harness.tool_descriptions_sha256() != M02_BASE_SERVED_SHA256
+    assert hashlib.sha256(canonical_json(stripped)).hexdigest() == M02_BASE_SERVED_SHA256
+    assert [(t["name"], t["description"]) for t in served] == [
+        (t["name"], t["description"]) for t in stripped
+    ]
+    # The texts are the files, byte for byte; the files are pinned against the base below.
+    by_tool = {op.mcp_tool: name for name, op in OPERATIONS.items() if op.mcp_tool is not None}
+    for tool in served:
+        name = by_tool[tool["name"]]
+        assert tool["description"] == (DESCRIPTIONS / f"{name}.md").read_text("utf-8")
 
 
 def test_the_served_files_differ_from_v17_c2_in_exactly_the_two_reviewed_files() -> None:

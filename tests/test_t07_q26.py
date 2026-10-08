@@ -22,6 +22,13 @@ One array admits integers and is not in §13's list: an edit's `path`, an addres
 revision whose items are a member name or an array index (`string | integer >= 0`). It is pinned
 by operation and by item schema, not allowed by name.
 
+**M02 (R-235, design note M02 §14 B2).** The `experiment` job's inlet is a model input — the
+definition of the experiment, which its record is identified by — not a solver state: one numeric
+array is allowed by full path and only there, `submit_job`'s `body/inlet/n`, and the scalar
+inventory gains `body/inlet/T`, `body/inlet/P` and `body/n_tubes`. That no path leads from the
+`experiment` body to a solver start, a warm start or a coupling iterate is the companion test,
+`tests/test_m02_experiment_body_isolation.py`.
+
 **(ii) The forged bundle through every transport that reaches reproduce.** A bundle of a run that
 did not converge (`SYN-001-A02-352-vapor-guess-410`, `HOMOTOPY_STALLED`), forged to carry the
 `VERIFIED` certificate of a run that did (`SYN-001-A02-360`), with a consistent index and
@@ -60,6 +67,8 @@ from openflowsheet.run.bundle import read_artifact, read_manifest
 
 #: §13: the members allowed to be, or contain, numbers.
 ALLOWED = frozenset({"check_tolerances", "budgets", "max_property_calls", "depth", "limit"})
+#: R-235: model inputs allowed by full path (operation, path, kind), nowhere else.
+ALLOWED_BY_PATH = frozenset({("submit_job", "body/inlet/n", "array")})
 NUMERIC = frozenset({"number", "integer"})
 
 
@@ -213,7 +222,11 @@ def test_t07_q26_no_external_state() -> None:
     change_set = published_schemas()[SCHEMA_BASE + "change-set.schema.json"]
     path_schema = change_set["$defs"]["edit"]["properties"]["path"]["items"]
     assert path_schema == {"anyOf": [{"type": "string"}, {"type": "integer", "minimum": 0}]}
-    forbidden = [f for f in containers_found if f not in addresses]
+    model_inputs = {
+        f for f in containers_found if (f.operation, "/".join(f.path), f.kind) in ALLOWED_BY_PATH
+    }
+    assert {(f.operation, "/".join(f.path), f.kind) for f in model_inputs} == ALLOWED_BY_PATH
+    forbidden = [f for f in containers_found if f not in addresses | model_inputs]
     assert forbidden == [], forbidden
     containers = {(f.operation, "/".join(f.path), f.kind) for f in findings if f.allowed}
     # `check_tolerances` (kind -> number) is the one numeric map; it is found, and allowed.
@@ -227,8 +240,16 @@ def test_t07_q26_no_external_state() -> None:
         "limit",
         "after_sequence",
         "timeout_s",
+        "T",  # R-235: the `experiment` inlet's, and its tube count
+        "P",
+        "n_tubes",
     }, scalars
     assert {path for _, path in scalars if path.endswith("wall_time_s")} == {"budgets/wall_time_s"}
+    assert {(o, path) for o, path in scalars if path.split("/")[-1] in ("T", "P", "n_tubes")} == {
+        ("submit_job", "body/inlet/T"),
+        ("submit_job", "body/inlet/P"),
+        ("submit_job", "body/n_tubes"),
+    }
     untyped = {(f.operation, "/".join(f.path)) for f in findings if f.kind == "untyped"}
     assert untyped == {
         ("commit_change", "edits/*/value"),
