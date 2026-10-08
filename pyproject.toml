@@ -72,6 +72,15 @@ openflowsheet = [
     "_data/benchmarks/k04/reference_values.yaml",
     "_data/benchmarks/syn001/reference_values.yaml",
     "_data/benchmarks/t08/numerical_policy_v2.yaml",
+    "_data/benchmarks/m01/components.yaml",
+    # M06 (ADR 0030 D2): the diagnostic web shell, `_data/web` → `apps/web/`, one glob per
+    # directory (`serve-http --ui`).
+    "_data/web/*.html",
+    "_data/web/*.svg",
+    "_data/web/css/*.css",
+    "_data/web/js/*.js",
+    "_data/web/js/model/*.js",
+    "_data/web/js/screens/*.js",
 ]
 # The MCP tool descriptions and their review record are served text (T07 W6c, gate G15).
 "openflowsheet.application.bindings" = ["descriptions/*.md", "descriptions/REVIEW.json"]
@@ -128,4 +137,5 @@ pythonpath = ["."]
 addopts = "-m 'not nlp'"
 markers = [
     "nlp: needs the audited Ipopt environment of docs/m03-ipopt-audit.md (scripts/m03_nlp_check.sh)",
+    "browser: drives a headless Chromium (M06 design note §8 A6); skipped without one, failed without one when OPENFLOWSHEET_REQUIRE_BROWSER=1",
 ]

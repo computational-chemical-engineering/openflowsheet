@@ -1,0 +1,128 @@
+/* Design tokens of the diagnostic web shell (M06 design note §5.5; values: the token table of
+   docs/design/web-shell/README.md). Light by default, dark under prefers-color-scheme, and
+   either one forced by html[data-theme] (the header's theme toggle). Contrast is held by
+   tests/test_m06_contrast.py: every text token on every background token, and every pill's
+   word on its fill, is at least 4.5:1 in both themes, except ink-3 on select in light (4.39:1),
+   which the selected-row rule at the end of this file never lets happen. */
+
+:root {
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    monospace;
+  color-scheme: light;
+
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --sunken: #f0f0ec;
+  --line: #e2e2dc;
+  --line-strong: #cdcdc5;
+  --ink: #16181b;
+  --ink-2: #464b51;
+  --ink-3: #686d73;
+  --link: #2b5ca8;
+  --ok: #1c6a39;
+  --info: #24508f;
+  --warn: #7a5600;
+  --bad: #a1261c;
+  --gap: #5d3f98;
+  --edu: #0e5f5c;
+  --select: #e5ecf7;
+
+  --pill-ok-fg: #1c6a39;
+  --pill-ok-bg: #e4f1e8;
+  --pill-ok-border: #b7d9c2;
+  --pill-info-fg: #24508f;
+  --pill-info-bg: #e5ecf7;
+  --pill-info-border: #bccae4;
+  --pill-warn-fg: #7a5600;
+  --pill-warn-bg: #faf0d4;
+  --pill-warn-border: #e6d29a;
+  --pill-bad-fg: #a1261c;
+  --pill-bad-bg: #f8e3e0;
+  --pill-bad-border: #e7b7b0;
+  --pill-none-fg: #464b51;
+  --pill-none-bg: #f0f0ec;
+  --pill-none-border: #c9c9c1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #121416;
+    --surface: #1a1d20;
+    --sunken: #202428;
+    --line: #2c3035;
+    --line-strong: #3a3f45;
+    --ink: #e8e9ea;
+    --ink-2: #a9adb2;
+    --ink-3: #9ba0a6;
+    --link: #8fb3ec;
+    --ok: #86d4a0;
+    --info: #93b6ea;
+    --warn: #e6c56e;
+    --bad: #f0a197;
+    --gap: #c2aef0;
+    --edu: #7fd3cb;
+    --select: #1d2d45;
+
+    --pill-ok-fg: #86d4a0;
+    --pill-ok-bg: #173323;
+    --pill-ok-border: #2f5a3e;
+    --pill-info-fg: #93b6ea;
+    --pill-info-bg: #18263b;
+    --pill-info-border: #2d4466;
+    --pill-warn-fg: #e6c56e;
+    --pill-warn-bg: #33290f;
+    --pill-warn-border: #5a4818;
+    --pill-bad-fg: #f0a197;
+    --pill-bad-bg: #3a1a17;
+    --pill-bad-border: #63302a;
+    --pill-none-fg: #b3b7bc;
+    --pill-none-bg: #24282c;
+    --pill-none-border: #454a50;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #121416;
+  --surface: #1a1d20;
+  --sunken: #202428;
+  --line: #2c3035;
+  --line-strong: #3a3f45;
+  --ink: #e8e9ea;
+  --ink-2: #a9adb2;
+  --ink-3: #9ba0a6;
+  --link: #8fb3ec;
+  --ok: #86d4a0;
+  --info: #93b6ea;
+  --warn: #e6c56e;
+  --bad: #f0a197;
+  --gap: #c2aef0;
+  --edu: #7fd3cb;
+  --select: #1d2d45;
+
+  --pill-ok-fg: #86d4a0;
+  --pill-ok-bg: #173323;
+  --pill-ok-border: #2f5a3e;
+  --pill-info-fg: #93b6ea;
+  --pill-info-bg: #18263b;
+  --pill-info-border: #2d4466;
+  --pill-warn-fg: #e6c56e;
+  --pill-warn-bg: #33290f;
+  --pill-warn-border: #5a4818;
+  --pill-bad-fg: #f0a197;
+  --pill-bad-bg: #3a1a17;
+  --pill-bad-border: #63302a;
+  --pill-none-fg: #b3b7bc;
+  --pill-none-bg: #24282c;
+  --pill-none-border: #454a50;
+}
+
+/* §5.5: ink-3 on select is 4.39:1 in light, so a selected row's tertiary text is ink-2. */
+.selected,
+[aria-selected="true"] {
+  --ink-3: var(--ink-2);
+}

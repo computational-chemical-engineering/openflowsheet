@@ -51,9 +51,9 @@ def test_the_envelope_has_spec_5_1s_form(envelope: dict[str, Any]) -> None:
 
 def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, Any]) -> None:
     assert MATRIX.check_a20(envelope, facts) == []
-    assert len(facts["operations"]) == 20
+    assert len(facts["operations"]) == 21  # spec §9's 20 and ADR 0019 Amendment 3's `list_audit`
     assert len(facts["models"]) == 13
-    assert facts["providers"] == ["syn001"]
+    assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]
 
 
@@ -114,6 +114,26 @@ def test_a22_the_unsupported_rows_test_nodes_pass(envelope: dict[str, Any]) -> N
     output = completed.stdout + completed.stderr
     assert completed.returncode == 0, output[-4000:]
     assert "SKIPPED" not in output and " skipped" not in output, output[-4000:]
+
+
+def test_an_unbound_provider_is_rendered_apart_from_the_axes_with_its_limitation(
+    envelope: dict[str, Any],
+) -> None:
+    """M01 review F1: `pr-c1-v1` is shipped but bound by no model, so the matrix must not list it
+    beside the axes' components and domain without its caveat (L42)."""
+    rendered = MATRIX.render(envelope).splitlines()
+    (components,) = (line for line in rendered if line.startswith("- **Components:**"))
+    assert "pr-c1-v1" not in components and "`syn001`" in components
+    (shipped,) = (line for line in rendered if line.startswith("- **Shipped, bound by no model:**"))
+    assert "`pr-c1-v1`" in shipped and "no mixture VLE validation" in shipped
+    assert shipped.endswith("(L42)")
+    mutated = copy.deepcopy(envelope)
+    (axis,) = (row for row in mutated["axes"] if row["id"] == "property_model")
+    axis["unbound_providers"] = [
+        {"id": "pr-c1-v1", "limitation": "L99", "caveat": "x"},
+        {"id": "pr", "limitation": "L42", "caveat": " "},
+    ]
+    assert len(MATRIX.check_structure(mutated)) == 3
 
 
 def test_a23_the_matrix_regenerates_byte_for_byte(envelope: dict[str, Any]) -> None:

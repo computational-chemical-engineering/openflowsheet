@@ -1,0 +1,310 @@
+{
+  "record": "m01-idaes-conformance",
+  "version": 1,
+  "assertion": "M01.A37",
+  "specification": "docs/derivations/M01-spec.md §9.8 M01.A37, §14 WO-5",
+  "script": "benchmarks/m01/idaes_conformance.py",
+  "status": "measured",
+  "judged": false,
+  "comparison": "none here: tests/test_m01_idaes_conformance.py compares this record with pr-c1-v1 at A37's tolerances",
+  "environment": {
+    "kind": "separate venv from spikes/references/idaes-requirements.lock (--require-hashes) and the IDAES binary extensions 3.4.2 ubuntu2204, built by scripts/build-reference-envs.sh idaes; never the project .venv",
+    "lock_sha256": "74762cd1b27c4644c7daf81a1eda4daebcc2b041bc108d4a9d86a8f205c54035",
+    "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+    "idaes_data_bin_tree_sha256": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+    "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e",
+    "cubic_roots_sha256": "91c638215ff0cf04e62d6821892be2dd85af302cb057a6e1af878aebef8a5167",
+    "idaes_extension_sha256": {
+      "idaes-lib-ubuntu2204-x86_64.tar.gz": "341470b4b0b9d67758cfde6f3246ed3a3d08000e2306908186435262d5751184",
+      "idaes-solvers-ubuntu2204-x86_64.tar.gz": "f370fa258cc457cd84fd9fe4298bde55dfc03374b607e68aa4d38f24ad9730e5"
+    },
+    "python": "3.13.5",
+    "platform": "Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41",
+    "packages": {
+      "idaes-pse": "2.13.0",
+      "pyomo": "6.10.1",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1"
+    },
+    "ipopt_version": "3.13.2.0",
+    "idaes_pr_constants": {
+      "omegaA": 0.45724,
+      "coeff_b": 0.0778,
+      "u": 2,
+      "w": -1,
+      "kappa": "0.37464 + 1.54226 omega - 0.26992 omega^2 (IDAES ceos.cubic_kappa_PR)",
+      "gas_constant_J_per_mol_K": 8.314462618
+    }
+  },
+  "inputs": {
+    "components_yaml_sha256": "6f154f7fbc3f4bef9fe3cb2048983cc19ad13c6b43f40d29fa944e9b719f05b9",
+    "reference_values_yaml_sha256": "6cef65b15d02809604b72e4b9b80115aab4b8ef674a241f5b99c73bc1655cc77",
+    "records": {
+      "H2": {
+        "molar_mass": 0.00201588,
+        "critical_temperature": 33.145,
+        "critical_pressure": 1296400.0,
+        "acentric_factor": -0.219,
+        "standard_formation_enthalpy": 0.0,
+        "ideal_gas_cp_b0": 2.34433112,
+        "ideal_gas_cp_b1": 7.98052075,
+        "ideal_gas_cp_b2": -19.478151,
+        "ideal_gas_cp_b3": 20.1572094,
+        "ideal_gas_cp_b4": -7.37611761,
+        "ideal_gas_cp_lower_temperature": 200.0,
+        "ideal_gas_cp_upper_temperature": 1000.0
+      },
+      "N2": {
+        "molar_mass": 0.0280134,
+        "critical_temperature": 126.192,
+        "critical_pressure": 3395800.0,
+        "acentric_factor": 0.0372,
+        "standard_formation_enthalpy": 0.0,
+        "ideal_gas_cp_b0": 3.53100528,
+        "ideal_gas_cp_b1": -0.123660987,
+        "ideal_gas_cp_b2": -0.502999437,
+        "ideal_gas_cp_b3": 2.43530612,
+        "ideal_gas_cp_b4": -1.40881235,
+        "ideal_gas_cp_lower_temperature": 200.0,
+        "ideal_gas_cp_upper_temperature": 1000.0
+      },
+      "NH3": {
+        "molar_mass": 0.01703052,
+        "critical_temperature": 405.56,
+        "critical_pressure": 11363400.0,
+        "acentric_factor": 0.256,
+        "standard_formation_enthalpy": -45558.0,
+        "ideal_gas_cp_b0": 4.30177808,
+        "ideal_gas_cp_b1": -4.7712733,
+        "ideal_gas_cp_b2": 21.9341619,
+        "ideal_gas_cp_b3": -22.9856489,
+        "ideal_gas_cp_b4": 8.28992268,
+        "ideal_gas_cp_lower_temperature": 200.0,
+        "ideal_gas_cp_upper_temperature": 1000.0
+      },
+      "Ar": {
+        "molar_mass": 0.039948,
+        "critical_temperature": 150.687,
+        "critical_pressure": 4863000.0,
+        "acentric_factor": -0.00219,
+        "standard_formation_enthalpy": 0.0,
+        "ideal_gas_cp_b0": 2.5,
+        "ideal_gas_cp_b1": 0.0,
+        "ideal_gas_cp_b2": 0.0,
+        "ideal_gas_cp_b3": 0.0,
+        "ideal_gas_cp_b4": 0.0,
+        "ideal_gas_cp_lower_temperature": 200.0,
+        "ideal_gas_cp_upper_temperature": 1000.0
+      },
+      "CH4": {
+        "molar_mass": 0.01604246,
+        "critical_temperature": 190.564,
+        "critical_pressure": 4599200.0,
+        "acentric_factor": 0.01142,
+        "standard_formation_enthalpy": -74534.0,
+        "ideal_gas_cp_b0": 5.14987613,
+        "ideal_gas_cp_b1": -13.6709788,
+        "ideal_gas_cp_b2": 49.1800599,
+        "ideal_gas_cp_b3": -48.4743026,
+        "ideal_gas_cp_b4": 16.6693956,
+        "ideal_gas_cp_lower_temperature": 200.0,
+        "ideal_gas_cp_upper_temperature": 1000.0
+      }
+    },
+    "k_ij": "0 for every pair (ADR 0026 D3)",
+    "cp_gas_constant_J_per_mol_K": 8.31446261815324,
+    "T_ref_K": 298.15
+  },
+  "property_block": {
+    "method": "IDAES modular Cubic, CubicType.PR; FTPx; light gases vapour-only (H2, N2, Ar, CH4), NH3 in both phases; log-fugacity equilibrium, SmoothVLE, LogBubbleDew; c_p^ig: NASA-7 low range from the records (user method); P_sat: Wilson estimate (initialization only)",
+    "phase_states": "one-phase variant of the block (VAPOR: Vap only, five components; LIQUID: Liq only, NH3 alone); state fixed, mole_frac_phase_comp = z, IDAES's expressions evaluated (no solve)",
+    "flash_states": "Flash, outlet T = inlet T, dP = 0, inlet 1 mol/s; IDAES initialize, then Ipopt"
+  },
+  "phase_states": {
+    "V1": {
+      "spec": {
+        "phase": "VAPOR",
+        "T_K": 673.15,
+        "P_Pa": 10000000.0,
+        "n_mol_s": [
+          0.7,
+          0.235,
+          0.03,
+          0.015,
+          0.02
+        ]
+      },
+      "idaes_phase": "Vap",
+      "components_in_block": [
+        "H2",
+        "N2",
+        "NH3",
+        "Ar",
+        "CH4"
+      ],
+      "degrees_of_freedom": 0,
+      "max_constraint_residual": 0.0,
+      "values": {
+        "Z": 1.0253224507926901,
+        "lnphi_H2": 0.022860273754912237,
+        "lnphi_N2": 0.03468667929053262,
+        "lnphi_NH3": -0.004238504410618434,
+        "lnphi_Ar": 0.021484160476678702,
+        "lnphi_CH4": 0.023295016069697437,
+        "h": 8411.091539542167
+      }
+    },
+    "V2": {
+      "spec": {
+        "phase": "VAPOR",
+        "T_K": 268.15,
+        "P_Pa": 10000000.0,
+        "n_mol_s": [
+          0.6743819512868283,
+          0.22479398376227613,
+          0.061485117792505664,
+          0.01685954878217071,
+          0.022479398376227616
+        ]
+      },
+      "idaes_phase": "Vap",
+      "components_in_block": [
+        "H2",
+        "N2",
+        "NH3",
+        "Ar",
+        "CH4"
+      ],
+      "degrees_of_freedom": 0,
+      "max_constraint_residual": 0.0,
+      "values": {
+        "Z": 0.9943972083293808,
+        "lnphi_H2": 0.043309147319877006,
+        "lnphi_N2": -0.05285180550824443,
+        "lnphi_NH3": -0.47078703743519834,
+        "lnphi_Ar": -0.09878038912621981,
+        "lnphi_CH4": -0.1757278231939812,
+        "h": -5698.106754590261
+      }
+    },
+    "L1": {
+      "spec": {
+        "phase": "LIQUID",
+        "T_K": 268.15,
+        "P_Pa": 10000000.0,
+        "n_mol_s": [
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ]
+      },
+      "idaes_phase": "Liq",
+      "components_in_block": [
+        "NH3"
+      ],
+      "degrees_of_freedom": 0,
+      "max_constraint_residual": 0.0,
+      "values": {
+        "Z": 0.13072045559137918,
+        "lnphi_NH3": -3.2588216442882767,
+        "h": -69084.57681639309
+      }
+    }
+  },
+  "flash_states": {
+    "F1": {
+      "spec": {
+        "T_K": 268.15,
+        "P_Pa": 10000000.0,
+        "n_mol_s": [
+          0.6,
+          0.2,
+          0.165,
+          0.015,
+          0.02
+        ]
+      },
+      "degrees_of_freedom": 0,
+      "initialization": "ok",
+      "solver_status": "ok",
+      "termination_condition": "optimal",
+      "solver_options": {
+        "max_iter": 500,
+        "tol": 1e-08
+      },
+      "vapor_fraction": 0.889762193490427,
+      "y_star": 0.061546999738895734,
+      "y_vapour": {
+        "H2": 0.6743374852175661,
+        "N2": 0.22477916173918872,
+        "NH3": 0.061546999738895734,
+        "Ar": 0.016858437130439153,
+        "CH4": 0.022477916173918873
+      },
+      "T_equilibrium_minus_T_K": -2.008562205446651e-09,
+      "vapour": {
+        "Z": 0.9943701802035216,
+        "lnphi_H2": 0.0433210282259517,
+        "lnphi_N2": -0.05286112099271743,
+        "lnphi_NH3": -0.4708674717109079,
+        "lnphi_Ar": -0.09879508473146117,
+        "lnphi_CH4": -0.17575995393322547,
+        "h": -5701.000638467694
+      },
+      "liquid": {
+        "x_NH3": 1.0000000000000087,
+        "Z": 0.1307204555913799,
+        "lnphi_NH3": -3.2588216442882767,
+        "h": -69084.5768163937
+      }
+    },
+    "F11": {
+      "spec": {
+        "T_K": 250.0,
+        "P_Pa": 25000000.0,
+        "n_mol_s": [
+          0.6,
+          0.2,
+          0.165,
+          0.015,
+          0.02
+        ]
+      },
+      "degrees_of_freedom": 0,
+      "initialization": "ok",
+      "solver_status": "ok",
+      "termination_condition": "optimal",
+      "solver_options": {
+        "max_iter": 500,
+        "tol": 1e-08
+      },
+      "vapor_fraction": 0.8568690630759891,
+      "y_star": 0.025522059341817727,
+      "y_vapour": {
+        "H2": 0.7002236699340266,
+        "N2": 0.2334078899780089,
+        "NH3": 0.025522059341817727,
+        "Ar": 0.017505591748350664,
+        "CH4": 0.023340788997800888
+      },
+      "T_equilibrium_minus_T_K": -1.0066685263154795e-09,
+      "vapour": {
+        "Z": 1.0746875306661348,
+        "lnphi_H2": 0.11016265630053608,
+        "lnphi_N2": -0.09338770531517074,
+        "lnphi_NH3": -1.0485234314209189,
+        "lnphi_Ar": -0.20830479100018823,
+        "lnphi_CH4": -0.3584285524478085,
+        "h": -4768.034593074348
+      },
+      "liquid": {
+        "x_NH3": 1.0000000000000047,
+        "Z": 0.3364083242090047,
+        "lnphi_NH3": -4.716735559936618,
+        "h": -70217.74484550039
+      }
+    }
+  }
+}

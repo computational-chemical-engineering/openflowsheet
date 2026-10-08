@@ -101,6 +101,8 @@ TABLE: dict[str, tuple[str, tuple[str, str] | None, str | None, tuple[str, ...]]
     ),
     "preview_change": ("read", ("POST", "/v1/changes/preview"), "preview_change", ALL),
     "get_artifact": ("read", ("GET", "/v1/artifacts/{artifact_id}"), "get_artifact", ALL),
+    # ADR 0019 Amendment 3 (A3.3; M06 WO-3): no MCP tool.
+    "list_audit": ("read", ("GET", "/v1/audit"), None, ("python", "cli", "http")),
     "artifact_bytes": (
         "read",
         ("GET", "/v1/artifacts/{artifact_id}/raw"),
@@ -133,7 +135,7 @@ def test_every_protocol_method_is_exactly_one_row() -> None:
         *_protocol_methods(JobControl),
         *_protocol_methods(Inspection),
     ]
-    assert len(methods) == len(set(methods)) == 4 + 7 + 8
+    assert len(methods) == len(set(methods)) == 4 + 7 + 9  # Inspection's ninth: `list_audit`
     rows = [operation.method for operation in OPERATIONS.values()]
     assert sorted(rows) == sorted([*methods, "artifact_bytes"])
     for name, operation in OPERATIONS.items():
@@ -152,7 +154,8 @@ def test_the_table_is_section_4_3s() -> None:
     assert {name: op.right for name, op in OPERATIONS.items()} == dict(OPERATION_RIGHTS)
     http = [op.http for op in OPERATIONS.values() if op.http is not None]
     tools = [op.mcp_tool for op in OPERATIONS.values() if op.mcp_tool is not None]
-    assert len(http) == len(set(http)) == 18 and len(tools) == len(set(tools)) == 17
+    # 19 routes with ADR 0019 Amendment 3's `list_audit`, which has no MCP tool (17 stay).
+    assert len(http) == len(set(http)) == 19 and len(tools) == len(set(tools)) == 17
     for operation in OPERATIONS.values():
         assert ("http" in operation.transports) == (operation.http is not None)
         assert ("mcp" in operation.transports) == (operation.mcp_tool is not None)
@@ -370,6 +373,7 @@ def _success_path(app: LocalApplication, tmp_path: Path) -> list[tuple[str, dict
         ("diff_revisions", {"from_revision": revision_id, "to_revision": revision_id}),
         ("inspect_structure", {"revision_id": revision_id, "depth": 2}),
         ("get_artifact", {"artifact_id": state, "pointer": "/variable_ids", "limit": 5}),
+        ("list_audit", {"limit": 3}),
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
@@ -462,12 +466,15 @@ def _probe(name: str, text: str, other_job: str) -> dict[str, Any]:
             "expected_revision": "rev-000001",
         },
         "get_artifact": {"artifact_id": "job-999999:bundle"},
+        # Every principal's rows (ADR 0019 Amendment 3): `policy` as well as `read`.
+        "list_audit": {"limit": 1},
         "artifact_bytes": {"artifact_id": "job-999999:bundle/run-manifest.json"},
     }[name]
 
 
 def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplication) -> None:
-    """64 right subsets × 20 operations, plus `cancel_job` of another principal's job, through
+    """64 right subsets × 21 operations, plus `cancel_job` of another principal's job and
+    `list_audit` of every principal's rows (ADR 0019 Amendment 3), through
     `dispatch`: allowed iff §10.1's table says so, whatever the grant's note or the request's
     text says."""
     directory = app.store.directory
@@ -488,8 +495,8 @@ def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplica
         with LocalApplication.open(directory, capability=capability) as caller:
             for name in OPERATIONS:
                 needed = {OPERATIONS[name].right}
-                if name == "cancel_job":
-                    needed.add("policy")  # the probe cancels the owner's job
+                if name in ("cancel_job", "list_audit"):
+                    needed.add("policy")  # the owner's job; every principal's audit rows
                 try:
                     dispatch(caller, name, _probe(name, text, others_job))
                     allowed = True
@@ -498,7 +505,7 @@ def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplica
                     assert refused.code != "unauthenticated", (rights, name)
                 assert allowed == (needed <= set(rights)), (rights, name, text)
                 cells += 1
-    assert cells == 64 * 20
+    assert cells == 64 * 21
     assert app.get_job(others_job).status == "completed", "the probes changed nothing"
 
 
@@ -670,6 +677,8 @@ def test_g13_every_response_is_bounded_and_the_raw_export_is_exact(
         {"artifact_id": f"{bundle}/revision.json", "pointer": "/" + _mebibyte("p")[:8000]},
     )
     call(HOSTILE * 1000, {})
+    # The audit holds the refused hostile name (ADR 0019 Amendment 3): served bounded.
+    call("list_audit", {"order": "descending", "limit": 5})
 
     names = {name for name, _ in responses}
     assert names >= set(OPERATIONS) - {"cancel_job", "artifact_bytes", "solve"}, (

@@ -1,0 +1,1414 @@
+record: m01-reference-values
+version: 1
+specification: docs/derivations/M01-spec.md
+generator: docs/derivations/scripts/m01_reference.py
+components_yaml_sha256: 6f154f7fbc3f4bef9fe3cb2048983cc19ad13c6b43f40d29fa944e9b719f05b9
+constants:
+  R_J_per_mol_K: '8.31446261815324'
+  Omega_a: '0.45724'
+  Omega_b: '0.07780'
+  kappa_rule: 0.37464 + 1.54226 w - 0.26992 w^2 (Peng-Robinson 1976) for every component
+  k_ij: 0 for every pair (ADR 0026 D3)
+  T_ref_K: '298.15'
+  domain:
+    T_K:
+    - 200.0
+    - 1000.0
+    P_Pa:
+    - 10000.0
+    - 30000000.0
+transcription_check_vs_idaes:
+  record: benchmarks/t08/v19/c1-idaes.json pr_flash.light_gases_vapour_only.separator
+  parameter_set: 'T08''s (the group database for H2, N2, NH3; IDAES examples for Ar, CH4): used for this check only'
+  abs_dev_beta: 4.14e-12
+  abs_dev_y_NH3: 4.36e-12
+  max_rel_dev_vapour_phi: 4.36e-15
+  rel_dev_liquid_phi: 3.55e-14
+measured:
+  meaning: '|53-bit transcription - 50-digit closed form| / max(|value|, 1): the double-precision floor the tolerances of
+    spec section 9 sit above'
+  transcription_floor:
+    V1:
+      Z: 1.58e-17
+      h: 4.11e-16
+      lnphi_H2: 4.13e-17
+      lnphi_N2: 3.41e-17
+      lnphi_NH3: 9.27e-18
+      lnphi_Ar: 3.14e-17
+      lnphi_CH4: 3.09e-17
+    V2:
+      Z: 3.8e-17
+      h: 1.59e-16
+      lnphi_H2: 3.5e-17
+      lnphi_N2: 7.28e-17
+      lnphi_NH3: 3.21e-18
+      lnphi_Ar: 2.19e-17
+      lnphi_CH4: 1.08e-17
+    L1:
+      Z: 5.37e-17
+      h: 8.06e-18
+      lnphi_NH3: 1.51e-16
+derived_from_measured:
+  meaning: 'process-side quantities at the pinned grid''s nominal solve, computed from the measured record: regression values,
+    not validation'
+  probe_sha256: 992cb1aa40b3b3e04c0b97cf151cc6e25dd031a78b3f2ac98449adeca0272ddb
+  xi_mol_s: 0.000265383399725
+  projected_outlet_mol_s:
+  - 0.00420672271034
+  - 0.00141415250561
+  - 0.000745175638428
+  - 0.00010720441949
+  - 0.000142939225986
+  defect_rel: 9.43e-09
+  Q_process_W: -9.750509665
+  Q_reactor_coolant_W: 3.3200499480531107
+  discretization_estimate:
+    meaning: spec section 10.1's discretization estimate at the design grid (Richardson, two orders, two differences); an
+      estimate, not a bound; what every reactor result reports (section 8.12, M01.A48)
+    num_z: 800
+    order_p:
+    - 0.6192
+    - 0.783
+    NH3_out_high_rel:
+    - 0.0102
+    - 0.01376
+    xi_high_rel:
+    - 0.01438
+    - 0.01943
+    T_out_low_K:
+    - 1.244
+    - 1.673
+    inputs: 'grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect 2.2e-6, still moving)'
+assertion_margins:
+  meaning: 'spec section 9 Amendment 1: the distance of each registered expectation from the nearest plausible wrong answer
+    and from the 53-bit floor, re-derived on every run; arguments for tolerances, never expectations'
+  A09_min_pairwise_lnphi_gap:
+    V1:
+      pair: H2/CH4
+      gap: 0.0004347
+    V2:
+      pair: N2/Ar
+      gap: 0.04593
+  A26_projection:
+    tolerance_over_n_tot_in: 1e-13
+    floor_defect_over_n_tot_in: 5.57e-17
+    floor_defect_relative_to_itself: 2.52e-11
+    floor_element_balance_float_over_n_tot_in: 0.0
+    floor_element_balance_exact_over_n_tot_in: 2.78e-17
+    wrong_projection_change_over_n_tot_in:
+      extent_from_H2_alone: 2.21e-06
+      extent_from_N2_alone: 2.79e-06
+      extent_from_NH3_alone: 4.29e-06
+      extent_divided_by_13: 0.0136
+      extent_sign_reversed: 0.353
+      nu_H2_N2_permuted: 0.134
+      inert_defect_dropped: 1.0e-07
+closed_form:
+  pr_constants:
+    B_c: '0.077796073903888455972'
+    Z_c: '0.30740130869870384801'
+    A_c: '0.45723552892138218938'
+    theta_c: '5.8773599486044029529'
+    v_c_over_b: '3.951373035591441433'
+  components:
+    H2:
+      kappa: 0.02393942688
+      a_c_Pa_m6_per_mol2: 0.02678610769162092
+      b_m3_per_mol: 1.653837301653966e-05
+      T_c_EOS_K: 33.14368299159907
+      sqrt_alpha_at_1000K: 0.8924457900083851
+      cp_ig_298_15: 28.836182535732334
+      cp_ig_700: 29.34438790847016
+      h_ig_700: 11750.979171755283
+      h_ig_268_15: -861.0742030689522
+    N2:
+      kappa: 0.4316385459072
+      a_c_Pa_m6_per_mol2: 0.1482293243966841
+      b_m3_per_mol: 2.4038286197666975e-05
+      T_c_EOS_K: 126.18841369754057
+      sqrt_alpha_at_1000K: 0.21656012227587787
+      cp_ig_298_15: 29.124184335127932
+      cp_ig_700: 30.722164021668682
+      h_ig_700: 11937.442335353087
+      h_ig_268_15: -873.5071299207233
+    NH3:
+      kappa: 0.75176908288
+      a_c_Pa_m6_per_mol2: 0.4575246743107135
+      b_m3_per_mol: 2.3086633150530488e-05
+      T_c_EOS_K: 405.5505804875952
+      sqrt_alpha_at_1000K: 0.5712937844907867
+      cp_ig_298_15: 35.63022546326313
+      cp_ig_700: 48.35657339296229
+      h_ig_700: -28710.82853933086
+      h_ig_268_15: -46615.924721567164
+    Ar:
+      kappa: 0.371261156036688
+      a_c_Pa_m6_per_mol2: 0.14759100498883634
+      b_m3_per_mol: 2.0044041772679608e-05
+      T_c_EOS_K: 150.68252901020324
+      sqrt_alpha_at_1000K: 0.41485663742098566
+      cp_ig_298_15: 20.7861565453831
+      cp_ig_700: 20.7861565453831
+      h_ig_700: 8352.917007762198
+      h_ig_268_15: -623.584696361493
+    CH4:
+      kappa: 0.392217407205312
+      a_c_Pa_m6_per_mol2: 0.24958128189472517
+      b_m3_per_mol: 2.6802317444263278e-05
+      T_c_EOS_K: 190.55843093852323
+      sqrt_alpha_at_1000K: 0.4937415033396982
+      cp_ig_298_15: 35.69097504264315
+      cp_ig_700: 58.65068835023716
+      h_ig_700: -55787.23459806915
+      h_ig_268_15: -75589.060423724
+  nh3_eos_critical:
+    T_K: 405.5505804875952
+    P_Pa: 11362562.645500638
+    v_m3_per_mol: 9.122389971359765e-05
+    T_c_record_K: 405.56
+  nh3_spinodal_volumes_m3_per_mol:
+    '200':
+    - 3.25745161135531e-05
+    - 0.0007024877775008603
+    '240':
+    - 3.527825951271547e-05
+    - 0.0005071914082349104
+    '268.15':
+    - 3.765745859404801e-05
+    - 0.0004072878748200662
+    '300':
+    - 4.108477004871549e-05
+    - 0.00031817132324747253
+    '350':
+    - 4.948413202601758e-05
+    - 0.00021060602915856517
+    '400':
+    - 7.36674993325681e-05
+    - 0.00011541010730390535
+    '405':
+    - 8.509764159935709e-05
+    - 9.799824165772052e-05
+  phase_states:
+    V1:
+      T_K: 673.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.7
+      - 0.235
+      - 0.03
+      - 0.015
+      - 0.02
+      phase: VAPOR
+      why: 'reactor inlet: above NH3''s EOS critical temperature, five distinct fugacity coefficients near one, a nonzero
+        departure enthalpy'
+      values:
+        Z: 1.0253224507926901
+        v: 0.0005738607242752596
+        h: 8411.091539543166
+        lnphi_H2: 0.022860273754912258
+        lnphi_N2: 0.03468667929053277
+        lnphi_NH3: -0.004238504410618317
+        lnphi_Ar: 0.021484160476678813
+        lnphi_CH4: 0.023295016069697597
+      h_departure_J_mol: 54.35462099427922
+      real_root_count: 1
+      status_or_reason: ok
+    V2:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.6743819512868283
+      - 0.22479398376227613
+      - 0.061485117792505664
+      - 0.01685954878217071
+      - 0.022479398376227616
+      phase: VAPOR
+      why: 'a cold, NH3-bearing vapour near the separator''s equilibrium vapour (the IDAES composition): strongly nonideal
+        NH3'
+      values:
+        Z: 0.9943972083293808
+        v: 0.00022170315973175922
+        h: -5698.1067545966225
+        lnphi_H2: 0.04330914731987685
+        lnphi_N2: -0.052851805508244476
+        lnphi_NH3: -0.47078703743519856
+        lnphi_Ar: -0.09878038912621992
+        lnphi_CH4: -0.1757278231939814
+      h_departure_J_mol: -345.1591244787573
+      real_root_count: 1
+      status_or_reason: ok
+    L1:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      phase: LIQUID
+      why: 'pure NH3 compressed liquid: a single real root, liquid by the critical-volume test'
+      values:
+        Z: 0.13072045559137904
+        v: 2.9144428205780148e-05
+        h: -69084.57681680721
+        lnphi_NH3: -3.2588216442882425
+      h_departure_J_mol: -22468.652095240046
+      real_root_count: 1
+      status_or_reason: ok
+    L2:
+      T_K: 350.0
+      P_Pa: 1000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      phase: LIQUID
+      why: 'pure NH3 below its saturation pressure: three real roots; the liquid root is metastable and still evaluable'
+      values:
+        Z: 0.013383920356505217
+        v: 3.894803692097598e-05
+        h: -61673.45080642687
+        lnphi_NH3: 1.099408690192041
+      h_departure_J_mol: -17999.092947017245
+      real_root_count: 3
+      status_or_reason: ok
+    V3:
+      T_K: 350.0
+      P_Pa: 1000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      phase: VAPOR
+      why: 'the same three-root state, vapour root: the largest root, distinct from L2''s'
+      values:
+        Z: 0.9461336373913496
+        v: 0.002753307465953705
+        h: -44135.21458823313
+        lnphi_H2: 0.0429061316140334
+        lnphi_N2: 0.024729374658603493
+        lnphi_NH3: -0.052913604431839546
+        lnphi_Ar: 0.017002658140357653
+        lnphi_CH4: -0.0016327849311121984
+      h_departure_J_mol: -460.8567288235098
+      real_root_count: 3
+      status_or_reason: ok
+    V4:
+      T_K: 420.0
+      P_Pa: 5000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      phase: VAPOR
+      why: 'pure NH3 above its EOS critical temperature: one root, labelled vapour'
+      values:
+        Z: 0.8389115472866022
+        v: 0.0005859082907875301
+        h: -42866.71571005264
+        lnphi_H2: 0.15412467609787495
+        lnphi_N2: 0.11061114260265176
+        lnphi_NH3: -0.15490680243620764
+        lnphi_Ar: 0.07665193056134736
+        lnphi_CH4: 0.018026715221564384
+      h_departure_J_mol: -1862.3858837508456
+      real_root_count: 1
+      status_or_reason: ok
+    V5:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.75
+      - 0.25
+      - 0.0
+      - 0.0
+      - 0.0
+      phase: VAPOR
+      why: 'light gases only: lnphi_NH3 is NH3 at infinite dilution, defined although NH3 is absent'
+      values:
+        Z: 1.02335231137587
+        v: 0.00022815876699010037
+        h: -1020.8050783977252
+        lnphi_H2: 0.032969571943607986
+        lnphi_N2: -0.037718153876545334
+        lnphi_NH3: -0.37109065230202437
+        lnphi_Ar: -0.07738563081800927
+        lnphi_CH4: -0.13335957343957697
+      h_departure_J_mol: -156.62264361583016
+      real_root_count: 1
+      status_or_reason: ok
+    U1:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 1.0e-06
+      - 0.0
+      - 0.999999
+      - 0.0
+      - 0.0
+      phase: LIQUID
+      why: a liquid carrying any light gas is outside the convention
+      status_or_reason: light_gas_in_liquid
+    U2:
+      T_K: 420.0
+      P_Pa: 5000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      phase: LIQUID
+      why: no liquid above NH3's EOS critical temperature
+      status_or_reason: no_liquid_root
+    U3:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      phase: VAPOR
+      why: pure compressed liquid NH3 has no vapour-like root
+      status_or_reason: no_vapour_root
+    U4:
+      T_K: 268.15
+      P_Pa: 500000.0
+      n_mol_s:
+      - 0.02
+      - 0.0
+      - 0.98
+      - 0.0
+      - 0.0
+      phase: VAPOR
+      why: 'an NH3-rich mixture with three roots whose smallest root is the stable one: the convention''s vapour would be
+        metastable'
+      status_or_reason: vapour_root_metastable
+    U5:
+      T_K: 150.0
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.7
+      - 0.235
+      - 0.03
+      - 0.015
+      - 0.02
+      phase: VAPOR
+      why: below the provider's temperature domain (200 K)
+      status_or_reason: out_of_domain
+    U6:
+      T_K: 673.15
+      P_Pa: 50000000.0
+      n_mol_s:
+      - 0.7
+      - 0.235
+      - 0.03
+      - 0.015
+      - 0.02
+      phase: VAPOR
+      why: above the provider's pressure domain (3e7 Pa)
+      status_or_reason: out_of_domain
+  derivatives:
+    V1:
+      Z:
+        T: -1.7123448917060597e-05
+        P: 2.627576342037086e-09
+        n_H2: -0.002124312471197373
+        n_N2: 0.009989447632670958
+        n_NH3: -0.026906302019294892
+        n_Ar: -0.002984990339887795
+        n_CH4: -0.00042687740811750603
+      v:
+        T: 8.429167291137069e-07
+        P: -5.5915449345427065e-11
+        n_H2: -1.1889523070189482e-06
+        n_N2: 5.590974477504538e-06
+        n_NH3: -1.5059135740589917e-05
+        n_Ar: -1.6706634260064674e-06
+        n_CH4: -2.38918184625402e-07
+      h:
+        T: 30.85984405158629
+        P: 6.451328072367833e-06
+        n_H2: 2644.170482445253
+        n_N2: 2746.1862622725157
+        n_NH3: -38945.19784515426
+        n_Ar: -671.0157667931819
+        n_CH4: -65892.59687445965
+      lnphi_H2:
+        T: -2.4306769546953644e-05
+        P: 2.3198138321492774e-09
+        n_H2: -0.0002196410982943409
+        n_N2: -6.578706454224451e-05
+        n_NH3: 0.00414362813667185
+        n_Ar: 0.0006324317486609478
+        n_CH4: 0.0017706704321698184
+      lnphi_N2:
+        T: -1.122677283887997e-05
+        P: 3.5311898425361103e-09
+        n_H2: -6.578706454224451e-05
+        n_N2: -2.0737711577239757e-05
+        n_NH3: 0.0012476151580387822
+        n_Ar: 0.00019031136989833841
+        n_CH4: 0.0005320591055291976
+      lnphi_NH3:
+        T: 0.00014215190421162165
+        P: -1.5838512266047443e-10
+        n_H2: 0.00414362813667185
+        n_N2: 0.0012476151580387822
+        n_NH3: -0.07821246306839069
+        n_Ar: -0.01193668797898128
+        n_CH4: -0.03341525230364843
+      lnphi_Ar:
+        T: 1.4527498070299548e-05
+        P: 2.2337460452802353e-09
+        n_H2: 0.0006324317486609478
+        n_N2: 0.00019031136989833841
+        n_NH3: -0.01193668797898128
+        n_Ar: -0.001821773848141231
+        n_CH4: -0.0050999074448608095
+      lnphi_CH4:
+        T: 3.7173791816775604e-05
+        P: 2.4895573384572643e-09
+        n_H2: 0.0017706704321698184
+        n_N2: 0.0005320591055291976
+        n_NH3: -0.03341525230364843
+        n_Ar: -0.0050999074448608095
+        n_CH4: -0.01427735057679346
+    V2:
+      Z:
+        T: 0.000448549506506937
+        P: 1.6101753647743036e-09
+        n_H2: 0.05267074552811333
+        n_N2: -0.02680759540550519
+        n_NH3: -0.40987419784132073
+        n_Ar: -0.07326815376331809
+        n_CH4: -0.13601710244118798
+      v:
+        T: 9.26792992540334e-07
+        P: -2.18113236478732e-11
+        n_H2: 1.1743064653840229e-05
+        n_N2: -5.97681545807643e-06
+        n_NH3: -9.13824013108466e-05
+        n_Ar: -1.633530450505797e-05
+        n_CH4: -3.0325327883242782e-05
+      h:
+        T: 31.57210179147342
+        P: -2.6816381217931353e-05
+        n_H2: 4903.033251118575
+        n_N2: 4103.561886842493
+        n_NH3: -43888.99579691917
+        n_Ar: 4216.239582546174
+        n_CH4: -71244.65472868095
+      lnphi_H2:
+        T: -0.0001103973761039601
+        P: 4.706795385749464e-09
+        n_H2: -0.02660751628405418
+        n_N2: 0.020883221092066976
+        n_NH3: 0.1801420615439006
+        n_Ar: 0.0329185666856032
+        n_CH4: 0.07198405429244148
+      lnphi_N2:
+        T: 0.001206058039112954
+        P: -3.2410387076124545e-09
+        n_H2: 0.020883221092066976
+        n_N2: -0.016409352375596216
+        n_NH3: -0.14131727681055806
+        n_Ar: -0.025825975925799792
+        n_CH4: -0.05650596002226355
+      lnphi_NH3:
+        T: 0.004969799386938991
+        P: -4.1547698951194335e-08
+        n_H2: 0.1801420615439006
+        n_N2: -0.14131727681055806
+        n_NH3: -1.2198780645849836
+        n_Ar: -0.22290871629927816
+        n_CH4: -0.4873259635716299
+      lnphi_Ar:
+        T: 0.0014356231655015066
+        P: -7.887094543393783e-09
+        n_H2: 0.0329185666856032
+        n_N2: -0.025825975925799792
+        n_NH3: -0.22290871629927816
+        n_Ar: -0.040732420531867534
+        n_CH4: -0.08905328687978785
+      lnphi_CH4:
+        T: 0.0022642948624810037
+        P: -1.4161989411180825e-08
+        n_H2: 0.07198405429244148
+        n_N2: -0.05650596002226355
+        n_NH3: -0.4873259635716299
+        n_Ar: -0.08905328687978785
+        n_CH4: -0.1947496349491447
+    L1:
+      Z:
+        T: -0.00024263952912485483
+        P: 1.2954790919855909e-08
+        n_H2: 0.0
+        n_N2: 0.0
+        n_NH3: 0.0
+        n_Ar: 0.0
+        n_CH4: 0.0
+      v:
+        T: 5.458998938968567e-08
+        P: -2.6142193284814136e-14
+        n_H2: 0.0
+        n_N2: 0.0
+        n_NH3: 0.0
+        n_Ar: 0.0
+        n_CH4: 0.0
+      h:
+        T: 77.68597324415727
+        P: 1.4506122550935936e-05
+        n_H2: 0.0
+        n_N2: 0.0
+        n_NH3: 0.0
+        n_Ar: 0.0
+        n_CH4: 0.0
+      lnphi_NH3:
+        T: 0.037582635506601854
+        P: -8.69279544408621e-08
+        n_H2: 0.0
+        n_N2: 0.0
+        n_NH3: 0.0
+        n_Ar: 0.0
+        n_CH4: 0.0
+  flash_states:
+    F1:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.6
+      - 0.2
+      - 0.165
+      - 0.015
+      - 0.02
+      why: 'the C1 separator: vapour plus pure liquid NH3 (the IDAES composition, M01''s parameter set)'
+      phase_signature: TWO_PHASE
+      route: two_phase
+      vapor_fraction: 0.8897621934945995
+      y_star: 0.06154699974328799
+      v_nh3: 0.05476219349459947
+      l_nh3: 0.11023780650540053
+      vapour:
+        n_mol_s:
+        - 0.6
+        - 0.2
+        - 0.05476219349459947
+        - 0.015
+        - 0.02
+        h_J_mol: -5701.000638679434
+        Z: 0.9943701802016036
+        lnphi_H2: 0.04332102822679475
+        lnphi_N2: -0.0528611209933779
+        lnphi_NH3: -0.47086747171661353
+        lnphi_Ar: -0.09879508473250338
+        lnphi_CH4: -0.1757599539355046
+      liquid:
+        n_NH3_mol_s: 0.11023780650540053
+        h_J_mol: -69084.57681680721
+        Z: 0.13072045559137904
+        lnphi_NH3: -3.2588216442882425
+      k_value_NH3: 0.06154699974328799
+      bracket_sample_index: 3
+      vapour_real_root_count: 1
+    F2:
+      T_K: 300.0
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.7
+      - 0.235
+      - 0.03
+      - 0.015
+      - 0.02
+      why: subcritical, above NH3's saturation pressure, but the feed holds less NH3 than the equilibrium vapour can
+      phase_signature: VAPOR
+      route: undersaturated
+      vapor_fraction: 1.0
+      y_star: 0.1681719369482627
+    F3:
+      T_K: 268.15
+      P_Pa: 200000.0
+      n_mol_s:
+      - 0.25
+      - 0.25
+      - 0.5
+      - 0.0
+      - 0.0
+      why: 'below NH3''s saturation pressure: no liquid can form whatever the feed'
+      phase_signature: VAPOR
+      route: no_liquid
+      vapor_fraction: 1.0
+    F4:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.6
+      - 0.2
+      - 0.05476219349459947
+      - 0.015
+      - 0.02
+      why: 'F1''s light gases with exactly the equilibrium vapour''s NH3: the dew point, where a liquid of O(ulp) may appear'
+      phase_signature: VAPOR
+      route: undersaturated
+      vapor_fraction: 1.0
+      y_star: 0.06154699974328799
+    F5:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 1.0e-06
+      - 0.0
+      - 0.999999
+      - 0.0
+      - 0.0
+      why: 'the trivial-solution trap: an NH3 feed with a trace of H2, whose own single root is liquid-like; the convention''s
+        answer is a small H2-rich vapour'
+      phase_signature: TWO_PHASE
+      route: two_phase
+      vapor_fraction: 1.0587353031750334e-06
+      y_star: 0.05547685337297486
+      v_nh3: 5.8735303175033406e-08
+      l_nh3: 0.9999989412646968
+      vapour:
+        n_mol_s:
+        - 1.0e-06
+        - 0.0
+        - 5.8735303175033406e-08
+        - 0.0
+        - 0.0
+        h_J_mol: -3535.585414297166
+        Z: 1.017709146965401
+        lnphi_H2: 0.03272334328316844
+        lnphi_N2: -0.03694953744045197
+        lnphi_NH3: -0.36703224272351437
+        lnphi_Ar: -0.07638545096131048
+        lnphi_CH4: -0.1315220305517644
+      liquid:
+        n_NH3_mol_s: 0.9999989412646968
+        h_J_mol: -69084.57681680721
+        Z: 0.13072045559137904
+        lnphi_NH3: -3.2588216442882425
+      k_value_NH3: 0.05547685337297486
+      bracket_sample_index: 3
+      vapour_real_root_count: 1
+    F6:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.75
+      - 0.25
+      - 0.0
+      - 0.0
+      - 0.0
+      why: 'no NH3: no liquid can exist'
+      phase_signature: VAPOR
+      route: no_nh3
+      vapor_fraction: 1.0
+    F7:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      why: pure NH3 above its saturation pressure
+      phase_signature: LIQUID
+      route: pure_nh3
+      vapor_fraction: 0.0
+    F8:
+      T_K: 350.0
+      P_Pa: 1000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      why: 'pure NH3 below its saturation pressure: the vapour root has the lower Gibbs energy'
+      phase_signature: VAPOR
+      route: pure_nh3
+      vapor_fraction: 1.0
+    F9:
+      T_K: 420.0
+      P_Pa: 5000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      why: pure NH3 above its EOS critical temperature
+      phase_signature: VAPOR
+      route: pure_nh3
+      vapor_fraction: 1.0
+    F10:
+      T_K: 673.15
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.7
+      - 0.235
+      - 0.03
+      - 0.015
+      - 0.02
+      why: 'the reactor inlet: above NH3''s EOS critical temperature, decided without the equilibrium search'
+      phase_signature: VAPOR
+      route: supercritical
+      vapor_fraction: 1.0
+    F11:
+      T_K: 250.0
+      P_Pa: 25000000.0
+      n_mol_s:
+      - 0.6
+      - 0.2
+      - 0.165
+      - 0.015
+      - 0.02
+      why: 'a colder, higher-pressure separator: a different equilibrium vapour, the same rules'
+      phase_signature: TWO_PHASE
+      route: two_phase
+      vapor_fraction: 0.8568690630768132
+      y_star: 0.025522059342750248
+      v_nh3: 0.02186906307681323
+      l_nh3: 0.14313093692318676
+      vapour:
+        n_mol_s:
+        - 0.6
+        - 0.2
+        - 0.02186906307681323
+        - 0.015
+        - 0.02
+        h_J_mol: -4768.034593129316
+        Z: 1.074687530665413
+        lnphi_H2: 0.1101626563008714
+        lnphi_N2: -0.0933877053156311
+        lnphi_NH3: -1.0485234314242116
+        lnphi_Ar: -0.2083047910008926
+        lnphi_CH4: -0.35842855244913024
+      liquid:
+        n_NH3_mol_s: 0.14313093692318676
+        h_J_mol: -70217.74484592343
+        Z: 0.33640832420900363
+        lnphi_NH3: -4.716735559936612
+      k_value_NH3: 0.025522059342750248
+      bracket_sample_index: 1
+      vapour_real_root_count: 1
+    F12:
+      T_K: 400.0
+      P_Pa: 20000000.0
+      n_mol_s:
+      - 0.5
+      - 0.17
+      - 0.3
+      - 0.01
+      - 0.02
+      why: '5.6 K below NH3''s EOS critical temperature: the adversarial near-critical case, registered for what the rules
+        give'
+      phase_signature: VAPOR
+      route: no_liquid
+      vapor_fraction: 1.0
+    F13:
+      T_K: 268.15
+      P_Pa: 500000.0
+      n_mol_s:
+      - 0.02
+      - 0.0
+      - 0.98
+      - 0.0
+      - 0.0
+      why: 'U4''s feed: evaluate_phase refuses its vapour root, the flash still finds the convention''s split'
+      phase_signature: TWO_PHASE
+      route: two_phase
+      vapor_fraction: 0.07019319445017301
+      y_star: 0.7150720927197992
+      v_nh3: 0.05019319445017301
+      l_nh3: 0.929806805549827
+      vapour:
+        n_mol_s:
+        - 0.02
+        - 0.0
+        - 0.05019319445017301
+        - 0.0
+        - 0.0
+        h_J_mol: -33772.57753205955
+        Z: 0.9683751124784513
+        lnphi_H2: 0.02176873454670244
+        lnphi_N2: 0.004780700859265935
+        lnphi_NH3: -0.052452356235813326
+        lnphi_Ar: 0.0004158473006759074
+        lnphi_CH4: -0.013552408617418053
+      liquid:
+        n_NH3_mol_s: 0.929806805549827
+        h_J_mol: -69217.50310021723
+        Z: 0.006595153897620094
+        lnphi_NH3: -0.3878242686281024
+      k_value_NH3: 0.7150720927197992
+      bracket_sample_index: 45
+      vapour_real_root_count: 3
+    F14:
+      T_K: 300.0
+      P_Pa: 10000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      why: a dormant feed (ADR 0001 D3.4)
+      phase_signature: ZERO_FLOW
+      route: zero_flow
+  nh3_saturation_pr:
+    '240':
+      P_sat_Pa: 100876.05942012524
+      v_L_m3_mol: 2.7963606748711667e-05
+      v_V_m3_mol: 0.01948511434755976
+      h_vap_J_mol: 23732.78921350285
+    '260':
+      P_sat_Pa: 253050.93377892266
+      v_L_m3_mol: 2.894996173096391e-05
+      v_V_m3_mol: 0.008279553803264221
+      h_vap_J_mol: 22784.404333859533
+    '268.15':
+      P_sat_Pa: 352112.7540906235
+      v_L_m3_mol: 2.9412462157129734e-05
+      v_V_m3_mol: 0.006080099349681083
+      h_vap_J_mol: 22365.151256724606
+    '280':
+      P_sat_Pa: 547815.206531213
+      v_L_m3_mol: 3.0161953217025913e-05
+      v_V_m3_mol: 0.0040128866641349166
+      h_vap_J_mol: 21712.056217705078
+    '300':
+      P_sat_Pa: 1058726.9608499543
+      v_L_m3_mol: 3.1688941058285956e-05
+      v_V_m3_mol: 0.002140218501430916
+      h_vap_J_mol: 20461.694251447352
+    '320':
+      P_sat_Pa: 1872780.5414105053
+      v_L_m3_mol: 3.367869724628308e-05
+      v_V_m3_mol: 0.001221528458298976
+      h_vap_J_mol: 18961.31125155963
+    '350':
+      P_sat_Pa: 3882165.256806882
+      v_L_m3_mol: 3.8185856016058324e-05
+      v_V_m3_mol: 0.000568147294016929
+      h_vap_J_mol: 15991.226775661638
+    '380':
+      P_sat_Pa: 7185282.799042264
+      v_L_m3_mol: 4.719172370545685e-05
+      v_V_m3_mol: 0.00026645005232159107
+      h_vap_J_mol: 11376.64939844763
+    '400':
+      P_sat_Pa: 10330426.557094708
+      v_L_m3_mol: 6.44228789802959e-05
+      v_V_m3_mol: 0.00014083781119326758
+      h_vap_J_mol: 5481.156161852935
+  pure_component_states:
+    H2-VAPOR-268.15-1e7:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: 0.03044639128880506
+      Z: 1.0353932605096163
+      h_departure_J_mol: -27.382775129092384
+    H2-VAPOR-673.15-1e7:
+      T_K: 673.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: 0.022749834996366663
+      Z: 1.023105116366356
+      h_departure_J_mol: 86.64863652169753
+    N2-VAPOR-268.15-1e7:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: -0.06109970142594444
+      Z: 0.9614877252737792
+      h_departure_J_mol: -805.0342120251349
+    N2-VAPOR-673.15-1e7:
+      T_K: 673.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: 0.03467652232015823
+      Z: 1.0352922611728932
+      h_departure_J_mol: 44.49757918373797
+    NH3-VAPOR-673.15-1e7:
+      T_K: 673.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: -0.04485097214341736
+      Z: 0.9587602342664482
+      h_departure_J_mol: -1353.683560179537
+    NH3-LIQUID-268.15-1e7:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      phase: LIQUID
+      lnphi: -3.2588216442882425
+      Z: 0.13072045559137904
+      h_departure_J_mol: -22468.652095240046
+    NH3-LIQUID-250-2.5e7:
+      T_K: 250.0
+      P_Pa: 25000000.0
+      phase: LIQUID
+      lnphi: -4.716735559936612
+      Z: 0.33640832420900363
+      h_departure_J_mol: -22971.671298343983
+    Ar-VAPOR-268.15-1e7:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: -0.12085298446490492
+      Z: 0.8980756377766643
+      h_departure_J_mol: -1036.6025293596806
+    Ar-VAPOR-673.15-1e7:
+      T_K: 673.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: 0.020572257842343747
+      Z: 1.0214861952974676
+      h_departure_J_mol: -80.51032887463
+    CH4-VAPOR-268.15-1e7:
+      T_K: 268.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: -0.28985855225390655
+      Z: 0.745976045630025
+      h_departure_J_mol: -2256.1133403671793
+    CH4-VAPOR-673.15-1e7:
+      T_K: 673.15
+      P_Pa: 10000000.0
+      phase: VAPOR
+      lnphi: 0.016225329809153973
+      Z: 1.0185915909183125
+      h_departure_J_mol: -277.78734019267034
+  reaction:
+    elements:
+    - Ar
+    - C
+    - H
+    - N
+    element_matrix:
+    - - 0
+      - 0
+      - 0
+      - 1
+      - 0
+    - - 0
+      - 0
+      - 0
+      - 0
+      - 1
+    - - 2
+      - 0
+      - 3
+      - 0
+      - 4
+    - - 0
+      - 2
+      - 1
+      - 0
+      - 0
+    nu:
+    - -3
+    - -1
+    - 2
+    - 0
+    - 0
+    dh_r_ig_298_15_J_mol: -91116.0
+    dh_r_ig_673_15_J_mol: -104003.12297042357
+  kij_sensitivity_F1:
+    H2-NH3:
+      '-0.1':
+        y_star: 0.063538333
+        rel_change_y_star: 0.03235
+      '0.1':
+        y_star: 0.059619942
+        rel_change_y_star: -0.03131
+      '0.2':
+        y_star: 0.057754676
+        rel_change_y_star: -0.06162
+    N2-NH3:
+      '-0.1':
+        y_star: 0.062850464
+        rel_change_y_star: 0.02118
+      '0.1':
+        y_star: 0.060271385
+        rel_change_y_star: -0.02073
+      '0.2':
+        y_star: 0.059022904
+        rel_change_y_star: -0.04101
+    NH3-Ar:
+      '-0.1':
+        y_star: 0.061652438
+        rel_change_y_star: 0.001713
+      '0.1':
+        y_star: 0.061441747
+        rel_change_y_star: -0.00171
+      '0.2':
+        y_star: 0.06133668
+        rel_change_y_star: -0.003417
+    NH3-CH4:
+      '-0.1':
+        y_star: 0.061740592
+        rel_change_y_star: 0.003145
+      '0.1':
+        y_star: 0.061354033
+        rel_change_y_star: -0.003135
+      '0.2':
+        y_star: 0.06116169
+        rel_change_y_star: -0.00626
+    H2-N2:
+      '-0.1':
+        y_star: 0.061430656
+        rel_change_y_star: -0.00189
+      '0.1':
+        y_star: 0.061662799
+        rel_change_y_star: 0.001881
+      '0.2':
+        y_star: 0.061778061
+        rel_change_y_star: 0.003754
+  boundary:
+    standin:
+      conversion_N2: '0.25'
+      inlet_n_mol_s:
+      - 0.7
+      - 0.235
+      - 0.03
+      - 0.015
+      - 0.02
+      T_in_K: 673.15
+      P_in_Pa: 10000000.0
+      xi_mol_s: 0.05875
+      outlet_n_mol_s:
+      - 0.52375
+      - 0.17625
+      - 0.1475
+      - 0.015
+      - 0.02
+      T_out_K: 673.15
+      P_out_Pa: 10000000.0
+      Q_W: -6205.800878966381
+      H_in_W: 8411.091539543166
+      H_out_W: 2205.290660576785
+      Q_over_xi_J_mol: -105630.65325900223
+    projection:
+      perturbation_mol_s:
+      - 2.0e-06
+      - -1.0e-06
+      - 3.0e-06
+      - 1.0e-07
+      - 0.0
+      raw_outlet_mol_s:
+      - 0.523752
+      - 0.176249
+      - 0.147503
+      - 0.0150001
+      - 0.02
+      xi_mol_s: 0.05875007142857143
+      projected_outlet_mol_s:
+      - 0.5237497857142858
+      - 0.17624992857142857
+      - 0.14750014285714286
+      - 0.015
+      - 0.02
+      defect_mol_s:
+      - 2.214285714285714e-06
+      - -9.285714285714285e-07
+      - 2.8571428571428573e-06
+      - 1.0e-07
+      - 0.0
+      defect_rel: 2.8571428571428573e-06
+    pressure_convention:
+      eps_P: 1e-3
+      accepted_dP_Pa: 5000.0
+      refused_dP_Pa: 20000.0
+      P_in_Pa: 10000000.0
+  overlay_fit:
+    max_rel_dev: 0.004244
+generator_claims:
+- id: REC-01
+  holds: true
+  statement: components.yaml lists ('H2', 'N2', 'NH3', 'Ar', 'CH4') in that order
+- id: PR-01
+  holds: true
+  statement: B_c, Z_c, A_c satisfy the PR cubic's triple-root conditions
+- id: PR-02
+  holds: true
+  statement: the exact PR constants round to the textbook 0.0777960739 and 0.4572355289
+- id: PR-03-H2
+  holds: true
+  statement: sqrt(alpha) of H2 stays positive on 200-1000 K (it is monotone in T)
+- id: PR-03-N2
+  holds: true
+  statement: sqrt(alpha) of N2 stays positive on 200-1000 K (it is monotone in T)
+- id: PR-03-NH3
+  holds: true
+  statement: sqrt(alpha) of NH3 stays positive on 200-1000 K (it is monotone in T)
+- id: PR-03-Ar
+  holds: true
+  statement: sqrt(alpha) of Ar stays positive on 200-1000 K (it is monotone in T)
+- id: PR-03-CH4
+  holds: true
+  statement: sqrt(alpha) of CH4 stays positive on 200-1000 K (it is monotone in T)
+- id: PR-04
+  holds: true
+  statement: 'at (T_c,EOS, P_c,EOS) pure NH3''s A and B equal the critical A_c, B_c: the closed form is NH3''s EOS critical
+    point'
+- id: PR-05
+  holds: true
+  statement: with the rounded Omega_a, Omega_b NH3's EOS critical temperature lies below the record's T_c by less than 0.02
+    K
+- id: PR-06-200
+  holds: true
+  statement: at 200 K NH3's two spinodal volumes straddle v_c,EOS (the single-root label rule is exact)
+- id: PR-06-240
+  holds: true
+  statement: at 240 K NH3's two spinodal volumes straddle v_c,EOS (the single-root label rule is exact)
+- id: PR-06-268.15
+  holds: true
+  statement: at 268.15 K NH3's two spinodal volumes straddle v_c,EOS (the single-root label rule is exact)
+- id: PR-06-300
+  holds: true
+  statement: at 300 K NH3's two spinodal volumes straddle v_c,EOS (the single-root label rule is exact)
+- id: PR-06-350
+  holds: true
+  statement: at 350 K NH3's two spinodal volumes straddle v_c,EOS (the single-root label rule is exact)
+- id: PR-06-400
+  holds: true
+  statement: at 400 K NH3's two spinodal volumes straddle v_c,EOS (the single-root label rule is exact)
+- id: PR-06-405
+  holds: true
+  statement: at 405 K NH3's two spinodal volumes straddle v_c,EOS (the single-root label rule is exact)
+- id: PR-07
+  holds: true
+  statement: 'at every registered phase state the PR cubic at Z = B equals -2 B^2: the admissible roots counted with multiplicity
+    are odd in number, so two distinct ones form a double root'
+- id: IDAES-01
+  holds: true
+  statement: with T08's parameter set this script reproduces IDAES 2.13's vapour-only separator (beta, y_NH3, five vapour
+    and the liquid fugacity coefficients) to 1e-9
+- id: PH-V1
+  holds: true
+  statement: state V1 evaluates to ok
+- id: PH-V2
+  holds: true
+  statement: state V2 evaluates to ok
+- id: PH-L1
+  holds: true
+  statement: state L1 evaluates to ok
+- id: PH-L2
+  holds: true
+  statement: state L2 evaluates to ok
+- id: PH-V3
+  holds: true
+  statement: state V3 evaluates to ok
+- id: PH-V4
+  holds: true
+  statement: state V4 evaluates to ok
+- id: PH-V5
+  holds: true
+  statement: state V5 evaluates to ok
+- id: PH-U1
+  holds: true
+  statement: state U1 evaluates to light_gas_in_liquid
+- id: PH-U2
+  holds: true
+  statement: state U2 evaluates to no_liquid_root
+- id: PH-U3
+  holds: true
+  statement: state U3 evaluates to no_vapour_root
+- id: PH-U4
+  holds: true
+  statement: state U4 evaluates to vapour_root_metastable
+- id: PH-U5
+  holds: true
+  statement: state U5 evaluates to out_of_domain
+- id: PH-U6
+  holds: true
+  statement: state U6 evaluates to out_of_domain
+- id: PH-ROOTS
+  holds: true
+  statement: L2/V3 have three real roots; L1, V1 and V2 one
+- id: PH-DISTINCT
+  holds: true
+  statement: the three-root state's two roots differ; V1's and V2's five lnphi are pairwise distinct
+- id: PH-NONZERO
+  holds: true
+  statement: 'every evaluated state has a departure enthalpy above 1 J/mol in magnitude: a dropped departure term changes
+    every h'
+- id: PH-GAP
+  holds: true
+  statement: 'V1''s and V2''s five lnphi differ pairwise by at least 1e6 times A07''s tolerance 1e-12: a permuted component
+    index fails A07'
+- id: DER-HOM-V1
+  holds: true
+  statement: at V1 every intensive property is homogeneous of degree zero in n (sum_j n_j dX/dn_j < 1e-25)
+- id: DER-GD-V1
+  holds: true
+  statement: at V1 the lnphi derivatives satisfy Gibbs-Duhem to 1e-25
+- id: DER-SYM-V1
+  holds: true
+  statement: at V1 d lnphi_i/d n_j is symmetric to 1e-25
+- id: DER-NZ-V1
+  holds: true
+  statement: 'at V1 no registered derivative vanishes (smallest magnitude above 1e-12): no assertion is met by an accidental
+    zero'
+- id: DER-HOM-V2
+  holds: true
+  statement: at V2 every intensive property is homogeneous of degree zero in n (sum_j n_j dX/dn_j < 1e-25)
+- id: DER-GD-V2
+  holds: true
+  statement: at V2 the lnphi derivatives satisfy Gibbs-Duhem to 1e-25
+- id: DER-SYM-V2
+  holds: true
+  statement: at V2 d lnphi_i/d n_j is symmetric to 1e-25
+- id: DER-NZ-V2
+  holds: true
+  statement: 'at V2 no registered derivative vanishes (smallest magnitude above 1e-12): no assertion is met by an accidental
+    zero'
+- id: FL-EQ-F1
+  holds: true
+  statement: at F1 the equilibrium row ln y* + lnphi_NH3^V - lnphi_NH3^L vanishes to 1e-40
+- id: FL-ROOT-F1
+  holds: true
+  statement: at F1 (100-250 bar) the equilibrium vapour's cubic has a single real root
+- id: FL-F1
+  holds: true
+  statement: flash F1 gives TWO_PHASE
+- id: FL-F2
+  holds: true
+  statement: flash F2 gives VAPOR by route undersaturated
+- id: FL-F3
+  holds: true
+  statement: flash F3 gives VAPOR by route no_liquid
+- id: FL-F4
+  holds: true
+  statement: flash F4 gives VAPOR_OR_TRACE by route dew_point
+- id: FL-EQ-F5
+  holds: true
+  statement: at F5 the equilibrium row ln y* + lnphi_NH3^V - lnphi_NH3^L vanishes to 1e-40
+- id: FL-ROOT-F5
+  holds: true
+  statement: at F5 (100-250 bar) the equilibrium vapour's cubic has a single real root
+- id: FL-F5
+  holds: true
+  statement: flash F5 gives TWO_PHASE
+- id: FL-F6
+  holds: true
+  statement: flash F6 gives VAPOR by route no_nh3
+- id: FL-F7
+  holds: true
+  statement: flash F7 gives LIQUID by route pure_nh3
+- id: FL-F8
+  holds: true
+  statement: flash F8 gives VAPOR by route pure_nh3
+- id: FL-F9
+  holds: true
+  statement: flash F9 gives VAPOR by route pure_nh3
+- id: FL-F10
+  holds: true
+  statement: flash F10 gives VAPOR by route supercritical
+- id: FL-EQ-F11
+  holds: true
+  statement: at F11 the equilibrium row ln y* + lnphi_NH3^V - lnphi_NH3^L vanishes to 1e-40
+- id: FL-ROOT-F11
+  holds: true
+  statement: at F11 (100-250 bar) the equilibrium vapour's cubic has a single real root
+- id: FL-F11
+  holds: true
+  statement: flash F11 gives TWO_PHASE
+- id: FL-F12
+  holds: true
+  statement: flash F12 gives ANY
+- id: FL-EQ-F13
+  holds: true
+  statement: at F13 the equilibrium row ln y* + lnphi_NH3^V - lnphi_NH3^L vanishes to 1e-40
+- id: FL-F13
+  holds: true
+  statement: flash F13 gives TWO_PHASE
+- id: FL-F14
+  holds: true
+  statement: flash F14 gives ZERO_FLOW
+- id: FL-INDEP
+  holds: true
+  statement: the equilibrium vapour composition does not depend on the feed's NH3 (F1 with doubled NH3)
+- id: FL-F5-ROOT
+  holds: true
+  statement: 'F5''s vapour holds NH3 at y* < 0.2: the H2-rich vapour, not the trivial liquid-like root'
+- id: SAT-240
+  holds: true
+  statement: PR saturation at 240 K solved to 1e-35 in lnphi
+- id: SAT-260
+  holds: true
+  statement: PR saturation at 260 K solved to 1e-35 in lnphi
+- id: SAT-268.15
+  holds: true
+  statement: PR saturation at 268.15 K solved to 1e-35 in lnphi
+- id: SAT-280
+  holds: true
+  statement: PR saturation at 280 K solved to 1e-35 in lnphi
+- id: SAT-300
+  holds: true
+  statement: PR saturation at 300 K solved to 1e-35 in lnphi
+- id: SAT-320
+  holds: true
+  statement: PR saturation at 320 K solved to 1e-35 in lnphi
+- id: SAT-350
+  holds: true
+  statement: PR saturation at 350 K solved to 1e-35 in lnphi
+- id: SAT-380
+  holds: true
+  statement: PR saturation at 380 K solved to 1e-35 in lnphi
+- id: SAT-400
+  holds: true
+  statement: PR saturation at 400 K solved to 1e-35 in lnphi
+- id: SAT-F3
+  holds: true
+  statement: '268.15 K: F3''s 2e5 Pa lies below and F1''s 1e7 Pa above PR''s NH3 saturation pressure'
+- id: RX-01
+  holds: true
+  statement: 'E nu = 0 for every element: the reaction conserves H, N, C and Ar'
+- id: RX-02
+  holds: true
+  statement: 'sum nu_i h_i^ig(298.15 K) = 2 dfH(NH3) exactly: PR-C1-ref-v1 is a formation datum'
+- id: BD-01
+  holds: true
+  statement: the least-squares extent of the perturbed outlet is xi_s + (nu . d)/14 = xi_s + 1e-6/14
+- id: BD-02
+  holds: true
+  statement: the projected outlet conserves every element exactly
+- id: BD-03
+  holds: true
+  statement: 'the isothermal stand-in at 673.15 K removes heat (Q < 0): the reaction is exothermic on the datum'
+- id: BD-04
+  holds: true
+  statement: the 53-bit projection of the registered raw outlet meets the 50-digit defect vector and conserves every element
+    to 1e-3 of A26's tolerance 1e-13 x n_tot,in
+- id: BD-05
+  holds: true
+  statement: every listed wrong projection (one-species extent, divisor 13, reversed sign, H2/N2 stoichiometry permuted, inert
+    defect dropped) moves the defect vector by at least 1e3 times A26's tolerance
+- id: BD-06
+  holds: true
+  statement: 'the adapter''s hard domain starts above NH3''s EOS critical temperature, so no inlet inside it flashes to a
+    liquid: liquid_at_reactor_inlet is reachable only outside it, and the boundary checks the inlet phase first'
+- id: OV-01
+  holds: true
+  statement: the CH4 DIPPR-107 fit stays within 0.5 % of NASA c_p on 250-1000 K
+- id: OV-02
+  holds: true
+  statement: Ar's NASA c_p is exactly 5/2 R, so its DIPPR-107 row is C1 = 2500 R, C2 = C4 = 0
+- id: DX-01
+  holds: true
+  statement: the registered discretization estimate at num_z = 800, recomputed from the probe record, rounds to spec section
+    10.1's printed ranges (p 0.62-0.78; NH3 high 1.0-1.4 %; xi high 1.4-1.9 %; T_out low 1.2-1.7 K)

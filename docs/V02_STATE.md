@@ -15,12 +15,12 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
-| M01 | Design | T08 | W22, W21 (part) | **resumed 2026-10-08** (specifier running). Was halted 2026-10-06: no specification yet; WIP note `docs/derivations/M01-spec-WIP.md` (`daea823` on `wp/M01`: measured findings, tentative decisions, where to resume — incl. a dossier §6 error: the reactor uses ideal-gas density). Resume: a fresh `specifier` with the brief and that WIP note, on `wp/M01` |
-| M02 | Build | M01 | W21 | not started |
-| M03 | Design | T08 | W24 (part) | not started |
-| M04 | Design | M02 | W23 | not started |
-| M05 | Design | M03, M04 | W24 | not started |
-| M06 | Build | T08 | W26, W27 | design done on `wp/M06` (`44098b0`, `03f3f13`: `docs/design/M06-web-shell.md`, ADR 0030 + ADR 0019 Amendment 3 Proposed, R-170…R-175). **WO-4…6 halted for budget**: untested WIP `f8fa5e5` on `wp/M06-build` (WO-4 partial, WO-5/6 not started; next steps in `docs/V02_DECISIONS.md`, "halt") (worktree `.claude/worktrees/agent-af89210400852f3dd`). Resume: opus-engineer on WO-4…6 from that branch; WO-1…3 on `wp/M06-contract` (Amendment 3 approved 2026-10-08) |
+| M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
+| M02 | Build | M01 | W21 | design + rulings R-234…237; WO-1…6 done (`2e63211`; **G10 all pass, A47 bitwise**); WO-7, 8 running; rulings round 2 R-250…252 (`e4d1b82`); then WO-9…13 |
+| M03 | Design | T08 | W24 (part) | all WOs + review fixes done (`71b3c37`); manifest `implemented` (`evidence/M03/fd16834…`) → `tested` on N1 + CI both runners (run 37846362678); merge waits for N1 |
+| M04 | Design | M02 | W23 | spec done; WO-1, 2, 3, 10 done (`7613b5e`, gate green); WO-4…9 after `wp/M02` (WO-7/8) is merged into `wp/M04`; WO-11 real run needs M02 WO-5 env (built) + Frank's N1 budget |
+| M05 | Design | M03, M04 | W24 | design done (`43651ce`: note, ADR 0038–0040, R-260…273; TRF composes per probe); WO-1…3 next (after `wp/M03` is merged into `wp/M05`); WO-4+ need M02 + M04 merged |
+| M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
 ## Milestone 0 (housekeeping)
@@ -41,15 +41,62 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
-Nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
+- **M03 N1:** accept the licences of an optional, non-default `nlp` extra; the [A10] audit (PASS, `docs/m03-ipopt-audit.md`
+  on `wp/M03-audit`) found exactly: EPL-2.0 (Ipopt, cyipopt), CeCILL-C (MUMPS, Scotch), public domain (PORD, SQLite),
+  Apache-2.0 (METIS 5, OpenSSL), Apache-2.0 WITH LLVM-exception (libomp), BSD-3 (OpenBLAS, SPRAL, hwloc, libuuid,
+  Pyomo), ASL BSD-3 + f2c notice, MIT (libxml2, libffi), **LGPL-2.1-only** (libiconv), **GPL-3.0 WITH GCC RLE from
+  conda-forge** (libstdc++, libgcc_s, libgfortran, libquadmath), PSF-2.0, bzip2, 0BSD, BSD-2, Zlib. Default: accept;
+  without it W24's M03 optimizer part stays BLOCKED.
+
+- **M01 (defaults set, work proceeds):** Q-F1 the reactor's inlet heat loss (23–33 % of reaction heat through the
+  inlet face) — intended, or Danckwerts? default: as pinned, reported; Q-N1 c_p source — default NASA TM-4513, not
+  Poling; Q-N2 fix F-R1/F-R2 upstream at a new pin? default: keep `6089593` + subclass/overlay; Q-N3 design grid —
+  default num_z = 800 (~9 s/solve); Q-N4 ship the real C1 records in the wheel — default yes, with citations; Q-N5
+  a structured `synthetic` field in ModelManifest — default no schema change in v0.2.
+
+- **W27 (defaults set):** Q3 up to 3 re-canaries within the approved budget; Q4 agent false verification reported
+  with its bound, not gated; Q5 run the approved 45 even if 0 cases are candidates (alternative: 15 runs).
+
+- **M02 (defaults set):** N1 accept "not a sandbox" (`external-subprocess-v1`) for local v0.2 use; N2 no CI job for
+  the reactor environment; N3 `v0.2-alpha-gate-v1` = v0.1 gate unchanged + W21, W22 met, no other claims (for
+  `0.2.0a1`); N4 ship the synthetic stand-in, listed synthetic; N5 defer the PR LIQUID regime and pure-NH₃ flash;
+  N6 no reactor warm start.
+
+- **M03 threading (new):** make single-threaded BLAS/OpenMP (`OMP_NUM_THREADS=1`) a product rule for NLP runs?
+  Default: recommended and recorded in every report, not enforced (it is reproducible and faster: 1.7 s vs 3.2–3.9 s).
+
+- **M04 (defaults set):** N1 experiment budget — 632 cold reactor runs for iteration 1 and up to two more. **Corrected
+  2026-10-08:** a real evaluation takes 25–45 s (not 9 s), so iteration 1 ≈ 4.4–7.9 h and three iterations ≈ 12–20 h of
+  local compute; N2 width limits 0.0025 in conversion, 1.5 K; N3 gradient limit 0.25; N6 M04 counts as `tested`
+  whatever the real verdict, and M05 uses the parent model if the surrogate is not promotable.
+
+- **`0.2.0a1` (alpha gate, ADR 0028; defaults set):** N3 claim set = V11–V20 re-judged + W21 + W22, W23–W27 not
+  claimed; carry the V14(b) FAIL acceptance into this release (dated after the alpha verdict); **carry V17 across the
+  surface changes R-192/R-234** as R-133 did (alternative: a new agent campaign, ≈USD 10); accept M02 N1 "not a sandbox"
+  for a published release; W21(f) read as adapter-reproduces-standalone + group tests + error travels + published
+  validation cited (the stronger reading would BLOCK W21 on the 4TU data statement); publish via release.yml with your
+  approval, marked pre-release. Preferences on defaults: cut `C_α` before M03 merges; freeze distribution paths from
+  `C_α` to dispatch.
+
+- **M05 (defaults set):** N-F1 objective = maximize liquid NH₃ product, reactor inlet T the only decision (alt: an
+  economic objective with your prices, making purge a second decision); N-F2 decision tolerance 0.5 K; N-F3 real-reactor
+  budget 400 experiments / 4 h; N-F6 decision box [643.15, 733.15] K.
+
+Otherwise nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
 `origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
 F5 education mode deferred.
 
 ## Next action
 
-**Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", max 4 agents).** Running: `specifier` M01 on `wp/M01`
-(worktree `.claude/worktrees/agent-a94d84cd26a293bc0`); `opus-engineer` M06 WO-4…6 on `wp/M06-build`
-(`agent-af89210400852f3dd`); `opus-engineer` M06 WO-1…3 on `wp/M06-contract` (`m06-contract`; Amendment 3 approved
-2026-10-08); `recon` M03 (digest in the session scratchpad, then an M03 specifier brief under
-`docs/briefs/`). Next when a slot frees: M03 specifier; M06 WO-14 (W27 acquisition) and WO-15 (W27 registration).
-In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`. Push `main` at milestones (authorised).
+Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
+
+| Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
+| --- | --- | --- |
+| `opus-engineer` | M02 merge main + WO-7, 8 (+9): C1 binding, PR units | `wp/M02` (`m02`) |
+| `opus-engineer` | merge main into `wp/M03` (merge-ready; M05 base) | `wp/M03` (`m03`) |
+| `opus-engineer` | alpha gate WO-1, 2, 3, 4, 7 (`v0_2_gate.py`, release.yml pre-releases) | `wp/V02-alpha-gate` (`alpha-gate`) |
+
+Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
+Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
+M03 WO-8 after N1; M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
+Push `main` at milestones (authorised).

@@ -27,6 +27,23 @@ run_step "ruff format" ruff format --check .
 run_step "mypy" mypy
 run_step "pytest" pytest -q
 
+# M06 (design note §8 Layer B, ADR 0030 D6): the web shell's Node tests, on Node's built-in
+# runner (a test-time tool; no package.json, no npm). The quoted glob is expanded by Node >= 22.
+web_tests() {
+    if [ "${OPENFLOWSHEET_SKIP_WEB_TESTS:-}" = "1" ]; then
+        echo "SKIPPED (explicit): OPENFLOWSHEET_SKIP_WEB_TESTS=1"
+        return 0
+    fi
+    local major
+    major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true)"
+    if [ -z "${major}" ] || [ "${major}" -lt 22 ]; then
+        echo "node ${major:-not found}: install Node >= 22 (a test-time tool only) or set OPENFLOWSHEET_SKIP_WEB_TESTS=1"
+        return 1
+    fi
+    node --test "tests/web/*.test.mjs"
+}
+run_step "node --test" web_tests
+
 if [ "${status}" -ne 0 ]; then
     echo "=== check.sh: FAILED ==="
 else

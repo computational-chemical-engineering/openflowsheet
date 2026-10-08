@@ -1,4 +1,7 @@
-# The v0.1 supported envelope (T08 release spec §5; T08 build-first spec §E.4, §E.5, B27).
+# The supported envelope (T08 release spec §5; T08 build-first spec §E.4, §E.5, B27). Since R-193
+# (2026-10-08) this file is v0.2's working envelope, held to the live code during v0.2 development;
+# the v0.1 envelope as released is `git show v0.1.1:benchmarks/t08/support_envelope.yaml`
+# (`v0.1-envelope-1`, release 0.1.0). It is finalised for 0.2.0 at M07.
 #
 # Machine-readable source of `docs/support-matrix.md`, which `scripts/t08_support_matrix.py --emit`
 # renders and `--check` holds to this file byte for byte (T08.A23). `--check` also compares the
@@ -16,22 +19,36 @@
 #   starts across runs" is no longer true; the GUESS-role half stands.
 # - L18 onward are rows the harvest (W2.2) needed that §5.5's seed does not carry.
 
-envelope_id: v0.1-envelope-1
-release: 0.1.0
+envelope_id: v0.2-envelope-dev
+release: 0.2.0.dev0
 
 axes:
   - id: property_model
     title: Property model
     statement: >-
-      SYN-001 only: ideal vapour, incompressible ideal liquid, VLE; reference convention
-      SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no critical region, no extra phase.
-    providers: [syn001]
+      SYN-001 for every revision, unit model and operation: ideal vapour, incompressible ideal
+      liquid, VLE; reference convention SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no
+      critical region, no extra phase. Since M01 the package also carries `pr-c1-v1`
+      (Peng–Robinson for the five C1 components, the light gases vapour-only, reference convention
+      PR-C1-ref-v1; ADR 0026), a provider no model of `MODEL_BUILDERS` binds yet (M02 adds its
+      units).
+    providers: [pr-c1-v1, syn001]
+    #: Shipped providers no model binds: each has its own surface and a limitation row (M01
+    #: review F1); the components and domain axes below are the bound provider's.
+    unbound_providers:
+      - id: pr-c1-v1
+        limitation: L42
+        caveat: >-
+          its own components (H2, N2, NH3, Ar, CH4) and domain (200–1000 K, 10⁴–3 × 10⁷ Pa),
+          validated for pure-component behaviour only, no mixture VLE validation, k_ij = 0
     reference_convention: SYN-001-ref-v1
     evidence:
       - check:T05.A23
       - check:K02.identity.property_package
       - doc:docs/derivations/SYN-001.md
       - doc:docs/adr/0011-unit-models-ph-closure-and-reaction-datum.md §D2
+      - doc:docs/adr/0026-c1-peng-robinson-vapour-only-route.md §D6
+      - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
 
   - id: components
     title: Components
@@ -198,8 +215,10 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty operations of
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of
       `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
+      With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of
+      them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4).
     operations:
       artifact_bytes: [python, cli, http]
       cancel_job: [python, cli, http, mcp]
@@ -211,6 +230,7 @@ axes:
       get_project: [python, cli, http, mcp]
       get_revision: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
+      list_audit: [python, cli, http]
       list_job_events: [python, cli, http, mcp]
       list_jobs: [python, cli, http, mcp]
       list_models: [python, cli, http, mcp]
@@ -226,7 +246,9 @@ axes:
       - check:T07.G11
       - check:T07.G14
       - check:T07.D15(b)
+      - tests/test_m06_http_contract.py::test_g2_every_ui_operation_answers_schema_valid_over_http
       - doc:docs/adr/0019-application-contract-v1.md
+      - doc:docs/web-shell.md
 
   - id: platforms
     title: Platforms
@@ -284,7 +306,7 @@ unsupported:
       `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, detail
       `task_unsupported(optimization)`, before any analysis; no v0.1 path returns
       `READY_FOR_OPTIMIZATION` (the value stays in the frozen enum, unused); the other studies
-      have no operation among the twenty of `OPERATIONS`; no optimality claim anywhere.
+      have no operation among the twenty-one of `OPERATIONS`; no optimality claim anywhere.
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported
       - tests/test_t08_w2_unsupported.py::test_u05_a_change_for_optimization_is_refused_audited
@@ -371,7 +393,11 @@ unsupported:
 
   - id: U14
     capability: External benchmark comparisons (CRAFTS / OpenIDAES-450)
-    outcome: Not run in v0.1 (M06/W27); nothing is registered or shipped for them.
+    outcome: >-
+      No comparison is run (W27's campaign is M07's, R-175). v0.2's adaptation records (provenance,
+      access report, registration; R-176 to R-179) are committed under
+      `benchmarks/m06/openidaes450/` only; nothing is registered in `benchmarks/registry.yaml` and
+      nothing ships in the package (R-194).
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered
 
@@ -675,11 +701,13 @@ limitations:
     text: >-
       The reference-tool data (the IDAES and DWSIM environments, their downloads and their
       outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's
-      own code, its package data and its licence files only, and every ComponentRecord is
-      synthetic (SYN-001).
+      own code, its package data (since M01 including the five C1 records, M01 spec §15 Q-N4's
+      default) and its licence files only, and every ComponentRecord is synthetic (SYN-001) or
+      one of M01's five real C1 records, each with its identifiers, rights,
+      per-parameter provenance and retrieval equality (M01 spec §3.5, R-158).
     evidence:
       - tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel
-      - tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_with_rights
+      - tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rights
       - doc:docs/adr/0006-distribution-data-rights.md §D1
   - id: L41
     text: >-
@@ -693,6 +721,59 @@ limitations:
       - tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none
       - doc:docs/adr/0007-reproducibility-certificate-policy.md §D4
       - doc:docs/derivations/T08-release-spec.md §5.5
+  - id: L42
+    text: >-
+      `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is
+      bound by no model of `MODEL_BUILDERS` yet (M02 adds its units) and does not share the axes'
+      components and domain: it takes the five real components H2, N2, NH3, Ar, CH4 (the only
+      liquid is pure NH3) over 200–1000 K and 10⁴–3 × 10⁷ Pa. It is validated for pure-component
+      behaviour only, within M01 spec §11's bands (NH3 saturation pressure within 2 %, liquid NH3
+      and light-gas ln φ within 0.05 of the reference equations of state). There is no mixture
+      VLE validation, and k_ij = 0 for every pair: k_H2–NH3 = 0.1 would move the separator's
+      vapour NH3 fraction y* by −3.1 % (about 3 % per 0.1; spec §4.2).
+    evidence:
+      - check:M01.A38
+      - check:M01.A39
+      - check:M01.A40
+      - doc:docs/derivations/M01-spec.md §11
+      - doc:docs/derivations/M01-spec.md §4.2
+      - doc:docs/derivations/M01-spec.md §17
+      - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
+  - id: L-WEB-1
+    text: >-
+      The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits
+      nothing (Solve and Cancel are its only effects), calls seventeen operations and no other,
+      computes only display arithmetic (design note §5.6), converts no unit, and judges nothing —
+      the scenario view displays run differences without a registered comparison or allowance.
+    evidence:
+      - tests/test_m06_static_scan.py::test_the_ui_calls_exactly_the_seventeen_operations
+      - doc:docs/web-shell.md
+      - doc:docs/design/M06-web-shell.md §5.6
+  - id: L-WEB-2
+    text: >-
+      The web shell's security is the local, single-user model: loopback by default, the bearer
+      token on every data request, a strict Content-Security-Policy; no TLS, no multi-user
+      hosting, and no security assessment beyond design note §7. Served with `--allow-remote`
+      over plain HTTP the page is an insecure context and record digests show "unchecked".
+    evidence:
+      - tests/test_m06_wo4_serving.py::test_a_shell_file_is_served_with_its_type_and_the_shell_headers
+      - doc:docs/design/M06-web-shell.md §7
+  - id: L-WEB-3
+    text: >-
+      The web shell is tested in headless Chromium only. No usability, workflow or screen-reader
+      study exists; accessibility is limited to status shown as glyph and word, controls that are
+      keyboard-reachable by construction, and the measured contrast of its colour tokens.
+    evidence:
+      - tests/test_m06_contrast.py::test_every_text_token_on_every_background_is_legible
+      - doc:docs/design/M06-web-shell.md §13
+  - id: L-WEB-4
+    text: >-
+      The agent history shows what the project recorded, not what an agent claimed; the
+      validation shown beside a commit is recomputed now by the current server, not the report the
+      agent received at commit time.
+    evidence:
+      - doc:docs/web-shell.md
+      - doc:docs/design/M06-web-shell.md §12
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -2424,6 +2505,149 @@ harvest:
   class: P
   to: []
   note: export lifecycles
+- manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
+  item: limitations[0]
+  sha256: ee46a433f1bfe6f19f00877097a0e961d9957f6e811812f936098abe5d743036
+  class: P
+  to: []
+  note: W21/W22 outside the requirements pattern; verdicts are the verdict lane's
+- manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
+  item: limitations[1]
+  sha256: fa167598b842a43c1743e38f28857c49119c0c77c146cbe272510fcd38aeafaa
+  class: P
+  to: []
+  note: reactor not re-run; adapter halves of A41-A48 are M02's planned acceptance (R-200)
+- manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
+  item: limitations[2]
+  sha256: 62596cb3d5b5da46150e63f324d86069ac5f972c58a89d607fc5311926d3fd6f
+  class: P
+  to: []
+  note: stand-in synthetic and unbound (U04 refuses it, M01.A49; R-199)
+- manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
+  item: limitations[3]
+  sha256: 9eae779984d4556e3924ac1f1ae7bb3178c8184c88d08947acb922ee63a2bd25
+  class: E
+  to:
+  - L42
+  note: W22 pure-component validation only, no mixture VLE validation, k_ij = 0 (user-facing; M01 review F1)
+- manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
+  item: limitations[4]
+  sha256: 30e9bb7b39330b81facad603f97bcf31d06f216f0ab3d50d8cf27df8d3ecb162
+  class: P
+  to: []
+  note: probe record from one machine; two record values registered within 10x
+- manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
+  item: limitations[5]
+  sha256: 598b9fdb4bc667f1d08467f8efe1f4f968b7e62259339ca9dc4ad082684aa7b5
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
+  item: checks[46]
+  check_id: M01.A47
+  sha256: db777b6096e1a0b78073ea34abae038ca3aad840853534902eb7fb3a87ed7767
+  class: P
+  to: []
+  note: A47 is M02's adapter half, no record half (spec §8.15, R-200)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[0]
+  sha256: ee46a433f1bfe6f19f00877097a0e961d9957f6e811812f936098abe5d743036
+  class: P
+  to: []
+  note: W21/W22 outside the requirements pattern; verdicts are the verdict lane's
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[1]
+  sha256: fa167598b842a43c1743e38f28857c49119c0c77c146cbe272510fcd38aeafaa
+  class: P
+  to: []
+  note: reactor not re-run; adapter halves of A41-A48 are M02's planned acceptance (R-200)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[2]
+  sha256: 62596cb3d5b5da46150e63f324d86069ac5f972c58a89d607fc5311926d3fd6f
+  class: P
+  to: []
+  note: stand-in synthetic and unbound (U04 refuses it, M01.A49; R-199)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[3]
+  sha256: 9eae779984d4556e3924ac1f1ae7bb3178c8184c88d08947acb922ee63a2bd25
+  class: E
+  to:
+  - L42
+  note: W22 pure-component validation only, no mixture VLE validation, k_ij = 0 (user-facing; M01 review F1)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[4]
+  sha256: 70203b5374073bd9457e7df458a852c22dda43ba103f0472694897c42afb48d4
+  class: P
+  to: []
+  note: probe record from one machine; two record values registered within 10x (A45 worst 2.98e-8, review F7)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[5]
+  sha256: 598b9fdb4bc667f1d08467f8efe1f4f968b7e62259339ca9dc4ad082684aa7b5
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: checks[46]
+  check_id: M01.A47
+  sha256: db777b6096e1a0b78073ea34abae038ca3aad840853534902eb7fb3a87ed7767
+  class: P
+  to: []
+  note: A47 is M02's adapter half, no record half (spec §8.15, R-200)
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[0]
+  sha256: 4aba0e645395a22514b5c74fdfccc5f2171c6c30dbdc3a89718668de116b6b52
+  class: E
+  to:
+  - L-WEB-1
+  note: L-WEB-1, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[1]
+  sha256: 94db9bd70f528a56b675a66fd3187d481e4ef25a8e5d7a382131f7e869138845
+  class: E
+  to:
+  - L-WEB-2
+  note: L-WEB-2, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[2]
+  sha256: 7e588e9b4901e9dbeff46bfd7081d8b74c8beb8d69dd1651a3b0ef88b331b267
+  class: E
+  to:
+  - L-WEB-3
+  note: L-WEB-3, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[3]
+  sha256: d5535ca4ef891366fc94078a6aec5c96bedd6fe67ff1ee9a698f525279bf5684
+  class: E
+  to:
+  - L-WEB-4
+  note: L-WEB-4, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[4]
+  sha256: 2068fc6ba734ac715ba1577b8e8c59e7860a97421b16557d66995e373d60c1d8
+  class: E
+  to:
+  - U14
+  note: W27 campaign is M07's
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[5]
+  sha256: 1dd3cd8e8b79cf6f8ec040e0e89b03b6f5d4bfae5449c94e00cf1a4071a661a0
+  class: P
+  to: []
+  note: requirement ids outside the manifest pattern
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[6]
+  sha256: df9cddfe81cb5dd15164205495c3e9d8ce53efc37911042f2e4b1ca5aef10e99
+  class: P
+  to: []
+  note: evidence class; review pending
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: checks[15]
+  check_id: M06.G16
+  sha256: c5b5f14b6d0264373d3ee589d5304a0c701cf100d444ac19a2c1bafed44dfa8a
+  class: E
+  to:
+  - U14
+  note: W27 campaign is M07's (G16)
 - manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
   item: limitations[0]
   sha256: 7add8a7d7f4abd01cae49e3d48a3108350c8baeaf86d0f6521794081802c3075

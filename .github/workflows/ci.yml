@@ -94,8 +94,24 @@ jobs:
           python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
           python scripts/t07_licence_inventory.py
 
+      # M06 (design note §8 Layer C, ADR 0030 D6): Node for check.sh's `node --test` step of the
+      # web shell's tests — a test-time tool, no packages installed. CI never sets
+      # OPENFLOWSHEET_SKIP_WEB_TESTS, so the step runs on both architectures.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      # M06 WO-11 (design note §8 A6, Layer C): on the x86-64 leg the browser smoke test must
+      # run — Chrome is on the GitHub Ubuntu image — so a missing browser fails it rather than
+      # skipping it. The aarch64 image has no browser; there it is skipped with its reason.
       - name: Run checks
-        run: ./scripts/check.sh
+        run: |
+          if [ "${{ matrix.runner }}" = "ubuntu-latest" ]; then
+            export OPENFLOWSHEET_REQUIRE_BROWSER=1
+            OPENFLOWSHEET_BROWSER="$(command -v google-chrome || command -v chromium || true)"
+            export OPENFLOWSHEET_BROWSER
+          fi
+          ./scripts/check.sh
 
       # Gate G05's second clause: two-platform structural equality. Each runner emits the R0
       # artifacts blueprint §8.3 promises identical across supported platforms; the `identity`
@@ -595,6 +611,29 @@ jobs:
               --out "$RUNNER_TEMP/rc-install/lock-$state-${{ matrix.runner }}.json" || status=1
           done
           exit $status
+
+      # M06 gate G10 (design note §8 Layer C): the installed wheel serves the diagnostic web
+      # shell. The server extra's requirements, at the lock's versions, join the clean
+      # environment; then `openflowsheet serve-http --ui` from outside the tree answers
+      # `GET /ui/` and each checked shell file with its type and the shell's CSP.
+      - name: M06 G10 — the installed wheel serves the web shell
+        if: always()
+        run: |
+          WHEEL=$(ls "$RUNNER_TEMP"/rc-dist/dist/*.whl)
+          "$RUNNER_TEMP/clean/bin/python" - "$WHEEL" > "$RUNNER_TEMP/server.txt" <<'PY'
+          import email.parser, sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as wheel:
+              (name,) = [n for n in wheel.namelist() if n.endswith(".dist-info/METADATA")]
+              metadata = email.parser.Parser().parsestr(wheel.read(name).decode())
+          print("\n".join(r.split(";")[0] for r in metadata.get_all("Requires-Dist")
+                          if 'extra == "server"' in r))
+          PY
+          cat "$RUNNER_TEMP/server.txt"
+          "$RUNNER_TEMP/clean/bin/python" -m pip install -c requirements.lock -r "$RUNNER_TEMP/server.txt"
+          mkdir -p "$RUNNER_TEMP/outside-ui"
+          cd "$RUNNER_TEMP/outside-ui"
+          "$RUNNER_TEMP/clean/bin/python" "$GITHUB_WORKSPACE/scripts/m06_web_serve_check.py" \
+            "$RUNNER_TEMP/outside-ui" | tee "$RUNNER_TEMP/rc-install/web-${{ matrix.runner }}.txt"
 
       # T08.A34 (step 10) on the certificate this step emitted.
       - name: T08.A34 — audit the smoke solve's certificate

@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "at": "2026-10-08T13:44:19.360493Z",
+      "capability_id": "local-owner",
+      "code": null,
+      "effect": "job:job-000001",
+      "idempotency_key": "fixture-results-solve",
+      "operation": "submit_job",
+      "outcome": "allowed",
+      "principal_id": "local-owner",
+      "request_sha256": "49a802c22fa773df99c898eed647f14163358569497cd1170b9708ce05f4051d",
+      "seq": 4
+    }
+  ],
+  "next_cursor": null
+}

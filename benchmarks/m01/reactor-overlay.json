@@ -1,0 +1,89 @@
+{
+ "record": "m01-reactor-overlay",
+ "version": 1,
+ "reactor_commit": "6089593464fc9bc2c0a0cb58e30ad5433ece6332",
+ "specification": "docs/derivations/M01-spec.md section 8.6; ADR 0027 D5",
+ "generator": "docs/derivations/scripts/m01_reference.py",
+ "meaning": "Rows the pinned reactor's property database lacks (it holds H2, N2, NH3 only). The adapter merges them into a copy of the pinned src/reactor/data/properties_database.json read from the pinned checkout at run time; the group's file is never copied into this repository. 'copy_from' names a row of that pinned file whose columns are copied (the transport surrogate).",
+ "species_properties": {
+  "Ar": {
+   "Mw": 0.039948,
+   "Tc": 150.687,
+   "Pc": 4863000.0,
+   "omega": -0.00219,
+   "c_p_C1": 20786.1565453831,
+   "c_p_C2": 0.0,
+   "c_p_C3": 1.0,
+   "c_p_C4": 0.0,
+   "c_p_C5": 1.0,
+   "dH_f": 0.0,
+   "copy_from": {
+    "row": "N2",
+    "columns": [
+     "wilke_C1",
+     "wilke_C2",
+     "wilke_C3",
+     "wilke_C4",
+     "therm_cond_C1",
+     "therm_cond_C2",
+     "therm_cond_C3",
+     "therm_cond_C4"
+    ]
+   }
+  },
+  "CH4": {
+   "Mw": 0.01604246,
+   "Tc": 190.564,
+   "Pc": 4599200.0,
+   "omega": 0.01142,
+   "c_p_C1": 33422.8,
+   "c_p_C2": 74982.0,
+   "c_p_C3": 2000.0,
+   "c_p_C4": 40670.1,
+   "c_p_C5": 1000.0,
+   "dH_f": -74534.0,
+   "copy_from": {
+    "row": "N2",
+    "columns": [
+     "wilke_C1",
+     "wilke_C2",
+     "wilke_C3",
+     "wilke_C4",
+     "therm_cond_C1",
+     "therm_cond_C2",
+     "therm_cond_C3",
+     "therm_cond_C4"
+    ]
+   }
+  }
+ },
+ "binary_properties": {
+  "H2/Ar": {
+   "copy_from": "H2/N2"
+  },
+  "N2/Ar": {
+   "copy_from": "N2/NH3"
+  },
+  "NH3/Ar": {
+   "copy_from": "N2/NH3"
+  },
+  "H2/CH4": {
+   "copy_from": "H2/N2"
+  },
+  "N2/CH4": {
+   "copy_from": "N2/NH3"
+  },
+  "NH3/CH4": {
+   "copy_from": "N2/NH3"
+  },
+  "Ar/CH4": {
+   "copy_from": "N2/NH3"
+  }
+ },
+ "provenance": {
+  "Mw, Tc, Pc, omega, dH_f": "benchmarks/m01/components.yaml (the M01 records)",
+  "Ar c_p": "5/2 R exactly (monatomic ideal gas; NASA TM-4513's Ar low range is the same constant)",
+  "CH4 c_p": "relative least-squares fit of the DIPPR-107 form with C3 = 2000 K and C5 = 1000 K fixed (M01's choice) to NASA TM-4513's c_p on 250-1000 K step 5 K; C1, C2, C4 rounded to 6 significant digits; max relative deviation 0.00424",
+  "transport columns and binary rows": "surrogates copied from the pinned database's N2 row and N2 pairs (M01's choice; its effect is measured by the reactor probe's inert-transport variant)"
+ }
+}

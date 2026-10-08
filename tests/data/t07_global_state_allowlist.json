@@ -140,6 +140,20 @@
       "patterns": ["cache"],
       "occurrences": 1,
       "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
+    },
+    {
+      "file": "thermo/pr_c1.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 3,
+      "justification": "M01 WO-1/WO-2: three nullary functions of immutable inputs, each computed once per process: load_records (the packaged C1 records' bytes, parsed and checked), parameters (the Peng-Robinson parameters, a pure function of those records) and _implementation_sha256 (the module source's SHA-256, the W0.5 pattern)."
+    },
+    {
+      "file": "models/c1/reactor_standin.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "M01 WO-6: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life (the W0.5 pattern of every model module)."
     }
   ]
 }
