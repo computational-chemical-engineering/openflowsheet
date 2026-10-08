@@ -1,12 +1,13 @@
 """T08 W4.2 (release spec §12 Q1, FD5): the runtime data travels in the package, unchanged.
 
-The schemas and the two registered YAML files the package reads at run time are package data
-(`openflowsheet.resources`), reached through `importlib.resources` via `_data/` links to the one
-repository copy of each. These tests hold the source-tree half: the links point at the registered
-files, every packaged file reads the repository's bytes, the package-data patterns cover exactly
-what is packaged, and no module goes back to walking up from `__file__` to the repository. The
-built half — the sdist's and the wheel's bytes equal the commit's, file by file — is T08.A43's
-`scripts/t08_dist.py`, and an installed wheel solving outside the tree is T08.A44's CI job.
+The schemas, the registered YAML files the package reads at run time and the web shell (`_data/web`
+→ `apps/web/`, M06) are package data (`openflowsheet.resources`), reached through
+`importlib.resources` via `_data/` links to the one repository copy of each. These tests hold the
+source-tree half: the links point at the registered files, every packaged file reads the
+repository's bytes, the package-data patterns cover exactly what is packaged, and no module goes
+back to walking up from `__file__` to the repository. The built half — the sdist's and the wheel's
+bytes equal the commit's, file by file — is T08.A43's `scripts/t08_dist.py`, and an installed wheel
+solving outside the tree is T08.A44's CI job.
 """
 
 from __future__ import annotations
@@ -21,23 +22,29 @@ import pytest
 from conftest import REPO_ROOT
 
 from openflowsheet.application.types import published_schemas
-from openflowsheet.resources import PACKAGED, packaged
+from openflowsheet.resources import DIRECTORIES, PACKAGED, packaged, repository_path
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import t08_dist  # noqa: E402
 
 DATA = REPO_ROOT / "src" / "openflowsheet" / "_data"
+#: Which files below each packaged directory travel: the published schemas only (not the
+#: directory's README or unit table), but every file of the web shell (M06, gate G10).
+DIRECTORY_FILES = {"schemas": "*.schema.json", "web": "**/*"}
 
 
 def _repository_files() -> dict[str, bytes]:
-    """Every file the package carries, by repository path, read from the repository."""
-    found = {
-        f"schemas/{path.name}": path.read_bytes()
-        for path in sorted((REPO_ROOT / "schemas").glob("*.schema.json"))
-    }
+    """Every file the package carries, by its path below `_data/`, read from its single
+    repository copy (`repository_path`: `web` is `apps/web`)."""
+    found: dict[str, bytes] = {}
     for relative in PACKAGED:
-        if relative != "schemas":
-            found[relative] = (REPO_ROOT / relative).read_bytes()
+        source = REPO_ROOT / repository_path(relative)
+        if relative in DIRECTORIES:
+            for path in sorted(source.glob(DIRECTORY_FILES[relative])):
+                if path.is_file():
+                    found[f"{relative}/{path.relative_to(source).as_posix()}"] = path.read_bytes()
+        else:
+            found[relative] = source.read_bytes()
     return found
 
 
@@ -45,12 +52,30 @@ def _repository_files() -> dict[str, bytes]:
 def test_each_packaged_path_is_a_link_to_the_single_repository_copy(relative: str) -> None:
     link = DATA / relative
     assert link.is_symlink(), f"{link} must be a link, not a copy (one copy, no rumour)"
-    assert link.resolve() == (REPO_ROOT / relative).resolve()
+    assert link.resolve() == (REPO_ROOT / repository_path(relative)).resolve()
+
+
+def test_only_the_web_shell_sits_at_another_repository_path() -> None:
+    assert set(DIRECTORY_FILES) == set(DIRECTORIES)
+    assert {r: repository_path(r) for r in PACKAGED if repository_path(r) != r} == {
+        "web": "apps/web"
+    }
+    with pytest.raises(KeyError):
+        repository_path("schemas/job.schema.json")
+
+
+def test_the_web_shell_holds_no_link_and_nothing_outside_the_packaged_globs() -> None:
+    """`serve-http --ui` serves the resolved directory without following links, and the wheel
+    carries bytes: a link inside `apps/web/` would serve in a checkout and not from a wheel."""
+    shell = REPO_ROOT / "apps" / "web"
+    assert [p for p in shell.rglob("*") if p.is_symlink()] == []
+    assert "web/index.html" in _repository_files()
 
 
 def test_every_packaged_file_reads_the_repository_bytes() -> None:
     expected = _repository_files()
-    assert len(expected) == 32 + 3
+    assert sum(1 for r in expected if r.startswith("schemas/")) == 32
+    assert sum(1 for r in expected if r in PACKAGED) == 3
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
     assert sorted(
@@ -88,6 +113,12 @@ def test_the_package_data_patterns_cover_exactly_what_is_packaged() -> None:
 def test_an_unlisted_path_is_refused() -> None:
     with pytest.raises(KeyError):
         packaged("benchmarks/registry.yaml")
+    with pytest.raises(KeyError):
+        packaged("webx/index.html")
+    assert (
+        packaged("web/index.html").read_bytes()
+        == (REPO_ROOT / "apps" / "web" / "index.html").read_bytes()
+    )
 
 
 def test_no_module_reads_schemas_or_benchmarks_by_walking_up_from_its_file() -> None:

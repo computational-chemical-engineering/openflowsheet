@@ -596,6 +596,29 @@ jobs:
           done
           exit $status
 
+      # M06 gate G10 (design note §8 Layer C): the installed wheel serves the diagnostic web
+      # shell. The server extra's requirements, at the lock's versions, join the clean
+      # environment; then `openflowsheet serve-http --ui` from outside the tree answers
+      # `GET /ui/` and each checked shell file with its type and the shell's CSP.
+      - name: M06 G10 — the installed wheel serves the web shell
+        if: always()
+        run: |
+          WHEEL=$(ls "$RUNNER_TEMP"/rc-dist/dist/*.whl)
+          "$RUNNER_TEMP/clean/bin/python" - "$WHEEL" > "$RUNNER_TEMP/server.txt" <<'PY'
+          import email.parser, sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as wheel:
+              (name,) = [n for n in wheel.namelist() if n.endswith(".dist-info/METADATA")]
+              metadata = email.parser.Parser().parsestr(wheel.read(name).decode())
+          print("\n".join(r.split(";")[0] for r in metadata.get_all("Requires-Dist")
+                          if 'extra == "server"' in r))
+          PY
+          cat "$RUNNER_TEMP/server.txt"
+          "$RUNNER_TEMP/clean/bin/python" -m pip install -c requirements.lock -r "$RUNNER_TEMP/server.txt"
+          mkdir -p "$RUNNER_TEMP/outside-ui"
+          cd "$RUNNER_TEMP/outside-ui"
+          "$RUNNER_TEMP/clean/bin/python" "$GITHUB_WORKSPACE/scripts/m06_web_serve_check.py" \
+            "$RUNNER_TEMP/outside-ui" | tee "$RUNNER_TEMP/rc-install/web-${{ matrix.runner }}.txt"
+
       # T08.A34 (step 10) on the certificate this step emitted.
       - name: T08.A34 — audit the smoke solve's certificate
         if: always()

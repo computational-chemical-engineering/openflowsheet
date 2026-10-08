@@ -15,10 +15,11 @@ failed on import of `run/compare.py`, because the policy was not on disk.
 copies — `_data/schemas` → `schemas/`, `_data/benchmarks/k04/reference_values.yaml` →
 `benchmarks/k04/reference_values.yaml`, and the same for `syn001` — and `pyproject.toml` declares
 them package data. One link's package path is not its repository path: `_data/web` → `apps/web/`
-(blueprint §15 puts the web client under `apps/`), recorded in `REPOSITORY_PATHS`. A source checkout and an editable install read the repository's files through
-the links; the sdist and the wheel carry the files' bytes, which the T08.A43 build check compares
-with the repository's file by file. No content, `$id` or identity-bearing byte is copied by hand
-or changed, so there is still one copy and no rumour (`run/compare.py`'s rule).
+(blueprint §15 puts the web client under `apps/`), recorded in `REPOSITORY_PATHS`. A source checkout
+and an editable install read the repository's files through the links; the sdist and the wheel carry
+the files' bytes, which the T08.A43 build check compares with the repository's file by file. No
+content, `$id` or identity-bearing byte is copied by hand or changed, so there is still one copy and
+no rumour (`run/compare.py`'s rule).
 """
 
 from __future__ import annotations

@@ -53,6 +53,11 @@ ALLOWED_APPLICATION = {
     "openflowsheet.application.operations",
     "openflowsheet.application.projection",
 }
+#: M06 §5.2: the web shell's server also builds on the HTTP binding and reads the packaged
+#: files through `openflowsheet.resources` (standard library only; held below).
+ALLOWED_PER_MODULE = {
+    "web.py": {"openflowsheet.application.bindings.http", "openflowsheet.resources"},
+}
 #: `anyio` too: §11.3 names `anyio.to_thread.run_sync`, the SDK's own dependency (W6b decision).
 ALLOWED_THIRD_PARTY = {"starlette", "uvicorn", "mcp", "anyio"}
 #: §11.6 (3): the members compared after removal — clock readings and host facts.
@@ -100,7 +105,15 @@ def test_a_binding_imports_only_the_dispatch_surface(module: str) -> None:
             continue
         if top in ALLOWED_THIRD_PARTY:
             continue
-        assert name in ALLOWED_APPLICATION, f"{module} imports {name}"
+        allowed = ALLOWED_APPLICATION | ALLOWED_PER_MODULE.get(module, set())
+        assert name in allowed, f"{module} imports {name}"
+
+
+def test_the_web_module_is_linted_and_resources_imports_only_the_standard_library() -> None:
+    assert "openflowsheet.application.bindings.http" in _imports(BINDINGS / "web.py")
+    resources = REPO_ROOT / "src" / "openflowsheet" / "resources.py"
+    for name in _imports(resources):
+        assert name == "__future__" or name.split(".")[0] in sys.stdlib_module_names, name
 
 
 def test_the_lint_sees_the_http_module_and_would_catch_a_violation(tmp_path: Path) -> None:
