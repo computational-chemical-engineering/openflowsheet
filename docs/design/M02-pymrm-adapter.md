@@ -351,7 +351,7 @@ with the same body is a cache hit, no execution.
 | `schemas/solve-event.schema.json` | `outcome` + `"COUPLING_NOT_CONVERGED"` |
 | `schemas/api-error.schema.json` | `code` + `"model_replacement_incompatible"`; `detail` doc names `report` |
 | `schemas/transaction-result.schema.json` | `invalidations` description widened (text only, §6.3) |
-| `schemas/application-results.schema.json` | `get_job_result` response `oneOf` gains the two experiment documents |
+| `schemas/job.schema.json` `$defs/job_result` | (as built, §14 B5) `get_job_result` `$ref`s `job_result`, so the widening is an optional `experiment` member and branch there; `application-results.schema.json` is unchanged |
 | unchanged | `model-manifest` (Q-N5's default holds), `run-manifest` (`reproducibility_class` already has R3, `artifacts` is an open map), `solution-certificate` (checks use category `residual`, `limitations` items are open), `replay-report` (`reasons` is open), `solve-policy`, `process-revision`, `change-set` |
 
 **ADR 0007 D2.3 (every float classified).** The new float fields are classified in a **separate addendum table**
@@ -811,7 +811,8 @@ W21 ("PyMRM boundary/accuracy/execution and provenance") is judged by the `verdi
 assertions plus G4 (e)–(g), G9 (b); accuracy — G10 (b), (e), (f), (i), §4.2's floor argument with G12's recorded
 ratios, the discretization estimate in every result; execution — G3, G4, G5, G11 (d), the isolation-profile
 statement; provenance — G6, G10 (g)/(h), G12's replay, the records' rights and fingerprints. **Proposed gate
-`v0.2-alpha-gate-v1`:** the v0.1 release gate unchanged (no relaxation) + M01 and M02 manifests `tested` + W21 and
+`v0.2-alpha-gate-v1`:** the v0.1 release gate unchanged (no relaxation) except its served-surface row, which on the
+v0.2 line pins v0.2's own surface (§14 B1) + M01 and M02 manifests `tested` + W21 and
 W22 verdicts `met`; the release notes state that reactor execution needs the separately built environment, is
 Linux-only, and is R3; the alpha claims nothing of W23–W27 beyond verdicts already `met` (M06's W26/W27 if judged).
 Frank decides (§12, N3).
@@ -870,3 +871,72 @@ Frank decides (§12, N3).
 - Not the convergence of coupled loops in general: the outer iteration is tested on the C1 loop and synthetic maps.
 - Not that the stand-in certifies anything: its numbers certify code paths only (R-199).
 - Not M07's loop design: `C1-LOOP-M02-v1` is a test case.
+
+---
+
+## 14. Rulings on the build (as built), 2026-10-08
+
+The build lane finished WO-1a, WO-2, WO-3 and WO-4 (`wp/M02` @ `02403d1`, gate green, 7178 passed; G3 met with worst
+cases 2.10 s / 3.0, 2.003 s / 2.5, 2.07 s / 3.0; G4 (a)–(i) met). Its log is `docs/design/M02-build-decisions.md`
+(D1–D13). Its D2, D3, D5, D6 and D9 are ratified as built: they place things, they do not change semantics. Four
+questions came back. Each ruling below is normative and amends the sections it names.
+
+**B1 (Q1) — The served MCP surface moves; R-192's pattern applies (R-234).** Every additive edit to an existing schema
+that a tool's `outputSchema` or `inputSchema` inlines moves the served tool-list digest. That is a consequence of
+transport parity (R-096), not a defect. M02 follows R-192 exactly:
+- `scripts/t08_rc.py`'s A49 constant (`R133_DESCRIPTIONS_SHA256`) is a 0.1 release record and is **not edited**. On a
+  v0.2 tree it reports the move, which is correct. R-133, R-134 and R-137 stay the record of the 0.1 surface.
+- `tests/test_t08_w2_surface_digest.py` gains a decomposition test bound to M02's additions alone: served digest with
+  M02's enum values, branches, members and `$defs` stripped = **the base's registered digest at merge time** (R-192's
+  `6c4375b4…` if M06's Amendment 3 is on `main` by then, else R-133's `171dd768…`); and the served descriptions
+  (texts) are byte-identical to the base's, so T08.A18 is not reopened. `8de83946…` (measured on
+  `wp/M02-wo1b-proposed`, without M06) is evidence for the decomposition, not a pin. M02's served digest is
+  registered beside the earlier ones at the merge commit, on the combined tree.
+- **What the v0.2 gate pins:** the served digest at the release commit, registered with an unbroken decomposition chain
+  back to R-133's `171dd768…`, one entry per surface change (R-192: M06; R-234: M02; later packages add theirs).
+  `v0.2-alpha-gate-v1`'s surface row is that pin, replacing the 0.1 line's A49 constant on the v0.2 line; the 0.1 A49
+  check is kept and its "moved" report is expected, not a failure of the v0.2 gate. §10.4 is amended accordingly.
+- WO-1b is un-parked: cherry-pick `631b1c7` onto `wp/M02` with this decomposition test and B2's allowance.
+
+**B2 (Q2) — `experiment`'s inlet is a model input, allowed by name (R-235).** ADR 0020 D7 forbids an operation to
+accept a solver state or matrix from outside, because such a value could reach a certified result without being
+re-derived. An experiment's inlet is the definition of the experiment: its record is identified by exactly those
+numbers, nothing is certified about any other state, and the orchestrator never reads it. It is allowed **by name and
+only there**: `test_t07_q26_no_external_state`'s allowed members gain `("submit_job", "body/inlet/n", "array")`, and its
+pinned scalar inventory gains `T`, `P` and `n_tubes` (under `body/inlet` and `body`). The scan stays strict everywhere
+else. A companion test proves the property that makes the allowance safe: no path from the `experiment` body reaches a
+solver start, a warm start or a coupling iterate (the body is read by `adapters/experiments` only, and the coupling
+driver builds its requests from its own inner solutions, §4.3). The rejected alternative, a reference to a stream of
+an existing run instead of numbers, would make M04's sampled inlets impossible. ADR 0020 D7's "the first operation
+that accepts one must add a W14 path test" does not apply, because the inlet is not a state, but the companion test is
+its analogue.
+
+**B3 (Q3) — Handshake failures: confirmed, with one amendment (R-236).** Confirmed as built (log D7, D8): a request whose
+handshake measured no fingerprint is keyed on `document_sha256({measured: false, variant_sha256, env_id, status})`, its
+outcome is transient and never cached, and the failed handshake attempts are retained (under `experiments/handshakes/`
+and as attempts of that key). A crashed handshake is retried before the key is built, so a successful retry's measured
+fingerprint is the one in the key. The unmeasured preimage can never equal a measured fingerprint's. **Amendment:** the
+handshake and the evaluation have **separate** retry budgets, each `max_retries` (1). The handshake belongs to the job
+and the evaluation to the experiment, so an experiment does not lose its retry because the job's handshake needed one.
+A job keeps its handshake outcome, success or failure, for its lifetime and does not handshake again (no repeated
+handshake per experiment), consistent with §6.1's frozen fingerprint. §3.3's table is read with this.
+
+**B4 (Q4) — The store gets an injected artifact sink, and no upward import (R-237).** `adapters` sits below `application`
+(blueprint §15; `tests/test_package_imports.py`). The lazy import of `application.store` is replaced:
+- `adapters/experiments/store.py` declares a protocol `ArtifactSink.record(*, job_id, kind, name, relpath, sha256,
+  size_bytes, parent_artifact_id) -> str` (returns the artifact id).
+- The application constructs the runner with a sink that writes rows into its `artifacts` table, inside the store's
+  transaction discipline. Tests and the in-memory path pass a list-backed sink.
+- `atomic_write_bytes` moves down to a lower-level module (`openflowsheet/_files.py`) and stays re-exported from
+  `application.store`, so its existing callers do not change.
+- `test_package_imports` forbids any import, lazy or not, from `openflowsheet.adapters` into
+  `openflowsheet.application` (an AST scan of function bodies too).
+
+The lazy import was rejected because it hides a layering cycle from the import-time check, and the store could not be
+tested without an application.
+
+**B5 — The note's premises the build corrected.** The `get_job_result` widening lives in `job.schema.json#/$defs/job_result`
+(§3.6 amended; log D3). `numerical_policy_external` lives in `benchmarks/m02/numerical_policy_external.yaml`, because the
+K04 file is byte-pinned (log D2; §3.6's intent, an addendum that leaves the policy id unmoved, holds). The real variant
+is created in WO-5 with the files it names (log D5). The in-process variant schema admits the stand-in's test-only
+perturbation fields, which no registered variant uses (log D6).

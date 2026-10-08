@@ -4348,3 +4348,98 @@ hard-domain field read by `Boundary`; widened to [0.25, 4] × only if both ends 
 **Watch for.** M05's true-model call accounting counts experiments (executions and hits), not property calls.
 
 ---
+
+## R-234 — M02's served-surface move follows R-192: the 0.1 A49 constant is not edited, a decomposition test binds the move to M02's additions, and the v0.2 gate pins its own surface through a chain back to R-133
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's Q1 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14 B1, §10.4 |
+| Evidence | `wp/M02-wo1b-proposed` @ `631b1c7`: 10 operations move, served `8de83946…`; with M02's additions stripped, the 20 operations' resolved responses equal their pre-M02 snapshots and the served list is byte-identical to the base |
+| Affected packages | M02, M06 (R-192), M07 (the v0.2 surface), W27 |
+
+**Decision.** `scripts/t08_rc.py`'s `R133_DESCRIPTIONS_SHA256` stays as it is: it is a 0.1 RC record. With M02's
+additions stripped, the served digest equals the base's registered digest at merge time, which is R-192's if M06 has
+landed and R-133's if not. The description texts are unchanged. M02's digest is registered at the merge commit.
+The v0.2 gate pins the release commit's served digest, with one decomposition entry per surface change back to
+R-133.
+
+**Rejected alternatives, and why.**
+- Editing the 0.1 constant: it rewrites a release record.
+- Pinning `8de83946…` now: it is not the merged tree's digest.
+- Keeping M02's members out of MCP `outputSchema`s: that breaks transport parity (R-096).
+
+**Watch for.** Every later surface change needs its own entry and test. A v0.2 gate that runs the 0.1 A49 check as a
+pass criterion would fail by design.
+
+---
+
+## R-235 — The `experiment` body's inlet (`body/inlet/n`, `T`, `P`, `n_tubes`) is a model input and is allowed by name under T07 Q26; nowhere else
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's Q2 |
+| Normative text | design note §14 B2; ADR 0020 D7 (read, not amended) |
+| Evidence | `test_t07_q26_no_external_state` fails on WO-1b only for `submit_job body/inlet/n` |
+| Affected packages | M02, M04 (sampled inlets) |
+
+**Decision.** Allowed by name, with a companion test proving that no path leads from the `experiment` body to a solver
+start, a warm start or a coupling iterate.
+
+**Rejected alternatives, and why.**
+- A body that references a stream of an existing run: M04 could not sample arbitrary inlets.
+- Treating the inlet as a solver state: it identifies the experiment, and it is certified about nothing else.
+
+**Watch for.** Any other numeric array in a request still fails Q26. An operation that does feed submitted numbers to a
+solver needs ADR 0020 D7's W14 path test.
+
+---
+
+## R-236 — A failed handshake keys its request on an explicit unmeasured fingerprint (transient, never cached); the handshake and the evaluation have separate retry budgets; a job handshakes once
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's Q3 (confirms its D7 and D8, amends the budget) |
+| Normative text | design note §14 B3, §3.3, §6.1 |
+| Evidence | `wp/M02` @ `6a1319c` (`backends.unmeasured_fingerprint`) |
+| Affected packages | M02 |
+
+**Decision.**
+- The key preimage is `{measured: false, variant_sha256, env_id, status}`.
+- A crashed handshake is retried before the key is built.
+- The handshake and the evaluation each have `max_retries` = 1.
+- A job keeps its handshake outcome for its lifetime.
+
+**Rejected alternatives, and why.**
+- A shared retry budget: a job-level failure would consume an experiment's retry.
+- Handshaking per experiment: it repeats a job-level check and could let the fingerprint vary within an attempt.
+
+**Watch for.** An unmeasured key must never be served from the cache.
+
+---
+
+## R-237 — The experiment store writes artifact rows through an injected `ArtifactSink`; `adapters` never imports `application`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's Q4 (replaces its D10) |
+| Normative text | design note §14 B4 |
+| Evidence | `adapters/experiments/store.py`'s lazy import of `application.store` at `6a1319c` |
+| Affected packages | M02, M04, M05 (later adapters) |
+
+**Decision.**
+- The application passes the runner a sink that writes `artifacts` rows.
+- Tests and the in-memory path pass a list-backed sink.
+- `atomic_write_bytes` moves to `openflowsheet/_files.py` and is re-exported from `application.store`.
+- `test_package_imports` forbids every import from `adapters` into `application`, including lazy ones.
+
+**Rejected alternatives, and why.** The lazy upward import hides a layering cycle from the import-time check, and the
+store cannot be tested without an application.
+
+**Watch for.** Later adapters must take their sinks by injection too.
+
+---
