@@ -449,3 +449,9 @@ Grep, don't read whole. Newest at the bottom.
   tolerance 0.5 K; N-F3 real-reactor budget 400 experiments / 4 h; N-F4 proceed in the audited env, merge with `nlp`
   undeclared if N1 is pending; N-F5 surrogate only if promoted; N-F6 decision box [643.15, 733.15] K; N-F7 no job op.
 - `opus-engineer` merging main into `wp/M03` (merge-ready; base for M05 WO-1…3).
+- Alpha gate WO-1, 2, 3, 4, 7 done on `wp/V02-alpha-gate` (`332e9d7`…`c35c50b`): `scripts/v0_2_gate.py` (104 tests;
+  11 deliberate rule breaks each caught), release.yml + changelog_section.py accept PEP 440 pre-releases (dry-run
+  default kept), v0.1.0 notes test reads PUBLIC_ROOT, v0.1.1 bundle fixture. check.sh 7861 passed. v0.1 gate and
+  t08_rc.py empty diff. A dry `t08_dist.py` at `0.2.0a1` passes T08.A43; clean pip install reports 0.2.0a1. Open: A42
+  (plain `replay` gives NOT_RUN; test judges `replay --rerun`). WO-5…11 need M02.
+- `reviewer` alpha gate (WO-2 + the rest) launched.

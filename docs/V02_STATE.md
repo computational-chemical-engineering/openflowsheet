@@ -94,7 +94,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `opus-engineer` | M02 merge main + WO-7, 8 (+9): C1 binding, PR units | `wp/M02` (`m02`) |
 | `opus-engineer` | merge main into `wp/M03` (merge-ready; M05 base) | `wp/M03` (`m03`) |
-| `opus-engineer` | alpha gate WO-1, 2, 3, 4, 7 (`v0_2_gate.py`, release.yml pre-releases) | `wp/V02-alpha-gate` (`alpha-gate`) |
+| `reviewer` | alpha gate (`v0_2_gate.py` etc.) | `wp/V02-alpha-gate` @ `c35c50b` |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
