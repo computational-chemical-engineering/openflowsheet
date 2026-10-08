@@ -63,7 +63,7 @@ from openflowsheet.thermo import (
     StreamState,
 )
 
-#: The records' repository path, one of `openflowsheet.resources.PACKAGED`.
+#: The records' repository path, one of `openflowsheet.resources.PACKAGED` (spec Q-N4's default).
 RECORDS_PATH: Final = "benchmarks/m01/components.yaml"
 
 #: The identity order of every C1 n-vector (spec §3.1).
@@ -163,10 +163,35 @@ def parse_records(data: bytes) -> C1Records:
     return C1Records(components=components, sha256=hashlib.sha256(data).hexdigest())
 
 
+def _checkout_records() -> Path | None:
+    """The repository's single copy of the records when this module runs from a source checkout
+    (`<root>/src/openflowsheet/thermo/pr_c1.py`), else `None` (`run/manifest.py`'s lock lookup)."""
+    here = Path(__file__).resolve()
+    root = here.parents[3]
+    if here.parents[1] != root / "src" / "openflowsheet":
+        return None
+    copy = root / RECORDS_PATH
+    return copy if copy.is_file() else None
+
+
 @cache
 def load_records() -> C1Records:
-    """The packaged C1 records (read once per process; the file is package data, not state)."""
-    return parse_records(packaged(RECORDS_PATH).read_bytes())
+    """The C1 records, read once per process (the file is data, not state).
+
+    Package data, spec §15 Q-N4's default. Where the package does not carry them (`PACKAGED`
+    without the entry: Q-N4 declined, which is a revert of commit `1621d65`), a source checkout
+    reads its single repository copy instead (review F4); an installed package without them has
+    no records and says so on first use.
+    """
+    try:
+        return parse_records(packaged(RECORDS_PATH).read_bytes())
+    except KeyError:
+        checkout = _checkout_records()
+    if checkout is None:
+        raise FileNotFoundError(
+            f"{RECORDS_PATH} is neither package data nor in a source checkout (spec §15 Q-N4)"
+        )
+    return parse_records(checkout.read_bytes())
 
 
 # -- the method's constants (spec §3.2, §4) -----------------------------------------------------
@@ -213,6 +238,12 @@ _C_MINUS: Final = 1.0 - _SQRT2
 #: a few reach the double floor from the closed form's ~1e-10, and the bound is declared, not a
 #: `while`.
 _POLISH_STEPS: Final = 8
+#: A polished candidate counts as a root only if the cubic there is within this many unit
+#: roundoffs of Σ|terms| (M01 review F2). Horner's own error is at most γ_6 Σ|terms| ≈ 6u Σ|terms|,
+#: and Newton's last few steps oscillate at that level, a few ulp of z, rather than stopping; near a
+#: double root the closed form puts candidates at the cubic's extremum, where Newton jumps away
+#: and its iterate after `_POLISH_STEPS` has a residual of order 10⁻².
+_RESIDUAL_ROUNDOFFS: Final = 16.0
 
 
 #: The flash's fixed bracket samples (spec §5.4 step 6): k/64 for k = 1..63, then 1 − 2^−j for
@@ -370,7 +401,15 @@ def _cubic(big_a: float, big_b: float) -> tuple[float, float, float]:
     )
 
 
-def _polish(z: float, c2: float, c1: float, c0: float) -> float:
+def _is_root(z: float, c2: float, c1: float, c0: float) -> bool:
+    """Whether the cubic at z is zero to within its own evaluation error (review F2)."""
+    residual = ((z + c2) * z + c1) * z + c0
+    size = ((abs(z) + abs(c2)) * abs(z) + abs(c1)) * abs(z) + abs(c0)
+    return abs(residual) <= _RESIDUAL_ROUNDOFFS * (2.0**-53) * size
+
+
+def _polish(z: float, c2: float, c1: float, c0: float) -> tuple[float, bool]:
+    """Newton on the cubic from z: the polished value, and whether it is a root (`_is_root`)."""
     for _ in range(_POLISH_STEPS):
         slope = (3.0 * z + 2.0 * c2) * z + c1
         if slope == 0.0:
@@ -379,15 +418,47 @@ def _polish(z: float, c2: float, c1: float, c0: float) -> float:
         if moved == z:
             break
         z = moved
-    return z
+    return z, _is_root(z, c2, c1, c0)
+
+
+def _deflated(root: float, c2: float, c1: float, c0: float) -> list[float]:
+    """`root` and the real roots of the quadratic left after dividing the cubic by (Z − root).
+
+    Z² + a1 Z + a0 with a1 = c2 + root (the roots sum to −c2) and a0 = −c0/root (their product is
+    −c0), which carries root's relative accuracy; solved by the cancellation-free formula. A
+    negative discriminant means the cubic's other two roots are a complex pair (review F2).
+    """
+    a1 = c2 + root
+    a0 = -c0 / root if root != 0.0 else c1
+    discriminant = a1 * a1 - 4.0 * a0
+    if discriminant < 0.0:
+        return [root]
+    t = -0.5 * (a1 + math.copysign(math.sqrt(discriminant), a1))
+    return [root, t, a0 / t if t != 0.0 else 0.0]
+
+
+def _isolated(candidates: list[tuple[float, bool]], c2: float, c1: float, c0: float) -> float:
+    """The best-conditioned root among polished candidates: the converged one of largest |slope|.
+
+    Near a double root the trigonometric form's isolated candidate is accurate (its cosine sits at
+    an extremum in θ) and simple, so it converges; were none to, the smallest residual is taken.
+    """
+    roots = [z for z, converged in candidates if converged]
+    if roots:
+        return max(roots, key=lambda z: abs((3.0 * z + 2.0 * c2) * z + c1))
+    return min((z for z, _ in candidates), key=lambda z: abs(((z + c2) * z + c1) * z + c0))
 
 
 def admissible_roots(big_a: float, big_b: float) -> tuple[float, ...]:
-    """The cubic's real roots Z > B, ascending (spec §4.3).
+    """The cubic's real roots Z > B, ascending and distinct (spec §4.3, §5.2 as amended by F2).
 
-    Three distinct real roots iff the discriminant is positive (spec §4.3; §5.2 lets the count be
-    decided by the discriminant). The roots come from the trigonometric (three) or Cardano (one)
-    closed form and are polished by Newton on the cubic itself.
+    The branch is chosen by the discriminant's sign: the trigonometric form gives three candidates,
+    Cardano's one. Each candidate is polished by Newton on the cubic itself and kept only if Newton
+    converged (`_polish`). Where the three-root branch keeps fewer than three distinct roots (a
+    near-double root, where the discriminant's sign is not resolved), the best-conditioned
+    root (`_isolated`) is deflated out and the other two come from the quadratic (`_deflated`); a
+    complex pair then leaves one root. Cardano's single root lies
+    outside the extremum interval and is simple, so it is kept as polished.
     """
     c2, c1, c0 = _cubic(big_a, big_b)
     discriminant = (
@@ -400,11 +471,15 @@ def admissible_roots(big_a: float, big_b: float) -> tuple[float, ...]:
         m = 2.0 * math.sqrt(-p / 3.0)
         theta = math.acos(max(-1.0, min(1.0, 3.0 * q / (p * m)))) / 3.0
         raw = [m * math.cos(theta - 2.0 * math.pi * k / 3.0) - shift for k in range(3)]
+        polished = [_polish(z, c2, c1, c0) for z in raw]
+        roots = sorted({z for z, converged in polished if converged})
+        if len(roots) < 3:
+            roots = sorted(set(_deflated(_isolated(polished, c2, c1, c0), c2, c1, c0)))
     else:
         half = math.sqrt(max(q * q / 4.0 + p**3 / 27.0, 0.0))
         u = math.cbrt(-q / 2.0 - math.copysign(half, q))
-        raw = [(u - p / (3.0 * u) if u != 0.0 else 0.0) - shift]
-    roots = sorted(_polish(z, c2, c1, c0) for z in raw)
+        z, _ = _polish((u - p / (3.0 * u) if u != 0.0 else 0.0) - shift, c2, c1, c0)
+        roots = [z]
     return tuple(z for z in roots if z > big_b)
 
 
@@ -676,9 +751,13 @@ class PrC1Provider:
                 "one.",
                 "The TP flash solves for the equilibrium vapour's NH3 fraction by fixed samples "
                 "and bisection; near NH3's EOS critical temperature a positive excursion narrower "
-                "than the samples' spacing could be missed (spec §17).",
-                "Near-double-root states are classified by the discriminant's sign; their "
-                "classification is not asserted (spec §5.2).",
+                "than the samples' spacing can be missed: measured at T = 362.5-401 K and "
+                "P = 1.00e7-1.38e7 Pa, where a feed with more NH3 than the missed y* (0.71-0.998) "
+                "comes back VAPOR instead of TWO_PHASE (spec §17).",
+                "Within about 1e-14 (relative, in P) of a spinodal the cubic has a near-double "
+                "root: only candidates that are roots to rounding are kept, and the pair comes "
+                "from the deflated quadratic, so a complex pair leaves one root; such states' "
+                "classification is not asserted (spec §5.2, Amendment 2).",
                 "No PH flash, no entropy, no k_ij.",
             ),
         )

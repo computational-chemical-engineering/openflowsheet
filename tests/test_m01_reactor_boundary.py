@@ -1,5 +1,7 @@
 """M01.A24 (unit half), A25-A32, A49, A51: the C1 reactor boundary and its synthetic stand-in (§8).
 
+A51 (iii) is restated and A51 (v) added by Amendment 2 (review F3, spec §20).
+
 Expectations: `benchmarks/m01/reference_values.yaml` → `closed_form.boundary` (the generator's
 stand-in and projection at 50 digits). The stand-in is synthetic: these tests certify the boundary
 code — mapping, projection, conventions, envelope, refusals — never the reactor.
@@ -400,14 +402,81 @@ def test_a51_ii_a_refused_stream_enthalpy_is_an_error_carrying_the_providers_mes
     assert _carries_no_outlet_values(result)
 
 
-def test_a51_iii_a_negative_inlet_flow_passes_the_inlet_flashs_refusal_through() -> None:
-    inlet = replace(INLET, n=(0.7, -0.235, 0.03, 0.015, 0.02))
-    assert INLET.n == (0.7, 0.235, 0.03, 0.015, 0.02)  # one defect: N2's sign
-    flashed = PROVIDER.flash(FlashRequest(state=inlet), CONTEXT)
-    result = _unit().evaluate(inlet)
-    assert (result.status, result.code) == ("out_of_domain", "out_of_domain")
-    assert result.message == flashed.message
+class _RefusesFlash:
+    """`pr-c1-v1`'s `describe` and `evaluate_phase`, but every `flash` refused (A51 (iii))."""
+
+    MESSAGE = "vapour_root_metastable: the double refuses every flash"
+
+    def describe(self) -> PropertyCapabilities:
+        return PROVIDER.describe()
+
+    def evaluate_phase(
+        self, request: PropertyRequest, context: EvaluationContext
+    ) -> PropertyResult:
+        return PROVIDER.evaluate_phase(request, context)
+
+    def flash(self, request: FlashRequest, context: EvaluationContext) -> FlashResult:
+        return FlashResult(
+            status="unsupported",
+            phase_signature=None,
+            vapor_fraction=None,
+            vapor=None,
+            liquid=None,
+            provider_id="pr-c1-v1",
+            reference_convention="PR-C1-ref-v1",
+            message=self.MESSAGE,
+        )
+
+
+def test_a51_iii_the_inlet_flashs_refusal_passes_through() -> None:
+    # Amendment 2 (review F3): a negative flow, this assertion's state before, is now refused by
+    # the boundary's own state-space check (A51 (v)); no inlet inside the state space and the hard
+    # domain is refused by pr-c1-v1's flash, so the pass-through is held with a refusing double.
+    unit = ReactorStandin(unit_id="R1", provider=_RefusesFlash(), context=CONTEXT)
+    result = unit.evaluate(INLET)
+    assert (result.status, result.code) == ("unsupported", "vapour_root_metastable")
+    assert result.message == _RefusesFlash.MESSAGE
     assert _carries_no_outlet_values(result)
+
+
+#: Review F3's inlets outside nTP-v1's state space, each with one defect (the three of the review's
+#: P8, then the remaining kinds); before Amendment 2 the dormant ones answered `ok`, `ZERO_FLOW`.
+OUTSIDE_THE_STATE_SPACE = {
+    "flows_summing_to_zero": replace(INLET, n=(0.5, -0.5, 0.0, 0.0, 0.0)),
+    "dormant_nan_temperature": StreamState(n=(0.0,) * 5, temperature=math.nan, pressure=1e7),
+    "dormant_negative_pressure": StreamState(n=(0.0,) * 5, temperature=673.15, pressure=-1.0),
+    "flowing_negative_n2": replace(INLET, n=(0.7, -0.235, 0.03, 0.015, 0.02)),
+    "flowing_nan_flow": replace(INLET, n=(0.7, 0.235, math.nan, 0.015, 0.02)),
+    "flowing_infinite_flow": replace(INLET, n=(math.inf, 0.235, 0.03, 0.015, 0.02)),
+    "dormant_infinite_pressure": StreamState(n=(0.0,) * 5, temperature=673.15, pressure=math.inf),
+    "dormant_zero_temperature": StreamState(n=(0.0,) * 5, temperature=0.0, pressure=1e7),
+}
+
+
+@pytest.mark.parametrize("case", sorted(OUTSIDE_THE_STATE_SPACE))
+def test_a51_v_an_inlet_outside_the_state_space_is_out_of_domain_before_the_dormant_check(
+    case: str,
+) -> None:
+    result = _unit().evaluate(OUTSIDE_THE_STATE_SPACE[case])
+    assert (result.status, result.code) == ("out_of_domain", "out_of_domain"), result.message
+    assert result.message.startswith("out_of_domain:") and "ADR 0001 D2" in result.message
+    assert _carries_no_outlet_values(result)
+
+
+def test_a51_v_a_dormant_inlets_labels_stay_free_inside_the_state_space() -> None:
+    # ADR 0001 D3.1: a dormant inlet's T and P are labels; outside the provider's box and the
+    # hard domain (50 K, 1 Pa) they are still answered ZERO_FLOW, and -0.0 is a zero flow.
+    dormant = StreamState(n=(0.0, -0.0, 0.0, 0.0, 0.0), temperature=50.0, pressure=1.0)
+    result = _unit().evaluate(dormant)
+    assert (result.status, result.code) == ("ok", "ZERO_FLOW")
+    assert result.outlet is not None
+    assert (result.outlet.temperature, result.outlet.pressure) == (50.0, 1.0)
+
+
+def test_a51_v_the_component_set_precedes_the_state_space() -> None:
+    inlet = OUTSIDE_THE_STATE_SPACE["flows_summing_to_zero"]
+    result = _unit().evaluate(inlet, ("N2", "H2", "NH3", "Ar", "CH4"))
+    assert (result.status, result.code) == ("unsupported", "component_set_mismatch")
 
 
 def test_a51_iv_a_liquid_inlet_outside_the_hard_domain_is_liquid_at_reactor_inlet() -> None:

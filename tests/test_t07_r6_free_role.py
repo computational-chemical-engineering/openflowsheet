@@ -137,7 +137,14 @@ def test_g_r7_3_each_mutation_validates_draft_with_its_reported_refusal(name: st
         assert f"{route.legacy.kind}({route.legacy.detail})" == legacy
 
     structure = route_structure(mutated(name))
-    assert set(structure) == {"not_run_reason", "hint"}
+    # ADR 0019 Amendment 3 (A3.1) adds three members, by addition only (M06 WO-1).
+    assert set(structure) == {
+        "not_run_reason",
+        "hint",
+        "validation_structural_report",
+        "rows",
+        "columns",
+    }
     assert detail in structure["not_run_reason"]
     assert structure["hint"] == reported.hint
 

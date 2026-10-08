@@ -187,8 +187,16 @@ def test_u13_no_mode_b_artifact_is_tracked() -> None:
 
 
 def test_u14_no_external_benchmark_comparison_is_registered() -> None:
+    # R-194: v0.2's W27 adaptation records (R-175 to R-179) live under one directory and nowhere
+    # else; no comparison is run, registered with the benchmarks, or shipped in the package.
     registry = (ROOT / "benchmarks" / "registry.yaml").read_text(encoding="utf-8").lower()
     assert "openidaes" not in registry
     assert "crafts" not in registry
-    shipped = [path for path in _tracked() if path.startswith(("src/", "benchmarks/"))]
-    assert not any("openidaes" in path.lower() or "crafts" in path.lower() for path in shipped)
+    adaptation = "benchmarks/m06/openidaes450/"
+    named = [p for p in _tracked() if "openidaes" in p.lower() or "crafts" in p.lower()]
+    shipped = [p for p in named if p.startswith(("src/", "benchmarks/"))]
+    assert all(p.startswith(adaptation) for p in shipped), shipped
+    assert not any(Path(p).name in {"run.json", "campaign.json"} or "/runs/" in p for p in shipped)
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8").lower()
+    assert "openidaes" not in pyproject
+    assert "benchmarks/m06" not in pyproject

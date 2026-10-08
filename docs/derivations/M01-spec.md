@@ -1,7 +1,8 @@
 # M01 specification — the C1 property route and the PyMRM reactor boundary
 
-**Status:** design lane (`specifier`), 2026-10-08. **Draft for review**, **amended once** (Amendment 1, 2026-10-08,
-§19: rulings on the build lane's measurements at `13bcef7`); the build lane implements against it, a
+**Status:** design lane (`specifier`), 2026-10-08. **Draft for review**, **amended twice** (Amendment 1, 2026-10-08,
+§19: rulings on the build lane's measurements at `13bcef7`; Amendment 2, 2026-10-08, §20: the closure of the design-lane
+review's findings, `docs/reviews/M01-review.md`); the build lane implements against it, a
 `reviewer` reviews the implementation, a `verdict` judges W22 and M01's part of W21 from the evidence.
 **Package:** M01 (plan v1.2 §4.4: *pin the selected PyMRM reactor and one required nonideal property route; derive
 process boundary mappings. Acceptance: model/source/data rights, numerical refinement evidence,
@@ -54,6 +55,7 @@ VLE with dissolved gases, columns, DWSIM, re-selecting the chemistry, production
 | 12 | The M01/M02 split and a synthetic stand-in reactor for the in-repo gate | §8.13–8.14 | ADR 0027 D8; R-168 |
 | 13 | Out-of-data-domain inlets are flagged, not refused | §8.12 | ADR 0027 D9; R-169 |
 | 14 | Amendment 1: A09, A12 and A26 re-stated on measured floors; request checks and boundary paths ratified (flash derivatives refused); the boundary's check order normative; where "synthetic" is written | §19 | ADR 0026, 0027 Amendment 1; R-195–R-200 |
+| 15 | Amendment 2: the review's findings F1–F5 closed (root convergence, the boundary's state-space check, Q-N4's reversal path, the flash's measured miss region, the harvest class) | §20 | R-197 (correction note); `docs/reviews/M01-review.md` |
 
 ## 3. Component records (`benchmarks/m01/components.yaml`)
 
@@ -224,9 +226,26 @@ Determining Δ's sign: the implementation may use the discriminant or the count 
 registered states the margin is wide (no registered state has a near-double root). A near-degenerate state is not
 registered and its classification is not asserted (§17).
 
+**Converged roots only (Amendment 2, review F2).** A polished candidate is a root only if the cubic there is zero to
+within its own evaluation error, |f(Z)| ≤ 16 u Σ|terms| (u = 2⁻⁵³; Horner's error is at most ≈ 6u Σ|terms|). Near a
+double root (within ≈ 10⁻¹⁴ of P, relative, of a spinodal) the trigonometric form puts two candidates at the cubic's
+extremum, where Newton jumps away and is still moving after its 8 steps; the review measured such iterates returned
+as roots with residuals up to 10⁻², and `evaluate_phase(LIQUID)` answering `ok` at pure NH₃, 400 K,
+10 025 791.149338482 Pa, where the cubic has one real root (0.486253) and a complex pair (0.222075 ± 2.8 × 10⁻⁸ i).
+Where the three-root branch keeps fewer than three distinct roots, the converged candidate of largest |f′| (the
+isolated, well-conditioned root) is divided out, and the quadratic left, Z² + (c₂ + r)Z − c₀/r, is solved by the
+cancellation-free formula: a negative discriminant means a complex pair, so one root. Cardano's single root is simple
+and is kept as polished. Measured (the review's P2 scan re-run, 20 000 random states): no returned value changes bit
+for bit; worst root error 8.6 × 10⁻¹⁶. Measured (±60 ulp of P around every spinodal crossing at 220–400 K, three
+compositions, 3 267 states): worst distance of a returned root from a true one 2.0 × 10⁻⁸ (the near-double root's own
+conditioning, √u), against 0.28 before; every returned value is a root to rounding.
+
 **Two admissible roots (Amendment 1).** The cubic at Z = B equals −2B² < 0 (claim PR-07) and tends to +∞, so its roots
 above B, counted with multiplicity, are odd in number: one or three. Two *distinct* admissible roots therefore occur
-only at a double root (Δ = 0), or where roundoff splits a near-double root. Whenever more than one admissible root is
+only at a double root (Δ = 0), or where roundoff splits a near-double root. *(Amendment 2, review F2: the two-root
+returns actually measured before were not a split double root but unconverged Newton iterates, the real part of a
+complex pair among them. Since Amendment 2 two distinct roots come only from the deflated quadratic with a
+non-negative discriminant: roots of the cubic to rounding, a near-double pair.)* Whenever more than one admissible root is
 found, the rules above apply as for three: smallest = liquid (pure NH₃), largest = vapour, and the guard compares the
 smallest with the largest. This is the continuous extension of the three-root rule; no registered state reaches it
 and it is not asserted.
@@ -509,13 +528,14 @@ the violated bounds), and the identity (reactor commit, pymrm version, overlay S
 | --- | --- | --- |
 | inlet flash (by `pr-c1-v1`) not VAPOR | `unsupported`, `liquid_at_reactor_inlet` | stand-in |
 | component set or order ≠ (H2, N2, NH3, Ar, CH4) | `unsupported`, `component_set_mismatch` | stand-in |
-| n_tot,in = 0 | `ok`, `ZERO_FLOW`: outlet +0.0, Q = +0.0, T_out = T_in, P_out = P_in, ξ = 0 | stand-in |
+| an inlet outside nTP-v1's state space: a flow negative or not finite, or T or P not finite or ≤ 0, dormant or not (Amendment 2, review F3) | `out_of_domain`, `out_of_domain` (ADR 0001 D2) | stand-in |
+| n_tot,in = 0 (every flow +0.0 or −0.0) | `ok`, `ZERO_FLOW`: outlet +0.0, Q = +0.0, T_out = T_in, P_out = P_in, ξ = 0 | stand-in |
 | y_NH₃,in < 10⁻⁹ (incl. zero NH₃) | `unsupported`, `nh3_below_trace` (the rate carries a negative power of a_NH₃, regularized in the code by A_SMALL = 10⁻⁴ bar; the group feeds 10⁻⁹) | stand-in |
 | T_in ∉ [573.15, 773.15] K or P_in ∉ [5×10⁶, 1.5×10⁷] Pa or H₂/N₂ ∉ [1, 4] or y_inert > 0.2 | `out_of_domain` (the adapter's hard domain, around the group's case envelope 548–698 K; M01 measured the start strategy at 653.15–693.15 K and 10⁷ Pa only — inside the hard domain a failure is `not_converged`, never a silent result; Q-F4) | stand-in |
 | |ΔP|/P_in > 10⁻³ | `unsupported`, `pressure_drop_exceeds_convention` | stand-in (reported ΔP), M02 (real) |
 | the reactor's result fails §8.7's acceptance | `not_converged`, `reactor_not_accepted(<stage>)`, no outlet values | M02 (real); stand-in boundary with an evaluation returning `NotAccepted` |
 | defect_rel > 10⁻⁶ | `not_converged`, `element_balance_defect` | stand-in (injected) |
-| the provider's inlet flash refuses (out of its domain, a negative or non-finite flow, a metastable vapour; Amendment 1) | the provider's status and reason code, passed through with its message | stand-in |
+| the provider's inlet flash refuses (out of its domain, a metastable vapour; Amendment 1. A negative or non-finite flow is the boundary's own step 2 since Amendment 2) | the provider's status and reason code, passed through with its message | stand-in boundary with a refusing provider |
 | the provider refuses Ḣ_in or Ḣ_out (`evaluate_phase` not `ok`; Amendment 1) | `error`, `stream_enthalpy_refused`, the provider's message carried | stand-in boundary with a refusing provider |
 | a liquid with dissolved light gas anywhere | not representable: refused by the provider (§5.3) | provider |
 | inside the hard domain but outside the kinetics' data domain (T_in 643.15–733.15 K, P_in 5×10⁶–10⁷ Pa, H₂/N₂ ∈ [1.5, 3]) | `ok` with `domain_status: extrapolated` and the list | stand-in |
@@ -525,12 +545,18 @@ its target, or the group's acceptance rejected its state), `certificate` (S3 con
 failed), `backflow` (u_ret ≤ 0 on a face), `nonpositive_flow` (an axial flow ≤ 0). M02 may register further stages
 (a timeout, say) in its own specification, each with a test; the boundary passes the stage through verbatim.
 
-**Check order (normative, Amendment 1).** (1) component set and order, including the flow vector's length
-(`component_set_mismatch`); (2) a dormant inlet (`ZERO_FLOW`, before any composition is formed; its T and P are
-labels, ADR 0001 D3.1); (3) the inlet's TP flash by `pr-c1-v1` (a refusal passes through; a result other than VAPOR is
-`liquid_at_reactor_inlet`); (4) the NH₃ trace; (5) the hard domain; (6) the evaluation (`NotAccepted` →
-`reactor_not_accepted(<stage>)`); (7) the pressure convention; (8) the element defect; (9) the two enthalpy flows
-(`stream_enthalpy_refused`); (10) `ok`, with the data-domain flag. *Why this order:* every other registered refusal
+**Check order (normative, Amendment 1; step 2 inserted by Amendment 2).** (1) component set and order, including the
+flow vector's length (`component_set_mismatch`); (2) nTP-v1's state space: every flow finite and ≥ 0 (−0.0 is zero),
+T and P finite and > 0, else `out_of_domain`, `out_of_domain` (ADR 0001 D2; Amendment 2, review F3); (3) a dormant
+inlet (`ZERO_FLOW`, before any composition is formed; its T and P are labels, ADR 0001 D3.1, free within the state
+space); (4) the inlet's TP flash by `pr-c1-v1` (a refusal passes through; a result other than VAPOR is
+`liquid_at_reactor_inlet`); (5) the NH₃ trace; (6) the hard domain; (7) the evaluation (`NotAccepted` →
+`reactor_not_accepted(<stage>)`); (8) the pressure convention; (9) the element defect; (10) the two enthalpy flows
+(`stream_enthalpy_refused`); (11) `ok`, with the data-domain flag. *Why step 2 precedes the dormant check (Amendment
+2):* `is_dormant` tests n_tot = 0, so (0.5, −0.5, 0, 0, 0) was answered `ZERO_FLOW` with an all-zero outlet, against
+the reactor's own H₂ and N₂ rows (§8.2), and an all-zero inlet with T = NaN was answered `ok` with T_out = NaN; the
+provider refuses both (its domain check precedes its dormancy check, A50), and the boundary now does too. *Why this
+order:* every other registered refusal
 has a single defect and gives its own code under any order. A liquid inlet cannot have a single defect. No liquid
 exists inside the hard domain: its lowest inlet temperature, 573.15 K, lies above NH₃'s T_c,EOS = 405.55 K (claim
 BD-06), and the flash is VAPOR there for any feed (§5.4 step 4). If the hard domain came before the inlet phase,
@@ -808,8 +834,11 @@ machine (the probe's environment record); M02's adapter must reproduce them.
 - **M01.A43** — Repeatability: two repeats at the design grid are bitwise identical (one machine, one environment).
 - **M01.A44** — The backflow override is inert: replacing it by `[0, 0, 0, 1, 0]` leaves the outlet bitwise unchanged,
   and u_ret > 0 on every face.
-- **M01.A45** — Raw element defects |Δ(H, N, C, Ar)|/inlet ≤ 10⁻⁷ at every accepted grid (measured ≤ 2.7 × 10⁻⁸ at
-  800, ≤ 9.2 × 10⁻¹⁰ at 100–400); the refusal threshold 10⁻⁶ of §8.9 sits 37 times above the design grid's value.
+- **M01.A45** — Raw element defects |Δ(H, N, C, Ar)|/inlet ≤ 10⁻⁷ at every accepted grid (measured at 800: 2.66 × 10⁻⁸
+  at the nominal T_in 673.15 K, 1.72 × 10⁻⁸ at 653.15 K and 2.98 × 10⁻⁸ at 693.15 K; ≤ 9.2 × 10⁻¹⁰ at 100–400); the
+  refusal threshold 10⁻⁶ of §8.9 sits 37 times above the nominal design-grid value and 33.6 times above the worst
+  accepted one. *(Amendment 2, review F7: the draft's "≤ 2.7 × 10⁻⁸ at 800" and "37 times" held at the nominal T_in
+  only.)*
 - **M01.A46** — |ΔP|/P_in ≤ 10⁻³ at every registered point (measured 4.90–5.06 × 10⁻⁵).
 - **M01.A47** — M02's adapter reproduces the probe's design-grid nominal outlet (as amended by Amendment 1). The
   outlet means the evaluation's raw `TubeOutlet`, at N_tubes = 1, before projection: five flows and T_out.
@@ -854,8 +883,16 @@ machine (the probe's environment record); M02's adapter must reproduce them.
   - (ii) a provider whose `flash` answers as `pr-c1-v1` but whose `evaluate_phase` refuses → `error`,
     `stream_enthalpy_refused`, and the message contains the provider's message;
   - (iii) V1's inlet with N₂ = −0.235 → `out_of_domain`, code `out_of_domain`, passed through from the inlet flash;
+    *(Amendment 2, review F3: that state is now refused by the boundary's own step 2, see (v); (iii) holds the
+    pass-through with a provider whose `flash` refuses the nominal inlet: its status, code and message come back
+    unchanged. No inlet inside the state space and the hard domain is refused by `pr-c1-v1`'s flash.)*
   - (iv) the check order: F7's state as the inlet → `liquid_at_reactor_inlet`, although it is also outside the hard
     domain (A30's case; claim BD-06).
+  - (v) (Amendment 2, review F3) each inlet outside nTP-v1's state space → `out_of_domain`, code `out_of_domain`, the
+    message citing ADR 0001 D2, no outlet values: n = (0.5, −0.5, 0, 0, 0); an all-zero inlet with T = NaN, with
+    P = −1 Pa, with P = +∞, with T = 0 K; V1's inlet with N₂ = −0.235, with NH₃ = NaN, with H₂ = +∞. A dormant inlet at
+    50 K and 1 Pa (with a −0.0 flow) is still `ZERO_FLOW` with those labels, and a permuted component set still gives
+    `component_set_mismatch` first.
 
   No refusal carries outlet values. Exact.
 - **M01.A52** — The probe record, as committed, holds §8.15's record halves:
@@ -1069,6 +1106,11 @@ units under §7's rules, the loop.
   with citations; NASA TM-4513 a U.S. Government work) as package data, ending v0.1's "no third-party data in sdist or
   wheel" (T08.A32). *Default:* ship them with their citations and rights fields; M07's release specification records
   it; if Frank declines, the provider reads the records from a user-supplied path and the wheel carries none.
+  *(Amendment 2, review F4: the reversal path as built. The default is the single commit `1621d65`; declining is a
+  revert of it, after which `PACKAGED` lacks the entry and `load_records` reads the source checkout's single copy
+  instead, tested by simulating the absent entry. An installed package then carries no records, and the provider
+  fails on first use with `FileNotFoundError` naming Q-N4. The "user-supplied path" for an installed package is not
+  built: it would be a new configuration surface, specified with M07's release decision if Frank declines.)*
 - **Q-N1 (needs Frank's preference — rights).** Poling 5th ed. c_p polynomials could replace NASA TM-4513 if Frank
   wants the "properties book" source; it needs his view on redistributing book tables. *Default:* NASA (no grant needed).
 - **Q-N2 (needs Frank's preference).** The F-R1/F-R2 findings and the overlay concern the group's code: Frank may prefer a
@@ -1136,6 +1178,19 @@ the mapping is 1 ulp off). Reversible by: A47 and §8.15 (R-200).
   reactor or the chemistry.
 - **Not the near-critical phase behaviour.** F12 registers what the rules give; near-double-root classifications are not
   asserted; the flash's fixed samples could miss a positive excursion of h narrower than their spacing (only near T_c,EOS).
+  *Measured region (Amendment 2, review F5).* A miss is a state the flash answers VAPOR (route `no_liquid`) although
+  pure liquid NH₃ is stable and h ≥ 0 on a short interval of y between two samples, just before the vapour branch ends
+  (the largest root jumps from Z ≈ 0.35 to the liquid branch); the convention's answer there is TWO_PHASE with y* at
+  the interval's start, contrary to ADR 0026 D2's "smallest root on (0, 1)". The review found 5 of 497 random relevant
+  states (200–405.5 K, 10⁶–3 × 10⁷ Pa) at 373–398 K and 1.05–1.24 × 10⁷ Pa (example: 393.0590 K, 1.0675 × 10⁷ Pa, IDAES
+  light-gas proportions: h ≥ 0 on y ∈ [0.9558, 0.9676], between samples 61/64 and 62/64). The build lane's map, a
+  0.5 K × 0.01-decade grid over 340–405.5 K and 4.0 × 10⁶–1.78 × 10⁷ Pa with random light-gas proportions at each
+  point, NH₃ 50 mol/s, h scanned on 3 000 points of y ∈ [0.4, 1), found 26 misses in 1 744 relevant states, all at
+  **T = 362.5–401 K and P = 1.00–1.38 × 10⁷ Pa**, with the missed crossing at **y = 0.71–0.998** and h at most
+  9.6 × 10⁻³ (a further 4 000-state random scan: 1 of 347, at 397.0 K, 1.04 × 10⁷ Pa). None was found outside that
+  box. *Effect:* only a feed whose NH₃ mole fraction exceeds the missed y* (≥ 0.71) is affected; a leaner feed is
+  undersaturated and VAPOR is the convention's answer for it too. No registered state and no loop state lies in the box
+  (the separator runs at 268.15 K).
 - **Not the k_ij.** k_ij = 0 is a choice with a stated effect, not a fitted or validated value.
 - **Not the PR liquid density or h_vap** for any purpose beyond §11's statement.
 - **Not K_NH₃ against Rossetti 2006** (R-152: a decision, not a verification).
@@ -1146,7 +1201,9 @@ the mapping is 1 ulp off). Reversible by: A47 and §8.15 (R-200).
   only the manifest's structured fields cannot tell a synthetic model from another.
 - **Not the order of the provider's request checks, nor its root rules at two admissible roots** (Amendment 1; §5.2,
   §5.3). Both are ratified as built. Neither is asserted, because no registered state has two defects or a
-  near-double root.
+  near-double root. *(Amendment 2, review F2: what is asserted near a double root is that every returned value is a
+  root of the cubic to rounding, across ±60 ulp of the review's 400 K crossing, and that the review's counterexample
+  has one root and no liquid; which label a near-double pair gets is still not.)*
 
 ## 18. Corrections and the WIP note's leads, re-measured
 
@@ -1218,3 +1275,20 @@ value moves. `--check` reproduces the files byte-for-byte.
   - the probe record is a gate-checked regression (A34's hash, plus A52), never re-run by the gate;
   - A48's estimate is now machine-readable for M02's results (DX-01), and §10.1's T_out range is corrected from
     1.3–1.7 K to 1.2–1.7 K.
+
+## 20. Amendment 2 (2026-10-08): review findings
+
+The design-lane review of the implementation (`docs/reviews/M01-review.md`, at `c2cf045`) found one must-fix (F1) and
+four should-fixes (F2–F5), each with a prescribed fix. The build lane closed them, one commit per finding, and changed
+the normative text in place, marked "Amendment 2". No closed form, registered state, expectation value, tolerance or
+frozen interface changes; every registered value (A05–A11, A15–A22, A37) is bit-identical before and after (every
+output of `evaluate_phase` and `flash` at the registered states compared as `float.hex`).
+
+| Finding | Closure | Where |
+| --- | --- | --- |
+| F1 (must-fix): the harvest row of the M01 manifest's `limitations[3]` (no mixture VLE validation, k_ij = 0) was P, but `pr-c1-v1` is shipped and listed on the envelope's property-model axis, so the item is user-facing (T08 §5.7) | Envelope row L42 states `pr-c1-v1`'s own components and domain, pure-component validation only (§11), no mixture VLE validation, k_ij = 0 and its effect (−3.1 % in y* at k_H₂–NH₃ = 0.1), and that no model binds it. The harvest row is E → L42. The axis gains `unbound_providers` (checked: a listed provider, an existing L-row, a caveat), so the rendered matrix lists `pr-c1-v1` on its own line with its caveat, not beside the axes' components and domain. M01's harvest tally is 1 E, 6 P. | `benchmarks/t08/support_envelope.yaml` L42; `docs/support-matrix.md` (rendered); `scripts/t08_support_matrix.py` |
+| F2 (should-fix): `admissible_roots` returned unconverged Newton iterates as roots within ≈ 10⁻¹⁴ of a spinodal, and `evaluate_phase(LIQUID)` answered `ok` at a state with no liquid root | A candidate is kept only if it is a root to rounding; a three-root branch left with fewer than three deflates the best-conditioned root and solves the quadratic. The review's counterexample and a ±60-ulp sweep are tests. R-197's rationale for the two-root rule is corrected (a note appended to R-197); the rule stands. | §5.2, §17; `pr_c1.py` `admissible_roots`; `tests/test_m01_provider.py::test_f2_*`; R-197 |
+| F3 (should-fix): the boundary tested dormancy before the inlet's state space, so (0.5, −0.5, 0, 0, 0) and an all-zero inlet with T = NaN answered `ok` | Step 2 of §8.12's order (state space: flows finite and ≥ 0, T and P finite and > 0 → `out_of_domain`) inserted before the dormant check, in the text and in `Boundary.evaluate`. A51 (iii) is restated with a refusing-flash double, because its negative-flow state now stops at step 2; A51 (v) is new. BD-06 and A51 (iv) are unaffected: F7's state is inside the state space, so the inlet phase still precedes the hard domain. | §8.12, A51; `boundary.py` `state_space_violation`; R-198 (note) |
+| F4 (should-fix): "declining Q-N4 is a revert of `1621d65`" was false, because the loader reads through `packaged()`, which raises `KeyError` without the entry | `load_records` falls back to the source checkout's single copy when `PACKAGED` lacks the entry, and raises `FileNotFoundError` naming Q-N4 outside a checkout. Tested by simulating the absent entry; the revert itself was trial-applied to a copy of the tree, and the M01 and T08 package-data tests pass there. The "user-supplied path" for installed packages stays unbuilt (Q-N4 states so). | §15 Q-N4; `pr_c1.py` `load_records`; `tests/test_m01_records.py::test_f4_*` |
+| F5 (should-fix, documentation): the flash's fixed samples miss a genuine crossing near T_c,EOS; the declared limitation did not say where | §17's limitation quantified with the review's measurement and the build lane's map (T = 362.5–401 K, P = 1.00–1.38 × 10⁷ Pa, missed y* = 0.71–0.998, h ≤ 9.6 × 10⁻³), and `describe().numerical_limitations` states the same box. The optional detection of the branch switch (the review's design-lane option) is not built. | §17; `pr_c1.py` `describe` |
+| F7 (note): A45's measured value and wording held at the nominal inlet only | A45's parenthesis states the three design-grid values (2.66, 1.72, 2.98 × 10⁻⁸) and both margins (37× nominal, 33.6× worst); the manifest's limitation on A45 quotes the worst accepted value, 2.98 × 10⁻⁸, which is what its A45 check measures. No tolerance changes. | A45; `scripts/m01_evidence_manifest.py` |

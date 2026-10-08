@@ -57,7 +57,8 @@ CI: Final = ROOT / ".github" / "workflows" / "ci.yml"
 
 #: Spec §5.1: the envelope's top-level keys, in order.
 TOP_LEVEL: Final = ("envelope_id", "release", "axes", "unsupported", "limitations", "harvest")
-ENVELOPE_ID: Final = "v0.1-envelope-1"
+#: R-193: v0.2's working envelope; v0.1's (`v0.1-envelope-1`) is the one at tag v0.1.1.
+ENVELOPE_ID: Final = "v0.2-envelope-dev"
 #: The CI runners and the architecture each is (`.github/workflows/ci.yml`'s matrix).
 RUNNER_ARCHITECTURE: Final[Mapping[str, str]] = {
     "ubuntu-latest": "x86-64",
@@ -178,6 +179,17 @@ def check_structure(envelope: Mapping[str, Any]) -> list[str]:
         for row in envelope.get(section) or ():
             if not row.get("evidence"):
                 problems.append(f"{section}.{row.get('id')}: no evidence (spec §5.1)")
+    limitations = {row.get("id") for row in envelope.get("limitations") or ()}
+    property_model = [a for a in envelope.get("axes") or () if a.get("id") == "property_model"]
+    for axis in property_model:
+        for provider in axis.get("unbound_providers") or ():
+            where = f"property_model.unbound_providers.{provider.get('id')}"
+            if provider.get("id") not in axis.get("providers", ()):
+                problems.append(f"{where}: not a listed provider")
+            if provider.get("limitation") not in limitations:
+                problems.append(f"{where}: no limitation row {provider.get('limitation')!r}")
+            if not str(provider.get("caveat", "")).strip():
+                problems.append(f"{where}: no caveat")
     return problems
 
 
@@ -207,8 +219,12 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
         for key in claimed
         if claimed[key] != facts[key]
     ]
-    if len(claimed["operations"]) != 20 or len(claimed["models"]) != 13:
-        problems.append("A20: spec §9 registers 20 operations and 13 models")
+    # ADR 0019 Amendment 3 (M06, approved by Frank on 2026-10-08) adds `list_audit` to spec §9's
+    # 20 operations; this file is v0.2's working envelope (R-193), v0.1's stays as released.
+    if len(claimed["operations"]) != 21 or len(claimed["models"]) != 13:
+        problems.append(
+            "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models"
+        )
     return problems
 
 
@@ -334,16 +350,25 @@ def render(envelope: Mapping[str, Any]) -> str:
         "- **Solve policies:** "
         + ", ".join(f"`{p}`" for p in _axis(envelope, "solve_policies")["members"])
     )
+    property_model = _axis(envelope, "property_model")
+    unbound = property_model.get("unbound_providers") or ()
+    bound = [p for p in property_model["providers"] if p not in {u["id"] for u in unbound}]
     lines.append(
         "- **Components:** "
         + ", ".join(f"`{c}`" for c in _axis(envelope, "components")["members"])
-        + f"; provider `{', '.join(_axis(envelope, 'property_model')['providers'])}`"
+        + f"; provider `{', '.join(bound)}`"
     )
     domain = _axis(envelope, "domain")
     lines.append(
         f"- **Domain:** T in [{domain['temperature_K'][0]:g}, {domain['temperature_K'][1]:g}] K, "
         f"P in [{domain['pressure_Pa'][0]:g}, {domain['pressure_Pa'][1]:g}] Pa"
     )
+    for provider in unbound:
+        # M01 review F1: a shipped provider no model binds is not the axes' provider.
+        lines.append(
+            f"- **Shipped, bound by no model:** `{provider['id']}`, with {provider['caveat']} "
+            f"({provider['limitation']})"
+        )
     lines.append(
         "- **Unit spellings (ADR 0016):** "
         + "; ".join(

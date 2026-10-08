@@ -14,6 +14,7 @@ import hashlib
 import math
 import tomllib
 from collections.abc import Mapping
+from fractions import Fraction
 from typing import Any
 
 import pytest
@@ -34,6 +35,7 @@ from openflowsheet.thermo.pr_c1 import (
     DERIVATIVE_INPUTS,
     PROPERTIES,
     PrC1Provider,
+    admissible_roots,
     cp_ig,
     h_ig,
     load_records,
@@ -220,6 +222,65 @@ def test_a09_every_departure_enthalpy_exceeds_one_joule(sid: str) -> None:
         ideal = sum(n / total * h_ig(state["T_K"], i) for i, n in enumerate(state["n_mol_s"]))
     assert abs(h - ideal) > 1.0
     assert _rel(h - ideal, state["h_departure_J_mol"]) <= 1e-11
+
+
+# -- Review F2: near-double roots (spec §5.2, Amendment 2) ----------------------------------------
+
+#: Review F2's counterexample: pure NH3 at 400 K within ~30 ulp of P of a spinodal crossing, and
+#: the cubic's one real root there (mpmath, 40 digits, on the provider's own A and B; the other two
+#: roots are 0.222075375 ± 2.77e-8 i and ± 2.96e-8 i). Before the fix the closed form's two
+#: candidates at the cubic's extremum came back as unconverged Newton iterates, (0.069921, 0.486253,
+#: 0.556360) at the first pressure and (0.22208, 0.48625) at the second, and LIQUID answered `ok`.
+F2_STATES = {
+    10_025_791.149338482: 0.4862531211028538374950152430333275847397063,
+    10_025_791.149338447: 0.4862531211028580050661740355951823307321699,
+}
+#: The provider's A and B at the first F2 state (`float.hex`), to sweep the cubic around it.
+F2_A, F2_B = float.fromhex("0x1.ad1107ef158ffp-2"), float.fromhex("0x1.1d10d4647e8f6p-4")
+
+
+def _exact_residual(z: float, big_a: float, big_b: float) -> float:
+    """The PR cubic of spec §4.3 at z, exactly, on the coefficients as the provider rounds them."""
+    c2 = Fraction(-(1.0 - big_b))
+    c1 = Fraction(big_a - 3.0 * big_b * big_b - 2.0 * big_b)
+    c0 = Fraction(-(big_a * big_b - big_b * big_b - big_b * big_b * big_b))
+    x = Fraction(z)
+    return float(((x + c2) * x + c1) * x + c0)
+
+
+@pytest.mark.parametrize("pressure", sorted(F2_STATES))
+def test_f2_the_counterexample_has_one_root_and_no_liquid(pressure: float) -> None:
+    pure = (0.0, 0.0, 1.0, 0.0, 0.0)
+    (root,) = real_roots(400.0, pressure, pure)
+    assert abs(root - F2_STATES[pressure]) <= 1e-12 * F2_STATES[pressure]
+    state = StreamState(n=pure, temperature=400.0, pressure=pressure)
+    liquid = PROVIDER.evaluate_phase(PropertyRequest(state, "LIQUID", ("Z", "h")), CONTEXT)
+    assert liquid.status == "unsupported"
+    assert liquid.message.startswith("no_liquid_root:"), liquid.message
+    assert liquid.values == {}
+    vapour = PROVIDER.evaluate_phase(PropertyRequest(state, "VAPOR", ("Z",)), CONTEXT)
+    assert vapour.status == "ok" and vapour.values["Z"] == root
+    flashed = PROVIDER.flash(FlashRequest(state=state), CONTEXT)
+    assert flashed.status == "ok" and flashed.phase_signature == "VAPOR"
+
+
+@pytest.mark.parametrize("coordinate", ["A", "B"])
+def test_f2_every_returned_root_is_a_root_across_the_spinodal_crossing(coordinate: str) -> None:
+    """±60 ulp of A (or B) around the F2 state crosses the discriminant's zero. Every value
+    `admissible_roots` returns must be a root of the cubic (an unconverged iterate's residual is
+    of order 1e-2; a root's, rounding included, below 1e-15), and it never returns nothing."""
+    for k in range(-60, 61):
+        big_a, big_b = F2_A, F2_B
+        for _ in range(abs(k)):
+            if coordinate == "A":
+                big_a = math.nextafter(big_a, math.copysign(math.inf, k))
+            else:
+                big_b = math.nextafter(big_b, math.copysign(math.inf, k))
+        roots = admissible_roots(big_a, big_b)
+        assert roots, (k, big_a, big_b)
+        assert list(roots) == sorted(set(roots))
+        for z in roots:
+            assert abs(_exact_residual(z, big_a, big_b)) <= 1e-13, (k, roots)
 
 
 # -- A10-A13: derivatives -------------------------------------------------------------------------

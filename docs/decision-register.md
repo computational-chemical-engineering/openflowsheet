@@ -673,7 +673,7 @@ now written (R-003, R-A04, R-004), 0005 is accepted (R-028), 0008 is used by R-0
 R-035 (T04's globalization: specification continuation, edge 3, the residence-time PTC family,
 experimental; certificates of a bound declaration; Proposed 2026-09-24). 0011 is used by R-036 to
 R-043 (T05's unit models: the PH closure in the unit layer, `SYN-001-ref-v1` as a formation datum,
-SYN-001 bit-identical; accepted 2026-09-25). 0012 is used by R-052 to R-058 (T05b: the saturation band and the PH kernel's band route, the phase contract `T05b-phase-contract-v2` with its `ZERO_FLOW` regime, the verifier's temperature-degenerate judgement, R-007's and R-029's amendments, what stays registered, and the zero-flow form of dormant non-lifted outlets; accepted 2026-09-25). 0013 is used by R-059 to R-062 (K04's fresh-flash checks at the verifier's projection; accepted 2026-09-25). 0014 is used by R-066 to R-074 (T06: the corpus and NET-07, the sampling law, the gate, a deterministic regularity estimate, the verifier's domain-safe alias shift, validation's dimension and component checks, the reference semantics, identity and replay; accepted 2026-09-27) and, from its Amendment 1 (2026-09-26), R-076 to R-080 (component-order mapping, unit conversion by ADR 0001 D1.3–D1.4, the typed tear-path initializer failure, the reference-tool qualification rulings, the shared-provider qualification's field). 0015 is used by R-075 (T06 F4: recovery edge 3's second action, the sequential restart of a revision-built region from `traversal-G0-pass8-v1`; accepted 2026-09-27). 0016 is used by R-081 (input units by recorded conversion, `unit-conversion-v2`, widening ADR 0001 D1.1/D1.4 by Frank's Q11; accepted 2026-09-27). 0017 is used by R-082 (SYN-001's TP flash classified by its Rachford–Rice bracket when the binary64 tests disagree, and SYN-001's identity re-baselined by substitution; accepted 2026-09-27; Frank approved the identity move 2026-09-26). ADR 0014's Amendment 2 carries R-083 (IDAES SmoothVLE) and R-084 (the screen's identity refusal). 0018 is used by R-085 (the solver's terminal refinement, `globalization.eo_core = newton_refined`; accepted 2026-09-27; the enum widening approved by Frank 2026-09-26; Amendment 1, 2026-09-27: the outcome claim under the property budget). ADR 0014's Amendment 4 carries R-086 (the saturation closure) and R-087 (scoring run 1 stands; nothing that scores a start changes after it). Its Amendment 5 (2026-09-27) carries R-088 (six questions handed to T07), R-089 (the holdout ensemble) and R-090 (run records as committed evidence). 0019 is used by R-091 to R-096 (T07's application contract: the sibling protocols, the frozen schemas with Amendments 1 (`application-results`) and 2 (`list_models` `specifications`), idempotency, authorization, the error shape, transports adding nothing; approved by Frank 2026-09-27, Accepted with T07's tested evidence). 0020 is used by R-097 to R-104 (job execution, R-088 Q27, cancellation and budgets, revision-built runs and their routes with the solution state, validate's fallback, R-088 Q29, Q26, Q28). ADR 0002's Amendment 1 (integer canonicity) is recorded in R-A02, and ADR 0013's Amendment 2 (routing on registered tolerances) in R-059 and R-061. T07's decisions outside an ADR are R-105 to R-116: the design note's ruling rounds 3–7 (R-105 to R-109), Frank's v0.1 exclusions (R-110), the V17 specification's four entries (R-111 to R-114), its Amendment R6 and `v17-c2` (R-115), and operator identity isolation (R-116). 0021 is used by R-117, R-118, R-119, R-121, R-125 (the v0.1 release policy; accepted 2026-10-02 with its proposed revisions 1 and 2 and T08's tested evidence). 0022 is used by R-120 (the v0.2 real-chemistry selection, the ammonia loop; accepted 2026-10-02 with V19 PASS). 0023 is used by R-123 (the kinetic CSTR and PTC-R1; accepted 2026-10-02 with T08's tested evidence) and, from its Amendment 1 (2026-09-29), R-126 (the `2⁻¹⁰` C trace). 0024 is used by R-124 (compatible warm starts; accepted 2026-10-02 with T08's tested evidence). T08's decisions outside an ADR: R-122, R-127 (build-first Amendment 1's other rulings), R-128 (build-first Amendment 2: the review's P-budget and P-trace rulings), and, from review 2 (`docs/reviews/T08-review-2.md`, 2026-10-01), R-129 (U05's refusal), R-130 (recovery-edge evidence kinds and `library-only`), R-131 (CLI `replay --rerun`, reversing T07 D-Q6) and R-132 (the description review blocks the RC); R-133 (Frank, 2026-10-01: V17 carried across U05 and the description review's two fixes). R-134 (Frank, 2026-10-01: B50 amended to the carried surface). ADR 0006 Amendment 1 carries R-135 (the GCC runtime library; LGPL-2.1). T08 release spec Amendment R3 (2026-10-01) carries R-136 (A45's bundle set; T06 A34 by A46), R-137 (A49's digest), R-138 (the verdict table, read by column), R-139 (ADR 0021 D2.4's tree list, proposed revision 2), R-140 (no lock in the wheel, L41; the lock lookup confined to the checkout), R-141 (T06 A89 by machine class, T06 Amendment T08-1), R-142 (ADR 0006 Amendment 2: D4 on aarch64) and R-143 (V19 for C1; ADR 0022 proposed revision 1). R-144 (B50 excludes the package version) and R-145 (ADR 0022: Frank's choice recorded). ADR 0025 is used by R-146 (`T08-numerical-policy-v2`; accepted 2026-10-02 with T08's tested evidence; entered at its W9 as amended by R-147, its Correction of 2026-10-02) and R-147 (Frank, 2026-10-02: Q4, a record is compared under the policy it records; an unknown policy is refused). R-148 (Frank, 2026-10-02: the K05 identity re-registered for recording `T08-numerical-policy-v2`, substitution only). R-149 (Frank, 2026-10-02: the project is named OpenFlowsheet; the rename's identity move re-registered, substitution only). R-150 (Frank, 2026-10-03: the public repository is the one working repository; the pre-0.1.0 history archived in `openflowsheet-dev`) and R-151 (the release gate identifies `C` by its recorded file hashes where `C` is absent). R-152 (Frank, 2026-10-06: M01 pins the code's K_NH₃ enthalpy term) and R-153 (Frank, 2026-10-06: the v0.2 order — M01's design first with M06 built alongside — and a `0.2.0a1` pre-release after M02). ADR 0026 is used by R-154 to R-160 (M01: the C1 property route; Proposed 2026-10-08) and ADR 0027 by R-161 to R-169 (M01: the C1 reactor boundary; Proposed 2026-10-08). **R-170 to R-175 and ADR 0030 are held by M06's branch; R-176 is the next free R number and 0028 the next free ADR number.**
+SYN-001 bit-identical; accepted 2026-09-25). 0012 is used by R-052 to R-058 (T05b: the saturation band and the PH kernel's band route, the phase contract `T05b-phase-contract-v2` with its `ZERO_FLOW` regime, the verifier's temperature-degenerate judgement, R-007's and R-029's amendments, what stays registered, and the zero-flow form of dormant non-lifted outlets; accepted 2026-09-25). 0013 is used by R-059 to R-062 (K04's fresh-flash checks at the verifier's projection; accepted 2026-09-25). 0014 is used by R-066 to R-074 (T06: the corpus and NET-07, the sampling law, the gate, a deterministic regularity estimate, the verifier's domain-safe alias shift, validation's dimension and component checks, the reference semantics, identity and replay; accepted 2026-09-27) and, from its Amendment 1 (2026-09-26), R-076 to R-080 (component-order mapping, unit conversion by ADR 0001 D1.3–D1.4, the typed tear-path initializer failure, the reference-tool qualification rulings, the shared-provider qualification's field). 0015 is used by R-075 (T06 F4: recovery edge 3's second action, the sequential restart of a revision-built region from `traversal-G0-pass8-v1`; accepted 2026-09-27). 0016 is used by R-081 (input units by recorded conversion, `unit-conversion-v2`, widening ADR 0001 D1.1/D1.4 by Frank's Q11; accepted 2026-09-27). 0017 is used by R-082 (SYN-001's TP flash classified by its Rachford–Rice bracket when the binary64 tests disagree, and SYN-001's identity re-baselined by substitution; accepted 2026-09-27; Frank approved the identity move 2026-09-26). ADR 0014's Amendment 2 carries R-083 (IDAES SmoothVLE) and R-084 (the screen's identity refusal). 0018 is used by R-085 (the solver's terminal refinement, `globalization.eo_core = newton_refined`; accepted 2026-09-27; the enum widening approved by Frank 2026-09-26; Amendment 1, 2026-09-27: the outcome claim under the property budget). ADR 0014's Amendment 4 carries R-086 (the saturation closure) and R-087 (scoring run 1 stands; nothing that scores a start changes after it). Its Amendment 5 (2026-09-27) carries R-088 (six questions handed to T07), R-089 (the holdout ensemble) and R-090 (run records as committed evidence). 0019 is used by R-091 to R-096 (T07's application contract: the sibling protocols, the frozen schemas with Amendments 1 (`application-results`) and 2 (`list_models` `specifications`), idempotency, authorization, the error shape, transports adding nothing; approved by Frank 2026-09-27, Accepted with T07's tested evidence). 0020 is used by R-097 to R-104 (job execution, R-088 Q27, cancellation and budgets, revision-built runs and their routes with the solution state, validate's fallback, R-088 Q29, Q26, Q28). ADR 0002's Amendment 1 (integer canonicity) is recorded in R-A02, and ADR 0013's Amendment 2 (routing on registered tolerances) in R-059 and R-061. T07's decisions outside an ADR are R-105 to R-116: the design note's ruling rounds 3–7 (R-105 to R-109), Frank's v0.1 exclusions (R-110), the V17 specification's four entries (R-111 to R-114), its Amendment R6 and `v17-c2` (R-115), and operator identity isolation (R-116). 0021 is used by R-117, R-118, R-119, R-121, R-125 (the v0.1 release policy; accepted 2026-10-02 with its proposed revisions 1 and 2 and T08's tested evidence). 0022 is used by R-120 (the v0.2 real-chemistry selection, the ammonia loop; accepted 2026-10-02 with V19 PASS). 0023 is used by R-123 (the kinetic CSTR and PTC-R1; accepted 2026-10-02 with T08's tested evidence) and, from its Amendment 1 (2026-09-29), R-126 (the `2⁻¹⁰` C trace). 0024 is used by R-124 (compatible warm starts; accepted 2026-10-02 with T08's tested evidence). T08's decisions outside an ADR: R-122, R-127 (build-first Amendment 1's other rulings), R-128 (build-first Amendment 2: the review's P-budget and P-trace rulings), and, from review 2 (`docs/reviews/T08-review-2.md`, 2026-10-01), R-129 (U05's refusal), R-130 (recovery-edge evidence kinds and `library-only`), R-131 (CLI `replay --rerun`, reversing T07 D-Q6) and R-132 (the description review blocks the RC); R-133 (Frank, 2026-10-01: V17 carried across U05 and the description review's two fixes). R-134 (Frank, 2026-10-01: B50 amended to the carried surface). ADR 0006 Amendment 1 carries R-135 (the GCC runtime library; LGPL-2.1). T08 release spec Amendment R3 (2026-10-01) carries R-136 (A45's bundle set; T06 A34 by A46), R-137 (A49's digest), R-138 (the verdict table, read by column), R-139 (ADR 0021 D2.4's tree list, proposed revision 2), R-140 (no lock in the wheel, L41; the lock lookup confined to the checkout), R-141 (T06 A89 by machine class, T06 Amendment T08-1), R-142 (ADR 0006 Amendment 2: D4 on aarch64) and R-143 (V19 for C1; ADR 0022 proposed revision 1). R-144 (B50 excludes the package version) and R-145 (ADR 0022: Frank's choice recorded). ADR 0025 is used by R-146 (`T08-numerical-policy-v2`; accepted 2026-10-02 with T08's tested evidence; entered at its W9 as amended by R-147, its Correction of 2026-10-02) and R-147 (Frank, 2026-10-02: Q4, a record is compared under the policy it records; an unknown policy is refused). R-148 (Frank, 2026-10-02: the K05 identity re-registered for recording `T08-numerical-policy-v2`, substitution only). R-149 (Frank, 2026-10-02: the project is named OpenFlowsheet; the rename's identity move re-registered, substitution only). R-150 (Frank, 2026-10-03: the public repository is the one working repository; the pre-0.1.0 history archived in `openflowsheet-dev`) and R-151 (the release gate identifies `C` by its recorded file hashes where `C` is absent). R-152 (Frank, 2026-10-06: M01 pins the code's K_NH₃ enthalpy term) and R-153 (Frank, 2026-10-06: the v0.2 order — M01's design first with M06 built alongside — and a `0.2.0a1` pre-release after M02). ADR 0026 is used by R-154 to R-160 (M01: the C1 property route; accepted 2026-10-08 with M01's tested evidence and the review closure `9098f14`) and ADR 0027 by R-161 to R-169 (M01: the C1 reactor boundary; Proposed 2026-10-08, still Proposed). Their Amendments 1 (M01 spec Amendment 1, §19) carry R-196 and R-197 (0026: the ln φ block's bounds, the request checks) and R-195, R-198, R-199 and R-200 (0027: the projection's defect assertion, the boundary's check order, the stand-in's label, M02's bitwise probe). M01's decisions outside an ADR: R-217 (T08's manifest-count and review-table tests scoped to the v0.1 packages) and R-219 (the C1 records' declared no-walk-up exception). ADR 0030 is used by R-170 and R-171 (M06: the diagnostic web shell, hand-written ES modules served same-origin; the bearer token in Web Storage, never a cookie; accepted 2026-10-08 with M06's tested evidence), with R-173 and R-174 (the gap triage closed; the scenario view is the run comparison) from its design note. ADR 0019 Amendment 3 (approved by Frank 2026-10-08, accepted with M06's tested evidence) carries R-172 (the structure index, element-level `diff_revisions`, `list_audit`) and R-192 (the served MCP tool-list digest moves to `6c4375b4…`). M06's W27 registration carries R-175 to R-179, and its decisions outside an ADR are R-193 (v0.2's working envelope `v0.2-envelope-dev`), R-194 (T08's U14 restated for v0.2) and R-216 (the v0.1.0 CHANGELOG-limitations test reads the envelope as released). **R-180 to R-191 and R-210 to R-218 (less M06's R-216 and M01's R-217) are held by M03, R-220 to R-237 by M02 and R-240 onward by M04; R-238 is the next free R number. ADRs 0031–0032 are held by M03 and 0033–0035 by M02; 0028 is the next free ADR number.**
 
 ## R-018 — Structural analysis reads the declaration, never the compiled sparsity pattern
 
@@ -3894,6 +3894,314 @@ decision variable's likely optimum.
 
 ---
 
+## R-170 — The web shell is hand-written ES modules with no build, no framework and nothing third-party, served same-origin by `serve-http --ui`
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); **Proposed** until M06's review |
+| Normative text | `docs/adr/0030-diagnostic-web-shell.md`; `docs/design/M06-web-shell.md` §5, §8 |
+| Evidence | — (an architecture decision); gates G1, G10–G12 of the design note when built |
+| Affected packages | M06 and every later UI change |
+
+**Decision.** Source in `apps/web/`, shipped as package data through `_data/web`; rendering through an in-house
+builder that can only create text nodes; one `fetch` call site with a route table generated from `OPERATIONS`;
+`serve-http --ui` (off by default) adds a static mount at `/ui/` with a strict CSP; no CORS. Tests: Python
+contract and static scans, Node's built-in runner (test-time only, no npm), a headless-Chromium smoke test.
+
+**Rejected alternative, and why.** An npm toolchain (Vite/TypeScript/React): committed build output cannot be
+reviewed against its source or the sdist build needs Node, and the supply chain and licence inventory grow by
+hundreds of packages. A vendored micro-framework: an opaque file for a benefit the screens do not need. A
+separate port with CORS. Playwright in the default gate (kept as the fallback for a flaky smoke test).
+
+**Watch for.** Adding a JS dependency, a build step or a framework later reverses this and takes a new ADR.
+
+---
+
+## R-171 — The browser holds the existing bearer token in Web Storage and sends it only as a header; never a cookie
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); **Proposed** |
+| Normative text | ADR 0030 D3–D4; design note §7 |
+| Evidence | — ; gate G8 when built |
+| Affected packages | M06 |
+
+**Decision.** Login form → `sessionStorage` (opt-in `localStorage`); `Authorization: Bearer` only; never placed
+in a URL the app builds; no Host-header check, because without ambient authority DNS rebinding gains nothing.
+
+**Rejected alternative, and why.** A cookie session with a login endpoint: an endpoint outside `OPERATIONS` and
+ambient authority for CSRF and rebinding. A token in the query string: it lands in logs and history.
+
+**Watch for.** Any move to cookies needs CSRF and Host defences designed first.
+
+---
+
+## R-172 — ADR 0019 Amendment 3: the structure index and unroutable analysis (Asks 1, 2), element-level `diff_revisions` (Ask 6), `list_audit` (Ask 4); Ask 3 deferred, Ask 5 rejected
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); **Proposed** until M06's tested evidence and review |
+| Normative text | `docs/adr/0019-application-contract-v1.md` Amendment 3; design note §4 |
+| Evidence | probes at `67029fa` (design note §3); gates G2–G6 when built |
+| Affected packages | M06; every client of the contract |
+
+**Decision.** `inspect_structure` gains `rows`/`columns` beside the report (never inside it) and, when no route
+binds, `validation_structural_report`; `diff_revisions` gains `elements`, pairing list items by `id`;
+`list_audit` (Python, CLI, HTTP) with `read` for one's own rows and `read`+`policy` for others' (`cancel_job`'s
+`target_principal` rule). `blocked_by` in failure bundles is deferred (a hashed artifact; solver-record work);
+rights in `get_project` are rejected (the UI's route table is generated and checked).
+
+**Rejected alternative, and why.** Computing a finer diff, a row index or an audit view in the browser: each is a
+second implementation of contract semantics that humans would see and agents would not. Putting the index inside
+`structural_report`: it would move `structural_sha256` and R0. Exposing `list_audit` over MCP now: no agent task
+needs it and a tool description needs its own review (G15).
+
+**Watch for.** `elements` must stay out of `TransactionResult.diff` (ledger replays); the index must come from the
+same declaration as the report; nothing in it may be parsed from an id (R-019).
+
+---
+
+## R-173 — D1–D3 of the web-shell gap triage are closed by T08 Phase 1; Q1–Q5 ruled; the equation view is a row index without symbolic text
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06) |
+| Normative text | design note §3, §4, §6.5 |
+| Evidence | live probe at `67029fa`: STR-03 message names `heater`; the A02-352 bundle's `replay_identity` is filled (`T04-W12`) and `property_calls` = 2104; `tests/test_t08_w1_d{1,2,3}_*.py` |
+| Affected packages | M06 |
+
+**Decision.** No M06 work on D1–D3 beyond UI-level regression checks. Q1: no structured redundant/excess counts in
+the frozen validation report (the structure index serves them). Q2: the equation view shows a row's instance,
+role, specification, residual kind and SI unit, incidence with values, matched column, block, redundancy, DOF
+row and certificate residual — no symbolic text. Q3: no per-event or per-attempt wall time (it would make
+`solve-events.json` differ run to run and so the bundle irreproducible). Q4: no reference-root comparison in run
+records. Q5: own audit rows need `read`, other principals' `read`+`policy`.
+
+**Rejected alternative, and why.** Re-fixing D1–D3 (already fixed and tested). Per-event timing as telemetry
+inside the event schema (closed and hashed).
+
+**Watch for.** The gap triage's "take identity from the manifest until D2 is fixed" is obsolete.
+
+---
+
+## R-174 — The "scenario view" of the M06 plan row is the run comparison: two finished solves, differences displayed, never judged
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); scope default pending Frank (design note §12 F4) |
+| Normative text | design note §6.7 |
+| Evidence | — (a definition); the revision IR has no scenario object in v0.2 |
+| Affected packages | M06 |
+
+**Decision.** A scenario in v0.2 is one revision solved under one policy; the view compares two such runs
+(outcome, verification, path, structure identity, counters, certificate summary, state differences Δ and
+|Δ|/max(|a|,|b|)) with the banner that no registered comparison or allowance is applied.
+
+**Rejected alternative, and why.** Waiting for an IR scenario concept (none planned in v0.2). Showing
+AGREE/MATCH on this screen: that vocabulary belongs to registered comparisons (Q4).
+
+**Watch for.** When the IR gains scenarios, this definition is revisited by a new entry.
+
+---
+
+## R-175 — W27: Tier 0 coverage and access report for all 450 OpenIDAES-450 cases without spend; a registered 45-run agent campaign at M07 by Frank's spend decision
+
+| | |
+| --- | --- |
+| Date | 2026-10-06 |
+| Decided by | Design lane (`architect`, M06); spend and model are Frank's (design note §12 F1, F2) |
+| Normative text | design note §9; the W27 registration (`docs/derivations/M06-W27-registration.md`, to be written by the `specifier`) |
+| Evidence | audit `study/openidaes450:docs/openidaes450-audit.md`; V17 cost USD 0.32–0.54 per run |
+| Affected packages | M06, M07 |
+
+**Decision.** Tier 0: provenance, artifact-access report with inaccessible assets, deterministic coverage classes
+for all 450 against the 450 and the 82-split, re-run at M07. Tier 1 default: 45 stratified cases, k = 1, the
+V17 `v17-c2` agent configuration, est. USD 15–45, at M07 on the v0.2 candidate. System false verification must
+be 0; agent terms reported. No headline score, no comparison with CRAFTS' results.
+
+**Rejected alternative, and why.** All 450 runs by default (USD 150–450 for 450 near-identical limitation
+measurements while v0.2's domain is narrow). Running the campaign now (0.1.x has SYN-001 components only, so
+coverage would not reflect v0.2).
+
+**Watch for.** The classification maps are semantic judgements; they are the design lane's, not the classifier's
+implementer's.
+
+---
+
+## R-176 — W27 coverage maps are registered tables over the pinned archive, re-evaluated mechanically against a registry snapshot
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | Design lane (`specifier`, M06 WO-15) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §4–§5; `benchmarks/m06/openidaes450/registration.json` |
+| Evidence | `case_facts.json` (450 cases); the generator's GC-* claims; dry illustration (0 candidates at 0.1.1 and in a hypothetical v0.2 snapshot) |
+| Affected packages | M06, M07 |
+
+**Decision.** Units by function plus required tokens (partial = unavailable, no compositions); components by CAS
+RN through an alias table (synthetic records never match); property routes by method equality plus component
+coverage and phase admission; the classifier reads case JSON only (never `sources/`) and calls what it cannot
+identify `unidentified`. OpenFlowsheet model ids and provider ids are mapped by the registration; an unmapped id
+in a snapshot **refuses** classification until an amendment maps it. The snapshot (models, routes, components,
+phases) is built from the build under test and its SHA-256 recorded beside `list_models`'.
+
+**Rejected alternative, and why.** Hard-coding today's registry (stale at M07). Inferring a model's function from
+its port signature (SYN-001's TP and PH flashes have identical ports). Name matching for components (SYN-001's
+`A` would match a case's `A`). Treating unmapped ids as unavailable (silently under-counts v0.2).
+
+**Watch for.** M01/M02 add provider and model ids: the M07 amendment comes before coverage is run.
+
+---
+
+## R-177 — A correct limitation is one matching reason; a CANDIDATE needs the same method, not a covering one
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | Design lane (`specifier`, M06 WO-15) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §10.3, §11.5, §5.6 |
+| Evidence | — (definitions) |
+| Affected packages | M06, M07 |
+
+**Decision.** A limitation answer on a non-`CANDIDATE` case is correct iff at least one item matches a recorded
+reason by kind and alias; contradicted and nothing-naming items are semantic errors, reported. A property route
+serves a case only with the case's own method class.
+
+**Rejected alternative, and why.** Requiring every item to match (punishes a true reason the classifier
+coarse-grained); requiring the top-precedence reason (an agent cannot see precedence); accepting any covering
+route (counts method substitution as coverage).
+
+**Watch for.** An agent that lists everything: its semantic error rate shows it.
+
+---
+
+## R-178 — W27 sample: frame without ARTIFACT_INCOMPLETE, candidates first, family largest remainder with a minimum of one for families of ≥ 4, SHA-256 ranks from a fixed seed; residual-check failures flagged, not excluded
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | Design lane (`specifier`, M06 WO-15) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §6, §7 |
+| Evidence | GC-SAMPLE-1/2; dry draw (§15.2) |
+| Affected packages | M07 |
+
+**Decision.** As §6; seed `W27-OpenIDAES-450-sample-v1`; > 45 candidates → 45 drawn from candidates by the same
+rule; 0 candidates → 45 from the frame. Every sampled candidate is confirmed by a scripted build, with the stream
+floor measured, before any run.
+
+**Rejected alternative, and why.** Excluding the 24 residual-check failures (shifts the family strata; the check
+matters only to candidate stream checks, which §11.3 then leaves unjudged). A library RNG (not byte-stable across
+versions).
+
+**Watch for.** A re-draw after a §7 amendment uses the same seed.
+
+---
+
+## R-179 — W27 gates the system, not the agent: system false verification, unauthorized and critical effects at 0; agent false verification reported with its bound
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | Design lane (`specifier`, M06 WO-15); gating of the agent term pending Frank (§17 Q4) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §11.6–§11.9, §12 |
+| Evidence | — (policy) |
+| Affected packages | M07 (G16) |
+
+**Decision.** One outcome per run by SYSTEM > INFRASTRUCTURE > AGENT_FALSE_VERIFICATION > the table; infrastructure
+failures count and are not re-run; system false verification is judged by integrity, replay and component-record
+checks (no registered roots); gated terms as W27-R56; agent false verification, correct-limitation and
+correct-build rates reported with one-sided 95 % Clopper–Pearson bounds.
+
+**Rejected alternative, and why.** Gating agent false verification at 0 as V17 does: V17 tests the system's own
+agent surface on registered tasks; W27 runs one external model on external cases, and its agent term describes
+that model. A headline score: blueprint §11.4.
+
+**Watch for.** If Frank answers Q4 "gated", W27-R56 changes before the first run, by amendment.
+
+---
+
+## R-192 — The served MCP tool-list digest moves from R-133's `171dd768…` to `6c4375b4…`, as the direct consequence of ADR 0019 Amendment 3's `diff_revisions` `elements` (A3.2); the move is bound to that member alone
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M06 WO-2 engineer's escalation; Amendment 3 approved by Frank 2026-10-08 |
+| Normative text | This entry; ADR 0019 Amendment 3 (A3.2); `docs/design/M06-web-shell.md` §2 item 2 (superseded on this point) |
+| Evidence | `7b36f4a` `tests/test_t08_w2_surface_digest.py`: served `6c4375b4…`; with `elements` removed from `diff_revisions`' `outputSchema` it is `171dd768…`; with `v17-c2`'s two texts as well, `6d13e13d…` |
+| Affected packages | M06, M07 (the v0.2 gate registers its own surface), W27 |
+
+**Decision.** Amendment 3 puts `elements` into `diff_revisions`' result schema, and the MCP binding serves each
+tool's `outputSchema`, so the served tool-list digest moves. The design note's "every registered digest stays
+bit-identical" (§2 item 2) did not foresee this. The new digest is registered beside the old one, bound by the
+decomposition test to exactly that one member. No tool *description* text changes, so Frank's description review
+(T08.A18) is not reopened. R-133, R-134 and R-137 remain the record of the 0.1 surface. `scripts/t08_rc.py`'s A49 check
+(`R133_DESCRIPTIONS_SHA256`) belongs to the 0.1 line's RC and is not edited. Run on a v0.2 tree it reports the
+move, which is correct. The v0.2 release gate registers v0.2's surface (M07).
+
+**Rejected alternative, and why.** Keeping `elements` out of the MCP `outputSchema`: transports must add nothing and
+omit nothing (R-096), so MCP would describe a different contract from Python, CLI and HTTP. Editing the A49 constant
+to the new digest: that rewrites a 0.1 release record.
+
+**Watch for.** Any other served-surface change in v0.2 needs its own entry and decomposition test. W27's campaign
+runs on the v0.2 surface and states its digest.
+
+---
+
+## R-193 — During v0.2, `benchmarks/t08/support_envelope.yaml` is v0.2's working envelope (`v0.2-envelope-dev`, release `0.2.0.dev0`); v0.1's envelope stays as released, at tag `v0.1.1`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M06 WO-3 engineer's escalation |
+| Normative text | This entry; T08 release spec §5 (its `envelope_id: v0.1-envelope-1` holds for the 0.1 line) |
+| Evidence | `4415e3e` (`list_audit` on the interface axis, A20 count 21) and the following commit (id and release renamed, `docs/support-matrix.md` re-emitted; `t08_support_matrix.py --check` 0 problems; envelope tests 65 passed) |
+| Affected packages | M01–M07 (every package that adds models, components or operations), M07 (finalises the 0.2.0 envelope with the T08 F3 harvest) |
+
+**Decision.** T08.A20 holds the envelope to the live code, so every v0.2 addition (M06's `list_audit` now, M01's
+models next) must enter it. A release record must not describe more than its release shipped. So the file is renamed
+in place to v0.2's working envelope, and v0.1's stays byte-for-byte at the release tags. M07 finalises it as
+`v0.2-envelope-1` for 0.2.0, with the harvest of T08's manifest limitations (milestone 0 item F3).
+
+**Rejected alternative, and why.** Amending `v0.1-envelope-1` in place (`4415e3e` alone): `docs/support-matrix.md`
+would say "v0.1.0" while listing an operation 0.1.0 does not have. A frozen copy of v0.1's file beside a new one:
+the tags already preserve it, and two live envelopes would need two A20 checks.
+
+**Watch for.** The release gate for `0.2.0a1` and `0.2.0` must check that `release` matches the version being cut.
+
+---
+
+## R-194 — In v0.2, T08's U14 row claims that no external benchmark comparison is run, registered or shipped, and that W27's adaptation records are confined to `benchmarks/m06/openidaes450/`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on WO-15's finding F6 |
+| Normative text | This entry; `benchmarks/t08/support_envelope.yaml` U14 (v0.2's working envelope, R-193); R-175…R-179 |
+| Evidence | `tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered` |
+| Affected packages | M06 (W27), M07 |
+
+**Decision.** v0.1's U14 ("nothing is registered or shipped") failed as soon as W27's approved Tier 0 records were
+committed (`e268ed8`). WO-14's green gate ran before those files were tracked. The premise changed by design (R-175),
+so the claim is restated for v0.2 and the test is pinned to the new claim, which is no weaker than the old one:
+- `benchmarks/registry.yaml` names no OpenIDAES/CRAFTS benchmark;
+- no tracked path under `src/` mentions them;
+- every tracked `benchmarks/` path that does lies under `benchmarks/m06/openidaes450/`;
+- no run or campaign record exists there;
+- `pyproject.toml` (package data) does not reference them.
+
+**Rejected alternative, and why.** Narrowing the test to `registry.yaml` and `src/` (WO-15's suggestion): it would
+let adaptation records spread anywhere in `benchmarks/`, and it would not detect a campaign record committed before
+M07. Moving the records out of the repository: R-175 and G13 require them committed, referenced by hash.
+
+**Watch for.** M07's campaign records change this claim again. U14 is then rewritten with the campaign, not relaxed.
+
+---
+
 ## R-195 — M01.A26 asserts the projection's defect vector, defect_rel and element balances at 10⁻¹³ × n_tot,in, not relative to the defect
 
 | | |
@@ -3970,6 +4278,14 @@ degenerate: that would give a discontinuous rule at a measure-zero set that no r
 **Watch for.** The request-check order and the two-root case are ratified but not asserted (no registered state
 has two defects or a near-double root).
 
+**Correction (2026-10-08, M01 review F2; spec Amendment 2, §5.2, §20).** The rationale above for the two-root rule
+was wrong about the cases it rested on. The two-root returns measured before the review were not a near-double root
+split by roundoff but unconverged Newton iterates (one of them the real part of a complex pair, 0.222075 ± 2.8 × 10⁻⁸ i,
+at pure NH₃, 400 K), and with them `evaluate_phase(LIQUID)` answered `ok` where the cubic has one real root.
+`admissible_roots` now keeps a candidate only if it is a root to rounding, and a three-root branch left with fewer than
+three deflates its best-conditioned root and solves the quadratic, so two distinct roots arise only as a genuine
+near-double pair. The rule itself (more than one admissible root → the three-root rules) stands.
+
 ---
 
 ## R-198 — The C1 reactor boundary checks the inlet phase before the hard domain; `stream_enthalpy_refused` is `error`; `reactor_not_accepted(<stage>)` has a grammar and registered stages
@@ -4003,6 +4319,13 @@ evaluation converged, so the boundary failed to form its answer.
 
 **Watch for.** If the hard domain is ever widened below NH₃'s T_c,EOS, the inlet-phase check becomes reachable
 inside it, and the order still holds.
+
+**Amendment (2026-10-08, M01 review F3; spec Amendment 2, §8.12, §20).** A step is inserted between 1 and 2: the
+inlet's nTP-v1 state space (every flow finite and ≥ 0, T and P finite and > 0), else `out_of_domain`. The order
+above dormant-tested first, so (0.5, −0.5, 0, 0, 0) answered `ZERO_FLOW` and an all-zero inlet with T = NaN answered
+`ok`. The order is now eleven steps; the inlet phase still precedes the hard domain (BD-06 unchanged). A negative
+flow, M01.A51 (iii)'s state, is now the boundary's own refusal, and A51 (iii) holds the flash pass-through with a
+refusing provider.
 
 ---
 
@@ -4063,6 +4386,90 @@ describes what a revision can use, and a revision cannot use it.
 
 **Watch for.** Q-F5: the per-tube flow is not bounded by the hard domain. M02 adds the bound or measures it. §10.1's
 T_out range was corrected to 1.2–1.7 K (the draft printed 1.3).
+
+---
+
+---
+
+## R-216 — T08's CHANGELOG-limitations test compares the v0.1.0 release notes with the envelope as v0.1.0 released it, not with v0.2's working envelope
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M06 WO-12 engineer's escalation |
+| Normative text | This entry; R-193 |
+| Evidence | `3c04037` `tests/test_t08_w4_changelog.py::test_every_registered_limitation_is_named_and_no_other` (reads the envelope at `PUBLIC_ROOT`, the bytes released at v0.1.0 = v0.1.1) |
+| Affected packages | M01, M02, M03, M06 (every v0.2 package that adds envelope rows), M07 |
+
+**Decision.** The test checked the v0.1.0 CHANGELOG's limitation notes against the *live* envelope. Since R-193 that
+envelope is v0.2's working one, so any v0.2 row (M06's L-WEB-1…4 first) failed it. The test now reads the envelope as
+v0.1.0 released it. Its exact comparison is unchanged. v0.2's notes are checked against v0.2's envelope by the v0.2
+release gate (M07, finalising `v0.2-envelope-1`).
+
+**Rejected alternative, and why.** Naming v0.2 rows in the v0.1.0 notes: that rewrites a release record. Adding no
+envelope rows for new capabilities: T08.A20 requires them.
+
+**Watch for.** The v0.2 gate must add the matching check for the 0.2.0 notes; until then, v0.2 rows are unchecked
+against any CHANGELOG.
+
+---
+
+## R-217 — T08's manifest-count and review-table tests are scoped to the v0.1 packages (P, K, T); v0.2 manifests are covered by the harvest-completeness check and the v0.2 gate
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M01 WO-7 engineer's escalation |
+| Normative text | This entry; R-193, R-216 |
+| Evidence | `7e0eb67`: `tests/test_t08_w2_support_envelope.py::test_a21` (the quoted size, 18 manifests and 232 limitations, applies to P/K/T; `len(harvest) == len(items)` still covers every manifest) and `test_the_review_table_is_every_manifests_status` (P/K/T compared with CHANGELOG's v0.1.0 table) |
+| Affected packages | M01–M07 (every v0.2 evidence manifest) |
+
+**Decision.** Both tests pinned facts of the v0.1.0 release: its manifest count and its CHANGELOG review table.
+Every v0.2 manifest broke them. They now check the v0.1 packages' records exactly as before. The completeness rule
+(every manifest limitation and non-pass check has a harvest row) still applies to all manifests, v0.2's included.
+
+**Rejected alternative, and why.** Adding v0.2 manifests to the v0.1.0 CHANGELOG table rewrites a release record.
+Exempting v0.2 manifests from the harvest: T08.A21's completeness rule is the useful half and stays universal.
+
+**Watch for.** The v0.2 gate (M07) must add the 0.2.0 counterparts: the review table in the 0.2.0 notes, and the
+v0.2 manifest count.
+
+**Amendment (2026-10-08, M01 review F1).** A third test pins the v0.1.0 release record:
+`tests/test_t08_w4_changelog.py::test_every_registered_limitation_is_named_and_no_other` required the v0.1.0
+CHANGELOG section to name exactly the envelope's limitation rows, so the first row added after the release (L42,
+`pr-c1-v1`'s caveat) broke it. It is scoped the same way: the section names the rows registered at v0.1.0, and the
+rows added since are an explicit list in the test (`ADDED_AFTER_V0_1_0`), each required to exist in the envelope.
+Rejected: naming L42 in the v0.1.0 section (rewrites a release record, as above). M07's 0.2.0 notes must name the
+listed rows.
+
+**Merge note (2026-10-08, M06 into main).** R-216 (M06) scoped the same test by reading the envelope as v0.1.0
+released it (`PUBLIC_ROOT`), where L42 and every later row are absent, so the comparison is exact with no exception
+list. The merge keeps R-216's form and drops `ADDED_AFTER_V0_1_0`, which would have failed against the released
+envelope (L42 is not a row of it). The obligation stands: M07's 0.2.0 notes name L42 and every other v0.2 row,
+checked by the v0.2 gate (R-216's Watch for).
+
+---
+
+## R-219 — One declared exception to T08's "no walk-up" rule: the C1 records fall back to the source checkout only when the package-data entry is absent
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M01 review's Closure note (`docs/reviews/M01-review.md`, `9098f14`) |
+| Normative text | This entry; M01 spec §20 (Amendment 2, F4); Q-N4 |
+| Evidence | `f1877ec` (`thermo/pr_c1.py` `load_records`; tests simulating the absent entry); the exception named in `tests/test_t08_w4_package_data.py`'s docstring |
+| Affected packages | M01, M02 (anything reading the C1 records) |
+
+**Decision.** T08's rule is that installed code never walks up the tree to find repository files. The C1 records
+have one exception: if `PACKAGED` has no entry for them (which only happens if Frank declines Q-N4 and `1621d65` is
+reverted), `load_records` reads the source checkout's copy. Outside a checkout it raises `FileNotFoundError` naming
+Q-N4. In the shipped configuration the entry is present, so the fallback never runs.
+
+**Rejected alternative, and why.** No fallback: declining Q-N4 would then break the provider outright, which was the
+review's F4. A user-supplied path for installed packages is not built; Q-N4 says so.
+
+**Watch for.** If Q-N4 is declined, an installed package without the records raises rather than refusing with a
+typed result. Revisit with Frank's answer.
 
 ---
 
@@ -4441,5 +4848,74 @@ solver needs ADR 0020 D7's W14 path test.
 store cannot be tested without an application.
 
 **Watch for.** Later adapters must take their sinks by injection too.
+
+---
+
+## R-250 — A design-grid evaluation costs 25–45 s, of which the group's KPI-drift certificate is 12–35 s; the certificate stays, because no cheaper check makes an equal claim
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's finding D22 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14 B6 (amends §0, §4.5, §5.2's numbers, G12's budget) |
+| Evidence | `wp/M02` @ `d0eb848`: wall 25–45 s, start-up 1.8 s, S1–S3 ≈ 10 s, `certify_convergence_1d` 12–35 s (20 implicit steps at dt 10⁶ s under S3's rtol 10⁻¹²); the outlet is extracted after the march; A47 (a) bitwise |
+| Affected packages | M02, M04 (sampling budget), M05, M07 |
+
+**Decision.** Acceptance is unchanged (ADR 0027 D6). The timeout stays 120 s until G11 re-registers it by §5.2's
+rule over registered requests. The coupled-loop estimate becomes 2–6 min; G12 runs with `wall_time_s` = 3600. Wall
+time for many experiments is reduced only by concurrency across distinct keys, which does not change any bit.
+
+**Rejected alternatives, and why.**
+- Fewer certificate steps, or the group's looser tolerance in the march: these weaken the claim, and the looser
+  tolerance makes the march vacuous and moves the registered outlet bits.
+- A persistent child: start-up is 4–7 % of a call.
+- Skipping the certificate on intermediate coupling iterates: it creates two classes of record under one key.
+
+**Watch for.** If G11 shows the drift ≤ 10⁻⁶ wherever S3 is accepted, put the certificate's added claim to the
+specifier. Concurrency above the physical core count turns load into `timed_out`.
+
+---
+
+## R-251 — M02 registers the stage `model_exception`: an exception raised inside the model's computation is a deterministic, cached refusal, not a transient crash
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's D18 |
+| Normative text | design note §14 B9; ADR 0027 A1.2 (M02 may register stages) |
+| Evidence | §3.3's purity invariant (count-based limits, one thread, fixed environment); M01.A43 |
+| Affected packages | M02, M04, M05 |
+
+**Decision.**
+- **Window.** From constructing the first reactor object through extracting the outlet.
+- **Covered.** Any `Exception` raised in the window, except `MemoryError` and `OSError`. It becomes
+  `reactor_not_accepted(model_exception)` with its type, first message line and traceback hash recorded.
+- **Not covered.** Everything else remains `crashed`.
+
+**Rejected alternatives, and why.** Leaving every exception as `crashed`: each recurrence costs 25–45 s and, never
+cached, repeats in every coupled iteration and sample.
+
+**Watch for.** A determinism finding on a `model_exception` key would mean the classification is wrong for that
+exception type.
+
+---
+
+## R-252 — `job_result.experiment` is `null` iff the experiment job wrote no experiment artifact
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's D24 |
+| Normative text | design note §14 B7 |
+| Evidence | `wp/M02` @ `2e63211`: a job cancelled while queued has no attempt; G1 (c) and R-234 re-checked with the snapshots re-taken |
+| Affected packages | M02, M06 (the shell renders job results) |
+
+**Decision.** `null` is only possible for a job that ended `cancelled`, `timed_out` or `failed` before its first
+attempt. A `completed` experiment job always carries a result or an attempt. Both directions are tested.
+
+**Rejected alternatives, and why.** Requiring a result-or-attempt for every job: a job cancelled while queued cannot have
+one, and a fabricated attempt would record an execution that never happened.
+
+**Watch for.** A `completed` job with `null`.
 
 ---

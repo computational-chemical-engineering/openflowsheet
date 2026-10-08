@@ -69,6 +69,8 @@ EXPECTED_RIGHT = {
     "inspect_structure": "read",
     "preview_change": "read",
     "get_artifact": "read",
+    # ADR 0019 Amendment 3 (A3.3; M06 WO-3)
+    "list_audit": "read",
     "artifact_bytes": "read",
 }
 SUBSETS = [
@@ -106,7 +108,7 @@ def capability(rights: tuple[str, ...], **fields: Any) -> CapabilityReference:
 
 def expected(rights: tuple[str, ...], operation: str, own: bool = True) -> bool:
     needed = {EXPECTED_RIGHT[operation]}
-    if operation == "cancel_job" and not own:
+    if operation in ("cancel_job", "list_audit") and not own:
         needed.add("policy")
     return needed <= set(rights)
 
@@ -115,13 +117,15 @@ def expected(rights: tuple[str, ...], operation: str, own: bool = True) -> bool:
 
 
 def test_the_table_names_exactly_the_twenty_operations() -> None:
-    """The 19 protocol methods and `artifact_bytes` (§4.1, §4.3; G11)."""
+    """The 19 protocol methods and `artifact_bytes` (§4.1, §4.3; G11), and ADR 0019 Amendment
+    3's `list_audit`: 21."""
     assert dict(OPERATION_RIGHTS) == EXPECTED_RIGHT
     assert len(SUBSETS) == 64
 
 
 def test_g11_the_decision_matrix_equals_the_table() -> None:
-    """64 right subsets × 20 operations (and `cancel_job` of another's job) — every cell."""
+    """64 right subsets × 21 operations (and `cancel_job` of another's job, and `list_audit` of
+    another's or all principals' rows, ADR 0019 Amendment 3) — every cell."""
     cells = 0
     for rights in SUBSETS:
         cap = capability(rights)
@@ -134,7 +138,11 @@ def test_g11_the_decision_matrix_equals_the_table() -> None:
         assert other.allowed == expected(rights, "cancel_job", own=False), rights
         unstated = authorize(cap, "cancel_job", None)
         assert unstated.allowed == other.allowed, "an unstated owner counts as another's"
-    assert cells == 64 * 20
+        others = authorize(cap, "list_audit", "agent-2")
+        assert others.allowed == expected(rights, "list_audit", own=False), rights
+        everyone = authorize(cap, "list_audit", None)
+        assert everyone.allowed == others.allowed, "all principals' rows are others' rows"
+    assert cells == 64 * 21
 
 
 def test_g11_an_unknown_operation_and_an_expired_capability_are_refused() -> None:

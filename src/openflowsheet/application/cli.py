@@ -24,9 +24,10 @@ job it still runs `cancelled(server_shutdown)` (§9.3) — so the process execut
 servers, which live as long as their jobs (build-lane decision W5b-Q1, `docs/T07_DECISIONS.md`).
 
 **The servers** (§11.2, §10.2). `serve-http` opens the project with the process executor and
-serves it with `bindings.http.serve` until interrupted; `serve-mcp` is `serving.serve_mcp`, over
-stdio. Both need the `server` extra; without it, or when the project cannot be opened, they
-refuse to start with exit 1 and the reason on stderr.
+serves it with `bindings.http.serve` until interrupted (with `--ui`, `bindings.web.serve`, which
+adds the diagnostic web shell at `/ui/`, M06); `serve-mcp` is `serving.serve_mcp`, over stdio.
+Both need the `server` extra; without it, or when the project cannot be opened, or (`--ui`) when
+the shell's packaged files are missing, they refuse to start with exit 1 and the reason on stderr.
 """
 
 from __future__ import annotations
@@ -393,7 +394,9 @@ def _loopback(host: str) -> bool:
 
 
 def command_serve_http(arguments: argparse.Namespace) -> int:
-    """§11.2: `serve-http --project DIR [--host 127.0.0.1] [--port 8765] [--allow-remote]`."""
+    """§11.2: `serve-http --project DIR [--host 127.0.0.1] [--port 8765] [--allow-remote]
+    [--ui]`. `--ui` (M06, ADR 0030 D3) also serves the diagnostic web shell at `/ui/`
+    (`bindings.web`); without it nothing differs, and `bindings.web` is not even imported."""
     if not _loopback(arguments.host) and not arguments.allow_remote:
         print(
             f"--host {arguments.host} is not loopback: pass --allow-remote (there is no TLS in "
@@ -414,13 +417,23 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 1
+    serve = binding.serve
+    if arguments.ui:
+        from openflowsheet.application.bindings import web
+
+        try:
+            web.static_directory()
+        except web.WebShellMissingError as error:
+            print(f"serve-http: refused to start: {error}", file=sys.stderr)
+            return 1
+        serve = web.serve
     try:
         application = LocalApplication.open(arguments.project, executor="process")
     except (StoreError, PolicyRefusedError) as error:
         print(f"serve-http: refused to start: {error}", file=sys.stderr)
         return 1
     with application:
-        binding.serve(
+        serve(
             application,
             host=arguments.host,
             port=arguments.port,
@@ -537,6 +550,12 @@ def build_parser() -> argparse.ArgumentParser:
     http_command.add_argument("--port", type=int, default=8765)
     http_command.add_argument(
         "--allow-remote", action="store_true", help="needed for a non-loopback --host"
+    )
+    http_command.add_argument(
+        "--ui",
+        action="store_true",
+        help="also serve the diagnostic web shell at /ui/ — static files only; every data "
+        "request needs a bearer token",
     )
     http_command.set_defaults(handler=command_serve_http)
 

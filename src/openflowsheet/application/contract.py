@@ -21,6 +21,8 @@ from openflowsheet.application.types import ApiError, ApiErrorCode
 if TYPE_CHECKING:
     from openflowsheet.application.jobs.model import JobStatus
     from openflowsheet.application.types import (
+        AuditOrder,
+        AuditRecord,
         Change,
         Job,
         JobEvent,
@@ -147,7 +149,9 @@ class JobControl(Protocol):
 
 class Inspection(Protocol):
     """§4.1, new under ADR 0019: the project, its models, revisions, structure and artifacts.
-    Every method is read-only (`read`); every document comes back as a bounded `Projection`."""
+    Every method is read-only (`read`); every document comes back as a bounded `Projection`.
+    `list_audit` is ADR 0019 Amendment 3's (A3.3): the audit, by `seq`; another principal's rows,
+    or all principals', need `policy` as well."""
 
     def get_project(self) -> ProjectSummary: ...
 
@@ -192,3 +196,13 @@ class Inspection(Protocol):
         cursor: str | None = None,
         limit: int = 50,
     ) -> Projection: ...
+
+    def list_audit(
+        self,
+        *,
+        principal_id: str | None = None,
+        operation: str | None = None,
+        order: AuditOrder = "ascending",
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> Page[AuditRecord]: ...

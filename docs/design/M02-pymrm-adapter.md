@@ -23,10 +23,10 @@ existing pattern; where a number appears, it is registered here and nowhere else
 | D2 | Kill chain and isolation | Three layers: adapter-owned cooperative/timeout kill (SIGTERM, 2 s, SIGKILL); **executor forced kill becomes a process-group kill** (the worker makes itself group leader; amends ADR 0020 D3); child lifeline (stdin EOF) and self-deadline. Profile `external-subprocess-v1`, stated as *not a sandbox*. Linux registered, macOS best effort, Windows refused | Kill by pid only (orphans the grandchild on a forced kill); `PR_SET_PDEATHSIG` alone (Linux-only, thread-scoped); a job-per-experiment scheduler (D1) | ADR 0033 D2, §2.3 |
 | D3 | Experiment identity | **Process-level**: SHA-256 of {model id, variant id and variant SHA-256, provider identity, N_tubes, sweep ratio, components, exact binary64 n, T, P, environment fingerprint SHA-256}. Never quantized | Tube-level key (would share entries across (k n, k N_tubes) but puts the boundary's provider calls outside the identity and splits one consumer-visible fact over two records) | ADR 0033 D4, §3.2 |
 | D4 | Records | One schema file `experiment.schema.json`: `request`, `result`, `attempt`, `coupling`. Every request that reaches the runner is retained: a deterministic outcome is a write-once `result`; every execution is an `attempt`. No fabricated outputs | Records only for `ok` (violates blueprint §9.1); mutable result files | ADR 0033 D5, §3 |
-| D5 | Cache | Exact, per project, keyed by D3; serves **deterministic outcomes only** (every boundary status incl. refusals and `not_converged`), never a transient failure; a per-key `flock` makes a duplicate execution impossible within a project; cache bypass is a measurement mode whose repeat is compared bitwise (a determinism monitor) | Caching only `ok` (re-runs known refusals at 9 s each); caching timeouts (a machine-load fact, not an input fact); a global lock (serializes unrelated experiments) | ADR 0033 D6, §5.3 |
-| D6 | Retry and timeout | Bounded, transient-only: one retry after `crashed`, `protocol_error`, `spawn_failed`; none after `timed_out`, `environment_*`, `cancelled`. Per-attempt timeout 120 s (13 × the measured 9 s), re-registered from the Q-F4/Q-F5 sweep | Retrying timeouts (doubles a known-expensive cost silently); unbounded retry | ADR 0033 D7, §5.2 |
+| D5 | Cache | Exact, per project, keyed by D3; serves **deterministic outcomes only** (every boundary status incl. refusals and `not_converged`), never a transient failure; a per-key `flock` makes a duplicate execution impossible within a project; cache bypass is a measurement mode whose repeat is compared bitwise (a determinism monitor) | Caching only `ok` (re-runs known refusals at 25–45 s each, §14 B6); caching timeouts (a machine-load fact, not an input fact); a global lock (serializes unrelated experiments) | ADR 0033 D6, §5.3 |
+| D6 | Retry and timeout | Bounded, transient-only: one retry after `crashed`, `protocol_error`, `spawn_failed`; none after `timed_out`, `environment_*`, `cancelled`. Per-attempt timeout 120 s (2.7 × the slowest measured evaluation, 44.9 s; §14 B6), re-registered from the Q-F4/Q-F5 sweep | Retrying timeouts (doubles a known-expensive cost silently); unbounded retry | ADR 0033 D7, §5.2 |
 | D7 | Noise and accuracy | Each variant declares its accuracy contract: precision floor ε_eval = 10⁻⁶ relative (the registered path-independence bound; measured 1.6 × 10⁻⁸) and the design grid's discretization estimate (DX-01). Every result carries both. Cold S1–S3 only: **no warm start of the reactor**, so a result is a function of its request | Warm-starting S2 from a neighbour's fields (makes a result depend on history at the 10⁻⁸ level, which an exact cache cannot key; revisit on measured cost, R-224) | ADR 0033 D8, §5.4 |
-| D8 | How the reactor enters a flowsheet | **Extent-fixed embedding with an outer coupling.** The unit's compiled rows take the conversion X̂ and temperature rise ΔT̂ as pinned parameters (rows exist: `extent_row`, `offset_row`); the existing revision EO solve runs unchanged; an outer Broyden iteration on w = (X̂, ΔT̂) evaluates the reactor once per iteration at the inner solution's reactor inlet. Converged iff \|ξ_E − X̂ n_N₂,in\| ≤ 10⁻⁵ n_tot,in and \|T_E − T_in − ΔT̂\| ≤ 10⁻² K. Route `revision_coupled` | The reactor inside Newton with a finite-difference Jacobian (8 × 9 s per Jacobian, FD is a test oracle by plan §4.2, noise/h); a tear on the full reactor inlet (7 coordinates instead of 2); the SYN-001 tear path (refuses revision flowsheets, R-045); leaving the loop to the agent or to M05 (truth checks and frozen versions need it now) | ADR 0034 D1–D4, §4 |
+| D8 | How the reactor enters a flowsheet | **Extent-fixed embedding with an outer coupling.** The unit's compiled rows take the conversion X̂ and temperature rise ΔT̂ as pinned parameters (rows exist: `extent_row`, `offset_row`); the existing revision EO solve runs unchanged; an outer Broyden iteration on w = (X̂, ΔT̂) evaluates the reactor once per iteration at the inner solution's reactor inlet. Converged iff \|ξ_E − X̂ n_N₂,in\| ≤ 10⁻⁵ n_tot,in and \|T_E − T_in − ΔT̂\| ≤ 10⁻² K. Route `revision_coupled` | The reactor inside Newton with a finite-difference Jacobian (8 × 25–45 s per Jacobian, FD is a test oracle by plan §4.2, noise/h); a tear on the full reactor inlet (7 coordinates instead of 2); the SYN-001 tear path (refuses revision flowsheets, R-045); leaving the loop to the agent or to M05 (truth checks and frozen versions need it now) | ADR 0034 D1–D4, §4 |
 | D9 | Frozen versions | A revision pins an external model by **variant id and variant SHA-256** (`model.version`, `model.artifact_ref`), enforced by the binder; variants are immutable, append-only package data with a pinned registry; the environment fingerprint is established once per attempt (handshake) and every experiment in the attempt must report it | Trusting `model.version` strings (today nothing checks them); re-reading the environment per call without freezing | ADR 0034 D5, ADR 0035 D1, §6.1 |
 | D10 | Promotion | **A commit that changes an instance's model reference is a promotion**: checked against blueprint §5.3's facets whenever the old or new model is variant-backed; rejected `model_replacement_incompatible` with the report; on success the report is an artifact hashed into the new revision's provenance; invalidation is the existing `invalidations` (runs of the expected revision), generalized to every evidence-producing operation; experiment records are never invalidated | A separate `promote_model` method (bypassable through `commit_change`, more contract); flagging old records as invalidated (evidence is immutable) | ADR 0035, §6 |
 | D11 | Reproducibility class | A coupled run that used an out-of-process variant is **R3**; its bundle gains `external-coupling.json`, which embeds every request, result and variant used; `reproduce` replays **from the record** (the external results substituted after the recomputed requests are checked) and says so in `reasons`; an in-process variant (the stand-in) is re-evaluated on replay and compared. A live rerun in the pinned environment is an evidence script, never the default | Rerunning the reactor on replay (not possible "from the bundle alone", ADR 0024 D5; needs the environment) | ADR 0034 D6, §7 |
@@ -41,7 +41,7 @@ existing pattern; where a number appears, it is registered here and nowhere else
 ## 1. Problem and scope
 
 M02 makes the group's 1D ammonia reactor (pin `6089593`, M01 §8) an **external model** that the application can
-(a) evaluate as a recorded experiment, (b) embed in a flowsheet solve without putting a 9 s, derivative-free call
+(a) evaluate as a recorded experiment, (b) embed in a flowsheet solve without putting a 25–45 s, derivative-free call
 inside Newton, (c) freeze and replace under rules, and (d) replay. It also delivers the Peng–Robinson unit models of
 M01 §7 so that a C1 ammonia loop can be bound and solved at all.
 
@@ -494,8 +494,8 @@ iterations. The stand-in's F is constant ((0.25, 0)), so it converges at k = 1 w
 
 Per outer iteration: one inner build and solve (the inner `ProblemSpec` is re-compiled per iteration because X̂, ΔT̂
 are constants of it; the C1 loop is ≈ 80 variables, so compile plus solve is expected well under 1 s — measured in
-G12, and worth optimizing only if it exceeds 20 % of an iteration) and one experiment (≈ 9 s cold at num_z = 800;
-0 s on a cache hit). Expected 4–8 iterations on the real loop → about 1–2 minutes. Records are a few KB each. The
+G12, and worth optimizing only if it exceeds 20 % of an iteration) and one experiment (25–45 s cold at num_z = 800, as measured, §14 B6;
+0 s on a cache hit). Expected 4–8 iterations on the real loop → about 2–6 minutes. Records are a few KB each. The
 child's start-up (interpreter, imports, numba JIT) is measured separately (`timing.startup_s`); if it exceeds 30 % of
 `wall_s` at the design grid, a persistent per-job child is reconsidered by an ADR amendment (R-224).
 
@@ -825,7 +825,7 @@ Frank decides (§12, N3).
 | --- | --- | --- | --- |
 | K1 | The PR flash's integration with the phase-attempt machinery (lifted-split registry, screens, verifier) is the largest build item and may meet SYN-001-shaped code | fact (build) | One split unit only (D13); WO-8 reviewed by the design lane; G7 |
 | K2 | Reading `record_source` perturbs SYN-001 identities | fact | Every non-C1 value binds as today; G2 byte-identity |
-| K3 | Child start-up (imports, numba JIT) is a large share of 9 s | fact | Measured G11 (d); > 30 % → persistent child by ADR amendment (R-224) |
+| K3 | Child start-up (imports, numba JIT) is a large share of an evaluation (measured 1.8 s of 25–45 s, §14 B6: retired) | fact | Measured G11 (d); > 30 % → persistent child by ADR amendment (R-224) |
 | K4 | Broyden fails on a strongly coupled loop | fact | Safeguards (§4.3); G8 (f), G12; M05's trust region does its own outer loop anyway |
 | K5 | A freshly built env is not bitwise equal to the probe's (A47 (a)) | fact | The finding procedure; (b) decides (R-200) |
 | K6 | Q-F4 corners fail → narrower domain → smaller design space for M05/M07 | fact | §10.3's rule; M07 informed |
@@ -940,3 +940,67 @@ tested without an application.
 K04 file is byte-pinned (log D2; §3.6's intent, an addendum that leaves the policy id unmoved, holds). The real variant
 is created in WO-5 with the files it names (log D5). The in-process variant schema admits the stand-in's test-only
 perturbation fields, which no registered variant uses (log D6).
+
+### 14.1 Second round, 2026-10-08 (`wp/M02` @ `2e63211`: WO-1b, WO-5, WO-6 done; G5 and G10 met, A47 (a) bitwise; build log D14–D26)
+
+**B6 (D22) — The measured cost stands, and so does the certificate (R-250).** One design-grid evaluation costs **25–45 s**
+(start-up 1.8 s, S1–S3 ≈ 10 s, the group's KPI-drift certificate 12–35 s), not the ≈ 9 s this note assumed: the probe's
+`wall_s` left the certificate out. The certificate is `certify_convergence_1d` at the pin: 20 implicit steps at
+`dt_max` = 10⁶ s on the S3-polished reactor, so each step runs Newton at S3's tolerances (rtol 10⁻¹²). It requires every
+scalar KPI to drift ≤ 10⁻³ relative. **It is not made cheaper, and it cannot be with an equal claim:**
+- It is part of ADR 0027 D6's acceptance.
+- The child extracts the outlet *after* the march, so the march produces the registered outlet bits (M01.A47 (a)).
+- Fewer steps, or the group's looser tolerance inside the march, would weaken the claim; the loose tolerance would make
+  the march vacuous (its Newton exits at the first iterate, M01 §8.7) and would also move the outlet.
+- Neither caching (it is not JIT) nor a persistent child (start-up is 4–7 % of a call, far under R-224's 30 % trigger)
+  touches it.
+
+Whether it adds a claim beyond S3 is a specifier question. G11 records its `kpi_drift_rel_max` at every point, and if
+the drift stays ≤ 10⁻⁶ wherever S3 is accepted, the specifier may be asked to rule. Until then it stays.
+
+Consequences:
+- **Timeout.** 120 s stands now (2.7 × the 44.9 s worst, which was the evidence-only A42 start). §5.2's rule applies after
+  G11 over registered requests only: max(120, 3 × the slowest accepted point), as a new variant if it changes. A 41 s
+  sweep point therefore raises it.
+- **Cost statements.** §4.5 and §0 are amended to 25–45 s per evaluation and about 2–6 min per coupled solve. A job's
+  handshake costs ≈ 1.9 s, once.
+- **G12.** The real-loop job runs with `wall_time_s` = 3600. That covers 15 iterations × (1 + 3 backtracks) × 45 s with
+  margin. The measured wall time is recorded, not gated.
+- **M04 (its decision, R-240…).** Iteration 1's 632 experiments cost ≈ 4.4–7.9 h serially. The architecture lets experiments
+  with **distinct keys run concurrently without changing a bit**: one single-threaded child per experiment, per-key
+  locks only. So `max_workers` > 1, or an M04 batch operation that runs children concurrently, divides the wall time by
+  the worker count. Workers must not exceed physical cores, or the timeout must be scaled, because load is what turns
+  slow calls into `timed_out`.
+
+**B7 (D24) — `job_result.experiment` may be `null` (R-252).** Confirmed, with the condition that makes it checkable: `null`
+iff the job wrote no experiment artifact. That is possible only for a job that ended `cancelled`, `timed_out` or `failed`
+before its first attempt. A `completed` experiment job always has a result or an attempt. A test asserts both
+directions. G1 (c) and R-234 hold as the build recorded.
+
+**B8 (D23) — Confirmed.** R-237's list-backed sink means the runner used with no application (library use, unit tests).
+Every experiment job, including the in-memory application's, records through `ArtifactTableSink`, so that
+§3.5's outputs resolve through `get_artifact`.
+
+**B9 (D18) — An exception inside the model is a registered stage, not a crash (R-251).** Under §3.3's purity invariant
+the child's computation is a function of its request, so a Python exception raised by the model on a given inlet
+recurs on every attempt. Retrying it costs another 25–45 s, and leaving it uncached repeats it in every coupled
+iteration and M04 sample. M02 registers the stage **`model_exception`** (M01 §8.12 / ADR 0027 A1.2 allow M02 to add
+stages):
+- **Window.** From constructing the first reactor object for the request through the outlet's extraction, i.e. S1,
+  S2, S3, the certificate and `outlet`.
+- **Covered.** Any `Exception` raised in that window, except `MemoryError`, `OSError` and their subclasses. It is
+  returned as `not_accepted` with stage `model_exception`, so `not_converged`, `reactor_not_accepted(model_exception)`:
+  deterministic, cached, not retried, and a deterministic refusal for the coupling driver (backtrack, §4.3).
+- **Recorded.** The attempt's diagnostics hold the exception's qualified type name, its message's first line
+  (≤ 512 characters), and the SHA-256 of the formatted traceback (the full text is in `child.stderr`).
+- **Everything else stays `crashed`** (transient, one retry): an exception outside the window, `MemoryError`, `OSError`,
+  a signal, a non-zero exit.
+
+If this classification were ever wrong, the bypass repeat (§5.3) would expose it as a determinism finding. Test: a
+synthetic-child hook that raises `ValueError` inside the window gives a cached `reactor_not_accepted(model_exception)`
+with no second attempt; one that raises `MemoryError` gives `crashed`, retried once.
+
+**B10 (D14) — Confirmed.** A later experiment in a job whose handshake failed writes one attempt recording the frozen
+failure and executes nothing (R-236; §3.3 retention). The attempt has the frozen status, `exit_code: null`,
+`timing.wall_s` 0, and the relpaths of the original handshake's logs, so it is distinguishable from an execution without
+a new status value.

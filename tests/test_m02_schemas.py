@@ -158,7 +158,8 @@ def test_g1c_without_m02s_additions_every_response_is_its_pre_m02_snapshot() -> 
 
     from openflowsheet.application.operations import OPERATIONS
 
-    before = {**r4.SNAPSHOT_AT_B13D556, **r4.SNAPSHOT_AMENDMENT_2}
+    # The base is `main`'s at M02's merge of it: M06's Amendment 3 (R-192) included.
+    before = {**r4.SNAPSHOT_AT_B13D556, **r4.SNAPSHOT_AMENDMENT_2, **r4.SNAPSHOT_AMENDMENT_3}
     moved = []
     for name, operation in OPERATIONS.items():
         resolved = r4.resolved_response(operation)

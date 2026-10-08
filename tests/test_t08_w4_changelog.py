@@ -2,19 +2,20 @@
 
 D4 fixes what the section carries and in which order; these tests hold the parts that can drift
 from their sources: the gate table equals what `scripts/v0_1_gate.py --markdown` prints from the
-ledger, the verdicts and ADR 0021 now; every registered limitation id of the support envelope is
-named, and no other; the review-status table equals every package manifest's `status`; and the
-reproducibility promise is ADR 0007 F1's sentence verbatim.
+ledger, the verdicts and ADR 0021 now; every registered limitation id of v0.1's support envelope
+as released is named, and no other (R-216); the review-status table equals every package manifest's
+`status`; and the reproducibility promise is ADR 0007 F1's sentence verbatim.
 """
 
 from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 
 import yaml
-from conftest import REPO_ROOT
+from conftest import PUBLIC_ROOT, REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import v0_1_gate  # noqa: E402
@@ -84,9 +85,17 @@ def test_what_it_is_not_names_every_d4_item() -> None:
 
 
 def test_every_registered_limitation_is_named_and_no_other() -> None:
-    envelope = yaml.safe_load(
-        (REPO_ROOT / "benchmarks" / "t08" / "support_envelope.yaml").read_text(encoding="utf-8")
-    )
+    """Against v0.1's envelope as v0.1.0 released it (`PUBLIC_ROOT`): since R-193 the working
+    file is v0.2's, and a release record names what its release shipped, no more."""
+    released = subprocess.run(
+        ["git", "show", f"{PUBLIC_ROOT}:benchmarks/t08/support_envelope.yaml"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    envelope = yaml.safe_load(released)
+    assert envelope["envelope_id"] == "v0.1-envelope-1"
     body = section()
     part = body[body.index("**Known limitations") : body.index("**Reproducibility.**")]
     named = re.findall(r"`(L(?:\d{2}|-[A-Z]+-\d+))`", part)
@@ -105,7 +114,8 @@ def test_the_reproducibility_promise_is_adr_0007_f1_verbatim() -> None:
 
 def test_the_review_table_is_every_manifests_status() -> None:
     statuses = {}
-    for path in sorted((REPO_ROOT / "evidence").glob("*/*/manifest.json")):
+    # The v0.1.0 section reviews the release's packages (P, K, T); v0.2's (M01 on) are not in it.
+    for path in sorted((REPO_ROOT / "evidence").glob("[PKT]*/*/manifest.json")):
         document = json.loads(path.read_text(encoding="utf-8"))
         statuses[document["work_package"]] = document["status"]
     rows = dict(re.findall(r"^\| (\w+) \| `(\w+)` \|", section(), flags=re.MULTILINE))

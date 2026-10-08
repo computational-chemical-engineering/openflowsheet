@@ -767,7 +767,10 @@ def _description(aid: str) -> str:
     match = re.search(rf"^- \*\*M01\.{aid}\*\* — (.+?)(?:\n(?=- |\n|###)|\Z)", text, re.M | re.S)
     if match is None:
         raise SystemExit(f"M01.{aid}: no bullet in {SPEC.name}")
-    body = " ".join(match[1].split())
+    # The manifest test rejects any string holding `<…>` (a template placeholder is never
+    # evidence); the spec's comparisons and grammar names (`v < v_c`, `(<stage>)`) are kept
+    # readable with the full-width signs.
+    body = " ".join(match[1].split()).replace("<", "\uff1c").replace(">", "\uff1e")
     return f"M01 spec §9, M01.{aid}: {body[:600]}{'…' if len(body) > 600 else ''}"
 
 
@@ -836,14 +839,23 @@ def _frozen_diff(base: str, commit: str) -> dict[str, Any]:
         "ordered_by_the_spec": [p for p in changed if p in ORDERED_EDITS],
         "unordered_edits": [p for p in changed if p not in ORDERED_EDITS],
         "note": "support_envelope.yaml: the property_model axis lists pr-c1-v1 (T08.A20 holds the "
-        "axes to the code) and L40's text admits M01's five vetted records (spec §3.5, R-158); "
-        "no registered value moves",
+        "axes to the code) and names it a provider no model binds yet (M01 review F1); L40's text "
+        "admits M01's five vetted records (spec §3.5, R-158); L42 states pr-c1-v1's own "
+        "components, domain and validation (review F1); the harvest classifies M01's manifests' "
+        "items (T08.A21's completeness rule). No registered value moves",
     }
+
+
+def _foreign_env() -> dict[str, str]:
+    """The environment for an interpreter that is not the project's: no PYTHONPATH, which would
+    put `src/openflowsheet.egg-info` into its `pip freeze` (and so into the IDAES record's
+    `pip_freeze_sha256`)."""
+    return {key: value for key, value in os.environ.items() if key != "PYTHONPATH"}
 
 
 def _idaes(python: Path, data: Path | None, artifacts: Path) -> tuple[dict[str, Any], Any]:
     out = artifacts / "idaes-conformance.json"
-    env = {**os.environ}
+    env = _foreign_env()
     if data is not None:
         env["IDAES_DATA"] = str(data)
     _, command = _run(
@@ -908,7 +920,8 @@ def main() -> int:
     artifacts.mkdir(parents=True, exist_ok=True)
 
     gate_text = arguments.gate_log.read_text(encoding="utf-8")
-    gate_passed = gate_text.rstrip().splitlines()[-1] == "=== check.sh: PASSED ==="
+    verdicts = [line for line in gate_text.splitlines() if line.startswith("=== check.sh: ")]
+    gate_passed = verdicts[-1:] == ["=== check.sh: PASSED ==="]
     summary = re.findall(r"^(\d+ passed.*) in [\d.]+s", gate_text, re.MULTILINE)
     gate_summary = f"check.sh {'PASSED' if gate_passed else 'FAILED'}; pytest: "
     gate_summary += summary[-1] if summary else "no summary line"
@@ -936,6 +949,7 @@ def main() -> int:
         artifacts / "external-crosscheck-check.stdout.txt",
         "VENV/bin/python -I benchmarks/m01/external_crosscheck.py --check  (VENV: chemicals 1.5.2, "
         "thermo 0.6.1, CoolProp 8.0.0, cantera 3.2.0, pyyaml 6.0.2; the script's pins)",
+        _foreign_env(),
     )
     crosscheck = {
         "exit_code": completed.returncode,
@@ -989,7 +1003,7 @@ def main() -> int:
     )
 
     counts = {r: sum(c["result"] == r for c in checks) for r in RESULTS}
-    print(f"wrote {destination.relative_to(ROOT)}: status {manifest['status']}")
+    print(f"wrote {destination}: status {manifest['status']}")
     print(", ".join(f"{n} {r}" for r, n in counts.items()))
     failed = [c["id"] for c in checks if c["result"] == "fail"]
     if failed:
@@ -998,7 +1012,8 @@ def main() -> int:
         f"{c['id']} {name}: {bound['value']:.3g} vs {bound['tolerance']:.3g}, "
         f"margin {bound['margin']}"
         for c in checks
-        for name, bound in (c.get("value", {}).get("measured") or {}).items()
+        if isinstance(c["value"], Mapping)
+        for name, bound in (c["value"].get("measured") or {}).items()
         if isinstance(bound, Mapping)
         and "margin" in bound
         and isinstance(bound["margin"], float)
@@ -1034,7 +1049,9 @@ def build(
         "commands": commands,
         "checks": checks,
         "artifacts": [
-            _artifact("docs/derivations/M01-spec.md", "The specification, Amendment 1 included."),
+            _artifact(
+                "docs/derivations/M01-spec.md", "The specification, Amendments 1 and 2 included."
+            ),
             _artifact("benchmarks/m01/components.yaml", "The five C1 records (A01, A03)."),
             _artifact(
                 "benchmarks/m01/reference_values.yaml", "The generator's 50-digit expectations."
@@ -1068,10 +1085,11 @@ def build(
             "W22 is validated for pure-component behaviour only (A38-A40, spec §11); there is no "
             "mixture VLE validation, and k_ij = 0.",
             "The probe record's numbers come from one machine and one environment. Two record "
-            "values sit within 10x of their bounds by the spec's own registration: A45's element "
-            "defect at the design grid (2.66e-8 against 1e-7; the refusal threshold 1e-6 is 37x "
-            "above it) and A52's mapping of the recorded n (1 ulp against 2). Both are constants "
-            "of a committed record, not computations the gate repeats.",
+            "values sit within 10x of their bounds by the spec's own registration: A45's worst "
+            "accepted element defect, 2.98e-8 at the design grid's 693.15 K neighbour (2.66e-8 at "
+            "the nominal inlet), against 1e-7, with the refusal threshold 1e-6 33.6x above it; and "
+            "A52's mapping of the recorded n (1 ulp against 2). Both are constants of a committed "
+            "record, not computations the gate repeats.",
             "Human numerical and process-modeling review remain `pending`; `reviewed` is never "
             "self-set.",
         ],

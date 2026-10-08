@@ -67,13 +67,13 @@ jobs:
       OMP_NUM_THREADS: "1"
       MKL_NUM_THREADS: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Full history: tests/test_evidence_manifests.py checks that each manifest's
           # recorded commit object exists in the repository.
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -94,8 +94,24 @@ jobs:
           python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
           python scripts/t07_licence_inventory.py
 
+      # M06 (design note §8 Layer C, ADR 0030 D6): Node for check.sh's `node --test` step of the
+      # web shell's tests — a test-time tool, no packages installed. CI never sets
+      # OPENFLOWSHEET_SKIP_WEB_TESTS, so the step runs on both architectures.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      # M06 WO-11 (design note §8 A6, Layer C): on the x86-64 leg the browser smoke test must
+      # run — Chrome is on the GitHub Ubuntu image — so a missing browser fails it rather than
+      # skipping it. The aarch64 image has no browser; there it is skipped with its reason.
       - name: Run checks
-        run: ./scripts/check.sh
+        run: |
+          if [ "${{ matrix.runner }}" = "ubuntu-latest" ]; then
+            export OPENFLOWSHEET_REQUIRE_BROWSER=1
+            OPENFLOWSHEET_BROWSER="$(command -v google-chrome || command -v chromium || true)"
+            export OPENFLOWSHEET_BROWSER
+          fi
+          ./scripts/check.sh
 
       # Gate G05's second clause: two-platform structural equality. Each runner emits the R0
       # artifacts blueprint §8.3 promises identical across supported platforms; the `identity`
@@ -110,7 +126,7 @@ jobs:
       - name: Emit T02's R1/R2 floats
         run: PYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: structural-identity-${{ matrix.runner }}
           path: |
@@ -129,11 +145,11 @@ jobs:
       OMP_NUM_THREADS: "1"
       MKL_NUM_THREADS: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -160,15 +176,15 @@ jobs:
     needs: check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: structural-identity-*
           path: identities
 
       # T02 A34: `t02_floats` is compared under ADR 0007 D2 by the registered comparator, which
       # reads the numerical policy from benchmarks/k04/reference_values.yaml.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -243,9 +259,9 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -293,7 +309,7 @@ jobs:
         if: always()
         run: python scripts/t06_ensemble.py a98 "$OUT/run2r-$CLASS.json" | tee "$OUT/run2r-$CLASS.a98.txt"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: ensemble-${{ matrix.runner }}
@@ -310,9 +326,9 @@ jobs:
     env:
       PYTHONPATH: "."
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -322,7 +338,7 @@ jobs:
           python -m pip install -r requirements.lock
           python -m pip install -e .
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: ensemble-*
           path: ensembles
@@ -357,9 +373,9 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -382,7 +398,7 @@ jobs:
       - name: W5 — PTC-R1, 441 starts × 2 arms (§A4.5)
         run: python -m benchmarks.t08.ptc_r1.compare --run --out-dir "$OUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: ptc-r1-${{ matrix.runner }}
@@ -408,9 +424,9 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -434,7 +450,7 @@ jobs:
           echo "a30 exit status ${PIPESTATUS[0]}" | tee -a "$OUT/a30.log"
           ls "$OUT"/a30-inventory-aarch64.json "$OUT"/t08-a30-aarch64.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: a30-inventory-ubuntu-24.04-arm
@@ -459,9 +475,9 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -482,7 +498,7 @@ jobs:
           echo "a89 exit status ${PIPESTATUS[0]}" | tee -a "$OUT/a89.log"
           ls "$OUT/ci-aarch64.json"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: a89-repeats-ubuntu-24.04-arm
@@ -498,18 +514,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
       - name: T08.A43 — build twice and inspect
         run: python scripts/t08_dist.py --out "$RUNNER_TEMP/rc-dist"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: rc-dist
@@ -545,13 +561,13 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: rc-dist
           path: ${{ runner.temp }}/rc-dist
@@ -596,6 +612,29 @@ jobs:
           done
           exit $status
 
+      # M06 gate G10 (design note §8 Layer C): the installed wheel serves the diagnostic web
+      # shell. The server extra's requirements, at the lock's versions, join the clean
+      # environment; then `openflowsheet serve-http --ui` from outside the tree answers
+      # `GET /ui/` and each checked shell file with its type and the shell's CSP.
+      - name: M06 G10 — the installed wheel serves the web shell
+        if: always()
+        run: |
+          WHEEL=$(ls "$RUNNER_TEMP"/rc-dist/dist/*.whl)
+          "$RUNNER_TEMP/clean/bin/python" - "$WHEEL" > "$RUNNER_TEMP/server.txt" <<'PY'
+          import email.parser, sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as wheel:
+              (name,) = [n for n in wheel.namelist() if n.endswith(".dist-info/METADATA")]
+              metadata = email.parser.Parser().parsestr(wheel.read(name).decode())
+          print("\n".join(r.split(";")[0] for r in metadata.get_all("Requires-Dist")
+                          if 'extra == "server"' in r))
+          PY
+          cat "$RUNNER_TEMP/server.txt"
+          "$RUNNER_TEMP/clean/bin/python" -m pip install -c requirements.lock -r "$RUNNER_TEMP/server.txt"
+          mkdir -p "$RUNNER_TEMP/outside-ui"
+          cd "$RUNNER_TEMP/outside-ui"
+          "$RUNNER_TEMP/clean/bin/python" "$GITHUB_WORKSPACE/scripts/m06_web_serve_check.py" \
+            "$RUNNER_TEMP/outside-ui" | tee "$RUNNER_TEMP/rc-install/web-${{ matrix.runner }}.txt"
+
       # T08.A34 (step 10) on the certificate this step emitted.
       - name: T08.A34 — audit the smoke solve's certificate
         if: always()
@@ -604,7 +643,7 @@ jobs:
             --out "$RUNNER_TEMP/rc-install/certificates-${{ matrix.runner }}.json" \
             "$RUNNER_TEMP/rc-install/bundle"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: rc-install-${{ matrix.runner }}
@@ -625,9 +664,9 @@ jobs:
       MKL_NUM_THREADS: "1"
       PYTHONPATH: "."
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -645,13 +684,13 @@ jobs:
           python scripts/t08_rc.py certificates --out "$RUNNER_TEMP/rc-certificates.json" \
             "$RUNNER_TEMP/rc-bundles"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rc-bundle-set-certificates
           path: ${{ runner.temp }}/rc-certificates.json
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rc-bundles
           path: ${{ runner.temp }}/rc-bundles/
@@ -676,9 +715,9 @@ jobs:
       MKL_NUM_THREADS: "1"
       PYTHONPATH: "."
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -688,7 +727,7 @@ jobs:
           python -m pip install -r requirements.lock
           python -m pip install -e .
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: rc-bundles
           path: ${{ runner.temp }}/rc-bundles
@@ -698,7 +737,7 @@ jobs:
           python scripts/t08_rc.py bundles-replay --bundles "$RUNNER_TEMP/rc-bundles" \
             --out "$RUNNER_TEMP/rc-replay/replay-${{ matrix.runner }}.json"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: rc-replay-${{ matrix.runner }}
@@ -727,11 +766,11 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -765,7 +804,7 @@ jobs:
         if: always()
         run: python scripts/t08_rc.py certificates --out "$OUT/certificates-${{ matrix.runner }}.json" "$OUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: rc-steps-${{ matrix.runner }}
@@ -787,9 +826,9 @@ jobs:
       MKL_NUM_THREADS: "1"
       PYTHONPATH: "."
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
@@ -802,7 +841,7 @@ jobs:
       - name: T08.A46, A47 (S3) — the registered ensemble and T06 A34's replay on ci-aarch64
         run: python scripts/t08_rc.py ensemble --out "$RUNNER_TEMP/rc-ensemble"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: rc-ensemble-ubuntu-24.04-arm
