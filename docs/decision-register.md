@@ -4065,3 +4065,286 @@ describes what a revision can use, and a revision cannot use it.
 T_out range was corrected to 1.2–1.7 K (the draft printed 1.3).
 
 ---
+
+## R-220 — The reactor runs as a fresh child process per experiment attempt inside the job worker, in a venv built from a hash-pinned lock
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D1; `docs/design/M02-pymrm-adapter.md` §2 |
+| Evidence | the reactor's numpy 2.5.3 / scipy 1.18.1 differ from the project's pins; ≈ 9 s per design-grid solve; `max_workers = 1` (ADR 0020 D1) |
+| Affected packages | M02, M04, M05, M07 |
+
+**Decision.** One subprocess per attempt, synchronous, started by the job worker; the child imports only stdlib,
+numpy, scipy, pymrm and the exported reactor; the environment is built by `adapters/pymrm/env.py` from a `git archive`
+export and a hash-pinned lock, never vendored.
+
+**Rejected alternatives, and why.** A job per experiment (job-to-job scheduling, deadlock at one worker, still needs a
+grandchild); a persistent per-job child (state carry-over; revisit on measurement, R-224); in-process import (pins,
+crash containment).
+
+**Watch for.** G11 (d)'s start-up share.
+
+---
+
+## R-221 — The kill chain has three layers, the executor's forced kill is a process-group kill, and the isolation profile `external-subprocess-v1` is stated as not a sandbox
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D2 (amends ADR 0020 D3); design note §2.3 |
+| Evidence | to be measured: design note G3 (a)–(h) |
+| Affected packages | M02; every later package that spawns a process from a job |
+
+**Decision.** L1 adapter (0.2 s poll, cooperative check, timeout; TERM, 2 s, KILL; reap); L2 the worker leads its own
+process group and the forced kill is `killpg`; L3 the child's stdin lifeline and self-deadline. Linux registered, macOS
+best effort, Windows refused.
+
+**Rejected alternatives, and why.** Kill by pid (orphans the grandchild); PDEATHSIG alone (Linux-only, thread-scoped).
+
+**Watch for.** Any later subprocess started from a job must stay in the worker's group (no `start_new_session`).
+
+---
+
+## R-222 — Experiment identity is process-level and exact; every request reaching the runner is retained; outcomes are deterministic or transient
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D4, D5; design note §3.2–§3.4 |
+| Evidence | M01.A43 (bitwise repeatability), M01.A36 (exact keys), blueprint §9.1 |
+| Affected packages | M02, M04 (trains on the records), M05 |
+
+**Decision.** Key = SHA-256 of {model, variant id and hash, provider identity, N_tubes, sweep ratio, components, exact
+n, T, P, environment fingerprint}. Completed executions and pre-execution refusals are deterministic (one write-once
+result); timeouts, crashes, protocol and environment failures and cancellations are transient (attempts only).
+
+**Rejected alternatives, and why.** Tube-level keys (the boundary's provider calls outside the identity; two records per
+fact); quantized keys (forbidden on the exact path).
+
+**Watch for.** (k n, k N_tubes) is a different key by design.
+
+---
+
+## R-223 — The exact cache serves deterministic outcomes only, a per-key `flock` prevents duplicate executions, bypass is a determinism monitor, and experiments are never invalidated
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D6, ADR 0035 D4; design note §3.4, §5.3, §6.3 |
+| Evidence | blueprint §7.7, §11.2 |
+| Affected packages | M02, M04, M05 |
+
+**Decision.** As the title. Records are files plus rows in the existing `artifacts` table; no store table is added.
+
+**Rejected alternatives, and why.** Caching only `ok` (re-runs known refusals); caching timeouts (a load fact); a global
+lock (serializes unrelated experiments); a new table (a store migration for no gain).
+
+**Watch for.** Network filesystems with unreliable `flock`.
+
+---
+
+## R-224 — Bounded transient-only retry, a 120 s per-attempt timeout, cold S1–S3 only (no reactor warm start), and no persistent child — each revisited only on a measurement
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed (N6 for Frank) |
+| Normative text | ADR 0033 D7, D8; design note §5.2, §5.4 |
+| Evidence | 9 s measured (M01 §10.1); path independence 1.6 × 10⁻⁸ measured at one point only |
+| Affected packages | M02, M04, M05 |
+
+**Decision.** One retry after `crashed`, `protocol_error`, `spawn_failed`; none after a timeout, an environment failure
+or a cancel. Timeout re-registered from G11 as max(120, 3 × the slowest accepted point), as a new variant if it changes.
+
+**Rejected alternatives, and why.** Retrying timeouts (silently doubles a known cost); warm starts (history-dependent
+results an exact cache cannot key); a persistent child (state carry-over) — the last two to be revisited if G11 (d)
+shows start-up above 30 % of a call or M05's budget demands it.
+
+**Watch for.** M05's call budget.
+
+---
+
+## R-225 — The reactor enters a flowsheet by an extent-fixed embedding with an outer Broyden coupling on (X̂, ΔT̂); converged at 10⁻⁵ n_tot,in and 10⁻² K
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0034 D1–D4; design note §4 |
+| Evidence | M01 §8.2 (two numbers carry the reactor's effect), §10.3 (floor), §10.1 (bias); T02 §4.2 (EO capability), R-045 |
+| Affected packages | M02, M03 (refuses sensitivities on the route), M05, M07 |
+
+**Decision.** Route `revision_coupled`; the compiled unit pins X̂ and ΔT̂; one experiment per unit per outer iteration at
+the inner solution's exact inlet; Broyden's good method, B₀ = −I, scales 0.1 and 10 K, at most 15 iterations; the
+tolerances sit ≥ 13 × above the propagated precision floor and ≥ 56 × below the design grid's bias.
+
+**Rejected alternatives, and why.** The reactor inside Newton with finite differences; a seven-coordinate inlet tear;
+the SYN-001 tear path; leaving the loop to the agent or to M05; the absolute extent as coordinate.
+
+**Watch for.** A loop with a feed–effluent exchanger couples ΔT̂ into the inlet; the 2m × 2m Broyden covers it, G12 does
+not test it.
+
+---
+
+## R-226 — Model versions are frozen by pinning variants by hash in the revision, by append-only variants, and by one environment fingerprint per attempt
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D3, ADR 0034 D5, ADR 0035 D1; design note §3.1, §6.1 |
+| Evidence | today `model.version` and `artifact_ref` are unchecked (`revision_binding.py`); blueprint §5.3 |
+| Affected packages | M02, M04 (surrogate variants), M05 |
+
+**Decision.** `model.version` = variant id, `model.artifact_ref` = variant SHA-256, binder-enforced
+(`model_variant_mismatch`); any change to child, overlay, profile, grid, lock or timeout is a new variant; the handshake
+fingerprint is frozen for the job and checked on every call.
+
+**Rejected alternatives, and why.** Trusting version strings; re-reading the environment per call without freezing.
+
+**Watch for.** Native models still carry unchecked versions.
+
+---
+
+## R-227 — A coupled run that used an out-of-process model is R3 and is replayed from its record; in-process models are re-evaluated on replay
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0034 D6 (amends ADR 0020 D4); design note §7 |
+| Evidence | blueprint §8.3 (R3), ADR 0024 D5 (replay from the bundle alone), ADR 0007 D4 |
+| Affected packages | M02, M05, M07 |
+
+**Decision.** The bundle gains `external-coupling.json` embedding every variant, request, result, attempt and iterate;
+`reproduce` checks each recomputed request (identity exact, inputs within ADR 0007 D2) before serving the recorded
+result, and says so in `reasons`. A live rerun is an evidence script.
+
+**Rejected alternatives, and why.** Rerunning the reactor on replay (needs the environment; not from the bundle alone).
+
+**Watch for.** A cross-platform replay whose iteration count differs is a `MISMATCH` unless a near-threshold flag explains
+it.
+
+---
+
+## R-228 — Promotion is a commit that changes a model reference, checked against blueprint §5.3's facets when either side is variant-backed; invalidation is the existing `invalidations` rule, generalized by operation
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0035; design note §6.2–§6.3 |
+| Evidence | `local.py:444` (runs of the expected revision already invalidated on commit); `transaction-result.schema.json` |
+| Affected packages | M02, M04 (surrogate promotion, rollback), M05 |
+
+**Decision.** Facets resolvable, ports, components, conserved quantities, reference states, boundary condition, DOF,
+derivatives, validity; `model_replacement_incompatible` with the report on failure; the report's hash in the new
+revision's provenance on success; `EVIDENCE_OPERATIONS` (M02: `solve → run-`).
+
+**Rejected alternatives, and why.** A separate `promote_model` (bypassable); in-place invalidation flags (evidence is
+immutable); checking native swaps now (could reject v0.1 corpus transactions).
+
+**Watch for.** Extend the check to native models when they carry real versions.
+
+---
+
+## R-229 — Standalone experiments are an `experiment` job operation, one request per job; batches are M04's
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D9 (ADR 0019 Amendment 4); design note §3.5 |
+| Evidence | ADR 0019 D2: "A later operation is an added enum value and branch" |
+| Affected packages | M02, M04, M06 (the shell lists jobs generically) |
+
+**Decision.** Body: model reference, SI inlet, N_tubes, cache mode; right `execute`; `completed` whatever the outcome.
+
+**Rejected alternatives, and why.** Experiments only inside solves (M04 would have no producer).
+
+**Watch for.** M04's sampling should submit through this operation or a batch operation of its own, not around it.
+
+---
+
+## R-230 — The M02 PR units: vapour-outlet heater and mixer, one split unit (the flash, VAPOR / TWO_PHASE / ZERO_FLOW); a feed without light gas is refused; τ_dew = 10⁻¹⁰
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed (N5 for Frank) |
+| Normative text | design note §8; M01 spec §7 |
+| Evidence | the C1 loop's streams: vapour except the separator; M01 F4 (O(ε) liquid at a dew point) |
+| Affected packages | M02, M05, M07 |
+
+**Decision.** `c1.feed_source`, `c1.product_sink`, `c1.stream_splitter`, `c1.adiabatic_mixer`, `c1.tp_heater`,
+`c1.tp_flash`; the flash's NH₃ equilibrium row in R-008's form with the liquid's light-gas flows as structural zeros;
+`pure_nh3_flash_unsupported` for feeds with no light gas.
+
+**Rejected alternatives, and why.** Two-phase heaters and mixers (not needed by the loop); the pure-NH₃ LIQUID and
+saturation route now (ADR 0012's band route for a case the loop never visits).
+
+**Watch for.** M07's journey adding a cooler into the two-phase region must use the flash.
+
+---
+
+## R-231 — C1 revisions bind on `pr-c1-v1` by `record_source`; `c1.reactor` and `c1.reactor_standin` are both bindable; the stand-in is listed synthetic only
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed (N4 for Frank) |
+| Normative text | ADR 0034 D8, D9; design note §8 |
+| Evidence | `revision_binding.py:1191` (the binder is hard-wired to SYN-001); R-199 (M02 decides whether to bind the stand-in) |
+| Affected packages | M01 (A49's binder clause superseded), M02, M07 (the envelope) |
+
+**Decision.** Every `record_source` other than the C1 records binds exactly as today. M01.A49's "`MODEL_BUILDERS` has no
+key `c1.reactor_standin`" is replaced by design note G8 (e); its label clauses stand.
+
+**Rejected alternatives, and why.** Not binding the stand-in (no default-gate coverage of the coupled route).
+
+**Watch for.** A W21 or M07 claim on a result with `identity.synthetic: true` is invalid (R-199).
+
+---
+
+## R-232 — Q-F5: the real reactor's variant bounds the per-tube flow to [0.5, 2] × nominal; the stand-in has no flow bound
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0034 D10 (amends ADR 0027 D9 for that variant); design note §3.1, §10.3 |
+| Evidence | M01 Q-F5 (start strategy measured at GHSV 1000 only); M01.A25's stand-in inlet is 140 × nominal per tube |
+| Affected packages | M02, M05, M07 (N_tubes) |
+
+**Decision.** F_ret_in ∈ [0.003573480649651052, 0.014293922598604208] mol/s, `out_of_domain` outside, as a variant
+hard-domain field read by `Boundary`; widened to [0.25, 4] × only if both ends are measured accepted (a new variant).
+
+**Rejected alternatives, and why.** A module-level bound (refuses M01's registered stand-in states).
+
+**Watch for.** M07's choice of N_tubes must keep the loop's per-tube flow inside the bound.
+
+---
+
+## R-233 — Property calls inside an experiment are not metered by the solve's property budget; each experiment records its own
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D11; design note §4.4 |
+| Evidence | ADR 0007 D5.1 (a deterministic cap); a cache hit makes no provider calls |
+| Affected packages | M02, M05 |
+
+**Decision.** As the title.
+
+**Rejected alternatives, and why.** Metering them (a cache hit would change a solve's count and the point at which
+`BUDGET_EXHAUSTED` fires).
+
+**Watch for.** M05's true-model call accounting counts experiments (executions and hits), not property calls.
+
+---
