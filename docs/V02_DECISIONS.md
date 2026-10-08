@@ -487,3 +487,9 @@ Grep, don't read whole. Newest at the bottom.
   `vapour_phase_inadmissible`; B17 zero-flow ideal-gas limit; B18 D27 confirmed; B19 D33 confirmed. No specifier blocks
   (optional ratification of M01 §7 A3). Risks: G7(a) 1e-9 may need `newton_refined`; near-dew singularity → limitation.
 - `opus-engineer` M02 WO-8.1…8.5 launched on `wp/M02`.
+- M05 WO-2, WO-3 done on `wp/M05` (`0a93225` projection compiler, `aaa2452` omitted_rows DECISION, `545a385` G4 in K03
+  scales DECISION, `dd9e364` TRF runner): default 7951 passed, nlp 67 passed. G2 pin refuses; G3 TR-E1 matches native to
+  4.4e-16 in 5 iterations (6 cold points, 4 gradients); G4 SYN-001 ≤ 5.9e-4/7.1e-7/2.3e-3 of tolerance; G13 holds.
+  Finding: Pyomo's EFReplacement.exitNode swallows start-value exceptions (bare except → 0); holder now records them.
+  Open for the M05 architect: omitted pressure-alias rows (PROJECTION_DOF otherwise); G4/Ipopt scaling in K03's scales;
+  unassigned affine basis (§6.6), readiness halves, TruthBox meta. Architect asked.
