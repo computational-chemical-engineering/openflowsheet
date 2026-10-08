@@ -417,3 +417,13 @@ Grep, don't read whole. Newest at the bottom.
   ExternalFunction needs no ASL library; no M05 code/ADR anywhere; C1 decisions per ADR 0022 D6 = reactor inlet T
   (alternative purge fraction); no registered objective.
 - `architect` M05 launched on `wp/M05` (ADR 0038+, R-260+), with a throwaway TRF probe allowed in the audited env.
+- M04 WO-1, 2, 3, 10 done on `wp/M04` (`c757f13`, `cebe3f6`, `af4801a`, `7613b5e`; check.sh 7243 passed):
+  `studies/surrogate/{plan,conformal,quadratic}.py` (the `studies` layer created byte-identically to wp/M03's).
+  A01–A15 + A34 pass (closest: A12 R_T 8.1e-17 vs 1e-15, 12×). Choices isolated per commit (input map in plan.py;
+  injected domain guard; `plan_not_registered` for it≥2; None is the only +∞ score). For the M04 amendment round:
+  A11's "rank-deficient by two columns" is eight columns; whether it≥2 training lists earlier draws as requests.
+  WO-4+ need M02's runner/unit → merge `wp/M02` into `wp/M04` after M02's WO-7/8 gate is green.
+- M03 CI 37846362678: check green on both architectures; default-install failed on the G6 isolation walk importing
+  bindings.http (uvicorn absent). Fixed (`8996973`: only a server-extra ModuleNotFoundError is tolerated); re-run
+  37848933412.
+- `docs/progress.md` "Start here" rows brought up to date.

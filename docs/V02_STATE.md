@@ -18,7 +18,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
 | M02 | Build | M01 | W21 | design + rulings R-234…237; WO-1…6 done (`2e63211`; **G10 all pass, A47 bitwise**); WO-7, 8 running; rulings round 2 R-250…252 (`e4d1b82`); then WO-9…13 |
 | M03 | Design | T08 | W24 (part) | all WOs + review fixes done (`71b3c37`); manifest `implemented` (`evidence/M03/fd16834…`) → `tested` on N1 + CI both runners (run 37846362678); merge waits for N1 |
-| M04 | Design | M02 | W23 | spec done (`6e48ffb`: A01–A35, ADR 0036/0037, R-240…249, plan it.1 = 632 experiments ≈ 95 min); WO-1, 2, 3, 10 running; WO-4…9 need M02's WO-4/6/7/11; WO-11 real run needs M02 WO-5 |
+| M04 | Design | M02 | W23 | spec done; WO-1, 2, 3, 10 done (`7613b5e`, gate green); WO-4…9 after `wp/M02` (WO-7/8) is merged into `wp/M04`; WO-11 real run needs M02 WO-5 env (built) + Frank's N1 budget |
 | M05 | Design | M03, M04 | W24 | design started 2026-10-08 (`architect` on `wp/M05`; ADR 0038+, R-260+); depends on N1 (Pyomo route) and M04 N6 |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
@@ -82,7 +82,6 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `opus-engineer` | M02 merge main + WO-7, 8 (+9): C1 binding, PR units | `wp/M02` (`m02`) |
 | `architect` | M05 design (brief `docs/briefs/M05-design.md`) | `wp/M05` (`m05`) |
-| `opus-engineer` | M04 WO-1, 2, 3, 10 (sampler, conformal, fit) | `wp/M04` (`m04`) |
 | `specifier` | v0.2 alpha release gate (`0.2.0a1`) | `wp/V02-alpha-gate` (`alpha-gate`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
