@@ -1,0 +1,1277 @@
+{
+ "work_package": "M01",
+ "commit": "3c803920f63f3d2e2fe7300090198f2e5670fbf7",
+ "requirements": [
+  "D08"
+ ],
+ "status": "tested",
+ "inputs": {
+  "case_id": "M01 registered states (V1-V5, L1, L2, U1-U6, F1-F14), the stand-in at V1's inlet, the projection's registered perturbation, the IDAES and CoolProp records, the reactor probe record v2",
+  "case_hash": "46d684cdc1b4086e12be0e4f95502f07150b820887f9fdd9c6de26f6a7f58ebf",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "PYTHONPATH=src PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "dd6661b04aec0982e16a78f810478a8c456012944eb4db25db761824ec45aac3"
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/m01-tests.junit.xml tests/test_m01_flash.py tests/test_m01_idaes_conformance.py tests/test_m01_provider.py tests/test_m01_reactor_boundary.py tests/test_m01_reactor_probe_record.py tests/test_m01_records.py tests/test_m01_reference_values.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "e3bf6bbf629e501a8c3776a1b500983e49c403cc634cd3249defe6aa70a336a9"
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python docs/derivations/scripts/m01_reference.py --check",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "3ce3a40e83aae853d6e86f9a57f9165c4091cbea0352c3a5dcd6b6db89b1cc92"
+  },
+  {
+   "cmd": "VENV/bin/python -I benchmarks/m01/external_crosscheck.py --check  (VENV: chemicals 1.5.2, thermo 0.6.1, CoolProp 8.0.0, cantera 3.2.0, pyyaml 6.0.2; the script's pins)",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "2f92bf5c59207de7c1f4f59e58c59087f73908eea14c14943edeb4499ae88bdc"
+  },
+  {
+   "cmd": ".venv-idaes/bin/python -I benchmarks/m01/idaes_conformance.py --out ARTIFACTS/idaes-conformance.json",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "cmd": "git diff --name-only c1da14c14625e596978c691c8ba72f0a132bbc51 3c803920f63f3d2e2fe7300090198f2e5670fbf7 -- benchmarks/syn001 benchmarks/t05 benchmarks/t05b benchmarks/t06 benchmarks/t08 src/openflowsheet/models/syn001 evidence/K05 evidence/T07 tests/fixtures scripts/k05_structural_identity.py",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "M01.A01",
+   "description": "M01 spec §9, M01.A01: `components.yaml` holds five records, ids in the order H2, N2, NH3, Ar, CH4; each validates against `component-record.schema.json` and `check_quantity`; `synthetic: false`; `elemental_verification: VERIFIED`. Exact.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a01_*",
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A02",
+   "description": "M01 spec §9, M01.A02: `external-crosscheck.json` has `retrieval_all_equal: true` and every `retrieval.*.equal` true (form test in the gate; the script's `--check` is evidence in the manifest).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a02_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "crosscheck": {
+     "exit_code": 0,
+     "output": "external-crosscheck.json matches",
+     "record_sha256": "72a2732e5c22517786b1b2e1f2419de8223e88a959b001c3ee47aea56c408f39"
+    }
+   }
+  },
+  {
+   "id": "M01.A03",
+   "description": "M01 spec §9, M01.A03: The provider's parameters equal the records' values bitwise (as parsed floats); `data_sha256` is the SHA-256 of `components.yaml`'s bytes; `implementation_sha256` the SHA-256 of the provider module's source. Exact.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a03_*",
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A04",
+   "description": "M01 spec §9, M01.A04: `describe()`: `provider_id` `pr-c1-v1`, `reference_convention` `PR-C1-ref-v1`, `state_definition` `nTP-v1`, components (H2, N2, NH3, Ar, CH4), phases (LIQUID, VAPOR), properties ⊇ {h, Z, v, lnphi_H2, lnphi_N2, lnphi_NH3, lnphi_Ar, lnphi_CH4}, flashes (\"TP\",), derivative_order = {T: 1, P: 1, n_H2: 1, n_N2: 1, n_NH3: 1, n_Ar: 1, n_CH4: 1}, domain {T: (200.0, 1000.0), P: (1e4, 3e7)}. Exact.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a04_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A05",
+   "description": "M01 spec §9, M01.A05: Per component: κ, a_c, b rel 10⁻¹⁴; NH₃'s T_c,EOS rel 10⁻¹³ (`closed_form.components`, `nh3_eos_critical`). Simple products; the floor is a few ulp.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a05_*",
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "kappa_a_c_b": {
+      "value": 2.220446049250313e-16,
+      "tolerance": 1e-14,
+      "sense": "<=",
+      "within": true,
+      "margin": 45.0
+     },
+     "nh3_eos_critical": {
+      "value": 2.220446049250313e-16,
+      "tolerance": 1e-13,
+      "sense": "<=",
+      "within": true,
+      "margin": 450.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A06",
+   "description": "M01 spec §9, M01.A06: c_p^ig(298.15 K), c_p^ig(700 K), h^ig(268.15 K), h^ig(700 K) per component rel 10⁻¹²; h^ig(298.15 K) = Δ_fH° within 10⁻⁹ J/mol.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a06_*",
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "cp_h_ig": {
+      "value": 9.115589140092656e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 1100.0
+     },
+     "h_ig_298_15_minus_dfH_J_mol": {
+      "value": 0.0,
+      "tolerance": 1e-09,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A07",
+   "description": "M01 spec §9, M01.A07: Phase states V1, V2, V3, V4, V5, L1, L2: Z, h, every reported ln φ rel 10⁻¹²; v rel 10⁻¹².",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a07_*",
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "Z_h_v_lnphi": {
+      "value": 6.059019004649999e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 1650.0
+     },
+     "states": [
+      "V1",
+      "V2",
+      "L1",
+      "L2",
+      "V3",
+      "V4",
+      "V5"
+     ]
+    }
+   }
+  },
+  {
+   "id": "M01.A08",
+   "description": "M01 spec §9, M01.A08: Roots and labels: L2 and V3 (one state, three roots) have distinct Z equal to the reference's smallest and largest; L1 is a single liquid-like root (v ＜ v_c,EOS); V4 is the single supercritical root. Values as A07.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a08_*",
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A09",
+   "description": "M01 spec §9, M01.A09: V1's five ln φ are nonzero and differ pairwise by at least 10⁻⁶, and V2's likewise; every |h^dep| at V1–V5, L1, L2 exceeds 1 J/mol (a dropped departure term fails A07). *Why 10⁻⁶ (Amendment 1):* it is 10⁶ times A07's tolerance, so a permuted component index fails A07 by at least that factor. The reference's smallest gaps are 4.35 × 10⁻⁴ (V1, H₂/CH₄) and 0.046 (V2, N₂/Ar) (`assertion_margins.A09_min_pairwise_lnphi_gap`; claim PH-GAP holds the 10⁻⁶ bound on the reference). The draft's parenthetical, \"changes A07's comparison by ≥ 10⁻³\", was false at V1.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a09_*",
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "min_pairwise_lnphi_gap": {
+      "value": 0.0004347423147853281,
+      "tolerance": 1e-06,
+      "sense": ">=",
+      "within": true,
+      "margin": 435.0
+     },
+     "by_state": {
+      "V1": 0.0004347423147853281,
+      "V2": 0.04592858361797546
+     },
+     "min_abs_h_departure_J_mol": {
+      "value": 54.354620994279685,
+      "tolerance": 1.0,
+      "sense": ">=",
+      "within": true,
+      "margin": 54.4
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A10",
+   "description": "M01 spec §9, M01.A10: At V1, V2 (VAPOR) and L1 (LIQUID), for every property X ∈ {Z, v, h, ln φ_*} and input x ∈ {T, P, n_j}: |s·(∂X/∂x)_impl − s·(∂X/∂x)_ref| ≤ 10⁻⁹·max(|X|, 1, |s·(∂X/∂x)_ref|), s = T, P or n_tot,in respectively (`closed_form.derivatives`). Argument: an analytic or AD derivative in double has no stencil; its floor is the value floor times the conditioning (≲ 10⁻¹³); 10⁻⁹ leaves 10⁴. A sign error or a dropped implicit-root term is ≥ 10⁻³ relative.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a10_*",
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "scaled_derivative_error": {
+      "value": 5.271357053122545e-16,
+      "tolerance": 1e-09,
+      "sense": "<=",
+      "within": true,
+      "margin": 1900000.0
+     },
+     "states": [
+      "V1",
+      "V2",
+      "L1"
+     ]
+    }
+   }
+  },
+  {
+   "id": "M01.A11",
+   "description": "M01 spec §9, M01.A11: L1's n-derivatives are exactly 0.0 (pure-liquid properties are composition-free); V1's and V2's are all nonzero (DER-NZ: each ＞ 10⁻¹² in magnitude), so A10 is not met by zeros.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a11_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "L1_n_derivatives_exactly_zero": true,
+     "min_vapour_n_derivative": {
+      "value": 2.3891818462540286e-07,
+      "tolerance": 1e-12,
+      "sense": ">=",
+      "within": true,
+      "margin": 239000.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A12",
+   "description": "M01 spec §9, M01.A12: Identities of the implementation itself, independent of the reference, at V1 and V2 (as amended by Amendment 1). Homogeneity of X ∈ {Z, v, h}: |Σ_j n_j ∂X/∂n_j| ≤ 10⁻¹²·Σ_j |n_j ∂X/∂n_j|. The ln φ block: with the dimensionless J_ij = n_tot ∂ln φ_i/∂n_j, y = n/n_tot and **M = max_{i,j} |J_ij|**: - homogeneity |Σ_j y_j J_ij| ≤ 10⁻¹² M for every i; - Gibbs–Duhem |Σ_i y_i J_ij| ≤ 10⁻¹² M for every j; - symmetry |J_ij − J_ji| ≤ 10⁻¹² M for every i, j.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a12_*",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "homogeneity_Z_v_h": {
+      "value": 6.109990213179649e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 1640.0
+     },
+     "lnphi_homogeneity": {
+      "value": 2.9110764101990437e-17,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 34400.0
+     },
+     "gibbs_duhem": {
+      "value": 2.4605526800491916e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 4060.0
+     },
+     "symmetry": {
+      "value": 3.770537064638761e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 2650.0
+     },
+     "scale": "lnphi identities over M = max|J_ij| (Amendment 1, R-196); Z, v, h over their own row sums of |n_j dX/dn_j|"
+    }
+   }
+  },
+  {
+   "id": "M01.A13",
+   "description": "M01 spec §9, M01.A13: A derivative request for an undeclared input returns `unsupported` with `undeclared_derivative_input`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a13_*",
+     "passed": 3,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A14",
+   "description": "M01 spec §9, M01.A14: U1 → `unsupported`, message matches `^light_gas_in_liquid:`; U2 → `^no_liquid_root:`; U3 → `^no_vapour_root:`; U4 → `^vapour_root_metastable:`; U5, U6 → status `out_of_domain`, `^out_of_domain:`. A dormant state in `evaluate_phase` → `^dormant_state:`. No refusal carries values.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a14_*",
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A15",
+   "description": "M01 spec §9, M01.A15: F1, F5, F11, F13: `ok`, TWO_PHASE; y* (= `k_values[\"NH3\"]`, the only key) rel 10⁻¹¹; `vapor_fraction` |Δ| ≤ 10⁻¹²; vapour NH₃ and liquid NH₃ flows rel 10⁻¹¹; the liquid's light-gas flows are +0.0 exactly; the vapour's light-gas flows equal the feed's bitwise. Argument: y* is a root of one scalar equation found by bisection to ~ulp; roundoff in h (≲ 10⁻¹⁵) moves y* by ≲ 10⁻¹⁵/(y* h′(y*)) ≈ 10⁻¹⁵ relative (h′ ≈ 1/y*).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a15_*",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "y_star_rel": {
+      "value": 3.552713678800501e-15,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 2810.0
+     },
+     "vapor_fraction_abs": {
+      "value": 4.440892098500626e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 2250.0
+     },
+     "nh3_flows_rel": {
+      "value": 8.659739592076221e-15,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 1150.0
+     },
+     "states": [
+      "F1",
+      "F5",
+      "F11",
+      "F13"
+     ]
+    }
+   }
+  },
+  {
+   "id": "M01.A16",
+   "description": "M01 spec §9, M01.A16: At the implementation's own TWO_PHASE results (A15 states), its own `evaluate_phase` gives |ln y* + ln φ_NH₃^V − ln φ_NH₃^L| ≤ 10⁻¹² (the equilibrium row closes on the provider's own evaluations).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a16_*",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "equilibrium_residual": {
+      "value": 8.881784197001252e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 1130.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A17",
+   "description": "M01 spec §9, M01.A17: Single-phase routes: F2 VAPOR, F3 VAPOR, F6 VAPOR, F8 VAPOR, F9 VAPOR, F10 VAPOR (vapor_fraction 1.0, liquid dormant), F7 LIQUID (vapor_fraction 0.0, vapour dormant); the present phase equals the feed bitwise; `k_values` empty.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a17_*",
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A18",
+   "description": "M01 spec §9, M01.A18: F4 is VAPOR, or TWO_PHASE with liquid NH₃ ≤ 10⁻¹² × the feed's NH₃.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a18_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A19",
+   "description": "M01 spec §9, M01.A19: F12 is VAPOR (the rules' answer at the near-critical state; registered behaviour, not a physical claim).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a19_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A20",
+   "description": "M01 spec §9, M01.A20: F14: `ok`, `ZERO_FLOW`, `vapor_fraction` None, both outlets all +0.0, `k_values` empty.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a20_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A21",
+   "description": "M01 spec §9, M01.A21: Feed independence: F1 with its NH₃ doubled gives y* bitwise equal to F1's.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a21_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "y_star_bitwise_equal": true
+    }
+   }
+  },
+  {
+   "id": "M01.A22",
+   "description": "M01 spec §9, M01.A22: Material closure: for every TWO_PHASE result, vapour + liquid = feed componentwise within 1 ulp of the feed's component flow.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a22_*",
+     "passed": 4,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "closure_in_ulp_of_feed": {
+      "value": 1.0,
+      "tolerance": 1.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 1.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A23",
+   "description": "M01 spec §9, M01.A23: Σ ν_i h_i^ig at 298.15 K = −91 116 J/mol within 10⁻⁹ J/mol; at 673.15 K rel 10⁻¹² (−104 003.12297042357).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a23_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "dh_r_298_15_abs_J_mol": {
+      "value": 0.0,
+      "tolerance": 1e-09,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     },
+     "dh_r_673_15_rel": {
+      "value": 1.3991806027310477e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 7150.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A24",
+   "description": "M01 spec §9, M01.A24: The registry of reaction-consistent conventions equals {`SYN-001-ref-v1`, `PR-C1-ref-v1`}; SYN-001's constant is unchanged and a subset; a C1 reacting unit over `pr-c1-v1` constructs; over an unregistered convention it raises `reference_convention_not_reaction_consistent(＜convention＞)`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a24_*",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A25",
+   "description": "M01 spec §9, M01.A25: Stand-in at V1's inlet: ξ = 0.05875 rel 10⁻¹⁴; n_out as §8.13 rel 10⁻¹⁴; T_out = T_in, P_out = P_in bitwise; Q = −6205.800878966381 W rel 10⁻¹⁰ (Ḣ_in, Ḣ_out rel 10⁻¹¹; the difference amplifies by 1.4).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a25_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "xi_rel": {
+      "value": 2.220446049250313e-16,
+      "tolerance": 1e-14,
+      "sense": "<=",
+      "within": true,
+      "margin": 45.0
+     },
+     "outlet_rel": {
+      "value": 2.220446049250313e-16,
+      "tolerance": 1e-14,
+      "sense": "<=",
+      "within": true,
+      "margin": 45.0
+     },
+     "T_P_out_bitwise": true,
+     "Q_rel": {
+      "value": 2.220446049250313e-16,
+      "tolerance": 1e-10,
+      "sense": "<=",
+      "within": true,
+      "margin": 450000.0
+     },
+     "H_in_H_out_rel": {
+      "value": 4.440892098500626e-16,
+      "tolerance": 1e-11,
+      "sense": "<=",
+      "within": true,
+      "margin": 22500.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A26",
+   "description": "M01 spec §9, M01.A26: Projection with the registered d (as amended by Amendment 1): - ξ and the projected outlet: rel 10⁻¹² (measured 2.2 × 10⁻¹⁶); - the inerts' projected flows equal their inlet flows bitwise, and the CH₄ defect is exactly 0.0 (raw and inlet are the same double and ν_CH₄ = 0); - the defect vector: |d_i − d_i,ref| ≤ **10⁻¹³ × n_tot,in** for every i, and |defect_rel − defect_rel,ref| ≤ 10⁻¹³; - the projected outlet conserves Ar, C, H and N: |Σ_i E_ki (n_out,i − n_in,i)| ≤ **10⁻¹³ × n_tot,in** for each element.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a26_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "xi_and_projected_outlet_rel": {
+      "value": 2.220446049250313e-16,
+      "tolerance": 1e-12,
+      "sense": "<=",
+      "within": true,
+      "margin": 4500.0
+     },
+     "inerts_bitwise_and_CH4_defect_zero": true,
+     "defect_vector_over_n_tot_in": {
+      "value": 5.574323825880552e-17,
+      "tolerance": 1e-13,
+      "sense": "<=",
+      "within": true,
+      "margin": 1790.0
+     },
+     "defect_rel_abs": {
+      "value": 5.0724568046323776e-18,
+      "tolerance": 1e-13,
+      "sense": "<=",
+      "within": true,
+      "margin": 19700.0
+     },
+     "element_balances_over_n_tot_in": {
+      "value": 0.0,
+      "tolerance": 1e-13,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     },
+     "amended_by": "Amendment 1 (R-195): 1e-13 x n_tot,in, from relative 1e-12 and 1e-15"
+    }
+   }
+  },
+  {
+   "id": "M01.A27",
+   "description": "M01 spec §9, M01.A27: Pressure convention: reported ΔP 5000 Pa at P_in 10⁷ → `ok`; 20 000 Pa → `unsupported`, `pressure_drop_exceeds_convention`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a27_*",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A28",
+   "description": "M01 spec §9, M01.A28: Zero-flow inlet → `ZERO_FLOW` result per §8.12; Q is +0.0 exactly.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a28_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A29",
+   "description": "M01 spec §9, M01.A29: Per-tube scaling: the stand-in's result for (k n_in, k N_tubes), k ∈ {2, 7}, equals k × the result for (n_in, N_tubes) rel 10⁻¹⁵ (n_out, ξ, Q).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a29_*",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "scaled_result_rel": {
+      "value": 0.0,
+      "tolerance": 1e-15,
+      "sense": "<=",
+      "within": true,
+      "margin": "infinite (exactly 0)"
+     },
+     "k": [
+      2.0,
+      7.0
+     ]
+    }
+   }
+  },
+  {
+   "id": "M01.A30",
+   "description": "M01 spec §9, M01.A30: Each refusal of §8.12 testable by the stand-in returns its status and code (inlet liquid: F7's state as inlet; component mismatch: a permuted order; trace: y_NH₃ = 10⁻¹⁰; hard domain: T_in = 550 K; defect: d with defect_rel 2 × 10⁻⁶) and carries no outlet values.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a30_*",
+     "passed": 6,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A31",
+   "description": "M01 spec §9, M01.A31: Data-domain flag: T_in = 623.15 K (inside the hard domain) → `ok`, `domain_status: extrapolated` listing `T_in`; T_in = 673.15 K → `within_data_domain`.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a31_*",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A32",
+   "description": "M01 spec §9, M01.A32: The envelope of an `ok` result has every field of §8.12 (stand-in: the reactor-specific diagnostics are present and `null`).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a32_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A33",
+   "description": "M01 spec §9, M01.A33: Existing identities unchanged: the gate passes with no edit to any registered value under `benchmarks/syn001/`, `benchmarks/t05/`, `benchmarks/t05b/`, `benchmarks/t06/`, `benchmarks/t08/`, the K05 identity fixtures, or `models/syn001/`; SYN-001's structural hash and the K05 identity document are reproduced bit for bit.",
+   "result": "pass",
+   "value": {
+    "frozen_paths_diff": {
+     "base": "c1da14c14625e596978c691c8ba72f0a132bbc51",
+     "commit": "3c803920f63f3d2e2fe7300090198f2e5670fbf7",
+     "paths": [
+      "benchmarks/syn001",
+      "benchmarks/t05",
+      "benchmarks/t05b",
+      "benchmarks/t06",
+      "benchmarks/t08",
+      "src/openflowsheet/models/syn001",
+      "evidence/K05",
+      "evidence/T07",
+      "tests/fixtures",
+      "scripts/k05_structural_identity.py"
+     ],
+     "changed": [
+      "benchmarks/t08/support_envelope.yaml"
+     ],
+     "ordered_by_the_spec": [
+      "benchmarks/t08/support_envelope.yaml"
+     ],
+     "unordered_edits": [],
+     "note": "support_envelope.yaml: the property_model axis lists pr-c1-v1 (T08.A20 holds the axes to the code) and names it a provider no model binds yet (M01 review F1); L40's text admits M01's five vetted records (spec §3.5, R-158); L42 states pr-c1-v1's own components, domain and validation (review F1); the harvest classifies M01's manifests' items (T08.A21's completeness rule). No registered value moves"
+    },
+    "gate": "check.sh PASSED; pytest: 7135 passed, 31 skipped"
+   }
+  },
+  {
+   "id": "M01.A34",
+   "description": "M01 spec §9, M01.A34: `m01_reference.py --check` exits 0 (88 claims hold, files byte-identical; 82 before Amendment 1 added PR-07, PH-GAP, BD-04, BD-05, BD-06, DX-01).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a34_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "generator": {
+     "exit_code": 0,
+     "claims": 88,
+     "last_line": "88 claims hold; reference_values.yaml matches; reactor-overlay.json matches"
+    }
+   }
+  },
+  {
+   "id": "M01.A35",
+   "description": "M01 spec §9, M01.A35: No runtime import of `chemicals`, `thermo`, `CoolProp`, `cantera` or `mpmath` from `openflowsheet`; `pyproject.toml`'s runtime dependencies unchanged.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a35_*",
+     "passed": 2,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A36",
+   "description": "M01 spec §9, M01.A36: Exact caching: two `evaluate_phase` requests differing by one ulp in T produce different cache keys and both evaluate (the existing cache rule; the provider supplies non-empty identity hashes).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a36_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A37",
+   "description": "M01 spec §9, M01.A37: IDAES conformance (build lane, IDAES 2.13 env, M01's records, k_ij = 0, vapour-only convention): at V1, V2 and L1, ln φ |Δ| ≤ 10⁻⁹ and Z rel 10⁻⁹; at F1 and F11, β |Δ| ≤ 10⁻⁸ and y* rel 10⁻⁸; record `benchmarks/m01/idaes-conformance.json` with environment hashes. Argument: claim IDAES-01 shows agreement at 4 × 10⁻¹² (β) and 4 × 10⁻¹⁵ (φ) with T08's parameters; Ipopt's tolerance bounds β; 10⁻⁸ leaves a margin of ~10³.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a37_*",
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "Z_rel": {
+      "value": 4.2465542963513587e-16,
+      "tolerance": 1e-09,
+      "sense": "<=",
+      "within": true,
+      "margin": 2350000.0
+     },
+     "lnphi_abs": {
+      "value": 3.552713678800501e-14,
+      "tolerance": 1e-09,
+      "sense": "<=",
+      "within": true,
+      "margin": 28100.0
+     },
+     "vapor_fraction_abs": {
+      "value": 4.172662215751188e-12,
+      "tolerance": 1e-08,
+      "sense": "<=",
+      "within": true,
+      "margin": 2400.0
+     },
+     "y_star_rel": {
+      "value": 7.136529578707424e-11,
+      "tolerance": 1e-08,
+      "sense": "<=",
+      "within": true,
+      "margin": 140.0
+     }
+    },
+    "idaes_rerun": {
+     "exit_code": 0,
+     "rerun_sha256": "7e1d41dd0da62c1685c2ea422e7891bb216c2e01bebb2e7ece7de22d4360adb4",
+     "committed_sha256": "7dc5509621e45e3c398bb82535632d8e9b1b205d530ec24432439f80dc14f9be",
+     "differing_members": [
+      "inputs.reference_values_yaml_sha256"
+     ],
+     "numbers_identical": true,
+     "note": "every member of the re-run equals the committed record except, if listed, the input hash of reference_values.yaml, which Amendment 1 changed outside closed_form"
+    }
+   }
+  },
+  {
+   "id": "M01.A38",
+   "description": "M01 spec §9, M01.A38: W22, pure NH₃ saturation: |P_sat,PR/P_sat,ref − 1| ≤ 0.02 at 240, 260, 268.15, 280, 300, 320 K against CoolProp 8.0.0's ammonia (Gao et al. 2020). Measured maximum 0.0127 (240 K); 0.0072 at 268.15 K.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "max_abs_P_sat_rel_dev": {
+      "value": 0.012675,
+      "tolerance": 0.02,
+      "sense": "<=",
+      "within": true,
+      "margin": 1.58
+     },
+     "by_temperature_K": {
+      "240": 0.012675,
+      "260": 0.008599,
+      "268.15": 0.007171,
+      "280": 0.005246,
+      "300": 0.002257,
+      "320": 0.000548
+     },
+     "kind": "validation band (spec §11), not a numerical tolerance"
+    },
+    "crosscheck": {
+     "exit_code": 0,
+     "output": "external-crosscheck.json matches",
+     "record_sha256": "72a2732e5c22517786b1b2e1f2419de8223e88a959b001c3ee47aea56c408f39"
+    }
+   }
+  },
+  {
+   "id": "M01.A39",
+   "description": "M01 spec §9, M01.A39: W22, liquid NH₃ fugacity at the separator states: |ln φ^L_PR − ln φ^L_ref| ≤ 0.05 at (268.15 K, 10⁷ Pa) and (250 K, 2.5 × 10⁷ Pa). Measured 0.0254 and 0.0401.",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "max_abs_dlnphi": {
+      "value": 0.040096,
+      "tolerance": 0.05,
+      "sense": "<=",
+      "within": true,
+      "margin": 1.25
+     },
+     "by_state": {
+      "NH3-LIQUID-268.15-1e7": 0.025394,
+      "NH3-LIQUID-250-2.5e7": 0.040096
+     },
+     "kind": "validation band (spec §11), not a numerical tolerance"
+    },
+    "crosscheck": {
+     "exit_code": 0,
+     "output": "external-crosscheck.json matches",
+     "record_sha256": "72a2732e5c22517786b1b2e1f2419de8223e88a959b001c3ee47aea56c408f39"
+    }
+   }
+  },
+  {
+   "id": "M01.A40",
+   "description": "M01 spec §9, M01.A40: W22, vapour fugacity of each pure light gas at (268.15 K, 10⁷ Pa) and (673.15 K, 10⁷ Pa), and of NH₃ vapour at (673.15 K, 10⁷ Pa): |Δ ln φ| ≤ 0.05. Measured maximum 0.0424 (CH₄, 268.15 K).",
+   "result": "pass",
+   "value": {
+    "measured": {
+     "max_abs_dlnphi": {
+      "value": 0.042371,
+      "tolerance": 0.05,
+      "sense": "<=",
+      "within": true,
+      "margin": 1.18
+     },
+     "by_state": {
+      "H2-VAPOR-268.15-1e7": 0.032804,
+      "H2-VAPOR-673.15-1e7": 0.006775,
+      "N2-VAPOR-268.15-1e7": 0.024624,
+      "N2-VAPOR-673.15-1e7": 0.008037,
+      "Ar-VAPOR-268.15-1e7": 0.028708,
+      "Ar-VAPOR-673.15-1e7": 0.005962,
+      "CH4-VAPOR-268.15-1e7": 0.042371,
+      "CH4-VAPOR-673.15-1e7": 0.008674,
+      "NH3-VAPOR-673.15-1e7": 0.001184
+     },
+     "kind": "validation band (spec §11), not a numerical tolerance"
+    },
+    "crosscheck": {
+     "exit_code": 0,
+     "output": "external-crosscheck.json matches",
+     "record_sha256": "72a2732e5c22517786b1b2e1f2419de8223e88a959b001c3ee47aea56c408f39"
+    }
+   }
+  },
+  {
+   "id": "M01.A41",
+   "description": "M01 spec §9, M01.A41: The start strategy is accepted (§8.7) at the design grid num_z = 800 for T_in ∈ {653.15, 673.15, 693.15} K, and the group's cold start at the true inlet is rejected for `dt_init` ∈ {10⁻⁶, 10⁻³, 10⁻¹} (the failure S1–S2 exist for).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a52_a41_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "accepted_at_num_z_800": {
+      "673.15": true,
+      "653.15": true,
+      "693.15": true
+     },
+     "cold_start_true_inlet_rejected": {
+      "1e-06": true,
+      "0.001": true,
+      "0.1": true
+     },
+     "cold_start_dt_init_registered": true
+    }
+   }
+  },
+  {
+   "id": "M01.A42",
+   "description": "M01 spec §9, M01.A42: Path independence at the design grid: S2 with `dt_init` 10⁻⁶ and 10⁻¹ give outlets (n_out, T_out) within 10⁻⁶ relative (§10.3; measured 1.6 × 10⁻⁸).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a52_a42_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "max_rel_diff": {
+      "value": 1.559285305616933e-08,
+      "tolerance": 1e-06,
+      "sense": "<=",
+      "within": true,
+      "margin": 64.1
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A43",
+   "description": "M01 spec §9, M01.A43: Repeatability: two repeats at the design grid are bitwise identical (one machine, one environment).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a52_a43_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "runs": 2,
+     "two_runs": true,
+     "bitwise_identical": true
+    }
+   }
+  },
+  {
+   "id": "M01.A44",
+   "description": "M01 spec §9, M01.A44: The backflow override is inert: replacing it by `[0, 0, 0, 1, 0]` leaves the outlet bitwise unchanged, and u_ret ＞ 0 on every face.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a52_a44_*",
+     "passed": 10,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "bitwise_identical": true,
+     "min_u_ret_min": 0.0013803491565340664,
+     "u_ret_positive_in_every_entry": true
+    }
+   }
+  },
+  {
+   "id": "M01.A45",
+   "description": "M01 spec §9, M01.A45: Raw element defects |Δ(H, N, C, Ar)|/inlet ≤ 10⁻⁷ at every accepted grid (measured at 800: 2.66 × 10⁻⁸ at the nominal T_in 673.15 K, 1.72 × 10⁻⁸ at 653.15 K and 2.98 × 10⁻⁸ at 693.15 K; ≤ 9.2 × 10⁻¹⁰ at 100–400); the refusal threshold 10⁻⁶ of §8.9 sits 37 times above the nominal design-grid value and 33.6 times above the worst accepted one. *(Amendment 2, review F7: the draft's \"≤ 2.7 × 10⁻⁸ at 800\" and \"37 times\" held at the nominal T_in only.)*",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a52_a45_*",
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "max_element_defect_rel_accepted": {
+      "value": 2.9798974020496724e-08,
+      "tolerance": 1e-07,
+      "sense": "<=",
+      "within": true,
+      "margin": 3.36
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A46",
+   "description": "M01 spec §9, M01.A46: |ΔP|/P_in ≤ 10⁻³ at every registered point (measured 4.90–5.06 × 10⁻⁵).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a52_a46_*",
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "max_abs_dP_over_P": {
+      "value": 5.059274805523455e-05,
+      "tolerance": 0.001,
+      "sense": "<=",
+      "within": true,
+      "margin": 19.8
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.A47",
+   "description": "M01 spec §9, M01.A47: M02's adapter reproduces the probe's design-grid nominal outlet (as amended by Amendment 1). The outlet means the evaluation's raw `TubeOutlet`, at N_tubes = 1, before projection: five flows and T_out. - (a) *Bitwise.* M02's `ExternalEvaluation` is called with the record's tube inputs exactly: `pinned.F_ret_in_mol_s`, `pinned.y_in`, T_in, p_ret_out = P_in, and §8.3's coolant. The environment block equals the record's (python, the four packages, the platform string, one thread). The call then returns flows and T_out equal to `pinned.outlet_n_mol_s` and `pinned.T_out_K` bitwise. If the environme… — Not M01's to run: the adapter half is M02's and A47 has no record half (spec §8.14, §8.15; R-200). Recorded so the hand-off is visible; not in §13's catalogue.",
+   "result": "not_applicable",
+   "value": {
+    "measured": {
+     "to_reproduce": {
+      "outlet_n_mol_s": [
+       0.004206722750696396,
+       0.0014141525193808178,
+       0.0007451757058514184,
+       0.00010720442233839437,
+       0.00014293922978452547
+      ],
+      "T_out_K": 757.3353119014521
+     },
+     "record_half": "none (spec §8.15: '—'); the adapter half is M02's"
+    }
+   }
+  },
+  {
+   "id": "M01.A48",
+   "description": "M01 spec §9, M01.A48: The refinement record holds the grid sequence of §10.1 with its order estimate and the design grid's discretization estimate; every reactor result reports that estimate (§8.12).",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a52_a48_*",
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "grid_num_z": [
+      100,
+      200,
+      400,
+      800,
+      1600,
+      3200
+     ],
+     "grid_registered": true,
+     "accepted_exactly_the_first_four": true,
+     "discretization_estimate": "reference_values.yaml derived_from_measured.discretization_estimate, recomputed by claim DX-01 (A34)"
+    }
+   }
+  },
+  {
+   "id": "M01.A49",
+   "description": "M01 spec §9, M01.A49: The stand-in is labelled as §8.13 states. Its manifest validates against `model-manifest.schema.json`. Its `title` contains `synthetic` (case-insensitive), its `description` begins `SYNTHETIC`, and its `validity.limitations[0]` begins `SYNTHETIC:`. Every `ok` result has `identity.synthetic` exactly `true`. `MODEL_BUILDERS` has no key `c1.reactor_standin`, and the revision binder refuses a revision naming it `model_unsupported(c1.reactor_standin)`. Exact. The stand-in's status as an unsupported model is checked, not assumed.",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a49_*",
+     "passed": 5,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A50",
+   "description": "M01 spec §9, M01.A50: Provider request checks (§5.3, §5.4 step 0):",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a50_*",
+     "passed": 10,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A51",
+   "description": "M01 spec §9, M01.A51: Boundary paths beyond A30 (§8.12): - (i) an evaluation that returns `NotAccepted(\"S3\")` → `not_converged`, code `reactor_not_accepted(S3)`; every code of this kind matches `^reactor_not_accepted\\([A-Za-z0-9_]+\\)$`; - (ii) a provider whose `flash` answers as `pr-c1-v1` but whose `evaluate_phase` refuses → `error`, `stream_enthalpy_refused`, and the message contains the provider's message; - (iii) V1's inlet with N₂ = −0.235 → `out_of_domain`, code `out_of_domain`, passed through from the inlet flash; *(Amendment 2, review F3: that state is now refused by the boundary's own step 2, see (v); (iii…",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a51_*",
+     "passed": 27,
+     "failed": 0,
+     "skipped": 0
+    }
+   }
+  },
+  {
+   "id": "M01.A52",
+   "description": "M01 spec §9, M01.A52: The probe record, as committed, holds §8.15's record halves: - `version` 2; `reactor_commit` the pin of §8.1; `environment.packages.pymrm` `2.5.0`; - A41: `pinned` and both `neighbouring_inlet_temperatures` at num_z 800 with `m01_accepted` true; `cold_start_true_inlet` with `dt_init` exactly {10⁻⁶, 10⁻³, 10⁻¹}, all `accepted` false; - A42: `path_independence.max_rel_diff` ≤ 10⁻⁶; - A43: `repeats.runs` 2 with `bitwise_identical` true; - A44: `backflow_override.bitwise_identical` true, and `u_ret_min` ＞ 0 in every grid entry and both neighbours; - A45: max |`element_defect_rel`| ≤ 10⁻⁷ in every …",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selector": "tests/test_m01_*.py::test_a52_*",
+     "passed": 33,
+     "failed": 0,
+     "skipped": 0
+    },
+    "measured": {
+     "mapping_F_ulp": {
+      "value": 1.0,
+      "tolerance": 2.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 2.0
+     },
+     "mapping_y_ulp": {
+      "value": 1.0,
+      "tolerance": 2.0,
+      "sense": "<=",
+      "within": true,
+      "margin": 2.0
+     },
+     "y_ulp_by_component": {
+      "H2": 1.0,
+      "N2": 1.0,
+      "NH3": 1.0,
+      "Ar": 1.0,
+      "CH4": 0.0
+     }
+    }
+   }
+  },
+  {
+   "id": "M01.gate",
+   "description": "M01 spec §13: `./scripts/check.sh` green at C, with M01.A01, A03-A36 and A49-A52 among its tests.",
+   "result": "pass",
+   "value": "check.sh PASSED; pytest: 7135 passed, 31 skipped"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/derivations/M01-spec.md",
+   "sha256": "2ad4921d7f51fcfdb004ec79f940279fc7e4480c7785aa4c547c0241bcdaef33",
+   "description": "The specification, Amendments 1 and 2 included."
+  },
+  {
+   "path": "benchmarks/m01/components.yaml",
+   "sha256": "6f154f7fbc3f4bef9fe3cb2048983cc19ad13c6b43f40d29fa944e9b719f05b9",
+   "description": "The five C1 records (A01, A03)."
+  },
+  {
+   "path": "benchmarks/m01/reference_values.yaml",
+   "sha256": "46d684cdc1b4086e12be0e4f95502f07150b820887f9fdd9c6de26f6a7f58ebf",
+   "description": "The generator's 50-digit expectations."
+  },
+  {
+   "path": "benchmarks/m01/external-crosscheck.json",
+   "sha256": "72a2732e5c22517786b1b2e1f2419de8223e88a959b001c3ee47aea56c408f39",
+   "description": "Retrieval equality and W22 (A02, A38-A40)."
+  },
+  {
+   "path": "benchmarks/m01/idaes-conformance.json",
+   "sha256": "7dc5509621e45e3c398bb82535632d8e9b1b205d530ec24432439f80dc14f9be",
+   "description": "IDAES 2.13 conformance (A37)."
+  },
+  {
+   "path": "benchmarks/m01/reactor-probe.json",
+   "sha256": "992cb1aa40b3b3e04c0b97cf151cc6e25dd031a78b3f2ac98449adeca0272ddb",
+   "description": "The probe record v2 (A41-A46, A48, A52), last written at 74b43096e7ff43220189649597c0a4070136d847."
+  },
+  {
+   "path": "benchmarks/m01/reactor-overlay.json",
+   "sha256": "0f6ff0017291f14a5bc5136dfa7cd71ce8954e7bd38b5cb6383ee58ec35f81ff",
+   "description": "The five-species overlay rows (§8.6)."
+  },
+  {
+   "path": "src/openflowsheet/thermo/pr_c1.py",
+   "sha256": "a6123b07fa9ab6f91dd85543f8438d54b071105a9f6ac14be8eeab015403e6f4",
+   "description": "The provider pr-c1-v1."
+  },
+  {
+   "path": "src/openflowsheet/models/c1/boundary.py",
+   "sha256": "58044cb4d6cfe214066a2af0737c10c865bb5f74a69db60f14f8af1e5894f3cf",
+   "description": "The reactor boundary."
+  },
+  {
+   "path": "src/openflowsheet/models/c1/reactor_standin.py",
+   "sha256": "8ffbcf1d11dfc56599dc3de72ed380be9546596755a94e869a74b2a973d25f6e",
+   "description": "The synthetic stand-in."
+  }
+ ],
+ "limitations": [
+  "W21 and W22 are v0.2 requirement ids the manifest schema's `requirements` pattern ([DA]nn) cannot carry; this evidence bears on both, and their verdicts are the `verdict` lane's, not this manifest's.",
+  "The reactor is not run here: A41-A46 and A48 are checked as the probe record's halves (spec §8.15, M01.A52) on the record last written at 74b43096e7ff43220189649597c0a4070136d847, whose bytes A34 pins. reactor_probe.py was not re-run for this manifest. The adapter halves of A41-A48, including all of A47, are M02's (R-200).",
+  "The stand-in c1.reactor_standin is synthetic: A25-A32 and A49-A51 certify the boundary code, never the reactor (spec §8.13, R-199).",
+  "W22 is validated for pure-component behaviour only (A38-A40, spec §11); there is no mixture VLE validation, and k_ij = 0.",
+  "The probe record's numbers come from one machine and one environment. Two record values sit within 10x of their bounds by the spec's own registration: A45's worst accepted element defect, 2.98e-8 at the design grid's 693.15 K neighbour (2.66e-8 at the nominal inlet), against 1e-7, with the refusal threshold 1e-6 33.6x above it; and A52's mapping of the recorded n (1 ulp against 2). Both are constants of a committed record, not computations the gate repeats.",
+  "Human numerical and process-modeling review remain `pending`; `reviewed` is never self-set."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

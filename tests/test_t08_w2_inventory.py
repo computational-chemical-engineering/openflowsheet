@@ -354,11 +354,13 @@ def test_a31_readme_states_casadi_is_lgpl() -> None:
 # that includes the runtime data under `_data/`: the published schemas and three of the project's
 # registered documents (K04's numerical policy, SYN-001's synthetic variants, and T08's numerical
 # policy of ADR 0025), byte copies of the repository files (`openflowsheet.resources`; T08.A43
-# compares the bytes).
+# compares the bytes). Since M01 (spec §3.5, §15 Q-N4's default) it also includes the five C1
+# component records, published constants with their citations and rights, which the provider
+# `pr-c1-v1` reads at run time; the reference tools' data stays out.
 SHIPPED_DATA = re.compile(
     r"^(src/)?openflowsheet/(py\.typed|application/bindings/descriptions/([a-z_]+\.md|REVIEW\.json)"
     r"|_data/schemas/[a-z0-9-]+\.schema\.json|_data/benchmarks/(k04|syn001)/reference_values\.yaml"
-    r"|_data/benchmarks/t08/numerical_policy_v2\.yaml)$"
+    r"|_data/benchmarks/t08/numerical_policy_v2\.yaml|_data/benchmarks/m01/components\.yaml)$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"
@@ -411,20 +413,53 @@ def _component_records() -> list[tuple[str, dict[str, Any]]]:
     return found
 
 
-def test_a32_every_component_record_is_synthetic_with_rights() -> None:
+#: M01 spec §3.5 (R-158): the only real (`synthetic: false`) records the repository may hold, each
+#: vetted by M01.A02's retrieval equality in `benchmarks/m01/external-crosscheck.json`.
+M01_RECORDS = "benchmarks/m01/components.yaml"
+M01_COMPONENTS = ("H2", "N2", "NH3", "Ar", "CH4")
+M01_CROSSCHECK = REPO_ROOT / "benchmarks" / "m01" / "external-crosscheck.json"
+
+
+def test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rights() -> None:
+    """T08.A32 as amended by M01 spec §3.5 (R-158): amended for real records, not relaxed.
+
+    A `synthetic: true` record keeps the v0.1 rule unchanged (it validates and states its rights).
+    A `synthetic: false` record must (i) be one of the five records of
+    `benchmarks/m01/components.yaml`, (ii) carry `identifiers` with `cas`, `inchi` and `inchikey`,
+    (iii) carry non-empty `rights.source` and `rights.redistribution` and a `provenance` on every
+    parameter and on the molecular weight, and (iv) be covered by M01.A02's retrieval equality.
+    """
     validator = validator_for("component_record")
     records = _component_records()
     assert {(path, record["id"]) for path, record in records} >= {
         ("benchmarks/syn001/components.yaml", component) for component in ("A", "B", "C")
     }
+    retrieval = load_json(M01_CROSSCHECK)["retrieval"]
+    real = []
     for path, record in records:
-        assert [error.message for error in validator.iter_errors(record)] == [], (
-            path,
-            record["id"],
-        )
-        assert record["synthetic"] is True, (path, record["id"])
+        where = (path, record["id"])
+        assert [error.message for error in validator.iter_errors(record)] == [], where
         rights = record["rights"]
-        assert rights["source"].strip() and rights["redistribution"].strip(), (path, record["id"])
+        assert rights["source"].strip() and rights["redistribution"].strip(), where
+        if record["synthetic"] is True:
+            continue
+        assert record["synthetic"] is False, where
+        # The package-data link `src/openflowsheet/_data/benchmarks/m01/components.yaml` is the
+        # same single copy (`openflowsheet.resources`), not a second record.
+        linked = (REPO_ROOT / path).is_symlink()
+        single = (REPO_ROOT / path).resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+        assert single == M01_RECORDS and record["id"] in M01_COMPONENTS, where  # (i)
+        if not linked:
+            real.append(where)
+        identifiers = record["identifiers"]
+        assert all(identifiers.get(key, "").strip() for key in ("cas", "inchi", "inchikey")), where
+        quantities = [record["molecular_weight"], *record["parameters"].values()]
+        assert all(str(quantity.get("provenance", "")).strip() for quantity in quantities), where
+        vetted = retrieval[record["id"]]  # (iv)
+        assert all(vetted["equal"].values()) and vetted["nasa7_low_range_equal"], where
+        assert vetted["identifiers_equal"], where
+    assert len(real) == len(set(real)), "a real record appears twice"
+    assert set(real) == {(M01_RECORDS, component) for component in M01_COMPONENTS}
 
 
 def test_a32_the_envelope_states_reference_data_and_openidaes_are_not_distributed() -> None:

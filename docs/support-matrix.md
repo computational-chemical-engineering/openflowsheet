@@ -8,7 +8,7 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 
 | Axis | v0.1 statement | Evidence |
 | --- | --- | --- |
-| Property model | SYN-001 only: ideal vapour, incompressible ideal liquid, VLE; reference convention SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no critical region, no extra phase. | `check:T05.A23`<br>`check:K02.identity.property_package`<br>`doc:docs/derivations/SYN-001.md`<br>`doc:docs/adr/0011-unit-models-ph-closure-and-reaction-datum.md §D2` |
+| Property model | SYN-001 for every revision, unit model and operation: ideal vapour, incompressible ideal liquid, VLE; reference convention SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no critical region, no extra phase. Since M01 the package also carries `pr-c1-v1` (Peng–Robinson for the five C1 components, the light gases vapour-only, reference convention PR-C1-ref-v1; ADR 0026), a provider no model of `MODEL_BUILDERS` binds yet (M02 adds its units). | `check:T05.A23`<br>`check:K02.identity.property_package`<br>`doc:docs/derivations/SYN-001.md`<br>`doc:docs/adr/0011-unit-models-ph-closure-and-reaction-datum.md §D2`<br>`doc:docs/adr/0026-c1-peng-robinson-vapour-only-route.md §D6`<br>`tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface` |
 | Components | Exactly the three SYN-001 pseudo-components A, B, C, declared in any of the six orders and mapped onto the provider's order at binding (T06 A59–A61); a proper subset, an extra or a repeated component is refused `components_unsupported`. A mixture without one of them is declared with all three and that component's flows exactly zero (ADR 0001 D3). Synthetic: no real chemical identity. | `tests/test_t06_w1b_order.py::test_every_permutation_maps_to_the_providers_order`<br>`tests/test_t06_w1b_order.py::test_a60_a_non_permutation_is_refused_by_both_bindings`<br>`check:T06.A59`<br>`check:T06.A60`<br>`check:T06.A61` |
 | Domain | 280–440 K and 50–200 kPa, inclusive (the provider's predicate). | `tests/test_k01_syn001_conformance.py::test_a_state_outside_the_domain_is_reported_not_extrapolated`<br>`tests/test_t06_w11_initializer.py::test_a62_the_tear_path_returns_initialization_failed`<br>`check:T06.A62` |
 | Unit models | The thirteen models of `MODEL_BUILDERS`, each with its registered limitations (L02, L27–L31, L-CSTR-1..3). A cooler is the TP heater with negative duty (ADR 0001's sign convention). | `tests/test_t05_w1b_revision.py::test_builders_hold_the_thirteen_models_of_the_table`<br>`tests/test_t08_kinetic_cstr.py::test_b10_the_model_is_the_thirteenth_builder_with_its_signature`<br>`check:T05.A17`<br>`check:T05.A18`<br>`check:T05.A19`<br>`check:T05.A21` |
@@ -27,6 +27,7 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 - **Solve policies:** `T04-W12`, `T06-revision-v2`, `T08-ptc-v1`, `T08-warm-v1`
 - **Components:** `A`, `B`, `C`; provider `syn001`
 - **Domain:** T in [280, 440] K, P in [50000, 200000] Pa
+- **Shipped, bound by no model:** `pr-c1-v1`, with its own components (H2, N2, NH3, Ar, CH4) and domain (200–1000 K, 10⁴–3 × 10⁷ Pa), validated for pure-component behaviour only, no mixture VLE validation, k_ij = 0 (L42)
 - **Unit spellings (ADR 0016):** dimensionless `%`; heat_rate `kW`; heat_rate `MW`; molar_flow `g/s`; molar_flow `kg/h`; molar_flow `kg/s`; molar_flow `kmol/h`; molar_flow `kmol/s`; molar_flow `mmol/s`; molar_flow `mol/h`; mole_fraction `%`; power `kW`; power `MW`; pressure `atm`; pressure `bar`; pressure `kPa`; pressure `MPa`; pressure `psi`; temperature `degC`; temperature `degF`; temperature_difference `degC`; temperature_difference `degF`
 - **Platforms:** aarch64, x86-64; Python 3.13; lock `ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4`
 
@@ -120,12 +121,13 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 | L33 | Scope defaults of T06 §16: results are keyed by component id; a TWO_PHASE split with a vanishing phase is not converted by the solver (the verifier catches the label); three F-BUDGET starts have no cost remedy. | `doc:docs/derivations/T06-corpus-spec.md §16` |
 | L34 | A replay bundle references the CasADi wheel by hash and does not embed it; a replay needs the wheel to remain fetchable. | `doc:docs/adr/0006-distribution-data-rights.md §D1` |
 | L35 | A tear-path solve that exhausts its budget records `attempts = 0`, the start state and no provenance (K03's registered capped-budget shape). | `doc:docs/derivations/T03-phase-controller-spec.md §13` |
-| L40 | The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's own code, its package data and its licence files only, and every ComponentRecord is synthetic (SYN-001). | `tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel`<br>`tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_with_rights`<br>`doc:docs/adr/0006-distribution-data-rights.md §D1` |
+| L40 | The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's own code, its package data (since M01 including the five C1 records, M01 spec §15 Q-N4's default) and its licence files only, and every ComponentRecord is synthetic (SYN-001) or one of M01's five real C1 records, each with its identifiers, rights, per-parameter provenance and retrieval equality (M01 spec §3.5, R-158). | `tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel`<br>`tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rights`<br>`doc:docs/adr/0006-distribution-data-rights.md §D1` |
 | L41 | A bundle written by an installed package (wheel or sdist, not the source checkout) carries no dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and every replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is unknown …"); replayable bundles are written from the source checkout at the lock `ead4edf1…`. | `tests/test_t08_r3_a19_lock_lookup.py::test_the_three_states_end_to_end`<br>`tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none`<br>`doc:docs/adr/0007-reproducibility-certificate-policy.md §D4`<br>`doc:docs/derivations/T08-release-spec.md §5.5` |
+| L42 | `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is bound by no model of `MODEL_BUILDERS` yet (M02 adds its units) and does not share the axes' components and domain: it takes the five real components H2, N2, NH3, Ar, CH4 (the only liquid is pure NH3) over 200–1000 K and 10⁴–3 × 10⁷ Pa. It is validated for pure-component behaviour only, within M01 spec §11's bands (NH3 saturation pressure within 2 %, liquid NH3 and light-gas ln φ within 0.05 of the reference equations of state). There is no mixture VLE validation, and k_ij = 0 for every pair: k_H2–NH3 = 0.1 would move the separator's vapour NH3 fraction y* by −3.1 % (about 3 % per 0.1; spec §4.2). | `check:M01.A38`<br>`check:M01.A39`<br>`check:M01.A40`<br>`doc:docs/derivations/M01-spec.md §11`<br>`doc:docs/derivations/M01-spec.md §4.2`<br>`doc:docs/derivations/M01-spec.md §17`<br>`tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface` |
 
 ## Harvest (T08.A21)
 
-256 items — every `limitations[]` entry and non-`pass` check of the 18 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
+270 items — every `limitations[]` entry and non-`pass` check of the 19 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
 
 | Package | E | S | P | B |
 | --- | --- | --- | --- | --- |
@@ -135,6 +137,7 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 | K04 | 5 | 3 | 2 | 0 |
 | K05 | 6 | 0 | 2 | 0 |
 | K06 | 0 | 7 | 1 | 0 |
+| M01 | 2 | 0 | 12 | 0 |
 | P00 | 0 | 1 | 8 | 0 |
 | P01 | 2 | 2 | 5 | 0 |
 | P02 | 2 | 0 | 12 | 0 |
@@ -147,4 +150,4 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 | T05b | 11 | 2 | 7 | 1 |
 | T06 | 11 | 3 | 14 | 0 |
 | T07 | 3 | 2 | 7 | 2 |
-| **all** | 93 | 42 | 116 | 5 |
+| **all** | 95 | 42 | 128 | 5 |

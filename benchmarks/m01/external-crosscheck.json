@@ -1,0 +1,311 @@
+{
+ "record": "m01-external-crosscheck",
+ "version": 1,
+ "status": "measured",
+ "judged": false,
+ "specification": "docs/derivations/M01-spec.md sections 3.3 and 9.4",
+ "packages": {
+  "chemicals": "1.5.2",
+  "thermo": "0.6.1",
+  "CoolProp": "8.0.0",
+  "cantera": "3.2.0",
+  "PyYAML": "6.0.2"
+ },
+ "retrieval": {
+  "H2": {
+   "equal": {
+    "critical_temperature": true,
+    "critical_pressure": true,
+    "acentric_factor": true,
+    "standard_formation_enthalpy": true,
+    "molecular_weight_kg_mol": true
+   },
+   "nasa7_low_range_equal": true,
+   "identifiers_equal": true,
+   "nasa_note": "TPIS78"
+  },
+  "N2": {
+   "equal": {
+    "critical_temperature": true,
+    "critical_pressure": true,
+    "acentric_factor": true,
+    "standard_formation_enthalpy": true,
+    "molecular_weight_kg_mol": true
+   },
+   "nasa7_low_range_equal": true,
+   "identifiers_equal": true,
+   "nasa_note": "TPIS78"
+  },
+  "NH3": {
+   "equal": {
+    "critical_temperature": true,
+    "critical_pressure": true,
+    "acentric_factor": true,
+    "standard_formation_enthalpy": true,
+    "molecular_weight_kg_mol": true
+   },
+   "nasa7_low_range_equal": true,
+   "identifiers_equal": true,
+   "nasa_note": "TPIS89"
+  },
+  "Ar": {
+   "equal": {
+    "critical_temperature": true,
+    "critical_pressure": true,
+    "acentric_factor": true,
+    "standard_formation_enthalpy": true,
+    "molecular_weight_kg_mol": true
+   },
+   "nasa7_low_range_equal": true,
+   "identifiers_equal": true,
+   "nasa_note": "L 6/88"
+  },
+  "CH4": {
+   "equal": {
+    "critical_temperature": true,
+    "critical_pressure": true,
+    "acentric_factor": true,
+    "standard_formation_enthalpy": true,
+    "molecular_weight_kg_mol": true
+   },
+   "nasa7_low_range_equal": true,
+   "identifiers_equal": true,
+   "nasa_note": "L 8/88"
+  }
+ },
+ "crosscheck": {
+  "H2": {
+   "coolprop_eos": "Leachman-JPCRD-2009",
+   "Tc_rel_dev": 2.0134e-05,
+   "Pc_rel_dev": 3.2702e-05,
+   "omega_record_minus_definition": -0.000348,
+   "cp_rel_dev_vs_coolprop_ideal_gas": {
+    "250.0": 0.0005241,
+    "298.15": 7.14e-05,
+    "500.0": 0.0014627,
+    "700.0": -0.0039036,
+    "1000.0": -0.0019356
+   },
+   "cp_rel_dev_vs_janaf": {
+    "250.0": null,
+    "298.15": null,
+    "500.0": null,
+    "700.0": null,
+    "1000.0": null
+   },
+   "dHf_record_minus_janaf_J_mol": null
+  },
+  "N2": {
+   "coolprop_eos": "Span-JPCRD-2000",
+   "Tc_rel_dev": 0.0,
+   "Pc_rel_dev": -1.31e-07,
+   "omega_record_minus_definition": -3e-05,
+   "cp_rel_dev_vs_coolprop_ideal_gas": {
+    "250.0": -3.88e-05,
+    "298.15": -3.72e-05,
+    "500.0": 0.0005893,
+    "700.0": -0.0010557,
+    "1000.0": -0.0005244
+   },
+   "cp_rel_dev_vs_janaf": {
+    "250.0": null,
+    "298.15": null,
+    "500.0": null,
+    "700.0": null,
+    "1000.0": null
+   },
+   "dHf_record_minus_janaf_J_mol": null
+  },
+  "NH3": {
+   "coolprop_eos": "Gao-JPCRD-2020",
+   "Tc_rel_dev": 0.0,
+   "Pc_rel_dev": 7.78e-07,
+   "omega_record_minus_definition": 0.000309,
+   "cp_rel_dev_vs_coolprop_ideal_gas": {
+    "250.0": 0.0046786,
+    "298.15": 0.0025444,
+    "500.0": 0.0013049,
+    "700.0": 0.0050753,
+    "1000.0": -0.0038217
+   },
+   "cp_rel_dev_vs_janaf": {
+    "250.0": 0.0081485,
+    "298.15": -0.0006108,
+    "500.0": -0.0024947,
+    "700.0": 5.32e-05,
+    "1000.0": -0.0037333
+   },
+   "dHf_record_minus_janaf_J_mol": 340.0
+  },
+  "Ar": {
+   "coolprop_eos": "Tegeler-JPCRD-1999",
+   "Tc_rel_dev": -0.0,
+   "Pc_rel_dev": -1.12e-07,
+   "omega_record_minus_definition": -1e-06,
+   "cp_rel_dev_vs_coolprop_ideal_gas": {
+    "250.0": -5.7e-06,
+    "298.15": -5.7e-06,
+    "500.0": -5.7e-06,
+    "700.0": -5.7e-06,
+    "1000.0": -5.7e-06
+   },
+   "cp_rel_dev_vs_janaf": {
+    "250.0": null,
+    "298.15": null,
+    "500.0": null,
+    "700.0": null,
+    "1000.0": null
+   },
+   "dHf_record_minus_janaf_J_mol": null
+  },
+  "CH4": {
+   "coolprop_eos": "Setzmann-JPCRD-1991",
+   "Tc_rel_dev": -1.4e-08,
+   "Pc_rel_dev": -1.03e-07,
+   "omega_record_minus_definition": 2e-06,
+   "cp_rel_dev_vs_coolprop_ideal_gas": {
+    "250.0": -0.0019028,
+    "298.15": -0.00049,
+    "500.0": -0.0002746,
+    "700.0": 0.0077436,
+    "1000.0": 0.0111549
+   },
+   "cp_rel_dev_vs_janaf": {
+    "250.0": -0.0004009,
+    "298.15": 0.0014584,
+    "500.0": 0.0032814,
+    "700.0": 0.0148231,
+    "1000.0": 0.0253732
+   },
+   "dHf_record_minus_janaf_J_mol": 339.0
+  }
+ },
+ "retrieval_all_equal": true,
+ "w22_pure_component_fugacity_vs_reference_eos": {
+  "H2-VAPOR-268.15-1e7": {
+   "lnphi_ref": 0.063250282,
+   "lnphi_pr_minus_ref": -0.032804,
+   "Z_rel_dev": -0.027324,
+   "h_dep_pr_J_mol": -27.383
+  },
+  "H2-VAPOR-673.15-1e7": {
+   "lnphi_ref": 0.029524827,
+   "lnphi_pr_minus_ref": -0.006775,
+   "Z_rel_dev": -0.006166,
+   "h_dep_pr_J_mol": 86.649
+  },
+  "N2-VAPOR-268.15-1e7": {
+   "lnphi_ref": -0.036475375,
+   "lnphi_pr_minus_ref": -0.024624,
+   "Z_rel_dev": -0.018868,
+   "h_dep_pr_J_mol": -805.034
+  },
+  "N2-VAPOR-673.15-1e7": {
+   "lnphi_ref": 0.042713573,
+   "lnphi_pr_minus_ref": -0.008037,
+   "Z_rel_dev": -0.007925,
+   "h_dep_pr_J_mol": 44.498
+  },
+  "NH3-VAPOR-673.15-1e7": {
+   "lnphi_ref": -0.04366699,
+   "lnphi_pr_minus_ref": -0.001184,
+   "Z_rel_dev": 0.001275,
+   "h_dep_pr_J_mol": -1353.684
+  },
+  "NH3-LIQUID-268.15-1e7": {
+   "lnphi_ref": -3.28421532,
+   "lnphi_pr_minus_ref": 0.025394,
+   "Z_rel_dev": 0.115082,
+   "h_dep_pr_J_mol": -22468.652
+  },
+  "NH3-LIQUID-250-2.5e7": {
+   "lnphi_ref": -4.756831314,
+   "lnphi_pr_minus_ref": 0.040096,
+   "Z_rel_dev": 0.119737,
+   "h_dep_pr_J_mol": -22971.671
+  },
+  "Ar-VAPOR-268.15-1e7": {
+   "lnphi_ref": -0.092145394,
+   "lnphi_pr_minus_ref": -0.028708,
+   "Z_rel_dev": -0.022542,
+   "h_dep_pr_J_mol": -1036.603
+  },
+  "Ar-VAPOR-673.15-1e7": {
+   "lnphi_ref": 0.026534475,
+   "lnphi_pr_minus_ref": -0.005962,
+   "Z_rel_dev": -0.005724,
+   "h_dep_pr_J_mol": -80.51
+  },
+  "CH4-VAPOR-268.15-1e7": {
+   "lnphi_ref": -0.247487189,
+   "lnphi_pr_minus_ref": -0.042371,
+   "Z_rel_dev": -0.027522,
+   "h_dep_pr_J_mol": -2256.113
+  },
+  "CH4-VAPOR-673.15-1e7": {
+   "lnphi_ref": 0.024899373,
+   "lnphi_pr_minus_ref": -0.008674,
+   "Z_rel_dev": -0.007936,
+   "h_dep_pr_J_mol": -277.787
+  }
+ },
+ "w22_pure_nh3_vs_reference_eos": {
+  "reference": "CoolProp 8.0.0 Ammonia, Gao-JPCRD-2020",
+  "by_temperature_K": {
+   "240": {
+    "P_sat_ref_Pa": 102171.03,
+    "P_sat_rel_dev": -0.012675,
+    "v_L_rel_dev": 0.118889,
+    "h_vap_rel_dev": 0.017798
+   },
+   "260": {
+    "P_sat_ref_Pa": 255245.712,
+    "P_sat_rel_dev": -0.008599,
+    "v_L_rel_dev": 0.115359,
+    "h_vap_rel_dev": 0.023869
+   },
+   "268.15": {
+    "P_sat_ref_Pa": 354655.99,
+    "P_sat_rel_dev": -0.007171,
+    "v_L_rel_dev": 0.114604,
+    "h_vap_rel_dev": 0.026579
+   },
+   "280": {
+    "P_sat_ref_Pa": 550704.374,
+    "P_sat_rel_dev": -0.005246,
+    "v_L_rel_dev": 0.114353,
+    "h_vap_rel_dev": 0.03064
+   },
+   "300": {
+    "P_sat_ref_Pa": 1061121.502,
+    "P_sat_rel_dev": -0.002257,
+    "v_L_rel_dev": 0.116745,
+    "h_vap_rel_dev": 0.037495
+   },
+   "320": {
+    "P_sat_ref_Pa": 1871755.11,
+    "P_sat_rel_dev": 0.000548,
+    "v_L_rel_dev": 0.123896,
+    "h_vap_rel_dev": 0.043717
+   },
+   "350": {
+    "P_sat_ref_Pa": 3865199.174,
+    "P_sat_rel_dev": 0.004389,
+    "v_L_rel_dev": 0.14894,
+    "h_vap_rel_dev": 0.048535
+   },
+   "380": {
+    "P_sat_ref_Pa": 7139743.762,
+    "P_sat_rel_dev": 0.006378,
+    "v_L_rel_dev": 0.208852,
+    "h_vap_rel_dev": 0.030754
+   },
+   "400": {
+    "P_sat_ref_Pa": 10297199.395,
+    "P_sat_rel_dev": 0.003227,
+    "v_L_rel_dev": 0.301308,
+    "h_vap_rel_dev": -0.070329
+   }
+  }
+ }
+}

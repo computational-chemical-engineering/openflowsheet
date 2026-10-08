@@ -4,7 +4,9 @@ The package reads three kinds of file it does not generate: the published schema
 (`schemas/*.schema.json`, the application contract and the solution-state check), K04's
 registered numerical policy (`benchmarks/k04/reference_values.yaml`, ADR 0007 D2) and T08's
 (`benchmarks/t08/numerical_policy_v2.yaml`, ADR 0025), and SYN-001's registered variants
-(`benchmarks/syn001/reference_values.yaml`, the CLI's `solve <case>`). Each has
+(`benchmarks/syn001/reference_values.yaml`, the CLI's `solve <case>`), and since M01 the five C1
+component records the provider `pr-c1-v1` reads (`benchmarks/m01/components.yaml`, M01 spec §3).
+Each has
 exactly one copy in the repository, at the path its registration names. Until T08 they were found
 by walking up from a module's `__file__` to the repository root, which an installed wheel does
 not have (T08 release spec §12 Q1, FD5): `openflowsheet solve SYN-001-nominal` from a wheel
@@ -33,6 +35,7 @@ PACKAGED: Final[tuple[str, ...]] = (
     "benchmarks/k04/reference_values.yaml",
     "benchmarks/syn001/reference_values.yaml",
     "benchmarks/t08/numerical_policy_v2.yaml",
+    "benchmarks/m01/components.yaml",
 )
 
 
