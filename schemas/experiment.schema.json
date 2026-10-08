@@ -260,58 +260,67 @@
           }
         },
         "identity": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "model_id",
-            "synthetic",
-            "reactor_commit",
-            "pymrm_version",
-            "overlay_sha256",
-            "configuration_sha256",
-            "profile"
-          ],
-          "properties": {
-            "model_id": {
-              "type": "string"
-            },
-            "synthetic": {
-              "type": "boolean"
-            },
-            "reactor_commit": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "pymrm_version": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "overlay_sha256": {
-              "anyOf": [
-                {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "model_id",
+                "synthetic",
+                "reactor_commit",
+                "pymrm_version",
+                "overlay_sha256",
+                "configuration_sha256",
+                "profile"
+              ],
+              "properties": {
+                "model_id": {
+                  "type": "string"
+                },
+                "synthetic": {
+                  "type": "boolean"
+                },
+                "reactor_commit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "pymrm_version": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "overlay_sha256": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "configuration_sha256": {
                   "type": "string",
                   "pattern": "^[0-9a-f]{64}$"
                 },
-                {
-                  "type": "null"
+                "profile": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
-              ]
+              }
             },
-            "configuration_sha256": {
-              "type": "string",
-              "pattern": "^[0-9a-f]{64}$"
-            },
-            "profile": {
-              "type": [
-                "string",
-                "null"
-              ]
+            {
+              "type": "object",
+              "maxProperties": 0
             }
-          }
+          ],
+          "description": "M01 spec §8.12: the full identity on `ok`; a refusal (`boundary.refused`) carries an empty one."
         }
       },
       "description": "M01 spec §8.12: `ReactorResult.as_document()`. A refusal carries no outlet values: every member but status, code, message and identity is null."

@@ -12,7 +12,8 @@ Its "reactor" is the stand-in's closed form per tube (ξ = 0.25 F y_N2, T_out = 
 answers. `configuration.hooks` (a list, applied in order) reaches every failure path:
 
 - `ok` — nothing; `sleep(s)` — sleep s seconds; `ignore_sigterm` — ignore SIGTERM;
-- `abort` — `os.abort()` (SIGABRT, a crash); `exit(code)` — `os._exit(code)`;
+- `abort` — `os.abort()` (SIGABRT, a crash); `abort_first` — the same, on the first run under
+  an environment root only; `exit(code)` — `os._exit(code)`;
 - `bad_json` — write a `result.json` that is not JSON and exit 0;
 - `wrong_hash` — answer with another request's `request_sha256`;
 - `fingerprint(alt)` — an evaluation reports another interpreter in its fingerprint;
@@ -172,6 +173,11 @@ def main() -> None:
             signal.signal(signal.SIGTERM, signal.SIG_IGN)
         elif name == "abort":
             os.abort()
+        elif name == "abort_first":
+            marker = Path(os.environ["NUMBA_CACHE_DIR"]).parent / "aborted-once"
+            if not marker.exists():
+                marker.write_text("1")
+                os.abort()
         elif name == "exit":
             os._exit(int(argument))
         elif name == "bad_json":

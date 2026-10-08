@@ -12,7 +12,9 @@ member removed — and A32's rule applied to them arrive with the work orders th
 
 from __future__ import annotations
 
+import re
 import sys
+from collections.abc import Iterator
 from typing import Any
 
 import pytest
@@ -104,6 +106,41 @@ def test_g1a_every_def_has_a_valid_and_an_invalid_fixture(directory: str) -> Non
 
 
 def test_g1a_the_fixtures_are_what_the_code_emits_today() -> None:
-    emitted = _fixture_module().documents()
-    for name, document in emitted.items():
-        assert load_json(FIXTURES / name) == document, name
+    module = _fixture_module()
+    for name, document in module.documents().items():
+        assert module.stable(load_json(FIXTURES / name)) == module.stable(document), name
+
+
+#: The addendum's rules table of each fixture directory.
+RULES_OF = {
+    "model_variant": "model_variant",
+    "experiment_request": "request",
+    "experiment_result": "result",
+    "experiment_attempt": "attempt",
+}
+
+
+def _floats(node: Any, path: str = "") -> Iterator[str]:
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from _floats(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            yield from _floats(value, f"{path}[{index}]")
+    elif isinstance(node, float):
+        yield path
+
+
+@pytest.mark.parametrize("directory", sorted(RULES_OF))
+def test_g1_a32_every_float_of_every_m02_fixture_is_classified(directory: str) -> None:
+    """ADR 0007 D2.3 for M02's floats: each one matches a rule of the addendum."""
+    rules = [
+        (re.compile(rule["path"]), rule["class"]) for rule in EXTERNAL["rules"][RULES_OF[directory]]
+    ]
+    found = 0
+    for path in sorted((FIXTURES / directory / "valid").glob("*.json")):
+        for where in _floats(load_json(path)):
+            found += 1
+            classes = [cls for pattern, cls in rules if pattern.fullmatch(where)]
+            assert classes, f"{path.name}: {where} is unclassified"
+    assert found > 0, directory
