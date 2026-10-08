@@ -51,10 +51,10 @@ def dense(matrix: TwinMatrix) -> npt.NDArray[np.float64]:
     return out
 
 
-def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
-    """G4 (a)-(e) for one projection at its start; returns the worst measured ratios."""
+def structure(projection: Any) -> None:
+    """G4 (a) and (e): the source map's bijections, TRF's DOF count, one node per EF, and no
+    nonsmooth node."""
     import pyomo.environ as pyo
-    from pyomo.core.expr.calculus.derivatives import Modes, differentiate
     from pyomo.core.expr.numeric_expr import ExternalFunctionExpression
 
     from openflowsheet.studies.trust_region.projection import find_nonsmooth_node
@@ -96,6 +96,18 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     # (e) no nonsmooth node.
     for expression in projection.row_expressions:
         assert find_nonsmooth_node(expression) is None
+
+
+def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
+    """G4 (a)-(e) for one projection at its start; returns the worst measured ratios."""
+    import pyomo.environ as pyo
+    from pyomo.core.expr.calculus.derivatives import Modes, differentiate
+
+    structure(projection)
+    spec: ProblemSpec = projection.spec
+    model = projection.model
+    source = projection.source_map
+    decision_ids = tuple(d.parameter_id for d in projection.decisions)
 
     # The CasADi side, at the parameters the Pyomo model stands for (c + h·d₀, in binary64).
     twin = compile_parametric_twin(spec, decision_ids)
@@ -366,3 +378,51 @@ def test_syn001_with_every_row_is_refused_for_its_redundant_pressure_rows() -> N
     with pytest.raises(ProjectionRefusedError) as refused:
         syn001_projection("P1")
     assert refused.value.reason == "PROJECTION_DOF(3)"
+
+
+#: The reason recorded for SYN-001's omitted rows.
+ALIAS_REASON = "pressure alias row implied by the retained rows (orchestrator alias elimination)"
+
+
+def syn001_alias_rows(state: str) -> dict[str, str]:
+    """The rows the orchestrator's certified alias elimination removes at `state` (M03's
+    `FullSpaceNlp` leaves exactly these out of its equality constraints)."""
+    from m03_support import solved
+
+    from openflowsheet.orchestrator.tear import Syn001TearProblem
+
+    sheet, _ = solved(state)
+    eliminated = Syn001TearProblem(sheet).partition.elimination.eliminated
+    return {row.row_id: ALIAS_REASON for row in eliminated}
+
+
+@pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
+def test_syn001_without_its_alias_rows_projects_with_dof_equal_to_the_decisions(state: str) -> None:
+    """G4 (a) and (e) at M03's registered states: the source map is a bijection, the two alias
+    rows are recorded as omitted with their reason, TRF's DOF count is the 5 decisions, and no
+    projected expression has a nonsmooth node."""
+    omitted = syn001_alias_rows(state)
+    assert sorted(omitted) == ["U-FLASH:FLASH-P:inlet", "U-SPLIT:SPLIT-P:recycle"]
+    projection, x0 = syn001_projection(state, omitted_rows=omitted)
+    structure(projection)
+    source = projection.source_map
+    assert [row["equation_id"] for row in source["omitted_rows"]] == sorted(omitted)
+    assert all(row["reason"] == ALIAS_REASON for row in source["omitted_rows"])
+    assert len(source["rows"]) == len(projection.spec.equations) - 2
+    assert len(source["decisions"]) == 5
+    # Bounds: the provider's T and P domain, flows ≥ 0 except those exactly 0.0 at x₀.
+    for entry in source["variables"]:
+        if entry["kind"] == "molar_flow":
+            expected = [None, None] if x0[entry["variable_id"]] == 0.0 else [0.0, None]
+            assert entry["bounds"] == expected, entry
+        elif entry["kind"] == "temperature":
+            assert entry["bounds"] == [280.0, 440.0]
+        elif entry["kind"] == "pressure":
+            assert entry["bounds"] == [50_000.0, 200_000.0]
+        else:
+            assert entry["bounds"] == [None, None]
+
+
+def test_an_unknown_omitted_row_is_refused() -> None:
+    with pytest.raises(ValueError, match="not equations"):
+        syn001_projection("P1", omitted_rows={"no-such-row": "test"})

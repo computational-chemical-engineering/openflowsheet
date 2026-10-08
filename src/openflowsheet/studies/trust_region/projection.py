@@ -17,6 +17,12 @@ variables `y` and constraints `ydef`, the rows `row`, the inequalities `ineq`, t
 and last the `scaling_factor` suffix. Pyomo names are index-based; canonical ids appear only in the
 source map.
 
+**Omitted rows** (a build-lane decision in WO-2, escalated to the design lane: design note §6.1
+projects every row). A caller may name rows
+the retained rows imply — SYN-001's two certified pressure alias rows, which make its 49 rows over
+47 variables redundant by two — with a reason; they are not projected, and the source map lists
+them under `omitted_rows`. With every row, such a spec is refused `PROJECTION_DOF`, correctly.
+
 **Scales.** Variables carry `1/column_scale`, rows `1/row_scale`, the objective `1/scale` (Ipopt's
 `user-scaling`). Each `ExternalFunction` output k has the power-of-two scale
 s_k = 2^⌈log₂ max(|y_k(x₀)|, 1e-6)⌉: the holder returns `value / s_k`, the defining constraint
@@ -263,14 +269,27 @@ def project(
     domain: Mapping[str, tuple[float, float]],
     external_links: Sequence[ExternalLinkSpec] = (),
     inequalities: Sequence[InequalitySpec] = (),
+    omitted_rows: Mapping[str, str] | None = None,
 ) -> Projection:
     """Project `spec` at the state `x0` (every variable id → binary64) for TRF (§6.1).
 
     `domain` gives the bounds of the `temperature` and `pressure` variable kinds — the bound
     property provider's declared domain. Raises `ProjectionRefusedError` for a spec TRF cannot be
-    given, and `ValueError` for an inconsistent call."""
+    given, and `ValueError` for an inconsistent call.
+
+    `omitted_rows` maps an equation id to the reason it is not projected. It exists for rows that
+    the retained rows imply — a flowsheet's certified alias rows (`orchestrator/rank.py`'s
+    elimination), which M03's full-space NLP also leaves out of its equality constraints (ADR 0032
+    D1, "the kept rows F_K") — and that would otherwise make TRF's DOF count wrong and its
+    equality Jacobian rank-deficient. The projection does not judge the reason; the caller owns
+    it, and the source map records it."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
+    omitted = dict(omitted_rows or {})
+    unknown_rows = sorted(set(omitted) - set(spec.equation_ids))
+    if unknown_rows:
+        raise ValueError(f"omitted_rows names {unknown_rows}, which are not equations of the spec")
+    projected = [equation for equation in spec.equations if equation.equation_id not in omitted]
     model = pyo.ConcreteModel(name=spec.label)
 
     # 1. Variables.
@@ -404,10 +423,10 @@ def project(
 
     # 5. Rows.
     symbols = {name: model.x[index] for index, name in enumerate(variable_ids)}
-    row_ids = spec.equation_ids
+    row_ids = tuple(equation.equation_id for equation in projected)
     expressions = [
         _build(equation.equation_id, equation.build, symbols, block_outputs, parameters, spec)
-        for equation in spec.equations
+        for equation in projected
     ]
     model.row = pyo.Constraint(range(len(expressions)), rule=lambda m, i: expressions[i] == 0)
 
@@ -473,6 +492,7 @@ def project(
         link_rows,
         inequalities,
         objective,
+        omitted,
     )
     return Projection(
         model=model,
@@ -627,6 +647,7 @@ def _source_map(
     link_rows: Sequence[Mapping[str, Any]],
     inequalities: Sequence[InequalitySpec],
     objective: ObjectiveSpec,
+    omitted: Mapping[str, str],
 ) -> dict[str, Any]:
     """`projection-source-map-v1` (§6.2), without its `trf` part, which a run fills."""
     structure = structure_sha256(
@@ -659,6 +680,11 @@ def _source_map(
                 "row_scale": spec.row_scales.get(name, 1.0),
             }
             for index, name in enumerate(row_ids)
+        ],
+        "omitted_rows": [
+            {"equation_id": name, "origin": origins[name], "reason": omitted[name]}
+            for name in spec.equation_ids
+            if name in omitted
         ],
         "block_outputs": [dict(row) for row in output_rows],
         "decisions": [
