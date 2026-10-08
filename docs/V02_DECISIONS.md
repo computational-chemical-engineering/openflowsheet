@@ -257,3 +257,11 @@ Grep, don't read whole. Newest at the bottom.
 - `wp/M06-build` pushed to origin (Frank authorised pushing) for CI evidence (G10 wheel half, G12, Chrome on
   ubuntu-latest); CI run 37825384881.
 - `reviewer` M06 (WO-13 review) launched on `wp/M06-build` @ `98da494`.
+- M01 WO-8 + WO-7 done on `wp/M01` (`11df954`…`cec8a01`): A49–A52 pass; manifest
+  `evidence/M01/6c81683…/manifest.json` status **tested** (52 pass, 0 fail, 1 not_applicable = A47 adapter half);
+  check.sh 7118 passed. Amended bounds measured: A12 ≤ 3.8e-16·M; A26 5.57e-17 × n_tot,in. Within 10×: A22 exactly
+  1 ulp vs 1 ulp (proven worst case); A45 2.98e-8 vs 1e-7; A52 1 ulp vs 2; A38–A40 1.18–1.58× inside the W22 bands →
+  for the reviewer. Harvest: 7 rows, class P. `7e0eb67` scoped two T08 tests to P/K/T → registered as R-217
+  (`c2cf045`; session). IDAES record's `inputs.reference_values_yaml_sha256` moved with Amendment 1 (closed_form
+  unchanged).
+- `reviewer` M01 launched on `wp/M01` @ `c2cf045`.
