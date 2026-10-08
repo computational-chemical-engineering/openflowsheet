@@ -14,6 +14,7 @@ wheel): the same files over uvicorn.
 from __future__ import annotations
 
 import contextlib
+import importlib.util
 import io
 import subprocess
 import sys
@@ -27,16 +28,23 @@ from openflowsheet.application.authz import grant
 from openflowsheet.application.cli import main
 from openflowsheet.application.local import LocalApplication
 
-pytest.importorskip("starlette")
-pytest.importorskip("httpx")
-
-from starlette.testclient import TestClient  # noqa: E402
-
-from openflowsheet.application.bindings import http, web  # noqa: E402
-
-pytestmark = pytest.mark.filterwarnings(
-    "ignore:Using `httpx` with `starlette.testclient` is deprecated"
+#: Every test here serves the shell, so it needs the server extra. The skip is a mark, not a
+#: module-level `importorskip`, so the tests are collected (and skipped) without the extra: T08.A22
+#: resolves its evidence references by collection (M06 review F2c).
+SERVER_EXTRA = all(
+    importlib.util.find_spec(name) is not None for name in ("starlette", "httpx", "uvicorn")
 )
+if SERVER_EXTRA:
+    from starlette.testclient import TestClient
+
+    from openflowsheet.application.bindings import http, web
+
+pytestmark = [
+    pytest.mark.skipif(
+        not SERVER_EXTRA, reason="needs the server extra (starlette, httpx, uvicorn)"
+    ),
+    pytest.mark.filterwarnings("ignore:Using `httpx` with `starlette.testclient` is deprecated"),
+]
 
 #: §5.2, verbatim: the string every `/ui` response carries.
 CSP = (

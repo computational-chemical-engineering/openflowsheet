@@ -28,7 +28,7 @@ import sys
 from collections.abc import Iterator
 from functools import cache
 from pathlib import Path
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote, urlencode
 
 import pytest
@@ -40,12 +40,8 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.types import ApiError, schema_errors, validate_inline
 
-pytest.importorskip("starlette")
-pytest.importorskip("httpx")
-
-from starlette.testclient import TestClient  # noqa: E402
-
-from openflowsheet.application.bindings import web  # noqa: E402
+if TYPE_CHECKING:
+    from starlette.testclient import TestClient
 
 pytestmark = pytest.mark.filterwarnings(
     "ignore:Using `httpx` with `starlette.testclient` is deprecated"
@@ -107,6 +103,14 @@ def _requests() -> dict[str, list[tuple[str, dict[str, Any], int | None]]]:
 
 @pytest.fixture(scope="module")
 def client(tmp_path_factory: pytest.TempPathFactory) -> Iterator[tuple[Any, TestClient]]:
+    # The skip lives here, not at module level, so the tests are collected (and skipped) without
+    # the server extra: T08.A22 resolves its evidence references by collection (M06 review F2c).
+    pytest.importorskip("starlette")
+    pytest.importorskip("httpx")
+    from starlette.testclient import TestClient
+
+    from openflowsheet.application.bindings import web
+
     project = fixtures.build_fixture_project(tmp_path_factory.mktemp("m06-g2") / "project")
     owner = LocalApplication.open(project.path)
     with TestClient(web.create_web_app(owner), raise_server_exceptions=False) as served:

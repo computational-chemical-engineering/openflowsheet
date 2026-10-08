@@ -45,7 +45,6 @@ from typing import Any, Final
 import yaml
 
 from openflowsheet.application.authz import grant
-from openflowsheet.application.bindings.http import HTTP_OPERATIONS
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
@@ -358,7 +357,9 @@ def capture(project: FixtureProject) -> tuple[dict[str, Any], dict[str, bytes]]:
             if _numeric_member(operation.request_schema, member)
         )
         for name, operation in OPERATIONS.items()
-        if operation in HTTP_OPERATIONS
+        # The HTTP binding's rows (`HTTP_OPERATIONS`), read from `OPERATIONS` so the module
+        # loads without the server extra (M06 review F2c).
+        if "http" in operation.transports
         and operation.http is not None
         and operation.http[0] == "GET"
     }
