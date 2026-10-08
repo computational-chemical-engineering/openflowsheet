@@ -7,6 +7,11 @@
 // interactive elements. There is no way through here to write markup, a style, a source URL or
 // an inline handler, and `h` refuses anything else by throwing, so a mistake fails a Node test
 // instead of reaching a browser. `view()` functions return trees, so they run in Node too.
+//
+// A tree is only what `h` made: every node it returns is recorded in a module-private WeakSet,
+// and a child or a mounted tree that is not (a `{t, p, c}` object parsed from a server document,
+// say) is refused. `create` checks the tag and the attributes again, so even a made tree changed
+// afterwards cannot leave the whitelists (ADR 0030 D1; M06 review F4).
 
 import { sanitize } from "./text.js";
 
@@ -40,6 +45,18 @@ function refuse(message) {
   throw new Error(`h: ${message}`);
 }
 
+// The trees `h` made (see the header).
+const MADE = new WeakSet();
+
+// Whether `value` is a tree `h` made.
+export function isTree(value) {
+  return typeof value === "object" && value !== null && MADE.has(value);
+}
+
+function checkTag(tag) {
+  if (!HTML_TAGS.has(tag) && !SVG_TAGS.has(tag)) refuse(`element <${tag}> is not allowed`);
+}
+
 function checkProps(tag, props) {
   const svg = SVG_TAGS.has(tag);
   for (const [name, value] of Object.entries(props)) {
@@ -68,7 +85,8 @@ function children(list, into) {
     if (Array.isArray(child)) children(child, into);
     else if (typeof child === "string") into.push(child);
     else if (typeof child === "number" || typeof child === "bigint") into.push(String(child));
-    else if (typeof child === "object" && typeof child.t === "string") into.push(child);
+    else if (isTree(child)) into.push(child);
+    else if (typeof child === "object") refuse("a child object that h did not make");
     else refuse(`a child of type ${typeof child}`);
   }
   return into;
@@ -77,10 +95,12 @@ function children(list, into) {
 // A tree node. `props` may be null; children may be strings, numbers, trees, arrays of them,
 // or null/undefined/booleans (skipped, for conditional children).
 export function h(tag, props, ...kids) {
-  if (!HTML_TAGS.has(tag) && !SVG_TAGS.has(tag)) refuse(`element <${tag}> is not allowed`);
+  checkTag(tag);
   const p = { ...(props ?? {}) };
   checkProps(tag, p);
-  return { t: tag, p, c: children(kids, []) };
+  const tree = { t: tag, p, c: children(kids, []) };
+  MADE.add(tree);
+  return tree;
 }
 
 // All text of a tree, concatenated, as `mount` would render it (for tests and titles).
@@ -91,6 +111,9 @@ export function textOf(tree) {
 
 function create(tree, document, inSvg) {
   if (typeof tree === "string") return document.createTextNode(sanitize(tree));
+  if (!isTree(tree)) refuse("a tree that h did not make");
+  checkTag(tree.t);
+  checkProps(tree.t, tree.p);
   const svg = inSvg || tree.t === "svg";
   const node = svg ? document.createElementNS(SVG_NS, tree.t) : document.createElement(tree.t);
   for (const [name, value] of Object.entries(tree.p)) {

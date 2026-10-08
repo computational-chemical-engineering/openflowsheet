@@ -4,7 +4,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { h, mount, replace, SVG_NS, textOf } from "../../apps/web/js/h.js";
+import { h, isTree, mount, replace, SVG_NS, textOf } from "../../apps/web/js/h.js";
+import { table } from "../../apps/web/js/screens/common.js";
 import { FakeDocument, HTML_NS } from "./fake-dom.mjs";
 
 test("h returns a plain tree; strings stay strings, numbers become text, nulls vanish", () => {
@@ -106,4 +107,37 @@ test("replace empties the parent first", () => {
   replace(h("p", null, "new"), document.body);
   assert.equal(document.body.childNodes.length, 1);
   assert.equal(document.body.textContent, "new");
+});
+
+// M06 review F4 (probe P1): a `{t, p, c}` object `h` did not make is not a tree — not as a child,
+// not as a table cell, not mounted — and a made tree changed afterwards is checked again on mount.
+test("only trees h made are trees: a parsed or forged {t, p, c} is refused", () => {
+  const forged = JSON.parse('{"t":"img","p":{"src":"x","onerror":"alert(1)"},"c":[]}');
+  assert.equal(isTree(forged), false);
+  assert.equal(isTree(h("td", null)), true);
+  assert.throws(() => h("td", null, forged), /did not make/);
+  assert.throws(() => h("td", null, [JSON.parse('{"t":"span","p":{},"c":["x"]}')]), /did not make/);
+  const cell = { t: "td", p: { onclick: "x", style: "color:red" }, c: ["hi"] };
+  assert.throws(() => table(["a"], [[cell]]), /did not make/);
+  const document = new FakeDocument();
+  assert.throws(() => mount(forged, document.body), /did not make/);
+  assert.throws(() => mount({ t: "td", p: {}, c: ["hi"] }, document.body), /did not make/);
+  assert.equal(document.body.childNodes.length, 0);
+  // A made tree is still checked when it is created: a tag, an attribute or a child set later.
+  const retagged = h("span", null, "x");
+  retagged.t = "img";
+  assert.throws(() => mount(retagged, document.body), /not allowed/);
+  const restyled = h("span", null, "x");
+  restyled.p.onerror = "alert(1)";
+  assert.throws(() => mount(restyled, document.body), /attribute/);
+  const adopted = h("span", null, "x");
+  adopted.c.push(forged);
+  assert.throws(() => mount(adopted, document.body), /did not make/);
+  assert.equal(document.body.childNodes.length, 0);
+  // What the screens do is unchanged: a made td passes through `table`, anything else is wrapped.
+  const made = h("td", { class: "num" }, "1.5");
+  const built = table(["a", "b"], [[made, "text"]]);
+  const row = built.c[1].c[0];
+  assert.equal(row.c[0], made);
+  assert.deepEqual(row.c[1], { t: "td", p: {}, c: ["text"] });
 });

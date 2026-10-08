@@ -8,7 +8,7 @@
 // revision has the bundle's `model_version` (the consistency guard); otherwise the view says so
 // and shows no equation index. `?column=` lists the rows incident on that column, matched first.
 
-import { h } from "../h.js";
+import { h, isTree } from "../h.js";
 import { checksForSubject, scaledResidual } from "../model/certificate.js";
 import { structureIndex } from "../model/structure.js";
 import { link } from "../router.js";
@@ -194,7 +194,7 @@ export function view(data) {
               text(column?.component),
               ...(atRun ? [variables === null ? "no state recorded" : numCell(variables[columnId])] : []),
               columnRowsLink(data, columnId, "rows"),
-            ].map((cell) => (cell && cell.t === "td" ? cell : h("td", null, cell))),
+            ].map((cell) => (isTree(cell) && cell.t === "td" ? cell : h("td", null, cell))),
           );
         }),
       ),

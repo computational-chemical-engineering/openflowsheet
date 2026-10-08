@@ -3,7 +3,7 @@
 // view pieces every screen draws the same way — numbers, ids, links, pills, empty sections,
 // the digest banner, a JSON tree. Loads take `api` (js/api.js); views stay pure trees.
 
-import { h } from "../h.js";
+import { h, isTree } from "../h.js";
 import { link } from "../router.js";
 import { DASH, fmt, pill } from "../text.js";
 
@@ -140,7 +140,7 @@ export function table(headers, rows, { empty = "none recorded", caption = null, 
       ? [h("tr", null, h("td", { colspan: String(headers.length), class: "muted" }, empty))]
       : rows.map((row) =>
           Array.isArray(row)
-            ? h("tr", null, row.map((cell) => (cell && cell.t === "td" ? cell : h("td", null, cell))))
+            ? h("tr", null, row.map((cell) => (isTree(cell) && cell.t === "td" ? cell : h("td", null, cell))))
             : row,
         );
   return h(
