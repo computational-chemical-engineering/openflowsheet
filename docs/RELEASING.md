@@ -116,7 +116,10 @@ created marked **pre-release**, which `pip` installs only with `--pre` or the ex
 `v0.2-alpha-gate-v1`, covers `0.2.0aN` and nothing else: it claims V11–V20 (re-judged at the
 alpha's own release candidate `C_α`), W21 and W22, prints W23–W27 as not claimed, and reads every
 input at the tag candidate (`git show`), not from the working tree. It also requires Frank's three
-answers and his D3 acceptances in ADR 0028's two tables (never ADR 0021's), the RC record
+answers and his D3 acceptances in ADR 0028's two tables (never ADR 0021's), each starting
+`accepted, YYYY-MM-DD` with the date right after the word and on or after the verdict's `Judged`
+date, so that an answer given for one pre-release is not read for the next (spec Tables T4 and T6,
+Amendment 1); the RC record
 `docs/v02-alpha-rc-record.md` with steps 1–12 passed, M07a's manifest at `C_α`, M01's and M02's
 `tested` manifests at ancestors of `C_α`, the envelope pinned to `v0.2-alpha-envelope-1` with
 `release` equal to the version, and the required ADRs Accepted. Every other `0.2` version is
