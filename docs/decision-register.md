@@ -4470,3 +4470,309 @@ review's F4. A user-supplied path for installed packages is not built; Q-N4 says
 
 **Watch for.** If Q-N4 is declined, an installed package without the records raises rather than refusing with a
 typed result. Revisit with Frank's answer.
+
+---
+
+## R-260 — M05's trust region is Pyomo 6.10.1's `contrib.trustregion`, unmodified and pinned by version and module hashes; its state is read from its INFO log and EXIT lines
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D1, D8; `docs/design/M05-trust-region.md` §6.7 |
+| Evidence | Probe of 2026-10-09 (design note §4, P1–P2′, P9): it composes with Python-callback EFs; Pyomo's example 1 is reproduced bitwise through a `PropertyBlock`-style wrapper; it is deterministic on repeat |
+| Affected packages | M05, M07 |
+
+**Decision.** Use the framework as shipped: pin `pyomo` 6.10.1 and the sha256 of its five TRF modules, and refuse with
+`UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNPINNED)` on any mismatch. Read the trust-region and filter state and the rejected
+steps from the `pyomo.contrib.trustregion` INFO records, reconstruct the filter, and take the outcome from the captured
+EXIT lines. Run one TRF run per process.
+
+**Rejected alternatives, and why.** Patching TRF to expose its state, which breaks the pin. Our own trust-region loop
+as the primary route, which is not a tested framework (D13); it is kept as ADR 0040's conditional fallback.
+
+**Watch for.** Any Pyomo upgrade, which is a new ADR. Log-text changes fail G2 loudly.
+
+---
+
+## R-261 — The glass box is the `ProblemSpec` evaluated with a `PyomoAlgebra`, property outputs become ExternalFunctions behind explicit output variables, and the reactor enters full-space through its two coupling coordinates
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D2, D3; design note §6.1–§6.2 |
+| Evidence | `compile/spec.py`: rows are builders over `Algebra` (`exp`, `log`, `sqrt`); blocks are opaque with Jacobians. Probe P4: explicit output variables pass TRF's DOF check |
+| Affected packages | M05 |
+
+**Decision.** The projection calls each `EquationSpec.build` with Pyomo symbols and `PyomoAlgebra`. Decisions are
+pinned inputs promoted to scaled variables. Each block output is `y == s·EF(inputs)`, with one holder per block. An
+external unit's (X̂, ΔT̂) become variables linked to two EFs of its seven inlet variables, and TRF solves the coupling
+together with the optimization. The projection has a source map and equivalence gates against CasADi (residual
+≤ 1e-12 scaled, Jacobian ≤ 1e-10). `PyomoAlgebra` is not a compile backend (R-003 stands, guard G13).
+
+**Rejected alternatives, and why.**
+- A text code generator: a second artifact to keep in sync.
+- Peng–Robinson in Pyomo algebra: a second model.
+- Grey-box property blocks in the subproblem: TRF passes `keepfiles`, and its DOF count and rejection cannot see
+  inside them.
+- The reactor as a reduced-space black box through M02's coupled solve: 2–6 min and tolerance noise per evaluation.
+
+**Watch for.** A row builder that branches on a decision's value (`PARAMETER_NOT_DIFFERENTIABLE`); nonsmooth nodes
+(`PROJECTION_NONSMOOTH`).
+
+---
+
+## R-262 — ExternalFunction holders keep their identity under TRF's clone, memoize on exact inputs, never return a non-finite value, and raise typed refusals
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D5; design note §6.3 |
+| Evidence | Probe P2′: without `__deepcopy__` returning `self`, the accounting saw 0 of 23 calls. P6: an exception aborts TRF. P7: NaN is accepted silently |
+| Affected packages | M05 |
+
+**Decision.** One `EFHolder` per black box, which:
+- returns itself from `__deepcopy__`;
+- memoizes on binary64 tuples;
+- raises `TruthRefused` for a non-finite output, a property `DomainError`, an experiment status other than `ok`, an
+  infeasible FD side, or the budget;
+- checks the caps before each cold request.
+
+A refusal ends the TRF run as `TRF_TRUTH_REFUSED`; retries belong to the study.
+
+**Rejected alternatives, and why.** Plain callbacks (invisible accounting; a runner with locks cannot be deep-copied).
+Returning NaN or a penalty (silently accepted; R-189).
+
+**Watch for.** A holder holding state that a future Pyomo copies by another path.
+
+---
+
+## R-263 — TRF's subproblems are solved by the audited Ipopt 3.14.20 ASL executable through a registered alias with exact Hessian, `bound_relax_factor = 0` and `acceptable_iter = 0`; the executable joins the [A10] inventory
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D4; design note §6.7 |
+| Evidence | Probe P8: `solver='cyipopt'` is refused (TRF passes `keepfiles`). P10: the alias works without `PATH`. P12: `ldd bin/ipopt` adds `bin/ipopt`, `libipoptamplinterface.so.3.14.20` and `libgomp.so.1` to M03's inventory |
+| Affected packages | M05; M03 (the environment is shared, its inventory not edited) |
+
+**Decision.** `openflowsheet_trsp_ipopt` subclasses Pyomo's `IPOPT` shell plugin, with the executable pinned by path
+and sha256 and the options `M05-trsp-ipopt-v1`. The Hessian is exact: the subproblem is pure algebra, so ADR 0032 D2's
+L-BFGS rule for M03's Hessian-less twin does not apply. The audit extension goes in
+`benchmarks/m05/trsp-inventory-x86_64.json`, under M03's criteria. The contingency, only if the audit fails, is a
+cyipopt shim that drops `keepfiles` and `tee` and must reproduce TR-E1 within 1e-8.
+
+**Rejected alternatives, and why.** PyNumero cyipopt (refused by TRF). The shim as the primary route (a configuration
+the framework never tested). L-BFGS for the subproblem (a Hessian exists).
+
+**Watch for.** `libgomp` licence classification (GCC runtime exception, as `libgcc_s`).
+
+---
+
+## R-264 — TRF basis functions: an affine Taylor basis at w₀ for property EFs; the promoted M04 quadratic, or else the constant d(w₀), for the reactor EF; frozen for the study
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D7; design note §6.6 |
+| Evidence | `interface.py`: r_k = b + [d − b](w_k) + [∇d − ∇b](w_k)ᵀ(w − w_k), so an affine b leaves every r_k equal to the Taylor model. Probe P5: a constant basis converges to the same point within 4e-7 |
+| Affected packages | M05, M04 (its manifest is read) |
+
+**Decision.** As in the title. The basis is built on the clone's EF arguments, never on the original model's
+variables. An unpromoted surrogate is never a basis (N-F5's default).
+
+**Rejected alternatives, and why.** TRF's default b = 0: the first subproblem would see zero enthalpies and ln φ.
+Retraining the basis during a study: voids the theory (blueprint L437).
+
+**Watch for.** N-F5: Frank may allow `any_fitted`; the theory does not need the basis to be accurate.
+
+---
+
+## R-265 — A derivative-free truth's gradient is forward FD in the seven inlet coordinates at η = 2⁻¹⁴ with exact steps, inward at hard bounds, run concurrently, behind a once-per-study η-against-η/4 check
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D6; design note §6.5 |
+| Evidence | R-250: the march runs at S3 rtol 1e-12. Probe P11: an FD gradient from a thread pool inside the gradient callback agrees with exact within 1.5e-6 |
+| Affected packages | M05, M02 (runner concurrency) |
+
+**Decision.** h_j = η·max(|w_j|, f_j) with f_n = 1e-3 Σn, f_T = 1 K and f_P = 1e5 Pa. The quotient uses the exact
+difference fl(w + h) − w. The seven points run on min(7, cores − 1) workers after the base point. The check passes iff
+‖G(η) − G(η/4)‖_∞ ≤ 1e-3 · max(1, ‖G(η)‖_∞) (scaled); on failure η ← 4η, at most twice, after which A3 is marked
+`fd_unstable`. FD values are never sensitivities.
+
+**Rejected alternatives, and why.** Central differences (double the cost). Steps tied to M02's cross-environment
+ε_eval = 1e-6 (irrelevant within one environment).
+
+**Watch for.** A gradient check that fails on the real reactor: report it, do not tune it silently.
+
+---
+
+## R-266 — M05's eligible example is TR-E2 (the C1 formulation with the test-only C^∞ truth `m05-synthetic-interior-v1`); TR-E1 (Eason–Biegler example 1 as a `ProblemSpec`) is the framework-equivalence oracle; the real reactor is qualified, not eligible
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D9; ADR 0039 D2; design note §5 |
+| Evidence | Design note §5.2's assumption table A1–A7 |
+| Affected packages | M05, M07 |
+
+**Decision.** TR-E2's truth is X = 0.16·exp(a·z − z_T²) and ΔT = 80 K·exp(b·z), with an analytic gradient. Its T
+optimum is interior, and the independent expectation comes from a tightly coupled golden-section reference in test
+support. TR-E1 must match Pyomo's native example: 5 iterations, values within 1e-10. The real reactor's outcomes are
+empirical, without an inherited guarantee (blueprint L443).
+
+**Rejected alternatives, and why.** The real reactor as the eligible example (A2 assumed, A3 by FD). The M04 surrogate
+(depends on M04's real build). Pyomo's example alone (no flowsheet).
+
+**Watch for.** A claim of "eligible" attached to any parent-truth run.
+
+---
+
+## R-267 — The C1 study optimizes the reactor inlet temperature in [643.15, 733.15] K for liquid NH₃ product at fixed purge 0.02; hard domains and admissibility are constraints, `extrapolated` is a stated limit
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed; the objective and the box await Frank (N-F1, N-F6) |
+| Normative text | ADR 0039 D1; design note §7.1 |
+| Evidence | ADR 0022 D6 (the inlet temperature is the decision; interior optimum); R-169 (every registered state is extrapolated); the steady-state inert balance (φ degenerate under this objective) |
+| Affected packages | M05, M07 |
+
+**Decision.** As in the title. The objective is `c1-obj-nh3-liquid-v1` and the decision tolerance is 0.5 K. The
+constraints are generated from the bound variant's hard domain and M04's admissibility set, with a margin of 1e-6 on
+expression constraints.
+
+**Rejected alternatives, and why.** (T_in, φ) jointly (φ runs to its bound). An economic objective (prices are Frank's
+call). `extrapolated` as a constraint (infeasible). Box7 as a constraint (not a true restriction of the parent).
+
+**Watch for.** A bound-active real optimum: report it as such.
+
+---
+
+## R-268 — The refinement loop is S0 → A (promoted surrogate only) → B → C (parent through the EF) → B, at most 3 study iterations, stopping only on parent evidence; M05 does not retrain the surrogate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0039 D3; design note §7.2–§7.3 |
+| Evidence | Blueprint §9.3 L427 and §10 L437; M04 spec §5.5 and §8.5 |
+| Affected packages | M05, M04 |
+
+**Decision.** A TRF abort is retried once at ¼ of the radius. `NOT_STATIONARY_AT_DELTA` restarts from the best
+feasible poll point. Any other failing status stops the study `FAILED`. A budget or iteration stop is never called
+stable.
+
+**Rejected alternative, and why.** Surrogate-based optimization with retraining between iterations: it breaks TRF's
+theory, and M04's splits must stay i.i.d.
+
+**Watch for.** A request to add targeted parent points to M04's training, which needs an M04 amendment.
+
+---
+
+## R-269 — Candidates are judged by P1–P5: the targeted check, gross agreement, constraints, regimes, and a poll at the decision tolerance against a noise floor from the achieved coupling residuals
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0039 D4; design note §7.4 |
+| Evidence | ADR 0034 D3 (coupling tolerances, achieved residuals in the certificate); Kolda, Lewis & Torczon 2003, Thm 3.3 (what a poll certifies) |
+| Affected packages | M05, M07 |
+
+**Decision.** e_i = 2(|∂J/∂X̂|ΔX_i + |∂J/∂ΔT̂|ΔT_i), with the sensitivities from central differences of M02's inner
+solve (no reactor call). Statuses, by precedence: P1, P4, P3, P2, P5. The curvature and the indifference half-width
+are reported. The claims are `global_optimality: false` and `stationarity: poll_at_delta`.
+
+**Rejected alternatives, and why.** M03's V5 (refused by ADR 0031 C3). An FD-KKT verdict (no decidable tolerance). A
+fixed noise floor (risks false stability).
+
+**Watch for.** A curved active constraint (n_d > 1), where the coordinate poll does not establish KKT.
+
+---
+
+## R-270 — Every true-model request is in a ledger, attributed to stage, iteration and candidate, and reconciled bijectively with M02's store; budgets are in cold experiments and wall time, enforced before each call
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed; the REAL budget awaits Frank (N-F3) |
+| Normative text | ADR 0039 D5, D6; design note §7.5, §8 |
+| Evidence | Probe P2′ (TRF's call order); ADR 0033 (one attempt is one execution; `cache_hit`) |
+| Affected packages | M05, M02 |
+
+**Decision.** `truth-ledger-v1` with served ∈ {cold, store_hit, memo_hit}. Per-check summaries come from
+`external-coupling.json`. TRF 6.10.1's request identity is gated. REAL budget: 400 cold / 4 h per study, 250 cold /
+30 iterations per TRF run.
+
+**Rejected alternative, and why.** Counting from the store alone (no attribution).
+
+**Watch for.** Any unattributed store attempt, which is a gate failure, not noise.
+
+---
+
+## R-271 — M05's records use the new schema `trust-region-study-v1`; replay classes follow M02; R-253's move into `run/compare` falls to the first package exposing study replay, not M05
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0039 D7; design note §9 |
+| Evidence | R-253's watch-for; ADR 0034 D6 |
+| Affected packages | M05, M07 |
+
+**Decision.** A new schema file. No existing schema changes. Same-machine replay is bitwise; cross-architecture
+comparison is under `T08-numerical-policy-v2` with a test-level pre-pass.
+
+**Rejected alternatives, and why.** Extending M03's `optimization-report` (disjoint content; A06). Doing R-253's move
+in M05 (no product-level study replay is added).
+
+**Watch for.** M07 exposing study replay, which must do R-253's move first.
+
+---
+
+## R-272 — The conditional fallback (ADR 0040): a scipy-only reduced-space trust-region model management over certified simulations, activated only by trigger T1, T2 or T3
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Conditional, inactive |
+| Normative text | ADR 0040; design note §10 |
+| Evidence | Plan L271 |
+| Affected packages | M05 |
+
+**Decision.** See ADR 0040. If activated, it may not claim a tested-framework guarantee. It is withdrawn if M05 closes
+without a trigger.
+
+**Rejected alternative, and why.** A re-implementation of TRF over the same projection: it keeps the failed route's
+dependencies.
+
+**Watch for.** Activation without a recorded trigger.
+
+---
+
+## R-273 — M05 exposes a library, evidence scripts and `trust_region_readiness`; no application job operation
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed (N-F7) |
+| Normative text | ADR 0039 D8; ADR 0038 D10; design note §6.8, §9.5 |
+| Evidence | ADR 0032 D6 (a `ProcessRevision` has no place for decisions or objectives) |
+| Affected packages | M05, M07 |
+
+**Decision.** In the default install, readiness is `UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNAVAILABLE)` until N1, and
+lists every failing reason otherwise.
+
+**Rejected alternative, and why.** A `trust_region_study` job operation now (an ADR 0019 amendment). M07 decides
+whether its journey needs one.
+
+**Watch for.** M07 needing it.
