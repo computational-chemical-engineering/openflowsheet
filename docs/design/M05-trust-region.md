@@ -3,7 +3,7 @@
 **Status:** Proposed, 2026-10-09. Design lane (`architect`). Branch `wp/M05` from `main` `1ecf576`.
 **Brief:** `docs/briefs/M05-design.md`. **ADRs:** 0038 (the trust-region adapter and its composition), 0039 (the C1
 study: decision, objective, parent checks, refinement loop, accounting, records), 0040 (the conditional fallback).
-**Register:** R-260 to R-273.
+**Register:** R-260 to R-276 (R-274 to R-276: §16 rulings).
 **Plan row (v1.2 §4.4, L267):** "M05 — M03, M04: distinct trust-region integration spike and fixed-topology refinement
 loop." Acceptance: ExternalFunction/glass-box composition with source maps; parent-model checks at candidate optima;
 true-model call accounting; constraints and limitations retained. Gate W24 (M05's half). Requirements A06, D13.
@@ -113,6 +113,8 @@ as a test.
 | P11 | A vector black box (2 outputs) behind two EFs sharing one memo; forward FD from a thread pool inside the gradient callback | Works, with no deadlock. 14 cold evaluations, 8 of them FD points; the FD solution agrees with exact gradients within 1.5e-6 |
 | P12 | Executable linkage (`ldd bin/ipopt`) | Loads `libipoptamplinterface.so.3`, `libipopt.so.3`, `libasl.so`, `libspral.so`, `libdmumps_seq.so`, `libmetis.so`, `libgomp.so.1`, `libhwloc`, `libgfortran`. Absent from M03's inventory: `bin/ipopt`, `libipoptamplinterface.so.3.14.20`, `libgomp.so.1` |
 
+| P13 | (found in WO-3, 2026-10-09) An EF refusal during TRF's start-value evaluation | **Swallowed.** `EFReplacement.exitNode` (`interface.py:86`) wraps it in a bare `except:` and sets the holder variable to 0. It is the module's only bare `except` |
+
 **What the probe settles.** The framework composes with Python-callback EFs. It needs a gradient for every EF, the
 ASL executable for its subproblems, identity-preserving callbacks, finite values, and an outer handler for refusals.
 Nothing found requires the fallback.
@@ -213,7 +215,7 @@ Each `build` is a builder over the projection's symbols and an `Algebra`, exactl
    - molar_flow ≥ 0, except a flow exactly 0.0 in x₀, which gets no bound (ADR 0032 D4's rule);
    - none otherwise.
 
-   Scaling suffix: `scaling_factor = 1/column_scales[id]` (default 1).
+   Scaling suffix: `scaling_factor = 1/S_x[id]`, with S_x from K03's `Scaling.from_spec` (§16, R-275).
 2. **Decisions.** For a bounded `DecisionSpec`: c = (lo + hi)·0.5 and h = (hi − lo)·0.5 in binary64.
    `m.d[j] ∈ [−1, 1]` is initialized to (p₀ − c)/h, and the parameter's symbol is the expression `c + h·m.d[j]`. A
    `DecisionSpec` with `lower = upper = None` (TR-E1 only) is unbounded: `m.d[j]` has no bounds, is initialized to p₀,
@@ -233,7 +235,8 @@ Each `build` is a builder over the projection's symbols and an `Algebra`, exactl
    - `block_out_map["b.o"] = m.y[b, o]`;
    - `param_map[p]` is the float, the decision expression, or `m.w[...]`.
 
-   Then `m.row[i]: expr == 0`, with scaling `1/row_scales[id]`.
+   Then `m.row[i]: expr == 0`, with scaling `1/S_F[id]` (§16, R-275). Rows in the certified alias
+   elimination are not projected (§16, R-274).
 6. **Inequalities**, as `m.ineq[k]: g ≤ upper_tightened`, where `upper_tightened = upper − margin_rel·|upper|` (or
    `+margin_rel·|upper|` for a lower form).
 7. **Objective**: `m.obj`, with `sense` and `1/scale`.
@@ -270,6 +273,8 @@ canonical ids appear only in the map. Fields:
 - **`external_links`**: `[{pyomo_var, ef, unit_id, parameter_id, coordinate: "X"|"dT", input_variable_ids, truth: {kind, id, sha256}, output_scale}]`.
 - **`inequalities`**: `[{pyomo, inequality_id, source, upper, margin_rel}]`.
 - **`objective`**: `{objective_id, sense, scale}`.
+- **`omitted_rows`**: `[{equation_id, origin, reason, retained_path, residual_x0}]` (§16, R-274).
+- **`scale_provenance`**: K03's `Scaling.from_spec` provenance, or `unit_no_kinds` (§16, R-275).
 - **`trf`**: filled after a successful run from the returned model's `trf_data.truth_models`, as
   `[{holder: "trf_data.ef_outputs[i]", ef}]`.
 
@@ -786,9 +791,9 @@ merge and M02's case JSON `C1-LOOP-M02-v1` exists: rebase `wp/M05` onto that mer
 | WO-1 | bounded | The TRSP audit extension. A workload `trf-trsp-executable` (TR-E1's native example through the alias) runs in the audited environment with M03's inventory tooling. New files: `benchmarks/m05/trsp-inventory-x86_64.json` (loaded objects, licences, sha256 of `bin/ipopt` and the five TRF modules) and `docs/m05-trsp-audit.md` (verdict). M03's inventory is not edited | G1 |
 | WO-2 | Opus | `projection.py`: `PyomoAlgebra`, `project()`, the source map, refusals, scales. `tests/test_m05_projection.py` covers SYN-001 at its K05 registered states and the TR-E1 spec. The backend-import guard's allow-list gains `studies/trust_region/` for `pyomo` only | G4 (SYN-001 and TR-E1 parts), G13 |
 | WO-3 | Opus | `trf.py` and `holders.py` (base): pin, alias with `M05-trsp-ipopt-v1`, configuration, log handler and parser, stdout capture, outcomes, the holder (deepcopy identity, memo, non-finite guard, refusal mapping, budget), and TR-E1. The probe's findings P2′, P3, P6, P7 and P8 become tests | G2, G3 |
-| WO-4 | Opus | `truths.py`: `ParentExperimentTruth` (M02 runner, the FD policy with thread pool and gradient check, hard-domain side rule), `SurrogateTruth` (M04), and `tests/support/m05_synthetic.py` (§5.2, analytic gradient). Concurrency equivalence: 7 distinct-key FD experiments run concurrently and serially give byte-identical store records (in-process synthetic). If `ExperimentRunner.run` is not safe for that, add `ExperimentRunner.run_batch` additively in M02's module, proven serial-equivalent; escalate if the handshake or lock logic must change. The M04 basis expression must match `predict` at J1–J3 within 1e-14 relative | Analytic against FD on the synthetic ≤ 1e-6 relative at η; G7's mechanics on a unit run |
+| WO-4 | Opus | `truths.py`: `ParentExperimentTruth` (M02 runner, the FD policy with thread pool and gradient check, hard-domain side rule), `SurrogateTruth` (M04), and `tests/support/m05_synthetic.py` (§5.2, analytic gradient). Concurrency equivalence: 7 distinct-key FD experiments run concurrently and serially give byte-identical store records (in-process synthetic). If `ExperimentRunner.run` is not safe for that, add `ExperimentRunner.run_batch` additively in M02's module, proven serial-equivalent; escalate if the handshake or lock logic must change. The M04 basis expression must match `predict` at J1–J3 within 1e-14 relative. **Also (§16.4):** the affine property basis of §6.6, and the `meta` contract `{status, cache_hit, experiment_key, executions, extrapolated}` for every adapter | Analytic against FD on the synthetic ≤ 1e-6 relative at η; G7's mechanics on a unit run; §16.4's basis acceptance |
 | WO-5 | Opus | `study.py` (formulation): the C1 decision, objective and inequality generation from the boundary block and the admissibility definitions; projection of the coupled route's inner `ProblemSpec` with (X̂, ΔT̂) promoted; M02's inner-solve-at-pinned-w accessor (additive and bitwise-inert if it is not public); `tests/support/m05_reference.py` (§5.2) | G4 (C1 part) |
-| WO-6 | Opus | `checks.py` and `study.py` (loop): P1–P5, the noise floor, the poll, statuses, stages S0/A/B/C, retries, budgets, record assembly | Unit tests on fakes for every status and precedence; LOOP runs in WO-8 |
+| WO-6 | Opus | `checks.py` and `study.py` (loop): P1–P5, the noise floor, the poll, statuses, stages S0/A/B/C, retries, budgets, record assembly. **Also (§16.4):** `trust_region_readiness`'s projection and start halves | Unit tests on fakes for every status and precedence; every readiness reason produced by a fixture and `READY` on TR-E2's configuration; LOOP runs in WO-8 |
 | WO-7 | bounded | `schemas/trust-region-study.schema.json` from §9.1. Default-gate tests on the committed records: schema, accounting arithmetic and identities (§8.3), status precedence, log-parser fixtures, readiness refusals without Pyomo | G12 |
 | WO-8 | Opus | `nlp`-tier runs TR-E2, TR-E2-FD, LOOP-S (M04 smooth synthetic parent, the M04 pipeline's prefix-plan manifest, PROMOTABLE per M04 §9.2) and LOOP-R (rough, NOT_PROMOTABLE); records committed; same-machine replay | G5, G6, G7, G8, G9, G10 |
 | WO-9 | Opus (opt-in `pymrm`) | REAL: gradient check at the start inlet; stage A and B if the real surrogate is promoted; stage C and checks under `M05-budget-v1`; record committed; replay from the record | G11, G10 (REAL part) |
@@ -868,3 +873,79 @@ merge and M02's case JSON `C1-LOOP-M02-v1` exists: rebase `wp/M05` onto that mer
   structure is found.
 - **Whether M03 audited aarch64.** Default: the TRSP extension, like M03's, covers x86_64 only, and the `nlp` tier runs
   there.
+
+## 16. Rulings on WO-2 and WO-3 as built (2026-10-09)
+
+These rule on the build lane's escalations from `aaa2452`, `545a385` and `dd9e364`. Measured at `dd9e364`: default
+gate 7951 passed; `nlp` tier 67 passed; G2, G3 and G13 hold.
+
+### 16.1 Omitted rows (R-274): confirmed, amended to be derived and certified
+
+SYN-001's spec has 49 rows over 47 variables. Two of the rows are certified pressure alias rows that the retained rows
+imply. Projecting all 49 makes TRF's DOF count n_d − 2, which is refused as `PROJECTION_DOF`.
+
+**Ruling.** A row is omitted from the projection **iff** `orchestrator/rank.py`'s `eliminate_alias_rows` eliminates
+it. This is the same elimination, with the same inputs and tolerances, that the certificate applies
+(`verify/certificate.py`) and that M03's sensitivities apply (`studies/sensitivity.py`). The projection computes the set
+itself. It is never caller-chosen: a caller-supplied `omitted_rows` is accepted only if it equals the certified set,
+and otherwise it is refused as `PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)`.
+
+**What certifies an omitted row.** All four of the following, recorded in the source map's `omitted_rows`:
+1. **Eliminated by the certified algorithm.** The row is affine in pressure columns with ±1 coefficients and lies on a
+   retained-forest path. The path is recorded as `retained_path`.
+2. **Satisfied at the start.** Its residual at x₀ is within the elimination's `pressure_tolerance`. The value is
+   recorded as `residual_x0`.
+3. **Consistent with the decisions.** Every decision's tangent residual on the row is ≤ τ_alias = 1e-8 (ADR 0031 D3
+   Q3; ADR 0032 D1). Otherwise the projection is refused before any solve.
+4. **Satisfied at the final state.** At every TRF final state the omitted rows are evaluated and recorded. A residual
+   above `pressure_tolerance` fails P2 (`PROJECTION_DISAGREES`).
+
+P1's certified re-solve checks every row anyway (R-188).
+
+The DOF check remains n_vars − (n_rows − n_omitted) − n_block_outputs − n_links = n_d. C1's zero-ΔP pressure loop is
+expected to yield its own alias rows, under the same rule and with no case-specific code.
+
+### 16.2 Scales (R-275): K03's `Scaling.from_spec` everywhere
+
+**Ruling.** One source of row and column scales for the projection: K03's `Scaling.from_spec(spec)`, the scales that
+M03's full-space NLP and the certificate use. It governs:
+- G4's denominators: (b) row scale, (c) J_scale = S_F/S_x, and (d);
+- the Ipopt `scaling_factor` suffixes (1/S_x, 1/S_F);
+- P2's state comparison;
+- the scales recorded in the source map.
+
+`ProblemSpec.row_scales` and `column_scales` are not read directly.
+
+**A spec without kinds** (only the test-only TR-E1, where `from_spec` cannot build) uses unit scales, recorded as
+`scale_provenance: "unit_no_kinds"`. **A spec with partial kinds** is refused as `PROJECTION_SCALES_UNAVAILABLE(<ids>)`.
+
+The measured worst ratios to tolerance stand under this ruling: SYN-001 ≤ 5.9e-4 / 7.1e-7 / 2.3e-3; TR-E1 1.5e-4 / 0 /
+2.9e-4. G3 is unchanged, because TR-E1 keeps unit scales. After switching the suffix, re-run G3 and G4 once; nothing
+registered depends on SYN-001's TRSP iterates.
+
+**Rejected:** the spec's unit scales. Rounding alone fails G4(b) in raw watts, at a ratio of 21.8.
+
+### 16.3 TRF swallows start-value refusals (R-276): a pre-flight, plus a backstop
+
+P13 (§4): `EFReplacement.exitNode` swallows any exception from the start-value evaluation and sets the holder to 0.
+The build lane's holder now records every refusal, and `run_trf` reports it. That is necessary, but not sufficient: a
+swallowed start refusal can be followed by a run that ends "optimal".
+
+**Ruling. Pre-flight.** Before calling `solve()`, `run_trf` evaluates every EF holder at x₀ (values only). A refusal
+there is `TRF_TRUTH_REFUSED(start:<status>:<reason>)`, and TRF is never invoked. TRF's own start evaluation then becomes
+a memo hit. The ledger's `trf_start_value` request is the pre-flight's, so §8.3's identity is unchanged.
+
+**Ruling. Backstop invariant.** If any holder recorded a refusal during a run, the outcome is
+`TRF_TRUTH_REFUSED(<first refusal>)` with no candidate, whatever TRF returned or printed. A test drives a refusal
+through `exitNode`'s bare `except` and asserts both the pre-flight and the backstop.
+
+Nothing more is needed: `interface.py:86` is the module's only bare `except`, and every other evaluation propagates
+(probe P6).
+
+### 16.4 Gaps assigned
+
+| Gap | Assigned to | Acceptance |
+| --- | --- | --- |
+| Affine property basis (§6.6) | WO-4 (Opus) | At w₀ the basis value equals the block's value bitwise, and its `differentiate` gradient equals the block Jacobian within 1e-15 relative; every basis variable belongs to the clone; TR-E1 with an affine basis on `bb` converges to native within 1e-6 (probe P5's analogue) |
+| `trust_region_readiness`: projection and start halves (§6.8) | WO-6 (Opus) | Each reason code is produced by a fixture; `READY` on TR-E2's configuration |
+| `TruthBox`'s `meta` contract | WO-4 (Opus) | Every `TruthModel.evaluate` returns `meta = {status, cache_hit, experiment_key, executions, extrapolated}`. `SurrogateTruth` and in-process test truths return `status: "ok"`, `cache_hit: false`, `experiment_key: null`, `executions: 0`, `extrapolated: false`; the ledger records them with `truth.kind` and they never count against parent budgets. `ParentExperimentTruth` maps M02's `ExperimentOutcome` exactly |

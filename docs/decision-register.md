@@ -5158,3 +5158,71 @@ lists every failing reason otherwise.
 whether its journey needs one.
 
 **Watch for.** M07 needing it.
+
+---
+
+## R-274 — The trust-region projection omits exactly the rows that the certified alias elimination removes; it derives and certifies them itself
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on the build lane's escalation `aaa2452`; Proposed |
+| Normative text | `docs/design/M05-trust-region.md` §16.1 (amends §6.1–§6.2) |
+| Evidence | SYN-001: 49 rows over 47 variables, of which two are certified pressure alias rows; projecting all 49 rows → `PROJECTION_DOF(3)`; without them DOF = 5 = n_d at M03's P1–P3 and B1–B3 |
+| Affected packages | M05 (C1's zero-ΔP loop likewise) |
+
+**Decision.** The omitted set is the set `orchestrator/rank.py`'s `eliminate_alias_rows` eliminates (the certificate's
+and M03's elimination), computed by the projection. A row is certified by four facts, all recorded:
+- it is on the retained-forest path;
+- its residual at x₀ is within `pressure_tolerance`;
+- every decision's tangent residual on it is ≤ 1e-8;
+- its residual at every TRF final state is within `pressure_tolerance` (else P2 fails).
+
+A caller set that differs from the certified one is refused `PROJECTION_OMITTED_ROW_UNCERTIFIED`.
+
+**Rejected alternative, and why.** A free caller-chosen `omitted_rows` (as built in `aaa2452`): it could drop a row
+that is not implied.
+
+**Watch for.** An alias pattern the elimination refuses (`UnsupportedRankStructureError`) on C1. That is an escalation,
+not a reason to choose rows by hand.
+
+---
+
+## R-275 — The projection's scales are K03's `Scaling.from_spec`, for G4, for the Ipopt scaling suffixes, for P2 and for the source map; a spec without kinds uses unit scales, recorded
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on the build lane's escalation `545a385`; Proposed |
+| Normative text | Design note §16.2 (amends §6.1 and G4) |
+| Evidence | SYN-001 in raw watts: an evaluation-order difference of 2.2e-11 W fails 1e-12 (ratio 21.8); in K03's 1e5 W nominal it is 2.2e-16 |
+| Affected packages | M05 |
+
+**Decision.** As in the title. A spec with partial kinds is refused as `PROJECTION_SCALES_UNAVAILABLE`.
+`ProblemSpec.row_scales` and `column_scales` are not read directly.
+
+**Rejected alternatives, and why.** The spec's unit scales (rounding fails the gate). Different scales for the gate and
+for Ipopt (two notions of "scaled").
+
+**Watch for.** A spec that declares both kinds and explicit scales. K03 governs until an ADR says otherwise.
+
+---
+
+## R-276 — `run_trf` evaluates every ExternalFunction at the start before invoking TRF, and any refusal recorded during a run makes the outcome `TRF_TRUTH_REFUSED`, because TRF 6.10.1 swallows start-value exceptions
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on the build lane's finding in WO-3; Proposed |
+| Normative text | Design note §4 P13, §16.3 (amends §6.7) |
+| Evidence | `pyomo/contrib/trustregion/interface.py:86`: a bare `except:` in `EFReplacement.exitNode` sets the holder to 0; it is the module's only bare `except` |
+| Affected packages | M05 |
+
+**Decision.** A pre-flight evaluation of the values at x₀; a refusal there is `TRF_TRUTH_REFUSED(start:…)`, and TRF
+is not invoked. Backstop: any refusal recorded in a run means no candidate, whatever TRF reported. §8.3's identity is
+unchanged, because the start request is the pre-flight's.
+
+**Rejected alternative, and why.** Recording the refusal only (as built): a run after a swallowed start refusal can
+still end "optimal".
+
+**Watch for.** A Pyomo upgrade that changes `exitNode`. This is covered by the pin (R-260).
