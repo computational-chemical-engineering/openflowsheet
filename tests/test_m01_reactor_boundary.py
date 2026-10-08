@@ -153,6 +153,14 @@ def test_a26_the_projection_of_the_registered_raw_outlet() -> None:
         assert _flow_rel(got, expected) <= 1e-12
     assert projection.outlet[3] == n_in[3] and projection.outlet[4] == n_in[4]  # inerts bitwise
     assert projection.defect[4] == 0.0  # the zero entry (absolute 1e-18 or better)
+    # DECISION (M01 WO-6, pending the design lane): spec §9.6 registers the defect vector at rel
+    # 1e-12, but a 1e-6 mol/s defect is the difference of O(0.5) mol/s flows, whose double floor is
+    # ~1e-16 mol/s absolute: measured 2.5e-11 relative (5.5e-17 mol/s) on these inputs, whatever the
+    # arithmetic, because the raw outlet's own rounding is that size. Asserted on the flow scale,
+    # 1e-13 x n_tot,in: 1.8e3 above the measured floor, 1e7 below a wrong projection's ~1e-6.
+    for got, expected in zip(projection.defect, PROJECTION["defect_mol_s"], strict=True):
+        assert abs(got - expected) <= 1e-13 * sum(n_in)
+    assert abs(projection.defect_rel - PROJECTION["defect_rel"]) <= 1e-13
     total = sum(n_in)
     for row in ELEMENT_MATRIX:
         inflow = sum(e * n for e, n in zip(row, n_in, strict=True))
