@@ -1,0 +1,575 @@
+# M01 component records: the five components of C1, the ammonia synthesis loop (ADR 0022, R-120, R-145).
+#
+# Normative text: docs/derivations/M01-spec.md section 3 (records and sources) and ADR 0026 D5.
+# Every value is a published value recorded with its primary reference (Frank, 2026-10-02, dossier
+# statement 1). Retrieval tools: chemicals 1.5.2 (critical constants, acentric factors, formation
+# enthalpies, identifiers, molecular weights) and Cantera 3.2.0 (nasa_gas.yaml, the NASA-7 heat
+# capacities). Cross-checked against CoolProp 8.0.0 by benchmarks/m01/components_crosscheck.py, whose
+# record benchmarks/m01/components-crosscheck.json states every deviation. The group's reactor property
+# database is a cross-check only (Frank, 2026-10-02); none of its values is used here.
+#
+# Ideal-gas heat capacity: c_p^ig/R = sum_k b_k (T / 1000 K)^k, k = 0..4, R = 8.31446261815324 J/(mol K)
+# (exact SI). b_k = a_(k+1) * 1000^k exactly in decimal, where a_1..a_5 are the low-range (200-1000 K)
+# NASA-7 coefficients of McBride, Gordon and Reno (1993); the scaling makes each b_k dimensionless.
+# Formation enthalpies: ideal gas at 298.15 K, ATcT 1.112; elements in their reference state are zero by
+# definition. Together they are the datum of the reference convention PR-C1-ref-v1 (ADR 0026 D4).
+
+schema_version: 1
+record_schema: schemas/component-record.schema.json
+reference_convention: PR-C1-ref-v1
+components:
+  - id: H2
+    name: hydrogen
+    synthetic: false
+    identifiers:
+      cas: "1333-74-0"
+      inchi: "InChI=1S/H2/h1H"
+      inchikey: "UFHFLCQGNIYNRP-UHFFFAOYSA-N"
+      formula: "H2"
+    molecular_weight:
+      value: 0.00201588
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molar mass of hydrogen
+      role: fixed
+      provenance: "IUPAC (CIAAW) standard atomic weights as tabulated by chemicals 1.5.2 (chemicals.elements.molecular_weight of the formula)"
+    elemental_composition: {H: 2}
+    elemental_verification: VERIFIED
+    parameters:
+      critical_temperature:
+        value: 33.145
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "T_c of hydrogen, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Leachman, Jacobsen, Penoncello and Lemmon, J. Phys. Chem. Ref. Data 38 (2009) 721-748, doi:10.1063/1.3160306 (normal hydrogen); retrieved as chemicals 1.5.2 method HEOS"
+      critical_pressure:
+        value: 1296400.0
+        unit: Pa
+        dimension: [-1, 1, -2, 0, 0, 0, 0]
+        kind: pressure
+        meaning: "P_c of hydrogen, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Leachman, Jacobsen, Penoncello and Lemmon, J. Phys. Chem. Ref. Data 38 (2009) 721-748, doi:10.1063/1.3160306 (normal hydrogen); retrieved as chemicals 1.5.2 method HEOS"
+      acentric_factor:
+        value: -0.219
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "Pitzer acentric factor of hydrogen, Peng-Robinson input"
+        role: fixed
+        provenance: "Acentric factor of the reference equation of state, Leachman, Jacobsen, Penoncello and Lemmon, J. Phys. Chem. Ref. Data 38 (2009) 721-748, doi:10.1063/1.3160306 (normal hydrogen); retrieved as chemicals 1.5.2 method HEOS"
+      standard_formation_enthalpy:
+        value: 0.0
+        unit: J/mol
+        dimension: [2, 1, -2, 0, -1, 0, 0]
+        kind: molar_enthalpy
+        meaning: "Standard enthalpy of formation of hydrogen, ideal gas at 298.15 K; the PR-C1-ref-v1 datum h_i^ig(298.15 K) = this value"
+        role: fixed
+        provenance: "Element in its reference state: zero by definition of the standard formation enthalpy (the ATcT 1.112 value retrieved by chemicals 1.5.2 method ATCT_G is 0 as well)"
+      ideal_gas_cp_b0:
+        value: 2.34433112
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_0 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_1 x 1000^0 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b1:
+        value: 7.98052075
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_1 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_2 x 1000^1 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b2:
+        value: -19.478151
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_2 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_3 x 1000^2 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b3:
+        value: 20.1572094
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_3 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_4 x 1000^3 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b4:
+        value: -7.37611761
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_4 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_5 x 1000^4 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_lower_temperature:
+        value: 200.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Lower end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range lower bound"
+      ideal_gas_cp_upper_temperature:
+        value: 1000.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Upper end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range upper bound"
+    rights:
+      source: "Critical constants and acentric factor: Leachman et al. reference EOS; c_p: NASA TM-4513 (1993); formation enthalpy: ATcT 1.112; identifiers and molar mass: chemicals 1.5.2 (MIT)"
+      redistribution: "permitted: published numerical constants quoted with their citations (a handful of values per component, not an extraction of any database); NASA TM-4513 is a work of the United States Government; the retrieval tools are MIT (chemicals) and BSD-3-Clause (Cantera)"
+      notes: "No value comes from the group's reactor property database (Frank, 2026-10-02). No rights grant is relied on (M01 spec section 3.4)."
+  - id: N2
+    name: nitrogen
+    synthetic: false
+    identifiers:
+      cas: "7727-37-9"
+      inchi: "InChI=1S/N2/c1-2"
+      inchikey: "IJGRMHOSHXDMSA-UHFFFAOYSA-N"
+      formula: "N2"
+    molecular_weight:
+      value: 0.0280134
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molar mass of nitrogen
+      role: fixed
+      provenance: "IUPAC (CIAAW) standard atomic weights as tabulated by chemicals 1.5.2 (chemicals.elements.molecular_weight of the formula)"
+    elemental_composition: {N: 2}
+    elemental_verification: VERIFIED
+    parameters:
+      critical_temperature:
+        value: 126.192
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "T_c of nitrogen, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Span, Lemmon, Jacobsen, Wagner and Yokozeki, J. Phys. Chem. Ref. Data 29 (2000) 1361-1433, doi:10.1063/1.1349047; retrieved as chemicals 1.5.2 method HEOS"
+      critical_pressure:
+        value: 3395800.0
+        unit: Pa
+        dimension: [-1, 1, -2, 0, 0, 0, 0]
+        kind: pressure
+        meaning: "P_c of nitrogen, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Span, Lemmon, Jacobsen, Wagner and Yokozeki, J. Phys. Chem. Ref. Data 29 (2000) 1361-1433, doi:10.1063/1.1349047; retrieved as chemicals 1.5.2 method HEOS"
+      acentric_factor:
+        value: 0.0372
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "Pitzer acentric factor of nitrogen, Peng-Robinson input"
+        role: fixed
+        provenance: "Acentric factor of the reference equation of state, Span, Lemmon, Jacobsen, Wagner and Yokozeki, J. Phys. Chem. Ref. Data 29 (2000) 1361-1433, doi:10.1063/1.1349047; retrieved as chemicals 1.5.2 method HEOS"
+      standard_formation_enthalpy:
+        value: 0.0
+        unit: J/mol
+        dimension: [2, 1, -2, 0, -1, 0, 0]
+        kind: molar_enthalpy
+        meaning: "Standard enthalpy of formation of nitrogen, ideal gas at 298.15 K; the PR-C1-ref-v1 datum h_i^ig(298.15 K) = this value"
+        role: fixed
+        provenance: "Element in its reference state: zero by definition of the standard formation enthalpy (the ATcT 1.112 value retrieved by chemicals 1.5.2 method ATCT_G is 0 as well)"
+      ideal_gas_cp_b0:
+        value: 3.53100528
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_0 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_1 x 1000^0 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b1:
+        value: -0.123660987
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_1 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_2 x 1000^1 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b2:
+        value: -0.502999437
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_2 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_3 x 1000^2 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b3:
+        value: 2.43530612
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_3 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_4 x 1000^3 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b4:
+        value: -1.40881235
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_4 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_5 x 1000^4 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS78'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_lower_temperature:
+        value: 200.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Lower end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range lower bound"
+      ideal_gas_cp_upper_temperature:
+        value: 1000.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Upper end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range upper bound"
+    rights:
+      source: "Critical constants and acentric factor: Span et al. reference EOS; c_p: NASA TM-4513 (1993); formation enthalpy: ATcT 1.112; identifiers and molar mass: chemicals 1.5.2 (MIT)"
+      redistribution: "permitted: published numerical constants quoted with their citations (a handful of values per component, not an extraction of any database); NASA TM-4513 is a work of the United States Government; the retrieval tools are MIT (chemicals) and BSD-3-Clause (Cantera)"
+      notes: "No value comes from the group's reactor property database (Frank, 2026-10-02). No rights grant is relied on (M01 spec section 3.4)."
+  - id: NH3
+    name: ammonia
+    synthetic: false
+    identifiers:
+      cas: "7664-41-7"
+      inchi: "InChI=1S/H3N/h1H3"
+      inchikey: "QGZKDVFQNNGYKY-UHFFFAOYSA-N"
+      formula: "H3N"
+    molecular_weight:
+      value: 0.01703052
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molar mass of ammonia
+      role: fixed
+      provenance: "IUPAC (CIAAW) standard atomic weights as tabulated by chemicals 1.5.2 (chemicals.elements.molecular_weight of the formula)"
+    elemental_composition: {N: 1, H: 3}
+    elemental_verification: VERIFIED
+    parameters:
+      critical_temperature:
+        value: 405.56
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "T_c of ammonia, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Gao, Wu, Bell and Lemmon, 'Thermodynamic Properties of Ammonia for Temperatures from the Melting Line to 725 K and Pressures to 1000 MPa', J. Phys. Chem. Ref. Data (2020), as cited by CoolProp 8.0.0 (bibliography key Gao-JPCRD-2020, which records no volume or DOI); retrieved as chemicals 1.5.2 method HEOS"
+      critical_pressure:
+        value: 11363400.0
+        unit: Pa
+        dimension: [-1, 1, -2, 0, 0, 0, 0]
+        kind: pressure
+        meaning: "P_c of ammonia, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Gao, Wu, Bell and Lemmon, 'Thermodynamic Properties of Ammonia for Temperatures from the Melting Line to 725 K and Pressures to 1000 MPa', J. Phys. Chem. Ref. Data (2020), as cited by CoolProp 8.0.0 (bibliography key Gao-JPCRD-2020, which records no volume or DOI); retrieved as chemicals 1.5.2 method HEOS"
+      acentric_factor:
+        value: 0.256
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "Pitzer acentric factor of ammonia, Peng-Robinson input"
+        role: fixed
+        provenance: "Acentric factor of the reference equation of state, Gao, Wu, Bell and Lemmon, 'Thermodynamic Properties of Ammonia for Temperatures from the Melting Line to 725 K and Pressures to 1000 MPa', J. Phys. Chem. Ref. Data (2020), as cited by CoolProp 8.0.0 (bibliography key Gao-JPCRD-2020, which records no volume or DOI); retrieved as chemicals 1.5.2 method HEOS"
+      standard_formation_enthalpy:
+        value: -45558.0
+        unit: J/mol
+        dimension: [2, 1, -2, 0, -1, 0, 0]
+        kind: molar_enthalpy
+        meaning: "Standard enthalpy of formation of ammonia, ideal gas at 298.15 K; the PR-C1-ref-v1 datum h_i^ig(298.15 K) = this value"
+        role: fixed
+        provenance: "Active Thermochemical Tables (ATcT) version 1.112, B. Ruscic and D. H. Bross, Argonne National Laboratory (ATcT.anl.gov), H3N (g) at 298.15 K, uncertainty 0.030 kJ/mol; retrieved as chemicals 1.5.2 method ATCT_G"
+      ideal_gas_cp_b0:
+        value: 4.30177808
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_0 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_1 x 1000^0 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS89'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b1:
+        value: -4.7712733
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_1 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_2 x 1000^1 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS89'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b2:
+        value: 21.9341619
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_2 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_3 x 1000^2 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS89'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b3:
+        value: -22.9856489
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_3 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_4 x 1000^3 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS89'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b4:
+        value: 8.28992268
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_4 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_5 x 1000^4 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'TPIS89'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_lower_temperature:
+        value: 200.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Lower end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range lower bound"
+      ideal_gas_cp_upper_temperature:
+        value: 1000.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Upper end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range upper bound"
+    rights:
+      source: "Critical constants and acentric factor: Gao et al. reference EOS; c_p: NASA TM-4513 (1993); formation enthalpy: ATcT 1.112; identifiers and molar mass: chemicals 1.5.2 (MIT)"
+      redistribution: "permitted: published numerical constants quoted with their citations (a handful of values per component, not an extraction of any database); NASA TM-4513 is a work of the United States Government; the retrieval tools are MIT (chemicals) and BSD-3-Clause (Cantera)"
+      notes: "No value comes from the group's reactor property database (Frank, 2026-10-02). No rights grant is relied on (M01 spec section 3.4)."
+  - id: Ar
+    name: argon
+    synthetic: false
+    identifiers:
+      cas: "7440-37-1"
+      inchi: "InChI=1S/Ar"
+      inchikey: "XKRFYHLGVUSROY-UHFFFAOYSA-N"
+      formula: "Ar"
+    molecular_weight:
+      value: 0.039948
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molar mass of argon
+      role: fixed
+      provenance: "IUPAC (CIAAW) standard atomic weights as tabulated by chemicals 1.5.2 (chemicals.elements.molecular_weight of the formula)"
+    elemental_composition: {Ar: 1}
+    elemental_verification: VERIFIED
+    parameters:
+      critical_temperature:
+        value: 150.687
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "T_c of argon, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Tegeler, Span and Wagner, J. Phys. Chem. Ref. Data 28 (1999) 779-850, doi:10.1063/1.556037; retrieved as chemicals 1.5.2 method HEOS"
+      critical_pressure:
+        value: 4863000.0
+        unit: Pa
+        dimension: [-1, 1, -2, 0, 0, 0, 0]
+        kind: pressure
+        meaning: "P_c of argon, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Tegeler, Span and Wagner, J. Phys. Chem. Ref. Data 28 (1999) 779-850, doi:10.1063/1.556037; retrieved as chemicals 1.5.2 method HEOS"
+      acentric_factor:
+        value: -0.00219
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "Pitzer acentric factor of argon, Peng-Robinson input"
+        role: fixed
+        provenance: "Acentric factor of the reference equation of state, Tegeler, Span and Wagner, J. Phys. Chem. Ref. Data 28 (1999) 779-850, doi:10.1063/1.556037; retrieved as chemicals 1.5.2 method HEOS"
+      standard_formation_enthalpy:
+        value: 0.0
+        unit: J/mol
+        dimension: [2, 1, -2, 0, -1, 0, 0]
+        kind: molar_enthalpy
+        meaning: "Standard enthalpy of formation of argon, ideal gas at 298.15 K; the PR-C1-ref-v1 datum h_i^ig(298.15 K) = this value"
+        role: fixed
+        provenance: "Element in its reference state: zero by definition of the standard formation enthalpy (the ATcT 1.112 value retrieved by chemicals 1.5.2 method ATCT_G is 0 as well)"
+      ideal_gas_cp_b0:
+        value: 2.5
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_0 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_1 x 1000^0 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 6/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b1:
+        value: 0.0
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_1 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_2 x 1000^1 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 6/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b2:
+        value: 0.0
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_2 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_3 x 1000^2 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 6/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b3:
+        value: 0.0
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_3 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_4 x 1000^3 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 6/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b4:
+        value: 0.0
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_4 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_5 x 1000^4 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 6/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_lower_temperature:
+        value: 200.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Lower end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range lower bound"
+      ideal_gas_cp_upper_temperature:
+        value: 1000.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Upper end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range upper bound"
+    rights:
+      source: "Critical constants and acentric factor: Tegeler et al. reference EOS; c_p: NASA TM-4513 (1993); formation enthalpy: ATcT 1.112; identifiers and molar mass: chemicals 1.5.2 (MIT)"
+      redistribution: "permitted: published numerical constants quoted with their citations (a handful of values per component, not an extraction of any database); NASA TM-4513 is a work of the United States Government; the retrieval tools are MIT (chemicals) and BSD-3-Clause (Cantera)"
+      notes: "No value comes from the group's reactor property database (Frank, 2026-10-02). No rights grant is relied on (M01 spec section 3.4)."
+  - id: CH4
+    name: methane
+    synthetic: false
+    identifiers:
+      cas: "74-82-8"
+      inchi: "InChI=1S/CH4/h1H4"
+      inchikey: "VNWKTOKETHGBQD-UHFFFAOYSA-N"
+      formula: "CH4"
+    molecular_weight:
+      value: 0.01604246
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molar mass of methane
+      role: fixed
+      provenance: "IUPAC (CIAAW) standard atomic weights as tabulated by chemicals 1.5.2 (chemicals.elements.molecular_weight of the formula)"
+    elemental_composition: {C: 1, H: 4}
+    elemental_verification: VERIFIED
+    parameters:
+      critical_temperature:
+        value: 190.564
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "T_c of methane, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Setzmann and Wagner, J. Phys. Chem. Ref. Data 20 (1991) 1061-1151, doi:10.1063/1.555898; retrieved as chemicals 1.5.2 method HEOS"
+      critical_pressure:
+        value: 4599200.0
+        unit: Pa
+        dimension: [-1, 1, -2, 0, 0, 0, 0]
+        kind: pressure
+        meaning: "P_c of methane, Peng-Robinson input"
+        role: fixed
+        provenance: "Critical point of the reference equation of state, Setzmann and Wagner, J. Phys. Chem. Ref. Data 20 (1991) 1061-1151, doi:10.1063/1.555898; retrieved as chemicals 1.5.2 method HEOS"
+      acentric_factor:
+        value: 0.01142
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "Pitzer acentric factor of methane, Peng-Robinson input"
+        role: fixed
+        provenance: "Acentric factor of the reference equation of state, Setzmann and Wagner, J. Phys. Chem. Ref. Data 20 (1991) 1061-1151, doi:10.1063/1.555898; retrieved as chemicals 1.5.2 method HEOS"
+      standard_formation_enthalpy:
+        value: -74534.0
+        unit: J/mol
+        dimension: [2, 1, -2, 0, -1, 0, 0]
+        kind: molar_enthalpy
+        meaning: "Standard enthalpy of formation of methane, ideal gas at 298.15 K; the PR-C1-ref-v1 datum h_i^ig(298.15 K) = this value"
+        role: fixed
+        provenance: "Active Thermochemical Tables (ATcT) version 1.112, B. Ruscic and D. H. Bross, Argonne National Laboratory (ATcT.anl.gov), CH4 (g) at 298.15 K, uncertainty 0.057 kJ/mol; retrieved as chemicals 1.5.2 method ATCT_G"
+      ideal_gas_cp_b0:
+        value: 5.14987613
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_0 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_1 x 1000^0 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 8/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b1:
+        value: -13.6709788
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_1 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_2 x 1000^1 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 8/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b2:
+        value: 49.1800599
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_2 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_3 x 1000^2 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 8/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b3:
+        value: -48.4743026
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_3 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_4 x 1000^3 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 8/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_b4:
+        value: 16.6693956
+        unit: "1"
+        dimension: [0, 0, 0, 0, 0, 0, 0]
+        kind: dimensionless
+        meaning: "b_4 of c_p^ig/R = sum_k b_k (T/1000 K)^k on 200-1000 K; = a_5 x 1000^4 of the low-range NASA-7 fit"
+        role: fixed
+        provenance: "McBride, Gordon and Reno, Coefficients for Calculating Thermodynamic and Transport Properties of Individual Species, NASA TM-4513 (1993), low range 200-1000 K, species note 'L 8/88'; retrieved from Cantera 3.2.0 data/nasa_gas.yaml"
+      ideal_gas_cp_lower_temperature:
+        value: 200.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Lower end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range lower bound"
+      ideal_gas_cp_upper_temperature:
+        value: 1000.0
+        unit: K
+        dimension: [0, 0, 0, 1, 0, 0, 0]
+        kind: temperature
+        meaning: "Upper end of the c_p fit range"
+        role: fixed
+        provenance: "NASA TM-4513 (1993), low-range upper bound"
+    rights:
+      source: "Critical constants and acentric factor: Setzmann and Wagner et al. reference EOS; c_p: NASA TM-4513 (1993); formation enthalpy: ATcT 1.112; identifiers and molar mass: chemicals 1.5.2 (MIT)"
+      redistribution: "permitted: published numerical constants quoted with their citations (a handful of values per component, not an extraction of any database); NASA TM-4513 is a work of the United States Government; the retrieval tools are MIT (chemicals) and BSD-3-Clause (Cantera)"
+      notes: "No value comes from the group's reactor property database (Frank, 2026-10-02). No rights grant is relied on (M01 spec section 3.4)."
