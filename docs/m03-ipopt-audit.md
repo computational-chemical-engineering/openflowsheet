@@ -30,7 +30,8 @@ knowledge.
 
 **Verdict: PASS** — for linux x86-64, CPython 3.13.5, on the route of §3.1 (a user-space conda-forge
 environment built by `scripts/build-m03-ipopt-env.sh`). Q-F5 is answered: an auditable Ipopt + ASL
-distribution exists for this platform. The `nlp` extra is still not declared: that waits for N1.
+distribution exists for this platform. WO-8 declared the `nlp` extra on branch `wp/M03` in a commit
+of its own, which is not merged before Frank answers N1 and reverts alone if he declines.
 
 | Item | Outcome | Evidence (details in §6) |
 | --- | --- | --- |
@@ -39,7 +40,7 @@ distribution exists for this platform. The `nlp` extra is still not declared: th
 | G3 | **PASS** | One `METIS_` exporter is mapped: conda-forge `metis-5.1.0` `libmetis.so` (`970cd095…`); it defines `METIS_SetDefaultOptions` and `METIS_Free` and none of `METIS_EstimateMemory`, `METIS_mCPartGraphKway`, `METIS_EdgeND`: METIS 5 by ADR 0006 D2.1's binary test |
 | G4 | **PASS** | No mapped object defines or imports an `ma27`/`ma57`/`ma77`/`ma86`/`ma97` routine or is named `*hsl*`; Ipopt's own banner: `This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2.`; `linear_solver = mumps` set and recorded |
 | G5 | **PASS** | No mapped object is restrictive, GPL without an exception, or unresolved. Four are the GCC runtime under GPL-3.0 with the GCC Runtime Library Exception (R-135's class), five LGPL (ADR 0006 Q1, Amendment 1: CasADi's two, numpy's and scipy's `libquadmath`, conda-forge `libiconv`); numpy's and scipy's `libgfortran` are dispositioned by ADR 0006 Amendment 1 exactly as in T08.A30. Subject to Frank's N1 (§7) |
-| G6 | **PASS** | `pyproject.toml` names neither `pyomo` nor `cyipopt` anywhere; `tests/test_m03_nlp_isolation.py` (default gate) imports every `openflowsheet` module but WO-8's adapter in a fresh interpreter and asserts neither is loaded |
+| G6 | **PASS** | `pyproject.toml` names `pyomo` and `cyipopt` only in the optional `nlp` extra (WO-8; at WO-6's audit, nowhere); `tests/test_m03_nlp_isolation.py` (default gate) imports every `openflowsheet` module but WO-8's adapter in a fresh interpreter and asserts neither is loaded |
 | G7 | **PASS** | Exact versions and hashes: three committed locks (§8), micromamba and three upstream sources pinned by SHA-256 in the build script; route documented in `docs/reference-environments.md` §8. Measured: two builds at different prefixes and cache paths (the second with a cold download cache) give identical conda and pip fingerprints and the same `libpynumero_ASL.so` (`6646bbdd…`), and `--check` against the second build reproduces the committed inventory |
 | G8 | **PASS** | This document, committed on `wp/M03-audit` before any `nlp` code |
 
@@ -276,7 +277,8 @@ declaration) makes the object `unresolved`; this was measured, and is how the ca
 
 ### 6.6 G6 and G7
 
-G6: `pyproject.toml` at this commit has no `nlp` extra and names neither library;
+G6: `pyproject.toml` at WO-6's commit had no `nlp` extra and named neither library; since WO-8 it
+names them only in that extra (the inventory's G6 record: `nlp_extra_declared: true`);
 `tests/test_m03_nlp_isolation.py::test_the_default_modules_import_no_nlp_library` walks every module
 except `openflowsheet.studies.nlp.greybox` (WO-8's adapter, the one module allowed to import them).
 
@@ -332,7 +334,8 @@ interactive prompt (§9.3).
   make 4.4.1), never loaded at run time.
 - In the build script: micromamba 2.9.0 and the three recipe-named upstream sources, by SHA-256.
 
-The `nlp` extra is **not** added (N1 pending). Drafted for WO-8, after N1:
+The `nlp` extra was **not** added by WO-6 (N1 pending). Drafted for WO-8, which declared it verbatim
+in a commit of its own on `wp/M03` (still pending N1):
 
 ```toml
 # M03 ADR 0032 D5: the optional general-NLP bridge. Installable only into the audited environment

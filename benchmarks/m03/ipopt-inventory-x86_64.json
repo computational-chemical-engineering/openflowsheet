@@ -461,9 +461,14 @@
    "undispositioned": []
   },
   "G6": {
-   "nlp_extra_declared": false,
+   "nlp_extra_declared": true,
    "pass": true,
-   "requirements_naming_pyomo_or_cyipopt": {}
+   "requirements_naming_pyomo_or_cyipopt": {
+    "optional-dependencies.nlp": [
+     "cyipopt==1.7.0",
+     "pyomo==6.10.1"
+    ]
+   }
   }
  },
  "host": {
