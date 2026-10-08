@@ -17,7 +17,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | spec + Amendment 1 (`1e8aecd`, R-195…200); WO-1…8 done; manifest `tested` (`evidence/M01/6c81683…`); `reviewer` running → merge to main |
 | M02 | Build | M01 | W21 | design done (`a507c99`: note, ADR 0033–0035, R-220…233, WO-1…13, G1–G12); WO-1…4 running; merges after M01 `tested` |
-| M03 | Design | T08 | W24 (part) | spec + Amendment 1 (`8154baa`, R-210…215); WO-0…7 done; WO-2a/5a/7a/9 running; WO-8 waits for N1; then WO-10 manifest, `reviewer` |
+| M03 | Design | T08 | W24 (part) | spec + Amendment 1; WO-0…7, 2a/5a/7a, 9 done (`7606ada`); WO-8 running (merge waits for N1); then WO-10 manifest, `reviewer` |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
 | M06 | Build | T08 | W26, W27 | design + ADR 0030 / Amendment 3 (approved); WO-1…12, 14…16 done on `wp/M06-build` (`98da494`, pushed, CI running); `reviewer` running; then WO-13 manifest → merge (security/browser, docs, evidence + `reviewer`); WO-17 (canaries + campaign) at M07 |
@@ -74,7 +74,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `reviewer` | M01 independent review | `wp/M01` @ `c2cf045` |
 | `reviewer` | M06 independent review (WO-13) | `wp/M06-build` @ `98da494` |
-| `opus-engineer` | M03 WO-2a, 5a, 7a, 9 (post-amendment, schemas) | `wp/M03` (`m03`) |
+| `opus-engineer` | M03 WO-8 cyipopt gray box (extra isolated; merge waits for N1) | `wp/M03` (`m03`) |
 | `opus-engineer` | M02 WO-1…4 (+5, 6) schemas, variants, kill chain, runner | `wp/M02` (`m02`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).

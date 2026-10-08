@@ -265,3 +265,11 @@ Grep, don't read whole. Newest at the bottom.
   (`c2cf045`; session). IDAES record's `inputs.reference_values_yaml_sha256` moved with Amendment 1 (closed_form
   unchanged).
 - `reviewer` M01 launched on `wp/M01` @ `c2cf045`.
+- M03 WO-2a, 5a, 7a, 9 done on `wp/M03` (`5660bee`…`51941fa`): Q2′/LINEAR_SOLVE_FAILED (restructure bit-identical
+  on 48 results, A10 still 2 factorizations), A43–A48 pass, `classify_starts`, `schemas/registry.json` (34 names),
+  `study` + `optimization-report` schemas with emitted fixtures; WO-7 serialization defect fixed (`47fffad`); check.sh
+  7043 passed. Nothing within 10×. R-218 (session, `7606ada`): rename-substitution test gets a registered
+  post-rename fixture list (from the engineer's `26d1f1a`).
+- DECISION: M03 WO-8 (cyipopt gray box) built now on `wp/M03`, the `nlp` extra in its own commit; no merge until
+  Frank answers N1. Alternative: wait for N1. Reversible by: reverting that commit (no default path depends on it).
+- `opus-engineer` M03 WO-8 launched on `wp/M03`.
