@@ -2037,7 +2037,7 @@ def registration_claims(facts: Mapping[str, Any]) -> Claims:
             f"{lows[-1]:.10f}",
         )
     )
-    return claims
+    return claims + tolerance_claims()
 
 
 def statistics(facts: Mapping[str, Any]) -> dict[str, Any]:
@@ -2077,6 +2077,55 @@ def statistics(facts: Mapping[str, Any]) -> dict[str, Any]:
         },
         "not_steady_topology_kinds": len(NSS_TOPOLOGY_KINDS),
     }
+
+
+def within_tolerance(kind: str, value: float, ref: float, port_total: float = 0.0) -> bool:
+    """§11.4 W27-R46: the registered stream tolerance."""
+    if kind == "temperature":
+        return abs(value - ref) <= STREAM_TOLERANCE["temperature_K"]["absolute"]
+    if kind == "pressure":
+        t = STREAM_TOLERANCE["pressure_Pa"]
+        return abs(value - ref) <= t["relative"] * abs(ref) + t["absolute"]
+    if kind == "flow":
+        t = STREAM_TOLERANCE["component_flow_mol_s"]
+        return abs(value - ref) <= t["relative"] * abs(ref) + t["of_port_total"] * port_total
+    raise ValueError(kind)
+
+
+def tolerance_claims() -> Claims:
+    """§14.2 W27-A30…A32: boundary values, and the mis-implementations each one catches."""
+    claims: Claims = []
+    t_ok = within_tolerance("temperature", 351.999, 350.0) and not within_tolerance(
+        "temperature", 352.001, 350.0
+    )
+    t_catch = abs(351.999 - 350.0) > 1.0
+    claims.append(
+        ("GC-TOL-1 T: 351.999 passes, 352.001 fails; 1 K would fail 351.999", t_ok and t_catch, "")
+    )
+    p_ok = within_tolerance("pressure", 101_099.0, 1e5) and not within_tolerance(
+        "pressure", 101_101.0, 1e5
+    )
+    p_catch = abs(101_099.0 - 1e5) > 1e-2 * 1e5 and abs(101_099.0 - 1e5) > 1e-3 * 1e5 + 100
+    claims.append(
+        (
+            "GC-TOL-2 P: 101099 passes, 101101 fails; no 100 Pa or 0.1 % would fail",
+            p_ok and p_catch,
+            "",
+        )
+    )
+    f_ok = within_tolerance("flow", 10.503, 10.0, 40.0) and not within_tolerance(
+        "flow", 10.505, 10.0, 40.0
+    )
+    f_catch = abs(10.503 - 10.0) > 0.05 * 10.0 + 1e-4 * 10.0 and abs(10.503 - 10.0) > 0.05 * 10.0
+    claims.append(
+        (
+            "GC-TOL-3 flow (10, 30): 10.503 passes, 10.505 fails; an own-flow or no absolute term "
+            "would fail 10.503",
+            f_ok and f_catch,
+            "",
+        )
+    )
+    return claims
 
 
 def build_registration(facts: Mapping[str, Any]) -> dict[str, Any]:

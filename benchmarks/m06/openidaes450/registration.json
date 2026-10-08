@@ -284,6 +284,21 @@
       "claim": "GC-CP-3 45/45 lower bound is 0.05^(1/45) = 0.93560",
       "detail": "0.9355957112",
       "holds": true
+    },
+    {
+      "claim": "GC-TOL-1 T: 351.999 passes, 352.001 fails; 1 K would fail 351.999",
+      "detail": "",
+      "holds": true
+    },
+    {
+      "claim": "GC-TOL-2 P: 101099 passes, 101101 fails; no 100 Pa or 0.1 % would fail",
+      "detail": "",
+      "holds": true
+    },
+    {
+      "claim": "GC-TOL-3 flow (10, 30): 10.503 passes, 10.505 fails; an own-flow or no absolute term would fail 10.503",
+      "detail": "",
+      "holds": true
     }
   ],
   "inputs": {

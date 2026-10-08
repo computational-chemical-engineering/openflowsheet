@@ -16,7 +16,7 @@ drawn at M07 from the coverage of the v0.2 candidate by the procedure of §6.
 
 - A `verdict` agent judges W27 from **this document and the campaign record** (§13 lists what the record must
   hold). Nothing else is needed and nothing else is authority.
-- Numbered items: **W27-R01…R62** are registration rules; **GC-*** are the generator's self-claims (§14.1);
+- Numbered items: **W27-R01…R58** are registration rules; **GC-*** are the generator's self-claims (§14.1);
   **W27-A01…A40** are the assertions WO-16's tests and G15's dry run must pass (§14.2); **W27-S01…S18** are the
   registered scorer states (§14.3).
 - Authority order for W27: blueprint §11.4 > plan v1.2 W27 row > design note `docs/design/M06-web-shell.md` §9
@@ -72,7 +72,7 @@ and the confirmation of §7, and no claim about any model's agent ability beyond
 - **F3 — what an agent can see.** At 0.1.1 no contract operation lists the available components or property
   routes; an agent learns them only from a refusal (`RevisionError("unsupported", "components_unsupported")`
   at validation). This is not a request to change the contract. The campaign measures agents under whatever
-  surface v0.2 has, and the report states which (§12.4).
+  surface v0.2 has, and the report states which (W27-R54).
 - **F4 — one case cannot be prompted.** `watertap_metab` lacks six of the per-case files, `units.json` among
   them; it is `ARTIFACT_INCOMPLETE` and is outside the sampling frame (§6).
 - **F5 — "agent false verification" for a built claim on a non-`CANDIDATE` case** (design note §9) is kept, but
@@ -177,13 +177,13 @@ Today 65 cases have this class; 66 carry the reason.
 `junction` (IDAES `StateJunction`) needs no model: it is a connection.
 
 **W27-R12 (case side).** Each unit key maps to a function or to none:
-- **Explicit** (`registration.json#/units/keys`, 51 keys of the archive's 361), e.g. `idaes:Flash` → flash; `idaes:Heater` → heater;
-  `idaes:Mixer` → mixer (rule *mixer*); `idaes:Separator` → splitter, or component_separator when
+- **Explicit** (`registration.json#/units/keys`, 51 keys of the archive's 361), e.g. `idaes:Flash` → flash;
+  `idaes:Heater` → heater; `idaes:Mixer` → mixer (rule *mixer*); `idaes:Separator` → splitter, or component_separator when
   `split_basis = componentFlow` (rule *separator*); `idaes:PressureChanger` by its options (rule *pressure
   changer*: `pump` → pump; `isentropic` → compressor if `compressor`, else expander; `adiabatic` without
   `compressor` → valve; anything else → none); `idaes:CSTR` → kinetic_reactor; `topology:Cooler` → heater;
-  `topology:Separator` → component_separator; `topology:Reactor` → conversion_reactor; `topology:Recuperator` →
-heat_exchanger.
+  `topology:Separator` → component_separator; `topology:Reactor` → conversion_reactor;
+  `topology:Recuperator` → heat_exchanger.
 - **Reviewed none** (84 keys, each with a reason code): keys whose name suggests a function of the vocabulary
   but which have none — `distributed` (1D/2D), `defining_relation_absent` (turbine stages with flow relations,
   boilers, equilibrium and Gibbs reactors, isothermal pressure changers), `column_section`,
@@ -308,7 +308,8 @@ both SHA-256 values are recorded.
 **W27-R26 (frame).** The frame is the 450 cases minus `ARTIFACT_INCOMPLETE` (449 today). Cases whose residual
 check is `fail` or `absent` stay in the frame, **flagged** (R-178): the residual check concerns IDAES's
 numbers, which matter only to a `CANDIDATE` build's stream check (§11.4), and excluding them would shift
-families (PrOMMiS and WaterTAP carry most of them).
+the strata unevenly (the 24 failures are IDAES 7, PrOMMiS 7 of 25, DISPATCHES 4 of 11, WaterTAP 2, REFLO 2,
+grid 1, Reaktoro 1; `access_report.json`).
 
 **W27-R27 (candidates first).** Let C be the frame's `CANDIDATE` cases. If |C| ≤ 45, all of C is in the sample
 and the remaining 45 − |C| slots are drawn from the frame's other cases by W27-R28. If |C| > 45, the 45 are
@@ -477,8 +478,8 @@ records to CAS RNs; the check passes iff that set equals the set of the case's `
 
 **W27-R45 (stream check).** Reference ports: the case's `terminal_product_ports`, found in `streams.csv#port`
 with or without the `fs.` prefix (measured, `registration.json#/statistics`: 165 of the 733 listed ports have
-rows; the others are named differently or the case has no stream table). From a port's rows: T from `temperature`; P from `pressure`; component flows
-from `flow_mol_comp[c]`, else Σ_p `flow_mol_phase_comp[p, c]`, else `flow_mol` × `mole_frac_comp[c]`; units
+rows; the others are named differently or the case has no stream table). From a port's rows: T from
+`temperature`; P from `pressure`; component flows from `flow_mol_comp[c]`, else Σ_p `flow_mol_phase_comp[p, c]`, else `flow_mol` × `mole_frac_comp[c]`; units
 converted by the registered table (`K`, `degC`, `Pa`, `kg/m/s**2`, `kPa`, `MPa`, `bar`, `mol/s`, `kmol/s`,
 `mol/h`, `kmol/h`, `dimensionless`); a quantity whose rows are missing or whose unit is not in the table is
 unjudged. The agent's side: each connection that feeds a `product_sink` in the revision, read from the
@@ -536,7 +537,9 @@ component check and a stream check run as for a candidate is flagged **`map_defe
 job's rerun bundle), the scorer, in a fresh process on a copy of the exported bundle:
 - (s1) runs `verify_bundle`: any inconsistency is a system false verification;
 - (s2) replays the bundle and compares under the numerical policy the bundle names (ADR 0025): a replay that does
-  not reproduce `VERIFIED`, or a comparison outside the policy, is a system false verification;
+  not reproduce `VERIFIED`, or a comparison outside the policy, is a system false verification; a replay the
+  system declines for its environment (an `inspected_archived_results` outcome, e.g. an empty lock hash) leaves
+  that certificate *not established*, reported, and makes the campaign's system term not established;
 - (s3) checks that every `component_set.components` id of the certified revision is a component of a snapshot
   route: a `VERIFIED` revision declaring a component the system has no record for is a system false
   verification (a silent substitution).
@@ -548,9 +551,10 @@ found; the campaign continues.
 
 **W27-R50.** Effects and critical effects as V17 §4.7, with one predicate for every run: `commit: true`,
 `solve: any`, `reproduce: any`, `cancel_own: true` — everything the capability allows. Unauthorized effects
-are therefore only (a) any allowed audit row in the session by a principal other than `agent-w27` or the local
-owner's seeding, and (b) the critical effects `cancel_non_own_allowed`, `job_wall_time_over_ceiling`,
-`job_check_tolerance_looser_than_registered`, each impossible by construction and each a defect report.
+are therefore only (a) any effect in the session by a principal other than `agent-w27` (nothing else acts
+during a session, so such a row means the isolation failed), and (b) the critical effects
+`cancel_non_own_allowed`, `job_wall_time_over_ceiling`, `job_check_tolerance_looser_than_registered`, each
+impossible by construction and each a defect report.
 Refused attempts are reported by operation and code as V17 §7.4.
 
 ### 11.9 Infrastructure failures
@@ -578,11 +582,13 @@ experiments by request and by content, job wall time.
 per family; with the snapshot's SHA-256 and `list_models`' and the package version. Sentence form: "k of 450
 (j of 82) cases are representable candidates for OpenFlowsheet <version>; the rest are classified with reasons".
 
-**W27-R54 (campaign).** Counts of each outcome class over the 45 runs; the same split by case class (`CANDIDATE`
+**W27-R54 (campaign).** Counts of each outcome class over the 45 runs (every denominator includes the
+infrastructure failures, W27-R51); the same split by case class (`CANDIDATE`
 or not) and by family; the agent false-verification count with its one-sided 95 % Clopper–Pearson upper
 bound; the correct-limitation rate over non-`CANDIDATE` runs with its one-sided 95 % lower and upper bounds;
 the correct-build rate over `CANDIDATE` runs likewise (or "no candidate runs"); infrastructure failures by
-reason; §11.10; the model id, Claude Code version and cost.
+reason; §11.10; the model id, Claude Code version and cost; and the surface the agent had (the SHA-256 of the
+served MCP tool list, and whether any tool lists components or property routes, F3).
 
 **W27-R55 (bounds).** One-sided, α = 0.05: upper(x, n) solves I_p(x + 1, n − x) = 0.95 (1 if x = n); lower(x, n)
 solves I_p(x, n − x + 1) = 0.05 (0 if x = 0); I the regularised incomplete beta, solved to 40 digits.
@@ -598,8 +604,15 @@ effects = 0 and critical effects = 0 (established); operator-identifier hits = 0
 against OpenFlowsheet's coverage with one agent model; a system gate that depended on that model's behaviour
 would judge the model, not the system. V17 (the system's own agent tasks) keeps its zero gate.
 
-**W27-R57 (what is never reported).** No headline score, no single success percentage over all 450 or over the
-82, no comparison with CRAFTS' reported rates or with `v17-c2`.
+**W27-R57 (claims allowed, and never made).** The report may say, filling the brackets from the record:
+"External agent benchmark adaptation attempted: OpenIDAES-450 (CRAFTS, arXiv:2608.01369), archive SHA-256
+`6d42c02f…4526`. [k] of 450 ([j] of 82) cases are representable candidates for OpenFlowsheet [version] under
+the W27 registration; the rest are classified with reasons ([table]). Inaccessible assets: [the ten of
+`access_report.json`, each absent, with where each was sought]. Campaign of 45 runs of [model id], k = 1:
+[counts of the seven outcome classes]; system false verification [0, established]; unauthorized and critical
+effects [0]; agent false verification [x], one-sided 95 % upper bound [u]; [cost]." It never gives a headline
+score, a single success percentage over the 450 or the 82, or a comparison with CRAFTS' reported rates or with
+`v17-c2`.
 
 ## 13. What the campaign record must hold (for the verdict)
 
@@ -645,6 +658,7 @@ Exact, no tolerance unless stated. All hold at this commit.
 | GC-DRY-1…5 | (dry illustration, both snapshots where marked) 450 rows with a class; every non-`CANDIDATE` row has a reason of its class; summaries sum to 450 and 82; today's model ids equal `model_functions`; every reason with a subject has itself among its aliases |
 | GC-SAMPLE-1 | W27-R28 sums to S, respects N_f and keeps minima for every S = 1…45 on today's frame |
 | GC-SAMPLE-2 | the dry sample is 45 distinct frame cases; the run order is a permutation of it; the 3 canaries are disjoint from it |
+| GC-TOL-1…3 | the boundary values of W27-A30…A32 pass and fail as registered, and each mis-implementation named there would flip one |
 | GC-ADV (11) | the states of W27-A09…A15 (`dry_illustration.json#/adversarial_states`) classify, or refuse, exactly as §14.2 registers |
 
 The faults these caught while this document was written are recorded in §15.3.
@@ -676,14 +690,16 @@ Expected values come from this document and the generator, which WO-16's code do
 | W27-A23 | `run.json` of a stub run | carries `lock_sha256` (non-empty), interpreter, commit, `tree_clean`, model id, effort, Claude Code version, and the four SHA-256 values of W27-R58 |
 | W27-A30 | stream check, temperature | T_ref = 350 K: 351.999 K passes, 352.001 K fails |
 | W27-A31 | stream check, pressure | P_ref = 1.0 × 10⁵ Pa: tolerance 1 100 Pa; 101 099 passes, 101 101 fails |
-| W27-A32 | stream check, flow | port flows n = (10, 10) mol/s: tolerance 0.502 mol/s; 10.501 passes, 10.503 fails |
-| W27-A33 | stream check, assignment | two reference ports and two agent product connections with the values swapped between connection ids | passes (assignment is by value, not by name) |
+| W27-A32 | stream check, flow | port flows n = (10, 30) mol/s: tolerance on the first 0.504 mol/s; 10.503 passes, 10.505 fails (an absolute term taken from the component's own flow, 0.501, would fail 10.503) |
+| W27-A33 | stream check, assignment: two reference ports and two agent product connections whose values are swapped between the connection ids | passes (the assignment is by value, not by name) |
 | W27-A34 | stream check, `residual_check = fail` | unjudged |
 | W27-A40 | Clopper–Pearson in WO-16's reporting | equals `registration.json#/reporting` to 6 decimals |
 
-Tolerances of W27-A30…A33 sit 1 × 10⁻³ of the respective unit inside and outside the bound: wide enough that
-binary64 cannot flip the comparison (the relative spacing at 10⁵ is 1.5 × 10⁻¹¹), narrow enough that an
-off-by-a-term tolerance (2 K vs 1 K, 1 % vs 0.1 %, a missing absolute term) changes the verdict.
+The test values of W27-A30…A32 sit 0.001 K, 1 Pa and 0.001 mol/s inside and outside each bound: at least six
+orders above binary64 spacing at those magnitudes (about 6 × 10⁻¹⁴ K at 352 K, 1.5 × 10⁻¹¹ Pa at 10⁵ Pa,
+2 × 10⁻¹⁵ mol/s at 10 mol/s), so roundoff cannot flip a verdict; and close enough that every plausible
+mis-implementation flips one — 1 K instead of 2 K (A30), a dropped 100 Pa or a 0.1 % relative term (A31), a
+dropped or wrongly based absolute flow term (A32).
 
 ### 14.3 Registered scorer states (G15's stub runs)
 
@@ -816,7 +832,9 @@ reported metric, not an optimisation. Each was fixed in the table or the rule, n
   W27-A21…A22), a fresh project per run with `agent-w27`, the export of W27-R42 (including `audit` and
   `audit_all` via `list_audit`), and `run.json` with V17's open finding fixed (W27-R58, W27-A23).
 - **WO-16e — preflight** (as V17's `preflight.py`): (P1) Frank's spend approval recorded; (P2) `registration.json`,
-  this document and the generator unmodified since registration (SHA-256), `--check` passes; (P3) `coverage.json`
+  this document and the generator unmodified since registration (SHA-256) or changed only by a recorded
+  amendment, `--check` passes, and `facts --check` passes against the archive (whose SHA-256 must equal
+  `provenance.json`'s; on a mismatch, stop and escalate, design note R5); (P3) `coverage.json`
   made at the campaign commit, G14 passing, W27-R24 not refusing; (P4) `sample.json` re-draws equal; (P5) §7
   done for every sampled candidate (or C empty, recorded); (P6) three canaries recorded and passed; (P7) model id
   and Claude Code version pinned from the canaries; (P8) clean committed tree, no campaign run directory yet.
