@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import os
 import re
 import socket
@@ -321,6 +322,26 @@ class Route:
     absent: tuple[str, ...] = ()
     #: Non-200 statuses this route's contract calls answer (by design: a refusal shown).
     refusals: tuple[int, ...] = ()
+    #: `(job, variable, short)`: the route shows `repr` of the variable's value in the solution
+    #: state that job recorded here, a value `short` (the G7 short form, also a marker) begins.
+    #: The fixture re-solves on the host, and x86-64 hosts disagree on a converged float's
+    #: trailing digits (`ci.yml`, above the `check` matrix), so the full-precision text is read
+    #: from the run, not written here (M06 review F2a). The Node tests hold `fmt` to the
+    #: committed fixture's digits exactly.
+    solved: tuple[tuple[str, str, str], ...] = ()
+
+
+def solved_text(shell: Shell, job_id: str, variable: str) -> str:
+    """`repr` of `variable`'s value in the solution state `job_id` recorded on this host — read
+    as the shell reads it: the job's result, its replay bundle, the bundle's
+    `solution-state.json` member's bytes."""
+    result = shell.owner.get_job_result(job_id)
+    assert result.run_result is not None, job_id
+    (bundle,) = [o for o in result.run_result.outputs if o.kind == "replay_bundle"]
+    stored = shell.owner.artifact_bytes(f"{bundle.artifact_id}/solution-state.json")
+    value = json.loads(stored)["variables"][variable]
+    assert isinstance(value, float), (job_id, variable, value)
+    return repr(value)
 
 
 #: §6's routes. Markers are what the route must show: the design note's G7 numbers where the
@@ -359,9 +380,19 @@ ROUTES: Final[tuple[Route, ...]] = (
         "failure",
         ("HOMOTOPY_STALLED", "T04-W12", ">2104<", "hypothesis", "phase_boundary_on_path"),
     ),
-    Route("/job/job-000001/streams", "streams", (">31487.6", "31487.641739605908")),
+    Route(
+        "/job/job-000001/streams",
+        "streams",
+        (">31487.6",),
+        solved=(("job-000001", "U-HEAT.Q", "31487.6"),),
+    ),
     Route("/job/job-000003/streams", "streams", ("no solution state recorded for this run",)),
-    Route("/job/job-000001/row/U-HEAT%3AHEAT-duty", "equation", (">31487.6", "31487.641739605908")),
+    Route(
+        "/job/job-000001/row/U-HEAT%3AHEAT-duty",
+        "equation",
+        (">31487.6",),
+        solved=(("job-000001", "U-HEAT.Q", "31487.6"),),
+    ),
     Route(
         "/job/job-000001/file/solve-path.json",
         "file",
@@ -393,6 +424,10 @@ def test_g11_every_screen_renders_and_reaches_only_the_contract(shell: Shell, ca
         assert_rendered(page, dom, case.screen)
         for marker in case.markers:
             assert marker in dom, marker
+        for job_id, variable, short in case.solved:
+            full = solved_text(shell, job_id, variable)
+            assert full.startswith(short) and full != short, (variable, full)
+            assert full in dom, full
         for marker in case.absent:
             assert marker not in dom, marker
         requests = shell.recorder.since(mark)
