@@ -374,6 +374,26 @@ def test_a34_a_ready_closure_without_the_adapter_is_still_unsupported_and_never_
     assert "could not be imported" in report.reasons[0].detail
 
 
+def test_a34_an_adapter_that_fails_to_import_otherwise_is_still_a_typed_report(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """M03 review F8.1: any `Exception` while importing the adapter, not only `ImportError`."""
+    import openflowsheet.studies.nlp.closure as closure_module
+
+    real = closure_module.importlib.import_module
+
+    def failing(name: str, *args: Any, **kwargs: Any) -> Any:
+        if name == closure_module.ADAPTER_MODULE:
+            raise RuntimeError("injected: a Pyomo plugin failed to register")
+        return real(name, *args, **kwargs)
+
+    monkeypatch.setattr(closure_module.importlib, "import_module", failing)
+    report = optimize(nlp_formulation(), flowsheet({}), solver_probe=available)
+    assert report.status == "UNSUPPORTED"
+    assert report.reason_codes == ("NLP_SOLVER_UNAVAILABLE",)
+    assert "injected: a Pyomo plugin failed to register" in report.reasons[0].detail
+
+
 def test_the_nlp_capability_requires_the_licence_acceptance(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

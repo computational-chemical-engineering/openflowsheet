@@ -690,13 +690,15 @@ def optimize(
 
     When ready, the gray-box adapter (WO-8, `ADAPTER_MODULE`) solves and assembles the report.
     It is imported only here and only then, so the default install never loads it; if it cannot
-    be imported after all, the result is still a typed `UNSUPPORTED`, never an `ImportError`."""
+    be imported after all, the result is still a typed `UNSUPPORTED`, never an `ImportError`. Any
+    `Exception` raised while importing it counts (a Pyomo or cyipopt import can fail otherwise
+    than with `ImportError`; M03 review F8.1): §8.7's `optimize()` never raises for it."""
     readiness = optimization_readiness(formulation, flowsheet, solver_probe=solver_probe)
     if readiness.status != "READY_FOR_OPTIMIZATION":
         return unsupported_report(formulation, flowsheet, readiness)
     try:
         adapter = importlib.import_module(ADAPTER_MODULE)
-    except ImportError as error:
+    except Exception as error:  # noqa: BLE001 -- §8.7: a typed report, never an exception
         missing = Readiness(
             status="unsupported",
             reasons=(
