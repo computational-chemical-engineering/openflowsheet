@@ -34,8 +34,8 @@ from m03_support import (
 from openflowsheet.compile.casadi_backend import compile_parametric_twin
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.orchestrator.tear import Syn001TearProblem
-from openflowsheet.study.sensitivity import SensitivityResult
-from openflowsheet.study.syn001 import split_regimes, syn001_sensitivity
+from openflowsheet.studies.sensitivity import SensitivityResult
+from openflowsheet.studies.syn001 import split_regimes, syn001_sensitivity
 from openflowsheet.verify.certificate import verify
 
 TAU_ABS = 1e-11

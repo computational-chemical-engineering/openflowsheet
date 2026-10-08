@@ -1,4 +1,5 @@
-"""Studies over a compiled problem's pinned inputs: sensitivities, sweeps, estimation (M03).
+"""Studies over a compiled problem's pinned inputs — sensitivities, sweeps, estimation —
+introduced by package M03 (blueprint §15's `src/studies/`).
 
 Specification `docs/derivations/M03-studies-spec.md`; ADR 0031. A study parameter is a pinned
 input already listed in `CompiledProblemMetadata.parameter_ids` (D1); its derivative comes from the

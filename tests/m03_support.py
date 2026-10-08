@@ -31,7 +31,7 @@ from openflowsheet.models.syn001.flowsheet import FRESH_FEED_FLOWS, Syn001Flowsh
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.attempts import SolveResult
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
-from openflowsheet.study.sensitivity import OutputFunctional, SensitivityHost, StudyParameter
+from openflowsheet.studies.sensitivity import OutputFunctional, SensitivityHost, StudyParameter
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 REPO_ROOT: Final = Path(__file__).resolve().parent.parent

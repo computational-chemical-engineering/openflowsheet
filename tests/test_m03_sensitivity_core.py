@@ -37,7 +37,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics import linear
 from openflowsheet.orchestrator import tear as tear_module
-from openflowsheet.study.sensitivity import (
+from openflowsheet.studies.sensitivity import (
     POLICY_ID,
     CertificateEvidence,
     OutputFunctional,

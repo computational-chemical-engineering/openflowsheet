@@ -1,7 +1,7 @@
 """The SYN-001 binding of the sensitivity core: margins, the certificate, the host (M03 spec §3.4,
 §3.5 Q1′, §4; ADR 0031 D3).
 
-The core (`study/sensitivity.py`) knows a compiled problem, its scales and its eliminated rows. A
+The core (`studies/sensitivity.py`) knows a compiled problem, its scales and its eliminated rows. A
 SYN-001 study adds two things the core cannot know: that the root was certified by K04 for the same
 state (Q1′ — a converged solve is not yet a verified one), and where the tear path's two lifted
 **TP-type** phase splits sit relative to their phase boundaries (Q4): the heater outlet `U-HEAT`
@@ -31,7 +31,7 @@ from openflowsheet.compile.reference import state_vector
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.flowsheet import FLASH_UNIT, HEATER_UNIT, Syn001Flowsheet
 from openflowsheet.orchestrator.tear import Syn001TearProblem
-from openflowsheet.study.sensitivity import (
+from openflowsheet.studies.sensitivity import (
     CertificateEvidence,
     Mode,
     OutputFunctional,

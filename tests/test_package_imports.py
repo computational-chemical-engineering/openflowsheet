@@ -28,6 +28,10 @@ LAYERS = [
     # verification and must not be a subpackage of either.
     "run",
     "application",
+    # M03's studies (blueprint §15's `src/studies/`): sensitivities, sweeps and estimation over a
+    # compiled problem's pinned inputs. Above the verifier, because a sensitivity is issued only at
+    # a certified root.
+    "studies",
 ]
 
 
@@ -59,7 +63,7 @@ def test_layer_imports_and_is_documented(layer: str) -> None:
 
 
 def test_no_unexpected_layers() -> None:
-    """`studies`, `adapters`, clients and the web shell are not created before their packages."""
+    """`adapters`, clients and the web shell are not created before their packages."""
     present = sorted(
         entry.name
         for entry in package_dir().iterdir()
