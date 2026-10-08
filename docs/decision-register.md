@@ -4102,3 +4102,11 @@ Exempting v0.2 manifests from the harvest: T08.A21's completeness rule is the us
 
 **Watch for.** The v0.2 gate (M07) must add the 0.2.0 counterparts: the review table in the 0.2.0 notes, and the
 v0.2 manifest count.
+
+**Amendment (2026-10-08, M01 review F1).** A third test pins the v0.1.0 release record:
+`tests/test_t08_w4_changelog.py::test_every_registered_limitation_is_named_and_no_other` required the v0.1.0
+CHANGELOG section to name exactly the envelope's limitation rows, so the first row added after the release (L42,
+`pr-c1-v1`'s caveat) broke it. It is scoped the same way: the section names the rows registered at v0.1.0, and the
+rows added since are an explicit list in the test (`ADDED_AFTER_V0_1_0`), each required to exist in the envelope.
+Rejected: naming L42 in the v0.1.0 section (rewrites a release record, as above). M07's 0.2.0 notes must name the
+listed rows.
