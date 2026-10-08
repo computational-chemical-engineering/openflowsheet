@@ -435,3 +435,17 @@ Grep, don't read whole. Newest at the bottom.
   names L42, L-WEB-1…4). Findings: release.yml and changelog_section.py reject every pre-release today; B50's content
   test will break at M02's merge.
 - `opus-engineer` alpha gate WO-1, 2, 3, 4, 7 launched on `wp/V02-alpha-gate` (no dispatch/tag/publish).
+- M05 design done on `wp/M05` (`d7d6dbf`, `43651ce`): `docs/design/M05-trust-region.md`, ADR 0038 (TRF adapter: Pyomo
+  6.10.1 contrib.trustregion unmodified, pinned by version + module hashes), 0039 (C1 study: one decision, reactor
+  inlet T ∈ [643.15, 733.15] K, purge 0.02, maximize liquid NH₃), 0040 (fallback, inactive; triggers T1 N1 denied, T2
+  structural failure, T3 audit + shim both fail), R-260…R-273. Probe (scratchpad): TRF composes (Pyomo example 1
+  bitwise via a property-block wrapper); every ExternalFunction needs a gradient; TRF clones the model (identity hook
+  needed for the ledger); exceptions abort TRF, NaN is silently "optimal" (callbacks raise typed refusals); subproblems
+  need the `ipopt` executable (+ `libipoptamplinterface`, `libgomp` — not in M03's inventory). Glass box = canonical
+  row builders over a Pyomo algebra + property outputs as Python-callback ExternalFunctions; reactor in full space
+  ((X̂, ΔT̂) linked to an EF of 7 inlet vars, FD step 2⁻¹⁴, 7 concurrent workers); eligible example TR-E2 = C1 loop with
+  a test-only smooth synthetic reactor; real reactor "qualified" only. Budgets 400 cold / 4 h per study.
+- M05 Needs Frank (defaults proceed): N-F1 objective = liquid NH₃ product (alt: economic with his prices); N-F2 decision
+  tolerance 0.5 K; N-F3 real-reactor budget 400 experiments / 4 h; N-F4 proceed in the audited env, merge with `nlp`
+  undeclared if N1 is pending; N-F5 surrogate only if promoted; N-F6 decision box [643.15, 733.15] K; N-F7 no job op.
+- `opus-engineer` merging main into `wp/M03` (merge-ready; base for M05 WO-1…3).
