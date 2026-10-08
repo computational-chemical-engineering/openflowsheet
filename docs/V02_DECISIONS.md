@@ -163,3 +163,16 @@ Grep, don't read whole. Newest at the bottom.
   Alternative: amend now. Reversible by: consulting sooner.
 - `opus-engineer` M03 WO-4, 5, 7 (+ optional WO-9) launched on `wp/M03`.
 - check.sh on `wp/M06-build` `b8a0518` (W27 merged, R-194): 7189 passed, 31 skipped, 1 xfailed; PASSED. The U14 red is closed.
+- M01 WO-1…4, 6 done on `wp/M01` (`4cd5e32`…`f595179`): records as package data (Q-N4 default, isolated `1621d65`),
+  `thermo/pr_c1.py` (provider `pr-c1-v1`), `thermo/conventions.py`, flash, `models/c1/{boundary,reactor_standin}.py`;
+  G20 allowlist 20→23; envelope rows (property_model `pr-c1-v1`, L40). check.sh 7035 passed, 0 failed. A33: SYN-001
+  structural sha `16ae2bd4…773b` and bundle artifacts byte-identical before/after. Worst values all ≪ tolerance except
+  A12 Gibbs–Duhem 1.0e-13 vs 1e-12 at V1 (within 10×).
+- M01 design-lane amendment round (batched after WO-5): A26 defect-vector tolerance (1e-12 rel unreachable in binary64;
+  asserted at 1e-13 × n_tot,in in isolated `f595179`); A09's "≥1e-3" parenthetical (V1 H₂/CH₄ ln φ gap 4.35e-4; test
+  asserts ≥1e-6); A12 G–D margin; ModelManifest cannot carry `synthetic: true` (frozen schema); stand-in not in
+  MODEL_BUILDERS (M02 binds it) — envelope mention?; engineer-added refusal behaviours (negative/non-finite flows →
+  out_of_domain; unknown property → unsupported; state length → error; non-TP flash → unsupported_specification;
+  enthalpy refusal → stream_enthalpy_refused; reactor_not_accepted(<stage>); boundary check order); ADR 0026's note in
+  `docs/interfaces-frozen.md` (no WO covers it). Then `reviewer` on M01 (derivatives, phase logic), then WO-7 manifest.
+- `opus-engineer` M01 WO-5 (IDAES conformance, A37) launched on `wp/M01-idaes` (from `f595179`).

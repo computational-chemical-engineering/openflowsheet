@@ -15,7 +15,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
-| M01 | Design | T08 | W22, W21 (part) | spec done on `wp/M01` (`7f267ed`: A01–A48, ADR 0026/0027 Proposed, R-154…169); build WO-1…4, 6 running; WO-5 (IDAES conformance), WO-7 next; Q-F1, Q-N1…N4 for Frank (defaults set) |
+| M01 | Design | T08 | W22, W21 (part) | spec done (`7f267ed`); WO-1…4, 6 done (`f595179`, gate green); WO-5 running; then one design-lane amendment round (A26, A09, A12, added refusals; `V02_DECISIONS.md`), `reviewer`, WO-7 manifest → `tested` → M02 |
 | M02 | Build | M01 | W21 | not started |
 | M03 | Design | T08 | W24 (part) | spec done (`17cec07`); WO-0…3 done (`82560bf`), WO-6 audit PASS (merged `afa19ad`); WO-4, 5, 7 running; WO-8 waits for N1; amendment round batched |
 | M04 | Design | M02 | W23 | not started |
@@ -66,12 +66,12 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `opus-engineer` | M01 WO-1…4, 6 (PR provider, flash, boundary) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
+| `opus-engineer` | M01 WO-5 IDAES conformance (A37) | `wp/M01-idaes` (`m01-idaes`) |
 | `opus-engineer` | M06 WO-7…10 fixtures, view models, screens | `wp/M06-ui` (`m06-ui`) |
 | `opus-engineer` | M03 WO-4, 5, 7 sweeps, estimation, NLP formulation | `wp/M03` (`m03`) |
 | `opus-engineer` | M06 WO-16 W27 classifier, harness, scorer | `wp/M06-w27-harness` (`m06-w27h`) |
 
 Done today: M06 WO-1…6, WO-14, WO-15 (all merged into `wp/M06-build`; R-192…R-194), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
-Next free slot: M01 WO-5 (IDAES conformance, own env) and WO-7; then M03 spec amendment round (batched);
+Next free slot: the M01 amendment round (`specifier`, fresh, on `wp/M01`), then `reviewer` M01, then WO-7; then M03 spec amendment round (batched);
 M03 WO-8 after N1; M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
 Push `main` at milestones (authorised).
