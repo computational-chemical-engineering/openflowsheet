@@ -305,3 +305,9 @@ Grep, don't read whole. Newest at the bottom.
   (`8de83946…`), Q2 T07 Q26 forbids the numeric `body.inlet.n`. Q3 handshake-fingerprint keying, Q4 store layering
   (lazy upward import vs callback). Build decision log copied into `docs/design/M02-build-decisions.md` (`02403d1`).
   Engineer stopped near its context budget. M02 architect asked for rulings (R-234+).
+- M02 architect rulings (`811b23c`, note §14 B1–B5, R-234…R-237): Q1 digest move follows R-192 (0.1 A49 constant
+  unedited; decomposition test to the base's registered digest; `8de83946…` evidence, not a pin; the v0.2 gate pins
+  the release commit's digest with one decomposition entry per surface change); Q2 `body/inlet/n` allowed by name +
+  companion test; Q3 confirmed with separate handshake/evaluation retry budgets, handshake outcome fixed per job; Q4
+  injected `ArtifactSink` callback replaces the lazy upward import (D10), `atomic_write_bytes` → `_files.py`.
+- `opus-engineer` M02 WO-1b + R-234…237 code, WO-5 (reactor env + child, G10 opt-in run), WO-6 launched on `wp/M02`.
