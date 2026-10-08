@@ -1,0 +1,8 @@
+{
+ "coefficients": {
+  "U-FLASH.Q": 1.0,
+  "U-HEAT.Q": 1.0
+ },
+ "output_id": "Q_total",
+ "scale": 100000.0
+}

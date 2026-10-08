@@ -114,6 +114,10 @@ def test_a48_the_registry_is_the_published_and_the_packaged_schemas() -> None:
     assert f"schemas/{REGISTRY.name}" not in _repository_files()
 
 
+def test_a48_the_registry_carries_m03s_two_schemas() -> None:
+    assert {"study.schema.json", "optimization-report.schema.json"} <= set(_registry())
+
+
 def test_a48_no_literal_schema_count_is_left_in_this_file() -> None:
     """R-213: a literal count is what two branches each bump and merge to a wrong number."""
     source = Path(__file__).read_text(encoding="utf-8")

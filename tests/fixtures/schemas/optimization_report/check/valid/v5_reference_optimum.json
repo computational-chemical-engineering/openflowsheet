@@ -1,0 +1,10 @@
+{
+ "check": "V5",
+ "licq": true,
+ "multipliers_nonnegative": true,
+ "outcome": "pass",
+ "second_order": "not_assessed",
+ "sensitivity_status": "QUALIFIED",
+ "stationarity_residual_inf": 8.205830324604201e-16,
+ "tau_kkt": 1e-06
+}

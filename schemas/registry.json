@@ -15,6 +15,7 @@
   "job-event.schema.json",
   "job.schema.json",
   "model-manifest.schema.json",
+  "optimization-report.schema.json",
   "process-revision.schema.json",
   "project-policy.schema.json",
   "quantity.schema.json",
@@ -29,6 +30,7 @@
   "solve-plan.schema.json",
   "solve-policy.schema.json",
   "specification.schema.json",
+  "study.schema.json",
   "transaction-result.schema.json",
   "validation-report.schema.json"
 ]

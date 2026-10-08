@@ -1,0 +1,10 @@
+{
+ "document": {
+  "domain": [
+   0.0,
+   0.999
+  ],
+  "scale": 1.0
+ },
+ "expect_error": "'parameter_id' is a required property"
+}

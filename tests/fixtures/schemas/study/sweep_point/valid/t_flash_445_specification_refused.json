@@ -1,0 +1,12 @@
+{
+ "certificate_status": null,
+ "constants_sha256": null,
+ "message": "U-FLASH: specified temperature 445.0 K is outside the declared domain [280.0, 440.0] K",
+ "outcome": "SPECIFICATION_REFUSED",
+ "outputs": null,
+ "root_fingerprint": null,
+ "sensitivity": null,
+ "solve_outcome": null,
+ "state_sha256": null,
+ "value": 445.0
+}

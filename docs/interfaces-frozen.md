@@ -83,6 +83,8 @@ the finite-difference derivative path because the path is recorded.
 
 **T08, ADR 0025 (Proposed; a design-lane ADR under Frank's go-ahead of 2026-10-01, his Q4 answer of 2026-10-02, R-146/R-147).** Two additive widenings: `run-manifest`'s and `solution-certificate`'s `numerical_policy_id` widen from `const "K04-numerical-policy-v1"` to `enum ["K04-numerical-policy-v1", "T08-numerical-policy-v2"]` (D1.2), so every existing document still validates and a third id (`K04-numerical-policy-v3`, say) is refused (A15). A record is replayed and compared under the policy it names (`run.compare.differences(..., policy_id=...)`, no default); a record naming a policy this build does not know is inspected and not re-run. No served MCP schema reaches either document, so the served tool list is unchanged (A49's `171dd768…`).
 
+**M03, ADR 0031 D7 and ADR 0032 D6 (Proposed; spec §10, Amendment 1).** Two schemas added for the M01–M04 row's Study and OptimizationReport: `schemas/study.schema.json` and `schemas/optimization-report.schema.json`, with fixtures emitted by real study runs; the schema list is registered in `schemas/registry.json` (R-213), which mirrors this section and replaces the literal counts in `tests/test_t08_w4_package_data.py`.
+
 ## 3. Semantic rules covered by the freeze
 
 ADR 0001 D1–D5 (units, state definition `nTP-v1`, zero flow, signs, reference conventions) and ADR 0008 D1–D3 (no time at the evaluation boundary, `state_sha256` coverage, per-row accumulation declarations and the balance-row sign convention) are part of this freeze.

@@ -39,7 +39,10 @@ FIXTURE_DIR = REPO_ROOT / "tests" / "fixtures" / "schemas"
 #: Fixture trees first emitted after the rename, by the current code: they carry the post-rename
 #: provider hash because they were born with it, not because the rename moved them. Each entry
 #: names the package that added it; the rename's claim is about every other fixture.
-ADDED_AFTER_THE_RENAME = ()
+ADDED_AFTER_THE_RENAME = (
+    "study",  # M03 WO-9, scripts/m03_schema_fixtures.py
+    "optimization_report",  # M03 WO-9, scripts/m03_schema_fixtures.py
+)
 
 
 # -- the two sources ---------------------------------------------------------------------------
