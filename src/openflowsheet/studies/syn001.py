@@ -23,14 +23,17 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
-from typing import Any
+from dataclasses import dataclass, replace
+from typing import Any, Final
 
 import numpy as np
 
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import FLASH_UNIT, HEATER_UNIT, Syn001Flowsheet
-from openflowsheet.orchestrator.tear import Syn001TearProblem
+from openflowsheet.orchestrator.attempts import SolveResult
+from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
 from openflowsheet.studies.sensitivity import (
     CertificateEvidence,
     Mode,
@@ -44,7 +47,23 @@ from openflowsheet.studies.sensitivity import (
     evaluate_sensitivity,
 )
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, StreamState
-from openflowsheet.verify.certificate import verify
+from openflowsheet.verify.certificate import SolutionCertificate, verify
+
+#: The `Syn001Flowsheet` field each separately settable pinned input lives in (spec §4.5). The feed
+#: flows are `U-FEED.n_spec.<component>`, one entry of `feed_flows` each.
+_PINNED_FIELDS: Final = {
+    "U-SPLIT.split_fraction": "split_fraction",
+    "U-FLASH.T_spec": "flash_temperature",
+    "U-HEAT.T_spec": "heater_temperature",
+    "U-FEED.T_spec": "feed_temperature",
+}
+#: Pinned inputs that `Syn001Flowsheet` holds in one shared field: both pressure specifications are
+#: `pressure`, and the heater's pressure drop is fixed at zero. Moving one of them alone is not a
+#: SYN-001 flowsheet, so they can be "set" only to the value they already have.
+_SHARED_FIELDS: Final = {
+    "U-FLASH.P_spec": "pressure",
+    "U-FEED.P_spec": "pressure",
+}
 
 
 def host_of(tear: Syn001TearProblem) -> SensitivityHost:
@@ -154,3 +173,104 @@ def syn001_sensitivity(
         certificate=CertificateEvidence.of(certificate),
         splits=split_regimes(flowsheet, final_state),
     )
+
+
+# -- pinned inputs and certified solves (spec §6, §7.3, §8.5 V1) ---------------------------------
+
+
+def pinned_value(flowsheet: Syn001Flowsheet, parameter_id: str) -> float:
+    """The current value of a SYN-001 pinned input, as the compiled problem bakes it in."""
+    value = flowsheet.spec().parameters.get(parameter_id)
+    if value is None:
+        raise KeyError(f"{parameter_id!r} is not a pinned input of SYN-001")
+    return float(value)
+
+
+def with_pinned(flowsheet: Syn001Flowsheet, values: Mapping[str, float]) -> Syn001Flowsheet:
+    """`flowsheet` with the given pinned inputs replaced (spec §4.5's `dataclasses.replace`).
+
+    Raises `KeyError` for an id that is not a pinned input and `ValueError` for one SYN-001 cannot
+    move alone (a pressure specification, or the heater's pressure drop) at a value other than the
+    one it has: such a request is ill-formed, not a point that failed. A value the flowsheet's units
+    refuse (outside a declared domain) is *not* checked here — the solve refuses it, by name.
+    """
+    fields: dict[str, Any] = {}
+    flows = list(flowsheet.feed_flows)
+    for parameter_id, value in values.items():
+        if parameter_id in _PINNED_FIELDS:
+            fields[_PINNED_FIELDS[parameter_id]] = float(value)
+        elif parameter_id.startswith("U-FEED.n_spec."):
+            component = parameter_id.removeprefix("U-FEED.n_spec.")
+            if component not in flowsheet.components:
+                raise KeyError(f"{parameter_id!r} is not a pinned input of SYN-001")
+            flows[flowsheet.components.index(component)] = float(value)
+        else:
+            current = pinned_value(flowsheet, parameter_id)
+            if float(value) != current:
+                shared = _SHARED_FIELDS.get(parameter_id, "a fixed constant")
+                raise ValueError(
+                    f"{parameter_id!r} cannot be moved alone on SYN-001 (it is {shared}, shared "
+                    f"or fixed); only its current value {current!r} is accepted"
+                )
+    if tuple(flows) != tuple(flowsheet.feed_flows):
+        fields["feed_flows"] = tuple(flows)
+    return replace(flowsheet, **fields)
+
+
+@dataclass(frozen=True)
+class CertifiedSolve:
+    """A production tear solve from the registered initializer and, when it converged, its K04
+    certificate. `outcome` is `CONVERGED` only when the solve converged **and** the certificate is
+    `VERIFIED`; otherwise the solve's K03 outcome, `SPECIFICATION_REFUSED` (a unit refused the
+    specification before any solve), or `CERTIFICATE_NOT_VERIFIED` (spec §6 item 3)."""
+
+    outcome: str
+    message: str
+    result: SolveResult | None
+    certificate: SolutionCertificate | None
+
+    @property
+    def verified(self) -> bool:
+        return self.outcome == "CONVERGED"
+
+    @property
+    def final_state(self) -> Mapping[str, float] | None:
+        return self.result.final_state if self.result is not None else None
+
+
+def solve_certified(flowsheet: Syn001Flowsheet) -> CertifiedSolve:
+    """Solve from the registered initializer, then certify (spec §6 items 1-3).
+
+    A `SpecificationError` — a unit refusing its specification, such as a temperature outside the
+    provider's declared domain — is a result (`SPECIFICATION_REFUSED`, its first message line),
+    not an exception: the caller records it and moves on."""
+    try:
+        result, _ = solve_tear(flowsheet)
+    except SpecificationError as error:
+        return CertifiedSolve("SPECIFICATION_REFUSED", first_line(error), None, None)
+    if result.outcome != "CONVERGED":
+        return CertifiedSolve(result.outcome, first_line(result.message), result, None)
+    certificate = verify(flowsheet, result)
+    if certificate.verification_status != "VERIFIED":
+        return CertifiedSolve(
+            "CERTIFICATE_NOT_VERIFIED",
+            f"certificate {certificate.verification_status}",
+            result,
+            certificate,
+        )
+    return CertifiedSolve("CONVERGED", first_line(result.message), result, certificate)
+
+
+def output_values(
+    state: Mapping[str, float], outputs: Sequence[OutputFunctional]
+) -> tuple[float, ...]:
+    """`y = C x` for each output functional, each a correctly rounded `math.fsum`."""
+    return tuple(
+        math.fsum(coefficient * state[name] for name, coefficient in output.coefficients.items())
+        for output in outputs
+    )
+
+
+def first_line(message: object) -> str:
+    """The first line of a message or an exception's text (spec §6 item 3)."""
+    return (str(message).splitlines() or [""])[0]
