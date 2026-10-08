@@ -286,3 +286,33 @@ Open for T06's `specifier`/`verdict`, with the evidence above:
 - The pressure-closure form for the IDAES mixer, and the reaction data (formation enthalpies) for a
   synthetic conversion-reactor case, once T05 fixes this project's valve, pump and reactor
   contracts.
+
+## 8. The M03 optional general-NLP environment (Ipopt, cyipopt, PyNumero ASL)
+
+**Package:** M03 WO-6 (specification `docs/derivations/M03-studies-spec.md` §9 G7, §14 N3).
+**Recorded:** 2026-10-08, branch `wp/M03-audit`. Not a T06 reference tool: the environment the
+optional `nlp` extra (ADR 0032 D5) runs in. Its [A10] audit and verdict are `docs/m03-ipopt-audit.md`.
+
+```bash
+scripts/build-m03-ipopt-env.sh [prefix] [cache]   # default .venv-nlp and .reference-downloads/m03-ipopt
+.venv/bin/python scripts/m03_ipopt_inventory.py --env .venv-nlp --check
+```
+
+| Produced | Contents |
+| --- | --- |
+| `<prefix>/` | conda-forge packages of `benchmarks/m03/nlp-conda-explicit.txt` (CPython 3.13.5, Ipopt 3.14.20, MUMPS 5.8.2 sequential, METIS 5.1.0, cyipopt 1.7.0, ampl-asl 1.0.0, OpenBLAS 0.3.34 …), created by micromamba 2.9.0 from the explicit lock with no solve |
+| `<prefix>/lib/python3.13/site-packages` | plus the PyPI wheels of `benchmarks/m03/nlp-pip.lock` (`--no-deps --require-hashes`): the default runtime closure at `requirements.lock`'s versions, pyomo 6.10.1, packaging 26.3 |
+| `<prefix>/share/pyomo/lib/libpynumero_ASL.so` | compiled from the installed Pyomo's sources against the environment's ampl-asl with the toolchain of `benchmarks/m03/nlp-build-conda-explicit.txt`, HSL interfaces off; SHA-256 `6646bbdd51332c3a5b306604fe0f6bd572d7cec352af994c76bfe1cdf550161c` |
+| `<prefix>/share/m03-ipopt-notices/` | three notices read from recipe-pinned upstream sources (audit §6.5) |
+| `<cache>/` | micromamba, its package cache, the build environment, the build log (git-ignored) |
+
+No root, no system package, nothing written outside the two directories; the project `.venv` is
+not touched. Using the environment needs `PYTHONNOUSERSITE=1` (conda-forge's CPython enables the
+user site) and `PYOMO_CONFIG_DIR=<prefix>/share/pyomo` (otherwise Pyomo searches the working
+directory and `~/.pyomo/lib` first, which on this host holds an unaudited P03 build).
+
+**Reproducibility, measured 2026-10-08:** two builds at different prefixes and cache paths, the
+second from a cold download cache, gave the same conda fingerprint (`51a33c8d…537790b1`), the same
+`pip freeze` fingerprint (`621262d4…565907a5`) and the same `libpynumero_ASL.so`; the inventory
+written from the first is reproduced by `--check` on the second. About 25 s per build with a warm
+package cache.
