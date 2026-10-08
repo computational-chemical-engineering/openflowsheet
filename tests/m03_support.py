@@ -367,3 +367,56 @@ def estimation_problem(fit_id: str) -> Any:
             theta_true={name: number(value) for name, value in data["theta_true"].items()},
         ),
     )
+
+
+# -- the NLP problems (spec §8.1) -----------------------------------------------------------------
+
+
+def nlp_formulation(problem_id: str = "NLP-1", *, hessian: str = "limited-memory") -> Any:
+    """NLP-1 or NLP-INF of spec §8.1, from the JSON's decisions and starts.
+
+    The JSON states the objective and constraint as text; their coefficients are written out
+    here from spec §8.1: `φ = (Q_h + Q_f)/1e5 + 100 (Q_h/1e5)²` and `g = (S4.n.A − c·S1.n.A)/3`
+    with `c = 0.75` (NLP-1) or `1.05` (NLP-INF)."""
+    from openflowsheet.studies.nlp.formulation import (
+        Decision,
+        InequalityConstraint,
+        NlpFormulation,
+        QuadraticExpression,
+    )
+
+    section = reference()["nlp"]
+    base = section["NLP-1"]
+    recovery = {"NLP-1": 0.75, "NLP-INF": 1.05}[problem_id]
+    constraint = section[problem_id]["constraints"][0]
+    decisions = tuple(
+        Decision(
+            entry["id"], number(entry["lower"]), number(entry["upper"]), number(entry["scale"])
+        )
+        for entry in base["decisions"]
+    )
+    objective = QuadraticExpression(
+        linear={"U-HEAT.Q": 1e-5, "U-FLASH.Q": 1e-5},
+        quadratic={("U-HEAT.Q", "U-HEAT.Q"): 100.0 / 1e10},
+        text=base["objective"],
+    )
+    return NlpFormulation(
+        problem_id=problem_id,
+        decisions=decisions,
+        objective=objective,
+        constraints=(
+            InequalityConstraint(
+                constraint["id"],
+                QuadraticExpression(
+                    linear={"S4.n.A": 1.0 / 3.0, "S1.n.A": -recovery / 3.0},
+                    text=constraint["expression"],
+                ),
+                lower=number(constraint["lower"]),
+            ),
+        ),
+        starts=tuple(
+            tuple(number(start[decision.parameter_id]) for decision in decisions)
+            for start in base["starts"]
+        ),
+        hessian=hessian,
+    )

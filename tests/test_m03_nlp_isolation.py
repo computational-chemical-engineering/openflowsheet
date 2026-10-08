@@ -4,7 +4,7 @@ Two kinds of test, both in the default gate and neither needing the audited envi
 
 - **G6, the default install is unchanged:** importing `openflowsheet` and every module the default
   gate imports loads neither Pyomo nor cyipopt, and `pyproject.toml` names them only in an `nlp`
-  extra. The adapter module of WO-8 (`openflowsheet.study.nlp.greybox`) is the one module allowed
+  extra. The adapter module of WO-8 (`openflowsheet.studies.nlp.greybox`) is the one module allowed
   to import them, and is the one module not walked here; its tests are marked `nlp` and deselected.
 - **A41's committed half:** the audit document and its inventory exist, record every gate item,
   and the inventory was taken from exactly the committed locks. That the inventory reproduces is
@@ -23,7 +23,7 @@ import tomllib
 from conftest import REPO_ROOT
 
 NLP_LIBRARIES = ("pyomo", "cyipopt", "ipopt_wrapper")
-NLP_ADAPTER_MODULES = ("openflowsheet.study.nlp.greybox",)
+NLP_ADAPTER_MODULES = ("openflowsheet.studies.nlp.greybox",)
 AUDIT = REPO_ROOT / "docs" / "m03-ipopt-audit.md"
 INVENTORY = REPO_ROOT / "benchmarks" / "m03" / "ipopt-inventory-x86_64.json"
 LOCKS = {
