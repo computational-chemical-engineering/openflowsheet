@@ -10,9 +10,13 @@ document}` (the `application-results` precedent, `scripts/t07_schema_fixtures.py
 `optimization-report.schema.json#/$defs/start` and the solved reports are what the gray-box adapter
 (WO-8) writes for real Ipopt runs, which only the audited environment of `docs/m03-ipopt-audit.md`
 can make: `--nlp` emits them there (`NLP_FIXTURES`), and the default run leaves them alone. A start
-record carries a measured wall time, the one member no two runs share, so the audited environment's
-comparison masks `wall_time_s` and nothing else; every other value is bitwise reproducible under
-`OMP_NUM_THREADS=1` (WO-8's measurement), which `--nlp` therefore requires.
+record carries a measured wall time, the one member no two runs share; every other value is bitwise
+reproducible under `OMP_NUM_THREADS=1` (WO-8's measurement), which `--nlp` therefore requires.
+
+A fixture "differs" when `tests/m03_fixture_compare.py` says so: under `T08-numerical-policy-v2`
+and M03's rules for what that policy has no row for, never byte for byte (M03 review F1). The
+default gate runs on two architectures, and the fixtures carry `state_sha256` digests (ADR 0008
+D2.1) and FIT-U's arbitrary final iterate (spec §7.4, Amendment 1).
 
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/m03_schema_fixtures.py [--write]
@@ -35,6 +39,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 
 import numpy as np  # noqa: E402
+from m03_fixture_compare import fixture_differences  # noqa: E402
 from m03_support import (  # noqa: E402
     estimation_problem,
     flowsheet,
@@ -81,8 +86,6 @@ NLP_FIXTURES = (
     "optimization_report/valid/nlp_1_solved.json",
     "optimization_report/valid/nlp_inf_solved.json",
 )
-#: The one member of an emitted NLP fixture that no two runs share.
-VOLATILE = "wall_time_s"
 
 
 def sensitivity_documents() -> dict[str, Any]:
@@ -251,15 +254,6 @@ def nlp_documents() -> dict[str, Any]:
     return _valid(REPORT_SCHEMA, out, invalid={"start"})
 
 
-def masked(document: Any) -> Any:
-    """`document` without its `VOLATILE` members, at any depth."""
-    if isinstance(document, dict):
-        return {key: masked(value) for key, value in document.items() if key != VOLATILE}
-    if isinstance(document, list):
-        return [masked(value) for value in document]
-    return document
-
-
 def _valid(
     schema: str, documents: dict[str, Any], *, invalid: set[str] | None = None
 ) -> dict[str, Any]:
@@ -315,10 +309,8 @@ def main() -> int:
     for name, document in emitted.items():
         path = FIXTURE_DIR / name
         text = serialize(document)
-        same = path.exists() and (
-            masked(json.loads(path.read_text(encoding="utf-8"))) == masked(json.loads(text))
-            if arguments.nlp
-            else path.read_text(encoding="utf-8") == text
+        same = path.exists() and not fixture_differences(
+            json.loads(text), json.loads(path.read_text(encoding="utf-8"))
         )
         if not same:
             differing.append(name)

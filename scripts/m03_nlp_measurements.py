@@ -15,6 +15,8 @@
 Wall times are not recorded, so the output is byte-reproducible under `OMP_NUM_THREADS=1` (WO-8's
 measurement: MUMPS/OpenBLAS under LLVM OpenMP differ run to run in the last bits otherwise), which
 this script therefore requires. Only the audited environment of `docs/m03-ipopt-audit.md` runs it.
+The committed record is nevertheless compared for structure and margin, not bytes
+(`m03_fixture_compare.measurement_differences`; M03 review F1).
 
 The adapter (and with it Pyomo and cyipopt) is imported only when measuring, so the default gate can
 import this module for its constants.
@@ -256,10 +258,18 @@ def main() -> int:
         OUT.write_text(text, encoding="utf-8")
         print(f"wrote {OUT}")
         return 0
-    if OUT.exists() and OUT.read_text(encoding="utf-8") == text:
+    from m03_fixture_compare import measurement_differences  # noqa: PLC0415
+
+    found = (
+        measurement_differences(json.loads(text), json.loads(OUT.read_text(encoding="utf-8")))
+        if OUT.exists()
+        else [f"{OUT} does not exist"]
+    )
+    if not found:
         print(f"{OUT.name} reproduced")
         return 0
-    print(f"{OUT.name} differs from what the adapter measures now (rerun with --write)")
+    print(f"{OUT.name} differs from what the adapter measures now (rerun with --write):")
+    print("\n".join(f"  {line}" for line in found))
     return 1
 
 

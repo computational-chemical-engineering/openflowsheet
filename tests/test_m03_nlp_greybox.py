@@ -23,6 +23,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT, load_json
+from m03_fixture_compare import fixture_differences, measurement_differences
 from m03_support import flowsheet, nlp_formulation, number, reference
 from test_m03_schemas import FIXTURES, REPORT, report_violations
 
@@ -431,22 +432,24 @@ def test_an_adapter_exception_is_a_solver_failed_start_never_a_raise(
 
 
 def test_the_nlp_fixtures_are_what_the_adapter_emits_today() -> None:
-    """R-015 for the audited environment's fixtures: regenerated, equal to the committed ones
-    except for the measured wall times (`m03_schema_fixtures.VOLATILE`)."""
+    """R-015 for the audited environment's fixtures: regenerated, what the committed ones record
+    under the numerical policy and M03's rules (`m03_fixture_compare`; M03 review F1 and ruling
+    Q3.3), with the measured wall times checked for kind only."""
     emitted = m03_schema_fixtures.nlp_documents()
     assert sorted(emitted) == sorted(m03_schema_fixtures.NLP_FIXTURES)
     for name, document in emitted.items():
         committed = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
         fresh = json.loads(m03_schema_fixtures.serialize(document))
-        assert m03_schema_fixtures.masked(committed) == m03_schema_fixtures.masked(fresh), name
+        found = fixture_differences(fresh, committed)
+        assert not found, (name, found)
 
 
 def test_the_q_f2_and_q_f4_measurements_reproduce_and_keep_their_margin() -> None:
     """Spec §14 Q-F2: no measured value within 10x of its registered tolerance; and the committed
-    record is what the adapter measures now, byte for byte."""
+    record is what the adapter measures now, for structure and margin (M03 review F1)."""
     measured = m03_nlp_measurements.measure()
     assert measured["q_f2"]["within_margin_factor"] == []
     assert measured["q_f2"]["closest"]["ratio"] >= m03_nlp_measurements.MARGIN_FACTOR
-    assert m03_nlp_measurements.OUT.read_text(encoding="utf-8") == (
-        m03_nlp_measurements.serialize(measured)
-    )
+    committed = json.loads(m03_nlp_measurements.OUT.read_text(encoding="utf-8"))
+    fresh = json.loads(m03_nlp_measurements.serialize(measured))
+    assert measurement_differences(fresh, committed) == []

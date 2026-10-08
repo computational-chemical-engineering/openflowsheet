@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import sys
 from collections.abc import Iterator
 from pathlib import Path
@@ -31,6 +32,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
+from m03_fixture_compare import fixture_differences
 
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
 from openflowsheet.studies import sensitivity as sensitivity_module
@@ -110,9 +112,13 @@ def test_every_def_has_a_valid_and_an_invalid_fixture_emitted_by_a_real_run(
 
 
 def test_the_fixtures_are_what_real_runs_emit_today() -> None:
-    """R-015: regenerated, every fixture is byte-identical — sensitivities, sweeps, fits and the
-    verifier are bitwise reproducible on one platform (spec §3.7). The audited environment's
-    fixtures are regenerated there (`test_m03_nlp_greybox.py`); here they need only exist."""
+    """R-015: regenerated, every fixture is what the committed one records — under
+    `T08-numerical-policy-v2` and M03's rules for what that policy has no row for
+    (`m03_fixture_compare`; M03 review F1), not byte for byte. Spec §3.7's bitwise reproducibility
+    holds on one platform, and the default gate runs on two; a byte comparison also pinned 13
+    `state_sha256` values (ADR 0008 D2.1) and FIT-U's arbitrary final iterate (spec §7.4,
+    Amendment 1). The audited environment's fixtures are regenerated there
+    (`test_m03_nlp_greybox.py`); here they need only exist."""
     emitted = m03_schema_fixtures.documents()
     committed = sorted(
         str(path.relative_to(FIXTURES))
@@ -124,9 +130,56 @@ def test_the_fixtures_are_what_real_runs_emit_today() -> None:
     assert not set(nlp) & set(emitted)
     assert sorted(emitted) == sorted(set(committed) - set(nlp))
     for name, document in emitted.items():
-        assert (FIXTURES / name).read_text(encoding="utf-8") == m03_schema_fixtures.serialize(
-            document
-        ), name
+        fresh = json.loads(m03_schema_fixtures.serialize(document))
+        found = fixture_differences(fresh, load_json(FIXTURES / name))
+        assert not found, (
+            f"{name} is not what the code emits:\n  "
+            + "\n  ".join(found)
+            + "\nIf this is an intended change, regenerate with "
+            "`python scripts/m03_schema_fixtures.py --write`."
+        )
+
+
+#: A change the comparison must still catch, one per rule it applies: (fixture, path, new value).
+CAUGHT: tuple[tuple[str, tuple[str | int, ...], Any], ...] = (
+    # A class (i) value under the policy's 1e-9 relative: FIT-I's r̂, moved by 1e-8 relative.
+    ("study/estimation_report/valid/fit_i_identifiable.json", ("parameters", 0, "estimate"),
+     0.70019969945978752144 * (1 + 1e-8)),
+    # FIT-U's χ² (class (i), r-invariant), by 1e-8 relative.
+    ("study/estimation_report/valid/fit_u_unidentifiable.json", ("chi2",),
+     9.173019926214655 * (1 + 1e-8)),
+    # A scaled sensitivity, by 1e-8 relative, and a registered zero moved to 1e-10 (> τ_abs).
+    ("study/sensitivity_result/valid/p1_both_qualified.json", ("forward", "scaled", 1, 0),
+     2.1855879077024665 * (1 + 1e-8)),
+    ("study/sensitivity_result/valid/p1_both_qualified.json", ("forward", "scaled", 0, 2), 1e-10),
+    # The undetermined r outside its bounds; σ₂ above 1e-12 σ₁; U-HEAT.Q's projection outside
+    # its registered range.
+    ("study/estimation_report/valid/fit_u_unidentifiable.json",
+     ("parameters", 0, "final_iterate"), 0.98),
+    ("study/estimation_report/valid/fit_u_unidentifiable.json",
+     ("identifiability", "singular_values_scaled", 1), 1e-6),
+    ("study/estimation_report/valid/fit_u_unidentifiable.json",
+     ("validation", 0, "null_projection_relative"), 0.5),
+    # A structural member: a refusal's code.
+    ("study/sensitivity_result/valid/b1_forward_phase_boundary.json", ("refusals", 0, "code"),
+     "ROOT_NOT_CONVERGED"),
+)  # fmt: skip
+
+
+@pytest.mark.parametrize(("name", "path", "value"), CAUGHT, ids=lambda value: str(value)[:40])
+def test_the_policy_comparison_still_catches_a_real_change(
+    name: str, path: tuple[str | int, ...], value: Any
+) -> None:
+    """Review F1's condition: each replacement for the byte comparison still catches a change."""
+    committed = load_json(FIXTURES / name)
+    changed = copy.deepcopy(committed)
+    target = changed
+    for step in path[:-1]:
+        target = target[step]
+    assert target[path[-1]] != value
+    target[path[-1]] = value
+    assert fixture_differences(committed, committed) == []
+    assert fixture_differences(changed, committed), (name, path)
 
 
 # -- the rules a JSON Schema cannot express -------------------------------------------------------
