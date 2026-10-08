@@ -36,6 +36,10 @@ from openflowsheet.run.compare import differences
 from openflowsheet.run.manifest import THREAD_VARIABLES
 
 FIXTURE_DIR = REPO_ROOT / "tests" / "fixtures" / "schemas"
+#: Fixture trees first emitted after the rename, by the current code: they carry the post-rename
+#: provider hash because they were born with it, not because the rename moved them. Each entry
+#: names the package that added it; the rename's claim is about every other fixture.
+ADDED_AFTER_THE_RENAME = ()
 
 
 # -- the two sources ---------------------------------------------------------------------------
@@ -64,10 +68,12 @@ def test_each_self_hash_moved_by_the_package_name_only(
 
 
 def test_the_schema_fixtures_moved_by_the_rename_only() -> None:
+    assert all((FIXTURE_DIR / name).is_dir() for name in ADDED_AFTER_THE_RENAME)
     moved = sorted(
         str(path.relative_to(FIXTURE_DIR))
         for path in FIXTURE_DIR.rglob("*.json")
-        if PROVIDER_SHA256[0][:12] in path.read_text(encoding="utf-8")
+        if path.relative_to(FIXTURE_DIR).parts[0] not in ADDED_AFTER_THE_RENAME
+        and PROVIDER_SHA256[0][:12] in path.read_text(encoding="utf-8")
     )
     assert moved == sorted(FIXTURES_PRE_RENAME_SHA256)
     for name, registered in FIXTURES_PRE_RENAME_SHA256.items():
