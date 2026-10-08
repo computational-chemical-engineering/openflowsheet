@@ -4065,3 +4065,25 @@ describes what a revision can use, and a revision cannot use it.
 T_out range was corrected to 1.2–1.7 K (the draft printed 1.3).
 
 ---
+
+---
+
+## R-217 — T08's manifest-count and review-table tests are scoped to the v0.1 packages (P, K, T); v0.2 manifests are covered by the harvest-completeness check and the v0.2 gate
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M01 WO-7 engineer's escalation |
+| Normative text | This entry; R-193, R-216 |
+| Evidence | `7e0eb67`: `tests/test_t08_w2_support_envelope.py::test_a21` (the quoted size, 18 manifests and 232 limitations, applies to P/K/T; `len(harvest) == len(items)` still covers every manifest) and `test_the_review_table_is_every_manifests_status` (P/K/T compared with CHANGELOG's v0.1.0 table) |
+| Affected packages | M01–M07 (every v0.2 evidence manifest) |
+
+**Decision.** Both tests pinned facts of the v0.1.0 release: its manifest count and its CHANGELOG review table.
+Every v0.2 manifest broke them. They now check the v0.1 packages' records exactly as before. The completeness rule
+(every manifest limitation and non-pass check has a harvest row) still applies to all manifests, v0.2's included.
+
+**Rejected alternative, and why.** Adding v0.2 manifests to the v0.1.0 CHANGELOG table rewrites a release record.
+Exempting v0.2 manifests from the harvest: T08.A21's completeness rule is the useful half and stays universal.
+
+**Watch for.** The v0.2 gate (M07) must add the 0.2.0 counterparts: the review table in the 0.2.0 notes, and the
+v0.2 manifest count.
