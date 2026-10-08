@@ -554,9 +554,12 @@
             },
             {
               "$ref": "https://github.com/frankp/process-runtime/schemas/experiment.schema.json#/$defs/attempt"
+            },
+            {
+              "type": "null"
             }
           ],
-          "description": "ADR 0033 D9: an `experiment` job's answer, present iff the operation is `experiment` — the `result` of a deterministic outcome, or the last `attempt` when the outcome was transient."
+          "description": "ADR 0033 D9: an `experiment` job's answer, present iff the operation is `experiment` — the `result` of a deterministic outcome, or the last `attempt` when the outcome was transient; null when the job ended before any attempt was recorded (cancelled while queued)."
         }
       },
       "oneOf": [

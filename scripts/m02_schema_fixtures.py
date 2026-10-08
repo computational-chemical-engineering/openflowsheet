@@ -6,6 +6,8 @@ document}`). Fixtures live under `tests/fixtures/schemas/<def>/{valid,invalid}/`
 
 - **`model_variant`**: the registered stand-in variant, as `adapters.variants` loads it at its
   pinned hash (the documents are package data, not run output; the record fixtures are).
+- **`experiment_body`** (WO-6): the body of an `experiment` job request for the registered
+  stand-in at the nominal inlet below, as `JobRequest` normalizes it (every default written).
 - **`experiment` `request`, `result`, `attempt`**: one real `ExperimentRunner.run` of the
   registered stand-in at M01's nominal inlet scaled to 1000 tubes, in a scratch project; and one
   out-of-process attempt by the synthetic child (`tests/support/synthetic_child.py`) for the same
@@ -36,6 +38,7 @@ REFERENCES: Final[Mapping[str, str]] = {
     "experiment_request": "experiment.schema.json#/$defs/request",
     "experiment_result": "experiment.schema.json#/$defs/result",
     "experiment_attempt": "experiment.schema.json#/$defs/attempt",
+    "experiment_body": "experiment.schema.json#/$defs/experiment_body",
 }
 #: Members that differ between machines, code versions and runs; masked by `stable`.
 VOLATILE: Final = frozenset(
@@ -185,8 +188,37 @@ def variant_documents() -> dict[str, Any]:
     return _pair("model_variant", standin.variant_id, standin.document)
 
 
+def body_documents() -> dict[str, Any]:
+    from openflowsheet.adapters import variants
+    from openflowsheet.application.types import JobRequest
+    from openflowsheet.models.c1 import COMPONENTS
+
+    standin = variants.registered_variant("standin-x025-v1")
+    inlet = nominal_inlet()
+    request = {
+        "operation": "experiment",
+        "idempotency_key": "fixture-experiment",
+        "body": {
+            "model": {
+                "id": standin.model_id,
+                "version": standin.variant_id,
+                "artifact_ref": standin.sha256,
+            },
+            "inlet": {
+                "components": list(COMPONENTS),
+                "n": list(inlet.n),
+                "T": inlet.temperature,
+                "P": inlet.pressure,
+            },
+            "n_tubes": N_TUBES,
+        },
+    }
+    normalized = JobRequest.from_document(request).as_document()
+    return _pair("experiment_body", "standin_nominal", normalized["body"])
+
+
 def documents() -> dict[str, Any]:
-    return {**variant_documents(), **record_documents()}
+    return {**variant_documents(), **body_documents(), **record_documents()}
 
 
 def serialize(document: Any) -> str:

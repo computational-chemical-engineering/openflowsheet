@@ -148,18 +148,19 @@ SNAPSHOT_AMENDMENT_2: dict[str, str | None] = {
 #: M02 (ADR 0033-0035, design note §3.6): the operations whose resolved response embeds a schema
 #: M02 widened additively (`job`, `run-result`, `solve-event`, `api-error`, `transaction-result`).
 #: Re-taken; with M02's additions removed every one is its earlier snapshot again (G1 (c),
-#: `tests/test_m02_schemas.py`).
+#: `tests/test_m02_schemas.py`). The `job.schema.json`-embedding ones re-taken again at WO-6,
+#: where `job_result`'s `experiment` member admits null for a job ended before any attempt.
 SNAPSHOT_M02: dict[str, str | None] = {
     "commit_change": "c44597cdfdff995b96c491f8b4de0e71d17c79d442519e4b8e5cbeee81a28207",
     "preview_change": "c44597cdfdff995b96c491f8b4de0e71d17c79d442519e4b8e5cbeee81a28207",
     "solve": "892799e0e9385badcd353ae38e1ec483b6510abb04983647a922d87f6a929505",
-    "submit_job": "af92a32470a7b032774d866946e8b6cd0a73a6a52a1745916a9822fa5828b673",
-    "get_job": "5244fcd63bb843785673522995376f46c4939e06957cf78e58294154e249807d",
-    "cancel_job": "5244fcd63bb843785673522995376f46c4939e06957cf78e58294154e249807d",
-    "list_jobs": "62894e2061db58635a95efe7ed15dd1b9de0c9112263b261135126492c8e06e1",
+    "submit_job": "e9abdbeb0d5cdfcabb497a0961bf1472852954c148f520f51ec93d9630a704da",
+    "get_job": "1d3c46e2e941994d4f946f1b8de9cd31a256b0d9306c18d298a2af70f25325c4",
+    "cancel_job": "1d3c46e2e941994d4f946f1b8de9cd31a256b0d9306c18d298a2af70f25325c4",
+    "list_jobs": "0ae6014c2dba7c1801b3ae33b8ce87125ecaa0005e1671214537c1dbe60d1a81",
     "list_job_events": "9e7f7152392798eec6d79c2be32ca7c90287dcce754cfb4c9d2cb5c3dab561fa",
-    "wait_job": "3de4f79a4362347e9be6364b7c7bc5ad2a73a029dd7e5514edeb3ac5313a3a3b",
-    "get_job_result": "d5569e5bd88543ce8b5bb7cb7a426f0b6ee6272db68a45a9cec92ec201b1b772",
+    "wait_job": "1b119ce8f27d361d598aef22268d9c5046daa73814670687909c6f4719142ccb",
+    "get_job_result": "e76fcd6c22749c16c55c2246e2542ede607bca861661c7be2ebc7d10425a07f4",
 }
 
 

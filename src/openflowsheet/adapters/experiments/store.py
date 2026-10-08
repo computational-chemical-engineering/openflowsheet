@@ -235,9 +235,13 @@ class ExperimentStore:
         (none when the result was written without a sink)."""
         if self.sink is None:
             return
-        marker = self.directory(key) / RESULT_ARTIFACT_FILE
-        producing = marker.read_text("utf-8") if marker.is_file() else None
+        producing = self.producing_artifact_id(key)
         self._register(RESULT_KIND, key, self.result_path(key), job_id, parent=producing)
+
+    def producing_artifact_id(self, key: str) -> str | None:
+        """The artifact id the sink gave `key`'s result when it was written (`None` without one)."""
+        marker = self.directory(key) / RESULT_ARTIFACT_FILE
+        return marker.read_text("utf-8") if marker.is_file() else None
 
     # -- records -------------------------------------------------------------------------------
 

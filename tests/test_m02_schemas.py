@@ -118,6 +118,7 @@ RULES_OF = {
     "experiment_request": "request",
     "experiment_result": "result",
     "experiment_attempt": "attempt",
+    "experiment_body": "experiment_body",
 }
 
 
@@ -165,30 +166,3 @@ def test_g1c_without_m02s_additions_every_response_is_its_pre_m02_snapshot() -> 
         if r4._digest(resolved) != before[name]:
             moved.append(name)
     assert sorted(moved) == sorted(r4.SNAPSHOT_M02)
-
-
-def test_an_experiment_job_is_refused_typed_until_its_body_exists(tmp_path: Any) -> None:
-    """The schema admits `experiment` (ADR 0033 D9) before WO-6 gives it a body type and a runner
-    branch: until then a submission is refused `invalid_request`, creates no job, and is never
-    routed to another operation's body."""
-    from openflowsheet.application.contract import ApplicationError
-    from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.operations import dispatch
-
-    body = {
-        "model": {
-            "id": "c1.reactor_standin",
-            "version": "standin-x025-v1",
-            "artifact_ref": "f" * 64,
-        },
-        "inlet": {"components": ["H2"], "n": [1.0], "T": 673.15, "P": 1.0e7},
-        "n_tubes": 1000.0,
-    }
-    with LocalApplication.create(tmp_path / "p") as application:
-        with pytest.raises(ApplicationError, match="'experiment' is not executable"):
-            dispatch(
-                application,
-                "submit_job",
-                {"operation": "experiment", "idempotency_key": "k1", "body": body},
-            )
-        assert application.list_jobs().items == ()
