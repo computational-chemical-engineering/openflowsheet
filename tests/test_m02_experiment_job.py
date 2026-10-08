@@ -343,3 +343,38 @@ def test_g5_an_experiment_over_every_transport_is_the_same_record(
     result = answer["experiment"]
     assert result["experiment_key"] == expected["experiment"]["experiment_key"]
     assert result["envelope"] == expected["experiment"]["envelope"]
+
+
+# -- R-252 (design note §14 B7): `experiment` is null iff the job wrote no experiment artifact ----
+
+
+def test_r252_a_job_cancelled_while_queued_has_no_artifact_and_a_null_experiment(
+    app: LocalApplication,
+) -> None:
+    from t07_jobs_support import cancel_while_queued
+
+    from openflowsheet.application.types import JobRequest
+
+    request = JobRequest.from_document(
+        {"operation": "experiment", "idempotency_key": "queued", "body": body()}
+    )
+    _, cancelled = cancel_while_queued(app, request)
+    assert (cancelled.status, cancelled.outputs) == ("cancelled", ())
+    assert result_of(app, cancelled.job_id)["experiment"] is None
+
+
+@pytest.mark.parametrize("variant", [STANDIN, REAL], ids=["ok", "transient"])
+def test_r252_a_completed_job_has_an_experiment_artifact_and_a_non_null_experiment(
+    app: LocalApplication,
+    variant: variants.Variant,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The other direction: a `completed` experiment job wrote an experiment artifact, and its
+    result's `experiment` is the record it answers with (the result, or the last attempt). The
+    real variant with no environment built is the transient outcome (an attempt only)."""
+    monkeypatch.setenv("OPENFLOWSHEET_EXTERNAL_ROOT", str(tmp_path / "no-environments"))
+    job = submit(app, f"completed-{variant.variant_id}", body(variant, n_tubes=1.0))["job"]
+    assert job["status"] == "completed"
+    assert set(kinds(job)) & set(EXPERIMENT_KINDS)
+    assert result_of(app, job["job_id"])["experiment"] is not None
