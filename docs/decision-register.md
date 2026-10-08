@@ -1383,6 +1383,11 @@ release note calling V14 passed.
 
 **Watch for.** A new model with equilibrium rows and no split rule (refused `lifted_split_unregistered`); a model without a check-table entry (`UNVERIFIED`, never `VERIFIED`).
 
+> **Amended 2026-10-09 (R-255, R-257):** a rule may declare `vapour_only` components (the C1 flash). Those
+> components' equilibrium rows are zero rows of kind molar_flow, checked by the generalized (b), (e) and the new (h);
+> SYN-001's rules run the original statements. `MODEL_CHECKS` gains the `c1.` entries, built from SYN-001's rule
+> functions, and the table's PR forms live in `verify/pr_c1.py`.
+
 ---
 
 ## R-047 — A revision-built flowsheet's label carries `configuration_sha256`; `compiled-problem-structure-v2` is not introduced
@@ -1675,6 +1680,9 @@ release note calling V14 passed.
 **Rejected alternatives, and why.** Bounding the kink by a propagated tolerance (needs rows outside the lifted block for copies); an assigned-phase map per stream (a second declaration of phases in the verifier; the excess test needs none).
 
 **Watch for.** `ε_adm` widened "to be safe" (it is K03's registered admissibility tolerance, not a free parameter); the rule applied to a split's feed.
+
+> **Amended 2026-10-09 (R-257):** on `pr-c1-v1`, which has no K-values, the analogue reads a TWO_PHASE fresh flash
+> as VAPOR iff its liquid NH₃ is at most τ_dew · n_tot (τ_dew = 1e-10, R-230). `ε_adm` is not read there.
 
 ---
 
@@ -4697,6 +4705,12 @@ saturation route now (ADR 0012's band route for a case the loop never visits).
 
 **Watch for.** M07's journey adding a cooler into the two-phase region must use the flash.
 
+> **Amended 2026-10-09 (R-254, R-256):** "R-008's form" is now literal: `E = L v_NH₃ φ^V − V l_NH₃ φ^L`, kind
+> molar_flow_squared. M01 §7's first statement, `v φ^V − V φ^L`, did not vanish on the VAPOR branch. The light-gas
+> liquid flows are zero rows, pinned in TWO_PHASE. τ_dew acts in the kernel, the screen, the closure, the causal
+> evaluates and the verifier. A non-lifted outlet that fails the band is refused by its evaluate and failed by the
+> certificate; there is no solve outcome for it.
+
 ---
 
 ## R-231 — C1 revisions bind on `pr-c1-v1` by `record_source`; `c1.reactor` and `c1.reactor_standin` are both bindable; the stand-in is listed synthetic only
@@ -4917,5 +4931,176 @@ attempt. A `completed` experiment job always carries a result or an attempt. Bot
 one, and a fabricated attempt would record an execution that never happened.
 
 **Watch for.** A `completed` job with `null`.
+
+---
+
+## R-254 — The C1 flash's NH₃ equilibrium row is in R-008's pairwise form; the liquid's light-gas flows are zero rows pinned in TWO_PHASE
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D30 F1 and the architect's own finding; specifier ratification optional (ADR 0026 A2) |
+| Normative text | design note §14.2 B11, B12; M01 spec §7 Amendment 3; ADR 0012 Amendment (A2); ADR 0026 Amendment 2 |
+| Evidence | `LiftedSplit.dropped` ("rows a pinned phase satisfies identically"); K04 §4.1 and §7.1 evaluate every declared row at `x_final`; M01's row equals `V(yφ^V − φ^L) ≠ 0` on VAPOR, and φ^L has no root above T_c,EOS (G7 (b), 673.15 K) |
+| Affected packages | M02 (WO-8), M05, M07 (any PR split) |
+
+**Decision.** The row is `E = L · v_NH₃ · exp(ln φ^V_NH₃) − V · l_NH₃ · exp(ln φ^L_NH₃)`, of kind
+molar_flow_squared. It is exactly zero on VAPOR and on LIQUID, and on TWO_PHASE it equals `L V (yφ^V − φ^L)`. The
+equilibrium family is completed by the rows `l_i = 0` (molar_flow, one per light gas), which read only their own
+column. A `VapourOnlyForm` pins those columns at `+0.0` and drops those rows in a TWO_PHASE attempt. The mole rows and
+Ldef keep all five flows.
+
+**Rejected alternatives, and why.** M01's `v φ^V − V φ^L`: it fails on every VAPOR-branch certificate.
+Rows alone: the factorization's roundoff makes `l_i ≠ 0`, the liquid blocks are refused, and ADR 0013's exact-zero
+projection is defeated. Changing `assemble`: it is frozen. Singleton columns, by leaving `l_i` out of the mole rows
+and out of Ldef: the LIQUID attempt becomes singular and agreement check (d) needs a special case.
+
+**Watch for.** Any PR row that is not identically zero on the branch that drops it. Light-gas liquid columns that are
+not bitwise `+0.0` at an iterate (G7 (g)).
+
+---
+
+## R-255 — `check_agreement` and the split registry are generalized by `SplitRule.vapour_only`; SYN-001's statements run verbatim
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D30 F2 |
+| Normative text | design note §14.2 B13 |
+| Evidence | `splits.py` (a)–(g) as read at `6a46cdd`; with E of kind molar_flow_squared, (a), (c), (d), (f) and (g) hold for the C1 flash unchanged |
+| Affected packages | M02, any later split with vapour-only components |
+
+**Decision.** `SplitRule.vapour_only: tuple[str, ...] = ()`, and `c1.tp_flash` declares `("H2", "N2", "Ar", "CH4")`.
+When `vapour_only` is non-empty, (b) compares only the other components' rows with the unit's molar_flow_squared
+rows, and requires each vapour-only row to be the unit's own row of kind molar_flow. (e) requires a vapour-only row
+to read exactly its liquid flow. A new check (h) checks the `VapourOnlyForm`. With an empty `vapour_only`, today's
+code runs unedited.
+
+The registries stay single, one rule per model id: `SPLIT_RULES`, `DORMANCY_RULES`, `MODEL_CHECKS`,
+`DORMANT_OUTLETS` and `PRODUCT_MOLE_ROWS`. The four tests that pin a registry literally are restricted to their
+`syn001.` keys, with their literals unchanged, and M02 tests pin the full key sets and the `c1.` entries.
+
+**Rejected alternatives, and why.** A second registry for C1 rules: two naming sites per lookup. Marking PR equilibrium
+rows by a new quantity kind: a check-policy change.
+
+**Watch for.** Restricting a registry test without re-pinning the full set elsewhere, which would be a narrowed check.
+
+---
+
+## R-256 — On the solve side a `pr-c1-v1` split is classified by M01 §7 rule 3 with τ_dew (kernel, screen, closure, causal evaluate); non-lifted PR outlets have no solve-time screen
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D30 F3 and F5 |
+| Normative text | design note §14.2 B14, B16; ADR 0012 Amendment (A1, A5) |
+| Evidence | `region._admissible` reads `k_values` (3-wide, `lnK`); `pr-c1-v1` answers `state_length`; a feed at its own dew point flashes TWO_PHASE with liquid of order ε, where the TWO_PHASE Jacobian is singular (the branches bifurcate there) |
+| Affected packages | M02; ADR 0005 D3's reading for PR splits |
+
+**Decision.** The solver side has one function, `models/c1/phase.py::classify`: the provider's TP flash, with
+TWO_PHASE and `l_NH₃ / n_tot ≤ τ_dew` read as VAPOR. It is used in four places:
+- the region's `_kernel`, where a band VAPOR is pinned as a VAPOR restart pins it;
+- `_admissible`, where `admissibility_epsilon` is not read for PR;
+- the mixer's and the heater's causal evaluates, which refuse with `vapour_phase_inadmissible`;
+- the flash's evaluate.
+
+The region dispatches on the provider id; `describe` is uncounted. τ_dew = 1e-10 is `models/c1.TAU_DEW` (R-230;
+ADR 0001 D6's composition tolerance). Non-lifted vapour outlets are judged by the certificate, and no solve outcome is
+added.
+
+**Rejected alternatives, and why.** τ_dew as a SolvePolicy field: a frozen schema, and it is the provider's convention.
+Dispatch by unit model: a second entry for every future PR split. The region importing the verifier's copy: R-016,
+since the two copies are compared as data instead. A screen for non-lifted outlets, with a new outcome: a
+frozen-schema change for a case the certificate already types.
+
+**Watch for.** τ_dew widened to rescue a K18 near-dew failure. A PR `_kernel` that returns the flash's ulp-sized
+liquid.
+
+---
+
+## R-257 — The verifier's `pr-c1-v1` forms: fresh provider by basis; dew band, first-order dew-distance closure, band-read enthalpies; no new tolerance
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D30 F4 |
+| Normative text | design note §14.2 B15; ADR 0013 Amendment 3 |
+| Evidence | `certificate.py:677` (`Syn001Provider()`), `checks.stream_of` (`COMPONENTS`), `table._declared_phase` (`h_<c>`), `saturation_closure` (`lnK`); the tolerances used are R-230's τ_dew and K04's τ_T, τ_flow and τ_E |
+| Affected packages | M02, K04 (the revision table only) |
+
+**Decision.**
+- The verifier selects the provider from `view.basis.provider_id` through its own table, and streams are read with
+  the view's components.
+- **D2 analogue:** a TWO_PHASE fresh flash within τ_dew is read as VAPOR.
+- **No degeneracy or unresolved routing**, because the band is half-open.
+- **VAPOR branch:** `.dew`, the liquid NH₃ fraction of a fresh flash of the feed, one-sided against τ_dew.
+- **TWO_PHASE:** `.closure`, `|g / g_T|` in kelvin against τ_T, with g the NH₃ fugacity log-ratio on the state's own
+  phases.
+- **LIQUID branch:** `unsupported`.
+- **Independent split:** K04's formula.
+- **Declared vapour ports:** the τ_dew test.
+- **The flash:** `material_balance.<U>.liquid.<i>` for each vapour-only i.
+- **`MODEL_CHECKS` entries** reuse SYN-001's rule functions.
+
+The PR forms live in `verify/pr_c1.py`, and SYN-001's functions are not edited. `check_policy_sha256` stays unchanged.
+
+**Rejected alternatives, and why.** `|y − y*| ≤ 1e-10`: off-policy, and 500 to 16 000 times tighter than E's row
+tolerance permits. An exact dew temperature by bisection: a new iterative routine whose difference from the
+first-order value is second order. The K-distance declared-port form: it cannot see `l/n` below about 1.5e-9.
+Provider-generic rewrites of SYN-001's functions: they put W1.d's bitwise pairing at risk.
+
+**Watch for.** A PR check that silently passes where the provider refused. A SYN-001 certificate byte that moves
+(G2 (ii)).
+
+---
+
+## R-258 — At exact dormancy a PR vapour block takes the ideal-gas limit; a pure-NH₃ liquid block takes a unit probe, falling back to the vapour root
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D30 F6 |
+| Normative text | design note §14.2 B17; ADR 0012 Amendment (A6) |
+| Evidence | `Ḣ_V = Σ n_j h^ig_j + n_tot h^dep`, where the departure is positively homogeneous of degree one and nonlinear in n, so not differentiable at 0; pure NH₃ has no vapour root at 253–300 K and 1e7 Pa, so the pure-component directional derivative does not exist there; `blocks.py:184-222` (SYN-001's probe) |
+| Affected packages | M02 (WO-8, WO-9: the reactor's duty row), any PR block |
+
+**Decision.**
+- **Vapour blocks at `n = 0`:** `Ḣ = 0`, `∂Ḣ/∂n_j = h^ig_j(T)` (`pr_c1.h_ig`), and `∂Ḣ/∂T = ∂Ḣ/∂P = 0`. ln φ is 0,
+  with zero derivatives.
+- **Liquid blocks at `n = 0`:** the provider at the probe `(0, 0, 1, 0, 0)` in LIQUID, or in VAPOR if it answers
+  `no_liquid_root`.
+- **Flowing streams:** the provider. A flowing liquid without a liquid root is refused; the fallback is never used
+  for it.
+
+**Rejected alternatives, and why.** Refusing a Jacobian at dormancy: a dormant feed's flows are live columns
+downstream. A probe at an equimolar composition: arbitrary, and the metastability guard can refuse it. Zero flow
+derivatives: Newton would lose the enthalpy of flow re-entering a dormant stream.
+
+**Watch for.** An FD witness "fixing" the convention at dormant columns. The liquid fallback reached by a flowing
+liquid.
+
+---
+
+## R-259 — The reactor environment manifest's `variant_id` is provenance, not a verification key
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D33 |
+| Normative text | design note §14.2 B19 |
+| Evidence | `env_id` depends on the lock only; v1 and v2 share it (D31); the child is identified by the variant's `runner_sha256`, not by the environment |
+| Affected packages | M02 (adapters/env), M04 (batch runs in one environment) |
+
+**Decision.**
+- `env verify --variant X` compares `env_id`, the lock hash, the interpreter and the distributions with X's pins. It
+  reports `variant_id` as information.
+- `env build --variant X` over an existing environment with X's `env_id` that verifies is a successful no-op. A
+  different `env_id` is refused, as today.
+- The field keeps its name.
+
+**Rejected alternatives, and why.** One environment per variant: an identical venv rebuilt for every runner change.
+
+**Watch for.** A variant whose runner needs a different environment: that is a new lock, hence a new `env_id`, never a
+manifest key.
 
 ---
