@@ -66,6 +66,10 @@ its own change, §12 R6); unit conversion in the browser.
    the K05 identity and every registered digest stay bit-identical. M06 touches no hashed artifact. The two
    contract additions that touch code near the structural layer (§4.1) are refactors proved inert on the
    50-revision T07 corpus (gate G3).
+   *As built (M06 review F3b):* one registered digest does move — the served MCP tool list, `171dd768…` →
+   `6c4375b4…`, because `diff_revisions`' served `outputSchema` carries A3.2's `elements` (R-192; the
+   decomposition test `tests/test_t08_w2_surface_digest.py` recovers `171dd768…` with that member removed).
+   Every other digest and every hashed artifact is unchanged.
 3. **Frozen contract changes by amendment only** (ADR 0019 Amendment 3, additive). Store schema stays
    `t07-store-v1` (no table, column or index is added).
 4. **Licence.** The project is **Apache-2.0** (`LICENSE`, `pyproject.toml`, `NOTICE`). M06 ships no third-party
