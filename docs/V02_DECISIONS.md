@@ -365,3 +365,16 @@ Grep, don't read whole. Newest at the bottom.
 - `specifier` v0.2 alpha release gate launched on `wp/V02-alpha-gate` (ADR 0028, R-238/239): what `0.2.0a1` claims,
   carried and moved v0.1 records (digest, envelope, CHANGELOG notes, review table, A49), W21/W22 verdict criteria,
   gate script work orders. Against M02's N3 default (v0.1 gate unchanged + W21, W22 met).
+- M04 specification done on `wp/M04` (`35ace09`, `408a960`, `6e48ffb`): `docs/derivations/M04-spec.md` (A01–A35),
+  ADR 0036 (surrogate evidence + Default split-conformal), ADR 0037 (surrogate unit, promotion, rollback; amends
+  ADR 0035 additively and ADR 0019 as Amendment 5), R-240…R-249, generator `m04_reference.py` (5269 claims),
+  `plan-it1.json`. Native unit `c1.reactor_surrogate` (frozen quadratic in 7 scaled inputs → (X, ΔT)) on
+  `revision_eo`; reference distribution uniform on a box inside the data domain; one joint score scaled by width
+  limits (0.0025 in X, 1.5 K); failures score +∞ and stay in denominators; promotion decided in integers (H ≥ h_min);
+  new facet `surrogate_evidence`. Plan it.1: 144 train / 118 cal (k=114) / 300 test + 5×14 gradient stencil = 632
+  cold experiments ≈ 95 min; power 0.9035 with no parent failures. WO-1, 2, 3, 10 need nothing from M02.
+- M04 Needs Frank (defaults proceed): N1 experiment budget 632 (≈95 min) for it.1 + up to two more (≈4 h total); N2
+  width limits 0.0025 / 1.5 K; N3 gradient limit 0.25; N6 M04 `tested` whatever the real verdict, M05 proceeds on the
+  parent model if not promotable. N4 (reference box vs the real loop inlet) and N5 (runner concurrency) are facts
+  for M02's measurements.
+- `opus-engineer` M04 WO-1, 2, 3, 10 launched on `wp/M04`.

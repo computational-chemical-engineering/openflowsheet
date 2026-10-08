@@ -18,7 +18,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
 | M02 | Build | M01 | W21 | design done; WO-1a, 2, 3, 4 done (`02403d1`, gate green); rulings R-234…237 (`811b23c`); WO-1b, 5, 6 running; then WO-7…13; merges after M01 `tested` |
 | M03 | Design | T08 | W24 (part) | spec + Amendment 1; WO-0…9 done (`e9de5ee`; `nlp` extra isolated in `91537b0`); review: sound, 1 must-fix (`ceb5e15`); fixes + manifest running; merge waits for N1 |
-| M04 | Design | M02 | W23 | specification started 2026-10-08 (`specifier` on `wp/M04`; brief in `docs/briefs/M04-specification.md` there; ADR 0036+, R-240+) |
+| M04 | Design | M02 | W23 | spec done (`6e48ffb`: A01–A35, ADR 0036/0037, R-240…249, plan it.1 = 632 experiments ≈ 95 min); WO-1, 2, 3, 10 running; WO-4…9 need M02's WO-4/6/7/11; WO-11 real run needs M02 WO-5 |
 | M05 | Design | M03, M04 | W24 | not started |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
@@ -65,6 +65,10 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 - **M03 threading (new):** make single-threaded BLAS/OpenMP (`OMP_NUM_THREADS=1`) a product rule for NLP runs?
   Default: recommended and recorded in every report, not enforced (it is reproducible and faster: 1.7 s vs 3.2–3.9 s).
 
+- **M04 (defaults set):** N1 experiment budget — 632 cold reactor runs (≈95 min, local) for iteration 1 and up to two
+  more (≈4 h total); N2 width limits 0.0025 in conversion, 1.5 K; N3 gradient limit 0.25; N6 M04 counts as `tested`
+  whatever the real verdict, and M05 uses the parent model if the surrogate is not promotable.
+
 Otherwise nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
 `origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
 F5 education mode deferred.
@@ -77,7 +81,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `opus-engineer` | M02 WO-1b + rulings, WO-5 (reactor env, G10), WO-6 | `wp/M02` (`m02`) |
 | `opus-engineer` | M03 review fixes + WO-10 manifest | `wp/M03` (`m03`) |
-| `specifier` | M04 specification | `wp/M04` (`m04`) |
+| `opus-engineer` | M04 WO-1, 2, 3, 10 (sampler, conformal, fit) | `wp/M04` (`m04`) |
 | `specifier` | v0.2 alpha release gate (`0.2.0a1`) | `wp/V02-alpha-gate` (`alpha-gate`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
