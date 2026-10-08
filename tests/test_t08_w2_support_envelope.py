@@ -140,9 +140,11 @@ def test_a21_every_item_is_classified_once_and_resolves(
 ) -> None:
     assert MATRIX.check_a21(envelope, **harvest_context) == []
     items = harvest_context["items"]
-    # Spec §10's quoted size: 18 manifests, 87 + 145 limitations; plus every non-pass check.
-    manifests = {path for path, _ in items}
-    limitations = [key for key in items if key[1].startswith("limitations")]
+    # Spec §10's quoted size: 18 manifests of P00-T07, 87 + 145 limitations; plus every non-pass
+    # check. Later packages' manifests (v0.2's M01 on) are harvested too, but are not in the quote.
+    v0_1 = {key for key in items if key[0].split("/")[1][0] in "PKT"}
+    manifests = {path for path, _ in v0_1}
+    limitations = [key for key in v0_1 if key[1].startswith("limitations")]
     assert (len(manifests), len(limitations)) == (18, 232)
     assert len(envelope["harvest"]) == len(items)
 

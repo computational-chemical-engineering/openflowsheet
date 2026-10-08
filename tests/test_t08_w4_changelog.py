@@ -105,7 +105,8 @@ def test_the_reproducibility_promise_is_adr_0007_f1_verbatim() -> None:
 
 def test_the_review_table_is_every_manifests_status() -> None:
     statuses = {}
-    for path in sorted((REPO_ROOT / "evidence").glob("*/*/manifest.json")):
+    # The v0.1.0 section reviews the release's packages (P, K, T); v0.2's (M01 on) are not in it.
+    for path in sorted((REPO_ROOT / "evidence").glob("[PKT]*/*/manifest.json")):
         document = json.loads(path.read_text(encoding="utf-8"))
         statuses[document["work_package"]] = document["status"]
     rows = dict(re.findall(r"^\| (\w+) \| `(\w+)` \|", section(), flags=re.MULTILINE))
