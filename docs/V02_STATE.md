@@ -20,7 +20,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M03 | Design | T08 | W24 (part) | spec + Amendment 1; WO-0…7, 2a/5a/7a, 9 done (`7606ada`); WO-8 running (merge waits for N1); then WO-10 manifest, `reviewer` |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
-| M06 | Build | T08 | W26, W27 | design + ADR 0030 / Amendment 3 (approved); WO-1…12, 14…16 done on `wp/M06-build` (`98da494`, pushed, CI running); `reviewer` running; then WO-13 manifest → merge (security/browser, docs, evidence + `reviewer`); WO-17 (canaries + campaign) at M07 |
+| M06 | Build | T08 | W26, W27 | design + ADR 0030 / Amendment 3 (approved); WO-1…12, 14…16 done on `wp/M06-build` (`98da494`); review: matches with must-fixes (`fc73c0b`; CI red on 3 test-side defects); fixes + manifest running → green CI → ADRs Accepted → merge (security/browser, docs, evidence + `reviewer`); WO-17 (canaries + campaign) at M07 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
 ## Milestone 0 (housekeeping)
@@ -73,7 +73,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M01 review fixes F1–F5 | `wp/M01` (`agent-a94d84cd26a293bc0`) |
-| `reviewer` | M06 independent review (WO-13) | `wp/M06-build` @ `98da494` |
+| `opus-engineer` | M06 review fixes F1–F8 + WO-13 manifest | `wp/M06-build` (`agent-af89210400852f3dd`) |
 | `opus-engineer` | M03 WO-8 cyipopt gray box (extra isolated; merge waits for N1) | `wp/M03` (`m03`) |
 | `opus-engineer` | M02 WO-1…4 (+5, 6) schemas, variants, kill chain, runner | `wp/M02` (`m02`) |
 

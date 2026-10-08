@@ -285,3 +285,15 @@ Grep, don't read whole. Newest at the bottom.
   M02's choice on boundary.py in the reactor identity. M02 notes: stand-in identity doesn't cover boundary.py;
   `Boundary` doesn't validate n_tubes.
 - `opus-engineer` M01 review fixes F1–F5 launched on `wp/M01`; the reviewer confirms closure afterwards.
+- CI run 37825384881 on `wp/M06-build` @ `98da494`: aarch64 check green; x86-64 check 2 failed / 7400 (browser smoke
+  hard-codes 31487.641739605908 — trailing digits differ on the runner's re-solve); default-install 2 failed
+  (route-table script imports uvicorn; envelope cites tests in modules that skip at module level). Chrome headless
+  starts without `--no-sandbox` on ubuntu-latest.
+- M06 review (`docs/reviews/M06-review.md`, `fc73c0b`): **matches with must-fixes.** F1 G10 never measured (dist and
+  clean-install run only on dispatch); F2a–c the CI failures above; F3 Amendment 3 text (null rows/columns on the
+  routed branch; R-192 digest move recorded). Should-fix F4 `h()` doesn't enforce the whitelist itself; F5 W27
+  registration erratum (ten → nine) + ratify the scorer's three silent-case choices (reviewer recommends ratifying);
+  F6 manifest harvest; F7 P1 lives on main (merge, re-run preflight); F8 as-built addendum. All deviations accepted;
+  certificate tone mapping confirmed; the DevTools harness counts as §8 A6. ADR 0030 → Accepted after F1+F2 with a
+  green CI run; Amendment 3 after F3 + the same run.
+- `opus-engineer` M06 review fixes F1–F8 + WO-13 manifest launched on `wp/M06-build`.
