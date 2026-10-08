@@ -300,3 +300,48 @@ applies to: A41's three points.
 | P6 | A fine scan (2 × 10⁴ points) of h at F12 (max −5 × 10⁻⁵ at y → 1: no crossing, as registered) and at one P5 state (a genuine continuous crossing at y = 0.9558; a branch jump at y ≈ 0.9676). |
 | P7 | P3's 400 K state, against mpmath, with `evaluate_phase(LIQUID)` and `flash` at four pressures. |
 | P8 | `ReactorStandin.evaluate` on the three invalid dormant inlets of F3. |
+
+## 6. Closure (2026-10-08, at `784b38f`)
+
+I checked the closing commits `e4eb1f0`…`784b38f`. I read every diff, and I re-ran probes P3, P7 and P8 against the
+new tree. I did not run the gate; the build lane reports 7141 passed.
+
+**Closed:**
+- **F1** (`ce0b92f`, follow-on `e041fcb`):
+  - L42 states `pr-c1-v1`'s components and domain, pure-component validation only, no mixture VLE validation, and
+    k_ij = 0 with its effect;
+  - the harvest row is now E → L42;
+  - `unbound_providers` renders the provider on its own line, with its caveat;
+  - the CHANGELOG test's `ADDED_AFTER_V0_1_0` list must name existing rows, so it cannot go stale silently.
+- **F2** (`e4eb1f0`):
+  - P7: the 400 K counterexample now returns the single root 0.486253, and LIQUID answers `no_liquid_root` at all
+    four pressures;
+  - P3: the worst residual of any returned value is 6.6 × 10⁻¹⁷, down from 1.3 × 10⁻²;
+  - one two-root return remains, at 300 K and 4 915 811.85 Pa. mpmath gives a real root at 0.06889 and a complex pair
+    at 0.443416 ± 2.9 × 10⁻⁹ i, which is within √u conditioning. That is Amendment 1's genuine near-double case,
+    whose classification is not asserted, and not an unconverged iterate.
+- **F3** (`eec11d3`): P8's three inlets are now all `out_of_domain`. BD-06 and A51 (iv) are unaffected.
+- **F4** (`f1877ec`):
+  - the reversal path is now true;
+  - the walk-up fallback runs only when `PACKAGED` lacks the entry, so the shipped configuration never walks up.
+- **F5** (`094b936`):
+  - the region is quantified in §17 and in `describe()`: 362.5–401 K, 1.00–1.38 × 10⁷ Pa, missed y* 0.71–0.998;
+  - the optional branch-switch detection was not built, which is acceptable.
+- **F7** (`46a4a45`): closed.
+- **The A33 note** (`3c80392`): now names every frozen-path edit.
+
+**Spec Amendment 2 (§20)** was written by the build lane. It transcribes the fixes this review prescribed. I have
+checked it against them, and on that basis I ratify it as design-lane text.
+
+**Notes still open, none blocking:**
+- F4's exception to T08's no-walk-up rule is recorded only in a test docstring. Give it a register line.
+- With Q-N4 declined, an installed package raises `FileNotFoundError` rather than returning a typed refusal. That is
+  for the Q-N4 decision to settle.
+- F8 is carried to M02: `Boundary` still does not validate `n_tubes`, and `boundary.py` still enters no identity.
+- F6, F9 and F10 stand as notes.
+
+**Outcome:**
+- M01 may merge to `main`. Manifest `3c80392` is `tested`, and the human `numerical` and `process_model` reviews stay
+  `pending`.
+- ADR 0026 may move to Accepted now.
+- ADR 0027 still waits on items 1, 2, 4 and 5 of §4 (M02's work). Item 3 is done.
