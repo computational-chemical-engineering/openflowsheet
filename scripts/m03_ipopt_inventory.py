@@ -4,10 +4,12 @@ The M03 NLP path (ADR 0032) loads binary closures the default install does not: 
 linear solver, ordering libraries, BLAS/LAPACK and Fortran runtime; cyipopt's extension; and
 PyNumero's ASL library. This script records **every object a solve actually maps**, not what a
 package manager says it installed: a child interpreter of the audited environment imports every
-`openflowsheet` module and the NLP stack, solves a two-variable PyNumero gray-box problem through
-cyipopt (its residual and Jacobian evaluated by CasADi, as the adapter's will be, with
-`casadi.nlpsol` replaced by a function that raises), and reports `/proc/self/maps`. It does so in
-both import orders, because which copy of a shared runtime wins can depend on the order.
+`openflowsheet` module and the NLP stack, solves NLP-1 (specification §8.1) through the gray-box
+adapter `openflowsheet.studies.nlp.greybox` and cyipopt, with `casadi.nlpsol` replaced by a function
+that raises, and reports `/proc/self/maps`. It does so in both import orders, because which copy of
+a shared runtime wins can depend on the order. WO-6 measured the audit on a two-variable stand-in
+gray box before the adapter existed (`--workload stand-in` reproduces that record); audit §9 item 1
+asked WO-8 to repeat it with NLP-1, which is the default.
 
 Each mapped ELF object is recorded with its SHA-256, size, SONAME and `DT_NEEDED` list, the package
 that owns it, and its licence: read from a notice file the package ships (or, where a package ships
@@ -26,6 +28,7 @@ Usage (any Python 3.13 with the standard library; needs objdump, nm and dpkg-que
 
     python scripts/m03_ipopt_inventory.py --env .venv-nlp            # writes the inventory
     python scripts/m03_ipopt_inventory.py --env .venv-nlp --check    # regenerates and compares
+    python scripts/m03_ipopt_inventory.py --env .venv-nlp --workload stand-in --check
 
 The environment is built by `scripts/build-m03-ipopt-env.sh`. `--check` exits 0 iff the regenerated
 record equals the committed one; objects of the host platform (glibc, owned by a dpkg package) are
@@ -61,6 +64,8 @@ LOCKS = {
 A30_SUMMARY = ROOT / "docs" / "t08-a30" / "t08-a30-x86_64.json"
 SITE = "lib/python3.13/site-packages"
 PYNUMERO_ASL = "share/pyomo/lib/libpynumero_ASL.so"
+#: The child's solve: spec §8.1's NLP-1 through the adapter (audit §9 item 1), or WO-6's stand-in.
+WORKLOADS = ("nlp-1", "stand-in")
 RECIPE_NOTICES = "share/m03-ipopt-notices"
 
 # Specification §9 G2: what a mapped path under the CasADi package may not name.
@@ -96,11 +101,12 @@ EXTRA_PATTERNS: tuple[tuple[str, str], ...] = (
 )
 
 # A child interpreter of the audited environment does what the NLP path does. argv: the project's
-# `src`, the import order, the Ipopt log path. It prints one JSON line.
+# `src`, the import order, the Ipopt log path, the workload (`stand-in` or `nlp-1`). It prints one
+# JSON line.
 _WORKLOAD = r"""
 import importlib, json, pkgutil, sys
 sys.path.insert(0, sys.argv[1])
-order, log = sys.argv[2], sys.argv[3]
+order, log, workload = sys.argv[2], sys.argv[3], sys.argv[4]
 # The two bindings of the `server` extra, which this environment does not install.
 SERVER = ("openflowsheet.application.bindings.http", "openflowsheet.application.bindings.mcp")
 skipped = []
@@ -130,30 +136,57 @@ from pyomo.contrib.pynumero.interfaces.external_grey_box import (
     ExternalGreyBoxBlock, ExternalGreyBoxModel)
 from pyomo.contrib.pynumero.asl import AmplInterface
 
-# min a + 2 b subject to a b = 1, a, b >= 0.1: the minimizer is (sqrt 2, 1/sqrt 2).
-z = casadi.SX.sym("z", 2)
-residual = casadi.Function("r", [z], [z[0] * z[1] - 1.0])
-jacobian = casadi.Function("j", [z], [casadi.jacobian(z[0] * z[1] - 1.0, z)])
-class Product(ExternalGreyBoxModel):
-    def input_names(self): return ["a", "b"]
-    def equality_constraint_names(self): return ["ab"]
-    def output_names(self): return []
-    def set_input_values(self, values): self._z = np.asarray(values, dtype=float)
-    def evaluate_equality_constraints(self): return np.asarray(residual(self._z)).ravel()
-    def evaluate_jacobian_equality_constraints(self):
-        return sparse.coo_matrix(
-            (np.asarray(jacobian(self._z)).ravel(), ([0, 0], [0, 1])), shape=(1, 2))
-m = pyo.ConcreteModel()
-m.box = ExternalGreyBoxBlock(external_model=Product())
-for name in ("a", "b"):
-    m.box.inputs[name].value = 2.0
-    m.box.inputs[name].setlb(0.1)
-m.objective = pyo.Objective(expr=m.box.inputs["a"] + 2.0 * m.box.inputs["b"])
-options = {"linear_solver": "mumps", "hessian_approximation": "limited-memory",
-           "limited_memory_max_history": 6, "tol": 1e-10, "print_level": 0,
-           "output_file": log, "file_print_level": 5}
-result = pyo.SolverFactory("cyipopt", options=options).solve(m)
-a, b = pyo.value(m.box.inputs["a"]), pyo.value(m.box.inputs["b"])
+def stand_in():
+    # min a + 2 b subject to a b = 1, a, b >= 0.1: the minimizer is (sqrt 2, 1/sqrt 2).
+    z = casadi.SX.sym("z", 2)
+    residual = casadi.Function("r", [z], [z[0] * z[1] - 1.0])
+    jacobian = casadi.Function("j", [z], [casadi.jacobian(z[0] * z[1] - 1.0, z)])
+    class Product(ExternalGreyBoxModel):
+        def input_names(self): return ["a", "b"]
+        def equality_constraint_names(self): return ["ab"]
+        def output_names(self): return []
+        def set_input_values(self, values): self._z = np.asarray(values, dtype=float)
+        def evaluate_equality_constraints(self): return np.asarray(residual(self._z)).ravel()
+        def evaluate_jacobian_equality_constraints(self):
+            return sparse.coo_matrix(
+                (np.asarray(jacobian(self._z)).ravel(), ([0, 0], [0, 1])), shape=(1, 2))
+    m = pyo.ConcreteModel()
+    m.box = ExternalGreyBoxBlock(external_model=Product())
+    for name in ("a", "b"):
+        m.box.inputs[name].value = 2.0
+        m.box.inputs[name].setlb(0.1)
+    m.objective = pyo.Objective(expr=m.box.inputs["a"] + 2.0 * m.box.inputs["b"])
+    options = {"linear_solver": "mumps", "hessian_approximation": "limited-memory",
+               "limited_memory_max_history": 6, "tol": 1e-10, "print_level": 0,
+               "output_file": log, "file_print_level": 5}
+    result = pyo.SolverFactory("cyipopt", options=options).solve(m)
+    a, b = pyo.value(m.box.inputs["a"]), pyo.value(m.box.inputs["b"])
+    return (str(result.solver.termination_condition),
+            max(abs(a - 2 ** 0.5), abs(b - 0.5 ** 0.5)),
+            options | {"output_file": "<log>"})
+def nlp_1():
+    # Spec §8.1's NLP-1 through the adapter (WO-8), with §8.4's options. Only Ipopt's log file is
+    # added, so that its banner shows the linear solver it ran (G4); print options change no
+    # numerics. The error is the decisions' scaled distance from the reference optimum.
+    sys.path.insert(0, sys.argv[5])
+    from m03_support import flowsheet, nlp_formulation, number, reference
+    from openflowsheet.studies.nlp import closure, greybox
+    typed = greybox._typed_options
+    greybox._typed_options = lambda: typed() | {"output_file": log, "file_print_level": 5}
+    formulation = nlp_formulation()
+    report = closure.optimize(formulation, flowsheet({}))
+    optimum = reference()["nlp"]["NLP-1"]["reference_optimum"]
+    errors = [
+        abs(start["final_decisions"][d.parameter_id] - number(optimum[d.parameter_id])) / d.scale
+        for start in report.as_document()["starts"]
+        for d in formulation.decisions
+    ]
+    return report.status, max(errors), dict(closure.IPOPT_OPTIONS) | {"output_file": "<log>"}
+
+if workload == "nlp-1":
+    termination, max_error, options = nlp_1()
+else:
+    termination, max_error, options = stand_in()
 banner = [line.strip() for line in open(log, encoding="utf-8") if "This is Ipopt version" in line]
 mapped = set()
 with open("/proc/self/maps", encoding="utf-8") as handle:
@@ -162,10 +195,12 @@ with open("/proc/self/maps", encoding="utf-8") as handle:
         if len(fields) == 6 and fields[5].startswith("/") and not fields[5].endswith(" (deleted)"):
             mapped.add(fields[5])
 print(json.dumps({
-    "termination": str(result.solver.termination_condition),
-    "max_error": max(abs(a - 2 ** 0.5), abs(b - 0.5 ** 0.5)),
+    # The stand-in record predates this field, and stays byte-identical without it.
+    **({} if workload == "stand-in" else {"workload": workload}),
+    "termination": termination,
+    "max_error": max_error,
     "ipopt_banner": banner,
-    "options": options | {"output_file": "<log>"},
+    "options": options,
     "pynumero_asl": AmplInterface.libname,
     "nlpsol_calls": nlpsol_calls,
     "skipped_modules": skipped,
@@ -201,18 +236,21 @@ def _child_environment(env: Path, *, pyomo_config: bool) -> dict[str, str]:
         "PATH": f"{env}/bin:/usr/bin:/bin",
         "PYTHONNOUSERSITE": "1",
         "LC_ALL": "C.UTF-8",
+        # MUMPS/OpenBLAS under LLVM OpenMP are bitwise reproducible run to run only single-
+        # threaded (WO-8's measurement); the recorded `max_error` is compared bit for bit.
+        "OMP_NUM_THREADS": "1",
     }
     if pyomo_config:
         environment["PYOMO_CONFIG_DIR"] = str(env / "share" / "pyomo")
     return environment
 
 
-def run_workload(env: Path, order: str) -> dict[str, Any]:
+def run_workload(env: Path, order: str, workload: str) -> dict[str, Any]:
     """One NLP-path solve in a fresh interpreter of `env`, from an empty working directory."""
     with tempfile.TemporaryDirectory() as scratch:
         completed = subprocess.run(
             [str(env / "bin" / "python"), "-I", "-c", _WORKLOAD, str(ROOT / "src"), order,
-             f"{scratch}/ipopt.log"],
+             f"{scratch}/ipopt.log", workload, str(ROOT / "tests")],
             capture_output=True, text=True, check=False, cwd=scratch,
             env=_child_environment(env, pyomo_config=True),
         )  # fmt: skip
@@ -519,10 +557,10 @@ def _normalise(path: str, env: Path) -> str:
     return "$ENV/" + path[len(str(env)) + 1 :] if path.startswith(str(env) + "/") else path
 
 
-def build_record(env: Path) -> dict[str, Any]:
+def build_record(env: Path, workload: str) -> dict[str, Any]:
     env = env.resolve()
     site = env / SITE
-    runs = {order: run_workload(env, order) for order in ("project-first", "nlp-first")}
+    runs = {order: run_workload(env, order, workload) for order in ("project-first", "nlp-first")}
     mapped_sets = {order: set(run.pop("mapped")) for order, run in runs.items()}
     mapped = sorted(set().union(*mapped_sets.values()))
     elf_paths = [path for path in mapped if is_elf(Path(path))]
@@ -856,11 +894,18 @@ def main() -> int:
     parser.add_argument("--env", type=Path, default=ROOT / ".venv-nlp")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--check", action="store_true")
+    parser.add_argument(
+        "--workload",
+        choices=WORKLOADS,
+        default="nlp-1",
+        help="what the child solves: spec §8.1's NLP-1 through the WO-8 adapter (the default), or "
+        "WO-6's two-variable stand-in, which the audit was first measured on",
+    )
     arguments = parser.parse_args()
     if not (arguments.env / "bin" / "python").exists():
         print(f"no environment at {arguments.env}; build it with scripts/build-m03-ipopt-env.sh")
         return 2
-    record = build_record(arguments.env)
+    record = build_record(arguments.env, arguments.workload)
     text = json.dumps(record, indent=1, sort_keys=True) + "\n"
     gates = " ".join(
         f"{name} {'PASS' if gate['pass'] else 'FAIL'}" for name, gate in record["gates"].items()

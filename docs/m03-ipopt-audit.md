@@ -14,7 +14,7 @@ accept the licences: that is Frank's N1 (§7). Every number and hash quoted here
 ```bash
 scripts/build-m03-ipopt-env.sh [prefix] [cache]          # default .venv-nlp, .reference-downloads/m03-ipopt
 .venv/bin/python scripts/m03_ipopt_inventory.py --env .venv-nlp            # write the inventory
-.venv/bin/python scripts/m03_ipopt_inventory.py --env .venv-nlp --check    # reproduce it
+.venv/bin/python scripts/m03_ipopt_inventory.py --env .venv-nlp --check    # reproduce it (NLP-1, §9)
 ```
 
 As in P03, three grades of statement are kept apart: **measured** (a size, a SHA-256, a `DT_NEEDED`
@@ -45,7 +45,8 @@ distribution exists for this platform. The `nlp` extra is still not declared: th
 
 What would turn the verdict: a pin change of any package in the locks (re-run the build and
 `--check`; a licence change at a new pin is a new finding, R-135's last paragraph), WO-8's NLP-1
-workload mapping an object this stand-in workload did not (§9.1), or Frank declining N1.
+workload mapping an object this stand-in workload did not (§9.1; measured by WO-8: it maps the same
+178 objects), or Frank declining N1.
 
 ---
 
@@ -373,6 +374,35 @@ nlp = [
    CPython 3.13.5, not the host's; the default numerical stack's binaries are identical (§3.1), but
    cross-environment bitwise claims (V1's re-solve compared with a default-install solve) are
    WO-8's to measure, not this audit's to assume.
+
+**WO-8's answers (build lane, 2026-10-08, branch `wp/M03`).** Measured with the adapter
+`openflowsheet.studies.nlp.greybox`; the numbers are in `benchmarks/m03/nlp-measurements.json` and
+the inventory.
+
+1. **G1 on NLP-1.** `scripts/m03_ipopt_inventory.py` now solves NLP-1 through the adapter with
+   §8.4's options (its default workload; `--workload stand-in` reproduces WO-6's record). Both
+   import orders map exactly the stand-in's 178 objects, no object is added or lost, and G1-G6
+   stay PASS; the committed inventory carries the NLP-1 workload (status `KKT_POINT_VERIFIED`,
+   decision error 2.7e-12 scaled) and `--check` reproduces it.
+2. **`libpynumero_ASL`.** The adapter checks `AmplInterface.libname`'s SHA-256 against
+   `closure.AUDITED_PYNUMERO_ASL_SHA256` (`6646bbdd…`, a default-gate test ties it to this
+   inventory) before any solve, and refuses with `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)` naming
+   `PYOMO_CONFIG_DIR` otherwise. `scripts/m03_nlp_check.sh` sets `PYOMO_CONFIG_DIR`.
+3. **User site.** `scripts/m03_nlp_check.sh` sets `PYTHONNOUSERSITE=1`.
+4. **Linear solver and HSL.** `linear_solver = mumps` is passed explicitly; before any solve the
+   adapter refuses if a mapped object is named `*hsl*` or is a CasADi object naming
+   `ipopt`/`mumps`/`metis`, and A39's test re-derives the CasADi METIS closure (55 objects) and
+   finds none of it mapped after the NLP-1 solve.
+5. **Threads.** With the default OpenMP thread count (48 on this host) MUMPS/OpenBLAS results
+   differ run to run in the last bits: NLP-1's returned split fraction by 1 ulp, every verdict
+   identical; NLP-INF's three starts take 498 iterations in one run and 597 under
+   `OMP_NUM_THREADS=1`. `OPENBLAS_NUM_THREADS=1` alone does not make runs reproducible;
+   `OMP_NUM_THREADS=1` does (four runs, every value but the wall times bitwise identical), and
+   NLP-1's whole report then takes 1.7 s instead of 3.2-3.9 s. The check script, the NLP fixtures
+   and the inventory's child set it.
+6. **Across interpreters.** The V1-V6 verifier at NLP-1's reference optimum emits, in this
+   environment's CPython 3.13.5, the byte-identical candidate document the default install emits
+   (`tests/fixtures/schemas/optimization_report/candidate/valid/nlp_1_reference_optimum.json`).
 
 ---
 

@@ -6599,13 +6599,23 @@
    "ipopt_banner": [
     "This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2."
    ],
-   "max_error": 8.346656699131927e-13,
+   "max_error": 2.6716406864579767e-12,
    "nlpsol_calls": [],
    "options": {
-    "file_print_level": 5,
+    "acceptable_iter": 15,
+    "acceptable_tol": 1e-08,
+    "bound_relax_factor": 0,
+    "compl_inf_tol": 1e-08,
+    "constr_viol_tol": 1e-08,
+    "dual_inf_tol": 1e-06,
     "hessian_approximation": "limited-memory",
+    "honor_original_bounds": "yes",
     "limited_memory_max_history": 6,
     "linear_solver": "mumps",
+    "max_iter": 500,
+    "max_wall_time": 120,
+    "mu_strategy": "monotone",
+    "nlp_scaling_method": "user-scaling",
     "output_file": "<log>",
     "print_level": 0,
     "tol": 1e-10
@@ -6615,25 +6625,36 @@
     "openflowsheet.application.bindings.http",
     "openflowsheet.application.bindings.mcp"
    ],
-   "termination": "optimal",
+   "termination": "KKT_POINT_VERIFIED",
    "versions": {
     "casadi": "3.8.0",
     "cyipopt": "1.7.0",
     "numpy": "2.2.4",
     "pyomo": "6.10.1"
-   }
+   },
+   "workload": "nlp-1"
   },
   "project-first": {
    "ipopt_banner": [
     "This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2."
    ],
-   "max_error": 8.346656699131927e-13,
+   "max_error": 2.6716406864579767e-12,
    "nlpsol_calls": [],
    "options": {
-    "file_print_level": 5,
+    "acceptable_iter": 15,
+    "acceptable_tol": 1e-08,
+    "bound_relax_factor": 0,
+    "compl_inf_tol": 1e-08,
+    "constr_viol_tol": 1e-08,
+    "dual_inf_tol": 1e-06,
     "hessian_approximation": "limited-memory",
+    "honor_original_bounds": "yes",
     "limited_memory_max_history": 6,
     "linear_solver": "mumps",
+    "max_iter": 500,
+    "max_wall_time": 120,
+    "mu_strategy": "monotone",
+    "nlp_scaling_method": "user-scaling",
     "output_file": "<log>",
     "print_level": 0,
     "tol": 1e-10
@@ -6643,13 +6664,14 @@
     "openflowsheet.application.bindings.http",
     "openflowsheet.application.bindings.mcp"
    ],
-   "termination": "optimal",
+   "termination": "KKT_POINT_VERIFIED",
    "versions": {
     "casadi": "3.8.0",
     "cyipopt": "1.7.0",
     "numpy": "2.2.4",
     "pyomo": "6.10.1"
-   }
+   },
+   "workload": "nlp-1"
   }
  }
 }

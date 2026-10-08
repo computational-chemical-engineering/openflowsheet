@@ -104,6 +104,16 @@ def test_the_adapter_requires_the_audited_pynumero_asl_build() -> None:
     assert row["sha256"] == record["pynumero_asl_build"]["sha256"] == AUDITED_PYNUMERO_ASL_SHA256
 
 
+def test_the_inventory_was_taken_on_nlp_1() -> None:
+    """Audit §9 item 1: G1 re-measured with NLP-1 solved by the adapter, in both import orders."""
+    record = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    for run in record["workload"].values():
+        assert run["workload"] == "nlp-1"
+        assert run["termination"] == "KKT_POINT_VERIFIED"
+        assert run["nlpsol_calls"] == []
+    assert record["pass_g1_to_g6"] is True
+
+
 def test_the_q_f2_measurements_keep_a_tenfold_margin() -> None:
     """Spec §14 Q-F2, as recorded by `scripts/m03_nlp_measurements.py` in the audited environment
     (whose `nlp` test checks that the record reproduces): no measured value of NLP-1 within 10x of
