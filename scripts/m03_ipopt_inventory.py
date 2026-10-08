@@ -107,8 +107,9 @@ _WORKLOAD = r"""
 import importlib, json, pkgutil, sys
 sys.path.insert(0, sys.argv[1])
 order, log, workload = sys.argv[2], sys.argv[3], sys.argv[4]
-# The two bindings of the `server` extra, which this environment does not install.
-SERVER = ("openflowsheet.application.bindings.http", "openflowsheet.application.bindings.mcp")
+# The three bindings of the `server` extra (M06 added `web`), which this environment does not
+# install.
+SERVER = tuple(f"openflowsheet.application.bindings.{name}" for name in ("http", "mcp", "web"))
 skipped = []
 def project():
     import openflowsheet

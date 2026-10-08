@@ -6628,7 +6628,8 @@
    "pynumero_asl": "$ENV/share/pyomo/lib/libpynumero_ASL.so",
    "skipped_modules": [
     "openflowsheet.application.bindings.http",
-    "openflowsheet.application.bindings.mcp"
+    "openflowsheet.application.bindings.mcp",
+    "openflowsheet.application.bindings.web"
    ],
    "termination": "KKT_POINT_VERIFIED",
    "versions": {
@@ -6667,7 +6668,8 @@
    "pynumero_asl": "$ENV/share/pyomo/lib/libpynumero_ASL.so",
    "skipped_modules": [
     "openflowsheet.application.bindings.http",
-    "openflowsheet.application.bindings.mcp"
+    "openflowsheet.application.bindings.mcp",
+    "openflowsheet.application.bindings.web"
    ],
    "termination": "KKT_POINT_VERIFIED",
    "versions": {

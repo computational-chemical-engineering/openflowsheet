@@ -130,9 +130,9 @@ T08.A30: the C library is the platform every Python process runs on, not part of
 
 A fresh interpreter of the environment (`python -I`, `PYTHONNOUSERSITE=1`,
 `PYOMO_CONFIG_DIR=<env>/share/pyomo`, an empty working directory) imports every `openflowsheet`
-module (the two `server`-extra bindings are skipped: this environment does not install that
-extra) and the NLP stack in **both orders**, replaces `casadi.nlpsol` by a function that raises,
-and solves a two-variable PyNumero `ExternalGreyBoxModel` problem through Pyomo's `cyipopt` solver
+module (the three `server`-extra bindings, `http`, `mcp` and M06's `web`, are skipped: this
+environment does not install that extra) and the NLP stack in **both orders**, replaces
+`casadi.nlpsol` by a function that raises, and solves a two-variable PyNumero `ExternalGreyBoxModel` problem through Pyomo's `cyipopt` solver
 (min a + 2b subject to ab = 1, a, b ≥ 0.1) whose residual and Jacobian are CasADi `Function`s, as the
 adapter's will be. Options: `linear_solver = mumps`, `hessian_approximation = limited-memory`,
 `limited_memory_max_history = 6`, `tol = 1e-10`. Outcome in both orders: `optimal`, maximum error
