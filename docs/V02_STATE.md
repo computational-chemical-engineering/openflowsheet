@@ -17,7 +17,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | spec done on `wp/M01` (`7f267ed`: A01–A48, ADR 0026/0027 Proposed, R-154…169); build WO-1…4, 6 running; WO-5 (IDAES conformance), WO-7 next; Q-F1, Q-N1…N4 for Frank (defaults set) |
 | M02 | Build | M01 | W21 | not started |
-| M03 | Design | T08 | W24 (part) | spec done on `wp/M03` (`17cec07`: A01–A42, ADR 0031/0032, R-180…191); build WO-0…3 running; WO-6 [A10] Ipopt audit next; N1 licences asked of Frank |
+| M03 | Design | T08 | W24 (part) | spec done (`17cec07`); WO-0…3 done (`82560bf`), WO-6 audit PASS (merged `afa19ad`); WO-4, 5, 7 running; WO-8 waits for N1; amendment round batched |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
 | M06 | Build | T08 | W26, W27 | design done on `wp/M06` (`44098b0`, `03f3f13`: `docs/design/M06-web-shell.md`, ADR 0030 + ADR 0019 Amendment 3 Proposed, R-170…R-175). **WO-4…6 halted for budget**: untested WIP `f8fa5e5` on `wp/M06-build` (WO-4 partial, WO-5/6 not started; next steps in `docs/V02_DECISIONS.md`, "halt") (worktree `.claude/worktrees/agent-af89210400852f3dd`). Resume: opus-engineer on WO-4…6 from that branch; WO-1…3 on `wp/M06-contract` (Amendment 3 approved 2026-10-08) |
@@ -68,10 +68,10 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `opus-engineer` | M01 WO-1…4, 6 (PR provider, flash, boundary) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `opus-engineer` | M06 WO-7…10 fixtures, view models, screens | `wp/M06-ui` (`m06-ui`) |
-| `opus-engineer` | M03 WO-0…3 sensitivity core | `wp/M03` (`m03`) |
+| `opus-engineer` | M03 WO-4, 5, 7 sweeps, estimation, NLP formulation | `wp/M03` (`m03`) |
 | `opus-engineer` | M06 WO-16 W27 classifier, harness, scorer | `wp/M06-w27-harness` (`m06-w27h`) |
 
-Done today: M06 WO-1…6, WO-14, WO-15 (all merged into `wp/M06-build`; R-192…R-194), the M01 and M03 specifications, M03 WO-6 Ipopt audit (PASS; `wp/M03-audit`, merge into `wp/M03` after WO-0…3).
-Next free slot: M01 WO-5 (IDAES conformance, own env) and WO-7; then M03 WO-4/5/7 after WO-0…3; then M06
-WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
+Done today: M06 WO-1…6, WO-14, WO-15 (all merged into `wp/M06-build`; R-192…R-194), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
+Next free slot: M01 WO-5 (IDAES conformance, own env) and WO-7; then M03 spec amendment round (batched);
+M03 WO-8 after N1; M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
 Push `main` at milestones (authorised).

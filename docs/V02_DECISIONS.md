@@ -150,3 +150,15 @@ Grep, don't read whole. Newest at the bottom.
   `scripts/build-m03-ipopt-env.sh` rebuilds it from the locks. Worktree removed; branch kept; merge into `wp/M03`
   after WO-0…3 finish.
 - `opus-engineer` M06 WO-16 (W27 classifier/harness/scorer, stub dry run) launched on `wp/M06-w27-harness`.
+- M03 WO-0…3 done on `wp/M03` (`8e179cb`, `a848bb5`, `2ac8f77`, `992e8e6`, `82560bf`): twin, `solve_transposed`,
+  `studies/sensitivity.py`, `studies/syn001.py`; check.sh 6958 passed, 31 skipped. Q-F1: twin bitwise identical at
+  P1–P3, B1–B3, all 8 sweep points (1/7/10 symbolic parameters). Worst: A05/A06 3.2e-3 of allowed; A09 FD 5.5e-12 vs
+  1e-9; A12 `C=[1,10]` 2.13e-14 vs 1e-13 (4.7×, inside the 10× amend-first window). `wp/M03-audit` merged (`afa19ad`).
+- DECISION: package `openflowsheet.studies` (blueprint §15, frozen layer list) not the spec's `study/`. Alternative:
+  rename to `study`. Reversible by: a rename commit.
+- DECISION: M03 design-lane questions batched into one spec amendment round after WO-4/5/7 — A12 margin; engineer's
+  refusal-vocabulary choices (unevaluable residual → ROOT_NOT_CONVERGED; non-square → UNSUPPORTED_RANK_STRUCTURE;
+  LinearSolveFailedError after a clean screen; mode-`both` consistency recorded not refusing; adjoint-only still runs
+  forward for Q3); spec §5 toy residual "exactly 0" is 1.5e-36 in binary64; plus Q-F2/Q-F3 measurements.
+  Alternative: amend now. Reversible by: consulting sooner.
+- `opus-engineer` M03 WO-4, 5, 7 (+ optional WO-9) launched on `wp/M03`.
