@@ -353,3 +353,8 @@ Grep, don't read whole. Newest at the bottom.
 - M04 recon done (digest inline): no M04 code/schema/ADR/register entry; no approved experiment budget or registered
   reference distribution; surrogate seam = M02's pinned (X̂, ΔT̂) (ADR 0034 D1). Brief `docs/briefs/M04-specification.md`
   (`418a891` on `wp/M04`). `specifier` M04 launched on `wp/M04` (ADR 0036+, R-240+).
+- M06 CI green: push run 37839253802 (check both architectures, default-install, identity) and dispatch 37839266960
+  (+ dist, clean-install both, bundle-set, bundle-replay both). `--add-ci` → manifest `evidence/M06/4719a1a…` **tested**
+  (G1–G15 pass, G16 n/a). ADR 0030 and ADR 0019 Amendment 3 → **Accepted** (`19a1379`).
+- `opus-engineer` merging `wp/M06-build` into main on `merge/M06` (reconcile register, envelope, matrix, changelog
+  test with M01); main fast-forwards after a green gate.
