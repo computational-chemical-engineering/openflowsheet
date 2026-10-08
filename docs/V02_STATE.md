@@ -9,7 +9,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | Chemistry | C1, the ammonia synthesis loop (ADR 0022, R-120); `docs/v02-real-chemistry-dossier.md`; reactor `ammonia_synthesis_reactor` `main` @ `6089593` (MIT) |
 | Order | R-153: M01 design first; M06 built alongside; M03 when the critical path allows; pre-release `0.2.0a1` after M02 `tested`; `0.2.0` after M07 |
 | Concurrency | At most 4 agents at a time (Frank, 2026-10-06) |
-| Repository | Public `origin` only (R-150); pre-push guard installed; pushes to `origin` with Frank's OK |
+| Repository | Public `origin` only (R-150); pre-push guard installed; pushing to `origin` authorised (Frank, 2026-10-08) |
 
 ## Packages
 
@@ -20,7 +20,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M03 | Design | T08 | W24 (part) | not started |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
-| M06 | Build | T08 | W26, W27 | design done on `wp/M06` (`44098b0`, `03f3f13`: `docs/design/M06-web-shell.md`, ADR 0030 + ADR 0019 Amendment 3 Proposed, R-170…R-175). **WO-4…6 halted for budget**: untested WIP `f8fa5e5` on `wp/M06-build` (WO-4 partial, WO-5/6 not started; next steps in `docs/V02_DECISIONS.md`, "halt") (worktree `.claude/worktrees/agent-af89210400852f3dd`). Resume: opus-engineer on WO-4…6 from that branch; WO-1…3 wait for Frank's approval of Amendment 3 |
+| M06 | Build | T08 | W26, W27 | design done on `wp/M06` (`44098b0`, `03f3f13`: `docs/design/M06-web-shell.md`, ADR 0030 + ADR 0019 Amendment 3 Proposed, R-170…R-175). **WO-4…6 halted for budget**: untested WIP `f8fa5e5` on `wp/M06-build` (WO-4 partial, WO-5/6 not started; next steps in `docs/V02_DECISIONS.md`, "halt") (worktree `.claude/worktrees/agent-af89210400852f3dd`). Resume: opus-engineer on WO-4…6 from that branch; WO-1…3 on `wp/M06-contract` (Amendment 3 approved 2026-10-08) |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
 ## Milestone 0 (housekeeping)
@@ -41,16 +41,15 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
-- Approve ADR 0019 Amendment 3 (additive contract widening: structure index + unroutable analysis, element-level `diff_revisions`, `list_audit`); default: build it on the branch, merge only after approval.
-- M06 F1 W27 spend [45 runs at M07, USD 15–45]; F2 agent model — **answered (Frank, 2026-10-06): the most recent model at campaign time**, pinned by exact model ID and recorded (not V17's `claude-sonnet-5`; direct comparability with `v17-c2` is lost and is stated); F3 fonts [system]; F4 scenario = run comparison [yes]; F5 education mode [deferred].
+Nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
+`origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
+F5 education mode deferred.
 
 ## Next action
 
 **Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", max 4 agents).** Running: `specifier` M01 on `wp/M01`
 (worktree `.claude/worktrees/agent-a94d84cd26a293bc0`); `opus-engineer` M06 WO-4…6 on `wp/M06-build`
-(`agent-af89210400852f3dd`); `opus-engineer` M06 WO-1…3 on `wp/M06-contract` (`m06-contract`; merge only after
-Frank approves Amendment 3); `recon` M03 (digest in the session scratchpad, then an M03 specifier brief under
+(`agent-af89210400852f3dd`); `opus-engineer` M06 WO-1…3 on `wp/M06-contract` (`m06-contract`; Amendment 3 approved
+2026-10-08); `recon` M03 (digest in the session scratchpad, then an M03 specifier brief under
 `docs/briefs/`). Next when a slot frees: M03 specifier; M06 WO-14 (W27 acquisition) and WO-15 (W27 registration).
-In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`. Nothing is
-pushed; pushing needs Frank's OK. Stale worktrees for Frank to remove: `public-line`, `showcase`,
-`study-openidaes450`, `agent-a3fc35fa5df8ef915`.
+In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`. Push `main` at milestones (authorised).
