@@ -41,9 +41,12 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
-- **M03 N1:** accept the licences of an optional, non-default `nlp` extra (cyipopt + Ipopt + PyNumero ASL: EPL-2.0,
-  CeCILL-C, the ASL notice, Apache-2.0 METIS 5, BSD, GCC runtime), once the [A10] audit lists exactly what is loaded.
-  Default: accept for the optional extra; without it W24's M03 optimizer part stays BLOCKED.
+- **M03 N1:** accept the licences of an optional, non-default `nlp` extra; the [A10] audit (PASS, `docs/m03-ipopt-audit.md`
+  on `wp/M03-audit`) found exactly: EPL-2.0 (Ipopt, cyipopt), CeCILL-C (MUMPS, Scotch), public domain (PORD, SQLite),
+  Apache-2.0 (METIS 5, OpenSSL), Apache-2.0 WITH LLVM-exception (libomp), BSD-3 (OpenBLAS, SPRAL, hwloc, libuuid,
+  Pyomo), ASL BSD-3 + f2c notice, MIT (libxml2, libffi), **LGPL-2.1-only** (libiconv), **GPL-3.0 WITH GCC RLE from
+  conda-forge** (libstdc++, libgcc_s, libgfortran, libquadmath), PSF-2.0, bzip2, 0BSD, BSD-2, Zlib. Default: accept;
+  without it W24's M03 optimizer part stays BLOCKED.
 
 - **M01 (defaults set, work proceeds):** Q-F1 the reactor's inlet heat loss (23–33 % of reaction heat through the
   inlet face) — intended, or Danckwerts? default: as pinned, reported; Q-N1 c_p source — default NASA TM-4513, not
@@ -66,9 +69,9 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | `opus-engineer` | M01 WO-1…4, 6 (PR provider, flash, boundary) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `opus-engineer` | M06 WO-7…10 fixtures, view models, screens | `wp/M06-ui` (`m06-ui`) |
 | `opus-engineer` | M03 WO-0…3 sensitivity core | `wp/M03` (`m03`) |
-| `opus-engineer` | M03 WO-6 Ipopt [A10] audit | `wp/M03-audit` (`m03-audit`) |
+| `opus-engineer` | M06 WO-16 W27 classifier, harness, scorer | `wp/M06-w27-harness` (`m06-w27h`) |
 
-Done today: M06 WO-1…6, WO-14, WO-15 (all merged into `wp/M06-build`; R-192…R-194), the M01 and M03 specifications.
-Next free slot: M01 WO-5 (IDAES conformance, own env) and WO-7; then M06 WO-16 (W27 classifier/harness/scorer);
-then M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
+Done today: M06 WO-1…6, WO-14, WO-15 (all merged into `wp/M06-build`; R-192…R-194), the M01 and M03 specifications, M03 WO-6 Ipopt audit (PASS; `wp/M03-audit`, merge into `wp/M03` after WO-0…3).
+Next free slot: M01 WO-5 (IDAES conformance, own env) and WO-7; then M03 WO-4/5/7 after WO-0…3; then M06
+WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
 Push `main` at milestones (authorised).

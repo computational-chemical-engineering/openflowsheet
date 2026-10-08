@@ -139,3 +139,14 @@ Grep, don't read whole. Newest at the bottom.
   snapshot SHA (WO-15 F1, F2).
 - `wp/M06-w27` merged into `wp/M06-build` (`5ceb32c`; register conflict resolved by concatenation). Worktrees
   `m06-contract`, `m06-w27` removed. `opus-engineer` M06 WO-7…10 launched on `wp/M06-ui` (from `b8a0518`).
+- M03 WO-6 [A10] Ipopt audit: **PASS** G1–G8 on `wp/M03-audit` (`4e56fc7`, `4b70e08`, `61da5d1`, `672998c`; check.sh
+  6883 passed). Route: user-space conda-forge env (micromamba 2.9.0, explicit lock; CPython 3.13.5, Ipopt 3.14.20,
+  MUMPS 5.8.2 seq, METIS 5.1.0 by symbol test, cyipopt 1.7.0, ampl-asl) + hash-locked PyPI wheels (pyomo 6.10.1,
+  packaging 26.3); `libpynumero_ASL` compiled from Pyomo's own sources (reproducible, `6646bbdd…`). Rejected: Debian
+  (MPI MUMPS → OpenMPI in-process); source build not needed. CasADi METIS closure untouched; no HSL; nothing
+  restrictive. Draft extra `nlp = [pyomo==6.10.1, cyipopt==1.7.0, packaging==26.3]` (not added; N1 pending).
+  WO-8 notes: set `PYOMO_CONFIG_DIR` (else P03's unaudited `~/.pyomo/lib` loads), `PYTHONNOUSERSITE=1`, explicit
+  `linear_solver=mumps`; threaded-BLAS reproducibility open. The env lives in the session scratchpad (temporary);
+  `scripts/build-m03-ipopt-env.sh` rebuilds it from the locks. Worktree removed; branch kept; merge into `wp/M03`
+  after WO-0…3 finish.
+- `opus-engineer` M06 WO-16 (W27 classifier/harness/scorer, stub dry run) launched on `wp/M06-w27-harness`.
