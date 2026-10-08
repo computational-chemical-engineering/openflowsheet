@@ -17,7 +17,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | spec done (`7f267ed`); WO-1…6 done (`13bcef7`, gate green; A37 IDAES ≥140× inside); Amendment 1 running; then one design-lane amendment round (A26, A09, A12, added refusals; `V02_DECISIONS.md`), `reviewer`, WO-7 manifest → `tested` → M02 |
 | M02 | Build | M01 | W21 | not started |
-| M03 | Design | T08 | W24 (part) | spec done (`17cec07`); WO-0…3 done (`82560bf`), WO-6 audit PASS (merged `afa19ad`); WO-4, 5, 7 running; WO-8 waits for N1; amendment round batched |
+| M03 | Design | T08 | W24 (part) | spec (`17cec07`); WO-0…7 done except WO-8 (`5cf4160`, gate green); Amendment 1 running; then WO-9 schemas, WO-8 (after N1), WO-10 manifest, `reviewer` |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
 | M06 | Build | T08 | W26, W27 | design done on `wp/M06` (`44098b0`, `03f3f13`: `docs/design/M06-web-shell.md`, ADR 0030 + ADR 0019 Amendment 3 Proposed, R-170…R-175). **WO-4…6 halted for budget**: untested WIP `f8fa5e5` on `wp/M06-build` (WO-4 partial, WO-5/6 not started; next steps in `docs/V02_DECISIONS.md`, "halt") (worktree `.claude/worktrees/agent-af89210400852f3dd`). Resume: opus-engineer on WO-4…6 from that branch; WO-1…3 on `wp/M06-contract` (Amendment 3 approved 2026-10-08) |
@@ -68,7 +68,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `specifier` | M01 Amendment 1 (A26, A09, A12, refusals) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `opus-engineer` | M06 WO-7…10 fixtures, view models, screens | `wp/M06-ui` (`m06-ui`) |
-| `opus-engineer` | M03 WO-4, 5, 7 sweeps, estimation, NLP formulation | `wp/M03` (`m03`) |
+| `specifier` | M03 Amendment 1 | `wp/M03` (`m03`) |
 | `opus-engineer` | M06 WO-16 W27 classifier, harness, scorer | `wp/M06-w27-harness` (`m06-w27h`) |
 
 Done today: M06 WO-1…6, WO-14, WO-15 (all merged into `wp/M06-build`; R-192…R-194), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).

@@ -182,3 +182,9 @@ Grep, don't read whole. Newest at the bottom.
   `m01-idaes` worktree (git-ignored); keep it for M02.
 - `specifier` M01 Amendment 1 launched on `wp/M01` (items A26, A09, A12, synthetic marker, stand-in envelope row, added
   refusals, interfaces-frozen note; R-195+).
+- M03 WO-4, 5, 7 done on `wp/M03` (`27cf166` sweeps, `d377364` estimation, `5cf4160` NLP formulation/KKT
+  verifier/readiness/UNSUPPORTED path; no greybox, no extra): check.sh 6991 passed. Within-10× list empty (closest
+  FIT-U σ₂/σ₁ 9.1e-15 vs 1e-12). Q-F3: FIT-I θ̂ 1.1e-16 scaled, FIT-U T̂_f 6.2e-12. New code `ESTIMATOR_NOT_CONVERGED`.
+  Open: FIT-U r drifts to 0.969 (null projection 0.997 vs JSON 0.869); NOT_VERIFIED vs INFEASIBLE_REPORTED precedence
+  (WO-8); WO-9 not started (package-data test hard-codes 32 schemas). Engineer stopped after reporting.
+- `specifier` M03 Amendment 1 launched on `wp/M03` (R-210+; M01's amendment holds R-195…R-209).
