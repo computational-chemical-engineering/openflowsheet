@@ -55,6 +55,7 @@ from openflowsheet.resources import packaged
 from openflowsheet.thermo import (
     FlashRequest,
     FlashResult,
+    Phase,
     PropertyCapabilities,
     PropertyRequest,
     PropertyResult,
@@ -212,6 +213,16 @@ _C_MINUS: Final = 1.0 - _SQRT2
 #: a few reach the double floor from the closed form's ~1e-10, and the bound is declared, not a
 #: `while`.
 _POLISH_STEPS: Final = 8
+
+
+#: The flash's fixed bracket samples (spec §5.4 step 6): k/64 for k = 1..63, then 1 − 2^−j for
+#: j = 7..40, in that order. Each is exact in binary.
+SAMPLES: Final[tuple[float, ...]] = (
+    *(k / 64.0 for k in range(1, 64)),
+    *(1.0 - 2.0**-j for j in range(7, 41)),
+)
+#: The bisection's declared bound (spec §5.4 step 6); 2 ulp is reached in ~50 halvings.
+_MAX_HALVINGS: Final = 200
 
 
 @dataclass(frozen=True)
@@ -572,7 +583,7 @@ def _pure_nh3(temperature: float, pressure: float) -> _PureRoots:
     return _PureRoots(mix, None, z)
 
 
-def _pure_stable_phase(roots: _PureRoots) -> str:
+def _pure_stable_phase(roots: _PureRoots) -> Phase:
     """The existing root of lower ln φ_NH3; ties go to the liquid (spec §5.2 item 4)."""
     if roots.liquid is None:
         return "VAPOR"
@@ -771,10 +782,134 @@ class PrC1Provider:
     # -- flash ---------------------------------------------------------------------------------
 
     def flash(self, request: FlashRequest, context: EvaluationContext) -> FlashResult:
-        del context, request
-        return _flash_refused(
-            "unsupported", "flash_unavailable: the TP flash lands with M01 WO-3 (spec §5.4)"
+        """The TP flash of spec §5.4: the equilibrium vapour's NH3 fraction y*, then the split.
+
+        y* solves h(y) = ln y + ln φ_NH3^V(T, P; y, (1 − y) w) − ln φ_NH3^L = 0 for the light-gas
+        proportions w alone, so it never depends on the feed's NH3 (M01.A21) and the trivial
+        solution does not exist in this formulation (spec §5.5). Flash derivatives are not
+        offered; `FlashResult` has no field to carry them.
+        """
+        del context
+        if request.specification != "TP":
+            return _flash_refused(
+                "unsupported",
+                f"unsupported_specification: {request.specification!r}; pr-c1-v1 offers TP only",
+            )
+        state = request.state
+        if len(state.n) != len(COMPONENTS):
+            return _flash_refused(
+                "error", f"state_length: {len(state.n)} flows for the components {COMPONENTS}"
+            )
+        outside = _domain_violation(state)
+        if outside is not None:
+            return _flash_refused("out_of_domain", outside)
+        t, p, n = state.temperature, state.pressure, state.n
+        if state.is_dormant:
+            # ADR 0001 D3.4: two dormant outlets labelled T and P, no K-value (composition
+            # undefined); a valid result, not a failure (step 1).
+            dormant = StreamState(n=(0.0,) * 5, temperature=t, pressure=p)
+            return FlashResult(
+                status="ok",
+                phase_signature="ZERO_FLOW",
+                vapor_fraction=None,
+                vapor=dormant,
+                liquid=dormant,
+                provider_id=PROVIDER_ID,
+                reference_convention=REFERENCE_CONVENTION,
+                message="route: zero_flow",
+            )
+
+        critical = parameters().nh3_critical_temperature
+        light = _light_flow(n)
+        if light == 0.0:  # step 2
+            if t >= critical:
+                return _single_phase(state, "VAPOR", "pure_nh3")
+            return _single_phase(state, _pure_stable_phase(_pure_nh3(t, p)), "pure_nh3")
+        if n[I_NH3] == 0.0:  # step 3
+            return _single_phase(state, "VAPOR", "no_nh3")
+        if t >= critical:  # step 4
+            return _single_phase(state, "VAPOR", "supercritical")
+        pure = _pure_nh3(t, p)
+        if _pure_stable_phase(pure) == "VAPOR":
+            return _single_phase(state, "VAPOR", "no_liquid")
+
+        # Step 5: h(y) on (0, 1) with the vapour's largest root and no guard.
+        assert pure.liquid is not None  # the stable pure phase is the liquid
+        ln_phi_liquid = _ln_phi(pure.mixture, pure.liquid)[I_NH3]
+        proportions = tuple(n[k] / light for k in LIGHT)
+
+        def equilibrium_mixture(fraction: float) -> _Mixture:
+            rest = 1.0 - fraction
+            w0, w1, w3, w4 = proportions
+            return _mixture(t, p, (rest * w0, rest * w1, fraction, rest * w3, rest * w4))
+
+        def h(fraction: float) -> float:
+            mix = equilibrium_mixture(fraction)
+            z = admissible_roots(mix.big_a, mix.big_b)[-1]
+            return math.log(fraction) + _ln_phi(mix, z)[I_NH3] - ln_phi_liquid
+
+        # Step 6: bracket on the fixed samples, then bisect.
+        low, high, samples = 0.0, -1.0, 0
+        for sample in SAMPLES:
+            samples += 1
+            if h(sample) >= 0.0:
+                high = sample
+                break
+            low = sample
+        if high < 0.0:
+            return _single_phase(state, "VAPOR", "no_liquid", samples)
+        halvings = 0
+        while high - low > 2.0 * math.ulp(high) and halvings < _MAX_HALVINGS:
+            middle = (low + high) / 2.0
+            halvings += 1
+            if h(middle) >= 0.0:
+                high = middle
+            else:
+                low = middle
+        y_star = (low + high) / 2.0
+        iterations = samples + halvings
+
+        # Step 7: the guard on the converged vapour, then the split.
+        if _vapour_root(equilibrium_mixture(y_star))[1]:
+            return _flash_refused(
+                "unsupported",
+                "vapour_root_metastable: the equilibrium vapour's largest root is not its stable "
+                f"one (y* = {y_star!r} at {t!r} K, {p!r} Pa)",
+            )
+        vapour_nh3 = light * y_star / (1.0 - y_star)
+        if n[I_NH3] <= vapour_nh3:
+            return _single_phase(state, "VAPOR", "undersaturated", iterations)
+        return FlashResult(
+            status="ok",
+            phase_signature="TWO_PHASE",
+            vapor_fraction=(light + vapour_nh3) / state.total_flow,
+            vapor=StreamState(n=(n[0], n[1], vapour_nh3, n[3], n[4]), temperature=t, pressure=p),
+            liquid=StreamState(
+                n=(0.0, 0.0, n[I_NH3] - vapour_nh3, 0.0, 0.0), temperature=t, pressure=p
+            ),
+            # x_NH3 = 1, so K_NH3 = y*; a light gas has no K and is absent ("not computed").
+            k_values={"NH3": y_star},
+            iterations=iterations,
+            provider_id=PROVIDER_ID,
+            reference_convention=REFERENCE_CONVENTION,
+            message="route: two_phase",
         )
+
+
+def _single_phase(state: StreamState, phase: Phase, route: str, iterations: int = 0) -> FlashResult:
+    """The present phase carries the feed bitwise; the other is dormant, labelled T and P."""
+    empty = StreamState(n=(0.0,) * 5, temperature=state.temperature, pressure=state.pressure)
+    return FlashResult(
+        status="ok",
+        phase_signature=phase,
+        vapor_fraction=1.0 if phase == "VAPOR" else 0.0,
+        vapor=state if phase == "VAPOR" else empty,
+        liquid=state if phase == "LIQUID" else empty,
+        iterations=iterations,
+        provider_id=PROVIDER_ID,
+        reference_convention=REFERENCE_CONVENTION,
+        message=f"route: {route}",
+    )
 
 
 def _refused(status: PropertyStatus, message: str) -> PropertyResult:
