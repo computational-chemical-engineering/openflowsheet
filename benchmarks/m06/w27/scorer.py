@@ -13,7 +13,8 @@ pure function of them: re-scoring reproduces it byte for byte. The system checks
 each `VERIFIED` certificate's exported bundle in a fresh process (`openflowsheet replay --rerun`),
 on a scratch copy whose path is recorded nowhere.
 
-Decisions this module takes where the registration is silent, each reported in the score:
+Three rules the registration was silent on when this module was written, each reported in the
+score, and ratified since as W27-R59…R61 (registration §20, Amendment 1; M06 review F5):
 
 - A unit, component or package the classification records as *available* is named, for W27-R41,
   by what `coverage.json` holds for it: a unit group by its key's class, its names and their last

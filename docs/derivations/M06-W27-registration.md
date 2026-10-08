@@ -1,6 +1,7 @@
 # M06 W27 registration — the OpenIDAES-450 external agent benchmark adaptation
 
-**Status:** registered 2026-10-08, **before any W27 agent run**. Design lane (`specifier`), M06 WO-15, branch
+**Status:** registered 2026-10-08, **before any W27 agent run**. Amended once, also before any run: §20
+(Amendment 1, 2026-10-08: one erratum and three scoring rules, W27-R59…R61, from the M06 review F5). Design lane (`specifier`), M06 WO-15, branch
 `wp/M06-w27`. Brief: `docs/briefs/M06-W27-registration.md` (`1fb65c1`).
 **Machine-readable companion:** `benchmarks/m06/openidaes450/registration.json`, written by
 `docs/derivations/scripts/m06_w27_registration.py` from the tables in that script and from
@@ -16,7 +17,7 @@ drawn at M07 from the coverage of the v0.2 candidate by the procedure of §6.
 
 - A `verdict` agent judges W27 from **this document and the campaign record** (§13 lists what the record must
   hold). Nothing else is needed and nothing else is authority.
-- Numbered items: **W27-R01…R58** are registration rules; **GC-*** are the generator's self-claims (§14.1);
+- Numbered items: **W27-R01…R61** are registration rules (R59…R61 by Amendment 1, §20); **GC-*** are the generator's self-claims (§14.1);
   **W27-A01…A40** are the assertions WO-16's tests and G15's dry run must pass (§14.2); **W27-S01…S18** are the
   registered scorer states (§14.3).
 - Authority order for W27: blueprint §11.4 > plan v1.2 W27 row > design note `docs/design/M06-web-shell.md` §9
@@ -617,7 +618,7 @@ would judge the model, not the system. V17 (the system's own agent tasks) keeps 
 **W27-R57 (claims allowed, and never made).** The report may say, filling the brackets from the record:
 "External agent benchmark adaptation attempted: OpenIDAES-450 (CRAFTS, arXiv:2608.01369), archive SHA-256
 `6d42c02f…4526`. [k] of 450 ([j] of 82) cases are representable candidates for OpenFlowsheet [version] under
-the W27 registration; the rest are classified with reasons ([table]). Inaccessible assets: [the ten of
+the W27 registration; the rest are classified with reasons ([table]). Inaccessible assets: [the nine of
 `access_report.json`, each absent, with where each was sought]. Campaign of 45 runs of [model id], k = 1:
 [counts of the seven outcome classes]; system false verification [0, established]; unauthorized and critical
 effects [0]; agent false verification [x], one-sided 95 % upper bound [u]; [cost]." It never gives a headline
@@ -942,3 +943,39 @@ agent surface on registered tasks; W27 runs one external model on external cases
 that model. A headline score: blueprint §11.4.
 
 **Watch for.** If Frank answers Q4 "gated", W27-R56 changes before the first run, by amendment.
+
+## 20. Amendment 1 — one erratum and three scoring rules (2026-10-08, before any W27 run)
+
+**Source.** The design-lane review of M06 at `wp/M06-build` `98da494`, `docs/reviews/M06-review.md` finding F5 and
+§3 (its rulings on the recorded deviations). The review found the scorer (`benchmarks/m06/w27/scorer.py`, module
+docstring) taking three choices where this registration was silent, reporting each in the score, and recommended
+ratifying all three; this amendment records that ratification. No table of the generator, no member of
+`registration.json` and no assertion of §14 changes, so `registration.json`'s SHA-256 (`ce59200a…`) and every
+coverage and dry-illustration record that pins it stand. Preflight P2 re-pins this document's SHA-256 in the commit
+that records the amendment (`benchmarks/m06/w27/preflight.py`, `REGISTERED_SHA256`).
+
+**Erratum (W27-R57).** The claims template said "the ten of `access_report.json`"; the report holds **nine**
+`inaccessible_assets`, and the nine cover every item design note §9 Tier 0 item 2 names (the fine-tuned models, the
+prompts and workflow, the scoring harness, and the 82-split binding). The template now says nine.
+
+**W27-R59 (naming an available item, for W27-R41).** A unit, component or property package that the classification
+records as *available* for the case is named by what the case's `coverage.json` row holds for it: a unit group by
+its key's class, by each of its recorded names and by each name's last dotted segment; a component by its name, or
+by an alias that resolves to the same CAS RN; a package by its name, its last dotted segment and its key. Text is
+compared under W27-R39's normalization (stripped, case-folded). *Why:* mechanical — these are the only names the
+record holds; any other alias list would be a new table, which only a further amendment may add.
+
+**W27-R60 (a quantity at more than one time point).** A reference quantity of W27-R45 whose rows in `streams.csv`
+carry more than one time point is **unjudged**, reported as `multiple_time_points` (and, like every unjudged
+quantity of W27-R45, it takes no part in the assignment). *Why:* a steady `CANDIDATE` case has one time point, and
+choosing one of several would be a rule nobody registered; the score names every quantity left unjudged this way,
+so the reduction of the check is visible, not silent.
+
+**W27-R61 (a reference component the agent's product stream does not carry).** In W27-R45's comparison, a judged
+reference component flow whose component the agent's product connection does not carry is compared against 0 mol/s.
+*Why:* a stream that does not carry a component carries none of it. The rule is almost moot: when the component
+check W27-R44 passes, every chemical component is in the revision's component set, and every `nTP-v1` connection
+carries all of them.
+
+**What the scorer reports is unchanged:** each of the three is applied and reported in `scores.json` exactly as
+before the amendment; this section makes the rules normative rather than the module's.
