@@ -19,7 +19,11 @@ answers. `configuration.hooks` (a list, applied in order) reaches every failure 
 - `fingerprint(alt)` — an evaluation reports another interpreter in its fingerprint;
 - `nondeterministic` — each run's outlet temperature differs by one more ulp (a counter beside
   the environment root);
-- `not_accepted(stage)` — answer `not_accepted` at `stage`.
+- `not_accepted(stage)` — answer `not_accepted` at `stage`;
+- `raise(name)` — raise the built-in exception `name` inside the evaluation's window (R-251),
+  classified by the real child's own `model_exception` (loaded from `child.py` by path, so the
+  two cannot drift): covered, it is `not_accepted` at `model_exception` with its record and the
+  traceback on stderr; not covered (`MemoryError`, `OSError`), it propagates — exit 1, a crash.
 
 A hook acts on evaluations only; `handshake:<hook>` acts on the handshake only (`--handshake`).
 
@@ -30,7 +34,9 @@ can see a lifeline exit it is not the parent of, and when.
 
 from __future__ import annotations
 
+import builtins
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -42,6 +48,7 @@ import threading
 import time
 import traceback
 from pathlib import Path
+from typing import Any
 
 PROTOCOL_VERSION = 1
 EXIT_LIFELINE_LOST = 70
@@ -65,6 +72,18 @@ THREAD_VARIABLES = (
     "NUMBA_NUM_THREADS",
 )
 CHEAP = ("python", "packages", "cpu_model", "thread_env", "runner_sha256", "export_tree_sha256")
+#: The real child, whose `model_exception` classifies the `raise(name)` hook's exception.
+CHILD = Path(__file__).resolve().parents[2] / "src/openflowsheet/adapters/pymrm/child.py"
+
+
+def _child() -> Any:
+    """The real child's module, loaded from its file (it imports the standard library only at
+    import time, and `__main__` is not its name here, so nothing of it runs)."""
+    spec = importlib.util.spec_from_file_location("ofs_reactor_child", CHILD)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _sha256(path: Path) -> str:
@@ -133,6 +152,31 @@ def _counter() -> int:
     return count
 
 
+def _evaluate(
+    tube: dict[str, Any], configuration: dict[str, Any], hooks: list[str], cheap: dict[str, Any]
+) -> dict[str, object]:
+    """The stand-in's closed form per tube (module docstring)."""
+    feed = [tube["flow"] * y for y in tube["composition"]]
+    xi = CONVERSION * feed[1]
+    flows = [feed[i] + NU[i] * xi for i in range(len(NU))]
+    temperature = tube["temperature"]
+    if "nondeterministic" in hooks:
+        for _ in range(_counter()):
+            temperature = math.nextafter(temperature, math.inf)
+    return {
+        "outcome": OUTCOME_OUTLET,
+        "tube_outlet": {
+            "flows": flows,
+            "temperature": temperature,
+            "pressure_drop": float(configuration.get("pressure_drop", 0.0)),
+            "coolant_heat": None,
+            "inlet_face_heat_loss": None,
+        },
+        "diagnostics": {"synthetic": True},
+        "fingerprint": cheap,
+    }
+
+
 def main() -> None:
     started = time.monotonic()
     request = json.loads(sys.stdin.buffer.readline())
@@ -159,6 +203,7 @@ def main() -> None:
     cheap = {name: full[name] for name in CHEAP}
     digest = request["request_sha256"]
     stage = None
+    raised: type[BaseException] | None = None
     handshake = HANDSHAKE_ARGUMENT in sys.argv
     for hook in hooks:
         # A hook acts on evaluations; `handshake:<hook>` on the handshake only.
@@ -189,6 +234,9 @@ def main() -> None:
             cheap = {**cheap, "python": f"{argument}-{cheap['python']}"}
         elif name == "not_accepted":
             stage = argument
+        elif name == "raise":
+            raised = getattr(builtins, argument)
+            assert isinstance(raised, type) and issubclass(raised, BaseException), hook
     solve_started = time.monotonic()
     timing = {"startup_s": solve_started - started}
     if HANDSHAKE_ARGUMENT in sys.argv:
@@ -196,26 +244,24 @@ def main() -> None:
     elif stage is not None:
         document = {"outcome": OUTCOME_NOT_ACCEPTED, "stage": stage, "fingerprint": cheap}
     else:
-        tube = request["tube_inlet"]
-        feed = [tube["flow"] * y for y in tube["composition"]]
-        xi = CONVERSION * feed[1]
-        flows = [feed[i] + NU[i] * xi for i in range(len(NU))]
-        temperature = tube["temperature"]
-        if "nondeterministic" in hooks:
-            for _ in range(_counter()):
-                temperature = math.nextafter(temperature, math.inf)
-        document = {
-            "outcome": OUTCOME_OUTLET,
-            "tube_outlet": {
-                "flows": flows,
-                "temperature": temperature,
-                "pressure_drop": float(configuration.get("pressure_drop", 0.0)),
-                "coolant_heat": None,
-                "inlet_face_heat_loss": None,
-            },
-            "diagnostics": {"synthetic": True},
-            "fingerprint": cheap,
-        }
+        try:  # the evaluation's window (R-251), as the real child's `Reactor._window`
+            if raised is not None:
+                raise raised(f"synthetic {raised.__name__} inside the window\nsecond line")
+            document = _evaluate(request["tube_inlet"], configuration, hooks, cheap)
+        except Exception as error:
+            child = _child()
+            covered = child.model_exception(error)
+            if covered is None:
+                raise
+            record, text = covered
+            sys.stderr.write(text)
+            sys.stderr.flush()
+            document = {
+                "outcome": OUTCOME_NOT_ACCEPTED,
+                "stage": child.STAGE_MODEL_EXCEPTION,
+                "diagnostics": {"model_exception": record},
+                "fingerprint": cheap,
+            }
     timing["solve_s"] = time.monotonic() - solve_started
     _write({"protocol": PROTOCOL_VERSION, "request_sha256": digest, **document, "timing": timing})
     os._exit(0)

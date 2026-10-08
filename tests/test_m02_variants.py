@@ -3,9 +3,12 @@ flow bound, and `ExecutionFailure` in the evaluation seam.
 
 - **G6 (b), the pin test.** Every registered variant loads, its `document_sha256` is the
   registry's, the directory holds exactly the registered documents, and no registered document
-  carries a test-only member; an out-of-process variant's `runner_sha256`, `overlay_sha256` and
-  discretization estimate are the child's, the overlay's and `reference_values.yaml`'s. An edited
-  document is refused, not re-pinned.
+  carries a test-only member; an out-of-process variant's `overlay_sha256` and discretization
+  estimate are the overlay's and `reference_values.yaml`'s. Exactly one out-of-process variant,
+  the current one, has this child's `runner_sha256`; every other is superseded (append-only,
+  §3.1: a changed child is a new variant) — `...-v1`, the child before R-251, is the one, and the
+  child refuses it at its environment check (`test_m02_pymrm_child.py`). An edited document is
+  refused, not re-pinned.
 - **Resolution (§6.1).** A model reference resolves only on the registered id, the exact hash and
   the variant's own model id.
 - **The stand-in variant is M01's boundary**: its boundary block holds M01's constants and its hard
@@ -55,6 +58,9 @@ from openflowsheet.thermo.pr_c1 import PrC1Provider
 
 VARIANT_DIR = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "variants"
 STANDIN_ID = "standin-x025-v1"
+#: The current real variant and the ones it supersedes (their runner is an earlier child).
+CURRENT_ID = "pymrm-6089593-g2-nz800-s123-v2"
+SUPERSEDED_IDS = ("pymrm-6089593-g2-nz800-s123-v1",)
 PROBE: dict[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m01" / "reactor-probe.json")
 F_NOM: float = PROBE["pinned"]["F_ret_in_mol_s"]
 #: R-232: the real reactor's variant's per-tube flow bound, as registered in the note (§3.1).
@@ -89,18 +95,23 @@ def test_g6b_every_registered_variant_loads_at_its_pinned_hash() -> None:
     assert documents == sorted([variants.REGISTRY_FILE, *(f"{key}.json" for key in registered)])
     reference = load_yaml(REPO_ROOT / "benchmarks" / "m01" / "reference_values.yaml")
     estimate = reference["derived_from_measured"]["discretization_estimate"]
+    child = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "pymrm" / "child.py"
+    current: list[str] = []
+    superseded: list[str] = []
     for variant_id, pinned in registered.items():
         variant = variants.registered_variant(variant_id)
         document = load_json(VARIANT_DIR / f"{variant_id}.json")
         assert variant.sha256 == document_sha256(document) == pinned
         assert not set(TEST_ONLY) & set(variant.evaluation), "a test-only member is registered"
         if variant.kind == "out_of_process":
-            child = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "pymrm" / "child.py"
-            assert variant.evaluation["runner_sha256"] == file_sha256(child)
+            runner = variant.evaluation["runner_sha256"]
+            (current if runner == file_sha256(child) else superseded).append(variant_id)
             overlay = REPO_ROOT / "benchmarks" / "m01" / "reactor-overlay.json"
             assert variant.evaluation["overlay_sha256"] == file_sha256(overlay)
             assert variant.accuracy["discretization_estimate"] == estimate
             assert not variant.synthetic
+    assert current == [CURRENT_ID]
+    assert sorted(superseded) == sorted(SUPERSEDED_IDS)
 
 
 @pytest.fixture

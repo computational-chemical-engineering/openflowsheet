@@ -4,6 +4,10 @@ reproduces the probe's design-grid nominal outlet bitwise at the record's exact 
 (M01.A47 (a), when the environment block equals the record's). The full adapter halves of
 M01.A41-A48 are `benchmarks/m02/g10_adapter_halves.py`'s, recorded in
 `benchmarks/m02/g10-adapter-halves.json`.
+
+The environment is the one `env build --variant pymrm-6089593-g2-nz800-s123-v1` made: its manifest
+names the variant that built it, so it verifies against v1. The child is not part of it, so v2
+(the child of R-251, the same `env_id`) executes in it.
 """
 
 from __future__ import annotations
@@ -22,12 +26,15 @@ from openflowsheet.models.c1.boundary import PERMEATE_OUTLET_PRESSURE, TubeInlet
 
 pytestmark = pytest.mark.pymrm
 
-VARIANT = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v1")
+#: The variant that built the environment, and the current one, which executes in it.
+BUILT_BY = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v1")
+VARIANT = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v2")
 PROBE: dict[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m01" / "reactor-probe.json")
 
 
 def test_the_environment_verifies_against_its_pins() -> None:
-    assert env.verify(VARIANT, overlay=REPO_ROOT / env.OVERLAY) == []
+    assert env.environment_root(BUILT_BY) == env.environment_root(VARIANT)
+    assert env.verify(BUILT_BY, overlay=REPO_ROOT / env.OVERLAY) == []
 
 
 def test_a47a_the_nominal_outlet_is_the_probes_bitwise(tmp_path: Path) -> None:

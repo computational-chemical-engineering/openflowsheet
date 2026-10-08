@@ -36,6 +36,14 @@ uptake and the inlet-face heat loss — with the diagnostics. The pressure conve
 element defect are the boundary's to judge (Amendment 1). The computation is a pure function of
 the request: every limit is a count, never a clock.
 
+**An exception inside the model** (R-251; design note §14.1 B9) is the registered stage
+`model_exception`, not a crash: purity makes it recur on every attempt. The window runs from
+building the first reactor object through the outlet's extraction (S1, S2, S3, the certificate,
+`outlet`); `model_exception` decides what it covers — any `Exception` but `MemoryError`, `OSError`
+and their subclasses — and what the diagnostics record (the qualified type name, the message's
+first line, the formatted traceback's SHA-256; the traceback itself goes to stderr). Everything
+else — an exception outside the window, `MemoryError`, `OSError`, a signal — stays a crash.
+
 **Evidence-only switches.** `OFS_EVIDENCE_S2_DT_INIT` (S2's `dt_init`, M01.A42) and
 `OFS_EVIDENCE_BACKFLOW_ALT` (the backflow inflow `[0, 0, 0, 1, 0]`, M01.A44) are read from the
 environment, which the launcher builds from an allowlist: only its Python-only `test_environment`
@@ -70,6 +78,9 @@ HANDSHAKE_ARGUMENT = "--handshake"
 OUTCOME_OUTLET = "outlet"
 OUTCOME_NOT_ACCEPTED = "not_accepted"
 OUTCOME_HANDSHAKE = "handshake"
+#: R-251: the stage of an exception the model raised inside its window (`model_exception`).
+STAGE_MODEL_EXCEPTION = "model_exception"
+MODEL_EXCEPTION_MESSAGE_LIMIT = 512
 SELF_DEADLINE_MARGIN_S = 30.0
 DEADLINE_MARGIN_VARIABLE = "OFS_TEST_DEADLINE_MARGIN_S"
 
@@ -177,6 +188,26 @@ def _write(document: dict[str, Any], directory: Path) -> None:
         handle.flush()
         os.fsync(handle.fileno())
     os.rename(temporary, directory / RESULT_FILE)
+
+
+def model_exception(error: Exception) -> tuple[dict[str, str], str] | None:
+    """R-251 (design note §14.1 B9): an exception raised inside the model's window, as the
+    diagnostics of the stage `model_exception` and its formatted traceback; `None` when it is not
+    covered and stays a crash (`MemoryError`, `OSError` and their subclasses).
+
+    A pure function of the exception and its traceback. The synthetic child
+    (`tests/support/synthetic_child.py`) calls this same function, so both classify alike."""
+    if isinstance(error, MemoryError | OSError):
+        return None
+    kind = type(error)
+    lines = str(error).splitlines()
+    text = "".join(traceback.format_exception(kind, error, error.__traceback__))
+    record = {
+        "type": f"{kind.__module__}.{kind.__qualname__}",
+        "message": (lines[0] if lines else "")[:MODEL_EXCEPTION_MESSAGE_LIMIT],
+        "traceback_sha256": hashlib.sha256(text.encode("utf-8", "backslashreplace")).hexdigest(),
+    }
+    return record, text
 
 
 # -- the environment -------------------------------------------------------------------------------
@@ -467,27 +498,69 @@ class Reactor:
     def evaluate(
         self, tube: dict[str, Any], s2_dt_init: float | None, backflow: list[float]
     ) -> dict[str, Any]:
-        """S1-S3 and the evaluation's acceptance: `{outcome, stage | tube_outlet, diagnostics}`."""
+        """S1-S3 and the evaluation's acceptance: `{outcome, stage | tube_outlet, diagnostics}`.
+        An exception the window (`_window`) raises is the stage `model_exception` when
+        `model_exception` covers it, and propagates (a crash) when it does not (R-251)."""
         num_z = int(self.configuration["num_z"])
         y_in = [float(value) for value in tube["composition"]]
         trace = float(PROFILE["S1"]["trace_NH3"])
         raw = y_in[:2] + [trace] + y_in[3:]
         total = sum(raw)
         y_trace = [value / total for value in raw]
-        model = self.model_class(backflow)
-        stages: dict[str, Any] = {}
-        diagnostics: dict[str, Any] = {"stages": stages, "num_z": num_z}
+        diagnostics: dict[str, Any] = {"stages": {}, "num_z": num_z}
 
         def refused(stage: str) -> dict[str, Any]:
             return {"outcome": OUTCOME_NOT_ACCEPTED, "stage": stage, "diagnostics": diagnostics}
 
+        try:
+            reached = self._window(tube, y_in, y_trace, s2_dt_init, backflow, diagnostics)
+        except Exception as error:
+            covered = model_exception(error)
+            if covered is None:
+                raise
+            record, text = covered
+            sys.stderr.write(text)
+            sys.stderr.flush()
+            diagnostics["model_exception"] = record
+            return refused(STAGE_MODEL_EXCEPTION)
+        if isinstance(reached, str):
+            return refused(reached)
+        certificate, outlet = reached
+        diagnostics.update(outlet["diagnostics"])
+        if certificate.get("kpi_drift_ok") is not True:
+            return refused("certificate")
+        if not diagnostics["u_ret_min"] > 0.0:
+            return refused("backflow")
+        if not diagnostics["min_axial_flow_mol_s"] > 0.0:
+            return refused("nonpositive_flow")
+        return {
+            "outcome": OUTCOME_OUTLET,
+            "tube_outlet": outlet["tube_outlet"],
+            "diagnostics": diagnostics,
+        }
+
+    def _window(
+        self,
+        tube: dict[str, Any],
+        y_in: list[float],
+        y_trace: list[float],
+        s2_dt_init: float | None,
+        backflow: list[float],
+        diagnostics: dict[str, Any],
+    ) -> str | tuple[dict[str, Any], dict[str, Any]]:
+        """R-251's window: from the first reactor object through the outlet's extraction. The
+        stage S1, S2 or S3 refused at, or the certificate and the outlet; the stages' and the
+        certificate's diagnostics go into `diagnostics` as they are reached."""
+        num_z = int(self.configuration["num_z"])
+        stages: dict[str, Any] = diagnostics["stages"]
+        model = self.model_class(backflow)
         started = time.perf_counter()
         config1, meta = self.config(tube, y_trace)
         first = model(config=config1)
         status1 = first.solve(dt_init=self.settings.DT_INIT_1D, return_status=True, verbose=0)
         stages["S1"] = self._stage(status1, self._accepted(status1, config1), started)
         if not stages["S1"]["accepted"]:
-            return refused("S1")
+            return "S1"
         started = time.perf_counter()
         config2, meta = self.config(tube, y_in)
         count = len(SPECIES)
@@ -502,7 +575,7 @@ class Reactor:
         stages["S2"] = self._stage(status2, self._accepted(status2, config2), started)
         stages["S2"]["dt_init"] = dt2
         if not stages["S2"]["accepted"]:
-            return refused("S2")
+            return "S2"
         started = time.perf_counter()
         polish: Any = PROFILE["S3"]
         target = steady_state_target(num_z)
@@ -517,7 +590,7 @@ class Reactor:
         stages["S3"] = self._stage(status3, bool(status3.converged), started)
         stages["S3"]["steady_state_target"] = target
         if not stages["S3"]["accepted"]:
-            return refused("S3")
+            return "S3"
         started = time.perf_counter()
         certificate = self.runner.certify_convergence_1d(second, status3, meta)
         drift = certificate.get("kpi_drift_rel") or {}
@@ -528,18 +601,7 @@ class Reactor:
             "wall_s": time.perf_counter() - started,
         }
         outlet = self.outlet(second, float(tube["temperature"]), float(tube["coolant_temperature"]))
-        diagnostics.update(outlet["diagnostics"])
-        if certificate.get("kpi_drift_ok") is not True:
-            return refused("certificate")
-        if not diagnostics["u_ret_min"] > 0.0:
-            return refused("backflow")
-        if not diagnostics["min_axial_flow_mol_s"] > 0.0:
-            return refused("nonpositive_flow")
-        return {
-            "outcome": OUTCOME_OUTLET,
-            "tube_outlet": outlet["tube_outlet"],
-            "diagnostics": diagnostics,
-        }
+        return certificate, outlet
 
     @staticmethod
     def _stage(status: Any, accepted: bool, started: float) -> dict[str, Any]:

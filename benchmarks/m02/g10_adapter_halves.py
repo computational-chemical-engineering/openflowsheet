@@ -3,9 +3,10 @@ spec §8.15, §9.9).
 
 Opt-in evidence, never part of the default gate: it needs the pinned reactor environment, built
 from pins by ``python -m openflowsheet.adapters.pymrm.env build --variant
-pymrm-6089593-g2-nz800-s123-v1``. It runs in this project's environment (the worker side) and
-reaches the reactor only through ``adapters.experiments`` and ``adapters.external`` — the child
-in its own venv, one per attempt. Its record, ``benchmarks/m02/g10-adapter-halves.json``, is a
+pymrm-6089593-g2-nz800-s123-v1`` (the variant it runs, v2 — the child of R-251 — shares its
+``env_id``). It runs in this project's environment (the worker side) and reaches the reactor
+only through ``adapters.experiments`` and ``adapters.external`` — the child in its own venv, one
+per attempt. Its record, ``benchmarks/m02/g10-adapter-halves.json``, is a
 measurement (``judged: false``); ``tests/test_m02_g10_record.py`` checks the record's form and
 numbers in the default gate, which never runs the reactor.
 
@@ -58,7 +59,7 @@ from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 
 REPO = Path(__file__).resolve().parents[2]
-VARIANT_ID = "pymrm-6089593-g2-nz800-s123-v1"
+VARIANT_ID = "pymrm-6089593-g2-nz800-s123-v2"
 PROBE = REPO / "benchmarks" / "m01" / "reactor-probe.json"
 REFERENCE = REPO / "benchmarks" / "m01" / "reference_values.yaml"
 TEMPERATURES = (653.15, 673.15, 693.15)

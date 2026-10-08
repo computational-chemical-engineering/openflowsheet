@@ -101,7 +101,8 @@ class HardDomain:
 DEFAULT_HARD_DOMAIN: Final = HardDomain()
 
 #: The grammar of `NotAccepted.stage` (spec §8.12, Amendment 1); the registered stages are S1, S2,
-#: S3, certificate, backflow and nonpositive_flow, and M02 may register more.
+#: S3, certificate, backflow and nonpositive_flow, and M02 may register more (it registers
+#: model_exception, R-251).
 _STAGE: Final = re.compile(r"[A-Za-z0-9_]+")
 
 ReactorStatus = Literal["ok", "unsupported", "out_of_domain", "not_converged", "error"]

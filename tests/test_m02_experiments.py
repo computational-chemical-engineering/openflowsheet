@@ -7,6 +7,10 @@ synthetic child (out of process, `tests/support/synthetic_child.py`).
 - (b) T_in + 1 ulp is another key and executes again; (c) (2n, 2 N_tubes) is another key.
 - (d) `crashed`, retried once, `crashed`: two attempts, no result; the same request executes
   again (a transient outcome is never cached).
+- R-251 (design note §14.1 B9): a `ValueError` raised inside the model's window is
+  `not_converged`, `reactor_not_accepted(model_exception)` — one attempt, its type, first message
+  line and traceback hash recorded, cached (the repeat is a hit); a `MemoryError` there is
+  `crashed`, retried once, never cached.
 - (e) A perturbation with defect_rel 2 × 10⁻⁶ → `not_converged`, `element_balance_defect`, no
   outlet values, deterministic: the repeat is a hit.
 - (f) y_NH3 = 10⁻¹⁰ → a result whose attempt is `not_executed`, `nh3_below_trace`.
@@ -25,6 +29,7 @@ block is not the implemented one is refused.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import multiprocessing
@@ -214,6 +219,52 @@ def test_g4d_a_crash_is_retried_once_and_never_cached(project: Project) -> None:
     third = _run(project.runner(), variant)
     assert third.key == first.key and not third.cache_hit
     assert [a["attempt"] for a in third.attempts] == [3, 4]
+
+
+def test_r251_an_exception_inside_the_model_is_a_cached_deterministic_refusal(
+    project: Project,
+) -> None:
+    variant = synthetic_variant("value-error", ["raise(ValueError)"])
+    first = _run(project.runner(), variant)
+    _valid(first)
+    assert not first.transient and first.result is not None
+    envelope = first.result["envelope"]
+    assert (envelope["status"], envelope["code"]) == (
+        "not_converged",
+        "reactor_not_accepted(model_exception)",
+    )
+    assert all(envelope[name] is None for name in ("outlet", "xi", "Q", "defect", "defect_rel"))
+    (attempt,) = first.attempts  # no retry
+    execution = attempt["execution"]
+    assert (execution["status"], execution["exit_code"], execution["stage"]) == (
+        "completed",
+        0,
+        "model_exception",
+    )
+    record = execution["diagnostics"]["model_exception"]
+    assert (record["type"], record["message"]) == (
+        "builtins.ValueError",
+        "synthetic ValueError inside the window",
+    )
+    stderr = (project.root / execution["logs"]["relpaths"]["stderr"]).read_bytes()
+    assert stderr.endswith(b"ValueError: synthetic ValueError inside the window\nsecond line\n")
+    assert hashlib.sha256(stderr).hexdigest() == record["traceback_sha256"]
+    repeat = _run(project.runner(), variant)
+    assert repeat.cache_hit and repeat.attempts == () and repeat.result == first.result
+    assert len(project.records().attempts(first.key)) == 1
+
+
+def test_r251_a_memory_error_inside_the_model_is_a_crash_retried_once(project: Project) -> None:
+    variant = synthetic_variant("memory-error", ["raise(MemoryError)"])
+    first = _run(project.runner(), variant)
+    _valid(first)
+    assert first.transient and _statuses(first) == ["crashed", "crashed"]
+    assert [a["execution"]["exit_code"] for a in first.attempts] == [1, 1]
+    assert all(a["execution"]["stage"] is None for a in first.attempts)
+    assert (first.envelope["status"], first.envelope["code"]) == ("error", "external_crashed")
+    assert project.records().result(first.key) is None
+    again = _run(project.runner(), variant)
+    assert not again.cache_hit and [a["attempt"] for a in again.attempts] == [3, 4]
 
 
 def test_a_timeout_is_not_retried(project: Project) -> None:

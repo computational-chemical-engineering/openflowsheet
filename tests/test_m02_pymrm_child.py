@@ -18,17 +18,30 @@ the environment builder, the lock and the registered real variant — without Py
   the variant's `lock_sha256`; the variant's `env_id` is §2.4's.
 - **The real variant (R-232, D15)**: its per-tube flow bound is exactly [0.5, 2] x the probe's
   pinned F_ret_in; its profile and configuration are the child's; its rights block says the code is
-  used by reference; its execution and accuracy blocks are the note's numbers.
+  used by reference; its execution and accuracy blocks are the note's numbers. The current one is
+  `...-v2`; `...-v1` is superseded (its runner is the child before R-251), and the child refuses a
+  request that expects it at its environment check, exit 72.
+- **An exception inside the model (R-251, design note §14.1 B9)** is the stage `model_exception`:
+  `model_exception` covers every `Exception` but `MemoryError`, `OSError` and their subclasses,
+  and records the qualified type name, the message's first line (≤ 512 characters) and the
+  SHA-256 of the formatted traceback, which goes to stderr; with the pinned model stubbed,
+  `Reactor.evaluate` refuses at `model_exception` for a covered exception raised anywhere from the
+  model class through `outlet`, and lets an uncovered one, or one raised after the window,
+  propagate (a crash).
 """
 
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
+import traceback
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -43,7 +56,9 @@ from openflowsheet.canonical import file_sha256
 
 PACKAGE = REPO_ROOT / "src" / "openflowsheet"
 CHILD = PACKAGE / "adapters" / "pymrm" / "child.py"
-REAL_ID = "pymrm-6089593-g2-nz800-s123-v1"
+REAL_ID = "pymrm-6089593-g2-nz800-s123-v2"
+#: The variant of the child before R-251 (`model_exception`): registered, loadable, superseded.
+SUPERSEDED_ID = "pymrm-6089593-g2-nz800-s123-v1"
 PROBE: dict[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m01" / "reactor-probe.json")
 F_NOM: float = PROBE["pinned"]["F_ret_in_mol_s"]
 #: R-232, design note §3.1: [0.5, 2] x F_nom, as registered in the note.
@@ -182,7 +197,7 @@ def _run_child(
     tmp_path: Path, request: dict[str, Any] | str, *, close: bool
 ) -> subprocess.CompletedProcess[bytes]:
     root = tmp_path / "environment"
-    root.mkdir()
+    root.mkdir(exist_ok=True)
     environment = launcher.scrubbed_environment(tmp_path, root)
     line = request if isinstance(request, str) else json.dumps(request)
     process = subprocess.Popen(
@@ -243,6 +258,224 @@ def test_a_sigint_ends_the_child_by_the_signal_not_sigabrt(tmp_path: Path) -> No
     assert process.stdin is not None and process.stderr is not None
     process.stdin.close()
     process.stderr.close()
+
+
+# -- R-251: an exception inside the model is the stage `model_exception` ---------------------------
+
+
+def _raised(error: Exception) -> Exception:
+    try:
+        raise error
+    except Exception as caught:
+        return caught
+
+
+class _Nested:
+    class ModelError(ArithmeticError):
+        """A model's own exception type, nested: its qualified name has a dot."""
+
+
+def test_r251_a_covered_exception_records_its_type_first_line_and_traceback_hash() -> None:
+    error = _raised(ValueError("the first line\nthe second line"))
+    covered = CHILD_MODULE.model_exception(error)
+    assert covered is not None
+    record, text = covered
+    assert text == "".join(traceback.format_exception(type(error), error, error.__traceback__))
+    assert text.startswith("Traceback (most recent call last):\n")
+    assert text.endswith("ValueError: the first line\nthe second line\n")
+    assert record == {
+        "type": "builtins.ValueError",
+        "message": "the first line",
+        "traceback_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+    }
+    nested = CHILD_MODULE.model_exception(_raised(_Nested.ModelError("x" * 600 + "\ny")))
+    assert nested is not None
+    assert nested[0]["type"] == f"{__name__}._Nested.ModelError"
+    assert nested[0]["message"] == "x" * CHILD_MODULE.MODEL_EXCEPTION_MESSAGE_LIMIT == "x" * 512
+    empty = CHILD_MODULE.model_exception(_raised(KeyError()))
+    assert empty is not None and empty[0]["message"] == ""
+    # A function of the exception and its traceback: the same raise records the same.
+    again = CHILD_MODULE.model_exception(_raised(ValueError("the first line\nthe second line")))
+    assert again == (record, text)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        ZeroDivisionError("z"),
+        KeyError("k"),
+        RuntimeError("r"),
+        AssertionError("a"),
+        _Nested.ModelError(),
+    ],
+    ids=lambda error: type(error).__name__,
+)
+def test_r251_every_other_exception_is_covered(error: Exception) -> None:
+    covered = CHILD_MODULE.model_exception(_raised(error))
+    assert covered is not None and covered[0]["type"].endswith(type(error).__qualname__)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        MemoryError(),
+        type("ModelMemoryError", (MemoryError,), {})(),
+        OSError(5, "input/output error"),
+        FileNotFoundError("database.json"),
+        BrokenPipeError(),
+    ],
+    ids=lambda error: type(error).__name__,
+)
+def test_r251_memory_and_os_errors_are_not_covered(error: Exception) -> None:
+    assert CHILD_MODULE.model_exception(_raised(error)) is None
+
+
+#: The window's steps, in order (`Reactor._window`).
+WINDOW = ("model_class", "S1", "S2", "S3", "certificate", "outlet")
+TUBE = {
+    "composition": [0.6975, 0.2325, 0.03, 0.017142857142857144, 0.022857142857142857],
+    "temperature": 673.15,
+    "coolant_temperature": 673.15,
+}
+
+
+def _stub_reactor(failing: str | None, error: Exception) -> Any:
+    """`Reactor` without the pinned model: every stage converges and every acceptance holds;
+    the step `failing` raises `error`. `"after"` makes `outlet` answer without the diagnostics the
+    acceptance reads, so `evaluate`'s own code raises `KeyError` after the window."""
+    import numpy as np
+
+    def step(name: str) -> None:
+        if name == failing:
+            raise error
+
+    solves = iter(("S1", "S2", "S3"))
+
+    class Model:
+        def __init__(self, config: Any, **start: Any) -> None:
+            self.cpT = np.zeros((4, 2, len(CHILD_MODULE.SPECIES) + 2))
+
+        def solve(self, **options: Any) -> Any:
+            step(next(solves))
+            return SimpleNamespace(
+                converged=True,
+                steady_state_norm=0.0,
+                best_steady_state_norm=None,
+                num_steps_attempted=1,
+            )
+
+    def model_class(backflow: list[float]) -> Any:
+        step("model_class")
+        return Model
+
+    def certify(model: Any, status: Any, meta: Any) -> dict[str, Any]:
+        step("certificate")
+        return {"kpi_drift_ok": True, "kpi_drift_rel": {"NH3": 0.0}, "achieved_residual": 0.0}
+
+    def outlet(model: Any, t_in: float, t_coolant_in: float) -> dict[str, Any]:
+        step("outlet")
+        diagnostics = {} if failing == "after" else {"u_ret_min": 1.0, "min_axial_flow_mol_s": 1.0}
+        return {"tube_outlet": {"flows": [1.0] * 5}, "diagnostics": diagnostics}
+
+    reactor = object.__new__(CHILD_MODULE.Reactor)
+    reactor.configuration = {"num_z": 100}
+    reactor.settings = SimpleNamespace(DT_INIT_1D=1e-6, STEADY_STATE_ACCEPT_FACTOR=1.0)
+    reactor.kpis = SimpleNamespace(solver_acceptance=lambda *arguments: {"accepted": True})
+    reactor.runner = SimpleNamespace(certify_convergence_1d=certify)
+    reactor.config = lambda tube, composition: (SimpleNamespace(steady_state_atol=1e-6), {})
+    reactor.model_class = model_class
+    reactor.outlet = outlet
+    return reactor
+
+
+def test_r251_the_stubbed_window_reaches_the_outlet() -> None:
+    document = _stub_reactor(None, ValueError()).evaluate(TUBE, None, [0.0] * 5)
+    assert document["outcome"] == CHILD_MODULE.OUTCOME_OUTLET
+    assert sorted(document["diagnostics"]["stages"]) == ["S1", "S2", "S3"]
+    assert "model_exception" not in document["diagnostics"]
+
+
+@pytest.mark.parametrize("failing", WINDOW)
+def test_r251_a_covered_exception_in_the_window_is_the_stage_model_exception(
+    failing: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    document = _stub_reactor(failing, ValueError(f"in {failing}\nmore")).evaluate(
+        TUBE, None, [0.0] * 5
+    )
+    assert (document["outcome"], document["stage"]) == ("not_accepted", "model_exception")
+    assert CHILD_MODULE.STAGE_MODEL_EXCEPTION == "model_exception"
+    diagnostics = document["diagnostics"]
+    record = diagnostics["model_exception"]
+    assert (record["type"], record["message"]) == ("builtins.ValueError", f"in {failing}")
+    stderr = capsys.readouterr().err  # the full traceback, and only it
+    assert stderr.endswith(f"ValueError: in {failing}\nmore\n")
+    assert hashlib.sha256(stderr.encode("utf-8")).hexdigest() == record["traceback_sha256"]
+    # The stages reached before the exception keep their diagnostics.
+    reached = [name for name in ("S1", "S2", "S3") if WINDOW.index(name) < WINDOW.index(failing)]
+    assert sorted(diagnostics["stages"]) == reached
+
+
+@pytest.mark.parametrize("failing", WINDOW)
+@pytest.mark.parametrize("error", [MemoryError(), OSError(5, "io")], ids=["MemoryError", "OSError"])
+def test_r251_an_uncovered_exception_in_the_window_propagates(
+    failing: str, error: Exception
+) -> None:
+    with pytest.raises(type(error)):
+        _stub_reactor(failing, error).evaluate(TUBE, None, [0.0] * 5)
+
+
+def test_r251_an_exception_after_the_window_propagates() -> None:
+    with pytest.raises(KeyError, match="u_ret_min"):
+        _stub_reactor("after", ValueError()).evaluate(TUBE, None, [0.0] * 5)
+
+
+# -- the superseded variant ----------------------------------------------------------------------
+
+
+def _pinned_root(root: Path, variant: variants.Variant) -> None:
+    """An environment root that meets `Environment`'s pins for `variant` (commit, lock, export
+    marker), with nothing else in it."""
+    tree = "0" * 64
+    (root / "export").mkdir(parents=True)
+    (root / "export" / env.EXPORT_TREE_FILE).write_text(tree + "\n", encoding="utf-8")
+    shutil.copyfile(env.packaged_lock(), root / env.LOCK_FILE)
+    manifest = {
+        "commit": variant.evaluation["reactor"]["commit"],
+        "lock_sha256": variant.evaluation["environment"]["lock_sha256"],
+        "export_tree_sha256": tree,
+    }
+    (root / env.MANIFEST_FILE).write_text(json.dumps(manifest), encoding="utf-8")
+
+
+def test_the_superseded_variant_is_refused_at_the_environment_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """v1's runner is the child before R-251: on an environment that meets every other pin of
+    both variants, the child exits 72 on v1's request, and its `Environment` takes v2's."""
+    superseded = variants.registered_variant(SUPERSEDED_ID)
+    current = variants.registered_variant(REAL_ID)
+    runner = file_sha256(CHILD)
+    assert superseded.evaluation["runner_sha256"] != runner == current.evaluation["runner_sha256"]
+    for name in ("commit", "lock_sha256"):
+        assert (
+            backends.OutOfProcessBackend(superseded).expected[name]
+            == backends.OutOfProcessBackend(current).expected[name]
+        )
+    root = tmp_path / "environment"
+    _pinned_root(root, superseded)
+    expected = backends.OutOfProcessBackend(superseded).expected
+    request = {"protocol": 1, "deadline_s": 60.0, "expected": expected, "request_sha256": "0" * 64}
+    completed = _run_child(tmp_path, request, close=False)
+    assert completed.returncode == protocol.EXIT_ENVIRONMENT_MISMATCH == 72
+    assert completed.stderr.decode() == (
+        f"environment_mismatch: runner_sha256 {runner} is not the expected one\n"
+    )
+    assert not (tmp_path / "result.json").exists()
+    monkeypatch.setenv("NUMBA_CACHE_DIR", str(root / "numba-cache"))
+    with pytest.raises(CHILD_MODULE.MismatchError, match="runner_sha256"):
+        CHILD_MODULE.Environment(expected, runner)
+    environment = CHILD_MODULE.Environment(backends.OutOfProcessBackend(current).expected, runner)
+    assert environment.root == root and environment.runner == runner
 
 
 # -- the builder ---------------------------------------------------------------------------------
