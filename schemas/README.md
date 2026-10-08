@@ -160,3 +160,5 @@ without rerun (1) and a converged solve (3, of three kinds), and one event of ea
 `tests/test_t07_adr0008_jobs.py` holds them to ADR 0008 A1 (a). The other T07 schemas' fixtures are
 not yet present; `tests/test_t07_types.py` round-trips constructed documents, which test the types
 and are not fixtures.
+
+Added by **M03** under ADR 0031 D7 and ADR 0032 D6 (spec §10, Amendment 1): `study.schema.json` (a sensitivity, sweep or estimation study, with the `$defs` `study_parameter`, `output_functional`, `sensitivity_result` — Q2′ and `LINEAR_SOLVE_FAILED` included — `sweep_point`, `sweep_result` and `estimation_report`) and `optimization-report.schema.json` (`optimize()`'s report, every start with its `classification`); fixtures emitted by real runs (`scripts/m03_schema_fixtures.py`), the cross-field rules in `tests/test_m03_schemas.py`; the schema list is `registry.json` (R-213), not packaged.

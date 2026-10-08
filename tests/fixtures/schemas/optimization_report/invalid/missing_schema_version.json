@@ -1,0 +1,139 @@
+{
+ "document": {
+  "candidate": null,
+  "claims": {
+   "global_optimality": false,
+   "local_stationarity": false,
+   "second_order": "not_assessed"
+  },
+  "distinct_local_solutions": 0,
+  "formulation": {
+   "constraints": [
+    {
+     "expression": {
+      "constant": 0.0,
+      "linear": {
+       "S1.n.A": -0.25,
+       "S4.n.A": 0.3333333333333333
+      },
+      "quadratic": [],
+      "text": "(S4.n.A - 0.75 S1.n.A)/3"
+     },
+     "id": "recovery_A",
+     "lower": 0.0,
+     "upper": null
+    }
+   ],
+   "decisions": [
+    {
+     "id": "U-SPLIT.split_fraction",
+     "lower": 0.5,
+     "scale": 1.0,
+     "upper": 0.97
+    },
+    {
+     "id": "U-FLASH.T_spec",
+     "lower": 356.0,
+     "scale": 100.0,
+     "upper": 366.0
+    }
+   ],
+   "declared_regimes": {
+    "U-FLASH": "TWO_PHASE",
+    "U-HEAT": "LIQUID"
+   },
+   "hessian": "limited-memory",
+   "kind": "full_space",
+   "objective": {
+    "constant": 0.0,
+    "linear": {
+     "U-FLASH.Q": 1e-05,
+     "U-HEAT.Q": 1e-05
+    },
+    "quadratic": [
+     {
+      "coefficient": 1e-08,
+      "variables": [
+       "U-HEAT.Q",
+       "U-HEAT.Q"
+      ]
+     }
+    ],
+    "sense": "minimize",
+    "text": "(U-HEAT.Q + U-FLASH.Q)/1e5 + 100 (U-HEAT.Q/1e5)^2"
+   },
+   "problem_id": "NLP-1",
+   "starts": [
+    [
+     0.6,
+     360.0
+    ],
+    [
+     0.85,
+     357.0
+    ],
+    [
+     0.55,
+     365.0
+    ]
+   ]
+  },
+  "hessian_policy": {
+   "approximation": "ipopt-limited-memory",
+   "capability": "absent",
+   "history": 6
+  },
+  "limits": {
+   "hessian": "absent (limited-memory approximation only)",
+   "max_iter": 500,
+   "max_wall_time": 120,
+   "regime_restriction": "every lifted TP split keeps the start's regime with margin >= tau_regime"
+  },
+  "model": {
+   "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+   "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769"
+  },
+  "reasons": [
+   {
+    "code": "NLP_SOLVER_UNAVAILABLE",
+    "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
+    "subject": "docs/m03-ipopt-audit.md"
+   }
+  ],
+  "solver": {
+   "audit": {
+    "document": "docs/m03-ipopt-audit.md",
+    "gate": "G-A10",
+    "verdict": "PASS"
+   },
+   "available": false,
+   "cyipopt": null,
+   "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
+   "environment": null,
+   "ipopt": null,
+   "linear_solver": "mumps",
+   "options": {
+    "acceptable_iter": 15,
+    "acceptable_tol": 1e-08,
+    "bound_relax_factor": 0,
+    "compl_inf_tol": 1e-08,
+    "constr_viol_tol": 1e-08,
+    "dual_inf_tol": 1e-06,
+    "hessian_approximation": "limited-memory",
+    "honor_original_bounds": "yes",
+    "limited_memory_max_history": 6,
+    "linear_solver": "mumps",
+    "max_iter": 500,
+    "max_wall_time": 120,
+    "mu_strategy": "monotone",
+    "nlp_scaling_method": "user-scaling",
+    "print_level": 0,
+    "tol": 1e-10
+   },
+   "pyomo": null
+  },
+  "starts": [],
+  "status": "UNSUPPORTED"
+ },
+ "expect_error": "'schema_version' is a required property"
+}

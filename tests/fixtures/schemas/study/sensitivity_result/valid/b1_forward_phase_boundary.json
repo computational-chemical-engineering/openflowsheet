@@ -1,0 +1,495 @@
+{
+ "adjoint": null,
+ "consistency": null,
+ "derivative_provenance": "implicit-exact",
+ "forward": {
+  "scaled": [
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ]
+  ],
+  "unscaled": [
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ]
+  ]
+ },
+ "identity": {
+  "constants_sha256": "405e5e00d16bf8b6e044579a51215ca385e6af189bf80ca9bd08fed71379112e",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+  "phase_signature": null,
+  "state_sha256": "e946d7651341cd6b0ac55303365fcbe6b210340c5ad40e36b96bfc40067675dd"
+ },
+ "linear_solves": [
+  {
+   "dimension": 47,
+   "linear_suspect": false,
+   "max_abs_u_diagonal": 1.9999171985231616,
+   "min_abs_u_diagonal": 0.001339083163067961,
+   "nnz_l": 152,
+   "nnz_u": 140,
+   "residual_normalized": 5.55906087513231e-17
+  }
+ ],
+ "mode": "forward",
+ "outputs": [
+  {
+   "coefficients": {
+    "S4.N": 1.0
+   },
+   "output_id": "S4.N",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S5.N": 1.0
+   },
+   "output_id": "S5.N",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S6.n.A": 1.0
+   },
+   "output_id": "S6.n.A",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S6.n.B": 1.0
+   },
+   "output_id": "S6.n.B",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S6.n.C": 1.0
+   },
+   "output_id": "S6.n.C",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S7.n.A": 1.0
+   },
+   "output_id": "S7.n.A",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S4.n.A": 1.0
+   },
+   "output_id": "S4.n.A",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S2.T": 1.0
+   },
+   "output_id": "S2.T",
+   "scale": 100.0
+  },
+  {
+   "coefficients": {
+    "U-HEAT.Q": 1.0
+   },
+   "output_id": "U-HEAT.Q",
+   "scale": 100000.0
+  },
+  {
+   "coefficients": {
+    "U-FLASH.Q": 1.0
+   },
+   "output_id": "U-FLASH.Q",
+   "scale": 100000.0
+  },
+  {
+   "coefficients": {
+    "S3.V": 1.0
+   },
+   "output_id": "S3.V",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "U-FLASH.Q": 1.0,
+    "U-HEAT.Q": 1.0
+   },
+   "output_id": "Q_total",
+   "scale": 100000.0
+  }
+ ],
+ "parameters": [
+  {
+   "alias_residual": 0.0,
+   "domain": [
+    0.0,
+    0.999
+   ],
+   "parameter_id": "U-SPLIT.split_fraction",
+   "scale": 1.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": 0.0,
+   "domain": [
+    280.0,
+    440.0
+   ],
+   "parameter_id": "U-FLASH.T_spec",
+   "scale": 100.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": 0.0,
+   "domain": [
+    280.0,
+    440.0
+   ],
+   "parameter_id": "U-HEAT.T_spec",
+   "scale": 100.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": 0.0,
+   "domain": [
+    280.0,
+    440.0
+   ],
+   "parameter_id": "U-FEED.T_spec",
+   "scale": 100.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": 0.0,
+   "domain": [
+    1e-06,
+    10.0
+   ],
+   "parameter_id": "U-FEED.n_spec.A",
+   "scale": 3.0,
+   "status": "REFUSED"
+  }
+ ],
+ "policy_id": "M03-sensitivity-v1",
+ "qualification": {
+  "alias_residuals": {
+   "U-FEED.T_spec": 0.0,
+   "U-FEED.n_spec.A": 0.0,
+   "U-FLASH.T_spec": 0.0,
+   "U-HEAT.T_spec": 0.0,
+   "U-SPLIT.split_fraction": 0.0
+  },
+  "outcomes": [
+   {
+    "outcome": "pass",
+    "qualification": "Q0"
+   },
+   {
+    "entries_compared": 2352,
+    "outcome": "pass",
+    "qualification": "Q0'"
+   },
+   {
+    "outcome": "pass",
+    "qualification": "Q0''"
+   },
+   {
+    "outcome": "pass",
+    "qualification": "Q1",
+    "scaled_residual_inf": 3.190040824089616e-14,
+    "threshold": 1e-10
+   },
+   {
+    "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+    "outcome": "pass",
+    "qualification": "Q1'",
+    "same_state": true,
+    "verification_status": "VERIFIED"
+   },
+   {
+    "outcome": "pass",
+    "qualification": "Q2",
+    "rcond_1": 2.865603598981897e-07,
+    "status": "NO_RANK_LOSS_DETECTED"
+   },
+   {
+    "outcome": "pass",
+    "qualification": "Q2'",
+    "residual_normalized": [
+     5.55906087513231e-17
+    ],
+    "solves": {
+     "forward": "pass",
+     "transposed": "not_applicable"
+    },
+    "threshold": 1e-12
+   },
+   {
+    "eliminated_rows": [
+     "U-FLASH:FLASH-P:inlet",
+     "U-SPLIT:SPLIT-P:recycle"
+    ],
+    "outcome": "pass",
+    "qualification": "Q3",
+    "refused_columns": [],
+    "threshold": 1e-08
+   },
+   {
+    "outcome": "fail",
+    "qualification": "Q4",
+    "splits": [
+     {
+      "kind": "TP",
+      "margin": 0.0703000266256355,
+      "regime": "TWO_PHASE",
+      "streams": "S3",
+      "unit_id": "U-HEAT"
+     },
+     {
+      "kind": "TP",
+      "margin": 1.3370443389781883e-05,
+      "regime": "TWO_PHASE",
+      "streams": "S4/S5",
+      "unit_id": "U-FLASH"
+     }
+    ],
+    "threshold": 0.0001
+   },
+   {
+    "outcome": "pass",
+    "qualification": "Q4'"
+   }
+  ],
+  "regularity": {
+   "derivative_accuracy": "exact-ad-double",
+   "dimension": 47,
+   "escalation": null,
+   "factorization_source": "evaluated_at_final_state",
+   "ill_conditioned_reason": null,
+   "inconclusive_reason": null,
+   "inverse_one_norm_estimate": 563097.6769593855,
+   "inverse_one_norm_threshold": 958212.6866745737,
+   "jacobian_identity": {
+    "constants_sha256": "405e5e00d16bf8b6e044579a51215ca385e6af189bf80ca9bd08fed71379112e",
+    "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+    "phase_signature": null,
+    "state_sha256": "e946d7651341cd6b0ac55303365fcbe6b210340c5ad40e36b96bfc40067675dd"
+   },
+   "matrix": "target_after_alias_elimination",
+   "method": "splu_onenormest_rcond1",
+   "nnz": 163,
+   "one_norm": 6.197266185110687,
+   "rcond_1": 2.865603598981897e-07,
+   "scales_provenance": "SolvePlan.row_scales and column_scales",
+   "solution_error_bound_scaled": 1.7963045774504667e-08,
+   "status": "NO_RANK_LOSS_DETECTED",
+   "superlu_options": {
+    "diag_pivot_thresh": 1.0,
+    "options": {
+     "Equil": false,
+     "IterRefine": "NOREFINE",
+     "SymmetricMode": false
+    },
+    "panel_size": 10,
+    "permc_spec": "COLAMD",
+    "relax": 1
+   },
+   "thresholds": {
+    "svd_dimension_cap": 2000,
+    "svd_rank_tolerance": "n eps sigma_max",
+    "tau_ill": 1e-08
+   },
+   "u_diagonal_ratio": 0.0006695693021975144
+  },
+  "scaled_residual_inf": 3.190040824089616e-14,
+  "splits": [
+   {
+    "kind": "TP",
+    "margin": 0.0703000266256355,
+    "regime": "TWO_PHASE",
+    "streams": "S3",
+    "unit_id": "U-HEAT"
+   },
+   {
+    "kind": "TP",
+    "margin": 1.3370443389781883e-05,
+    "regime": "TWO_PHASE",
+    "streams": "S4/S5",
+    "unit_id": "U-FLASH"
+   }
+  ]
+ },
+ "refusals": [
+  {
+   "code": "PHASE_BOUNDARY",
+   "detail": "U-FLASH (S4/S5) is TWO_PHASE with margin 1.3370443389781883e-05 < tau_regime 0.0001",
+   "parameter_id": null,
+   "qualification": "Q4",
+   "scope": "request"
+  }
+ ],
+ "status": "REFUSED"
+}

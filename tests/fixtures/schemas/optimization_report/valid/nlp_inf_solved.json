@@ -1,0 +1,464 @@
+{
+ "candidate": null,
+ "claims": {
+  "global_optimality": false,
+  "local_stationarity": false,
+  "second_order": "not_assessed"
+ },
+ "distinct_local_solutions": 0,
+ "formulation": {
+  "constraints": [
+   {
+    "expression": {
+     "constant": 0.0,
+     "linear": {
+      "S1.n.A": -0.35000000000000003,
+      "S4.n.A": 0.3333333333333333
+     },
+     "quadratic": [],
+     "text": "(S4.n.A - 1.05 S1.n.A)/3"
+    },
+    "id": "recovery_A",
+    "lower": 0.0,
+    "upper": null
+   }
+  ],
+  "decisions": [
+   {
+    "id": "U-SPLIT.split_fraction",
+    "lower": 0.5,
+    "scale": 1.0,
+    "upper": 0.97
+   },
+   {
+    "id": "U-FLASH.T_spec",
+    "lower": 356.0,
+    "scale": 100.0,
+    "upper": 366.0
+   }
+  ],
+  "declared_regimes": {
+   "U-FLASH": "TWO_PHASE",
+   "U-HEAT": "LIQUID"
+  },
+  "hessian": "limited-memory",
+  "kind": "full_space",
+  "objective": {
+   "constant": 0.0,
+   "linear": {
+    "U-FLASH.Q": 1e-05,
+    "U-HEAT.Q": 1e-05
+   },
+   "quadratic": [
+    {
+     "coefficient": 1e-08,
+     "variables": [
+      "U-HEAT.Q",
+      "U-HEAT.Q"
+     ]
+    }
+   ],
+   "sense": "minimize",
+   "text": "(U-HEAT.Q + U-FLASH.Q)/1e5 + 100 (U-HEAT.Q/1e5)^2"
+  },
+  "problem_id": "NLP-INF",
+  "starts": [
+   [
+    0.6,
+    360.0
+   ],
+   [
+    0.85,
+    357.0
+   ],
+   [
+    0.55,
+    365.0
+   ]
+  ]
+ },
+ "hessian_policy": {
+  "approximation": "ipopt-limited-memory",
+  "capability": "absent",
+  "history": 6
+ },
+ "limits": {
+  "hessian": "absent (limited-memory approximation only)",
+  "max_iter": 500,
+  "max_wall_time": 120,
+  "regime_restriction": "every lifted TP split keeps the start's regime with margin >= tau_regime"
+ },
+ "model": {
+  "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769"
+ },
+ "reasons": [
+  {
+   "code": "INFEASIBLE_REPORTED",
+   "detail": "Ipopt Infeasible_Problem_Detected (2); failing V checks: V2, V3, V5",
+   "subject": "start 0"
+  },
+  {
+   "code": "INFEASIBLE_REPORTED",
+   "detail": "Ipopt Infeasible_Problem_Detected (2); failing V checks: V2, V3, V5",
+   "subject": "start 1"
+  },
+  {
+   "code": "INFEASIBLE_REPORTED",
+   "detail": "Ipopt Infeasible_Problem_Detected (2); failing V checks: V2, V3, V5",
+   "subject": "start 2"
+  }
+ ],
+ "schema_version": "optimization-report-v1",
+ "solver": {
+  "audit": {
+   "document": "docs/m03-ipopt-audit.md",
+   "gate": "G-A10",
+   "verdict": "PASS"
+  },
+  "available": true,
+  "cyipopt": "1.7.0",
+  "detail": "audited by docs/m03-ipopt-audit.md (G-A10)",
+  "environment": {
+   "openmp": [
+    {
+     "library": "libomp.so",
+     "max_threads": 1
+    }
+   ],
+   "pynumero_asl": {
+    "path": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/m03-ipopt/nlp/share/pyomo/lib/libpynumero_ASL.so",
+    "sha256": "6646bbdd51332c3a5b306604fe0f6bd572d7cec352af994c76bfe1cdf550161c"
+   },
+   "thread_variables": {
+    "MKL_NUM_THREADS": null,
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": null
+   }
+  },
+  "ipopt": "3.14.20",
+  "linear_solver": "mumps",
+  "options": {
+   "acceptable_iter": 15,
+   "acceptable_tol": 1e-08,
+   "bound_relax_factor": 0,
+   "compl_inf_tol": 1e-08,
+   "constr_viol_tol": 1e-08,
+   "dual_inf_tol": 1e-06,
+   "hessian_approximation": "limited-memory",
+   "honor_original_bounds": "yes",
+   "limited_memory_max_history": 6,
+   "linear_solver": "mumps",
+   "max_iter": 500,
+   "max_wall_time": 120,
+   "mu_strategy": "monotone",
+   "nlp_scaling_method": "user-scaling",
+   "print_level": 0,
+   "tol": 1e-10
+  },
+  "pyomo": "6.10.1"
+ },
+ "starts": [
+  {
+   "checks": [
+    {
+     "certificate_status": "VERIFIED",
+     "check": "V1",
+     "message": "",
+     "outcome": "pass",
+     "resolve_outcome": "CONVERGED"
+    },
+    {
+     "check": "V2",
+     "outcome": "fail",
+     "scaled_difference_inf": 0.8261559849451968,
+     "threshold": 1e-06,
+     "worst_variable": "S5.N"
+    },
+    {
+     "active_set": [
+      "U-FLASH.T_spec:upper"
+     ],
+     "check": "V3",
+     "outcome": "fail",
+     "outside_box": [],
+     "tau_active": 1e-06,
+     "tau_feas": 1e-08,
+     "violated": [
+      "recovery_A"
+     ]
+    },
+    {
+     "check": "V4",
+     "declared": {
+      "U-FLASH": "TWO_PHASE",
+      "U-HEAT": "LIQUID"
+     },
+     "inside_tau_regime": [],
+     "outcome": "pass",
+     "regime_changed": [],
+     "splits": [
+      {
+       "kind": "TP",
+       "margin": 0.27674853013544254,
+       "regime": "LIQUID",
+       "streams": "S3",
+       "unit_id": "U-HEAT"
+      },
+      {
+       "kind": "TP",
+       "margin": 0.1065139405120783,
+       "regime": "TWO_PHASE",
+       "streams": "S4/S5",
+       "unit_id": "U-FLASH"
+      }
+     ],
+     "tau_regime": 0.0001
+    },
+    {
+     "check": "V5",
+     "licq": true,
+     "multipliers_nonnegative": true,
+     "outcome": "fail",
+     "second_order": "not_assessed",
+     "sensitivity_status": "QUALIFIED",
+     "stationarity_residual_inf": 53.04955121463465,
+     "tau_kkt": 1e-06
+    },
+    {
+     "check": "V6",
+     "constraint_values": {
+      "recovery_A": -0.06164841846357255
+     },
+     "objective": 1.3237563657478333,
+     "outcome": "pass"
+    }
+   ],
+   "classification": "INFEASIBLE_REPORTED",
+   "evaluations": {
+    "evaluation_errors": 0,
+    "jacobian_calls": 174,
+    "property_calls": 8586,
+    "residual_calls": 606
+   },
+   "final_decisions": {
+    "U-FLASH.T_spec": 365.9999999999986,
+    "U-SPLIT.split_fraction": 0.9327249261834033
+   },
+   "ipopt_final": {
+    "complementarity": 14.930669010537827,
+    "dual_infeasibility": 5.674033475209638e-05,
+    "primal_infeasibility": 0.04479200703164077
+   },
+   "ipopt_message": "Algorithm converged to a point of local infeasibility. Problem may be infeasible.",
+   "ipopt_status": 2,
+   "iterations": 167,
+   "start": {
+    "U-FLASH.T_spec": 360.0,
+    "U-SPLIT.split_fraction": 0.6
+   },
+   "wall_time_s": 0.8907731610015617
+  },
+  {
+   "checks": [
+    {
+     "certificate_status": "VERIFIED",
+     "check": "V1",
+     "message": "",
+     "outcome": "pass",
+     "resolve_outcome": "CONVERGED"
+    },
+    {
+     "check": "V2",
+     "outcome": "fail",
+     "scaled_difference_inf": 0.8284820098130101,
+     "threshold": 1e-06,
+     "worst_variable": "S5.N"
+    },
+    {
+     "active_set": [
+      "U-FLASH.T_spec:upper"
+     ],
+     "check": "V3",
+     "outcome": "fail",
+     "outside_box": [],
+     "tau_active": 1e-06,
+     "tau_feas": 1e-08,
+     "violated": [
+      "recovery_A"
+     ]
+    },
+    {
+     "check": "V4",
+     "declared": {
+      "U-FLASH": "TWO_PHASE",
+      "U-HEAT": "LIQUID"
+     },
+     "inside_tau_regime": [],
+     "outcome": "pass",
+     "regime_changed": [],
+     "splits": [
+      {
+       "kind": "TP",
+       "margin": 0.276932792367236,
+       "regime": "LIQUID",
+       "streams": "S3",
+       "unit_id": "U-HEAT"
+      },
+      {
+       "kind": "TP",
+       "margin": 0.10624977029673888,
+       "regime": "TWO_PHASE",
+       "streams": "S4/S5",
+       "unit_id": "U-FLASH"
+      }
+     ],
+     "tau_regime": 0.0001
+    },
+    {
+     "check": "V5",
+     "licq": true,
+     "multipliers_nonnegative": true,
+     "outcome": "fail",
+     "second_order": "not_assessed",
+     "sensitivity_status": "QUALIFIED",
+     "stationarity_residual_inf": 53.8351476050096,
+     "tau_kkt": 1e-06
+    },
+    {
+     "check": "V6",
+     "constraint_values": {
+      "recovery_A": -0.06164841846357244
+     },
+     "objective": 1.3338503759239773,
+     "outcome": "pass"
+    }
+   ],
+   "classification": "INFEASIBLE_REPORTED",
+   "evaluations": {
+    "evaluation_errors": 0,
+    "jacobian_calls": 325,
+    "property_calls": 20025,
+    "residual_calls": 1575
+   },
+   "final_decisions": {
+    "U-FLASH.T_spec": 365.9999999999986,
+    "U-SPLIT.split_fraction": 0.9329138059572867
+   },
+   "ipopt_final": {
+    "complementarity": 14.748907829291632,
+    "dual_infeasibility": 5.866768175724322e-05,
+    "primal_infeasibility": 0.04424672348790182
+   },
+   "ipopt_message": "Algorithm converged to a point of local infeasibility. Problem may be infeasible.",
+   "ipopt_status": 2,
+   "iterations": 317,
+   "start": {
+    "U-FLASH.T_spec": 357.0,
+    "U-SPLIT.split_fraction": 0.85
+   },
+   "wall_time_s": 1.9109123199959868
+  },
+  {
+   "checks": [
+    {
+     "certificate_status": "VERIFIED",
+     "check": "V1",
+     "message": "",
+     "outcome": "pass",
+     "resolve_outcome": "CONVERGED"
+    },
+    {
+     "check": "V2",
+     "outcome": "fail",
+     "scaled_difference_inf": 0.8304606804024625,
+     "threshold": 1e-06,
+     "worst_variable": "S5.N"
+    },
+    {
+     "active_set": [
+      "U-FLASH.T_spec:upper"
+     ],
+     "check": "V3",
+     "outcome": "fail",
+     "outside_box": [],
+     "tau_active": 1e-06,
+     "tau_feas": 1e-08,
+     "violated": [
+      "recovery_A"
+     ]
+    },
+    {
+     "check": "V4",
+     "declared": {
+      "U-FLASH": "TWO_PHASE",
+      "U-HEAT": "LIQUID"
+     },
+     "inside_tau_regime": [],
+     "outcome": "pass",
+     "regime_changed": [],
+     "splits": [
+      {
+       "kind": "TP",
+       "margin": 0.27708882007233093,
+       "regime": "LIQUID",
+       "streams": "S3",
+       "unit_id": "U-HEAT"
+      },
+      {
+       "kind": "TP",
+       "margin": 0.10602607891922378,
+       "regime": "TWO_PHASE",
+       "streams": "S4/S5",
+       "unit_id": "U-FLASH"
+      }
+     ],
+     "tau_regime": 0.0001
+    },
+    {
+     "check": "V5",
+     "licq": true,
+     "multipliers_nonnegative": true,
+     "outcome": "fail",
+     "second_order": "not_assessed",
+     "sensitivity_status": "QUALIFIED",
+     "stationarity_residual_inf": 54.50839524497871,
+     "tau_kkt": 1e-06
+    },
+    {
+     "check": "V6",
+     "constraint_values": {
+      "recovery_A": -0.06164841846357244
+     },
+     "objective": 1.3425091301578356,
+     "outcome": "pass"
+    }
+   ],
+   "classification": "INFEASIBLE_REPORTED",
+   "evaluations": {
+    "evaluation_errors": 0,
+    "jacobian_calls": 121,
+    "property_calls": 4770,
+    "residual_calls": 288
+   },
+   "final_decisions": {
+    "U-FLASH.T_spec": 365.9999999999986,
+    "U-SPLIT.split_fraction": 0.9330736467327039
+   },
+   "ipopt_final": {
+    "complementarity": 16.408521349219814,
+    "dual_infeasibility": 6.005975247822066e-05,
+    "primal_infeasibility": 0.04922556404768707
+   },
+   "ipopt_message": "Algorithm converged to a point of local infeasibility. Problem may be infeasible.",
+   "ipopt_status": 2,
+   "iterations": 113,
+   "start": {
+    "U-FLASH.T_spec": 365.0,
+    "U-SPLIT.split_fraction": 0.55
+   },
+   "wall_time_s": 0.509775083999557
+  }
+ ],
+ "status": "INFEASIBLE_REPORTED"
+}

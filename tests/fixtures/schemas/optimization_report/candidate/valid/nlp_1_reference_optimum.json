@@ -1,0 +1,121 @@
+{
+ "active_set": [
+  {
+   "kind": "constraint",
+   "name": "recovery_A",
+   "side": "lower",
+   "slack": 1.1102230246251565e-16,
+   "target": "recovery_A"
+  }
+ ],
+ "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+ "checks": [
+  {
+   "certificate_status": "VERIFIED",
+   "check": "V1",
+   "message": "",
+   "outcome": "pass",
+   "resolve_outcome": "CONVERGED"
+  },
+  {
+   "check": "V2",
+   "outcome": "pass",
+   "scaled_difference_inf": 0.0,
+   "threshold": 1e-06,
+   "worst_variable": ""
+  },
+  {
+   "active_set": [
+    "recovery_A"
+   ],
+   "check": "V3",
+   "outcome": "pass",
+   "outside_box": [],
+   "tau_active": 1e-06,
+   "tau_feas": 1e-08,
+   "violated": []
+  },
+  {
+   "check": "V4",
+   "declared": {
+    "U-FLASH": "TWO_PHASE",
+    "U-HEAT": "LIQUID"
+   },
+   "inside_tau_regime": [],
+   "outcome": "pass",
+   "regime_changed": [],
+   "splits": [
+    {
+     "kind": "TP",
+     "margin": 0.20300891167481427,
+     "regime": "LIQUID",
+     "streams": "S3",
+     "unit_id": "U-HEAT"
+    },
+    {
+     "kind": "TP",
+     "margin": 0.081605272666194,
+     "regime": "TWO_PHASE",
+     "streams": "S4/S5",
+     "unit_id": "U-FLASH"
+    }
+   ],
+   "tau_regime": 0.0001
+  },
+  {
+   "check": "V5",
+   "licq": true,
+   "multipliers_nonnegative": true,
+   "outcome": "pass",
+   "second_order": "not_assessed",
+   "sensitivity_status": "QUALIFIED",
+   "stationarity_residual_inf": 8.205830324604201e-16,
+   "tau_kkt": 1e-06
+  },
+  {
+   "check": "V6",
+   "constraint_values": {
+    "recovery_A": 1.1102230246251565e-16
+   },
+   "objective": 0.6139625069956544,
+   "outcome": "pass"
+  }
+ ],
+ "constraint_values": {
+  "recovery_A": 1.1102230246251565e-16
+ },
+ "decisions": {
+  "U-FLASH.T_spec": 361.4996491864085,
+  "U-SPLIT.split_fraction": 0.8977866130119466
+ },
+ "kkt": {
+  "constraint_gradients_scaled": {
+   "recovery_A": [
+    -1.1102230246251565e-16,
+    1.0033869307182801
+   ]
+  },
+  "licq": true,
+  "licq_singular_values": [
+   1.0033869307182801
+  ],
+  "multipliers": {
+   "recovery_A": 3.391154878430599
+  },
+  "multipliers_nonnegative": true,
+  "objective_gradient_scaled": [
+   4.440892098500626e-16,
+   3.402640485058801
+  ],
+  "second_order": "not_assessed",
+  "stationarity_residual_inf": 8.205830324604201e-16,
+  "tau_kkt": 1e-06
+ },
+ "objective": 0.6139625069956544,
+ "slacks": {
+  "recovery_A": {
+   "lower": 1.1102230246251565e-16
+  }
+ },
+ "state_sha256": "2e7ae54309bdebe709d151c59d677c2a174b527343e908d79b27fe59ad3972df"
+}

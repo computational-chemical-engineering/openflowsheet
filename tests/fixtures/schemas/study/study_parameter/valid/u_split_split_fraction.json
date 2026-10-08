@@ -1,0 +1,8 @@
+{
+ "domain": [
+  0.0,
+  0.999
+ ],
+ "parameter_id": "U-SPLIT.split_fraction",
+ "scale": 1.0
+}

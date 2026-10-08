@@ -1,0 +1,7 @@
+{
+ "document": {
+  "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
+  "subject": "docs/m03-ipopt-audit.md"
+ },
+ "expect_error": "'code' is a required property"
+}

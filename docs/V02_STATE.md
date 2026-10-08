@@ -18,8 +18,8 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
 | M02 | Build | M01 | W21 | design + rulings R-234…237; WO-1…6 done (`2e63211`; **G10 all pass, A47 bitwise**); WO-7, 8 running; rulings round 2 R-250…252 (`e4d1b82`); then WO-9…13 |
 | M03 | Design | T08 | W24 (part) | all WOs + review fixes done (`71b3c37`); manifest `implemented` (`evidence/M03/fd16834…`) → `tested` on N1 + CI both runners (run 37846362678); merge waits for N1 |
-| M04 | Design | M02 | W23 | spec done (`6e48ffb`: A01–A35, ADR 0036/0037, R-240…249, plan it.1 = 632 experiments ≈ 95 min); WO-1, 2, 3, 10 running; WO-4…9 need M02's WO-4/6/7/11; WO-11 real run needs M02 WO-5 |
-| M05 | Design | M03, M04 | W24 | not started |
+| M04 | Design | M02 | W23 | spec done; WO-1, 2, 3, 10 done (`7613b5e`, gate green); WO-4…9 after `wp/M02` (WO-7/8) is merged into `wp/M04`; WO-11 real run needs M02 WO-5 env (built) + Frank's N1 budget |
+| M05 | Design | M03, M04 | W24 | design done (`43651ce`: note, ADR 0038–0040, R-260…273; TRF composes per probe); WO-1…3 next (after `wp/M03` is merged into `wp/M05`); WO-4+ need M02 + M04 merged |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
@@ -70,6 +70,18 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   local compute; N2 width limits 0.0025 in conversion, 1.5 K; N3 gradient limit 0.25; N6 M04 counts as `tested`
   whatever the real verdict, and M05 uses the parent model if the surrogate is not promotable.
 
+- **`0.2.0a1` (alpha gate, ADR 0028; defaults set):** N3 claim set = V11–V20 re-judged + W21 + W22, W23–W27 not
+  claimed; carry the V14(b) FAIL acceptance into this release (dated after the alpha verdict); **carry V17 across the
+  surface changes R-192/R-234** as R-133 did (alternative: a new agent campaign, ≈USD 10); accept M02 N1 "not a sandbox"
+  for a published release; W21(f) read as adapter-reproduces-standalone + group tests + error travels + published
+  validation cited (the stronger reading would BLOCK W21 on the 4TU data statement); publish via release.yml with your
+  approval, marked pre-release. Preferences on defaults: cut `C_α` before M03 merges; freeze distribution paths from
+  `C_α` to dispatch.
+
+- **M05 (defaults set):** N-F1 objective = maximize liquid NH₃ product, reactor inlet T the only decision (alt: an
+  economic objective with your prices, making purge a second decision); N-F2 decision tolerance 0.5 K; N-F3 real-reactor
+  budget 400 experiments / 4 h; N-F6 decision box [643.15, 733.15] K.
+
 Otherwise nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
 `origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
 F5 education mode deferred.
@@ -81,9 +93,8 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 merge main + WO-7, 8 (+9): C1 binding, PR units | `wp/M02` (`m02`) |
-| `recon` | M05 recon digest | read-only |
-| `opus-engineer` | M04 WO-1, 2, 3, 10 (sampler, conformal, fit) | `wp/M04` (`m04`) |
-| `specifier` | v0.2 alpha release gate (`0.2.0a1`) | `wp/V02-alpha-gate` (`alpha-gate`) |
+| `opus-engineer` | merge main into `wp/M03` (merge-ready; M05 base) | `wp/M03` (`m03`) |
+| `opus-engineer` | alpha gate WO-1, 2, 3, 4, 7 (`v0_2_gate.py`, release.yml pre-releases) | `wp/V02-alpha-gate` (`alpha-gate`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);

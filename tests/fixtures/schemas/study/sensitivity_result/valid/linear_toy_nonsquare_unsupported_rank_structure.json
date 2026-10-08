@@ -1,0 +1,143 @@
+{
+ "adjoint": {
+  "scaled": [
+   [
+    null,
+    null
+   ]
+  ],
+  "unscaled": [
+   [
+    null,
+    null
+   ]
+  ]
+ },
+ "consistency": null,
+ "derivative_provenance": "implicit-exact",
+ "forward": {
+  "scaled": [
+   [
+    null,
+    null
+   ]
+  ],
+  "unscaled": [
+   [
+    null,
+    null
+   ]
+  ]
+ },
+ "identity": {
+  "constants_sha256": "b8e9276ea85d7784882a17200ab73ca2a1568439114746bb60a33a64affc580e",
+  "model_version": "M03-toy-linear@c2c3349d10f9ed40b1feb8f5ccc6ef68590dfd9d3b367fc8eda14bee34948c42",
+  "phase_signature": null,
+  "state_sha256": "c6851b4e3b0d89b2de736074fa8ec03d9c705b3c688370fead97c74d38959ecf"
+ },
+ "linear_solves": [],
+ "mode": "both",
+ "outputs": [
+  {
+   "coefficients": {
+    "x1": 1.0,
+    "x2": 10.0
+   },
+   "output_id": "C",
+   "scale": 1.0
+  }
+ ],
+ "parameters": [
+  {
+   "alias_residual": null,
+   "domain": [
+    -10.0,
+    10.0
+   ],
+   "parameter_id": "p1",
+   "scale": 1.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": null,
+   "domain": [
+    -10.0,
+    10.0
+   ],
+   "parameter_id": "p2",
+   "scale": 1.0,
+   "status": "REFUSED"
+  }
+ ],
+ "policy_id": "M03-sensitivity-v1",
+ "qualification": {
+  "alias_residuals": {
+   "p1": null,
+   "p2": null
+  },
+  "outcomes": [
+   {
+    "outcome": "pass",
+    "qualification": "Q0"
+   },
+   {
+    "entries_compared": 6,
+    "outcome": "pass",
+    "qualification": "Q0'"
+   },
+   {
+    "outcome": "pass",
+    "qualification": "Q0''"
+   },
+   {
+    "outcome": "pass",
+    "qualification": "Q1",
+    "scaled_residual_inf": 0.0,
+    "threshold": 1e-10
+   },
+   {
+    "outcome": "not_applicable",
+    "qualification": "Q1'",
+    "reason": "no study-level certificate required"
+   },
+   {
+    "outcome": "fail",
+    "qualification": "Q2",
+    "reduced_shape": "1x2"
+   },
+   {
+    "outcome": "not_evaluated",
+    "qualification": "Q2'",
+    "reason": "no_qualified_target"
+   },
+   {
+    "outcome": "not_evaluated",
+    "qualification": "Q3",
+    "reason": "no_qualified_target"
+   },
+   {
+    "outcome": "not_applicable",
+    "qualification": "Q4",
+    "reason": "no TP-type lifted split"
+   },
+   {
+    "outcome": "not_applicable",
+    "qualification": "Q4'",
+    "reason": "no lifted split"
+   }
+  ],
+  "regularity": null,
+  "scaled_residual_inf": 0.0,
+  "splits": []
+ },
+ "refusals": [
+  {
+   "code": "UNSUPPORTED_RANK_STRUCTURE",
+   "detail": "the reduced system is 1x2, not square",
+   "parameter_id": null,
+   "qualification": "Q2",
+   "scope": "request"
+  }
+ ],
+ "status": "REFUSED"
+}

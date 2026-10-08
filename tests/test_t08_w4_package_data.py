@@ -8,11 +8,16 @@ repository's bytes, the package-data patterns cover exactly what is packaged, an
 back to walking up from `__file__` to the repository. The built half — the sdist's and the wheel's
 bytes equal the commit's, file by file — is T08.A43's `scripts/t08_dist.py`, and an installed wheel
 solving outside the tree is T08.A44's CI job.
+
+The schema list is `schemas/registry.json` (R-213; M03 spec §10, A48), not a number here: every
+count below is derived from it, so schemas added on separate branches merge as separate lines of
+the registry instead of as one literal two branches each bump.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import sys
 import tomllib
@@ -28,6 +33,15 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import t08_dist  # noqa: E402
 
 DATA = REPO_ROOT / "src" / "openflowsheet" / "_data"
+#: R-213: the registered schema list — sorted file names, one per line, not packaged.
+REGISTRY = REPO_ROOT / "schemas" / "registry.json"
+
+
+def _registry() -> list[str]:
+    names: list[str] = json.loads(REGISTRY.read_text(encoding="utf-8"))
+    return names
+
+
 #: Which files below each packaged directory travel: the published schemas only (not the
 #: directory's README or unit table), but every file of the web shell (M06, gate G10).
 DIRECTORY_FILES = {"schemas": "*.schema.json", "web": "**/*"}
@@ -74,7 +88,8 @@ def test_the_web_shell_holds_no_link_and_nothing_outside_the_packaged_globs() ->
 
 def test_every_packaged_file_reads_the_repository_bytes() -> None:
     expected = _repository_files()
-    assert sum(1 for r in expected if r.startswith("schemas/")) == 32
+    # Every registered schema, and every packaged path that is a file rather than a directory.
+    assert sum(1 for r in expected if r.startswith("schemas/")) == len(_registry())
     assert sum(1 for r in expected if r in PACKAGED) == 4
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
@@ -90,10 +105,51 @@ def test_the_published_schemas_are_the_repository_schemas_by_id() -> None:
         ).hexdigest()
         for document in published_schemas().values()
     }
-    assert len(by_id) == 32
+    assert len(by_id) == len(_registry())
     for schema_id, digest in by_id.items():
         name = schema_id.rsplit("/", 1)[1]
         assert hashlib.sha256(packaged(f"schemas/{name}").read_bytes()).hexdigest() == digest
+
+
+def test_a48_the_registry_is_sorted_and_names_each_schema_once() -> None:
+    names = _registry()
+    assert names == sorted(names)
+    assert len(set(names)) == len(names), sorted({n for n in names if names.count(n) > 1})
+    assert all(name.endswith(".schema.json") for name in names)
+    # The registry's own text: one name per line, so a branch's addition is its own line.
+    lines = REGISTRY.read_text(encoding="utf-8").splitlines()
+    assert lines == ["[", *(f'  "{name}",' for name in names[:-1]), f'  "{names[-1]}"', "]"]
+
+
+def test_a48_the_registry_is_the_schema_directory() -> None:
+    on_disk = {path.name for path in (REPO_ROOT / "schemas").glob("*.schema.json")}
+    registered = set(_registry())
+    assert sorted(on_disk - registered) == [], "schema files without a registry line"
+    assert sorted(registered - on_disk) == [], "registry lines without a schema file"
+
+
+def test_a48_the_registry_is_the_published_and_the_packaged_schemas() -> None:
+    registered = set(_registry())
+    published = {schema_id.rsplit("/", 1)[1] for schema_id in published_schemas()}
+    assert sorted(published ^ registered) == []
+    packaged_names = {
+        entry.name for entry in packaged("schemas").iterdir() if entry.name.endswith(".schema.json")
+    }
+    assert sorted(packaged_names ^ registered) == []
+    # The registry itself is not packaged (like `units.json`): the package-data patterns, which
+    # the next test holds to `_repository_files()`, carry `*.schema.json` only.
+    assert f"schemas/{REGISTRY.name}" not in _repository_files()
+
+
+def test_a48_the_registry_carries_m03s_two_schemas() -> None:
+    assert {"study.schema.json", "optimization-report.schema.json"} <= set(_registry())
+
+
+def test_a48_no_literal_schema_count_is_left_in_this_file() -> None:
+    """R-213: a literal count is what two branches each bump and merge to a wrong number."""
+    source = Path(__file__).read_text(encoding="utf-8")
+    assert re.search(r"len\([^)]*\)\s*==\s*\d", source) is None
+    assert re.search(r"==\s*\d+\s*\+\s*\d", source) is None
 
 
 def test_the_package_data_patterns_cover_exactly_what_is_packaged() -> None:

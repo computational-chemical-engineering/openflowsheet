@@ -411,3 +411,41 @@ Grep, don't read whole. Newest at the bottom.
   amendment before study/optimization records become replay-comparable, i.e. before M05/K05 bundles). ADR 0031 →
   Accepted on green CI + manifest tested; ADR 0032 also needs N1.
 - `recon` M05 launched.
+- M05 recon done (digest inline; facts pasted into `docs/briefs/M05-design.md`, `1ecf576`): Pyomo 6.10.1
+  `contrib.trustregion` present in the audited env (TrustRegionSolver; ExternalFunction → holder variables; default
+  subproblem solver = the ASL `ipopt` executable, which is in the env but NOT in the [A10] inventory); Python-callback
+  ExternalFunction needs no ASL library; no M05 code/ADR anywhere; C1 decisions per ADR 0022 D6 = reactor inlet T
+  (alternative purge fraction); no registered objective.
+- `architect` M05 launched on `wp/M05` (ADR 0038+, R-260+), with a throwaway TRF probe allowed in the audited env.
+- M04 WO-1, 2, 3, 10 done on `wp/M04` (`c757f13`, `cebe3f6`, `af4801a`, `7613b5e`; check.sh 7243 passed):
+  `studies/surrogate/{plan,conformal,quadratic}.py` (the `studies` layer created byte-identically to wp/M03's).
+  A01–A15 + A34 pass (closest: A12 R_T 8.1e-17 vs 1e-15, 12×). Choices isolated per commit (input map in plan.py;
+  injected domain guard; `plan_not_registered` for it≥2; None is the only +∞ score). For the M04 amendment round:
+  A11's "rank-deficient by two columns" is eight columns; whether it≥2 training lists earlier draws as requests.
+  WO-4+ need M02's runner/unit → merge `wp/M02` into `wp/M04` after M02's WO-7/8 gate is green.
+- M03 CI 37846362678: check green on both architectures; default-install failed on the G6 isolation walk importing
+  bindings.http (uvicorn absent). Fixed (`8996973`: only a server-extra ModuleNotFoundError is tolerated); re-run
+  37848933412.
+- `docs/progress.md` "Start here" rows brought up to date.
+- v0.2 alpha gate specified on `wp/V02-alpha-gate` (`e3703bb`): `docs/derivations/V02-alpha-release-spec.md` (12 gate
+  rows, A00–A64), ADR 0028 (v0.2 pre-release policy), R-238/239, generator `v02a_reference.py` (64 claims), evidence
+  id M07a. Claims at `C_α`: V11–V20 re-judged by T08 §4 unchanged + W21 + W22; W23–W27 "not claimed"; web shell ships
+  unclaimed. Moved records MR-1…12 each with a counterpart at least as strict (surface digest chain R-234→R-192→R-133→
+  v17-c2; V17 BLOCKED unless carried; alpha envelope pinned with T08's 58 limitations harvested; CHANGELOG `## v0.2.0a1`
+  names L42, L-WEB-1…4). Findings: release.yml and changelog_section.py reject every pre-release today; B50's content
+  test will break at M02's merge.
+- `opus-engineer` alpha gate WO-1, 2, 3, 4, 7 launched on `wp/V02-alpha-gate` (no dispatch/tag/publish).
+- M05 design done on `wp/M05` (`d7d6dbf`, `43651ce`): `docs/design/M05-trust-region.md`, ADR 0038 (TRF adapter: Pyomo
+  6.10.1 contrib.trustregion unmodified, pinned by version + module hashes), 0039 (C1 study: one decision, reactor
+  inlet T ∈ [643.15, 733.15] K, purge 0.02, maximize liquid NH₃), 0040 (fallback, inactive; triggers T1 N1 denied, T2
+  structural failure, T3 audit + shim both fail), R-260…R-273. Probe (scratchpad): TRF composes (Pyomo example 1
+  bitwise via a property-block wrapper); every ExternalFunction needs a gradient; TRF clones the model (identity hook
+  needed for the ledger); exceptions abort TRF, NaN is silently "optimal" (callbacks raise typed refusals); subproblems
+  need the `ipopt` executable (+ `libipoptamplinterface`, `libgomp` — not in M03's inventory). Glass box = canonical
+  row builders over a Pyomo algebra + property outputs as Python-callback ExternalFunctions; reactor in full space
+  ((X̂, ΔT̂) linked to an EF of 7 inlet vars, FD step 2⁻¹⁴, 7 concurrent workers); eligible example TR-E2 = C1 loop with
+  a test-only smooth synthetic reactor; real reactor "qualified" only. Budgets 400 cold / 4 h per study.
+- M05 Needs Frank (defaults proceed): N-F1 objective = liquid NH₃ product (alt: economic with his prices); N-F2 decision
+  tolerance 0.5 K; N-F3 real-reactor budget 400 experiments / 4 h; N-F4 proceed in the audited env, merge with `nlp`
+  undeclared if N1 is pending; N-F5 surrogate only if promoted; N-F6 decision box [643.15, 733.15] K; N-F7 no job op.
+- `opus-engineer` merging main into `wp/M03` (merge-ready; base for M05 WO-1…3).

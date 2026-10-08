@@ -47,6 +47,14 @@ server = [
     "starlette==1.7.0",
     "uvicorn==0.54.0",
 ]
+# M03 ADR 0032 D5: the optional general-NLP bridge. Installable only into the audited environment
+# of docs/m03-ipopt-audit.md (scripts/build-m03-ipopt-env.sh), which provides cyipopt 1.7.0 from
+# conda-forge and libpynumero_ASL; PyPI has no cyipopt wheel for CPython 3.13.
+nlp = [
+    "pyomo==6.10.1",
+    "cyipopt==1.7.0",
+    "packaging==26.3",  # Pyomo detects numpy through packaging.version and does not declare it
+]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -111,11 +119,23 @@ warn_unreachable = true
 module = ["scipy.*"]
 ignore_missing_imports = true
 
+# M03 WO-8: Pyomo and cyipopt exist only in the audited NLP environment (docs/m03-ipopt-audit.md),
+# never in the default install the gate type-checks, and ship no stubs. This narrows only the
+# missing-import error for those two packages, which only `openflowsheet.studies.nlp.greybox`
+# imports; every other strict check still applies to that module.
+[[tool.mypy.overrides]]
+module = ["pyomo.*", "cyipopt.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # The repository root on sys.path so `benchmarks.syn001.oracle` imports without installing it;
 # the oracle is deliberately not part of the `openflowsheet` distribution.
 pythonpath = ["."]
+# M03 WO-8 (ADR 0032 C2): tests marked `nlp` need the audited NLP environment and are deselected
+# (not skipped) here; scripts/m03_nlp_check.sh runs them there with `-m nlp`, which overrides this.
+addopts = "-m 'not nlp'"
 markers = [
+    "nlp: needs the audited Ipopt environment of docs/m03-ipopt-audit.md (scripts/m03_nlp_check.sh)",
     "browser: drives a headless Chromium (M06 design note §8 A6); skipped without one, failed without one when OPENFLOWSHEET_REQUIRE_BROWSER=1",
 ]
