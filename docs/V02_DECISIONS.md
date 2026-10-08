@@ -113,3 +113,4 @@ Grep, don't read whole. Newest at the bottom.
   - R numbers: R-192+ are the session's (M03 holds R-180…R-191, WO-15 R-176…R-179).
 - `wp/M06-contract` merged into `wp/M06-build`; `js/routes.js` regenerated (19 routes).
 - `opus-engineer` M03 WO-6 (Ipopt [A10] audit) launched on `wp/M03-audit` (from `17cec07`).
+- check.sh on merged `wp/M06-build` (routes regenerated): 7175 passed, 31 skipped, 1 xfailed (strict 17-op equality, until WO-9/10); Node pass; PASSED.
