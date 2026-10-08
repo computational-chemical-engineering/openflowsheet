@@ -218,3 +218,10 @@ Grep, don't read whole. Newest at the bottom.
   semantics that M04/M05/M07 inherit. Alternative: build-lane design by opus-engineer. Reversible by: none needed
   (the note is input to the build lane either way).
 - `architect` M02 launched on `wp/M02` (from `wp/M01` `13bcef7`; ADR 0033+, R-220+), concurrent with M01 Amendment 1.
+- M03 Amendment 1 done on `wp/M03` (`98485d5`, `2660608`, `8154baa`; check.sh 6991 passed; generator 264 claims; JSON
+  sha `81d1d79a…`): A12 1e-13 → 1e-11 (below the a-priori 4.4e-12 bound before); LinearSolveFailedError → typed
+  `LINEAR_SOLVE_FAILED` at new step Q2′; UNSUPPORTED_RANK_STRUCTURE added to ADR 0031 D3; FIT-U's undetermined r is
+  arbitrary (registered values shown r-invariant; null projection a range [0.85960, 0.99761]); status precedence
+  KKT_POINT_VERIFIED > NOT_VERIFIED > INFEASIBLE_REPORTED > SOLVER_FAILED; `schemas/registry.json` replaces the
+  hard-coded schema count (A48). R-210…R-215. Q-F1, Q-F3 closed.
+- `opus-engineer` M03 WO-2a, 5a, 7a, 9 launched on `wp/M03`.

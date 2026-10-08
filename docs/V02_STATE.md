@@ -17,7 +17,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | spec done (`7f267ed`); WO-1…6 done (`13bcef7`, gate green; A37 IDAES ≥140× inside); Amendment 1 running; then one design-lane amendment round (A26, A09, A12, added refusals; `V02_DECISIONS.md`), `reviewer`, WO-7 manifest → `tested` → M02 |
 | M02 | Build | M01 | W21 | design started 2026-10-08 (`architect` on `wp/M02`, ADR 0033+, R-220+); build after M01 `tested` |
-| M03 | Design | T08 | W24 (part) | spec (`17cec07`); WO-0…7 done except WO-8 (`5cf4160`, gate green); Amendment 1 running; then WO-9 schemas, WO-8 (after N1), WO-10 manifest, `reviewer` |
+| M03 | Design | T08 | W24 (part) | spec + Amendment 1 (`8154baa`, R-210…215); WO-0…7 done; WO-2a/5a/7a/9 running; WO-8 waits for N1; then WO-10 manifest, `reviewer` |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
 | M06 | Build | T08 | W26, W27 | design + ADR 0030 / Amendment 3 (approved); WO-1…10, 14…16 done and merged on `wp/M06-build` (`6fc69ef`); WO-11, 12 running on `wp/M06-finish`; then WO-13 (security/browser, docs, evidence + `reviewer`); WO-17 (canaries + campaign) at M07 |
@@ -68,7 +68,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `specifier` | M01 Amendment 1 (A26, A09, A12, refusals) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `opus-engineer` | M06 WO-11, 12 security/browser gates, docs | `wp/M06-finish` (`m06-finish`) |
-| `specifier` | M03 Amendment 1 | `wp/M03` (`m03`) |
+| `opus-engineer` | M03 WO-2a, 5a, 7a, 9 (post-amendment, schemas) | `wp/M03` (`m03`) |
 | `architect` | M02 design note (brief `docs/briefs/M02-design.md`) | `wp/M02` (`m02`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
