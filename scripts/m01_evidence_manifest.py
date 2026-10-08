@@ -839,8 +839,10 @@ def _frozen_diff(base: str, commit: str) -> dict[str, Any]:
         "ordered_by_the_spec": [p for p in changed if p in ORDERED_EDITS],
         "unordered_edits": [p for p in changed if p not in ORDERED_EDITS],
         "note": "support_envelope.yaml: the property_model axis lists pr-c1-v1 (T08.A20 holds the "
-        "axes to the code) and L40's text admits M01's five vetted records (spec §3.5, R-158); "
-        "no registered value moves",
+        "axes to the code) and names it a provider no model binds yet (M01 review F1); L40's text "
+        "admits M01's five vetted records (spec §3.5, R-158); L42 states pr-c1-v1's own "
+        "components, domain and validation (review F1); the harvest classifies M01's manifests' "
+        "items (T08.A21's completeness rule). No registered value moves",
     }
 
 
