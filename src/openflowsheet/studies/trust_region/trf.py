@@ -24,6 +24,11 @@ goes to `solve()`, never to the constructor (probe P8). The outcome is design no
 - otherwise `trf_state.classify_exit`: `TRF_CONVERGED`, `TRF_FEASIBLE_STALLED` or
   `TRF_MAX_ITERATIONS`, the three outcomes that return TRF's clone.
 
+For those three, the projection's omitted rows are evaluated at the returned state and recorded as
+`TrfRun.omitted_rows_final` (R-274's fact 4). That is the hook P2 reads: P2 (stage B's parent
+checks, design note §7.4) is not built yet, and a failed check there is `PROJECTION_DISAGREES`;
+the run's own outcome does not change.
+
 `stdout` capture is process-global, so there is **one TRF run per process**: a second concurrent
 call raises rather than interleaving.
 """
@@ -45,7 +50,7 @@ from pyomo.solvers.plugins.solvers.IPOPT import IPOPT
 
 from openflowsheet.canonical import document_sha256
 from openflowsheet.studies.trust_region.holders import ColdBudget, RunState, TruthRefused
-from openflowsheet.studies.trust_region.projection import Projection
+from openflowsheet.studies.trust_region.projection import OmittedRowsCheck, Projection
 from openflowsheet.studies.trust_region.trf_state import (
     RETURNS_MODEL,
     TRF_PACKAGE,
@@ -120,6 +125,8 @@ class TrfRun:
     refusal: TruthRefused | None
     error: str | None
     wall_s: float
+    #: R-274's fact 4 at the returned state, for the outcomes in `RETURNS_MODEL` only.
+    omitted_rows_final: OmittedRowsCheck | None = None
 
     def source_map(self, projection: Projection) -> dict[str, Any]:
         """The projection's source map with this run's `trf` part filled."""
@@ -251,6 +258,7 @@ def _run(
             objective=sign * accepted.objective,
             theta=accepted.theta,
         )
+    omitted_rows_final = projection.omitted_rows_at(model) if model is not None else None
     return TrfRun(
         run_id=run_id,
         outcome=outcome,
@@ -270,6 +278,7 @@ def _run(
         refusal=refusal,
         error=error_text,
         wall_s=wall,
+        omitted_rows_final=omitted_rows_final,
     )
 
 

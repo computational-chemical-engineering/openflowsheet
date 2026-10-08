@@ -144,3 +144,110 @@ def nlp1_recovery_build(
 ) -> Expr:
     """M03 spec §8.1: g = (S4.n.A − 0.75 · S1.n.A)/3 ≥ 0."""
     return (v["S4.n.A"] - NLP1_RECOVERY * v["S1.n.A"]) / 3.0
+
+
+# -- AT: a pressure alias toy (R-274) -------------------------------------------------------------
+
+#: Three pressure rows over two pressures — `Pa = p_spec`, `Pb = Pa`, `Pb = p_spec2` — of which the
+#: third is implied by the first two whenever p_spec2 = p_spec; `T = 300 z`; and `Q = y(T)` through
+#: a block, `y = T²/1000`. The decision is `z`, and optionally `p_spec`. The objective
+#: (Q − 96.1)²/100 has its minimum at T = 310 K, z = 31/30.
+AT_LABEL: Final = "M05-AT-pressure-alias-toy"
+AT_START: Final[Mapping[str, float]] = {"Pa": 1.0e5, "Pb": 1.0e5, "T": 300.0, "Q": 90.0}
+AT_PARAMETERS: Final[Mapping[str, float]] = {"p_spec": 1.0e5, "p_spec2": 1.0e5, "z": 1.0}
+AT_DOMAIN: Final[Mapping[str, tuple[float, float]]] = {
+    "pressure": (5.0e4, 2.0e5),
+    "temperature": (200.0, 1000.0),
+}
+
+
+class SquareBlock:
+    """`y = T²/1000` as a `PropertyBlock`."""
+
+    block_id = "sq"
+    input_ids = ("T",)
+    output_ids = ("y",)
+
+    def jacobian_pattern(self) -> tuple[tuple[int, int], ...]:
+        return ((0, 0),)
+
+    def values(self, inputs: Sequence[float]) -> Sequence[float]:
+        (t,) = inputs
+        return [t * t / 1000.0]
+
+    def jacobian(self, inputs: Sequence[float]) -> Sequence[tuple[int, int, float]]:
+        (t,) = inputs
+        return [(0, 0, 2.0 * t / 1000.0)]
+
+
+def _at_r1(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
+    return v["Pa"] - p["p_spec"]
+
+
+def _at_r2(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
+    return v["Pb"] - v["Pa"]
+
+
+def _at_r3(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
+    return v["Pb"] - p["p_spec2"]
+
+
+def _at_r4(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
+    return v["T"] - 300.0 * p["z"]
+
+
+def _at_r5(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
+    return v["Q"] - b["sq.y"]
+
+
+def at_objective_build(
+    v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], algebra: Any
+) -> Expr:
+    return (v["Q"] - 96.1) ** 2 / 100.0
+
+
+def at_spec(**parameters: float) -> ProblemSpec:
+    return ProblemSpec(
+        label=AT_LABEL,
+        variable_ids=("Pa", "Pb", "T", "Q"),
+        equations=(
+            EquationSpec("r1", _at_r1, "algebraic", "AT r1"),
+            EquationSpec("r2", _at_r2, "algebraic", "AT r2"),
+            EquationSpec("r3", _at_r3, "algebraic", "AT r3"),
+            EquationSpec("r4", _at_r4, "algebraic", "AT r4"),
+            EquationSpec("r5", _at_r5, "algebraic", "AT r5"),
+        ),
+        parameter_ids=("p_spec", "p_spec2", "z"),
+        parameters={**AT_PARAMETERS, **parameters},
+        blocks=(SquareBlock(),),
+        block_inputs={"sq": ("T",)},
+        variable_kinds={"Pa": "pressure", "Pb": "pressure", "T": "temperature", "Q": "heat_rate"},
+        row_kinds={
+            "r1": "pressure",
+            "r2": "pressure",
+            "r3": "pressure",
+            "r4": "temperature",
+            "r5": "heat_rate",
+        },
+    )
+
+
+def at_projection(
+    *,
+    start: Mapping[str, float] = AT_START,
+    decisions: Mapping[str, tuple[float, float]] | None = None,
+    domain: Mapping[str, tuple[float, float]] = AT_DOMAIN,
+    omitted_rows: Sequence[str] | None = None,
+    **parameters: float,
+) -> Any:
+    from openflowsheet.studies.trust_region.projection import DecisionSpec, ObjectiveSpec, project
+
+    boxes = {"z": (0.5, 1.5)} if decisions is None else decisions
+    return project(
+        at_spec(**parameters),
+        start,
+        decisions=[DecisionSpec(name, *box) for name, box in boxes.items()],
+        objective=ObjectiveSpec("at-objective", "minimize", at_objective_build, 1.0),
+        domain=domain,
+        omitted_rows=omitted_rows,
+    )

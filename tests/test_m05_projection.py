@@ -289,7 +289,7 @@ def test_syn001_is_projected_in_k03s_scales() -> None:
     """The suffixes and the source map carry K03's `Scaling.from_spec`, and nothing else."""
     from openflowsheet.numerics.scaling import SCALE_PROVENANCE, Scaling
 
-    projection, _ = syn001_projection("P1", omitted_rows=syn001_alias_rows("P1"))
+    projection, _ = syn001_projection("P1")
     spec = projection.spec
     k03 = Scaling.from_spec(spec)
     assert projection.scaling == k03
@@ -446,47 +446,96 @@ def syn001_projection(state: str, **options: Any) -> tuple[Any, Mapping[str, flo
     return projection, result.final_state
 
 
-def test_syn001_with_every_row_is_refused_for_its_redundant_pressure_rows() -> None:
-    """SYN-001's 49 rows over 47 variables include two pressure alias rows that the retained rows
-    imply (the orchestrator's certified alias elimination, `orchestrator/rank.py`; M03's
-    `FullSpaceNlp` keeps only the retained rows). Projected with every row, TRF's DOF count is
-    5 − 2 = 3, not the 5 decisions, and the projection says so, typed, before any run."""
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
-
-    with pytest.raises(ProjectionRefusedError) as refused:
-        syn001_projection("P1")
-    assert refused.value.reason == "PROJECTION_DOF(3)"
-
-
-#: The reason recorded for SYN-001's omitted rows.
-ALIAS_REASON = "pressure alias row implied by the retained rows (orchestrator alias elimination)"
-
-
-def syn001_alias_rows(state: str) -> dict[str, str]:
-    """The rows the orchestrator's certified alias elimination removes at `state` (M03's
-    `FullSpaceNlp` leaves exactly these out of its equality constraints)."""
+def syn001_alias_rows(state: str) -> Any:
+    """The rows the orchestrator's tear partition eliminates at `state` — M03's `FullSpaceNlp`
+    leaves exactly these out of its equality constraints — as its `EliminatedRow`s."""
     from m03_support import solved
 
     from openflowsheet.orchestrator.tear import Syn001TearProblem
 
     sheet, _ = solved(state)
-    eliminated = Syn001TearProblem(sheet).partition.elimination.eliminated
-    return {row.row_id: ALIAS_REASON for row in eliminated}
+    return Syn001TearProblem(sheet).partition.elimination.eliminated
+
+
+SYN001_ALIAS_ROWS = ["U-FLASH:FLASH-P:inlet", "U-SPLIT:SPLIT-P:recycle"]
 
 
 @pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
-def test_syn001_without_its_alias_rows_projects_with_dof_equal_to_the_decisions(state: str) -> None:
-    """G4 (a) and (e) at M03's registered states: the source map is a bijection, the two alias
-    rows are recorded as omitted with their reason, TRF's DOF count is the 5 decisions, and no
-    projected expression has a nonsmooth node."""
-    omitted = syn001_alias_rows(state)
-    assert sorted(omitted) == ["U-FLASH:FLASH-P:inlet", "U-SPLIT:SPLIT-P:recycle"]
-    projection, x0 = syn001_projection(state, omitted_rows=omitted)
+def test_syn001_s_alias_rows_are_computed_not_supplied(state: str) -> None:
+    """R-274: with no `omitted_rows`, the projection omits exactly the rows M03's elimination does
+    — SYN-001's two pressure alias rows, on the same retained paths — and records their four
+    facts' first three; TRF's DOF count is then the 5 decisions."""
+    from openflowsheet.studies.trust_region.projection import OMITTED_ROW_REASON
+
+    projection, x0 = syn001_projection(state)
+    m03 = syn001_alias_rows(state)
+    assert sorted(row.row_id for row in m03) == SYN001_ALIAS_ROWS
+    assert [row.equation_id for row in projection.omitted_rows] == SYN001_ALIAS_ROWS
+    assert [row.elimination.equals for row in projection.omitted_rows] == [
+        row.equals for row in sorted(m03, key=lambda row: row.row_id)
+    ]
+    source = projection.source_map
+    assert [row["equation_id"] for row in source["omitted_rows"]] == SYN001_ALIAS_ROWS
+    for row in source["omitted_rows"]:
+        assert row["reason"] == OMITTED_ROW_REASON
+        # The path runs over projected rows only, each with a sign.
+        assert row["retained_path"]
+        assert all(
+            name in projection.row_ids and sign in (-1, 1) for name, sign in row["retained_path"]
+        )
+        assert abs(row["residual_x0"]) <= row["pressure_tolerance"] == 1e-2
+        tangent = row["tangent_residuals"]
+        assert list(tangent) == [d.parameter_id for d in projection.decisions]
+        assert all(abs(value) <= row["tau_alias"] == 1e-8 for value in tangent.values())
+    assert len(source["rows"]) == len(projection.spec.equations) - 2
+    assert not set(SYN001_ALIAS_ROWS) & set(projection.row_ids)
+    assert len(projection.source_map_sha256) == 64  # the certificate is canonical JSON
+    # The fourth fact, at the start: the omitted rows hold there.
+    assert projection.omitted_rows_at(projection.model).status == "pass"
+
+
+def test_syn001_a_supplied_set_equal_to_the_certified_one_is_accepted() -> None:
+    computed, _ = syn001_projection("P1")
+    supplied, _ = syn001_projection("P1", omitted_rows=list(reversed(SYN001_ALIAS_ROWS)))
+    assert supplied.source_map == computed.source_map
+
+
+@pytest.mark.parametrize(
+    ("supplied", "subject"),
+    [
+        ([], "U-FLASH:FLASH-P:inlet"),
+        (["U-SPLIT:SPLIT-P:recycle"], "U-FLASH:FLASH-P:inlet"),
+        (["U-FLASH:FLASH-P:inlet"], "U-SPLIT:SPLIT-P:recycle"),
+    ],
+)
+def test_syn001_a_supplied_set_other_than_the_certified_one_is_refused(
+    supplied: list[str], subject: str
+) -> None:
+    """A caller can neither keep a certified alias row nor drop another row (R-274)."""
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    with pytest.raises(ProjectionRefusedError) as refused:
+        syn001_projection("P1", omitted_rows=supplied)
+    assert refused.value.reason == f"PROJECTION_OMITTED_ROW_UNCERTIFIED({subject})"
+
+
+def test_syn001_a_supplied_row_the_elimination_keeps_is_refused() -> None:
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    projection, _ = syn001_projection("P1")
+    kept = projection.row_ids[0]
+    with pytest.raises(ProjectionRefusedError) as refused:
+        syn001_projection("P1", omitted_rows=[*SYN001_ALIAS_ROWS, kept])
+    assert refused.value.reason == f"PROJECTION_OMITTED_ROW_UNCERTIFIED({kept})"
+
+
+@pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
+def test_syn001_projects_with_dof_equal_to_the_decisions(state: str) -> None:
+    """G4 (a) and (e) at M03's registered states: the source map is a bijection, TRF's DOF count
+    is the 5 decisions, and no projected expression has a nonsmooth node."""
+    projection, x0 = syn001_projection(state)
     structure(projection)
     source = projection.source_map
-    assert [row["equation_id"] for row in source["omitted_rows"]] == sorted(omitted)
-    assert all(row["reason"] == ALIAS_REASON for row in source["omitted_rows"])
-    assert len(source["rows"]) == len(projection.spec.equations) - 2
     assert len(source["decisions"]) == 5
     # Bounds: the provider's T and P domain, flows ≥ 0 except those exactly 0.0 at x₀.
     for entry in source["variables"]:
@@ -509,7 +558,7 @@ def test_g4_syn001_at_the_registered_states(state: str, record_property: Any) ->
     1e4-1e5 W, so the two evaluation orders differ by a few ulps of those terms — measured up to
     2.2e-11 W absolute at P2 — which is 2.2e-16 in the registered 1e5 W scale and above 1e-12
     only in watts."""
-    projection, x0 = syn001_projection(state, omitted_rows=syn001_alias_rows(state))
+    projection, x0 = syn001_projection(state)
     measured = equivalence(projection, x0)
     for name, value in measured.items():
         record_property(f"M05.G4.syn001.{state}.{name}", value)
@@ -517,4 +566,93 @@ def test_g4_syn001_at_the_registered_states(state: str, record_property: Any) ->
 
 def test_an_unknown_omitted_row_is_refused() -> None:
     with pytest.raises(ValueError, match="not equations"):
-        syn001_projection("P1", omitted_rows={"no-such-row": "test"})
+        syn001_projection("P1", omitted_rows=[*SYN001_ALIAS_ROWS, "no-such-row"])
+
+
+# -- R-274 on the pressure alias toy (`m05_support.at_spec`) --------------------------------------
+
+
+def test_at_the_implied_pressure_row_is_omitted_with_its_certificate() -> None:
+    from m05_support import AT_START, at_projection
+
+    projection = at_projection()
+    assert projection.row_ids == ("r1", "r2", "r4", "r5")
+    (row,) = projection.omitted_rows
+    assert row.equation_id == "r3"
+    assert {name for name, _ in row.elimination.equals} == {"r1", "r2"}
+    assert (row.residual_x0, row.elimination.constant_mismatch) == (0.0, 0.0)
+    assert row.tangent_residuals == {"z": 0.0}
+    structure(projection)
+    # G4 on the toy too: the chain through the block is the compiled function's Jacobian.
+    equivalence(projection, AT_START)
+
+
+def test_at_a_row_not_satisfied_at_the_start_is_refused() -> None:
+    """Fact 2: the redundancy is consistent (mismatch 0), but x₀ violates the row by 1 Pa."""
+    from m05_support import AT_START, at_projection
+
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    with pytest.raises(ProjectionRefusedError) as refused:
+        at_projection(start={**AT_START, "Pa": 1.0e5 + 1.0, "Pb": 1.0e5 + 1.0})
+    assert refused.value.reason == "PROJECTION_OMITTED_ROW_UNCERTIFIED(r3)"
+    assert "residual at x0 is 1.0" in refused.value.detail
+
+
+def test_at_a_row_a_decision_moves_is_refused() -> None:
+    """Fact 3: with `p_spec` a decision, the retained rows move `Pb` and the omitted row's pinned
+    `p_spec2` does not — a tangent residual of h/S_F = 1e4/1e5 per unit decision."""
+    from m05_support import at_projection
+
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    with pytest.raises(ProjectionRefusedError) as refused:
+        at_projection(decisions={"z": (0.5, 1.5), "p_spec": (0.9e5, 1.1e5)})
+    assert refused.value.reason == "PROJECTION_OMITTED_ROW_UNCERTIFIED(r3)"
+    assert "decisions ['p_spec']" in refused.value.detail
+
+
+def test_at_without_a_witness_state_no_row_is_certified() -> None:
+    """Fact 1: in a pressure domain [99 kPa, 101 kPa], `Pb`'s move of 2 x 997 Pa leaves it both
+    ways, so the elimination's mismatch is not witnessed at a second state."""
+    from m05_support import AT_DOMAIN, at_projection
+
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    narrow = {**AT_DOMAIN, "pressure": (99_000.0, 101_000.0)}
+    with pytest.raises(ProjectionRefusedError) as refused:
+        at_projection(domain=narrow)
+    assert refused.value.reason == "PROJECTION_OMITTED_ROW_UNCERTIFIED(r3)"
+    assert "pressure_shift_outside_domain" in refused.value.detail
+
+
+def test_at_an_inconsistent_redundancy_is_the_elimination_s_own_refusal() -> None:
+    from m05_support import at_projection
+
+    from openflowsheet.orchestrator.rank import SpecificationConflictError
+
+    with pytest.raises(SpecificationConflictError, match="SPECIFICATION_CONFLICT"):
+        at_projection(p_spec2=1.0e5 + 1.0)
+
+
+def test_at_the_omitted_rows_are_checked_at_a_final_state() -> None:
+    """Fact 4's hook: the omitted rows at the state a model holds, within `pressure_tolerance`."""
+    from m05_support import at_projection
+
+    projection = at_projection()
+    model = projection.model
+    check = projection.omitted_rows_at(model)
+    assert (check.status, check.code, dict(check.residuals)) == ("pass", None, {"r3": 0.0})
+    model.x[1].set_value(1.0e5 + 0.005)
+    assert projection.omitted_rows_at(model).status == "pass"
+    model.x[1].set_value(1.0e5 + 0.5)
+    check = projection.omitted_rows_at(model)
+    assert (check.status, check.code, check.failed) == ("fail", "PROJECTION_DISAGREES", ("r3",))
+    assert check.residuals == {"r3": 0.5}
+
+
+def test_a_spec_without_alias_rows_omits_none() -> None:
+    projection = tr_e1_projection()
+    assert projection.omitted_rows == ()
+    assert projection.source_map["omitted_rows"] == []
+    assert projection.omitted_rows_at(projection.model).status == "pass"

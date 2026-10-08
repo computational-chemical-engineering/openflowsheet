@@ -407,6 +407,21 @@ def test_g7_mechanism_a_budget_is_never_exceeded_through_a_run() -> None:
     assert [r.code for r in holder.refusals] == ["budget:budget_exhausted"]
 
 
+def test_the_omitted_rows_are_recorded_at_trf_s_final_state() -> None:
+    """R-274's fact 4, wired: a run that returns a model records the omitted rows there."""
+    from m05_support import at_projection
+
+    from openflowsheet.studies.trust_region.trf import run_trf
+
+    projection = at_projection()
+    result = run_trf(projection, TR_E1_CONFIG)
+    assert result.outcome == "TRF_CONVERGED", result.error
+    assert result.final is not None and abs(result.final.decisions["z"] - 31.0 / 30.0) <= 1e-6
+    check = result.omitted_rows_final
+    assert check is not None and check.status == "pass"
+    assert list(check.residuals) == ["r3"] and abs(check.residuals["r3"]) <= 1e-2
+
+
 def test_one_trf_run_per_process() -> None:
     from openflowsheet.studies.trust_region import trf
 

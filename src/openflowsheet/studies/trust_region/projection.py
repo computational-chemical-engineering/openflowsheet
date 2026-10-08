@@ -17,11 +17,24 @@ variables `y` and constraints `ydef`, the rows `row`, the inequalities `ineq`, t
 and last the `scaling_factor` suffix. Pyomo names are index-based; canonical ids appear only in the
 source map.
 
-**Omitted rows** (a build-lane decision in WO-2, escalated to the design lane: design note §6.1
-projects every row). A caller may name rows
-the retained rows imply — SYN-001's two certified pressure alias rows, which make its 49 rows over
-47 variables redundant by two — with a reason; they are not projected, and the source map lists
-them under `omitted_rows`. With every row, such a spec is refused `PROJECTION_DOF`, correctly.
+**Omitted rows** (R-274, design note §16.1). A row is not projected **iff**
+`orchestrator/rank.py`'s `eliminate_alias_rows` eliminates it — the certificate's and M03's
+elimination, applied by the projection itself to the spec's rows at x₀ and at the certificate's
+pressure-shifted witness state (`pressure_shifted_state`), with the elimination's own tolerances.
+SYN-001's 49 rows over 47 variables have two such rows; projected with them, TRF's DOF count is the
+decisions less two. Each omitted row is certified by four facts, recorded in the source map's
+`omitted_rows` (the first three) and on every TRF run (the fourth):
+1. the elimination removes it, on the retained-forest path recorded as `retained_path`, with its
+   two-state witness (no witness state is no certificate);
+2. its residual at x₀, `residual_x0`, is within the elimination's `pressure_tolerance`;
+3. every decision's scaled tangent residual on it, Ĵ_E X̂_j + F̂_d,E,j with Ĵ_K X̂ = −F̂_d,K at x₀
+   in the projection's scales (M03's Q3, ADR 0031 D3), is within τ_alias = 1e-8;
+4. at a TRF final state its residual is within `pressure_tolerance` (`Projection.omitted_rows_at`,
+   which `trf.run_trf` records; a failure there fails P2, `PROJECTION_DISAGREES`).
+A failure of 1-3 is `PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)`, before any solve. A caller may
+name the omitted rows; a set other than the certified one is refused the same way. The
+elimination's own refusals (`SpecificationConflictError`, `UnsupportedRankStructureError`)
+propagate unchanged: an alias pattern it cannot read is an escalation, not a row to drop by hand.
 
 **Scales** (R-275, design note §16.2). One source: K03's `Scaling.from_spec(spec)`, the scales
 M03's full-space NLP and the certificate use. They give the Ipopt `scaling_factor` suffixes —
@@ -42,18 +55,21 @@ symbol (ADR 0031 D2's meaning); `PROJECTION_NONSMOOTH(<id>)` — a row, inequali
 contains `abs`, `Expr_if`, `min`/`max`, `ceil`/`floor` or a piecewise node;
 `PROJECTION_STRUCTURE(<id>)` — a variable appears in no constraint (or a row in no variable);
 `PROJECTION_DOF(<n>)` — n_vars − n_equalities = n ≠ n_decisions, TRF's own count, repeated here so
-the failure is typed.
+the failure is typed; `PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)` — above.
 """
 
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Final, Literal
 
+import numpy as np
+import numpy.typing as npt
 import pyomo.environ as pyo
 from pyomo.common.collections import ComponentSet
+from pyomo.core.expr.calculus.derivatives import Modes, differentiate
 from pyomo.core.expr.numeric_expr import (
     AbsExpression,
     Expr_ifExpression,
@@ -69,8 +85,16 @@ from openflowsheet.canonical import (
     model_version,
     structure_sha256,
 )
-from openflowsheet.compile.spec import Expr, ProblemSpec, RowBuilder
+from openflowsheet.compile.reference import FloatAlgebra, block_outputs
+from openflowsheet.compile.spec import DomainError, Expr, ProblemSpec, RowBuilder
+from openflowsheet.numerics.linear import LinearSolveFailedError, solve_linear
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, ScaleUnavailableError, Scaling
+from openflowsheet.orchestrator.rank import (
+    EliminatedRow,
+    eliminate_alias_rows,
+    pressure_shifted_state,
+)
+from openflowsheet.studies.sensitivity import TAU_ALIAS
 from openflowsheet.studies.trust_region.holders import (
     EFHolder,
     PropertyBlockBox,
@@ -89,6 +113,10 @@ LINK_BOUNDS: Final[Mapping[str, tuple[float, float]]] = {"X": (0.0, 0.95), "dT":
 LINK_INLET_SIZE: Final = 7
 #: R-275: the provenance of the unit scales a spec without any declared kind is projected with.
 UNIT_NO_KINDS: Final = "unit_no_kinds"
+#: R-274: why an omitted row is not projected, as the source map records it.
+OMITTED_ROW_REASON: Final = (
+    "eliminated by orchestrator/rank.py's alias elimination: implied by the retained rows (R-274)"
+)
 _NONSMOOTH_FUNCTIONS: Final = frozenset({"abs", "ceil", "floor"})
 _NONSMOOTH_NODES: Final = (AbsExpression, Expr_ifExpression, MaxExpression, MinExpression)
 
@@ -98,6 +126,7 @@ RefusalCode = Literal[
     "PROJECTION_NONSMOOTH",
     "PROJECTION_STRUCTURE",
     "PROJECTION_DOF",
+    "PROJECTION_OMITTED_ROW_UNCERTIFIED",
 ]
 
 
@@ -208,6 +237,69 @@ def output_scale(start_value: float) -> float:
 
 
 @dataclass(frozen=True)
+class OmittedRow:
+    """A row the projection leaves out, with what certifies it (R-274's facts 1-3)."""
+
+    elimination: EliminatedRow
+    origin: str
+    residual_x0: float
+    #: Each decision's scaled tangent residual on the row, by parameter id.
+    tangent_residuals: Mapping[str, float]
+
+    @property
+    def equation_id(self) -> str:
+        return self.elimination.row_id
+
+    @property
+    def tolerance(self) -> float:
+        """The elimination's `pressure_tolerance`, which facts 2 and 4 are judged by."""
+        return self.elimination.tolerance
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "equation_id": self.equation_id,
+            "origin": self.origin,
+            "reason": OMITTED_ROW_REASON,
+            "retained_path": [[name, sign] for name, sign in self.elimination.equals],
+            "constant_mismatch": self.elimination.constant_mismatch,
+            "residual_x0": self.residual_x0,
+            "pressure_tolerance": self.tolerance,
+            "tangent_residuals": dict(self.tangent_residuals),
+            "tau_alias": TAU_ALIAS,
+        }
+
+
+@dataclass(frozen=True)
+class OmittedRowsCheck:
+    """R-274's fact 4 at one state: every omitted row's residual against its tolerance.
+
+    `failed` names the rows above it; `detail` says why the rows could not be evaluated (a block
+    refusing the state), which fails the check too. P2 reads `status` (`PROJECTION_DISAGREES` on a
+    failure)."""
+
+    residuals: Mapping[str, float]
+    failed: tuple[str, ...] = ()
+    detail: str = ""
+
+    @property
+    def status(self) -> Literal["pass", "fail"]:
+        return "fail" if self.failed or self.detail else "pass"
+
+    @property
+    def code(self) -> str | None:
+        return "PROJECTION_DISAGREES" if self.status == "fail" else None
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "code": self.code,
+            "residuals": dict(self.residuals),
+            "failed": list(self.failed),
+            "detail": self.detail,
+        }
+
+
+@dataclass(frozen=True)
 class Projection:
     """A projected spec: the Pyomo model TRF solves, its holders and its source map.
 
@@ -229,6 +321,8 @@ class Projection:
     source_map: Mapping[str, Any]
     #: R-275: the row and column scales of every projected quantity — the suffixes', G4's and P2's.
     scaling: Scaling
+    #: R-274: the rows not projected, each with its certificate, in spec order.
+    omitted_rows: tuple[OmittedRow, ...] = ()
 
     @property
     def source_map_sha256(self) -> str:
@@ -263,6 +357,39 @@ class Projection:
             model.x[index].set_value(float(values[name]), skip_validation=True)
         _initialize_outputs(model, self.spec, values)
 
+    def parameters_of(self, model: Any = None) -> dict[str, float]:
+        """Every pinned input of the spec at `model` (the original by default, or TRF's returned
+        clone): the decisions and the link coordinates as `model` holds them, the rest pinned."""
+        source = self.model if model is None else model
+        values = {name: float(value) for name, value in self.spec.parameters.items()}
+        values.update(self.decision_parameters(source))
+        for k, link in enumerate(self.source_map["external_links"]):
+            values[link["parameter_id"]] = float(pyo.value(source.w[k]))
+        return values
+
+    def omitted_rows_at(self, model: Any) -> OmittedRowsCheck:
+        """R-274's fact 4 at the state `model` holds (TRF's returned clone at a final state): every
+        omitted row evaluated with floats — its builder, the blocks called directly (never
+        through a holder), the parameters `parameters_of(model)` — against its tolerance."""
+        if not self.omitted_rows:
+            return OmittedRowsCheck(residuals={})
+        state = {
+            name: float(pyo.value(model.x[index]))
+            for index, name in enumerate(self.spec.variable_ids)
+        }
+        try:
+            outputs = block_outputs(self.spec, state)
+        except DomainError as error:
+            return OmittedRowsCheck(residuals={}, detail=f"property_domain_error: {error}")
+        wanted = {row.equation_id for row in self.omitted_rows}
+        residuals = _float_rows(self.spec, state, outputs, self.parameters_of(model), wanted)
+        failed = tuple(
+            row.equation_id
+            for row in self.omitted_rows
+            if not abs(residuals[row.equation_id]) <= row.tolerance
+        )
+        return OmittedRowsCheck(residuals=residuals, failed=failed)
+
 
 def _initialize_outputs(model: Any, spec: ProblemSpec, values: Mapping[str, float]) -> None:
     index = 0
@@ -282,7 +409,7 @@ def project(
     domain: Mapping[str, tuple[float, float]],
     external_links: Sequence[ExternalLinkSpec] = (),
     inequalities: Sequence[InequalitySpec] = (),
-    omitted_rows: Mapping[str, str] | None = None,
+    omitted_rows: Collection[str] | None = None,
 ) -> Projection:
     """Project `spec` at the state `x0` (every variable id → binary64) for TRF (§6.1).
 
@@ -290,20 +417,17 @@ def project(
     property provider's declared domain. Raises `ProjectionRefusedError` for a spec TRF cannot be
     given, and `ValueError` for an inconsistent call.
 
-    `omitted_rows` maps an equation id to the reason it is not projected. It exists for rows that
-    the retained rows imply — a flowsheet's certified alias rows (`orchestrator/rank.py`'s
-    elimination), which M03's full-space NLP also leaves out of its equality constraints (ADR 0032
-    D1, "the kept rows F_K") — and that would otherwise make TRF's DOF count wrong and its
-    equality Jacobian rank-deficient. The projection does not judge the reason; the caller owns
-    it, and the source map records it."""
+    The rows not projected are the certified alias rows, computed here (R-274; module docstring).
+    `omitted_rows`, if given, must name exactly that set, or the projection is refused
+    `PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)` with the first id, in spec order, on which the two
+    differ; an id that is not an equation of the spec is a `ValueError`."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
-    omitted = dict(omitted_rows or {})
-    unknown_rows = sorted(set(omitted) - set(spec.equation_ids))
+    requested = None if omitted_rows is None else frozenset(omitted_rows)
+    unknown_rows = sorted((requested or frozenset()) - set(spec.equation_ids))
     if unknown_rows:
         raise ValueError(f"omitted_rows names {unknown_rows}, which are not equations of the spec")
-    projected = [equation for equation in spec.equations if equation.equation_id not in omitted]
     model = pyo.ConcreteModel(name=spec.label)
 
     # 1. Variables.
@@ -435,13 +559,33 @@ def project(
     for g, row in enumerate(output_rows):
         block_outputs[f"{row['block_id']}.{row['output_id']}"] = model.y[g]
 
-    # 5. Rows.
+    # 5. Rows: every row is built; the certified alias rows (R-274) are not projected.
     symbols = {name: model.x[index] for index, name in enumerate(variable_ids)}
-    row_ids = tuple(equation.equation_id for equation in projected)
-    expressions = [
-        _build(equation.equation_id, equation.build, symbols, block_outputs, parameters, spec)
-        for equation in projected
-    ]
+    built = {
+        equation.equation_id: _build(
+            equation.equation_id, equation.build, symbols, block_outputs, parameters, spec
+        )
+        for equation in spec.equations
+    }
+    derivatives = _row_derivatives(model, spec, x0, built, len(output_rows), len(decisions))
+    starts_by_key = {
+        f"{row['block_id']}.{row['output_id']}": value
+        for row, value in zip(output_rows, output_starts, strict=True)
+    }
+    elimination, residuals_x0 = _eliminate(spec, x0, starts_by_key, derivatives.x, domain)
+    omitted = {row.row_id for row in elimination}
+    if requested is not None and requested != omitted:
+        subject = next(
+            name for name in spec.equation_ids if (name in requested) != (name in omitted)
+        )
+        raise ProjectionRefusedError(
+            "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+            subject,
+            f"the caller omits {sorted(requested)}; the certified alias elimination omits "
+            f"{sorted(omitted)}",
+        )
+    row_ids = tuple(name for name in spec.equation_ids if name not in omitted)
+    expressions = [built[name] for name in row_ids]
     model.row = pyo.Constraint(range(len(expressions)), rule=lambda m, i: expressions[i] == 0)
 
     # 6. Inequalities.
@@ -494,6 +638,7 @@ def project(
         if found is not None:
             raise ProjectionRefusedError("PROJECTION_NONSMOOTH", subject, f"contains {found}")
     _check_structure(model, spec, decisions, external_links, output_rows, len(decisions))
+    certified = _certify(spec, scaling, decisions, elimination, residuals_x0, derivatives)
 
     source_map = _source_map(
         spec,
@@ -507,7 +652,7 @@ def project(
         link_rows,
         inequalities,
         objective,
-        omitted,
+        certified,
     )
     return Projection(
         model=model,
@@ -521,6 +666,7 @@ def project(
         ef_names=ef_names,
         source_map=source_map,
         scaling=scaling,
+        omitted_rows=certified,
     )
 
 
@@ -679,6 +825,192 @@ def _check_structure(
         )
 
 
+# -- the omitted rows (R-274) ---------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class _RowDerivatives:
+    """Every row's derivatives at x₀, in spec order: `x`, the total x-Jacobian — through the block
+    outputs, so it is the Jacobian of the function the compiled problem holds — and `d`, the
+    decision columns (per unit of the scaled decision)."""
+
+    x: npt.NDArray[np.float64]
+    d: npt.NDArray[np.float64]
+
+
+def _row_derivatives(
+    model: Any,
+    spec: ProblemSpec,
+    x0: Mapping[str, float],
+    built: Mapping[str, Any],
+    n_outputs: int,
+    n_decisions: int,
+) -> _RowDerivatives:
+    """Pyomo's reverse-mode derivatives of every row in `x`, `y` and `d`, at the model's start
+    values, with ∂y/∂x from each block's own Jacobian at x₀ (the block called directly, never
+    through a holder, and only when some row depends on its outputs)."""
+    n_x = len(spec.variable_ids)
+    wrt = [
+        *(model.x[i] for i in range(n_x)),
+        *(model.y[g] for g in range(n_outputs)),
+        *(model.d[j] for j in range(n_decisions)),
+    ]
+    gradients = np.array(
+        [
+            differentiate(built[name], wrt_list=wrt, mode=Modes.reverse_numeric)
+            for name in spec.equation_ids
+        ],
+        dtype=np.float64,
+    ).reshape(len(spec.equation_ids), len(wrt))
+    by_y = gradients[:, n_x : n_x + n_outputs]
+    dy_dx = np.zeros((n_outputs, n_x))
+    index = {name: i for i, name in enumerate(spec.variable_ids)}
+    first = 0
+    for block in spec.blocks:
+        count = len(block.output_ids)
+        if np.any(by_y[:, first : first + count] != 0.0):
+            feeding = spec.block_inputs[block.block_id]
+            for row, column, value in block.jacobian([float(x0[name]) for name in feeding]):
+                dy_dx[first + row, index[feeding[column]]] += float(value)
+        first += count
+    return _RowDerivatives(
+        x=gradients[:, :n_x] + by_y @ dy_dx, d=gradients[:, n_x + n_outputs :].copy()
+    )
+
+
+def _eliminate(
+    spec: ProblemSpec,
+    x0: Mapping[str, float],
+    outputs_x0: Mapping[str, float],
+    jacobian_x: npt.NDArray[np.float64],
+    domain: Mapping[str, tuple[float, float]],
+) -> tuple[tuple[EliminatedRow, ...], dict[str, float]]:
+    """R-274's facts 1 and 2: `eliminate_alias_rows` on every row, with the certificate's inputs —
+    the rows' Jacobian by column id, the variable kinds, and the residuals (with the pinned
+    parameters) at x₀ and at its pressure-shifted witness state — then each eliminated row's
+    residual at x₀ within the elimination's tolerance. Returns the eliminated rows and every
+    row's residual at x₀."""
+    state = {name: float(x0[name]) for name in spec.variable_ids}
+    at_x0 = _float_rows(spec, state, outputs_x0, spec.parameters)
+    reason = ""
+    second = at_x0
+    if any(spec.variable_kinds.get(name) == "pressure" for name in spec.variable_ids):
+        shifted, reason = pressure_shifted_state(
+            spec.variable_ids, spec.variable_kinds, state, domain["pressure"]
+        )
+        if not reason:
+            try:
+                second = _float_rows(spec, shifted, block_outputs(spec, shifted), spec.parameters)
+            except DomainError:
+                reason = "shifted_state_property_domain_error"
+    coefficients = {
+        name: {
+            column: float(value)
+            for column, value in zip(spec.variable_ids, jacobian_x[i], strict=True)
+            if value != 0.0
+        }
+        for i, name in enumerate(spec.equation_ids)
+    }
+    elimination = eliminate_alias_rows(
+        row_ids=spec.equation_ids,
+        coefficients=coefficients,
+        column_kinds=spec.variable_kinds,
+        residuals=[at_x0, second],
+    )
+    for row in elimination.eliminated:
+        if reason:
+            raise ProjectionRefusedError(
+                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+                row.row_id,
+                f"the elimination's second state could not be built ({reason}), so the constancy "
+                "of its mismatch is not witnessed",
+            )
+        if not abs(at_x0[row.row_id]) <= row.tolerance:
+            raise ProjectionRefusedError(
+                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+                row.row_id,
+                f"its residual at x0 is {at_x0[row.row_id]!r}, beyond the elimination's "
+                f"pressure_tolerance {row.tolerance:g}",
+            )
+    return elimination.eliminated, at_x0
+
+
+def _certify(
+    spec: ProblemSpec,
+    scaling: Scaling,
+    decisions: Sequence[DecisionSpec],
+    eliminated: Sequence[EliminatedRow],
+    residuals_x0: Mapping[str, float],
+    derivatives: _RowDerivatives,
+) -> tuple[OmittedRow, ...]:
+    """R-274's fact 3, M03's Q3 in the projection's scales: Ĵ_K X̂ = −F̂_d,K at x₀ (one ADR 0004
+    solve for every decision), and every decision's tangent residual Ĵ_E X̂ + F̂_d,E on each
+    eliminated row within τ_alias. Called after the DOF check, so Ĵ_K is square."""
+    if not eliminated:
+        return ()
+    position = {name: i for i, name in enumerate(spec.equation_ids)}
+    removed = [row.row_id for row in eliminated]
+    kept = [name for name in spec.equation_ids if name not in set(removed)]
+    column_scales = scaling.column_vector(spec.variable_ids)
+
+    def scaled(
+        rows: Sequence[str],
+    ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+        at = [position[name] for name in rows]
+        row_scales = scaling.row_vector(rows)[:, None]
+        return (
+            derivatives.x[at] * column_scales[None, :] / row_scales,
+            derivatives.d[at] / row_scales,
+        )
+
+    tangent: npt.NDArray[np.float64] = np.zeros((len(removed), len(decisions)))
+    if decisions:
+        j_kept, d_kept = scaled(kept)
+        j_removed, d_removed = scaled(removed)
+        try:
+            solution, _ = solve_linear(j_kept, -d_kept)
+        except LinearSolveFailedError as error:
+            raise ProjectionRefusedError(
+                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+                removed[0],
+                f"the tangent of the retained rows at x0 is not defined: {error}",
+            ) from error
+        tangent = j_removed @ solution.reshape(len(kept), len(decisions)) + d_removed
+    origins = {equation.equation_id: equation.origin for equation in spec.equations}
+    certified = []
+    for i, row in enumerate(eliminated):
+        residuals = {
+            decision.parameter_id: float(tangent[i, j]) for j, decision in enumerate(decisions)
+        }
+        over = sorted(name for name, value in residuals.items() if not abs(value) <= TAU_ALIAS)
+        if over:
+            raise ProjectionRefusedError(
+                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+                row.row_id,
+                f"the tangent residual of decisions {over} on it exceeds tau_alias "
+                f"{TAU_ALIAS:g}: {residuals}",
+            )
+        certified.append(OmittedRow(row, origins[row.row_id], residuals_x0[row.row_id], residuals))
+    return tuple(certified)
+
+
+def _float_rows(
+    spec: ProblemSpec,
+    state: Mapping[str, float],
+    outputs: Mapping[str, float],
+    parameters: Mapping[str, float],
+    wanted: Collection[str] | None = None,
+) -> dict[str, float]:
+    """The rows (`wanted`, or every one) evaluated with floats, as `compile/reference.py` does,
+    with the given block outputs and parameters."""
+    algebra = FloatAlgebra()
+    return {
+        equation.equation_id: float(equation.build(state, outputs, parameters, algebra))
+        for equation in spec.equations
+        if wanted is None or equation.equation_id in wanted
+    }
+
+
 def _source_map(
     spec: ProblemSpec,
     scaling: Scaling,
@@ -691,7 +1023,7 @@ def _source_map(
     link_rows: Sequence[Mapping[str, Any]],
     inequalities: Sequence[InequalitySpec],
     objective: ObjectiveSpec,
-    omitted: Mapping[str, str],
+    omitted: Sequence[OmittedRow],
 ) -> dict[str, Any]:
     """`projection-source-map-v1` (§6.2), without its `trf` part, which a run fills."""
     structure = structure_sha256(
@@ -725,11 +1057,7 @@ def _source_map(
             }
             for index, name in enumerate(row_ids)
         ],
-        "omitted_rows": [
-            {"equation_id": name, "origin": origins[name], "reason": omitted[name]}
-            for name in spec.equation_ids
-            if name in omitted
-        ],
+        "omitted_rows": [row.as_document() for row in omitted],
         "block_outputs": [dict(row) for row in output_rows],
         "decisions": [
             {
