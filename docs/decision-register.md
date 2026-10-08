@@ -3916,3 +3916,37 @@ must exist, so a stale entry fails. Every fixture outside the list is checked ex
 the provider hash in new fixtures would put a schema-level difference between old and new records.
 
 **Watch for.** M01, M02 and M06 add their fixture directories to the list at merge, by name.
+
+---
+
+## R-253 — M03's regression fixtures are compared under the numerical policy, with registered pre-pass rules for values the policy has no row for
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The design lane (`reviewer`), ratified in the M03 review's Closure (`docs/reviews/M03-review.md`, `a8a6dcc`); recorded by the session |
+| Normative text | This entry; `tests/m03_fixture_compare.py` (`ca3d833`); M03 spec Amendment 2 |
+| Evidence | Eight regenerations with every back-solve perturbed by 1–64 ulps compare clean; a 3e-9 relative χ² change is caught; eight permanent must-catch mutations |
+| Affected packages | M03; M05 and anything that makes study or optimization records replay-comparable |
+
+**Decision.** M03's study and optimization fixtures are compared with `run.compare.differences` under
+`T08-numerical-policy-v2`. Before the comparison, a pre-pass checks each value that has no policy row against its own
+rule, then removes it from the comparison. The rules:
+- scaled sensitivities floored at τ_abs = 1e-11, unscaled ones at τ_abs·s_y/s_p;
+- residuals floored at the threshold they are judged by;
+- the normalized-residual floor 1e-9·|pred|/√(σ²+SE²);
+- FIT-U's undetermined r inside its bounds, σ₂ ≤ 1e-12σ₁, null directions within 1e-8, and U-HEAT.Q's projection
+  inside its registered range ±1e-6;
+- the fit's path counters, `optimality` and trf's status checked for kind only, with `success` compared;
+- `wall_time_s` positive.
+
+No `state_sha256` is pinned (ADR 0008 D2.1). Every floor is an existing registered number, so no new tolerance enters.
+
+**Rejected alternative, and why.** Byte-for-byte comparison fails across the two CI architectures, which differ by 1–3
+ulp on converged floats. It also pins values that the spec declares arbitrary (R-211).
+
+**Watch for.**
+- A return to byte-for-byte comparison of converged floats.
+- Comparing an undetermined parameter's final iterate, or a fit's path counters, by value.
+- Before any study or optimization record becomes replay-comparable (K05 bundles, M05), these rules must move into
+  `run/compare` and the policy data, through a design-lane amendment of ADR 0025.
