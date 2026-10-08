@@ -362,7 +362,10 @@ SHIPPED_DATA = re.compile(
     r"|_data/schemas/[a-z0-9-]+\.schema\.json|_data/benchmarks/(k04|syn001)/reference_values\.yaml"
     r"|_data/benchmarks/t08/numerical_policy_v2\.yaml|_data/benchmarks/m01/components\.yaml"
     # M02 design note §3.1: the registered variants and their registry (the project's own data).
-    r"|adapters/variants/[a-z0-9.-]+\.json)$"
+    r"|adapters/variants/[a-z0-9.-]+\.json"
+    # M02 design note §2.4: the reactor environment's lock — the project's own pin file (names,
+    # versions and hashes of distributions it installs elsewhere; none of their content).
+    r"|adapters/pymrm/reactor-env\.lock)$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"

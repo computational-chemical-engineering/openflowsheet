@@ -1,0 +1,500 @@
+{
+ "record": "m02-g10-adapter-halves",
+ "version": 1,
+ "status": "measured",
+ "judged": false,
+ "specification": "docs/design/M02-pymrm-adapter.md §10.2 G10; docs/derivations/M01-spec.md §8.15",
+ "probe_record_sha256": "992cb1aa40b3b3e04c0b97cf151cc6e25dd031a78b3f2ac98449adeca0272ddb",
+ "variant": {
+  "variant_id": "pymrm-6089593-g2-nz800-s123-v1",
+  "sha256": "2302cddf2d3014ba3caeef8f5a247ee3cba01066d779e4b1142a55fbaa52aad4"
+ },
+ "environment": {
+  "python": "3.13.5",
+  "platform": "Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41",
+  "packages": {
+   "pymrm": "2.5.0",
+   "numpy": "2.5.3",
+   "scipy": "1.18.1",
+   "pandas": "3.0.6"
+  },
+  "threads": "OMP/OPENBLAS/MKL_NUM_THREADS=1",
+  "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+  "machine": "x86_64",
+  "numba": "0.68.0",
+  "llvmlite": "0.50.0",
+  "env_id": "pymrm-6089593-032a050c6cf3",
+  "external_root_default": true,
+  "fingerprint_sha256": "238123dc250c5e09c647f69b6592e9d0fc161d9a7a8e625bc24846357f946b6e",
+  "lock_sha256": "032a050c6cf39e1eb2f01ebf03ea92a386f99967cb7fd0797c54431a33a60288",
+  "export_tree_sha256": "c51b4734e453733ea2c3c473392d29255214e562d57446b5431406b424dfe3bd",
+  "merged_database_sha256": "74cb058c545ad2056b7e7cc0b433642b5677e46dced8f55c04e7ec2326888454",
+  "runner_sha256": "24e18ca0abe3f37816c4cdfdd219c0a9d399376f74e9c946c07d05b5931f2161",
+  "worker_python": "3.13.5"
+ },
+ "probe_environment": {
+  "python": "3.13.5",
+  "platform": "Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41",
+  "packages": {
+   "pymrm": "2.5.0",
+   "numpy": "2.5.3",
+   "scipy": "1.18.1",
+   "pandas": "3.0.6"
+  },
+  "threads": "OMP/OPENBLAS/MKL_NUM_THREADS=1"
+ },
+ "assertions": {
+  "A41": {
+   "T_in_K": [
+    653.15,
+    673.15,
+    693.15
+   ],
+   "accepted": [
+    true,
+    true,
+    true
+   ]
+  },
+  "A42": {
+   "s2_dt_init": [
+    1e-06,
+    0.1
+   ],
+   "max_rel_diff": 1.559285305616933e-08,
+   "bound": 1e-06,
+   "probe_max_rel_diff": 1.559285305616933e-08
+  },
+  "A43": {
+   "bypassed_runs": 2,
+   "repeat_bitwise_equal": [
+    true,
+    true
+   ]
+  },
+  "A44": {
+   "alternative_backflow": [
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0
+   ],
+   "bitwise_identical": true,
+   "u_ret_min": [
+    0.0014048407210793812,
+    0.001404840742907254,
+    0.0014048407210793812,
+    0.0013803491528960876,
+    0.0014048407283553388,
+    0.0014315774023998529,
+    0.0014048407283553388,
+    0.0014048407283553388
+   ]
+  },
+  "A45": {
+   "element_defect_max": [
+    2.657411726677951e-08,
+    2.7273263445777032e-08,
+    2.657411726677951e-08,
+    2.2026158951237745e-08,
+    3.8383264652952895e-08,
+    3.4513952509350926e-08,
+    3.8383264652952895e-08,
+    3.8383264652952895e-08
+   ],
+   "bound": 1e-07
+  },
+  "A46": {
+   "dP_over_P": [
+    4.997898459658027e-05,
+    4.997898469939828e-05,
+    4.997898459658027e-05,
+    4.943324979916215e-05,
+    4.997898472435772e-05,
+    5.0592748045548796e-05,
+    4.997898472435772e-05,
+    4.997898472435772e-05
+   ],
+   "bound": 0.001
+  },
+  "A47": {
+   "a_environment_block_equal": true,
+   "a_bitwise": true,
+   "b_max_rel_diff": 1.4289545806002592e-08,
+   "b_bound": 1e-06
+  },
+  "A48": {
+   "estimates_equal_reference": [
+    true,
+    true,
+    true
+   ]
+  }
+ },
+ "runs": [
+  {
+   "label": "direct nominal",
+   "status": "completed",
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 38,
+    "S2": 32,
+    "S3": 9
+   },
+   "tube_outlet": {
+    "flows": [
+     0.004206722750696396,
+     0.0014141525193808178,
+     0.0007451757058514184,
+     0.00010720442233839437,
+     0.00014293922978452547
+    ],
+    "temperature": 757.3353119014521,
+    "pressure_drop": 499.78984596580267,
+    "coolant_heat": 3.3200499480531107,
+    "inlet_face_heat_loss": 6.50650082805223
+   },
+   "element_defect_max": 2.657411726677951e-08,
+   "dP_over_P": 4.997898459658027e-05,
+   "u_ret_min": 0.0014048407210793812,
+   "min_axial_flow_mol_s": 0.00010593911193312912,
+   "wall_s": 30.41435388300306,
+   "certificate_wall_s": 18.590019149996806,
+   "startup_s": 1.7619933479945757,
+   "solve_s": 28.54779698100174
+  },
+  {
+   "label": "direct S2 dt_init 1e-1",
+   "status": "completed",
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 38,
+    "S2": 14,
+    "S3": 8
+   },
+   "tube_outlet": {
+    "flows": [
+     0.0042067227701029644,
+     0.0014141525258603387,
+     0.0007451756942320031,
+     0.00010720442241334593,
+     0.0001429392298844388
+    ],
+    "temperature": 757.3353138836449,
+    "pressure_drop": 499.7898469939828,
+    "coolant_heat": 3.32004996355337,
+    "inlet_face_heat_loss": 6.506499731651836
+   },
+   "element_defect_max": 2.7273263445777032e-08,
+   "dP_over_P": 4.997898469939828e-05,
+   "u_ret_min": 0.001404840742907254,
+   "min_axial_flow_mol_s": 0.0001059391114004383,
+   "wall_s": 45.22784837600193,
+   "certificate_wall_s": 35.04476246100239,
+   "startup_s": 1.7881063150052796,
+   "solve_s": 43.37244544899295
+  },
+  {
+   "label": "direct backflow [0,0,0,1,0]",
+   "status": "completed",
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 38,
+    "S2": 32,
+    "S3": 9
+   },
+   "tube_outlet": {
+    "flows": [
+     0.004206722750696396,
+     0.0014141525193808178,
+     0.0007451757058514184,
+     0.00010720442233839437,
+     0.00014293922978452547
+    ],
+    "temperature": 757.3353119014521,
+    "pressure_drop": 499.78984596580267,
+    "coolant_heat": 3.3200499480531107,
+    "inlet_face_heat_loss": 6.50650082805223
+   },
+   "element_defect_max": 2.657411726677951e-08,
+   "dP_over_P": 4.997898459658027e-05,
+   "u_ret_min": 0.0014048407210793812,
+   "min_axial_flow_mol_s": 0.00010593911193312912,
+   "wall_s": 30.32857460300147,
+   "certificate_wall_s": 18.459971060001408,
+   "startup_s": 1.8087663639962557,
+   "solve_s": 28.434440842000186
+  },
+  {
+   "label": "boundary T_in 653.15",
+   "status": "completed",
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 44,
+    "S2": 31,
+    "S3": 10
+   },
+   "tube_outlet": {
+    "flows": [
+     0.004167323942573274,
+     0.0014010195832862573,
+     0.0007714415615255545,
+     0.00010720442185083314,
+     0.00014293922913442746
+    ],
+    "temperature": 753.0429821404381,
+    "pressure_drop": 494.3324979916215,
+    "coolant_heat": 3.9203927310962623,
+    "inlet_face_heat_loss": 3.866298056800982
+   },
+   "element_defect_max": 2.2026158951237745e-08,
+   "dP_over_P": 4.943324979916215e-05,
+   "u_ret_min": 0.0013803491528960876,
+   "min_axial_flow_mol_s": 0.00010605185279887258,
+   "wall_s": 24.575484330998734,
+   "certificate_wall_s": 11.89455616199848,
+   "startup_s": 1.7845423489998211,
+   "solve_s": 22.68657505200099,
+   "envelope_status": "ok",
+   "envelope_code": "ok",
+   "discretization_estimate": {
+    "NH3_out_high_rel": [
+     0.0102,
+     0.01376
+    ],
+    "T_out_low_K": [
+     1.244,
+     1.673
+    ],
+    "inputs": "grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect 2.2e-6, still moving)",
+    "meaning": "spec section 10.1's discretization estimate at the design grid (Richardson, two orders, two differences); an estimate, not a bound; what every reactor result reports (section 8.12, M01.A48)",
+    "num_z": 800,
+    "order_p": [
+     0.6192,
+     0.783
+    ],
+    "xi_high_rel": [
+     0.01438,
+     0.01943
+    ]
+   },
+   "experiment_key": "7bde7602a1afd020b36539f00909f7fcedd0f6f3faca671087c842d2210f32dd"
+  },
+  {
+   "label": "boundary T_in 673.15",
+   "status": "completed",
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 38,
+    "S2": 32,
+    "S3": 9
+   },
+   "tube_outlet": {
+    "flows": [
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
+    ],
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
+   },
+   "element_defect_max": 3.8383264652952895e-08,
+   "dP_over_P": 4.997898472435772e-05,
+   "u_ret_min": 0.0014048407283553388,
+   "min_axial_flow_mol_s": 0.00010593911166748371,
+   "wall_s": 29.577357160000247,
+   "certificate_wall_s": 17.743467332002183,
+   "startup_s": 1.7604377099996782,
+   "solve_s": 27.719169388998125,
+   "envelope_status": "ok",
+   "envelope_code": "ok",
+   "discretization_estimate": {
+    "NH3_out_high_rel": [
+     0.0102,
+     0.01376
+    ],
+    "T_out_low_K": [
+     1.244,
+     1.673
+    ],
+    "inputs": "grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect 2.2e-6, still moving)",
+    "meaning": "spec section 10.1's discretization estimate at the design grid (Richardson, two orders, two differences); an estimate, not a bound; what every reactor result reports (section 8.12, M01.A48)",
+    "num_z": 800,
+    "order_p": [
+     0.6192,
+     0.783
+    ],
+    "xi_high_rel": [
+     0.01438,
+     0.01943
+    ]
+   },
+   "experiment_key": "4177063d0aa864fecf98b6523c6cc82d204f4719e2f4a95f97983b739f9988b0"
+  },
+  {
+   "label": "boundary T_in 693.15",
+   "status": "completed",
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 34,
+    "S2": 33,
+    "S3": 9
+   },
+   "tube_outlet": {
+    "flows": [
+     0.004250001507108143,
+     0.0014285787716149447,
+     0.0007163232294102798,
+     0.0001072044231895798,
+     0.00014293923091941984
+    ],
+    "temperature": 762.2135884491616,
+    "pressure_drop": 505.92748045548797,
+    "coolant_heat": 2.7348423941471056,
+    "inlet_face_heat_loss": 8.875261962569532
+   },
+   "element_defect_max": 3.4513952509350926e-08,
+   "dP_over_P": 5.0592748045548796e-05,
+   "u_ret_min": 0.0014315774023998529,
+   "min_axial_flow_mol_s": 0.00010577764981831999,
+   "wall_s": 31.379567636999127,
+   "certificate_wall_s": 19.93449245300144,
+   "startup_s": 1.7558446809998713,
+   "solve_s": 29.534132310000132,
+   "envelope_status": "ok",
+   "envelope_code": "ok",
+   "discretization_estimate": {
+    "NH3_out_high_rel": [
+     0.0102,
+     0.01376
+    ],
+    "T_out_low_K": [
+     1.244,
+     1.673
+    ],
+    "inputs": "grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect 2.2e-6, still moving)",
+    "meaning": "spec section 10.1's discretization estimate at the design grid (Richardson, two orders, two differences); an estimate, not a bound; what every reactor result reports (section 8.12, M01.A48)",
+    "num_z": 800,
+    "order_p": [
+     0.6192,
+     0.783
+    ],
+    "xi_high_rel": [
+     0.01438,
+     0.01943
+    ]
+   },
+   "experiment_key": "167fb778568bf160df49c3192864df454cbaf5ec81989742ca972594e001cd06"
+  },
+  {
+   "label": "boundary bypass repeat 1",
+   "status": "completed",
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 38,
+    "S2": 32,
+    "S3": 9
+   },
+   "tube_outlet": {
+    "flows": [
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
+    ],
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
+   },
+   "element_defect_max": 3.8383264652952895e-08,
+   "dP_over_P": 4.997898472435772e-05,
+   "u_ret_min": 0.0014048407283553388,
+   "min_axial_flow_mol_s": 0.00010593911166748371,
+   "wall_s": 29.61449888000061,
+   "certificate_wall_s": 17.666990577999968,
+   "startup_s": 1.7798961000007694,
+   "solve_s": 27.74042548199941,
+   "repeat_bitwise_equal": true
+  },
+  {
+   "label": "boundary bypass repeat 2",
+   "status": "completed",
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 38,
+    "S2": 32,
+    "S3": 9
+   },
+   "tube_outlet": {
+    "flows": [
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
+    ],
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
+   },
+   "element_defect_max": 3.8383264652952895e-08,
+   "dP_over_P": 4.997898472435772e-05,
+   "u_ret_min": 0.0014048407283553388,
+   "min_axial_flow_mol_s": 0.00010593911166748371,
+   "wall_s": 29.279993546995684,
+   "certificate_wall_s": 17.604642119003984,
+   "startup_s": 1.7677158609949402,
+   "solve_s": 27.42917697100347,
+   "repeat_bitwise_equal": true
+  }
+ ],
+ "elapsed_s": 257.9
+}

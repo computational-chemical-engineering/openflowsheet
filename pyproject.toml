@@ -68,8 +68,9 @@ openflowsheet = [
 ]
 # The MCP tool descriptions and their review record are served text (T07 W6c, gate G15).
 "openflowsheet.application.bindings" = ["descriptions/*.md", "descriptions/REVIEW.json"]
-# M02 design note §3.1: the registered variants and their registry (append-only package data).
-"openflowsheet.adapters" = ["variants/*.json"]
+# M02 design note §3.1, §2.4: the registered variants and their registry (append-only package
+# data), and the reactor environment's hash-pinned lock.
+"openflowsheet.adapters" = ["variants/*.json", "pymrm/reactor-env.lock"]
 
 [tool.ruff]
 line-length = 100
@@ -110,3 +111,10 @@ testpaths = ["tests"]
 # The repository root on sys.path so `benchmarks.syn001.oracle` imports without installing it;
 # the oracle is deliberately not part of the `openflowsheet` distribution.
 pythonpath = ["."]
+# M02 WO-5 (design note §10.2): tests marked `pymrm` need the pinned reactor environment
+# (`python -m openflowsheet.adapters.pymrm.env build`) and are deselected (not skipped) here;
+# `pytest -m pymrm` runs them there, which overrides this.
+addopts = "-m 'not pymrm'"
+markers = [
+    "pymrm: needs the pinned reactor environment of M02 design note §2.4 (opt-in evidence)",
+]
