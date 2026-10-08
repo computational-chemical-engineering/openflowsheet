@@ -317,3 +317,53 @@ def fd_sensitivity(
         derivative = total / (12.0 * step)
         columns.append(derivative * parameter.scale / output_scales)
     return np.column_stack(columns)
+
+
+# -- the estimation example (spec §7) -------------------------------------------------------------
+
+
+def _measurement(entry: Mapping[str, Any]) -> Any:
+    from openflowsheet.studies.estimation import Measurement
+
+    return Measurement(
+        measurement_id=entry["id"],
+        coefficients={name: float(value) for name, value in entry["coefficients"].items()},
+        sigma=number(entry["sigma"]),
+        observed=number(entry["observed"]),
+    )
+
+
+def estimation_problem(fit_id: str) -> Any:
+    """Spec §7's FIT-I or FIT-U, read from the JSON: the observations are the stored `repr`s of
+    the generator's binary64 values (spec §7.2) — nothing here, or in `src`, regenerates them."""
+    from openflowsheet.studies.estimation import DataProvenance, EstimationProblem
+
+    section = reference()["estimation"]
+    data = section["data"]
+    chosen = set(section["fits"][fit_id]["measurements"])
+    measurements = tuple(
+        _measurement(entry) for entry in data["measurements"] if entry["id"] in chosen
+    )
+    parameters = tuple(
+        StudyParameter(
+            entry["id"], number(entry["scale"]), number(entry["lower"]), number(entry["upper"])
+        )
+        for entry in section["theta"]
+    )
+    return EstimationProblem(
+        fit_id=fit_id,
+        flowsheet=flowsheet({}),
+        parameters=parameters,
+        start=tuple(number(entry["start"]) for entry in section["theta"]),
+        measurements=measurements,
+        validation=tuple(_measurement(entry) for entry in data["validation"]),
+        provenance=DataProvenance(
+            evidence_class=section["evidence_class"],
+            statement=section["statement"],
+            seed=int(data["seed"]),
+            noise_model={
+                name: data[name] for name in ("generator", "uniform", "normal", "observation")
+            },
+            theta_true={name: number(value) for name, value in data["theta_true"].items()},
+        ),
+    )
