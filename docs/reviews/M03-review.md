@@ -315,3 +315,50 @@ If N1 is declined:
 - The register text of R-180…R-215.
 
 Nothing was executed.
+
+## Closure (2026-10-08, at `71b3c37`)
+
+Read-only check of `ceb5e15..71b3c37`. Nothing was run. The gate figures are the build lane's:
+- `check.sh`: 7066 passed, 31 skipped, 18 deselected;
+- `nlp` gate: 18 passed;
+- generator: 264 claims.
+
+| Finding | Commit | State |
+| --- | --- | --- |
+| F1 | `ca3d833` | **Closed in code; pending the evidence that closes it** (see below). |
+| F2 | `15884bb` | Closed. `solver.environment` records the thread variables and each mapped OpenMP runtime's `omp_get_max_threads()` (read through `RTLD_NOLOAD`, nothing loaded), plus the ASL's path and SHA-256. Nothing is enforced, as ruled. |
+| F3 / Q1, F7 | `18882f1` | Closed. Spec Amendment 2 transcribes rulings Q1 and Q3.1 and findings F2 and F7 faithfully, with no tolerance or expectation changed. I ratify it as design-lane text. |
+| F4 | `bf753ae`, `2b6e350` | Closed. `NLP_LICENCES_ACCEPTED` gates `audited_solver()`. Declining N1 = revert `2b6e350` and `91537b0`, then re-take the inventory. |
+| F5 | `f85da25` | Closed. The twin is bitwise equal to the base at moved inputs, in three cases, including a negative control. |
+| F8.1 | `4a49bd0` | Closed. |
+| F6, F8.2–F8.4 | — | Accepted as manifest limitations. They were notes. |
+
+**F1.** `tests/m03_fixture_compare.py` is what F1 asked for:
+- `differences` runs under `CURRENT_POLICY_ID`.
+- A value leaves the comparison only after its own rule has judged it.
+- Every floor is a registered number:
+  - §4.7's τ_abs, carried through to the unscaled matrices by `S_y/S_p`;
+  - each residual's own judged threshold, under ADR 0007 D2.2;
+  - A27's bounds, A28's range, and V3's and §8.4's tolerances.
+- No `state_sha256` is pinned.
+
+Taking trf's `status` out of the comparison goes beyond my list. It is justified: §7.3 asks that it be recorded, not compared, and `success` is still compared.
+
+F1's acceptance was "default gate green on both CI runners". CI run 37846362678 is still in progress. F1 closes when `check (ubuntu-latest)`, `check (ubuntu-24.04-arm)` and `default-install` pass and the manifest records it.
+
+**Where the comparison rules live.**
+- **Ratification here is sufficient authority.** The rules introduce no tolerance value; every floor derives from a registered number. They govern only M03's regression fixtures.
+- **Register them anyway.** Add one register entry (build lane), pointing to this section and to `tests/m03_fixture_compare.py`. Its watch-for line covers two risks: a return to byte comparison, and comparing an undetermined parameter's iterate or a fit's path by value.
+- **No spec amendment is needed.**
+- **Before any study or optimization record becomes replay-comparable** (K05 bundles, M05), the rules must move into `run/compare` and the policy data, under a design-lane amendment of ADR 0025.
+
+**ADRs.**
+- **ADR 0031** may move to Accepted, with no N1 dependency, once all three hold:
+  1. the CI run is green on both `check` runners and on `default-install`;
+  2. `M03.ci_both_runners` is stated;
+  3. the manifest is `tested` for A01–A30, A42 and A43–A46.
+- **ADR 0032** still needs:
+  1. the same CI and `tested` conditions, for A31–A41 and A47;
+  2. Frank's N1 answer, recorded.
+
+  If N1 is declined: revert `2b6e350` and `91537b0`, re-take the inventory, record A35–A40 as `BLOCKED`, accept D5 and D6, and keep D1–D4 Proposed.
