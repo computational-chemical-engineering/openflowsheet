@@ -19,11 +19,18 @@ from functools import cache
 from pathlib import Path
 from typing import Any, Final
 
+import numpy as np
+import numpy.typing as npt
+
+from openflowsheet.compile.casadi_backend import compile_problem
+from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.flowsheet import FRESH_FEED_FLOWS, Syn001Flowsheet
+from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.attempts import SolveResult
-from openflowsheet.orchestrator.tear import solve_tear
+from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
+from openflowsheet.study.sensitivity import OutputFunctional, SensitivityHost, StudyParameter
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 REPO_ROOT: Final = Path(__file__).resolve().parent.parent
@@ -189,3 +196,76 @@ def linear_spec(delta: float, p: tuple[float, float] = (1.0, 3.0)) -> ProblemSpe
         parameter_ids=("p1", "p2"),
         parameters={"p1": p[0], "p2": p[1]},
     )
+
+
+def toy_host(spec: ProblemSpec) -> tuple[SensitivityHost, EvaluationContext]:
+    """A toy compiled with unit scales and no eliminated rows (spec §5), and its own context."""
+    compiled = compile_problem(spec)
+    scaling = Scaling(
+        column={name: 1.0 for name in spec.variable_ids},
+        row={name: 1.0 for name in spec.equation_ids},
+        provenance="M03 spec §5: unit scales",
+    )
+    context = EvaluationContext(
+        model_version=compiled.metadata.model_version,
+        constants_sha256=compiled.metadata.constants_sha256,
+    )
+    return SensitivityHost(spec, compiled, scaling), context
+
+
+def toy_parameter(parameter_id: str) -> StudyParameter:
+    """A toy parameter: scale 1 (spec §5), and a domain wide enough to hold every toy state."""
+    return StudyParameter(parameter_id, scale=1.0, lower=-10.0, upper=10.0)
+
+
+def registered_parameters() -> tuple[StudyParameter, ...]:
+    """Spec §2's five registered SYN-001 parameters with the JSON's scales.
+
+    The domains are the provider's (temperatures [280, 440] K) and the physical ones (the split
+    fraction in [0, 1), a positive feed); spec §3.1 asks for a finite declared domain, and no
+    M03 qualification reads it."""
+    domains = {
+        "U-SPLIT.split_fraction": (0.0, 0.999),
+        "U-FLASH.T_spec": (280.0, 440.0),
+        "U-HEAT.T_spec": (280.0, 440.0),
+        "U-FEED.T_spec": (280.0, 440.0),
+        "U-FEED.n_spec.A": (1e-6, 10.0),
+    }
+    return tuple(
+        StudyParameter(entry["id"], number(entry["scale"]), *domains[entry["id"]])
+        for entry in reference()["constants"]["parameters"]
+    )
+
+
+def pressure_parameters() -> tuple[StudyParameter, ...]:
+    """The two pressure specifications (spec §4.6, Alias), at the registered pressure scale."""
+    return tuple(StudyParameter(name, 1.0e5, 5.0e4, 2.0e5) for name in PRESSURE_PARAMETERS)
+
+
+def registered_outputs() -> tuple[OutputFunctional, ...]:
+    """Spec §2's twelve outputs: eleven variables and `Q_total`, with the JSON's scales."""
+    return tuple(
+        OutputFunctional(
+            entry["id"],
+            {
+                name: float(value)
+                for name, value in entry.get("coefficients", {entry["id"]: 1}).items()
+            },
+            number(entry["scale"]),
+        )
+        for entry in reference()["constants"]["outputs"]
+    )
+
+
+def syn001_host(state: str) -> tuple[SensitivityHost, Syn001TearProblem, npt.NDArray[np.float64]]:
+    """The SYN-001 tear problem of a registered state as a core host, and `x*`."""
+    sheet, result = solved(state)
+    assert result.final_state is not None
+    tear = Syn001TearProblem(sheet)
+    host = SensitivityHost(
+        tear.spec,
+        tear.compiled,
+        tear.scaling,
+        tuple(row.row_id for row in tear.partition.elimination.eliminated),
+    )
+    return host, tear, np.array(state_vector(tear.spec, result.final_state))
