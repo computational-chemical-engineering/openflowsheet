@@ -114,3 +114,16 @@ Grep, don't read whole. Newest at the bottom.
 - `wp/M06-contract` merged into `wp/M06-build`; `js/routes.js` regenerated (19 routes).
 - `opus-engineer` M03 WO-6 (Ipopt [A10] audit) launched on `wp/M03-audit` (from `17cec07`).
 - check.sh on merged `wp/M06-build` (routes regenerated): 7175 passed, 31 skipped, 1 xfailed (strict 17-op equality, until WO-9/10); Node pass; PASSED.
+- M01 specification done on `wp/M01` (`341bd27`, `de683eb`, `74b4309`, `7f267ed`): `docs/derivations/M01-spec.md`
+  (A01–A48), ADR 0026 (C1 PR vapour-only route) and 0027 (reactor boundary), both Proposed; R-154…R-169; generator
+  `m01_reference.py` (82 claims; IDAES separator to 4e-12); `benchmarks/m01/` records, references, overlay,
+  CoolProp cross-check, probe v2. Gate on `wp/M01`: one deliberate red, T08.A32 (all records synthetic), amended by
+  spec §3.5 — WO-1's first step. Findings: the group tolerance leaves 0.45 % path dependence (polish → 1.6e-8); grid
+  order only 0.6–0.8 (num_z 800 ≈ 1–1.4 % high; 100 ≈ 5.5 % high); F-R3 inlet Dirichlet T + axial conduction loses
+  23–33 % of reaction heat through the inlet face; F-R1 hard-coded 3-species constant (subclass, proven inert);
+  F-R2 fugacities at Σ reactive partial pressures; dossier §6 corrected (ideal-gas density). W22 measured:
+  P_sat ≤ 1.27 % (2 %), liquid NH₃ ln φ 0.025/0.040 (0.05), light-gas ln φ ≤ 0.042 (0.05).
+- Specifier defaults for Frank: Q-F1 inlet heat loss → use the pin as is, report it; Q-N1 c_p source → NASA
+  TM-4513 (not Poling); Q-N2 upstream fixes → keep `6089593` + subclass/overlay; Q-N3 design grid → 800 (~9 s/solve);
+  Q-N4 ship real C1 records in the wheel → yes, with citations.
+- `opus-engineer` M01 WO-1…4, WO-6 launched on `wp/M01`. WO-5 (IDAES conformance, own env) and WO-7 (manifest) next.

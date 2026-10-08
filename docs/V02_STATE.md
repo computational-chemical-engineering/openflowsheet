@@ -15,7 +15,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
-| M01 | Design | T08 | W22, W21 (part) | **resumed 2026-10-08** (specifier running). Was halted 2026-10-06: no specification yet; WIP note `docs/derivations/M01-spec-WIP.md` (`daea823` on `wp/M01`: measured findings, tentative decisions, where to resume — incl. a dossier §6 error: the reactor uses ideal-gas density). Resume: a fresh `specifier` with the brief and that WIP note, on `wp/M01` |
+| M01 | Design | T08 | W22, W21 (part) | spec done on `wp/M01` (`7f267ed`: A01–A48, ADR 0026/0027 Proposed, R-154…169); build WO-1…4, 6 running; WO-5 (IDAES conformance), WO-7 next; Q-F1, Q-N1…N4 for Frank (defaults set) |
 | M02 | Build | M01 | W21 | not started |
 | M03 | Design | T08 | W24 (part) | spec done on `wp/M03` (`17cec07`: A01–A42, ADR 0031/0032, R-180…191); build WO-0…3 running; WO-6 [A10] Ipopt audit next; N1 licences asked of Frank |
 | M04 | Design | M02 | W23 | not started |
@@ -45,6 +45,11 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   CeCILL-C, the ASL notice, Apache-2.0 METIS 5, BSD, GCC runtime), once the [A10] audit lists exactly what is loaded.
   Default: accept for the optional extra; without it W24's M03 optimizer part stays BLOCKED.
 
+- **M01 (defaults set, work proceeds):** Q-F1 the reactor's inlet heat loss (23–33 % of reaction heat through the
+  inlet face) — intended, or Danckwerts? default: as pinned, reported; Q-N1 c_p source — default NASA TM-4513, not
+  Poling; Q-N2 fix F-R1/F-R2 upstream at a new pin? default: keep `6089593` + subclass/overlay; Q-N3 design grid —
+  default num_z = 800 (~9 s/solve); Q-N4 ship the real C1 records in the wheel — default yes, with citations.
+
 Otherwise nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
 `origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
 F5 education mode deferred.
@@ -55,12 +60,12 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `specifier` | M01 specification | `wp/M01` (`agent-a94d84cd26a293bc0`) |
+| `opus-engineer` | M01 WO-1…4, 6 (PR provider, flash, boundary) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `specifier` | M06 WO-15 W27 registration | `wp/M06-w27` (`m06-w27`) |
 | `opus-engineer` | M03 WO-0…3 sensitivity core | `wp/M03` (`m03`) |
 | `opus-engineer` | M03 WO-6 Ipopt [A10] audit | `wp/M03-audit` (`m03-audit`) |
 
 Done today: M06 WO-1…6 (`wp/M06-build`, contract merged in; R-192, R-193), M06 WO-14, the M03 specification.
-Next free slot: the M01 build if its spec is done (critical path); otherwise M06 WO-7 (fixtures), then WO-8…12 on
+Next free slot: M01 WO-5 (IDAES conformance) if ready, else M06 WO-7 (fixtures), then WO-8…12 on
 `wp/M06-build`. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
 Push `main` at milestones (authorised).
