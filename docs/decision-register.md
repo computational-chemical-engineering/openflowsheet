@@ -3894,3 +3894,25 @@ own (the W gates that apply at that point), designed before the pre-release, not
 **Watch for.** A sweep that drops the points it did not run; a domain table copied into the study layer.
 
 ---
+
+---
+
+## R-218 — T08's rename-substitution test carries a registered list of fixture directories added after the rename
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M03 WO-9 engineer's escalation |
+| Normative text | This entry; R-149 |
+| Evidence | `26d1f1a`: `tests/test_t08_rename_substitution.py` `ADDED_AFTER_THE_RENAME` (each listed directory must exist) |
+| Affected packages | M01–M07 (any package emitting fixtures that carry the provider hash) |
+
+**Decision.** The test assumed that every fixture carrying the provider hash had been moved by the 2026-10-02
+rename. Fixtures emitted after the rename (M03's `study` and `optimization-report` first) carry that hash too, so
+the test failed. It now subtracts an explicit, registered list of directories added after the rename. Each entry
+must exist, so a stale entry fails. Every fixture outside the list is checked exactly as before.
+
+**Rejected alternative, and why.** Excluding by date or glob would let an un-renamed old fixture hide. Not emitting
+the provider hash in new fixtures would put a schema-level difference between old and new records.
+
+**Watch for.** M01, M02 and M06 add their fixture directories to the list at merge, by name.
