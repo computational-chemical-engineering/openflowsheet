@@ -45,6 +45,12 @@ from openflowsheet.models import (
     pressure_id,
     temperature_id,
 )
+from openflowsheet.models.c1 import feed as c1_feed
+from openflowsheet.models.c1 import flash as c1_flash
+from openflowsheet.models.c1 import heater as c1_heater
+from openflowsheet.models.c1 import mixer as c1_mixer
+from openflowsheet.models.c1 import sink as c1_sink
+from openflowsheet.models.c1 import splitter as c1_splitter
 from openflowsheet.models.revision_flowsheet import (
     PHASE_CAPABILITIES,
     SYN001_BASIS,
@@ -91,6 +97,8 @@ from openflowsheet.models.syn001.valve import Valve
 from openflowsheet.thermo import Phase, PropertyProvider
 
 __all__ = [
+    "C1_MODEL_BUILDERS",
+    "C1_MODEL_SIGNATURES",
     "MODEL_BUILDERS",
     "MODEL_SIGNATURES",
     "Builder",
@@ -585,6 +593,9 @@ _PORT_PHASES: Final[Mapping[str, tuple[tuple[str, Phase | None], ...]]] = {
     valve.MODEL_ID: (("outlet", None),),
     pump.MODEL_ID: (("inlet", "LIQUID"), ("outlet", "LIQUID")),
     conversion_reactor.MODEL_ID: (("outlet", None),),
+    c1_mixer.MODEL_ID: (("*", "VAPOR"),),
+    c1_heater.MODEL_ID: (("inlet", "VAPOR"), ("outlet", "VAPOR")),
+    c1_flash.MODEL_ID: (("inlet", "VAPOR"), ("vapor", "VAPOR"), ("liquid", "LIQUID")),
 }
 
 
@@ -1102,6 +1113,185 @@ def _heat_exchanger(
     }
 
 
+# -- the six M02 C1 builders (design note §8, §14.2; WO-8.2) ------------------------------------
+#
+# The C1 units are their own classes (`models.c1`): SYN-001's carry SYN-001 constants in their
+# manifests and row origins. Their signatures read what SYN-001's read, port for port, so the
+# verifier's rules (`verify.table`) read the same pins. They bind only on the C1 basis.
+
+
+def _c1_basis(view: InstanceView, components: tuple[str, ...]) -> None:
+    """A `c1.*` model binds only in a revision whose `record_source` names the C1 records."""
+    from openflowsheet.models.c1 import COMPONENTS as C1_COMPONENTS
+
+    if components != C1_COMPONENTS:
+        raise RevisionError(
+            "unsupported",
+            f"model_unsupported({view.model_id})",
+            f"{view.model_id} binds on the C1 records' components {list(C1_COMPONENTS)}",
+        )
+
+
+_C1_FEED_SOURCE: Final = ModelSignature(
+    model_id=c1_feed.MODEL_ID,
+    ports=c1_feed.PORTS,
+    pins=(
+        PinColumn("flows", "flow", "outlet"),
+        PinColumn("temperature", "temperature", "outlet"),
+        PinColumn("pressure", "pressure", "outlet"),
+    ),
+)
+
+
+def _c1_feed_source(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    signature = _C1_FEED_SOURCE
+    instance_contract(view, signature, components)
+    _c1_basis(view, components)
+    pin = signature.pin("flows")
+    flows = _columns(view, pin, components)
+    unit = c1_feed.FeedSource(
+        unit_id=view.unit_id,
+        flows=tuple(
+            _pin(view, column, partial(_missing_pin_hint, view, signature, pin, components, c))
+            for c, column in zip(components, flows, strict=True)
+        ),
+        temperature=_pinned(view, signature, "temperature"),
+        pressure=_pinned(view, signature, "pressure"),
+        components=components,
+    )
+    return unit, {}
+
+
+_C1_ADIABATIC_MIXER: Final = ModelSignature(
+    model_id=c1_mixer.MODEL_ID, ports=c1_mixer.PORTS, zero=("pressure_drop",)
+)
+
+
+def _c1_adiabatic_mixer(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    instance_contract(view, _C1_ADIABATIC_MIXER, components)
+    _c1_basis(view, components)
+    unit = c1_mixer.AdiabaticMixer(
+        unit_id=view.unit_id, provider=provider, context=context, components=components
+    )
+    return unit, {}
+
+
+_C1_TP_HEATER: Final = ModelSignature(
+    model_id=c1_heater.MODEL_ID,
+    ports=c1_heater.PORTS,
+    zero=("pressure_drop",),
+    pins=(PinColumn("outlet_temperature", "temperature", "outlet"),),
+)
+
+
+def _c1_tp_heater(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    signature = _C1_TP_HEATER
+    instance_contract(view, signature, components)
+    _c1_basis(view, components)
+    unit = c1_heater.TPHeater(
+        unit_id=view.unit_id,
+        provider=provider,
+        outlet_temperature=_pinned(view, signature, "outlet_temperature"),
+        context=context,
+        components=components,
+    )
+    return unit, {}
+
+
+#: As `_TP_FLASH`: the liquid product's T and P are read to be refused when they differ from the
+#: vapour's, which set the flash's.
+_C1_TP_FLASH: Final = ModelSignature(
+    model_id=c1_flash.MODEL_ID,
+    ports=c1_flash.PORTS,
+    zero=("pressure_drop",),
+    pins=(
+        PinColumn("temperature", "temperature", "vapor"),
+        PinColumn("pressure", "pressure", "vapor"),
+        PinColumn("liquid_temperature", "temperature", "liquid"),
+        PinColumn("liquid_pressure", "pressure", "liquid"),
+    ),
+)
+
+
+def _c1_tp_flash(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    signature = _C1_TP_FLASH
+    instance_contract(view, signature, components)
+    _c1_basis(view, components)
+    _stream(view, "inlet")
+    _stream(view, "vapor")
+    _stream(view, "liquid")
+    temperature = _pinned(view, signature, "temperature")
+    pressure = _pinned(view, signature, "pressure")
+    if _pinned(view, signature, "liquid_temperature") != temperature:
+        raise RevisionError("conflict", f"specification_conflict({view.unit_id}.T)")
+    if _pinned(view, signature, "liquid_pressure") != pressure:
+        raise RevisionError("conflict", f"specification_conflict({view.unit_id}.P)")
+    unit = c1_flash.TPFlash(
+        unit_id=view.unit_id,
+        provider=provider,
+        temperature=temperature,
+        pressure=pressure,
+        context=context,
+        components=components,
+    )
+    return unit, {}
+
+
+_C1_STREAM_SPLITTER: Final = ModelSignature(
+    model_id=c1_splitter.MODEL_ID, ports=c1_splitter.PORTS, required=("split_fraction",)
+)
+
+
+def _c1_stream_splitter(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    parameters = instance_contract(view, _C1_STREAM_SPLITTER, components)
+    _c1_basis(view, components)
+    unit = c1_splitter.StreamSplitter(
+        unit_id=view.unit_id,
+        split_fraction=parameters["split_fraction"],
+        components=components,
+    )
+    return unit, {}
+
+
+_C1_PRODUCT_SINK: Final = ModelSignature(model_id=c1_sink.MODEL_ID, ports=c1_sink.PORTS)
+
+
+def _c1_product_sink(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    instance_contract(view, _C1_PRODUCT_SINK, components)
+    _c1_basis(view, components)
+    return c1_sink.ProductSink(unit_id=view.unit_id, components=components), {}
+
+
 #: Model id -> signature: what each builder reads (§1.3's table), for `list_models` (T07 §4.2).
 MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
     signature.model_id: signature
@@ -1122,10 +1312,27 @@ MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
     )
 }
 
+#: M02's six C1 units (design note §8), by model id: their signatures, read by the binder only.
+#: Kept apart from `MODEL_SIGNATURES`/`MODEL_BUILDERS`, which `list_models` serves and the
+#: registered corpus's coverage tests pin, until the design lane rules on the surface change
+#: (build log D36). Joining them is moving these entries; nothing else reads the split.
+C1_MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
+    signature.model_id: signature
+    for signature in (
+        _C1_FEED_SOURCE,
+        _C1_ADIABATIC_MIXER,
+        _C1_TP_HEATER,
+        _C1_TP_FLASH,
+        _C1_STREAM_SPLITTER,
+        _C1_PRODUCT_SINK,
+    )
+}
+
 #: Model id -> what an instance of it takes as a target path, for `parse_revision`'s
 #: `specification_unsupported` hint on an instance target (ruling round 6, B2).
 _INSTANCE_TARGETS: Final[Mapping[str, str]] = {
-    model_id: _instance_targets(signature) for model_id, signature in MODEL_SIGNATURES.items()
+    model_id: _instance_targets(signature)
+    for model_id, signature in (*MODEL_SIGNATURES.items(), *C1_MODEL_SIGNATURES.items())
 }
 
 #: Model id -> builder: the six K02 models, the six T05 ones (§1.3's table) and T08's kinetic
@@ -1145,6 +1352,22 @@ MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _HEAT_EXCHANGER.model_id: _heat_exchanger,
     _KINETIC_CSTR.model_id: _kinetic_cstr,
 }
+
+#: M02's six C1 builders, as `C1_MODEL_SIGNATURES` (build log D36).
+C1_MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
+    _C1_FEED_SOURCE.model_id: _c1_feed_source,
+    _C1_ADIABATIC_MIXER.model_id: _c1_adiabatic_mixer,
+    _C1_TP_HEATER.model_id: _c1_tp_heater,
+    _C1_TP_FLASH.model_id: _c1_tp_flash,
+    _C1_STREAM_SPLITTER.model_id: _c1_stream_splitter,
+    _C1_PRODUCT_SINK.model_id: _c1_product_sink,
+}
+
+
+def _builder(model_id: str) -> Builder | None:
+    """The builder `bind_revision_flowsheet` constructs `model_id` with, read per call."""
+    found = MODEL_BUILDERS.get(model_id)
+    return found if found is not None else C1_MODEL_BUILDERS.get(model_id)
 
 
 class _PinReader(Mapping[str, float]):
@@ -1239,7 +1462,7 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
         ):
             return Unbound("unsupported", f"model_variant_mismatch({instance.unit_id})")
     for instance in view.instances:
-        if instance.model_id not in MODEL_BUILDERS:
+        if _builder(instance.model_id) is None:
             return Unbound("unsupported", f"model_unsupported({instance.model_id})")
 
     # Metered from construction: the declaration's property blocks capture the provider here,
@@ -1250,8 +1473,10 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
     built: list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] = []
     for instance in view.instances:
         reader = _PinReader(instance.pins)
+        builder = _builder(instance.model_id)
+        assert builder is not None  # every model id was checked above
         try:
-            unit, configuration = MODEL_BUILDERS[instance.model_id](
+            unit, configuration = builder(
                 replace(instance, pins=reader), provider, _CONTEXT, view.components
             )
         except RevisionError as error:
