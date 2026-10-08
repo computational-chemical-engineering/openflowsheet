@@ -2,9 +2,10 @@
 
 **The guarantee is the signature.** `authorize(capability, operation, target_principal)` is pure
 and reads the capability's `rights` and `expires_at`, the operation name and — for `cancel_job`
-only — the target job's principal. No other input exists, so no name, citation, comment, stdout
-line or request field can grant a permission: there is nowhere for it to enter (blueprint §11.3,
-design note §10.1, ADR 0019 D4). Limits are the capability's too, and admission checks them.
+and `list_audit` only (ADR 0019 Amendment 3, A3.3) — the target principal: the job's, or the
+principal whose audit rows are asked for. No other input exists, so no name, citation, comment,
+stdout line or request field can grant a permission: there is nowhere for it to enter (blueprint
+§11.3, design note §10.1, ADR 0019 D4). Limits are the capability's too, and admission checks them.
 
 **Credentials.** A bearer token is `prt_` plus 43 base64url characters (32 random bytes); only
 its SHA-256 is stored. `authenticate` compares that hash with every grant's in constant time and
@@ -52,8 +53,9 @@ from openflowsheet.application.validation import utc_timestamp
 
 _LOG = logging.getLogger(__name__)
 
-#: §10.1: the one right each operation needs — the 19 protocol methods and `artifact_bytes`.
-#: `cancel_job` of *another* principal's job needs `policy` as well (`CANCEL_OTHERS_RIGHT`).
+#: §10.1: the one right each operation needs — the 20 protocol methods and `artifact_bytes`.
+#: `cancel_job` of *another* principal's job, and `list_audit` of another principal's rows or of
+#: all principals' (ADR 0019 Amendment 3), need `policy` as well (`CANCEL_OTHERS_RIGHT`).
 OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     # Application (frozen)
     "validate": "read",
@@ -77,10 +79,13 @@ OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     "inspect_structure": "read",
     "preview_change": "read",
     "get_artifact": "read",
+    "list_audit": "read",
     # raw export (Python, CLI, HTTP)
     "artifact_bytes": "read",
 }
 CANCEL_OTHERS_RIGHT: Final[Right] = "policy"
+#: The operations whose `target_principal` `authorize` reads: another's needs `policy` too.
+TARGET_PRINCIPAL_OPERATIONS: Final[frozenset[str]] = frozenset({"cancel_job", "list_audit"})
 
 #: §10.2: the in-process caller. It owns the files; restricting it would be theatre.
 LOCAL_OWNER: Final[CapabilityReference] = CapabilityReference(
@@ -125,15 +130,17 @@ def authorize(
 ) -> Decision:
     """§10.1: may `capability` perform `operation`? Pure; `at` defaults to the clock.
 
-    `target_principal` is read for `cancel_job` alone: a job not the caller's own needs `policy`
-    as well as `execute`, and an unstated owner counts as another's. An operation outside the
-    table is refused — a defect, and the safe side of one.
+    `target_principal` is read for `cancel_job` and `list_audit` alone
+    (`TARGET_PRINCIPAL_OPERATIONS`): a job, or audit rows, not the caller's own need `policy` as
+    well as the operation's right, and an unstated principal counts as another's (for
+    `list_audit`, all principals). An operation outside the table is refused — a defect, and the
+    safe side of one.
     """
     right = OPERATION_RIGHTS.get(operation)
     if right is None:
         return Decision(False, "forbidden", (), f"no operation {operation!r} is authorized")
     required: tuple[Right, ...] = (right,)
-    if operation == "cancel_job" and target_principal != capability.principal_id:
+    if operation in TARGET_PRINCIPAL_OPERATIONS and target_principal != capability.principal_id:
         required = (right, CANCEL_OTHERS_RIGHT)
     if capability.expires_at is not None and capability.expires_at <= (at or utc_timestamp()):
         return Decision(False, "unauthenticated", required, "the credential has expired")

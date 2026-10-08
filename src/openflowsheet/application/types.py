@@ -1472,6 +1472,43 @@ class RevisionSummary:
         }
 
 
+AuditOutcome = Literal["allowed", "refused"]
+AuditOrder = Literal["ascending", "descending"]
+
+
+@dataclass(frozen=True)
+class AuditRecord:
+    """ADR 0019 Amendment 3 (A3.3; M06 design note §4.3) `list_audit`: one row of the project's
+    audit (§10.7) — an effect or a refusal — as the store holds it. `effect` is `<kind>:<id>`;
+    `idempotency_key` is the ledger's key of an `allowed` row whose principal, operation and
+    request hash it shares (a keyed request's hash covers its key), else `None`."""
+
+    seq: int
+    at: str
+    principal_id: str
+    capability_id: str
+    operation: str
+    outcome: AuditOutcome
+    code: str | None
+    request_sha256: str | None
+    effect: str | None
+    idempotency_key: str | None
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "seq": self.seq,
+            "at": self.at,
+            "principal_id": self.principal_id,
+            "capability_id": self.capability_id,
+            "operation": self.operation,
+            "outcome": self.outcome,
+            "code": self.code,
+            "request_sha256": self.request_sha256,
+            "effect": self.effect,
+            "idempotency_key": self.idempotency_key,
+        }
+
+
 def validate_inline(label: str, schema: Mapping[str, Any], document: Any) -> None:
     """Raise `DocumentSchemaError` (named `label`) unless `document` satisfies `schema`: a schema
     that is not published itself but may `$ref` the published ones — `operations`' request and

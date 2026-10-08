@@ -618,6 +618,98 @@
           }
         }
       }
+    },
+    "audit_record": {
+      "description": "ADR 0019 Amendment 3 (A3.3; M06 design note §4.3): one row of the project's audit (§10.7), an effect or a refusal, as the store holds it. `effect` is `<kind>:<id>`; `idempotency_key` is the ledger's key of an `allowed` row with the same principal, operation and request hash, else null.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "at",
+        "capability_id",
+        "code",
+        "effect",
+        "idempotency_key",
+        "operation",
+        "outcome",
+        "principal_id",
+        "request_sha256",
+        "seq"
+      ],
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "at": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/timestamp"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "allowed",
+            "refused"
+          ]
+        },
+        "code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_sha256": {
+          "anyOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effect": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "idempotency_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "audit_page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/audit_record"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        }
+      }
     }
   }
 }

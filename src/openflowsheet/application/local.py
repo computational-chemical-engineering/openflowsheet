@@ -94,6 +94,8 @@ from openflowsheet.application.transactions import (
 from openflowsheet.application.types import (
     ApiError,
     ApiErrorCode,
+    AuditOrder,
+    AuditRecord,
     CapabilityReference,
     Change,
     DocumentSchemaError,
@@ -130,6 +132,9 @@ TASKS: tuple[str, ...] = get_args(Task)
 WAIT_POLL_S: Final[float] = 0.1
 #: §11.4: page sizes — job lists as arrays (default 50, at most 200), events (100, at most 500).
 MAX_JOB_PAGE: Final[int] = 200
+#: ADR 0019 Amendment 3 (A3.3): `list_audit`'s orders, and its `operation` filter's length bound.
+AUDIT_ORDERS: Final[tuple[str, ...]] = ("ascending", "descending")
+_AUDIT_OPERATION_LIMIT: Final[int] = 128
 MAX_EVENT_PAGE: Final[int] = 500
 
 
@@ -1152,6 +1157,87 @@ class LocalApplication:
             operation, document, artifact_id, row.sha256, pointer, depth, cursor, limit
         )
 
+    def list_audit(
+        self,
+        *,
+        principal_id: str | None = None,
+        operation: str | None = None,
+        order: AuditOrder = "ascending",
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> Page[AuditRecord]:
+        """ADR 0019 Amendment 3 (A3.3; M06 design note §4.3): the project's audit rows — every
+        effect and every refusal — by `seq`, optionally of one principal and one operation, each
+        `allowed` row with the ledger's idempotency key. `read`; another principal's rows, or all
+        principals' (`principal_id` omitted), need `policy` as well (`cancel_job`'s rule). The
+        cursor is `{order, seq}`; one issued for the other order is refused at `/cursor`."""
+        name = "list_audit"
+        self._authorize(name, target_principal=principal_id)
+        if principal_id is not None and not isinstance(principal_id, str):
+            self._refuse(
+                "invalid_request", "principal_id is an id", operation=name, pointer="/principal_id"
+            )
+        if operation is not None and (
+            not isinstance(operation, str) or not 1 <= len(operation) <= _AUDIT_OPERATION_LIMIT
+        ):
+            self._refuse(
+                "invalid_request",
+                f"operation is a string of 1 to {_AUDIT_OPERATION_LIMIT} characters",
+                operation=name,
+                pointer="/operation",
+            )
+        if order not in AUDIT_ORDERS:
+            self._refuse(
+                "invalid_request",
+                f"order is one of {list(AUDIT_ORDERS)}",
+                operation=name,
+                pointer="/order",
+            )
+        self._check_limit(limit, MAX_PAGE, name)
+        after = self._decode_audit_cursor(cursor, order, name)
+        rows, more = self._store.list_audit(
+            principal_id=principal_id,
+            operation=operation,
+            descending=order == "descending",
+            after_seq=after,
+            limit=limit,
+        )
+        next_cursor = _encode_audit_cursor(order, rows[-1].seq) if more else None
+        return Page(items=tuple(rows), next_cursor=next_cursor)
+
+    def _decode_audit_cursor(self, cursor: str | None, order: str, operation: str) -> int | None:
+        """`list_audit`'s cursor, `{order, seq}`, as the `seq` to continue after; `None` for the
+        first page. A cursor of the other order, or one this list did not issue, is refused."""
+        if cursor is None:
+            return None
+        try:
+            decoded = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
+        except (ValueError, TypeError, binascii.Error):
+            decoded = None
+        seq = decoded.get("seq") if isinstance(decoded, dict) else None
+        if (
+            not isinstance(decoded, dict)
+            or set(decoded) != {"order", "seq"}
+            or decoded["order"] not in AUDIT_ORDERS
+            or isinstance(seq, bool)
+            or not isinstance(seq, int)
+            or seq < 0
+        ):
+            self._refuse(
+                "invalid_request",
+                "cursor is not one this list issued",
+                operation=operation,
+                pointer="/cursor",
+            )
+        if decoded["order"] != order:
+            self._refuse(
+                "invalid_request",
+                f"cursor was issued for order {decoded['order']!r}, not {order!r}",
+                operation=operation,
+                pointer="/cursor",
+            )
+        return int(seq)
+
     def artifact_bytes(self, artifact_id: str) -> bytes:
         """§4.3, §10.4: an artifact file's bytes exactly as stored — the raw export (Python, CLI,
         HTTP; never MCP). A bundle is a directory, exported member by member. `read`."""
@@ -1467,6 +1553,13 @@ def _file_document(path: Path) -> Any:
             if first_noncanonical(document) is None:
                 return document
     return raw.decode("utf-8", errors="replace").splitlines()
+
+
+def _encode_audit_cursor(order: str, seq: int) -> str:
+    """ADR 0019 Amendment 3 (A3.3): `list_audit`'s cursor, `base64url(canonical_json({"order":
+    o, "seq": s}))` unpadded, `s` the `seq` of the last row returned."""
+    encoded = base64.urlsafe_b64encode(canonical_json({"order": order, "seq": seq}))
+    return encoded.decode("ascii").rstrip("=")
 
 
 def _encode_cursor(ordinal: int) -> str:

@@ -35,7 +35,9 @@ one member removed) and one converged solve: `submit_job`, `list_jobs`, `list_jo
 `$def` is that response with its first required member removed, `{expect_error, document}`; and
 `model_registry_view` has a second, its first pin without the `specifications` ADR 0019
 Amendment 2 requires; and `semantic_diff` has a second, the response without the `elements`
-ADR 0019 Amendment 3 (A3.2) requires.
+ADR 0019 Amendment 3 (A3.2) requires. ADR 0019 Amendment 3 (A3.3) adds `audit_page` (the
+project's `submit_job` audit rows, `list_audit` with `operation: submit_job`) and its first item,
+`audit_record`; an audit row's `at` is a clock reading and is masked like the timestamps.
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -94,7 +96,7 @@ EVENT_FIXTURES = (
     "job_event/valid/ended_completed.json",
     "job_event/valid/ended_cancelled.json",
 )
-TIMESTAMPS = frozenset({"created_at", "started_at", "ended_at", "recorded_at"})
+TIMESTAMPS = frozenset({"created_at", "started_at", "ended_at", "recorded_at", "at"})
 RESULTS_SCHEMA = "application-results.schema.json"
 #: Each `application-results` `$def`'s valid fixture: what the response shows.
 RESULTS_VALID = {
@@ -108,6 +110,8 @@ RESULTS_VALID = {
     "revision_page": "two_revisions",
     "projection": "syn001_nominal_depth_1",
     "semantic_diff": "one_value_changed_one_member_removed",
+    "audit_record": "solve_accepted_with_its_key",
+    "audit_page": "one_submit",
 }
 
 
@@ -240,6 +244,11 @@ def application_results_documents() -> dict[str, Any]:
                     "diff_revisions", {"from_revision": parent, "to_revision": child}
                 ),
             }
+            # ADR 0019 Amendment 3 (A3.3): the submit's audit row, which carries its fixed key
+            # (the commits' keys are drawn from the clock by `commit`).
+            audit = call("list_audit", {"operation": "submit_job"})
+            responses["audit_record"] = audit["items"][0]
+            responses["audit_page"] = audit
             violations = lifecycle_violations(application)
             if violations:
                 raise SystemExit(f"the fixture job breaks the lifecycle: {violations}")
