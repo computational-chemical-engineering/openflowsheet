@@ -6,9 +6,10 @@
   the report), draft 2020-12, under the published `$id` base.
 - **Fixtures (R-015).** One valid fixture per `$def` and per schema at least, each emitted by a
   real run (`scripts/m03_schema_fixtures.py`), and one invalid fixture each, a valid one with its
-  first required member removed. `optimization-report#/$defs/start` has none: a start record is
-  written only by the gray-box adapter (WO-8), and no default-environment run produces one. The
-  gap is named here, not filled with a constructed record.
+  first required member removed. The start records and the solved reports are the gray-box
+  adapter's (WO-8), emitted by real Ipopt runs in the audited environment
+  (`m03_schema_fixtures.NLP_FIXTURES`): the default gate validates them and checks their rules, and
+  `tests/test_m03_nlp_greybox.py` (marked `nlp`) checks that they are what the adapter emits today.
 - **Rules a JSON Schema cannot express** (spec §10), checked on every valid fixture and on every
   sensitivity result nested in one: a refused column's values are `null`; `status` agrees with
   `refusals`; a `determined: false` parameter carries no standard error; `KKT_POINT_VERIFIED`
@@ -54,8 +55,8 @@ DEFS = {
     },
     REPORT: {"reason", "check", "candidate", "start"},
 }
-#: `$def`s whose first real producer is a later work order (module docstring).
-PENDING = {REPORT: {"start"}}
+#: `$def`s whose first real producer is a later work order (module docstring): none since WO-8.
+PENDING: dict[str, set[str]] = {}
 
 
 def directory(schema: str) -> Path:
@@ -110,14 +111,18 @@ def test_every_def_has_a_valid_and_an_invalid_fixture_emitted_by_a_real_run(
 
 def test_the_fixtures_are_what_real_runs_emit_today() -> None:
     """R-015: regenerated, every fixture is byte-identical — sensitivities, sweeps, fits and the
-    verifier are bitwise reproducible on one platform (spec §3.7)."""
+    verifier are bitwise reproducible on one platform (spec §3.7). The audited environment's
+    fixtures are regenerated there (`test_m03_nlp_greybox.py`); here they need only exist."""
     emitted = m03_schema_fixtures.documents()
     committed = sorted(
         str(path.relative_to(FIXTURES))
         for schema in DEFS
         for path in directory(schema).rglob("*.json")
     )
-    assert sorted(emitted) == committed
+    nlp = sorted(m03_schema_fixtures.NLP_FIXTURES)
+    assert set(nlp) <= set(committed)
+    assert not set(nlp) & set(emitted)
+    assert sorted(emitted) == sorted(set(committed) - set(nlp))
     for name, document in emitted.items():
         assert (FIXTURES / name).read_text(encoding="utf-8") == m03_schema_fixtures.serialize(
             document
@@ -250,7 +255,8 @@ def test_the_non_schema_rules_hold_on_every_valid_fixture() -> None:
     # the four-point budget sweep's four and the converged point's own.
     assert checked["sensitivity"] == 5 + 1 + 8 + 4 + 1
     assert checked["estimation"] == 3
-    assert checked["report"] == 2
+    # Two `UNSUPPORTED` reports of the default environment, NLP-1 and NLP-INF solved (WO-8).
+    assert checked["report"] == 4
 
 
 def qualified_fixture() -> dict[str, Any]:
@@ -301,7 +307,12 @@ def start_record(
         "ipopt_status": ipopt_status,
         "ipopt_message": None,
         "iterations": 12,
-        "evaluations": {"residual_calls": 13, "jacobian_calls": 13, "property_calls": 0},
+        "evaluations": {
+            "residual_calls": 13,
+            "jacobian_calls": 13,
+            "property_calls": 0,
+            "evaluation_errors": 0,
+        },
         "wall_time_s": 0.5,
         "final_decisions": {"U-SPLIT.split_fraction": 0.89, "U-FLASH.T_spec": 361.5},
         "ipopt_final": {

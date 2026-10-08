@@ -7,12 +7,17 @@ author's reading of the schema, an emitted one tests the code (K03's rule). One 
 `$def` and per schema is a valid one with its first required member removed, `{expect_error,
 document}` (the `application-results` precedent, `scripts/t07_schema_fixtures.py`).
 
-`optimization-report.schema.json#/$defs/start` has no fixture yet: a start record is what the
-gray-box adapter (WO-8) writes for one Ipopt run, and no default-environment run produces one.
-`tests/test_m03_schemas.py` names that gap rather than filling it with a constructed record.
+`optimization-report.schema.json#/$defs/start` and the solved reports are what the gray-box adapter
+(WO-8) writes for real Ipopt runs, which only the audited environment of `docs/m03-ipopt-audit.md`
+can make: `--nlp` emits them there (`NLP_FIXTURES`), and the default run leaves them alone. A start
+record carries a measured wall time, the one member no two runs share, so the audited environment's
+comparison masks `wall_time_s` and nothing else; every other value is bitwise reproducible under
+`OMP_NUM_THREADS=1` (WO-8's measurement), which `--nlp` therefore requires.
 
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/m03_schema_fixtures.py [--write]
+    OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=<env>/share/pyomo PYTHONPATH=src \
+        <env>/bin/python scripts/m03_schema_fixtures.py --nlp [--write]
 """
 
 from __future__ import annotations
@@ -20,6 +25,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -66,7 +72,17 @@ FIXTURE_DIR = ROOT / "tests" / "fixtures" / "schemas"
 STUDY_SCHEMA = "study.schema.json"
 REPORT_SCHEMA = "optimization-report.schema.json"
 #: The `$def`s with no real producer yet, and why (module docstring).
-PENDING_DEFS = {REPORT_SCHEMA: {"start": "written by the gray-box adapter (WO-8) only"}}
+PENDING_DEFS: dict[str, dict[str, str]] = {}
+#: The fixtures only the audited NLP environment emits (`nlp_documents`), by path.
+NLP_FIXTURES = (
+    "optimization_report/start/invalid/missing_start.json",
+    "optimization_report/start/valid/nlp_1_start_0.json",
+    "optimization_report/start/valid/nlp_inf_start_0.json",
+    "optimization_report/valid/nlp_1_solved.json",
+    "optimization_report/valid/nlp_inf_solved.json",
+)
+#: The one member of an emitted NLP fixture that no two runs share.
+VOLATILE = "wall_time_s"
 
 
 def sensitivity_documents() -> dict[str, Any]:
@@ -213,9 +229,43 @@ def optimization_documents() -> dict[str, Any]:
     }
 
 
-def _valid(schema: str, documents: dict[str, Any]) -> dict[str, Any]:
+def nlp_documents() -> dict[str, Any]:
+    """NLP-1 and NLP-INF solved by the gray-box adapter (A35, A37), and the first start record of
+    each. Only in the audited environment, single-threaded (module docstring)."""
+    from openflowsheet.studies.nlp.closure import audited_solver
+
+    if not audited_solver().available:
+        raise SystemExit(f"--nlp needs the audited NLP environment: {audited_solver().detail}")
+    if os.environ.get("OMP_NUM_THREADS") != "1":
+        raise SystemExit("--nlp needs OMP_NUM_THREADS=1 (bitwise reproducible MUMPS/OpenBLAS)")
+    sheet = flowsheet({})
+    out: dict[str, Any] = {}
+    for problem, expected in (("NLP-1", "KKT_POINT_VERIFIED"), ("NLP-INF", "INFEASIBLE_REPORTED")):
+        report = optimize(nlp_formulation(problem), sheet)
+        if report.status != expected:
+            raise SystemExit(f"{problem} ended {report.status}, not {expected}")
+        name = problem.lower().replace("-", "_")
+        document = report.as_document()
+        out[f"optimization_report/{name}_solved"] = document
+        out[f"start/{name}_start_0"] = document["starts"][0]
+    return _valid(REPORT_SCHEMA, out, invalid={"start"})
+
+
+def masked(document: Any) -> Any:
+    """`document` without its `VOLATILE` members, at any depth."""
+    if isinstance(document, dict):
+        return {key: masked(value) for key, value in document.items() if key != VOLATILE}
+    if isinstance(document, list):
+        return [masked(value) for value in document]
+    return document
+
+
+def _valid(
+    schema: str, documents: dict[str, Any], *, invalid: set[str] | None = None
+) -> dict[str, Any]:
     """`<dir>/valid/<name>.json` for the schema's own documents, `<dir>/<def>/valid/<name>.json`
-    for a `$def`'s, and for each the first required member removed under `invalid/`."""
+    for a `$def`'s, and for each the first required member removed under `invalid/` (for the
+    kinds in `invalid` only, when given)."""
     directory = schema.removesuffix(".schema.json").replace("-", "_")
     loaded = json.loads((ROOT / "schemas" / schema).read_text(encoding="utf-8"))
     top = directory
@@ -227,6 +277,8 @@ def _valid(schema: str, documents: dict[str, Any]) -> dict[str, Any]:
         out[f"{where}/valid/{name}.json"] = document
         first.setdefault(kind, document)
     for kind, document in first.items():
+        if invalid is not None and kind not in invalid:
+            continue
         where = directory if kind == top else f"{directory}/{kind}"
         definition = loaded if kind == top else loaded["$defs"][kind]
         member = definition["required"][0]
@@ -253,13 +305,22 @@ def serialize(document: Any) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true")
+    parser.add_argument(
+        "--nlp", action="store_true", help="emit NLP_FIXTURES (the audited NLP environment only)"
+    )
     arguments = parser.parse_args()
 
     differing = []
-    for name, document in documents().items():
+    emitted = nlp_documents() if arguments.nlp else documents()
+    for name, document in emitted.items():
         path = FIXTURE_DIR / name
         text = serialize(document)
-        if not path.exists() or path.read_text(encoding="utf-8") != text:
+        same = path.exists() and (
+            masked(json.loads(path.read_text(encoding="utf-8"))) == masked(json.loads(text))
+            if arguments.nlp
+            else path.read_text(encoding="utf-8") == text
+        )
+        if not same:
             differing.append(name)
             if arguments.write:
                 path.parent.mkdir(parents=True, exist_ok=True)

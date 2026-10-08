@@ -1,0 +1,545 @@
+{
+ "candidate": {
+  "active_set": [
+   {
+    "kind": "constraint",
+    "name": "recovery_A",
+    "side": "lower",
+    "slack": 2.680078381445128e-12,
+    "target": "recovery_A"
+   }
+  ],
+  "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+  "checks": [
+   {
+    "certificate_status": "VERIFIED",
+    "check": "V1",
+    "message": "",
+    "outcome": "pass",
+    "resolve_outcome": "CONVERGED"
+   },
+   {
+    "check": "V2",
+    "outcome": "pass",
+    "scaled_difference_inf": 2.473825588822365e-15,
+    "threshold": 1e-06,
+    "worst_variable": "U-FLASH.Q"
+   },
+   {
+    "active_set": [
+     "recovery_A"
+    ],
+    "check": "V3",
+    "outcome": "pass",
+    "outside_box": [],
+    "tau_active": 1e-06,
+    "tau_feas": 1e-08,
+    "violated": []
+   },
+   {
+    "check": "V4",
+    "declared": {
+     "U-FLASH": "TWO_PHASE",
+     "U-HEAT": "LIQUID"
+    },
+    "inside_tau_regime": [],
+    "outcome": "pass",
+    "regime_changed": [],
+    "splits": [
+     {
+      "kind": "TP",
+      "margin": 0.2030089116793401,
+      "regime": "LIQUID",
+      "streams": "S3",
+      "unit_id": "U-HEAT"
+     },
+     {
+      "kind": "TP",
+      "margin": 0.08160527266773565,
+      "regime": "TWO_PHASE",
+      "streams": "S4/S5",
+      "unit_id": "U-FLASH"
+     }
+    ],
+    "tau_regime": 0.0001
+   },
+   {
+    "check": "V5",
+    "licq": true,
+    "multipliers_nonnegative": true,
+    "outcome": "pass",
+    "second_order": "not_assessed",
+    "sensitivity_status": "QUALIFIED",
+    "stationarity_residual_inf": 1.3160128349882077e-09,
+    "tau_kkt": 1e-06
+   },
+   {
+    "check": "V6",
+    "constraint_values": {
+     "recovery_A": 2.680078381445128e-12
+    },
+    "objective": 0.6139625070047436,
+    "outcome": "pass"
+   }
+  ],
+  "constraint_values": {
+   "recovery_A": 2.680078381445128e-12
+  },
+  "decisions": {
+   "U-FLASH.T_spec": 361.49964918667564,
+   "U-SPLIT.split_fraction": 0.8977866130139803
+  },
+  "kkt": {
+   "constraint_gradients_scaled": {
+    "recovery_A": [
+     3.3306690738754696e-16,
+     1.0033869306981864
+    ]
+   },
+   "licq": true,
+   "licq_singular_values": [
+    1.0033869306981864
+   ],
+   "multipliers": {
+    "recovery_A": 3.391154878720765
+   },
+   "multipliers_nonnegative": true,
+   "objective_gradient_scaled": [
+    1.3160139644696756e-09,
+    3.402640485281809
+   ],
+   "second_order": "not_assessed",
+   "stationarity_residual_inf": 1.3160128349882077e-09,
+   "tau_kkt": 1e-06
+  },
+  "objective": 0.6139625070047436,
+  "slacks": {
+   "recovery_A": {
+    "lower": 2.680078381445128e-12
+   }
+  },
+  "state_sha256": "8e24866e364ef7a35f0393cc0d2a23cc6437dfc5324efc63633c672d9cb1b859"
+ },
+ "claims": {
+  "global_optimality": false,
+  "local_stationarity": true,
+  "second_order": "not_assessed"
+ },
+ "distinct_local_solutions": 1,
+ "formulation": {
+  "constraints": [
+   {
+    "expression": {
+     "constant": 0.0,
+     "linear": {
+      "S1.n.A": -0.25,
+      "S4.n.A": 0.3333333333333333
+     },
+     "quadratic": [],
+     "text": "(S4.n.A - 0.75 S1.n.A)/3"
+    },
+    "id": "recovery_A",
+    "lower": 0.0,
+    "upper": null
+   }
+  ],
+  "decisions": [
+   {
+    "id": "U-SPLIT.split_fraction",
+    "lower": 0.5,
+    "scale": 1.0,
+    "upper": 0.97
+   },
+   {
+    "id": "U-FLASH.T_spec",
+    "lower": 356.0,
+    "scale": 100.0,
+    "upper": 366.0
+   }
+  ],
+  "declared_regimes": {
+   "U-FLASH": "TWO_PHASE",
+   "U-HEAT": "LIQUID"
+  },
+  "hessian": "limited-memory",
+  "kind": "full_space",
+  "objective": {
+   "constant": 0.0,
+   "linear": {
+    "U-FLASH.Q": 1e-05,
+    "U-HEAT.Q": 1e-05
+   },
+   "quadratic": [
+    {
+     "coefficient": 1e-08,
+     "variables": [
+      "U-HEAT.Q",
+      "U-HEAT.Q"
+     ]
+    }
+   ],
+   "sense": "minimize",
+   "text": "(U-HEAT.Q + U-FLASH.Q)/1e5 + 100 (U-HEAT.Q/1e5)^2"
+  },
+  "problem_id": "NLP-1",
+  "starts": [
+   [
+    0.6,
+    360.0
+   ],
+   [
+    0.85,
+    357.0
+   ],
+   [
+    0.55,
+    365.0
+   ]
+  ]
+ },
+ "hessian_policy": {
+  "approximation": "ipopt-limited-memory",
+  "capability": "absent",
+  "history": 6
+ },
+ "limits": {
+  "hessian": "absent (limited-memory approximation only)",
+  "max_iter": 500,
+  "max_wall_time": 120,
+  "regime_restriction": "every lifted TP split keeps the start's regime with margin >= tau_regime"
+ },
+ "model": {
+  "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769"
+ },
+ "reasons": [],
+ "schema_version": "optimization-report-v1",
+ "solver": {
+  "audit": {
+   "document": "docs/m03-ipopt-audit.md",
+   "gate": "G-A10",
+   "verdict": "PASS"
+  },
+  "available": true,
+  "cyipopt": "1.7.0",
+  "detail": "audited by docs/m03-ipopt-audit.md (G-A10)",
+  "ipopt": "3.14.20",
+  "linear_solver": "mumps",
+  "options": {
+   "acceptable_iter": 15,
+   "acceptable_tol": 1e-08,
+   "bound_relax_factor": 0,
+   "compl_inf_tol": 1e-08,
+   "constr_viol_tol": 1e-08,
+   "dual_inf_tol": 1e-06,
+   "hessian_approximation": "limited-memory",
+   "honor_original_bounds": "yes",
+   "limited_memory_max_history": 6,
+   "linear_solver": "mumps",
+   "max_iter": 500,
+   "max_wall_time": 120,
+   "mu_strategy": "monotone",
+   "nlp_scaling_method": "user-scaling",
+   "print_level": 0,
+   "tol": 1e-10
+  },
+  "pyomo": "6.10.1"
+ },
+ "starts": [
+  {
+   "checks": [
+    {
+     "certificate_status": "VERIFIED",
+     "check": "V1",
+     "message": "",
+     "outcome": "pass",
+     "resolve_outcome": "CONVERGED"
+    },
+    {
+     "check": "V2",
+     "outcome": "pass",
+     "scaled_difference_inf": 2.5461114698070258e-14,
+     "threshold": 1e-06,
+     "worst_variable": "S5.N"
+    },
+    {
+     "active_set": [
+      "recovery_A"
+     ],
+     "check": "V3",
+     "outcome": "pass",
+     "outside_box": [],
+     "tau_active": 1e-06,
+     "tau_feas": 1e-08,
+     "violated": []
+    },
+    {
+     "check": "V4",
+     "declared": {
+      "U-FLASH": "TWO_PHASE",
+      "U-HEAT": "LIQUID"
+     },
+     "inside_tau_regime": [],
+     "outcome": "pass",
+     "regime_changed": [],
+     "splits": [
+      {
+       "kind": "TP",
+       "margin": 0.20300891167946022,
+       "regime": "LIQUID",
+       "streams": "S3",
+       "unit_id": "U-HEAT"
+      },
+      {
+       "kind": "TP",
+       "margin": 0.08160527266757933,
+       "regime": "TWO_PHASE",
+       "streams": "S4/S5",
+       "unit_id": "U-FLASH"
+      }
+     ],
+     "tau_regime": 0.0001
+    },
+    {
+     "check": "V5",
+     "licq": true,
+     "multipliers_nonnegative": true,
+     "outcome": "pass",
+     "second_order": "not_assessed",
+     "sensitivity_status": "QUALIFIED",
+     "stationarity_residual_inf": 1.431709890855154e-09,
+     "tau_kkt": 1e-06
+    },
+    {
+     "check": "V6",
+     "constraint_values": {
+      "recovery_A": 2.680522470654978e-12
+     },
+     "objective": 0.6139625070047441,
+     "outcome": "pass"
+    }
+   ],
+   "classification": "KKT_POINT_VERIFIED",
+   "evaluations": {
+    "evaluation_errors": 0,
+    "jacobian_calls": 24,
+    "property_calls": 630,
+    "residual_calls": 22
+   },
+   "final_decisions": {
+    "U-FLASH.T_spec": 361.49964918667564,
+    "U-SPLIT.split_fraction": 0.897786613014196
+   },
+   "ipopt_final": {
+    "complementarity": 9.091008091482351e-12,
+    "dual_infeasibility": 1.9844397359658331e-13,
+    "primal_infeasibility": 3.637978807091713e-11
+   },
+   "ipopt_message": "Algorithm terminated successfully at a locally optimal point, satisfying the convergence tolerances (can be specified by options).",
+   "ipopt_status": 0,
+   "iterations": 21,
+   "start": {
+    "U-FLASH.T_spec": 360.0,
+    "U-SPLIT.split_fraction": 0.6
+   },
+   "wall_time_s": 0.07557152699882863
+  },
+  {
+   "checks": [
+    {
+     "certificate_status": "VERIFIED",
+     "check": "V1",
+     "message": "",
+     "outcome": "pass",
+     "resolve_outcome": "CONVERGED"
+    },
+    {
+     "check": "V2",
+     "outcome": "pass",
+     "scaled_difference_inf": 2.473825588822365e-15,
+     "threshold": 1e-06,
+     "worst_variable": "U-FLASH.Q"
+    },
+    {
+     "active_set": [
+      "recovery_A"
+     ],
+     "check": "V3",
+     "outcome": "pass",
+     "outside_box": [],
+     "tau_active": 1e-06,
+     "tau_feas": 1e-08,
+     "violated": []
+    },
+    {
+     "check": "V4",
+     "declared": {
+      "U-FLASH": "TWO_PHASE",
+      "U-HEAT": "LIQUID"
+     },
+     "inside_tau_regime": [],
+     "outcome": "pass",
+     "regime_changed": [],
+     "splits": [
+      {
+       "kind": "TP",
+       "margin": 0.2030089116793401,
+       "regime": "LIQUID",
+       "streams": "S3",
+       "unit_id": "U-HEAT"
+      },
+      {
+       "kind": "TP",
+       "margin": 0.08160527266773565,
+       "regime": "TWO_PHASE",
+       "streams": "S4/S5",
+       "unit_id": "U-FLASH"
+      }
+     ],
+     "tau_regime": 0.0001
+    },
+    {
+     "check": "V5",
+     "licq": true,
+     "multipliers_nonnegative": true,
+     "outcome": "pass",
+     "second_order": "not_assessed",
+     "sensitivity_status": "QUALIFIED",
+     "stationarity_residual_inf": 1.3160128349882077e-09,
+     "tau_kkt": 1e-06
+    },
+    {
+     "check": "V6",
+     "constraint_values": {
+      "recovery_A": 2.680078381445128e-12
+     },
+     "objective": 0.6139625070047436,
+     "outcome": "pass"
+    }
+   ],
+   "classification": "KKT_POINT_VERIFIED",
+   "evaluations": {
+    "evaluation_errors": 0,
+    "jacobian_calls": 19,
+    "property_calls": 495,
+    "residual_calls": 17
+   },
+   "final_decisions": {
+    "U-FLASH.T_spec": 361.49964918667564,
+    "U-SPLIT.split_fraction": 0.8977866130139803
+   },
+   "ipopt_final": {
+    "complementarity": 9.090909090909137e-12,
+    "dual_infeasibility": 3.42370976391067e-13,
+    "primal_infeasibility": 9.458744898438454e-11
+   },
+   "ipopt_message": "Algorithm terminated successfully at a locally optimal point, satisfying the convergence tolerances (can be specified by options).",
+   "ipopt_status": 0,
+   "iterations": 16,
+   "start": {
+    "U-FLASH.T_spec": 357.0,
+    "U-SPLIT.split_fraction": 0.85
+   },
+   "wall_time_s": 0.055343074000120396
+  },
+  {
+   "checks": [
+    {
+     "certificate_status": "VERIFIED",
+     "check": "V1",
+     "message": "",
+     "outcome": "pass",
+     "resolve_outcome": "CONVERGED"
+    },
+    {
+     "check": "V2",
+     "outcome": "pass",
+     "scaled_difference_inf": 1.0658141036401503e-14,
+     "threshold": 1e-06,
+     "worst_variable": "S3.L"
+    },
+    {
+     "active_set": [
+      "recovery_A"
+     ],
+     "check": "V3",
+     "outcome": "pass",
+     "outside_box": [],
+     "tau_active": 1e-06,
+     "tau_feas": 1e-08,
+     "violated": []
+    },
+    {
+     "check": "V4",
+     "declared": {
+      "U-FLASH": "TWO_PHASE",
+      "U-HEAT": "LIQUID"
+     },
+     "inside_tau_regime": [],
+     "outcome": "pass",
+     "regime_changed": [],
+     "splits": [
+      {
+       "kind": "TP",
+       "margin": 0.2030089116788245,
+       "regime": "LIQUID",
+       "streams": "S3",
+       "unit_id": "U-HEAT"
+      },
+      {
+       "kind": "TP",
+       "margin": 0.0816052726684049,
+       "regime": "TWO_PHASE",
+       "streams": "S4/S5",
+       "unit_id": "U-FLASH"
+      }
+     ],
+     "tau_regime": 0.0001
+    },
+    {
+     "check": "V5",
+     "licq": true,
+     "multipliers_nonnegative": true,
+     "outcome": "pass",
+     "second_order": "not_assessed",
+     "sensitivity_status": "QUALIFIED",
+     "stationarity_residual_inf": 8.216789954418864e-10,
+     "tau_kkt": 1e-06
+    },
+    {
+     "check": "V6",
+     "constraint_values": {
+      "recovery_A": 2.6806334929574405e-12
+     },
+     "objective": 0.6139625070047443,
+     "outcome": "pass"
+    }
+   ],
+   "classification": "KKT_POINT_VERIFIED",
+   "evaluations": {
+    "evaluation_errors": 0,
+    "jacobian_calls": 20,
+    "property_calls": 522,
+    "residual_calls": 18
+   },
+   "final_decisions": {
+    "U-FLASH.T_spec": 361.49964918667564,
+    "U-SPLIT.split_fraction": 0.8977866130130546
+   },
+   "ipopt_final": {
+    "complementarity": 9.091384585023745e-12,
+    "dual_infeasibility": 2.5034285761027214e-12,
+    "primal_infeasibility": 4.3655745685100555e-11
+   },
+   "ipopt_message": "Algorithm terminated successfully at a locally optimal point, satisfying the convergence tolerances (can be specified by options).",
+   "ipopt_status": 0,
+   "iterations": 17,
+   "start": {
+    "U-FLASH.T_spec": 365.0,
+    "U-SPLIT.split_fraction": 0.55
+   },
+   "wall_time_s": 0.05940878800174687
+  }
+ ],
+ "status": "KKT_POINT_VERIFIED"
+}

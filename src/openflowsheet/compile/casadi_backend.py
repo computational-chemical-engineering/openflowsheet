@@ -805,6 +805,11 @@ class ParametricTwin:
         """`∂F/∂p_P` at `(x, p_P)`: rows `equation_ids`, columns the requested pinned inputs."""
         return self._matrix(self._jacobian_p, x, values, self.parameter_ids)
 
+    def block_calls(self) -> Mapping[str, Mapping[str, int]]:
+        """Per-block value and Jacobian callback counts since construction (ADR 0003 D5.5): how
+        many property-block evaluations the twin's residuals and Jacobians have cost."""
+        return self._counters.snapshot()
+
     def constants_sha256(self, values: Mapping[str, float]) -> str:
         """`constants_sha256` of the full pinned-input vector, the requested ones at `values`."""
         return constants_sha256(

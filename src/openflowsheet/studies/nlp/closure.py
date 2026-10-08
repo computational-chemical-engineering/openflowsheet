@@ -56,6 +56,11 @@ SCHEMA_VERSION: Final = "optimization-report-v1"
 AUDIT_DOCUMENT: Final = "docs/m03-ipopt-audit.md"
 AUDIT_GATE: Final = "G-A10"
 AUDIT_VERDICT: Final = "PASS"
+#: The audited `libpynumero_ASL.so` (audit §4.3, the inventory's `$ENV/share/pyomo/lib` object):
+#: the adapter refuses to solve with any other build PyNumero finds (audit §9 item 2).
+AUDITED_PYNUMERO_ASL_SHA256: Final = (
+    "6646bbdd51332c3a5b306604fe0f6bd572d7cec352af994c76bfe1cdf550161c"
+)
 #: The one module allowed to import Pyomo and cyipopt (WO-8), and the libraries it needs.
 ADAPTER_MODULE: Final = "openflowsheet.studies.nlp.greybox"
 NLP_LIBRARIES: Final = ("pyomo", "cyipopt")

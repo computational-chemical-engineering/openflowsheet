@@ -899,10 +899,12 @@
         "evaluations": {
           "type": "object",
           "additionalProperties": false,
+          "description": "Spec §8.6's counters since the start's twin was built: full-space residuals and Jacobians, property-block callbacks (value and Jacobian), and (WO-8) the twin evaluations that failed and were reported to Ipopt as evaluation errors (spec §8.2, §14 Q-F4), so that a start whose trial points were rejected is told apart from one that never met a domain error.",
           "required": [
             "residual_calls",
             "jacobian_calls",
-            "property_calls"
+            "property_calls",
+            "evaluation_errors"
           ],
           "properties": {
             "residual_calls": {
@@ -914,6 +916,10 @@
               "minimum": 0
             },
             "property_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "evaluation_errors": {
               "type": "integer",
               "minimum": 0
             }
