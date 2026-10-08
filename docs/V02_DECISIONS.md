@@ -478,3 +478,12 @@ Grep, don't read whole. Newest at the bottom.
   clause. check.sh 7889 passed; generator 67 claims. Session aligned ADR 0028's cell rule + answers intro and appended an
   R-238 amendment note (`c97da19`). Left: F6 (close 0.1-line pre-releases? Frank's call), F7 for M07, F8 aarch64
   `--rerun` MATCH to confirm in CI before `C_α`, WO-5 must check the V17-carry row names every surface link.
+- M02 WO-8 rulings (`bfbad26`, note §14.2 B11–B19, R-254…R-259; amendments on ADR 0012, ADR 0013 (A3), ADR 0026 (A2),
+  M01 spec §7 (A3), R-046, R-060, R-230): B11 M01's equilibrium row restated in R-008's form E = L·v·φ^V − V·l·φ^L
+  (molar_flow_squared; same two-phase roots, no M01 value moves) — as written it was nonzero on VAPOR and unevaluable
+  above NH₃'s T_c; B12 light-gas liquid rows l_i = 0 + `VapourOnlyForm` pinning +0.0; B13 `SplitRule.vapour_only`,
+  SYN-001 code unedited; B14 region dispatch by provider id with τ_dew band; B15 PR verifier check forms from existing
+  tolerances only (check_policy_sha256 unchanged; rejected |y−y*| ≤ 1e-10 as 500–16000× too tight); B16 evaluate refuses
+  `vapour_phase_inadmissible`; B17 zero-flow ideal-gas limit; B18 D27 confirmed; B19 D33 confirmed. No specifier blocks
+  (optional ratification of M01 §7 A3). Risks: G7(a) 1e-9 may need `newton_refined`; near-dew singularity → limitation.
+- `opus-engineer` M02 WO-8.1…8.5 launched on `wp/M02`.

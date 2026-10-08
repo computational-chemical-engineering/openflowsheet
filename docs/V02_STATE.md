@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…7 done (`6a46cdd`; G10 bitwise, re-recorded on variant v2); **WO-8 blocked** on design rulings F1–F6 (architect running); then WO-9…13 |
+| M02 | Build | M01 | W21 | WO-1…7 done (`6a46cdd`; G10 bitwise, re-recorded on variant v2); WO-8 rulings R-254…259 (`bfbad26`); WO-8 running; then WO-9…13 |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | spec done; WO-1, 2, 3, 10 done (`7613b5e`, gate green); WO-4…9 after `wp/M02` (WO-7/8) is merged into `wp/M04`; WO-11 real run needs M02 WO-5 env (built) + Frank's N1 budget |
 | M05 | Design | M03, M04 | W24 | design done (`43651ce`: note, ADR 0038–0040, R-260…273; TRF composes per probe); WO-1…3 next (after `wp/M03` is merged into `wp/M05`); WO-4+ need M02 + M04 merged |
@@ -92,7 +92,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `architect` | M02 WO-8 rulings F1–F6 (phase machinery + verifier for PR units) | `wp/M02` (`m02`) |
+| `opus-engineer` | M02 WO-8.1…8.5 (PR units, verifier forms) | `wp/M02` (`m02`) |
 | `opus-engineer` | M05 WO-2, WO-3 (projection compiler, TRF runner) | `wp/M05` (`m05`) |
 | `sonnet-implementer` | M05 WO-1 (`ipopt` executable audit) | `wp/M05-audit` (`m05-audit`) |
 
