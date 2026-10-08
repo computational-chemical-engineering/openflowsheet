@@ -20,6 +20,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_json, load_yaml
 from jsonschema import Draft202012Validator
+from m02_schema_support import without_m02
 
 from openflowsheet.application.types import SCHEMA_BASE, published_schemas, schema_errors
 
@@ -144,3 +145,50 @@ def test_g1_a32_every_float_of_every_m02_fixture_is_classified(directory: str) -
             classes = [cls for pattern, cls in rules if pattern.fullmatch(where)]
             assert classes, f"{path.name}: {where} is unclassified"
     assert found > 0, directory
+
+
+# -- G1 (c): R4-G3's method -----------------------------------------------------------------------
+
+
+def test_g1c_without_m02s_additions_every_response_is_its_pre_m02_snapshot() -> None:
+    """Every operation's fully resolved response schema, with M02's enum values, `experiment`
+    branches and members and widened descriptions removed, equals its snapshot before M02."""
+    import test_t07_w5e_application_results as r4
+
+    from openflowsheet.application.operations import OPERATIONS
+
+    before = {**r4.SNAPSHOT_AT_B13D556, **r4.SNAPSHOT_AMENDMENT_2}
+    moved = []
+    for name, operation in OPERATIONS.items():
+        resolved = r4.resolved_response(operation)
+        assert r4._digest(without_m02(resolved)) == before[name], name
+        if r4._digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(r4.SNAPSHOT_M02)
+
+
+def test_an_experiment_job_is_refused_typed_until_its_body_exists(tmp_path: Any) -> None:
+    """The schema admits `experiment` (ADR 0033 D9) before WO-6 gives it a body type and a runner
+    branch: until then a submission is refused `invalid_request`, creates no job, and is never
+    routed to another operation's body."""
+    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.operations import dispatch
+
+    body = {
+        "model": {
+            "id": "c1.reactor_standin",
+            "version": "standin-x025-v1",
+            "artifact_ref": "f" * 64,
+        },
+        "inlet": {"components": ["H2"], "n": [1.0], "T": 673.15, "P": 1.0e7},
+        "n_tubes": 1000.0,
+    }
+    with LocalApplication.create(tmp_path / "p") as application:
+        with pytest.raises(ApplicationError, match="'experiment' is not executable"):
+            dispatch(
+                application,
+                "submit_job",
+                {"operation": "experiment", "idempotency_key": "k1", "body": body},
+            )
+        assert application.list_jobs().items == ()

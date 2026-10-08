@@ -86,7 +86,7 @@
       "items": {
         "type": "string"
       },
-      "description": "`run-<job_id>` for every solve job whose `revision_id` equals the expected revision."
+      "description": "`run-<job_id>` for every solve job whose `revision_id` equals the expected revision; generalized by ADR 0035 D4 to every job of a registered evidence-producing operation whose request names the expected revision, each with its operation's prefix, in acceptance order. Experiment records are never invalidated: they are facts about a variant, not about a revision."
     },
     "conflict": {
       "anyOf": [

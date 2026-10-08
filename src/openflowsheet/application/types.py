@@ -81,6 +81,8 @@ ApiErrorCode = Literal[
     "limit_exceeded",
     "unsupported",
     "internal_error",
+    # ADR 0035 D3 (M02 design note §6.2): a promotion whose replacement check failed.
+    "model_replacement_incompatible",
 ]
 #: §5.8's HTTP status of each code.
 API_ERROR_HTTP_STATUS: Final[Mapping[str, int]] = {
@@ -98,6 +100,7 @@ API_ERROR_HTTP_STATUS: Final[Mapping[str, int]] = {
     "limit_exceeded": 429,
     "unsupported": 501,
     "internal_error": 500,
+    "model_replacement_incompatible": 422,
 }
 #: Blueprint §11.3's six rights (ADR 0019 D4).
 Right = Literal["read", "draft", "execute", "install", "policy", "publish"]
@@ -648,6 +651,10 @@ class JobRequest:
     @classmethod
     def _build(cls, document: Mapping[str, Any]) -> Self:
         operation = document["operation"]
+        if operation not in _BODY_TYPES:
+            # A schema-valid operation this build cannot run yet (M02's `experiment` until its
+            # job body, WO-6): refused here, typed, never routed to another operation's body.
+            raise ValueError(f"operation {operation!r} is not executable by this build")
         return cls(
             operation=operation,
             idempotency_key=document["idempotency_key"],
