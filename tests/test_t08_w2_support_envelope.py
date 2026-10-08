@@ -53,7 +53,7 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert MATRIX.check_a20(envelope, facts) == []
     assert len(facts["operations"]) == 20
     assert len(facts["models"]) == 13
-    assert facts["providers"] == ["syn001"]
+    assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]
 
 

@@ -23,15 +23,21 @@ axes:
   - id: property_model
     title: Property model
     statement: >-
-      SYN-001 only: ideal vapour, incompressible ideal liquid, VLE; reference convention
-      SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no critical region, no extra phase.
-    providers: [syn001]
+      SYN-001 for every revision, unit model and operation: ideal vapour, incompressible ideal
+      liquid, VLE; reference convention SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no
+      critical region, no extra phase. Since M01 the package also carries `pr-c1-v1`
+      (Peng–Robinson for the five C1 components, the light gases vapour-only, reference convention
+      PR-C1-ref-v1; ADR 0026), a provider no model of `MODEL_BUILDERS` binds yet (M02 adds its
+      units).
+    providers: [pr-c1-v1, syn001]
     reference_convention: SYN-001-ref-v1
     evidence:
       - check:T05.A23
       - check:K02.identity.property_package
       - doc:docs/derivations/SYN-001.md
       - doc:docs/adr/0011-unit-models-ph-closure-and-reaction-datum.md §D2
+      - doc:docs/adr/0026-c1-peng-robinson-vapour-only-route.md §D6
+      - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
 
   - id: components
     title: Components
