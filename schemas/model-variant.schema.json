@@ -1,0 +1,491 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/model-variant.schema.json",
+  "title": "ModelVariant",
+  "description": "M02 design note §3.1, ADR 0033 D3, ADR 0034 D5, ADR 0035 D1. The frozen identity of one external model configuration. Its `document_sha256` (ADR 0002) is what a revision pins as `instances[i].model.artifact_ref`; its `variant_id` is `instances[i].model.version`. Variants are append-only package data under `adapters/variants/`, pinned by `adapters/variants/registry.json`: a changed child, overlay, profile, grid, lock or limit is a new variant id, and an existing document is never edited.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "model_id",
+    "variant_id",
+    "synthetic",
+    "evaluation",
+    "boundary",
+    "accuracy",
+    "execution",
+    "coupling"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "model-variant-v1"
+    },
+    "model_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.]*$",
+      "maxLength": 128
+    },
+    "variant_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]*$",
+      "maxLength": 128
+    },
+    "synthetic": {
+      "type": "boolean",
+      "description": "R-199: a synthetic variant certifies code paths only, never the reactor."
+    },
+    "evaluation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/in_process"
+        },
+        {
+          "$ref": "#/$defs/out_of_process"
+        }
+      ]
+    },
+    "boundary": {
+      "$ref": "#/$defs/boundary"
+    },
+    "accuracy": {
+      "$ref": "#/$defs/accuracy"
+    },
+    "execution": {
+      "$ref": "#/$defs/execution"
+    },
+    "coupling": {
+      "$ref": "#/$defs/coupling"
+    }
+  },
+  "$defs": {
+    "in_process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "module",
+        "conversion_N2"
+      ],
+      "properties": {
+        "kind": {
+          "const": "in_process"
+        },
+        "module": {
+          "type": "string"
+        },
+        "conversion_N2": {
+          "type": "number"
+        },
+        "perturbation_mol_s": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 5,
+              "maxItems": 5
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Test-only (the stand-in's d, spec §8.13): mol/s per tube added to the raw outlet. Never in a registered variant."
+        },
+        "pressure_drop_Pa": {
+          "type": "number",
+          "description": "Test-only (spec §8.13): the tube's reported Ergun drop. Never in a registered variant."
+        }
+      },
+      "description": "Evaluated in the worker (the stand-in). Its environment fingerprint is the boundary's and the module's artifact hashes and the package version (§3.2)."
+    },
+    "out_of_process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reactor",
+        "environment",
+        "runner_sha256",
+        "overlay_sha256",
+        "configuration",
+        "profile"
+      ],
+      "properties": {
+        "kind": {
+          "const": "out_of_process"
+        },
+        "reactor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "repository",
+            "commit",
+            "model_class",
+            "licence",
+            "licence_notice_sha256",
+            "used_by_reference"
+          ],
+          "properties": {
+            "repository": {
+              "type": "string"
+            },
+            "commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "model_class": {
+              "type": "string"
+            },
+            "licence": {
+              "type": "string"
+            },
+            "licence_notice_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "used_by_reference": {
+              "const": true
+            }
+          },
+          "description": "The rights block: the pinned commit is used by reference, never vendored."
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "python",
+            "lock_sha256",
+            "env_id"
+          ],
+          "properties": {
+            "python": {
+              "type": "string"
+            },
+            "lock_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "env_id": {
+              "type": "string"
+            }
+          }
+        },
+        "runner_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the child script the variant runs (`adapters/pymrm/child.py`)."
+        },
+        "overlay_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "configuration": {
+          "type": "object",
+          "description": "The reactor configuration the child builds (geometry case, grid, sweep ratio, coolant, backflow): child-defined, hashed as part of the variant."
+        },
+        "profile": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "description": "The solver strategy and its acceptance (S1–S3): child-defined; `id` is the result identity's `profile`."
+        }
+      },
+      "description": "Evaluated in a fresh child per attempt, in a pinned environment (ADR 0033 D1)."
+    },
+    "hard_domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "T_K",
+        "P_Pa",
+        "H2_N2",
+        "inert_max",
+        "tube_flow_mol_s"
+      ],
+      "properties": {
+        "T_K": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "P_Pa": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "H2_N2": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "inert_max": {
+          "type": "number"
+        },
+        "tube_flow_mol_s": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "ADR 0034 D10 (Q-F5): the per-tube flow bound F_ret_in, mol/s; null is unbounded."
+        }
+      }
+    },
+    "data_domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "T_K",
+        "P_Pa",
+        "H2_N2"
+      ],
+      "properties": {
+        "T_K": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "P_Pa": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "H2_N2": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "reference_convention",
+        "pressure_convention",
+        "eps_P",
+        "projection",
+        "defect_limit",
+        "duty",
+        "per_tube_scaling",
+        "hard_domain",
+        "data_domain"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "reference_convention": {
+          "type": "string"
+        },
+        "pressure_convention": {
+          "type": "string"
+        },
+        "eps_P": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "projection": {
+          "type": "string"
+        },
+        "defect_limit": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "duty": {
+          "type": "string"
+        },
+        "per_tube_scaling": {
+          "type": "boolean"
+        },
+        "hard_domain": {
+          "$ref": "#/$defs/hard_domain"
+        },
+        "data_domain": {
+          "$ref": "#/$defs/data_domain"
+        }
+      },
+      "description": "The boundary contract (ADR 0027 with Amendment 1): what the replacement check's `boundary_condition` facet compares, `hard_domain` and `data_domain` excepted (§6.2)."
+    },
+    "accuracy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "precision_floor_rel",
+        "measured_path_independence_rel",
+        "discretization_estimate"
+      ],
+      "properties": {
+        "precision_floor_rel": {
+          "type": "number",
+          "minimum": 0
+        },
+        "measured_path_independence_rel": {
+          "type": "number",
+          "minimum": 0
+        },
+        "discretization_estimate": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Copied from `benchmarks/m01/reference_values.yaml` → `derived_from_measured.discretization_estimate` (an estimate, not a bound); null where there is none."
+        }
+      },
+      "description": "ADR 0033 D8: copied into every result."
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeout_s",
+        "max_retries",
+        "kill_grace_s"
+      ],
+      "properties": {
+        "timeout_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kill_grace_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        }
+      },
+      "description": "ADR 0033 D7: the per-attempt limits; null for an in-process variant."
+    },
+    "coupling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tau_xi_rel",
+        "tau_T_K",
+        "max_outer",
+        "method",
+        "scales",
+        "initial",
+        "bounds"
+      ],
+      "properties": {
+        "tau_xi_rel": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "tau_T_K": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "max_outer": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "method": {
+          "type": "string"
+        },
+        "scales": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "X",
+            "dT_K"
+          ],
+          "properties": {
+            "X": {
+              "type": "number"
+            },
+            "dT_K": {
+              "type": "number"
+            }
+          }
+        },
+        "initial": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "X",
+            "dT_K"
+          ],
+          "properties": {
+            "X": {
+              "type": "number"
+            },
+            "dT_K": {
+              "type": "number"
+            }
+          }
+        },
+        "bounds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "X",
+            "dT_K"
+          ],
+          "properties": {
+            "X": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "dT_K": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      },
+      "description": "ADR 0034 D1–D4: the outer coupling's block (§4.2–§4.3)."
+    }
+  }
+}

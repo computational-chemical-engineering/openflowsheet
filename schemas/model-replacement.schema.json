@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/model-replacement.schema.json",
+  "title": "ModelReplacementReport",
+  "description": "M02 design note §6.2, ADR 0035. The replacement check of blueprint §5.3, run by `commit_change` and `preview_change` when a change set alters an instance's model reference and either side is variant-backed. Any `fail` rejects the transaction `model_replacement_incompatible` with this report as `error.detail.report`; on commit the report is an artifact whose SHA-256 is in the new revision's provenance. `synthetic` is reported, not judged.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "instance_id",
+    "from",
+    "to",
+    "facets",
+    "compatible"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "model-replacement-v1"
+    },
+    "instance_id": {
+      "type": "string"
+    },
+    "from": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "artifact_ref",
+        "synthetic"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "synthetic": {
+          "type": "boolean"
+        }
+      }
+    },
+    "to": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "artifact_ref",
+        "synthetic"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "synthetic": {
+          "type": "boolean"
+        }
+      }
+    },
+    "facets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "facet",
+          "result",
+          "detail"
+        ],
+        "properties": {
+          "facet": {
+            "enum": [
+              "resolvable",
+              "ports",
+              "components",
+              "conserved_quantities",
+              "reference_states",
+              "boundary_condition",
+              "degrees_of_freedom",
+              "derivatives",
+              "validity"
+            ]
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "not_applicable"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        }
+      }
+    },
+    "compatible": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,71 @@
+# M02 design note §3.6 (ADR 0007 D2.3, every float classified): the classes of the floats and the
+# SHA-256-bearing names that M02's schemas add (`experiment`, `model-variant`,
+# `model-replacement`). A separate table, so that the registered numerical policies
+# (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) keep their ids and their contents.
+#
+# Location: the note names `benchmarks/k04/reference_values.yaml`; that file is byte-pinned
+# (`tests/test_k04f9_reference.py`, X00), so the addendum is this file (M02 build-lane decision,
+# reported to the design lane).
+#
+# Read by `tests/test_m02_schemas.py` (A32's rule over M02's emitted fixtures) and by
+# `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names).
+numerical_policy_external:
+  id: M02-numerical-policy-external-v1
+  schemas:
+  - experiment.schema.json
+  - model-replacement.schema.json
+  - model-variant.schema.json
+  classes:
+    exact: copied or registered values, compared exactly (request inputs, variant constants, the
+      tube inlet the worker forms from the request)
+    r3_recorded_external: outputs of an external model; compared exactly against the record on a
+      replay from record, within the variant's precision_floor_rel on a live rerun (ADR 0034 D6)
+    r1_r2_existing_floors: coupling iterates, residuals and inlets; compared under the registered
+      policy's floors (R1/R2)
+    excluded: timings; outside every identity and every comparison
+  # Paths: the dotted path of a float inside one `$def`'s document (`[i]` for an array index), as
+  # a full-match regular expression; the first matching rule classifies. A float no rule matches
+  # is unclassified and the test fails naming it.
+  rules:
+    request:
+    - {path: '\.inputs\.(n\[\d+\]|T|P)', class: exact}
+    - {path: '\.boundary\.(n_tubes|sweep_ratio)', class: exact}
+    result:
+    - {path: '\.envelope\..*', class: r3_recorded_external}
+    - {path: '\.accuracy\..*', class: exact}
+    attempt:
+    - {path: '\.execution\.tube_inlet\..*', class: exact}
+    - {path: '\.execution\.(tube_outlet|diagnostics|fingerprint)\..*', class: r3_recorded_external}
+    - {path: '\.execution\.timing\..*', class: excluded}
+    coupling:
+    - {path: '\.(variants|coupling_block|frozen)\..*', class: exact}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.request\..*', class: exact}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.result\.envelope\..*', class: r3_recorded_external}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.result\.accuracy\..*', class: exact}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.attempts\[\d+\]\.execution\.tube_inlet\..*', class: exact}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.attempts\[\d+\]\.execution\.(tube_outlet|diagnostics|fingerprint)\..*', class: r3_recorded_external}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.attempts\[\d+\]\.execution\.timing\..*', class: excluded}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.(xi_E|T_E)', class: r3_recorded_external}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.(inlet\..*|n_N2_in|n_tot_in|r_xi|r_T|floor_ratio_xi|floor_ratio_T)', class: r1_r2_existing_floors}
+    - {path: '\.iterations\[\d+\]\.(w|u)\[\d+\]', class: r1_r2_existing_floors}
+    - {path: '\.iterations\[\d+\]\.rho', class: r1_r2_existing_floors}
+    - {path: '\.iterations\[\d+\]\.step\.(du\[\d+\]|B\[\d+\]\[\d+\])', class: r1_r2_existing_floors}
+    experiment_body:
+    - {path: '\.inlet\.(n\[\d+\]|T|P)', class: exact}
+    - {path: '\.n_tubes', class: exact}
+    model_variant:
+    - {path: '\..*', class: exact}
+    model_replacement: []
+  # The `sha256`-bearing property names M02's schemas add, all exact digests (none is a float
+  # digest, ADR 0007 D1 row 3). The names M02 reuses (`request_sha256`, `stdout_sha256`,
+  # `lock_sha256`, `constants_sha256`, `state_sha256`) keep their T08 classes.
+  exact_sha256:
+  - configuration_sha256
+  - environment_fingerprint_sha256
+  - fingerprint_sha256
+  - licence_notice_sha256
+  - overlay_sha256
+  - provider_identity_sha256
+  - runner_sha256
+  - stderr_sha256
+  - variant_sha256

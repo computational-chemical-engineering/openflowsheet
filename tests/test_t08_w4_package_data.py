@@ -50,7 +50,8 @@ def test_each_packaged_path_is_a_link_to_the_single_repository_copy(relative: st
 
 def test_every_packaged_file_reads_the_repository_bytes() -> None:
     expected = _repository_files()
-    assert len(expected) == 32 + 4
+    # M02 (ADR 0033-0035) added three: experiment, model-variant, model-replacement.
+    assert len(expected) == 35 + 4
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
     assert sorted(
@@ -65,7 +66,7 @@ def test_the_published_schemas_are_the_repository_schemas_by_id() -> None:
         ).hexdigest()
         for document in published_schemas().values()
     }
-    assert len(by_id) == 32
+    assert len(by_id) == 35
     for schema_id, digest in by_id.items():
         name = schema_id.rsplit("/", 1)[1]
         assert hashlib.sha256(packaged(f"schemas/{name}").read_bytes()).hexdigest() == digest
