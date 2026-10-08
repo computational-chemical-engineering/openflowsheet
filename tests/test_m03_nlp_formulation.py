@@ -215,7 +215,9 @@ def test_a32_the_same_verifier_discriminates_at_the_start() -> None:
     print(f"A32 stationarity at the start {verification.kkt.stationarity_residual:.3e}")
 
 
-def test_v2_compares_the_optimizer_state_with_the_resolved_simulation() -> None:
+def test_a32_v2_compares_the_optimizer_state_with_the_resolved_simulation() -> None:
+    """A32 as amended (spec §8.5): supplied the re-solved state as the optimizer state, V2 is
+    `pass` and the verification is `passed`; a gross error in that state fails V2."""
     verification = at_optimum()
     state = verification.simulation_state
     assert state is not None

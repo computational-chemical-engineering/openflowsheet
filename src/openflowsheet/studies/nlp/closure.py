@@ -16,9 +16,12 @@ importable; otherwise `unsupported` with every failing reason, in the specificat
 | `NLP_SOLVER_UNAVAILABLE` | the `nlp` extra and its adapter installed; [A10] verdict `PASS` |
 
 `optimize()` calls it first and returns an `OptimizationReport` with status `UNSUPPORTED` and those
-reasons — never an `ImportError`, never a partial success. Whether a solver is available is decided
-without importing one (`importlib.util.find_spec`), so the default install never loads Pyomo or
-cyipopt (gate G6).
+reasons — never an `ImportError`, never a partial success. When it is ready, every other status
+comes from `classify_starts` (spec §8.5, Amendment 1): each start classified from Ipopt's return
+status and the V1-V5 outcomes on the re-solved simulation, the report taking the highest
+classification under `KKT_POINT_VERIFIED` > `NOT_VERIFIED` > `INFEASIBLE_REPORTED` >
+`SOLVER_FAILED`. Whether a solver is available is decided without importing one
+(`importlib.util.find_spec`), so the default install never loads Pyomo or cyipopt (gate G6).
 
 R-129 is unchanged: `Application.validate(…, task="optimization")` stays typed `unsupported`,
 because a `ProcessRevision` has no place to declare decisions, an objective or constraints
@@ -44,7 +47,7 @@ from openflowsheet.studies.nlp.formulation import (
     IPOPT_OPTIONS,
     NlpFormulation,
 )
-from openflowsheet.studies.nlp.verification import declared_regimes
+from openflowsheet.studies.nlp.verification import CHECKS, CheckOutcome, declared_regimes
 from openflowsheet.studies.sensitivity import TAU_ALIAS, OutputFunctional, StudyParameter
 from openflowsheet.studies.syn001 import solve_certified, syn001_sensitivity, with_pinned
 
@@ -82,6 +85,45 @@ ReadinessStatus = Literal["READY_FOR_OPTIMIZATION", "unsupported"]
 ReportStatus = Literal[
     "KKT_POINT_VERIFIED", "NOT_VERIFIED", "INFEASIBLE_REPORTED", "SOLVER_FAILED", "UNSUPPORTED"
 ]
+StartClassification = Literal[
+    "KKT_POINT_VERIFIED", "NOT_VERIFIED", "INFEASIBLE_REPORTED", "SOLVER_FAILED"
+]
+#: Spec §8.5 (Amendment 1): the report's status is its starts' highest classification, in this
+#: order. A refuted claim of success outranks Ipopt's local, heuristic infeasibility verdict.
+STATUS_PRECEDENCE: Final[tuple[StartClassification, ...]] = (
+    "KKT_POINT_VERIFIED",
+    "NOT_VERIFIED",
+    "INFEASIBLE_REPORTED",
+    "SOLVER_FAILED",
+)
+#: Ipopt's `ApplicationReturnStatus` (`IpReturnCodes_inc.h`), the integer cyipopt reports as
+#: `info["status"]`. Only rules 2 and 3 of spec §8.5 read a value; the names are for the detail.
+IPOPT_STATUS_NAMES: Final[Mapping[int, str]] = {
+    0: "Solve_Succeeded",
+    1: "Solved_To_Acceptable_Level",
+    2: "Infeasible_Problem_Detected",
+    3: "Search_Direction_Becomes_Too_Small",
+    4: "Diverging_Iterates",
+    5: "User_Requested_Stop",
+    6: "Feasible_Point_Found",
+    -1: "Maximum_Iterations_Exceeded",
+    -2: "Restoration_Failed",
+    -3: "Error_In_Step_Computation",
+    -4: "Maximum_CpuTime_Exceeded",
+    -5: "Maximum_WallTime_Exceeded",
+    -10: "Not_Enough_Degrees_Of_Freedom",
+    -11: "Invalid_Problem_Definition",
+    -12: "Invalid_Option",
+    -13: "Invalid_Number_Detected",
+    -100: "Unrecoverable_Exception",
+    -101: "NonIpopt_Exception_Thrown",
+    -102: "Insufficient_Memory",
+    -199: "Internal_Error",
+}
+#: Spec §8.5 rule 2: the statuses with which Ipopt claims a solution.
+IPOPT_CLAIMS_SOLUTION: Final = frozenset({0, 1})
+#: Spec §8.5 rule 3: `Infeasible_Problem_Detected`.
+IPOPT_INFEASIBLE: Final = 2
 
 
 # -- the solver --------------------------------------------------------------------------------
@@ -374,6 +416,137 @@ def _start(
     )
 
 
+# -- the status rule ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class StartEvidence:
+    """What spec §8.5's status rule reads of one start: Ipopt's return status, `None` when the run
+    ended without one (an evaluation error that ended it, an exception in the adapter); and the
+    outcomes of the V checks on the re-solved simulation at the decisions the start returned,
+    empty when it returned none. `detail` says why a start has neither."""
+
+    ipopt_status: int | None
+    checks: Mapping[str, CheckOutcome]
+    detail: str | None = None
+
+    def __post_init__(self) -> None:
+        unknown = sorted(set(self.checks) - set(CHECKS))
+        if unknown:
+            raise ValueError(f"{unknown} are not V checks ({', '.join(CHECKS)})")
+        outcomes = set(self.checks.values()) - {"pass", "fail", "not_evaluated"}
+        if outcomes:
+            raise ValueError(f"{sorted(outcomes)} are not check outcomes")
+
+    @property
+    def verified(self) -> bool:
+        """V1-V5 all `pass` (V6 records values and decides nothing)."""
+        return all(self.checks.get(check) == "pass" for check in CHECKS[:5])
+
+
+@dataclass(frozen=True)
+class StartReason:
+    """A report reason for one start not classified `KKT_POINT_VERIFIED` (spec §8.5): its
+    classification as the code, Ipopt's status name and the failing V checks as the detail, and
+    `start <i>` as the subject. The same document shape as a `ReadinessReason`."""
+
+    code: StartClassification
+    detail: str
+    subject: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {"code": self.code, "detail": self.detail, "subject": self.subject}
+
+
+@dataclass(frozen=True)
+class StatusVerdict:
+    """Each start's classification, the report's status and its reasons (spec §8.5)."""
+
+    classifications: tuple[StartClassification, ...]
+    status: StartClassification
+    reasons: tuple[StartReason, ...]
+
+    @property
+    def local_stationarity(self) -> bool:
+        """`claims.local_stationarity`: true exactly when the status is `KKT_POINT_VERIFIED`."""
+        return self.status == "KKT_POINT_VERIFIED"
+
+    @property
+    def verified_starts(self) -> tuple[int, ...]:
+        """The starts a candidate may come from — empty unless the status is
+        `KKT_POINT_VERIFIED`, so the candidate is `null` for every other status."""
+        return tuple(
+            index
+            for index, classification in enumerate(self.classifications)
+            if classification == "KKT_POINT_VERIFIED"
+        )
+
+    def start_records(self, records: Sequence[Mapping[str, Any]]) -> tuple[dict[str, Any], ...]:
+        """The report's `starts`: each start's record with its `classification` (spec §8.6)."""
+        if len(records) != len(self.classifications):
+            raise ValueError(
+                f"{len(records)} start records for {len(self.classifications)} classified starts"
+            )
+        annotated = []
+        for record, classification in zip(records, self.classifications, strict=True):
+            if record.get("classification", classification) != classification:
+                raise ValueError(
+                    f"a start record says {record['classification']}, the rule {classification}"
+                )
+            annotated.append({**record, "classification": classification})
+        return tuple(annotated)
+
+
+def classify_starts(starts: Sequence[StartEvidence]) -> StatusVerdict:
+    """Spec §8.5 (Amendment 1), as one pure function of `(Ipopt status, V1-V5)` per start.
+
+    Each start is classified by the first rule that applies: (1) V1-V5 all `pass` →
+    `KKT_POINT_VERIFIED`, whatever Ipopt returned; (2) Ipopt status 0 or 1 → `NOT_VERIFIED`, a
+    claimed solution the re-solved simulation refuted; (3) status 2 → `INFEASIBLE_REPORTED`;
+    (4) anything else, no status included → `SOLVER_FAILED`. The status is the highest
+    classification under `STATUS_PRECEDENCE`; `reasons` lists, in start order, every start not
+    classified `KKT_POINT_VERIFIED`, so a refuted claim stays visible beside a verified candidate.
+    The adapter (WO-8) computes no status of its own."""
+    if not starts:
+        raise ValueError("a report with no start is refused before any solve (UNSUPPORTED)")
+    classifications = tuple(_classification(start) for start in starts)
+    status = min(classifications, key=STATUS_PRECEDENCE.index)
+    reasons = tuple(
+        StartReason(classification, _start_detail(start), f"start {index}")
+        for index, (start, classification) in enumerate(zip(starts, classifications, strict=True))
+        if classification != "KKT_POINT_VERIFIED"
+    )
+    return StatusVerdict(classifications, status, reasons)
+
+
+def _classification(start: StartEvidence) -> StartClassification:
+    if start.verified:
+        return "KKT_POINT_VERIFIED"
+    if start.ipopt_status in IPOPT_CLAIMS_SOLUTION:
+        return "NOT_VERIFIED"
+    if start.ipopt_status == IPOPT_INFEASIBLE:
+        return "INFEASIBLE_REPORTED"
+    return "SOLVER_FAILED"
+
+
+def _start_detail(start: StartEvidence) -> str:
+    """Ipopt's status name and the failing V checks (spec §8.5), and the start's own detail."""
+    if start.ipopt_status is None:
+        parts = ["no Ipopt status"]
+    else:
+        name = IPOPT_STATUS_NAMES.get(start.ipopt_status, "unknown status")
+        parts = [f"Ipopt {name} ({start.ipopt_status})"]
+    failing = [check for check in CHECKS if start.checks.get(check) == "fail"]
+    parts.append(f"failing V checks: {', '.join(failing) if failing else 'none'}")
+    unevaluated = [check for check in CHECKS[:5] if start.checks.get(check, "") != "pass"]
+    unevaluated = [check for check in unevaluated if check not in failing]
+    if unevaluated:
+        parts.append(f"not evaluated: {', '.join(unevaluated)}")
+    if start.detail:
+        parts.append(start.detail)
+    return "; ".join(parts)
+
+
 # -- the report --------------------------------------------------------------------------------
 
 
@@ -390,7 +563,8 @@ class OptimizationReport:
     candidate: Mapping[str, Any] | None
     distinct_local_solutions: int
     status: ReportStatus
-    reasons: tuple[ReadinessReason, ...]
+    #: §8.7's readiness reasons when `UNSUPPORTED`; otherwise one per start not verified (§8.5).
+    reasons: tuple[ReadinessReason | StartReason, ...]
     claims: Mapping[str, Any]
     limits: Mapping[str, Any]
     schema_version: str = SCHEMA_VERSION
