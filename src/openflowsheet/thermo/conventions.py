@@ -1,4 +1,4 @@
-"""The registered reaction-consistent reference conventions (ADR 0011 D2, as amended by ADR 0026 D4).
+"""The registered reaction-consistent reference conventions (ADR 0011 D2, amended by ADR 0026 D4).
 
 A reactor balances total enthalpy, `Q + Hdot_in − Hdot_out = 0`, with no separate `xi dh_r` term
 (ADR 0011 D2). That form is right only over a provider whose component enthalpies share one
