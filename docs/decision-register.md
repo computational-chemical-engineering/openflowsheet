@@ -3970,6 +3970,14 @@ degenerate: that would give a discontinuous rule at a measure-zero set that no r
 **Watch for.** The request-check order and the two-root case are ratified but not asserted (no registered state
 has two defects or a near-double root).
 
+**Correction (2026-10-08, M01 review F2; spec Amendment 2, §5.2, §20).** The rationale above for the two-root rule
+was wrong about the cases it rested on. The two-root returns measured before the review were not a near-double root
+split by roundoff but unconverged Newton iterates (one of them the real part of a complex pair, 0.222075 ± 2.8 × 10⁻⁸ i,
+at pure NH₃, 400 K), and with them `evaluate_phase(LIQUID)` answered `ok` where the cubic has one real root.
+`admissible_roots` now keeps a candidate only if it is a root to rounding, and a three-root branch left with fewer than
+three deflates its best-conditioned root and solves the quadratic, so two distinct roots arise only as a genuine
+near-double pair. The rule itself (more than one admissible root → the three-root rules) stands.
+
 ---
 
 ## R-198 — The C1 reactor boundary checks the inlet phase before the hard domain; `stream_enthalpy_refused` is `error`; `reactor_not_accepted(<stage>)` has a grammar and registered stages

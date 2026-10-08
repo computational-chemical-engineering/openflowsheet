@@ -1,7 +1,8 @@
 # M01 specification — the C1 property route and the PyMRM reactor boundary
 
-**Status:** design lane (`specifier`), 2026-10-08. **Draft for review**, **amended once** (Amendment 1, 2026-10-08,
-§19: rulings on the build lane's measurements at `13bcef7`); the build lane implements against it, a
+**Status:** design lane (`specifier`), 2026-10-08. **Draft for review**, **amended twice** (Amendment 1, 2026-10-08,
+§19: rulings on the build lane's measurements at `13bcef7`; Amendment 2, 2026-10-08, §20: the closure of the design-lane
+review's findings, `docs/reviews/M01-review.md`); the build lane implements against it, a
 `reviewer` reviews the implementation, a `verdict` judges W22 and M01's part of W21 from the evidence.
 **Package:** M01 (plan v1.2 §4.4: *pin the selected PyMRM reactor and one required nonideal property route; derive
 process boundary mappings. Acceptance: model/source/data rights, numerical refinement evidence,
@@ -54,6 +55,7 @@ VLE with dissolved gases, columns, DWSIM, re-selecting the chemistry, production
 | 12 | The M01/M02 split and a synthetic stand-in reactor for the in-repo gate | §8.13–8.14 | ADR 0027 D8; R-168 |
 | 13 | Out-of-data-domain inlets are flagged, not refused | §8.12 | ADR 0027 D9; R-169 |
 | 14 | Amendment 1: A09, A12 and A26 re-stated on measured floors; request checks and boundary paths ratified (flash derivatives refused); the boundary's check order normative; where "synthetic" is written | §19 | ADR 0026, 0027 Amendment 1; R-195–R-200 |
+| 15 | Amendment 2: the review's findings F1–F5 closed (root convergence, the boundary's state-space check, Q-N4's reversal path, the flash's measured miss region, the harvest class) | §20 | R-197 (correction note); `docs/reviews/M01-review.md` |
 
 ## 3. Component records (`benchmarks/m01/components.yaml`)
 
@@ -224,9 +226,26 @@ Determining Δ's sign: the implementation may use the discriminant or the count 
 registered states the margin is wide (no registered state has a near-double root). A near-degenerate state is not
 registered and its classification is not asserted (§17).
 
+**Converged roots only (Amendment 2, review F2).** A polished candidate is a root only if the cubic there is zero to
+within its own evaluation error, |f(Z)| ≤ 16 u Σ|terms| (u = 2⁻⁵³; Horner's error is at most ≈ 6u Σ|terms|). Near a
+double root (within ≈ 10⁻¹⁴ of P, relative, of a spinodal) the trigonometric form puts two candidates at the cubic's
+extremum, where Newton jumps away and is still moving after its 8 steps; the review measured such iterates returned
+as roots with residuals up to 10⁻², and `evaluate_phase(LIQUID)` answering `ok` at pure NH₃, 400 K,
+10 025 791.149338482 Pa, where the cubic has one real root (0.486253) and a complex pair (0.222075 ± 2.8 × 10⁻⁸ i).
+Where the three-root branch keeps fewer than three distinct roots, the converged candidate of largest |f′| (the
+isolated, well-conditioned root) is divided out, and the quadratic left, Z² + (c₂ + r)Z − c₀/r, is solved by the
+cancellation-free formula: a negative discriminant means a complex pair, so one root. Cardano's single root is simple
+and is kept as polished. Measured (the review's P2 scan re-run, 20 000 random states): no returned value changes bit
+for bit; worst root error 8.6 × 10⁻¹⁶. Measured (±60 ulp of P around every spinodal crossing at 220–400 K, three
+compositions, 3 267 states): worst distance of a returned root from a true one 2.0 × 10⁻⁸ (the near-double root's own
+conditioning, √u), against 0.28 before; every returned value is a root to rounding.
+
 **Two admissible roots (Amendment 1).** The cubic at Z = B equals −2B² < 0 (claim PR-07) and tends to +∞, so its roots
 above B, counted with multiplicity, are odd in number: one or three. Two *distinct* admissible roots therefore occur
-only at a double root (Δ = 0), or where roundoff splits a near-double root. Whenever more than one admissible root is
+only at a double root (Δ = 0), or where roundoff splits a near-double root. *(Amendment 2, review F2: the two-root
+returns actually measured before were not a split double root but unconverged Newton iterates, the real part of a
+complex pair among them. Since Amendment 2 two distinct roots come only from the deflated quadratic with a
+non-negative discriminant: roots of the cubic to rounding, a near-double pair.)* Whenever more than one admissible root is
 found, the rules above apply as for three: smallest = liquid (pure NH₃), largest = vapour, and the guard compares the
 smallest with the largest. This is the continuous extension of the three-root rule; no registered state reaches it
 and it is not asserted.
@@ -1146,7 +1165,9 @@ the mapping is 1 ulp off). Reversible by: A47 and §8.15 (R-200).
   only the manifest's structured fields cannot tell a synthetic model from another.
 - **Not the order of the provider's request checks, nor its root rules at two admissible roots** (Amendment 1; §5.2,
   §5.3). Both are ratified as built. Neither is asserted, because no registered state has two defects or a
-  near-double root.
+  near-double root. *(Amendment 2, review F2: what is asserted near a double root is that every returned value is a
+  root of the cubic to rounding, across ±60 ulp of the review's 400 K crossing, and that the review's counterexample
+  has one root and no liquid; which label a near-double pair gets is still not.)*
 
 ## 18. Corrections and the WIP note's leads, re-measured
 
@@ -1218,3 +1239,15 @@ value moves. `--check` reproduces the files byte-for-byte.
   - the probe record is a gate-checked regression (A34's hash, plus A52), never re-run by the gate;
   - A48's estimate is now machine-readable for M02's results (DX-01), and §10.1's T_out range is corrected from
     1.3–1.7 K to 1.2–1.7 K.
+
+## 20. Amendment 2 (2026-10-08): review findings
+
+The design-lane review of the implementation (`docs/reviews/M01-review.md`, at `c2cf045`) found one must-fix (F1) and
+four should-fixes (F2–F5), each with a prescribed fix. The build lane closed them, one commit per finding, and changed
+the normative text in place, marked "Amendment 2". No closed form, registered state, expectation value, tolerance or
+frozen interface changes; every registered value (A05–A11, A15–A22, A37) is bit-identical before and after (every
+output of `evaluate_phase` and `flash` at the registered states compared as `float.hex`).
+
+| Finding | Closure | Where |
+| --- | --- | --- |
+| F2 (should-fix): `admissible_roots` returned unconverged Newton iterates as roots within ≈ 10⁻¹⁴ of a spinodal, and `evaluate_phase(LIQUID)` answered `ok` at a state with no liquid root | A candidate is kept only if it is a root to rounding; a three-root branch left with fewer than three deflates the best-conditioned root and solves the quadratic. The review's counterexample and a ±60-ulp sweep are tests. R-197's rationale for the two-root rule is corrected (a note appended to R-197); the rule stands. | §5.2, §17; `pr_c1.py` `admissible_roots`; `tests/test_m01_provider.py::test_f2_*`; R-197 |
