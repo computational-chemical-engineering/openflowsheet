@@ -14,7 +14,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Mapping
+import math
+from collections.abc import Mapping, Sequence
 from functools import cache
 from pathlib import Path
 from typing import Any, Final
@@ -269,3 +270,50 @@ def syn001_host(state: str) -> tuple[SensitivityHost, Syn001TearProblem, npt.NDA
         tuple(row.row_id for row in tear.partition.elimination.eliminated),
     )
     return host, tear, np.array(state_vector(tear.spec, result.final_state))
+
+
+# -- the finite-difference oracle (spec §4.5; R-010: a test oracle, never a production path) ------
+
+#: Spec §4.5: `h_j = 1e-4 · s_pj`, and the 4th-order central stencil's offsets and weights.
+FD_RELATIVE_STEP: Final = 1e-4
+_STENCIL: Final = ((-2, 1.0), (-1, -8.0), (1, 8.0), (2, -1.0))
+
+
+def output_values(
+    sheet: Syn001Flowsheet, outputs: Sequence[OutputFunctional]
+) -> npt.NDArray[np.float64]:
+    """Solve `sheet` with the production K03 solver from the registered initializer; `y = C x`."""
+    result, _ = solve_tear(sheet)
+    if result.outcome != "CONVERGED" or result.final_state is None:
+        raise AssertionError(f"an FD stencil point did not converge: {result.outcome}")
+    state = result.final_state
+    return np.array(
+        [
+            math.fsum(
+                coefficient * state[name] for name, coefficient in output.coefficients.items()
+            )
+            for output in outputs
+        ]
+    )
+
+
+def fd_sensitivity(
+    state: str,
+    parameters: Sequence[StudyParameter],
+    outputs: Sequence[OutputFunctional],
+) -> npt.NDArray[np.float64]:
+    """Spec §4.5's oracle, scaled: `Ŝ_FD = [−y(+2h) + 8y(+h) − 8y(−h) + y(−2h)] / (12h) · s_p / s_y`
+    from four re-solves per parameter, each pinned input replaced at `p_j + m h_j`."""
+    pinned = registered_pinned(state)
+    output_scales = np.array([output.scale for output in outputs])
+    columns = []
+    for parameter in parameters:
+        base = number(pinned[parameter.parameter_id])
+        step = FD_RELATIVE_STEP * parameter.scale
+        total = np.zeros(len(outputs))
+        for offset, weight in _STENCIL:
+            moved = {**pinned, parameter.parameter_id: base + offset * step}
+            total += weight * output_values(flowsheet(moved), outputs)
+        derivative = total / (12.0 * step)
+        columns.append(derivative * parameter.scale / output_scales)
+    return np.column_stack(columns)
