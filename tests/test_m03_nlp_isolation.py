@@ -24,6 +24,9 @@ from conftest import REPO_ROOT
 
 NLP_LIBRARIES = ("pyomo", "cyipopt", "ipopt_wrapper")
 NLP_ADAPTER_MODULES = ("openflowsheet.studies.nlp.greybox",)
+#: The `server` extra's top-level packages. A binding module may fail to import only because one of
+#: these is absent (the CI `default-install` job); any other import failure fails the test.
+SERVER_EXTRA = ("uvicorn", "starlette", "mcp", "httpx")
 AUDIT = REPO_ROOT / "docs" / "m03-ipopt-audit.md"
 INVENTORY = REPO_ROOT / "benchmarks" / "m03" / "ipopt-inventory-x86_64.json"
 MEASUREMENTS = REPO_ROOT / "benchmarks" / "m03" / "nlp-measurements.json"
@@ -41,11 +44,19 @@ def test_the_default_modules_import_no_nlp_library() -> None:
         "import importlib, json, pkgutil, sys\n"
         "import openflowsheet\n"
         f"skip = {NLP_ADAPTER_MODULES!r}\n"
+        f"server = {SERVER_EXTRA!r}\n"
         "walked = []\n"
-        "for module in pkgutil.walk_packages(openflowsheet.__path__, 'openflowsheet.'):\n"
+        "for module in pkgutil.walk_packages(\n"
+        "    openflowsheet.__path__, 'openflowsheet.', onerror=lambda name: None\n"
+        "):\n"
         "    if module.name.startswith(skip):\n"
         "        continue\n"
-        "    importlib.import_module(module.name)\n"
+        "    try:\n"
+        "        importlib.import_module(module.name)\n"
+        "    except ModuleNotFoundError as error:\n"
+        "        if (error.name or '').split('.')[0] not in server:\n"
+        "            raise\n"
+        "        continue\n"
         "    walked.append(module.name)\n"
         f"loaded = sorted(m for m in sys.modules if m.split('.')[0] in {NLP_LIBRARIES!r})\n"
         "print(json.dumps({'walked': len(walked), 'loaded': loaded}))"
