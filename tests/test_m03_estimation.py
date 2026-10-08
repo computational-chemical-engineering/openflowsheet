@@ -1,4 +1,5 @@
-"""M03 WO-5: the estimation example (spec §7) — A25-A30.
+"""M03 WO-5: the estimation example (spec §7) — A25-A30; WO-5a (Amendment 1): A46 and the A27,
+A28 additions.
 
 SYN-001's (r, T_f) fitted to the seeded synthetic data the reference generator stored in
 `benchmarks/m03/reference_values.json` (`estimation`). FIT-I (eight measurements, with a recycle
@@ -9,12 +10,19 @@ every product stream is independent of r (derivation §5.1). The expectations ar
 
 The data are generated from the model: these tests verify the estimation machinery, they are not
 empirical validation (spec §7.2, §15) — the reports say so in fields.
+
+FIT-U's undetermined split fraction is moved by the estimator and stops where the optimizer's path
+leaves it (spec §7.4, Amendment 1), so its final iterate is checked only to lie in its bounds, and
+every registered FIT-U value is one the generator shows to be independent of it (claims C9[FIT-U]).
+The one FIT-U quantity that does depend on it, `U-HEAT.Q`'s null projection, is registered as its
+range over the box.
 """
 
 from __future__ import annotations
 
 import dataclasses
 import inspect
+import math
 from functools import cache
 from typing import Any
 
@@ -33,6 +41,8 @@ TAU_RELATIVE = 1e-6
 TAU_ABSOLUTE = 1e-6
 TAU_RATIO_U = 1e-12
 TAU_NULL = 1e-8
+#: Spec §7.5 (Amendment 1): the widening of FIT-U's registered null-projection range.
+TAU_PROJECTION = 1e-6
 
 
 @cache
@@ -51,6 +61,11 @@ def scale_of(parameter_id: str) -> float:
         for entry in reference()["estimation"]["theta"]
         if entry["id"] == parameter_id
     )
+
+
+def bounds_of(parameter_id: str) -> tuple[float, float]:
+    entry = next(item for item in reference()["estimation"]["theta"] if item["id"] == parameter_id)
+    return number(entry["lower"]), number(entry["upper"])
 
 
 def relative(value: float, closed: float) -> float:
@@ -141,9 +156,18 @@ def test_a27_fit_u_is_unidentifiable_along_the_split_fraction() -> None:
     assert temperature.standard_error is None
     assert report.covariance is None and report.correlation is None
     assert report.degrees_of_freedom == closed["degrees_of_freedom"] == 5
+    # Amendment 1: χ² is invariant along the null direction, so it is registered; r's final
+    # iterate is arbitrary along it, so it is checked against its bounds and nothing else.
+    assert report.chi2 is not None
+    chi2_error = relative(report.chi2, number(closed["chi2"]))
+    assert chi2_error <= TAU_RELATIVE
+    assert closed["final_iterate_not_registered"] == [undetermined]
+    lower, upper = bounds_of(undetermined)
+    assert lower <= split.final_iterate <= upper
     print(
         f"A27 ratio {ratio:.3e}; null direction error {null_error:.3e}; T_f error {error:.3e} "
-        f"scaled; r final iterate {split.final_iterate!r}; "
+        f"scaled; chi2 {chi2_error:.3e} relative; r final iterate {split.final_iterate!r} in "
+        f"[{lower}, {upper}]; "
         f"estimator {report.estimator_result['message']} nfev {report.estimator_result['nfev']}"
     )
 
@@ -167,20 +191,37 @@ def test_a28_validation_predictions() -> None:
         assert error <= TAU_ABSOLUTE
         worst_absolute = max(worst_absolute, error)
     unidentifiable = fit("FIT-U")
+    determined_error = projection_margin = math.inf
     for entry in expected("FIT-U")["validation"]:
         prediction = unidentifiable.prediction(entry["id"])
         assert prediction.determined is entry["determined"]
         assert prediction.standard_error is None and prediction.normalized_residual is None
         if entry["determined"]:
+            # Amendment 1: a determined prediction is invariant along the null direction, so its
+            # value is registered.
             assert prediction.predicted is not None
+            determined_error = relative(prediction.predicted, number(entry["predicted"]))
+            assert determined_error <= TAU_RELATIVE, (entry["id"], determined_error)
         else:
             assert prediction.predicted is None
+            # Amendment 1: the projection depends on where r stopped, so it is registered as its
+            # range over the box, widened by 1e-6 on each side.
+            low, high = (
+                number(value) for value in entry["null_projection_relative_range_over_box"]
+            )
+            measured = prediction.null_projection_relative
+            assert low - TAU_PROJECTION <= measured <= high + TAU_PROJECTION, (
+                entry["id"],
+                measured,
+            )
+            projection_margin = min(measured - low, high - measured)
     projections = {
         item.validation_id: item.null_projection_relative for item in unidentifiable.validation
     }
     print(
         f"A28 FIT-I worst relative {worst_relative:.3e}, normalized residual {worst_absolute:.3e}; "
-        f"FIT-U null projections {projections}"
+        f"FIT-U null projections {projections} (distance to the range's nearer end "
+        f"{projection_margin:.3e}); FIT-U S4.N {determined_error:.3e} relative"
     )
 
 
@@ -240,3 +281,42 @@ def test_a30_a_refused_sensitivity_ends_the_fit_and_no_difference_jacobian_is_us
     assert report.parameters == () and report.covariance is None
     assert jacobians and all(callable(jac) for jac in jacobians)
     assert not any(jac in ("2-point", "3-point", "cs") for jac in jacobians)
+
+
+# -- A46 (Amendment 1) ----------------------------------------------------------------------------
+
+
+def test_a46_an_estimator_that_did_not_converge_is_a_failed_fit_with_no_estimates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """FIT-I with the pinned `max_nfev` overridden to 2: the registered fit needs 8 residual
+    evaluations, so `least_squares` stops with status 0 and the fit carries nothing it did not
+    converge to (spec §7.3)."""
+    pinned = estimation_module.ESTIMATOR
+    assert pinned["max_nfev"] == 100
+    monkeypatch.setattr(estimation_module, "ESTIMATOR", {**pinned, "max_nfev": 2})
+    report = estimate(estimation_problem("FIT-I"))
+    assert report.status == "FAILED"
+    assert report.failure is not None
+    assert report.failure.stage == "estimator"
+    assert report.failure.codes == ("ESTIMATOR_NOT_CONVERGED",)
+    result = report.estimator_result
+    assert result["status"] == 0 and result["success"] is False
+    assert result["nfev"] == 2
+    assert {"message", "njev"} <= set(result)
+    # The last iterate is recorded, as the failure's iterate.
+    assert len(report.failure.iterate) == 2
+    assert all(math.isfinite(value) for value in report.failure.iterate)
+    assert report.failure.iterate != tuple(estimation_problem("FIT-I").start)
+    # No estimate, standard error, covariance, identifiability verdict or prediction.
+    assert report.parameters == ()
+    assert report.covariance is None and report.correlation is None
+    assert report.identifiability is None and report.identifiability_at_start is None
+    assert report.chi2 is None and report.degrees_of_freedom is None
+    assert report.validation == ()
+    # The report records the settings the run used, not the pinned ones.
+    assert report.as_document()["estimator"]["max_nfev"] == 2
+    print(
+        f"A46 status {result['status']} ({result['message']}); nfev {result['nfev']}, "
+        f"njev {result['njev']}; last iterate {report.failure.iterate}"
+    )
