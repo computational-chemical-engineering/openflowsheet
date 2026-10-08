@@ -3875,3 +3875,26 @@ let adaptation records spread anywhere in `benchmarks/`, and it would not detect
 M07. Moving the records out of the repository: R-175 and G13 require them committed, referenced by hash.
 
 **Watch for.** M07's campaign records change this claim again. U14 is then rewritten with the campaign, not relaxed.
+
+---
+
+## R-216 — T08's CHANGELOG-limitations test compares the v0.1.0 release notes with the envelope as v0.1.0 released it, not with v0.2's working envelope
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M06 WO-12 engineer's escalation |
+| Normative text | This entry; R-193 |
+| Evidence | `3c04037` `tests/test_t08_w4_changelog.py::test_every_registered_limitation_is_named_and_no_other` (reads the envelope at `PUBLIC_ROOT`, the bytes released at v0.1.0 = v0.1.1) |
+| Affected packages | M01, M02, M03, M06 (every v0.2 package that adds envelope rows), M07 |
+
+**Decision.** The test checked the v0.1.0 CHANGELOG's limitation notes against the *live* envelope. Since R-193 that
+envelope is v0.2's working one, so any v0.2 row (M06's L-WEB-1…4 first) failed it. The test now reads the envelope as
+v0.1.0 released it. Its exact comparison is unchanged. v0.2's notes are checked against v0.2's envelope by the v0.2
+release gate (M07, finalising `v0.2-envelope-1`).
+
+**Rejected alternative, and why.** Naming v0.2 rows in the v0.1.0 notes: that rewrites a release record. Adding no
+envelope rows for new capabilities: T08.A20 requires them.
+
+**Watch for.** The v0.2 gate must add the matching check for the 0.2.0 notes; until then, v0.2 rows are unchecked
+against any CHANGELOG.
