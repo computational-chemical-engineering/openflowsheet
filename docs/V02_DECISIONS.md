@@ -200,3 +200,12 @@ Grep, don't read whole. Newest at the bottom.
   harvest classification; WO-17 needs v0.2 binder reading in `snapshot.READINGS` + M01/M02 id rows + U14 rewrite for
   campaign records) → for WO-13's review / M07.
 - `wp/M06-w27-harness` merged into `wp/M06-build` (`92d430e`). `recon` M02 launched (digest → M02 design brief).
+- M06 WO-7…10 done on `wp/M06-ui` (`72a7e1b` fixtures, `22b3eef` view models, `327edcd` label decision, `a1a0fd9`
+  screens A, `4aaa04c` screens B; strict xfail removed, shell calls exactly 17 operations): check.sh 7322 passed, Node
+  91/91. G1 static, G5, G6 view, G7 (all design numbers), G4 STR-03, G8 Node evidenced; Chromium dump of 18 routes
+  found and fixed a `history` shadowing bug. Merged into `wp/M06-build` (`6fc69ef`); worktree removed; engineer stopped.
+- DECISION: certificate labels lower-case `pass`→ok, `fail`→bad, `unsupported`/`not_applicable`→none (`327edcd`).
+  Alternative: the note's upper-case-only §5.5 table (every passing check would render ✕). Reversible by reverting
+  `327edcd`; the WO-13 reviewer confirms.
+- DECISION: G2 (HTTP contract tests of all 17 operations; no WO owned it) → WO-11. Alternative: a separate WO.
+- `opus-engineer` M06 WO-11, WO-12 launched on `wp/M06-finish` (from `6fc69ef`).

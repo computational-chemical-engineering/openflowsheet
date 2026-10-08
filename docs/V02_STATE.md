@@ -20,7 +20,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M03 | Design | T08 | W24 (part) | spec (`17cec07`); WO-0…7 done except WO-8 (`5cf4160`, gate green); Amendment 1 running; then WO-9 schemas, WO-8 (after N1), WO-10 manifest, `reviewer` |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
-| M06 | Build | T08 | W26, W27 | design + ADR 0030 / Amendment 3 (approved); WO-1…6, 14, 15, 16 done and merged on `wp/M06-build` (`92d430e`); WO-7…10 running on `wp/M06-ui`; then WO-11…13 (security/browser, docs, evidence + `reviewer`); WO-17 (canaries + campaign) at M07 |
+| M06 | Build | T08 | W26, W27 | design + ADR 0030 / Amendment 3 (approved); WO-1…10, 14…16 done and merged on `wp/M06-build` (`6fc69ef`); WO-11, 12 running on `wp/M06-finish`; then WO-13 (security/browser, docs, evidence + `reviewer`); WO-17 (canaries + campaign) at M07 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
 ## Milestone 0 (housekeeping)
@@ -67,7 +67,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `specifier` | M01 Amendment 1 (A26, A09, A12, refusals) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
-| `opus-engineer` | M06 WO-7…10 fixtures, view models, screens | `wp/M06-ui` (`m06-ui`) |
+| `opus-engineer` | M06 WO-11, 12 security/browser gates, docs | `wp/M06-finish` (`m06-finish`) |
 | `specifier` | M03 Amendment 1 | `wp/M03` (`m03`) |
 | `recon` | M02 recon digest (→ M02 design brief) | read-only |
 
