@@ -1,0 +1,51 @@
+{
+  "acquisition_time_utc": "2026-10-08T13:50:23Z",
+  "archive": {
+    "name": "OpenIDAES-450-demo.tar.gz",
+    "sha256": "6d42c02fdc7e8e4c81c861d77fd5b546198a2bfd7d9c87212c97149e50ea4526",
+    "size_bytes": 220802919,
+    "url": "https://github.com/Galigeigei-Z/CRAFTS-Multi-agent-for-Equation-oriented-PSE/releases/download/openidaes450-demo-2026-09-26/OpenIDAES-450-demo.tar.gz"
+  },
+  "attribution": "Cite the CRAFTS paper (arXiv:2608.01369) and acknowledge IDAES and the upstream projects named in the case provenance (demo/openidaes450/THIRD_PARTY_NOTICES.md in the repository).",
+  "commit": {
+    "committer_date": "2026-09-26T10:00:37Z",
+    "sha": "13ca57ecec1927c892b023fdc7f0cf13718bf28b",
+    "short": "13ca57e"
+  },
+  "licence": {
+    "copyright_line": "Copyright (c) 2026 Ziyun_Zhang",
+    "path": "LICENSE",
+    "sha256": "818dc2237afd26cd7506e9342b209ef6280a1fe8c5585b6b304774f61754a8a2",
+    "spdx": "MIT"
+  },
+  "paper": {
+    "id": "arXiv:2608.01369",
+    "title": "CRAFTS: Collaborative Role-Adaptive Fine-Tuning of LLM Agents for Chemical Process Simulation"
+  },
+  "permission": {
+    "date": "2026-09-26",
+    "holder": "Ziyun Zhang (first author of arXiv:2608.01369; National University of Singapore)",
+    "note": "Given by e-mail to Frank Peters; the e-mail itself is held by Frank and is not recorded here.",
+    "quoted_sentence": "Please feel free to use the benchmark cases, including using subsets for your simulator comparisons and publishing the resulting comparisons."
+  },
+  "release": {
+    "published_at": "2026-09-26T09:19:08Z",
+    "tag": "openidaes450-demo-2026-09-26"
+  },
+  "repository_url": "https://github.com/Galigeigei-Z/CRAFTS-Multi-agent-for-Equation-oriented-PSE",
+  "size_disclosure": {
+    "asset_created_at": "2026-09-26T14:39:12Z",
+    "asset_updated_at": "2026-09-26T14:39:28Z",
+    "audit_recorded_hash": null,
+    "audit_recorded_size_bytes": 220433394,
+    "pinned_size_bytes": 220802919,
+    "release_manifest_at_repository_head": {
+      "bytes": 220802919,
+      "committer_date": "2026-09-26T14:44:27Z",
+      "sha": "b7e10063a23260282bd316c8ac23638d41929d36"
+    },
+    "release_manifest_bytes_at_audited_commit": 220433394,
+    "release_published_at": "2026-09-26T09:19:08Z",
+    "statement": "The audit (study/openidaes450, 2026-09-26) recorded the archive as 220433394 bytes, as did RELEASE_MANIFEST.json at the audited commit. The live release asset, pinned here, is 220802919 bytes: it was created and updated after the release was published and after the audited commit (timestamps above), and RELEASE_MANIFEST.json at the repository head states the pinned size. The earlier upload is therefore most likely the audited one, but the audit recorded no hash, so its bytes cannot be identified. That the pinned archive is the audited data is established only by the audit's counts reproducing (access_report.json summary)."
+  }
+}

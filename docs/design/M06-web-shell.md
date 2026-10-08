@@ -633,6 +633,9 @@ Frank (2026-09-26) including subsets and publishing comparisons; attribution: ci
 acknowledge IDAES and upstream projects (`demo/openidaes450/THIRD_PARTY_NOTICES.md`). 450 cases; own residual
 check 425 pass / 24 fail / 1 absent; `splits/full82.json` 82 cases (WaterTAP 41, IDAES 20, PrOMMiS 20,
 DISPATCHES 1), whose binding to the manuscript's score run is "not independently verified".
+**Archive size.** The pinned archive is the live release asset, 220 802 919 bytes, SHA-256 `6d42c02f…4526`;
+the audit's 220 433 394 was an earlier upload (the asset was re-created after the audited commit), disclosed in
+`provenance.json` (`size_disclosure`). The audit recorded no hash; "same data" rests on the counts reproducing.
 **Governing rules.** Blueprint §11.4: adapted subsets report coverage and never inherit the original headline
 score; report completion, false verification, unauthorized actions, semantic error rate and cost separately.
 
@@ -791,7 +794,7 @@ WO-15 in parallel, WO-16 after both, WO-17 after Frank.
 | **G10** packaging | the wheel serves the shell | `t08_dist` extension; `dist` job | every `apps/web` file in wheel and sdist with equal bytes; clean install `serve-http --ui` → `GET /ui/` 200, `/ui/js/main.js` `text/javascript` |
 | **G11** smoke | every screen renders in a real browser | §8 A6 | all §6 routes: ready marker 1, no fatal, marker texts present |
 | **G12** gate | the repository gate | `./scripts/check.sh`, CI | green, both architectures; Node step ran (not skipped) in CI |
-| **G13** W27 provenance/access | exact provenance; disclosure | WO-14 script `--check` | archive size 220 433 394 and recorded SHA-256 match; 450 rows; residual-check split 425/24/1 and full82 = 82 (41/20/20/1) reproduce the audit; every inaccessible asset listed with where it was sought |
+| **G13** W27 provenance/access | exact provenance; disclosure | WO-14 script `--check` | archive size and SHA-256 match `provenance.json` (220 802 919 bytes; the audit's 220 433 394 was an earlier upload, disclosed there); 450 rows; residual-check split 425/24/1 and full82 = 82 (41/20/20/1) reproduce the audit; every inaccessible asset listed with where it was sought |
 | **G14** W27 coverage | every case classified | WO-16 | 450/450 rows with a class; every non-`CANDIDATE` row has ≥ 1 reason; summaries against 450 and 82 sum correctly; registry SHA-256 recorded |
 | **G15** W27 harness | ready to run, nothing spent | dry run with a stub session | preflight passes; `run.json` carries commit, tree-clean, lock hash, interpreter environment, model id, Claude Code version; scorer classifies the stub runs as registered |
 | **G16** W27 campaign (if approved) | attempted, honest | `verdict` on the campaign record | all registered runs recorded (infrastructure failures counted); system false verification 0; unauthorized effects 0; agent terms and cost reported with bounds |
