@@ -78,3 +78,12 @@ Grep, don't read whole. Newest at the bottom.
   discrepancy in `provenance.json`; "same data" rests on the audit's counts reproducing (450; 425/24/1; full82
   41/20/20/1). G13 wording amended on `wp/M06-w27`. Alternative: keep the audit's size (unverifiable, no earlier
   copy). Reversible by: reverting the note amendment commit.
+- M06 WO-14 done on `wp/M06-w27`: `4ee514d` (G13 wording amended, §9 note), `e268ed8` (acquire script with offline
+  `--check`, provenance.json, access_report.json, test). All audit counts reproduce (450; 425/24/1; families; model
+  types; full82 82 = 41/20/20/1, 7 fail residual check). Extra evidence: `RELEASE_MANIFEST.json` at `13ca57e` says
+  220 433 394, at head `b7e1006` 220 802 919 → re-upload after the audit. Ten inaccessible assets, all absent
+  (three LoRA adapters, SFT data/knowledge base, role prompts/orchestration, scoring harness, 82-split score-run
+  binding, agent outputs + GPT-5 mini controls, supplementary material). `full82.json` comes from the repo at the
+  pinned SHA, not the archive. check.sh: 6939 passed, 31 skipped, 1 xfailed, PASSED.
+- `specifier` M06 WO-15 (W27 registration) launched on `wp/M06-w27`; brief `docs/briefs/M06-W27-registration.md`
+  (`1fb65c1`); register R-176…R-179.
