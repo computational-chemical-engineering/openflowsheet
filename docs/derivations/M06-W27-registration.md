@@ -75,6 +75,16 @@ and the confirmation of §7, and no claim about any model's agent ability beyond
   surface v0.2 has, and the report states which (W27-R54).
 - **F4 — one case cannot be prompted.** `watertap_metab` lacks six of the per-case files, `units.json` among
   them; it is `ARTIFACT_INCOMPLETE` and is outside the sampling frame (§6).
+- **F6 — T08's U14 contradicts W27's file locations.** T08 release spec §5.3 row U14 ("external benchmark
+  (CRAFTS/OpenIDAES-450) comparisons — not run in v0.1 (M06/W27)") is tested by
+  `tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered`, which fails on
+  any tracked path under `src/` or `benchmarks/` containing `openidaes`. Design note §9 puts W27's records under
+  `benchmarks/m06/openidaes450/`, so the test has failed since WO-14 (`e268ed8`, `provenance.json` and
+  `access_report.json`), and `test_t08_w2_support_envelope.py::test_a22_…` fails with it. `benchmarks/` is not
+  in the sdist (`MANIFEST.in`), so nothing ships. Recommended amendment (design lane, T08 spec; not made here):
+  U14 reads "no external benchmark comparison is registered in `benchmarks/registry.yaml` or shipped in
+  `src/`; W27's adaptation records (M06) live under `benchmarks/m06/openidaes450/` and register no comparison",
+  and the node checks `registry.yaml` and `src/` only.
 - **F5 — "agent false verification" for a built claim on a non-`CANDIDATE` case** (design note §9) is kept, but
   it is only as right as the maps. §11.6 adds the `map_defect_candidate` flag so that a build the maps called
   impossible but which passes every build check is shown to the verdict, not hidden; it does not re-score.
