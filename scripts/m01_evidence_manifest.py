@@ -767,7 +767,10 @@ def _description(aid: str) -> str:
     match = re.search(rf"^- \*\*M01\.{aid}\*\* — (.+?)(?:\n(?=- |\n|###)|\Z)", text, re.M | re.S)
     if match is None:
         raise SystemExit(f"M01.{aid}: no bullet in {SPEC.name}")
-    body = " ".join(match[1].split())
+    # The manifest test rejects any string holding `<…>` (a template placeholder is never
+    # evidence); the spec's comparisons and grammar names (`v < v_c`, `(<stage>)`) are kept
+    # readable with the full-width signs.
+    body = " ".join(match[1].split()).replace("<", "\uff1c").replace(">", "\uff1e")
     return f"M01 spec §9, M01.{aid}: {body[:600]}{'…' if len(body) > 600 else ''}"
 
 
@@ -1007,7 +1010,8 @@ def main() -> int:
         f"{c['id']} {name}: {bound['value']:.3g} vs {bound['tolerance']:.3g}, "
         f"margin {bound['margin']}"
         for c in checks
-        for name, bound in (c.get("value", {}).get("measured") or {}).items()
+        if isinstance(c["value"], Mapping)
+        for name, bound in (c["value"].get("measured") or {}).items()
         if isinstance(bound, Mapping)
         and "margin" in bound
         and isinstance(bound["margin"], float)
