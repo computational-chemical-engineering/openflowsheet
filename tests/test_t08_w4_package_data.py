@@ -50,7 +50,7 @@ def test_each_packaged_path_is_a_link_to_the_single_repository_copy(relative: st
 
 def test_every_packaged_file_reads_the_repository_bytes() -> None:
     expected = _repository_files()
-    assert len(expected) == 32 + 3
+    assert len(expected) == 32 + 4
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
     assert sorted(

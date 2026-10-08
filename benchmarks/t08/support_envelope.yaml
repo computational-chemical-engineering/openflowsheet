@@ -675,8 +675,9 @@ limitations:
     text: >-
       The reference-tool data (the IDAES and DWSIM environments, their downloads and their
       outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's
-      own code, its package data and its licence files only, and every ComponentRecord is
-      synthetic (SYN-001) or one of M01's five real C1 records, each with its identifiers, rights,
+      own code, its package data (since M01 including the five C1 records, M01 spec §15 Q-N4's
+      default) and its licence files only, and every ComponentRecord is synthetic (SYN-001) or
+      one of M01's five real C1 records, each with its identifiers, rights,
       per-parameter provenance and retrieval equality (M01 spec §3.5, R-158).
     evidence:
       - tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel

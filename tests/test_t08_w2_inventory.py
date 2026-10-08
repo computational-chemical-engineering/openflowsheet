@@ -354,11 +354,13 @@ def test_a31_readme_states_casadi_is_lgpl() -> None:
 # that includes the runtime data under `_data/`: the published schemas and three of the project's
 # registered documents (K04's numerical policy, SYN-001's synthetic variants, and T08's numerical
 # policy of ADR 0025), byte copies of the repository files (`openflowsheet.resources`; T08.A43
-# compares the bytes).
+# compares the bytes). Since M01 (spec §3.5, §15 Q-N4's default) it also includes the five C1
+# component records, published constants with their citations and rights, which the provider
+# `pr-c1-v1` reads at run time; the reference tools' data stays out.
 SHIPPED_DATA = re.compile(
     r"^(src/)?openflowsheet/(py\.typed|application/bindings/descriptions/([a-z_]+\.md|REVIEW\.json)"
     r"|_data/schemas/[a-z0-9-]+\.schema\.json|_data/benchmarks/(k04|syn001)/reference_values\.yaml"
-    r"|_data/benchmarks/t08/numerical_policy_v2\.yaml)$"
+    r"|_data/benchmarks/t08/numerical_policy_v2\.yaml|_data/benchmarks/m01/components\.yaml)$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"
@@ -442,8 +444,13 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rig
         if record["synthetic"] is True:
             continue
         assert record["synthetic"] is False, where
-        real.append(where)
-        assert path == M01_RECORDS and record["id"] in M01_COMPONENTS, where  # (i)
+        # The package-data link `src/openflowsheet/_data/benchmarks/m01/components.yaml` is the
+        # same single copy (`openflowsheet.resources`), not a second record.
+        linked = (REPO_ROOT / path).is_symlink()
+        single = (REPO_ROOT / path).resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+        assert single == M01_RECORDS and record["id"] in M01_COMPONENTS, where  # (i)
+        if not linked:
+            real.append(where)
         identifiers = record["identifiers"]
         assert all(identifiers.get(key, "").strip() for key in ("cas", "inchi", "inchikey")), where
         quantities = [record["molecular_weight"], *record["parameters"].values()]
@@ -452,7 +459,7 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rig
         assert all(vetted["equal"].values()) and vetted["nasa7_low_range_equal"], where
         assert vetted["identifiers_equal"], where
     assert len(real) == len(set(real)), "a real record appears twice"
-    assert set(real) <= {(M01_RECORDS, component) for component in M01_COMPONENTS}
+    assert set(real) == {(M01_RECORDS, component) for component in M01_COMPONENTS}
 
 
 def test_a32_the_envelope_states_reference_data_and_openidaes_are_not_distributed() -> None:

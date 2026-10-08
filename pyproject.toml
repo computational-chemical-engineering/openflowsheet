@@ -64,6 +64,7 @@ openflowsheet = [
     "_data/benchmarks/k04/reference_values.yaml",
     "_data/benchmarks/syn001/reference_values.yaml",
     "_data/benchmarks/t08/numerical_policy_v2.yaml",
+    "_data/benchmarks/m01/components.yaml",
 ]
 # The MCP tool descriptions and their review record are served text (T07 W6c, gate G15).
 "openflowsheet.application.bindings" = ["descriptions/*.md", "descriptions/REVIEW.json"]
