@@ -67,7 +67,7 @@ AUDITED_PYNUMERO_ASL_SHA256: Final = (
 #: the inventory (`scripts/m03_ipopt_inventory.py --env <env>`). Without the acceptance,
 #: `audited_solver()` is unavailable, so `optimize()` reports `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)`
 #: and solves nothing, even in the audited environment (M03 review F4).
-NLP_LICENCES_ACCEPTED: Final = False
+NLP_LICENCES_ACCEPTED: Final = True
 #: The one module allowed to import Pyomo and cyipopt (WO-8), and the libraries it needs.
 ADAPTER_MODULE: Final = "openflowsheet.studies.nlp.greybox"
 NLP_LIBRARIES: Final = ("pyomo", "cyipopt")
