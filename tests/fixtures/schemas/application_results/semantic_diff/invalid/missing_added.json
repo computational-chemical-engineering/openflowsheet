@@ -4,6 +4,21 @@
     "changed": [
       "specifications"
     ],
+    "elements": [
+      {
+        "change": "changed",
+        "id": "SPEC-feed-n-A",
+        "member": "specifications",
+        "paths": [
+          [
+            "notes"
+          ],
+          [
+            "value"
+          ]
+        ]
+      }
+    ],
     "removed": []
   }
 }

@@ -432,24 +432,58 @@ class ChangeSet:
 # ========================================================================= TransactionResult
 
 
+#: ADR 0019 Amendment 3 (A3.2): the list members whose items `diff_revisions` pairs by `id`.
+DiffMember = Literal["instances", "connections", "specifications"]
+DiffChange = Literal["added", "removed", "changed"]
+
+
+@dataclass(frozen=True)
+class DiffElement:
+    """ADR 0019 Amendment 3 (A3.2; M06 design note §4.2): one item of `instances`, `connections`
+    or `specifications` that differs between two revisions. `id` is `None` when the member's
+    items cannot be paired by id; `paths` are the key paths inside a `changed` item, from its
+    root, in code-point order (empty for `added`, `removed` and an unpaired member)."""
+
+    member: DiffMember
+    id: str | None
+    change: DiffChange
+    paths: tuple[tuple[str, ...], ...] = ()
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "member": self.member,
+            "id": self.id,
+            "change": self.change,
+            "paths": [list(path) for path in self.paths],
+        }
+
+
 @dataclass(frozen=True)
 class SemanticDiff:
-    """What changed, by path, in the revision's *content* — not its title or provenance."""
+    """What changed, by path, in the revision's *content* — not its title or provenance.
+
+    `elements` is `diff_revisions`'s alone (ADR 0019 Amendment 3, A3.2): `None` — and absent from
+    the document — in `commit_change`'s and `preview_change`'s `TransactionResult.diff`, whose
+    schema and ledger replays it does not change."""
 
     added: tuple[str, ...]
     removed: tuple[str, ...]
     changed: tuple[str, ...]
+    elements: tuple[DiffElement, ...] | None = None
 
     @property
     def empty(self) -> bool:
         return not (self.added or self.removed or self.changed)
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document: dict[str, Any] = {
             "added": list(self.added),
             "removed": list(self.removed),
             "changed": list(self.changed),
         }
+        if self.elements is not None:
+            document["elements"] = [element.as_document() for element in self.elements]
+        return document
 
 
 def _validation_report_build(document: Mapping[str, Any]) -> ValidationReport:

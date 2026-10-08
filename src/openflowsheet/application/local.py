@@ -88,6 +88,7 @@ from openflowsheet.application.store import (
 from openflowsheet.application.transactions import (
     EditPathError,
     apply_edits,
+    revision_diff,
     semantic_diff,
 )
 from openflowsheet.application.types import (
@@ -1066,12 +1067,14 @@ class LocalApplication:
 
     def diff_revisions(self, from_revision: str, to_revision: str) -> SemanticDiff:
         """§4.2: the semantic diff (content paths added, removed, changed; the title and other
-        descriptive members excluded) from one stored revision to another. `read`."""
+        descriptive members excluded) from one stored revision to another, with its
+        `elements` (ADR 0019 Amendment 3, A3.2: the items of `instances`, `connections` and
+        `specifications` that differ, paired by id). `read`."""
         operation = "diff_revisions"
         self._authorize(operation)
         before = self._revision(from_revision, operation)
         after = self._revision(to_revision, operation)
-        return semantic_diff(before.document, after.document)
+        return revision_diff(before.document, after.document)
 
     def inspect_structure(
         self,

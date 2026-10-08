@@ -142,6 +142,12 @@ def _digest(document: Any) -> str | None:
 SNAPSHOT_AMENDMENT_2: dict[str, str | None] = {
     "list_models": "12d8824519a37a41eafa12a88308bbafa563ccd706d226c60f3f39310b6cad85",
 }
+#: ADR 0019 Amendment 3, A3.2 (approved by Frank on 2026-10-08; M06 design note §4.2, gate G5):
+#: `semantic_diff` gains the required member `elements`. `diff_revisions`'s snapshot is re-taken;
+#: with the member removed it is the `b13d556` snapshot again.
+SNAPSHOT_AMENDMENT_3: dict[str, str | None] = {
+    "diff_revisions": "07f04027b7ce896a9c42e0dcd6b45ab60f518edfbd992e60aa50d707e79b473e",
+}
 
 
 def _without_specifications(schema: Any) -> Any:
@@ -162,7 +168,7 @@ def _without_specifications(schema: Any) -> Any:
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
     assert len(measured) == 20
-    assert measured == {**SNAPSHOT_AT_B13D556, **SNAPSHOT_AMENDMENT_2}
+    assert measured == {**SNAPSHOT_AT_B13D556, **SNAPSHOT_AMENDMENT_2, **SNAPSHOT_AMENDMENT_3}
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
 
@@ -179,7 +185,24 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
         for name in OPERATIONS
         if _digest(resolved_response(OPERATIONS[name])) != SNAPSHOT_AT_B13D556[name]
     ]
-    assert moved == ["list_models"]
+    # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.
+    assert moved == ["list_models", "diff_revisions"]
+
+
+def test_g5_diff_revisions_moved_only_by_the_approved_additive_member() -> None:
+    """ADR 0019 Amendment 3, A3.2: with `elements` removed from `semantic_diff`'s properties and
+    `required`, `diff_revisions`'s resolved schema is the `b13d556` snapshot again."""
+    resolved = resolved_response(OPERATIONS["diff_revisions"])
+    assert _digest(resolved) == SNAPSHOT_AMENDMENT_3["diff_revisions"]
+    assert resolved["required"] == ["added", "changed", "elements", "removed"]
+    without = {
+        **resolved,
+        "required": [member for member in resolved["required"] if member != "elements"],
+        "properties": {
+            key: value for key, value in resolved["properties"].items() if key != "elements"
+        },
+    }
+    assert _digest(without) == SNAPSHOT_AT_B13D556["diff_revisions"]
 
 
 def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:

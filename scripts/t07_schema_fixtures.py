@@ -34,7 +34,8 @@ one member removed) and one converged solve: `submit_job`, `list_jobs`, `list_jo
 `revision_summary`), `get_revision` at depth 1 and `diff_revisions`. One invalid fixture per
 `$def` is that response with its first required member removed, `{expect_error, document}`; and
 `model_registry_view` has a second, its first pin without the `specifications` ADR 0019
-Amendment 2 requires.
+Amendment 2 requires; and `semantic_diff` has a second, the response without the `elements`
+ADR 0019 Amendment 3 (A3.2) requires.
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -261,6 +262,12 @@ def application_results_documents() -> dict[str, Any]:
     documents["application_results/model_registry_view/invalid/pin_missing_specifications.json"] = {
         "expect_error": "'specifications' is a required property",
         "document": registry,
+    }
+    # ADR 0019 Amendment 3 (A3.2; M06 WO-2): the diff without the member the amendment requires.
+    diff = {key: value for key, value in responses["semantic_diff"].items() if key != "elements"}
+    documents["application_results/semantic_diff/invalid/missing_elements.json"] = {
+        "expect_error": "'elements' is a required property",
+        "document": diff,
     }
     return documents
 
