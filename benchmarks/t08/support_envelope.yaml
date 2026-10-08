@@ -2502,3 +2502,47 @@ harvest:
   class: P
   to: []
   note: A47 is M02's adapter half, no record half (spec §8.15, R-200)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[0]
+  sha256: ee46a433f1bfe6f19f00877097a0e961d9957f6e811812f936098abe5d743036
+  class: P
+  to: []
+  note: W21/W22 outside the requirements pattern; verdicts are the verdict lane's
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[1]
+  sha256: fa167598b842a43c1743e38f28857c49119c0c77c146cbe272510fcd38aeafaa
+  class: P
+  to: []
+  note: reactor not re-run; adapter halves of A41-A48 are M02's planned acceptance (R-200)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[2]
+  sha256: 62596cb3d5b5da46150e63f324d86069ac5f972c58a89d607fc5311926d3fd6f
+  class: P
+  to: []
+  note: stand-in synthetic and unbound (U04 refuses it, M01.A49; R-199)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[3]
+  sha256: 9eae779984d4556e3924ac1f1ae7bb3178c8184c88d08947acb922ee63a2bd25
+  class: E
+  to:
+  - L42
+  note: W22 pure-component validation only, no mixture VLE validation, k_ij = 0 (user-facing; M01 review F1)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[4]
+  sha256: 70203b5374073bd9457e7df458a852c22dda43ba103f0472694897c42afb48d4
+  class: P
+  to: []
+  note: probe record from one machine; two record values registered within 10x (A45 worst 2.98e-8, review F7)
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: limitations[5]
+  sha256: 598b9fdb4bc667f1d08467f8efe1f4f968b7e62259339ca9dc4ad082684aa7b5
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+  item: checks[46]
+  check_id: M01.A47
+  sha256: db777b6096e1a0b78073ea34abae038ca3aad840853534902eb7fb3a87ed7767
+  class: P
+  to: []
+  note: A47 is M02's adapter half, no record half (spec §8.15, R-200)
