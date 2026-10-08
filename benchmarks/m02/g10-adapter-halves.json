@@ -6,8 +6,8 @@
  "specification": "docs/design/M02-pymrm-adapter.md §10.2 G10; docs/derivations/M01-spec.md §8.15",
  "probe_record_sha256": "992cb1aa40b3b3e04c0b97cf151cc6e25dd031a78b3f2ac98449adeca0272ddb",
  "variant": {
-  "variant_id": "pymrm-6089593-g2-nz800-s123-v1",
-  "sha256": "2302cddf2d3014ba3caeef8f5a247ee3cba01066d779e4b1142a55fbaa52aad4"
+  "variant_id": "pymrm-6089593-g2-nz800-s123-v2",
+  "sha256": "04d4ef9c1ebbd8f727ec6f59709c54e19c365dec4c3ae86718c5e84270750b11"
  },
  "environment": {
   "python": "3.13.5",
@@ -25,11 +25,11 @@
   "llvmlite": "0.50.0",
   "env_id": "pymrm-6089593-032a050c6cf3",
   "external_root_default": true,
-  "fingerprint_sha256": "238123dc250c5e09c647f69b6592e9d0fc161d9a7a8e625bc24846357f946b6e",
+  "fingerprint_sha256": "6f8a29558bcd0e08830569f92886bf62a5df0f0c26f4c55f615bae587f1b704b",
   "lock_sha256": "032a050c6cf39e1eb2f01ebf03ea92a386f99967cb7fd0797c54431a33a60288",
   "export_tree_sha256": "c51b4734e453733ea2c3c473392d29255214e562d57446b5431406b424dfe3bd",
   "merged_database_sha256": "74cb058c545ad2056b7e7cc0b433642b5677e46dced8f55c04e7ec2326888454",
-  "runner_sha256": "24e18ca0abe3f37816c4cdfdd219c0a9d399376f74e9c946c07d05b5931f2161",
+  "runner_sha256": "4846cc799f8900eb8ff2b33ef0d4bbd17b02fed980e4b91130765d049c3193b0",
   "worker_python": "3.13.5"
  },
  "probe_environment": {
@@ -164,10 +164,10 @@
    "dP_over_P": 4.997898459658027e-05,
    "u_ret_min": 0.0014048407210793812,
    "min_axial_flow_mol_s": 0.00010593911193312912,
-   "wall_s": 30.41435388300306,
-   "certificate_wall_s": 18.590019149996806,
-   "startup_s": 1.7619933479945757,
-   "solve_s": 28.54779698100174
+   "wall_s": 30.986348145001102,
+   "certificate_wall_s": 18.738157416999456,
+   "startup_s": 1.7847792960019433,
+   "solve_s": 29.09788153500267
   },
   {
    "label": "direct S2 dt_init 1e-1",
@@ -200,10 +200,10 @@
    "dP_over_P": 4.997898469939828e-05,
    "u_ret_min": 0.001404840742907254,
    "min_axial_flow_mol_s": 0.0001059391114004383,
-   "wall_s": 45.22784837600193,
-   "certificate_wall_s": 35.04476246100239,
-   "startup_s": 1.7881063150052796,
-   "solve_s": 43.37244544899295
+   "wall_s": 44.8553168829967,
+   "certificate_wall_s": 34.768650513004104,
+   "startup_s": 1.786645968000812,
+   "solve_s": 43.00359047699749
   },
   {
    "label": "direct backflow [0,0,0,1,0]",
@@ -236,10 +236,10 @@
    "dP_over_P": 4.997898459658027e-05,
    "u_ret_min": 0.0014048407210793812,
    "min_axial_flow_mol_s": 0.00010593911193312912,
-   "wall_s": 30.32857460300147,
-   "certificate_wall_s": 18.459971060001408,
-   "startup_s": 1.8087663639962557,
-   "solve_s": 28.434440842000186
+   "wall_s": 30.93205818300339,
+   "certificate_wall_s": 19.025927948998287,
+   "startup_s": 1.795631675995537,
+   "solve_s": 29.026758651001728
   },
   {
    "label": "boundary T_in 653.15",
@@ -272,10 +272,10 @@
    "dP_over_P": 4.943324979916215e-05,
    "u_ret_min": 0.0013803491528960876,
    "min_axial_flow_mol_s": 0.00010605185279887258,
-   "wall_s": 24.575484330998734,
-   "certificate_wall_s": 11.89455616199848,
-   "startup_s": 1.7845423489998211,
-   "solve_s": 22.68657505200099,
+   "wall_s": 24.856381430996407,
+   "certificate_wall_s": 11.89646930199524,
+   "startup_s": 1.7960348240012536,
+   "solve_s": 22.990199924999615,
    "envelope_status": "ok",
    "envelope_code": "ok",
    "discretization_estimate": {
@@ -299,7 +299,7 @@
      0.01943
     ]
    },
-   "experiment_key": "7bde7602a1afd020b36539f00909f7fcedd0f6f3faca671087c842d2210f32dd"
+   "experiment_key": "d165b97b6953bdcf492bcc629a4466579ee7b5aa1c9591c6239b73112bce7c30"
   },
   {
    "label": "boundary T_in 673.15",
@@ -332,10 +332,10 @@
    "dP_over_P": 4.997898472435772e-05,
    "u_ret_min": 0.0014048407283553388,
    "min_axial_flow_mol_s": 0.00010593911166748371,
-   "wall_s": 29.577357160000247,
-   "certificate_wall_s": 17.743467332002183,
-   "startup_s": 1.7604377099996782,
-   "solve_s": 27.719169388998125,
+   "wall_s": 29.681440974003635,
+   "certificate_wall_s": 17.7772172699988,
+   "startup_s": 1.7892976459988859,
+   "solve_s": 27.801494207997166,
    "envelope_status": "ok",
    "envelope_code": "ok",
    "discretization_estimate": {
@@ -359,7 +359,7 @@
      0.01943
     ]
    },
-   "experiment_key": "4177063d0aa864fecf98b6523c6cc82d204f4719e2f4a95f97983b739f9988b0"
+   "experiment_key": "e9649e0df930227c66cf7ba95a8d79d48e38dd97a9507509a8cb7a5e727daec5"
   },
   {
    "label": "boundary T_in 693.15",
@@ -392,10 +392,10 @@
    "dP_over_P": 5.0592748045548796e-05,
    "u_ret_min": 0.0014315774023998529,
    "min_axial_flow_mol_s": 0.00010577764981831999,
-   "wall_s": 31.379567636999127,
-   "certificate_wall_s": 19.93449245300144,
-   "startup_s": 1.7558446809998713,
-   "solve_s": 29.534132310000132,
+   "wall_s": 31.536818353000854,
+   "certificate_wall_s": 19.945442080002977,
+   "startup_s": 1.7915519379967009,
+   "solve_s": 29.643530034001742,
    "envelope_status": "ok",
    "envelope_code": "ok",
    "discretization_estimate": {
@@ -419,7 +419,7 @@
      0.01943
     ]
    },
-   "experiment_key": "167fb778568bf160df49c3192864df454cbaf5ec81989742ca972594e001cd06"
+   "experiment_key": "46be963558b819e4814c812fd8cd8151a0798620fb1f0ea150eb0faa52323379"
   },
   {
    "label": "boundary bypass repeat 1",
@@ -452,10 +452,10 @@
    "dP_over_P": 4.997898472435772e-05,
    "u_ret_min": 0.0014048407283553388,
    "min_axial_flow_mol_s": 0.00010593911166748371,
-   "wall_s": 29.61449888000061,
-   "certificate_wall_s": 17.666990577999968,
-   "startup_s": 1.7798961000007694,
-   "solve_s": 27.74042548199941,
+   "wall_s": 29.77899920499476,
+   "certificate_wall_s": 17.83599107700138,
+   "startup_s": 1.7925684399961028,
+   "solve_s": 27.88073851900117,
    "repeat_bitwise_equal": true
   },
   {
@@ -489,12 +489,12 @@
    "dP_over_P": 4.997898472435772e-05,
    "u_ret_min": 0.0014048407283553388,
    "min_axial_flow_mol_s": 0.00010593911166748371,
-   "wall_s": 29.279993546995684,
-   "certificate_wall_s": 17.604642119003984,
-   "startup_s": 1.7677158609949402,
-   "solve_s": 27.42917697100347,
+   "wall_s": 30.33373497700086,
+   "certificate_wall_s": 18.15135977599857,
+   "startup_s": 1.8139082439956837,
+   "solve_s": 28.411416071998246,
    "repeat_bitwise_equal": true
   }
  ],
- "elapsed_s": 257.9
+ "elapsed_s": 260.6
 }
