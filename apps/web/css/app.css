@@ -1,0 +1,282 @@
+/* Layout and components of the diagnostic web shell (M06 design note §5.5). Colours come only
+   from tokens.css: text in an ink, link or status token (or a pill's fg), backgrounds in bg,
+   surface, sunken or select (or a pill's bg), which tests/test_m06_contrast.py checks. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+code,
+pre,
+kbd,
+.mono,
+.num {
+  font-family: var(--font-mono);
+}
+
+a {
+  color: var(--link);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------------------ the frame */
+
+#ofs-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+#ofs-header .product {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+#ofs-header .facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--ink-2);
+}
+
+#ofs-header .facts dt {
+  color: var(--ink-3);
+}
+
+#ofs-header .facts div {
+  display: flex;
+  gap: 4px;
+}
+
+#ofs-header .facts dd {
+  margin: 0;
+  font-family: var(--font-mono);
+}
+
+#ofs-header .actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+#ofs-main {
+  padding: 16px;
+  max-width: 1400px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 18px;
+}
+
+h2 {
+  font-size: 15px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.muted {
+  color: var(--ink-2);
+}
+
+.notice {
+  background: var(--sunken);
+  color: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+/* ------------------------------------------------------------------- controls and forms */
+
+button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--sunken);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+button:disabled {
+  color: var(--ink-2);
+  cursor: not-allowed;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+.login {
+  max-width: 28rem;
+}
+
+.login form {
+  display: grid;
+  gap: 8px;
+}
+
+.login .remember {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------------------------- tables */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--surface);
+}
+
+th,
+td {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  color: var(--ink-2);
+  font-weight: 600;
+  background: var(--sunken);
+}
+
+td.num,
+th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+tr.selected,
+tr[aria-selected="true"] {
+  background: var(--select);
+}
+
+.id {
+  font-family: var(--font-mono);
+  max-width: 24ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+/* ----------------------------------------------------------------------------- pills */
+
+.pill {
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 0 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pill-ok {
+  color: var(--pill-ok-fg);
+  background: var(--pill-ok-bg);
+  border-color: var(--pill-ok-border);
+}
+
+.pill-info {
+  color: var(--pill-info-fg);
+  background: var(--pill-info-bg);
+  border-color: var(--pill-info-border);
+}
+
+.pill-warn {
+  color: var(--pill-warn-fg);
+  background: var(--pill-warn-bg);
+  border-color: var(--pill-warn-border);
+}
+
+.pill-bad {
+  color: var(--pill-bad-fg);
+  background: var(--pill-bad-bg);
+  border-color: var(--pill-bad-border);
+}
+
+.pill-none {
+  color: var(--pill-none-fg);
+  background: var(--pill-none-bg);
+  border-color: var(--pill-none-border);
+  border-style: dashed;
+}
+
+/* --------------------------------------------------------------------- errors and faults */
+
+#ofs-error {
+  border-color: var(--bad);
+}
+
+#ofs-error h1 {
+  color: var(--bad);
+}
+
+#ofs-error pre,
+#ofs-fatal {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--sunken);
+  color: var(--ink);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+#ofs-fatal {
+  border: 2px solid var(--bad);
+  margin: 16px;
+}
