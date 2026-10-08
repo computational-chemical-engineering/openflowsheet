@@ -13,7 +13,8 @@
 # and put on PYTHONPATH here only, so that the audited environment stays exactly its locks.
 #
 # The audited environment's inventory is re-taken with NLP-1 as the workload
-# (scripts/m03_ipopt_inventory.py --check, audit §9 item 1) unless --no-inventory is given.
+# (scripts/m03_ipopt_inventory.py --check, audit §9 item 1) unless --no-inventory is given, and so
+# is the Ipopt executable's (`--workload trsp-exe`, M05 WO-1, audit §11).
 #
 # Usage: scripts/m03_nlp_check.sh [--no-inventory] [prefix] [cache] [-- pytest arguments]
 #        defaults: .venv-nlp and .reference-downloads/m03-ipopt (the build script's)
@@ -65,6 +66,16 @@ if [ "$INVENTORY" -eq 1 ]; then
         echo "--- inventory --check: exit 0"
     else
         echo "--- inventory --check: exit $?"
+        status=1
+    fi
+fi
+if [ "$INVENTORY" -eq 1 ]; then
+    echo "=== inventory --check (ipopt executable workload) ==="
+    if "$PREFIX/bin/python" -I scripts/m03_ipopt_inventory.py --env "$PREFIX" --workload trsp-exe \
+        --check; then
+        echo "--- inventory --check (trsp-exe): exit 0"
+    else
+        echo "--- inventory --check (trsp-exe): exit $?"
         status=1
     fi
 fi

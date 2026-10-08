@@ -1,0 +1,2004 @@
+{
+ "conda_packages": [
+  {
+   "build": "8_kmp_llvm",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 0,
+   "md5": "b4d1b93dd1dab4eea23395fd5e5b357d",
+   "name": "_openmp_mutex",
+   "sha256": "b8de006376660eb12c7fc40803c97e1480bf4bc1253f0d59694b12f81b52fe14",
+   "version": "4.5"
+  },
+  {
+   "build": "h5888daf_2",
+   "declared_licence": "BSD-3-Clause AND SMLNJ",
+   "loaded_objects": 1,
+   "md5": "ef757816a8f0fee2650b6c7e19980b6b",
+   "name": "ampl-asl",
+   "sha256": "c5c1057778bec78e07a4a8f122c3659767817fc0a9fa034724ff931ad90af57b",
+   "version": "1.0.0"
+  },
+  {
+   "build": "hda65f42_10",
+   "declared_licence": "bzip2-1.0.6",
+   "loaded_objects": 1,
+   "md5": "e675fabcf81499adc7edf58124fb1e01",
+   "name": "bzip2",
+   "sha256": "1a0d382c515ebf55f8ee1f38c8b81bc95af5c2acc42ad53b66bc5df932032f96",
+   "version": "1.0.8"
+  },
+  {
+   "build": "hbd8a1cb_0",
+   "declared_licence": "ISC",
+   "loaded_objects": 0,
+   "md5": "0f51e2391ade309db462a55611263e9c",
+   "name": "ca-certificates",
+   "sha256": "0a0544cf95f64394fe4959286f5c71f5444ad58feb0602e53becb27448d24da6",
+   "version": "2026.7.22"
+  },
+  {
+   "build": "py313hddd399a_1",
+   "declared_licence": "EPL-2.0",
+   "loaded_objects": 0,
+   "md5": "aa122c393ed7ceeecaf50179d02d642e",
+   "name": "cyipopt",
+   "sha256": "e543b84e787dbea7b8ed94481b947916671162af1a2ef5e3a6f5c2eb7cc8dc22",
+   "version": "1.7.0"
+  },
+  {
+   "build": "hec1326d_0",
+   "declared_licence": "EPL-1.0",
+   "loaded_objects": 3,
+   "md5": "dc269299f500ebd548d2f6b065fe1390",
+   "name": "ipopt",
+   "sha256": "44554d5124ee96c27c6650a3ee971f8ede6384c542fa99ed1f16ba104d0cbeb5",
+   "version": "3.14.20"
+  },
+  {
+   "build": "default_hbd61a6d_102",
+   "declared_licence": "GPL-3.0-only",
+   "loaded_objects": 0,
+   "md5": "449500f2c089da11c40f5c21312e3e07",
+   "name": "ld_impl_linux-64",
+   "sha256": "27d83f1188cd19bcb7754a078b3fa7f4cfb8527f8eb2fde54dd01fc529d1adec",
+   "version": "2.46.1"
+  },
+  {
+   "build": "11_h4a7cf45_openblas",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 0,
+   "md5": "b8cce1486f3c62f33291d6318c193d0d",
+   "name": "libblas",
+   "sha256": "d942e0c820d60a613a6f786d074f0820fb6343e3f1ccfb110b1d98b44fb75968",
+   "version": "3.11.0"
+  },
+  {
+   "build": "11_h0358290_openblas",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 0,
+   "md5": "73a248c30811075059b5aeda766c2624",
+   "name": "libcblas",
+   "sha256": "f7d1bbdea61cf94ba219d17b2cb571a29830f8025385af799bff5a7ad1ef45e6",
+   "version": "3.11.0"
+  },
+  {
+   "build": "hd2095e1_0",
+   "declared_licence": "MIT",
+   "loaded_objects": 0,
+   "md5": "72cfd2b95b0540247220b42f58a148d7",
+   "name": "libexpat",
+   "sha256": "6de73033a7c5f712c9c5a54124e4581e025691029835e5bceaf10a333a7e7bc0",
+   "version": "2.8.5"
+  },
+  {
+   "build": "h2dba641_1",
+   "declared_licence": "MIT",
+   "loaded_objects": 0,
+   "md5": "ede4673863426c0883c0063d853bbd85",
+   "name": "libffi",
+   "sha256": "764432d32db45466e87f10621db5b74363a9f847d2b8b1f9743746cd160f06ab",
+   "version": "3.4.6"
+  },
+  {
+   "build": "ha9f2e26_7",
+   "declared_licence": "GPL-3.0-only WITH GCC-exception-3.1",
+   "loaded_objects": 2,
+   "md5": "735629b400b70eeab21a2ba8f5b1c2ce",
+   "name": "libgcc",
+   "sha256": "e031634c3a928f9594eba868bc46ef5230d6571a364a0c63215b06c4563bfcea",
+   "version": "16.2.0"
+  },
+  {
+   "build": "h69a702a_7",
+   "declared_licence": "GPL-3.0-only WITH GCC-exception-3.1",
+   "loaded_objects": 0,
+   "md5": "3a8d285f5f22138ef826ad54cf267e73",
+   "name": "libgfortran",
+   "sha256": "9682ae4dd11487e10b904b3cb3ab6379cad25233d45fdfdf90d54349df244494",
+   "version": "16.2.0"
+  },
+  {
+   "build": "h6b99dfc_7",
+   "declared_licence": "GPL-3.0-only WITH GCC-exception-3.1",
+   "loaded_objects": 1,
+   "md5": "7719ed7be38ad8c492c4bd5cc2bce0c4",
+   "name": "libgfortran5",
+   "sha256": "04dbab12c925b92977bb835dd2f5eda413607afa79f95a554e5a04b07a380322",
+   "version": "16.2.0"
+  },
+  {
+   "build": "default_he001693_1000",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 1,
+   "md5": "c197985b58bc813d26b42881f0021c82",
+   "name": "libhwloc",
+   "sha256": "5041d295813dfb84652557839825880aae296222ab725972285c5abe3b6e4288",
+   "version": "2.13.0"
+  },
+  {
+   "build": "h0cb94f2_3",
+   "declared_licence": "LGPL-2.1-only",
+   "loaded_objects": 1,
+   "md5": "f92233bf33e24a25668bb2119e2c51f9",
+   "name": "libiconv",
+   "sha256": "f943117edb9cd4d9c61cc972eee5a34291dc55ea7a6e9e38da104995841cbcb6",
+   "version": "1.18"
+  },
+  {
+   "build": "11_h47877c9_openblas",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 0,
+   "md5": "5622a13917855ce4b953b9e655cf9262",
+   "name": "liblapack",
+   "sha256": "1ad3f43c9319ef398a8ef45989f4903a06e3965b51e77fc669a4c894168a8411",
+   "version": "3.11.0"
+  },
+  {
+   "build": "hb03c661_1",
+   "declared_licence": "0BSD",
+   "loaded_objects": 1,
+   "md5": "1390b7c5ac0b1d8e447bc5efa6d3c8c2",
+   "name": "liblzma",
+   "sha256": "9787df8c22a59c9a70d3e5a10db9ad663485e75e9ccc3f09bd092cb7b95e0dab",
+   "version": "5.8.3"
+  },
+  {
+   "build": "hb03c661_2",
+   "declared_licence": "BSD-2-Clause",
+   "loaded_objects": 0,
+   "md5": "fcfed1dc5053eb1901b66e7b1fc32588",
+   "name": "libmpdec",
+   "sha256": "46820b4a835e175940ae20bec00fdddaff804cda27a1408ab1b95e77a2196437",
+   "version": "4.0.0"
+  },
+  {
+   "build": "openmp_h156ec52_2",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 1,
+   "md5": "85d0ace74af50f6eea7010679eacb59a",
+   "name": "libopenblas",
+   "sha256": "dbcd501070d124ee7e02740e5483e2e83158ab4a0cabfc65fb4253e0168ff428",
+   "version": "0.3.34"
+  },
+  {
+   "build": "int64_h807e49d_3",
+   "declared_licence": "CECILL-C",
+   "loaded_objects": 3,
+   "md5": "cdc96eb14693f0a33fb2daffb1987c4d",
+   "name": "libscotch",
+   "sha256": "d28da67deec6e16bc6acaad1b30a22a251b3868f9e79602d1d1b14b3d5030b90",
+   "version": "7.0.11"
+  },
+  {
+   "build": "h74cae3c_2",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 1,
+   "md5": "5ee48d510cb22553d446210b76d1f645",
+   "name": "libspral",
+   "sha256": "f66b648fd6f7b59d94e513f976f7396b9014395f57b5a9907fb07b847fbfd141",
+   "version": "2025.09.18"
+  },
+  {
+   "build": "h0737f62_103",
+   "declared_licence": "blessing",
+   "loaded_objects": 0,
+   "md5": "cc1ad2520049c35344239454a17560ac",
+   "name": "libsqlite",
+   "sha256": "66f4831f4ee3055f0ffe94e01901198cf3601e2c1b4f6b51d05c3f2d8557ce1d",
+   "version": "3.53.4"
+  },
+  {
+   "build": "h934c35e_7",
+   "declared_licence": "GPL-3.0-only WITH GCC-exception-3.1",
+   "loaded_objects": 1,
+   "md5": "9b6707e0caca917fa6ea9ee473f37a5d",
+   "name": "libstdcxx",
+   "sha256": "fa7018298629fc429971fffd6ecba3d27a7b02e4e890d6a93ea01ffebe8cb745",
+   "version": "16.2.0"
+  },
+  {
+   "build": "hcfc3c73_0",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 0,
+   "md5": "54a948337e66706380ff24d6b5fde63f",
+   "name": "libuuid",
+   "sha256": "f34b8d1de9a2bf62476d8608057d9b8a918d97444236dc53a47128f2fae79041",
+   "version": "2.42.4"
+  },
+  {
+   "build": "hbdfff7e_1",
+   "declared_licence": "MIT",
+   "loaded_objects": 1,
+   "md5": "36e109ff64ea3bc459fdf0bfad9dd21b",
+   "name": "libxml2-16",
+   "sha256": "642d5d650a5f877a13ca60b720ae88643a145a30fb7a1065fd96c370595a5e2c",
+   "version": "2.15.4"
+  },
+  {
+   "build": "ha7a5771_1",
+   "declared_licence": "MIT",
+   "loaded_objects": 0,
+   "md5": "7c2fba53903a27aeb56a410a9510774b",
+   "name": "libxml2",
+   "sha256": "ef0f51a53d5f5d8a0aa8a71115a36b1bb3cd3ac95d65ced2cbfec7f1f08229b0",
+   "version": "2.15.4"
+  },
+  {
+   "build": "h25fd6f3_3",
+   "declared_licence": "Zlib",
+   "loaded_objects": 1,
+   "md5": "0de0122d9570a8ab637c6b73db268389",
+   "name": "libzlib",
+   "sha256": "eb8a0db0aa570124f7d2a93d7c7f596e3390df5e047818d873baad32985fc736",
+   "version": "1.3.2"
+  },
+  {
+   "build": "h7148c6a_0",
+   "declared_licence": "Apache-2.0 WITH LLVM-exception",
+   "loaded_objects": 1,
+   "md5": "373b64bc33e184b56f4f168bd7c2b733",
+   "name": "llvm-openmp",
+   "sha256": "684b08c8a127ed0c45e6ab137df7ee5c8fc76643099b62d97fc1575de6f4e29e",
+   "version": "23.1.3"
+  },
+  {
+   "build": "h86e3903_1008",
+   "declared_licence": "Apache-2.0",
+   "loaded_objects": 1,
+   "md5": "bd71f3eb5f383d32032e344784d928f6",
+   "name": "metis",
+   "sha256": "c845827efbac5eaf722260493dbf06a520c89bf0d59c46605af72cb47c3f75e9",
+   "version": "5.1.0"
+  },
+  {
+   "build": "h5a610fb_3",
+   "declared_licence": "CECILL-C",
+   "loaded_objects": 0,
+   "md5": "b09f450cfb527a45e678b415213a31ac",
+   "name": "mumps-include",
+   "sha256": "18e9bf4bb85588401ae7b319af15eace9f2f0a47677bfe0f91b974941f7a803f",
+   "version": "5.8.2"
+  },
+  {
+   "build": "gfortran_hfb83c00_3",
+   "declared_licence": "CECILL-C",
+   "loaded_objects": 4,
+   "md5": "34da5235f4255c19412c371ed6891afb",
+   "name": "mumps-seq",
+   "sha256": "f9915375618e24931a0da068717e4517331c7eff273c14558f6b87a0a64cf515",
+   "version": "5.8.2"
+  },
+  {
+   "build": "hdb14827_1",
+   "declared_licence": "X11 AND BSD-3-Clause",
+   "loaded_objects": 0,
+   "md5": "ee6c0cd80a60961a1f48aa3e0b91f986",
+   "name": "ncurses",
+   "sha256": "5d46557214ed184381dafe835b7c94a474a1c3b307a08a250b1ea4779b44ffb3",
+   "version": "6.6"
+  },
+  {
+   "build": "h781a0a9_0",
+   "declared_licence": "Apache-2.0",
+   "loaded_objects": 0,
+   "md5": "5a51a2ea653f120240b1a9bf76e0aae9",
+   "name": "openssl",
+   "sha256": "9c1533f1cf784f0e250919c0c9762d0b0e6bc727a79290ffb7cea1ceca1d038c",
+   "version": "3.6.5"
+  },
+  {
+   "build": "pyh145f28c_0",
+   "declared_licence": "MIT",
+   "loaded_objects": 0,
+   "md5": "573cb3ed111004230ed3de650653cd4d",
+   "name": "pip",
+   "sha256": "0f7021cfb3ff454c91a5e28e1f5060906a52c6d1cde3f879a7d03ac33c28b1c3",
+   "version": "26.2.1"
+  },
+  {
+   "build": "hec9711d_102_cp313",
+   "declared_licence": "Python-2.0",
+   "loaded_objects": 0,
+   "md5": "89e07d92cf50743886f41638d58c4328",
+   "name": "python",
+   "sha256": "c2cdcc98ea3cbf78240624e4077e164dc9d5588eefb044b4097c3df54d24d504",
+   "version": "3.13.5"
+  },
+  {
+   "build": "9_cp313",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 0,
+   "md5": "c5abc97af551bc12d71305852392f75c",
+   "name": "python_abi",
+   "sha256": "9dc0cb6a20ebc7e9bcd8c6868f2bec083c114b0ba20b7118405c036533d5c522",
+   "version": "3.13"
+  },
+  {
+   "build": "hd6e31c0_1",
+   "declared_licence": "GPL-3.0-only",
+   "loaded_objects": 0,
+   "md5": "69c01c781e7c8190bbdaf79e3848c5ca",
+   "name": "readline",
+   "sha256": "01b3fe073a66e321970d09e04b388708f8cbdca5cdfbfcb7c9eeb470ad10383d",
+   "version": "8.3"
+  },
+  {
+   "build": "noxft_h1df4ec4_4",
+   "declared_licence": "TCL",
+   "loaded_objects": 0,
+   "md5": "676a2f9b1c4fcf57b70aa5c65f6c60d0",
+   "name": "tk",
+   "sha256": "a1a241d172c1ccab067ba245206dd048bc3c2d1b84504b53c9468e99adfc16a1",
+   "version": "8.6.13"
+  },
+  {
+   "build": "h151e31d_0",
+   "declared_licence": "LicenseRef-Public-Domain",
+   "loaded_objects": 0,
+   "md5": "fcb489df604d100968b737f2cb6076c6",
+   "name": "tzdata",
+   "sha256": "b928c30ddcb0e3f544c6eade8352737e6e610e263276b90232db6a578ef899d8",
+   "version": "2026c"
+  },
+  {
+   "build": "hb78ec9c_7",
+   "declared_licence": "BSD-3-Clause",
+   "loaded_objects": 0,
+   "md5": "aa459086047c0e5e27023ab19f8cb86a",
+   "name": "zstd",
+   "sha256": "47d682b9f6d6ec9eb1a6e6c3e75ea6273e899e78fb7fc59f81d39745009fbc60",
+   "version": "1.5.7"
+  }
+ ],
+ "format": "m05-trsp-inventory-v1",
+ "gates": {
+  "G1": {
+   "bytes": 96652747,
+   "conda_objects_not_matching_their_package": [],
+   "distinct_sha256": 31,
+   "each_process_maps_the_same_objects": true,
+   "import_orders_map_the_same_objects": true,
+   "loader_equals_ldd_closure": true,
+   "objects": 31,
+   "pass": true,
+   "processes": 6,
+   "unknown_origin": []
+  },
+  "G2": {
+   "casadi_imported": false,
+   "casadi_metis_closure_mapped": [],
+   "casadi_metis_closure_size": 55,
+   "casadi_objects_mapped": [],
+   "forbidden_name_matches": [],
+   "nlpsol_calls": {
+    "executable": []
+   },
+   "pass": true
+  },
+  "G3": {
+   "carriers": [
+    {
+     "conclusion": "METIS 5.x",
+     "metis4_symbols_present": [],
+     "metis5_symbols_present": [
+      "METIS_SetDefaultOptions",
+      "METIS_Free"
+     ],
+     "needed_by": [
+      "$ENV/lib/libdmumps_seq.so",
+      "$ENV/lib/libmumps_common_seq.so",
+      "$ENV/lib/libspral.so"
+     ],
+     "origin": "conda-forge: metis-5.1.0-h86e3903_1008",
+     "path": "$ENV/lib/libmetis.so",
+     "sha256": "970cd0958ae3fe03ea5ce223d7b3fd68e1b05d3be2106fb9bd256afe00cf22e3"
+    }
+   ],
+   "objects_importing_metis_symbols": [
+    "$ENV/lib/libmumps_common_seq.so",
+    "$ENV/lib/libspral.so"
+   ],
+   "pass": true
+  },
+  "G4": {
+   "hsl_named_objects": [],
+   "hsl_symbol_exporters": [],
+   "hsl_symbol_importers": [],
+   "ipopt_banner": [
+    "This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2."
+   ],
+   "ipopt_hsl_interface_objects": [
+    "$ENV/lib/libipopt.so.3.14.20"
+   ],
+   "linear_solver_option": "mumps",
+   "pass": true
+  },
+  "G5": {
+   "declared_vs_read": [
+    {
+     "conflict": "declared EPL-1.0, notice reads EPL-2.0",
+     "origin": "conda-forge: ipopt-3.14.20-hec1326d_0",
+     "path": "$ENV/bin/ipopt"
+    },
+    {
+     "conflict": "declared EPL-1.0, notice reads EPL-2.0",
+     "origin": "conda-forge: ipopt-3.14.20-hec1326d_0",
+     "path": "$ENV/lib/libipopt.so.3.14.20"
+    },
+    {
+     "conflict": "declared EPL-1.0, notice reads EPL-2.0",
+     "origin": "conda-forge: ipopt-3.14.20-hec1326d_0",
+     "path": "$ENV/lib/libipoptamplinterface.so.3.14.20"
+    }
+   ],
+   "findings": [],
+   "pass": true,
+   "undispositioned": []
+  },
+  "G6": {
+   "cyipopt_imported": false,
+   "nlp_extra_declared": true,
+   "pass": true,
+   "requirements_naming_pyomo_or_cyipopt": {
+    "optional-dependencies.nlp": [
+     "cyipopt==1.7.0",
+     "pyomo==6.10.1"
+    ]
+   }
+  }
+ },
+ "host": {
+  "libc": "glibc 2.41",
+  "machine": "x86_64"
+ },
+ "locks": {
+  "build": "dd0b680cbaa069ff90a69cd27b2725ec68df9e15d745d9dca3de5b39f14b5269",
+  "conda": "bacf060e1dafa92f1332086c2210cebc6ac248a18708a4a940026647184af2d1",
+  "pip": "591bfa6003577c05c9e8269c325815d31750960d456496d524fa3ced5b5cf154"
+ },
+ "objects": [
+  {
+   "bytes": 32336,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "EPL-1.0",
+    "declared_vs_read": [
+     "declared EPL-1.0, notice reads EPL-2.0"
+    ],
+    "notices": [
+     {
+      "identifiers": [
+       "EPL-2.0"
+      ],
+      "path": "$PKGS/ipopt-3.14.20-hec1326d_0/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "0becf16567beb77fa252b7664631dd177c8f9a1889e48995b45379c7130e5303"
+     },
+     {
+      "identifiers": [
+       "EPL-2.0"
+      ],
+      "path": "$ENV/share/doc/ipopt/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "0becf16567beb77fa252b7664631dd177c8f9a1889e48995b45379c7130e5303"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libipoptamplinterface.so.3",
+    "libipopt.so.3",
+    "libstdc++.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: ipopt-3.14.20-hec1326d_0",
+   "path": "$ENV/bin/ipopt",
+   "python_extension": false,
+   "sha256": "2d7bcf8835ac26437a81a6bf840e9c6c5a87c36540bc467d6fe7ddec63924a63",
+   "soname": null
+  },
+  {
+   "bytes": 671208,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "BSD-3-Clause AND SMLNJ",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause"
+      ],
+      "path": "$PKGS/ampl-asl-1.0.0-h5888daf_2/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "d33c2a2cafafb5d69f77d1b1b9e4088114c3703d7adac9bdfda5fe3b44560663"
+     },
+     {
+      "identifiers": [],
+      "path": "$PKGS/ampl-asl-1.0.0-h5888daf_2/info/licenses/src/f2c/Notice",
+      "restrictive_clauses": [],
+      "sha256": "44561c447e91203ddc747beeca5cc2794d95ee982c17c578670e4f0408bc3904"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libdl.so.2",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: ampl-asl-1.0.0-h5888daf_2",
+   "path": "$ENV/lib/libasl.so",
+   "python_extension": false,
+   "sha256": "bfe531a3e3afefcdc2db27c0eeb0af3c44ef969679d46f95ba88b37236c41194",
+   "soname": "libasl.so"
+  },
+  {
+   "bytes": 241912,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "bzip2-1.0.6",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause"
+      ],
+      "path": "$PKGS/bzip2-1.0.8-hda65f42_10/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "c6dbbf828498be844a89eaa3b84adbab3199e342eb5cb2ed2f0d4ba7ec0f38a3"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: bzip2-1.0.8-hda65f42_10",
+   "path": "$ENV/lib/libbz2.so.1.0.8",
+   "python_extension": false,
+   "sha256": "89167cfb36a81306dcf8f439436f46dda12f0bbf4877b9f87abfd079bf765c46",
+   "soname": "libbz2.so.1.0"
+  },
+  {
+   "bytes": 2630993,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "CECILL-C",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "CeCILL-C"
+      ],
+      "path": "$PKGS/mumps-seq-5.8.2-gfortran_hfb83c00_3/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "5813fefd30a36fd7550cd2b62274be6586a0db51c11c3f2d4b852283e22ccc42"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libmetis.so",
+    "liblapack.so.3",
+    "libblas.so.3",
+    "libmpiseq_seq.so",
+    "libpthread.so.0",
+    "libmumps_common_seq.so",
+    "libgfortran.so.5",
+    "libm.so.6",
+    "libgomp.so.1",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: mumps-seq-5.8.2-gfortran_hfb83c00_3",
+   "path": "$ENV/lib/libdmumps_seq.so",
+   "python_extension": false,
+   "sha256": "293a78dde507e4bd1a9f09c44c201f52fe6e3b98398a876976371746522fc488",
+   "soname": "libdmumps_seq.so"
+  },
+  {
+   "bytes": 38624,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "CECILL-C",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "CeCILL-C"
+      ],
+      "path": "$PKGS/libscotch-7.0.11-int64_h807e49d_3/info/licenses/doc/CeCILL-C_V1-en.txt",
+      "restrictive_clauses": [],
+      "sha256": "b48f5dc16f144cd79ddaadce3cc8ef183778a0b4f75ab4362e134b347ca20f3d"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libscotch.so.7.0",
+    "libscotcherr.so.7.0",
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: libscotch-7.0.11-int64_h807e49d_3",
+   "path": "$ENV/lib/libesmumps.so.7.0.11",
+   "python_extension": false,
+   "sha256": "e7137a8336bff9c9e6467601243d5b35ae61c18cd5b1bb3b168cba911944b8e6",
+   "soname": "libesmumps.so.7.0"
+  },
+  {
+   "bytes": 922624,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "gpl-with-gcc-runtime-exception",
+    "declared": "GPL-3.0-only WITH GCC-exception-3.1",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "GCC-exception-3.1"
+      ],
+      "path": "$ENV/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION",
+      "restrictive_clauses": [],
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+   ],
+   "origin": "conda-forge: libgcc-16.2.0-ha9f2e26_7",
+   "path": "$ENV/lib/libgcc_s.so.1",
+   "python_extension": false,
+   "sha256": "5444fbe71e8cfe3bd05cdf2b44bd8c2e553e6e7e276977089b5e4e1a1ceed531",
+   "soname": "libgcc_s.so.1"
+  },
+  {
+   "bytes": 11532656,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "gpl-with-gcc-runtime-exception",
+    "declared": "GPL-3.0-only WITH GCC-exception-3.1",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "GCC-exception-3.1"
+      ],
+      "path": "$ENV/share/licenses/libgfortran/RUNTIME.LIBRARY.EXCEPTION",
+      "restrictive_clauses": [],
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libquadmath.so.0",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+   ],
+   "origin": "conda-forge: libgfortran5-16.2.0-h6b99dfc_7",
+   "path": "$ENV/lib/libgfortran.so.5.0.0",
+   "python_extension": false,
+   "sha256": "8b93406aef97f0f39ebac58aed3b63c58c9c26eb246595d8141dde5baeee5b33",
+   "soname": "libgfortran.so.5"
+  },
+  {
+   "bytes": 430912,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package_relocated": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "BSD-3-Clause",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause"
+      ],
+      "path": "$PKGS/libhwloc-2.13.0-default_he001693_1000/info/licenses/COPYING",
+      "restrictive_clauses": [],
+      "sha256": "a7e03d1ccef79f9a6369f7b7385231e1656339e3292bbac1b7113782d0d384f4"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libm.so.6",
+    "libxml2.so.16",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: libhwloc-2.13.0-default_he001693_1000",
+   "path": "$ENV/lib/libhwloc.so.15.10.2",
+   "prefix_relocated": true,
+   "python_extension": false,
+   "sha256": "38b44ce502e69506e8096c3f7f54eca580379e84f7523a99fdff50ba41faaad1",
+   "soname": "libhwloc.so.15"
+  },
+  {
+   "bytes": 1182640,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "lgpl",
+    "declared": "LGPL-2.1-only",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "LGPL-2.1"
+      ],
+      "path": "$PKGS/libiconv-1.18-h0cb94f2_3/info/licenses/COPYING.LIB",
+      "restrictive_clauses": [],
+      "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: libiconv-1.18-h0cb94f2_3",
+   "path": "$ENV/lib/libiconv.so.2.7.0",
+   "python_extension": false,
+   "sha256": "59b942b8a9dfabcfec7d65ff2be1de2e59902765837768ca37468cef5dca9571",
+   "soname": "libiconv.so.2"
+  },
+  {
+   "bytes": 2811800,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": true,
+   "licence": {
+    "category": "identified",
+    "declared": "EPL-1.0",
+    "declared_vs_read": [
+     "declared EPL-1.0, notice reads EPL-2.0"
+    ],
+    "notices": [
+     {
+      "identifiers": [
+       "EPL-2.0"
+      ],
+      "path": "$PKGS/ipopt-3.14.20-hec1326d_0/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "0becf16567beb77fa252b7664631dd177c8f9a1889e48995b45379c7130e5303"
+     },
+     {
+      "identifiers": [
+       "EPL-2.0"
+      ],
+      "path": "$ENV/share/doc/ipopt/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "0becf16567beb77fa252b7664631dd177c8f9a1889e48995b45379c7130e5303"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "librt.so.1",
+    "libspral.so",
+    "libdmumps_seq.so",
+    "liblapack.so.3",
+    "libblas.so.3",
+    "libdl.so.2",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2",
+    "libgcc_s.so.1"
+   ],
+   "origin": "conda-forge: ipopt-3.14.20-hec1326d_0",
+   "path": "$ENV/lib/libipopt.so.3.14.20",
+   "python_extension": false,
+   "sha256": "b9533a59f740964ca2764d4f56d925e164d28b9de29ce8e6446de0bc18a73672",
+   "soname": "libipopt.so.3"
+  },
+  {
+   "bytes": 137552,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "EPL-1.0",
+    "declared_vs_read": [
+     "declared EPL-1.0, notice reads EPL-2.0"
+    ],
+    "notices": [
+     {
+      "identifiers": [
+       "EPL-2.0"
+      ],
+      "path": "$PKGS/ipopt-3.14.20-hec1326d_0/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "0becf16567beb77fa252b7664631dd177c8f9a1889e48995b45379c7130e5303"
+     },
+     {
+      "identifiers": [
+       "EPL-2.0"
+      ],
+      "path": "$ENV/share/doc/ipopt/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "0becf16567beb77fa252b7664631dd177c8f9a1889e48995b45379c7130e5303"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libipopt.so.3",
+    "librt.so.1",
+    "libspral.so",
+    "libdmumps_seq.so",
+    "liblapack.so.3",
+    "libblas.so.3",
+    "libdl.so.2",
+    "libasl.so",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libc.so.6",
+    "libgcc_s.so.1"
+   ],
+   "origin": "conda-forge: ipopt-3.14.20-hec1326d_0",
+   "path": "$ENV/lib/libipoptamplinterface.so.3.14.20",
+   "python_extension": false,
+   "sha256": "9973a2cae3e7666ce6d2b4aa5484fa90c549fbec4272cf1ccad5e7691ab20e46",
+   "soname": "libipoptamplinterface.so.3"
+  },
+  {
+   "bytes": 222712,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "0BSD",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [],
+      "path": "$PKGS/liblzma-5.8.3-hb03c661_1/info/licenses/COPYING",
+      "restrictive_clauses": [],
+      "sha256": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8"
+     },
+     {
+      "identifiers": [
+       "ISC-style"
+      ],
+      "path": "$PKGS/liblzma-5.8.3-hb03c661_1/info/licenses/COPYING.0BSD",
+      "restrictive_clauses": [],
+      "sha256": "0b01625d853911cd0e2e088dcfb743261034a091bb379246cb25a14cc4c74bf1"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: liblzma-5.8.3-hb03c661_1",
+   "path": "$ENV/lib/liblzma.so.5",
+   "python_extension": false,
+   "sha256": "491c01c02da5a22f5825a7c05a561e175aa70c203d5e462dfe90b5040dbdaf50",
+   "soname": "liblzma.so.5"
+  },
+  {
+   "bytes": 511824,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "Apache-2.0",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "Apache-2.0"
+      ],
+      "path": "$PKGS/metis-5.1.0-h86e3903_1008/info/licenses/LICENSE.txt",
+      "restrictive_clauses": [],
+      "sha256": "64ab947d7b289ad76e935adff51b31e4ac160df7dfad24480dbaa452e39bbe79"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 21,
+   "metis_imports": [],
+   "needed": [
+    "libm.so.6",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+   ],
+   "origin": "conda-forge: metis-5.1.0-h86e3903_1008",
+   "path": "$ENV/lib/libmetis.so",
+   "python_extension": false,
+   "sha256": "970cd0958ae3fe03ea5ce223d7b3fd68e1b05d3be2106fb9bd256afe00cf22e3",
+   "soname": "libmetis.so"
+  },
+  {
+   "bytes": 64209,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "CECILL-C",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "CeCILL-C"
+      ],
+      "path": "$PKGS/mumps-seq-5.8.2-gfortran_hfb83c00_3/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "5813fefd30a36fd7550cd2b62274be6586a0db51c11c3f2d4b852283e22ccc42"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libgfortran.so.5",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: mumps-seq-5.8.2-gfortran_hfb83c00_3",
+   "path": "$ENV/lib/libmpiseq_seq.so",
+   "python_extension": false,
+   "sha256": "e89953fba8bf2d8bfcdf00cdf71a3f07a4925e38c70c720ca4f218f85e10e244",
+   "soname": "libmpiseq_seq.so"
+  },
+  {
+   "bytes": 666640,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "CECILL-C",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "CeCILL-C"
+      ],
+      "path": "$PKGS/mumps-seq-5.8.2-gfortran_hfb83c00_3/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "5813fefd30a36fd7550cd2b62274be6586a0db51c11c3f2d4b852283e22ccc42"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [
+    "METIS_PartGraphKway",
+    "METIS_SetDefaultOptions"
+   ],
+   "needed": [
+    "libmetis.so",
+    "libpord_seq.so",
+    "libesmumps.so.7.0",
+    "libscotch.so.7.0",
+    "libmpiseq_seq.so",
+    "libpthread.so.0",
+    "libgfortran.so.5",
+    "libm.so.6",
+    "libgomp.so.1",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: mumps-seq-5.8.2-gfortran_hfb83c00_3",
+   "path": "$ENV/lib/libmumps_common_seq.so",
+   "python_extension": false,
+   "sha256": "f1631e2f6df0db55c0e6d5ddc34d393cc75555e79420a8f5374a5a92c08f0bd5",
+   "soname": "libmumps_common_seq.so"
+  },
+  {
+   "bytes": 1473824,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "Apache-2.0 WITH LLVM-exception",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "Apache-2.0",
+       "LLVM-exception",
+       "MIT"
+      ],
+      "path": "$PKGS/llvm-openmp-23.1.3-h7148c6a_0/info/licenses/openmp/LICENSE.TXT",
+      "restrictive_clauses": [],
+      "sha256": "fdad1758a9e1f9d5a81e18879b3406772115edc92c24bfa36b70c654f325e8e4"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libpthread.so.0",
+    "librt.so.1",
+    "libdl.so.2",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+   ],
+   "origin": "conda-forge: llvm-openmp-23.1.3-h7148c6a_0",
+   "path": "$ENV/lib/libomp.so",
+   "python_extension": false,
+   "sha256": "96fa1d63fa1ee014d091da19079d1f56dfc6ae99737b3fc8973cab7a134acd16",
+   "soname": "libomp.so"
+  },
+  {
+   "bytes": 41559024,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "BSD-3-Clause",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause"
+      ],
+      "path": "$PKGS/libopenblas-0.3.34-openmp_h156ec52_2/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "190b5a9c8d9723fe958ad33916bd7346d96fab3c5ea90832bb02d854f620fcff"
+     },
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause"
+      ],
+      "path": "$PKGS/libopenblas-0.3.34-openmp_h156ec52_2/info/licenses/lapack-netlib/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "978539245c405775bf347b1256c36df4daf8b69a64b099e94b1d53742201621e"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libm.so.6",
+    "libpthread.so.0",
+    "libgfortran.so.5",
+    "libgomp.so.1",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+   ],
+   "origin": "conda-forge: libopenblas-0.3.34-openmp_h156ec52_2",
+   "path": "$ENV/lib/libopenblasp-r0.3.34.so",
+   "python_extension": false,
+   "sha256": "5a345212e7311feb4b26c29a9103ce75dab3c1361cff4d9827fd435fa337ab51",
+   "soname": "libopenblas.so.0"
+  },
+  {
+   "bytes": 116217,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "CECILL-C",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "public-domain"
+      ],
+      "path": "$ENV/share/m03-ipopt-notices/libpord/README",
+      "restrictive_clauses": [],
+      "sha256": "42ee4bd932cba9c607fe85d06119c369180e15b2380d47ed6aa39f17191d2b52",
+      "source": "https://mumps-solver.org/MUMPS_5.8.2.tar.gz sha256:eb515aa688e6dbab414bb6e889ff4c8b23f1691a843c68da5230a33ac4db7039 members MUMPS_5.8.2/PORD/README (pinned by mumps-seq's recipe)"
+     }
+    ],
+    "package_notices": [
+     "$PKGS/mumps-seq-5.8.2-gfortran_hfb83c00_3/info/licenses/LICENSE"
+    ],
+    "source": "upstream source pinned by the recipe (MUMPS's LICENSE excludes PORD and points at PORD/README, which mumps-seq does not ship)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: mumps-seq-5.8.2-gfortran_hfb83c00_3",
+   "path": "$ENV/lib/libpord_seq.so",
+   "python_extension": false,
+   "sha256": "31218006068efc2979e1149fcadd8e642dddd59fef22dc0f20fdabcf905bba95",
+   "soname": "libpord_seq.so"
+  },
+  {
+   "bytes": 991312,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "gpl-with-gcc-runtime-exception",
+    "declared": "GPL-3.0-only WITH GCC-exception-3.1",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "GCC-exception-3.1"
+      ],
+      "path": "$ENV/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION",
+      "restrictive_clauses": [],
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libm.so.6",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: libgcc-16.2.0-ha9f2e26_7",
+   "path": "$ENV/lib/libquadmath.so.0.0.0",
+   "python_extension": false,
+   "sha256": "9fa4807097fa47da1815765f0a43177c45e7ec7cc94e44cfa95a4c3a1a341ee6",
+   "soname": "libquadmath.so.0"
+  },
+  {
+   "bytes": 751656,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "CECILL-C",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "CeCILL-C"
+      ],
+      "path": "$PKGS/libscotch-7.0.11-int64_h807e49d_3/info/licenses/doc/CeCILL-C_V1-en.txt",
+      "restrictive_clauses": [],
+      "sha256": "b48f5dc16f144cd79ddaadce3cc8ef183778a0b4f75ab4362e134b347ca20f3d"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libscotcherr.so.7.0",
+    "libm.so.6",
+    "libz.so.1",
+    "libbz2.so.1.0",
+    "liblzma.so.5",
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: libscotch-7.0.11-int64_h807e49d_3",
+   "path": "$ENV/lib/libscotch.so.7.0.11",
+   "python_extension": false,
+   "sha256": "c7e1ae3818d9af976e462121a304dd52eacae7049d6d65a2be45f7a2bfe9efb1",
+   "soname": "libscotch.so.7.0"
+  },
+  {
+   "bytes": 15784,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "CECILL-C",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "CeCILL-C"
+      ],
+      "path": "$PKGS/libscotch-7.0.11-int64_h807e49d_3/info/licenses/doc/CeCILL-C_V1-en.txt",
+      "restrictive_clauses": [],
+      "sha256": "b48f5dc16f144cd79ddaadce3cc8ef183778a0b4f75ab4362e134b347ca20f3d"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: libscotch-7.0.11-int64_h807e49d_3",
+   "path": "$ENV/lib/libscotcherr.so.7.0.11",
+   "python_extension": false,
+   "sha256": "b9522b9ca5dd40d24bcc4e530a31a028eae70b33d780e365675398ac5cb920a9",
+   "soname": "libscotcherr.so.7.0"
+  },
+  {
+   "bytes": 964544,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "BSD-3-Clause",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause"
+      ],
+      "path": "$PKGS/libspral-2025.09.18-h74cae3c_2/info/licenses/LICENCE",
+      "restrictive_clauses": [],
+      "sha256": "a6b488e6f0e2052048b09b0955535c574347461e5f4695683c0abc1e61c6d2b2"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [
+    "METIS_NodeND",
+    "METIS_SetDefaultOptions"
+   ],
+   "needed": [
+    "libgomp.so.1",
+    "libblas.so.3",
+    "liblapack.so.3",
+    "libmetis.so",
+    "libhwloc.so.15",
+    "libgfortran.so.5",
+    "libstdc++.so.6",
+    "libm.so.6",
+    "libgcc_s.so.1",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: libspral-2025.09.18-h74cae3c_2",
+   "path": "$ENV/lib/libspral.so",
+   "python_extension": false,
+   "sha256": "5d9dce52b5738f3c0581b0b3f2cb3e4e5e83e44ed570e3c1fca3b61f74bc2099",
+   "soname": "libspral.so"
+  },
+  {
+   "bytes": 23874544,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "gpl-with-gcc-runtime-exception",
+    "declared": "GPL-3.0-only WITH GCC-exception-3.1",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "GCC-exception-3.1"
+      ],
+      "path": "$ENV/share/licenses/libstdc++/RUNTIME.LIBRARY.EXCEPTION",
+      "restrictive_clauses": [],
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libm.so.6",
+    "libdl.so.2",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2",
+    "libgcc_s.so.1"
+   ],
+   "origin": "conda-forge: libstdcxx-16.2.0-h934c35e_7",
+   "path": "$ENV/lib/libstdc++.so.6.0.36",
+   "python_extension": false,
+   "sha256": "10f0d3c46c070acd4abea2ccf2500ff0ec77e9b90154b82ea2720dba05510cb9",
+   "soname": "libstdc++.so.6"
+  },
+  {
+   "bytes": 1448664,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package_relocated": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "MIT",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "MIT"
+      ],
+      "path": "$PKGS/libxml2-16-2.15.4-hbdfff7e_1/info/licenses/Copyright",
+      "restrictive_clauses": [],
+      "sha256": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libdl.so.2",
+    "libpthread.so.0",
+    "libz.so.1",
+    "libiconv.so.2",
+    "libm.so.6",
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+   ],
+   "origin": "conda-forge: libxml2-16-2.15.4-hbdfff7e_1",
+   "path": "$ENV/lib/libxml2.so.16.1.4",
+   "prefix_relocated": true,
+   "python_extension": false,
+   "sha256": "7cfc6fe6fcd07e5f88d8287effbbbff6f9a8a5071069c4163635645ecdb7a944",
+   "soname": "libxml2.so.16"
+  },
+  {
+   "bytes": 117168,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "Zlib",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "Zlib"
+      ],
+      "path": "$PKGS/libzlib-1.3.2-h25fd6f3_3/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: libzlib-1.3.2-h25fd6f3_3",
+   "path": "$ENV/lib/libz.so.1.3.2",
+   "python_extension": false,
+   "sha256": "3c6fd78e248a60e45081bcc77031204a7cb64a88ff2e27fc786ef12ae7e91fca",
+   "soname": "libz.so.1"
+  },
+  {
+   "bytes": 225672,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "platform",
+    "declared": null,
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause",
+       "BSL-1.0",
+       "ISC-style",
+       "MIT",
+       "SMLNJ-style",
+       "public-domain"
+      ],
+      "path": "/usr/share/doc/libc6/copyright",
+      "restrictive_clauses": [],
+      "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d"
+     }
+    ],
+    "source": "dpkg copyright notice"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [],
+   "origin": "platform: libc6 2.41-12+deb13u4",
+   "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+   "python_extension": false,
+   "sha256": "c8438e4fde1934e61c88311633f00949ff645d5c04cdb8671fa3d78164d2f307",
+   "soname": "ld-linux-x86-64.so.2"
+  },
+  {
+   "bytes": 1995216,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "platform",
+    "declared": null,
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause",
+       "BSL-1.0",
+       "ISC-style",
+       "MIT",
+       "SMLNJ-style",
+       "public-domain"
+      ],
+      "path": "/usr/share/doc/libc6/copyright",
+      "restrictive_clauses": [],
+      "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d"
+     }
+    ],
+    "source": "dpkg copyright notice"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "ld-linux-x86-64.so.2"
+   ],
+   "origin": "platform: libc6 2.41-12+deb13u4",
+   "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+   "python_extension": false,
+   "sha256": "9792e3cbb541c8f44c7acf5f14f4022ea62998ecc787d326bed4d8b6547dfd92",
+   "soname": "libc.so.6"
+  },
+  {
+   "bytes": 14408,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "platform",
+    "declared": null,
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause",
+       "BSL-1.0",
+       "ISC-style",
+       "MIT",
+       "SMLNJ-style",
+       "public-domain"
+      ],
+      "path": "/usr/share/doc/libc6/copyright",
+      "restrictive_clauses": [],
+      "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d"
+     }
+    ],
+    "source": "dpkg copyright notice"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "platform: libc6 2.41-12+deb13u4",
+   "path": "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+   "python_extension": false,
+   "sha256": "295fa521a03cd2faa99974f378c9e23dd622021ec7d32bcad4f8ea61aec8a872",
+   "soname": "libdl.so.2"
+  },
+  {
+   "bytes": 977112,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "platform",
+    "declared": null,
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause",
+       "BSL-1.0",
+       "ISC-style",
+       "MIT",
+       "SMLNJ-style",
+       "public-domain"
+      ],
+      "path": "/usr/share/doc/libc6/copyright",
+      "restrictive_clauses": [],
+      "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d"
+     }
+    ],
+    "source": "dpkg copyright notice"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6",
+    "ld-linux-x86-64.so.2"
+   ],
+   "origin": "platform: libc6 2.41-12+deb13u4",
+   "path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+   "python_extension": false,
+   "sha256": "6d567d53e895273ca14a1f9dc164fc6c8d39aed2f60aa46a733c2784228915f3",
+   "soname": "libm.so.6"
+  },
+  {
+   "bytes": 14408,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "platform",
+    "declared": null,
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause",
+       "BSL-1.0",
+       "ISC-style",
+       "MIT",
+       "SMLNJ-style",
+       "public-domain"
+      ],
+      "path": "/usr/share/doc/libc6/copyright",
+      "restrictive_clauses": [],
+      "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d"
+     }
+    ],
+    "source": "dpkg copyright notice"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "platform: libc6 2.41-12+deb13u4",
+   "path": "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+   "python_extension": false,
+   "sha256": "85e21f7dba0394411d00959176fd18b470e575b0b05f1f4f41e5636802ce0500",
+   "soname": "libpthread.so.0"
+  },
+  {
+   "bytes": 14552,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "platform",
+    "declared": null,
+    "notices": [
+     {
+      "identifiers": [
+       "BSD-2-Clause",
+       "BSD-3-Clause",
+       "BSL-1.0",
+       "ISC-style",
+       "MIT",
+       "SMLNJ-style",
+       "public-domain"
+      ],
+      "path": "/usr/share/doc/libc6/copyright",
+      "restrictive_clauses": [],
+      "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d"
+     }
+    ],
+    "source": "dpkg copyright notice"
+   },
+   "loaded_in": [
+    "executable"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "platform: libc6 2.41-12+deb13u4",
+   "path": "/usr/lib/x86_64-linux-gnu/librt.so.1",
+   "python_extension": false,
+   "sha256": "7b7b84d1aedda0e0b2bdfc68844362782132180b8f02be1300e21e77572e514b",
+   "soname": "librt.so.1"
+  }
+ ],
+ "pass_g1_to_g6": true,
+ "pip_distributions": [
+  {
+   "compiled_objects": 0,
+   "installer": "pip",
+   "name": "attrs",
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "same_objects_as_t08_a30": true,
+   "version": "26.1.0"
+  },
+  {
+   "compiled_objects": 232,
+   "installer": "pip",
+   "name": "casadi",
+   "objects_digest": "2eed095db654d58026f968bf80cc8894b6b7d6f2f297938ebca18782a6a1cd52",
+   "same_objects_as_t08_a30": true,
+   "version": "3.8.0"
+  },
+  {
+   "compiled_objects": 1,
+   "installer": "conda",
+   "name": "cyipopt",
+   "objects_digest": "555f15b9951b49245a169d6fe91b7ed4ecfaaae52727c2d7c4dbd43966d99179",
+   "same_objects_as_t08_a30": null,
+   "version": "1.7.0"
+  },
+  {
+   "compiled_objects": 0,
+   "installer": "pip",
+   "name": "jsonschema",
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "same_objects_as_t08_a30": true,
+   "version": "4.26.0"
+  },
+  {
+   "compiled_objects": 0,
+   "installer": "pip",
+   "name": "jsonschema-specifications",
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "same_objects_as_t08_a30": true,
+   "version": "2025.9.1"
+  },
+  {
+   "compiled_objects": 24,
+   "installer": "pip",
+   "name": "numpy",
+   "objects_digest": "bad8618597117e2582aca289b0cf2d430c9a79112a75b4e522389743dd4b15a4",
+   "same_objects_as_t08_a30": true,
+   "version": "2.2.4"
+  },
+  {
+   "compiled_objects": 0,
+   "installer": "pip",
+   "name": "packaging",
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "same_objects_as_t08_a30": null,
+   "version": "26.3"
+  },
+  {
+   "compiled_objects": 0,
+   "installer": "conda",
+   "name": "pip",
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "same_objects_as_t08_a30": null,
+   "version": "26.2.1"
+  },
+  {
+   "compiled_objects": 1,
+   "installer": "pip",
+   "name": "pyomo",
+   "objects_digest": "9509666947f4dec45e03ce002c0a2c65a468d6ba91200ee2c06288b39a51230c",
+   "same_objects_as_t08_a30": null,
+   "version": "6.10.1"
+  },
+  {
+   "compiled_objects": 1,
+   "installer": "pip",
+   "name": "PyYAML",
+   "objects_digest": "c1ece463de7827470b3578e0fd79d9c34149c8efd4e9a3a783fd2d44ec73cb8f",
+   "same_objects_as_t08_a30": true,
+   "version": "6.0.2"
+  },
+  {
+   "compiled_objects": 0,
+   "installer": "pip",
+   "name": "referencing",
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "same_objects_as_t08_a30": true,
+   "version": "0.37.0"
+  },
+  {
+   "compiled_objects": 1,
+   "installer": "pip",
+   "name": "rpds-py",
+   "objects_digest": "ad2b22bc3320d9d90dbd208162fc68dc286ac4c740f3e2fd02a3effc3fdebc9c",
+   "same_objects_as_t08_a30": true,
+   "version": "2026.6.3"
+  },
+  {
+   "compiled_objects": 120,
+   "installer": "pip",
+   "name": "scipy",
+   "objects_digest": "a9ad3369188792c291a50c03e685b1d7cd9c44b2246b82ad1a9b2da8d930b1ca",
+   "same_objects_as_t08_a30": true,
+   "version": "1.15.3"
+  },
+  {
+   "compiled_objects": 0,
+   "installer": "pip",
+   "name": "typing_extensions",
+   "objects_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "same_objects_as_t08_a30": true,
+   "version": "4.16.0"
+  }
+ ],
+ "workload": {
+  "executable": {
+   "casadi_imported": false,
+   "cyipopt_imported": false,
+   "direct": {
+    "banner": [
+     "This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2."
+    ],
+    "max_error": 4.030109579389318e-13,
+    "termination": "optimal"
+   },
+   "direct_options": {
+    "linear_solver": "mumps",
+    "print_level": 5,
+    "tol": 1e-10
+   },
+   "dlopen_attempts": {
+    "libarcher.so": [
+     "$ENV/lib/libomp.so"
+    ],
+    "libmemkind.so": [
+     "$ENV/lib/libomp.so"
+    ]
+   },
+   "each_process_maps_the_same_objects": true,
+   "executable": "2d7bcf8835ac26437a81a6bf840e9c6c5a87c36540bc467d6fe7ddec63924a63",
+   "executable_pinned": "$ENV/bin/ipopt",
+   "executable_resolved_on_path": "$ENV/bin/ipopt",
+   "ipopt_banner": [
+    "This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2."
+   ],
+   "ldd_minus_loader": [],
+   "loaded_through_a_symlink": {
+    "libbz2.so.1.0": [
+     "$ENV/lib/libbz2.so.1.0.8"
+    ],
+    "libesmumps.so.7.0": [
+     "$ENV/lib/libesmumps.so.7.0.11"
+    ],
+    "libgfortran.so.5": [
+     "$ENV/lib/libgfortran.so.5.0.0"
+    ],
+    "libgomp.so.1": [
+     "$ENV/lib/libomp.so"
+    ],
+    "libhwloc.so.15": [
+     "$ENV/lib/libhwloc.so.15.10.2"
+    ],
+    "libiconv.so.2": [
+     "$ENV/lib/libiconv.so.2.7.0"
+    ],
+    "libipopt.so.3": [
+     "$ENV/lib/libipopt.so.3.14.20"
+    ],
+    "libipoptamplinterface.so.3": [
+     "$ENV/lib/libipoptamplinterface.so.3.14.20"
+    ],
+    "liblapack.so.3": [
+     "$ENV/lib/libopenblasp-r0.3.34.so"
+    ],
+    "libquadmath.so.0": [
+     "$ENV/lib/libquadmath.so.0.0.0"
+    ],
+    "libscotch.so.7.0": [
+     "$ENV/lib/libscotch.so.7.0.11"
+    ],
+    "libscotcherr.so.7.0": [
+     "$ENV/lib/libscotcherr.so.7.0.11"
+    ],
+    "libstdc++.so.6": [
+     "$ENV/lib/libstdc++.so.6.0.36"
+    ],
+    "libxml2.so.16": [
+     "$ENV/lib/libxml2.so.16.1.4"
+    ],
+    "libz.so.1": [
+     "$ENV/lib/libz.so.1.3.2"
+    ]
+   },
+   "loader_equals_ldd_closure": true,
+   "loader_minus_ldd": [],
+   "nlpsol_calls": [],
+   "options": {
+    "linear_solver": "mumps",
+    "print_level": 5,
+    "tol": 1e-10
+   },
+   "processes": 6,
+   "trf_example1": {
+    "banner": [
+     "This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2."
+    ],
+    "iterations": 5,
+    "objective": 0.27704478876374156
+   },
+   "trf_modules": {
+    "TRF.py": "69b5c8f854201dc2dbb78826540808a3353aad80838df74221e3f67e97d36973",
+    "filter.py": "616655ce04626589122602af1f7dfb5fb37ff0f5728c4ace1e0ea3da1b3248ae",
+    "funnel.py": "52e1840e35d93582c04316f0447a0f37fa0b843ec14c2aa2cb9b3c6e00592378",
+    "interface.py": "ef13ef90c89dd5d9381ebc47f0c200dc58d316bd6e6cf22f96567e853969cd9e",
+    "util.py": "25dcfb844d8730a8a6f82280cd554fc8e3c385b13a54216b52a8a2838fdcf40c"
+   },
+   "versions": {
+    "pyomo": "6.10.1"
+   },
+   "workload": "trsp-exe"
+  }
+ }
+}
