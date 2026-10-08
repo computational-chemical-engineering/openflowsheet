@@ -188,3 +188,14 @@ Grep, don't read whole. Newest at the bottom.
   Open: FIT-U r drifts to 0.969 (null projection 0.997 vs JSON 0.869); NOT_VERIFIED vs INFEASIBLE_REPORTED precedence
   (WO-8); WO-9 not started (package-data test hard-codes 32 schemas). Engineer stopped after reporting.
 - `specifier` M03 Amendment 1 launched on `wp/M03` (R-210+; M01's amendment holds R-195…R-209).
+- **W27 Tier 1 approved** — Frank, 2026-10-08: "W27 runs are agreed" (M06 F1: the registered 45-run campaign at
+  M07, estimated USD 15–45, preceded by 3 canaries; registration `docs/derivations/M06-W27-registration.md`; agent
+  model = the most recent at campaign time, pinned by exact ID, per F2). Recorded in this form for W27 preflight P1.
+- M06 WO-16 done on `wp/M06-w27-harness` (`6c9b190`…`062bc59`; code in `benchmarks/m06/w27/`): classifier, snapshot,
+  sampler, harness (lock hash + interpreter in run.json, A23), preflight P1–P8, scorer; check.sh 7266 passed, 31
+  skipped, 1 xfailed. Tier 0 coverage at 0.1.1: 0 CANDIDATE of 450 and of 82 (unit 367/73, not-steady 65/8, component
+  17/1, artifact 1/0); snapshot `f71c1f05…`, list_models `4a60f5a3…`. G14 pass; G15 18/18 stub states score as
+  registered; preflight P2–P8 pass, P1 now recorded (line above). Engineer's scorer choices where the registration is
+  silent and open items (W27-R57 "ten" vs 9 assets; effort pin only via run.json; M06 manifest needs the envelope
+  harvest classification; WO-17 needs v0.2 binder reading in `snapshot.READINGS` + M01/M02 id rows + U14 rewrite for
+  campaign records) → for WO-13's review / M07.
