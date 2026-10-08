@@ -21,12 +21,14 @@ export const TERMINAL = new Set(["completed", "failed", "cancelled", "timed_out"
 
 // ------------------------------------------------------------------------------------ reads
 
-// Every item of a cursor-paged list, at most `max` pages: `{items, complete}`.
-export async function allPages(api, name, args, { signal, max = MAX_PAGES } = {}) {
+// Every item of a cursor-paged list, at most `max` pages: `{items, complete}`. `ask(args)` asks
+// for one page — written at the call site as `api.call("<operation>", …)`, so that every
+// operation the shell calls is named literally where it is called (the static scan reads them).
+export async function allPages(ask, args, { max = MAX_PAGES } = {}) {
   const items = [];
   let cursor = null;
   for (let pages = 0; pages < max; pages += 1) {
-    const page = await api.call(name, cursor === null ? args : { ...args, cursor }, { signal });
+    const page = await ask(cursor === null ? args : { ...args, cursor });
     items.push(...page.items);
     if (page.next_cursor === null || page.next_cursor === undefined) {
       return { items, complete: true };

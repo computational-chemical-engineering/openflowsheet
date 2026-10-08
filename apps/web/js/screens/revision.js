@@ -84,12 +84,13 @@ export async function load(params, api) {
     { signal },
   );
   const revisions = await allPages(
-    api,
-    "list_revisions",
+    (args) => api.call("list_revisions", args, { signal }),
     { limit: PAGE.revisions },
-    { signal, max: MAX_PAGES },
+    { max: MAX_PAGES },
   );
-  const jobs = await allPages(api, "list_jobs", { limit: PAGE.jobs }, { signal });
+  const jobs = await allPages((args) => api.call("list_jobs", args, { signal }), {
+    limit: PAGE.jobs,
+  });
   const runs = [];
   for (const job of jobsOfRevision(jobs.items, rid)) {
     const ended = TERMINAL.has(job.status);

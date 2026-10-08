@@ -26,10 +26,9 @@ export const pattern = "/";
 export async function load(params, api) {
   const { signal } = params;
   const revisions = await allPages(
-    api,
-    "list_revisions",
+    (args) => api.call("list_revisions", args, { signal }),
     { limit: PAGE.revisions },
-    { signal, max: MAX_PAGES },
+    { max: MAX_PAGES },
   );
   const jobs = await api.call("list_jobs", { limit: PAGE.projectJobs }, { signal });
   return {
