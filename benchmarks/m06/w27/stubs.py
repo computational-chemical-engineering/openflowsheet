@@ -284,6 +284,7 @@ emit({"type": "result", "subtype": "success", "is_error": False, "num_turns": tu
 
 def write_fake_claude(directory: Path, state: State) -> Path:
     """The stand-in `claude` for `state`, with its plan beside it (outside any session cwd)."""
+    directory = directory.resolve()
     directory.mkdir(parents=True, exist_ok=True)
     plan = directory / f"{state.state_id}.plan.json"
     plan.write_text(

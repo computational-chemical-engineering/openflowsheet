@@ -35,6 +35,7 @@ CAMPAIGN = "dry-run"
 
 def run(out: Path, work: Path) -> dict[str, Any]:
     """The dry run into `out`; sessions run in `work`, outside the repository (V17 §14.1)."""
+    out, work = out.resolve(), work.resolve()
     if out.exists():
         raise harness.HarnessError(f"{out} exists; a dry run is never repeated in place")
     inputs = out / "inputs"
