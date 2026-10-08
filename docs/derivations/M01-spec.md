@@ -1103,6 +1103,11 @@ units under §7's rules, the loop.
   with citations; NASA TM-4513 a U.S. Government work) as package data, ending v0.1's "no third-party data in sdist or
   wheel" (T08.A32). *Default:* ship them with their citations and rights fields; M07's release specification records
   it; if Frank declines, the provider reads the records from a user-supplied path and the wheel carries none.
+  *(Amendment 2, review F4: the reversal path as built. The default is the single commit `1621d65`; declining is a
+  revert of it, after which `PACKAGED` lacks the entry and `load_records` reads the source checkout's single copy
+  instead, tested by simulating the absent entry. An installed package then carries no records, and the provider
+  fails on first use with `FileNotFoundError` naming Q-N4. The "user-supplied path" for an installed package is not
+  built: it would be a new configuration surface, specified with M07's release decision if Frank declines.)*
 - **Q-N1 (needs Frank's preference — rights).** Poling 5th ed. c_p polynomials could replace NASA TM-4513 if Frank
   wants the "properties book" source; it needs his view on redistributing book tables. *Default:* NASA (no grant needed).
 - **Q-N2 (needs Frank's preference).** The F-R1/F-R2 findings and the overlay concern the group's code: Frank may prefer a
@@ -1267,3 +1272,4 @@ output of `evaluate_phase` and `flash` at the registered states compared as `flo
 | --- | --- | --- |
 | F2 (should-fix): `admissible_roots` returned unconverged Newton iterates as roots within ≈ 10⁻¹⁴ of a spinodal, and `evaluate_phase(LIQUID)` answered `ok` at a state with no liquid root | A candidate is kept only if it is a root to rounding; a three-root branch left with fewer than three deflates the best-conditioned root and solves the quadratic. The review's counterexample and a ±60-ulp sweep are tests. R-197's rationale for the two-root rule is corrected (a note appended to R-197); the rule stands. | §5.2, §17; `pr_c1.py` `admissible_roots`; `tests/test_m01_provider.py::test_f2_*`; R-197 |
 | F3 (should-fix): the boundary tested dormancy before the inlet's state space, so (0.5, −0.5, 0, 0, 0) and an all-zero inlet with T = NaN answered `ok` | Step 2 of §8.12's order (state space: flows finite and ≥ 0, T and P finite and > 0 → `out_of_domain`) inserted before the dormant check, in the text and in `Boundary.evaluate`. A51 (iii) is restated with a refusing-flash double, because its negative-flow state now stops at step 2; A51 (v) is new. BD-06 and A51 (iv) are unaffected: F7's state is inside the state space, so the inlet phase still precedes the hard domain. | §8.12, A51; `boundary.py` `state_space_violation`; R-198 (note) |
+| F4 (should-fix): "declining Q-N4 is a revert of `1621d65`" was false, because the loader reads through `packaged()`, which raises `KeyError` without the entry | `load_records` falls back to the source checkout's single copy when `PACKAGED` lacks the entry, and raises `FileNotFoundError` naming Q-N4 outside a checkout. Tested by simulating the absent entry; the revert itself was trial-applied to a copy of the tree, and the M01 and T08 package-data tests pass there. The "user-supplied path" for installed packages stays unbuilt (Q-N4 states so). | §15 Q-N4; `pr_c1.py` `load_records`; `tests/test_m01_records.py::test_f4_*` |

@@ -16,6 +16,7 @@ from conftest import REPO_ROOT
 from test_schemas_p01 import validator_for
 
 from openflowsheet.resources import PACKAGED, packaged
+from openflowsheet.thermo import pr_c1
 from openflowsheet.thermo.pr_c1 import (
     COMPONENTS,
     RECORDS_PATH,
@@ -50,11 +51,38 @@ def test_a01_each_record_validates_and_is_real_and_verified(component: str) -> N
     assert record["elemental_verification"] == "VERIFIED"
 
 
-def test_the_records_are_package_data_read_from_the_single_repository_copy() -> None:
-    assert RECORDS_PATH in PACKAGED
-    data = packaged(RECORDS_PATH).read_bytes()
-    assert data == RECORDS.read_bytes()
+def test_the_records_are_read_from_the_single_repository_copy() -> None:
+    # Package data by spec Q-N4's default (commit 1621d65, whose own T08 package-data tests pin the
+    # entry); with Q-N4 declined, that commit reverted, the checkout's copy (review F4, below).
+    data = RECORDS.read_bytes()
+    if RECORDS_PATH in PACKAGED:
+        assert packaged(RECORDS_PATH).read_bytes() == data
     assert load_records().sha256 == hashlib.sha256(data).hexdigest()
+
+
+def _not_carried(relative: str) -> Any:
+    """`resources.packaged` for a package whose `PACKAGED` lacks the records (Q-N4 declined)."""
+    raise KeyError(f"{relative!r} is not runtime data the package carries; see PACKAGED")
+
+
+def test_f4_without_the_package_data_entry_a_checkout_reads_the_repository_copy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Review F4: reverting 1621d65 removes the records from PACKAGED, and `packaged()` then raises
+    # KeyError; the loader must fall back to the checkout's single copy, bitwise the same records.
+    monkeypatch.setattr(pr_c1, "packaged", _not_carried)
+    fallback = load_records.__wrapped__()
+    assert fallback.sha256 == hashlib.sha256(RECORDS.read_bytes()).hexdigest()
+    assert fallback == load_records()
+
+
+def test_f4_an_installed_package_without_the_records_says_so(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(pr_c1, "packaged", _not_carried)
+    monkeypatch.setattr(pr_c1, "_checkout_records", lambda: None)
+    with pytest.raises(FileNotFoundError, match="Q-N4"):
+        load_records.__wrapped__()
 
 
 @pytest.mark.parametrize("index", range(5))

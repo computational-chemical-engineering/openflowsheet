@@ -93,7 +93,9 @@ def test_an_unlisted_path_is_refused() -> None:
 def test_no_module_reads_schemas_or_benchmarks_by_walking_up_from_its_file() -> None:
     """The pre-W4.2 idiom, `Path(__file__).resolve().parents[3] / "schemas"` and the walk to a
     parent holding `benchmarks/`, works only in a checkout. (`run/manifest.py`'s walk to
-    `requirements.lock` stays: the lock describes a checkout's environment, not the package.)"""
+    `requirements.lock` stays: the lock describes a checkout's environment, not the package. So does
+    `thermo/pr_c1.py`'s `_checkout_records`, taken only when `PACKAGED` lacks the C1 records, which
+    is M01 spec Q-N4 declined: the package then deliberately carries none; M01 review F4.)"""
     idiom = re.compile(r'/\s*"(schemas|benchmarks)"')
     found = [
         f"{path.relative_to(REPO_ROOT)}:{number}"

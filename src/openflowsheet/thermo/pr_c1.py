@@ -63,7 +63,7 @@ from openflowsheet.thermo import (
     StreamState,
 )
 
-#: The records' repository path, one of `openflowsheet.resources.PACKAGED`.
+#: The records' repository path, one of `openflowsheet.resources.PACKAGED` (spec Q-N4's default).
 RECORDS_PATH: Final = "benchmarks/m01/components.yaml"
 
 #: The identity order of every C1 n-vector (spec §3.1).
@@ -163,10 +163,35 @@ def parse_records(data: bytes) -> C1Records:
     return C1Records(components=components, sha256=hashlib.sha256(data).hexdigest())
 
 
+def _checkout_records() -> Path | None:
+    """The repository's single copy of the records when this module runs from a source checkout
+    (`<root>/src/openflowsheet/thermo/pr_c1.py`), else `None` (`run/manifest.py`'s lock lookup)."""
+    here = Path(__file__).resolve()
+    root = here.parents[3]
+    if here.parents[1] != root / "src" / "openflowsheet":
+        return None
+    copy = root / RECORDS_PATH
+    return copy if copy.is_file() else None
+
+
 @cache
 def load_records() -> C1Records:
-    """The packaged C1 records (read once per process; the file is package data, not state)."""
-    return parse_records(packaged(RECORDS_PATH).read_bytes())
+    """The C1 records, read once per process (the file is data, not state).
+
+    Package data, spec §15 Q-N4's default. Where the package does not carry them (`PACKAGED`
+    without the entry: Q-N4 declined, which is a revert of commit `1621d65`), a source checkout
+    reads its single repository copy instead (review F4); an installed package without them has
+    no records and says so on first use.
+    """
+    try:
+        return parse_records(packaged(RECORDS_PATH).read_bytes())
+    except KeyError:
+        checkout = _checkout_records()
+    if checkout is None:
+        raise FileNotFoundError(
+            f"{RECORDS_PATH} is neither package data nor in a source checkout (spec §15 Q-N4)"
+        )
+    return parse_records(checkout.read_bytes())
 
 
 # -- the method's constants (spec §3.2, §4) -----------------------------------------------------
