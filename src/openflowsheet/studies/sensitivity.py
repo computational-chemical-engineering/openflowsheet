@@ -271,6 +271,12 @@ class QualificationOutcome:
     outcome: Outcome
     detail: Mapping[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        # The document spreads `detail` beside these two members; neither may be replaced.
+        clashing = sorted({"qualification", "outcome"} & set(self.detail))
+        if clashing:
+            raise ValueError(f"{self.qualification}: detail keys {clashing} are reserved")
+
     def as_document(self) -> dict[str, Any]:
         return {"qualification": self.qualification, "outcome": self.outcome, **self.detail}
 

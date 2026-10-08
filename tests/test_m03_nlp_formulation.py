@@ -196,6 +196,12 @@ def test_a32_the_reduced_kkt_check_at_the_reference_optimum() -> None:
     # Without the optimizer's state there is no V2, so no candidate here is ever "passed".
     assert verification.outcome("V2") == "not_evaluated"
     assert not verification.passed
+    # The record says what the checks say: no detail member replaces a verdict.
+    document = verification.as_document()
+    assert [(item["check"], item["outcome"]) for item in document["checks"]] == [
+        (item.check, item.outcome) for item in verification.checks
+    ]
+    assert document["checks"][0]["resolve_outcome"] == "CONVERGED"
 
 
 def test_a32_the_same_verifier_discriminates_at_the_start() -> None:
@@ -372,3 +378,13 @@ def test_a34_an_exact_hessian_request_is_refused_before_any_solver_call() -> Non
     report = optimize(nlp_formulation(hessian="exact"), flowsheet({}))
     assert report.status == "UNSUPPORTED"
     assert report.reason_codes == ("HESSIAN_UNAVAILABLE", "NLP_SOLVER_UNAVAILABLE")
+
+
+def test_a_check_detail_cannot_overwrite_the_verdict_in_its_record() -> None:
+    from openflowsheet.studies.nlp.verification import VerificationCheck
+    from openflowsheet.studies.sensitivity import QualificationOutcome
+
+    with pytest.raises(ValueError, match="overwrite"):
+        VerificationCheck("V1", "pass", {"outcome": "CONVERGED"})
+    with pytest.raises(ValueError, match="reserved"):
+        QualificationOutcome("Q1", "pass", {"qualification": "Q2"})

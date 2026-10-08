@@ -69,6 +69,13 @@ class VerificationCheck:
     outcome: CheckOutcome
     detail: Mapping[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        # The document spreads `detail` beside `check` and `outcome`: a detail key of either name
+        # would silently replace the verdict in the serialized record.
+        clashing = sorted({"check", "outcome"} & set(self.detail))
+        if clashing:
+            raise ValueError(f"{self.check}: detail keys {clashing} would overwrite the check")
+
     def as_document(self) -> dict[str, Any]:
         return {"check": self.check, "outcome": self.outcome, **self.detail}
 
@@ -195,7 +202,7 @@ def verify_candidate(
         "V1",
         "pass" if solve.verified else "fail",
         {
-            "outcome": solve.outcome,
+            "resolve_outcome": solve.outcome,
             "message": solve.message,
             "certificate_status": certificate.verification_status if certificate else None,
         },
