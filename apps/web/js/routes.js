@@ -134,6 +134,19 @@ export const ROUTES = freeze({
     "right": "read",
     "verb": "GET"
   },
+  "list_audit": {
+    "members": [
+      "cursor",
+      "limit",
+      "operation",
+      "order",
+      "principal_id"
+    ],
+    "path": "/v1/audit",
+    "path_params": [],
+    "right": "read",
+    "verb": "GET"
+  },
   "list_job_events": {
     "members": [
       "after_sequence",
