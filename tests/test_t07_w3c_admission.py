@@ -319,7 +319,10 @@ def test_inspect_structure_reports_the_formulation_solve_uses(name: str) -> None
         # solves (the conflicting spec, since ruling round 6, B1); and the hint of the refusal
         # validate reports, if it reports one (ruling round 6, B1 item 4).
         refusal = structural_refusal(CORPUS[name]())
-        assert structure == {
+        # ADR 0019 Amendment 3 (A3.1) adds three members, by addition only (M06 WO-1).
+        added = {"validation_structural_report", "rows", "columns"}
+        assert added <= set(structure)
+        assert {key: value for key, value in structure.items() if key not in added} == {
             "not_run_reason": validate(CORPUS[name]()).structural_counts_absent_reason
             or route.reason,
             "hint": None if refusal is None else refusal.hint,

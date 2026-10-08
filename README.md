@@ -32,6 +32,22 @@ Read these before changing anything they cover.
 | `docs/decision-register.md` | What was chosen, what was rejected, and why — the index that makes the ADRs findable by the question they answer |
 | `CLAUDE.md` | Working rules for the two coding agents that share this repository |
 
+## Diagnostic web shell
+
+A browser view of one project — revisions, validation and degrees of freedom, runs and traces,
+certificates and failure bundles, streams, comparisons and the audit history — served beside the
+HTTP API and reading nothing but the application contract:
+
+```bash
+openflowsheet project grant --project ./plant --principal me --rights read,execute   # prints a token once
+openflowsheet serve-http --project ./plant --ui    # web shell at http://127.0.0.1:8765/ui/
+```
+
+`--ui` is off by default; loopback by default; every data request needs the bearer token, which
+the page keeps in session storage and sends only in the `Authorization` header. The shell edits
+nothing — Solve and Cancel are its only actions — and judges nothing: what each screen shows and
+does not claim is `docs/web-shell.md` (design: `docs/design/M06-web-shell.md`, ADR 0030).
+
 ## Development
 
 Requires Python 3.13.

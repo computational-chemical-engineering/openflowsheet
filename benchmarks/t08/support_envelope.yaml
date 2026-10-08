@@ -1,4 +1,7 @@
-# The v0.1 supported envelope (T08 release spec §5; T08 build-first spec §E.4, §E.5, B27).
+# The supported envelope (T08 release spec §5; T08 build-first spec §E.4, §E.5, B27). Since R-193
+# (2026-10-08) this file is v0.2's working envelope, held to the live code during v0.2 development;
+# the v0.1 envelope as released is `git show v0.1.1:benchmarks/t08/support_envelope.yaml`
+# (`v0.1-envelope-1`, release 0.1.0). It is finalised for 0.2.0 at M07.
 #
 # Machine-readable source of `docs/support-matrix.md`, which `scripts/t08_support_matrix.py --emit`
 # renders and `--check` holds to this file byte for byte (T08.A23). `--check` also compares the
@@ -16,8 +19,8 @@
 #   starts across runs" is no longer true; the GUESS-role half stands.
 # - L18 onward are rows the harvest (W2.2) needed that §5.5's seed does not carry.
 
-envelope_id: v0.1-envelope-1
-release: 0.1.0
+envelope_id: v0.2-envelope-dev
+release: 0.2.0.dev0
 
 axes:
   - id: property_model
@@ -212,8 +215,10 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty operations of
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of
       `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
+      With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of
+      them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4).
     operations:
       artifact_bytes: [python, cli, http]
       cancel_job: [python, cli, http, mcp]
@@ -225,6 +230,7 @@ axes:
       get_project: [python, cli, http, mcp]
       get_revision: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
+      list_audit: [python, cli, http]
       list_job_events: [python, cli, http, mcp]
       list_jobs: [python, cli, http, mcp]
       list_models: [python, cli, http, mcp]
@@ -240,7 +246,9 @@ axes:
       - check:T07.G11
       - check:T07.G14
       - check:T07.D15(b)
+      - tests/test_m06_http_contract.py::test_g2_every_ui_operation_answers_schema_valid_over_http
       - doc:docs/adr/0019-application-contract-v1.md
+      - doc:docs/web-shell.md
 
   - id: platforms
     title: Platforms
@@ -298,7 +306,7 @@ unsupported:
       `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, detail
       `task_unsupported(optimization)`, before any analysis; no v0.1 path returns
       `READY_FOR_OPTIMIZATION` (the value stays in the frozen enum, unused); the other studies
-      have no operation among the twenty of `OPERATIONS`; no optimality claim anywhere.
+      have no operation among the twenty-one of `OPERATIONS`; no optimality claim anywhere.
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported
       - tests/test_t08_w2_unsupported.py::test_u05_a_change_for_optimization_is_refused_audited
@@ -385,7 +393,11 @@ unsupported:
 
   - id: U14
     capability: External benchmark comparisons (CRAFTS / OpenIDAES-450)
-    outcome: Not run in v0.1 (M06/W27); nothing is registered or shipped for them.
+    outcome: >-
+      No comparison is run (W27's campaign is M07's, R-175). v0.2's adaptation records (provenance,
+      access report, registration; R-176 to R-179) are committed under
+      `benchmarks/m06/openidaes450/` only; nothing is registered in `benchmarks/registry.yaml` and
+      nothing ships in the package (R-194).
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered
 
@@ -727,6 +739,41 @@ limitations:
       - doc:docs/derivations/M01-spec.md §4.2
       - doc:docs/derivations/M01-spec.md §17
       - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
+  - id: L-WEB-1
+    text: >-
+      The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits
+      nothing (Solve and Cancel are its only effects), calls seventeen operations and no other,
+      computes only display arithmetic (design note §5.6), converts no unit, and judges nothing —
+      the scenario view displays run differences without a registered comparison or allowance.
+    evidence:
+      - tests/test_m06_static_scan.py::test_the_ui_calls_exactly_the_seventeen_operations
+      - doc:docs/web-shell.md
+      - doc:docs/design/M06-web-shell.md §5.6
+  - id: L-WEB-2
+    text: >-
+      The web shell's security is the local, single-user model: loopback by default, the bearer
+      token on every data request, a strict Content-Security-Policy; no TLS, no multi-user
+      hosting, and no security assessment beyond design note §7. Served with `--allow-remote`
+      over plain HTTP the page is an insecure context and record digests show "unchecked".
+    evidence:
+      - tests/test_m06_wo4_serving.py::test_a_shell_file_is_served_with_its_type_and_the_shell_headers
+      - doc:docs/design/M06-web-shell.md §7
+  - id: L-WEB-3
+    text: >-
+      The web shell is tested in headless Chromium only. No usability, workflow or screen-reader
+      study exists; accessibility is limited to status shown as glyph and word, controls that are
+      keyboard-reachable by construction, and the measured contrast of its colour tokens.
+    evidence:
+      - tests/test_m06_contrast.py::test_every_text_token_on_every_background_is_legible
+      - doc:docs/design/M06-web-shell.md §13
+  - id: L-WEB-4
+    text: >-
+      The agent history shows what the project recorded, not what an agent claimed; the
+      validation shown beside a commit is recomputed now by the current server, not the report the
+      agent received at commit time.
+    evidence:
+      - doc:docs/web-shell.md
+      - doc:docs/design/M06-web-shell.md §12
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -2546,3 +2593,58 @@ harvest:
   class: P
   to: []
   note: A47 is M02's adapter half, no record half (spec §8.15, R-200)
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[0]
+  sha256: 4aba0e645395a22514b5c74fdfccc5f2171c6c30dbdc3a89718668de116b6b52
+  class: E
+  to:
+  - L-WEB-1
+  note: L-WEB-1, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[1]
+  sha256: 94db9bd70f528a56b675a66fd3187d481e4ef25a8e5d7a382131f7e869138845
+  class: E
+  to:
+  - L-WEB-2
+  note: L-WEB-2, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[2]
+  sha256: 7e588e9b4901e9dbeff46bfd7081d8b74c8beb8d69dd1651a3b0ef88b331b267
+  class: E
+  to:
+  - L-WEB-3
+  note: L-WEB-3, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[3]
+  sha256: d5535ca4ef891366fc94078a6aec5c96bedd6fe67ff1ee9a698f525279bf5684
+  class: E
+  to:
+  - L-WEB-4
+  note: L-WEB-4, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[4]
+  sha256: 2068fc6ba734ac715ba1577b8e8c59e7860a97421b16557d66995e373d60c1d8
+  class: E
+  to:
+  - U14
+  note: W27 campaign is M07's
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[5]
+  sha256: 1dd3cd8e8b79cf6f8ec040e0e89b03b6f5d4bfae5449c94e00cf1a4071a661a0
+  class: P
+  to: []
+  note: requirement ids outside the manifest pattern
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[6]
+  sha256: df9cddfe81cb5dd15164205495c3e9d8ce53efc37911042f2e4b1ca5aef10e99
+  class: P
+  to: []
+  note: evidence class; review pending
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: checks[15]
+  check_id: M06.G16
+  sha256: c5b5f14b6d0264373d3ee589d5304a0c701cf100d444ac19a2c1bafed44dfa8a
+  class: E
+  to:
+  - U14
+  note: W27 campaign is M07's (G16)

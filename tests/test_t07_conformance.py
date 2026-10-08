@@ -100,7 +100,7 @@ from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE, PAUSE
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME
-from openflowsheet.application.types import Limits
+from openflowsheet.application.types import LOCAL_OWNER_PRINCIPAL, Limits
 
 NOMINAL = "SYN-001-nominal"
 PROJECT_ID = "t07-conformance"
@@ -114,6 +114,7 @@ PAUSE_CHECK = 1
 #: §11.6 (3)'s strip list, and its extensions (module docstring).
 VOLATILE = frozenset(
     {
+        "at",  # an audit row's clock reading (`list_audit`, ADR 0019 Amendment 3)
         "recorded_at",
         "created_at",
         "started_at",
@@ -436,6 +437,21 @@ class Scenario:
         r = self.run_job("R", reproduce)
         report = self.ok("R result", "get_job_result", {"job_id": r})["replay_report"]
         assert (report["mode"], report["verdict"]) == ("inspected_archived_results", "NOT_RUN")
+
+        # ADR 0019 Amendment 3 (A3.3; M06 WO-3): the agent history — Python, CLI and HTTP, not
+        # MCP. Before the in-process `solve`, whose `auto:` key is a random draw. Own rows need
+        # `read`; every principal's need `policy` too, which the grant lacks (`forbidden`).
+        if "list_audit" in c.carries:
+            own = PRINCIPAL if c.grant else LOCAL_OWNER_PRINCIPAL
+            first = {"principal_id": own, "limit": 3}
+            audit = self.ok("audit 1", "list_audit", first)
+            self.ok("audit 2", "list_audit", {**first, "cursor": audit["next_cursor"]})
+            down = {"principal_id": own, "order": "descending", "limit": 5}
+            self.ok("audit descending", "list_audit", down)
+            commits = {"principal_id": own, "operation": "commit_change"}
+            self.ok("audit commits", "list_audit", commits)
+            self.step("audit everyone", "list_audit", {})
+            self.step("audit other order", "list_audit", {**down, "cursor": audit["next_cursor"]})
 
         # The in-process operations (Python and the CLI): solve and reproduce by path.
         if "solve" in c.carries:
