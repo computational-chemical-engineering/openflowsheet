@@ -209,7 +209,7 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
         if claimed[key] != facts[key]
     ]
     # ADR 0019 Amendment 3 (M06, approved by Frank on 2026-10-08) adds `list_audit` to spec §9's
-    # 20 operations; pending the session's record of that move on the v0.1 envelope.
+    # 20 operations; this file is v0.2's working envelope (R-193), v0.1's stays as released.
     if len(claimed["operations"]) != 21 or len(claimed["models"]) != 13:
         problems.append(
             "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models"
