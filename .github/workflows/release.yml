@@ -5,10 +5,11 @@ name: release
 # in any other repository every job is skipped. A dry run (the default) runs `gate` and `build`
 # and pushes, uploads and publishes nothing.
 #
-#   gate            the version is `pyproject.toml`'s and of the form X.Y.Z; a tag vX.Y.Z, if it
-#                   exists, is on this commit; CHANGELOG.md has its section; the release gate of
-#                   the version's minor line (scripts/v<major>_<minor>_gate.py --rc <rc>) exits 0
-#                   and prints `vX.Y.Z tag may be proposed: YES`.
+#   gate            the version is `pyproject.toml`'s and a canonical PEP 440 release X.Y.Z or
+#                   pre-release X.Y.Z{a|b|rc}N (N >= 1); a tag v<version>, if it exists, is on this
+#                   commit; CHANGELOG.md has its section; the release gate of the version's minor
+#                   line (scripts/v<major>_<minor>_gate.py --rc <rc>) exits 0 and prints
+#                   `v<version> tag may be proposed: YES`.
 #   tag             (not on a dry run) tags the gated commit vX.Y.Z and pushes the tag.
 #   build           the sdist and the wheel, built twice and inspected (scripts/t08_dist.py,
 #                   T08.A43), from the gated commit.
@@ -16,13 +17,14 @@ name: release
 #                   uploads by trusted publishing. PyPI's publisher for `openflowsheet` names this
 #                   file, `release.yml`.
 #   github-release  (not on a dry run) the GitHub release, with the CHANGELOG section as its notes
-#                   and the artifacts attached.
+#                   and the artifacts attached, marked a pre-release iff the version has an a, b or
+#                   rc segment (V02 alpha release spec §9.1).
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release, X.Y.Z (pyproject.toml must declare it)"
+        description: "Version to release, X.Y.Z or X.Y.Z{a|b|rc}N (pyproject.toml must declare it)"
         required: true
         type: string
       rc:
@@ -67,8 +69,8 @@ jobs:
       - name: The version is pyproject.toml's, and its tag is free or on this commit
         run: |
           refuse() { echo "refused: $*" >&2; exit 1; }
-          [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] \
-            || refuse "version '$VERSION' is not of the form X.Y.Z"
+          [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)((a|b|rc)[1-9][0-9]*)?$ ]] \
+            || refuse "version '$VERSION' is not of the form X.Y.Z or X.Y.Z{a|b|rc}N"
           declared=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
           [ "$VERSION" = "$declared" ] \
             || refuse "pyproject.toml declares version '$declared', not '$VERSION'"
@@ -195,5 +197,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag \
+          prerelease=()
+          if [[ "$VERSION" =~ [0-9](a|b|rc)[1-9][0-9]*$ ]]; then
+            prerelease=(--prerelease)
+          fi
+          gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag "${prerelease[@]}" \
             --title "OpenFlowsheet v$VERSION" --notes-file record/notes.md dist/*

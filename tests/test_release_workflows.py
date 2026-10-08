@@ -9,6 +9,13 @@ holds an OIDC token and uploads, by trusted publishing; every action is pinned b
 `gate` job's two scripts are run here on a scratch repository: they refuse a version that is not
 `pyproject.toml`'s or not `X.Y.Z`, a tag on another commit, and a gate that does not exit 0 *and*
 print the version's YES line.
+
+V02 alpha release spec §9.1 (M07a.A20–A24): the version step accepts canonical PEP 440 releases and
+pre-releases, `X.Y.Z{a|b|rc}N` with N ≥ 1, exactly as Table T2 states; `0.2.0a1` resolves the gate
+`scripts/v0_2_gate.py`, whose YES line must name the version; `github-release` marks a version with
+an `a`, `b` or `rc` segment `--prerelease`; and the dispatch defaults are unchanged (a dry run, and
+the v0.1 candidate as `rc`). Table T2 is read from `benchmarks/m07a/reference_values.yaml`, which
+`v02a_reference.py --check` re-derives from the specification (M07a.A00).
 """
 
 from __future__ import annotations
@@ -150,7 +157,7 @@ def test_the_gate_job_checks_before_anything_is_built() -> None:
     for job in ("tag", "build"):
         checkouts = [s for s in load()["jobs"][job]["steps"] if "checkout" in s.get("uses", "")]
         assert checkouts[0]["with"]["ref"] == "${{ needs.gate.outputs.commit }}", job
-    for script in ("changelog_section.py", "t08_dist.py", "v0_1_gate.py"):
+    for script in ("changelog_section.py", "t08_dist.py", "v0_1_gate.py", "v0_2_gate.py"):
         assert (REPO_ROOT / "scripts" / script).is_file()
 
 
@@ -187,8 +194,10 @@ def scratch(tmp_path: Path) -> Path:
     return repo
 
 
-def _run(repo: Path, name: str, version: str, **env: str) -> subprocess.CompletedProcess[str]:
-    script = step("gate", name)["run"]
+def _run(
+    repo: Path, name: str, version: str, *, job: str = "gate", **env: str
+) -> subprocess.CompletedProcess[str]:
+    script = step(job, name)["run"]
     environment = {
         **os.environ,
         "PATH": f"{Path(sys.executable).parent}{os.pathsep}{os.environ['PATH']}",
@@ -248,3 +257,97 @@ def test_the_gate_step(scratch: Path) -> None:
         refused = _run(scratch, "The release gate", version, FAKE_GATE_OUT=out, FAKE_GATE_EXIT=code)
         assert refused.returncode == 1 and why in refused.stderr, (out, code, version)
         assert not output.exists()
+
+
+# -- M07a.A20–A23: PEP 440 pre-releases (V02 alpha release spec §9.1) --------------------------
+
+M07A = yaml.safe_load(
+    (REPO_ROOT / "benchmarks" / "m07a" / "reference_values.yaml").read_text(encoding="utf-8")
+)
+
+
+@pytest.mark.parametrize(
+    ("version", "accepted"), M07A["truth_tables"]["T2_workflow_version"].items()
+)
+def test_m07a_a20_the_version_step_is_table_t2(scratch: Path, version: str, accepted: bool) -> None:
+    (scratch / "pyproject.toml").write_text(
+        f'[project]\nname = "p"\nversion = "{version}"\n', "utf-8"
+    )
+    result = _run(scratch, VERSION_STEP, version)
+    if accepted:
+        assert result.returncode == 0, result.stderr
+    else:
+        assert result.returncode == 1 and "refused: " in result.stderr
+        assert "not of the form" in result.stderr
+
+
+def test_m07a_a20_the_step_s_pattern_is_the_registered_one() -> None:
+    pattern = M07A["targets"]["workflow_version_pattern"]
+    assert f'[[ "$VERSION" =~ {pattern} ]]' in step("gate", VERSION_STEP)["run"]
+
+
+def test_m07a_a21_a_pre_release_resolves_the_0_2_gate(scratch: Path) -> None:
+    (scratch / "scripts" / "v0_2_gate.py").write_text(FAKE_GATE, "utf-8")
+    output = scratch.parent / "runner" / "output"
+    passed = _run(
+        scratch,
+        "The release gate",
+        "0.2.0a1",
+        FAKE_GATE_OUT="...\nv0.2.0a1 tag may be proposed: YES",
+        FAKE_GATE_EXIT="0",
+    )
+    assert passed.returncode == 0, passed.stderr
+    assert output.read_text("utf-8") == f"commit={_git(scratch, 'rev-parse', 'HEAD')}\n"
+    for out, code, why in (
+        ("v0.2.0a2 tag may be proposed: YES", "0", "did not print"),
+        ("v0.2.0 tag may be proposed: YES", "0", "did not print"),
+        ("v0.2.0a1 tag may be proposed: YES", "1", "v0_2_gate.py exited 1"),
+    ):
+        output.unlink(missing_ok=True)
+        refused = _run(
+            scratch, "The release gate", "0.2.0a1", FAKE_GATE_OUT=out, FAKE_GATE_EXIT=code
+        )
+        assert refused.returncode == 1 and why in refused.stderr, (out, code)
+        assert not output.exists()
+
+
+FAKE_GH = """#!/usr/bin/env bash
+printf '%s\\n' "$@" > "$FAKE_GH_ARGS"
+"""
+
+
+@pytest.mark.parametrize(
+    ("version", "prerelease"), [("0.2.0a1", True), ("0.2.0rc1", True), ("0.2.0", False)]
+)
+def test_m07a_a23_github_release_marks_pre_releases(
+    tmp_path: Path, version: str, prerelease: bool
+) -> None:
+    work = tmp_path / "work"
+    (work / "dist").mkdir(parents=True)
+    (work / "record").mkdir()
+    (work / "dist" / f"openflowsheet-{version}.tar.gz").write_text("sdist", "utf-8")
+    (work / "record" / "notes.md").write_text("notes", "utf-8")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "gh").write_text(FAKE_GH, "utf-8")
+    (bin_dir / "gh").chmod(0o755)
+    arguments = tmp_path / "gh-arguments"
+    result = subprocess.run(
+        ["bash", "-e", "-c", step("github-release", "Create the GitHub release")["run"]],
+        cwd=work,
+        env={
+            **os.environ,
+            "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
+            "VERSION": version,
+            "GITHUB_REPOSITORY": PUBLIC,
+            "GH_TOKEN": "unused",
+            "FAKE_GH_ARGS": str(arguments),
+        },
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    passed = arguments.read_text("utf-8").splitlines()
+    assert passed[:3] == ["release", "create", f"v{version}"]
+    assert ("--prerelease" in passed) is prerelease
+    assert passed[-1] == f"dist/openflowsheet-{version}.tar.gz"
