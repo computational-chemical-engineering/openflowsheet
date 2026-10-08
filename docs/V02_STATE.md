@@ -81,7 +81,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 merge main + WO-7, 8 (+9): C1 binding, PR units | `wp/M02` (`m02`) |
-| `reviewer` | M03 closure check | `wp/M03` (`m03`) |
+| `recon` | M05 recon digest | read-only |
 | `opus-engineer` | M04 WO-1, 2, 3, 10 (sampler, conformal, fit) | `wp/M04` (`m04`) |
 | `specifier` | v0.2 alpha release gate (`0.2.0a1`) | `wp/V02-alpha-gate` (`alpha-gate`) |
 

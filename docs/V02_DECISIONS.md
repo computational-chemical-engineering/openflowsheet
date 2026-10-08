@@ -406,3 +406,8 @@ Grep, don't read whole. Newest at the bottom.
   confirmed. Note: `e4d1b82` also concluded the WO-7/8 engineer's in-progress merge of main (parents `2e63211`,
   `e100b68`); engineer told to commit on top.
 - M03 reviewer asked to confirm closure and rule on registering the test-module comparison rules.
+- M03 review Closure (`a8a6dcc`): all findings closed in code; F1 final on green CI both runners; Amendment 2
+  ratified; comparison rules ratified → R-253 (session, `85965cd`) with watch-for (move into run/compare + ADR 0025
+  amendment before study/optimization records become replay-comparable, i.e. before M05/K05 bundles). ADR 0031 →
+  Accepted on green CI + manifest tested; ADR 0032 also needs N1.
+- `recon` M05 launched.
