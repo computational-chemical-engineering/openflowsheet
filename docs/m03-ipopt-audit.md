@@ -7,6 +7,9 @@ A41. **Authority:** ADR 0032 D5; ADR 0006 D1.5, D2.1, D2.4 and Amendment 1 (R-13
 **Precedent followed:** `docs/p03-binary-audit.md` and `scripts/p03_binary_inventory.py`, whose
 helpers the inventory script reuses.
 
+**Extended by §11 (M05 WO-1, 2026-10-09, branch `wp/M05-audit`)** to the Ipopt *executable*
+(`bin/ipopt`) that M05's trust-region subproblems run through Pyomo's `SolverFactory('ipopt')`.
+
 This document is the inventory and the gate verdict. It is not a legal opinion, and it does not
 accept the licences: that is Frank's N1 (§7). Every number and hash quoted here is read from
 `benchmarks/m03/ipopt-inventory-x86_64.json`, which the script writes and checks:
@@ -420,3 +423,126 @@ the inventory.
   notices), except for the three objects of §6.5; that is an inference, as P03's name rule was.
 - It says nothing about Ipopt's numerical behaviour on NLP-1 (WO-8, Q-F2) or about PyNumero's
   evaluation-error path (Q-F4).
+
+---
+
+## 11. The Ipopt executable (M05 WO-1)
+
+**Why.** M05's trust-region subproblems run through `SolverFactory('ipopt')`, which is the ASL
+executable `bin/ipopt` as a child process, not cyipopt. M03's inventory maps what the *Python*
+process loads (`/proc/self/maps`), so it contains neither the executable nor
+`libipoptamplinterface`. Nothing in §1–§10 is changed: the M03 record
+(`benchmarks/m03/ipopt-inventory-x86_64.json`) is untouched and still reproduces. The executable
+has its own record, `benchmarks/m05/trsp-inventory-x86_64.json` (format `m05-trsp-inventory-v1`,
+written and checked by the same script):
+
+```bash
+.venv/bin/python scripts/m03_ipopt_inventory.py --env .venv-nlp --workload trsp-exe            # write
+.venv/bin/python scripts/m03_ipopt_inventory.py --env .venv-nlp --workload trsp-exe --check    # reproduce
+```
+
+`scripts/m03_nlp_check.sh` runs both `--check`s.
+
+### 11.1 The workload and how the executable's objects were measured
+
+A fresh interpreter of the audited environment (`python -I`, `PYTHONNOUSERSITE=1`,
+`OMP_NUM_THREADS=1`, `PYOMO_CONFIG_DIR=<env>/share/pyomo`, an empty working directory) runs:
+
+1. a two-variable NLP (min x + 2y subject to xy = 1, x, y ≥ 0.1) through
+   `SolverFactory('ipopt', executable=<env>/bin/ipopt)`, `linear_solver = mumps`, `tol = 1e-10`:
+   `optimal`, error 4.0e-13 against (√2, 1/√2);
+2. Pyomo's own trust-region example (`pyomo.contrib.trustregion.examples.example1`, the
+   `trustregion` solver, 5 iterations, objective 0.27704478876374156). Its subproblem solver is
+   `ipopt` resolved by name on `PATH`; the workload requires that to resolve to the pinned file.
+
+**Method used: the dynamic loader's own log, cross-checked with `ldd`.** The child sets
+`LD_DEBUG=files` and `LD_DEBUG_OUTPUT` in its own environment only after it has started (so its own
+loads are not logged); every `ipopt` process Pyomo spawns then writes the objects it initialised and
+any `dlopen` it attempted. The parent reads those logs, resolves each path with `realpath` (so a
+symlink shows as the object it names, as `/proc/<pid>/maps` does), and compares the union with
+`ldd`'s static closure of the same file. A `/proc/<pid>/maps` read of a short-lived child is a race;
+the loader log is not, and it also records `dlopen`s that `ldd` cannot see. **Measured:** 6 `ipopt`
+processes (the direct solve and the processes the trust-region example runs) all map one set
+of 31 ELF objects (96 652 747 bytes, 31 distinct SHA-256); the loader log equals `ldd`'s closure
+plus the executable itself exactly (no object on either side only).
+
+### 11.2 What is new against §5
+
+Of the 31 objects, **29 are in M03's inventory unchanged** (same path, same SHA-256: every
+conda-forge object but two, and the six `libc6` objects). Two are new, both from conda-forge
+`ipopt-3.14.20-hec1326d_0`, the package whose `libipopt.so.3.14.20` §5 already lists:
+
+| Object | Bytes | SHA-256 | Owner | Declared | Read from notice | Category |
+| --- | ---: | --- | --- | --- | --- | --- |
+| `bin/ipopt` | 32336 | `2d7bcf8835ac26437a81a6bf840e9c6c5a87c36540bc467d6fe7ddec63924a63` | ipopt-3.14.20-hec1326d_0 | EPL-1.0 | EPL-2.0 | identified |
+| `lib/libipoptamplinterface.so.3.14.20` | 137552 | `9973a2cae3e7666ce6d2b4aa5484fa90c549fbec4272cf1ccad5e7691ab20e46` | ipopt-3.14.20-hec1326d_0 | EPL-1.0 | EPL-2.0 | identified |
+
+Both equal their package's recorded bytes. The notices are the package's `info/licenses/LICENSE`
+and `share/doc/ipopt/LICENSE` (Eclipse Public License 2.0); conda-forge's declaration of EPL-1.0 is
+the same stale metadata §6.4 found for `libipopt`. `bin/ipopt` needs `libipoptamplinterface.so.3`,
+`libipopt.so.3`, `libstdc++.so.6`, `libgcc_s.so.1`, `libc.so.6`. `libipoptamplinterface` needs
+`libipopt`, `libspral`, `libdmumps_seq`, **`libasl.so`**, `liblapack.so.3`/`libblas.so.3`, `libstdc++`
+and the C runtime.
+
+The other objects the brief singled out, as measured:
+
+- **`libasl.so`** (the ASL library `libipoptamplinterface` links): `ampl-asl-1.0.0-h5888daf_2`,
+  `bfe531a3…41194`, 671 208 bytes, BSD-3-Clause AND SMLNJ, the same object §5 lists; notices read.
+- **METIS**: one `METIS_` exporter, conda-forge `metis-5.1.0` `libmetis.so` (`970cd095…`), METIS 5
+  by ADR 0006 D2.1's binary test (no `METIS_EstimateMemory`, `METIS_mCPartGraphKway` or
+  `METIS_EdgeND`), needed by `libdmumps_seq`, `libmumps_common_seq` and `libspral`.
+- **MUMPS**: `mumps-seq-5.8.2` (`libdmumps_seq`, `libmumps_common_seq`, `libmpiseq_seq`,
+  `libpord_seq`), the sequential build, CeCILL-C (PORD read as public domain, §6.5); Ipopt's own
+  banner in every run: `This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2.`
+- **`libgomp.so.1` is not the GCC OpenMP runtime in this environment.** The executable's
+  `DT_NEEDED` name resolves to a **symlink to `libomp.so`**, LLVM OpenMP 23.1.3
+  (`llvm-openmp-23.1.3-h7148c6a_0`, installed by `_openmp_mutex-4.5-8_kmp_llvm`), Apache-2.0 WITH
+  LLVM-exception, `96fa1d63…acd16`, 1 473 824 bytes: the object §5 already lists. The loader log
+  records it as `libgomp.so.1 -> $ENV/lib/libomp.so`. ADR 0006 Amendment 1's GCC-runtime reading is
+  therefore **not engaged** by `libgomp`, and the §7 row for LLVM OpenMP already covers it. (A
+  different `_openmp_mutex` build would supply GCC's `libgomp` under the same name; that would be a
+  different pin and a new finding.) The GCC runtime objects the executable does load
+  (`libstdc++`, `libgcc_s`, `libgfortran`, `libquadmath`) are the four of §5, unchanged.
+- **`libomp` probes two optional libraries** (`libarcher.so`, `libmemkind.so`, both attempted by
+  the OpenMP runtime on start-up) and neither is present or loaded: recorded as `dlopen_attempts`.
+- No CasADi METIS-closure object and no HSL object is loaded (G2, G4).
+
+### 11.3 Verdict per gate, for the executable
+
+**Verdict: PASS** for linux x86-64 on the audited environment, subject to N1. Items as in §1, for
+the `trsp-exe` record.
+
+| Item | Outcome | Evidence |
+| --- | --- | --- |
+| G1 | **PASS** | 31 mapped objects, each with path, size, SHA-256, SONAME, `DT_NEEDED`, owner and licence; none of unknown origin; every conda-owned object equals its package's recorded bytes; all 6 spawned processes map the same set; the loader's log equals `ldd`'s closure. The "both import orders" test of §6 has no analogue for a spawned executable and is replaced by those two checks |
+| G2 | **PASS** | No object under `site-packages/casadi/` is mapped (none of the 55-member METIS closure); the child never imports `casadi` or `cyipopt` (`casadi_imported: false`), so `casadi.nlpsol` cannot have been called |
+| G3 | **PASS** | One `METIS_` exporter, `libmetis.so` (`970cd095…`), METIS 5.x; imported by `libmumps_common_seq` and `libspral` |
+| G4 | **PASS** | No HSL exporter, importer or `*hsl*` object; `libipopt` carries its own EPL wrapper classes for HSL routines and an `hsllib` loader, as in §6.3, and no `dlopen` of any HSL library is attempted; the banner names MUMPS 5.8.2 in the direct solve (explicit `linear_solver = mumps`) **and in the trust-region solves, which set nothing** (so MUMPS is also the executable's default in this build) |
+| G5 | **PASS**, subject to N1 | No object is restrictive, GPL without exception, or unresolved. One declared-vs-read disagreement, the known Ipopt one (EPL-1.0 declared, EPL-2.0 read), now on three objects. No licence class is new to §7 |
+| G6 | **PASS** | `pyomo` and `cyipopt` are named only in the optional `nlp` extra; this workload imports neither `openflowsheet` nor `cyipopt`, so it cannot have changed the default install |
+| G7 | **PASS**, narrower than §6.6 | The record's `locks` equal §6.6's hashes (the conda, pip and build locks are unchanged); the executable is a package file of the pinned `ipopt` (equal to its package's SHA-256, no relocation); `--check` reproduces the record in this environment. **Not re-measured:** a second build at another prefix and cold cache (§6.6 did it for the whole environment; `bin/ipopt` is from the same lock) |
+| G8 | **PASS** | This section, committed on `wp/M05-audit` before any M05 code uses the executable |
+
+The record also carries the SHA-256 of the five trust-region modules of Pyomo 6.10.1 the design note
+asks for (`TRF.py` `69b5c8f8…`, `filter.py` `616655ce…`, `funnel.py` `52e1840e…`, `interface.py`
+`ef13ef90…`, `util.py` `25dcfb84…`; full values in the JSON).
+
+### 11.4 Licence delta for N1
+
+**No licence class is added to §7.** Two new objects, `bin/ipopt` and `libipoptamplinterface`, join
+the row already listed for Ipopt 3.14.20: *EPL-2.0 (conda-forge's metadata says EPL-1.0, the shipped
+text is EPL-2.0)*. Everything else the executable loads is a §7 row unchanged (METIS Apache-2.0,
+MUMPS and Scotch CeCILL-C, SPRAL BSD-3-Clause, ASL BSD-3-Clause and the f2c notice, LLVM OpenMP
+Apache-2.0 WITH LLVM-exception, the GCC runtime under the exception, `libiconv` LGPL-2.1, OpenBLAS,
+hwloc, libxml2, zlib, bzip2, xz). **Unresolved: none.** One point is new in kind, not in
+licence: Ipopt is now also *run as a separate process* (the executable), not only loaded; this
+audit records that fact and makes no legal reading of it. `libiconv` remains LGPL-2.1-only, as in §7.
+
+### 11.5 What §11 does not establish
+
+- It does not cover the trust-region algorithm's numerics or Pyomo's TRF modules beyond hashing
+  them.
+- The workload exercises the executable on small algebraic NLPs. An object that Ipopt loads only
+  for an option this workload does not set (for example a different `linear_solver`) would not be
+  in the record; the executable's `dlopen` path is only the `hsllib` loader, which is not asked.
+- aarch64 and any other `_openmp_mutex` build are not audited; mode B is not covered (§10).

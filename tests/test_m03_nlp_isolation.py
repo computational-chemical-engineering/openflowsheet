@@ -166,3 +166,94 @@ def test_the_nlp_tests_are_deselected_not_skipped_in_the_default_gate() -> None:
     assert len(selected) >= 17
     assert f"no tests collected ({len(selected)} deselected)" in collect()
     assert "skipped" not in marked
+
+
+# -- M05 WO-1: the Ipopt executable's record (audit section 11) ---------------------------------
+
+TRSP_INVENTORY = REPO_ROOT / "benchmarks" / "m05" / "trsp-inventory-x86_64.json"
+#: The two objects the executable adds to M03's inventory; both are conda-forge ipopt-3.14.20 files.
+TRSP_NEW_OBJECTS = {"$ENV/bin/ipopt", "$ENV/lib/libipoptamplinterface.so.3.14.20"}
+
+
+def test_the_trsp_inventory_was_taken_from_the_committed_locks_and_passes_g1_to_g6() -> None:
+    """M05 WO-1 / G1: the executable's record names the committed locks' hashes, carries G1-G6 as
+    measured, and passes all six."""
+    record = json.loads(TRSP_INVENTORY.read_text(encoding="utf-8"))
+    assert record["format"] == "m05-trsp-inventory-v1"
+    assert record["locks"] == {
+        name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in LOCKS.items()
+    }
+    assert set(record["gates"]) == {"G1", "G2", "G3", "G4", "G5", "G6"}
+    assert all(gate["pass"] is True for gate in record["gates"].values())
+    assert record["pass_g1_to_g6"] is True
+
+
+def test_the_trsp_workload_ran_the_executable_and_the_loader_agrees_with_ldd() -> None:
+    """The record is of the executable, not of the Python process: Ipopt's banner names MUMPS, the
+    loader's log equals ldd's closure, every spawned process maps one set, and neither CasADi nor
+    cyipopt was loaded."""
+    record = json.loads(TRSP_INVENTORY.read_text(encoding="utf-8"))
+    run = record["workload"]["executable"]
+    assert run["direct"]["termination"] == "optimal"
+    assert run["executable_pinned"] == run["executable_resolved_on_path"] == "$ENV/bin/ipopt"
+    assert run["casadi_imported"] is False
+    assert run["cyipopt_imported"] is False
+    assert run["nlpsol_calls"] == []
+    assert run["processes"] >= 2
+    assert run["each_process_maps_the_same_objects"] is True
+    assert run["loader_equals_ldd_closure"] is True
+    assert run["loader_minus_ldd"] == run["ldd_minus_loader"] == []
+    for banner in (run["direct"]["banner"], run["trf_example1"]["banner"]):
+        assert len(banner) == 1
+        assert "running with linear solver MUMPS" in banner[0]
+    assert run["dlopen_attempts"].keys() <= {"libarcher.so", "libmemkind.so"}
+    assert set(run["trf_modules"]) == {
+        "TRF.py",
+        "interface.py",
+        "filter.py",
+        "funnel.py",
+        "util.py",
+    }
+    assert all(re.fullmatch(r"[0-9a-f]{64}", digest) for digest in run["trf_modules"].values())
+
+
+def test_the_trsp_objects_are_m03s_plus_two_and_none_is_unresolved_or_forbidden() -> None:
+    """The executable adds exactly `bin/ipopt` and `libipoptamplinterface` to M03's inventory (the
+    rest are the same paths with the same SHA-256), each with owner and licence; `libgomp.so.1` is
+    the LLVM OpenMP object already inventoried; no CasADi METIS-closure, HSL or unresolved
+    object."""
+    record = json.loads(TRSP_INVENTORY.read_text(encoding="utf-8"))
+    m03 = {o["path"]: o for o in json.loads(INVENTORY.read_text(encoding="utf-8"))["objects"]}
+    objects = {o["path"]: o for o in record["objects"]}
+    assert set(objects) - set(m03) == TRSP_NEW_OBJECTS
+    for path in set(objects) & set(m03):
+        assert objects[path]["sha256"] == m03[path]["sha256"], path
+    for path in TRSP_NEW_OBJECTS:
+        row = objects[path]
+        assert re.fullmatch(r"[0-9a-f]{64}", row["sha256"]) and row["bytes"] > 0
+        assert row["origin"] == "conda-forge: ipopt-3.14.20-hec1326d_0"
+        assert row["licence"]["category"] == "identified"
+        assert row["licence"]["notices"]
+    run = record["workload"]["executable"]
+    assert run["loaded_through_a_symlink"]["libgomp.so.1"] == ["$ENV/lib/libomp.so"]
+    assert objects["$ENV/lib/libomp.so"]["licence"]["declared"] == "Apache-2.0 WITH LLVM-exception"
+    assert not any(o["licence"]["category"] == "unresolved" for o in objects.values())
+    assert not any("/casadi/" in path or "hsl" in path.lower() for path in objects)
+    assert record["gates"]["G2"]["casadi_metis_closure_mapped"] == []
+    assert record["gates"]["G4"]["hsl_symbol_exporters"] == []
+    assert [c["conclusion"] for c in record["gates"]["G3"]["carriers"]] == ["METIS 5.x"]
+
+
+def test_the_audit_has_a_section_for_the_executable_with_every_gate() -> None:
+    """Audit section 11: G1-G8 each with an outcome for the executable, and a verdict."""
+    text = AUDIT.read_text(encoding="utf-8")
+    assert "## 11. The Ipopt executable (M05 WO-1)" in text
+    section = text.split("## 11. The Ipopt executable (M05 WO-1)", 1)[1]
+    for item in range(1, 9):
+        assert re.search(rf"^\| G{item} \|.*\*\*(PASS|FAIL|BLOCKED)\*\*", section, re.M), f"G{item}"
+    assert re.search(r"^\*\*Verdict: (PASS|FAIL)\*\* ", section, re.M)
+    record = json.loads(TRSP_INVENTORY.read_text(encoding="utf-8"))
+    run = record["workload"]["executable"]
+    assert run["executable"] in section
+    for digest in run["trf_modules"].values():
+        assert digest[:8] in section
