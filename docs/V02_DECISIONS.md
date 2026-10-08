@@ -297,3 +297,11 @@ Grep, don't read whole. Newest at the bottom.
   certificate tone mapping confirmed; the DevTools harness counts as §8 A6. ADR 0030 → Accepted after F1+F2 with a
   green CI run; Amendment 3 after F3 + the same run.
 - `opus-engineer` M06 review fixes F1–F8 + WO-13 manifest launched on `wp/M06-build`.
+- M02 WO-1a, 2, 3, 4 done on `wp/M02` (`dbc9e8a`, `441e3d1`, `7efd037`, `451d4d9`, `6a1319c`): new schemas
+  experiment/model-variant/model-replacement; `adapters/` layer, variants + pin check, stand-in variant, HardDomain
+  with the Q-F5 flow bound; launcher + 3-layer kill chain (G3 all within bounds: worst 2.10/3.0 s, 2.003/2.5 s,
+  2.07/3.0 s); experiment store with per-key flock, runner with cache/retry/bypass (G4 a–i). check.sh 7178 passed.
+  WO-1b (existing-schema edits) parked on `wp/M02-wo1b-proposed` (`631b1c7`): Q1 served MCP digest moves again
+  (`8de83946…`), Q2 T07 Q26 forbids the numeric `body.inlet.n`. Q3 handshake-fingerprint keying, Q4 store layering
+  (lazy upward import vs callback). Build decision log copied into `docs/design/M02-build-decisions.md` (`02403d1`).
+  Engineer stopped near its context budget. M02 architect asked for rulings (R-234+).

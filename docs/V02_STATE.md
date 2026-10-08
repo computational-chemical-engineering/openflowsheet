@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | spec + Amendment 1 (`1e8aecd`, R-195…200); WO-1…8 done; manifest `tested`; review: matches, 1 must-fix + 4 should-fix (`3a61298`); fixes running → reviewer closure → merge |
-| M02 | Build | M01 | W21 | design done (`a507c99`: note, ADR 0033–0035, R-220…233, WO-1…13, G1–G12); WO-1…4 running; merges after M01 `tested` |
+| M02 | Build | M01 | W21 | design done; WO-1a, 2, 3, 4 done (`02403d1`, gate green); WO-1b parked pending architect rulings Q1–Q4; then WO-5…13; merges after M01 `tested` |
 | M03 | Design | T08 | W24 (part) | spec + Amendment 1; WO-0…7, 2a/5a/7a, 9 done (`7606ada`); WO-8 running (merge waits for N1); then WO-10 manifest, `reviewer` |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
@@ -75,7 +75,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | `opus-engineer` | M01 review fixes F1–F5 | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `opus-engineer` | M06 review fixes F1–F8 + WO-13 manifest | `wp/M06-build` (`agent-af89210400852f3dd`) |
 | `opus-engineer` | M03 WO-8 cyipopt gray box (extra isolated; merge waits for N1) | `wp/M03` (`m03`) |
-| `opus-engineer` | M02 WO-1…4 (+5, 6) schemas, variants, kill chain, runner | `wp/M02` (`m02`) |
+| `architect` | M02 rulings Q1–Q4 (WO-1b parked) | `wp/M02` (`m02`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
