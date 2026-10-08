@@ -223,6 +223,23 @@
   "available": true,
   "cyipopt": "1.7.0",
   "detail": "audited by docs/m03-ipopt-audit.md (G-A10)",
+  "environment": {
+   "openmp": [
+    {
+     "library": "libomp.so",
+     "max_threads": 1
+    }
+   ],
+   "pynumero_asl": {
+    "path": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/m03-ipopt/nlp/share/pyomo/lib/libpynumero_ASL.so",
+    "sha256": "6646bbdd51332c3a5b306604fe0f6bd572d7cec352af994c76bfe1cdf550161c"
+   },
+   "thread_variables": {
+    "MKL_NUM_THREADS": null,
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": null
+   }
+  },
   "ipopt": "3.14.20",
   "linear_solver": "mumps",
   "options": {
@@ -342,7 +359,7 @@
     "U-FLASH.T_spec": 360.0,
     "U-SPLIT.split_fraction": 0.6
    },
-   "wall_time_s": 0.07557152699882863
+   "wall_time_s": 0.0778264050022699
   },
   {
    "checks": [
@@ -440,7 +457,7 @@
     "U-FLASH.T_spec": 357.0,
     "U-SPLIT.split_fraction": 0.85
    },
-   "wall_time_s": 0.055343074000120396
+   "wall_time_s": 0.056185306995757855
   },
   {
    "checks": [
@@ -538,7 +555,7 @@
     "U-FLASH.T_spec": 365.0,
     "U-SPLIT.split_fraction": 0.55
    },
-   "wall_time_s": 0.05940878800174687
+   "wall_time_s": 0.06310201899759704
   }
  ],
  "status": "KKT_POINT_VERIFIED"

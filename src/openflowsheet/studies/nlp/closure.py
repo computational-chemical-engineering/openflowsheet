@@ -595,8 +595,16 @@ class OptimizationReport:
         }
 
 
-def solver_record(solver: SolverAvailability) -> dict[str, Any]:
-    """The report's `solver`: versions, the linear solver, §8.4's options verbatim, the audit."""
+def solver_record(
+    solver: SolverAvailability, environment: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
+    """The report's `solver`: versions, the linear solver, §8.4's options verbatim, the audit, and
+    the environment the numbers were produced in (`greybox.solver_environment`; `None` when no
+    solve ran).
+
+    M03 review F2: ADR 0007 D6 makes the thread count part of the environment identity, and WO-8
+    measured that it moves the result (48 OpenMP threads: NLP-1's r by one ulp, NLP-INF 498
+    iterations against 597). It is recorded, not enforced (review ruling Q2)."""
     return {
         "ipopt": solver.versions.get("ipopt"),
         "cyipopt": solver.versions.get("cyipopt"),
@@ -610,6 +618,7 @@ def solver_record(solver: SolverAvailability) -> dict[str, Any]:
         },
         "available": solver.available,
         "detail": solver.detail,
+        "environment": dict(environment) if environment is not None else None,
     }
 
 

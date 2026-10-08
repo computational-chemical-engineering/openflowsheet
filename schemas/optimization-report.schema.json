@@ -285,7 +285,8 @@
         "options",
         "audit",
         "available",
-        "detail"
+        "detail",
+        "environment"
       ],
       "properties": {
         "ipopt": {
@@ -341,6 +342,102 @@
         },
         "detail": {
           "type": "string"
+        },
+        "environment": {
+          "description": "M03 review F2 (ADR 0007 D6): what the solves ran under; null when no solve ran. Recorded, not enforced.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "thread_variables",
+                "openmp",
+                "pynumero_asl"
+              ],
+              "properties": {
+                "thread_variables": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "OMP_NUM_THREADS",
+                    "OPENBLAS_NUM_THREADS",
+                    "MKL_NUM_THREADS"
+                  ],
+                  "properties": {
+                    "OMP_NUM_THREADS": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "OPENBLAS_NUM_THREADS": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "MKL_NUM_THREADS": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "openmp": {
+                  "type": "array",
+                  "description": "Each mapped OpenMP runtime and its effective omp_get_max_threads().",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "library",
+                      "max_threads"
+                    ],
+                    "properties": {
+                      "library": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "max_threads": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 1
+                      }
+                    }
+                  }
+                },
+                "pynumero_asl": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "sha256": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
         }
       }
     },

@@ -109,6 +109,7 @@
    "available": false,
    "cyipopt": null,
    "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
+   "environment": null,
    "ipopt": null,
    "linear_solver": "mumps",
    "options": {

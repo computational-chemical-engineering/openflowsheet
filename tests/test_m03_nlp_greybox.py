@@ -112,6 +112,27 @@ def test_the_environment_is_the_audited_one() -> None:
     assert os.environ.get("PYTHONNOUSERSITE") == "1"
 
 
+def test_the_report_records_the_thread_configuration_it_was_produced_under(
+    nlp_1: OptimizationReport, nlp_inf: OptimizationReport
+) -> None:
+    """M03 review F2 (ADR 0007 D6): `solver.environment` records the thread variables, the
+    effective `omp_get_max_threads()` of each mapped OpenMP runtime, and the ASL library actually
+    loaded. The evidence here is valid only single-threaded (review ruling Q2), so the recorded
+    effective count must be 1; the adapter itself enforces nothing."""
+    from openflowsheet.studies.nlp import greybox
+
+    library, _ = greybox.pynumero_asl()
+    for report in (nlp_1, nlp_inf):
+        environment = report.as_document()["solver"]["environment"]
+        assert environment["thread_variables"]["OMP_NUM_THREADS"] == "1"
+        assert environment["openmp"], "no OpenMP runtime is mapped after the solves"
+        assert all(runtime["max_threads"] == 1 for runtime in environment["openmp"])
+        assert environment["pynumero_asl"] == {
+            "path": library,
+            "sha256": AUDITED_PYNUMERO_ASL_SHA256,
+        }
+
+
 # -- A35 and A36: NLP-1 ---------------------------------------------------------------------------
 
 

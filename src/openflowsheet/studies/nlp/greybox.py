@@ -34,17 +34,22 @@ no status of its own.
 audited build (its SHA-256 equals `closure.AUDITED_PYNUMERO_ASL_SHA256`; Pyomo otherwise finds an
 unaudited `~/.pyomo/lib` build unless `PYOMO_CONFIG_DIR` points at the environment), and no object
 of the CasADi wheel's METIS closure and no HSL object may be mapped. Otherwise the report is
-`UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)` and nothing is solved.
+`UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)` and nothing is solved. After the solves, the report's
+`solver.environment` records the thread variables, each mapped OpenMP runtime's effective
+`omp_get_max_threads()` and the ASL library actually loaded (M03 review F2). Nothing here sets the
+thread count: single-threading is recorded, not enforced (review ruling Q2).
 """
 
 from __future__ import annotations
 
 import contextlib
+import ctypes
 import dataclasses
 import hashlib
 import importlib.util
 import logging
 import math
+import os
 import re
 import time
 from collections.abc import Iterator, Sequence
@@ -513,6 +518,51 @@ def environment_problems() -> list[str]:
     return problems
 
 
+#: M03 review F2: the thread variables a BLAS or OpenMP runtime of the NLP stack reads.
+THREAD_VARIABLES: Final = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS")
+#: An OpenMP runtime's file name: LLVM's `libomp`, GNU's `libgomp`, Intel's `libiomp5`.
+OPENMP_RUNTIME: Final = re.compile(r"\Alib(?:omp|gomp|iomp5)(?:[.-]|\Z)")
+
+
+def openmp_runtimes() -> list[dict[str, Any]]:
+    """Each mapped OpenMP runtime, by file name, with its effective `omp_get_max_threads()`.
+
+    Read through `ctypes` from the object already mapped (`RTLD_NOLOAD`: nothing new is loaded),
+    on the calling thread, after the solves: the value the runtime's thread pool was sized by."""
+    paths = set()
+    for line in Path("/proc/self/maps").read_text(encoding="utf-8").splitlines():
+        parts = line.split(maxsplit=5)
+        if len(parts) == 6 and parts[5].startswith("/"):
+            path = Path(parts[5].removesuffix(" (deleted)"))
+            if OPENMP_RUNTIME.match(path.name):
+                paths.add(path)
+    runtimes = []
+    for path in sorted(paths):
+        try:
+            library = ctypes.CDLL(str(path), mode=os.RTLD_NOLOAD | os.RTLD_LAZY)
+            get_max_threads = library.omp_get_max_threads
+        except (OSError, AttributeError):
+            threads = None
+        else:
+            get_max_threads.restype = ctypes.c_int
+            get_max_threads.argtypes = []
+            threads = int(get_max_threads())
+        runtimes.append({"library": path.name, "max_threads": threads})
+    return runtimes
+
+
+def solver_environment() -> dict[str, Any]:
+    """The report's `solver.environment` (M03 review F2; ADR 0007 D6): the thread variables as set
+    (`None` where unset), each mapped OpenMP runtime's effective thread count, and the path and
+    SHA-256 of the `libpynumero_ASL` PyNumero loads."""
+    library, digest = pynumero_asl()
+    return {
+        "thread_variables": {name: os.environ.get(name) for name in THREAD_VARIABLES},
+        "openmp": openmp_runtimes(),
+        "pynumero_asl": {"path": library, "sha256": digest},
+    }
+
+
 def ipopt_version() -> str:
     return ".".join(str(part) for part in cyipopt.IPOPT_VERSION)
 
@@ -563,7 +613,7 @@ def optimize(
     return OptimizationReport(
         formulation=formulation_record(formulation, readiness.declared_regimes),
         model=model_record(flowsheet),
-        solver=solver_record(solver),
+        solver=solver_record(solver, solver_environment()),
         hessian_policy=dict(HESSIAN_POLICY),
         starts=records,
         candidate=candidate.as_document() if candidate is not None else None,
