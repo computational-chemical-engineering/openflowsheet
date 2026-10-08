@@ -4110,3 +4110,26 @@ CHANGELOG section to name exactly the envelope's limitation rows, so the first r
 rows added since are an explicit list in the test (`ADDED_AFTER_V0_1_0`), each required to exist in the envelope.
 Rejected: naming L42 in the v0.1.0 section (rewrites a release record, as above). M07's 0.2.0 notes must name the
 listed rows.
+
+---
+
+## R-219 — One declared exception to T08's "no walk-up" rule: the C1 records fall back to the source checkout only when the package-data entry is absent
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M01 review's Closure note (`docs/reviews/M01-review.md`, `9098f14`) |
+| Normative text | This entry; M01 spec §20 (Amendment 2, F4); Q-N4 |
+| Evidence | `f1877ec` (`thermo/pr_c1.py` `load_records`; tests simulating the absent entry); the exception named in `tests/test_t08_w4_package_data.py`'s docstring |
+| Affected packages | M01, M02 (anything reading the C1 records) |
+
+**Decision.** T08's rule is that installed code never walks up the tree to find repository files. The C1 records
+have one exception: if `PACKAGED` has no entry for them (which only happens if Frank declines Q-N4 and `1621d65` is
+reverted), `load_records` reads the source checkout's copy. Outside a checkout it raises `FileNotFoundError` naming
+Q-N4. In the shipped configuration the entry is present, so the fallback never runs.
+
+**Rejected alternative, and why.** No fallback: declining Q-N4 would then break the provider outright, which was the
+review's F4. A user-supplied path for installed packages is not built; Q-N4 says so.
+
+**Watch for.** If Q-N4 is declined, an installed package without the records raises rather than refusing with a
+typed result. Revisit with Frank's answer.

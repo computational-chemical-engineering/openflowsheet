@@ -1,6 +1,6 @@
 # ADR 0026 — The C1 property route: Peng–Robinson with the light gases vapour-only, its root and phase rules, the equilibrium-vapour flash, and the formation datum `PR-C1-ref-v1`
 
-**Status:** Proposed, 2026-10-08; amended before acceptance by Amendment 1 (2026-10-08, below), and still Proposed.
+**Status:** **Accepted**, 2026-10-08 — on M01 `tested` (`evidence/M01/3c80392…/manifest.json`) and the design-lane review `docs/reviews/M01-review.md` with its Closure (`9098f14`: all findings closed, Amendment 2 ratified). Proposed 2026-10-08; amended before acceptance by Amendment 1 and by M01 spec Amendment 2 (review findings, §20).
 Accepted when M01's evidence manifest is `tested` with the work orders of
 `docs/derivations/M01-spec.md` §14 WO-1 to WO-4 and a `reviewer` pass on the provider.
 **Date:** 2026-10-08
