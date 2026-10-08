@@ -21,17 +21,22 @@ its outlet temperature and its Ergun pressure drop. Everything else happens here
    every field of §8.12 — the reactor-specific diagnostics are `None` where the evaluation has
    none (the stand-in).
 
-**The order of the request checks** (each registered refusal has one defect, so the order decides
-only unregistered combinations): the component set first (a permuted order cannot even be read),
-then a dormant inlet (`ZERO_FLOW`, before any composition is formed), then the inlet's phase by the
-provider's flash (`liquid_at_reactor_inlet`; the provider's own `out_of_domain` passes through),
-then the NH3 trace, then the adapter's hard domain; after the evaluation, the pressure convention,
-then the element defect. The kinetics' data domain flags, never refuses (ADR 0027 D9).
+**The order of the request checks** is normative (§8.12, Amendment 1): the component set first
+(a permuted order cannot even be read), then a dormant inlet (`ZERO_FLOW`, before any composition
+is formed), then the inlet's phase by the provider's flash (`liquid_at_reactor_inlet`; a refusal of
+the flash passes through), then the NH3 trace, then the adapter's hard domain; then the evaluation
+(`NotAccepted` → `reactor_not_accepted(<stage>)`); after it, the pressure convention, the element
+defect and the two enthalpy flows (`stream_enthalpy_refused`). The inlet's phase must precede the
+hard domain: no liquid exists inside it (its lowest T_in, 573.15 K, lies above NH3's T_c,EOS =
+405.55 K; claim BD-06), so a liquid inlet always has a second defect, and in any other order
+`liquid_at_reactor_inlet` could never be returned (F7's state, M01.A30 and A51). The kinetics' data
+domain flags, never refuses (ADR 0027 D9).
 """
 
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Final, Literal, Protocol
@@ -67,6 +72,10 @@ HARD_INERT_FRACTION: Final = 0.2
 DATA_TEMPERATURE_K: Final = (643.15, 733.15)
 DATA_PRESSURE_PA: Final = (5.0e6, 1.0e7)
 DATA_H2_N2: Final = (1.5, 3.0)
+
+#: The grammar of `NotAccepted.stage` (spec §8.12, Amendment 1); the registered stages are S1, S2,
+#: S3, certificate, backflow and nonpositive_flow, and M02 may register more.
+_STAGE: Final = re.compile(r"[A-Za-z0-9_]+")
 
 ReactorStatus = Literal["ok", "unsupported", "out_of_domain", "not_converged", "error"]
 DomainStatus = Literal["within_data_domain", "extrapolated"]
@@ -156,9 +165,17 @@ class TubeOutlet:
 
 @dataclass(frozen=True)
 class NotAccepted:
-    """The evaluation reached no state its acceptance admits (spec §8.7), at `stage`."""
+    """The evaluation reached no state its acceptance admits (spec §8.7), at `stage`.
+
+    `stage` matches `[A-Za-z0-9_]+` (§8.12, Amendment 1), so the code
+    `reactor_not_accepted(<stage>)` it becomes is parseable; anything else is a `ValueError`.
+    """
 
     stage: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.stage, str) or _STAGE.fullmatch(self.stage) is None:
+            raise ValueError(f"NotAccepted.stage must match [A-Za-z0-9_]+, got {self.stage!r}")
 
 
 class ExternalEvaluation(Protocol):
