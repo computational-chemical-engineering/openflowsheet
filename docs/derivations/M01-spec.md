@@ -1175,6 +1175,19 @@ the mapping is 1 ulp off). Reversible by: A47 and §8.15 (R-200).
   reactor or the chemistry.
 - **Not the near-critical phase behaviour.** F12 registers what the rules give; near-double-root classifications are not
   asserted; the flash's fixed samples could miss a positive excursion of h narrower than their spacing (only near T_c,EOS).
+  *Measured region (Amendment 2, review F5).* A miss is a state the flash answers VAPOR (route `no_liquid`) although
+  pure liquid NH₃ is stable and h ≥ 0 on a short interval of y between two samples, just before the vapour branch ends
+  (the largest root jumps from Z ≈ 0.35 to the liquid branch); the convention's answer there is TWO_PHASE with y* at
+  the interval's start, contrary to ADR 0026 D2's "smallest root on (0, 1)". The review found 5 of 497 random relevant
+  states (200–405.5 K, 10⁶–3 × 10⁷ Pa) at 373–398 K and 1.05–1.24 × 10⁷ Pa (example: 393.0590 K, 1.0675 × 10⁷ Pa, IDAES
+  light-gas proportions: h ≥ 0 on y ∈ [0.9558, 0.9676], between samples 61/64 and 62/64). The build lane's map, a
+  0.5 K × 0.01-decade grid over 340–405.5 K and 4.0 × 10⁶–1.78 × 10⁷ Pa with random light-gas proportions at each
+  point, NH₃ 50 mol/s, h scanned on 3 000 points of y ∈ [0.4, 1), found 26 misses in 1 744 relevant states, all at
+  **T = 362.5–401 K and P = 1.00–1.38 × 10⁷ Pa**, with the missed crossing at **y = 0.71–0.998** and h at most
+  9.6 × 10⁻³ (a further 4 000-state random scan: 1 of 347, at 397.0 K, 1.04 × 10⁷ Pa). None was found outside that
+  box. *Effect:* only a feed whose NH₃ mole fraction exceeds the missed y* (≥ 0.71) is affected; a leaner feed is
+  undersaturated and VAPOR is the convention's answer for it too. No registered state and no loop state lies in the box
+  (the separator runs at 268.15 K).
 - **Not the k_ij.** k_ij = 0 is a choice with a stated effect, not a fitted or validated value.
 - **Not the PR liquid density or h_vap** for any purpose beyond §11's statement.
 - **Not K_NH₃ against Rossetti 2006** (R-152: a decision, not a verification).
@@ -1273,3 +1286,4 @@ output of `evaluate_phase` and `flash` at the registered states compared as `flo
 | F2 (should-fix): `admissible_roots` returned unconverged Newton iterates as roots within ≈ 10⁻¹⁴ of a spinodal, and `evaluate_phase(LIQUID)` answered `ok` at a state with no liquid root | A candidate is kept only if it is a root to rounding; a three-root branch left with fewer than three deflates the best-conditioned root and solves the quadratic. The review's counterexample and a ±60-ulp sweep are tests. R-197's rationale for the two-root rule is corrected (a note appended to R-197); the rule stands. | §5.2, §17; `pr_c1.py` `admissible_roots`; `tests/test_m01_provider.py::test_f2_*`; R-197 |
 | F3 (should-fix): the boundary tested dormancy before the inlet's state space, so (0.5, −0.5, 0, 0, 0) and an all-zero inlet with T = NaN answered `ok` | Step 2 of §8.12's order (state space: flows finite and ≥ 0, T and P finite and > 0 → `out_of_domain`) inserted before the dormant check, in the text and in `Boundary.evaluate`. A51 (iii) is restated with a refusing-flash double, because its negative-flow state now stops at step 2; A51 (v) is new. BD-06 and A51 (iv) are unaffected: F7's state is inside the state space, so the inlet phase still precedes the hard domain. | §8.12, A51; `boundary.py` `state_space_violation`; R-198 (note) |
 | F4 (should-fix): "declining Q-N4 is a revert of `1621d65`" was false, because the loader reads through `packaged()`, which raises `KeyError` without the entry | `load_records` falls back to the source checkout's single copy when `PACKAGED` lacks the entry, and raises `FileNotFoundError` naming Q-N4 outside a checkout. Tested by simulating the absent entry; the revert itself was trial-applied to a copy of the tree, and the M01 and T08 package-data tests pass there. The "user-supplied path" for installed packages stays unbuilt (Q-N4 states so). | §15 Q-N4; `pr_c1.py` `load_records`; `tests/test_m01_records.py::test_f4_*` |
+| F5 (should-fix, documentation): the flash's fixed samples miss a genuine crossing near T_c,EOS; the declared limitation did not say where | §17's limitation quantified with the review's measurement and the build lane's map (T = 362.5–401 K, P = 1.00–1.38 × 10⁷ Pa, missed y* = 0.71–0.998, h ≤ 9.6 × 10⁻³), and `describe().numerical_limitations` states the same box. The optional detection of the branch switch (the review's design-lane option) is not built. | §17; `pr_c1.py` `describe` |

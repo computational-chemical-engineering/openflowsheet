@@ -751,7 +751,9 @@ class PrC1Provider:
                 "one.",
                 "The TP flash solves for the equilibrium vapour's NH3 fraction by fixed samples "
                 "and bisection; near NH3's EOS critical temperature a positive excursion narrower "
-                "than the samples' spacing could be missed (spec §17).",
+                "than the samples' spacing can be missed: measured at T = 362.5-401 K and "
+                "P = 1.00e7-1.38e7 Pa, where a feed with more NH3 than the missed y* (0.71-0.998) "
+                "comes back VAPOR instead of TWO_PHASE (spec §17).",
                 "Within about 1e-14 (relative, in P) of a spinodal the cubic has a near-double "
                 "root: only candidates that are roots to rounding are kept, and the pair comes "
                 "from the deflated quadratic, so a complex pair leaves one root; such states' "
