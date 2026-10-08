@@ -87,3 +87,15 @@ Grep, don't read whole. Newest at the bottom.
   pinned SHA, not the archive. check.sh: 6939 passed, 31 skipped, 1 xfailed, PASSED.
 - `specifier` M06 WO-15 (W27 registration) launched on `wp/M06-w27`; brief `docs/briefs/M06-W27-registration.md`
   (`1fb65c1`); register R-176…R-179.
+- M03 specification done on `wp/M03` (`c91ebc9`…`17cec07`): `docs/derivations/M03-studies-spec.md` (A01–A42),
+  ADR 0031 (parametric twin for F_p behind a bitwise guard; qualification policy M03-sensitivity-v1; forward+adjoint
+  on one factorization; independent sweeps; SYN-001 (r, T_f) fit, identifiability by SVD), ADR 0032 (full-space
+  PyNumero gray box over cyipopt, L-BFGS Hessian, exact refused; optional `nlp` extra behind an [A10] gate),
+  generator `m03_reference.py` (257 claims, mpmath 60 digits), R-180…R-191. Probe: no cyipopt wheel for
+  linux/cp313; Pyomo 6.10.1 wheel lacks `libpynumero_ASL`; no system Ipopt. Finding: P_spec columns of U-FLASH and
+  U-FEED conflict with eliminated alias rows (refused individually). Specifier defaults: N2 (no substitute
+  optimizer if the audit fails; UNSUPPORTED + BLOCKED), N3 (user-space conda-forge env for the audit). N1 (licences
+  of the optional `nlp` extra: EPL-2.0, CeCILL-C, ASL notice, Apache-2.0 METIS 5, BSD, GCC runtime) asked of Frank.
+- `opus-engineer` M03 WO-0…3 launched on `wp/M03`. Next M03 slot: WO-6 (the [A10] Ipopt audit).
+- At merge: register index paragraph + ADR index need R-154…R-191 and ADRs 0026…0032; register appends from M01,
+  M03, M06 branches resolve by concatenation.
