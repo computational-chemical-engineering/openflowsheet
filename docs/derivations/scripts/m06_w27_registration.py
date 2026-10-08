@@ -273,6 +273,7 @@ UNIT_KEYS: Final[dict[str, dict[str, Any]]] = {
     "topology:BackpressureTurbine": {"function": "expander"},
     "topology:HeatExchanger": {"function": "heat_exchanger"},
     "topology:PlateHeatExchanger": {"function": "heat_exchanger"},
+    "topology:Recuperator": {"function": "heat_exchanger"},
     "topology:StoichiometricReactor": {"function": "conversion_reactor"},
     "topology:Reactor": {"function": "conversion_reactor"},
 }
@@ -548,7 +549,6 @@ PACKAGE_METHODS: Final = {
     f"{_GEN}[Liq:LiquidPhase:Ideal]": "ideal_liquid",
     f"{_GEN}[Vap:VaporPhase:Cubic(type=PR)]": "cubic_pr",
     f"{_GEN}[Vap:VaporPhase:Ideal]": "ideal_gas",
-    "native:no_implementation": "unidentified",
     "dispatches.properties.h2_reaction.H2ReactionParameterBlock": "reaction",
     "hda_ideal_VLE.HDAParameterBlock": "ideal_vle",
     "hda_ideal_VLE.HDAParameterData": "ideal_vle",
@@ -825,9 +825,11 @@ STREAM_TOLERANCE: Final = {
     "floor_margin": 3.0,
 }
 STREAM_UNITS: Final = {
+    "dimensionless": ("fraction", 1.0, 0.0),
     "K": ("temperature", 1.0, 0.0),
     "degC": ("temperature", 1.0, 273.15),
     "Pa": ("pressure", 1.0, 0.0),
+    "kg/m/s**2": ("pressure", 1.0, 0.0),
     "kPa": ("pressure", 1e3, 0.0),
     "MPa": ("pressure", 1e6, 0.0),
     "bar": ("pressure", 1e5, 0.0),
@@ -1212,6 +1214,15 @@ def case_card(case_dir: Path) -> str:
     return json.dumps(_bound(card), sort_keys=True, ensure_ascii=False)
 
 
+def _ports_found(path: Path, ports: Sequence[str]) -> int:
+    """§11.3: how many terminal product ports `streams.csv` has rows for (with or without `fs.`)."""
+    if not path.exists():
+        return 0
+    with path.open(encoding="utf-8", newline="") as handle:
+        present = {row.get("port") for row in csv.DictReader(handle)}
+    return sum(1 for p in ports if p in present or f"fs.{p}" in present)
+
+
 def _stream_rows(path: Path) -> int:
     if not path.exists():
         return -1
@@ -1242,7 +1253,7 @@ def extract_facts(archive: Path) -> dict[str, Any]:
         topology_units = [u for u in topo.get("units") or [] if isinstance(u, dict)]
         unit_source, unit_facts = _unit_facts(units, topology_units)
         if isinstance(packages, dict):
-            packages = [packages]
+            packages = [packages] if "name" in packages else []
         topo_packages = {
             str(k): v
             for k, v in (topo.get("property_packages") or {}).items()
@@ -1288,6 +1299,10 @@ def extract_facts(archive: Path) -> dict[str, Any]:
                     str(p) for p in spec.get("terminal_product_ports") or []
                 ],
                 "stream_rows": _stream_rows(directory / "streams.csv"),
+                "product_ports_in_streams": _ports_found(
+                    directory / "streams.csv",
+                    [str(p) for p in spec.get("terminal_product_ports") or []],
+                ),
                 "card_chars": len(card),
                 "card_sha256": _sha256_bytes(card.encode("utf-8")),
                 "card_has_envelope_stem": ENVELOPE_STEM in card,
@@ -1721,6 +1736,17 @@ def allocate(populations: Mapping[str, int], slots: int) -> dict[str, int]:
     return alloc
 
 
+def bumped_families(populations: Mapping[str, int], slots: int) -> list[str]:
+    """The families W27-R28 lifts to one slot by the minimum (for the record)."""
+    total = sum(populations.values())
+    if slots <= 0 or total == 0:
+        return []
+    eligible = [f for f, n in populations.items() if n >= MIN_FAMILY_SIZE]
+    if len(eligible) > slots:
+        return []
+    return sorted(f for f in eligible if slots * populations[f] < total)
+
+
 def _family_draw(cases: Sequence[Mapping[str, Any]], slots: int) -> tuple[list[str], dict]:
     by_family: dict[str, list[str]] = {}
     for case in cases:
@@ -1731,7 +1757,11 @@ def _family_draw(cases: Sequence[Mapping[str, Any]], slots: int) -> tuple[list[s
     for family, ids in sorted(by_family.items()):
         ranked = sorted(ids, key=lambda c: _hash_rank("case", c))
         chosen += ranked[: alloc[family]]
-    return sorted(chosen), {"populations": populations, "allocation": alloc}
+    return sorted(chosen), {
+        "populations": populations,
+        "allocation": alloc,
+        "bumped_by_minimum": bumped_families(populations, slots),
+    }
 
 
 def draw_sample(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
@@ -1864,6 +1894,14 @@ def registration_claims(facts: Mapping[str, Any]) -> Claims:
             "GC-FACTS-3 every case.json names its own directory",
             all(c["case_json_case_id"] in (c["case_id"], None) for c in facts["cases"]),
             "case ids agree",
+        )
+    )
+    sources = Counter(c["unit_source"] for c in facts["cases"])
+    claims.append(
+        (
+            "GC-FACTS-4 units come from units.json in 238 cases and from topology.json in 212",
+            dict(sources) == {"units.json": 238, "topology.json": 212},
+            f"{dict(sources)}",
         )
     )
     keys = _all_unit_keys(facts)
@@ -2002,6 +2040,45 @@ def registration_claims(facts: Mapping[str, Any]) -> Claims:
     return claims
 
 
+def statistics(facts: Mapping[str, Any]) -> dict[str, Any]:
+    """Measured facts the document quotes (§4, §9, §11.3), computed, never typed."""
+    cards = sorted(c["card_chars"] for c in facts["cases"])
+    n = len(cards)
+    largest = max(facts["cases"], key=lambda c: (c["card_chars"], c["case_id"]))
+    keys = _all_unit_keys(facts)
+    return {
+        "unit_sources": dict(sorted(Counter(c["unit_source"] for c in facts["cases"]).items())),
+        "package_sources": dict(
+            sorted(Counter(c["package_source"] for c in facts["cases"]).items())
+        ),
+        "card_code_points": {
+            "median": (cards[(n - 1) // 2] + cards[n // 2]) / 2,
+            "p90": cards[int(0.9 * n)],
+            "max": cards[-1],
+            "max_case": largest["case_id"],
+        },
+        "terminal_product_ports": {
+            "listed": sum(len(c["terminal_product_ports"]) for c in facts["cases"]),
+            "found_in_streams_csv": sum(c["product_ports_in_streams"] for c in facts["cases"]),
+        },
+        "unit_keys": {
+            "distinct": len(keys),
+            "explicit": len(UNIT_KEYS),
+            "reviewed_none": len(REVIEWED_NONE),
+            "default_none": len([k for k in keys if k not in UNIT_KEYS and k not in REVIEWED_NONE]),
+        },
+        "package_keys": {
+            "distinct": len(_all_package_keys(facts)),
+            "mapped": len(PACKAGE_METHODS),
+        },
+        "aliases": {
+            "names": len(COMPONENT_ALIASES),
+            "substances": len(set(COMPONENT_ALIASES.values())),
+        },
+        "not_steady_topology_kinds": len(NSS_TOPOLOGY_KINDS),
+    }
+
+
 def build_registration(facts: Mapping[str, Any]) -> dict[str, Any]:
     keys = _all_unit_keys(facts)
     default_none = sorted(k for k in keys if k not in UNIT_KEYS and k not in REVIEWED_NONE)
@@ -2112,6 +2189,7 @@ def build_registration(facts: Mapping[str, Any]) -> dict[str, Any]:
             "clopper_pearson_n45": cp_table(SAMPLE_SIZE),
             "upper_95_zero_of_n": {str(n): round(cp_upper(0, n), 6) for n in range(1, 46)},
         },
+        "statistics": statistics(facts),
         "generator_claims": [{"claim": c, "holds": ok, "detail": d} for c, ok, d in claims],
     }
 
@@ -2282,6 +2360,226 @@ def dry_claims(
     return claims
 
 
+TEST_PROVIDER: Final = "test-pr"
+_PR_KEY: Final = f"{_GEN}[Vap:VaporPhase:Cubic(type=PR)]"
+_PR_VLE_KEY: Final = f"{_GEN}[Liq:LiquidPhase:Cubic(type=PR);Vap:VaporPhase:Cubic(type=PR)]"
+
+
+def synthetic_case(**changes: Any) -> dict[str, Any]:
+    """§14.2 W27-A13: a facts row with no reason on any axis against `test_snapshot`."""
+    case: dict[str, Any] = {
+        "case_id": "synthetic-w27",
+        "family": "synthetic",
+        "model_type": "native_IDAES",
+        "in_full82": False,
+        "residual_check": "pass",
+        "files_missing": [],
+        "parse_errors": [],
+        "unit_source": "units.json",
+        "units": [
+            {"key": "idaes:Feed", "class_leaf": "_ScalarFeed", "names": ["fs.feed"]},
+            {"key": "idaes:Heater", "class_leaf": "_ScalarHeater", "names": ["fs.heater"]},
+            {"key": "idaes:Product", "class_leaf": "_ScalarProduct", "names": ["fs.product"]},
+        ],
+        "topology_kinds": ["Feed", "Heater", "Product"],
+        "package_source": "property_packages.json",
+        "packages": [
+            {
+                "name": "fs.props",
+                "key": _PR_KEY,
+                "classes": ["GenericParameterBlock"],
+                "phases": ["vapor"],
+                "components": ["H2"],
+            }
+        ],
+        "topology_package_names": [],
+        "topology_entry_ids": [],
+        "listed_components": ["H2"],
+        "steady_state": True,
+        "expected_dof": 0,
+        "solve_dynamic": False,
+        "objective_declared": False,
+    }
+    case.update(changes)
+    return case
+
+
+def test_snapshot(today: Mapping[str, Any], components: Sequence[Mapping[str, Any]]) -> dict:
+    route = {"provider_id": TEST_PROVIDER, "components": list(components), "model_ids": []}
+    return {**today, "routes": [*today["routes"], route], "basis": "TEST: adversarial claims"}
+
+
+def _h2(phases: Sequence[str]) -> dict[str, Any]:
+    return {
+        "id": "H2",
+        "name": "hydrogen",
+        "formula": "H2",
+        "cas": "1333-74-0",
+        "synthetic": False,
+        "phases": list(phases),
+    }
+
+
+def adversarial_claims(
+    facts: Mapping[str, Any], today: Mapping[str, Any]
+) -> tuple[Claims, list[dict[str, Any]]]:
+    """§14.2 W27-A09…A15 as executable states: each changes exactly one thing."""
+    methods = {**PROVIDER_METHODS, TEST_PROVIDER: "cubic_pr"}
+    snap = test_snapshot(today, [_h2(["vapor"])])
+    states: list[tuple[str, dict[str, Any], dict[str, Any], str, Callable[[dict], bool]]] = []
+
+    def kinds(row: Mapping[str, Any]) -> list[str]:
+        return sorted({r["kind"] for r in row["reasons"]})
+
+    base = synthetic_case()
+    states.append(("A13-a base row", base, snap, "CANDIDATE", lambda r: not r["reasons"]))
+    states.append(
+        (
+            "A13-b H2 absent from the route",
+            base,
+            test_snapshot(today, []),
+            "COMPONENT_UNAVAILABLE",
+            lambda r: [(x["kind"], x["subject"]) for x in r["reasons"]]
+            == [("COMPONENT_UNAVAILABLE", "H2")],
+        )
+    )
+    dynamic_units = [dict(u) for u in base["units"]]
+    dynamic_units[1] = {**dynamic_units[1], "config": {"dynamic": True}}
+    states.append(
+        (
+            "A13-c heater built dynamic",
+            synthetic_case(units=dynamic_units),
+            snap,
+            "NOT_STEADY_STATE_SIMULATION",
+            lambda r: kinds(r) == ["NOT_STEADY_STATE_SIMULATION", "UNIT_UNAVAILABLE"]
+            and any("missing=dynamic" in x["detail"] for x in r["reasons"]),
+        )
+    )
+    mixer = {
+        "key": "idaes:Mixer",
+        "class_leaf": "_ScalarMixer",
+        "config": {"momentum_mixing_type": "none"},
+        "names": ["fs.mix"],
+    }
+    mixer_units = [*base["units"], mixer]
+    states.append(
+        (
+            "A13-d mixer without a momentum balance",
+            synthetic_case(units=mixer_units),
+            snap,
+            "UNIT_UNAVAILABLE",
+            lambda r: any(
+                x["subject"] == "Mixer" and "missing=mixer_no_momentum_balance" in x["detail"]
+                for x in r["reasons"]
+            ),
+        )
+    )
+    two_packages = [
+        *base["packages"],
+        {
+            "name": "fs.props2",
+            "key": f"{_GEN}[Vap:VaporPhase:Ideal]",
+            "classes": ["GenericParameterBlock"],
+            "phases": ["vapor"],
+            "components": ["H2"],
+        },
+    ]
+    states.append(
+        (
+            "A14 a second package of another method",
+            synthetic_case(packages=two_packages),
+            snap,
+            "PROPERTY_ROUTE_UNAVAILABLE",
+            lambda r: sorted(x["subject"] for x in r["reasons"]) == ["fs.props", "fs.props2"]
+            and all("multiple_routes_per_revision" in x["detail"] for x in r["reasons"]),
+        )
+    )
+    vle = [{**base["packages"][0], "key": _PR_VLE_KEY, "phases": ["liquid", "vapor"]}]
+    states.append(
+        (
+            "A15 a liquid phase holding a vapour-only component",
+            synthetic_case(packages=vle),
+            snap,
+            "PROPERTY_ROUTE_UNAVAILABLE",
+            lambda r: len(r["reasons"]) == 1
+            and "phase=1333-74-0:liquid" in r["reasons"][0]["detail"],
+        )
+    )
+    states.append(
+        (
+            "A13-e an artifact gap dominates",
+            synthetic_case(files_missing=["units.json"], steady_state=False),
+            snap,
+            "ARTIFACT_INCOMPLETE",
+            lambda r: kinds(r) == ["ARTIFACT_INCOMPLETE", "NOT_STEADY_STATE_SIMULATION"],
+        )
+    )
+    by_id = {c["case_id"]: c for c in facts["cases"]}
+    water = {"id": "H2O", "name": "water", "formula": "H2O", "cas": "7732-18-5",
+             "synthetic": False, "phases": ["liquid", "vapor"]}  # fmt: skip
+    states.append(
+        (
+            "A12 an IAPWS pump case with water in a PR route",
+            by_id["variant_idaes_iapws_pump_dp200k_eff75"],
+            test_snapshot(today, [water]),
+            "PROPERTY_ROUTE_UNAVAILABLE",
+            lambda r: [(x["kind"], x["subject"], x["detail"]) for x in r["reasons"]]
+            == [("PROPERTY_ROUTE_UNAVAILABLE", "fs.properties", "no_route:iapws95")],
+        )
+    )
+    claims: Claims = []
+    record = []
+    for label, case, snapshot, expected, extra in states:
+        check_snapshot(snapshot, facts, methods)
+        row = classify_case(case, snapshot, methods)
+        holds = row["class"] == expected and extra(row)
+        claims.append((f"GC-ADV {label}: {expected}", holds, f"{row['class']} {row['reasons']}"))
+        record.append(
+            {
+                "state": label,
+                "case": case if case["case_id"] == "synthetic-w27" else case["case_id"],
+                "added_route_components": snapshot["routes"][-1]["components"]
+                if snapshot is not today
+                else None,
+                "expected_class": expected,
+                "reasons": [
+                    {"kind": x["kind"], "subject": x["subject"], "detail": x["detail"]}
+                    for x in row["reasons"]
+                ],
+            }
+        )
+    extra_model = {**today, "models": [*today["models"], {"model_id": "x.test"}]}
+    extra_route = {"provider_id": "x-provider", "components": [], "model_ids": []}
+    extra_provider = {**today, "routes": [*today["routes"], extra_route]}
+    tds = {
+        "id": "TDS",
+        "name": "TDS",
+        "formula": None,
+        "cas": "7647-14-5",
+        "synthetic": False,
+        "phases": ["liquid"],
+    }
+    refusals = (
+        ("A09 an unregistered model id", extra_model, "x.test"),
+        ("A10 an unregistered provider id", extra_provider, "x-provider"),
+        (
+            "A11 a registry chemical with an unaliased archive spelling",
+            test_snapshot(today, [tds]),
+            "TDS->7647-14-5",
+        ),
+    )
+    for label, snapshot, needle in refusals:
+        try:
+            check_snapshot(snapshot, facts, methods)
+        except RefusalError as refusal:
+            holds, detail = needle in str(refusal), str(refusal)
+        else:
+            holds, detail = False, "no refusal"
+        claims.append((f"GC-ADV {label}: refused, naming {needle}", holds, detail))
+        record.append({"state": label, "expected": f"refusal naming {needle}"})
+    return claims, record
+
+
 def build_dry(facts: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str, Any]:
     out: dict[str, Any] = {
         "schema": "w27-dry-illustration-v1",
@@ -2330,6 +2628,21 @@ def build_dry(facts: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str
             if label == "today"
             else None,
         }
+    today_rows = {r["case_id"]: r for r in out["snapshots"]["today"]["rows"]}
+    hyp_rows = classify(facts, hypothetical_snapshot(snapshot), hypothetical_methods)["rows"]
+    changed = sorted(
+        r["case_id"]
+        for r in hyp_rows
+        if [(x["kind"], x["subject"], x["detail"]) for x in r["reasons"]]
+        != [(x["kind"], x["subject"], x["detail"]) for x in today_rows[r["case_id"]]["reasons"]]
+    )
+    out["snapshots"]["hypothetical_v02"]["cases_whose_reasons_change"] = {
+        "count": len(changed),
+        "cases": changed,
+    }
+    adversarial, record = adversarial_claims(facts, snapshot)
+    out["adversarial_states"] = record
+    all_claims += adversarial
     out["generator_claims"] = [{"claim": c, "holds": ok, "detail": d} for c, ok, d in all_claims]
     return out
 

@@ -1,5 +1,673 @@
 {
-  "case_facts_sha256": "2fbfd6f249a21701fb4fcca3436c742041814513c748ff9b0f5932c51c823565",
+  "adversarial_states": [
+    {
+      "added_route_components": [
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "id": "H2",
+          "name": "hydrogen",
+          "phases": [
+            "vapor"
+          ],
+          "synthetic": false
+        }
+      ],
+      "case": {
+        "case_id": "synthetic-w27",
+        "expected_dof": 0,
+        "family": "synthetic",
+        "files_missing": [],
+        "in_full82": false,
+        "listed_components": [
+          "H2"
+        ],
+        "model_type": "native_IDAES",
+        "objective_declared": false,
+        "package_source": "property_packages.json",
+        "packages": [
+          {
+            "classes": [
+              "GenericParameterBlock"
+            ],
+            "components": [
+              "H2"
+            ],
+            "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+            "name": "fs.props",
+            "phases": [
+              "vapor"
+            ]
+          }
+        ],
+        "parse_errors": [],
+        "residual_check": "pass",
+        "solve_dynamic": false,
+        "steady_state": true,
+        "topology_entry_ids": [],
+        "topology_kinds": [
+          "Feed",
+          "Heater",
+          "Product"
+        ],
+        "topology_package_names": [],
+        "unit_source": "units.json",
+        "units": [
+          {
+            "class_leaf": "_ScalarFeed",
+            "key": "idaes:Feed",
+            "names": [
+              "fs.feed"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarHeater",
+            "key": "idaes:Heater",
+            "names": [
+              "fs.heater"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarProduct",
+            "key": "idaes:Product",
+            "names": [
+              "fs.product"
+            ]
+          }
+        ]
+      },
+      "expected_class": "CANDIDATE",
+      "reasons": [],
+      "state": "A13-a base row"
+    },
+    {
+      "added_route_components": [],
+      "case": {
+        "case_id": "synthetic-w27",
+        "expected_dof": 0,
+        "family": "synthetic",
+        "files_missing": [],
+        "in_full82": false,
+        "listed_components": [
+          "H2"
+        ],
+        "model_type": "native_IDAES",
+        "objective_declared": false,
+        "package_source": "property_packages.json",
+        "packages": [
+          {
+            "classes": [
+              "GenericParameterBlock"
+            ],
+            "components": [
+              "H2"
+            ],
+            "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+            "name": "fs.props",
+            "phases": [
+              "vapor"
+            ]
+          }
+        ],
+        "parse_errors": [],
+        "residual_check": "pass",
+        "solve_dynamic": false,
+        "steady_state": true,
+        "topology_entry_ids": [],
+        "topology_kinds": [
+          "Feed",
+          "Heater",
+          "Product"
+        ],
+        "topology_package_names": [],
+        "unit_source": "units.json",
+        "units": [
+          {
+            "class_leaf": "_ScalarFeed",
+            "key": "idaes:Feed",
+            "names": [
+              "fs.feed"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarHeater",
+            "key": "idaes:Heater",
+            "names": [
+              "fs.heater"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarProduct",
+            "key": "idaes:Product",
+            "names": [
+              "fs.product"
+            ]
+          }
+        ]
+      },
+      "expected_class": "COMPONENT_UNAVAILABLE",
+      "reasons": [
+        {
+          "detail": "chemical:1333-74-0:not_in_registry",
+          "kind": "COMPONENT_UNAVAILABLE",
+          "subject": "H2"
+        }
+      ],
+      "state": "A13-b H2 absent from the route"
+    },
+    {
+      "added_route_components": [
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "id": "H2",
+          "name": "hydrogen",
+          "phases": [
+            "vapor"
+          ],
+          "synthetic": false
+        }
+      ],
+      "case": {
+        "case_id": "synthetic-w27",
+        "expected_dof": 0,
+        "family": "synthetic",
+        "files_missing": [],
+        "in_full82": false,
+        "listed_components": [
+          "H2"
+        ],
+        "model_type": "native_IDAES",
+        "objective_declared": false,
+        "package_source": "property_packages.json",
+        "packages": [
+          {
+            "classes": [
+              "GenericParameterBlock"
+            ],
+            "components": [
+              "H2"
+            ],
+            "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+            "name": "fs.props",
+            "phases": [
+              "vapor"
+            ]
+          }
+        ],
+        "parse_errors": [],
+        "residual_check": "pass",
+        "solve_dynamic": false,
+        "steady_state": true,
+        "topology_entry_ids": [],
+        "topology_kinds": [
+          "Feed",
+          "Heater",
+          "Product"
+        ],
+        "topology_package_names": [],
+        "unit_source": "units.json",
+        "units": [
+          {
+            "class_leaf": "_ScalarFeed",
+            "key": "idaes:Feed",
+            "names": [
+              "fs.feed"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarHeater",
+            "config": {
+              "dynamic": true
+            },
+            "key": "idaes:Heater",
+            "names": [
+              "fs.heater"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarProduct",
+            "key": "idaes:Product",
+            "names": [
+              "fs.product"
+            ]
+          }
+        ]
+      },
+      "expected_class": "NOT_STEADY_STATE_SIMULATION",
+      "reasons": [
+        {
+          "detail": "n2:dynamic_unit",
+          "kind": "NOT_STEADY_STATE_SIMULATION",
+          "subject": null
+        },
+        {
+          "detail": "partial:heater:missing=dynamic units=fs.heater",
+          "kind": "UNIT_UNAVAILABLE",
+          "subject": "Heater"
+        }
+      ],
+      "state": "A13-c heater built dynamic"
+    },
+    {
+      "added_route_components": [
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "id": "H2",
+          "name": "hydrogen",
+          "phases": [
+            "vapor"
+          ],
+          "synthetic": false
+        }
+      ],
+      "case": {
+        "case_id": "synthetic-w27",
+        "expected_dof": 0,
+        "family": "synthetic",
+        "files_missing": [],
+        "in_full82": false,
+        "listed_components": [
+          "H2"
+        ],
+        "model_type": "native_IDAES",
+        "objective_declared": false,
+        "package_source": "property_packages.json",
+        "packages": [
+          {
+            "classes": [
+              "GenericParameterBlock"
+            ],
+            "components": [
+              "H2"
+            ],
+            "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+            "name": "fs.props",
+            "phases": [
+              "vapor"
+            ]
+          }
+        ],
+        "parse_errors": [],
+        "residual_check": "pass",
+        "solve_dynamic": false,
+        "steady_state": true,
+        "topology_entry_ids": [],
+        "topology_kinds": [
+          "Feed",
+          "Heater",
+          "Product"
+        ],
+        "topology_package_names": [],
+        "unit_source": "units.json",
+        "units": [
+          {
+            "class_leaf": "_ScalarFeed",
+            "key": "idaes:Feed",
+            "names": [
+              "fs.feed"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarHeater",
+            "key": "idaes:Heater",
+            "names": [
+              "fs.heater"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarProduct",
+            "key": "idaes:Product",
+            "names": [
+              "fs.product"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarMixer",
+            "config": {
+              "momentum_mixing_type": "none"
+            },
+            "key": "idaes:Mixer",
+            "names": [
+              "fs.mix"
+            ]
+          }
+        ]
+      },
+      "expected_class": "UNIT_UNAVAILABLE",
+      "reasons": [
+        {
+          "detail": "partial:mixer:missing=mixer_no_momentum_balance units=fs.mix",
+          "kind": "UNIT_UNAVAILABLE",
+          "subject": "Mixer"
+        }
+      ],
+      "state": "A13-d mixer without a momentum balance"
+    },
+    {
+      "added_route_components": [
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "id": "H2",
+          "name": "hydrogen",
+          "phases": [
+            "vapor"
+          ],
+          "synthetic": false
+        }
+      ],
+      "case": {
+        "case_id": "synthetic-w27",
+        "expected_dof": 0,
+        "family": "synthetic",
+        "files_missing": [],
+        "in_full82": false,
+        "listed_components": [
+          "H2"
+        ],
+        "model_type": "native_IDAES",
+        "objective_declared": false,
+        "package_source": "property_packages.json",
+        "packages": [
+          {
+            "classes": [
+              "GenericParameterBlock"
+            ],
+            "components": [
+              "H2"
+            ],
+            "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+            "name": "fs.props",
+            "phases": [
+              "vapor"
+            ]
+          },
+          {
+            "classes": [
+              "GenericParameterBlock"
+            ],
+            "components": [
+              "H2"
+            ],
+            "key": "generic[Vap:VaporPhase:Ideal]",
+            "name": "fs.props2",
+            "phases": [
+              "vapor"
+            ]
+          }
+        ],
+        "parse_errors": [],
+        "residual_check": "pass",
+        "solve_dynamic": false,
+        "steady_state": true,
+        "topology_entry_ids": [],
+        "topology_kinds": [
+          "Feed",
+          "Heater",
+          "Product"
+        ],
+        "topology_package_names": [],
+        "unit_source": "units.json",
+        "units": [
+          {
+            "class_leaf": "_ScalarFeed",
+            "key": "idaes:Feed",
+            "names": [
+              "fs.feed"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarHeater",
+            "key": "idaes:Heater",
+            "names": [
+              "fs.heater"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarProduct",
+            "key": "idaes:Product",
+            "names": [
+              "fs.product"
+            ]
+          }
+        ]
+      },
+      "expected_class": "PROPERTY_ROUTE_UNAVAILABLE",
+      "reasons": [
+        {
+          "detail": "multiple_routes_per_revision:cubic_pr,ideal_gas",
+          "kind": "PROPERTY_ROUTE_UNAVAILABLE",
+          "subject": "fs.props"
+        },
+        {
+          "detail": "multiple_routes_per_revision:cubic_pr,ideal_gas",
+          "kind": "PROPERTY_ROUTE_UNAVAILABLE",
+          "subject": "fs.props2"
+        }
+      ],
+      "state": "A14 a second package of another method"
+    },
+    {
+      "added_route_components": [
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "id": "H2",
+          "name": "hydrogen",
+          "phases": [
+            "vapor"
+          ],
+          "synthetic": false
+        }
+      ],
+      "case": {
+        "case_id": "synthetic-w27",
+        "expected_dof": 0,
+        "family": "synthetic",
+        "files_missing": [],
+        "in_full82": false,
+        "listed_components": [
+          "H2"
+        ],
+        "model_type": "native_IDAES",
+        "objective_declared": false,
+        "package_source": "property_packages.json",
+        "packages": [
+          {
+            "classes": [
+              "GenericParameterBlock"
+            ],
+            "components": [
+              "H2"
+            ],
+            "key": "generic[Liq:LiquidPhase:Cubic(type=PR);Vap:VaporPhase:Cubic(type=PR)]",
+            "name": "fs.props",
+            "phases": [
+              "liquid",
+              "vapor"
+            ]
+          }
+        ],
+        "parse_errors": [],
+        "residual_check": "pass",
+        "solve_dynamic": false,
+        "steady_state": true,
+        "topology_entry_ids": [],
+        "topology_kinds": [
+          "Feed",
+          "Heater",
+          "Product"
+        ],
+        "topology_package_names": [],
+        "unit_source": "units.json",
+        "units": [
+          {
+            "class_leaf": "_ScalarFeed",
+            "key": "idaes:Feed",
+            "names": [
+              "fs.feed"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarHeater",
+            "key": "idaes:Heater",
+            "names": [
+              "fs.heater"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarProduct",
+            "key": "idaes:Product",
+            "names": [
+              "fs.product"
+            ]
+          }
+        ]
+      },
+      "expected_class": "PROPERTY_ROUTE_UNAVAILABLE",
+      "reasons": [
+        {
+          "detail": "route_mismatch:test-pr:missing=:phase=1333-74-0:liquid",
+          "kind": "PROPERTY_ROUTE_UNAVAILABLE",
+          "subject": "fs.props"
+        }
+      ],
+      "state": "A15 a liquid phase holding a vapour-only component"
+    },
+    {
+      "added_route_components": [
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "id": "H2",
+          "name": "hydrogen",
+          "phases": [
+            "vapor"
+          ],
+          "synthetic": false
+        }
+      ],
+      "case": {
+        "case_id": "synthetic-w27",
+        "expected_dof": 0,
+        "family": "synthetic",
+        "files_missing": [
+          "units.json"
+        ],
+        "in_full82": false,
+        "listed_components": [
+          "H2"
+        ],
+        "model_type": "native_IDAES",
+        "objective_declared": false,
+        "package_source": "property_packages.json",
+        "packages": [
+          {
+            "classes": [
+              "GenericParameterBlock"
+            ],
+            "components": [
+              "H2"
+            ],
+            "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+            "name": "fs.props",
+            "phases": [
+              "vapor"
+            ]
+          }
+        ],
+        "parse_errors": [],
+        "residual_check": "pass",
+        "solve_dynamic": false,
+        "steady_state": false,
+        "topology_entry_ids": [],
+        "topology_kinds": [
+          "Feed",
+          "Heater",
+          "Product"
+        ],
+        "topology_package_names": [],
+        "unit_source": "units.json",
+        "units": [
+          {
+            "class_leaf": "_ScalarFeed",
+            "key": "idaes:Feed",
+            "names": [
+              "fs.feed"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarHeater",
+            "key": "idaes:Heater",
+            "names": [
+              "fs.heater"
+            ]
+          },
+          {
+            "class_leaf": "_ScalarProduct",
+            "key": "idaes:Product",
+            "names": [
+              "fs.product"
+            ]
+          }
+        ]
+      },
+      "expected_class": "ARTIFACT_INCOMPLETE",
+      "reasons": [
+        {
+          "detail": "missing:units.json",
+          "kind": "ARTIFACT_INCOMPLETE",
+          "subject": null
+        },
+        {
+          "detail": "n3:steady_state=false",
+          "kind": "NOT_STEADY_STATE_SIMULATION",
+          "subject": null
+        }
+      ],
+      "state": "A13-e an artifact gap dominates"
+    },
+    {
+      "added_route_components": [
+        {
+          "cas": "7732-18-5",
+          "formula": "H2O",
+          "id": "H2O",
+          "name": "water",
+          "phases": [
+            "liquid",
+            "vapor"
+          ],
+          "synthetic": false
+        }
+      ],
+      "case": "variant_idaes_iapws_pump_dp200k_eff75",
+      "expected_class": "PROPERTY_ROUTE_UNAVAILABLE",
+      "reasons": [
+        {
+          "detail": "no_route:iapws95",
+          "kind": "PROPERTY_ROUTE_UNAVAILABLE",
+          "subject": "fs.properties"
+        }
+      ],
+      "state": "A12 an IAPWS pump case with water in a PR route"
+    },
+    {
+      "expected": "refusal naming x.test",
+      "state": "A09 an unregistered model id"
+    },
+    {
+      "expected": "refusal naming x-provider",
+      "state": "A10 an unregistered provider id"
+    },
+    {
+      "expected": "refusal naming TDS->7647-14-5",
+      "state": "A11 a registry chemical with an unaliased archive spelling"
+    }
+  ],
+  "case_facts_sha256": "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7",
   "generator_claims": [
     {
       "claim": "[today] GC-DRY-1 450 rows, each with a class",
@@ -23,7 +691,7 @@
     },
     {
       "claim": "[today] GC-DRY-5 every reason with a subject has a matchable alias equal to it",
-      "detail": "3749 reasons",
+      "detail": "3747 reasons",
       "holds": true
     },
     {
@@ -50,13 +718,180 @@
       "claim": "[hypothetical_v02] GC-DRY-3 class counts sum to 450 and to 82",
       "detail": "{'ARTIFACT_INCOMPLETE': 1, 'NOT_STEADY_STATE_SIMULATION': 65, 'UNIT_UNAVAILABLE': 367, 'COMPONENT_UNAVAILABLE': 17, 'PROPERTY_ROUTE_UNAVAILABLE': 0, 'CANDIDATE': 0}",
       "holds": true
+    },
+    {
+      "claim": "GC-ADV A13-a base row: CANDIDATE",
+      "detail": "CANDIDATE []",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A13-b H2 absent from the route: COMPONENT_UNAVAILABLE",
+      "detail": "COMPONENT_UNAVAILABLE [{'kind': 'COMPONENT_UNAVAILABLE', 'subject': 'H2', 'detail': 'chemical:1333-74-0:not_in_registry', 'aliases': ['H2']}]",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A13-c heater built dynamic: NOT_STEADY_STATE_SIMULATION",
+      "detail": "NOT_STEADY_STATE_SIMULATION [{'kind': 'NOT_STEADY_STATE_SIMULATION', 'subject': None, 'detail': 'n2:dynamic_unit', 'aliases': []}, {'kind': 'UNIT_UNAVAILABLE', 'subject': 'Heater', 'detail': 'partial:heater:missing=dynamic units=fs.heater', 'aliases': ['Heater', '_ScalarHeater', 'fs.heater', 'heater']}]",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A13-d mixer without a momentum balance: UNIT_UNAVAILABLE",
+      "detail": "UNIT_UNAVAILABLE [{'kind': 'UNIT_UNAVAILABLE', 'subject': 'Mixer', 'detail': 'partial:mixer:missing=mixer_no_momentum_balance units=fs.mix', 'aliases': ['Mixer', '_ScalarMixer', 'fs.mix', 'mix']}]",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A14 a second package of another method: PROPERTY_ROUTE_UNAVAILABLE",
+      "detail": "PROPERTY_ROUTE_UNAVAILABLE [{'kind': 'PROPERTY_ROUTE_UNAVAILABLE', 'subject': 'fs.props', 'detail': 'multiple_routes_per_revision:cubic_pr,ideal_gas', 'aliases': ['GenericParameterBlock', 'fs.props', 'generic[Vap:VaporPhase:Cubic(type=PR)]', 'props']}, {'kind': 'PROPERTY_ROUTE_UNAVAILABLE', 'subject': 'fs.props2', 'detail': 'multiple_routes_per_revision:cubic_pr,ideal_gas', 'aliases': ['GenericParameterBlock', 'fs.props2', 'generic[Vap:VaporPhase:Ideal]', 'props2']}]",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A15 a liquid phase holding a vapour-only component: PROPERTY_ROUTE_UNAVAILABLE",
+      "detail": "PROPERTY_ROUTE_UNAVAILABLE [{'kind': 'PROPERTY_ROUTE_UNAVAILABLE', 'subject': 'fs.props', 'detail': 'route_mismatch:test-pr:missing=:phase=1333-74-0:liquid', 'aliases': ['GenericParameterBlock', 'fs.props', 'generic[Liq:LiquidPhase:Cubic(type=PR);Vap:VaporPhase:Cubic(type=PR)]', 'props']}]",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A13-e an artifact gap dominates: ARTIFACT_INCOMPLETE",
+      "detail": "ARTIFACT_INCOMPLETE [{'kind': 'ARTIFACT_INCOMPLETE', 'subject': None, 'detail': 'missing:units.json', 'aliases': []}, {'kind': 'NOT_STEADY_STATE_SIMULATION', 'subject': None, 'detail': 'n3:steady_state=false', 'aliases': []}]",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A12 an IAPWS pump case with water in a PR route: PROPERTY_ROUTE_UNAVAILABLE",
+      "detail": "PROPERTY_ROUTE_UNAVAILABLE [{'kind': 'PROPERTY_ROUTE_UNAVAILABLE', 'subject': 'fs.properties', 'detail': 'no_route:iapws95', 'aliases': ['HelmholtzParameterBlockData', 'Iapws95ParameterBlock', 'Iapws95ParameterBlockData', 'fs.properties', 'iapws95', 'idaes.models.properties.general_helmholtz.helmholtz_functions.HelmholtzParameterBlockData', 'idaes.models.properties.iapws95.Iapws95ParameterBlock', 'idaes.models.properties.iapws95.Iapws95ParameterBlockData', 'properties']}]",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A09 an unregistered model id: refused, naming x.test",
+      "detail": "unregistered model ids ['x.test']",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A10 an unregistered provider id: refused, naming x-provider",
+      "detail": "unregistered provider ids ['x-provider']",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A11 a registry chemical with an unaliased archive spelling: refused, naming TDS->7647-14-5",
+      "detail": "archive spellings of registry chemicals not aliased ['TDS->7647-14-5', 'tds->7647-14-5']",
+      "holds": true
     }
   ],
-  "registration_sha256": "44756d8fbf18b95edd56666d9ff2d4ecc8e99e59f5ed0faa97a8a745650a2861",
+  "registration_sha256": "2943d3315ad48de6b8a50652b598dc91b0612a11d3fe768af5f60ec053099957",
   "schema": "w27-dry-illustration-v1",
   "snapshots": {
     "hypothetical_v02": {
       "candidates": [],
+      "cases_whose_reasons_change": {
+        "cases": [
+          "blind_synthesized_hda_distillation",
+          "blind_synthesized_hda_flash",
+          "blind_synthesized_methanol_recycle",
+          "blind_synthesized_methanol_single",
+          "blind_synthesized_ngcc",
+          "blind_synthesized_prommis_cmi_process",
+          "blind_synthesized_prommis_cmi_process_pfd",
+          "blind_synthesized_prommis_hydrogen_decrepitation_flowsheet",
+          "blind_synthesized_prommis_hydrogen_decrepitation_furnace",
+          "blind_synthesized_prommis_ree_oxalate_roaster",
+          "blind_synthesized_prommis_simplified_uky_flowsheet",
+          "blind_synthesized_prommis_uky_costing",
+          "blind_synthesized_prommis_uky_flowsheet",
+          "blind_synthesized_prommis_uky_tutorial_flowsheet_pfd",
+          "blind_synthesized_prommis_uky_ui_flowsheet",
+          "blind_synthesized_subcritical_power_plant",
+          "dispatches_nuclear_double_loop",
+          "dispatches_nuclear_multiperiod",
+          "dispatches_simple_rankine",
+          "dispatches_solar_battery_hydrogen",
+          "dispatches_wind_battery_pem_tank_turbine",
+          "idaes_co2_membrane_1d",
+          "idaes_ngcc_soec",
+          "idaes_soc_pid_control",
+          "idaes_temperature_swing_adsorption",
+          "ngcc_gas_turbine_subflowsheet",
+          "ngcc_hrsg_subflowsheet",
+          "ngfc_atr",
+          "official_co2_adsorption_desorption",
+          "official_idaes_smr_equilibrium_flowsheet",
+          "official_idaes_smr_gibbs_flowsheet",
+          "official_idaes_sofc_power_plant",
+          "official_idaes_sofc_soec_coproduction",
+          "official_ngcc",
+          "official_subcritical_boiler",
+          "variant_ad_biogas_h2s_guard_emergency_flare",
+          "variant_ad_chp_absorption_chiller_digestate_cooling",
+          "variant_ammonia_recovery_storage_scrubber_recycle",
+          "variant_dispatches_pem_oxygen_coproduct_methanation",
+          "variant_hda_once_through_single_flash",
+          "variant_hda_once_through_two_flash",
+          "variant_hda_psa_hydrogen_recovery_tailgas_fuel",
+          "variant_hda_psa_tailgas_furnace_heat_recovery",
+          "variant_hda_reactor_effluent_side_reboiler",
+          "variant_hda_recycle_purge_optimized",
+          "variant_hda_runaway_hydrogen_cutoff_nitrogen_quench",
+          "variant_hda_staged_hydrogen_quench_guard_bed",
+          "variant_idaes_ammonia_synthesis_intercool_condense",
+          "variant_idaes_bfb_staged_air_flue_gas_recycle",
+          "variant_idaes_biogas_h2s_co2_polishing",
+          "variant_idaes_boiler_biomass_cofire_fgr",
+          "variant_idaes_boiler_startup_fuel_transition_fgr",
+          "variant_idaes_co2_electrolysis_gas_recycle_small",
+          "variant_idaes_co2_electroreduction_gas_recycle",
+          "variant_idaes_co2_h2_membrane_two_stage",
+          "variant_idaes_co2_membrane_recompress_recycle",
+          "variant_idaes_co2_membrane_two_stage_recycle",
+          "variant_idaes_dac_co2_electroreduction_methanation",
+          "variant_idaes_dac_humidity_swing_calciner_recovery",
+          "variant_idaes_hda_benzene_toluene_side_draw",
+          "variant_idaes_hda_psa_tailgas_recycle",
+          "variant_idaes_methanation_co2_recycle",
+          "variant_idaes_natural_gas_glycol_dehydration",
+          "variant_idaes_ngcc_supplementary_firing_district_heat",
+          "variant_idaes_pipeline_teg_compressor_aftercool",
+          "variant_idaes_pz_capture_rich_split_intercooling",
+          "variant_idaes_rsofc_hydrogen_storage_heat_cascade",
+          "variant_idaes_soec_oxygen_depolarized_bped",
+          "variant_idaes_sofc_anode_recycle_oxyfuel_capture",
+          "variant_idaes_sofc_fuel_trip_inert_purge_heat_dump",
+          "variant_idaes_sour_gas_dehydration_sulfur_co2_capture",
+          "variant_idaes_sour_gas_zno_claus_tailgas",
+          "variant_idaes_teg_dehydration_flash_regeneration",
+          "variant_idaes_teg_regenerator_stripping_column",
+          "variant_idaes_tga_redox_oxygen_switching_cycle",
+          "variant_idaes_tsa_dual_bed_heat_recovery",
+          "variant_idaes_tsa_water_co2_coadsorption",
+          "variant_idaes_vsa_co2_dual_bed",
+          "variant_idaes_wgs_interstage_cooling_condensate_knockout",
+          "variant_idaes_wgs_shift_condensate_recycle",
+          "variant_idaes_zno_h2s_guard_regeneration",
+          "variant_methanol_capture_electrolysis_heat_integration",
+          "variant_methanol_co2_cofeed_water_knockout",
+          "variant_methanol_emergency_quench_relief_recovery",
+          "variant_methanol_reaction_water_condense_reheat",
+          "variant_methanol_recycle_purge_optimized",
+          "variant_methanol_two_bed_intercooled",
+          "variant_methanol_two_reactor_intercooling",
+          "variant_natural_gas_compressor_heat_teg_regeneration",
+          "variant_natural_gas_hydrate_inhibitor_slug_recovery",
+          "variant_natural_gas_zno_guard_claus_sulfur_recovery",
+          "variant_official_co2_adsorption_steam_vacuum_hybrid",
+          "variant_prommis_ndfeb_hydrogen_recycle_magnetic_classification",
+          "variant_prommis_spray_dryer_exhaust_recycle",
+          "variant_reaktoro_biogas_oxygen_enriched_fgr",
+          "variant_watertap_ad_digestate_ammonia_stripping",
+          "variant_watertap_ad_digestate_dewatering_recycle",
+          "variant_watertap_adm1_biogas_water_scrubbing",
+          "variant_watertap_adm1_two_stage_acidogenic_methanogenic",
+          "variant_watertap_ammonia_acid_absorption_crystallization",
+          "variant_watertap_ammonia_membrane_contactor_heat_recovery",
+          "variant_watertap_asm1_step_feed_internal_recycle",
+          "variant_watertap_biogas_co2_water_scrubber",
+          "variant_watertap_electrocoagulation_hydrogen_recovery",
+          "variant_watertap_ix_nitrate_selective_brine_recovery",
+          "variant_watertap_uconn_sidestream_deammonification",
+          "variant_watertap_wrrf_ad_struvite_chp_cascade"
+        ],
+        "count": 107
+      },
       "near_candidates": [
         {
           "case_id": "variant_idaes_ammonia_synthesis_intercool_condense",
@@ -557,6 +1392,10 @@
               "reflo": 2,
               "watertap": 15
             },
+            "bumped_by_minimum": [
+              "pareto",
+              "reaktoro"
+            ],
             "populations": {
               "dispatches": 11,
               "gtep": 21,
@@ -14868,11 +15707,6 @@
               "subject": "Compressor"
             },
             {
-              "detail": "no_function:no_function units=HTR,LTR",
-              "kind": "UNIT_UNAVAILABLE",
-              "subject": "Recuperator"
-            },
-            {
               "detail": "no_model:expander units=TURB",
               "kind": "UNIT_UNAVAILABLE",
               "subject": "Turbine"
@@ -22725,9 +23559,9 @@
               "subject": null
             },
             {
-              "detail": "no_route:unidentified",
+              "detail": "no_property_package_declared",
               "kind": "PROPERTY_ROUTE_UNAVAILABLE",
-              "subject": "None"
+              "subject": null
             }
           ]
         },
@@ -23567,6 +24401,10 @@
               "reflo": 2,
               "watertap": 15
             },
+            "bumped_by_minimum": [
+              "pareto",
+              "reaktoro"
+            ],
             "populations": {
               "dispatches": 11,
               "gtep": 21,

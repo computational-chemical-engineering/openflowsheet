@@ -196,6 +196,11 @@
       "holds": true
     },
     {
+      "claim": "GC-FACTS-4 units come from units.json in 238 cases and from topology.json in 212",
+      "detail": "{'units.json': 238, 'topology.json': 212}",
+      "holds": true
+    },
+    {
       "claim": "GC-UNIT-1 mapped and reviewed-none keys are disjoint",
       "detail": "disjoint",
       "holds": true
@@ -284,7 +289,7 @@
   "inputs": {
     "access_report_sha256": "db4c4371db2128759f7cdaa4b602da0f78da958ba2ae26989bd4f6a08bd9dad7",
     "archive_sha256": "6d42c02fdc7e8e4c81c861d77fd5b546198a2bfd7d9c87212c97149e50ea4526",
-    "case_facts_sha256": "2fbfd6f249a21701fb4fcca3436c742041814513c748ff9b0f5932c51c823565",
+    "case_facts_sha256": "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7",
     "provenance_sha256": "2198850dac2830338a1601ae9c99f5478d2d23e7033c456dadde0b678d480c74"
   },
   "not_steady_state": {
@@ -1196,7 +1201,6 @@
       "idaes.models_extra.power_generation.properties.flue_gas_ideal.FlueGasParameterData": "ideal_gas",
       "idaes_examples.notebooks.docs.unit_models.custom_unit_models.liquid_extraction.aqueous_property.AqPhaseData": "custom_example",
       "idaes_examples.notebooks.docs.unit_models.custom_unit_models.liquid_extraction.organic_property.PhysicalParameterData": "custom_example",
-      "native:no_implementation": "unidentified",
       "prommis.evaporation_pond.tests.example_properties.BrineParameters": "custom_example",
       "prommis.evaporation_pond.tests.example_reactions.BrineReactionParameters": "reaction",
       "prommis.hydrogen_decrepitation.repm_solids_properties.REPMParameters": "hydrometallurgy_solids",
@@ -1327,9 +1331,19 @@
         1.0,
         273.15
       ],
+      "dimensionless": [
+        "fraction",
+        1.0,
+        0.0
+      ],
       "kPa": [
         "pressure",
         1000.0,
+        0.0
+      ],
+      "kg/m/s**2": [
+        "pressure",
+        1.0,
         0.0
       ],
       "kmol/h": [
@@ -1352,6 +1366,42 @@
         1.0,
         0.0
       ]
+    }
+  },
+  "statistics": {
+    "aliases": {
+      "names": 49,
+      "substances": 38
+    },
+    "card_code_points": {
+      "max": 65158,
+      "max_case": "idaes_ngcc_soec",
+      "median": 3782.5,
+      "p90": 10817
+    },
+    "not_steady_topology_kinds": 31,
+    "package_keys": {
+      "distinct": 80,
+      "mapped": 80
+    },
+    "package_sources": {
+      "none": 14,
+      "property_packages.json": 237,
+      "topology.json": 199
+    },
+    "terminal_product_ports": {
+      "found_in_streams_csv": 165,
+      "listed": 733
+    },
+    "unit_keys": {
+      "default_none": 226,
+      "distinct": 361,
+      "explicit": 51,
+      "reviewed_none": 84
+    },
+    "unit_sources": {
+      "topology.json": 212,
+      "units.json": 238
     }
   },
   "status": "registered before any W27 agent run; the campaign sample is drawn at M07",
@@ -1543,7 +1593,6 @@
       "topology:ReaktoroThermalPrecipitator",
       "topology:RecarbonationBasin",
       "topology:Reclaimer",
-      "topology:Recuperator",
       "topology:Regenerator",
       "topology:RenewablePortfolio",
       "topology:ReserveRequirement",
@@ -1770,6 +1819,9 @@
       },
       "topology:Reactor": {
         "function": "conversion_reactor"
+      },
+      "topology:Recuperator": {
+        "function": "heat_exchanger"
       },
       "topology:Separator": {
         "function": "component_separator"
