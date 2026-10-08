@@ -25,8 +25,9 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 
 - **Unit models:** `syn001.adiabatic_mixer`, `syn001.component_separator`, `syn001.conversion_reactor`, `syn001.feed_source`, `syn001.heat_exchanger`, `syn001.kinetic_cstr`, `syn001.liquid_pump`, `syn001.ph_flash`, `syn001.product_sink`, `syn001.stream_splitter`, `syn001.tp_flash`, `syn001.tp_heater`, `syn001.valve`
 - **Solve policies:** `T04-W12`, `T06-revision-v2`, `T08-ptc-v1`, `T08-warm-v1`
-- **Components:** `A`, `B`, `C`; provider `pr-c1-v1, syn001`
+- **Components:** `A`, `B`, `C`; provider `syn001`
 - **Domain:** T in [280, 440] K, P in [50000, 200000] Pa
+- **Shipped, bound by no model:** `pr-c1-v1`, with its own components (H2, N2, NH3, Ar, CH4) and domain (200–1000 K, 10⁴–3 × 10⁷ Pa), validated for pure-component behaviour only, no mixture VLE validation, k_ij = 0 (L42)
 - **Unit spellings (ADR 0016):** dimensionless `%`; heat_rate `kW`; heat_rate `MW`; molar_flow `g/s`; molar_flow `kg/h`; molar_flow `kg/s`; molar_flow `kmol/h`; molar_flow `kmol/s`; molar_flow `mmol/s`; molar_flow `mol/h`; mole_fraction `%`; power `kW`; power `MW`; pressure `atm`; pressure `bar`; pressure `kPa`; pressure `MPa`; pressure `psi`; temperature `degC`; temperature `degF`; temperature_difference `degC`; temperature_difference `degF`
 - **Platforms:** aarch64, x86-64; Python 3.13; lock `ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4`
 
@@ -122,6 +123,7 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 | L35 | A tear-path solve that exhausts its budget records `attempts = 0`, the start state and no provenance (K03's registered capped-budget shape). | `doc:docs/derivations/T03-phase-controller-spec.md §13` |
 | L40 | The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's own code, its package data (since M01 including the five C1 records, M01 spec §15 Q-N4's default) and its licence files only, and every ComponentRecord is synthetic (SYN-001) or one of M01's five real C1 records, each with its identifiers, rights, per-parameter provenance and retrieval equality (M01 spec §3.5, R-158). | `tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel`<br>`tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rights`<br>`doc:docs/adr/0006-distribution-data-rights.md §D1` |
 | L41 | A bundle written by an installed package (wheel or sdist, not the source checkout) carries no dependency-set identity: the package ships no lock file, so its `lock_sha256` is empty and every replay of it is `inspected_archived_results` / `NOT_RUN` ("the dependency set is unknown …"); replayable bundles are written from the source checkout at the lock `ead4edf1…`. | `tests/test_t08_r3_a19_lock_lookup.py::test_the_three_states_end_to_end`<br>`tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none`<br>`doc:docs/adr/0007-reproducibility-certificate-policy.md §D4`<br>`doc:docs/derivations/T08-release-spec.md §5.5` |
+| L42 | `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is bound by no model of `MODEL_BUILDERS` yet (M02 adds its units) and does not share the axes' components and domain: it takes the five real components H2, N2, NH3, Ar, CH4 (the only liquid is pure NH3) over 200–1000 K and 10⁴–3 × 10⁷ Pa. It is validated for pure-component behaviour only, within M01 spec §11's bands (NH3 saturation pressure within 2 %, liquid NH3 and light-gas ln φ within 0.05 of the reference equations of state). There is no mixture VLE validation, and k_ij = 0 for every pair: k_H2–NH3 = 0.1 would move the separator's vapour NH3 fraction y* by −3.1 % (about 3 % per 0.1; spec §4.2). | `check:M01.A38`<br>`check:M01.A39`<br>`check:M01.A40`<br>`doc:docs/derivations/M01-spec.md §11`<br>`doc:docs/derivations/M01-spec.md §4.2`<br>`doc:docs/derivations/M01-spec.md §17`<br>`tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface` |
 
 ## Harvest (T08.A21)
 
@@ -135,7 +137,7 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 | K04 | 5 | 3 | 2 | 0 |
 | K05 | 6 | 0 | 2 | 0 |
 | K06 | 0 | 7 | 1 | 0 |
-| M01 | 0 | 0 | 7 | 0 |
+| M01 | 1 | 0 | 6 | 0 |
 | P00 | 0 | 1 | 8 | 0 |
 | P01 | 2 | 2 | 5 | 0 |
 | P02 | 2 | 0 | 12 | 0 |
@@ -148,4 +150,4 @@ Envelope `v0.1-envelope-1` (T08 release spec §5). **Unlisted is unsupported** (
 | T05b | 11 | 2 | 7 | 1 |
 | T06 | 11 | 3 | 14 | 0 |
 | T07 | 3 | 2 | 7 | 2 |
-| **all** | 93 | 42 | 123 | 5 |
+| **all** | 94 | 42 | 122 | 5 |
