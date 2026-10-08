@@ -436,6 +436,13 @@ class Boundary:
     #: M01's constants unless a variant says otherwise (ADR 0034 D10).
     hard_domain: HardDomain = DEFAULT_HARD_DOMAIN
 
+    def __post_init__(self) -> None:
+        # M01 review (passed to M02): the per-tube scaling divides by `n_tubes` (§8.3), so a
+        # zero, negative or non-finite count is a configuration defect, refused at construction
+        # rather than surfacing as a NaN or a sign flip inside an evaluation.
+        if not 0.0 < self.n_tubes < math.inf:
+            raise ValueError(f"n_tubes {self.n_tubes!r} is not finite and positive")
+
     def evaluate(
         self,
         inlet: StreamState,

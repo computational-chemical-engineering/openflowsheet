@@ -264,3 +264,10 @@ def test_an_execution_failure_kind_is_registered() -> None:
     assert "cancelled" not in EXECUTION_FAILURE_KINDS  # an interrupt propagates
     with pytest.raises(ValueError, match="ExecutionFailure.kind"):
         ExecutionFailure("exploded", "")
+
+
+@pytest.mark.parametrize("n_tubes", [0.0, -0.0, -1.0, math.inf, math.nan])
+def test_a_boundary_refuses_a_tube_count_that_is_not_finite_and_positive(n_tubes: float) -> None:
+    """M01's review, passed to M02: `Boundary` validates `n_tubes` at construction."""
+    with pytest.raises(ValueError, match="n_tubes"):
+        Boundary(provider=PROVIDER, n_tubes=n_tubes, identity={})
