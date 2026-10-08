@@ -98,8 +98,11 @@ def structure(projection: Any) -> None:
         assert find_nonsmooth_node(expression) is None
 
 
-def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
-    """G4 (a)-(e) for one projection at its start; returns the worst measured ratios."""
+def equivalence(projection: Any, x0: Mapping[str, float], scaling: Any = None) -> dict[str, float]:
+    """G4 (a)-(e) for one projection at its start; returns the worst measured ratios.
+
+    The row and column scales are the spec's own, or, with `scaling`, the K03 `Scaling` the
+    system judges that spec's residuals by (a spec that declares kinds instead of scales)."""
     import pyomo.environ as pyo
     from pyomo.core.expr.calculus.derivatives import Modes, differentiate
 
@@ -116,8 +119,12 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     residual = np.array(twin.residual(x, parameters))
     jacobian_x = dense(twin.jacobian_x(x, parameters))
     rows = [spec.equation_ids.index(name) for name in projection.row_ids]
-    row_scales = np.array([spec.row_scales.get(name, 1.0) for name in projection.row_ids])
-    column_scales = np.array([spec.column_scales.get(name, 1.0) for name in spec.variable_ids])
+    if scaling is None:
+        row_scales = np.array([spec.row_scales.get(name, 1.0) for name in projection.row_ids])
+        column_scales = np.array([spec.column_scales.get(n, 1.0) for n in spec.variable_ids])
+    else:
+        row_scales = np.asarray(scaling.row_vector(projection.row_ids))
+        column_scales = np.asarray(scaling.column_vector(spec.variable_ids))
 
     # (b) residuals.
     pyomo_rows = np.array([float(pyo.value(e)) for e in projection.row_expressions])
@@ -163,6 +170,7 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     assert np.all(decision_error <= allowed_d), np.max(decision_error / allowed_d)
 
     return {
+        "residual_abs_max": float(np.max(np.abs(pyomo_rows - casadi_rows))),
         "residual": float(np.max(scaled / allowed)),
         "jacobian": float(np.max(jacobian_error / allowed_j)),
         "decision": float(np.max(decision_error / allowed_d)),
@@ -421,6 +429,25 @@ def test_syn001_without_its_alias_rows_projects_with_dof_equal_to_the_decisions(
             assert entry["bounds"] == [50_000.0, 200_000.0]
         else:
             assert entry["bounds"] == [None, None]
+
+
+@pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
+def test_g4_syn001_at_the_registered_states(state: str, record_property: Any) -> None:
+    """G4 (a)-(e) at M03's registered states, judged in K03's registered scales.
+
+    SYN-001's spec declares row and variable *kinds* and no scales; the scales the system judges
+    its residuals by are K03's registered nominals for those kinds (`Scaling.from_spec`; M03's
+    full-space NLP and the certificate's root test use the same). The heat-rate rows sum terms of
+    order 1e4-1e5 W, so the two evaluation orders differ by a few ulps of those terms — measured
+    up to 2.2e-11 W absolute at P2 — which is 2.2e-16 in the registered 1e5 W scale and above
+    1e-12 only in watts."""
+    from openflowsheet.numerics.scaling import Scaling
+
+    projection, x0 = syn001_projection(state, omitted_rows=syn001_alias_rows(state))
+    assert not projection.spec.row_scales and not projection.spec.column_scales
+    measured = equivalence(projection, x0, Scaling.from_spec(projection.spec))
+    for name, value in measured.items():
+        record_property(f"M05.G4.syn001.{state}.{name}", value)
 
 
 def test_an_unknown_omitted_row_is_refused() -> None:
