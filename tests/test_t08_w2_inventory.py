@@ -411,20 +411,48 @@ def _component_records() -> list[tuple[str, dict[str, Any]]]:
     return found
 
 
-def test_a32_every_component_record_is_synthetic_with_rights() -> None:
+#: M01 spec §3.5 (R-158): the only real (`synthetic: false`) records the repository may hold, each
+#: vetted by M01.A02's retrieval equality in `benchmarks/m01/external-crosscheck.json`.
+M01_RECORDS = "benchmarks/m01/components.yaml"
+M01_COMPONENTS = ("H2", "N2", "NH3", "Ar", "CH4")
+M01_CROSSCHECK = REPO_ROOT / "benchmarks" / "m01" / "external-crosscheck.json"
+
+
+def test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rights() -> None:
+    """T08.A32 as amended by M01 spec §3.5 (R-158): amended for real records, not relaxed.
+
+    A `synthetic: true` record keeps the v0.1 rule unchanged (it validates and states its rights).
+    A `synthetic: false` record must (i) be one of the five records of
+    `benchmarks/m01/components.yaml`, (ii) carry `identifiers` with `cas`, `inchi` and `inchikey`,
+    (iii) carry non-empty `rights.source` and `rights.redistribution` and a `provenance` on every
+    parameter and on the molecular weight, and (iv) be covered by M01.A02's retrieval equality.
+    """
     validator = validator_for("component_record")
     records = _component_records()
     assert {(path, record["id"]) for path, record in records} >= {
         ("benchmarks/syn001/components.yaml", component) for component in ("A", "B", "C")
     }
+    retrieval = load_json(M01_CROSSCHECK)["retrieval"]
+    real = []
     for path, record in records:
-        assert [error.message for error in validator.iter_errors(record)] == [], (
-            path,
-            record["id"],
-        )
-        assert record["synthetic"] is True, (path, record["id"])
+        where = (path, record["id"])
+        assert [error.message for error in validator.iter_errors(record)] == [], where
         rights = record["rights"]
-        assert rights["source"].strip() and rights["redistribution"].strip(), (path, record["id"])
+        assert rights["source"].strip() and rights["redistribution"].strip(), where
+        if record["synthetic"] is True:
+            continue
+        assert record["synthetic"] is False, where
+        real.append(where)
+        assert path == M01_RECORDS and record["id"] in M01_COMPONENTS, where  # (i)
+        identifiers = record["identifiers"]
+        assert all(identifiers.get(key, "").strip() for key in ("cas", "inchi", "inchikey")), where
+        quantities = [record["molecular_weight"], *record["parameters"].values()]
+        assert all(str(quantity.get("provenance", "")).strip() for quantity in quantities), where
+        vetted = retrieval[record["id"]]  # (iv)
+        assert all(vetted["equal"].values()) and vetted["nasa7_low_range_equal"], where
+        assert vetted["identifiers_equal"], where
+    assert len(real) == len(set(real)), "a real record appears twice"
+    assert set(real) <= {(M01_RECORDS, component) for component in M01_COMPONENTS}
 
 
 def test_a32_the_envelope_states_reference_data_and_openidaes_are_not_distributed() -> None:
