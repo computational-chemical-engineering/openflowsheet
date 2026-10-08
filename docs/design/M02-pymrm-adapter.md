@@ -1,7 +1,8 @@
 # M02 — The PyMRM execution adapter, experiment records, frozen model versions and promotion, and the PR units: design note
 
-**Status:** Proposed, design lane (`architect`), 2026-10-08, on `wp/M02` from `wp/M01` @ `1e8aecd` (M01 Amendment 1
-included). **Brief:** `docs/briefs/M02-design.md`. **Plan row (v1.2 §4.4, binding):** M02 — execution adapter,
+**Status:** Proposed, design lane (`architect`), 2026-10-08, on `wp/M02`, written against M01 Amendment 1
+(`1e8aecd`) and checked against `wp/M01` @ `4142471` (WO-7/WO-8: the stage grammar and check order as Amendment 1
+states; M01.A49's binder clause, which this note supersedes in G8 (e)). **Brief:** `docs/briefs/M02-design.md`. **Plan row (v1.2 §4.4, binding):** M02 — execution adapter,
 experiment artifacts, timeout/cache/noise controls, frozen model versions and promotion; acceptance: reproducible
 reactor result, failed experiment retained, model replacement diff and invalidation, incompatible pressure boundary
 rejected; lanes Build / Design; gate W21 (M02's half). **Decisions:** ADR 0033 (external-model execution and
