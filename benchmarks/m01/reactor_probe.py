@@ -49,10 +49,18 @@ GEOMETRY_CASE = "G2 — GHSV sweep_1000"
 TRACE_NH3 = 1e-9  # the group's settings.TRACE_NH3
 GRIDS = (100, 200, 400, 800, 1600, 3200)
 #: M01's solver profile for the polish stage S3 (spec section 8.7).
-PROFILE = {"newton_rtol": 1e-12, "newton_atol": 1e-7, "steady_state_atol": 1e-6, "dt_init": 1.0, "num_timesteps": 400}
+#: The steady-state target scales with num_z^2 because the norm's roundoff floor does (measured: 7.7e-8, 1.7e-7,
+#: 5.9e-7, 2.2e-6 at num_z = 100, 200, 400, 800); the target keeps a factor of at least 10 above it.
+PROFILE = {"newton_rtol": 1e-12, "newton_atol_factor": 0.1, "steady_state_atol_at_100": 1e-6, "dt_init": 1.0, "num_timesteps": 400}
+
+
+def ss_target(num_z: int) -> float:
+    return PROFILE["steady_state_atol_at_100"] * (num_z / 100.0) ** 2
 EPS_P = 1e-3  # zero-pressure-drop convention's admissibility bound on dP / P_in (ADR 0027 D2)
 FLOOR_GRIDS = (100, 400)
-FLOOR_STEPS = 40
+FLOOR_STEPS = 25
+#: Grids where the profile's state is not accepted; a fixed extra polish records how far the outlet still moves.
+FINE_POLISH_GRIDS = (1600,)
 
 
 def merged_database(clone_db: Path, overlay_path: Path, variant: str = "N2") -> dict[str, Any]:
@@ -190,16 +198,16 @@ def strategy(num_z: int, y_in: list[float], T_in: float, db: dict[str, Any], db_
     acc2 = kpi_mod.solver_acceptance(st2, cfg2.steady_state_atol, settings.STEADY_STATE_ACCEPT_FACTOR)
     stages["S2"] = {"accepted": bool(acc2["accepted"]), "steady_state_norm": float(st2.steady_state_norm),
                     "steps": int(st2.num_steps_attempted), "outlet_at_group_tolerance": outlet(r, db, meta, T_in)["outlet_n_mol_s"]}
-    r.rtol, r.atol = PROFILE["newton_rtol"], PROFILE["newton_atol"]
+    r.rtol, r.atol = PROFILE["newton_rtol"], PROFILE["newton_atol_factor"] * ss_target(num_z)
     st3 = r.solve(num_timesteps=PROFILE["num_timesteps"], dt_init=PROFILE["dt_init"],
-                  steady_state_atol=PROFILE["steady_state_atol"], return_status=True, verbose=0)
+                  steady_state_atol=ss_target(num_z), return_status=True, verbose=0)
     wall = time.perf_counter() - t0
     cert = runner.certify_convergence_1d(r, st3, meta)
     out = outlet(r, db, meta, T_in)
     drift = cert.get("kpi_drift_rel") or {}
     accepted = (bool(st3.converged) and cert.get("kpi_drift_ok") is True and out["u_ret_min"] > 0
                 and out["min_axial_flow_mol_s"] > 0 and abs(out["dP_over_P"]) <= EPS_P)
-    stages["S3"] = {"converged": bool(st3.converged), "steady_state_norm": float(st3.steady_state_norm),
+    stages["S3"] = {"converged": bool(st3.converged), "steady_state_target": ss_target(num_z), "steady_state_norm": float(st3.steady_state_norm),
                     "steps": int(st3.num_steps_attempted), "certificate_kpi_drift_ok": cert.get("kpi_drift_ok"),
                     "certificate_kpi_drift_rel_max": max(drift.values()) if drift else None,
                     "certificate_residual": float(cert.get("achieved_residual", float("nan")))}
@@ -214,6 +222,19 @@ def floor(r: Any) -> dict[str, Any]:
     return {"steps": FLOOR_STEPS, "best_steady_state_norm": float(st.best_steady_state_norm or st.steady_state_norm)}
 
 
+def fine_polish(r: Any, db: dict[str, Any], rounds: int = 4, steps: int = 10) -> list[dict[str, Any]]:
+    """Beyond the profile: Newton atol 1e-12, fixed rounds of `steps` pseudo-time steps; the outlet's trajectory."""
+    r.atol = 1e-12
+    hist = []
+    for _ in range(rounds):
+        st = r.solve(num_timesteps=steps, dt_init=PROFILE["dt_init"], steady_state_atol=1e-14, return_status=True, verbose=0)
+        o = outlet(r, db, {}, T_IN)
+        hist.append({"best_steady_state_norm": float(st.best_steady_state_norm or st.steady_state_norm),
+                     "NH3_out_mol_s": o["outlet_n_mol_s"][2], "T_out_K": o["T_out_K"],
+                     "element_defect_H": o["element_defect_rel"]["H"]})
+    return hist
+
+
 def strip(rec: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in rec.items() if not k.startswith("_")}
 
@@ -224,7 +245,7 @@ def main() -> int:
     ap.add_argument("--export", required=True, type=Path)
     ap.add_argument("--overlay", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
-    ap.add_argument("--pinned", type=int, default=1600)
+    ap.add_argument("--pinned", type=int, default=800)
     ap.add_argument("--grids", type=str, default=",".join(str(g) for g in GRIDS))
     args = ap.parse_args()
     head = subprocess.run(["git", "-C", str(args.clone), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
@@ -251,6 +272,8 @@ def main() -> int:
         rec = strategy(nz, Y_IN, T_IN, db, db_path)
         if nz in FLOOR_GRIDS:
             rec["floor"] = floor(rec["_reactor"])
+        if nz in FINE_POLISH_GRIDS:
+            rec["fine_polish"] = fine_polish(rec["_reactor"], db)
         if nz == args.pinned:
             pinned = rec
         grid.append(strip(rec))

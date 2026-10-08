@@ -1,3 +1,5 @@
+**Superseded (2026-10-08) by `docs/derivations/M01-spec.md`; kept as the halt record.**
+
 # M01 specification — work in progress (halted for budget, 2026-10-06)
 
 **Not a specification.** The specifier's state at the halt, recorded by the session from its final report. Measured

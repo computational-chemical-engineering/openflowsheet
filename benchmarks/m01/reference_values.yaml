@@ -48,6 +48,20 @@ measured:
       Z: 5.37e-17
       h: 8.06e-18
       lnphi_NH3: 1.51e-16
+derived_from_measured:
+  meaning: 'process-side quantities at the pinned grid''s nominal solve, computed from the measured record: regression values,
+    not validation'
+  probe_sha256: 80e6d0a3b54bf181786fe1d877bc2ecf6d56d3e815b9f507635451790fef2c97
+  xi_mol_s: 0.000265383399725
+  projected_outlet_mol_s:
+  - 0.00420672271034
+  - 0.00141415250561
+  - 0.000745175638428
+  - 0.00010720441949
+  - 0.000142939225986
+  defect_rel: 9.43e-09
+  Q_process_W: -9.750509665
+  Q_reactor_coolant_W: 3.3200499480531107
 closed_form:
   pr_constants:
     B_c: '0.077796073903888455972'

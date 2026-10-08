@@ -673,7 +673,7 @@ now written (R-003, R-A04, R-004), 0005 is accepted (R-028), 0008 is used by R-0
 R-035 (T04's globalization: specification continuation, edge 3, the residence-time PTC family,
 experimental; certificates of a bound declaration; Proposed 2026-09-24). 0011 is used by R-036 to
 R-043 (T05's unit models: the PH closure in the unit layer, `SYN-001-ref-v1` as a formation datum,
-SYN-001 bit-identical; accepted 2026-09-25). 0012 is used by R-052 to R-058 (T05b: the saturation band and the PH kernel's band route, the phase contract `T05b-phase-contract-v2` with its `ZERO_FLOW` regime, the verifier's temperature-degenerate judgement, R-007's and R-029's amendments, what stays registered, and the zero-flow form of dormant non-lifted outlets; accepted 2026-09-25). 0013 is used by R-059 to R-062 (K04's fresh-flash checks at the verifier's projection; accepted 2026-09-25). 0014 is used by R-066 to R-074 (T06: the corpus and NET-07, the sampling law, the gate, a deterministic regularity estimate, the verifier's domain-safe alias shift, validation's dimension and component checks, the reference semantics, identity and replay; accepted 2026-09-27) and, from its Amendment 1 (2026-09-26), R-076 to R-080 (component-order mapping, unit conversion by ADR 0001 D1.3–D1.4, the typed tear-path initializer failure, the reference-tool qualification rulings, the shared-provider qualification's field). 0015 is used by R-075 (T06 F4: recovery edge 3's second action, the sequential restart of a revision-built region from `traversal-G0-pass8-v1`; accepted 2026-09-27). 0016 is used by R-081 (input units by recorded conversion, `unit-conversion-v2`, widening ADR 0001 D1.1/D1.4 by Frank's Q11; accepted 2026-09-27). 0017 is used by R-082 (SYN-001's TP flash classified by its Rachford–Rice bracket when the binary64 tests disagree, and SYN-001's identity re-baselined by substitution; accepted 2026-09-27; Frank approved the identity move 2026-09-26). ADR 0014's Amendment 2 carries R-083 (IDAES SmoothVLE) and R-084 (the screen's identity refusal). 0018 is used by R-085 (the solver's terminal refinement, `globalization.eo_core = newton_refined`; accepted 2026-09-27; the enum widening approved by Frank 2026-09-26; Amendment 1, 2026-09-27: the outcome claim under the property budget). ADR 0014's Amendment 4 carries R-086 (the saturation closure) and R-087 (scoring run 1 stands; nothing that scores a start changes after it). Its Amendment 5 (2026-09-27) carries R-088 (six questions handed to T07), R-089 (the holdout ensemble) and R-090 (run records as committed evidence). 0019 is used by R-091 to R-096 (T07's application contract: the sibling protocols, the frozen schemas with Amendments 1 (`application-results`) and 2 (`list_models` `specifications`), idempotency, authorization, the error shape, transports adding nothing; approved by Frank 2026-09-27, Accepted with T07's tested evidence). 0020 is used by R-097 to R-104 (job execution, R-088 Q27, cancellation and budgets, revision-built runs and their routes with the solution state, validate's fallback, R-088 Q29, Q26, Q28). ADR 0002's Amendment 1 (integer canonicity) is recorded in R-A02, and ADR 0013's Amendment 2 (routing on registered tolerances) in R-059 and R-061. T07's decisions outside an ADR are R-105 to R-116: the design note's ruling rounds 3–7 (R-105 to R-109), Frank's v0.1 exclusions (R-110), the V17 specification's four entries (R-111 to R-114), its Amendment R6 and `v17-c2` (R-115), and operator identity isolation (R-116). 0021 is used by R-117, R-118, R-119, R-121, R-125 (the v0.1 release policy; accepted 2026-10-02 with its proposed revisions 1 and 2 and T08's tested evidence). 0022 is used by R-120 (the v0.2 real-chemistry selection, the ammonia loop; accepted 2026-10-02 with V19 PASS). 0023 is used by R-123 (the kinetic CSTR and PTC-R1; accepted 2026-10-02 with T08's tested evidence) and, from its Amendment 1 (2026-09-29), R-126 (the `2⁻¹⁰` C trace). 0024 is used by R-124 (compatible warm starts; accepted 2026-10-02 with T08's tested evidence). T08's decisions outside an ADR: R-122, R-127 (build-first Amendment 1's other rulings), R-128 (build-first Amendment 2: the review's P-budget and P-trace rulings), and, from review 2 (`docs/reviews/T08-review-2.md`, 2026-10-01), R-129 (U05's refusal), R-130 (recovery-edge evidence kinds and `library-only`), R-131 (CLI `replay --rerun`, reversing T07 D-Q6) and R-132 (the description review blocks the RC); R-133 (Frank, 2026-10-01: V17 carried across U05 and the description review's two fixes). R-134 (Frank, 2026-10-01: B50 amended to the carried surface). ADR 0006 Amendment 1 carries R-135 (the GCC runtime library; LGPL-2.1). T08 release spec Amendment R3 (2026-10-01) carries R-136 (A45's bundle set; T06 A34 by A46), R-137 (A49's digest), R-138 (the verdict table, read by column), R-139 (ADR 0021 D2.4's tree list, proposed revision 2), R-140 (no lock in the wheel, L41; the lock lookup confined to the checkout), R-141 (T06 A89 by machine class, T06 Amendment T08-1), R-142 (ADR 0006 Amendment 2: D4 on aarch64) and R-143 (V19 for C1; ADR 0022 proposed revision 1). R-144 (B50 excludes the package version) and R-145 (ADR 0022: Frank's choice recorded). ADR 0025 is used by R-146 (`T08-numerical-policy-v2`; accepted 2026-10-02 with T08's tested evidence; entered at its W9 as amended by R-147, its Correction of 2026-10-02) and R-147 (Frank, 2026-10-02: Q4, a record is compared under the policy it records; an unknown policy is refused). R-148 (Frank, 2026-10-02: the K05 identity re-registered for recording `T08-numerical-policy-v2`, substitution only). R-149 (Frank, 2026-10-02: the project is named OpenFlowsheet; the rename's identity move re-registered, substitution only). R-150 (Frank, 2026-10-03: the public repository is the one working repository; the pre-0.1.0 history archived in `openflowsheet-dev`) and R-151 (the release gate identifies `C` by its recorded file hashes where `C` is absent). R-152 (Frank, 2026-10-06: M01 pins the code's K_NH₃ enthalpy term) and R-153 (Frank, 2026-10-06: the v0.2 order — M01's design first with M06 built alongside — and a `0.2.0a1` pre-release after M02). **R-154 is the next free R number; 0026 is the next free ADR number.**
+SYN-001 bit-identical; accepted 2026-09-25). 0012 is used by R-052 to R-058 (T05b: the saturation band and the PH kernel's band route, the phase contract `T05b-phase-contract-v2` with its `ZERO_FLOW` regime, the verifier's temperature-degenerate judgement, R-007's and R-029's amendments, what stays registered, and the zero-flow form of dormant non-lifted outlets; accepted 2026-09-25). 0013 is used by R-059 to R-062 (K04's fresh-flash checks at the verifier's projection; accepted 2026-09-25). 0014 is used by R-066 to R-074 (T06: the corpus and NET-07, the sampling law, the gate, a deterministic regularity estimate, the verifier's domain-safe alias shift, validation's dimension and component checks, the reference semantics, identity and replay; accepted 2026-09-27) and, from its Amendment 1 (2026-09-26), R-076 to R-080 (component-order mapping, unit conversion by ADR 0001 D1.3–D1.4, the typed tear-path initializer failure, the reference-tool qualification rulings, the shared-provider qualification's field). 0015 is used by R-075 (T06 F4: recovery edge 3's second action, the sequential restart of a revision-built region from `traversal-G0-pass8-v1`; accepted 2026-09-27). 0016 is used by R-081 (input units by recorded conversion, `unit-conversion-v2`, widening ADR 0001 D1.1/D1.4 by Frank's Q11; accepted 2026-09-27). 0017 is used by R-082 (SYN-001's TP flash classified by its Rachford–Rice bracket when the binary64 tests disagree, and SYN-001's identity re-baselined by substitution; accepted 2026-09-27; Frank approved the identity move 2026-09-26). ADR 0014's Amendment 2 carries R-083 (IDAES SmoothVLE) and R-084 (the screen's identity refusal). 0018 is used by R-085 (the solver's terminal refinement, `globalization.eo_core = newton_refined`; accepted 2026-09-27; the enum widening approved by Frank 2026-09-26; Amendment 1, 2026-09-27: the outcome claim under the property budget). ADR 0014's Amendment 4 carries R-086 (the saturation closure) and R-087 (scoring run 1 stands; nothing that scores a start changes after it). Its Amendment 5 (2026-09-27) carries R-088 (six questions handed to T07), R-089 (the holdout ensemble) and R-090 (run records as committed evidence). 0019 is used by R-091 to R-096 (T07's application contract: the sibling protocols, the frozen schemas with Amendments 1 (`application-results`) and 2 (`list_models` `specifications`), idempotency, authorization, the error shape, transports adding nothing; approved by Frank 2026-09-27, Accepted with T07's tested evidence). 0020 is used by R-097 to R-104 (job execution, R-088 Q27, cancellation and budgets, revision-built runs and their routes with the solution state, validate's fallback, R-088 Q29, Q26, Q28). ADR 0002's Amendment 1 (integer canonicity) is recorded in R-A02, and ADR 0013's Amendment 2 (routing on registered tolerances) in R-059 and R-061. T07's decisions outside an ADR are R-105 to R-116: the design note's ruling rounds 3–7 (R-105 to R-109), Frank's v0.1 exclusions (R-110), the V17 specification's four entries (R-111 to R-114), its Amendment R6 and `v17-c2` (R-115), and operator identity isolation (R-116). 0021 is used by R-117, R-118, R-119, R-121, R-125 (the v0.1 release policy; accepted 2026-10-02 with its proposed revisions 1 and 2 and T08's tested evidence). 0022 is used by R-120 (the v0.2 real-chemistry selection, the ammonia loop; accepted 2026-10-02 with V19 PASS). 0023 is used by R-123 (the kinetic CSTR and PTC-R1; accepted 2026-10-02 with T08's tested evidence) and, from its Amendment 1 (2026-09-29), R-126 (the `2⁻¹⁰` C trace). 0024 is used by R-124 (compatible warm starts; accepted 2026-10-02 with T08's tested evidence). T08's decisions outside an ADR: R-122, R-127 (build-first Amendment 1's other rulings), R-128 (build-first Amendment 2: the review's P-budget and P-trace rulings), and, from review 2 (`docs/reviews/T08-review-2.md`, 2026-10-01), R-129 (U05's refusal), R-130 (recovery-edge evidence kinds and `library-only`), R-131 (CLI `replay --rerun`, reversing T07 D-Q6) and R-132 (the description review blocks the RC); R-133 (Frank, 2026-10-01: V17 carried across U05 and the description review's two fixes). R-134 (Frank, 2026-10-01: B50 amended to the carried surface). ADR 0006 Amendment 1 carries R-135 (the GCC runtime library; LGPL-2.1). T08 release spec Amendment R3 (2026-10-01) carries R-136 (A45's bundle set; T06 A34 by A46), R-137 (A49's digest), R-138 (the verdict table, read by column), R-139 (ADR 0021 D2.4's tree list, proposed revision 2), R-140 (no lock in the wheel, L41; the lock lookup confined to the checkout), R-141 (T06 A89 by machine class, T06 Amendment T08-1), R-142 (ADR 0006 Amendment 2: D4 on aarch64) and R-143 (V19 for C1; ADR 0022 proposed revision 1). R-144 (B50 excludes the package version) and R-145 (ADR 0022: Frank's choice recorded). ADR 0025 is used by R-146 (`T08-numerical-policy-v2`; accepted 2026-10-02 with T08's tested evidence; entered at its W9 as amended by R-147, its Correction of 2026-10-02) and R-147 (Frank, 2026-10-02: Q4, a record is compared under the policy it records; an unknown policy is refused). R-148 (Frank, 2026-10-02: the K05 identity re-registered for recording `T08-numerical-policy-v2`, substitution only). R-149 (Frank, 2026-10-02: the project is named OpenFlowsheet; the rename's identity move re-registered, substitution only). R-150 (Frank, 2026-10-03: the public repository is the one working repository; the pre-0.1.0 history archived in `openflowsheet-dev`) and R-151 (the release gate identifies `C` by its recorded file hashes where `C` is absent). R-152 (Frank, 2026-10-06: M01 pins the code's K_NH₃ enthalpy term) and R-153 (Frank, 2026-10-06: the v0.2 order — M01's design first with M06 built alongside — and a `0.2.0a1` pre-release after M02). ADR 0026 is used by R-154 to R-160 (M01: the C1 property route; Proposed 2026-10-08) and ADR 0027 by R-161 to R-169 (M01: the C1 reactor boundary; Proposed 2026-10-08). **R-170 to R-175 and ADR 0030 are held by M06's branch; R-176 is the next free R number and 0028 the next free ADR number.**
 
 ## R-018 — Structural analysis reads the declaration, never the compiled sparsity pattern
 
@@ -3567,5 +3567,324 @@ route would stay unpublished until the end of v0.2.
 
 **Watch for.** The v0.1 gate script refuses versions off the 0.1 line (R-151); `0.2.0a1` needs a v0.2 gate of its
 own (the W gates that apply at that point), designed before the pre-release, not by relaxing the v0.1 one.
+
+---
+
+## R-154 — The C1 provider `pr-c1-v1`: Peng–Robinson with PR 1976's rounded Ω_a, Ω_b and κ; pure NH₃'s roots labelled by T_c,EOS and v_c,EOS; a light-gas phase takes the largest root, refused when that root is metastable
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | `docs/adr/0026-c1-peng-robinson-vapour-only-route.md` D1, D2; `docs/derivations/M01-spec.md` §4, §5.2–5.3 |
+| Evidence | `benchmarks/m01/reference_values.yaml` (claims PR-01–PR-06, IDAES-01: the generator reproduces T08's IDAES separator to 4 × 10⁻¹²) |
+| Affected packages | M01, M02, M04–M07 |
+
+**Decision.** Ω_a = 0.45724, Ω_b = 0.07780, κ(1976) for every component. Pure NH₃: above T_c,EOS = T_c((1+κ)/(r+κ))²
+one vapour root; below, three roots give liquid = smallest, vapour = largest, a single root is liquid iff v < (Z_c/B_c)b.
+A phase with any light gas takes the largest root; `vapour_root_metastable` when three roots exist and the smallest has
+the lower G^dep.
+
+**Rejected alternatives, and why.** Exact Ω's: IDAES (the independent reference) uses the rounded ones. Minimum-Gibbs
+root for the light-gas phase: discontinuous along the flash's search and unlike IDAES's vapour root.
+
+**Watch for.** Near-double-root states are not asserted; the label rule rests on the spinodal straddle (claims PR-06),
+which the generator re-checks.
+
+---
+
+## R-155 — The vapour-only flash solves for the equilibrium vapour composition y*(T, P, light-gas proportions), not for the split from the feed
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0026 D2; `docs/derivations/M01-spec.md` §5.4–5.6 |
+| Evidence | generator claims FL-*, FL-INDEP; state F5 (trace H₂ in NH₃: TWO_PHASE with y* = 0.0555) |
+| Affected packages | M01, M02 (units, verifier use) |
+
+**Decision.** y* is the smallest root on (0, 1) of ln y + ln φ_NH₃^V(y, w) − ln φ_NH₃^L,pure, bracketed by the fixed
+samples k/64 and 1 − 2⁻ʲ and bisected; two-phase iff n_NH₃ > n_light y*/(1 − y*). No liquid at T ≥ T_c,EOS or where pure
+NH₃'s stable phase is vapour.
+
+**Rejected alternatives, and why.** Bisection on the split from the feed, or a TPD test on the feed's own root (the
+previous specifier's tentative choice): an NH₃ feed with a trace of light gas has a liquid-like single root and is
+declared one dense phase — T08's trivial-solution trap in another form.
+
+**Watch for.** Positive excursions of h narrower than the sample spacing (near T_c,EOS only) could be missed; F12 is
+registered for what the rules give.
+
+---
+
+## R-156 — `PR-C1-ref-v1` is a formation datum (ideal gas at 298.15 K = Δ_fH°); ADR 0011 D2's reaction-consistent set becomes {SYN-001-ref-v1, PR-C1-ref-v1}, without editing SYN-001's constant
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0026 D4; `docs/derivations/M01-spec.md` §6 |
+| Evidence | claim RX-02 (Σν_i h_i^ig(298.15 K) = 2Δ_fH°(NH₃) exactly) |
+| Affected packages | M01, M02, M07 |
+
+**Decision.** h_i^ig(T) = Δ_fH°_i + ∫_{298.15}^{T} c_p dT; phases add the PR departure; reacting units balance total
+enthalpy. The registry of reaction-consistent conventions lives in a new module; `REACTION_CONSISTENT_CONVENTIONS` in
+`models/syn001/conversion_reactor.py` is not edited (its source is in SYN-001's model versions).
+
+**Rejected alternatives, and why.** Editing the SYN-001 constant: moves SYN-001's identity (needs Frank's approval,
+R-148/R-149) for no gain. A heat-of-reaction term: double-counts on a formation datum (ADR 0011).
+
+**Watch for.** A test keeps the SYN-001 constant a subset of the registry (M01.A24).
+
+---
+
+## R-157 — k_ij = 0 for every C1 pair, with its effect stated (k = 0.1 for H₂–NH₃ moves the separator's y* by −3.1 %)
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0026 D3; `docs/derivations/M01-spec.md` §4.2 |
+| Evidence | `reference_values.yaml` → `closed_form.kij_sensitivity_F1` |
+| Affected packages | M01, M07 (W22's statement) |
+
+**Decision.** No binary interaction parameters; the sensitivity table at F1 is part of the record.
+
+**Rejected alternatives, and why.** A literature or fitted set: none covering the C1 pairs was found in an open, cited
+source; fitting needs mixture data not transcribed (spec Q-F2).
+
+**Watch for.** Adding k_ij is a new provider data version and a new W22 statement, not a silent record edit.
+
+---
+
+## R-158 — C1 parameter sources: reference-EOS T_c, P_c, ω (via `chemicals` HEOS), NASA TM-4513 c_p (via Cantera), ATcT 1.112 Δ_fH; no rights grant relied on; the libraries are never runtime dependencies
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01, applying Frank's statement 1 of 2026-10-02; Proposed |
+| Normative text | ADR 0026 D5; `docs/derivations/M01-spec.md` §3; `benchmarks/m01/components.yaml` |
+| Evidence | `benchmarks/m01/external-crosscheck.json` (retrieval exact; CoolProp cross-checks) |
+| Affected packages | M01, M02 |
+
+**Decision.** As the title; c_p stored as dimensionless b_k of c_p/R = Σ b_k (T/1000 K)^k (exact decimal rescaling of the
+NASA-7 coefficients).
+
+**Rejected alternatives, and why.** Poling 5th ed. polynomials via `chemicals`: redistributing book tables is a rights
+question for Frank (spec Q-N1); NASA TM-4513 is a U.S. Government work. NASA's or JANAF's Δ_fH: ATcT is more accurate
+(NH₃ 340 J/mol from JANAF). The group's database: a cross-check only (Frank, 2026-10-02).
+
+**Watch for.** CH₄'s NASA c_p is 1.1 % from CoolProp's ideal part at 1000 K; recorded, not corrected.
+
+---
+
+## R-159 — The provider's surface: properties `h`, `Z`, `v`, `lnphi_<id>`; derivative inputs `T`, `P`, `n_<id>`; every refusal's `message` begins with its reason code
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0026 D6; `docs/derivations/M01-spec.md` §5.3, §9.1, §9.4 |
+| Evidence | — (a contract) |
+| Affected packages | M01, M02 |
+
+**Decision.** As the title; codes `out_of_domain`, `light_gas_in_liquid`, `no_liquid_root`, `no_vapour_root`,
+`vapour_root_metastable`, `undeclared_derivative_input`, `dormant_state`. The frozen `PropertyProvider` protocol is
+unchanged.
+
+**Rejected alternatives, and why.** A new status or result field for the reason: a frozen-interface change for what a
+prefix convention carries.
+
+**Watch for.** Tests match the prefix, not the prose after it.
+
+---
+
+## R-160 — W22's "validated" for C1: numerical verification against closed forms, conformance with IDAES 2.13, and pure-component validation against the reference EOS within stated bands; no mixture VLE claim
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | `docs/derivations/M01-spec.md` §11, M01.A37–A40 |
+| Evidence | `benchmarks/m01/external-crosscheck.json` (P_sat within 1.27 %; liquid ln φ within 0.040; light-gas ln φ within 0.042) |
+| Affected packages | M01, M07 (the verdict) |
+
+**Decision.** Bands: P_sat 2 % on 240–320 K; ln φ 0.05 for liquid NH₃ at the separator states and for each pure gas at
+loop states. They are fitness statements of the same order as the k_ij effect, not numerical tolerances.
+
+**Rejected alternatives, and why.** Waiting for mixture VLE data: none transcribed (candidates named, spec Q-F2).
+Bands at the measured values: no margin for a re-run with other pins.
+
+**Watch for.** A transcribed mixture dataset adds a criterion by a new entry; the bands do not tighten silently.
+
+---
+
+## R-161 — The C1 loop uses the zero-pressure-drop convention: P_out = P_in, the reactor runs with p_ret_out = P_in, admissible iff ΔP/P_in ≤ 10⁻³
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01, deciding what ADR 0022 D2 left open; Proposed |
+| Normative text | `docs/adr/0027-c1-reactor-boundary.md` D2; `docs/derivations/M01-spec.md` §8.8 |
+| Evidence | `benchmarks/m01/reactor-probe.json` (ΔP/P_in = 5.0 × 10⁻⁵ at the nominal point) |
+| Affected packages | M01, M02 ("incompatible pressure boundary rejected"), M07 |
+
+**Decision.** As the title; above the bound `pressure_drop_exceeds_convention`.
+
+**Rejected alternatives, and why.** A recycle compressor: needs PR entropy and an efficiency for a 5 × 10⁻⁵ effect.
+Inverting for p_ret_out: moves the inconsistency to the outlet at many times the cost.
+
+**Watch for.** Higher GHSV raises ΔP roughly with u²; the refusal, not a silent extrapolation, is the answer there.
+
+---
+
+## R-162 — The reactor's outlet is projected onto the reaction by the least-squares extent over H₂, N₂, NH₃ (inerts exact); refused above a defect of 10⁻⁶
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0027 D3; `docs/derivations/M01-spec.md` §8.9 |
+| Evidence | claims BD-01, BD-02; the probe's element defects (~10⁻⁹ under M01's profile) |
+| Affected packages | M01, M02 |
+
+**Decision.** ξ = Σ ν_i (n_raw,i − n_in,i)/14; n_out = n_in + ν ξ; the defect is reported.
+
+**Rejected alternatives, and why.** ξ from one species: hides the defect in the others.
+
+**Watch for.** The previous specifier's "grid-independent element floor 2.2 × 10⁻⁴" was iteration error at the group's
+tolerance, not a floor.
+
+---
+
+## R-163 — The reactor's duty is process-side (Ḣ by `pr-c1-v1`); the reactor keeps its own kinetics, fugacity correlations and ideal-gas thermodynamics
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0027 D4; `docs/derivations/M01-spec.md` §8.10 |
+| Evidence | the probe's coolant uptake and inlet-face loss (finding F-R3) |
+| Affected packages | M01, M02, M07 |
+
+**Decision.** Q = Ḣ_out − Ḣ_in on the process side; the coolant uptake and the inlet-face heat loss are diagnostics.
+
+**Rejected alternatives, and why.** PR fugacities inside the kinetics: changes the group's validated model. The
+reactor's enthalpy at the boundary: a different datum and data set (ADR 0001 D5.2).
+
+**Watch for.** F-R3 (25–33 % of the reaction heat leaves through the inlet face) is the group's question (spec Q-F1).
+
+---
+
+## R-164 — Ar and CH₄ enter the pinned reactor through M01's overlay rows (N₂ transport surrogates read from the pinned file) and a subclass replacing one three-species constant; nothing of the group's is copied
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0027 D5; `docs/derivations/M01-spec.md` §8.5–8.6; `benchmarks/m01/reactor-overlay.json` |
+| Evidence | the probe: backflow override bitwise inert; H₂-surrogate variant moves the outlet by 0.29 % |
+| Affected packages | M01, M02 |
+
+**Decision.** As the title.
+
+**Rejected alternatives, and why.** Lumping inerts into N₂: CH₄'s c_p is twice N₂'s. Patching the group's code: it is
+used by reference; a fix belongs upstream at a new pin (spec Q-N2).
+
+**Watch for.** The surrogate's 0.29 % is model uncertainty of the same order as the design grid's error.
+
+---
+
+## R-165 — The reactor's start: S1 cold at the trace-NH₃ inlet, S2 warm at the true inlet, S3 polish under M01's profile (Newton rtol 10⁻¹², steady-state target 10⁻⁶ (num_z/100)²)
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0027 D6; `docs/derivations/M01-spec.md` §8.7, §10.2–10.3 |
+| Evidence | the probe (cold starts with real NH₃ stall; the group's tolerance leaves 0.45 % path dependence; with S3 the paths agree to the bound of spec §10.3) |
+| Affected packages | M01, M02 |
+
+**Decision.** As the title, with the acceptance of spec §8.7.
+
+**Rejected alternatives, and why.** The group's acceptance alone (path-dependent outlet); continuation in inert
+fraction (the previous specifier's): the trace start is the group's own and needs one stage.
+
+**Watch for.** The residual floor grows like num_z²; a fixed target is unreachable above num_z = 400.
+
+---
+
+## R-166 — The C1 reactor's design grid is num_z = 800, with its discretization estimate reported in every result
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0027 D7; `docs/derivations/M01-spec.md` §10 |
+| Evidence | `benchmarks/m01/reactor-probe.json` grid sequence 100–3200 |
+| Affected packages | M01, M02, M04, M05, M07 |
+
+**Decision.** As the title; the profile is registered for num_z ≤ 800.
+
+**Rejected alternatives, and why.** The publication grid 100 (≈ 5 % high in outlet NH₃); 1600 and above (the pinned
+solver's state is not accepted there).
+
+**Watch for.** The observed order is 0.6–0.8 (spec Q-F3); an upstream fix of F-R3 may change it.
+
+---
+
+## R-167 — The C1 reactor is N_tubes identical tubes: per-tube flow n_tot/N_tubes, the map homogeneous of degree one
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0027 D1; `docs/derivations/M01-spec.md` §8.3 |
+| Evidence | M01.A29 |
+| Affected packages | M01, M02, M07 |
+
+**Decision.** N_tubes a positive real configuration parameter; the geometry per tube is the group's G2.
+
+**Rejected alternatives, and why.** Rescaling the geometry: changes the group's validated configuration.
+
+**Watch for.** N_tubes is part of the unit's identity; M07 chooses it for the loop's throughput.
+
+---
+
+## R-168 — M01 builds the boundary module and a synthetic stand-in reactor; M02 builds the out-of-process adapter and the PR units
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0027 D8; `docs/derivations/M01-spec.md` §8.13–8.14, §14 |
+| Evidence | — |
+| Affected packages | M01, M02 |
+
+**Decision.** `c1.reactor_standin` (ξ = 0.25 n_N₂,in, T_out = T_in), labelled synthetic, exercises every boundary path
+without PyMRM.
+
+**Rejected alternatives, and why.** M01-build also implementing the PR units: they belong with the loop M02 assembles.
+
+**Watch for.** The stand-in certifies the boundary code, never the reactor.
+
+---
+
+## R-169 — Inlets outside the kinetics' data domain are flagged `extrapolated`, not refused; outside the adapter's hard domain they are `out_of_domain`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M01; Proposed |
+| Normative text | ADR 0027 D9; `docs/derivations/M01-spec.md` §8.12 |
+| Evidence | the bed leaves the data domain at every registered state (T_max ≈ 760 K) |
+| Affected packages | M01, M02, M04, M05 |
+
+**Decision.** Data domain 643–733 K, 50–100 bar, H₂/N₂ ∈ [1.5, 3]; hard domain 573.15–773.15 K, 5–15 MPa, H₂/N₂ ∈
+[1, 4], inerts ≤ 20 %.
+
+**Rejected alternatives, and why.** Refusing outside the data domain (the dossier's list): it would hide the v0.2
+decision variable's likely optimum.
+
+**Watch for.** M05 must treat `extrapolated` results as such (a constraint or a stated limit), not as validated.
 
 ---
