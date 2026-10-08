@@ -249,3 +249,11 @@ Grep, don't read whole. Newest at the bottom.
   `v0.2-alpha-gate-v1` = v0.1 gate unchanged + W21, W22 met, no other claims; N4 ship the stand-in, listed synthetic;
   N5 defer PR LIQUID regime + pure-NH₃ flash; N6 no reactor warm start.
 - `opus-engineer` M02 WO-1…4 (+ optional 5, 6) launched on `wp/M02`. M02 merges only after M01 `tested`.
+- M06 WO-11, 12 done (`402e682` security/browser gates, `3c04037` changelog-test decision, `68bddc3` docs): check.sh
+  7447 passed, 52 skipped, Node 91/91; browser module 31 passed (10/10 repeats; DevTools protocol over a pipe). G1
+  dynamic, G1 static final list, G2 17/17 over HTTP, G8 DOM, G11 22 routes × 4 principals; live Solve/Cancel/download
+  exercised in a real browser, no shell bugs. R-216 (session): the T08 CHANGELOG-limitations test reads v0.1.0's
+  envelope (`98da494`). `wp/M06-finish` fast-forwarded into `wp/M06-build`; worktree removed.
+- `wp/M06-build` pushed to origin (Frank authorised pushing) for CI evidence (G10 wheel half, G12, Chrome on
+  ubuntu-latest); CI run 37825384881.
+- `reviewer` M06 (WO-13 review) launched on `wp/M06-build` @ `98da494`.
