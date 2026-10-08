@@ -28,9 +28,10 @@ its body, five artifact kinds, `revision_coupled`, `COUPLING_NOT_CONVERGED`,
 R-234 (design note M02 §14 B1, following R-192) rules how: this file's 0.1 constants and
 `scripts/t08_rc.py`'s A49 constant are not edited; the move is bound to M02's additions by a
 decomposition test — with M02's additions removed (`without_m02`, `tests/m02_schema_support.py`)
-the served list is the base's registered digest (`M02_BASE_SERVED_SHA256`, M06's
-`6c4375b4…` above, R-192), and the served tool descriptions are byte-identical. M02's own served digest is registered at the merge commit, on the
-combined tree; the value measured without M06 (`8de83946…`) is evidence, not a pin.
+the served list is the base's registered digest (`M02_BASE_SERVED_SHA256`, M06's `6c4375b4…`
+above, R-192), and the served tool descriptions are byte-identical. M02's own served digest is
+registered at the merge commit, on the combined tree; the value measured without M06
+(`8de83946…`) is evidence, not a pin.
 """
 
 from __future__ import annotations
