@@ -23,7 +23,12 @@ import tomllib
 from conftest import REPO_ROOT
 
 NLP_LIBRARIES = ("pyomo", "cyipopt", "ipopt_wrapper")
-NLP_ADAPTER_MODULES = ("openflowsheet.studies.nlp.greybox",)
+NLP_ADAPTER_MODULES = (
+    "openflowsheet.studies.nlp.greybox",
+    # M05 (ADR 0038 D2): the trust-region projection, also allowed to import Pyomo;
+    # tests/test_m05_isolation.py checks the allow-list itself.
+    "openflowsheet.studies.trust_region.projection",
+)
 #: The binding modules that need the `server` extra. Where that extra is absent (the CI
 #: `default-install` job) exactly these are skipped; any other import failure fails the test, and
 #: where the extra is installed they are walked like every other module.
