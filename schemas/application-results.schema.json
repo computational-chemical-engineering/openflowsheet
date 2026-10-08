@@ -550,6 +550,7 @@
       "required": [
         "added",
         "changed",
+        "elements",
         "removed"
       ],
       "properties": {
@@ -570,6 +571,143 @@
           "items": {
             "type": "string"
           }
+        },
+        "elements": {
+          "description": "ADR 0019 Amendment 3 (A3.2; M06 design note §4.2): the items of `instances`, `connections` and `specifications` that differ, paired by `id` (`transactions.element_diff`); `id` is null when a member's items cannot be paired. Ordered by member, then by `id` in code-point order; `paths` are the key paths inside a `changed` item, from its root, in code-point order. `diff_revisions` only: `transaction-result`'s `diff` has no such member.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "change",
+              "id",
+              "member",
+              "paths"
+            ],
+            "properties": {
+              "member": {
+                "enum": [
+                  "instances",
+                  "connections",
+                  "specifications"
+                ]
+              },
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "change": {
+                "enum": [
+                  "added",
+                  "removed",
+                  "changed"
+                ]
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "audit_record": {
+      "description": "ADR 0019 Amendment 3 (A3.3; M06 design note §4.3): one row of the project's audit (§10.7), an effect or a refusal, as the store holds it. `effect` is `<kind>:<id>`; `idempotency_key` is the ledger's key of an `allowed` row with the same principal, operation and request hash, else null.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "at",
+        "capability_id",
+        "code",
+        "effect",
+        "idempotency_key",
+        "operation",
+        "outcome",
+        "principal_id",
+        "request_sha256",
+        "seq"
+      ],
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "at": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/timestamp"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "allowed",
+            "refused"
+          ]
+        },
+        "code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_sha256": {
+          "anyOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effect": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "idempotency_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "audit_page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/audit_record"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
         }
       }
     }

@@ -460,6 +460,19 @@ def serve(
     it once this returns. A host other than the loopback interface is refused unless
     `allow_remote`, and then served with a warning on stderr that v0.1 has no TLS.
     """
+    run(create_app(owner), host=host, port=port, allow_remote=allow_remote, log_level=log_level)
+
+
+def run(
+    application: Starlette,
+    *,
+    host: str = DEFAULT_HOST,
+    port: int = DEFAULT_PORT,
+    allow_remote: bool = False,
+    log_level: str = "info",
+) -> None:
+    """`serve`'s rules — loopback unless `allow_remote`, the no-TLS warning, uvicorn's options —
+    applied to an application built over `create_app` (`bindings.web` adds the shell to it)."""
     if not is_loopback(host):
         if not allow_remote:
             raise ValueError(
@@ -472,7 +485,7 @@ def serve(
             file=sys.stderr,
         )
     uvicorn.run(
-        create_app(owner),
+        application,
         host=host,
         port=port,
         log_level=log_level,

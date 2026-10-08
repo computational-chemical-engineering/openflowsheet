@@ -51,7 +51,7 @@ def test_the_envelope_has_spec_5_1s_form(envelope: dict[str, Any]) -> None:
 
 def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, Any]) -> None:
     assert MATRIX.check_a20(envelope, facts) == []
-    assert len(facts["operations"]) == 20
+    assert len(facts["operations"]) == 21  # spec §9's 20 and ADR 0019 Amendment 3's `list_audit`
     assert len(facts["models"]) == 13
     assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]

@@ -34,6 +34,7 @@ from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.process import Connection, ProcessGraph
+from openflowsheet.graph.trace import Declaration
 from openflowsheet.models import (
     Port,
     SpecificationError,
@@ -99,6 +100,7 @@ __all__ = [
     "instance_contract",
     "pin_encodings",
     "render_encoding",
+    "specification_rows",
     "target_path_table",
 ]
 
@@ -129,6 +131,30 @@ class RevisionBinding:
     #: How the revision's inputs were read (T06 spec §8.5): `parse_revision`'s record, which is
     #: also what `verify_revision` reads. Empty for every registered revision.
     input_mapping: InputMapping = field(default_factory=InputMapping)
+    #: Instance id -> {pinned column -> the specification that pins it}: what each builder was
+    #: handed and consumed, recorded where the units are built (M06 design note §4.1, R3). The
+    #: first specification in document order names a column two equal specifications pin, as
+    #: `specification_unconsumed` and `specification_conflict` name it. Read only by
+    #: `specification_rows`, for `inspect_structure`'s index; never by the structural analysis.
+    specification_pins: Mapping[str, Mapping[str, str]] = field(default_factory=dict)
+
+
+def specification_rows(binding: RevisionBinding, declaration: Declaration) -> dict[str, str]:
+    """Row id -> the revision specification the row realises, on `revision_eo` (M06 design note
+    §4.1): a specification row (`TracedRow.is_specification_row`) whose one column is a pin its
+    authoring instance consumed. Joined on the row's traced incidence and the binder's own
+    routing record, never on id text (R-019). For `inspect_structure`'s index only: the route's
+    analysis is given no specification ids on `revision_eo`, and its report does not change."""
+    attributed: dict[str, str] = {}
+    for row_id in declaration.row_ids:
+        row = declaration.rows[row_id]
+        if row.unit is None or row.coefficients is None or not row.is_specification_row:
+            continue
+        (column,) = row.coefficients
+        specification = binding.specification_pins.get(row.unit, {}).get(column)
+        if specification is not None:
+            attributed[row_id] = specification
+    return attributed
 
 
 # -- model signatures (T07 design note §4.2 `list_models`, §15 W5c) -----------------------------
@@ -1282,4 +1308,8 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
         row_units=row_units,
         revision_sha256=document_sha256(document),
         input_mapping=view.input_mapping,
+        specification_pins={
+            instance.unit_id: {column: sources[column][0] for column in instance.pins}
+            for instance in view.instances
+        },
     )

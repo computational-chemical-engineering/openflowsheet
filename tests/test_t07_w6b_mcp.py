@@ -79,6 +79,11 @@ ALLOWED_PROJECT_MODULES = {
     for name in ("contract", "types", "operations", "projection")
 }
 ALLOWED_THIRD_PARTY = {"mcp", "anyio", "starlette", "uvicorn"}
+#: M06 §5.2: the web shell's server builds on the HTTP binding and reads the packaged files
+#: through `openflowsheet.resources` (standard library only).
+ALLOWED_PER_MODULE = {
+    "web.py": {"openflowsheet.application.bindings.http", "openflowsheet.resources"},
+}
 
 
 def _imports(path: Path) -> set[str]:
@@ -113,10 +118,10 @@ def _is_module(name: str) -> bool:
         return False
 
 
-def _allowed(module: str) -> bool:
+def _allowed(module: str, extra: frozenset[str] = frozenset()) -> bool:
     top = module.split(".")[0]
     if top == "openflowsheet":
-        return module in ALLOWED_PROJECT_MODULES
+        return module in ALLOWED_PROJECT_MODULES or module in extra
     return top in ALLOWED_THIRD_PARTY or top in sys.stdlib_module_names or top == "__future__"
 
 
@@ -126,7 +131,8 @@ def test_g14_the_bindings_import_only_the_contract(path: Path) -> None:
     and of the application only the contract — never `local`, `authz` or the store, so a binding
     cannot reach past `dispatch`. The composition root is `serving`, outside `bindings/`."""
     imported = _imports(path)
-    refused = sorted(module for module in imported if not _allowed(module))
+    extra = frozenset(ALLOWED_PER_MODULE.get(path.name, ()))
+    refused = sorted(module for module in imported if not _allowed(module, extra))
     assert refused == [], f"{path.name} imports outside §11.6 (2): {refused}"
     if path.name == "mcp.py":
         assert "openflowsheet.application.operations" in imported

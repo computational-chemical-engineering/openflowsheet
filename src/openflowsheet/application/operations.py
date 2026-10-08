@@ -1,9 +1,10 @@
 """The operations table and the one dispatch every binding goes through (§4.3, §10.4, §11.6).
 
 `OPERATIONS` is the only routing source: one row per protocol method — `Application`'s four,
-`JobControl`'s seven, `Inspection`'s eight — and `artifact_bytes`, the raw export. A row names
-its method, the right it needs, its request and response schemas, its HTTP verb and path, its MCP
-tool, the transports that carry it and its tool description. Python (through `dispatch`), the
+`JobControl`'s seven, `Inspection`'s nine (`list_audit` is ADR 0019 Amendment 3's) — and
+`artifact_bytes`, the raw export. A row names its method, the right it needs, its request and
+response schemas, its HTTP verb and path, its MCP tool, the transports that carry it and its tool
+description. Python (through `dispatch`), the
 CLI, HTTP and MCP read this table and nothing else, and add nothing to what it says.
 
 `dispatch(app, name, request)` does, in this order:
@@ -57,6 +58,7 @@ from openflowsheet.application.types import (
     SCHEMA_BASE,
     ApiError,
     ApiErrorCode,
+    AuditRecord,
     Change,
     DocumentSchemaError,
     Job,
@@ -477,6 +479,28 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             _result("projection"),
             ("GET", "/v1/artifacts/{artifact_id}"),
             decode=_members("artifact_id", *_VIEW),
+        ),
+        # ADR 0019 Amendment 3 (A3.3): the audit, by `seq`. Python, CLI and HTTP; no MCP tool
+        # (an MCP tool needs a reviewed description). `order` is a string, not a boolean: the
+        # HTTP binding converts only numeric query values.
+        _row(
+            "list_audit",
+            "read",
+            _object(
+                {},
+                {
+                    "principal_id": {"anyOf": [ID, {"type": "null"}]},
+                    "operation": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+                    "order": {"enum": ["ascending", "descending"]},
+                    "cursor": CURSOR,
+                    "limit": _limit(MAX_PAGE),
+                },
+            ),
+            _result("audit_page"),
+            ("GET", "/v1/audit"),
+            decode=_members("principal_id", "operation", "order", "cursor", "limit"),
+            encode=_page_of(AuditRecord.as_document),
+            transports=("python", "cli", "http"),
         ),
         # The raw export (Python, CLI, HTTP; never MCP)
         _row(
