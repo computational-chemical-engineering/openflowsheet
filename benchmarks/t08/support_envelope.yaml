@@ -1,4 +1,7 @@
-# The v0.1 supported envelope (T08 release spec §5; T08 build-first spec §E.4, §E.5, B27).
+# The supported envelope (T08 release spec §5; T08 build-first spec §E.4, §E.5, B27). Since R-193
+# (2026-10-08) this file is v0.2's working envelope, held to the live code during v0.2 development;
+# the v0.1 envelope as released is `git show v0.1.1:benchmarks/t08/support_envelope.yaml`
+# (`v0.1-envelope-1`, release 0.1.0). It is finalised for 0.2.0 at M07.
 #
 # Machine-readable source of `docs/support-matrix.md`, which `scripts/t08_support_matrix.py --emit`
 # renders and `--check` holds to this file byte for byte (T08.A23). `--check` also compares the
@@ -16,8 +19,8 @@
 #   starts across runs" is no longer true; the GUESS-role half stands.
 # - L18 onward are rows the harvest (W2.2) needed that §5.5's seed does not carry.
 
-envelope_id: v0.1-envelope-1
-release: 0.1.0
+envelope_id: v0.2-envelope-dev
+release: 0.2.0.dev0
 
 axes:
   - id: property_model
@@ -198,7 +201,7 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty operations of
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of
       `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
     operations:
       artifact_bytes: [python, cli, http]
@@ -211,6 +214,7 @@ axes:
       get_project: [python, cli, http, mcp]
       get_revision: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
+      list_audit: [python, cli, http]
       list_job_events: [python, cli, http, mcp]
       list_jobs: [python, cli, http, mcp]
       list_models: [python, cli, http, mcp]
@@ -284,7 +288,7 @@ unsupported:
       `validate` with `task: optimization` ends with ADR 0019's error `unsupported`, detail
       `task_unsupported(optimization)`, before any analysis; no v0.1 path returns
       `READY_FOR_OPTIMIZATION` (the value stays in the frozen enum, unused); the other studies
-      have no operation among the twenty of `OPERATIONS`; no optimality claim anywhere.
+      have no operation among the twenty-one of `OPERATIONS`; no optimality claim anywhere.
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u05_validate_for_optimization_is_unsupported
       - tests/test_t08_w2_unsupported.py::test_u05_a_change_for_optimization_is_refused_audited

@@ -32,7 +32,7 @@ from __future__ import annotations
 import copy
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet.application.revisions import (
     CONTENT_HASH_EXCLUDED,
@@ -42,6 +42,8 @@ from openflowsheet.application.revisions import (
 from openflowsheet.application.store import AuditEntry
 from openflowsheet.application.types import (
     ChangeSet,
+    DiffElement,
+    DiffMember,
     Edit,
     EditOperation,
     SemanticDiff,
@@ -55,8 +57,10 @@ if TYPE_CHECKING:
 Operation = EditOperation
 
 __all__ = [
+    "ELEMENT_MEMBERS",
     "Application",
     "ChangeSet",
+    "DiffElement",
     "Edit",
     "EditPathError",
     "Operation",
@@ -64,7 +68,9 @@ __all__ = [
     "SemanticDiff",
     "TransactionResult",
     "apply_edits",
+    "element_diff",
     "json_pointer",
+    "revision_diff",
     "semantic_diff",
 ]
 
@@ -187,6 +193,79 @@ def semantic_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> Semant
 
     walk(before, after, "")
     return SemanticDiff(tuple(added), tuple(removed), tuple(changed))
+
+
+#: ADR 0019 Amendment 3 (A3.2): the members `element_diff` pairs, in its order.
+ELEMENT_MEMBERS: Final[tuple[DiffMember, ...]] = ("instances", "connections", "specifications")
+
+
+def _by_id(items: Any) -> dict[str, Any] | None:
+    """`items` keyed by `id` when it is a list of objects each with a string `id`, unique; else
+    `None` (the member cannot be paired)."""
+    if not isinstance(items, list):
+        return None
+    keyed: dict[str, Any] = {}
+    for item in items:
+        if not isinstance(item, Mapping) or not isinstance(item.get("id"), str):
+            return None
+        if item["id"] in keyed:
+            return None
+        keyed[item["id"]] = item
+    return keyed
+
+
+def _item_paths(left: Any, right: Any) -> tuple[tuple[str, ...], ...]:
+    """Every path `semantic_diff`'s walk reports inside one item — keys added, keys removed,
+    values changed; objects recursed by key, every other value compared atomically — as key
+    tuples from the item's root, in code-point order."""
+    paths: list[tuple[str, ...]] = []
+
+    def walk(old: Any, new: Any, path: tuple[str, ...]) -> None:
+        if isinstance(old, Mapping) and isinstance(new, Mapping):
+            for key in set(old) | set(new):
+                if key not in old or key not in new:
+                    paths.append((*path, key))
+                else:
+                    walk(old[key], new[key], (*path, key))
+        elif old != new:
+            paths.append(path)
+
+    walk(left, right, ())
+    return tuple(sorted(paths))
+
+
+def element_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> tuple[DiffElement, ...]:
+    """ADR 0019 Amendment 3 (A3.2; M06 design note §4.2): the items of `instances`,
+    `connections` and `specifications` that differ, paired by `id`. `diff_revisions`'s only.
+
+    Where every item of a member is an object with a string `id`, unique, in both revisions: an id
+    only in `after` is `added`, only in `before` `removed`, in both with unequal items `changed`
+    with its `paths`. Otherwise a member that differs is one entry with `id` `None`. Items that
+    differ only in order give no entry (the coarse `changed` still names the member). Ordered by
+    member, then by `id` in code-point order. No member is excluded inside an item:
+    `CONTENT_HASH_EXCLUDED` is top-level only."""
+    elements: list[DiffElement] = []
+    for member in ELEMENT_MEMBERS:
+        old, new = before.get(member), after.get(member)
+        left, right = _by_id(old), _by_id(new)
+        if left is None or right is None:
+            if old != new:
+                elements.append(DiffElement(member, None, "changed"))
+            continue
+        for item_id in sorted(set(left) | set(right)):
+            if item_id not in left:
+                elements.append(DiffElement(member, item_id, "added"))
+            elif item_id not in right:
+                elements.append(DiffElement(member, item_id, "removed"))
+            elif left[item_id] != right[item_id]:
+                paths = _item_paths(left[item_id], right[item_id])
+                elements.append(DiffElement(member, item_id, "changed", paths))
+    return tuple(elements)
+
+
+def revision_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> SemanticDiff:
+    """`diff_revisions`'s result: `semantic_diff`, unchanged, with its `elements`."""
+    return replace(semantic_diff(before, after), elements=element_diff(before, after))
 
 
 # ================================================================ K06's façade over the core

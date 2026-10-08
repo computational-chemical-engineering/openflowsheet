@@ -2,10 +2,11 @@
 `schemas/application-results.schema.json` (design note ruling round 4, W5a-Q2, §11.3–§11.4 as
 amended; ADR 0019 Amendment 1; gates R4-G3 and R4-G4).
 
-- **The move is inert (R4-G3).** For each of the 20 operations, `canonical_json` of its response
-  schema with every `$ref` inlined equals the snapshot taken at `b13d556`, whose `operations.py`
-  is `9b541df`'s. The snapshot is pinned here as SHA-256 digests; `artifact_bytes` has no
-  response schema (its response is bytes).
+- **The move is inert (R4-G3).** For each of the 20 operations of `b13d556`, `canonical_json`
+  of its response schema with every `$ref` inlined equals the snapshot taken at `b13d556`, whose
+  `operations.py` is `9b541df`'s. The snapshot is pinned here as SHA-256 digests; `artifact_bytes`
+  has no response schema (its response is bytes). Amendments 2 and 3 re-take `list_models` and
+  `diff_revisions`, and Amendment 3 adds `list_audit`.
 - **The schema.** One `$def` per response shape in `OPERATIONS` with no published schema of its
   own, named in snake_case after its Python result type, a page `<item>_page`; each such operation
   `$ref`s its `$def`.
@@ -53,9 +54,11 @@ DEF_OF_OPERATION: dict[str, str] = {
     "inspect_structure": "projection",
     "get_artifact": "projection",
     "diff_revisions": "semantic_diff",
+    # ADR 0019 Amendment 3 (A3.3)
+    "list_audit": "audit_page",
 }
-#: `revision_summary` is a page's item, and its own `$def`.
-DEFS = frozenset({*DEF_OF_OPERATION.values(), "revision_summary"})
+#: `revision_summary` and `audit_record` are pages' items, each its own `$def`.
+DEFS = frozenset({*DEF_OF_OPERATION.values(), "revision_summary", "audit_record"})
 #: R4-G3: SHA-256 of `canonical_json` of each operation's fully resolved response schema, taken at
 #: `b13d556` with `resolved_response` below (`None`: no response schema).
 SNAPSHOT_AT_B13D556: dict[str, str | None] = {
@@ -142,6 +145,14 @@ def _digest(document: Any) -> str | None:
 SNAPSHOT_AMENDMENT_2: dict[str, str | None] = {
     "list_models": "12d8824519a37a41eafa12a88308bbafa563ccd706d226c60f3f39310b6cad85",
 }
+#: ADR 0019 Amendment 3, A3.2 (approved by Frank on 2026-10-08; M06 design note §4.2, gate G5):
+#: `semantic_diff` gains the required member `elements`. `diff_revisions`'s snapshot is re-taken;
+#: with the member removed it is the `b13d556` snapshot again.
+SNAPSHOT_AMENDMENT_3: dict[str, str | None] = {
+    "diff_revisions": "07f04027b7ce896a9c42e0dcd6b45ab60f518edfbd992e60aa50d707e79b473e",
+    # A3.3: the new operation `list_audit`, by addition (it had no snapshot to move from).
+    "list_audit": "658c9b64bf105525b15916eafa494c88bf54920d697853a3debaaddada2b9a7c",
+}
 
 
 def _without_specifications(schema: Any) -> Any:
@@ -161,8 +172,8 @@ def _without_specifications(schema: Any) -> Any:
 
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
-    assert len(measured) == 20
-    assert measured == {**SNAPSHOT_AT_B13D556, **SNAPSHOT_AMENDMENT_2}
+    assert len(measured) == 21
+    assert measured == {**SNAPSHOT_AT_B13D556, **SNAPSHOT_AMENDMENT_2, **SNAPSHOT_AMENDMENT_3}
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
 
@@ -176,10 +187,28 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     assert _digest(_without_specifications(resolved)) == SNAPSHOT_AT_B13D556["list_models"]
     moved = [
         name
-        for name in OPERATIONS
+        for name in SNAPSHOT_AT_B13D556
         if _digest(resolved_response(OPERATIONS[name])) != SNAPSHOT_AT_B13D556[name]
     ]
-    assert moved == ["list_models"]
+    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["list_audit"]
+    # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.
+    assert moved == ["list_models", "diff_revisions"]
+
+
+def test_g5_diff_revisions_moved_only_by_the_approved_additive_member() -> None:
+    """ADR 0019 Amendment 3, A3.2: with `elements` removed from `semantic_diff`'s properties and
+    `required`, `diff_revisions`'s resolved schema is the `b13d556` snapshot again."""
+    resolved = resolved_response(OPERATIONS["diff_revisions"])
+    assert _digest(resolved) == SNAPSHOT_AMENDMENT_3["diff_revisions"]
+    assert resolved["required"] == ["added", "changed", "elements", "removed"]
+    without = {
+        **resolved,
+        "required": [member for member in resolved["required"] if member != "elements"],
+        "properties": {
+            key: value for key, value in resolved["properties"].items() if key != "elements"
+        },
+    }
+    assert _digest(without) == SNAPSHOT_AT_B13D556["diff_revisions"]
 
 
 def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:

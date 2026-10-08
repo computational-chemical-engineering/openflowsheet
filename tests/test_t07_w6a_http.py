@@ -23,6 +23,7 @@ marker does; the import-graph lint reads source only and always runs.
 from __future__ import annotations
 
 import ast
+import base64
 import hashlib
 import json
 import sys
@@ -40,6 +41,7 @@ from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.types import API_ERROR_HTTP_STATUS, schema_errors
+from openflowsheet.canonical import canonical_json
 
 NOMINAL = "SYN-001-nominal"
 PROJECT_ID = "w6a-http"
@@ -62,6 +64,7 @@ ALLOWED_PER_MODULE = {
 ALLOWED_THIRD_PARTY = {"starlette", "uvicorn", "mcp", "anyio"}
 #: §11.6 (3): the members compared after removal — clock readings and host facts.
 VOLATILE = {
+    "at",  # an audit row's clock reading (ADR 0019 Amendment 3, `list_audit`)
     "recorded_at",
     "created_at",
     "started_at",
@@ -249,6 +252,21 @@ def _stable(document: Any) -> Any:
     return document
 
 
+def _seq_aligned(document: Any, offset: int) -> Any:
+    """A `list_audit` page with every `seq`, and its cursor's, moved back by `offset`; any other
+    document as it is."""
+    items = document.get("items") if isinstance(document, dict) else None
+    if not (isinstance(items, list) and items and all("seq" in item for item in items)):
+        return document
+    aligned = [{**item, "seq": item["seq"] - offset} for item in items]
+    cursor = document["next_cursor"]
+    if cursor is not None:
+        decoded = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
+        moved = {**decoded, "seq": decoded["seq"] - offset}
+        cursor = base64.urlsafe_b64encode(canonical_json(moved)).decode("ascii").rstrip("=")
+    return {**document, "items": aligned, "next_cursor": cursor}
+
+
 # ========================================================================= G14: the bijection
 
 
@@ -313,6 +331,17 @@ def _scenario(call: Call, raw: Callable[[str, bytes], tuple[int, Any]]) -> list[
     state = f"{job_id}:bundle/solution-state.json"
     step("get_artifact", {"artifact_id": state, "pointer": "/variable_ids", "limit": 5})
     step("artifact_bytes", {"artifact_id": state})
+    # ADR 0019 Amendment 3 (A3.3): the grant's own audit rows, paged; every principal's needs
+    # `policy`, which the grant does not hold (403, audited).
+    audit = step("list_audit", {"principal_id": PRINCIPAL, "limit": 2})
+    step("list_audit", {"principal_id": PRINCIPAL, "limit": 2, "cursor": audit["next_cursor"]})
+    step("list_audit", {"principal_id": PRINCIPAL, "order": "descending", "limit": 3})
+    step("list_audit", {})  # 403
+    step("list_audit", {"order": "descending", "cursor": audit["next_cursor"]})  # 403 first
+    step(
+        "list_audit",
+        {"principal_id": PRINCIPAL, "order": "descending", "cursor": audit["next_cursor"]},
+    )  # 422 the other order's cursor
     # Refusals a transport can reach.
     step("get_job", {"job_id": "job-999999"})  # 404
     step("get_artifact", {"artifact_id": "job-999999:bundle"})  # 404
@@ -345,11 +374,16 @@ def test_g14_every_http_operation_equals_dispatch_as_the_same_principal(
             assert path == "/v1/changes"
             return direct_call(view, "commit_change", json.loads(body))
 
+        # The twin's policy is copied, not granted, so its audit lacks the grant's row: its
+        # `seq` runs behind by a constant, which `_seq_aligned` removes (and checks).
+        offset = len(over_http.owner.store.audit_rows()) - len(in_process.owner.store.audit_rows())
+        assert offset == 1
         got = _scenario(lambda n, r: http_call(over_http, n, r), raw_http)
         expected = _scenario(lambda n, r: direct_call(view, n, r), raw_direct)
         assert len(got) == len(expected)
+        got = [(status, _seq_aligned(document, offset)) for status, document in got]
         served_names = {n for n, row in OPERATIONS.items() if "http" in row.transports}
-        assert len(served_names) == 18
+        assert len(served_names) == 19  # with ADR 0019 Amendment 3's `list_audit`
         for index, ((status, document), (want_status, want)) in enumerate(
             zip(got, expected, strict=True)
         ):
@@ -364,6 +398,7 @@ def test_g14_every_http_operation_equals_dispatch_as_the_same_principal(
             "not_found",
             "invalid_request",
             "document_not_canonical",
+            "forbidden",  # `list_audit` of every principal without `policy` (ADR 0019 A3.3)
         }
         # The same refusals were audited on both sides, in the same order.
         assert over_http.refusals() == in_process.refusals()

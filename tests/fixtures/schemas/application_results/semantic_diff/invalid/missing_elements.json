@@ -1,0 +1,10 @@
+{
+  "expect_error": "'elements' is a required property",
+  "document": {
+    "added": [],
+    "changed": [
+      "specifications"
+    ],
+    "removed": []
+  }
+}
