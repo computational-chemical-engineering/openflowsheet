@@ -78,6 +78,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | `opus-engineer` | M02 WO-1b + rulings, WO-5 (reactor env, G10), WO-6 | `wp/M02` (`m02`) |
 | `opus-engineer` | M03 review fixes + WO-10 manifest | `wp/M03` (`m03`) |
 | `specifier` | M04 specification | `wp/M04` (`m04`) |
+| `specifier` | v0.2 alpha release gate (`0.2.0a1`) | `wp/V02-alpha-gate` (`alpha-gate`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);

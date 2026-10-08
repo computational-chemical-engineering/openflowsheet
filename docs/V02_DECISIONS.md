@@ -362,3 +362,6 @@ Grep, don't read whole. Newest at the bottom.
   R-238; envelope + matrix regenerated, 51 limitations, 278 harvest rows; changelog test takes R-216's form and drops
   M01's `ADDED_AFTER_V0_1_0`, R-217 merge note; package data both kinds) — gate on that tree: 7717 passed, 52 skipped,
   Node 92/92, browser 34/34, matrix --check 0. `47baa4d` brings main's two state-file commits (docs only). Pushed.
+- `specifier` v0.2 alpha release gate launched on `wp/V02-alpha-gate` (ADR 0028, R-238/239): what `0.2.0a1` claims,
+  carried and moved v0.1 records (digest, envelope, CHANGELOG notes, review table, A49), W21/W22 verdict criteria,
+  gate script work orders. Against M02's N3 default (v0.1 gate unchanged + W21, W22 met).
