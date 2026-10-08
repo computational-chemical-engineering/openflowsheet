@@ -4,17 +4,45 @@
 // its view is mounted, then "1" (the browser smoke test waits for it). An error a load raises is
 // shown in the error panel; an uncaught error or rejection anywhere renders `<pre id="ofs-fatal">`
 // and sets `data-ofs-error="1"`. Every screen is `{name, pattern, load(params, api), view(data)}`;
-// `params` holds the route's values, `query` (URLSearchParams) and `signal` (aborted when the
-// user navigates away).
+// `params` holds the route's values, `query` (URLSearchParams), `signal` (aborted when the
+// user navigates away), `project` (the frame's `get_project` document: rights, policies) and
+// `go(hash)` (navigate; the current hash is loaded again).
 
 import { createApi } from "./api.js";
 import { createTokenStore, loginView, takeBootToken } from "./auth.js";
 import { errorView, fatalText, headerView, nextTheme, notFoundView } from "./frame.js";
 import { h, mount, replace } from "./h.js";
 import { link, matchRoute, parseHash, withoutToken } from "./router.js";
+import * as certificate from "./screens/certificate.js";
+import { setNumberMode } from "./screens/common.js";
+import * as compareRevisions from "./screens/compare-revisions.js";
+import * as compareRuns from "./screens/compare-runs.js";
+import { jobRow, revisionRow } from "./screens/equation.js";
+import * as failure from "./screens/failure.js";
+import * as file from "./screens/file.js";
+import * as historyScreen from "./screens/history.js";
+import * as job from "./screens/job.js";
+import * as projectScreen from "./screens/project.js";
+import * as revision from "./screens/revision.js";
+import * as streams from "./screens/streams.js";
+import * as validation from "./screens/validation.js";
 
-// The screens of this build, matched in order. WO-9 and WO-10 register theirs here.
-const SCREENS = [];
+// The screens of this build (§6's routes), matched in order.
+const SCREENS = [
+  projectScreen,
+  revision,
+  validation,
+  revisionRow,
+  job,
+  certificate,
+  failure,
+  streams,
+  jobRow,
+  file,
+  compareRevisions,
+  compareRuns,
+  historyScreen,
+];
 
 const THEME_KEY = "openflowsheet.theme";
 const root = document.documentElement;
@@ -45,6 +73,7 @@ let project = null;
 let loginMessage = null;
 let controller = null;
 
+let numbers = "short";
 let theme = "system";
 try {
   theme = local?.getItem(THEME_KEY) ?? "system";
@@ -73,6 +102,13 @@ function renderHeader() {
         }
         applyTheme();
         renderHeader();
+      },
+      numbers,
+      onNumbers: () => {
+        numbers = numbers === "short" ? "full" : "short";
+        setNumberMode(numbers);
+        renderHeader();
+        navigate();
       },
       onSignOut: () => {
         store.clear();
@@ -125,6 +161,12 @@ function showLogin(params) {
   root.setAttribute("data-ofs-ready", "1");
 }
 
+// Navigate to `hash`; the current hash is rendered again (a reload of the screen's data).
+function go(hash) {
+  if (location.hash === hash) navigate();
+  else location.hash = hash;
+}
+
 async function navigate() {
   controller?.abort();
   controller = new AbortController();
@@ -146,14 +188,25 @@ async function navigate() {
     }
     const match = matchRoute(SCREENS, path);
     let tree;
+    let screen = null;
+    let data = null;
     if (match === null) tree = notFoundView(path);
     else {
-      const screen = SCREENS.find((candidate) => candidate.name === match.name);
-      const data = await screen.load({ ...match.values, query: params, signal }, api);
+      screen = SCREENS.find((candidate) => candidate.name === match.name);
+      data = await screen.load(
+        { ...match.values, query: params, signal, project, go },
+        api,
+      );
       if (signal.aborted) return;
       tree = screen.view(data);
     }
     replace(tree, main);
+    if (screen?.follow) {
+      // A live screen keeps drawing after it is ready (§5.4: one outstanding call per view).
+      screen.follow(data, api, { signal, render: (next) => replace(next, main) }).catch((error) => {
+        if (!signal.aborted) replace(errorView(error), main);
+      });
+    }
   } catch (error) {
     if (signal.aborted) return;
     if (error?.status === 401) {

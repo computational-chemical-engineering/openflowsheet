@@ -13,7 +13,11 @@ export function nextTheme(theme) {
 }
 
 // `project`: `get_project`'s document, or null before sign-in.
-export function headerView(project, { theme = "system", onTheme, onSignOut } = {}) {
+// `numbers`: §5.5's global number mode ("short" or "full"), toggled by `onNumbers`.
+export function headerView(
+  project,
+  { theme = "system", onTheme, onSignOut, numbers = "short", onNumbers } = {},
+) {
   const facts =
     project === null
       ? null
@@ -41,6 +45,16 @@ export function headerView(project, { theme = "system", onTheme, onSignOut } = {
         "button",
         { type: "button", "data-ofs-action": "theme", on: onTheme ? { click: onTheme } : {} },
         `theme: ${theme}`,
+      ),
+      h(
+        "button",
+        {
+          type: "button",
+          "data-ofs-action": "numbers",
+          title: "show every number short (6 significant digits) or in full",
+          on: onNumbers ? { click: onNumbers } : {},
+        },
+        `numbers: ${numbers}`,
       ),
       project === null
         ? null

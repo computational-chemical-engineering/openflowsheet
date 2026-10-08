@@ -169,11 +169,6 @@ def test_every_called_operation_is_a_listed_route() -> None:
     assert called <= set(_routes()), called - set(_routes())
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="M06: `list_audit` arrives with WO-3 (ADR 0019 Amendment 3) and the screens that call "
-    "the 17 with WO-9/WO-10; until then the call set is a strict subset",
-)
 def test_the_ui_calls_exactly_the_seventeen_operations() -> None:
     assert _called() == UI_OPERATIONS
     assert set(_routes()) >= UI_OPERATIONS

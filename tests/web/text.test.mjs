@@ -52,6 +52,8 @@ test("status: every listed label has its tone; unlisted labels are failures", ()
     NOT_RUN: "none",
     FAILED: "bad", INVALID: "bad", MISMATCH: "bad", FAIL: "bad", failed: "bad", refused: "bad",
     HOMOTOPY_STALLED: "bad", BOUND_BLOCKED: "bad", "something new": "bad", verified: "bad",
+    // A certificate check's lower-case results (solution-certificate.schema.json).
+    pass: "ok", fail: "bad", unsupported: "none", not_applicable: "none",
   };
   for (const [label, tone] of Object.entries(expected)) {
     assert.equal(status(label).tone, tone, label);
