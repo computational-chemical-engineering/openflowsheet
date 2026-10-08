@@ -641,7 +641,9 @@ def build(
     is_ancestor: Callable[[str], bool],
 ) -> dict[str, Any]:
     """The report, from the candidate's files (path → text; a missing path is a missing file)
-    and the facts about `C` that git gives. A malformed verdict document is a `ValueError`."""
+    and the facts about `C` that git gives. `differences` is the D2.4 tree check's result
+    (`tree_differences`); `None` means it was not run, which refuses. A malformed verdict
+    document is a `ValueError`."""
     gate_set = gate_set_of(version)
     if gate_set is None:
         return {
@@ -695,7 +697,10 @@ def build(
         reasons.append(
             f"C's version {rc_version} is not the candidate's version {version} (ADR 0028 D4)"
         )
-    if differences:
+    if differences is None:
+        # Review F3: a caller that does not run the tree check gets no YES (D2.4 fails closed).
+        reasons.append("tree check (D2.4) not run")
+    elif differences:
         reasons.append(f"candidate {candidate[:12]} differs from C in {list(differences)} (D2.4)")
     record = rc_record_problems(files.get(gate_set.rc_record), rc, gate_set)
     manifests = manifest_problems(
@@ -806,7 +811,13 @@ def text(report: Mapping[str, Any]) -> str:
     differences = report["tree_differences"]
     out.append(
         "tree check (D2.4): "
-        + ("equal to C" if not differences else f"differs in {len(differences)} paths")
+        + (
+            "not run"
+            if differences is None
+            else f"differs in {len(differences)} paths"
+            if differences
+            else "equal to C"
+        )
     )
     out.append(
         "RC record (§8.1 item 4): "

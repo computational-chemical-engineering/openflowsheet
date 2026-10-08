@@ -596,6 +596,24 @@ def test_a07_the_tree_check_is_v0_1_gate_s_own() -> None:
     assert list(v0_2_gate.TREES) == REFERENCE["registered"]["tree_check"]["trees"]
 
 
+def test_a07_a_tree_check_not_run_refuses() -> None:
+    """Review F3: `build(differences=None)` is a tree check not run, never "equal to C"."""
+    result = v0_2_gate.build(
+        files=files(),
+        rc=RC,
+        rc_version=VERSION,
+        rc_in_repository=True,
+        candidate=CANDIDATE,
+        version=VERSION,
+        differences=None,
+        is_ancestor=lambda commit: commit in ANCESTORS,
+    )
+    assert result["reasons"] == ["tree check (D2.4) not run"]
+    assert not result["tag_may_be_proposed"]
+    assert "tree check (D2.4): not run" in v0_2_gate.text(result).splitlines()
+    assert "tree check (D2.4): equal to C" in v0_2_gate.text(report()).splitlines()
+
+
 def _git(repo: Path, *arguments: str) -> str:
     return subprocess.run(
         ["git", "-c", "user.name=t", "-c", "user.email=t@t", *arguments],
