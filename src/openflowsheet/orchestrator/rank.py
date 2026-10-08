@@ -41,6 +41,8 @@ LINEARITY_TOLERANCE: Final = 1e-9 * 1e5
 
 #: The graph node standing for the constant term of a specification row.
 CONST: Final = "<const>"
+#: §7.2's second state: pressure column k (0-based, variable order) moves by `(k + 1)` times this.
+PRESSURE_SHIFT: Final = 997.0
 
 
 class SpecificationConflictError(ValueError):
@@ -249,3 +251,39 @@ def eliminate_alias_rows(
             retained.append(row_id)
 
     return AliasElimination(retained_rows=tuple(retained), eliminated=tuple(eliminated))
+
+
+def pressure_shifted_state(
+    variable_ids: Sequence[str],
+    variable_kinds: Mapping[str, str],
+    state: Mapping[str, float],
+    domain: tuple[float, float],
+) -> tuple[dict[str, float], str]:
+    """§7.2's second state under ADR 0014 D5's direction rule, and `""` or the reason it cannot be
+    built: `pressure_shift_outside_domain` when a column's move leaves the pressure `domain`
+    (the provider's declared one) both ways, `pressure_shift_not_generic` when two pressures
+    distinct at `state` coincide after the moves (equal ones never can: the amounts are distinct
+    and each is positive).
+
+    The certificate's (`verify/certificate.py`) and the trust-region projection's
+    (`studies/trust_region/projection.py`, R-274) witness state, so the two apply the elimination
+    to the same inputs."""
+    low, high = domain
+    shifted = dict(state)
+    moved: list[str] = []
+    for index, name in enumerate(variable_ids):
+        if variable_kinds.get(name) != "pressure":
+            continue
+        step = PRESSURE_SHIFT * (index + 1)
+        if low <= state[name] + step <= high:
+            shifted[name] = state[name] + step
+        elif low <= state[name] - step <= high:
+            shifted[name] = state[name] - step
+        else:
+            return shifted, "pressure_shift_outside_domain"
+        moved.append(name)
+    original_at: dict[float, float] = {}
+    for name in moved:
+        if original_at.setdefault(shifted[name], state[name]) != state[name]:
+            return shifted, "pressure_shift_not_generic"
+    return shifted, ""
