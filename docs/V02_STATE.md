@@ -15,7 +15,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
-| M01 | Design | T08 | W22, W21 (part) | spec done (`7f267ed`); WO-1…6 done (`13bcef7`, gate green; A37 IDAES ≥140× inside); Amendment 1 running; then one design-lane amendment round (A26, A09, A12, added refusals; `V02_DECISIONS.md`), `reviewer`, WO-7 manifest → `tested` → M02 |
+| M01 | Design | T08 | W22, W21 (part) | spec + Amendment 1 (`1e8aecd`, R-195…200); WO-1…6 done; WO-8 + WO-7 manifest running; then `reviewer` → merge → M02 build |
 | M02 | Build | M01 | W21 | design started 2026-10-08 (`architect` on `wp/M02`, ADR 0033+, R-220+); build after M01 `tested` |
 | M03 | Design | T08 | W24 (part) | spec + Amendment 1 (`8154baa`, R-210…215); WO-0…7 done; WO-2a/5a/7a/9 running; WO-8 waits for N1; then WO-10 manifest, `reviewer` |
 | M04 | Design | M02 | W23 | not started |
@@ -51,7 +51,8 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 - **M01 (defaults set, work proceeds):** Q-F1 the reactor's inlet heat loss (23–33 % of reaction heat through the
   inlet face) — intended, or Danckwerts? default: as pinned, reported; Q-N1 c_p source — default NASA TM-4513, not
   Poling; Q-N2 fix F-R1/F-R2 upstream at a new pin? default: keep `6089593` + subclass/overlay; Q-N3 design grid —
-  default num_z = 800 (~9 s/solve); Q-N4 ship the real C1 records in the wheel — default yes, with citations.
+  default num_z = 800 (~9 s/solve); Q-N4 ship the real C1 records in the wheel — default yes, with citations; Q-N5
+  a structured `synthetic` field in ModelManifest — default no schema change in v0.2.
 
 - **W27 (defaults set):** Q3 up to 3 re-canaries within the approved budget; Q4 agent false verification reported
   with its bound, not gated; Q5 run the approved 45 even if 0 cases are candidates (alternative: 15 runs).
@@ -66,7 +67,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `specifier` | M01 Amendment 1 (A26, A09, A12, refusals) | `wp/M01` (`agent-a94d84cd26a293bc0`) |
+| `opus-engineer` | M01 WO-8 (A49–A52) + WO-7 manifest | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `opus-engineer` | M06 WO-11, 12 security/browser gates, docs | `wp/M06-finish` (`m06-finish`) |
 | `opus-engineer` | M03 WO-2a, 5a, 7a, 9 (post-amendment, schemas) | `wp/M03` (`m03`) |
 | `architect` | M02 design note (brief `docs/briefs/M02-design.md`) | `wp/M02` (`m02`) |

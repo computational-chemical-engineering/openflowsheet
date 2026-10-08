@@ -225,3 +225,12 @@ Grep, don't read whole. Newest at the bottom.
   KKT_POINT_VERIFIED > NOT_VERIFIED > INFEASIBLE_REPORTED > SOLVER_FAILED; `schemas/registry.json` replaces the
   hard-coded schema count (A48). R-210…R-215. Q-F1, Q-F3 closed.
 - `opus-engineer` M03 WO-2a, 5a, 7a, 9 launched on `wp/M03`.
+- M01 Amendment 1 done on `wp/M01` (`49e9975`, `1e8aecd`; check.sh 7047 passed; generator 88 claims): A26 → 1e-13 ×
+  n_tot,in (element balances too); A09 gap ≥ 1e-6; A12 rescaled to 1e-12 × M (block max), measured margin 2.6e3;
+  refusals ratified (stage grammar `[A-Za-z0-9_]+`, registered stages), flash derivatives now refused
+  `flash_derivatives_unsupported`; check order normative; §8.14 A45–A50 → A41–A48; new §8.15 record/adapter halves
+  (A52 gates the record); A47 restated (bitwise only at the probe's exact tube inputs; 1e-6 through the boundary);
+  Q-F4 sweep 16 corners + centre; new Q-F5 per-tube flow bound default [0.5, 2] × nominal (M02); A49–A52 new;
+  R-195…R-200; interfaces-frozen §3 note. New Q-N5 for Frank: structured `synthetic` field in ModelManifest? default
+  no. M02 architect told.
+- `opus-engineer` M01 WO-8 (amendment build items, A49–A52) + WO-7 manifest launched on `wp/M01`.
