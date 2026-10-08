@@ -62,6 +62,47 @@ derived_from_measured:
   defect_rel: 9.43e-09
   Q_process_W: -9.750509665
   Q_reactor_coolant_W: 3.3200499480531107
+  discretization_estimate:
+    meaning: spec section 10.1's discretization estimate at the design grid (Richardson, two orders, two differences); an
+      estimate, not a bound; what every reactor result reports (section 8.12, M01.A48)
+    num_z: 800
+    order_p:
+    - 0.6192
+    - 0.783
+    NH3_out_high_rel:
+    - 0.0102
+    - 0.01376
+    xi_high_rel:
+    - 0.01438
+    - 0.01943
+    T_out_low_K:
+    - 1.244
+    - 1.673
+    inputs: 'grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect 2.2e-6, still moving)'
+assertion_margins:
+  meaning: 'spec section 9 Amendment 1: the distance of each registered expectation from the nearest plausible wrong answer
+    and from the 53-bit floor, re-derived on every run; arguments for tolerances, never expectations'
+  A09_min_pairwise_lnphi_gap:
+    V1:
+      pair: H2/CH4
+      gap: 0.0004347
+    V2:
+      pair: N2/Ar
+      gap: 0.04593
+  A26_projection:
+    tolerance_over_n_tot_in: 1e-13
+    floor_defect_over_n_tot_in: 5.57e-17
+    floor_defect_relative_to_itself: 2.52e-11
+    floor_element_balance_float_over_n_tot_in: 0.0
+    floor_element_balance_exact_over_n_tot_in: 2.78e-17
+    wrong_projection_change_over_n_tot_in:
+      extent_from_H2_alone: 2.21e-06
+      extent_from_N2_alone: 2.79e-06
+      extent_from_NH3_alone: 4.29e-06
+      extent_divided_by_13: 0.0136
+      extent_sign_reversed: 0.353
+      nu_H2_N2_permuted: 0.134
+      inert_defect_dropped: 1.0e-07
 closed_form:
   pr_constants:
     B_c: '0.077796073903888455972'
@@ -1148,6 +1189,10 @@ generator_claims:
 - id: PR-06-405
   holds: true
   statement: at 405 K NH3's two spinodal volumes straddle v_c,EOS (the single-root label rule is exact)
+- id: PR-07
+  holds: true
+  statement: 'at every registered phase state the PR cubic at Z = B equals -2 B^2: the admissible roots counted with multiplicity
+    are odd in number, so two distinct ones form a double root'
 - id: IDAES-01
   holds: true
   statement: with T08's parameter set this script reproduces IDAES 2.13's vapour-only separator (beta, y_NH3, five vapour
@@ -1201,6 +1246,10 @@ generator_claims:
   holds: true
   statement: 'every evaluated state has a departure enthalpy above 1 J/mol in magnitude: a dropped departure term changes
     every h'
+- id: PH-GAP
+  holds: true
+  statement: 'V1''s and V2''s five lnphi differ pairwise by at least 1e6 times A07''s tolerance 1e-12: a permuted component
+    index fails A07'
 - id: DER-HOM-V1
   holds: true
   statement: at V1 every intensive property is homogeneous of degree zero in n (sum_j n_j dX/dn_j < 1e-25)
@@ -1341,9 +1390,25 @@ generator_claims:
 - id: BD-03
   holds: true
   statement: 'the isothermal stand-in at 673.15 K removes heat (Q < 0): the reaction is exothermic on the datum'
+- id: BD-04
+  holds: true
+  statement: the 53-bit projection of the registered raw outlet meets the 50-digit defect vector and conserves every element
+    to 1e-3 of A26's tolerance 1e-13 x n_tot,in
+- id: BD-05
+  holds: true
+  statement: every listed wrong projection (one-species extent, divisor 13, reversed sign, H2/N2 stoichiometry permuted, inert
+    defect dropped) moves the defect vector by at least 1e3 times A26's tolerance
+- id: BD-06
+  holds: true
+  statement: 'the adapter''s hard domain starts above NH3''s EOS critical temperature, so no inlet inside it flashes to a
+    liquid: liquid_at_reactor_inlet is reachable only outside it, and the boundary checks the inlet phase first'
 - id: OV-01
   holds: true
   statement: the CH4 DIPPR-107 fit stays within 0.5 % of NASA c_p on 250-1000 K
 - id: OV-02
   holds: true
   statement: Ar's NASA c_p is exactly 5/2 R, so its DIPPR-107 row is C1 = 2500 R, C2 = C4 = 0
+- id: DX-01
+  holds: true
+  statement: the registered discretization estimate at num_z = 800, recomputed from the probe record, rounds to spec section
+    10.1's printed ranges (p 0.62-0.78; NH3 high 1.0-1.4 %; xi high 1.4-1.9 %; T_out low 1.2-1.7 K)

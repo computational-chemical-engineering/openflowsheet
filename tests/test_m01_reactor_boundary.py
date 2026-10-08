@@ -152,20 +152,20 @@ def test_a26_the_projection_of_the_registered_raw_outlet() -> None:
     for got, expected in zip(projection.outlet, PROJECTION["projected_outlet_mol_s"], strict=True):
         assert _flow_rel(got, expected) <= 1e-12
     assert projection.outlet[3] == n_in[3] and projection.outlet[4] == n_in[4]  # inerts bitwise
-    assert projection.defect[4] == 0.0  # the zero entry (absolute 1e-18 or better)
-    # DECISION (M01 WO-6, pending the design lane): spec §9.6 registers the defect vector at rel
-    # 1e-12, but a 1e-6 mol/s defect is the difference of O(0.5) mol/s flows, whose double floor is
-    # ~1e-16 mol/s absolute: measured 2.5e-11 relative (5.5e-17 mol/s) on these inputs, whatever the
-    # arithmetic, because the raw outlet's own rounding is that size. Asserted on the flow scale,
-    # 1e-13 x n_tot,in: 1.8e3 above the measured floor, 1e7 below a wrong projection's ~1e-6.
-    for got, expected in zip(projection.defect, PROJECTION["defect_mol_s"], strict=True):
-        assert abs(got - expected) <= 1e-13 * sum(n_in)
-    assert abs(projection.defect_rel - PROJECTION["defect_rel"]) <= 1e-13
+    assert projection.defect[4] == 0.0  # CH4: raw and inlet are the same double, nu = 0
+    # Spec §9.6 A26 as amended (Amendment 1, R-195): the defect vector, defect_rel and the element
+    # balances on the flow scale, 1e-13 x n_tot,in. A 1e-6 mol/s defect is the difference of
+    # O(0.5) mol/s flows; the 53-bit floor on these inputs is 5.6e-17 x n_tot,in (2.5e-11 of the
+    # defect itself, set by the raw outlet's own rounding), the generator's BD-04 holds the 1e3
+    # margin and BD-05 that every listed wrong projection moves the defect by >= 1e3 x tolerance.
     total = sum(n_in)
+    for got, expected in zip(projection.defect, PROJECTION["defect_mol_s"], strict=True):
+        assert abs(got - expected) <= 1e-13 * total
+    assert abs(projection.defect_rel - PROJECTION["defect_rel"]) <= 1e-13
     for row in ELEMENT_MATRIX:
         inflow = sum(e * n for e, n in zip(row, n_in, strict=True))
         outflow = sum(e * n for e, n in zip(row, projection.outlet, strict=True))
-        assert abs(outflow - inflow) <= 1e-15 * total, row
+        assert abs(outflow - inflow) <= 1e-13 * total, row
     assert [sum(e * v for e, v in zip(row, NU, strict=True)) for row in ELEMENT_MATRIX] == [0] * 4
 
 

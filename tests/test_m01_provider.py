@@ -196,9 +196,9 @@ def test_a09_five_lnphi_pairwise_distinct_and_nonzero(sid: str) -> None:
     lnphi = list(values.values())
     assert all(value != 0.0 for value in lnphi)
     gaps = [abs(a - b) for i, a in enumerate(lnphi) for b in lnphi[i + 1 :]]
-    # Spec §9.2's parenthetical says a permutation moves A07's comparison by >= 1e-3; at V1 the
-    # H2/CH4 pair differs by 4.35e-4 only, still 4e8 times A07's 1e-12, so a permuted index fails
-    # A07 either way. The bound asserted is that margin, not the parenthetical's number.
+    # Spec §9.2 A09 as amended (Amendment 1): the smallest pairwise gap is at least 1e6 times A07's
+    # tolerance 1e-12, so a permuted component index fails A07; the generator's PH-GAP holds the
+    # same of the reference (V1's H2/CH4 gap 4.35e-4 is the smallest, assertion_margins).
     assert min(gaps) >= 1e6 * 1e-12
 
 
@@ -247,20 +247,29 @@ def test_a11_liquid_n_derivatives_are_exactly_zero_and_vapour_ones_are_not() -> 
 
 @pytest.mark.parametrize("sid", ["V1", "V2"])
 def test_a12_homogeneity_gibbs_duhem_and_symmetry_of_the_implementation(sid: str) -> None:
+    """Spec §9.3 A12 as amended (Amendment 1): the lnphi block's three identities on one scale.
+
+    J_ij = n_tot d lnphi_i/d n_j and M = max |J_ij|. Homogeneity of Z, v and h keeps its own row
+    scale; the lnphi rows (homogeneity), the columns (Gibbs-Duhem) and the pairs (symmetry) are
+    bounded by 1e-12 M, the scale their roundoff is made at (measured <= 3.8e-16 M at 13bcef7).
+    """
     n = PHASE_STATES[sid]["n_mol_s"]
+    total = sum(n)
+    y = [value / total for value in n]
     result = _evaluate(sid, PROPERTIES, DERIVATIVE_INPUTS)
     dn = {name: [result.derivatives[name][f"n_{c}"] for c in COMPONENTS] for name in PROPERTIES}
-    for name, row in dn.items():
-        terms = [nj * d for nj, d in zip(n, row, strict=True)]
+    for name in ("Z", "v", "h"):
+        terms = [nj * d for nj, d in zip(n, dn[name], strict=True)]
         assert abs(sum(terms)) <= 1e-12 * sum(abs(t) for t in terms), name
-    lnphi = [dn[f"lnphi_{c}"] for c in COMPONENTS]
+    block = [[total * value for value in dn[f"lnphi_{c}"]] for c in COMPONENTS]
+    scale = max(abs(value) for row in block for value in row)
+    for i in range(5):
+        assert abs(sum(y[j] * block[i][j] for j in range(5))) <= 1e-12 * scale, ("hom", i)
     for j in range(5):
-        terms = [n[i] * lnphi[i][j] for i in range(5)]
-        assert abs(sum(terms)) <= 1e-12 * sum(abs(t) for t in terms), j
-    biggest = max(abs(value) for row in lnphi for value in row)
+        assert abs(sum(y[i] * block[i][j] for i in range(5))) <= 1e-12 * scale, ("gd", j)
     for i in range(5):
         for j in range(5):
-            assert abs(lnphi[i][j] - lnphi[j][i]) <= 1e-12 * biggest, (i, j)
+            assert abs(block[i][j] - block[j][i]) <= 1e-12 * scale, (i, j)
 
 
 @pytest.mark.parametrize("wanted", ["n_H2O", "x_NH3", "T2"])

@@ -1,7 +1,7 @@
 """M01.A01, A02, A34 and the registered states' transcription (M01 spec §9, WO-4).
 
 `docs/derivations/scripts/m01_reference.py --check` re-derives
-`benchmarks/m01/reference_values.yaml` and `reactor-overlay.json` at 50 digits, re-checks its 82
+`benchmarks/m01/reference_values.yaml` and `reactor-overlay.json` at 50 digits, re-checks its 88
 claims, and requires the committed bytes to equal the regenerated ones (M01.A34; ~20 s, so it runs
 on every gate).
 `benchmarks/m01/external-crosscheck.json` is the record of the retrieval-equality check, run in its
@@ -56,13 +56,13 @@ def test_a34_the_generator_rederives_every_claim_and_the_committed_bytes() -> No
     output = completed.stdout + completed.stderr
     assert completed.returncode == 0, output
     assert re.search(
-        r"^82 claims hold; reference_values\.yaml matches; reactor-overlay\.json matches$",
+        r"^88 claims hold; reference_values\.yaml matches; reactor-overlay\.json matches$",
         completed.stdout,
         re.MULTILINE,
     ), output
     claims = REFERENCE["generator_claims"]
-    assert len(claims) == 82 and all(claim["holds"] is True for claim in claims)
-    assert len({claim["id"] for claim in claims}) == 82
+    assert len(claims) == 88 and all(claim["holds"] is True for claim in claims)
+    assert len({claim["id"] for claim in claims}) == 88
 
 
 def test_a02_the_external_crosscheck_records_retrieval_equality() -> None:

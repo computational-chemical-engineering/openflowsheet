@@ -17,6 +17,9 @@ classes of value, labelled as such in the YAML (the convention of ``t05b_referen
   re-derived on every run. The script refuses to emit when one fails.
 * ``measured`` -- the same closed forms rerun in 53-bit arithmetic (a transcription, never the
   implementation), used only to argue tolerances. Never an expectation.
+* ``assertion_margins`` (spec Amendment 1) -- how far an assertion's expectation sits from its
+  53-bit floor and from the nearest plausible wrong answer, each backed by a claim. Never an
+  expectation.
 
 Run from the repository root inside the project environment::
 
@@ -1015,6 +1018,8 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
         },
     }
     cf: dict[str, Any] = {}
+    # Amendment 1: each margin an assertion's tolerance argument cites, re-derived on every run.
+    margins: dict[str, Any] = {}
 
     # --- PR constants -----------------------------------------------------------------------------
     res = (1 - BC) / 3 - ZC
@@ -1096,6 +1101,24 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
         )
         spin[tk] = [nstr(v) for v in vs]
     cf["nh3_spinodal_volumes_m3_per_mol"] = spin
+    # Amendment 1 (spec section 5.2): the PR cubic at Z = B equals -2 B^2 < 0 and tends to +inf,
+    # so its roots above B, counted with multiplicity, are odd in number; two distinct admissible
+    # roots occur only at a double root, which the root rules treat like three.
+    f_at_b = []
+    for s in PHASE_STATES:
+        mm = mixture(comps, s["T"], s["P"], [x / sum(s["n"]) for x in s["n"]], {})
+        c3, c2, c1, c0 = cubic_coeffs(mm["A"], mm["B"])
+        bb = mm["B"]
+        f_at_b.append(abs(((c3 * bb + c2) * bb + c1) * bb + c0 + 2 * bb**2) / bb**2)
+    claim(
+        "PR-07",
+        max(f_at_b) < mpf(10) ** -40,
+        (
+            "at every registered phase state the PR cubic at Z = B equals -2 B^2: the admissible "
+            "roots counted with multiplicity are odd in number, so two distinct ones form a double "
+            "root"
+        ),
+    )
 
     # --- the T08 IDAES transcription check -------------------------------------------------------
     idaes = json.loads(IDAES_RECORD.read_text(encoding="utf-8"))
@@ -1193,6 +1216,23 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
             "departure term changes every h"
         ),
     )
+    # Amendment 1 (A09): the smallest pairwise lnphi gap, against A07's tolerance 1e-12.
+    gaps: dict[str, dict[str, Any]] = {}
+    smallest = []
+    for sid in ("V1", "V2"):
+        lp = [evals[sid][f"lnphi_{c}"] for c in ORDER]
+        gap, i, j = min((abs(lp[i] - lp[j]), i, j) for i in range(5) for j in range(i + 1, 5))
+        gaps[sid] = {"pair": f"{ORDER[i]}/{ORDER[j]}", "gap": nstr(gap, 4)}
+        smallest.append(gap)
+    claim(
+        "PH-GAP",
+        min(smallest) >= mpf(10) ** 6 * mpf("1e-12"),
+        (
+            "V1's and V2's five lnphi differ pairwise by at least 1e6 times A07's tolerance 1e-12: "
+            "a permuted component index fails A07"
+        ),
+    )
+    margins["A09_min_pairwise_lnphi_gap"] = gaps
     cf["phase_states"] = ps_out
 
     # --- derivatives -----------------------------------------------------------------------------
@@ -1468,6 +1508,88 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
             "on the datum"
         ),
     )
+    # Amendment 1 (A26): spec section 8.9 in 53-bit arithmetic on the registered inputs as a double
+    # implementation reads them, and the plausible wrong projections, against A26's flow-scale
+    # tolerance 1e-13 x n_tot,in (defect vector, defect_rel and the element balances).
+    a26_tol = mpf("1e-13")
+    n_tot_in = sum(n_in)
+    fin = [nstr(x) for x in n_in]
+    fraw = [nstr(x) for x in n_raw]
+    xi53 = sum(NU[i] * (fraw[i] - fin[i]) for i in REACTIVE) / 14.0
+    out53 = [fin[i] + NU[i] * xi53 for i in range(5)]
+    d53 = [fraw[i] - out53[i] for i in range(5)]
+    floor_defect = max(abs(mpf(d53[i]) - pj["defect"][i]) for i in range(5)) / n_tot_in
+    floor_defect_rel = max(
+        abs(mpf(d53[i]) / pj["defect"][i] - 1) for i in range(5) if pj["defect"][i] != 0
+    )
+    elem_float = (
+        max(
+            abs(
+                mpf(sum(emat[e][i] * out53[i] for i in range(5)))
+                - mpf(sum(emat[e][i] * fin[i] for i in range(5)))
+            )
+            for e in range(len(elems))
+        )
+        / n_tot_in
+    )
+    elem_exact = (
+        max(
+            abs(sum(emat[e][i] * (mpf(out53[i]) - mpf(fin[i])) for i in range(5)))
+            for e in range(len(elems))
+        )
+        / n_tot_in
+    )
+    claim(
+        "BD-04",
+        1000 * max(floor_defect, elem_float, elem_exact) <= a26_tol,
+        (
+            "the 53-bit projection of the registered raw outlet meets the 50-digit defect vector "
+            "and conserves every element to 1e-3 of A26's tolerance 1e-13 x n_tot,in"
+        ),
+    )
+    num = sum(NU[i] * (n_raw[i] - n_in[i]) for i in REACTIVE)
+    wrong_xi = {
+        "extent_from_H2_alone": -(n_raw[0] - n_in[0]) / 3,
+        "extent_from_N2_alone": -(n_raw[1] - n_in[1]),
+        "extent_from_NH3_alone": (n_raw[2] - n_in[2]) / 2,
+        "extent_divided_by_13": num / 13,
+        "extent_sign_reversed": -num / 14,
+    }
+    changes = {}
+    for name, xw in wrong_xi.items():
+        dw = [n_raw[i] - (n_in[i] + NU[i] * xw) for i in range(5)]
+        changes[name] = max(abs(dw[i] - pj["defect"][i]) for i in range(5)) / n_tot_in
+    nu_swapped = (-1, -3, 2, 0, 0)
+    xs_swap = sum(nu_swapped[i] * (n_raw[i] - n_in[i]) for i in REACTIVE) / 14
+    dw = [n_raw[i] - (n_in[i] + nu_swapped[i] * xs_swap) for i in range(5)]
+    changes["nu_H2_N2_permuted"] = max(abs(dw[i] - pj["defect"][i]) for i in range(5)) / n_tot_in
+    changes["inert_defect_dropped"] = abs(pj["defect"][3]) / n_tot_in
+    claim(
+        "BD-05",
+        min(changes.values()) >= 1000 * a26_tol,
+        (
+            "every listed wrong projection (one-species extent, divisor 13, reversed sign, H2/N2 "
+            "stoichiometry permuted, inert defect dropped) moves the defect vector by at least 1e3 "
+            "times A26's tolerance"
+        ),
+    )
+    claim(
+        "BD-06",
+        mpf("573.15") > pr.crit["T"],
+        (
+            "the adapter's hard domain starts above NH3's EOS critical temperature, so no inlet "
+            "inside it flashes to a liquid: liquid_at_reactor_inlet is reachable only outside it, "
+            "and the boundary checks the inlet phase first"
+        ),
+    )
+    margins["A26_projection"] = {
+        "tolerance_over_n_tot_in": "1e-13",
+        "floor_defect_over_n_tot_in": nstr(floor_defect, 3),
+        "floor_defect_relative_to_itself": nstr(floor_defect_rel, 3),
+        "floor_element_balance_float_over_n_tot_in": nstr(elem_float, 3),
+        "floor_element_balance_exact_over_n_tot_in": nstr(elem_exact, 3),
+        "wrong_projection_change_over_n_tot_in": {k: nstr(v, 3) for k, v in changes.items()},
+    }
     cf["boundary"] = {
         "standin": {
             "conversion_N2": "0.25",
@@ -1632,6 +1754,14 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
         if probe.get("record") == "m01-reactor-probe" and probe.get("version", 0) >= 2:
             out["derived_from_measured"] = derived_from_probe(pr, probe)
 
+    out["assertion_margins"] = {
+        "meaning": (
+            "spec section 9 Amendment 1: the distance of each registered expectation from the "
+            "nearest plausible wrong answer and from the 53-bit floor, re-derived on every run; "
+            "arguments for tolerances, never expectations"
+        ),
+        **margins,
+    }
     out["closed_form"] = cf
     out["generator_claims"] = CLAIMS[:]
     return out, overlay
@@ -1657,6 +1787,73 @@ def derived_from_probe(pr: PR, probe: dict[str, Any]) -> dict[str, Any]:
         "defect_rel": nstr(pj["defect_rel"], 3),
         "Q_process_W": nstr(h_out - h_in, 10),
         "Q_reactor_coolant_W": nom.get("coolant_heat_uptake_W"),
+        "discretization_estimate": discretization_estimate(probe),
+    }
+
+
+def discretization_estimate(probe: dict[str, Any]) -> dict[str, Any]:
+    """Spec section 10.1's registered estimate at the design grid, from the record (Amendment 1).
+
+    Orders p from the successive outlet-NH3 differences 200/400/800 and 400/800/1600 (1600: the
+    record's last fine-polish state, not accepted); for each p, the 800 error from the 400->800
+    difference (times 2^-p/(1-2^-p)) and from the 800->1600 difference (times 1/(1-2^-p)); the
+    estimate is the range of the four, relative to the extrapolated value. T_out uses the same p.
+    """
+    grid = {g["num_z"]: g for g in probe["grid"]}
+    polished = grid[1600]["fine_polish"][-1]
+    nh3 = {k: mpf(repr(grid[k]["outlet_n_mol_s"][I_NH3])) for k in (200, 400, 800)}
+    nh3[1600] = mpf(repr(polished["NH3_out_mol_s"]))
+    t_out = {k: mpf(repr(grid[k]["T_out_K"])) for k in (200, 400, 800)}
+    t_out[1600] = mpf(repr(polished["T_out_K"]))
+    produced = nh3[800] - mpf(repr(probe["pinned"]["inlet_n_mol_s"][I_NH3]))
+    d0, d1, d2 = nh3[400] - nh3[200], nh3[800] - nh3[400], nh3[1600] - nh3[800]
+    orders = sorted([mp.log(d0 / d1, 2), mp.log(d1 / d2, 2)])
+
+    def errors(e1: mpf, e2: mpf) -> list[mpf]:
+        out = []
+        for p in orders:
+            q = mpf(2) ** -p
+            out += [-e2 / (1 - q), -e1 * q / (1 - q)]
+        return out
+
+    e_n = errors(d1, d2)
+    e_t = errors(t_out[800] - t_out[400], t_out[1600] - t_out[800])
+    nh3_high = [e / (nh3[800] - e) for e in e_n]
+    xi_high = [e / (produced - e) for e in e_n]
+    t_low = [-e for e in e_t]
+    printed = {  # spec section 10.1 as printed (Amendment 1 corrects T_out's lower end)
+        "p": (0.62, 0.78, orders, 2),
+        "NH3 %": (1.0, 1.4, [100 * x for x in nh3_high], 1),
+        "xi %": (1.4, 1.9, [100 * x for x in xi_high], 1),
+        "T_out K": (1.2, 1.7, t_low, 1),
+    }
+    claim(
+        "DX-01",
+        all(
+            round(float(min(v)), d) == lo and round(float(max(v)), d) == hi
+            for lo, hi, v, d in printed.values()
+        ),
+        (
+            "the registered discretization estimate at num_z = 800, recomputed from the probe "
+            "record, rounds to spec section 10.1's printed ranges (p 0.62-0.78; NH3 high "
+            "1.0-1.4 %; xi high 1.4-1.9 %; T_out low 1.2-1.7 K)"
+        ),
+    )
+    return {
+        "meaning": (
+            "spec section 10.1's discretization estimate at the design grid (Richardson, two "
+            "orders, two differences); an estimate, not a bound; what every reactor result "
+            "reports (section 8.12, M01.A48)"
+        ),
+        "num_z": 800,
+        "order_p": [nstr(p, 4) for p in orders],
+        "NH3_out_high_rel": [nstr(min(nh3_high), 4), nstr(max(nh3_high), 4)],
+        "xi_high_rel": [nstr(min(xi_high), 4), nstr(max(xi_high), 4)],
+        "T_out_low_K": [nstr(min(t_low), 4), nstr(max(t_low), 4)],
+        "inputs": (
+            "grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect "
+            "2.2e-6, still moving)"
+        ),
     }
 
 
