@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import Any
 
 import casadi as ca
@@ -638,3 +639,226 @@ class CasadiCompiledProblem:
 def compile_problem(spec: ProblemSpec) -> CasadiCompiledProblem:
     """Compile a backend-free `ProblemSpec` into a runnable `CompiledProblem` on CasADi."""
     return CasadiCompiledProblem(spec)
+
+
+# -- the parametric twin (M03; ADR 0031 D2) --------------------------------------------------------
+
+
+class ParameterNotDifferentiableError(ValueError):
+    """A row builder cannot take a requested pinned input as a symbol (M03 spec §3.2).
+
+    A builder that branches on, or converts, a parameter's Python value raises when it is handed a
+    CasADi symbol instead. The study refuses the request `PARAMETER_NOT_DIFFERENTIABLE` naming the
+    parameter; it never retries with finite differences (R-010)."""
+
+    def __init__(self, parameter_ids: tuple[str, ...], equation_id: str, message: str) -> None:
+        super().__init__(
+            f"row {equation_id!r} cannot be built with {list(parameter_ids)} symbolic: {message}"
+        )
+        self.parameter_ids = parameter_ids
+        self.equation_id = equation_id
+
+
+class TwinEvaluationError(RuntimeError):
+    """The twin could not be evaluated at a state (a block's domain refusal, a non-finite value).
+
+    The twin is only ever evaluated where the base problem already evaluated, so a failure here is
+    a disagreement between the two, which the study reports as `TWIN_MISMATCH`."""
+
+
+@dataclass(frozen=True)
+class TwinMatrix:
+    """A sparse matrix from the twin, in the same canonical CSC the base `JacobianResult` uses."""
+
+    row_ids: tuple[str, ...]
+    col_ids: tuple[str, ...]
+    indptr: tuple[int, ...]
+    indices: tuple[int, ...]
+    data: tuple[float, ...]
+
+
+class ParametricTwin:
+    """The same `ProblemSpec` compiled a second time with the requested pinned inputs as symbols.
+
+    M03 spec §3.2, ADR 0031 D2. `F_p` exists nowhere else: the base `CasadiCompiledProblem` bakes
+    every pinned input in as a float constant, and it is frozen (no capability, method or identity
+    of it moves). The twin is built from the identical `EquationSpec.build` callables, block
+    callbacks over the same blocks and the same variable symbols; it differs from the base only in
+    whether a requested pinned input enters the graph as a symbol or as the float the base baked in.
+    That is an argument, not a proof — the study's identity guard checks the consequence, bit for
+    bit, at every state it is used (assertion A01).
+
+    `residual`, `jacobian_x` and `jacobian_p` all come from one expression graph, so the parameter
+    derivative and the state derivative describe the same function at the same state.
+    """
+
+    def __init__(self, spec: ProblemSpec, parameter_ids: Sequence[str]) -> None:
+        spec.validate()
+        requested = tuple(parameter_ids)
+        if not requested:
+            raise ValueError("a parametric twin needs at least one requested pinned input")
+        if len(set(requested)) != len(requested):
+            raise ValueError(f"requested pinned inputs repeat: {list(requested)}")
+        unknown = [name for name in requested if name not in spec.parameters]
+        if unknown:
+            raise ValueError(f"{unknown} are not pinned inputs of {spec.label!r}")
+        self._spec = spec
+        self.parameter_ids = requested
+        self._counters = _Counters([block.block_id for block in spec.blocks])
+        self._callbacks = {
+            block.block_id: _BlockCallback(block, self._counters) for block in spec.blocks
+        }
+
+        symbols = {name: ca.MX.sym(name) for name in spec.variable_ids}
+        outputs: dict[str, Any] = {}
+        for block in spec.blocks:
+            feeding = spec.block_inputs[block.block_id]
+            call = self._callbacks[block.block_id](ca.vertcat(*[symbols[n] for n in feeding]))
+            for index, output_id in enumerate(block.output_ids):
+                outputs[f"{block.block_id}.{output_id}"] = call[index]
+
+        algebra: Algebra = _CasadiAlgebra()
+        parameter_symbols = {name: ca.MX.sym(name) for name in requested}
+        rows = [
+            self._build(equation, symbols, outputs, parameter_symbols, algebra)
+            for equation in spec.equations
+        ]
+        vector = ca.vertcat(*rows)
+        argument = ca.vertcat(*[symbols[name] for name in spec.variable_ids])
+        parameters = ca.vertcat(*[parameter_symbols[name] for name in requested])
+
+        self._residual = ca.Function("twin_residual", [argument, parameters], [vector])
+        self._jacobian_x = ca.Function(
+            "twin_jacobian_x", [argument, parameters], [ca.jacobian(vector, argument)]
+        )
+        self._jacobian_p = ca.Function(
+            "twin_jacobian_p", [argument, parameters], [ca.jacobian(vector, parameters)]
+        )
+
+        #: Computed exactly as `CasadiCompiledProblem` computes it, so it must equal the base's.
+        self.model_version = model_version(
+            spec.label,
+            structure_sha256(
+                spec.variable_ids, spec.equation_ids, spec.parameter_ids, spec.row_accumulation
+            ),
+        )
+
+    def _build(
+        self,
+        equation: Any,
+        symbols: Mapping[str, Any],
+        outputs: Mapping[str, Any],
+        parameter_symbols: Mapping[str, Any],
+        algebra: Algebra,
+    ) -> Any:
+        """Build one row with the requested inputs symbolic; name the culprits if it cannot be."""
+        bound = {
+            name: parameter_symbols.get(name, value)
+            for name, value in self._spec.parameters.items()
+        }
+        try:
+            return equation.build(symbols, outputs, bound, algebra)
+        except Exception as error:  # noqa: BLE001 - a builder may raise anything on a symbol
+            message = (str(error).splitlines() or [type(error).__name__])[0][:300]
+            # Which requested input the builder cannot take: rebuild the row with each one alone
+            # symbolic. Only on this failure path, and the rebuilt rows are discarded.
+            culprits = tuple(
+                name
+                for name in self.parameter_ids
+                if not self._builds(equation, symbols, outputs, name, parameter_symbols, algebra)
+            )
+            raise ParameterNotDifferentiableError(
+                culprits or self.parameter_ids, equation.equation_id, message
+            ) from error
+
+    def _builds(
+        self,
+        equation: Any,
+        symbols: Mapping[str, Any],
+        outputs: Mapping[str, Any],
+        name: str,
+        parameter_symbols: Mapping[str, Any],
+        algebra: Algebra,
+    ) -> bool:
+        alone = {**self._spec.parameters, name: parameter_symbols[name]}
+        try:
+            equation.build(symbols, outputs, alone, algebra)
+        except Exception:  # noqa: BLE001 - see `_build`
+            return False
+        return True
+
+    # -- evaluation ------------------------------------------------------------------------------
+
+    def residual(self, x: StateVector, values: Mapping[str, float]) -> tuple[float, ...]:
+        """The compiled rows at `(x, p_P)`, in `equation_ids` order."""
+        result = self._evaluate(self._residual, x, values)
+        evaluated = tuple(float(result[index]) for index in range(len(self._spec.equations)))
+        if any(not math.isfinite(value) for value in evaluated):
+            raise TwinEvaluationError("non-finite twin residual")
+        return evaluated
+
+    def jacobian_x(self, x: StateVector, values: Mapping[str, float]) -> TwinMatrix:
+        """`∂F/∂x` at `(x, p_P)`: rows `equation_ids`, columns `variable_ids`."""
+        return self._matrix(self._jacobian_x, x, values, self._spec.variable_ids)
+
+    def jacobian_p(self, x: StateVector, values: Mapping[str, float]) -> TwinMatrix:
+        """`∂F/∂p_P` at `(x, p_P)`: rows `equation_ids`, columns the requested pinned inputs."""
+        return self._matrix(self._jacobian_p, x, values, self.parameter_ids)
+
+    def constants_sha256(self, values: Mapping[str, float]) -> str:
+        """`constants_sha256` of the full pinned-input vector, the requested ones at `values`."""
+        return constants_sha256(
+            {**self._spec.parameters, **self._values(values)}, self._spec.parameter_ids
+        )
+
+    def _values(self, values: Mapping[str, float]) -> dict[str, float]:
+        if set(values) != set(self.parameter_ids):
+            raise ValueError(
+                f"the twin takes values for exactly {list(self.parameter_ids)}, "
+                f"got {sorted(values)}"
+            )
+        return {name: float(values[name]) for name in self.parameter_ids}
+
+    def _evaluate(self, function: ca.Function, x: StateVector, values: Mapping[str, float]) -> Any:
+        expected = len(self._spec.variable_ids)
+        if x.shape != (expected,):
+            raise ValueError(f"state has shape {x.shape}; this problem has {expected} variables")
+        resolved = self._values(values)
+        for callback in self._callbacks.values():
+            callback.domain_error = None
+            callback.block_error = None
+        try:
+            return function(
+                ca.DM(x.tolist()), ca.DM([resolved[name] for name in self.parameter_ids])
+            )
+        except Exception as error:  # noqa: BLE001 - the backend wraps the block's exception
+            reports = [
+                report
+                for callback in self._callbacks.values()
+                for report in (callback.domain_error, callback.block_error)
+                if report is not None
+            ]
+            raise TwinEvaluationError(
+                "; ".join(reports) or str(error).split("\n")[0][:300]
+            ) from error
+
+    def _matrix(
+        self,
+        function: ca.Function,
+        x: StateVector,
+        values: Mapping[str, float],
+        col_ids: tuple[str, ...],
+    ) -> TwinMatrix:
+        assembled = self._evaluate(function, x, values)
+        rows, columns = assembled.sparsity().get_triplet()
+        entries = [float(value) for value in assembled.nonzeros()]
+        row_ids = self._spec.equation_ids
+        indptr, indices, data = _csc_from_triplets(rows, columns, entries, row_ids, col_ids)
+        if any(not math.isfinite(value) for value in data):
+            raise TwinEvaluationError("non-finite twin Jacobian entry")
+        return TwinMatrix(row_ids, col_ids, indptr, indices, data)
+
+
+def compile_parametric_twin(spec: ProblemSpec, parameter_ids: Sequence[str]) -> ParametricTwin:
+    """Compile `spec` with `parameter_ids` symbolic. Raises `ParameterNotDifferentiableError`."""
+    return ParametricTwin(spec, parameter_ids)

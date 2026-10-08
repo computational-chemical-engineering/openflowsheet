@@ -14,9 +14,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from functools import cache
 from pathlib import Path
 from typing import Any, Final
+
+from openflowsheet.compile.spec import EquationSpec, ProblemSpec
+from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models.syn001.flowsheet import FRESH_FEED_FLOWS, Syn001Flowsheet
+from openflowsheet.orchestrator.attempts import SolveResult
+from openflowsheet.orchestrator.tear import solve_tear
+from openflowsheet.thermo.syn001 import Syn001Provider
 
 REPO_ROOT: Final = Path(__file__).resolve().parent.parent
 REFERENCE_PATH: Final = REPO_ROOT / "benchmarks" / "m03" / "reference_values.json"
@@ -48,3 +56,136 @@ def number(value: str | int | float) -> float:
 def constant(name: str) -> float:
     """A registered constant of the specification (`constants` in the JSON), as binary64."""
     return number(reference()["constants"][name])
+
+
+# -- SYN-001's registered states (spec §4.2, §4.6, §6) --------------------------------------------
+
+#: The flowsheet's unit-evaluation context, as the K04 tests build it. The compiled problem's own
+#: identity is assigned by the compiler and does not depend on it.
+FLOWSHEET_CONTEXT: Final = EvaluationContext(
+    model_version="M03@" + "0" * 64, constants_sha256="0" * 64
+)
+
+#: Spec §2's parameter ids, in the JSON's order, and the `Syn001Flowsheet` field each one pins
+#: (spec §4.5). `U-FEED.n_spec.A` is the first entry of `feed_flows`.
+REGISTERED_PARAMETERS: Final = (
+    "U-SPLIT.split_fraction",
+    "U-FLASH.T_spec",
+    "U-HEAT.T_spec",
+    "U-FEED.T_spec",
+    "U-FEED.n_spec.A",
+)
+PRESSURE_PARAMETERS: Final = ("U-FLASH.P_spec", "U-FEED.P_spec")
+_FIELDS: Final = {
+    "U-SPLIT.split_fraction": "split_fraction",
+    "U-FLASH.T_spec": "flash_temperature",
+    "U-HEAT.T_spec": "heater_temperature",
+    "U-FEED.T_spec": "feed_temperature",
+}
+
+
+def flowsheet(pinned: Mapping[str, str | float]) -> Syn001Flowsheet:
+    """SYN-001 with the given pinned inputs (binary64 `repr`s or floats); the rest nominal."""
+    fields: dict[str, Any] = {}
+    for parameter_id, value in pinned.items():
+        if parameter_id == "U-FEED.n_spec.A":
+            fields["feed_flows"] = (number(value), *FRESH_FEED_FLOWS[1:])
+        else:
+            fields[_FIELDS[parameter_id]] = number(value)
+    return Syn001Flowsheet(provider=Syn001Provider(), context=FLOWSHEET_CONTEXT, **fields)
+
+
+def registered_pinned(state: str) -> dict[str, str]:
+    """The pinned binary64 inputs of a registered state: P1-P3 (§4.2), B1-B3 (§4.6), or a sweep
+    point `sweep@<T_f>` (§6)."""
+    loaded = reference()
+    if state in loaded["sensitivity_states"]:
+        return dict(loaded["sensitivity_states"][state]["pinned_doubles"])
+    if state in ("B1", "B2", "B3"):
+        return dict(loaded["boundary_states"][state]["pinned_doubles"])
+    if state.startswith("sweep@"):
+        sweep = loaded["sweep"]
+        return {
+            "U-SPLIT.split_fraction": sweep["split_fraction"],
+            sweep["parameter"]: state.removeprefix("sweep@"),
+        }
+    raise KeyError(state)
+
+
+def converged_sweep_states() -> tuple[str, ...]:
+    """The sweep points the specification registers as converged (§6), as `sweep@<T_f>`."""
+    sweep = reference()["sweep"]
+    return tuple(
+        f"sweep@{point[sweep['parameter']]}"
+        for point in sweep["points"]
+        if point["expected_outcome"] == "CONVERGED"
+    )
+
+
+@cache
+def solved(state: str) -> tuple[Syn001Flowsheet, SolveResult]:
+    """The production tear solve of a registered state from the registered initializer."""
+    sheet = flowsheet(registered_pinned(state))
+    result, _ = solve_tear(sheet)
+    if result.outcome != "CONVERGED" or result.final_state is None:
+        raise AssertionError(f"{state}: the registered state did not converge: {result.outcome}")
+    return sheet, result
+
+
+# -- the toys (spec §5) ---------------------------------------------------------------------------
+
+
+def x_squared_spec(p: float, *, convert: bool = False) -> ProblemSpec:
+    """`x² − p` with `p` pinned. With `convert`, the builder calls `float()` on the parameter —
+    harmless to the base problem, impossible for the twin (A04)."""
+
+    def build(
+        variables: Mapping[str, Any],
+        blocks: Mapping[str, Any],
+        parameters: Mapping[str, Any],
+        _: Any,
+    ) -> Any:
+        del blocks
+        value = float(parameters["p"]) if convert else parameters["p"]
+        return variables["x"] ** 2 - value
+
+    return ProblemSpec(
+        label="M03-toy-x-squared" + ("-float" if convert else ""),
+        variable_ids=("x",),
+        equations=(EquationSpec("R", build, "algebraic"),),
+        parameter_ids=("p",),
+        parameters={"p": p},
+    )
+
+
+def linear_spec(delta: float, p: tuple[float, float] = (1.0, 3.0)) -> ProblemSpec:
+    """`A(δ) x − p` with `A(δ) = [[1, 2], [3, 6 + δ]]` and `p` pinned (`F_p = −I`)."""
+
+    def first(
+        variables: Mapping[str, Any],
+        blocks: Mapping[str, Any],
+        parameters: Mapping[str, Any],
+        _: Any,
+    ) -> Any:
+        del blocks
+        return variables["x1"] + 2.0 * variables["x2"] - parameters["p1"]
+
+    def second(
+        variables: Mapping[str, Any],
+        blocks: Mapping[str, Any],
+        parameters: Mapping[str, Any],
+        _: Any,
+    ) -> Any:
+        del blocks
+        return 3.0 * variables["x1"] + (6.0 + delta) * variables["x2"] - parameters["p2"]
+
+    return ProblemSpec(
+        label="M03-toy-linear",
+        variable_ids=("x1", "x2"),
+        equations=(
+            EquationSpec("R1", first, "algebraic"),
+            EquationSpec("R2", second, "algebraic"),
+        ),
+        parameter_ids=("p1", "p2"),
+        parameters={"p1": p[0], "p2": p[1]},
+    )
