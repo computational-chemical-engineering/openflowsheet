@@ -44,7 +44,7 @@ A study parameter is an element of the compiled problem's `metadata.parameter_id
 - `jacobian_x(x, p_P)` and `jacobian_p(x, p_P)` — sparse CSC, rows `equation_ids`, columns `variable_ids` and the requested ids, from `ca.jacobian` of the same expression graph;
 - its identity: `model_version` (computed exactly as the base computes it — it must be equal) and `constants_sha256(p)` for the full pinned-input vector at `p_P`.
 
-**Identity guard (assertion A01).** At every state where a sensitivity is requested, after signed-zero normalization (`v + 0.0`): `twin.residual(x*, p₀) == base.residual(x*)` element for element, and `twin.jacobian_x(x*, p₀) == base.jacobian(x*)` entry for entry, with `p₀` the base's own pinned values. A difference of any size refuses the request `TWIN_MISMATCH` — it is a defect, not a tolerance. *Measured:* bitwise equal at P1, P2 and P3 for the residual and for all 49 × 47 Jacobian entries, with the five registered parameters symbolic.
+**Identity guard (assertion A01).** At every state where a sensitivity is requested, after signed-zero normalization (`v + 0.0`): `twin.residual(x*, p₀) == base.residual(x*)` element for element, and `twin.jacobian_x(x*, p₀) == base.jacobian(x*)` entry for entry, with `p₀` the base's own pinned values. A difference of any size refuses the request `TWIN_MISMATCH` — it is a defect, not a tolerance. *Measured:* bitwise equal at P1, P2 and P3 for the residual and for all 49 × 47 Jacobian entries, with seven pinned inputs symbolic (the five registered parameters and both pressure specifications), and at P1 also with all ten symbolic.
 
 **Why this is "the same function at the same state"** (CLAUDE.md): the twin is built from the identical `EquationSpec.build` callables, block callbacks and variable symbols; it differs from the base only in whether a pinned input enters the graph as a symbol or as a constant, and the guard checks the consequence rather than assuming it.
 
@@ -430,7 +430,7 @@ Expected values are in the JSON unless written here. "Scaled" is §2's. Toleranc
 - **A27** FIT-U: `UNIDENTIFIABLE`; σ₂/σ₁ ≤ 1e-12; null direction within 1e-8 of (1, 0); r reported `determined: false` with no estimate and no standard error; T̂_f within 1e-8 (scaled) of the JSON and `determined: true`; dof 5.
 - **A28** Validation: FIT-I predictions, their standard errors (1e-6 relative) and normalized residuals (1e-6 absolute) as in the JSON; FIT-U `U-HEAT.Q` `determined: false` with no value, `S4.N` `determined: true`.
 - **A29** Both reports carry `evidence_class = "numerical_verification"`, the JSON statement verbatim, the seed, the noise model, θ*, the bounds, the declared σ and `covariance_basis = "declared_sigma"`.
-- **A30** An estimation whose box is moved to include r = 0.3, T_f = 365 K (a two-phase heater, §4.2 P3) still runs, and any iterate whose sensitivity is refused ends the fit `FAILED` with that refusal rather than a finite-difference step (fault-injected by forcing a `PHASE_BOUNDARY` refusal at the second iterate).
+- **A30** Fault injection: when the sensitivity at FIT-I's second Jacobian evaluation is forced to `REFUSED([PHASE_BOUNDARY])`, the fit ends `FAILED` with that refusal and the iterate recorded, and `least_squares` is never called with a finite-difference `jac` (`'2-point'`, `'3-point'`, `'cs'`).
 
 **NLP formulation, verification and closure (default gate; no Ipopt needed)**
 

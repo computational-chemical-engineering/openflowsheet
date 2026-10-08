@@ -22,7 +22,7 @@ Run from the repository root inside the project environment::
     python docs/derivations/scripts/m03_reference.py --check
     python docs/derivations/scripts/m03_reference.py --emit benchmarks/m03/reference_values.json
 
-``--check`` re-derives every claim the specification makes about its own numbers (spec §13.2),
+``--check`` re-derives every claim the specification makes about its own numbers (spec §13),
 refuses to continue when one fails, and compares the result with the committed file byte for
 byte. ``--emit`` runs the same claims and writes the file only when all of them hold.
 """
@@ -55,7 +55,7 @@ V_LIQ = (mpf("0.0001"),) * 3
 NAMES = ("A", "B", "C")
 DOMAIN_T = (mpf(280), mpf(440))
 
-# -- M03 registered constants (spec §3.5, §4.2, §7, §8) -----------------------------------------
+# -- M03 registered constants (spec §3.4, §3.5, §4.7, §7, §8) -------------------------------------
 TAU_REGIME = mpf("1e-4")
 TAU_ROOT = mpf("1e-10")
 TAU_ALIAS = mpf("1e-8")
@@ -91,7 +91,7 @@ OUTPUTS: tuple[tuple[str, str], ...] = (
     ("U-FLASH.Q", "heat_rate"),
     ("S3.V", "molar_flow"),
 )
-#: The derived output of spec §4.4 (a linear functional, not a variable).
+#: The derived output of spec §2 (a linear functional, not a variable).
 Q_TOTAL = ("Q_total", {"U-HEAT.Q": 1, "U-FLASH.Q": 1}, "heat_rate")
 
 NOMINAL: dict[str, Any] = {
@@ -261,7 +261,7 @@ def scale_of(kind: str) -> Any:
 
 
 def derivative(fun: Callable[[Any], Any], at: Any, scale: Any, order: int = 4) -> Any:
-    """A central difference at h = 1e-20 * scale in 60-digit arithmetic (spec §13.1).
+    """A central difference at h = 1e-20 * scale in 60-digit arithmetic (spec §4.1, §13).
 
     Truncation is O(h^order) and roundoff O(10^-60 / h): both below 1e-38 relative, so the result
     carries more than the 20 digits printed. Claim C1 checks the 2nd- against the 4th-order form.
@@ -327,9 +327,9 @@ STATES: dict[str, dict[str, Any]] = {
         "case": "SYN-001-nominal",
         "params": dict(NOMINAL),
         "why": (
-            "The nominal case. K_B(360 K) = 1 exactly, so x_B = y_B = 1/3 and several couplings "
-            "through B vanish here; they are registered as zeros because they vanish here and "
-            "are non-zero at P3. Heater outlet LIQUID, flash TWO_PHASE."
+            "The nominal case: heater outlet LIQUID, flash TWO_PHASE, K_B(360 K) = 1 exactly. The "
+            "heater vapour S3.V and its whole sensitivity row vanish here and are registered as "
+            "zeros because they vanish here; the same row is non-zero at P3."
         ),
     },
     "P2": {
@@ -344,9 +344,9 @@ STATES: dict[str, dict[str, Any]] = {
         "case": None,
         "params": with_param(with_param(NOMINAL, "r", mpf("0.3")), "t_f", mpf(365)),
         "why": (
-            "Off the K_B = 1 point (T_f = 365 K) and at a heater outlet that is TWO_PHASE, so the "
-            "heater's lifted split rows and their property derivatives enter the sensitivity, and "
-            "the couplings that vanish at P1 through K_B = 1 do not vanish here."
+            "Off the K_B = 1 point (T_f = 365 K, so no value is right only because x_B = 1/3) and "
+            "at a heater outlet that is TWO_PHASE, so the heater's lifted split rows and their "
+            "property derivatives enter the sensitivity and the S3.V row is non-zero."
         ),
     },
 }

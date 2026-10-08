@@ -3569,3 +3569,220 @@ route would stay unpublished until the end of v0.2.
 own (the W gates that apply at that point), designed before the pre-release, not by relaxing the v0.1 one.
 
 ---
+
+
+## R-180 — M03: a study parameter is a pinned input, and its derivative Fₚ comes from a parametric twin that must reproduce the base residual and Jacobian bit for bit; the frozen CompiledProblem does not change
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D1, D2; `docs/derivations/M03-studies-spec.md` §3.1–§3.2 |
+| Evidence | Specification A01–A04 (planned); measured 2026-10-08: the twin is bitwise equal to the base at P1–P3 |
+| Affected packages | M03, M04, M05 |
+
+**Decision.** Parameters are elements of `metadata.parameter_ids`. `casadi_backend.py` compiles the same `ProblemSpec` again with only the requested pinned inputs as symbols; the twin's residual and x-Jacobian must equal the base's after signed-zero normalization at the requested state (`TWIN_MISMATCH` otherwise); a builder that cannot take a symbol refuses `PARAMETER_NOT_DIFFERENTIABLE`. No metadata, capability, `model_version` or `constants_sha256` changes.
+
+**Rejected alternatives, and why.** Widening `Capabilities`/`CompiledProblem` (frozen-interface and metadata migration for no gain); finite differences in p (R-010); hand-written ∂F/∂p per unit (a second model); one twin with every pinned input symbolic (one value-branching builder would disable every sensitivity).
+
+**Watch for.** Any sensitivity path that evaluates the base problem at perturbed pinned inputs; a tolerance replacing the bitwise guard without a specification amendment.
+
+---
+
+## R-181 — M03: a sensitivity is issued only at a qualified regular root (policy `M03-sensitivity-v1`); every failure is a typed refusal with null values; τ_regime = 1e-4
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D3; specification §3.4–§3.5 |
+| Evidence | Specification A13–A20 (planned); measured rcond₁ ≈ 0.02 × margin near SYN-001's bubble point; alias tangent residual 1.0 for both pressure specifications, 0.0 for the five registered parameters |
+| Affected packages | M03, M04, M05 |
+
+**Decision.** Q0 identity, twin guard, known differentiable parameters; Q1 kept-row scaled residual ≤ 1e-10 and (study level) a `VERIFIED` K04 certificate; Q2 K04's screen on the reduced scaled Jacobian `NO_RANK_LOSS_DETECTED`; Q3 per parameter, eliminated alias rows' tangent residual ≤ 1e-8 (else that column only is refused); Q4 every TP split's margin ≥ 1e-4, PH-type splits `REGIME_MARGIN_UNSUPPORTED`. All failures listed; refused values `null`; no override.
+
+**Rejected alternatives, and why.** The [A08] screen alone (it notices a boundary only below m ≈ 1e-6); an LU-pivot screen (blueprint §8.1: not rank revealing); a per-call threshold override (blueprint §8.1: a study cannot relabel).
+
+**Watch for.** A refusal that returns zeros or the unqualified numbers; a changed τ without a new policy id; the screen applied to a matrix containing decision variables.
+
+---
+
+## R-182 — M03: forward and adjoint sensitivities share one factorization; the adjoint is a transposed back-solve under ADR 0004 D3's record; finite differences stay test oracles
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D4; specification §3.6, §4.5 |
+| Evidence | Specification A03, A05–A10, A12 (planned); measured forward–adjoint ≤ 3.8e-14 scaled; FD floor 3.3e-12 at ε = 1e-4 (4th order) |
+| Affected packages | M03, ADR 0004's linear-solve module |
+
+**Decision.** One `factorize` for the solves per request regardless of the number of parameters and outputs (plus the screen's own); `KeptFactorization.solve_transposed` judged against Aᵀ; mode `both` records the consistency identity. The FD oracle (4th order, h = 1e-4 s_p, P1 and P3) lives in test support only.
+
+**Rejected alternatives, and why.** A factorization per parameter (ADR 0004's cost); a separate factorization of Jᵀ (two factorizations of one matrix); reusing the last Newton factorization (not the final Jacobian, blueprint [A08]).
+
+**Watch for.** A factorization count that grows with the request; an FD helper imported from `src`.
+
+---
+
+## R-183 — M03: a sweep is independent certified solves from the registered initializer; failed points are results; nothing is claimed between points
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D5; specification §6 |
+| Evidence | Specification A21–A24 (planned); measured: all eight in-domain registered points converge and certify `VERIFIED` |
+| Affected packages | M03, M04 (sampling), M07 |
+
+**Decision.** `start = "registered_initializer"` (single-valued literal); typed outcomes with `null` outputs for failed points; order independence; root fingerprints recorded; `INCOMPLETE` with `NOT_RUN` points on interrupt or budget.
+
+**Rejected alternatives, and why.** Warm-start chaining (order dependence, poisoned successors, branch following belongs to continuation); interpolating or dropping failed points (placeholder success).
+
+**Watch for.** A sweep summary that counts only converged points; chaining introduced without a new `start` value.
+
+---
+
+## R-184 — M03: the estimation example fits SYN-001's (r, T_f) to seeded synthetic data; identifiability by the weighted scaled sensitivity matrix (τ_id = 1e-8); the product streams alone cannot identify r
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D6; specification §7 |
+| Evidence | Specification A25–A30 (planned); closed forms in `benchmarks/m03/reference_values.json` (FIT-I ratio 0.3198; FIT-U ratio 0, null direction e_r) |
+| Affected packages | M03, M04 |
+
+**Decision.** WLS by SciPy `least_squares` (`trf`) with M03's exact forward sensitivities and a certified solve per evaluation; covariance only when identifiable, on the declared σ; undetermined parameters and predictions carry no values; data from SplitMix64 + erfinv in the generator, stored in the JSON and read, never regenerated; `evidence_class = numerical_verification`, not empirical validation.
+
+**Rejected alternatives, and why.** Profile likelihood or Bayesian identifiability (unnecessary to decide either registered fit); noise-free data (χ² and validation degenerate); a library RNG (streams may change across versions; the data must be byte-reproducible).
+
+**Watch for.** A covariance or standard error reported for an undetermined parameter; optimizer termination read as identifiability.
+
+---
+
+## R-185 — M03: one new schema file for studies; no existing schema changes; ExperimentRequest/Result left to M04; the R-149 `$id` move does not ride on M03
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D7; specification §10 |
+| Evidence | Schema round-trip tests from emitted fixtures (planned, WO-9) |
+| Affected packages | M03, M01, M04, M06 |
+
+**Decision.** `schemas/study.schema.json` (sensitivity, sweep, estimation) and, by ADR 0032, `schemas/optimization-report.schema.json`; fixtures emitted by real runs; four non-schema rules in a test.
+
+**Rejected alternatives, and why.** Editing existing schemas (collides with M01/M06, gains nothing); carrying the `$id` move (touches every schema).
+
+**Watch for.** A hand-written fixture; a refused value serialized as 0.
+
+---
+
+## R-186 — M03: the general NLP bridge is a full-space PyNumero ExternalGreyBoxModel over the parametric twin
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D1; specification §8.2 |
+| Evidence | Specification A31, A35 (planned) |
+| Affected packages | M03, M05 |
+
+**Decision.** Inputs: state variables and decisions; equality constraints: the kept rows via the twin; Jacobian `[Fₓ Fₚ]` exact; Pyomo holds only the objective, inequalities, bounds and scaling.
+
+**Rejected alternatives, and why.** Reduced space (not [A06]'s residual-exposing bridge; nested-solve failures become evaluation errors; it is M05's design space); a hand-transpiled Pyomo model (plan L271); CasADi `nlpsol` (ADR 0006 D2.4); cyipopt without PyNumero (departs from [A06]; a later ADR if ASL alone fails the audit).
+
+**Watch for.** Pyomo expressions duplicating model equations; claims of trust-region guarantees from this bridge.
+
+---
+
+## R-187 — M03: Hessian policy — the exact Hessian stays absent; Ipopt's limited-memory approximation is configured and recorded; second-order conditions are reported not assessed
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D2; specification §8.3 |
+| Evidence | Specification A35, A36, A38 (planned) |
+| Affected packages | M03, M05, ADR 0003 (T5 not fired) |
+
+**Decision.** `hessian_approximation = limited-memory`, history 6, recorded; `exact` refused `HESSIAN_UNAVAILABLE` before any solve; `second_order = "not_assessed"` except `"vacuous_at_vertex"`.
+
+**Rejected alternatives, and why.** FD Hessian (a fabricated derivative class); Gauss–Newton (not for general constraints); zeros (the frozen interface forbids them).
+
+**Watch for.** Any Hessian callback on the gray box; a second-order claim without an exact Hessian.
+
+---
+
+## R-188 — M03: an optimizer's candidate is its decision vector; feasibility, constraints and KKT are judged on the re-solved, certified simulation, independently of Ipopt
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D3; specification §8.5–§8.6 |
+| Evidence | Specification A32, A35–A37, A40 (planned) |
+| Affected packages | M03, M05, M07 |
+
+**Decision.** V1 re-solve and `VERIFIED`; V2 Ipopt-state gross-error check (≤ 1e-6 scaled); V3 bounds and inequalities on the re-solved state; V4 regimes and margins; V5 reduced KKT from M03 adjoints (stationarity ≤ 1e-6, signs, LICQ); statuses `KKT_POINT_VERIFIED` / `NOT_VERIFIED` / `INFEASIBLE_REPORTED` / `SOLVER_FAILED` / `UNSUPPORTED`; `global_optimality = false` always.
+
+**Rejected alternatives, and why.** Trusting Ipopt's return status or state (termination is not feasibility).
+
+**Watch for.** A report whose constraint values come from Ipopt's iterate; a status that implies optimality.
+
+---
+
+## R-189 — M03: optimizers receive true domain restrictions — decision boxes, the provider's T and P domain, flows ≥ 0 except those exactly zero at the verified start — never penalties; bound_relax_factor = 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D4; specification §8.2, §8.4 |
+| Evidence | Specification A31 (planned) |
+| Affected packages | M03, M05 |
+
+**Decision.** As the title; regime-pinned zero flows are left unbounded because a bound there is degenerate (LICQ), and V2/V4 police them.
+
+**Rejected alternatives, and why.** Bounding every flow (LICQ failure at the liquid heater); a penalty for constraints (blueprint §10).
+
+**Watch for.** Ipopt's default bound relaxation re-enabled; a penalty term in an objective.
+
+---
+
+## R-190 — M03: Ipopt only from a separately distributed package behind the [A10] gate G-A10; an optional `nlp` extra after a PASS and Frank's licence answer; otherwise UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass; licence acceptance is Frank's (N1, pending) |
+| Normative text | ADR 0032 D5; specification §9 |
+| Evidence | `docs/m03-ipopt-audit.md` (planned, WO-6); A39, A41. Probe 2026-10-08 (not the audit): no binary cyipopt on PyPI for linux/cp313; Pyomo 6.10.1's wheel has no `libpynumero_ASL`; no system Ipopt |
+| Affected packages | M03, T08-style release gates |
+
+**Decision.** G1–G8 of specification §9; the extra never in the default install; CasADi's METIS-closure objects never loaded (checked per test run); no substitute optimizer without a new ADR.
+
+**Rejected alternatives, and why.** CasADi's bundled Ipopt (ADR 0006 D2.4); adding cyipopt/pyomo as default dependencies (blueprint §15); proceeding before the audit (ADR 0006 D2.4: the audit runs first).
+
+**Watch for.** An `nlp` import on a default path; the extra declared before the audit document exists.
+
+---
+
+## R-191 — M03: the optimization closure is study-level (`optimization_readiness`); `validate(task="optimization")` keeps R-129's typed `unsupported`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D6; specification §8.7 |
+| Evidence | Specification A33, A34 (planned) |
+| Affected packages | M03, a later package that gives `ProcessRevision` an optimization formulation |
+
+**Decision.** `READY_FOR_OPTIMIZATION` only when the formulation closes and an audited NLP solver is importable; every failing reason listed otherwise; `optimize()` returns `UNSUPPORTED` with those reasons and never raises.
+
+**Rejected alternatives, and why.** Flipping the application-level validate now (no revision-level formulation exists; R-129's watch-for).
+
+**Watch for.** `READY_FOR_OPTIMIZATION` returned with the extra absent; R-129's refusal removed without a formulation behind it.
+
+---
