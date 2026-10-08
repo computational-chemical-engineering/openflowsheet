@@ -17,7 +17,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | spec + Amendment 1 (`1e8aecd`, R-195…200); WO-1…8 done; manifest `tested`; review: matches, 1 must-fix + 4 should-fix (`3a61298`); fixes running → reviewer closure → merge |
 | M02 | Build | M01 | W21 | design done; WO-1a, 2, 3, 4 done (`02403d1`, gate green); rulings R-234…237 (`811b23c`); WO-1b, 5, 6 running; then WO-7…13; merges after M01 `tested` |
-| M03 | Design | T08 | W24 (part) | spec + Amendment 1; WO-0…7, 2a/5a/7a, 9 done (`7606ada`); WO-8 running (merge waits for N1); then WO-10 manifest, `reviewer` |
+| M03 | Design | T08 | W24 (part) | spec + Amendment 1; WO-0…9 done (`e9de5ee`; `nlp` extra isolated in `91537b0`); `reviewer` running; then fixes, WO-10 manifest; merge waits for N1 |
 | M04 | Design | M02 | W23 | not started |
 | M05 | Design | M03, M04 | W24 | not started |
 | M06 | Build | T08 | W26, W27 | design + ADR 0030 / Amendment 3 (approved); WO-1…12, 14…16 done on `wp/M06-build` (`98da494`); review: matches with must-fixes (`fc73c0b`; CI red on 3 test-side defects); fixes + manifest running → green CI → ADRs Accepted → merge (security/browser, docs, evidence + `reviewer`); WO-17 (canaries + campaign) at M07 |
@@ -74,7 +74,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `opus-engineer` | M01 review fixes F1–F5 | `wp/M01` (`agent-a94d84cd26a293bc0`) |
 | `opus-engineer` | M06 review fixes F1–F8 + WO-13 manifest | `wp/M06-build` (`agent-af89210400852f3dd`) |
-| `opus-engineer` | M03 WO-8 cyipopt gray box (extra isolated; merge waits for N1) | `wp/M03` (`m03`) |
+| `reviewer` | M03 independent review | `wp/M03` @ `e9de5ee` |
 | `opus-engineer` | M02 WO-1b + rulings, WO-5 (reactor env, G10), WO-6 | `wp/M02` (`m02`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).

@@ -311,3 +311,11 @@ Grep, don't read whole. Newest at the bottom.
   companion test; Q3 confirmed with separate handshake/evaluation retry budgets, handshake outcome fixed per job; Q4
   injected `ArtifactSink` callback replaces the lazy upward import (D10), `atomic_write_bytes` → `_files.py`.
 - `opus-engineer` M02 WO-1b + R-234…237 code, WO-5 (reactor env + child, G10 opt-in run), WO-6 launched on `wp/M02`.
+- M03 WO-8 done on `wp/M03` (`aa52638` adapter + tests + `m03_nlp_check.sh`, `569c300` inventory on NLP-1,
+  **`91537b0` the `nlp` extra alone**, `e9de5ee` inventory after the extra): default gate 7047 passed, 17 deselected;
+  nlp gate 17 passed. A35 3/3 KKT_POINT_VERIFIED, decision error 2.67e-12 (1e-6); A36 μ ≤ 9e-11, stationarity ≤
+  1.4e-9; A37 NLP-INF INFEASIBLE_REPORTED; A38 exact Hessian refused with 0 solves; A39 no METIS-closure object, 0
+  nlpsol; Q-F2 nothing within 10×; Q-F4 trial-point errors → step rejection, start/Jacobian errors → SOLVER_FAILED.
+  Threading: 48 OMP threads → 1-ulp variation (NLP-1) and a different path on NLP-INF; OMP_NUM_THREADS=1 makes runs
+  identical. Open: A40 "sum" reading (NLP-INF sums 597 > 500); record/enforce OMP threads. Merge still waits for N1.
+- `reviewer` M03 launched on `wp/M03` @ `e9de5ee` (rules on A40 and threading).
