@@ -203,6 +203,8 @@ axes:
     statement: >-
       Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-one operations of
       `OPERATIONS`, each on the transports listed; authority from the credential only (ADR 0019).
+      With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of seventeen of
+      them over HTTP and of nothing else (M06; L-WEB-1 to L-WEB-4).
     operations:
       artifact_bytes: [python, cli, http]
       cancel_job: [python, cli, http, mcp]
@@ -230,7 +232,9 @@ axes:
       - check:T07.G11
       - check:T07.G14
       - check:T07.D15(b)
+      - tests/test_m06_http_contract.py::test_g2_every_ui_operation_answers_schema_valid_over_http
       - doc:docs/adr/0019-application-contract-v1.md
+      - doc:docs/web-shell.md
 
   - id: platforms
     title: Platforms
@@ -701,6 +705,41 @@ limitations:
       - tests/test_t08_r3_a19_lock_lookup.py::test_b_an_installed_layout_beneath_a_stray_lock_has_none
       - doc:docs/adr/0007-reproducibility-certificate-policy.md §D4
       - doc:docs/derivations/T08-release-spec.md §5.5
+  - id: L-WEB-1
+    text: >-
+      The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits
+      nothing (Solve and Cancel are its only effects), calls seventeen operations and no other,
+      computes only display arithmetic (design note §5.6), converts no unit, and judges nothing —
+      the scenario view displays run differences without a registered comparison or allowance.
+    evidence:
+      - tests/test_m06_static_scan.py::test_the_ui_calls_exactly_the_seventeen_operations
+      - doc:docs/web-shell.md
+      - doc:docs/design/M06-web-shell.md §5.6
+  - id: L-WEB-2
+    text: >-
+      The web shell's security is the local, single-user model: loopback by default, the bearer
+      token on every data request, a strict Content-Security-Policy; no TLS, no multi-user
+      hosting, and no security assessment beyond design note §7. Served with `--allow-remote`
+      over plain HTTP the page is an insecure context and record digests show "unchecked".
+    evidence:
+      - tests/test_m06_wo4_serving.py::test_a_shell_file_is_served_with_its_type_and_the_shell_headers
+      - doc:docs/design/M06-web-shell.md §7
+  - id: L-WEB-3
+    text: >-
+      The web shell is tested in headless Chromium only. No usability, workflow or screen-reader
+      study exists; accessibility is limited to status shown as glyph and word, controls that are
+      keyboard-reachable by construction, and the measured contrast of its colour tokens.
+    evidence:
+      - tests/test_m06_contrast.py::test_every_text_token_on_every_background_is_legible
+      - doc:docs/design/M06-web-shell.md §13
+  - id: L-WEB-4
+    text: >-
+      The agent history shows what the project recorded, not what an agent claimed; the
+      validation shown beside a commit is recomputed now by the current server, not the report the
+      agent received at commit time.
+    evidence:
+      - doc:docs/web-shell.md
+      - doc:docs/design/M06-web-shell.md §12
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json

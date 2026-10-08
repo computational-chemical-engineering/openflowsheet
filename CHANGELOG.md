@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.2.0 — unreleased
+
+*In development on `main`; nothing below is released. The section is finalised, with its gate
+table, at M07.*
+
+### M06 — the diagnostic web shell (W26)
+
+- **`serve-http --ui`.** A browser view of one project at `/ui/`, on the same origin as the
+  unchanged HTTP API: revisions with a flowsheet drawing, validation and degrees of freedom, the
+  equation view (structure), runs with attempts, trace and plan (live while a job runs),
+  certificates, failure bundles, streams and units, bundle files with download, revision and run
+  comparison, and the agent history. Solve and Cancel are its only actions; it edits nothing.
+  `docs/web-shell.md` says what each screen shows and does not claim; ADR 0030 (proposed) and
+  `docs/design/M06-web-shell.md` are the design.
+- **Contract only.** Hand-written ES modules and CSS shipped as package data: no build step, no
+  framework, nothing third-party. One `fetch` call site, URLs from a route table generated from
+  `OPERATIONS`, exactly 17 operations called; records read whole through the raw export and
+  checked against their registered SHA-256. The bearer token stays in session storage and the
+  `Authorization` header; every `/ui` response carries a strict Content-Security-Policy.
+- **Contract amendments (ADR 0019 Amendment 3, proposed).** `inspect_structure` gains a row and
+  column index and, for an unroutable revision, the validation's own analysis; `diff_revisions`
+  gains element-level detail; a new operation, `list_audit`, reads the project's audit history
+  (own rows with `read`, other principals' with `policy`).
+- **Tests.** Static scans of the shell's sources; Node's built-in runner on the view models and
+  screens against fixtures captured from real responses (`check.sh` needs Node ≥ 22 unless
+  `OPENFLOWSHEET_SKIP_WEB_TESTS=1`); every used operation over HTTP; a headless-Chromium test of
+  every screen with a request recorder, Solve, a live and a cancelled job, and the downloads
+  (skipped without a browser, required on CI's x86-64 leg).
+
 ## v0.1.1 — the single public repository; release by workflow; no change to the simulator
 
 *The code and data of the simulator are v0.1.0's: under the ADR 0021 D2.4 paths (`src/`,
