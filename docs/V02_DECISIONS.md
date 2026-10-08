@@ -199,3 +199,4 @@ Grep, don't read whole. Newest at the bottom.
   silent and open items (W27-R57 "ten" vs 9 assets; effort pin only via run.json; M06 manifest needs the envelope
   harvest classification; WO-17 needs v0.2 binder reading in `snapshot.READINGS` + M01/M02 id rows + U14 rewrite for
   campaign records) → for WO-13's review / M07.
+- `wp/M06-w27-harness` merged into `wp/M06-build` (`92d430e`). `recon` M02 launched (digest → M02 design brief).
