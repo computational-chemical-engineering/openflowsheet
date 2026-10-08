@@ -17,7 +17,7 @@ from typing import Any
 
 import numpy as np
 import pytest
-from m03_support import flowsheet, nlp_formulation, number, reference
+from m03_support import flowsheet, nlp_formulation, number, record_measurement, reference
 from t07_corpus import CORPUS
 
 from openflowsheet.application.contract import ApplicationError
@@ -161,7 +161,7 @@ def _dense(matrix: Any) -> Any:
 # -- A32: the V5 verifier --------------------------------------------------------------------------
 
 
-def test_a32_the_reduced_kkt_check_at_the_reference_optimum() -> None:
+def test_a32_the_reduced_kkt_check_at_the_reference_optimum(record_property: Any) -> None:
     verification = at_optimum()
     optimum = reference()["nlp"]["NLP-1"]["reference_optimum"]
     assert verification.outcome("V1") == "pass"
@@ -189,10 +189,15 @@ def test_a32_the_reduced_kkt_check_at_the_reference_optimum() -> None:
     ]
     assert verification.objective is not None
     objective_error = abs(verification.objective - number(optimum["objective"]))
-    print(
-        f"A32 mu relative error {mu_error:.3e}; stationarity {kkt.stationarity_residual:.3e}; "
-        f"gradient errors {max(gradient_errors):.3e}; objective error {objective_error:.3e}"
+    record_measurement(record_property, "A32", "|mu / mu* - 1|", mu_error, TAU_MULTIPLIER_REL)
+    record_measurement(
+        record_property,
+        "A32",
+        "stationarity residual at the reference optimum",
+        kkt.stationarity_residual,
+        TAU_STATIONARITY_OPTIMUM,
     )
+    print(f"A32 gradient errors {max(gradient_errors):.3e}; objective error {objective_error:.3e}")
     # Without the optimizer's state there is no V2, so no candidate here is ever "passed".
     assert verification.outcome("V2") == "not_evaluated"
     assert not verification.passed
@@ -204,7 +209,7 @@ def test_a32_the_reduced_kkt_check_at_the_reference_optimum() -> None:
     assert document["checks"][0]["resolve_outcome"] == "CONVERGED"
 
 
-def test_a32_the_same_verifier_discriminates_at_the_start() -> None:
+def test_a32_the_same_verifier_discriminates_at_the_start(record_property: Any) -> None:
     regimes = readiness().declared_regimes
     assert regimes is not None
     formulation = nlp_formulation()
@@ -218,7 +223,14 @@ def test_a32_the_same_verifier_discriminates_at_the_start() -> None:
     assert verification.outcome("V3") == "fail"
     expected = number(reference()["nlp"]["NLP-1"]["starts"][0]["constraint_scaled"])
     assert abs(verification.constraint_values["recovery_A"] - expected) <= 1e-12
-    print(f"A32 stationarity at the start {verification.kkt.stationarity_residual:.3e}")
+    record_measurement(
+        record_property,
+        "A32",
+        "stationarity residual at the start (0.6, 360 K)",
+        verification.kkt.stationarity_residual,
+        STATIONARITY_AT_START,
+        ">=",
+    )
 
 
 def test_a32_v2_compares_the_optimizer_state_with_the_resolved_simulation() -> None:

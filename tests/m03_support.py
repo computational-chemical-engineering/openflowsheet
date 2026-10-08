@@ -41,6 +41,31 @@ REFERENCE_SHA256: Final = "81d1d79ae11ba4a9da353a3856c80aec305fae25287a330486d31
 GENERATOR_PATH: Final = REPO_ROOT / "docs" / "derivations" / "scripts" / "m03_reference.py"
 
 
+#: WO-10: the junit property under which a test records what it measured for an assertion.
+MEASUREMENT_PREFIX: Final = "M03.measured."
+
+
+def record_measurement(
+    record_property: Any,
+    assertion: str,
+    quantity: str,
+    value: float,
+    tolerance: float,
+    sense: str = "<=",
+) -> None:
+    """Record a measured value beside its registered tolerance (WO-10).
+
+    `record_property` is pytest's fixture: without `--junitxml` it records nothing anyone reads,
+    and with it `scripts/m03_evidence_manifest.py` reads the value into the manifest check of
+    `assertion`. The test's own `assert` stays the verdict; this only says by how much."""
+    record_property(
+        f"{MEASUREMENT_PREFIX}{assertion}",
+        json.dumps(
+            {"quantity": quantity, "value": float(value), "tolerance": tolerance, "sense": sense}
+        ),
+    )
+
+
 @cache
 def reference() -> dict[str, Any]:
     """The M03 reference values, refused unless the bytes are the specification's."""

@@ -24,7 +24,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_json
 from m03_fixture_compare import fixture_differences, measurement_differences
-from m03_support import flowsheet, nlp_formulation, number, reference
+from m03_support import flowsheet, nlp_formulation, number, record_measurement, reference
 from test_m03_schemas import FIXTURES, REPORT, report_violations
 
 from openflowsheet.application.types import schema_errors
@@ -136,21 +136,32 @@ def test_the_report_records_the_thread_configuration_it_was_produced_under(
 # -- A35 and A36: NLP-1 ---------------------------------------------------------------------------
 
 
-def test_a35_every_start_reaches_the_reference_optimum_verified(nlp_1: OptimizationReport) -> None:
+def test_a35_every_start_reaches_the_reference_optimum_verified(
+    nlp_1: OptimizationReport, record_property: Any
+) -> None:
     optimum = reference()["nlp"]["NLP-1"]["reference_optimum"]
     formulation = nlp_formulation()
     document = nlp_1.as_document()
     assert nlp_1.status == "KKT_POINT_VERIFIED"
     assert nlp_1.reasons == ()
     assert len(nlp_1.starts) == 3
+    worst_decision = worst_objective = 0.0
     for start in document["starts"]:
         assert start["classification"] == "KKT_POINT_VERIFIED"
         decisions = start["final_decisions"]
         for decision in formulation.decisions:
             error = abs(decisions[decision.parameter_id] - number(optimum[decision.parameter_id]))
             assert error / decision.scale <= TAU_DECISION
+            worst_decision = max(worst_decision, error / decision.scale)
         objective = next(item for item in start["checks"] if item["check"] == "V6")["objective"]
         assert abs(objective - number(optimum["objective"])) <= TAU_OBJECTIVE
+        worst_objective = max(worst_objective, abs(objective - number(optimum["objective"])))
+    record_measurement(
+        record_property, "A35", "max over starts of |d - d*| / s_d", worst_decision, TAU_DECISION
+    )
+    record_measurement(
+        record_property, "A35", "max over starts of |phi - phi*|", worst_objective, TAU_OBJECTIVE
+    )
     assert nlp_1.distinct_local_solutions == 1
     assert document["hessian_policy"] == dict(HESSIAN_POLICY)
     assert document["solver"]["options"] == dict(IPOPT_OPTIONS)
@@ -161,7 +172,7 @@ def test_a35_every_start_reaches_the_reference_optimum_verified(nlp_1: Optimizat
 
 
 def test_a36_the_candidate_is_verified_on_the_resolved_simulation(
-    nlp_1: OptimizationReport,
+    nlp_1: OptimizationReport, record_property: Any
 ) -> None:
     optimum = reference()["nlp"]["NLP-1"]["reference_optimum"]
     candidate = nlp_1.candidate
@@ -183,6 +194,17 @@ def test_a36_the_candidate_is_verified_on_the_resolved_simulation(
     assert abs(kkt["multipliers"]["recovery_A"] - mu_star) <= TAU_MULTIPLIER_REL * mu_star
     assert kkt["stationarity_residual_inf"] <= TAU_STATIONARITY
     assert kkt["licq"] and kkt["second_order"] == "not_assessed"
+    for quantity, measured, tolerance, sense in (
+        ("V2 scaled difference", checks["V2"]["scaled_difference_inf"], TAU_V2, "<="),
+        ("V3 |g| of the active constraint", abs(value), TAU_ACTIVE, "<="),
+        ("V3 g of the active constraint", value, -TAU_FEAS, ">="),
+        ("V4 min regime margin", min(s["margin"] for s in checks["V4"]["splits"]), TAU_MARGIN,
+         ">="),
+        ("V5 |mu / mu* - 1|", abs(kkt["multipliers"]["recovery_A"] / mu_star - 1.0),
+         TAU_MULTIPLIER_REL, "<="),
+        ("V5 stationarity residual", kkt["stationarity_residual_inf"], TAU_STATIONARITY, "<="),
+    ):  # fmt: skip
+        record_measurement(record_property, "A36", quantity, measured, tolerance, sense)
     assert nlp_1.claims == {
         "global_optimality": False,
         "local_stationarity": True,
@@ -301,6 +323,13 @@ def test_a40_every_start_records_status_iterations_counters_and_time_within_budg
             assert start["iterations"] <= IPOPT_OPTIONS["max_iter"]
             assert start["wall_time_s"] <= IPOPT_OPTIONS["max_wall_time"]
         problem = report.as_document()["formulation"]["problem_id"]
+        for quantity, measured, limit in (
+            ("iterations", max(s["iterations"] for s in starts), IPOPT_OPTIONS["max_iter"]),
+            ("wall time, s", max(s["wall_time_s"] for s in starts), IPOPT_OPTIONS["max_wall_time"]),
+        ):
+            record_measurement(
+                record_property, "A40", f"{problem}: max over starts of {quantity}", measured, limit
+            )
         record_property(
             f"{problem} iterations over all starts", sum(s["iterations"] for s in starts)
         )

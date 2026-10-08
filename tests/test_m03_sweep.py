@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import json
 from functools import cache
+from typing import Any
 
 import pytest
-from m03_support import FLOWSHEET_CONTEXT, number, reference
+from m03_support import FLOWSHEET_CONTEXT, number, record_measurement, reference
 
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.studies.sensitivity import OutputFunctional, StudyParameter
@@ -62,7 +63,7 @@ def canonical(document: object) -> str:
     return json.dumps(document, sort_keys=True, allow_nan=False)
 
 
-def test_a21_the_registered_sweep_records_every_point_in_input_order() -> None:
+def test_a21_the_registered_sweep_records_every_point_in_input_order(record_property: Any) -> None:
     result = sweep()
     expected = reference()["sweep"]["points"]
     _, parameter, values = registered()
@@ -82,7 +83,7 @@ def test_a21_the_registered_sweep_records_every_point_in_input_order() -> None:
                 closed = number(entry[output])
                 error = abs(point.outputs[output] - closed)
                 assert error <= OUTPUT_ABS + OUTPUT_REL * abs(closed), (point.value, output)
-                worst = max(worst, error)
+                worst = max(worst, error / (OUTPUT_ABS + OUTPUT_REL * abs(closed)))
         else:
             assert point.outcome == "SPECIFICATION_REFUSED" == entry["expected_outcome"]
             assert "outside the declared domain" in point.message
@@ -90,7 +91,13 @@ def test_a21_the_registered_sweep_records_every_point_in_input_order() -> None:
             assert point.sensitivity is None
             assert point.certificate_status is None
             assert point.root_fingerprint is None
-    print(f"A21 worst |y - y*| = {worst:.3e}")
+    record_measurement(
+        record_property,
+        "A21",
+        "max over converged points of |y - y*| / (1e-9 + 1e-10 |y*|), S4.N and S5.N",
+        worst,
+        1.0,
+    )
     assert result.summary == {
         "total": 9,
         "converged": 8,
@@ -102,7 +109,9 @@ def test_a21_the_registered_sweep_records_every_point_in_input_order() -> None:
     assert result.status == "COMPLETE"
 
 
-def test_a22_the_sweep_sensitivity_is_the_closed_form_and_zero_only_where_single_phase() -> None:
+def test_a22_the_sweep_sensitivity_is_the_closed_form_and_zero_only_where_single_phase(
+    record_property: Any,
+) -> None:
     result = sweep()
     worst = worst_abs = 0.0
     for point, entry in zip(result.points, reference()["sweep"]["points"], strict=True):
@@ -122,7 +131,13 @@ def test_a22_the_sweep_sensitivity_is_the_closed_form_and_zero_only_where_single
         assert (closed == 0.0) == single_phase
         if not single_phase:
             assert abs(value) > 1e-3
-    print(f"A22 worst error / tolerance = {worst:.3e}, worst |Ŝ - Ŝ*| = {worst_abs:.3e}")
+    record_measurement(
+        record_property,
+        "A22",
+        "max over converged points of |S - S*| / (1e-11 + 1e-10 |S*|), scaled",
+        worst,
+        1.0,
+    )
 
 
 def test_a23_a_reversed_sweep_reproduces_every_point_record_bitwise() -> None:

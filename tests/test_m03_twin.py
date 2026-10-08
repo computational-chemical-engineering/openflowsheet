@@ -22,6 +22,7 @@ from m03_support import (
     PRESSURE_PARAMETERS,
     REGISTERED_PARAMETERS,
     number,
+    record_measurement,
     reference,
     solved,
     x_squared_spec,
@@ -152,7 +153,7 @@ def test_a01_the_twin_and_its_parameter_columns_come_from_one_graph() -> None:
 # -- A02 ------------------------------------------------------------------------------------------
 
 
-def test_a02_the_parameter_jacobian_at_p1_is_the_closed_form() -> None:
+def test_a02_the_parameter_jacobian_at_p1_is_the_closed_form(record_property: Any) -> None:
     expected = reference()["parameter_jacobian_P1"]
     tear, x = at_state("P1")
     twin = compile_parametric_twin(tear.spec, REGISTERED_PARAMETERS)
@@ -166,6 +167,7 @@ def test_a02_the_parameter_jacobian_at_p1_is_the_closed_form() -> None:
                 found[name][jacobian.row_ids[jacobian.indices[offset]]] = value
 
     assert set(found) == set(expected)
+    worst = 0.0
     for name, entries in expected.items():
         assert set(found[name]) == set(entries), name
         for row, value in entries.items():
@@ -173,12 +175,16 @@ def test_a02_the_parameter_jacobian_at_p1_is_the_closed_form() -> None:
             if name == "U-SPLIT.split_fraction":
                 # ∓S5.n_i on the recycle and purge rows, within 1e-15 relative.
                 assert abs(found[name][row] - closed) <= 1e-15 * abs(closed), (name, row)
+                worst = max(worst, abs(found[name][row] - closed) / abs(closed))
             else:
                 assert closed == -1.0
                 assert found[name][row] == -1.0, (name, row)
     # Six non-zeros for r; one per specification row elsewhere (two for the flash T).
     assert len(found["U-SPLIT.split_fraction"]) == 6
     assert len(found["U-FLASH.T_spec"]) == 2
+    record_measurement(
+        record_property, "A02", "max relative error of the split-fraction entries", worst, 1e-15
+    )
 
 
 # -- identity: the base problem does not move -----------------------------------------------------

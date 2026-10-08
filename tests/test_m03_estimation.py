@@ -27,7 +27,7 @@ from functools import cache
 from typing import Any
 
 import pytest
-from m03_support import estimation_problem, number, reference
+from m03_support import estimation_problem, number, record_measurement, reference
 
 import openflowsheet.studies.estimation as estimation_module
 from openflowsheet.studies.estimation import EstimationReport, estimate
@@ -86,7 +86,7 @@ def test_a25_the_fit_uses_the_stored_observations_bitwise_and_generates_none() -
         assert marker not in source, marker
 
 
-def test_a26_fit_i_is_identifiable_and_matches_the_closed_form() -> None:
+def test_a26_fit_i_is_identifiable_and_matches_the_closed_form(record_property: Any) -> None:
     report, closed = fit("FIT-I"), expected("FIT-I")
     assert report.status == closed["expected_status"] == "IDENTIFIABLE"
     worst_estimate = 0.0
@@ -125,14 +125,16 @@ def test_a26_fit_i_is_identifiable_and_matches_the_closed_form() -> None:
     assert report.degrees_of_freedom == closed["degrees_of_freedom"] == 6
     assert report.identifiability.null_directions == ()
     assert report.covariance_basis == "declared_sigma"
-    print(
-        f"A26 worst estimate error {worst_estimate:.3e} scaled; worst relative "
-        f"{worst_relative:.3e}; correlation {correlation_error:.3e}; "
-        f"estimator {report.estimator_result['message']} nfev {report.estimator_result['nfev']}"
-    )
+    for quantity, value, tolerance in (
+        ("max |theta - theta*| / s_theta", worst_estimate, TAU_ESTIMATE),
+        ("max relative error: sigma ratio, chi2, singular values, covariance", worst_relative,
+         TAU_RELATIVE),
+        ("|correlation - correlation*|", correlation_error, TAU_ABSOLUTE),
+    ):  # fmt: skip
+        record_measurement(record_property, "A26", quantity, value, tolerance)
 
 
-def test_a27_fit_u_is_unidentifiable_along_the_split_fraction() -> None:
+def test_a27_fit_u_is_unidentifiable_along_the_split_fraction(record_property: Any) -> None:
     report, closed = fit("FIT-U"), expected("FIT-U")
     assert report.status == closed["expected_status"] == "UNIDENTIFIABLE"
     assert report.identifiability is not None
@@ -164,15 +166,18 @@ def test_a27_fit_u_is_unidentifiable_along_the_split_fraction() -> None:
     assert closed["final_iterate_not_registered"] == [undetermined]
     lower, upper = bounds_of(undetermined)
     assert lower <= split.final_iterate <= upper
-    print(
-        f"A27 ratio {ratio:.3e}; null direction error {null_error:.3e}; T_f error {error:.3e} "
-        f"scaled; chi2 {chi2_error:.3e} relative; r final iterate {split.final_iterate!r} in "
-        f"[{lower}, {upper}]; "
-        f"estimator {report.estimator_result['message']} nfev {report.estimator_result['nfev']}"
-    )
+    for quantity, value, tolerance in (
+        ("sigma_2 / sigma_1", ratio, TAU_RATIO_U),
+        ("max |n - (1, 0)|", null_error, TAU_NULL),
+        ("|T_f - T_f*| / s_T", error, TAU_ESTIMATE),
+        ("|chi2 / chi2* - 1|", chi2_error, TAU_RELATIVE),
+    ):
+        record_measurement(record_property, "A27", quantity, value, tolerance)
+    record_measurement(record_property, "A27", "r final iterate", split.final_iterate, lower, ">=")
+    record_measurement(record_property, "A27", "r final iterate", split.final_iterate, upper)
 
 
-def test_a28_validation_predictions() -> None:
+def test_a28_validation_predictions(record_property: Any) -> None:
     report = fit("FIT-I")
     worst_relative = worst_absolute = 0.0
     for entry in expected("FIT-I")["validation"]:
@@ -215,14 +220,15 @@ def test_a28_validation_predictions() -> None:
                 measured,
             )
             projection_margin = min(measured - low, high - measured)
-    projections = {
-        item.validation_id: item.null_projection_relative for item in unidentifiable.validation
-    }
-    print(
-        f"A28 FIT-I worst relative {worst_relative:.3e}, normalized residual {worst_absolute:.3e}; "
-        f"FIT-U null projections {projections} (distance to the range's nearer end "
-        f"{projection_margin:.3e}); FIT-U S4.N {determined_error:.3e} relative"
-    )
+    for quantity, value, tolerance, sense in (
+        ("FIT-I max relative error, predictions and their SEs", worst_relative, TAU_RELATIVE,
+         "<="),
+        ("FIT-I max |normalized residual - registered|", worst_absolute, TAU_ABSOLUTE, "<="),
+        ("FIT-U S4.N |predicted / registered - 1|", determined_error, TAU_RELATIVE, "<="),
+        ("FIT-U U-HEAT.Q projection: distance inside the registered range's nearer end",
+         projection_margin, -TAU_PROJECTION, ">="),
+    ):  # fmt: skip
+        record_measurement(record_property, "A28", quantity, value, tolerance, sense)
 
 
 @pytest.mark.parametrize("fit_id", ["FIT-I", "FIT-U"])

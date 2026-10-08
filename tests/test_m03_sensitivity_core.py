@@ -22,6 +22,7 @@ import pytest
 from m03_support import (
     REGISTERED_PARAMETERS,
     linear_spec,
+    record_measurement,
     reference,
     registered_outputs,
     registered_parameters,
@@ -103,36 +104,50 @@ C_OUTPUT = (OutputFunctional("C", {"x1": 1.0, "x2": 10.0}, 1.0),)
 
 
 @pytest.mark.parametrize("mode", ["forward", "adjoint", "both"])
-def test_a11_x_squared_at_a_quarter_is_qualified_with_derivative_one(mode: str) -> None:
+def test_a11_x_squared_at_a_quarter_is_qualified_with_derivative_one(
+    mode: str, record_property: Any
+) -> None:
     _, result = x_squared(0.25, 0.5, mode=mode)
     assert result.status == "QUALIFIED"
     assert result.refusals == ()
     for block in (result.forward, result.adjoint):
         if block is not None:
-            assert abs(block.scaled[0][0] - 1.0) <= 1e-15  # type: ignore[operator]
+            error = abs(block.scaled[0][0] - 1.0)  # type: ignore[operator]
+            assert error <= 1e-15
             assert block.unscaled == block.scaled
+            record_measurement(record_property, "A11", f"{mode}: |dx/dp - 1|", error, 1e-15)
 
 
-def test_a12_the_linear_toy_inverts_and_transposes_correctly() -> None:
+def test_a12_the_linear_toy_inverts_and_transposes_correctly(record_property: Any) -> None:
     expected_x = reference()["toys"]["linear_2x2"]["states"][0]
     result = linear_toy(1.0, IDENTITY_OUTPUTS, mode="forward")
     assert result.status == "QUALIFIED"
     inverse = np.array(result.forward.scaled, dtype=float)
-    assert np.max(np.abs(inverse - np.array(expected_x["dx_dp"], dtype=float))) <= TOY_LINEAR
+    error = float(np.max(np.abs(inverse - np.array(expected_x["dx_dp"], dtype=float))))
+    assert error <= TOY_LINEAR
+    record_measurement(record_property, "A12", "max |X - A^-1|", error, TOY_LINEAR)
 
     for mode in ("forward", "adjoint"):
         block = linear_toy(1.0, C_OUTPUT, mode=mode)
         values = np.array(getattr(block, mode).scaled, dtype=float)
-        assert np.max(np.abs(values - np.array(expected_x["dy_dp"], dtype=float))) <= TOY_LINEAR
+        error = float(np.max(np.abs(values - np.array(expected_x["dy_dp"], dtype=float))))
+        assert error <= TOY_LINEAR
         # The missing-transpose value is O(1) away, so "not equal" means "not even near".
         missing = np.array(expected_x["missing_transpose_value"], dtype=float)
-        assert np.min(np.abs(values - missing)) > 0.5
+        distance = float(np.min(np.abs(values - missing)))
+        assert distance > 0.5
+        record_measurement(record_property, "A12", f"{mode}: max |S - [-23, 8]|", error, TOY_LINEAR)
+        record_measurement(
+            record_property, "A12", f"{mode}: min |S - [-13, 7]|", distance, 0.5, ">"
+        )
 
 
 @pytest.mark.parametrize(
     "case", ["x_squared", "linear_identity", "linear_c"], ids=lambda case: str(case)
 )
-def test_a07_toy_forward_and_adjoint_agree_and_the_record_says_by_how_much(case: str) -> None:
+def test_a07_toy_forward_and_adjoint_agree_and_the_record_says_by_how_much(
+    case: str, record_property: Any
+) -> None:
     if case == "x_squared":
         _, result = x_squared(0.25, 0.5)
     else:
@@ -140,10 +155,14 @@ def test_a07_toy_forward_and_adjoint_agree_and_the_record_says_by_how_much(case:
     forward = np.array(result.forward.scaled, dtype=float)
     adjoint = np.array(result.adjoint.scaled, dtype=float)
     difference = np.abs(forward - adjoint)
-    assert np.all(difference <= TAU_ABS + TAU_REL * np.max(np.abs(forward)))
+    bound = TAU_ABS + TAU_REL * float(np.max(np.abs(forward)))
+    assert np.all(difference <= bound)
     assert result.consistency is not None
     assert result.consistency["max_abs_difference"] == float(np.max(difference))
     assert result.consistency["within_tolerance"] is True
+    record_measurement(
+        record_property, "A07", f"toy {case}: max |S_fwd - S_adj|", np.max(difference), bound
+    )
 
 
 # -- A13, A14, A15 --------------------------------------------------------------------------------
@@ -331,7 +350,9 @@ def counting_factorizations(run: Callable[[], SensitivityResult]) -> tuple[int, 
     return len(factorizations), result
 
 
-def test_a10_the_factorization_count_does_not_depend_on_parameters_or_outputs() -> None:
+def test_a10_the_factorization_count_does_not_depend_on_parameters_or_outputs(
+    record_property: Any,
+) -> None:
     host, tear, x = syn001_host("P1")
     large = SensitivityRequest(tear.context, registered_parameters(), registered_outputs(), "both")
     small = SensitivityRequest(
@@ -346,6 +367,12 @@ def test_a10_the_factorization_count_does_not_depend_on_parameters_or_outputs() 
     assert large_result.status == small_result.status == "QUALIFIED"
     # One for the [A08] screen (K04 §7.5: it factorizes what it judges), one for the solves.
     assert large_count == small_count == 2
+    record_measurement(
+        record_property, "A10", "factorizations, (5, 12, both)", large_count, 2, "=="
+    )
+    record_measurement(
+        record_property, "A10", "factorizations, (1, 1, forward)", small_count, 2, "=="
+    )
     assert [record.dimension for record in large_result.linear_solves] == [47, 47]
     assert len(small_result.linear_solves) == 1
 

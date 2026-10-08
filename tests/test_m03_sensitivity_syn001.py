@@ -25,6 +25,7 @@ from m03_support import (
     fd_sensitivity,
     number,
     pressure_parameters,
+    record_measurement,
     reference,
     registered_outputs,
     registered_parameters,
@@ -94,10 +95,15 @@ def matrix(block: Any) -> npt.NDArray[np.float64]:
 
 def assert_within(
     measured: npt.NDArray[np.float64], expected: npt.NDArray[np.float64], label: str
-) -> None:
+) -> float:
+    """Every entry within `τ_abs + τ_rel |Ŝ*|`; returns the worst error over its bound."""
     allowed = TAU_ABS + TAU_REL * np.abs(expected)
     error = np.abs(measured - expected)
     assert np.all(error <= allowed), (label, float(np.max(error / allowed)))
+    return float(np.max(error / allowed))
+
+
+WORST_OVER_BOUND = "max over entries of |S - S*| / (1e-11 + 1e-10 |S*|), scaled"
 
 
 # -- A01 at every state ---------------------------------------------------------------------------
@@ -138,27 +144,33 @@ def test_a01_the_twin_is_bitwise_the_base_at_every_registered_state(state: str) 
 
 
 @pytest.mark.parametrize("state", SENSITIVITY_STATES)
-def test_a05_forward_sensitivities_are_the_closed_form(state: str) -> None:
+def test_a05_forward_sensitivities_are_the_closed_form(state: str, record_property: Any) -> None:
     result = sensitivity(state, "forward")
     assert result.status == "QUALIFIED", result.refusals
     assert result.adjoint is None
-    assert_within(matrix(result.forward), expected_scaled(state), f"{state} forward")
+    worst = assert_within(matrix(result.forward), expected_scaled(state), f"{state} forward")
+    record_measurement(record_property, "A05", f"{state}: {WORST_OVER_BOUND}", worst, 1.0)
 
 
 @pytest.mark.parametrize("state", SENSITIVITY_STATES)
-def test_a06_adjoint_sensitivities_are_the_closed_form(state: str) -> None:
+def test_a06_adjoint_sensitivities_are_the_closed_form(state: str, record_property: Any) -> None:
     result = sensitivity(state, "adjoint")
     assert result.status == "QUALIFIED", result.refusals
     assert result.forward is None
-    assert_within(matrix(result.adjoint), expected_scaled(state), f"{state} adjoint")
+    worst = assert_within(matrix(result.adjoint), expected_scaled(state), f"{state} adjoint")
+    record_measurement(record_property, "A06", f"{state}: {WORST_OVER_BOUND}", worst, 1.0)
 
 
 @pytest.mark.parametrize("state", SENSITIVITY_STATES)
-def test_a07_forward_and_adjoint_agree_entry_by_entry(state: str) -> None:
+def test_a07_forward_and_adjoint_agree_entry_by_entry(state: str, record_property: Any) -> None:
     result = sensitivity(state, "both")
     forward, adjoint = matrix(result.forward), matrix(result.adjoint)
     difference = np.abs(forward - adjoint)
-    assert np.all(difference <= TAU_ABS + TAU_REL * np.max(np.abs(forward)))
+    bound = TAU_ABS + TAU_REL * float(np.max(np.abs(forward)))
+    assert np.all(difference <= bound)
+    record_measurement(
+        record_property, "A07", f"{state}: max |S_fwd - S_adj|", np.max(difference), bound
+    )
     assert result.consistency is not None
     assert result.consistency["max_abs_difference"] == float(np.max(difference))
     assert result.consistency["within_tolerance"] is True
@@ -173,7 +185,9 @@ def test_a07_forward_and_adjoint_agree_entry_by_entry(state: str) -> None:
 
 
 @pytest.mark.parametrize("state", SENSITIVITY_STATES)
-def test_a08_every_registered_structural_zero_is_reproduced(state: str) -> None:
+def test_a08_every_registered_structural_zero_is_reproduced(
+    state: str, record_property: Any
+) -> None:
     forward = matrix(sensitivity(state, "forward").forward)
     rows = {output.output_id: index for index, output in enumerate(registered_outputs())}
     columns = {name: index for index, name in enumerate(REGISTERED_PARAMETERS)}
@@ -186,35 +200,50 @@ def test_a08_every_registered_structural_zero_is_reproduced(state: str) -> None:
             output_id,
             parameter_id,
         )
+    worst = max(abs(forward[rows[output], columns[parameter]]) for output, parameter, _ in zeros)
+    record_measurement(
+        record_property, "A08", f"{state}: max |S| over the registered zeros", worst, TAU_ABS
+    )
 
 
-def test_a08_the_heater_vapour_row_is_live_at_p3_where_it_is_zero_at_p1() -> None:
+def test_a08_the_heater_vapour_row_is_live_at_p3_where_it_is_zero_at_p1(
+    record_property: Any,
+) -> None:
     p1 = matrix(sensitivity("P1", "forward").forward)
     p3 = matrix(sensitivity("P3", "forward").forward)
     row = [output.output_id for output in registered_outputs()].index("S3.V")
+    live = []
     for column, name in enumerate(REGISTERED_PARAMETERS):
         if name == "U-FEED.T_spec":
             continue  # universal: T_feed changes no flow (spec §4.3 item 2)
         assert abs(p1[row, column]) <= TAU_ABS
         assert abs(p3[row, column]) >= 1e-3, name
+        live.append(abs(p3[row, column]))
+    record_measurement(
+        record_property, "A08", "P3: min |S| on the live S3.V row", min(live), 1e-3, ">="
+    )
 
 
 # -- A09 ------------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("state", ["P1", "P3"])
-def test_a09_the_finite_difference_oracle_agrees(state: str) -> None:
+def test_a09_the_finite_difference_oracle_agrees(state: str, record_property: Any) -> None:
     implicit = matrix(sensitivity(state, "forward").forward)
     oracle = fd_sensitivity(state, registered_parameters(), registered_outputs())
     assert oracle.shape == implicit.shape == (12, 5)
-    assert np.max(np.abs(oracle - implicit)) <= TAU_FD
+    worst = float(np.max(np.abs(oracle - implicit)))
+    assert worst <= TAU_FD
+    record_measurement(record_property, "A09", f"{state}: max |S_FD - S|", worst, TAU_FD)
 
 
 # -- A16 ------------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("state", ["B1", "B2"])
-def test_a16_a_state_inside_tau_regime_is_refused_phase_boundary_only(state: str) -> None:
+def test_a16_a_state_inside_tau_regime_is_refused_phase_boundary_only(
+    state: str, record_property: Any
+) -> None:
     registered = reference()["boundary_states"][state]
     result = sensitivity(state, "both")
     assert result.status == "REFUSED"
@@ -223,6 +252,13 @@ def test_a16_a_state_inside_tau_regime_is_refused_phase_boundary_only(state: str
     assert flash.regime == registered["flash_regime"]
     assert flash.margin is not None
     assert abs(flash.margin - number(registered["flash_margin"])) <= MARGIN
+    record_measurement(
+        record_property,
+        "A16",
+        f"{state}: |flash margin - registered|",
+        abs(flash.margin - number(registered["flash_margin"])),
+        MARGIN,
+    )
     heater = next(split for split in result.splits if split.unit_id == "U-HEAT")
     assert heater.regime == registered["heater_regime"]
     assert result.outcome("Q1'").outcome == "pass"
@@ -253,7 +289,9 @@ def test_a16_b3_lists_every_failing_qualification_in_order() -> None:
 # -- A17 ------------------------------------------------------------------------------------------
 
 
-def test_a17_a_pressure_alone_leaves_the_solution_set_and_only_its_column_is_refused() -> None:
+def test_a17_a_pressure_alone_leaves_the_solution_set_and_only_its_column_is_refused(
+    record_property: Any,
+) -> None:
     combined = sensitivity("P1", "both", "with_pressures")
     alone = sensitivity("P1", "both")
     assert combined.status == "PARTIALLY_QUALIFIED"
@@ -269,6 +307,20 @@ def test_a17_a_pressure_alone_leaves_the_solution_set_and_only_its_column_is_ref
         assert by_id[name].status == "QUALIFIED"
         assert by_id[name].alias_residual is not None
         assert by_id[name].alias_residual <= 1e-8
+    record_measurement(
+        record_property,
+        "A17",
+        "max |alias residual - 1| over the pressure columns",
+        max(abs(by_id[name].alias_residual - 1.0) for name in PRESSURE_PARAMETERS),  # type: ignore[operator]
+        MARGIN,
+    )
+    record_measurement(
+        record_property,
+        "A17",
+        "max alias residual over the five qualified columns",
+        max(by_id[name].alias_residual for name in REGISTERED_PARAMETERS),  # type: ignore[type-var]
+        1e-8,
+    )
 
     for block_name in ("forward", "adjoint"):
         combined_block = getattr(combined, block_name)
@@ -286,7 +338,7 @@ def test_a17_a_pressure_alone_leaves_the_solution_set_and_only_its_column_is_ref
 
 
 @pytest.mark.parametrize("state", SENSITIVITY_STATES)
-def test_a19_the_regime_margins_are_the_closed_form(state: str) -> None:
+def test_a19_the_regime_margins_are_the_closed_form(state: str, record_property: Any) -> None:
     registered = reference()["sensitivity_states"][state]["regime_margins"]
     sheet, result = solved(state)
     assert result.final_state is not None
@@ -296,5 +348,7 @@ def test_a19_the_regime_margins_are_the_closed_form(state: str) -> None:
         assert splits[unit_id].kind == "TP"
         assert splits[unit_id].regime == registered[unit_id]["regime"], unit_id
         assert splits[unit_id].margin is not None
-        assert abs(splits[unit_id].margin - number(registered[unit_id]["margin"])) <= MARGIN
+        error = abs(splits[unit_id].margin - number(registered[unit_id]["margin"]))  # type: ignore[operator]
+        assert error <= MARGIN
+        record_measurement(record_property, "A19", f"{state} {unit_id}: |m - m*|", error, MARGIN)
     assert sensitivity(state, "both").outcome("Q4").outcome == "pass"
