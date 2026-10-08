@@ -2471,3 +2471,72 @@ harvest:
   class: P
   to: []
   note: export lifecycles
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[0]
+  sha256: 4aba0e645395a22514b5c74fdfccc5f2171c6c30dbdc3a89718668de116b6b52
+  class: E
+  to:
+  - L-WEB-1
+  note: L-WEB-1, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[1]
+  sha256: 94db9bd70f528a56b675a66fd3187d481e4ef25a8e5d7a382131f7e869138845
+  class: E
+  to:
+  - L-WEB-2
+  note: L-WEB-2, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[2]
+  sha256: 7e588e9b4901e9dbeff46bfd7081d8b74c8beb8d69dd1651a3b0ef88b331b267
+  class: E
+  to:
+  - L-WEB-3
+  note: L-WEB-3, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[3]
+  sha256: d5535ca4ef891366fc94078a6aec5c96bedd6fe67ff1ee9a698f525279bf5684
+  class: E
+  to:
+  - L-WEB-4
+  note: L-WEB-4, verbatim
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[4]
+  sha256: 2068fc6ba734ac715ba1577b8e8c59e7860a97421b16557d66995e373d60c1d8
+  class: E
+  to:
+  - U14
+  note: W27 campaign is M07's
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[5]
+  sha256: 1dd3cd8e8b79cf6f8ec040e0e89b03b6f5d4bfae5449c94e00cf1a4071a661a0
+  class: P
+  to: []
+  note: requirement ids outside the manifest pattern
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: limitations[6]
+  sha256: df9cddfe81cb5dd15164205495c3e9d8ce53efc37911042f2e4b1ca5aef10e99
+  class: P
+  to: []
+  note: evidence class; review pending
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: checks[2]
+  check_id: M06.G3
+  sha256: 19bce1b93020cd0de7fee2fd8de7672cc10f8afb3e2d80717f7f66ef5c82f98a
+  class: P
+  to: []
+  note: pending the green CI run (review F2); recorded with --add-ci
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: checks[11]
+  check_id: M06.G12
+  sha256: fc6a8442e3718f1b3e941ef70900f9d612d8153a2883c756cd28aaf1754d8c48
+  class: P
+  to: []
+  note: pending the green CI run (review F2); recorded with --add-ci
+- manifest: evidence/M06/4719a1a050b8dd010de777fa236c30d62cfe090d/manifest.json
+  item: checks[15]
+  check_id: M06.G16
+  sha256: c5b5f14b6d0264373d3ee589d5304a0c701cf100d444ac19a2c1bafed44dfa8a
+  class: E
+  to:
+  - U14
+  note: W27 campaign is M07's (G16)

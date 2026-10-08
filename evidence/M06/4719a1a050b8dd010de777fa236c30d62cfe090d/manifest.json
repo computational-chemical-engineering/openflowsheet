@@ -1,0 +1,428 @@
+{
+ "work_package": "M06",
+ "commit": "4719a1a050b8dd010de777fa236c30d62cfe090d",
+ "requirements": [],
+ "status": "implemented",
+ "inputs": {
+  "case_id": "M06's acceptance: design note docs/design/M06-web-shell.md §11 gates G1-G16 at C (the W26 fixture project of §8, NET-02 and A02-352; the 50-revision T07 corpus; the pinned OpenIDAES-450 archive and the W27 registration as amended)",
+  "case_hash": "93da7a1d98a28354227f5a9c3b7f8a9c5abec71a47cf34cb5bb0ab5aedf36ffc",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "OPENFLOWSHEET_REQUIRE_BROWSER=1 PYTHONPATH=src PATH=.venv/bin:$PATH ./scripts/check.sh",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "b640f231a97e26e619695fa1fc402b725cb141052df13a1a29a4197e7a596bb8"
+  },
+  {
+   "cmd": "python3.13 -m venv VENV && VENV/bin/python -m pip install -c requirements.lock -e '.[dev]' && VENV/bin/python -m pytest -q  (CI's default-install job, locally; the server extra absent)",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "76fa8535cd06d03def518ad53d4b5fea057c7be8e8c17588bebebec223bdfb92"
+  },
+  {
+   "cmd": "python3.13 scripts/t08_dist.py --out W/rc-dist; a clean venv with the wheel's requirements at the lock and the wheel --no-deps, then the server extra at the lock; from W/outside-ui: VENV/bin/python scripts/m06_web_serve_check.py W/outside-ui  (CI's dist -> clean-install -> 'M06 G10' steps, locally)",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "869790faaf112a9b3d18f840197f8e0f0d81ce017d9b2a41bd671db014878841"
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/4719a1a",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "73479a3e9090bb991d04e9a151817d47f7792accf06cb4246b9a25119fd509a8"
+  },
+  {
+   "cmd": "OPENFLOWSHEET_REQUIRE_BROWSER=1 PYTHONPATH=src:. .venv/bin/python -m pytest -q -rs -p no:cacheprovider --junitxml=ARTIFACTS/m06-tests.junit.xml tests/test_m06_browser_smoke.py tests/test_m06_contrast.py tests/test_m06_fixtures_valid.py tests/test_m06_http_contract.py tests/test_m06_static_scan.py tests/test_m06_w27_coverage.py tests/test_m06_w27_harness.py tests/test_m06_w27_registration.py tests/test_m06_w27_scorer.py tests/test_m06_wo14_w27_provenance.py tests/test_m06_wo1_structure_index.py tests/test_m06_wo2_diff_elements.py tests/test_m06_wo3_list_audit.py tests/test_m06_wo4_serving.py tests/test_m06_wo6_expander_fixture.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "efca09dba06251aa045836652a8970f7e2833f57c73407112f0ec38d83114a30"
+  },
+  {
+   "cmd": "node --test --test-reporter=spec \"tests/web/*.test.mjs\"",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "8dca13e2c647b1e0a71d2d80474e9695885f749535fc1cec10d38ac06ce17058"
+  }
+ ],
+ "checks": [
+  {
+   "id": "M06.G1",
+   "description": "§11 G1, contract only: the browser touches only static files and `OPERATIONS` routes",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_static_scan.py::*",
+      "tests/test_m06_browser_smoke.py::test_g1_*"
+     ],
+     "passed": 44,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G2",
+   "description": "§11 G2, contract tests: every UI-used operation answers schema-valid over HTTP",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_http_contract.py::*",
+      "tests/test_m06_fixtures_valid.py::*"
+     ],
+     "passed": 150,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G3",
+   "description": "§11 G3, identity: nothing hashed moves",
+   "result": "fail",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_wo1_structure_index.py::test_g3_*",
+      "tests/test_m06_wo1_structure_index.py::test_the_snapshots_cover_the_corpus"
+     ],
+     "passed": 102,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    },
+    "local_passed": true,
+    "ci_identity_job": "not recorded: the session dispatches CI and records it with --add-ci"
+   }
+  },
+  {
+   "id": "M06.G4",
+   "description": "§11 G4, index: rows/columns describe the declaration",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_wo1_structure_index.py::*"
+     ],
+     "passed": 211,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G5",
+   "description": "§11 G5, diff elements: element detail is exact and additive",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_wo2_diff_elements.py::*"
+     ],
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G6",
+   "description": "§11 G6, audit: history is complete and authorized",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_wo3_list_audit.py::*"
+     ],
+     "passed": 15,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G7",
+   "description": "§11 G7, views on real data: the screens show the records exactly",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_wo6_expander_fixture.py::*"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    },
+    "node": {
+     "node": "v24.12.0",
+     "exit_code": 0,
+     "tests": 92,
+     "pass": 92,
+     "fail": 0,
+     "cancelled": 0,
+     "skipped": 0,
+     "todo": 0
+    }
+   }
+  },
+  {
+   "id": "M06.G8",
+   "description": "§11 G8, security: no script injection; strict headers",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_wo4_serving.py::*",
+      "tests/test_m06_browser_smoke.py::test_g8_*"
+     ],
+     "passed": 19,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G9",
+   "description": "§11 G9, contrast/theme: legibility in both themes",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_contrast.py::*"
+     ],
+     "passed": 7,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G10",
+   "description": "§11 G10, packaging: the wheel serves the shell",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_wo4_serving.py::test_a_real_server_serves_the_shell"
+     ],
+     "passed": 1,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    },
+    "local": {
+     "built_from": "4719a1a050b8dd010de777fa236c30d62cfe090d",
+     "wheel": "openflowsheet-0.1.1-py3-none-any.whl",
+     "wheel_sha256": "f5623552f567e5bfc179091a6f582d492879f57483f0feb7cac5c2face556d7b",
+     "installed_package": ".../site-packages/openflowsheet/__init__.py",
+     "dist_record_sha256": "3a03c015e718ff648626f15d2652b905a9f997d61638dc1b4d30c2e0549e7366",
+     "dist_checks_failing": [],
+     "web_files_in_wheel_equal_bytes": 33,
+     "web_files_tracked": 33,
+     "serve_checks": [
+      "PASS GET /ui/: (200, 'text/html; charset=utf-8') csp=\"default-src 'none'; script-src 'self'; s\"",
+      "PASS GET /ui/favicon.svg: (200, 'image/svg+xml') csp=\"default-src 'none'; script-src 'self'; s\"",
+      "PASS GET /ui/js/main.js: (200, 'text/javascript; charset=utf-8') csp=\"default-src 'none'; script-src 'self'; s\"",
+      "PASS GET /ui/js/routes.js: (200, 'text/javascript; charset=utf-8') csp=\"default-src 'none'; script-src 'self'; s\"",
+      "PASS GET /ui/css/tokens.css: (200, 'text/css; charset=utf-8') csp=\"default-src 'none'; script-src 'self'; s\"",
+      "PASS GET /v1/project without a token: 401 unauthenticated"
+     ],
+     "serve_verdict": "m06_web_serve_check: PASSED (.../openflowsheet)",
+     "exit_line": true
+    },
+    "local_passed": true
+   }
+  },
+  {
+   "id": "M06.G11",
+   "description": "§11 G11, smoke: every screen renders in a real browser",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_browser_smoke.py::*"
+     ],
+     "passed": 31,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G12",
+   "description": "§11 G12, gate: the repository gate",
+   "result": "fail",
+   "value": {
+    "gate": {
+     "passed": true,
+     "pytest": "7469 passed, 31 skipped, 1 warning",
+     "node_step_ran": true,
+     "node_pass": 92,
+     "stdout_sha256": "b640f231a97e26e619695fa1fc402b725cb141052df13a1a29a4197e7a596bb8"
+    },
+    "default_install_local": {
+     "summary": "7203 passed, 267 skipped",
+     "extra_absent": true,
+     "passed": true,
+     "stdout_sha256": "76fa8535cd06d03def518ad53d4b5fea057c7be8e8c17588bebebec223bdfb92"
+    },
+    "local_passed": true,
+    "ci": "not recorded: the session dispatches CI and records it with --add-ci"
+   }
+  },
+  {
+   "id": "M06.G13",
+   "description": "§11 G13, W27 provenance/access: exact provenance; disclosure",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_wo14_w27_provenance.py::*"
+     ],
+     "passed": 9,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    }
+   }
+  },
+  {
+   "id": "M06.G14",
+   "description": "§11 G14, W27 coverage: every case classified",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_w27_coverage.py::*",
+      "tests/test_m06_w27_registration.py::*"
+     ],
+     "passed": 32,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    },
+    "dry_run_g14": true
+   }
+  },
+  {
+   "id": "M06.G15",
+   "description": "§11 G15, W27 harness: ready to run, nothing spent",
+   "result": "pass",
+   "value": {
+    "tests": {
+     "selectors": [
+      "tests/test_m06_w27_harness.py::*",
+      "tests/test_m06_w27_scorer.py::*"
+     ],
+     "passed": 50,
+     "failed": 0,
+     "skipped": 0,
+     "not_passed": []
+    },
+    "dry_run": {
+     "commit": "4719a1a050b8dd010de777fa236c30d62cfe090d",
+     "summary_sha256": "73479a3e9090bb991d04e9a151817d47f7792accf06cb4246b9a25119fd509a8",
+     "preflight": {
+      "P1": true,
+      "P2": true,
+      "P3": true,
+      "P4": true,
+      "P5": true,
+      "P6": true,
+      "P7": true,
+      "P8": true
+     },
+     "canaries": "stub sessions: model ['claude-w27-stub-no-model'], Claude Code ['0.0.0-w27-stub'] — P6 and P7 are met by stub canaries; the real campaign's P7 pins a real model and version",
+     "g14_passed": true,
+     "g15_states_passed": true,
+     "a23_passed": true
+    }
+   }
+  },
+  {
+   "id": "M06.G16",
+   "description": "§11 G16, W27 campaign (if approved): attempted, honest — Not run in M06: the W27 campaign is M07's (WO-17), after Frank's spend approval (recorded, P1) and three real canaries (design note §11: M06 reaches tested on G1-G15).",
+   "result": "not_applicable",
+   "value": {
+    "status": "planned at M07"
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/design/M06-web-shell.md",
+   "sha256": "93da7a1d98a28354227f5a9c3b7f8a9c5abec71a47cf34cb5bb0ab5aedf36ffc",
+   "description": "The design note, §14 as built."
+  },
+  {
+   "path": "docs/adr/0030-diagnostic-web-shell.md",
+   "sha256": "fc10eb9f505e86c298c3eb56d90b45f5a4d26388180933f07a7ac81ff8b4b276",
+   "description": "ADR 0030."
+  },
+  {
+   "path": "docs/adr/0019-application-contract-v1.md",
+   "sha256": "075e5964407719d4d720de00bef6efddc8e9e1ca226e7459cdb42529fa810338",
+   "description": "ADR 0019, Amendment 3."
+  },
+  {
+   "path": "docs/reviews/M06-review.md",
+   "sha256": "94db370c7d5133ad0f520cf557b78dc2e1b627a39b984e892e6906c3e43ab878",
+   "description": "The design-lane review (WO-13)."
+  },
+  {
+   "path": "apps/web/js/routes.js",
+   "sha256": "21332184b0339524a3c20199680857eadea5f99056319a4faedd2ab095e93e6a",
+   "description": "The generated route table (G1)."
+  },
+  {
+   "path": "tests/web/fixtures/w26/exchanges.json",
+   "sha256": "def02087890624d35a0a187bafd2ebfaf5fbf1d43ce0aa4273e4c32d528403c9",
+   "description": "The W26 fixture exchanges (G2, G7)."
+  },
+  {
+   "path": "docs/derivations/M06-W27-registration.md",
+   "sha256": "dd0b7f02798d6cc7123c309999a7ca3e8805ed2d6542c3a6abcb39a42773c540",
+   "description": "The W27 registration, Amendment 1."
+  },
+  {
+   "path": "benchmarks/m06/openidaes450/registration.json",
+   "sha256": "ce59200a0bdaf26bbf6c830fb56e69d187d6dba81a0cb348a713d638e4544f7a",
+   "description": "The registration data."
+  },
+  {
+   "path": "benchmarks/m06/openidaes450/coverage.json",
+   "sha256": "3db281ca694906f2c38c6b039dc2dbf30218d126f3836672197e28c6dee3093d",
+   "description": "W27 coverage (G14)."
+  },
+  {
+   "path": "benchmarks/m06/openidaes450/access_report.json",
+   "sha256": "db4c4371db2128759f7cdaa4b602da0f78da958ba2ae26989bd4f6a08bd9dad7",
+   "description": "W27 access (G13)."
+  }
+ ],
+ "limitations": [
+  "The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits nothing (Solve and Cancel are its only effects), calls seventeen operations and no other, computes only display arithmetic (design note §5.6), converts no unit, and judges nothing — the scenario view displays run differences without a registered comparison or allowance.",
+  "The web shell's security is the local, single-user model: loopback by default, the bearer token on every data request, a strict Content-Security-Policy; no TLS, no multi-user hosting, and no security assessment beyond design note §7. Served with `--allow-remote` over plain HTTP the page is an insecure context and record digests show \"unchecked\".",
+  "The web shell is tested in headless Chromium only. No usability, workflow or screen-reader study exists; accessibility is limited to status shown as glyph and word, controls that are keyboard-reachable by construction, and the measured contrast of its colour tokens.",
+  "The agent history shows what the project recorded, not what an agent claimed; the validation shown beside a commit is recomputed now by the current server, not the report the agent received at commit time.",
+  "W27's campaign (G16) is not run in M06: it is M07's (WO-17), after Frank's recorded spend approval and three real canaries; M06 commits the adaptation records only (provenance, access report, registration, coverage; R-175 to R-179), and no comparison with CRAFTS or OpenIDAES-450's reported results is made.",
+  "W26 and W27 are v0.2 requirement ids the manifest schema's `requirements` pattern ([DA]nn) cannot carry, and M06 maps to no D/A requirement (plan v1.2 §4.4, rows W26 and W27), so `requirements` is empty; the verdicts on W26 and W27 are the `verdict` lane's, not this manifest's.",
+  "Evidence class: software verification at C (tests, the gate, a local wheel install, the W27 dry run with stub sessions, and CI where recorded); nothing here is empirical validation or a usability study. Human numerical and process-modeling review remain `pending`; `reviewed` is never self-set."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}
