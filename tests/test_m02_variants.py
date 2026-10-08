@@ -105,19 +105,15 @@ def test_g6b_every_registered_variant_loads_at_its_pinned_hash() -> None:
 
 @pytest.fixture
 def edited_registry(tmp_path: Path) -> Iterator[Path]:
-    """`variants.VARIANTS` pointed at a copy of the registered directory, caches emptied."""
+    """`variants.VARIANTS` pointed at a copy of the registered directory."""
     for path in VARIANT_DIR.glob("*.json"):
         (tmp_path / path.name).write_bytes(path.read_bytes())
     saved = variants.VARIANTS
     variants.VARIANTS = tmp_path  # type: ignore[misc]
-    variants.registry.cache_clear()
-    variants.registered_variant.cache_clear()
     try:
         yield tmp_path
     finally:
         variants.VARIANTS = saved  # type: ignore[misc]
-        variants.registry.cache_clear()
-        variants.registered_variant.cache_clear()
 
 
 def test_g6b_an_edited_registered_document_is_refused(edited_registry: Path) -> None:

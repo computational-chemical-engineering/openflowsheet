@@ -23,7 +23,6 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
-from functools import cache
 from importlib.resources import files
 from importlib.resources.abc import Traversable
 from typing import Any, Final, Literal
@@ -114,7 +113,6 @@ class Variant:
         return value
 
 
-@cache
 def _validator() -> Draft202012Validator:
     schema = json.loads(packaged(f"schemas/{SCHEMA_FILE}").read_text(encoding="utf-8"))
     return Draft202012Validator(schema)
@@ -133,7 +131,6 @@ def variant_from_document(document: Mapping[str, Any]) -> Variant:
     return Variant(document=document, sha256=document_sha256(document))
 
 
-@cache
 def registry() -> Mapping[str, str]:
     """`variants/registry.json`: every registered `variant_id` and its SHA-256."""
     document = load_document(
@@ -146,7 +143,6 @@ def registry() -> Mapping[str, str]:
     return dict(document)
 
 
-@cache
 def registered_variant(variant_id: str) -> Variant:
     """The registered variant `variant_id`, its hash checked against the registry."""
     pinned = registry().get(variant_id)
