@@ -411,3 +411,9 @@ Grep, don't read whole. Newest at the bottom.
   amendment before study/optimization records become replay-comparable, i.e. before M05/K05 bundles). ADR 0031 →
   Accepted on green CI + manifest tested; ADR 0032 also needs N1.
 - `recon` M05 launched.
+- M05 recon done (digest inline; facts pasted into `docs/briefs/M05-design.md`, `1ecf576`): Pyomo 6.10.1
+  `contrib.trustregion` present in the audited env (TrustRegionSolver; ExternalFunction → holder variables; default
+  subproblem solver = the ASL `ipopt` executable, which is in the env but NOT in the [A10] inventory); Python-callback
+  ExternalFunction needs no ASL library; no M05 code/ADR anywhere; C1 decisions per ADR 0022 D6 = reactor inlet T
+  (alternative purge fraction); no registered objective.
+- `architect` M05 launched on `wp/M05` (ADR 0038+, R-260+), with a throwaway TRF probe allowed in the audited env.
