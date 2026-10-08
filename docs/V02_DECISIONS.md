@@ -319,3 +319,12 @@ Grep, don't read whole. Newest at the bottom.
   Threading: 48 OMP threads → 1-ulp variation (NLP-1) and a different path on NLP-INF; OMP_NUM_THREADS=1 makes runs
   identical. Open: A40 "sum" reading (NLP-INF sums 597 > 500); record/enforce OMP threads. Merge still waits for N1.
 - `reviewer` M03 launched on `wp/M03` @ `e9de5ee` (rules on A40 and threading).
+- M03 review (`docs/reviews/M03-review.md`, `ceb5e15`): numerics and architecture sound; **one must-fix** F1 — three
+  tests compare emitted output byte for byte (study fixtures pin 13 `state_sha256` (ADR 0008 D2.1) and converged
+  floats; FIT-U pins arbitrary r, roundoff σ₂, the ranged projection, nfev) → policy comparison via
+  `run.compare.differences`, ranges for path-dependent values, τ_abs floor; require green on both CI runners. F2 record
+  OMP threads, effective max threads, the loaded ASL path/sha in `solver`. Rulings: A40's budget is per Ipopt run for
+  every run, the sum is recorded cost (amend wording); threading recorded, not enforced (product rule = Frank's call);
+  the seven build-lane choices accepted; vocabulary/precedence sound; F4 add `NLP_LICENCES_ACCEPTED` beside the extra.
+  ADR 0031 Accepted after F1 + green on both runners + manifest tested; ADR 0032 also needs F2, A40 amended, N1.
+- `opus-engineer` M03 review fixes + WO-10 manifest launched on `wp/M03`.
