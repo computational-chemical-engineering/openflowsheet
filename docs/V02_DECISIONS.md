@@ -328,3 +328,10 @@ Grep, don't read whole. Newest at the bottom.
   the seven build-lane choices accepted; vocabulary/precedence sound; F4 add `NLP_LICENCES_ACCEPTED` beside the extra.
   ADR 0031 Accepted after F1 + green on both runners + manifest tested; ADR 0032 also needs F2, A40 amended, N1.
 - `opus-engineer` M03 review fixes + WO-10 manifest launched on `wp/M03`.
+- M01 review fixes done on `wp/M01` (`e4eb1f0` F2 root check + deflation, R-197 note; `eec11d3` F3
+  state_space_violation, R-198 note; `f1877ec` F4 checkout fallback; `094b936` F5 region 362.5–401 K, 1.00–1.38e7 Pa,
+  26/1744; `ce0b92f` F1 L42 + E; `e041fcb` CHANGELOG test `ADDED_AFTER_V0_1_0=("L42",)`, R-217 note; `46a4a45`,
+  `3c80392`, `784b38f` manifest). check.sh 7141 passed. Registered values bit-identical (float.hex dumps). New
+  manifest `evidence/M01/3c80392…/manifest.json` tested. M02 items: boundary.py hash in the reactor identity;
+  `Boundary.__post_init__` validating n_tubes; §8.15 A45 restricted to A41's points; no A10 check at a three-root
+  state or for pure-vapour n-derivatives. M01 reviewer asked to confirm closure.
