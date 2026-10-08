@@ -40,3 +40,19 @@ Grep, don't read whole. Newest at the bottom.
   (V17 `v17-c2`'s `claude-sonnet-5`, for comparability) is overridden; the loss of direct comparability is stated.
   Development agents are unaffected (frontmatter aliases `opus`/`sonnet`/`haiku` resolve to the latest; the API saw
   `claude-opus-5-5`).
+
+## 2026-10-08 — resume
+
+- Frank: "start working to get to v0.2.0. Do maximally use 4 agents at a time."
+- The repository moved from `~/Codes/Process Simulator` to `~/Codes/OpenFlowsheet`. Repaired: worktree links
+  (`git worktree repair` + each worktree's `.git` file), `.venv` script shebangs and the editable `.pth`, the two
+  spike venvs. Worktrees `showcase` and `study-openidaes450` still have broken `.git` files (stale; Frank's to
+  remove). In a worktree, run the gate with `PYTHONPATH=$PWD/src` (the venv's editable install points at main).
+- Both halt commits had landed (`wp/M01` `daea823`, `wp/M06-build` `f8fa5e5`).
+- DECISION: build ADR 0019 Amendment 3 (M06 WO-1…3) now on its own branch `wp/M06-contract` (from `0f467ad` + main,
+  merge `f085d14`); merge only after Frank approves the amendment. Alternative: wait for the approval. Reversible by:
+  deleting the branch. (This is the default already stated in `V02_STATE.md` "Needs Frank".)
+- DECISION: 4th agent slot = M03 recon → M03 specifier brief (M03 is off the critical path but has no
+  dependency left). Alternative: M06 WO-14 (W27 acquisition). Reversible by: WO-14 takes the next free slot.
+- Agents launched: `specifier` M01 (resume on `wp/M01`), `opus-engineer` M06 WO-4…6 (`wp/M06-build`),
+  `opus-engineer` M06 WO-1…3 (`wp/M06-contract`), `recon` M03.

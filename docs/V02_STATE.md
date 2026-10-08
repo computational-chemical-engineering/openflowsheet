@@ -15,7 +15,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
-| M01 | Design | T08 | W22, W21 (part) | **halted for budget 2026-10-06**: no specification yet; WIP note `docs/derivations/M01-spec-WIP.md` (`daea823` on `wp/M01`: measured findings, tentative decisions, where to resume — incl. a dossier §6 error: the reactor uses ideal-gas density). Resume: a fresh `specifier` with the brief and that WIP note, on `wp/M01` |
+| M01 | Design | T08 | W22, W21 (part) | **resumed 2026-10-08** (specifier running). Was halted 2026-10-06: no specification yet; WIP note `docs/derivations/M01-spec-WIP.md` (`daea823` on `wp/M01`: measured findings, tentative decisions, where to resume — incl. a dossier §6 error: the reactor uses ideal-gas density). Resume: a fresh `specifier` with the brief and that WIP note, on `wp/M01` |
 | M02 | Build | M01 | W21 | not started |
 | M03 | Design | T08 | W24 (part) | not started |
 | M04 | Design | M02 | W23 | not started |
@@ -46,9 +46,11 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Next action
 
-**Halted 2026-10-06 at Frank's request (token budget).** Resume only when Frank says so (he plans to continue on his Max x20 account once its budget resets). Then: (1) check that the
-two halt commits landed (`git log -1 wp/M01`, `git log -1 wp/M06-build`); if not, commit the worktrees' files as WIP;
-(2) M01: a fresh `specifier` (the old agent's context is large) with the brief and the WIP note; (3) M06: WO-4…6 on
-`wp/M06-build`, then check.sh. At most 4 agents. Nothing is pushed: `main` is ahead of `origin/main` by local
-commits (`git log origin/main..main`); pushing needs Frank's OK. Stale clean worktrees for Frank to remove:
-`.claude/worktrees/{public-line,showcase,agent-a3fc35fa5df8ef915,agent-a0e7122a21d569dd7}`.
+**Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", max 4 agents).** Running: `specifier` M01 on `wp/M01`
+(worktree `.claude/worktrees/agent-a94d84cd26a293bc0`); `opus-engineer` M06 WO-4…6 on `wp/M06-build`
+(`agent-af89210400852f3dd`); `opus-engineer` M06 WO-1…3 on `wp/M06-contract` (`m06-contract`; merge only after
+Frank approves Amendment 3); `recon` M03 (digest in the session scratchpad, then an M03 specifier brief under
+`docs/briefs/`). Next when a slot frees: M03 specifier; M06 WO-14 (W27 acquisition) and WO-15 (W27 registration).
+In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`. Nothing is
+pushed; pushing needs Frank's OK. Stale worktrees for Frank to remove: `public-line`, `showcase`,
+`study-openidaes450`, `agent-a3fc35fa5df8ef915`.
