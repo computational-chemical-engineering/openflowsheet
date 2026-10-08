@@ -850,6 +850,8 @@ DECISION: start → trace-NH₃ continuation S1–S3 with M01's polish profile. 
 path dependence). Reversible by: §8.7.
 DECISION: data domain → flag, not refusal. Alternative: refuse outside 643–733 K. Reversible by: §8.12.
 DECISION: units on `pr-c1-v1` → M02. Alternative: M01-build. Reversible by: moving WO entries.
+DECISION: T08.A32 → amended for real records (§3.5), not relaxed. Alternative: keep the records out of the repository
+until v0.2's release spec. Reversible by: reverting §3.5 and WO-1's test change.
 
 ## 17. What M01 does not establish
 
