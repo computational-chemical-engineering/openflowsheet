@@ -528,13 +528,14 @@ the violated bounds), and the identity (reactor commit, pymrm version, overlay S
 | --- | --- | --- |
 | inlet flash (by `pr-c1-v1`) not VAPOR | `unsupported`, `liquid_at_reactor_inlet` | stand-in |
 | component set or order ≠ (H2, N2, NH3, Ar, CH4) | `unsupported`, `component_set_mismatch` | stand-in |
-| n_tot,in = 0 | `ok`, `ZERO_FLOW`: outlet +0.0, Q = +0.0, T_out = T_in, P_out = P_in, ξ = 0 | stand-in |
+| an inlet outside nTP-v1's state space: a flow negative or not finite, or T or P not finite or ≤ 0, dormant or not (Amendment 2, review F3) | `out_of_domain`, `out_of_domain` (ADR 0001 D2) | stand-in |
+| n_tot,in = 0 (every flow +0.0 or −0.0) | `ok`, `ZERO_FLOW`: outlet +0.0, Q = +0.0, T_out = T_in, P_out = P_in, ξ = 0 | stand-in |
 | y_NH₃,in < 10⁻⁹ (incl. zero NH₃) | `unsupported`, `nh3_below_trace` (the rate carries a negative power of a_NH₃, regularized in the code by A_SMALL = 10⁻⁴ bar; the group feeds 10⁻⁹) | stand-in |
 | T_in ∉ [573.15, 773.15] K or P_in ∉ [5×10⁶, 1.5×10⁷] Pa or H₂/N₂ ∉ [1, 4] or y_inert > 0.2 | `out_of_domain` (the adapter's hard domain, around the group's case envelope 548–698 K; M01 measured the start strategy at 653.15–693.15 K and 10⁷ Pa only — inside the hard domain a failure is `not_converged`, never a silent result; Q-F4) | stand-in |
 | |ΔP|/P_in > 10⁻³ | `unsupported`, `pressure_drop_exceeds_convention` | stand-in (reported ΔP), M02 (real) |
 | the reactor's result fails §8.7's acceptance | `not_converged`, `reactor_not_accepted(<stage>)`, no outlet values | M02 (real); stand-in boundary with an evaluation returning `NotAccepted` |
 | defect_rel > 10⁻⁶ | `not_converged`, `element_balance_defect` | stand-in (injected) |
-| the provider's inlet flash refuses (out of its domain, a negative or non-finite flow, a metastable vapour; Amendment 1) | the provider's status and reason code, passed through with its message | stand-in |
+| the provider's inlet flash refuses (out of its domain, a metastable vapour; Amendment 1. A negative or non-finite flow is the boundary's own step 2 since Amendment 2) | the provider's status and reason code, passed through with its message | stand-in boundary with a refusing provider |
 | the provider refuses Ḣ_in or Ḣ_out (`evaluate_phase` not `ok`; Amendment 1) | `error`, `stream_enthalpy_refused`, the provider's message carried | stand-in boundary with a refusing provider |
 | a liquid with dissolved light gas anywhere | not representable: refused by the provider (§5.3) | provider |
 | inside the hard domain but outside the kinetics' data domain (T_in 643.15–733.15 K, P_in 5×10⁶–10⁷ Pa, H₂/N₂ ∈ [1.5, 3]) | `ok` with `domain_status: extrapolated` and the list | stand-in |
@@ -544,12 +545,18 @@ its target, or the group's acceptance rejected its state), `certificate` (S3 con
 failed), `backflow` (u_ret ≤ 0 on a face), `nonpositive_flow` (an axial flow ≤ 0). M02 may register further stages
 (a timeout, say) in its own specification, each with a test; the boundary passes the stage through verbatim.
 
-**Check order (normative, Amendment 1).** (1) component set and order, including the flow vector's length
-(`component_set_mismatch`); (2) a dormant inlet (`ZERO_FLOW`, before any composition is formed; its T and P are
-labels, ADR 0001 D3.1); (3) the inlet's TP flash by `pr-c1-v1` (a refusal passes through; a result other than VAPOR is
-`liquid_at_reactor_inlet`); (4) the NH₃ trace; (5) the hard domain; (6) the evaluation (`NotAccepted` →
-`reactor_not_accepted(<stage>)`); (7) the pressure convention; (8) the element defect; (9) the two enthalpy flows
-(`stream_enthalpy_refused`); (10) `ok`, with the data-domain flag. *Why this order:* every other registered refusal
+**Check order (normative, Amendment 1; step 2 inserted by Amendment 2).** (1) component set and order, including the
+flow vector's length (`component_set_mismatch`); (2) nTP-v1's state space: every flow finite and ≥ 0 (−0.0 is zero),
+T and P finite and > 0, else `out_of_domain`, `out_of_domain` (ADR 0001 D2; Amendment 2, review F3); (3) a dormant
+inlet (`ZERO_FLOW`, before any composition is formed; its T and P are labels, ADR 0001 D3.1, free within the state
+space); (4) the inlet's TP flash by `pr-c1-v1` (a refusal passes through; a result other than VAPOR is
+`liquid_at_reactor_inlet`); (5) the NH₃ trace; (6) the hard domain; (7) the evaluation (`NotAccepted` →
+`reactor_not_accepted(<stage>)`); (8) the pressure convention; (9) the element defect; (10) the two enthalpy flows
+(`stream_enthalpy_refused`); (11) `ok`, with the data-domain flag. *Why step 2 precedes the dormant check (Amendment
+2):* `is_dormant` tests n_tot = 0, so (0.5, −0.5, 0, 0, 0) was answered `ZERO_FLOW` with an all-zero outlet, against
+the reactor's own H₂ and N₂ rows (§8.2), and an all-zero inlet with T = NaN was answered `ok` with T_out = NaN; the
+provider refuses both (its domain check precedes its dormancy check, A50), and the boundary now does too. *Why this
+order:* every other registered refusal
 has a single defect and gives its own code under any order. A liquid inlet cannot have a single defect. No liquid
 exists inside the hard domain: its lowest inlet temperature, 573.15 K, lies above NH₃'s T_c,EOS = 405.55 K (claim
 BD-06), and the flash is VAPOR there for any feed (§5.4 step 4). If the hard domain came before the inlet phase,
@@ -873,8 +880,16 @@ machine (the probe's environment record); M02's adapter must reproduce them.
   - (ii) a provider whose `flash` answers as `pr-c1-v1` but whose `evaluate_phase` refuses → `error`,
     `stream_enthalpy_refused`, and the message contains the provider's message;
   - (iii) V1's inlet with N₂ = −0.235 → `out_of_domain`, code `out_of_domain`, passed through from the inlet flash;
+    *(Amendment 2, review F3: that state is now refused by the boundary's own step 2, see (v); (iii) holds the
+    pass-through with a provider whose `flash` refuses the nominal inlet: its status, code and message come back
+    unchanged. No inlet inside the state space and the hard domain is refused by `pr-c1-v1`'s flash.)*
   - (iv) the check order: F7's state as the inlet → `liquid_at_reactor_inlet`, although it is also outside the hard
     domain (A30's case; claim BD-06).
+  - (v) (Amendment 2, review F3) each inlet outside nTP-v1's state space → `out_of_domain`, code `out_of_domain`, the
+    message citing ADR 0001 D2, no outlet values: n = (0.5, −0.5, 0, 0, 0); an all-zero inlet with T = NaN, with
+    P = −1 Pa, with P = +∞, with T = 0 K; V1's inlet with N₂ = −0.235, with NH₃ = NaN, with H₂ = +∞. A dormant inlet at
+    50 K and 1 Pa (with a −0.0 flow) is still `ZERO_FLOW` with those labels, and a permuted component set still gives
+    `component_set_mismatch` first.
 
   No refusal carries outlet values. Exact.
 - **M01.A52** — The probe record, as committed, holds §8.15's record halves:
@@ -1251,3 +1266,4 @@ output of `evaluate_phase` and `flash` at the registered states compared as `flo
 | Finding | Closure | Where |
 | --- | --- | --- |
 | F2 (should-fix): `admissible_roots` returned unconverged Newton iterates as roots within ≈ 10⁻¹⁴ of a spinodal, and `evaluate_phase(LIQUID)` answered `ok` at a state with no liquid root | A candidate is kept only if it is a root to rounding; a three-root branch left with fewer than three deflates the best-conditioned root and solves the quadratic. The review's counterexample and a ±60-ulp sweep are tests. R-197's rationale for the two-root rule is corrected (a note appended to R-197); the rule stands. | §5.2, §17; `pr_c1.py` `admissible_roots`; `tests/test_m01_provider.py::test_f2_*`; R-197 |
+| F3 (should-fix): the boundary tested dormancy before the inlet's state space, so (0.5, −0.5, 0, 0, 0) and an all-zero inlet with T = NaN answered `ok` | Step 2 of §8.12's order (state space: flows finite and ≥ 0, T and P finite and > 0 → `out_of_domain`) inserted before the dormant check, in the text and in `Boundary.evaluate`. A51 (iii) is restated with a refusing-flash double, because its negative-flow state now stops at step 2; A51 (v) is new. BD-06 and A51 (iv) are unaffected: F7's state is inside the state space, so the inlet phase still precedes the hard domain. | §8.12, A51; `boundary.py` `state_space_violation`; R-198 (note) |

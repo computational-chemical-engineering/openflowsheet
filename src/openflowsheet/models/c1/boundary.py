@@ -21,10 +21,12 @@ its outlet temperature and its Ergun pressure drop. Everything else happens here
    every field of §8.12 — the reactor-specific diagnostics are `None` where the evaluation has
    none (the stand-in).
 
-**The order of the request checks** is normative (§8.12, Amendment 1): the component set first
-(a permuted order cannot even be read), then a dormant inlet (`ZERO_FLOW`, before any composition
-is formed), then the inlet's phase by the provider's flash (`liquid_at_reactor_inlet`; a refusal of
-the flash passes through), then the NH3 trace, then the adapter's hard domain; then the evaluation
+**The order of the request checks** is normative (§8.12, Amendments 1 and 2): the component set
+first (a permuted order cannot even be read), then nTP-v1's state space (finite, non-negative
+flows; finite, positive T and P; `out_of_domain`, review F3), then a dormant inlet (`ZERO_FLOW`,
+before any composition is formed), then the inlet's phase by the provider's flash
+(`liquid_at_reactor_inlet`; a refusal of the flash passes through), then the NH3 trace, then the
+adapter's hard domain; then the evaluation
 (`NotAccepted` → `reactor_not_accepted(<stage>)`); after it, the pressure convention, the element
 defect and the two enthalpy flows (`stream_enthalpy_refused`). The inlet's phase must precede the
 hard domain: no liquid exists inside it (its lowest T_in, 573.15 K, lies above NH3's T_c,EOS =
@@ -280,6 +282,23 @@ def _h2_n2_within(n: Sequence[float], bounds: tuple[float, float]) -> bool:
     return n[1] > 0.0 and bounds[0] * n[1] <= n[0] <= bounds[1] * n[1]
 
 
+def state_space_violation(inlet: StreamState) -> str | None:
+    """Why the inlet lies outside nTP-v1's state space (ADR 0001 D2), or `None`.
+
+    Every flow finite and non-negative (−0.0 is zero), T and P finite and positive. Checked before
+    the dormant test (spec §8.12 step 2, Amendment 2, review F3): a dormant inlet's T and P are free
+    labels, but only within the state space, and a sum of zero is not a dormant inlet when a flow
+    is negative.
+    """
+    bad = [c for c, value in zip(COMPONENTS, inlet.n, strict=True) if not 0.0 <= value < math.inf]
+    if bad:
+        return f"component flows {bad} are not finite and non-negative (ADR 0001 D2)"
+    t, p = inlet.temperature, inlet.pressure
+    if not (0.0 < t < math.inf and 0.0 < p < math.inf):
+        return f"T = {t!r} K, P = {p!r} Pa: not finite and positive (ADR 0001 D2)"
+    return None
+
+
 def hard_domain_violations(inlet: StreamState) -> list[str]:
     """The adapter's hard-domain bounds a flowing inlet violates (spec §8.12, ADR 0027 D9)."""
     n = inlet.n
@@ -353,6 +372,9 @@ class Boundary:
                 "component_set_mismatch",
                 f"the inlet declares {list(components)}; the C1 reactor takes {list(COMPONENTS)}",
             )
+        outside = state_space_violation(inlet)
+        if outside is not None:
+            return refused("out_of_domain", "out_of_domain", outside)
         if inlet.is_dormant:
             # §8.12: outlet +0.0, Q = +0.0, T_out = T_in, P_out = P_in, ξ = 0 (ADR 0001 D3).
             return self._ok(

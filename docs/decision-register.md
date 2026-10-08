@@ -4012,6 +4012,13 @@ evaluation converged, so the boundary failed to form its answer.
 **Watch for.** If the hard domain is ever widened below NH₃'s T_c,EOS, the inlet-phase check becomes reachable
 inside it, and the order still holds.
 
+**Amendment (2026-10-08, M01 review F3; spec Amendment 2, §8.12, §20).** A step is inserted between 1 and 2: the
+inlet's nTP-v1 state space (every flow finite and ≥ 0, T and P finite and > 0), else `out_of_domain`. The order
+above dormant-tested first, so (0.5, −0.5, 0, 0, 0) answered `ZERO_FLOW` and an all-zero inlet with T = NaN answered
+`ok`. The order is now eleven steps; the inlet phase still precedes the hard domain (BD-06 unchanged). A negative
+flow, M01.A51 (iii)'s state, is now the boundary's own refusal, and A51 (iii) holds the flash pass-through with a
+refusing provider.
+
 ---
 
 ## R-199 — The stand-in `c1.reactor_standin` is labelled synthetic in the frozen `ModelManifest`'s own fields and in every result's `identity.synthetic`; it is not in the v0.2 envelope at M01
