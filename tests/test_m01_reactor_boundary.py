@@ -1,4 +1,4 @@
-"""M01.A24 (unit half), A25-A32: the C1 reactor boundary and its synthetic stand-in (spec §8).
+"""M01.A24 (unit half), A25-A32, A49, A51: the C1 reactor boundary and its synthetic stand-in (§8).
 
 Expectations: `benchmarks/m01/reference_values.yaml` → `closed_form.boundary` (the generator's
 stand-in and projection at 50 digits). The stand-in is synthetic: these tests certify the boundary
@@ -8,14 +8,18 @@ code — mapping, projection, conventions, envelope, refusals — never the reac
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Mapping
 from dataclasses import replace
 from typing import Any
 
 import pytest
 from conftest import REPO_ROOT, load_yaml
+from t07_corpus import CORPUS
 from test_schemas_p01 import validator_for
 
+from openflowsheet.application.binding import Unbound
+from openflowsheet.application.revision_binding import MODEL_BUILDERS, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.c1 import COMPONENTS, ELEMENT_MATRIX, NU
@@ -26,6 +30,7 @@ from openflowsheet.models.c1.boundary import (
     NotAccepted,
     ReactorResult,
     TubeInlet,
+    hard_domain_violations,
     project,
     tube_inlet,
 )
@@ -44,6 +49,9 @@ BOUNDARY: Mapping[str, Any] = load_yaml(REPO_ROOT / "benchmarks" / "m01" / "refe
     "closed_form"
 ]["boundary"]
 STANDIN = BOUNDARY["standin"]
+CLOSED_FLASH: Mapping[str, Any] = load_yaml(
+    REPO_ROOT / "benchmarks" / "m01" / "reference_values.yaml"
+)["closed_form"]["flash_states"]
 PROJECTION = BOUNDARY["projection"]
 CONTEXT = EvaluationContext(model_version="m01-boundary", constants_sha256="0" * 64)
 PROVIDER = PrC1Provider()
@@ -298,3 +306,118 @@ def test_a32_an_ok_envelope_has_every_field_and_the_standins_diagnostics_are_nul
     assert len(identity["configuration_sha256"]) == 64
     for name in ("outlet", "xi", "Q", "defect_rel", "pressure_drop_relative", "domain_status"):
         assert document[name] is not None, name
+
+
+# -- A49: the synthetic label (Amendment 1, §8.13) -------------------------------------------------
+
+
+def test_a49_the_manifest_carries_the_synthetic_label_where_spec_8_13_puts_it() -> None:
+    manifest = _unit().manifest()
+    assert [e.message for e in validator_for("model_manifest").iter_errors(manifest)] == []
+    assert "synthetic" in manifest["title"].lower()
+    assert manifest["description"].startswith("SYNTHETIC")
+    assert manifest["validity"]["limitations"][0].startswith("SYNTHETIC:")
+
+
+@pytest.mark.parametrize(
+    "inlet",
+    [
+        INLET,
+        StreamState(n=(0.0,) * 5, temperature=673.15, pressure=1e7),  # ZERO_FLOW
+        replace(INLET, temperature=623.15),  # extrapolated
+    ],
+    ids=["V1", "zero_flow", "extrapolated"],
+)
+def test_a49_every_ok_result_is_labelled_synthetic(inlet: StreamState) -> None:
+    result = _unit().evaluate(inlet)
+    assert result.status == "ok", result.message
+    assert result.identity is not None and result.identity["synthetic"] is True
+    assert result.as_document()["identity"]["synthetic"] is True
+
+
+def test_a49_the_standin_is_not_bound_and_a_revision_naming_it_is_model_unsupported() -> None:
+    assert MODEL_ID not in MODEL_BUILDERS
+    document = CORPUS["SYN-001-nominal"]()
+    (heater,) = (i for i in document["instances"] if i["id"] == "heater")  # T08 U02/U04's path
+    heater["model"]["id"] = MODEL_ID
+    refused = bind_revision_flowsheet(document)
+    assert isinstance(refused, Unbound)
+    assert (refused.kind, refused.detail) == ("unsupported", f"model_unsupported({MODEL_ID})")
+
+
+# -- A51: boundary paths beyond A30 (Amendment 1, §8.12) -------------------------------------------
+
+STAGE_CODE = re.compile(r"^reactor_not_accepted\([A-Za-z0-9_]+\)$")
+REGISTERED_STAGES = ("S1", "S2", "S3", "certificate", "backflow", "nonpositive_flow")
+
+
+class _RefusesEnthalpy:
+    """`pr-c1-v1`'s `describe` and `flash`, but every `evaluate_phase` refused (A51 (ii))."""
+
+    MESSAGE = "out_of_domain: the double refuses every phase evaluation"
+
+    def describe(self) -> PropertyCapabilities:
+        return PROVIDER.describe()
+
+    def evaluate_phase(
+        self, request: PropertyRequest, context: EvaluationContext
+    ) -> PropertyResult:
+        return PropertyResult(
+            status="out_of_domain",
+            phase_signature=None,
+            values={},
+            provider_id="pr-c1-v1",
+            reference_convention="PR-C1-ref-v1",
+            message=self.MESSAGE,
+        )
+
+    def flash(self, request: FlashRequest, context: EvaluationContext) -> FlashResult:
+        return PROVIDER.flash(request, context)
+
+
+@pytest.mark.parametrize("stage", REGISTERED_STAGES)
+def test_a51_i_an_unaccepted_evaluation_is_reactor_not_accepted_with_its_stage(stage: str) -> None:
+    boundary = Boundary(provider=PROVIDER, n_tubes=1.0, identity=_unit().identity())
+    result = boundary.evaluate(INLET, COMPONENTS, lambda tube: NotAccepted(stage), CONTEXT)
+    assert (result.status, result.code) == ("not_converged", f"reactor_not_accepted({stage})")
+    assert STAGE_CODE.fullmatch(result.code)
+    assert result.message.startswith(f"{result.code}:")
+    assert _carries_no_outlet_values(result)
+
+
+@pytest.mark.parametrize("stage", ["", "S 3", "S3)", "s-3", "(S3", "S3\n", "Ş3", 3])
+def test_a51_i_a_stage_outside_the_grammar_is_a_value_error(stage: Any) -> None:
+    with pytest.raises(ValueError, match="A-Za-z0-9_"):
+        NotAccepted(stage)
+
+
+def test_a51_ii_a_refused_stream_enthalpy_is_an_error_carrying_the_providers_message() -> None:
+    unit = ReactorStandin(unit_id="R1", provider=_RefusesEnthalpy(), context=CONTEXT)
+    result = unit.evaluate(INLET)
+    assert (result.status, result.code) == ("error", "stream_enthalpy_refused")
+    assert result.message.startswith("stream_enthalpy_refused:")
+    assert _RefusesEnthalpy.MESSAGE in result.message
+    assert _carries_no_outlet_values(result)
+
+
+def test_a51_iii_a_negative_inlet_flow_passes_the_inlet_flashs_refusal_through() -> None:
+    inlet = replace(INLET, n=(0.7, -0.235, 0.03, 0.015, 0.02))
+    assert INLET.n == (0.7, 0.235, 0.03, 0.015, 0.02)  # one defect: N2's sign
+    flashed = PROVIDER.flash(FlashRequest(state=inlet), CONTEXT)
+    result = _unit().evaluate(inlet)
+    assert (result.status, result.code) == ("out_of_domain", "out_of_domain")
+    assert result.message == flashed.message
+    assert _carries_no_outlet_values(result)
+
+
+def test_a51_iv_a_liquid_inlet_outside_the_hard_domain_is_liquid_at_reactor_inlet() -> None:
+    # F7's state has two defects: it flashes LIQUID, and it lies outside the hard domain (T_in =
+    # 268.15 K below 573.15 K; pure NH3 also fails H2/N2). The normative order (§8.12, claim BD-06)
+    # checks the inlet phase first, so the liquid's code is returned.
+    f7 = CLOSED_FLASH["F7"]
+    inlet = StreamState(n=tuple(f7["n_mol_s"]), temperature=f7["T_K"], pressure=f7["P_Pa"])
+    assert f7["phase_signature"] == "LIQUID"
+    assert any(bound.startswith("T_in") for bound in hard_domain_violations(inlet))
+    result = _unit().evaluate(inlet)
+    assert (result.status, result.code) == ("unsupported", "liquid_at_reactor_inlet")
+    assert _carries_no_outlet_values(result)
