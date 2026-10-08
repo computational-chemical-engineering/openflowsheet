@@ -743,7 +743,12 @@ def test_g1_over_the_module_the_browser_reached_exactly_the_seventeen(shell: She
     }
     missing = expected - FINISHED
     if missing:
-        pytest.skip(f"needs the module's other tests to have run: {sorted(missing)}")
+        # Under -k or a reordering plugin this check cannot run. Where the browser gate is
+        # required, that is a failure, not a silent skip (M06 review F9).
+        reason = f"needs the module's other tests to have run first: {sorted(missing)}"
+        if os.environ.get(REQUIRE_VARIABLE) == "1":
+            pytest.fail(f"{REQUIRE_VARIABLE}=1 and {reason}", pytrace=False)
+        pytest.skip(reason)
     reached = contract_only(shell.recorder.since(0))
     assert reached == REACHED == UI_OPERATIONS, sorted(UI_OPERATIONS - reached)
 
