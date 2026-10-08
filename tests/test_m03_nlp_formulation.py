@@ -374,6 +374,21 @@ def test_a34_a_ready_closure_without_the_adapter_is_still_unsupported_and_never_
     assert "could not be imported" in report.reasons[0].detail
 
 
+def test_the_nlp_capability_requires_the_licence_acceptance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """M03 review F4: `audited_solver()` checks `NLP_LICENCES_ACCEPTED` (N1), so declining N1
+    withdraws `optimize()`'s capability even where the extra is installed."""
+    import openflowsheet.studies.nlp.closure as closure_module
+
+    monkeypatch.setattr(closure_module, "NLP_LICENCES_ACCEPTED", False)
+    solver = closure_module.audited_solver()
+    assert not solver.available
+    assert "not accepted (N1)" in solver.detail
+    monkeypatch.setattr(closure_module, "NLP_LICENCES_ACCEPTED", True)
+    assert "N1" not in closure_module.audited_solver().detail
+
+
 def test_a34_an_exact_hessian_request_is_refused_before_any_solver_call() -> None:
     report = optimize(nlp_formulation(hessian="exact"), flowsheet({}))
     assert report.status == "UNSUPPORTED"

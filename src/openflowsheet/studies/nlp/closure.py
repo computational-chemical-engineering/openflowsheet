@@ -61,6 +61,13 @@ AUDIT_VERDICT: Final = "PASS"
 AUDITED_PYNUMERO_ASL_SHA256: Final = (
     "6646bbdd51332c3a5b306604fe0f6bd572d7cec352af994c76bfe1cdf550161c"
 )
+#: N1, Frank's answer on the licences of the `nlp` extra's stack (audit §8; ADR 0032 D5), is
+#: pending. The capability needs both this acceptance and the extra (`pyproject.toml`): declining
+#: N1 reverts the commit that sets this to True and the one that declares the extra, and re-takes
+#: the inventory (`scripts/m03_ipopt_inventory.py --env <env>`). Without the acceptance,
+#: `audited_solver()` is unavailable, so `optimize()` reports `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)`
+#: and solves nothing, even in the audited environment (M03 review F4).
+NLP_LICENCES_ACCEPTED: Final = False
 #: The one module allowed to import Pyomo and cyipopt (WO-8), and the libraries it needs.
 ADAPTER_MODULE: Final = "openflowsheet.studies.nlp.greybox"
 NLP_LIBRARIES: Final = ("pyomo", "cyipopt")
@@ -159,7 +166,7 @@ class SolverAvailability:
 
 
 def audited_solver() -> SolverAvailability:
-    """The `nlp` extra's state, found without importing it (G6)."""
+    """The `nlp` extra's state, found without importing it (G6), and N1's licence acceptance."""
     versions = {name: _version(name) for name in ("ipopt", "cyipopt", "pyomo")}
     missing = [name for name in NLP_LIBRARIES if importlib.util.find_spec(name) is None]
     problems = []
@@ -169,6 +176,8 @@ def audited_solver() -> SolverAvailability:
         problems.append(f"the gray-box adapter {ADAPTER_MODULE} (WO-8) is not present")
     if AUDIT_VERDICT != "PASS":
         problems.append(f"the [A10] verdict is {AUDIT_VERDICT}")
+    if not NLP_LICENCES_ACCEPTED:
+        problems.append("the licences of the `nlp` extra's stack are not accepted (N1)")
     if problems:
         return SolverAvailability(
             False,

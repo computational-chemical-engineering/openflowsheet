@@ -100,7 +100,7 @@
   },
   {
    "code": "NLP_SOLVER_UNAVAILABLE",
-   "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
+   "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent); the licences of the `nlp` extra's stack are not accepted (N1) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
    "subject": "docs/m03-ipopt-audit.md"
   }
  ],
@@ -113,7 +113,7 @@
   },
   "available": false,
   "cyipopt": null,
-  "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
+  "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent); the licences of the `nlp` extra's stack are not accepted (N1) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
   "environment": null,
   "ipopt": null,
   "linear_solver": "mumps",
