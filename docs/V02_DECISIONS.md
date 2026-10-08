@@ -273,3 +273,15 @@ Grep, don't read whole. Newest at the bottom.
 - DECISION: M03 WO-8 (cyipopt gray box) built now on `wp/M03`, the `nlp` extra in its own commit; no merge until
   Frank answers N1. Alternative: wait for N1. Reversible by: reverting that commit (no default path depends on it).
 - `opus-engineer` M03 WO-8 launched on `wp/M03`.
+- M01 review (`docs/reviews/M01-review.md`, `3a61298`): **matches, one must-fix.** F1 (must) harvest row for
+  `limitations[3]` (no mixture VLE, k_ij=0) is user-facing → E + an L-row for pr-c1-v1; F2 `admissible_roots` keeps
+  unconverged Newton values near a double root (NH₃ 400 K, P=10 025 791.149… Pa returns 3 "roots", LIQUID ok with
+  Z=0.0699) → keep converged only/deflate; R-197's reasoning corrected; F3 dormant-inlet check precedes the state-space
+  check (n=(0.5,−0.5,…) → ok ZERO_FLOW) → add check, amend §8.12; F4 declining Q-N4 is not a clean revert (loader via
+  `packaged()`) → fallback; F5 flash samples miss a root in 5/497 states at 373–398 K, 1.05–1.24e7 Pa → quantify.
+  Rulings: A22, A45, A52, A38–A40 accepted; A33 reading accepted; `requirements: ["D08"]` accepted (W-id carriage for
+  v0.2 manifests: design lane before M07). ADR 0026 may move to Accepted (F2 before M02's units use the provider; F1
+  before merge). ADR 0027 needs M02's adapter halves + review, the §8.12 amendment, the A49 supersession record, and
+  M02's choice on boundary.py in the reactor identity. M02 notes: stand-in identity doesn't cover boundary.py;
+  `Boundary` doesn't validate n_tubes.
+- `opus-engineer` M01 review fixes F1–F5 launched on `wp/M01`; the reviewer confirms closure afterwards.
