@@ -427,3 +427,11 @@ Grep, don't read whole. Newest at the bottom.
   bindings.http (uvicorn absent). Fixed (`8996973`: only a server-extra ModuleNotFoundError is tolerated); re-run
   37848933412.
 - `docs/progress.md` "Start here" rows brought up to date.
+- v0.2 alpha gate specified on `wp/V02-alpha-gate` (`e3703bb`): `docs/derivations/V02-alpha-release-spec.md` (12 gate
+  rows, A00–A64), ADR 0028 (v0.2 pre-release policy), R-238/239, generator `v02a_reference.py` (64 claims), evidence
+  id M07a. Claims at `C_α`: V11–V20 re-judged by T08 §4 unchanged + W21 + W22; W23–W27 "not claimed"; web shell ships
+  unclaimed. Moved records MR-1…12 each with a counterpart at least as strict (surface digest chain R-234→R-192→R-133→
+  v17-c2; V17 BLOCKED unless carried; alpha envelope pinned with T08's 58 limitations harvested; CHANGELOG `## v0.2.0a1`
+  names L42, L-WEB-1…4). Findings: release.yml and changelog_section.py reject every pre-release today; B50's content
+  test will break at M02's merge.
+- `opus-engineer` alpha gate WO-1, 2, 3, 4, 7 launched on `wp/V02-alpha-gate` (no dispatch/tag/publish).

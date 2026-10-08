@@ -70,6 +70,14 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   local compute; N2 width limits 0.0025 in conversion, 1.5 K; N3 gradient limit 0.25; N6 M04 counts as `tested`
   whatever the real verdict, and M05 uses the parent model if the surrogate is not promotable.
 
+- **`0.2.0a1` (alpha gate, ADR 0028; defaults set):** N3 claim set = V11–V20 re-judged + W21 + W22, W23–W27 not
+  claimed; carry the V14(b) FAIL acceptance into this release (dated after the alpha verdict); **carry V17 across the
+  surface changes R-192/R-234** as R-133 did (alternative: a new agent campaign, ≈USD 10); accept M02 N1 "not a sandbox"
+  for a published release; W21(f) read as adapter-reproduces-standalone + group tests + error travels + published
+  validation cited (the stronger reading would BLOCK W21 on the 4TU data statement); publish via release.yml with your
+  approval, marked pre-release. Preferences on defaults: cut `C_α` before M03 merges; freeze distribution paths from
+  `C_α` to dispatch.
+
 Otherwise nothing open. Answered 2026-10-08: Amendment 3 approved; W27 spend (45 runs, USD 15–45) approved; pushing to
 `origin` authorised. Earlier: F2 agent model = most recent, pinned by ID; F3 fonts system; F4 scenario = run comparison;
 F5 education mode deferred.
@@ -82,7 +90,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `opus-engineer` | M02 merge main + WO-7, 8 (+9): C1 binding, PR units | `wp/M02` (`m02`) |
 | `architect` | M05 design (brief `docs/briefs/M05-design.md`) | `wp/M05` (`m05`) |
-| `specifier` | v0.2 alpha release gate (`0.2.0a1`) | `wp/V02-alpha-gate` (`alpha-gate`) |
+| `opus-engineer` | alpha gate WO-1, 2, 3, 4, 7 (`v0_2_gate.py`, release.yml pre-releases) | `wp/V02-alpha-gate` (`alpha-gate`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
