@@ -500,3 +500,9 @@ Grep, don't read whole. Newest at the bottom.
   Method: `LD_DEBUG=files` in the workload's children, union equals `ldd` closure. No licence class added for N1
   (Ipopt now also runs as a separate process, noted). G7 narrower (no second-prefix rebuild). check.sh 7908 passed.
   To merge into `wp/M05` after the M05 architect's rulings commit; then a test that WO-3's pin hashes equal WO-1's record.
+- M05 rulings (`595b32b`, note §16 + P13, R-274…R-276): R-274 omitted rows computed by `eliminate_alias_rows` (caller set
+  only if equal; four certifying facts; C1 the same, escalate if elimination refuses); R-275 K03 `Scaling.from_spec`
+  everywhere (unit_no_kinds for TR-E1; partial kinds refused); R-276 pre-flight start evaluation + no candidate after any
+  recorded refusal. Gaps assigned: affine basis + TruthBox meta → WO-4; readiness halves → WO-6.
+- `wp/M05-audit` merged into `wp/M05` (`aef41bf`). `opus-engineer` M05 R-274…276 code amendments + pin cross-check
+  launched.
