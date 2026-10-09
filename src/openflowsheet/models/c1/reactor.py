@@ -226,7 +226,12 @@ def variant_limitations(model_id: str, variant: Mapping[str, Any]) -> tuple[str,
     domain = (
         f"A vapour inlet only, on {PROVIDER_ID} under {REFERENCE_CONVENTION}; the experiment "
         f"refuses an inlet outside T {_range(hard['T_K'])} K, P {_range(hard['P_Pa'])} Pa, H2/N2 "
-        f"{_range(hard['H2_N2'])}, inerts <= {float(hard['inert_max']):g}"
+        f"{_range(hard['H2_N2'])}, "
+        + (
+            f"inerts <= {float(hard['inert_max']):g}"
+            if "inert_min" not in hard
+            else f"inerts {float(hard['inert_min']):g}-{float(hard['inert_max']):g}"
+        )
         + (
             ""
             if hard["tube_flow_mol_s"] is None

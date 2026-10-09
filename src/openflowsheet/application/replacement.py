@@ -27,7 +27,7 @@ registered signatures' ports and, where a side is variant-backed, its variant:
   method, the new one declares with an EO-capable method;
 - `validity`: the new declared domain contains the old — the temperature and pressure intervals,
   the phases, and the variant hard domain (T, P, H2/N2, inerts, per-tube flow; an absent bound is
-  unbounded).
+  unbounded, an absent inert floor is 0).
 
 `synthetic` is reported, not judged (§6.2). A facet that needs a side that does not bind is
 `not_applicable` with the binder's reason; `degrees_of_freedom` then fails, so the report is not
@@ -479,6 +479,11 @@ def _validity(old: _Side, new: _Side) -> FacetResult:
         inner_max = None if old_hard is None else old_hard.get("inert_max")
         if inner_max is None or float(new_hard["inert_max"]) < float(inner_max):
             narrower.append(f"hard_domain.inert_max {inner_max} -> {new_hard['inert_max']}")
+        # ADR 0027 Amendment 3: an absent inert floor is 0, and a higher floor is narrower.
+        inner_min = None if old_hard is None else old_hard.get("inert_min")
+        outer_min = new_hard.get("inert_min")
+        if float(outer_min or 0.0) > float(inner_min or 0.0):
+            narrower.append(f"hard_domain.inert_min {inner_min} -> {outer_min}")
     if narrower:
         return FacetResult(
             "validity", "fail", "the new domain does not contain the old: " + "; ".join(narrower)

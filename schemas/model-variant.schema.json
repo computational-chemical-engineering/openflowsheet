@@ -252,6 +252,10 @@
             }
           ],
           "description": "ADR 0034 D10 (Q-F5): the per-tube flow bound F_ret_in, mol/s; null is unbounded."
+        },
+        "inert_min": {
+          "type": "number",
+          "description": "ADR 0027 Amendments 3 and 4 (M02 §14.6 E3, §14.7 F1): the inert floor, y_Ar + y_CH4 >= inert_min; absent is 0."
         }
       }
     },

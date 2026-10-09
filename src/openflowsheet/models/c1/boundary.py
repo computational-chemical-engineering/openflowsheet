@@ -88,6 +88,8 @@ class HardDomain:
 
     The defaults are M01's constants. `tube_flow` bounds the per-tube flow F_ret_in = n_tot,in /
     N_tubes, mol/s (ADR 0034 D10, Q-F5): a variant field, `None` (unbounded) for the stand-in.
+    `inert_min` is the floor y_Ar + y_CH4 >= inert_min (ADR 0027 Amendments 3 and 4, M02 design
+    note §14.6 E3): a variant field, 0 (no floor) when the variant does not declare it.
     """
 
     temperature_k: tuple[float, float] = HARD_TEMPERATURE_K
@@ -95,6 +97,7 @@ class HardDomain:
     h2_n2: tuple[float, float] = HARD_H2_N2
     inert_fraction: float = HARD_INERT_FRACTION
     tube_flow: tuple[float, float] | None = None
+    inert_min: float = 0.0
 
 
 #: M01's hard domain: no per-tube flow bound.
@@ -370,7 +373,9 @@ def hard_domain_violations(
     """The hard-domain bounds a flowing inlet violates (spec §8.12, ADR 0027 D9).
 
     With a per-tube flow bound (ADR 0034 D10) `n_tubes` is required, and F_ret_in is formed as
-    `tube_inlet` forms it; that bound is checked last, so M01's messages are unchanged.
+    `tube_inlet` forms it; that bound is checked last, so M01's messages are unchanged. The inert
+    floor, n_Ar + n_CH4 >= inert_min n_tot,in (§14.6 E3), is checked only when it is above 0, so a
+    domain without one gives M01's messages too.
     """
     n = inlet.n
     violated = []
@@ -382,6 +387,8 @@ def hard_domain_violations(
         violated.append(f"H2/N2 outside {list(domain.h2_n2)}")
     if not (n[3] + n[4]) <= domain.inert_fraction * inlet.total_flow:
         violated.append(f"inert fraction above {domain.inert_fraction}")
+    if domain.inert_min > 0.0 and not (n[3] + n[4]) >= domain.inert_min * inlet.total_flow:
+        violated.append(f"inert fraction below {domain.inert_min}")
     if domain.tube_flow is not None:
         if n_tubes is None:
             raise ValueError("a per-tube flow bound needs n_tubes")

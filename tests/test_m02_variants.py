@@ -283,6 +283,44 @@ def test_qf5_m01s_boundary_has_no_flow_bound() -> None:
     assert refused.status == "out_of_domain" and "F_ret_in" in refused.message
 
 
+# -- §14.6 E3: the inert floor -------------------------------------------------------------------
+
+
+def test_e3_the_floor_is_inclusive_and_one_ulp_below_it_is_refused() -> None:
+    """y_Ar + y_CH4 >= inert_min, judged as n_Ar + n_CH4 >= inert_min n_tot (exact floats here:
+    0.0625 + 0.1875 = 0.25 × 1.0; one ulp less CH4 leaves n_tot at 1.0)."""
+    domain = HardDomain(inert_fraction=0.5, inert_min=0.25)
+    on = StreamState(n=(0.5, 0.25, 0.0, 0.0625, 0.1875), temperature=673.15, pressure=1.0e7)
+    below = StreamState(
+        n=(0.5, 0.25, 0.0, 0.0625, math.nextafter(0.1875, 0.0)), temperature=673.15, pressure=1.0e7
+    )
+    assert on.total_flow == below.total_flow == 1.0
+    assert hard_domain_violations(on, domain) == []
+    assert hard_domain_violations(below, domain) == ["inert fraction below 0.25"]
+
+
+def test_e3_an_absent_floor_is_zero_and_checks_nothing() -> None:
+    """v1, v2 and the stand-in declare no floor: their domains are unchanged, and an inlet with
+    no inerts gives no violation."""
+    assert DEFAULT_HARD_DOMAIN.inert_min == 0.0
+    for variant_id in (STANDIN_ID, *SUPERSEDED_IDS):
+        variant = variants.registered_variant(variant_id)
+        assert "inert_min" not in variant.boundary["hard_domain"]
+        assert variants.hard_domain(variant).inert_min == 0.0
+    bare = StreamState(n=(0.75, 0.25, 0.0, 0.0, 0.0), temperature=673.15, pressure=1.0e7)
+    assert hard_domain_violations(bare) == []
+
+
+def test_e3_the_floor_follows_m01s_checks_and_precedes_the_flow_bound() -> None:
+    inlet = StreamState(n=(7.5, 2.5, 0.0, 0.0, 0.0), temperature=473.15, pressure=1.0e7)
+    violated = hard_domain_violations(inlet, HardDomain(tube_flow=FLOW_BOUND, inert_min=0.035), 1.0)
+    assert violated[0].startswith("T_in")
+    assert violated[-2:] == [
+        "inert fraction below 0.035",
+        f"F_ret_in 10.0 mol/s outside {list(FLOW_BOUND)}",
+    ]
+
+
 # -- ADR 0033 D10: ExecutionFailure ---------------------------------------------------------------
 
 

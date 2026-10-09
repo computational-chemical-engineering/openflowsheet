@@ -175,7 +175,8 @@ def resolve(model_id: str, version: str | None, artifact_ref: str | None) -> Var
 
 
 def hard_domain(variant: Variant) -> HardDomain:
-    """The boundary's hard domain as the variant declares it (ADR 0034 D10)."""
+    """The boundary's hard domain as the variant declares it (ADR 0034 D10); an absent
+    `inert_min` is 0 (ADR 0027 Amendment 3)."""
     block = variant.boundary["hard_domain"]
     flow = block["tube_flow_mol_s"]
     return HardDomain(
@@ -184,4 +185,5 @@ def hard_domain(variant: Variant) -> HardDomain:
         h2_n2=(float(block["H2_N2"][0]), float(block["H2_N2"][1])),
         inert_fraction=float(block["inert_max"]),
         tube_flow=None if flow is None else (float(flow[0]), float(flow[1])),
+        inert_min=float(block.get("inert_min", 0.0)),
     )
