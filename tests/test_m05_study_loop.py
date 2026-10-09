@@ -9,6 +9,7 @@ are exact.
 
 from __future__ import annotations
 
+import hashlib
 import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
@@ -71,6 +72,11 @@ RESIDUALS = (1e-6, 1e-4)
 E = 2.0 * (abs(DJ_DX) * RESIDUALS[0] + abs(DJ_DT) * RESIDUALS[1])
 
 
+def _digest(text: str) -> str:
+    """A stand-in sha256 of the fakes' revisions and coupling records (64 hex digits)."""
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
 def objective(t: float) -> float:
     return 0.5 - ((t - 673.0) / 10.0) ** 2
 
@@ -95,7 +101,7 @@ class FakeParent:
             solve_id=solve_id,
             purpose=purpose,
             decisions=dict(decisions),
-            revision_sha256=f"rev-{t!r}",
+            revision_sha256=_digest(f"rev-{t!r}"),
             outcome="FAILED" if bad else "CONVERGED",
             certificate=None if bad else "VERIFIED",
             objective=None if bad else self.j(t),
@@ -109,7 +115,7 @@ class FakeParent:
             ),
             executions=1,
             store_hits=0,
-            coupling_record_sha256=f"cr-{solve_id}",
+            coupling_record_sha256=_digest(f"cr-{solve_id}"),
             limitations=("synthetic",),
         )
 

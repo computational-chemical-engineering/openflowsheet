@@ -35,5 +35,6 @@
   "specification.schema.json",
   "study.schema.json",
   "transaction-result.schema.json",
+  "trust-region-study.schema.json",
   "validation-report.schema.json"
 ]
