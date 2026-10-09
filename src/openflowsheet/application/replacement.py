@@ -51,6 +51,7 @@ from openflowsheet.application.revision_binding import (
     RevisionBinding,
     bind_revision_flowsheet,
 )
+from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.execution import EO_CAPABLE_METHODS
 
 __all__ = [
@@ -101,12 +102,21 @@ class _Side:
         return None if self.unit is None else self.unit.manifest()
 
     def document(self) -> dict[str, Any]:
+        """The report's `from` / `to`; a malformed value (a draft may hold any) as its canonical
+        JSON text, so that the report says what the revision holds and stays schema-valid."""
+        model_id, version, artifact_ref = (
+            self.reference.get(key) for key in ("id", "version", "artifact_ref")
+        )
         return {
-            "id": self.reference.get("id"),
-            "version": self.reference.get("version"),
-            "artifact_ref": self.reference.get("artifact_ref"),
+            "id": _text(model_id),
+            "version": None if version is None else _text(version),
+            "artifact_ref": None if artifact_ref is None else _text(artifact_ref),
             "synthetic": bool(self.variant is not None and self.variant.synthetic),
         }
+
+
+def _text(value: Any) -> str:
+    return value if isinstance(value, str) else canonical_json(value).decode("utf-8")
 
 
 @dataclass(frozen=True)
@@ -160,15 +170,21 @@ def _reference(instance: Mapping[str, Any]) -> dict[str, Any]:
     return {key: model.get(key) for key in ("id", "version", "artifact_ref")}
 
 
+def _backed(model_id: Any, backed: frozenset[str]) -> bool:
+    """A model id names a variant-backed model; a document may hold any JSON value there."""
+    return isinstance(model_id, str) and model_id in backed
+
+
 def replacements(before: Mapping[str, Any], after: Mapping[str, Any]) -> tuple[str, ...]:
     """The instance ids whose model reference the change alters, where either side is
-    variant-backed (§6.2), in instance-id order."""
+    variant-backed (§6.2), in instance-id order. Total over any document: a malformed reference
+    is compared as the value it is."""
     old, new = _instances(before), _instances(after)
     backed = variant_backed_models()
     found = []
     for instance_id in sorted(set(old) & set(new)):
         left, right = _reference(old[instance_id]), _reference(new[instance_id])
-        if left != right and (left["id"] in backed or right["id"] in backed):
+        if left != right and (_backed(left["id"], backed) or _backed(right["id"], backed)):
             found.append(instance_id)
     return tuple(found)
 
@@ -180,11 +196,11 @@ def _side(
     backed: frozenset[str],
 ) -> _Side:
     reference = _reference(_instances(document)[instance_id])
-    model_id = reference["id"]
-    is_backed = model_id in backed
+    model_id, version, artifact_ref = (reference[key] for key in ("id", "version", "artifact_ref"))
+    is_backed = _backed(model_id, backed)
     variant = (
-        variants.resolve(str(model_id), reference["version"], reference["artifact_ref"])
-        if is_backed
+        variants.resolve(model_id, version, artifact_ref)
+        if is_backed and isinstance(version, str) and isinstance(artifact_ref, str)
         else None
     )
     if isinstance(bound, Unbound):
@@ -212,7 +228,7 @@ def _unavailable(facet: str, old: _Side, new: _Side) -> FacetResult | None:
 
 def _resolvable(new: _Side) -> FacetResult:
     model_id = new.reference["id"]
-    if model_id not in MODEL_BUILDERS:
+    if not isinstance(model_id, str) or model_id not in MODEL_BUILDERS:
         return FacetResult("resolvable", "fail", f"{model_id!r} is not a registered model")
     if new.backed and new.variant is None:
         return FacetResult(

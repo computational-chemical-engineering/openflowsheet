@@ -39,7 +39,7 @@ from openflowsheet.adapters import variants
 from openflowsheet.application import revision_binding
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.replacement import FACETS, replacements
+from openflowsheet.application.replacement import FACETS, check_replacement, replacements
 from openflowsheet.application.revision_binding import ModelSignature
 from openflowsheet.application.types import Change, Edit, TransactionResult, schema_errors
 from openflowsheet.canonical import document_sha256
@@ -385,3 +385,17 @@ def test_a_change_between_native_models_is_not_a_replacement() -> None:
     assert replacements(before, after) == ()
     after["instances"][REACTOR]["model"] = reference(REAL)
     assert replacements(before, after) == ("reactor",)
+
+
+@pytest.mark.parametrize("value", [["c1.reactor"], {"id": 1}, 3.5, None, True])
+def test_the_check_is_total_over_malformed_references(value: Any) -> None:
+    """A draft may hold any JSON value in a model reference (T07 S3.6's fuzz found the gap): the
+    check judges it, it never raises."""
+    after = loop()
+    for key in ("id", "version", "artifact_ref"):
+        after["instances"][REACTOR]["model"] = {**reference(STANDIN), key: value}
+        found = replacements(loop(), after)
+        if found:
+            report = check_replacement(loop(), after, "reactor")
+            assert not report.compatible
+            assert schema_errors(REPORT, report.as_document()) == []
