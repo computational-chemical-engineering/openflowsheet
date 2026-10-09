@@ -644,3 +644,9 @@ Grep, don't read whole. Newest at the bottom.
   constants with their pinning rows, G4 → 68×68; R-297 `M05-fd-v2` three-step curvature-aware check, FD kept at 2⁻¹⁴;
   R-298 TR-E1 ‖Δz‖ ≤ 2e-5; R-299 → `TRF_STALLED_INCONSISTENT`, retried once; R-300 E1–E7 confirmed). W27 Amendment 3
   `14c8695` on main (R-301/302). WO-2b/3b/4a launched; WO-5b folded into M02 WO-12.
+
+- **M02 WO-12** (2026-10-09, `wp/M02` `bdb756e`): G12 PASS (real loop 3 outer iterations, ρ 319.6→0.298, VERIFIED;
+  inlet 0.81×F_nom; replay MATCH; live rerun bitwise; 142.5 s). G11: Q-F4 1/17 accepted; Q-F5 0.5× fails
+  (`element_balance_defect`), 0.25× fails, 2×/4× pass; ΔP first > ε_P at 8×; NaN/inf corners typed `external_crashed`.
+  §10.3 triggered, no mechanical narrowing → `specifier` ruling round batching D50/D55/D58/D61/D69/D70/D71/envelope.
+  D71: `with_coupling` not copied (duplicates `at_coupling`) — contradicts R-300 E7, in the round.

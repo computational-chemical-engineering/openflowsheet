@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…11 done (`770969d`, gate 8251, 2 strict xfails; G2 byte-identical; digest unmoved); WO-12 (real G10–G12) running; then WO-13 manifest + `reviewer` with batched rulings: D50 (G8(f) G=1.8 Broyden vs §4.3 reset), D61 (G9(a) stand-in→real fails `validity` on per-tube flow bound), D55 (every C1 run classed R3), D58 (cross-platform replay last-bit), envelope `unbound_providers` + stand-in docstring |
+| M02 | Build | M01 | W21 | WO-1…11 done; WO-12 (`bdb756e`): G12 real loop PASS (3 outer its, VERIFIED, replay MATCH, live rerun bitwise); **§10.3 triggered**: G11 Q-F4 accepts 1/17 (all corners fail), Q-F5 0.5× fails → ruling round running (`docs/briefs/M02-rulings.md`: D69 domain, D70, D50, D61, D55, D58, D71, envelope); then implement, WO-13 manifest, `reviewer` |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435); W27 Amendment 3 (`14c8695` on main, R-301/302): surrogate → no function (`surrogate_model`), `hypothetical_v02_a3`, corpus resolver; next WO-16i on main, then J3′–J6′ + WO-8 on `wp/M04`; WO-9 after M02 merged; WO-11 real run; WO-12 manifest |
 | M05 | Design | M03, M04 | W24 | WO-1…5 done (`6b54b8d`); rulings §17 (`5bb026e`, R-296…R-300): zero-flow elimination, `M05-fd-v2`, TR-E1 bound 2e-5, Optimal-with-θ → `TRF_STALLED_INCONSISTENT`; WO-2b, 3b, 4a running; WO-5b in M02 WO-12; then WO-6+ |
@@ -92,7 +92,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `opus-engineer` | M02 WO-12 (real-reactor G10–G12; brief `docs/briefs/M02-WO12.md`) | `wp/M02` (`m02`) |
+| `specifier` | M02 ruling round (brief `docs/briefs/M02-rulings.md`) | `wp/M02` (`m02`) |
 | `opus-engineer` | M05 WO-2b, WO-3b, WO-4a (design note §17.6) | `wp/M05` (`m05`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
