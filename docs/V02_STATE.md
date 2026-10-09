@@ -18,7 +18,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
 | M02 | Build | M01 | W21 | WO-1…7 done (`6a46cdd`; G10 bitwise, re-recorded on variant v2); WO-8 built (`8734905`, gate green, G2 byte-identical); rulings R-280…282 (`2587f14`); WO-9 running; join commit after the W27 mapping amendment; then WO-10…13 |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
-| M04 | Design | M02 | W23 | spec; WO-1…6, 10 done (`d5736ac`, gate green; A16–A24 pass on synthetic parents); Amendment 1 running; WO-7 needs M02 WO-9, WO-8 M02 WO-11; WO-11 real run needs Frank's N1 budget |
+| M04 | Design | M02 | W23 | spec; WO-1…6, 10 done (`d5736ac`, gate green; A16–A24 pass on synthetic parents); Amendment 1 (`3c4f8c2`); WO-13…17 running; WO-7 needs M02 WO-9, WO-8 M02 WO-11; WO-11 real run needs Frank's N1 budget |
 | M05 | Design | M03, M04 | W24 | design done; WO-2, 3 done (`dd9e364`; G2, G3, G4 (SYN-001/TR-E1), G13); WO-1 audit PASS (merged `aef41bf`); rulings R-274…279 implemented (`2dc50d9`; WO-2a/3a done; one ruling pending for WO-6: Optimal-with-θ>1e-5 label); WO-4+ need M02 + M04 merged |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
@@ -66,8 +66,8 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   Default: recommended and recorded in every report, not enforced (it is reproducible and faster: 1.7 s vs 3.2–3.9 s).
 
 - **M04 (defaults set):** N1 experiment budget — 632 cold reactor runs for iteration 1 and up to two more. **Corrected
-  2026-10-08:** a real evaluation takes 25–45 s (not 9 s), so iteration 1 ≈ 4.4–7.9 h and three iterations ≈ 12–20 h of
-  local compute; N2 width limits 0.0025 in conversion, 1.5 K; N3 gradient limit 0.25; N6 M04 counts as `tested`
+  2026-10-08:** a real evaluation takes 25–45 s (not 9 s), so iteration 1 ≈ 4.4–7.9 h serially — but Amendment 1 pre-warms the cache with 16 parallel
+  experiment jobs, ≈ 16–30 min for iteration 1 (bitwise identical); N2 width limits 0.0025 in conversion, 1.5 K; N3 gradient limit 0.25; N6 M04 counts as `tested`
   whatever the real verdict, and M05 uses the parent model if the surrogate is not promotable.
 
 - **`0.2.0a1` (alpha gate, ADR 0028; defaults set):** N3 claim set = V11–V20 re-judged + W21 + W22, W23–W27 not
@@ -94,7 +94,7 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | --- | --- | --- |
 | `opus-engineer` | M02 WO-9 + R-281/R-282 (join after W27 amendment) | `wp/M02` (`m02`) |
 | `opus-engineer` | M06 WO-16h (W27 classifier/scorer per Amendment 2) | `wp/M06-w27-c1map` (`w27-c1map`) |
-| `specifier` | M04 Amendment 1 (A11, it≥2, float class, cycle, concurrency) | `wp/M04` (`m04`) |
+| `opus-engineer` | M04 WO-13…17 (Amendment 1 items, pre-warm) | `wp/M04` (`m04`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);

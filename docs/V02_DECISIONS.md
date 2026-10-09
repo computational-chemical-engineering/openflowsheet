@@ -572,3 +572,11 @@ Grep, don't read whole. Newest at the bottom.
   ratified; W27-R59 amended (S19/S20). Finding F-A2-1 for M02: should SYN-001 builders refuse the C1 basis (recommended
   yes). M02 join steps J1–J6 recorded in §21.8.
 - `opus-engineer` M06 WO-16h (R62, R24 d/e, R59, S19/S20, bases-v1, 0.1.1 guard) launched on `wp/M06-w27-c1map`.
+- M04 Amendment 1 (`3c4f8c2`, spec §18, ADR 0036/0037 A1, R-290…R-295; generator 8634 claims; gate 8062): A11 text
+  corrected (eight columns at roundoff, ratio 9.1e-32); it≥2 training lists earlier draws as requests, `plan-it2/it3.json`
+  committed, `iteration_not_permitted` unless earlier failures were coverage-only; no new float class (R1/R2 under ADR
+  0007 given the same records; R0 only with decision gaps ≥ 1e-8; `domain.admissibility_margin`); manifest–evidence
+  pointer reversed (evidence → manifest); outputs/refusals confirmed (+`cache_misses`); concurrency only as a pre-warm of
+  632 `experiment` jobs at max_workers 16 (≈16–30 min), study then fully cached, recorded only in the package manifest;
+  surface move R-295. Work items WO-13…17.
+- `opus-engineer` M04 WO-13…17 launched on `wp/M04`.
