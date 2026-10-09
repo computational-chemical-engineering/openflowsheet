@@ -36,6 +36,27 @@ name the omitted rows; a set other than the certified one is refused the same wa
 elimination's own refusals (`SpecificationConflictError`, `UnsupportedRankStructureError`)
 propagate unchanged: an alias pattern it cannot read is an escalation, not a row to drop by hand.
 
+**Exact-zero flows** (R-296, design note §17.1, rule `M05-zero-flow-v1`). A molar flow exactly 0.0
+at x₀ is pinned there by its regime's own rows (ADR 0032 D4) but left unbounded; Ipopt satisfies the
+pin only to roundoff, and a truth or block evaluated at n = −O(1e-27) rightly refuses it. So such a
+flow is not a variable of the projection but the constant +0.0, eliminated together with its pin,
+after R-274's set is computed and before the model TRF sees is built. Candidates Z₀: the
+`molar_flow` variables with x₀ == 0.0. Repeated passes over the kept rows in spec order (rows not
+omitted by R-274 and not already a pin) pair a row e whose structural incidence — the shape
+check's unknowns `x`, `y`, `w` its expression contains — less the eliminated flows is exactly {j},
+j ∈ Z₀, iff (i) r_e(x₀) == 0.0, (ii) ∂r_e/∂x_j(x₀) ≠ 0 (the projection's x-Jacobian at x₀, which
+G4 holds to CasADi's) and (iii) ∂r_e/∂d(x₀) == 0.0 for every decision (a link variable is in the
+incidence, so a pin has none); the first certified row wins. Refusals,
+`PROJECTION_ZERO_FLOW(<id>:<reason>)`: `unpinned` (a candidate left unpaired), `redundant_row` (a
+kept row, not a pin, whose unknowns were all eliminated) and `link_input` (an eliminated flow among
+an external link's inlet arguments). The eliminated flows are +0.0 in every builder's symbols and
+every EF's arguments (so neither Pyomo's differentiation, TRF's `identify_variables` nor the affine
+basis sees a column for them, and every holder key equals x₀'s); their pins are not built. The
+source map records `zero_eliminated` ({variable_id, row_id, residual_x0, dr_dx}) and lists the
+flows among `variables` with `pyomo: null`; `Projection.state_of` is the inverse map (+0.0 for
+each), and `Projection.zero_pins_at` evaluates the pins at a final state against 0.0, P2's hook as
+`omitted_rows_at` is.
+
 **Scales** (R-275, design note §16.2). One source: K03's `Scaling.from_spec(spec)`, the scales
 M03's full-space NLP and the certificate use. They give the Ipopt `scaling_factor` suffixes —
 variables `1/S_x`, rows `1/S_F` (Ipopt's `user-scaling`) — the scales recorded in the source map,
@@ -56,7 +77,7 @@ contains `abs`, `Expr_if`, `min`/`max`, `ceil`/`floor` or a piecewise node;
 `PROJECTION_STRUCTURE(<id>)` — a variable appears in no constraint (or a row in no variable);
 `PROJECTION_DOF(<n>)` — n_vars − n_equalities = n ≠ n_decisions, TRF's own count, repeated here so
 the failure is typed; `PROJECTION_IMPLICIT_EF_INPUT(<ids>)` — below;
-`PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)` — above.
+`PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)` — above; `PROJECTION_ZERO_FLOW(<id>:<reason>)` — above.
 
 **The shape check** (R-278, design note §16.5). TRF fixes an external link's output in every
 subproblem only through its model r_k(w), so the glass box must determine each link-EF input
@@ -103,6 +124,7 @@ from openflowsheet.canonical import (
     constants_sha256,
     document_sha256,
     model_version,
+    normalize_zero,
     structure_sha256,
 )
 from openflowsheet.compile.reference import FloatAlgebra, block_outputs
@@ -137,6 +159,10 @@ UNIT_NO_KINDS: Final = "unit_no_kinds"
 OMITTED_ROW_REASON: Final = (
     "eliminated by orchestrator/rank.py's alias elimination: implied by the retained rows (R-274)"
 )
+#: R-296: the rule that eliminates the flows exactly 0.0 at x₀ with their pins (design note §17.1).
+ZERO_FLOW_RULE: Final = "M05-zero-flow-v1"
+#: R-296: a pin's residual at a final state, with its flow the constant +0.0 (M05 build log Z1).
+ZERO_PIN_TOLERANCE: Final = 0.0
 _NONSMOOTH_FUNCTIONS: Final = frozenset({"abs", "ceil", "floor"})
 _NONSMOOTH_NODES: Final = (AbsExpression, Expr_ifExpression, MaxExpression, MinExpression)
 
@@ -148,6 +174,7 @@ RefusalCode = Literal[
     "PROJECTION_DOF",
     "PROJECTION_IMPLICIT_EF_INPUT",
     "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+    "PROJECTION_ZERO_FLOW",
 ]
 #: R-278: whether `project` enforces the shape check. `exempt_oracle` is TR-E1's only (test-only).
 ShapeCheck = Literal["required", "exempt_oracle"]
@@ -327,6 +354,26 @@ class OmittedRowsCheck:
 
 
 @dataclass(frozen=True)
+class ZeroEliminated:
+    """A flow exactly 0.0 at x₀ that is not a variable of the projection but the constant +0.0,
+    eliminated together with the row that pins it (`M05-zero-flow-v1`, R-296): its pin's residual
+    and its derivative in the flow at x₀ (criteria (i) and (ii))."""
+
+    variable_id: str
+    row_id: str
+    residual_x0: float
+    dr_dx: float
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "variable_id": self.variable_id,
+            "row_id": self.row_id,
+            "residual_x0": self.residual_x0,
+            "dr_dx": self.dr_dx,
+        }
+
+
+@dataclass(frozen=True)
 class Projection:
     """A projected spec: the Pyomo model TRF solves, its holders and its source map.
 
@@ -353,10 +400,34 @@ class Projection:
     scaling: Scaling
     #: R-274: the rows not projected, each with its certificate, in spec order.
     omitted_rows: tuple[OmittedRow, ...] = ()
+    #: R-296: the exact-zero flows eliminated as constants with their pins, in variable order.
+    zero_eliminated: tuple[ZeroEliminated, ...] = ()
 
     @property
     def source_map_sha256(self) -> str:
         return document_sha256(self.source_map)
+
+    @property
+    def eliminated_ids(self) -> frozenset[str]:
+        """The variable ids of the eliminated zero flows (R-296): constants, not `x`."""
+        return frozenset(entry.variable_id for entry in self.zero_eliminated)
+
+    @property
+    def variable_indices(self) -> tuple[int, ...]:
+        """The spec positions of the projection's `x`: every variable but the eliminated zero
+        flows."""
+        constants = self.eliminated_ids
+        return tuple(i for i, name in enumerate(self.spec.variable_ids) if name not in constants)
+
+    def state_of(self, model: Any = None) -> dict[str, float]:
+        """The inverse map: every variable of the spec at `model` (the original by default, or
+        TRF's returned clone) — its `x`, and +0.0 for each eliminated zero flow (R-296)."""
+        source = self.model if model is None else model
+        constants = self.eliminated_ids
+        return {
+            name: normalize_zero(0.0) if name in constants else float(pyo.value(source.x[index]))
+            for index, name in enumerate(self.spec.variable_ids)
+        }
 
     @property
     def decision_variables(self) -> list[Any]:
@@ -381,11 +452,21 @@ class Projection:
         """Set every `x` to `values` and every block output `y` to its block's value there.
 
         The blocks are called directly, not through the holders, so the holders' ledgers hold
-        TRF's requests only."""
+        TRF's requests only. An eliminated zero flow is the constant +0.0 (R-296): `values` must
+        hold 0.0 for it, or this is a `ValueError`."""
         model = self.model
+        constants = self.eliminated_ids
+        moved = sorted(name for name in constants if float(values[name]) != 0.0)
+        if moved:
+            raise ValueError(f"{moved} are eliminated zero flows (R-296); they stay 0.0")
+        state = {}
         for index, name in enumerate(self.spec.variable_ids):
-            model.x[index].set_value(float(values[name]), skip_validation=True)
-        _initialize_outputs(model, self.spec, values)
+            if name in constants:
+                state[name] = normalize_zero(0.0)
+                continue
+            state[name] = float(values[name])
+            model.x[index].set_value(state[name], skip_validation=True)
+        _initialize_outputs(model, self.spec, state)
 
     def parameters_of(self, model: Any = None) -> dict[str, float]:
         """Every pinned input of the spec at `model` (the original by default, or TRF's returned
@@ -401,23 +482,28 @@ class Projection:
         """R-274's fact 4 at the state `model` holds (TRF's returned clone at a final state): every
         omitted row evaluated with floats — its builder, the blocks called directly (never
         through a holder), the parameters `parameters_of(model)` — against its tolerance."""
-        if not self.omitted_rows:
+        return self._rows_at(model, [(row.equation_id, row.tolerance) for row in self.omitted_rows])
+
+    def zero_pins_at(self, model: Any) -> OmittedRowsCheck:
+        """R-296's final-state check at the state `model` holds: every pin of an eliminated zero
+        flow evaluated with floats, as `omitted_rows_at` evaluates the omitted rows, against
+        `ZERO_PIN_TOLERANCE` (0.0: the pin holds exactly by construction). A failure fails P2
+        (`PROJECTION_DISAGREES`)."""
+        return self._rows_at(
+            model, [(entry.row_id, ZERO_PIN_TOLERANCE) for entry in self.zero_eliminated]
+        )
+
+    def _rows_at(self, model: Any, rows: Sequence[tuple[str, float]]) -> OmittedRowsCheck:
+        if not rows:
             return OmittedRowsCheck(residuals={})
-        state = {
-            name: float(pyo.value(model.x[index]))
-            for index, name in enumerate(self.spec.variable_ids)
-        }
+        state = self.state_of(model)
         try:
             outputs = block_outputs(self.spec, state)
         except DomainError as error:
             return OmittedRowsCheck(residuals={}, detail=f"property_domain_error: {error}")
-        wanted = {row.equation_id for row in self.omitted_rows}
+        wanted = {name for name, _ in rows}
         residuals = _float_rows(self.spec, state, outputs, self.parameters_of(model), wanted)
-        failed = tuple(
-            row.equation_id
-            for row in self.omitted_rows
-            if not abs(residuals[row.equation_id]) <= row.tolerance
-        )
+        failed = tuple(name for name, tolerance in rows if not abs(residuals[name]) <= tolerance)
         return OmittedRowsCheck(residuals=residuals, failed=failed)
 
 
@@ -428,6 +514,31 @@ def _initialize_outputs(model: Any, spec: ProblemSpec, values: Mapping[str, floa
         for value in produced:
             model.y[index].set_value(float(value), skip_validation=True)
             index += 1
+
+
+@dataclass
+class _Assembly:
+    """§6.1 steps 1-4 and every row's expression (not yet a constraint): the model with its
+    variables, decisions, links and blocks, built with the eliminated zero flows (§17.1) as the
+    constant +0.0."""
+
+    model: Any
+    bounds: list[tuple[float | None, float | None]]
+    centers: list[float]
+    half_widths: list[float]
+    holders: list[EFHolder]
+    holder_inputs: list[tuple[int, ...]]
+    ef_names: dict[Callable[..., float], str]
+    link_rows: list[dict[str, Any]]
+    link_scales: list[float]
+    output_rows: list[dict[str, Any]]
+    output_starts: list[float]
+    output_scales: list[float]
+    symbols: dict[str, Any]
+    block_outputs: dict[str, Any]
+    parameters: dict[str, Any]
+    #: Every row's expression by equation id, but those in `skip` (the zero-flow pins).
+    built: dict[str, Any]
 
 
 def project(
@@ -454,12 +565,16 @@ def project(
     `PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)` with the first id, in spec order, on which the two
     differ; an id that is not an equation of the spec is a `ValueError`.
 
+    The flows exactly 0.0 at x₀ are then eliminated as constants with the rows that pin them
+    (`M05-zero-flow-v1`, module docstring), before the model TRF sees is built.
+
     `shape_check="exempt_oracle"` is TR-E1's alone (R-278): the shape check's verdict is recorded
     but does not refuse.
 
     `variable_bounds` tightens named variables' bounds beyond their kind's (§7.1: a truth's hard
     domain on its inlet T and P): each bound is the intersection, and the source map records the
-    result. A name that is not a variable is a `ValueError`."""
+    result. A name that is not a variable, or an eliminated zero flow (R-300 E5), is a
+    `ValueError`."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
@@ -467,6 +582,159 @@ def project(
     unknown_rows = sorted((requested or frozenset()) - set(spec.equation_ids))
     if unknown_rows:
         raise ValueError(f"omitted_rows names {unknown_rows}, which are not equations of the spec")
+
+    # R-274's set, on the model with every variable.
+    assembly = _assemble(spec, x0, decisions, domain, external_links, variable_bounds, {}, ())
+    output_rows = assembly.output_rows
+    derivatives = _row_derivatives(
+        assembly.model, spec, x0, assembly.built, len(output_rows), len(decisions)
+    )
+    starts_by_key = {
+        f"{row['block_id']}.{row['output_id']}": value
+        for row, value in zip(output_rows, assembly.output_starts, strict=True)
+    }
+    elimination, residuals_x0 = _eliminate(spec, x0, starts_by_key, derivatives.x, domain)
+    omitted = {row.row_id for row in elimination}
+    if requested is not None and requested != omitted:
+        subject = next(
+            name for name in spec.equation_ids if (name in requested) != (name in omitted)
+        )
+        raise ProjectionRefusedError(
+            "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+            subject,
+            f"the caller omits {sorted(requested)}; the certified alias elimination omits "
+            f"{sorted(omitted)}",
+        )
+
+    # §17.1 (R-296): the exact-zero flows and their pins leave the projection together.
+    zero = _eliminate_zero_flows(
+        spec, x0, assembly, omitted, residuals_x0, derivatives, external_links
+    )
+    constants = {entry.variable_id: normalize_zero(0.0) for entry in zero}
+    pins = frozenset(entry.row_id for entry in zero)
+    bounded = sorted(set(constants) & set(variable_bounds or {}))
+    if bounded:
+        raise ValueError(f"variable_bounds names {bounded}, which are eliminated zero flows")
+    if constants:
+        assembly = _assemble(
+            spec, x0, decisions, domain, external_links, variable_bounds, constants, pins
+        )
+    model = assembly.model
+    output_rows, output_scales = assembly.output_rows, assembly.output_scales
+    symbols, block_outputs, parameters = (
+        assembly.symbols,
+        assembly.block_outputs,
+        assembly.parameters,
+    )
+
+    # 5. Rows: the certified alias rows (R-274) and the zero-flow pins (R-296) are not projected.
+    row_ids = tuple(name for name in spec.equation_ids if name not in omitted and name not in pins)
+    expressions = [assembly.built[name] for name in row_ids]
+    model.row = pyo.Constraint(range(len(expressions)), rule=lambda m, i: expressions[i] == 0)
+
+    # 6. Inequalities.
+    inequality_expressions = [
+        _build(item.inequality_id, item.build, symbols, block_outputs, parameters, spec)
+        for item in inequalities
+    ]
+
+    def inequality_rule(m: Any, k: int) -> Any:
+        item = inequalities[k]
+        if item.sense == "<=":
+            return inequality_expressions[k] <= item.tightened()
+        return inequality_expressions[k] >= item.tightened()
+
+    model.ineq = pyo.Constraint(range(len(inequalities)), rule=inequality_rule)
+
+    # 7. Objective.
+    objective_expression = _build(
+        objective.objective_id, objective.build, symbols, block_outputs, parameters, spec
+    )
+    model.obj = pyo.Objective(
+        expr=objective_expression,
+        sense=pyo.minimize if objective.sense == "minimize" else pyo.maximize,
+    )
+
+    # Scaling (Ipopt `user-scaling`).
+    variable_ids = spec.variable_ids
+    projected = [index for index, name in enumerate(variable_ids) if name not in constants]
+    model.scaling_factor = pyo.Suffix(direction=pyo.Suffix.EXPORT)
+    for index in projected:
+        model.scaling_factor[model.x[index]] = 1.0 / scaling.column[variable_ids[index]]
+    for k, scale in enumerate(assembly.link_scales):
+        model.scaling_factor[model.w[k]] = 1.0 / scale
+        model.scaling_factor[model.link[k]] = 1.0 / scale
+    for g, scale in enumerate(output_scales):
+        model.scaling_factor[model.y[g]] = 1.0 / scale
+        model.scaling_factor[model.ydef[g]] = 1.0 / scale
+    for index, name in enumerate(row_ids):
+        model.scaling_factor[model.row[index]] = 1.0 / scaling.row[name]
+    model.scaling_factor[model.obj] = 1.0 / objective.scale
+
+    # Refusals, in §6.1's order (PARAMETER_NOT_DIFFERENTIABLE was raised by `_build`).
+    for subject, expression in (
+        *zip(row_ids, expressions, strict=True),
+        *(
+            (item.inequality_id, e)
+            for item, e in zip(inequalities, inequality_expressions, strict=True)
+        ),
+        (objective.objective_id, objective_expression),
+    ):
+        found = find_nonsmooth_node(expression)
+        if found is not None:
+            raise ProjectionRefusedError("PROJECTION_NONSMOOTH", subject, f"contains {found}")
+    _check_structure(model, spec, decisions, external_links, output_rows, len(decisions), projected)
+    shape = _shape_check(model, spec, row_ids, expressions, output_rows, external_links, projected)
+    if shape_check == "required" and shape.refusal is not None:
+        raise shape.refusal
+    certified = _certify(spec, scaling, decisions, elimination, residuals_x0, derivatives)
+
+    source_map = _source_map(
+        spec,
+        scaling,
+        assembly.bounds,
+        row_ids,
+        output_rows,
+        decisions,
+        assembly.centers,
+        assembly.half_widths,
+        assembly.link_rows,
+        inequalities,
+        objective,
+        certified,
+        shape.as_document(shape_check),
+        zero,
+    )
+    return Projection(
+        model=model,
+        spec=spec,
+        decisions=tuple(decisions),
+        centers=tuple(assembly.centers),
+        half_widths=tuple(assembly.half_widths),
+        holders=tuple(assembly.holders),
+        holder_inputs=tuple(assembly.holder_inputs),
+        row_ids=row_ids,
+        row_expressions=tuple(expressions),
+        ef_names=assembly.ef_names,
+        source_map=source_map,
+        scaling=scaling,
+        omitted_rows=certified,
+        zero_eliminated=zero,
+    )
+
+
+def _assemble(
+    spec: ProblemSpec,
+    x0: Mapping[str, float],
+    decisions: Sequence[DecisionSpec],
+    domain: Mapping[str, tuple[float, float]],
+    external_links: Sequence[ExternalLinkSpec],
+    variable_bounds: Mapping[str, tuple[float, float]] | None,
+    constants: Mapping[str, float],
+    skip: Collection[str],
+) -> _Assembly:
+    """§6.1 steps 1-4 and the row expressions, with `constants` (the eliminated zero flows, by
+    variable id) in place of their variables and the rows in `skip` (their pins) not built."""
     model = pyo.ConcreteModel(name=spec.label)
 
     # 1. Variables.
@@ -481,11 +749,16 @@ def project(
             float(low) if before_low is None else max(before_low, float(low)),
             float(high) if before_high is None else min(before_high, float(high)),
         )
+    projected = [index for index, name in enumerate(variable_ids) if name not in constants]
     model.x = pyo.Var(
-        range(len(variable_ids)),
-        initialize={index: float(x0[name]) for index, name in enumerate(variable_ids)},
+        projected if constants else range(len(variable_ids)),
+        initialize={index: float(x0[variable_ids[index]]) for index in projected},
         bounds=lambda m, index: bounds[index],
     )
+    symbols: dict[str, Any] = {
+        name: constants[name] if name in constants else model.x[index]
+        for index, name in enumerate(variable_ids)
+    }
 
     # 2. Decisions.
     centers: list[float] = []
@@ -539,7 +812,7 @@ def project(
         holder = EFHolder(f"link:{link.unit_id}", box, scales, kind="truth")
         holders.append(holder)
         holder_inputs.append(tuple(variable_index[name] for name in link.inlet_variable_ids))
-        inlet = [model.x[variable_index[name]] for name in link.inlet_variable_ids]
+        inlet = [symbols[name] for name in link.inlet_variable_ids]
         for coordinate, parameter in enumerate((link.x_param_id, link.dt_param_id)):
             k = 2 * position + coordinate
             name = f"ef_ext_{k}"
@@ -581,7 +854,7 @@ def project(
         )
         holders.append(holder)
         holder_inputs.append(tuple(variable_index[name] for name in feeding))
-        inputs = [model.x[variable_index[name]] for name in feeding]
+        inputs = [symbols[name] for name in feeding]
         for k, output_id in enumerate(block.output_ids):
             g = len(output_starts)
             name = f"ef_{g}"
@@ -609,119 +882,31 @@ def project(
     for g, row in enumerate(output_rows):
         block_outputs[f"{row['block_id']}.{row['output_id']}"] = model.y[g]
 
-    # 5. Rows: every row is built; the certified alias rows (R-274) are not projected.
-    symbols = {name: model.x[index] for index, name in enumerate(variable_ids)}
+    # 5. The rows' expressions (the constraints are made once the projected rows are known).
     built = {
         equation.equation_id: _build(
             equation.equation_id, equation.build, symbols, block_outputs, parameters, spec
         )
         for equation in spec.equations
+        if equation.equation_id not in skip
     }
-    derivatives = _row_derivatives(model, spec, x0, built, len(output_rows), len(decisions))
-    starts_by_key = {
-        f"{row['block_id']}.{row['output_id']}": value
-        for row, value in zip(output_rows, output_starts, strict=True)
-    }
-    elimination, residuals_x0 = _eliminate(spec, x0, starts_by_key, derivatives.x, domain)
-    omitted = {row.row_id for row in elimination}
-    if requested is not None and requested != omitted:
-        subject = next(
-            name for name in spec.equation_ids if (name in requested) != (name in omitted)
-        )
-        raise ProjectionRefusedError(
-            "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-            subject,
-            f"the caller omits {sorted(requested)}; the certified alias elimination omits "
-            f"{sorted(omitted)}",
-        )
-    row_ids = tuple(name for name in spec.equation_ids if name not in omitted)
-    expressions = [built[name] for name in row_ids]
-    model.row = pyo.Constraint(range(len(expressions)), rule=lambda m, i: expressions[i] == 0)
-
-    # 6. Inequalities.
-    inequality_expressions = [
-        _build(item.inequality_id, item.build, symbols, block_outputs, parameters, spec)
-        for item in inequalities
-    ]
-
-    def inequality_rule(m: Any, k: int) -> Any:
-        item = inequalities[k]
-        if item.sense == "<=":
-            return inequality_expressions[k] <= item.tightened()
-        return inequality_expressions[k] >= item.tightened()
-
-    model.ineq = pyo.Constraint(range(len(inequalities)), rule=inequality_rule)
-
-    # 7. Objective.
-    objective_expression = _build(
-        objective.objective_id, objective.build, symbols, block_outputs, parameters, spec
-    )
-    model.obj = pyo.Objective(
-        expr=objective_expression,
-        sense=pyo.minimize if objective.sense == "minimize" else pyo.maximize,
-    )
-
-    # Scaling (Ipopt `user-scaling`).
-    model.scaling_factor = pyo.Suffix(direction=pyo.Suffix.EXPORT)
-    for index, name in enumerate(variable_ids):
-        model.scaling_factor[model.x[index]] = 1.0 / scaling.column[name]
-    for k, scale in enumerate(link_scales):
-        model.scaling_factor[model.w[k]] = 1.0 / scale
-        model.scaling_factor[model.link[k]] = 1.0 / scale
-    for g, scale in enumerate(output_scales):
-        model.scaling_factor[model.y[g]] = 1.0 / scale
-        model.scaling_factor[model.ydef[g]] = 1.0 / scale
-    for index, name in enumerate(row_ids):
-        model.scaling_factor[model.row[index]] = 1.0 / scaling.row[name]
-    model.scaling_factor[model.obj] = 1.0 / objective.scale
-
-    # Refusals, in §6.1's order (PARAMETER_NOT_DIFFERENTIABLE was raised by `_build`).
-    for subject, expression in (
-        *zip(row_ids, expressions, strict=True),
-        *(
-            (item.inequality_id, e)
-            for item, e in zip(inequalities, inequality_expressions, strict=True)
-        ),
-        (objective.objective_id, objective_expression),
-    ):
-        found = find_nonsmooth_node(expression)
-        if found is not None:
-            raise ProjectionRefusedError("PROJECTION_NONSMOOTH", subject, f"contains {found}")
-    _check_structure(model, spec, decisions, external_links, output_rows, len(decisions))
-    shape = _shape_check(model, spec, row_ids, expressions, output_rows, external_links)
-    if shape_check == "required" and shape.refusal is not None:
-        raise shape.refusal
-    certified = _certify(spec, scaling, decisions, elimination, residuals_x0, derivatives)
-
-    source_map = _source_map(
-        spec,
-        scaling,
-        bounds,
-        row_ids,
-        output_rows,
-        decisions,
-        centers,
-        half_widths,
-        link_rows,
-        inequalities,
-        objective,
-        certified,
-        shape.as_document(shape_check),
-    )
-    return Projection(
+    return _Assembly(
         model=model,
-        spec=spec,
-        decisions=tuple(decisions),
-        centers=tuple(centers),
-        half_widths=tuple(half_widths),
-        holders=tuple(holders),
-        holder_inputs=tuple(holder_inputs),
-        row_ids=row_ids,
-        row_expressions=tuple(expressions),
+        bounds=bounds,
+        centers=centers,
+        half_widths=half_widths,
+        holders=holders,
+        holder_inputs=holder_inputs,
         ef_names=ef_names,
-        source_map=source_map,
-        scaling=scaling,
-        omitted_rows=certified,
+        link_rows=link_rows,
+        link_scales=link_scales,
+        output_rows=output_rows,
+        output_starts=output_starts,
+        output_scales=output_scales,
+        symbols=symbols,
+        block_outputs=block_outputs,
+        parameters=parameters,
+        built=built,
     )
 
 
@@ -847,8 +1032,10 @@ def _check_structure(
     links: Sequence[ExternalLinkSpec],
     output_rows: Sequence[Mapping[str, Any]],
     n_decisions: int,
+    projected: Sequence[int],
 ) -> None:
-    """Every declared variable in some constraint, and TRF's DOF count equal to the decisions."""
+    """Every declared variable in some constraint, and TRF's DOF count equal to the decisions.
+    `projected` are the spec positions of `x` (the eliminated zero flows are not variables)."""
     seen = ComponentSet()
     equalities = 0
     for constraint in model.component_data_objects(pyo.Constraint, active=True):
@@ -856,7 +1043,7 @@ def _check_structure(
         if constraint.equality:
             equalities += 1
     declared = [
-        *((model.x[i], name) for i, name in enumerate(spec.variable_ids)),
+        *((model.x[i], spec.variable_ids[i]) for i in projected),
         *((model.d[j], d.parameter_id) for j, d in enumerate(decisions)),
         *(
             (model.w[2 * p + c], parameter)
@@ -910,24 +1097,26 @@ def _shape_check(
     expressions: Sequence[Any],
     output_rows: Sequence[Mapping[str, Any]],
     links: Sequence[ExternalLinkSpec],
+    projected: Sequence[int],
 ) -> _ShapeVerdict:
     """R-278 (module docstring): the structural incidence of the projected equations on every
     variable but the decisions, with the link-EF outputs fixed and the property relations kept,
-    and whether it has a perfect matching. Called after the DOF check, so it is square."""
+    and whether it has a perfect matching. Called after the DOF check, so it is square. The
+    unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`."""
     import scipy.sparse as sp
     from scipy.sparse.csgraph import maximum_bipartite_matching
 
-    variable_index = {name: i for i, name in enumerate(spec.variable_ids)}
-    n_x, n_y = len(spec.variable_ids), len(output_rows)
+    variable_index = {spec.variable_ids[i]: c for c, i in enumerate(projected)}
+    n_x, n_y = len(projected), len(output_rows)
     link_parameters = [p for link in links for p in (link.x_param_id, link.dt_param_id)]
     unknown_names = [
-        *spec.variable_ids,
+        *(spec.variable_ids[i] for i in projected),
         *(f"{row['block_id']}.{row['output_id']}" for row in output_rows),
         *link_parameters,
     ]
     column = ComponentMap(
         [
-            *((model.x[i], i) for i in range(n_x)),
+            *((model.x[i], c) for c, i in enumerate(projected)),
             *((model.y[g], n_x + g) for g in range(n_y)),
             *((model.w[k], n_x + n_y + k) for k in range(len(link_parameters))),
         ]
@@ -938,7 +1127,8 @@ def _shape_check(
         for name, expression in zip(row_ids, expressions, strict=True)
     ]
     for g, row in enumerate(output_rows):
-        inputs = {variable_index[name] for name in spec.block_inputs[row["block_id"]]}
+        feeding = spec.block_inputs[row["block_id"]]
+        inputs = {variable_index[name] for name in feeding if name in variable_index}
         equations.append((f"ydef:{row['block_id']}.{row['output_id']}", sorted({n_x + g, *inputs})))
     for k, parameter in enumerate(link_parameters):
         equations.append((f"link:{parameter}", [n_x + n_y + k]))
@@ -1162,6 +1352,102 @@ def _certify(
     return tuple(certified)
 
 
+# -- the exact-zero flows (R-296) -----------------------------------------------------------------
+
+
+def _eliminate_zero_flows(
+    spec: ProblemSpec,
+    x0: Mapping[str, float],
+    assembly: _Assembly,
+    omitted: Collection[str],
+    residuals_x0: Mapping[str, float],
+    derivatives: _RowDerivatives,
+    links: Sequence[ExternalLinkSpec],
+) -> tuple[ZeroEliminated, ...]:
+    """`M05-zero-flow-v1` (module docstring) on the model with every variable: the candidates
+    Z₀, the certified pairs (j, e) found by repeated passes over the kept rows in spec order, and
+    the three refusals. Returns the pairs in variable order."""
+    variable_ids = spec.variable_ids
+    candidates = [
+        name
+        for name in variable_ids
+        if spec.variable_kinds.get(name) == "molar_flow" and float(x0[name]) == 0.0
+    ]
+    if not candidates:
+        return ()
+    model = assembly.model
+    # A row's structural incidence: the unknowns of the shape check (x, y, w) its expression
+    # contains — never the decisions, whose derivative is criterion (iii).
+    column = ComponentMap(
+        [
+            *((model.x[i], name) for i, name in enumerate(variable_ids)),
+            *((model.y[g], f"y[{g}]") for g in range(len(assembly.output_rows))),
+            *((model.w[k], f"w[{k}]") for k in range(len(assembly.link_rows))),
+        ]
+    )
+    incidence = {
+        name: frozenset(column[v] for v in identify_variables(expression) if v in column)
+        for name, expression in assembly.built.items()
+    }
+    position = {name: i for i, name in enumerate(spec.equation_ids)}
+    index = {name: i for i, name in enumerate(variable_ids)}
+    zero = set(candidates)
+    found: dict[str, ZeroEliminated] = {}
+    changed = True
+    while changed:
+        changed = False
+        for row in spec.equation_ids:
+            if row in omitted or any(entry.row_id == row for entry in found.values()):
+                continue
+            rest = incidence[row] - found.keys()
+            if len(rest) != 1:
+                continue
+            (j,) = rest
+            if j not in zero:
+                continue
+            e = position[row]
+            pivot = float(derivatives.x[e, index[j]])
+            if (
+                residuals_x0[row] == 0.0
+                and pivot != 0.0
+                and all(float(value) == 0.0 for value in derivatives.d[e])
+            ):
+                found[j] = ZeroEliminated(j, row, float(residuals_x0[row]), pivot)
+                changed = True
+    unpinned = [name for name in candidates if name not in found]
+    if unpinned:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{unpinned[0]}:unpinned",
+            f"the flows {unpinned} are exactly 0.0 at x0 and no kept row pins them alone with a "
+            "zero residual, a nonzero pivot and a zero decision tangent at x0 (R-296)",
+        )
+    pins = {entry.row_id for entry in found.values()}
+    redundant = [
+        row
+        for row in spec.equation_ids
+        if row not in omitted
+        and row not in pins
+        and incidence[row] & found.keys()
+        and not incidence[row] - found.keys()
+    ]
+    if redundant:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{redundant[0]}:redundant_row",
+            f"the rows {redundant} have no unknown left once the zero flows are eliminated (R-296)",
+        )
+    inputs = [name for link in links for name in link.inlet_variable_ids if name in found]
+    if inputs:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{inputs[0]}:link_input",
+            f"the eliminated flows {inputs} are inlet arguments of an external link; the FD policy "
+            "has no rule for a constant inlet coordinate (R-296)",
+        )
+    return tuple(found[name] for name in variable_ids if name in found)
+
+
 def _float_rows(
     spec: ProblemSpec,
     state: Mapping[str, float],
@@ -1193,12 +1479,14 @@ def _source_map(
     objective: ObjectiveSpec,
     omitted: Sequence[OmittedRow],
     shape_check: Mapping[str, Any],
+    zero: Sequence[ZeroEliminated],
 ) -> dict[str, Any]:
     """`projection-source-map-v1` (§6.2), without its `trf` part, which a run fills."""
     structure = structure_sha256(
         spec.variable_ids, spec.equation_ids, spec.parameter_ids, spec.row_accumulation
     )
     origins = {equation.equation_id: equation.origin for equation in spec.equations}
+    eliminated = {entry.variable_id for entry in zero}
     return {
         "schema_version": SOURCE_MAP_SCHEMA,
         "problem": {
@@ -1209,7 +1497,7 @@ def _source_map(
         },
         "variables": [
             {
-                "pyomo": f"x[{index}]",
+                "pyomo": None if name in eliminated else f"x[{index}]",
                 "variable_id": name,
                 "kind": spec.variable_kinds.get(name),
                 "column_scale": scaling.column[name],
@@ -1227,6 +1515,7 @@ def _source_map(
             for index, name in enumerate(row_ids)
         ],
         "omitted_rows": [row.as_document() for row in omitted],
+        "zero_eliminated": [entry.as_document() for entry in zero],
         "block_outputs": [dict(row) for row in output_rows],
         "decisions": [
             {

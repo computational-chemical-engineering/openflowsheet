@@ -51,15 +51,23 @@ BASIS_POLICY_ID: Final = "M05-basis-v1"
 
 def affine(value: float, gradient: Sequence[float], w0: Sequence[float], scale: float) -> EFBasis:
     """b(w) = (value + Σ_j gradient_j (w_j − w0_j)) / scale, an `affine_taylor` basis. At w = w₀
-    every term is an exact zero, so b(w₀) = value / scale bitwise (scale is a power of two)."""
+    every term is an exact zero, so b(w₀) = value / scale bitwise (scale is a power of two).
+
+    Terms are built for variable arguments only: an argument that is a float is an eliminated
+    zero flow, the constant +0.0 (R-296), whose term is the exact zero it has at w₀ — so TRF's
+    Taylor model has no column for it. A float that differs from its w0_j is a `ValueError`."""
     frozen_gradient = tuple(float(entry) for entry in gradient)
     frozen_w0 = tuple(float(entry) for entry in w0)
     frozen_value = float(value)
     frozen_scale = float(scale)
 
     def build(args: Sequence[Any]) -> Any:
-        terms = zip(frozen_gradient, args, frozen_w0, strict=True)
-        return (frozen_value + sum(g * (a - w) for g, a, w in terms)) / frozen_scale
+        terms = list(zip(frozen_gradient, args, frozen_w0, strict=True))
+        moved = [a for _, a, w in terms if isinstance(a, float) and a != w]
+        if moved:
+            raise ValueError(f"a constant argument {moved!r} differs from its start value")
+        variable = [(g, a, w) for g, a, w in terms if not isinstance(a, float)]
+        return (frozen_value + sum(g * (a - w) for g, a, w in variable)) / frozen_scale
 
     return EFBasis("affine_taylor", build)
 
@@ -75,11 +83,9 @@ def constant(value: float, scale: float) -> EFBasis:
 
 
 def _start(projection: Projection) -> dict[str, float]:
-    """x₀ as the projection's model holds it (its `x`, which TRF's clone starts from)."""
-    model = projection.model
-    return {
-        name: float(model.x[index].value) for index, name in enumerate(projection.spec.variable_ids)
-    }
+    """x₀ as the projection's model holds it (its `x`, which TRF's clone starts from, and +0.0
+    for each eliminated zero flow, R-296)."""
+    return projection.state_of()
 
 
 def affine_block_basis(projection: Projection) -> dict[str, EFBasis]:

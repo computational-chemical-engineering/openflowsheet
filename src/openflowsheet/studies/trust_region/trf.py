@@ -44,9 +44,11 @@ is one TRF requested at that state, so it is all memo hits, recorded in the ledg
 only its labelling is guarded.
 
 For the outcomes that keep the clone, the projection's omitted rows are evaluated at the returned
-state and recorded as `TrfRun.omitted_rows_final` (R-274's fact 4). That is the hook P2 reads: P2
-(stage B's parent checks, design note §7.4) is not built yet, and a failed check there is
-`PROJECTION_DISAGREES`; the run's own outcome does not change.
+state and recorded as `TrfRun.omitted_rows_final` (R-274's fact 4), and so are the pins of its
+eliminated zero flows, `TrfRun.zero_pins_final` (R-296); the returned state is mapped back to
+every spec variable, with +0.0 for each eliminated flow, as `TrfRun.final_state`. Those are the
+hooks P2 reads: P2 (stage B's parent checks, design note §7.4) is not built yet, and a failed
+check there is `PROJECTION_DISAGREES`; the run's own outcome does not change.
 
 `stdout` capture is process-global, so there is **one TRF run per process**: a second concurrent
 call raises rather than interleaving.
@@ -161,6 +163,11 @@ class TrfRun:
     theta_recheck: float | None
     #: R-274's fact 4 at the returned state, for the outcomes in `RETURNS_MODEL` only.
     omitted_rows_final: OmittedRowsCheck | None = None
+    #: R-296: the zero-flow pins at the returned state, for the outcomes in `RETURNS_MODEL` only.
+    zero_pins_final: OmittedRowsCheck | None = None
+    #: The returned state through the projection's inverse map (`Projection.state_of`: +0.0 for
+    #: every eliminated zero flow, R-296), for the outcomes in `RETURNS_MODEL` only.
+    final_state: Mapping[str, float] | None = None
 
     def source_map(self, projection: Projection) -> dict[str, Any]:
         """The projection's source map with this run's `trf` part filled."""
@@ -344,6 +351,8 @@ def _run(
             theta=accepted.theta,
         )
     omitted_rows_final = projection.omitted_rows_at(model) if model is not None else None
+    zero_pins_final = projection.zero_pins_at(model) if model is not None else None
+    final_state = projection.state_of(model) if model is not None else None
     return TrfRun(
         run_id=run_id,
         outcome=outcome,
@@ -366,6 +375,8 @@ def _run(
         basis=kinds,
         theta_recheck=theta_recheck,
         omitted_rows_final=omitted_rows_final,
+        zero_pins_final=zero_pins_final,
+        final_state=final_state,
     )
 
 
@@ -375,10 +386,10 @@ def _preflight(projection: Projection) -> TruthRefused | None:
 
     Stops at the first refusal: the run is refused whatever the other holders would answer, and a
     truth's evaluation is the expensive request the budgets exist for."""
-    model = projection.model
+    state = list(projection.state_of().values())
     for holder, inputs in zip(projection.holders, projection.holder_inputs, strict=True):
         try:
-            holder.request_values([float(pyo.value(model.x[i])) for i in inputs])
+            holder.request_values([state[i] for i in inputs])
         except TruthRefused as refusal:
             return refusal
     return None

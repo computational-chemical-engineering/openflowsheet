@@ -7,7 +7,11 @@
 - The projection of the coupled route's inner problem (the loop at S0's certified state for
   TR-E2: T_in = 673.15 K, w the reference's coupled w) passes R-278's shape check
   (`PROJECTION_IMPLICIT_EF_INPUT` is not raised: C1 is forward by construction) and omits exactly
-  the rows R-274's elimination computes — the zero-ΔP loop's two pressure alias rows.
+  the rows R-274's elimination computes — the zero-ΔP loop's two pressure alias rows — and
+  eliminates the five flows exactly 0.0 at x₀ with their pins (R-296, §17.1 (a), (b)): the
+  shape check's matching goes from 73 × 73 to 68 × 68, with DOF = 1.
+- TRF on TR-E2 gets past iteration 1 with no `TRF_TRUTH_REFUSED`, and every request any holder
+  serves has +0.0, bitwise, at an eliminated flow's position (§17.1 (d)).
 - G4 (a)-(e) at that state and at that state with every variable perturbed by a seeded relative
   1e-3: residuals ≤ 1e-12 scaled, x-Jacobian ≤ 1e-10, decision columns ≤ 1e-7 against CasADi's
   central difference, a bijective source map with DOF = n_d = 1, no nonsmooth node.
@@ -178,8 +182,8 @@ def test_c1_passes_the_shape_check_and_omits_exactly_the_computed_alias_rows() -
     shape = source["shape_check"]
     assert (shape["status"], shape["matched"], shape["size"], shape["refusal"]) == (
         "pass",
-        73,
-        73,
+        68,
+        68,
         None,
     )
     omitted = source["omitted_rows"]
@@ -188,8 +192,79 @@ def test_c1_passes_the_shape_check_and_omits_exactly_the_computed_alias_rows() -
         "splitter:C1SPLIT-P:recycle",
     ]
     assert all(row["residual_x0"] == 0.0 for row in omitted)
-    assert len(source["rows"]) == len(projection.spec.equation_ids) - 2 == 62
+    assert len(source["rows"]) == len(projection.spec.equation_ids) - 2 - 5 == 57
     assert len(source["external_links"]) == 2 and len(source["decisions"]) == 1
+
+
+def test_r296_the_five_exact_zero_flows_are_eliminated_with_their_pins() -> None:
+    """§17.1 (a): `S1.n.NH3` with the feed's specification row, `S6.n.{H2,N2,Ar,CH4}` with the
+    flash's four zero rows (`zero_row`, which sit in the light gases' equilibrium slots), each
+    with residual 0.0 and a nonzero pivot at x₀; (b) DOF = n_d = 1 (`structure`)."""
+    _, projection, state = tr_e2()
+    eliminated = projection.source_map["zero_eliminated"]
+    assert [(z["variable_id"], z["row_id"]) for z in eliminated] == [
+        ("S1.n.NH3", "makeup:C1FEED-n:NH3"),
+        ("S6.n.H2", "flash:C1FL-equilibrium:H2"),
+        ("S6.n.N2", "flash:C1FL-equilibrium:N2"),
+        ("S6.n.Ar", "flash:C1FL-equilibrium:Ar"),
+        ("S6.n.CH4", "flash:C1FL-equilibrium:CH4"),
+    ]
+    assert all(z["residual_x0"] == 0.0 and abs(z["dr_dx"]) > 0.0 for z in eliminated)
+    zero = [
+        name
+        for name in projection.spec.variable_ids
+        if projection.spec.variable_kinds.get(name) == "molar_flow" and state[name] == 0.0
+    ]
+    assert zero == [z["variable_id"] for z in eliminated]
+    structure(projection)
+
+
+def test_r296_trf_on_tr_e2_passes_iteration_1_with_exact_zero_arguments(
+    monkeypatch: pytest.MonkeyPatch, record_property: Any
+) -> None:
+    """§17.1 (d): before R-296 TRF stopped before iteration 1, `TRF_TRUTH_REFUSED(
+    property_domain_error:S1_Hdot_V)` at S1.n.NH3 = −3.4e-27. Every argument tuple any holder
+    is asked about holds +0.0, bitwise, at each eliminated flow's position. (The run's outcome
+    and optimum are WO-8's acceptance, not this test's.)"""
+    import struct
+
+    from openflowsheet.studies.trust_region import holders
+    from openflowsheet.studies.trust_region.basis import m05_basis
+    from openflowsheet.studies.trust_region.trf import run_trf
+    from openflowsheet.studies.trust_region.trf_state import TRF_CONFIG_V1
+
+    seen: dict[str, list[tuple[float, ...]]] = {}
+    key = holders.EFHolder._key
+
+    def spy(self: Any, args: Any) -> Any:
+        seen.setdefault(self.name, []).append(tuple(float(a) for a in args[: self.n_in]))
+        return key(self, args)
+
+    monkeypatch.setattr(holders.EFHolder, "_key", spy)
+    _, projection, _ = tr_e2()
+    result = run_trf(
+        projection,
+        {**dict(TRF_CONFIG_V1), "step_size_termination": 0.0125},
+        basis=m05_basis(projection),
+    )
+    record_property("M05.R296.tr_e2.outcome", result.outcome)
+    record_property("M05.R296.tr_e2.iterations", len(result.iterations))
+    assert not result.outcome.startswith("TRF_TRUTH_REFUSED"), result.outcome
+    assert result.refusal is None and max(record.k for record in result.iterations) >= 1
+    ids, gone = projection.spec.variable_ids, projection.eliminated_ids
+    checked = 0
+    for holder, inputs in zip(projection.holders, projection.holder_inputs, strict=True):
+        positions = [k for k, i in enumerate(inputs) if ids[i] in gone]
+        for arguments in seen.get(holder.name, []) if positions else ():
+            for k in positions:
+                assert struct.pack(">d", arguments[k]) == bytes(8), (holder.name, k, arguments)
+                checked += 1
+    record_property("M05.R296.tr_e2.zero_arguments_checked", checked)
+    assert checked > 0
+    if result.zero_pins_final is not None:
+        assert result.zero_pins_final.status == "pass"
+        assert result.final_state is not None
+        assert all(result.final_state[name] == 0.0 for name in gone)
 
 
 # == G4 (C1) ====================================================================================

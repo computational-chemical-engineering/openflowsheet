@@ -42,6 +42,23 @@ JACOBIAN_TOLERANCE = 1e-10
 DECISION_TOLERANCE = 1e-7
 FD_STEP = 1e-6
 
+#: R-296 (§17.1 (f)): the SYN-001 registered states holding flows exactly 0.0 at x₀ that rule
+#: `M05-zero-flow-v1` cannot pair — the heater-flash's vapor flows S3.vap.{A,B,C} and S3.V at P1
+#: and P2, and B2's flash vapor S4.n.{A,B,C} and S4.N — are pinned only jointly (each sits in an
+#: equilibrium row and a total-flow row, never alone in a row), so the projection refuses them
+#: `PROJECTION_ZERO_FLOW(<id>:unpinned)`. The ruling expected (a)-(c) to apply; escalated to the
+#: design lane (M05 build log Z2). The tests at these states are strict xfails until it rules.
+SYN001_UNPINNED: Mapping[str, str] = {"P1": "S3.vap.A", "P2": "S3.vap.A", "B2": "S4.n.A"}
+SYN001_UNPINNED_REASON = (
+    "R-296: SYN-001's exact-zero flows at P1, P2, B2 have no single-incidence pin, so the "
+    "projection is refused PROJECTION_ZERO_FLOW(<id>:unpinned); escalated (M05 build log Z2)"
+)
+_UNPINNED_XFAIL = pytest.mark.xfail(strict=True, reason=SYN001_UNPINNED_REASON)
+SYN001_STATES = [
+    pytest.param(state, marks=_UNPINNED_XFAIL) if state in SYN001_UNPINNED else state
+    for state in ("P1", "P2", "P3", "B1", "B2", "B3")
+]
+
 
 def dense(matrix: TwinMatrix) -> npt.NDArray[np.float64]:
     out = np.zeros((len(matrix.row_ids), len(matrix.col_ids)))
@@ -64,11 +81,18 @@ def structure(projection: Any) -> None:
     source = projection.source_map
     decision_ids = tuple(d.parameter_id for d in projection.decisions)
 
-    # (a) bijections, and the DOF TRF will count.
+    # (a) bijections, and the DOF TRF will count. An eliminated zero flow (R-296) is listed with
+    # no Pyomo variable; its pin is not a row.
+    eliminated = projection.eliminated_ids
     assert [v["variable_id"] for v in source["variables"]] == list(spec.variable_ids)
     assert [v["pyomo"] for v in source["variables"]] == [
-        f"x[{i}]" for i in range(len(spec.variable_ids))
+        None if name in eliminated else f"x[{i}]" for i, name in enumerate(spec.variable_ids)
     ]
+    assert [z["variable_id"] for z in source["zero_eliminated"]] == [
+        name for name in spec.variable_ids if name in eliminated
+    ]
+    pins = {z["row_id"] for z in source["zero_eliminated"]}
+    assert not pins & set(projection.row_ids)
     assert [r["equation_id"] for r in source["rows"]] == list(projection.row_ids)
     assert len(set(projection.row_ids)) == len(projection.row_ids)
     assert set(projection.row_ids) <= set(spec.equation_ids)
@@ -120,7 +144,9 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     jacobian_x = dense(twin.jacobian_x(x, parameters))
     rows = [spec.equation_ids.index(name) for name in projection.row_ids]
     row_scales = projection.scaling.row_vector(projection.row_ids)
-    column_scales = projection.scaling.column_vector(spec.variable_ids)
+    # (b) and (c) over the projected rows and columns (R-296: an eliminated flow is no column).
+    columns = list(projection.variable_indices)
+    column_scales = projection.scaling.column_vector([spec.variable_ids[i] for i in columns])
 
     # (b) residuals.
     pyomo_rows = np.array([float(pyo.value(e)) for e in projection.row_expressions])
@@ -130,7 +156,7 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     assert np.all(scaled <= allowed), np.max(scaled / allowed)
 
     # (c) the x-Jacobian: ∂r/∂x + ∂r/∂y · ∂y/∂x, with ∂y/∂x from y = s · EF(inputs).
-    xs = [model.x[i] for i in range(len(spec.variable_ids))]
+    xs = [model.x[i] for i in columns]
     ys = [model.y[g] for g in range(len(source["block_outputs"]))]
     dy_dx = np.zeros((len(ys), len(xs)))
     for g in range(len(ys)):
@@ -141,7 +167,7 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     for i, expression in enumerate(projection.row_expressions):
         gradient = differentiate(expression, wrt_list=xs + ys, mode=Modes.reverse_numeric)
         pyomo_jacobian[i] = np.array(gradient[: len(xs)]) + np.array(gradient[len(xs) :]) @ dy_dx
-    casadi_jacobian = jacobian_x[rows]
+    casadi_jacobian = jacobian_x[rows][:, columns]
     j_scale = row_scales[:, None] / column_scales[None, :]
     allowed_j = JACOBIAN_TOLERANCE * (np.abs(casadi_jacobian) + j_scale)
     jacobian_error = np.abs(pyomo_jacobian - casadi_jacobian)
@@ -165,7 +191,19 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     decision_error = np.abs(pyomo_decisions - fd)
     assert np.all(decision_error <= allowed_d), np.max(decision_error / allowed_d)
 
+    # R-296's criteria (i) and (ii) against CasADi: each pin's residual at x₀ and its pivot.
+    pin_errors = [0.0]
+    for entry in source["zero_eliminated"]:
+        e = spec.equation_ids.index(entry["row_id"])
+        j = spec.variable_ids.index(entry["variable_id"])
+        assert residual[e] == entry["residual_x0"] == 0.0, entry
+        allowed_pin = JACOBIAN_TOLERANCE * (abs(jacobian_x[e, j]) + 1.0)
+        pin_errors.append(abs(entry["dr_dx"] - jacobian_x[e, j]) / allowed_pin)
+        assert pin_errors[-1] <= 1.0, entry
+        assert entry["dr_dx"] != 0.0
+
     return {
+        "pin": float(max(pin_errors)),
         "residual_abs_max": float(np.max(np.abs(pyomo_rows - casadi_rows))),
         "residual": float(np.max(scaled / allowed)),
         "jacobian": float(np.max(jacobian_error / allowed_j)),
@@ -286,6 +324,7 @@ def test_a_spec_with_partial_kinds_is_refused() -> None:
     assert base.variable_kinds == {}  # TR-E1 itself declares none
 
 
+@_UNPINNED_XFAIL
 def test_syn001_is_projected_in_k03s_scales() -> None:
     """The suffixes and the source map carry K03's `Scaling.from_spec`, and nothing else."""
     from openflowsheet.numerics.scaling import SCALE_PROVENANCE, Scaling
@@ -463,7 +502,7 @@ def syn001_alias_rows(state: str) -> Any:
 SYN001_ALIAS_ROWS = ["U-FLASH:FLASH-P:inlet", "U-SPLIT:SPLIT-P:recycle"]
 
 
-@pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
+@pytest.mark.parametrize("state", SYN001_STATES)
 def test_syn001_s_alias_rows_are_computed_not_supplied(state: str) -> None:
     """R-274: with no `omitted_rows`, the projection omits exactly the rows M03's elimination does
     — SYN-001's two pressure alias rows, on the same retained paths — and records their four
@@ -497,6 +536,7 @@ def test_syn001_s_alias_rows_are_computed_not_supplied(state: str) -> None:
     assert projection.omitted_rows_at(projection.model).status == "pass"
 
 
+@_UNPINNED_XFAIL
 def test_syn001_a_supplied_set_equal_to_the_certified_one_is_accepted() -> None:
     computed, _ = syn001_projection("P1")
     supplied, _ = syn001_projection("P1", omitted_rows=list(reversed(SYN001_ALIAS_ROWS)))
@@ -522,6 +562,7 @@ def test_syn001_a_supplied_set_other_than_the_certified_one_is_refused(
     assert refused.value.reason == f"PROJECTION_OMITTED_ROW_UNCERTIFIED({subject})"
 
 
+@_UNPINNED_XFAIL
 def test_syn001_a_supplied_row_the_elimination_keeps_is_refused() -> None:
     from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
 
@@ -532,7 +573,7 @@ def test_syn001_a_supplied_row_the_elimination_keeps_is_refused() -> None:
     assert refused.value.reason == f"PROJECTION_OMITTED_ROW_UNCERTIFIED({kept})"
 
 
-@pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
+@pytest.mark.parametrize("state", SYN001_STATES)
 def test_syn001_projects_with_dof_equal_to_the_decisions(state: str) -> None:
     """G4 (a) and (e) at M03's registered states: the source map is a bijection, TRF's DOF count
     is the 5 decisions, and no projected expression has a nonsmooth node."""
@@ -553,7 +594,7 @@ def test_syn001_projects_with_dof_equal_to_the_decisions(state: str) -> None:
             assert entry["bounds"] == [None, None]
 
 
-@pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
+@pytest.mark.parametrize("state", SYN001_STATES)
 def test_g4_syn001_at_the_registered_states(state: str, record_property: Any) -> None:
     """G4 (a)-(e) at M03's registered states, judged in the projection's scales, which are K03's
     registered nominals for SYN-001's declared kinds (R-275; `Scaling.from_spec`, as M03's
@@ -722,10 +763,20 @@ def test_r278_the_at_toy_passes() -> None:
     assert (check["status"], check["matched"], check["size"]) == ("pass", 5, 5)
 
 
-@pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
+@pytest.mark.parametrize("state", SYN001_STATES)
 def test_r278_syn001_passes_at_the_registered_states(state: str, record_property: Any) -> None:
     projection, _ = syn001_projection(state)
     check = projection.source_map["shape_check"]
     record_property(f"M05.R278.syn001.{state}.matched", check["matched"])
     assert check["status"] == "pass" and check["refusal"] is None
     assert check["matched"] == check["size"] > 0
+
+
+@pytest.mark.parametrize("state", sorted(SYN001_UNPINNED))
+def test_r296_syn001_s_unpinned_zero_flows_are_refused(state: str) -> None:
+    """§17.1 (f), measured: what the strict xfails above are waiting on."""
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    with pytest.raises(ProjectionRefusedError) as refused:
+        syn001_projection(state)
+    assert refused.value.reason == f"PROJECTION_ZERO_FLOW({SYN001_UNPINNED[state]}:unpinned)"
