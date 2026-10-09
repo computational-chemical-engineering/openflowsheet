@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 from typing import Any, Final
 
@@ -49,8 +48,9 @@ PORTS: Final[tuple[Port, ...]] = (
 EQUATIONS: Final[tuple[DeclaredEquation, ...]] = ()
 
 
-@cache
 def _artifact_hash() -> str:
+    """The module source's SHA-256. Not cached: T07 G20 lists every per-process cache, and this
+    one would only save a file read per manifest (build log D37 (f))."""
     return file_sha256(Path(__file__))
 
 
