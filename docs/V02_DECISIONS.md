@@ -514,3 +514,8 @@ Grep, don't read whole. Newest at the bottom.
   alias elimination, but this widens verifier/solver sharing (R-016) and needs a design-lane look. Finding: TRF 6.10.1
   fails its subproblem as infeasible on `y − 90z = 0` (EF output tied to decisions alone) independent of the projection —
   probe before C1. Test-order dependence (`-k g3` alone) noted. M05 now waits for M02 + M04 merges (WO-4+).
+- DECISION: M04 continues on M02's completed base — `opus-engineer` merges the fixed commit `bfbad26` (M02 WO-1…7, gate
+  green at `6a46cdd`) into `wp/M04` and builds WO-4, 5, 6. Alternative: wait for M02 to merge to main. Reversible by:
+  reverting that merge; M02's later commits merge cumulatively.
+- `opus-engineer` diagnosis probe of the TRF infeasible-subproblem shape (`y − 90z`), with C1 formulation implications
+  (scratchpad only, no src commits).
