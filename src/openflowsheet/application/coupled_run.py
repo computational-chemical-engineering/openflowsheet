@@ -239,9 +239,14 @@ def answer_of(
     envelope: Mapping[str, Any],
     attempts: Sequence[Mapping[str, Any]],
     cache_hit: bool,
+    *,
+    attributed: Mapping[str, Any] | None = None,
 ) -> ExternalAnswer:
     """An experiment's outcome as the coupling reads it (§4.2–§4.3): transient when there is no
-    deterministic result; `ok`, `zero_flow` or a deterministic refusal from its envelope."""
+    deterministic result; `ok`, `zero_flow` or a deterministic refusal from its envelope.
+    `attributed` is the request the answer is attributed to (R-317 (a)), `request` (the one sent)
+    unless a replay recomputed it."""
+    attributed_request = dict(request if attributed is None else attributed)
     documents = {
         "request": dict(request),
         "result": None if result is None else dict(result),
@@ -250,11 +255,17 @@ def answer_of(
     }
     code = str(envelope["code"])
     if result is None:
-        return ExternalAnswer("transient", code, documents=documents)
+        return ExternalAnswer(
+            "transient", code, documents=documents, attributed_request=attributed_request
+        )
     if envelope["status"] != "ok":
-        return ExternalAnswer("refused", code, documents=documents)
+        return ExternalAnswer(
+            "refused", code, documents=documents, attributed_request=attributed_request
+        )
     if code == "ZERO_FLOW":
-        return ExternalAnswer("zero_flow", code, documents=documents)
+        return ExternalAnswer(
+            "zero_flow", code, documents=documents, attributed_request=attributed_request
+        )
     floors = _floors(result, envelope)
     return ExternalAnswer(
         "ok",
@@ -264,6 +275,7 @@ def answer_of(
         floor_xi=None if floors is None else floors[0],
         floor_T=None if floors is None else floors[1],
         documents=documents,
+        attributed_request=attributed_request,
     )
 
 
@@ -409,7 +421,11 @@ class RecordedExperiments:
                     f"external_result({k}, {unit.unit_id}){line}"
                     for line in differences(envelope, result["envelope"], policy_id=self.policy_id)
                 ]
-        return answer_of(recorded, result, envelope, entry["attempts"], entry["cache_hit"])
+        # R-317 (a): the rerun's record embeds the recorded (served) documents; the answer is
+        # attributed to the request recomputed here, at the rerun's inlet.
+        return answer_of(
+            recorded, result, envelope, entry["attempts"], entry["cache_hit"], attributed=request
+        )
 
     def frozen(self, variant: Variant) -> Mapping[str, Any] | None:
         for entry in self.record["frozen"].values():
@@ -617,7 +633,11 @@ def coupling_evidence(solved: CoupledSolve, state: Mapping[str, float]) -> Exter
         entry = final["units"][unit.unit_id]
         inlet = inlet_of(binding, unit, state)
         x_hat, dt_hat = coupling.w[unit.unit_id]
-        equal = _inputs_equal(entry["request"], inlet)
+        # R-317 (a): the certified inlet against the request the answer is attributed to — live,
+        # the request sent; in a replay, the one recomputed at the rerun's inlet.
+        answer = coupling.answers[unit.unit_id]
+        attributed = answer.attributed_request
+        equal = _inputs_equal(entry["request"] if attributed is None else attributed, inlet)
         n_tot = inlet.n_tot
         xi_value = abs(entry["xi_E"] - x_hat * inlet.n_key) / n_tot if n_tot > 0.0 else 0.0
         t_value = abs(entry["T_E"] - inlet.T - dt_hat)

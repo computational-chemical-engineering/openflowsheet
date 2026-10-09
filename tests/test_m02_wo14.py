@@ -13,8 +13,10 @@ D8's coupled replay digests.
 - D8 (R-308), on the stand-in loop (G8 (a)/(d)'s revision): RP-1, rebuilding the final inner model
   at the record's final w reproduces the recorded `constants_sha256`; RP-2, a rerun whose final w
   is one ulp off (a test seam on the driver's clip) is `MATCH` with `bitwise_floats: false`, its
-  constants digest differing; RP-3, a bundle whose recorded final w is one ulp from the w its digest
-  was computed at (a test seam on the inner solve's w) is `MISMATCH` `coupling_constants`. Item
+  constants digest differing, and its certificate VERIFIED (R-317 (a): the EXT-COUPLING checks
+  read the request recomputed at the rerun's inlet); RP-3, a bundle whose recorded final w is one
+  ulp from the w its digest was computed at (a test seam on the inner solve's w) is `MISMATCH`
+  `coupling_constants`. Item
   3's `coupling_iterate(<k>)` and item 1's shape rule are checked on their own.
 """
 
@@ -220,16 +222,6 @@ def test_rp1_the_recomputed_final_constants_equal_the_recorded(tmp_path: Path) -
     assert (report.verdict, report.bitwise_floats, report.differences) == ("MATCH", True, ())
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "RP-2 vs the stand-in loop (build log D93, escalated): a rerun whose final X̂ is moved in "
-        "its last bits is MISMATCH for reasons outside D8: the certificate's EXT-COUPLING checks "
-        "fail ('request inputs are not the certified state's inlet bit for bit': the rerun record "
-        "embeds the recorded request), and rho 2.0e-12 and r_xi -8.3e-17 are compared with the "
-        "record's exact 0 at 1e-9 relative, no registered floor"
-    ),
-)
 def test_rp2_a_rerun_one_ulp_off_at_the_final_w_matches_not_bitwise(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -238,7 +230,23 @@ def test_rp2_a_rerun_one_ulp_off_at_the_final_w_matches_not_bitwise(
     monkeypatch.setattr(coupling, "np", OneUlpOnTheFirstClip())
     reproduction = reproduced(tmp_path)
     report = reproduction.report
-    assert report.verdict == "MATCH", report.differences
+    # R-317 (a): the EXT-COUPLING checks compare the rerun's inlet with the request recomputed
+    # there, so the certificate stays VERIFIED (was: FAILED, false_success_detected).
+    certificate = read_artifact(tmp_path / "rerun", "solution-certificate.json")
+    assert certificate["verification_status"] == "VERIFIED"
+    assert certificate["false_success_detected"] is False
+    checks = [c for c in certificate["checks"] if c["id"].startswith("EXT-COUPLING:")]
+    assert len(checks) == 2 and all(c["result"] == "pass" for c in checks)
+    # Until the record's floats are classified (R-317 (b), review F1), exactly these differ.
+    differing = sorted(entry.split(":")[0] for entry in report.differences)
+    assert differing == [
+        "external-coupling.json<root>.iterations[1].rho",
+        "external-coupling.json<root>.iterations[1].units.reactor.r_xi",
+        "external_result(1, reactor)<root>.defect[0]",
+        "external_result(1, reactor)<root>.defect[2]",
+        "external_result(1, reactor)<root>.defect[4]",
+        "external_result(1, reactor)<root>.defect_rel",
+    ], report.differences
     assert report.bitwise_floats is False
     rerun = read_artifact(tmp_path / "rerun", "external-coupling.json")
     (final, recorded) = (rerun["iterations"][-1], record["iterations"][-1])
@@ -248,8 +256,9 @@ def test_rp2_a_rerun_one_ulp_off_at_the_final_w_matches_not_bitwise(
     assert final["w"][1] == recorded["w"][1]
     # The case exercises the old failure: the rerun's digest differs from the record's.
     assert final["inner"]["constants_sha256"] != recorded["inner"]["constants_sha256"]
+    assert reproduction.rerun_manifest is not None
     assert (
-        reproduction.manifest.constants_sha256
+        reproduction.rerun_manifest.constants_sha256
         != read_manifest(tmp_path / "bundle")[0].constants_sha256
     )
 

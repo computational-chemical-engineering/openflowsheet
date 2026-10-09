@@ -154,7 +154,11 @@ class ExternalAnswer:
     backtracks). `transient`: no deterministic outcome after the runner's retries (the run ends
     `EVALUATION_ERROR`). `code` is the boundary envelope's code; `documents` the unit's record
     members (`request`, `result`, `attempts`, `cache_hit`); `floor_xi` and `floor_T` the
-    propagated precision floors δξ (mol/s) and δT (K), `None` where the floor is zero."""
+    propagated precision floors δξ (mol/s) and δT (K), `None` where the floor is zero.
+    `attributed_request` is not a record member (register R-317 (a)): the request the answer is
+    attributed to, whose inputs EXT-COUPLING checks against the certified inlet bit for bit —
+    live, the request sent (`documents["request"]`); in a replay, the request recomputed at the
+    rerun's inlet, while `documents` keeps the recorded (served) one."""
 
     status: AnswerStatus
     code: str
@@ -163,6 +167,7 @@ class ExternalAnswer:
     floor_xi: float | None = None
     floor_T: float | None = None  # noqa: N815
     documents: Mapping[str, Any] = field(default_factory=dict)
+    attributed_request: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True)
