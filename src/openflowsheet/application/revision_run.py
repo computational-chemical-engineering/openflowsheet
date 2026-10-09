@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import copy
 import json
+import tempfile
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
@@ -54,8 +55,11 @@ from openflowsheet.application.coupled_run import (
     COUPLING_NAME,
     CouplingUnsupportedError,
     Experiments,
+    RecordedExperiments,
+    ReplayDivergenceError,
     compact_record,
     coupling_evidence,
+    coupling_record_problem,
     external_units,
     reproducibility_class,
     solve_coupled,
@@ -89,6 +93,7 @@ from openflowsheet.run.compare import KNOWN_POLICY_IDS
 from openflowsheet.run.identity import r0_projection, r0_sha256
 from openflowsheet.run.manifest import RunManifest, environment, policy_sha256, started_now
 from openflowsheet.run.replay import ReplayReport, Rerun, decide_mode, replay
+from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.verify.certificate import (
     CheckPolicy,
     SolutionCertificate,
@@ -710,6 +715,7 @@ def _solve_coupled(
             coupling=compact_record(solved.record),
             implicated=[unit.unit_id for unit in solved.units],
             plan=plan,
+            counters=run.counters,
         )
         return RouteRun(
             final,
@@ -1009,21 +1015,90 @@ def reproduce_bundle(
         return Reproduction(
             _inspected(directory, f"rerun_unsupported(route_unbound({solve_path}))")
         )
+    coupling: Mapping[str, Any] | None = None
+    if route.solve_path == "revision_coupled":
+        # M02 design note §7.2 step 1: the record against its schema, and each embedded request's
+        # key against its content.
+        if COUPLING_NAME not in manifest.artifacts:
+            at("compare")
+            return Reproduction(_inspected(directory, "rerun_unsupported(no_external_coupling)"))
+        coupling = read_artifact(directory, COUPLING_NAME)
+        problem = coupling_record_problem(coupling)
+        if problem is not None:
+            at("compare")
+            return Reproduction(
+                _inspected(directory, f"rerun_unsupported(external_coupling_invalid({problem}))")
+            )
     at("rerun")
-    rerun_manifest = run_revision_session(
-        route,
-        document,
-        Path(rerun_directory),
-        run_id=run_id,
-        policy=policy,
-        check_policy=check_policy,
-        policy_requested=str(recorded.get("policy_requested")),
-        # ADR 0024 D5: the recorded candidate, never a store lookup.
-        warm_start=_recorded_warm_start(recorded),
-    )
+    with tempfile.TemporaryDirectory(prefix="ofs-replay-") as scratch:
+        experiments = (
+            None
+            if coupling is None
+            else RecordedExperiments(
+                coupling,
+                provider=PrC1Provider(),
+                scratch=Path(scratch),
+                policy_id=manifest.numerical_policy_id,
+            )
+        )
+        try:
+            rerun_manifest = run_revision_session(
+                route,
+                document,
+                Path(rerun_directory),
+                run_id=run_id,
+                policy=policy,
+                check_policy=check_policy,
+                policy_requested=str(recorded.get("policy_requested")),
+                # ADR 0024 D5: the recorded candidate, never a store lookup.
+                warm_start=_recorded_warm_start(recorded),
+                experiments=experiments,
+            )
+        except ReplayDivergenceError as error:
+            at("compare")
+            return Reproduction(_diverged(directory, error.difference))
     artifacts = {
         name: read_artifact(Path(rerun_directory), name) for name in rerun_manifest.artifacts
     }
     at("compare")
+    # On `revision_coupled` the state is written over the final inner spec, whose columns and
+    # kinds are the route's binding's (w moves constants only).
     rerun_result = Rerun(artifacts, variable_kinds=declared_kinds(route.binding.spec))
-    return Reproduction(replay(directory, rerun_result), rerun_manifest)
+    report = replay(directory, rerun_result)
+    if experiments is not None and coupling is not None:
+        report = _replayed_from_record(report, experiments, coupling)
+    return Reproduction(report, rerun_manifest)
+
+
+def _diverged(directory: Path, difference: str) -> ReplayReport:
+    """§7.2: a recomputed external request that is not the record's — `MISMATCH`, naming it."""
+    report = replay(directory, None)
+    reasons = tuple(entry for entry in report.reasons if entry != "no rerun was supplied")
+    return replace(report, verdict="MISMATCH", reasons=reasons, differences=(difference,))
+
+
+def _replayed_from_record(
+    report: ReplayReport, experiments: RecordedExperiments, coupling: Mapping[str, Any]
+) -> ReplayReport:
+    """§7.2 step 4: `reasons` gains how the external results were obtained, `recorded_environment`
+    the frozen fingerprints, and an in-process re-evaluation that differs from the record is a
+    difference (`external_result(<k>, <unit>)…`)."""
+    reasons = (
+        *report.reasons,
+        f"external_results_replayed_from_record({experiments.replayed})",
+        *(
+            (f"external_results_reevaluated({experiments.reevaluated})",)
+            if experiments.reevaluated
+            else ()
+        ),
+    )
+    environment = {**report.recorded_environment, "external_fingerprints": coupling["frozen"]}
+    found = (*report.differences, *experiments.differences)
+    verdict = report.verdict if not experiments.differences else "MISMATCH"
+    return replace(
+        report,
+        reasons=reasons,
+        recorded_environment=environment,
+        differences=found,
+        verdict=verdict,
+    )

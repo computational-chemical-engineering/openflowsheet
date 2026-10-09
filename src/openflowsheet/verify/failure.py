@@ -476,13 +476,14 @@ def coupling_bundle(
     coupling: Mapping[str, Any],
     implicated: Sequence[str],
     plan: Any,
+    counters: Any,
 ) -> FailureBundle:
     """M02 design note §4.4 (ADR 0034 D3): the bundle of a coupled run that ended
     `COUPLING_NOT_CONVERGED` or `EVALUATION_ERROR` in its outer iteration. Every inner solve it
     judges converged, so the observations are the coupling's own: its reason and its record of
     iterates (`coupling`, the record without its embedded documents, which the run bundle's
-    `external-coupling.json` holds). The attempt tree is empty — no inner attempt failed — and
-    the replay identity is the last inner solve's plan's."""
+    `external-coupling.json` holds), and the last inner solve's counters. The attempt tree is
+    empty — no inner attempt failed — and the replay identity is the last inner solve's plan's."""
     taxonomy = TAXONOMY[outcome]
     iterations = coupling.get("iterations", [])
     return FailureBundle(
@@ -493,6 +494,17 @@ def coupling_bundle(
             "reason": reason,
             "outer_iterations": len({item["k"] for item in iterations if item["rho"] is not None}),
             "external_coupling": dict(coupling),
+            "counters": {
+                name: getattr(counters, name, 0)
+                for name in (
+                    "property_calls",
+                    "requested_evaluations",
+                    "cache_hits",
+                    "residual_calls",
+                    "jacobian_calls",
+                    "factorizations",
+                )
+            },
         },
         inferred_causes=(),
         implicated_sources=tuple(implicated),

@@ -119,6 +119,7 @@ RULES_OF = {
     "experiment_result": "result",
     "experiment_attempt": "attempt",
     "experiment_body": "experiment_body",
+    "experiment_coupling": "coupling",
 }
 
 

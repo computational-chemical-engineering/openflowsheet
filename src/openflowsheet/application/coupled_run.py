@@ -38,14 +38,18 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import Any, Final, Protocol
 
 from openflowsheet.adapters.experiments.backends import unmeasured_fingerprint
+from openflowsheet.adapters.experiments.request import build_request, experiment_key
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
+from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.adapters.variants import Variant
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compile.reference import state_vector
+from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.c1 import NU
 from openflowsheet.models.c1.reactor import KEY_COMPONENT, C1Reactor
@@ -63,6 +67,7 @@ from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import WarmStartCandidate
 from openflowsheet.run import solution_state
+from openflowsheet.run.compare import differences
 from openflowsheet.thermo import StreamState
 from openflowsheet.verify import CheckResult, Limitation
 from openflowsheet.verify.certificate import ExternalEvidence
@@ -74,9 +79,13 @@ __all__ = [
     "CouplingUnsupportedError",
     "Experiments",
     "LiveExperiments",
+    "RecordedExperiments",
+    "ReplayDivergenceError",
     "answer_of",
     "at_coupling",
+    "compact_record",
     "coupling_evidence",
+    "coupling_record_problem",
     "external_units",
     "reproducibility_class",
     "solve_coupled",
@@ -246,6 +255,141 @@ class LiveExperiments:
     def frozen(self, variant: Variant) -> Mapping[str, Any] | None:
         environment = self.runner.frozen_environment(variant)
         return None if environment is None else frozen_document(variant, environment)
+
+
+class ReplayDivergenceError(RuntimeError):
+    """§7.2: a recomputed request that is not the record's (`difference` names
+    `external_request(<k>, <unit>)`); the replay is a `MISMATCH` and nothing is served."""
+
+    def __init__(self, difference: str) -> None:
+        super().__init__(difference)
+        self.difference = difference
+
+
+def _identity(request: Mapping[str, Any]) -> dict[str, Any]:
+    """A request's identity members: everything but its inputs and its key (§7.2)."""
+    return {key: value for key, value in request.items() if key not in ("inputs", "experiment_key")}
+
+
+class RecordedExperiments:
+    """§7.2's recorded backend: the coupling re-run against `external-coupling.json`.
+
+    The n-th experiment the rerun asks for is the record's n-th (in its iterations' order). Its
+    request is recomputed at the rerun's inlet: the identity members (model, variant, provider,
+    n_tubes, sweep ratio, fingerprint) must equal the record's exactly, and the inputs agree
+    within ADR 0007 D2 (bitwise is observed, not required) — else `ReplayDivergenceError`. Then an
+    **out-of-process** result is served from the record (`replayed`), and an **in-process** one
+    (the stand-in) is re-evaluated in `scratch` and its envelope compared with the record's
+    (`differences`, under the current numerical policy); the rerun reads the re-evaluated
+    envelope. Either way the rerun's record embeds the recorded documents, so the two records
+    differ only where the coupling's numbers do."""
+
+    def __init__(
+        self, record: Mapping[str, Any], *, provider: Any, scratch: Path, policy_id: str
+    ) -> None:
+        self.record = record
+        self.provider = provider
+        self.policy_id = policy_id
+        self.queue = [
+            (int(item["k"]), unit_id, entry)
+            for item in record["iterations"]
+            for unit_id, entry in item["units"].items()
+        ]
+        self.position = 0
+        self.replayed = 0
+        self.reevaluated = 0
+        self.differences: list[str] = []
+        self.runner = ExperimentRunner(
+            ExperimentStore(scratch, ListArtifactSink()),
+            provider,
+            EvaluationContext(model_version="replay-from-record", constants_sha256="0" * 64),
+        )
+
+    def evaluate(self, unit: C1Reactor, variant: Variant, inlet: UnitInlet) -> ExternalAnswer:
+        if self.position >= len(self.queue):
+            raise ReplayDivergenceError(
+                f"external_request(-, {unit.unit_id}): the record holds no further experiment"
+            )
+        k, unit_id, entry = self.queue[self.position]
+        self.position += 1
+        where = f"external_request({k}, {unit.unit_id})"
+        if unit_id != unit.unit_id:
+            raise ReplayDivergenceError(f"{where}: the record's experiment is {unit_id}'s")
+        recorded = entry["request"]
+        state = StreamState(n=inlet.n, temperature=inlet.T, pressure=inlet.P)
+        fresh = None
+        if variant.kind == "out_of_process":
+            frozen = self.record["frozen"].get(unit.unit_id)
+            if frozen is None:
+                raise ReplayDivergenceError(f"{where}: the record froze no environment")
+            request = build_request(
+                variant,
+                self.provider.describe(),
+                unit.n_tubes,
+                unit.components,
+                state,
+                str(frozen["fingerprint_sha256"]),
+            )
+        else:
+            fresh = self.runner.run(variant, state, unit.components, unit.n_tubes)
+            request = dict(fresh.request)
+        if _identity(request) != _identity(recorded):
+            names = sorted(
+                key
+                for key in set(_identity(request)) | set(_identity(recorded))
+                if request.get(key) != recorded.get(key)
+            )
+            raise ReplayDivergenceError(f"{where}: identity differs in {names}")
+        found = differences(request["inputs"], recorded["inputs"], policy_id=self.policy_id)
+        if found:
+            raise ReplayDivergenceError(f"{where}.inputs{found[0]}")
+        result = entry["result"]
+        if fresh is None:
+            self.replayed += 1
+            envelope = result["envelope"] if result is not None else _transient(entry)
+        else:
+            self.reevaluated += 1
+            envelope = dict(fresh.envelope)
+            if result is None or fresh.result is None:
+                if (result is None) != (fresh.result is None):
+                    self.differences.append(f"external_result({k}, {unit.unit_id}): outcome class")
+            else:
+                self.differences += [
+                    f"external_result({k}, {unit.unit_id}){line}"
+                    for line in differences(envelope, result["envelope"], policy_id=self.policy_id)
+                ]
+        return answer_of(recorded, result, envelope, entry["attempts"], entry["cache_hit"])
+
+    def frozen(self, variant: Variant) -> Mapping[str, Any] | None:
+        for entry in self.record["frozen"].values():
+            if entry["variant_sha256"] == variant.sha256:
+                return dict(entry)
+        return None
+
+
+def coupling_record_problem(record: Any) -> str | None:
+    """§7.2 step 1: why `external-coupling.json` is not a record this replay can read — invalid
+    against `experiment.schema.json#/$defs/coupling`, or an embedded request whose key is not its
+    content's — or `None`."""
+    from openflowsheet.application.types import schema_errors
+
+    errors = schema_errors("experiment.schema.json#/$defs/coupling", record)
+    if errors:
+        return f"schema: {errors[0]}"
+    for item in record["iterations"]:
+        for unit_id, entry in item["units"].items():
+            request = entry["request"]
+            if request is not None and experiment_key(request) != request["experiment_key"]:
+                return f"request_key(k={item['k']}, {unit_id})"
+    return None
+
+
+def _transient(entry: Mapping[str, Any]) -> dict[str, Any]:
+    """A recorded transient outcome's envelope (the record keeps its attempts, not an envelope):
+    `external_<status>` of its last attempt, as the runner's refusal names it."""
+    attempts = entry["attempts"]
+    status = attempts[-1]["execution"]["status"] if attempts else "unknown"
+    return {"status": "error", "code": f"external_{status}"}
 
 
 # -- the coupled solve ----------------------------------------------------------------------------

@@ -8,6 +8,8 @@ document}`). Fixtures live under `tests/fixtures/schemas/<def>/{valid,invalid}/`
   pinned hash (the documents are package data, not run output; the record fixtures are).
 - **`experiment_body`** (WO-6): the body of an `experiment` job request for the registered
   stand-in at the nominal inlet below, as `JobRequest` normalizes it (every default written).
+- **`experiment` `coupling`** (WO-10): `external-coupling.json` of a real coupled run of
+  `C1-LOOP-M02-v1` with the stand-in, in a scratch project.
 - **`experiment` `request`, `result`, `attempt`**: one real `ExperimentRunner.run` of the
   registered stand-in at M01's nominal inlet scaled to 1000 tubes, in a scratch project; and one
   out-of-process attempt by the synthetic child (`tests/support/synthetic_child.py`) for the same
@@ -39,6 +41,7 @@ REFERENCES: Final[Mapping[str, str]] = {
     "experiment_result": "experiment.schema.json#/$defs/result",
     "experiment_attempt": "experiment.schema.json#/$defs/attempt",
     "experiment_body": "experiment.schema.json#/$defs/experiment_body",
+    "experiment_coupling": "experiment.schema.json#/$defs/coupling",
 }
 #: Members that differ between machines, code versions and runs; masked by `stable`.
 VOLATILE: Final = frozenset(
@@ -52,6 +55,9 @@ VOLATILE: Final = frozenset(
         "timing",
         "logs",
         "fingerprint",
+        # WO-10's record: the inner solves' digests (code version; float state).
+        "constants_sha256",
+        "state_sha256",
     }
 )
 SYNTHETIC_CHILD: Final = ROOT / "tests" / "support" / "synthetic_child.py"
@@ -217,8 +223,54 @@ def body_documents() -> dict[str, Any]:
     return _pair("experiment_body", "standin_nominal", normalized["body"])
 
 
+def coupling_documents() -> dict[str, Any]:
+    """WO-10: `external-coupling.json` of a real coupled run — `C1-LOOP-M02-v1` with the stand-in
+    (`benchmarks/m02/c1-loop-standin.json`) through `run_revision_session`, in a scratch project."""
+    import tempfile
+
+    from openflowsheet.adapters.experiments.runner import ExperimentRunner
+    from openflowsheet.adapters.experiments.store import ExperimentStore
+    from openflowsheet.application.coupled_run import LiveExperiments
+    from openflowsheet.application.policies import T06_REVISION_V2
+    from openflowsheet.application.revision_run import Route, run_revision_session, select_route
+    from openflowsheet.compiled import EvaluationContext
+    from openflowsheet.run.bundle import read_artifact
+    from openflowsheet.thermo.pr_c1 import PrC1Provider
+    from openflowsheet.verify.certificate import CheckPolicy
+
+    document = json.loads(
+        (ROOT / "benchmarks" / "m02" / "c1-loop-standin.json").read_text(encoding="utf-8")
+    )
+    route = select_route(document)
+    assert isinstance(route, Route)
+    with tempfile.TemporaryDirectory() as scratch:
+        root = Path(scratch)
+        runner = ExperimentRunner(
+            ExperimentStore(root / "records"),
+            PrC1Provider(),
+            EvaluationContext(model_version="m02-fixtures", constants_sha256="0" * 64),
+        )
+        run_revision_session(
+            route,
+            document,
+            root / "bundle",
+            run_id="run-fixture",
+            policy=T06_REVISION_V2,
+            check_policy=CheckPolicy(),
+            policy_requested="default",
+            experiments=LiveExperiments(runner),
+        )
+        record = read_artifact(root / "bundle", "external-coupling.json")
+    return _pair("experiment_coupling", "standin_loop", record)
+
+
 def documents() -> dict[str, Any]:
-    return {**variant_documents(), **body_documents(), **record_documents()}
+    return {
+        **variant_documents(),
+        **body_documents(),
+        **record_documents(),
+        **coupling_documents(),
+    }
 
 
 def serialize(document: Any) -> str:
