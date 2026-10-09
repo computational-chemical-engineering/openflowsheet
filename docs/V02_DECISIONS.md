@@ -703,3 +703,8 @@ Grep, don't read whole. Newest at the bottom.
   (`V4-corner-T653.15-P1.1e+07-r2.5-i0.03` S1), V5 21/21, V6 21/21 in both runs → **V5 selected**; timeout 450 s
   (slowest 149.7 s); G10v3 bitwise vs D83; G11v3-11 87×2 labels 0 differences. D100–D102, D105 to reviewer batch.
   WO-14 merged into `wp/M02` (`ba13ce3`; build log joined in D-order).
+
+- **M02 WO-12b done** (2026-10-09, `wp/M02` `7502515`/`14906e6`/`f4e8c56`, gate 8348, 1 xfail RP-2): v3 registered
+  (sha 8b92540a…, V5, `inert_min` 0.035, timeout 450 s); G12 under v3 met (ρ 0.292, VERIFIED, replay MATCH bitwise);
+  G12v3-2 both edges met (min inert request 0.039076 = 1.116× floor; slowest experiment 108.8 s). Digest 383b4e2c…
+  unmoved. M02 `reviewer` launched with the batched rulings.
