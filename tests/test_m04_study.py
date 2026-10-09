@@ -349,6 +349,8 @@ def test_a23_split_integrity_and_a_bitwise_refit(smooth_full: Study) -> None:
     ] == evidence["data"]
     for split in sp.SPLITS:
         assert splits[split]["keys_sha256"] == document_sha256(keys[split])
+    # Amendment 1 §A1.4: the evidence names its manifest by SHA-256.
+    assert evidence["subject"]["artifact_ref"] == document_sha256(manifest)
     # Refitting from the listed training records reproduces the coefficients bitwise.
     z, x, dt = [], [], []
     for key in keys["training"]:
@@ -381,7 +383,9 @@ def test_the_records_validate_and_carry_their_qualifications(
         manifest, evidence = study.manifest, study.outcome.evidence
         assert schema_errors("surrogate-manifest.schema.json", manifest) == []
         assert schema_errors("model-evidence.schema.json", evidence) == []
-        assert manifest["evidence_sha256"] == document_sha256(evidence)
+        assert evidence is not None
+        assert evidence["subject"]["artifact_ref"] == document_sha256(manifest)
+        assert "evidence_sha256" not in manifest
         assert manifest["qualifications"][0] == Q0
         assert manifest["qualifications"][1:6] == list(QUALIFICATIONS[:5])
         assert manifest["qualifications"][7] == QUALIFICATIONS[6]

@@ -164,8 +164,8 @@ by `scripts/m04_schema_fixtures.py` from M04.A19's run. `job.schema.json` gains 
 
 | File | Describes |
 | --- | --- |
-| `surrogate-manifest.schema.json` | `SurrogateManifest`: one surrogate study's frozen record — parent, input and output maps, splits by experiment key, predictor, score, calibration, evaluation, gradient check, domain, assumptions, qualifications Q0–Q7, promotion; its `document_sha256` is a surrogate instance's `model.artifact_ref`; `$defs` `surrogate_study_body` and `surrogate_study_result` (the job's body and answer); the rules a schema cannot state are `studies/surrogate/manifest.py::check_manifest` |
-| `model-evidence.schema.json` | `ModelEvidence`: the scope record of a surrogate's evidence — parent, data hashes, numerical accuracy, comparisons, uncertainty, what it establishes and what it does not; named by the manifest's `evidence_sha256` |
+| `surrogate-manifest.schema.json` | `SurrogateManifest`: one surrogate study's frozen record — parent, input and output maps, splits by experiment key, predictor, score, calibration, evaluation, gradient check, domain, assumptions, qualifications Q0–Q7, promotion; its `document_sha256` is a surrogate instance's `model.artifact_ref` and its evidence's `subject.artifact_ref` (it does not hash its evidence); `$defs` `surrogate_study_body` and `surrogate_study_result` (the job's body and answer); the rules a schema cannot state are `studies/surrogate/manifest.py::check_manifest` |
+| `model-evidence.schema.json` | `ModelEvidence`: the scope record of a surrogate's evidence — parent, data hashes, numerical accuracy, comparisons, uncertainty, what it establishes and what it does not; names its manifest by `subject.artifact_ref` (the manifest's SHA-256) |
 
 Every member without a stated default is required, the nullable ones included; a member the note
 gives a default is optional, and `process_runtime.application.types` writes it at that default, so

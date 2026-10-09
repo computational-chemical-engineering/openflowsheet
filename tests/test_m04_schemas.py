@@ -23,6 +23,7 @@ from conftest import REPO_ROOT, load_json, load_yaml
 from jsonschema import Draft202012Validator
 
 from openflowsheet.application.types import SCHEMA_BASE, published_schemas, schema_errors
+from openflowsheet.canonical import document_sha256
 from openflowsheet.studies.surrogate.manifest import check_manifest
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
@@ -70,6 +71,10 @@ def test_a35_the_manifest_fixture_is_a19s_and_passes_the_checker() -> None:
     assert manifest["surrogate_id"] == "m04q7-m04-synthetic-smooth-v1-it1-prefix"
     assert manifest["promotion"]["verdict"] == "PROMOTABLE"
     assert abs(manifest["calibration"]["q_hat"] - 0.024916065269) <= 1e-10
+    # M04.A38: the evidence fixture names this manifest; the manifest names no evidence.
+    evidence = load_json(FIXTURES / "model_evidence" / "valid" / "a19_smooth_prefix.json")
+    assert evidence["subject"]["artifact_ref"] == document_sha256(manifest)
+    assert "evidence_sha256" not in manifest
 
 
 def test_a35_the_replacement_facet_enum_contains_surrogate_evidence() -> None:

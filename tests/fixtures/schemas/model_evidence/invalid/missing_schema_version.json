@@ -4,7 +4,7 @@
     "subject": {
       "model_id": "c1.reactor_surrogate",
       "version": "m04q7-m04-synthetic-smooth-v1-it1-prefix",
-      "artifact_ref": null
+      "artifact_ref": "19c176cf7ed4a6aa94f73c78185b44adfb32fddfd7bce9071df0d964576d3361"
     },
     "parent": {
       "model_id": "c1.reactor",

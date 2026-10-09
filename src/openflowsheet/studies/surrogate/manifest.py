@@ -6,10 +6,11 @@ of a job id or a clock, so a study whose records are all cached reproduces them 
 No non-finite number is serialized: a failed draw's score and an absent q̂ are `null`, with the
 reason in the split's `failed` list or in `promotion`.
 
-**One reference, not two.** The manifest names its evidence by `evidence_sha256`; the evidence's
-`subject.artifact_ref` is `null`, because the manifest's own SHA-256 (the surrogate instance's
-`model.artifact_ref`, spec §8.2) covers `evidence_sha256` and so cannot also be inside the
-evidence. The evidence is reached from the manifest.
+**The evidence names the manifest, not the reverse** (spec §18 A1.4, ADR 0037 Amendment 1 D6). The
+manifest's SHA-256 is the surrogate's identity (an instance's `model.artifact_ref`, spec §8.2) and
+does not hash its evidence; the evidence's `subject.artifact_ref` is that SHA-256, required.
+Evidence about a model accumulates without changing the model's identity, and promotion rests on
+the manifest alone: its checker reads no evidence.
 
 `check_manifest(manifest)` is the checker the replacement check also runs (ADR 0037 D3): every rule
 a JSON Schema cannot express. It re-derives the band, the coverage count and the verdict from the
@@ -236,42 +237,6 @@ def build_records(
     coverage_evaluated = verdict.hits is not None and verdict.h_min is not None
     synthetic = variant.synthetic
     lower = verdict.lower_bound
-    evidence: dict[str, Any] = {
-        "schema_version": EVIDENCE_VERSION,
-        "subject": {"model_id": MODEL_ID, "version": surrogate_id, "artifact_ref": None},
-        "parent": {
-            "model_id": variant.model_id,
-            "variant_id": variant.variant_id,
-            "variant_sha256": variant.sha256,
-            "synthetic": synthetic,
-        },
-        "data": [
-            {"split": split, "count": counts[split], "keys_sha256": splits[split]["keys_sha256"]}
-            for split in SPLITS
-        ],
-        "numerical": {
-            "parent_accuracy": dict(variant.accuracy),
-            "fit": {
-                "training_ok": fit.training_ok,
-                "singular_value_ratio": fit.singular_value_ratio,
-            },
-        },
-        "comparisons": [dict(c) for c in _COMPARISONS],
-        "experimental_comparisons": [],
-        "experimental_comparisons_reason": _NO_EXPERIMENTS,
-        "uncertainty": {
-            "method": METHOD_ID,
-            "claim": "joint, marginal over P_ref",
-            "nominal": float(1 - ALPHA),
-            "lower_bound": lower,
-            "minimum": float(C_MIN),
-        },
-        "scope": {
-            "evidence_class": "synthetic_verification" if synthetic else "model_approximation",
-            "establishes": list(ESTABLISHES),
-            "does_not_establish": list(DOES_NOT_ESTABLISH),
-        },
-    }
     manifest: dict[str, Any] = {
         "schema_version": MANIFEST_VERSION,
         "surrogate_id": surrogate_id,
@@ -369,6 +334,7 @@ def build_records(
             "empirical": "box",
             "hard": _hard_domain(variant),
             "inadmissible_predictions": evaluation.inadmissible,
+            "admissibility_margin": evaluation.admissibility_margin,
             "parent_extrapolated": evaluation.extrapolated,
         },
         "assumptions": list(ASSUMPTIONS),
@@ -381,7 +347,46 @@ def build_records(
             # predecessors).
             "familywise_false_pass_bound": float(DELTA) if coverage_evaluated else 0.0,
         },
-        "evidence_sha256": document_sha256(evidence),
+    }
+    evidence: dict[str, Any] = {
+        "schema_version": EVIDENCE_VERSION,
+        "subject": {
+            "model_id": MODEL_ID,
+            "version": surrogate_id,
+            "artifact_ref": document_sha256(manifest),
+        },
+        "parent": {
+            "model_id": variant.model_id,
+            "variant_id": variant.variant_id,
+            "variant_sha256": variant.sha256,
+            "synthetic": synthetic,
+        },
+        "data": [
+            {"split": split, "count": counts[split], "keys_sha256": splits[split]["keys_sha256"]}
+            for split in SPLITS
+        ],
+        "numerical": {
+            "parent_accuracy": dict(variant.accuracy),
+            "fit": {
+                "training_ok": fit.training_ok,
+                "singular_value_ratio": fit.singular_value_ratio,
+            },
+        },
+        "comparisons": [dict(c) for c in _COMPARISONS],
+        "experimental_comparisons": [],
+        "experimental_comparisons_reason": _NO_EXPERIMENTS,
+        "uncertainty": {
+            "method": METHOD_ID,
+            "claim": "joint, marginal over P_ref",
+            "nominal": float(1 - ALPHA),
+            "lower_bound": lower,
+            "minimum": float(C_MIN),
+        },
+        "scope": {
+            "evidence_class": "synthetic_verification" if synthetic else "model_approximation",
+            "establishes": list(ESTABLISHES),
+            "does_not_establish": list(DOES_NOT_ESTABLISH),
+        },
     }
     return manifest, evidence
 
@@ -549,6 +554,10 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
         "training_unidentifiable" in derived.insufficient
     ):
         found.append("coefficients are present iff the fit is identifiable")
+    if (manifest["predictor"]["coefficients"] is None) != (
+        manifest["domain"]["admissibility_margin"] is None
+    ):
+        found.append("admissibility_margin is present iff there is a predictor")
 
     # The qualifications: Q0 first iff synthetic, then Q1–Q7, Q6 filled.
     stated = list(manifest["qualifications"])

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/frankp/process-runtime/schemas/surrogate-manifest.schema.json",
   "title": "SurrogateManifest",
-  "description": "M04 spec §10.1 (ADR 0036, ADR 0037 D2). One surrogate study's frozen record: parent model, input/output mapping, splits, transform, predictor, score, error and gradient metrics, domain, calibration assumptions, qualifications and the promotion result (blueprint App. A). Its `document_sha256` is a surrogate instance's `model.artifact_ref`. No non-finite number is serialized: a failed draw's score and an absent q̂ are `null`. Rules a schema cannot express are `studies.surrogate.manifest.check_manifest` (M04.A24), which the replacement check also runs. `$defs` carry the `surrogate_study` job's body and answer.",
+  "description": "M04 spec §10.1 (ADR 0036, ADR 0037 D2). One surrogate study's frozen record: parent model, input/output mapping, splits, transform, predictor, score, error and gradient metrics, domain, calibration assumptions, qualifications and the promotion result (blueprint App. A). Its `document_sha256` is a surrogate instance's `model.artifact_ref` and its ModelEvidence's `subject.artifact_ref`; it does not hash its evidence (spec §18 A1.4). No non-finite number is serialized: a failed draw's score and an absent q̂ are `null`. Rules a schema cannot express are `studies.surrogate.manifest.check_manifest` (M04.A24), which the replacement check also runs. `$defs` carry the `surrogate_study` job's body and answer.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -26,8 +26,7 @@
     "domain",
     "assumptions",
     "qualifications",
-    "promotion",
-    "evidence_sha256"
+    "promotion"
   ],
   "properties": {
     "schema_version": {
@@ -1086,6 +1085,7 @@
         "empirical",
         "hard",
         "inadmissible_predictions",
+        "admissibility_margin",
         "parent_extrapolated"
       ],
       "properties": {
@@ -1098,6 +1098,18 @@
         "inadmissible_predictions": {
           "type": "integer",
           "minimum": 0
+        },
+        "admissibility_margin": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Spec §18 A1.3: the smallest distance of a calibration or test prediction to a bound of A(s), over w_o (X to 0, 0.95 and r/3 over w_X; ΔT to −50 and 250 K over w_ΔT); `null` without a predictor. Below 10⁻⁸ an admissibility decision is near threshold."
         },
         "parent_extrapolated": {
           "type": "integer",
@@ -1171,10 +1183,6 @@
           "maximum": 1
         }
       }
-    },
-    "evidence_sha256": {
-      "type": "string",
-      "pattern": "^[0-9a-f]{64}$"
     }
   },
   "$defs": {
@@ -1320,7 +1328,7 @@
           "minimum": 0
         }
       },
-      "description": "M04 spec §10.3: a `surrogate_study` job's answer — the verdict and both reason lists (spec §7.3), the surrogate id, the SHA-256s of the manifest and evidence artifacts it wrote (`null` for a budget refusal, which writes neither), the plan experiments it executed or found cached, and the cache misses counted at study start."
+      "description": "M04 spec §10.3: a `surrogate_study` job's answer — the verdict and both reason lists (spec §7.3), the surrogate id, the SHA-256s of the manifest and evidence artifacts it wrote, in that order (spec §18 A1.4) (`null` for a budget refusal, which writes neither), the plan experiments it executed or found cached, and the cache misses counted at study start."
     }
   }
 }

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/frankp/process-runtime/schemas/model-evidence.schema.json",
   "title": "ModelEvidence",
-  "description": "M04 spec §10.2 (ADR 0036, ADR 0037 D6). The scope record of a surrogate's evidence (blueprint App. A: parent and data hashes, numerical convergence, comparisons, uncertainty, validation scope); it points into its SurrogateManifest rather than repeating it. The manifest names it by `evidence_sha256`; `subject.artifact_ref` is `null`, because the manifest's own SHA-256 covers that member and cannot also be inside this document.",
+  "description": "M04 spec §10.2 (ADR 0036, ADR 0037 D6). The scope record of a surrogate's evidence (blueprint App. A: parent and data hashes, numerical convergence, comparisons, uncertainty, validation scope); it points into its SurrogateManifest rather than repeating it. `subject.artifact_ref` is its manifest's SHA-256, required (spec §18 A1.4): the evidence names the manifest, and the manifest does not hash its evidence, so evidence added later never changes the surrogate's identity.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -38,7 +38,9 @@
           "minLength": 1
         },
         "artifact_ref": {
-          "type": "null"
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The SurrogateManifest's SHA-256 (its `document_sha256`), written by the same job."
         }
       }
     },

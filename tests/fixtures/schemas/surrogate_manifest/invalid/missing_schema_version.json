@@ -701,6 +701,7 @@
         "tube_flow_mol_s": null
       },
       "inadmissible_predictions": 0,
+      "admissibility_margin": 53.769197614138086,
       "parent_extrapolated": 0
     },
     "assumptions": [
@@ -724,7 +725,6 @@
       "insufficient": [],
       "not_promotable": [],
       "familywise_false_pass_bound": 0.05
-    },
-    "evidence_sha256": "2564341614119abd46878f081ca4c61e962b1d458866421b8b2914ff56f4e957"
+    }
   }
 }

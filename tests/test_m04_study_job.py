@@ -14,6 +14,7 @@ Floor: the stand-in's map is X ≡ 0.25 exactly, ΔT ≡ 0, so the residuals are
 
 from __future__ import annotations
 
+import inspect
 import json
 from collections.abc import Iterator
 from pathlib import Path
@@ -33,7 +34,8 @@ from openflowsheet.studies.surrogate.manifest import Q0, check_manifest
 
 STANDIN = variants.registered_variant("standin-x025-v1")
 REAL = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v2")
-STUDY_KINDS = ["model_evidence", "surrogate_manifest"]
+#: Spec §18 A1.4: the manifest, then the evidence that names it.
+STUDY_KINDS = ["surrogate_manifest", "model_evidence"]
 
 
 def body(
@@ -109,10 +111,10 @@ def test_a16_the_standin_prefix_study_through_the_job_operation(app: LocalApplic
     )
     assert (study["cold_experiments"], study["cache_hits"], study["cache_misses"]) == (199, 0, 199)
     assert study["surrogate_id"] == "m04q7-standin-x025-v1-it1-prefix"
-    evidence = read(app, job["outputs"][0]["artifact_id"])
-    manifest = read(app, job["outputs"][1]["artifact_id"])
-    assert study["manifest_sha256"] == document_sha256(manifest) == job["outputs"][1]["sha256"]
-    assert study["evidence_sha256"] == document_sha256(evidence) == manifest["evidence_sha256"]
+    manifest = read(app, job["outputs"][0]["artifact_id"])
+    evidence = read(app, job["outputs"][1]["artifact_id"])
+    assert study["manifest_sha256"] == document_sha256(manifest) == job["outputs"][0]["sha256"]
+    assert study["evidence_sha256"] == document_sha256(evidence) == job["outputs"][1]["sha256"]
     assert check_manifest(manifest) == []
     # A16: no failures, the exact fit of a constant map, q̂ at roundoff.
     for split in ("training", "calibration", "test", "gradient"):
@@ -143,6 +145,28 @@ def test_a16_the_standin_prefix_study_through_the_job_operation(app: LocalApplic
         "surrogate_manifest": 1,
     }
     assert JobResult.from_document(answer).as_document() == answer
+
+
+def test_a38_the_evidence_names_the_manifest_written_by_the_same_job(
+    app: LocalApplication,
+) -> None:
+    """M04.A38 (spec §18 A1.4): the outputs are [manifest, evidence]; the evidence's
+    `subject.artifact_ref` is the SHA-256 of that manifest; the manifest has no
+    `evidence_sha256`; the checker takes the manifest alone and accepts it."""
+    job = submit(app, "a38", body())["job"]
+    outputs = job["outputs"]
+    assert [output["kind"] for output in outputs] == ["surrogate_manifest", "model_evidence"]
+    manifest = read(app, outputs[0]["artifact_id"])
+    evidence = read(app, outputs[1]["artifact_id"])
+    assert "evidence_sha256" not in manifest
+    assert evidence["subject"]["artifact_ref"] == outputs[0]["sha256"] == document_sha256(manifest)
+    assert schema_errors("model-evidence.schema.json", evidence) == []
+    # The checker reads no evidence: one parameter, the manifest, and nothing else is consulted.
+    assert list(inspect.signature(check_manifest).parameters) == ["manifest"]
+    assert check_manifest(manifest) == []
+    # A null subject (the rejected alternative) is refused by the schema.
+    unnamed = {**evidence, "subject": {**evidence["subject"], "artifact_ref": None}}
+    assert any("artifact_ref" in e for e in schema_errors("model-evidence.schema.json", unnamed))
 
 
 def test_a_resubmission_with_every_record_cached_reproduces_the_manifest(

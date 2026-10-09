@@ -59,6 +59,8 @@ from openflowsheet.studies.surrogate.plan import (
     scaled,
 )
 from openflowsheet.studies.surrogate.quadratic import (
+    ADMISSIBLE_DT_K,
+    ADMISSIBLE_X,
     QuadraticFit,
     QuadraticSurrogate,
     fit_quadratic,
@@ -72,6 +74,7 @@ __all__ = [
     "Observation",
     "StudyOutcome",
     "SurrogateEvaluation",
+    "admissibility_distance",
     "evaluate",
     "observe",
     "prepare",
@@ -198,6 +201,9 @@ class SurrogateEvaluation:
     #: |e_X| and |e_ΔT| of the `ok` test draws, in plan order (reported, not judged; spec §7.1).
     test_errors: tuple[tuple[float, float], ...]
     inadmissible: int
+    #: The smallest distance of a calibration or test prediction to a bound of A(s), over w_o;
+    #: `None` without a predictor (spec §18 A1.3: the gap of the admissibility decisions).
+    admissibility_margin: float | None
     extrapolated: int
     centres: tuple[CentreEvidence, ...]
     verdict: StudyVerdict
@@ -224,6 +230,16 @@ def _gradient_errors(
         norm = math.sqrt(math.fsum(d * d for d in difference))
         errors.append(misfit / max(norm, width))
     return errors[0], errors[1]
+
+
+def admissibility_distance(x: float, dt: float, h2_n2: float) -> float:
+    """The distance of a prediction (X̃, ΔT̃) to the nearest bound of A(s), in units of w_o: X̃ to
+    0, 0.95 and r/3 over w_X, ΔT̃ to −50 and 250 K over w_ΔT, unsigned (spec §18 A1.3). The
+    bounds are `inadmissible_outputs`' operands, so a distance below 10⁻⁸ marks exactly the
+    admissibility decisions that are near threshold."""
+    to_x = min(abs(x - bound) for bound in (*ADMISSIBLE_X, h2_n2 / 3.0)) / WIDTH_X
+    to_dt = min(abs(dt - bound) for bound in ADMISSIBLE_DT_K) / WIDTH_DT_K
+    return min(to_x, to_dt)
 
 
 def evaluate(
@@ -253,6 +269,8 @@ def evaluate(
     )
     surrogate = fit.surrogate
 
+    margins: list[float] = []
+
     def scored(found: Sequence[Observation]) -> tuple[tuple[float | None, ...], int]:
         scores: list[float | None] = []
         inadmissible = 0
@@ -266,6 +284,7 @@ def evaluate(
             # Every calibration and test prediction is judged, whatever the parent returned
             # (spec §7.1 item 6): an inadmissible prediction in the box is the predictor's defect.
             inadmissible += bool(inadmissible_outputs(x_hat, dt_hat, u[2]))
+            margins.append(admissibility_distance(x_hat, dt_hat, u[2]))
             if o.status == "ok" and o.x is not None and o.dt is not None:
                 scores.append(score(o.x, o.dt, x_hat, dt_hat))
             else:
@@ -330,6 +349,7 @@ def evaluate(
         test_scores=test_scores,
         test_errors=test_errors,
         inadmissible=bad_calibration + bad_test,
+        admissibility_margin=min(margins) if margins else None,
         extrapolated=extrapolated,
         centres=tuple(centres),
         verdict=verdict,

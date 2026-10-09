@@ -17,7 +17,7 @@ function a direct caller uses, so a job's bundle *is* that function's bundle (ga
 variant and the inlet), `evaluate` (`adapters.experiments`' runner: key, lock, cache, attempts,
 records), `record` (the outputs). `surrogate_study`: `resolve` (the variant), `study`
 (`studies.surrogate.study.run_study`: the plan, the budget, the experiments one by one, the
-evidence), `record` (the evidence and the manifest).
+evidence), `record` (the manifest and the evidence).
 
 **Experiments (ADR 0033 D9, M02 design note §3.5).** An `experiment` job evaluates one request and
 ends `completed` whatever the experiment's outcome — a refusal or a transient failure is a result,
@@ -29,9 +29,10 @@ solve (R-235). Its property calls are its own and unmetered (R-233).
 
 **Surrogate studies (ADR 0037 D6, M04 spec §10.3).** A `surrogate_study` ends `completed`
 whatever its verdict, with its answer (`job_result.surrogate_study`) in `worker_result.study`. Its
-outputs are the evidence and the manifest (none for a budget refusal); its experiment records are
-artifacts of the job, not outputs. A cancellation recorded by another caller is honoured between
-experiments. A cancelled study keeps its records; a new job re-reads them through the cache.
+outputs are the manifest and then the evidence that names it (none for a budget refusal; spec §18
+A1.4); its experiment records are artifacts of the job, not outputs. A cancellation recorded by
+another caller is honoured between experiments. A cancelled study keeps its records; a new job
+re-reads them through the cache.
 
 **Interruption (§8.1).** `check` raises `JobInterrupted` once cancellation is requested or the
 wall-time deadline has passed; it runs at every `Trace.record` (installed by the executor) and at
@@ -681,8 +682,8 @@ class _Body:
 
     def surrogate_study(self) -> WorkerResult:
         """M04 spec §10.3: the registered plan through the experiment runner, cache first, then
-        the evidence; the manifest and the evidence are the job's two outputs, in that order
-        after the evidence it names. The experiment records are registered as artifacts of the
+        the evidence; the manifest and then the evidence that names it by SHA-256 are the job's
+        two outputs (spec §18 A1.4). The experiment records are registered as artifacts of the
         job (R-237's sink) but are not outputs: a study writes hundreds. A budget refusal writes
         nothing. The job ends `completed` whatever the verdict; the answer is `study`."""
         body = self.job.request.body
@@ -715,8 +716,8 @@ class _Body:
             self.at("record")
             manifest_sha256 = evidence_sha256 = None
             if outcome.manifest is not None and outcome.evidence is not None:
-                evidence_sha256 = self._file_output(EVIDENCE_FILE, outcome.evidence).sha256
                 manifest_sha256 = self._file_output(MANIFEST_FILE, outcome.manifest).sha256
+                evidence_sha256 = self._file_output(EVIDENCE_FILE, outcome.evidence).sha256
         except PlanRefusedError as refused:  # admission checked the plan: a defect if reached
             return _failed(_error("internal_error", f"plan_refused({refused.code})"), None)
         except JobInterrupted as interrupted:

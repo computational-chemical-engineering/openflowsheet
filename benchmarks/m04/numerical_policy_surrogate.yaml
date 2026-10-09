@@ -12,7 +12,8 @@ numerical_policy_surrogate:
   - surrogate-manifest.schema.json
   # The `sha256`-bearing names M04's schemas add, all exact digests of documents or key lists
   # (none is a float digest, ADR 0007 D1 row 3). The names M04 reuses keep their classes:
-  # `manifest_sha256` (T08 v2's), `variant_sha256` (M02's addendum's).
+  # `manifest_sha256` (T08 v2's), `variant_sha256` (M02's addendum's). `evidence_sha256` left the
+  # manifest (spec §18 A1.4) but stays here while the `surrogate_study` answer carries it.
   exact_sha256:
   - evidence_sha256
   - fingerprint_sha256s

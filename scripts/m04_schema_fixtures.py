@@ -14,10 +14,11 @@ document}`). Fixtures live under `tests/fixtures/schemas/<def>/{valid,invalid}/`
   scratch project.
 
 "Regenerates identically" is equality after `stable`: experiment keys, key-list and document
-hashes and environment fingerprints move with the code (an experiment key carries the boundary
-module's and the parent module's file hashes), so they are masked; every other number is compared
-rounded to 10 significant digits, because the fit is a LAPACK QR whose last bits are the
-platform's (spec §3.4; A10's tolerance is 10⁻¹⁰ × ‖β‖∞).
+hashes (the evidence's `subject.artifact_ref` is the manifest's) and environment fingerprints move
+with the code (an experiment key carries the boundary module's and the parent module's file
+hashes), so they are masked; every other number is compared rounded to 10 significant digits,
+because the fit is a LAPACK QR whose last bits are the platform's (spec §3.4; A10's tolerance is
+10⁻¹⁰ × ‖β‖∞).
 
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/m04_schema_fixtures.py          # check
@@ -53,6 +54,7 @@ VOLATILE: Final = frozenset(
         "keys_sha256",
         "stencil_keys",
         "fingerprint_sha256s",
+        "artifact_ref",
         "evidence_sha256",
         "manifest_sha256",
     }
