@@ -47,3 +47,25 @@ Z8 C1 TR-E2, measured: the five pairs are `S1.n.NH3`↔`makeup:C1FEED-n:NH3` and
    property_domain_error:S1_Hdot_V)` before iteration 1; now `TRF_MAX_ITERATIONS` after 30 iterations, θ_recheck
    4.01e-4, T_spec 673.667 K, no refusal, the pins hold at the returned state, and all 1395 argument positions of
    the eliminated flows in the requests were +0.0 bitwise. WO-8 owns TR-E2's acceptance.
+
+## WO-3b — `TRF_STALLED_INCONSISTENT` for an "Optimal" exit (§17.4, R-299)
+
+W1 Inside an "Optimal" line the line-against-log check comes first: a line whose own last logged θ or step is beyond
+   the terminations stays `TRF_ERROR(exit_mismatch)` whatever θ_recheck is (the ruling keeps exit_mismatch's meaning:
+   parser or framework drift, never retried); only a line its log agrees with is judged by θ_recheck
+   (`TRF_STALLED_INCONSISTENT` above the tolerance), and that precedes `TRF_EXIT_WITHOUT_STEP`. Alternative: θ_recheck
+   first. Reversible: `trf_state.classify_exit`.
+W2 OPEN. `TRF_MAX_ITERATIONS` (no `EXIT:` line, so no claim) is unchanged when θ_recheck exceeds the tolerance: it
+   keeps its clone and a candidate, which P1/P2 then judge. §17.4's precedence names the EXIT claims only. The TR-E2
+   check after WO-2b ends exactly so (θ_recheck 4.01e-4). For the design lane: should a max-iterations exit with
+   θ_recheck > 1e-5 also be `TRF_STALLED_INCONSISTENT` (an abort with a retry) rather than a candidate?
+W3 The threshold is the run's `feasibility_termination` (1e-5 in `M05-trf-config-v1` and in Pyomo's defaults), as
+   R-279's rule for "Feasible" already reads it.
+W4 `final_state_is_last_truth_point` is judged per holder (every EF is one of TRF's truth models): the returned state's
+   inputs, through the inverse map, hashed as the memo keys them (canonical binary64, zeros normalized), against the
+   holder's last ledger entry before the re-check. `exit_claim`, `theta_logged` (the last logged iteration's θ) and
+   this flag are recorded on every run TRF returned from, not only on `TRF_STALLED_INCONSISTENT`.
+W5 §17.4's acceptance test moves one of TRF's holder variables (`trf_data.ef_outputs`) by 1e-3 after `solve` returns
+   (P14 (b)'s converging toy): "Optimal" with an agreeing log, θ_recheck 1e-3, `TRF_STALLED_INCONSISTENT`,
+   `exit_claim: optimal`, `final_state_is_last_truth_point: true`. The retry itself (§7.3, once with radius × ¼) is
+   WO-6's study loop, not built yet.

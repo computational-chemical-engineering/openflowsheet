@@ -37,6 +37,17 @@ TRF's `ext_fcn_surrogate_map_rule` — the configuration goes to `solve()`, neve
   `TRF_FEASIBLE_STALLED`, `TRF_STALLED_INCONSISTENT` or `TRF_MAX_ITERATIONS`. All but
   `TRF_STALLED_INCONSISTENT` keep TRF's clone.
 
+The precedence (R-299, design note §17.4): `TRF_TRUTH_REFUSED` (the backstop); then θ_recheck
+above the feasibility termination is `TRF_STALLED_INCONSISTENT` whatever the `EXIT:` line claims
+(an "Optimal" line whose own logged θ and step agree with it included); then
+`TRF_EXIT_WITHOUT_STEP`; then `TRF_CONVERGED` or `TRF_FEASIBLE_STALLED`. `TRF_ERROR(exit_mismatch)`
+stays a line that disagrees with TRF's own log — a defect, never retried. Every run TRF returned
+from records `exit_claim` (`optimal`, `feasible` or `None`), `theta_logged` (the last logged
+iteration's θ, which TRF's termination read) beside `theta_recheck`, and
+`final_state_is_last_truth_point`: whether, for every holder, the inputs the returned model holds
+are, bitwise (zeros normalized, as the memo keys them), those of the holder's last request before
+the re-check — `False` points at a TRF that terminated on a state other than the one it returned.
+
 The re-check is `TRF.py`'s own feasibility measure, Σᵢ |yᵢ − dᵢ(w)| over its holder variables,
 evaluated on the returned clone while the holders still serve the run: every truth value it needs
 is one TRF requested at that state, so it is all memo hits, recorded in the ledger. It is
@@ -57,6 +68,7 @@ call raises rather than interleaving.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import logging
 import threading
@@ -69,7 +81,7 @@ import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
 from pyomo.solvers.plugins.solvers.IPOPT import IPOPT
 
-from openflowsheet.canonical import document_sha256
+from openflowsheet.canonical import document_sha256, encode_doubles
 from openflowsheet.studies.trust_region.holders import ColdBudget, RunState, TruthRefused
 from openflowsheet.studies.trust_region.projection import OmittedRowsCheck, Projection
 from openflowsheet.studies.trust_region.trf_state import (
@@ -85,6 +97,7 @@ from openflowsheet.studies.trust_region.trf_state import (
     TrfLogHandler,
     basis_refusals,
     classify_exit,
+    exit_claim,
     framework_readiness,
     last_accepted,
     reconstruct_filter,
@@ -168,6 +181,12 @@ class TrfRun:
     #: The returned state through the projection's inverse map (`Projection.state_of`: +0.0 for
     #: every eliminated zero flow, R-296), for the outcomes in `RETURNS_MODEL` only.
     final_state: Mapping[str, float] | None = None
+    #: R-299, for every run TRF returned from: the `EXIT:` line's claim (`optimal`, `feasible`,
+    #: or `None` for none or several), the last logged iteration's θ, and whether the returned
+    #: state is, for every holder, the point of its last request before the re-check.
+    exit_claim: str | None = None
+    theta_logged: float | None = None
+    final_state_is_last_truth_point: bool | None = None
 
     def source_map(self, projection: Projection) -> dict[str, Any]:
         """The projection's source map with this run's `trf` part filled."""
@@ -263,6 +282,7 @@ def _run(
     raised: BaseException | None = None
     theta_recheck: float | None = None
     recheck_error: str | None = None
+    last_points: dict[str, str | None] = {}
     try:
         with contextlib.redirect_stdout(captured):
             returned = solver.solve(
@@ -274,6 +294,7 @@ def _run(
     except Exception as error:  # noqa: BLE001 - every exception is mapped to a typed outcome
         raised = error
     else:
+        last_points = {holder.name: _last_point(holder) for holder in projection.holders}
         try:
             theta_recheck = recheck_theta(returned)
         except TruthRefused:
@@ -334,6 +355,11 @@ def _run(
         )
 
     model = returned if outcome in RETURNS_MODEL else None
+    claim = theta_logged = same_point = None
+    if returned is not None:
+        claim = exit_claim(exit_lines)
+        theta_logged = iterations[-1].theta if iterations else None
+        same_point = _returned_at_last_points(projection, returned, last_points)
     trf_map: tuple[Mapping[str, str], ...] = ()
     final = None
     if model is not None:
@@ -377,6 +403,9 @@ def _run(
         omitted_rows_final=omitted_rows_final,
         zero_pins_final=zero_pins_final,
         final_state=final_state,
+        exit_claim=claim,
+        theta_logged=theta_logged,
+        final_state_is_last_truth_point=same_point,
     )
 
 
@@ -393,6 +422,25 @@ def _preflight(projection: Projection) -> TruthRefused | None:
         except TruthRefused as refusal:
             return refusal
     return None
+
+
+def _last_point(holder: Any) -> str | None:
+    """The `inputs_sha256` of the holder's last ledger entry (its last request), or `None`."""
+    ledger = holder.ledger
+    return ledger[-1].inputs_sha256 if ledger else None
+
+
+def _returned_at_last_points(
+    projection: Projection, model: Any, last_points: Mapping[str, str | None]
+) -> bool:
+    """R-299's `final_state_is_last_truth_point`: every holder's inputs at the returned state
+    (through the inverse map) hash as its last request before the re-check did."""
+    state = list(projection.state_of(model).values())
+    for holder, inputs in zip(projection.holders, projection.holder_inputs, strict=True):
+        point = encode_doubles([state[i] for i in inputs])
+        if hashlib.sha256(point).hexdigest() != last_points[holder.name]:
+            return False
+    return True
 
 
 def _surrogate_map_rule(projection: Projection, basis: Mapping[str, EFBasis]) -> Any:

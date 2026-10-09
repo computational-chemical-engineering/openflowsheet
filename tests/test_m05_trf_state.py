@@ -285,15 +285,36 @@ def test_r279_optimal_without_an_accepted_step_is_exit_without_step() -> None:
     assert classify([EXIT_OPTIMAL], [], iterations) == "TRF_CONVERGED"
 
 
-def test_r279_optimal_needs_theta_rechecked_within_the_tolerance() -> None:
-    """A model whose θ disagrees with TRF's "Optimal" is believed over the line: no candidate."""
+def test_r299_optimal_with_theta_rechecked_above_the_tolerance_is_stalled_inconsistent() -> None:
+    """R-299: a model whose θ disagrees with TRF's "Optimal" is believed over the line — no
+    candidate, and an abort for the retry (`TRF_STALLED_INCONSISTENT`), not a parser defect; it
+    precedes `TRF_EXIT_WITHOUT_STEP` (P14 (b)'s PMP-only log)."""
     _, iterations = parsed()
     assert classify([EXIT_OPTIMAL], [], iterations, theta_recheck=1e-5) == "TRF_CONVERGED"
     assert classify([EXIT_OPTIMAL], [], iterations, theta_recheck=2e-5) == (
-        "TRF_ERROR(exit_mismatch)"
+        "TRF_STALLED_INCONSISTENT"
     )
     _, pmp_only = parsed(P14B_LOG)
-    assert classify([EXIT_OPTIMAL], [], pmp_only, theta_recheck=0.5) == ("TRF_ERROR(exit_mismatch)")
+    assert classify([EXIT_OPTIMAL], [], pmp_only, theta_recheck=0.5) == "TRF_STALLED_INCONSISTENT"
+
+
+def test_r299_a_line_that_disagrees_with_the_log_stays_exit_mismatch() -> None:
+    """R-299: `TRF_ERROR(exit_mismatch)` keeps its meaning — an "Optimal" line whose own logged θ
+    or step is beyond the terminations is a defect, whatever θ the model re-checks to."""
+    _, iterations = parsed()
+    for recheck in (0.0, 0.5):
+        assert classify([EXIT_OPTIMAL], [], iterations[:4], theta_recheck=recheck) == (
+            "TRF_ERROR(exit_mismatch)"
+        )
+
+
+def test_r299_the_exit_claim() -> None:
+    from openflowsheet.studies.trust_region.trf_state import exit_claim
+
+    assert exit_claim([EXIT_OPTIMAL]) == "optimal"
+    assert exit_claim([EXIT_FEASIBLE]) == "feasible"
+    assert exit_claim([]) is None
+    assert exit_claim([EXIT_OPTIMAL, EXIT_OPTIMAL]) is None
 
 
 def test_r279_a_feasible_exit_above_the_tolerance_is_stalled_inconsistent() -> None:

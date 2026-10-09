@@ -627,3 +627,56 @@ def test_p14c_a_feasible_exit_above_the_tolerance_is_stalled_inconsistent(
     assert abs(result.theta_recheck - theta) <= 1e-3 * theta
     assert (result.model, result.final, result.trf_map) == (None, None, ())
     assert projection.holders[0].ledger[-1].served == "memo_hit"
+
+
+# -- WO-3b: R-299 ---------------------------------------------------------------------------------
+
+
+def test_r299_an_optimal_exit_whose_model_disagrees_is_stalled_inconsistent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """§17.4's acceptance: P14 (b)'s converging toy, with one of TRF's holder variables (its
+    `trf_data.ef_outputs`) moved by 1e-3 after TRF returned — after the last truth request. TRF
+    printed "Optimal" and its own log agrees, but the model re-checks to θ = 1e-3:
+    `TRF_STALLED_INCONSISTENT`, no candidate, `exit_claim: "optimal"`, θ_logged and θ_recheck,
+    and the returned w is still the last truth request's (the outputs moved, not the inputs)."""
+    from m05_support import SquareBlock, affine_block_basis, implicit_block_projection
+    from pyomo.contrib.trustregion.TRF import TrustRegionSolver
+
+    from openflowsheet.studies.trust_region.trf import run_trf
+
+    solve = TrustRegionSolver.solve
+
+    def perturbed(self: Any, model: Any, *args: Any, **kwargs: Any) -> Any:
+        returned = solve(self, model, *args, **kwargs)
+        holder = next(iter(returned.trf_data.ef_outputs.values()))
+        holder.set_value(holder.value + 1e-3)
+        return returned
+
+    monkeypatch.setattr(TrustRegionSolver, "solve", perturbed)
+    projection = implicit_block_projection(SquareBlock(), 300.0)
+    config = P14_CONFIGS["M05-trf-config-v1"]
+    result = run_trf(projection, config, basis=affine_block_basis(projection))
+    assert result.exit_lines == (EXIT_OPTIMAL,)
+    assert result.outcome == "TRF_STALLED_INCONSISTENT"
+    assert result.model is None and result.final is None
+    assert result.exit_claim == "optimal"
+    assert result.theta_logged is not None and result.theta_logged <= 1e-5
+    assert result.theta_recheck is not None
+    assert abs(result.theta_recheck - 1e-3) <= result.theta_logged + 1e-12
+    assert result.final_state_is_last_truth_point is True
+
+
+def test_r299_a_converged_run_records_its_claim_and_its_point() -> None:
+    """The same fields on the unperturbed control: claim `optimal`, θ_logged ≤ 1e-5, and the
+    returned state is the last truth request's."""
+    from m05_support import SquareBlock, affine_block_basis, implicit_block_projection
+
+    from openflowsheet.studies.trust_region.trf import run_trf
+
+    projection = implicit_block_projection(SquareBlock(), 300.0)
+    config = P14_CONFIGS["M05-trf-config-v1"]
+    result = run_trf(projection, config, basis=affine_block_basis(projection))
+    assert result.outcome == "TRF_CONVERGED"
+    assert (result.exit_claim, result.final_state_is_last_truth_point) == ("optimal", True)
+    assert result.theta_logged is not None and result.theta_logged <= 1e-5

@@ -461,8 +461,8 @@ TRF_CONVERGED: Final = "TRF_CONVERGED"
 #: to stage B's parent checks (WO-6).
 TRF_EXIT_WITHOUT_STEP: Final = "TRF_EXIT_WITHOUT_STEP"
 TRF_FEASIBLE_STALLED: Final = "TRF_FEASIBLE_STALLED"
-#: R-279: "Feasible" with θ re-checked above the feasibility termination — no candidate; the
-#: retry policy treats it as an abort.
+#: R-279, R-299: an `EXIT:` claim ("Feasible" or "Optimal") with θ re-checked above the feasibility
+#: termination — no candidate; the retry policy treats it as an abort (§7.3: once, radius × ¼).
 TRF_STALLED_INCONSISTENT: Final = "TRF_STALLED_INCONSISTENT"
 TRF_MAX_ITERATIONS: Final = "TRF_MAX_ITERATIONS"
 TRF_SUBPROBLEM_FAILED: Final = "TRF_SUBPROBLEM_FAILED"
@@ -478,6 +478,12 @@ def truth_refused(code: str) -> Outcome:
 
 def trf_error(name: str) -> Outcome:
     return f"TRF_ERROR({name})"
+
+
+def exit_claim(exit_lines: Sequence[str]) -> str | None:
+    """R-299: what a single `EXIT:` line claims — `optimal`, `feasible` — or `None`."""
+    claims = {EXIT_OPTIMAL: "optimal", EXIT_FEASIBLE: "feasible"}
+    return claims.get(exit_lines[0]) if len(exit_lines) == 1 else None
 
 
 def accepted_steps(iterations: Sequence[IterationRecord]) -> int:
@@ -497,12 +503,14 @@ def classify_exit(
 ) -> Outcome:
     """The outcome of a run that returned, from its `EXIT:` lines checked against its log and
     against `theta_recheck`, θ recomputed from the model TRF returned (R-279: probe P14 shows that
-    either `EXIT:` line can be false).
+    either `EXIT:` line can be false; R-299 orders the checks).
 
     - `EXIT: Optimal solution found.` needs the last logged iteration's θ and step norm — the
-      values `TRF.py`'s termination test read — within the configured terminations, and
-      `theta_recheck` within the feasibility termination. Then it is `TRF_CONVERGED` after at
-      least one accepted TRSP step, and `TRF_EXIT_WITHOUT_STEP` after none.
+      values `TRF.py`'s termination test read — within the configured terminations; otherwise the
+      line disagrees with TRF's own log (`TRF_ERROR(exit_mismatch)`, a defect). With
+      `theta_recheck` above the feasibility termination it is `TRF_STALLED_INCONSISTENT` (R-299:
+      the model, not the line, is believed); within it, `TRF_CONVERGED` after at least one
+      accepted TRSP step and `TRF_EXIT_WITHOUT_STEP` after none.
     - `EXIT: Feasible solution found.` needs TRF's `Insufficient progress` warning. Then it is
       `TRF_FEASIBLE_STALLED` with `theta_recheck` within the feasibility termination, and
       `TRF_STALLED_INCONSISTENT` above it (`TRF.py`'s stall test compares θ with itself after an
@@ -517,13 +525,11 @@ def classify_exit(
     last = iterations[-1]
     feasible = theta_recheck <= feasibility_termination
     if list(exit_lines) == [EXIT_OPTIMAL]:
-        if (
-            last.theta <= feasibility_termination
-            and last.step_norm <= step_size_termination
-            and feasible
-        ):
-            return TRF_CONVERGED if accepted_steps(iterations) else TRF_EXIT_WITHOUT_STEP
-        return trf_error("exit_mismatch")
+        if last.theta > feasibility_termination or last.step_norm > step_size_termination:
+            return trf_error("exit_mismatch")
+        if not feasible:
+            return TRF_STALLED_INCONSISTENT
+        return TRF_CONVERGED if accepted_steps(iterations) else TRF_EXIT_WITHOUT_STEP
     if list(exit_lines) == [EXIT_FEASIBLE]:
         if WARNING_INSUFFICIENT_PROGRESS in warnings:
             return TRF_FEASIBLE_STALLED if feasible else TRF_STALLED_INCONSISTENT
