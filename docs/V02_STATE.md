@@ -16,10 +16,10 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…11 done; WO-12 (`bdb756e`): G12 real loop PASS (3 outer its, VERIFIED, replay MATCH, live rerun bitwise); **§10.3 triggered**: G11 Q-F4 accepts 1/17 (all corners fail), Q-F5 0.5× fails → ruling round running (`docs/briefs/M02-rulings.md`: D69 domain, D70, D50, D61, D55, D58, D71, envelope); then implement, WO-13 manifest, `reviewer` |
+| M02 | Build | M01 | W21 | WO-1…12 run; rulings §14.5 D1–D10 (`7be4084`, R-303…R-310, ADR 0027 Am. 2): reactor variant v3 (extra polish round when defect > 1e-7, nonfinite → refusal, first passing of 3 registered boxes); WO-12a (+WO-11a) running; then WO-14 (driver reset, R3 rule bug, D58 replay digest, `at_coupling` refusal); WO-12b (register v3, re-run) after all three; WO-13 manifest; `reviewer` |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435); W27 Amendment 3 (`14c8695` on main, R-301/302): surrogate → no function (`surrogate_model`), `hypothetical_v02_a3`, corpus resolver; next WO-16i on main, then J3′–J6′ + WO-8 on `wp/M04`; WO-9 after M02 merged; WO-11 real run; WO-12 manifest |
-| M05 | Design | M03, M04 | W24 | WO-1…5 done (`6b54b8d`); rulings §17 (`5bb026e`, R-296…R-300): zero-flow elimination, `M05-fd-v2`, TR-E1 bound 2e-5, Optimal-with-θ → `TRF_STALLED_INCONSISTENT`; WO-2b, 3b, 4a running; WO-5b in M02 WO-12; then WO-6+ |
+| M05 | Design | M03, M04 | W24 | WO-1…5 done (`6b54b8d`); rulings §17 (`5bb026e`, R-296…R-300): zero-flow elimination, `M05-fd-v2`, TR-E1 bound 2e-5, Optimal-with-θ → `TRF_STALLED_INCONSISTENT`; WO-2b, 3b, 4a running; WO-5b in M02 WO-12; then WO-6+; relay R-309: use `at_coupling` (WO-5c), real records bind reactor v3, decision box may shrink to [653.15, 693.15] K (R-304) |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
@@ -78,6 +78,10 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   approval, marked pre-release. Preferences on defaults: cut `C_α` before M03 merges; freeze distribution paths from
   `C_α` to dispatch.
 
+- **M02 N7 (new; default set):** shipped reactor domain = the box the v3 measurements select (R-304: [643.15, 733.15] K
+  if it passes, else [653.15, 693.15] K, else narrowed P and H₂/N₂). Full 573–773 K would need a new start strategy,
+  outside M02's plan row.
+
 - **M05 (defaults set):** N-F1 objective = maximize liquid NH₃ product, reactor inlet T the only decision (alt: an
   economic objective with your prices, making purge a second decision); N-F2 decision tolerance 0.5 K; N-F3 real-reactor
   budget 400 experiments / 4 h; N-F6 decision box [643.15, 733.15] K.
@@ -92,7 +96,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `specifier` | M02 ruling round (brief `docs/briefs/M02-rulings.md`) | `wp/M02` (`m02`) |
+| `opus-engineer` | M02 WO-12a + WO-11a (design note §14.5, l.1984–1990) | `wp/M02` (`m02`) |
 | `opus-engineer` | M05 WO-2b, WO-3b, WO-4a (design note §17.6) | `wp/M05` (`m05`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
