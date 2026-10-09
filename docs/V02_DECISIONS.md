@@ -681,3 +681,8 @@ Grep, don't read whole. Newest at the bottom.
   inert, at S1. Q-E1: 4.047 % (693.15 K), 4.548 % (653.15 K, v3 child only). D85: 2 points with failed first
   certificate and δ₁ > 1e-7. DECISION: N7 default → raise `inert_min`, keep T_in [653.15, 693.15] K; alternative: new
   S1 start strategy (outside plan row); reversible: append-only variant. Round-8 `specifier` launched.
+
+- **M02 round 8** (2026-10-09, `specifier`, `wp/M02` `756e123`): R-315 rungs V4/V5/V6 (inert floor 0.03, 0.035, then P
+  and H₂/N₂ narrowed), first qualifying = v3's domain, all measured in both runs; G12v3-2 loop at both T edges; G11v3-11
+  full re-measure, G11v3-12 nesting/loop-inside check. R-316 round 2 whenever δ₁ > 1e-7 (reverses part of R-311).
+  ADR 0027 Am. 4. WO-12b may proceed on the selected rung before Frank answers N7. WO-12a″ launched.
