@@ -536,6 +536,93 @@ def test_r3_reproduce_replays_the_results_from_the_record(
     assert frozen["fingerprint"]["runner_sha256"]
 
 
+# == F4: a w-dependent external map through the loop, out of process (M02 review F4) ==============
+
+
+def g8f_map(inlet: Mapping[str, Any]) -> tuple[float, float]:
+    """G8 (f)'s closed form on a whole reactor inlet, written here independently of both the
+    synthetic child's `nonlinear` hook and `NonlinearBackend`: (ξ, T_out)."""
+    n, total = inlet["n"], sum(inlet["n"])
+    y = [value / total for value in n]
+    return (0.15 + 2.0 * (y[3] + y[4] - 0.05)) * n[1], inlet["T"] + 80.0 + 1000.0 * (y[2] - 0.02)
+
+
+@pytest.fixture
+def nonlinear_run(tmp_path: Path, register: Any) -> tuple[Path, Any, dict[str, Any]]:
+    variant = register(out_of_process("f4-nonlinear", ["nonlinear"]))
+    runner = runner_in(tmp_path / "records", backend_for=synthetic_backend(tmp_path / "env"))
+    manifest, artifacts = solve(
+        pinned(loop(), variant), tmp_path / "bundle", LiveExperiments(runner)
+    )
+    return tmp_path, manifest, artifacts
+
+
+def test_f4_a_w_dependent_out_of_process_loop_converges_end_to_end(
+    nonlinear_run: tuple[Path, Any, dict[str, Any]], register: Any
+) -> None:
+    """Secant updates across real inner solves with a nonzero ρ at every iterate but the last;
+    each experiment's answer is the closed form at its recorded inlet; and the run is the
+    in-process G8 (f) run of the same map, iterate for iterate."""
+    tmp_path, manifest, artifacts = nonlinear_run
+    assert (manifest.outcome, manifest.verification_status) == ("CONVERGED", "VERIFIED")
+    assert manifest.reproducibility_class == "R3"
+    record = artifacts["external-coupling.json"]
+    assert schema_errors(COUPLING, record) == []
+    accepted = [item for item in record["iterations"] if item["rho"] is not None]
+    assert len(accepted) >= 3 and all(item["rho"] > 1.0 for item in accepted[:-1])
+    assert accepted[-1]["rho"] <= 1.0
+    assert [item["step"]["kind"] for item in accepted][1:-1] == ["broyden"] * (len(accepted) - 2)
+    for item in accepted:
+        unit = item["units"]["reactor"]
+        xi, t_out = g8f_map(unit["inlet"])
+        assert (unit["xi_E"], unit["T_E"]) == (pytest.approx(xi, rel=1e-12), pytest.approx(t_out))
+    # The same map in process (G8 (f)'s backend): the same iterates.
+    document = {**STANDIN.document, "variant_id": "test-nonlinear-f4-v1"}
+    variant = register(variants.variant_from_document(document))
+    runner = runner_in(
+        tmp_path / "records-in",
+        backend_for=lambda v: (
+            NonlinearBackend(v) if v.sha256 == variant.sha256 else InProcessBackend(v)
+        ),
+    )
+    _, in_process = solve(pinned(loop(), variant), tmp_path / "in", LiveExperiments(runner))
+    mine = in_process["external-coupling.json"]["iterations"]
+    assert [item["k"] for item in mine] == [item["k"] for item in record["iterations"]]
+    for left, right in zip(mine, record["iterations"], strict=True):
+        assert left["w"] == pytest.approx(right["w"], rel=1e-12, abs=1e-12)
+    # Measured (this build): see build log D126.
+
+
+def test_rp2b_a_w_dependent_rerun_one_ulp_off_matches_not_bitwise(
+    nonlinear_run: tuple[Path, Any, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """RP-2's second case (R-317, review F4) on F4's loop: the rerun's X̂ moved in its last bits at
+    k = 1 (RP-2's seam); every later iterate, inlet and residual moves with it, the experiments
+    are served from the record, and the reproduction is `MATCH`, not bitwise."""
+    from test_m02_wo14 import OneUlpOnTheFirstClip
+
+    from openflowsheet.orchestrator import coupling
+
+    tmp_path, _, artifacts = nonlinear_run
+    monkeypatch.setattr(coupling, "np", OneUlpOnTheFirstClip())
+    reproduction = reproduce_bundle(
+        tmp_path / "bundle", rerun=True, rerun_directory=tmp_path / "rerun", run_id="run-rerun"
+    )
+    report = reproduction.report
+    assert (report.verdict, report.differences) == ("MATCH", ())
+    assert report.bitwise_floats is False
+    recorded = artifacts["external-coupling.json"]["iterations"]
+    rerun = read_artifact(tmp_path / "rerun", "external-coupling.json")["iterations"]
+    assert len(rerun) == len(recorded)
+    assert rerun[1]["w"][0] != recorded[1]["w"][0]
+    assert any(
+        mine["units"]["reactor"]["r_xi"] != theirs["units"]["reactor"]["r_xi"]
+        for mine, theirs in zip(rerun, recorded, strict=True)
+    )
+    served = f"external_results_replayed_from_record({len(recorded)})"
+    assert served in report.reasons
+
+
 def test_r3_a_request_that_is_not_the_records_is_a_mismatch_naming_it(
     r3_run: tuple[Path, Any, dict[str, Any], Path],
 ) -> None:

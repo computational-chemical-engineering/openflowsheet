@@ -12,6 +12,8 @@ Its "reactor" is the stand-in's closed form per tube (ξ = 0.25 F y_N2, T_out = 
 answers. `configuration.hooks` (a list, applied in order) reaches every failure path:
 
 - `ok` — nothing; `sleep(s)` — sleep s seconds; `ignore_sigterm` — ignore SIGTERM;
+- `nonlinear` — G8 (f)'s map instead of the stand-in's, ξ = (0.15 + 2 (y_inert − 0.05)) F y_N2 and
+  T_out = T_in + 80 K + 1000 K (y_NH3 − 0.02): through the loop it depends on w (M02 review F4);
 - `abort` — `os.abort()` (SIGABRT, a crash); `abort_first` — the same, on the first run under
   an environment root only; `exit(code)` — `os._exit(code)`;
 - `bad_json` — write a `result.json` that is not JSON and exit 0;
@@ -161,11 +163,15 @@ def _counter() -> int:
 def _evaluate(
     tube: dict[str, Any], configuration: dict[str, Any], hooks: list[str], cheap: dict[str, Any]
 ) -> dict[str, object]:
-    """The stand-in's closed form per tube (module docstring)."""
-    feed = [tube["flow"] * y for y in tube["composition"]]
+    """The stand-in's closed form per tube, or the `nonlinear` hook's (module docstring)."""
+    y = tube["composition"]
+    feed = [tube["flow"] * value for value in y]
     xi = CONVERSION * feed[1]
-    flows = [feed[i] + NU[i] * xi for i in range(len(NU))]
     temperature = tube["temperature"]
+    if "nonlinear" in hooks:
+        xi = (0.15 + 2.0 * (y[3] + y[4] - 0.05)) * feed[1]
+        temperature = tube["temperature"] + 80.0 + 1000.0 * (y[2] - 0.02)
+    flows = [feed[i] + NU[i] * xi for i in range(len(NU))]
     if "nondeterministic" in hooks:
         for _ in range(_counter()):
             temperature = math.nextafter(temperature, math.inf)
