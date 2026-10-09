@@ -726,3 +726,9 @@ Grep, don't read whole. Newest at the bottom.
   S0/A/B/C, statuses with precedence (49 fake tests), readiness 12 codes, `TrfStage` bitwise = `run_trf`; REAL box per
   R-313. Not done: real parent adapter (needs M02 `coupled_run.py`). Choices S1–S10 (S6 isolated `c5aa61b`) → M05 review.
   WO-7 (Sonnet) launched.
+
+- **M05 WO-7 STOP** (Sonnet, uncommitted): `test_t08_adr0025` refuses 4 unclassified sha256 names in the new schema.
+  DECISION: classify all four `exact_sha256` in an M05 addendum `benchmarks/m05/numerical_policy_external.yaml`
+  following M02's precedent (dbc9e8a) and classify the record's floats (ADR 0007 D2.3, as the M02 review's F1
+  demanded). Alternative: per-machine hashes outside identity. Reversible by: reverting the isolated commit. Five
+  spec-vs-producer choices logged for the M05 review. Opus engineer finishing WO-7.
