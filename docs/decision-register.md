@@ -5729,3 +5729,58 @@ M05 decision variable beyond T_in, which would move the loop's inert fraction ou
 **Watch for.** A point where certificate₂ fails; none has been measured.
 
 ---
+
+## R-317 — A coupled replay checks the inlet against the request the answer is attributed to, and the coupling record's floats are floored at their registered thresholds (resolves RP-2; amends R-308's acceptance)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`reviewer`), M02 review (`docs/reviews/M02-review.md` F1, F2, §3) |
+| Normative text | `docs/reviews/M02-review.md` §3 rows RP-2 (a) and (b); to be carried into ADR 0034 as Amendment 1 by WO-13 |
+| Evidence | Build log D93 (RP-2's seam: EXT-COUPLING checks fail on the recorded request; ρ 0 → 2.0e-12 and r_ξ 0 → −8.3e-17 compared relative-only). Review F1: on G12's real loop, r_ξ ≈ 1.5e-5 is a cancellation of terms ≈ 0.2, so an inner-state difference of 1e-13 relative moves it 1.3e-9 relative, so (b) is not limited to the stand-in |
+| Affected packages | M02 (replay, certificate evidence, A32 coverage), M05 (binds coupled replays) |
+
+**Decision.**
+- **(a)** EXT-COUPLING's bitwise inlet check compares the certified inlet with the inputs of the request the answer is attributed to:
+  - live: the request sent (unchanged);
+  - replay: the request `RecordedExperiments` recomputes at the rerun's inlet, whose agreement with the recorded one within the archive's policy is the replay's guarantee.
+
+  The rerun record keeps embedding the recorded documents.
+- **(b)** Every float of `experiment.schema.json#/$defs/coupling`, and every envelope field a re-evaluation compares, is classified under ADR 0007 D2.2 and D2.3:
+  - `rho` is floored at 1;
+  - `r_xi` at the record's `tau_xi_rel`;
+  - `r_T` at its `tau_T_K`;
+  - `defect_rel` at 1e-6;
+  - `defect` and flows at the flow kind's floor;
+  - `step.B` and `step.du` are reported, not compared (comparability window), while step kinds and k stay R0;
+  - the rest is relative.
+
+  The floors are scoped to the coupled record, and no pre-M02 comparison or pinned digest moves. A32, or an M02 twin, enumerates the schema.
+- RP-2 then passes without an xfail. A second case runs on a w-dependent synthetic loop.
+
+**Rejected alternatives, and why.**
+- An absolute floor of 1e-9 on ρ: an invented floor, which ADR 0007 D2.2 rejects.
+- Writing the recomputed request into the rerun record: it would pair a request that was never sent with a served result.
+- Descoping cross-platform coupled replay: D2.3 makes the recording package own the classification.
+
+**Watch for.** A new float in the coupling record without a row; a live path that stops being bitwise.
+
+---
+
+## R-318 — On `revision_coupled`, every `constants_sha256` in the bundle is compared for shape (ratifies build log D94)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`reviewer`), M02 review §3 |
+| Normative text | `docs/reviews/M02-review.md` §3 row D94; build log D94; R-308 item 1 |
+| Evidence | D94: the final digest is copied into five artifacts (8 places), so a last-bit rerun could never be MATCH under item 1 read literally |
+| Affected packages | M02 (`revision_run._constants_for_shape`) |
+
+**Decision.** The shape rule applies to every `constants_sha256` in every artifact of a coupled bundle. The R0 guard is R-308 item 2's recomputation of the final digest at the recorded w, with the current build, which also catches a build that changed the constants.
+
+**Rejected alternatives, and why.** Item 1 read literally, covering the manifest and `iterations[].inner` only. The copies stay exact, and RP-2 becomes unreachable.
+
+**Watch for.** A `constants_sha256` field that digests something other than an inner solve of w, added to a coupled bundle.
+
+---
