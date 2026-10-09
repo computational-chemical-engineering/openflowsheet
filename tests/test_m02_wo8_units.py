@@ -30,6 +30,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.models.c1 import TAU_DEW, feed, flash, heater, mixer, sink, splitter
 from openflowsheet.models.c1.phase import classify
+from openflowsheet.models.c1.reactor import MODEL_IDS, PORTS
 from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.thermo import FlashRequest, PropertyRequest, StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
@@ -58,10 +59,11 @@ P = 1.0e7
 def test_the_six_c1_units_bind_through_their_own_registry() -> None:
     """Build log D36: the C1 builders sit beside `MODEL_BUILDERS`, which `list_models` serves,
     until the design lane rules on the surface change."""
-    assert set(C1_MODEL_BUILDERS) == set(C1_MODEL_SIGNATURES) == set(MODULES)
+    # M02 WO-9 adds the reactor's two ids (R-280's interim registry; tests/test_m02_wo9_reactor.py).
+    assert set(C1_MODEL_BUILDERS) == set(C1_MODEL_SIGNATURES) == set(MODULES) | set(MODEL_IDS)
     assert not any(model.startswith("c1.") for model in MODEL_BUILDERS)
     for model_id, signature in C1_MODEL_SIGNATURES.items():
-        assert signature.ports == MODULES[model_id].PORTS
+        assert signature.ports == (MODULES[model_id].PORTS if model_id in MODULES else PORTS)
 
 
 def _units() -> dict[str, Any]:

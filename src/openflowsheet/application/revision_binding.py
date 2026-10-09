@@ -49,6 +49,7 @@ from openflowsheet.models.c1 import feed as c1_feed
 from openflowsheet.models.c1 import flash as c1_flash
 from openflowsheet.models.c1 import heater as c1_heater
 from openflowsheet.models.c1 import mixer as c1_mixer
+from openflowsheet.models.c1 import reactor as c1_reactor
 from openflowsheet.models.c1 import sink as c1_sink
 from openflowsheet.models.c1 import splitter as c1_splitter
 from openflowsheet.models.revision_flowsheet import (
@@ -596,6 +597,8 @@ _PORT_PHASES: Final[Mapping[str, tuple[tuple[str, Phase | None], ...]]] = {
     c1_mixer.MODEL_ID: (("*", "VAPOR"),),
     c1_heater.MODEL_ID: (("inlet", "VAPOR"), ("outlet", "VAPOR")),
     c1_flash.MODEL_ID: (("inlet", "VAPOR"), ("vapor", "VAPOR"), ("liquid", "LIQUID")),
+    c1_reactor.REACTOR_MODEL_ID: (("inlet", "VAPOR"), ("outlet", "VAPOR")),
+    c1_reactor.STANDIN_MODEL_ID: (("inlet", "VAPOR"), ("outlet", "VAPOR")),
 }
 
 
@@ -1292,6 +1295,49 @@ def _c1_product_sink(
     return c1_sink.ProductSink(unit_id=view.unit_id, components=components), {}
 
 
+#: M02 WO-9 (design note §4.1; ADR 0034 D1, D9): `c1.reactor` and `c1.reactor_standin` are one
+#: embedded unit. `n_tubes` is the one parameter it reads; no row depends on it, so it is carried in
+#: the unit's configuration for the experiment request. Both are variant-backed, so the binder has
+#: already resolved the instance's pinned variant (`model_variant_mismatch` otherwise). The coupling
+#: parameters start at that variant's `coupling.initial`; the coupled route moves them (WO-10).
+#: Optional `coupling_initial.X` / `.dT` parameters are not admitted (build log D46).
+_C1_REACTOR: Final = ModelSignature(
+    model_id=c1_reactor.REACTOR_MODEL_ID, ports=c1_reactor.PORTS, required=("n_tubes",)
+)
+_C1_REACTOR_STANDIN: Final = ModelSignature(
+    model_id=c1_reactor.STANDIN_MODEL_ID, ports=c1_reactor.PORTS, required=("n_tubes",)
+)
+
+
+def _c1_reactor(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    signature = _C1_REACTOR if view.model_id == _C1_REACTOR.model_id else _C1_REACTOR_STANDIN
+    parameters = instance_contract(view, signature, components)
+    _c1_basis(view, components)
+    variant = variants.resolve(view.model_id, view.model_version, view.model_artifact_ref)
+    if variant is None:  # the binder resolved every variant-backed instance before building
+        raise RevisionError("unsupported", f"model_variant_mismatch({view.unit_id})")
+    initial = variant.coupling["initial"]
+    unit = c1_reactor.C1Reactor(
+        unit_id=view.unit_id,
+        model=view.model_id,
+        provider=provider,
+        context=context,
+        variant=variant.document,
+        n_tubes=parameters["n_tubes"],
+        conversion=float(initial["X"]),
+        temperature_rise=float(initial["dT_K"]),
+        components=components,
+    )
+    # `n_tubes` selects no expression (no row reads it), so the configuration digest gets
+    # nothing; the unit carries it for the experiment request.
+    return unit, {}
+
+
 #: Model id -> signature: what each builder reads (§1.3's table), for `list_models` (T07 §4.2).
 MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
     signature.model_id: signature
@@ -1312,7 +1358,8 @@ MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
     )
 }
 
-#: M02's six C1 units (design note §8), by model id: their signatures, read by the binder only.
+#: M02's C1 units (design note §8) and the reactor's two ids (§4.1, WO-9), by model id: their
+#: signatures, read by the binder only (R-280's interim registry, until WO-9's join commit).
 #: Kept apart from `MODEL_SIGNATURES`/`MODEL_BUILDERS`, which `list_models` serves and the
 #: registered corpus's coverage tests pin, until the design lane rules on the surface change
 #: (build log D36). Joining them is moving these entries; nothing else reads the split.
@@ -1325,6 +1372,8 @@ C1_MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
         _C1_TP_FLASH,
         _C1_STREAM_SPLITTER,
         _C1_PRODUCT_SINK,
+        _C1_REACTOR,
+        _C1_REACTOR_STANDIN,
     )
 }
 
@@ -1353,7 +1402,7 @@ MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _KINETIC_CSTR.model_id: _kinetic_cstr,
 }
 
-#: M02's six C1 builders, as `C1_MODEL_SIGNATURES` (build log D36).
+#: M02's C1 builders, as `C1_MODEL_SIGNATURES` (build log D36; R-280).
 C1_MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _C1_FEED_SOURCE.model_id: _c1_feed_source,
     _C1_ADIABATIC_MIXER.model_id: _c1_adiabatic_mixer,
@@ -1361,6 +1410,8 @@ C1_MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _C1_TP_FLASH.model_id: _c1_tp_flash,
     _C1_STREAM_SPLITTER.model_id: _c1_stream_splitter,
     _C1_PRODUCT_SINK.model_id: _c1_product_sink,
+    _C1_REACTOR.model_id: _c1_reactor,
+    _C1_REACTOR_STANDIN.model_id: _c1_reactor,
 }
 
 
