@@ -43,6 +43,9 @@ Token usage is a constraint. These rules cut it without dropping a review, a gat
   writes where it stopped, and ends. A fresh agent continues from the commit log.
 - **Sonnet for bounded items**: manifests, docs, fixture re-takes, generator-check tests, mechanical edits. Opus for
   numerics and design-adjacent code.
+- **Quiet runs.** Tests and builds are free; reading their output is not. Run the gate as `scripts/gate.sh` (one
+  summary line; the failing lines only on failure; full log in a file). Read a log only on failure, by `grep`/`tail`.
+  Start long runs in the background and wait for the one completion notice; no polling.
 - **Short reports, 200–300 words.** Full detail goes into the package's build-decisions log in the repository.
 - **Unchanged:** one design-lane spec or design pass and one `reviewer` pass per package, the full gate before every
   commit, and decisions recorded in the register.
