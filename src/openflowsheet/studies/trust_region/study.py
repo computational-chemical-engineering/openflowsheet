@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet.adapters.variants import Variant, hard_domain
 from openflowsheet.application.revision_binding import RevisionBinding
@@ -38,15 +38,16 @@ from openflowsheet.models.c1.flash import TPFlash
 from openflowsheet.models.c1.heater import TPHeater
 from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.studies.trust_region.holders import TruthModel
-from openflowsheet.studies.trust_region.projection import (
-    DecisionSpec,
-    ExternalLinkSpec,
-    InequalitySpec,
-    ObjectiveSpec,
-    Projection,
-    project,
-)
 from openflowsheet.thermo.pr_c1 import COMPONENTS
+
+if TYPE_CHECKING:
+    from openflowsheet.studies.trust_region.projection import (
+        DecisionSpec,
+        ExternalLinkSpec,
+        InequalitySpec,
+        ObjectiveSpec,
+        Projection,
+    )
 
 __all__ = [
     "MARGIN_REL",
@@ -116,7 +117,17 @@ def c1_formulation(
 ) -> C1Formulation:
     """`c1-trf-study-v1`'s formulation on `binding` (the C1 loop at the coupled route's inner
     problem) for the reactor bound to `variant` and evaluated by `truth`, with the decision box
-    `box` (module docstring). Raises `ValueError` for a revision that is not C1-shaped."""
+    `box` (module docstring). Raises `ValueError` for a revision that is not C1-shaped.
+
+    The projection's specs are imported here, not at module level: this module imports in the
+    default install, without Pyomo (M03's G6; WO-6's readiness answers there)."""
+    from openflowsheet.studies.trust_region.projection import (
+        DecisionSpec,
+        ExternalLinkSpec,
+        InequalitySpec,
+        ObjectiveSpec,
+    )
+
     flowsheet = binding.flowsheet
     reactor: C1Reactor = _only(
         [unit for unit in flowsheet.instances if isinstance(unit, C1Reactor)], "C1 reactor"
@@ -218,6 +229,8 @@ def project_c1(
     """The C1 formulation projected at the state `x0` of `binding`'s inner problem (§6.1): the
     omitted rows are the certified alias elimination's (R-274), and the shape check is required
     (R-278: C1 is forward by construction)."""
+    from openflowsheet.studies.trust_region.projection import project
+
     return project(
         binding.spec,
         x0,
