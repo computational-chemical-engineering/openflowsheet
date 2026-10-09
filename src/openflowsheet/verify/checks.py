@@ -118,9 +118,13 @@ def qualification(provider: PropertyProvider) -> str:
     )
 
 
-def stream_of(state: Mapping[str, float], stream: str) -> StreamState:
+def stream_of(
+    state: Mapping[str, float], stream: str, components: Sequence[str] = COMPONENTS
+) -> StreamState:
+    """`stream`'s `(n, T, P)` read from `state`, its flows in `components` order — SYN-001's by
+    default, a revision's view's on the revision path (M02 design note §14.2 B15 item 1)."""
     return StreamState(
-        n=tuple(state[flow_id(stream, component)] for component in COMPONENTS),
+        n=tuple(state[flow_id(stream, component)] for component in components),
         temperature=state[temperature_id(stream)],
         pressure=state[pressure_id(stream)],
     )
@@ -561,12 +565,15 @@ def bounds_checks(
     provider: PropertyProvider,
     state: Mapping[str, float],
     streams: Sequence[str] = STREAMS,
+    *,
+    components: Sequence[str] = COMPONENTS,
 ) -> list[CheckResult]:
     """§4.6: nonnegative flows exactly, and a flowing stream inside the declared domain.
 
     A dormant stream's `T` and `P` are labels, not a state (ADR 0001 D3.1), so they are not
     checked; the check is recorded `not_applicable` rather than skipped. `streams` is the
-    flowsheet's allocation order: SYN-001's by default, a revision's for `verify_revision`.
+    flowsheet's allocation order: SYN-001's by default, a revision's for `verify_revision`, and
+    `components` the order its flows are read in (M02 design note §14.2 B15 item 1).
     """
     domain = provider.describe().domain
     low_t, high_t = domain["T"]
@@ -590,7 +597,7 @@ def bounds_checks(
             )
 
     for stream in streams:
-        carried = stream_of(state, stream)
+        carried = stream_of(state, stream, components)
         if carried.is_dormant:
             checks.append(
                 dormant(

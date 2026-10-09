@@ -40,6 +40,8 @@ from openflowsheet.orchestrator.rank import AliasElimination, eliminate_alias_ro
 from openflowsheet.orchestrator.tear import Syn001TearProblem
 from openflowsheet.run.compare import CURRENT_POLICY_ID
 from openflowsheet.thermo import PropertyProvider
+from openflowsheet.thermo.pr_c1 import PrC1Provider
+from openflowsheet.thermo.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import (
     FAILING_CATEGORIES,
@@ -588,6 +590,22 @@ def verify_bound(
     )
 
 
+#: M02 design note §14.2 B15: the verifier's own table from a revision's basis to its fresh
+#: provider. It never calls the binder's constructor (`revision_binding.basis_provider`).
+FRESH_PROVIDERS: Final[Mapping[str, Callable[[], PropertyProvider]]] = {
+    SYN001_PROVIDER_ID: Syn001Provider,
+    "pr-c1-v1": PrC1Provider,
+}
+
+
+def fresh_provider(provider_id: str) -> PropertyProvider:
+    """A fresh provider of `provider_id` from `FRESH_PROVIDERS`; any other id is refused."""
+    construct = FRESH_PROVIDERS.get(provider_id)
+    if construct is None:
+        raise VerifierError(f"provider_unknown({provider_id})")
+    return construct()
+
+
 def verify_revision(
     binding: Any,
     revision: Mapping[str, Any],
@@ -607,12 +625,20 @@ def verify_revision(
     `application.revision_binding.RevisionBinding`; `revision` must be the document it was bound
     from, else `declaration_mismatch(revision)`.
     """
-    from openflowsheet.models.revision_flowsheet import RevisionError, parse_revision
+    from openflowsheet.models.revision_flowsheet import (
+        RevisionError,
+        component_basis,
+        parse_revision,
+    )
     from openflowsheet.orchestrator.splits import lifted_splits
     from openflowsheet.verify.table import revision_checks, revision_phase_branch
     from openflowsheet.verify.zero_flow import dormant_outlets, zero_flow_splits
 
     _require_converged(result)
+    # M02 design note §14.2 B15: the fresh provider of the revision's basis (the basis
+    # `parse_revision` reads into `view.basis`), from the verifier's own table.
+    basis = component_basis(revision).provider_id
+    fresh = fresh_provider(basis)
     compiled = compile_problem(binding.spec)
     solved = _guard(
         binding.spec,
@@ -630,10 +656,12 @@ def verify_revision(
         phase_signature=None,
     )
     if solved.final_state is None:
-        return _absent(context, result, resolved)
+        return _absent(context, result, resolved, provider=fresh)
 
     final_state = solved.final_state
-    target = BoundDeclaration(binding.spec, compiled, final_state)
+    target = BoundDeclaration(
+        binding.spec, compiled, final_state, pressure_domain=fresh.describe().domain["P"]
+    )
     if solve_plan is not None:
         found = [alias_document(row) for row in target.partition.elimination.eliminated]
         planned = [alias_document(row) for row in solve_plan.eliminated_rows]
@@ -648,6 +676,8 @@ def verify_revision(
         view = parse_revision(revision)
     except RevisionError as error:
         raise VerifierError(f"revision_unreadable({error.code})") from error
+    if view.basis.provider_id != basis:
+        raise VerifierError(f"basis_mismatch({view.basis.provider_id}, {basis})")
     splits = lifted_splits(
         [(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components
     )
@@ -674,7 +704,6 @@ def verify_revision(
     checks += alias_checks(
         target.partition.elimination.eliminated, values, target.alias_unsupported
     )
-    fresh = Syn001Provider()
     screened = _screen(target, final_state, zero_flow)
     projection = _project(
         target,
@@ -685,6 +714,7 @@ def verify_revision(
         streams=view.streams,
         provider=fresh,
         policy=resolved,
+        components=view.components,
     )
     checks += _judged_at(
         lambda judged_at: revision_checks(
@@ -708,9 +738,12 @@ def verify_revision(
         digest=digest,
         policy=resolved,
         declaration=NOMINAL_DECLARATION,
-        phase_branch=revision_phase_branch(final_state, view.streams, splits),
+        phase_branch=revision_phase_branch(
+            final_state, view.streams, splits, components=view.components
+        ),
         screened=screened,
         projection=projection,
+        provider=fresh,
     )
 
 
@@ -818,10 +851,22 @@ class BoundDeclaration:
     PRESSURE_SHIFT: Final = 997.0
 
     def __init__(
-        self, spec: ProblemSpec, compiled: CompiledProblem, state: Mapping[str, float]
+        self,
+        spec: ProblemSpec,
+        compiled: CompiledProblem,
+        state: Mapping[str, float],
+        *,
+        pressure_domain: tuple[float, float] | None = None,
     ) -> None:
         self.spec = spec
         self.compiled = compiled
+        #: The fresh provider's declared pressure range the shifted copy stays inside (ADR 0014
+        #: D5): SYN-001's unless given (M02 design note §14.2 B15: the revision's basis's).
+        self.pressure_domain = (
+            pressure_domain
+            if pressure_domain is not None
+            else Syn001Provider().describe().domain["P"]
+        )
         metadata = compiled.metadata
         self.context = EvaluationContext(
             model_version=metadata.model_version,
@@ -845,7 +890,7 @@ class BoundDeclaration:
         provider's pressure domain both ways, `pressure_shift_not_generic` when two pressures
         distinct at `state` coincide after the moves (equal ones never can: the amounts are
         distinct and each is positive)."""
-        low, high = Syn001Provider().describe().domain["P"]
+        low, high = self.pressure_domain
         shifted = dict(state)
         moved: list[str] = []
         for index, name in enumerate(self.spec.variable_ids):
@@ -906,8 +951,15 @@ class _BoundPartition:
     tear_rows: tuple[str, ...] = ()
 
 
-def _absent(context: EvaluationContext, result: Any, resolved: CheckPolicy) -> SolutionCertificate:
-    """§3.1: a converged solve of this declaration that carries no final state."""
+def _absent(
+    context: EvaluationContext,
+    result: Any,
+    resolved: CheckPolicy,
+    *,
+    provider: PropertyProvider | None = None,
+) -> SolutionCertificate:
+    """§3.1: a converged solve of this declaration that carries no final state. `provider` is the
+    fresh provider the statements name: SYN-001's unless given (M02 design note §14.2 B15)."""
     plan_id = getattr(getattr(result, "plan", None), "plan_id", "")
     checks = absent_state_certificate()
     status, limitations = grade(checks, policy=resolved)
@@ -932,7 +984,7 @@ def _absent(context: EvaluationContext, result: Any, resolved: CheckPolicy) -> S
         derivative_provenance={},
         independence_qualifications=(),
         limitations=tuple(limitations),
-        statements=statements_for(Syn001Provider()),
+        statements=statements_for(provider if provider is not None else Syn001Provider()),
     )
 
 
@@ -1043,6 +1095,7 @@ def _project(
     streams: Sequence[str],
     provider: PropertyProvider,
     policy: CheckPolicy,
+    components: Sequence[str] | None = None,
 ) -> Projection:
     """ADR 0013 D1: where the fresh-flash categories are judged — the verifier's one Newton
     step of the screened matrix from `final_state`, or `final_state` itself when a precondition
@@ -1061,6 +1114,7 @@ def _project(
         streams=streams,
         domain=provider.describe().domain,
         tolerances=routing_tolerances(policy.tolerances),
+        **({} if components is None else {"components": components}),
     )
 
 
@@ -1105,6 +1159,7 @@ def _issue(
     phase_branch: Mapping[str, Any],
     screened: _Screened,
     projection: Projection,
+    provider: PropertyProvider | None = None,
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
@@ -1142,7 +1197,10 @@ def _issue(
         regularity_reason=regularity.ill_conditioned_reason,
         derivative_ok=derivative_ok,
     )
-    provider = Syn001Provider()
+    # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
+    # qualifications and the statements name; SYN-001's unless given.
+    if provider is None:
+        provider = Syn001Provider()
     capabilities = provider.describe()
 
     return SolutionCertificate(
