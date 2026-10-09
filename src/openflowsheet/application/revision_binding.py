@@ -118,6 +118,7 @@ __all__ = [
     "render_encoding",
     "specification_rows",
     "target_path_table",
+    "with_coupling",
 ]
 
 #: The context a revision-built flowsheet's units are constructed with (§1.4).
@@ -1654,3 +1655,28 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
             for instance in view.instances
         },
     )
+
+
+def with_coupling(
+    binding: RevisionBinding, unit_id: str, conversion: float, temperature_rise: float
+) -> RevisionBinding:
+    """`binding` with the embedded C1 reactor `unit_id` pinned at w = (X̂, ΔT̂): the inner problem
+    of the coupled route at that w (M02 design note §4.1-§4.2; ADR 0034 D1-D2), every other unit
+    and the structural record unchanged, the spec rebuilt (`<U>.coupling.X` and `<U>.coupling.dT`
+    are carried in its `constants_sha256`).
+
+    Additive accessor for M05 (design note §12 WO-5: the inner solve at pinned w, which M05's
+    reference and parent checks call through `plan_revision`/`execute_plan`). It is the binding
+    `tests/test_m02_wo9_reactor.py::at_coupling` builds; at the binding's own w it rebuilds the
+    same spec. Raises `ValueError` if `unit_id` is not a C1 reactor of the flowsheet."""
+    flowsheet = binding.flowsheet
+    found = [model for model in flowsheet.instances if model.unit_id == unit_id]
+    reactor = found[0] if len(found) == 1 else None
+    if not isinstance(reactor, c1_reactor.C1Reactor):
+        raise ValueError(f"{unit_id!r} is not an embedded C1 reactor of this flowsheet")
+    pinned = replace(
+        reactor, conversion=float(conversion), temperature_rise=float(temperature_rise)
+    )
+    units = tuple(pinned if model is reactor else model for model in flowsheet.instances)
+    rebuilt = replace(flowsheet, instances=units)
+    return replace(binding, flowsheet=rebuilt, spec=rebuilt.spec())
