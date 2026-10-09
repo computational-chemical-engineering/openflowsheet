@@ -218,6 +218,15 @@ On the revision path the verifier was SYN-001-shaped in five ways:
    stream; a declared liquid port is `unsupported`.
 6. **Liquid-side check.** The flash gains `material_balance.<U>.liquid.<i>` = `n_L,i` against τ_flow for each
    vapour-only component.
+7. **Derivative witness** (added 2026-10-09, §14.3 C2; R-281). For a `pr-c1-v1` revision, the K04 §4.8 witness
+   does not difference stream component-flow columns that are exactly `0.0` at the witnessed state. Every other
+   column is still differenced. No two-sided derivative exists at those columns.
+   - Both witness checks name the count in their `independence_qualification`.
+   - The certificate carries the limitation `{"kind": "derivative_witness_partial", "columns": [...]}`.
+   - The witness's claim is restricted to the differentiable columns, and the certificate says so.
+8. **Near-dew window** (§14.3 C3; R-282). The equilibrium and liquid-total rows are singular at the dew point, so a
+   flash within the window certifies UNVERIFIED (`rank_limitation`). It is stated in the unit's manifest, as
+   SYN-001's `DEW_POINT_LIMITATION` is.
 
 ### Alternatives rejected
 

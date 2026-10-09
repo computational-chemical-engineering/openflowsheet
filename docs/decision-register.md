@@ -5052,6 +5052,11 @@ Provider-generic rewrites of SYN-001's functions: they put W1.d's bitwise pairin
 **Watch for.** A PR check that silently passes where the provider refused. A SYN-001 certificate byte that moves
 (G2 (ii)).
 
+> **Amended 2026-10-09 (§14.3 C2, C4; R-281):** confirmed as built (D39). The alias certificates' pressure shift
+> reads the fresh provider's domain; qualifications and statements name the fresh provider; the provider is chosen
+> from `component_basis(revision)` before the guard; a refused `.dew` flash is `unsupported` (`dew_<status>`). The
+> derivative witness skips exactly-zero `pr-c1-v1` stream flows, and records that it did (R-281).
+
 ---
 
 ## R-258 — At exact dormancy a PR vapour block takes the ideal-gas limit; a pure-NH₃ liquid block takes a unit probe, falling back to the vapour root
@@ -5102,5 +5107,82 @@ liquid.
 
 **Watch for.** A variant whose runner needs a different environment: that is a new lock, hence a new `env_id`, never a
 manifest key.
+
+---
+
+## R-280 — The C1 builders join `MODEL_BUILDERS` in one commit at the end of WO-9; until then a binder-only C1 registry is an interim that may not merge
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D36 |
+| Normative text | design note §14.3 C1 |
+| Evidence | joining in WO-8 fails 13 registry and coverage tests in 10 files (D36); they need registered C1 corpus revisions, which WO-9's loop creates |
+| Affected packages | M02 (WO-9), M06 (W27 snapshot, R-176), T08 envelope (R-193) |
+
+**Decision.** `C1_MODEL_BUILDERS` and `C1_MODEL_SIGNATURES` are read by the binder only, through WO-9. WO-9's last
+commit moves all eight entries into `MODEL_BUILDERS` and `MODEL_SIGNATURES`. The same commit adds:
+- registered C1 corpus revisions, so that the coverage tests are met by evidence;
+- the pinned surface fixtures, re-taken with a decomposition test (the `c1.` entries stripped = pre-M02);
+- the envelope listing, with the stand-in marked synthetic;
+- the W27 snapshot, re-pinned with a design-lane mapping amendment.
+
+There is no merge and no `tested` manifest while the interim registry exists.
+
+**Rejected alternatives, and why.** A permanent split registry: the binder would accept models that `list_models`
+does not name. Joining in WO-8: the coverage tests would need exemptions.
+
+**Watch for.** The interim surviving into a merge. Coverage tests exempted instead of satisfied.
+
+---
+
+## R-281 — The certificate's derivative witness does not difference exactly-zero `pr-c1-v1` stream-flow columns, and says so in the certificate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D40 (ratifies `d9c7cd4` with a narrower scope and a record) |
+| Normative text | design note §14.3 C2; ADR 0013 Amendment 3 item 7 |
+| Evidence | D40: at such columns the stencil leaves the provider's domain (negative flow, `light_gas_in_liquid`, `no_liquid_root`), so every C1 flash was UNVERIFIED; R-258's conventions have no derivative to compare |
+| Affected packages | M02, K04 (revision path only) |
+
+**Decision.**
+- **Scope.** Only `<S>.n.<c>` columns exactly `0.0` at the witnessed state, on a `pr-c1-v1` basis. Totals and other
+  columns are still differenced.
+- **Record.** Both witness checks carry the qualification `"not differenced: <k> exactly-zero pr-c1-v1 stream-flow
+  columns (design note §14.3 C2)"`. The certificate carries the limitation `derivative_witness_partial`, listing the
+  columns.
+- **The claim, restated.** The witness covers the differentiable columns. The excluded entries are checked by G7 (h)
+  and M01's derivative assertions, not by the certificate.
+
+**Rejected alternatives, and why.** The full stencil: it fails for a mathematical reason, not a state defect. A
+forward stencil: it needs an unregistered tolerance, and at dormant columns it would test a convention against a
+derivative that does not exist. An unrecorded exclusion: that would be a hidden weakening.
+
+**Watch for.** The exclusion widened to other columns or bases. A certificate whose witness was partial but which
+carries no `derivative_witness_partial` limitation.
+
+---
+
+## R-282 — A `pr-c1-v1` flash near its dew point certifies UNVERIFIED: a registered near-dew window, not a widened τ_dew
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D41 |
+| Normative text | design note §14.3 C3; `c1.tp_flash` manifest limitation |
+| Evidence | D41: at F4, rcond_1 ≈ 5.9e-19 (E and Ldef proportional on (L, l_NH₃)); TWO_PHASE side rcond_1 ≈ 7e-3 L/n_tot (δ = 1e-8, 1e-7, 1e-5 measured); SYN-001's `DEW_POINT_LIMITATION` is the same fact |
+| Affected packages | M02, M05, M07 (a flash run near its dew point) |
+
+**Decision.** At the dew point the certificate is UNVERIFIED with RANK_DEFICIENT, which is asserted as the
+registered expectation. On the TWO_PHASE side the window is `L/n_tot < ~1.4e-6`: the certificate is VERIFIED from
+there, and its verdict is promised (not near threshold) from about 1.4e-5. The VAPOR side is measured by G7 (c) and
+stated in the manifest. The loop's flash, at `L/n_tot ≈ 0.05`, is about four decades clear.
+
+**Rejected alternatives, and why.** Widening τ_dew (it would read genuinely two-phase states as vapour). A
+reformulated equilibrium row near the dew point (a new formulation for a case the loop never visits).
+
+**Watch for.** An operating point (M05, M07) inside the window reported as a solver failure rather than this
+limitation.
 
 ---

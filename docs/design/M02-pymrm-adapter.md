@@ -758,7 +758,7 @@ Each gate is decided by a recorded number or an exact assertion. "Default gate" 
   `fail`, certificate `FAILED`).
   (f) Scaling: at the stand-in loop's solution, the scaled Jacobian's `rcond_1` ≥ 10 × τ_ill (recorded); if not, a
   C1 nominal set is proposed to the design lane — not chosen by the build lane. *(Measured at WO-9, §14.2.)*
-  (b), (c) as extended and (g)–(k): §14.2 "Gates as amended".
+  (b), (c) as extended and (g)–(k): §14.2 "Gates as amended"; (a) and (c) as amended again by §14.3 C3 and "G7 (a) amended".
 - **G8 Coupled route with the stand-in.** On `C1-LOOP-M02-v1` (stand-in): (a) `CONVERGED` at k = 1 with exactly two
   experiments; certificate `VERIFIED`; both coupling checks `pass`, the ξ check's value ≤ 10⁻¹² (roundoff of the
   per-tube mapping and the projection) and the T check's exactly 0.0; (b) flowsheet element balance
@@ -1409,3 +1409,119 @@ The TWO_PHASE root set is unchanged, and no closed form, provider behaviour, reg
 moves. Nothing in F4 needs one: every tolerance it uses is already registered (B15).
 
 **Risks added to §11:** K14 to K18.
+
+### 14.3 Fourth round, 2026-10-09 (`wp/M02` @ `8734905`: WO-8 built; gate green, 8081 passed; build log D34–D42)
+
+WO-8 is built against §14.2. G2 holds: the 50 T07 corpus revisions dump byte-identically at `bfbad26`, `bd861bd`
+and the head; `SPLITS_REPR` is unchanged; only B13's four tests were edited. G7 (b), (d), (e) and (g)–(k) pass,
+and the policy hash is unchanged. D34, D35 (CasADi-legal block ids), D37 and D38 are ratified as built. Four
+questions came back. Register R-280 to R-282.
+
+**C1 (D36) — The C1 builders join `MODEL_BUILDERS` before M02 is `tested`. The binder-only registry is an interim
+that ends with WO-9 (R-280).**
+
+`list_models` is the discovery surface. A binder that accepts model ids `list_models` does not name contradicts it.
+D14/N4 intend the C1 models, the stand-in among them, to be listed, and the v0.2 envelope (R-193, T08.A20) and W27
+(R-176) need them. So:
+- **Interim (now to the end of WO-9).** `revision_binding.C1_MODEL_BUILDERS` and `C1_MODEL_SIGNATURES` are
+  binder-only. WO-9 adds `c1.reactor` and `c1.reactor_standin` there.
+- **The join is one isolated commit, WO-9's last.** It moves all eight entries into `MODEL_BUILDERS` and
+  `MODEL_SIGNATURES`, and deletes the C1 registry. It also does four things:
+  - (a) It registers C1 corpus revisions: `C1-LOOP-M02-v1` with the stand-in, plus G7's flash, heater and mixer
+    revisions. The coverage tests (T07 r6 hints, w5c signatures, T08 A14, E1/E2, A33) are then met by evidence;
+    no builder is exempted.
+  - (b) Every pinned `list_models` and surface fixture is re-taken, with a decomposition test: with the `c1.`
+    entries stripped, each equals its pre-M02 fixture (R-234's method).
+  - (c) The v0.2 envelope lists the eight models, the stand-in as synthetic.
+  - (d) M06's W27 registry snapshot is re-pinned with a mapping of the `c1.*` units by function. R-176 refuses
+    unmapped ids, so that mapping is a design-lane amendment to the W27 table, requested before the join.
+- No `wp/M02` merge and no M02 `tested` manifest while the interim registry exists.
+
+*Rejected.*
+- A permanent second registry: the surface would understate what the server binds.
+- Joining now: the coverage tests need the C1 loop corpus that WO-9 creates, so joining now would force
+  exemptions.
+
+**C2 (D40) — The certificate's witness skips exactly-zero `pr-c1-v1` stream flows. Ratified, narrowed and recorded
+(R-281).**
+
+The certificate's derivative witness (K04 §4.8) is a finite-difference Jacobian check, and B17's *Consequence*
+covers it. At an exactly-zero stream-flow column of a `pr-c1-v1` revision there is no two-sided derivative to
+witness:
+- the backward point is a negative flow, which the provider refuses;
+- the forward point is light gas in the pure liquid, which is refused, or the column is B17's convention for a
+  dormant stream;
+- for an absent component of a flowing stream (for example the makeup's NH₃), the derivative exists one-sided,
+  but a central stencil cannot reach it.
+
+So **the exclusion does weaken the witness's claim, and it must be visible.** The witness then certifies the
+Jacobian on every differentiable column. The excluded entries are B17's conventions, exact coefficients of linear
+rows, or the provider's analytic derivatives at infinite dilution (M01 §4.6). G7 (h) and M01's derivative
+assertions check them, the certificate does not. A regularity verdict at such a root is a statement about the
+declared Jacobian. Amendments to `d9c7cd4`:
+- **Scope.** Only stream component-flow columns (`<S>.n.<c>`, `stream_variables`) that are exactly `0.0` at the
+  witnessed state, and only for a `pr-c1-v1` basis. Totals (`<S>.N`), duties and all other columns keep the stencil;
+  perturbing them makes no provider call.
+- **Record.** No schema change is needed.
+  - Both witness checks carry `independence_qualification` = `"not differenced: <k> exactly-zero pr-c1-v1
+    stream-flow columns (design note §14.3 C2)"`.
+  - The certificate carries one limitation, `{"kind": "derivative_witness_partial", "columns": [<sorted ids>],
+    "reason": "pr_c1_zero_flow_columns"}`. `limitations` items are open objects with a required `kind`.
+  - When nothing is excluded, neither is written, so SYN-001 certificates do not move (G2 (ii)).
+
+*Rejected.*
+- Keeping the full stencil: every C1 flash would be UNVERIFIED for a mathematical reason, not a defect of the state.
+- A forward stencil for one-sided columns: its O(step) truncation error needs a tolerance the check policy lacks,
+  and at dormant columns it would test the convention against a derivative that does not exist.
+
+**C3 (D41) — The dew point is a bifurcation, so a registered near-dew limitation replaces G7 (c)'s "VERIFIED"
+(R-282).**
+
+At the dew point, E's and Ldef's rows are proportional on (L, l_NH₃), which is §14.2's prediction ("singular
+exactly at the dew point") and SYN-001's `DEW_POINT_LIMITATION`. The measured law on the TWO_PHASE side at F4 is
+`rcond_1 ≈ 7e-3 · L/n_tot`. With τ_ill = 1e-8:
+- **UNVERIFIED** (`rank_limitation`) for `L/n_tot` below about 1.4e-6.
+- **VERIFIED** from there.
+- **Promised** (not near threshold, ADR 0007 D2.4) from about 1.4e-5.
+
+The VAPOR side is ∝ undersaturation, and is measured below. `c1.tp_flash`'s manifest states the window,
+analogous to SYN-001's `DEW_POINT_LIMITATION`. The text: "A flash whose solution lies within the near-dew window of
+its dew point is certified UNVERIFIED with a rank limitation, because the equilibrium and liquid-total rows are
+singular at the dew point: on the TWO_PHASE side the window is L/n_tot < 1.4e-6 at the measured state (rcond_1 ≈
+7e-3 L/n_tot), and on the VAPOR side it is as measured by G7 (c). τ_dew does not move."
+
+*The loop.* The flash runs at 253.15 K with `L/n_tot` ≈ 0.05–0.07, so this mode gives `rcond_1` ≈ 4e-4, four
+decades above τ_ill. G8 and G12 record the flash's `L/n_tot` and the certificate's `rcond_1`.
+
+*G7 (c) as amended.* The feed is vapour at 300 K, flashed at 268.15 K and 10⁷ Pa.
+- At F4: CONVERGED, VAPOR, `.dew` = 0.0, and UNVERIFIED with RANK_DEFICIENT, **asserted as the registered
+  expectation** (the strict xfail goes).
+- At F4 × (1 + δ):
+  - δ = 1e-5: UNVERIFIED (measured);
+  - δ = 1e-4: VERIFIED, with `rcond_1` near threshold;
+  - δ = 1e-3: VERIFIED, no near-threshold flag.
+- At F4 × (1 − δ), for δ = 1e-6, 1e-4 and 1e-2: record the VAPOR-side law and the δ from which the certificate is
+  VERIFIED, and put it in the manifest's statement.
+- If δ = 1e-3 is not VERIFIED, the work stops and goes to the design lane.
+
+**C4 (D39) — All confirmed. None is a relaxed check.** Each replaces a SYN-001 constant that was wrong on a C1 revision
+with the revision's own provider:
+- (a) The alias certificates' shifted pressure is checked against the fresh provider's domain. Before, every C1
+  alias check was `unsupported`; now it is evaluated and can fail.
+- (b) Qualifications and statements name the provider actually used ([A09]).
+- (c) The provider is selected from `component_basis(revision)` before the guard, and checked equal to `view.basis`.
+- (d) A `.dew` whose fresh flash is refused is `unsupported` (`dew_<status>`), which makes the certificate
+  UNVERIFIED; it is never a pass. A declared vapour that flashes LIQUID fails with value 1.
+
+**G7 (a) amended.** The C1 flash's inlet is declared vapour and its `Ḣ_in` is a vapour block (B12). So F1 and F11
+fed *at their own T* are two-phase feeds outside the unit, and the FAILED declared-port check is correct.
+
+The gate now feeds F1's and F11's compositions as vapour at 673.15 K, with the flash at their T and P. Its
+certificates are VERIFIED, as measured, and its agreement assertions are unchanged. It runs no Newton iteration,
+because the start is the exact split; the reactor-less loop exercises Newton.
+
+**What WO-9 needs:**
+- the reactor builders in the interim registry, then the join commit (C1);
+- the witness narrowing and its record (C2);
+- G7 (c) and the manifest statement (C3);
+- the W27 mapping amendment, requested from the design lane before the join.
