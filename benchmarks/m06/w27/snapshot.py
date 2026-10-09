@@ -7,18 +7,22 @@ select, each with its provider id, its component records (`identifiers`, `synthe
 it admits per component, and the model ids the binder accepts with it — read from the binder's own
 tables, never from a hand-written list.
 
-How a binder exposes selectable routes is version-specific. A reading is registered here per
-package version; for any other version the builder refuses (`SnapshotUnsupportedError`,
-`registry_snapshot: unsupported(route enumeration)`, §17 Q1's default) until an amendment registers
-the reading for that binder (M01/M02 at M07). At 0.1.1 there is one implicit route: the binder
-builds every revision over `Syn001Provider`, admits exactly `canonical_components`' set, and
-accepts every model of `MODEL_BUILDERS`.
+How a binder exposes selectable routes is binder-specific, and the reading is chosen by what the
+binder exposes (W27-R63, registration §21.4), never by the package version alone: M02's binder
+selects its basis by `record_source` and still says `0.1.1`. A binder no registered reading fits is
+refused (`SnapshotUnsupportedError`, `registry_snapshot: unsupported(route enumeration)`, §17 Q1's
+default) until an amendment registers its reading.
+
+- **`0.1.1`** iff `__version__ == "0.1.1"` **and** `revision_binding` has no `basis_provider`:
+  one implicit route — the binder builds every revision over `Syn001Provider`, admits exactly
+  `canonical_components`' set, and accepts every model of `MODEL_BUILDERS`.
 """
 
 from __future__ import annotations
 
 import subprocess
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
+from types import ModuleType
 from typing import Any, Final
 
 from benchmarks.m06.w27 import registration
@@ -48,12 +52,11 @@ def list_models_document() -> tuple[dict[str, Any], str]:
     return document, registration.sha256_bytes(canonical_json(document))
 
 
-def _routes_0_1_1() -> list[dict[str, Any]]:
+def _routes_0_1_1(binding: ModuleType) -> list[dict[str, Any]]:
     """0.1.1's binder: one implicit route over SYN-001 (`revision_binding.bind_revision_flowsheet`
     constructs `Syn001Provider()`; `canonical_components` admits a permutation of its set)."""
     import yaml  # noqa: PLC0415
 
-    from openflowsheet.application.revision_binding import MODEL_BUILDERS  # noqa: PLC0415
     from openflowsheet.models.revision_flowsheet import canonical_components  # noqa: PLC0415
     from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: PLC0415
 
@@ -84,16 +87,18 @@ def _routes_0_1_1() -> list[dict[str, Any]]:
         {
             "provider_id": capabilities.provider_id,
             "components": components,
-            "model_ids": sorted(MODEL_BUILDERS),
+            "model_ids": sorted(binding.MODEL_BUILDERS),
         }
     ]
 
 
-#: Registered readings of the binder's route tables, by package version (§17 Q1). Each returns
-#: `routes`; `routes_per_revision` is the binder's (one route per revision at 0.1.1).
-READINGS: Final[Mapping[str, tuple[Callable[[], list[dict[str, Any]]], int]]] = {
-    "0.1.1": (_routes_0_1_1, 1),
-}
+def reading_for(binding: ModuleType, version: str) -> str:
+    """W27-R63: the registered reading of this binder, or a refusal."""
+    if version == "0.1.1" and not hasattr(binding, "basis_provider"):
+        return "0.1.1"
+    raise SnapshotUnsupportedError(
+        f"registry_snapshot: unsupported(route enumeration) for openflowsheet {version}"
+    )
 
 
 def git_commit() -> str | None:
@@ -108,16 +113,16 @@ def git_commit() -> str | None:
         return None
 
 
-def build_snapshot(version: str | None = None) -> dict[str, Any]:
-    """W27-R22's document for the build at hand. Refuses an unregistered binder reading."""
+def build_snapshot(version: str | None = None, binding: ModuleType | None = None) -> dict[str, Any]:
+    """W27-R22's document for the build at hand (`version` and `binding` default to this build's
+    `__version__` and `revision_binding`). Refuses a binder no registered reading fits (W27-R63)."""
     from openflowsheet import __version__  # noqa: PLC0415
+    from openflowsheet.application import revision_binding  # noqa: PLC0415
 
     version = __version__ if version is None else version
-    if version not in READINGS:
-        raise SnapshotUnsupportedError(
-            f"registry_snapshot: unsupported(route enumeration) for openflowsheet {version}"
-        )
-    reading, per_revision = READINGS[version]
+    binding = revision_binding if binding is None else binding
+    reading_for(binding, version)
+    routes = _routes_0_1_1(binding)
     document, digest = list_models_document()
     return {
         "schema": SCHEMA,
@@ -125,7 +130,7 @@ def build_snapshot(version: str | None = None) -> dict[str, Any]:
         "git_commit": git_commit(),
         "list_models_sha256": digest,
         "models": [{"model_id": m["model_id"]} for m in document["models"]],
-        "routes": reading(),
-        "routes_per_revision": per_revision,
+        "routes": routes,
+        "routes_per_revision": 1,
         "basis": "built by benchmarks.m06.w27.snapshot from the build at git_commit",
     }

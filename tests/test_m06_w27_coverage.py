@@ -13,6 +13,7 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import pytest
@@ -464,6 +465,21 @@ def test_snapshot_of_this_build_is_todays_registry() -> None:
 def test_snapshot_refuses_an_unregistered_binder_reading() -> None:
     with pytest.raises(snapshot.SnapshotUnsupportedError, match="route enumeration"):
         snapshot.build_snapshot(version="0.2.0")
+
+
+def test_the_0_1_1_reading_refuses_a_binder_with_basis_provider() -> None:
+    """W27-R63 item 2: a binder that selects its basis (M02's `basis_provider`) and still says
+    0.1.1 is not read as 0.1.1's one SYN-001 route. TEST INPUT: today's binder plus the name."""
+    from openflowsheet.application import revision_binding  # noqa: PLC0415
+
+    assert snapshot.reading_for(revision_binding, "0.1.1") == "0.1.1"
+    multi_basis = ModuleType("constructed_revision_binding")
+    multi_basis.__dict__.update(vars(revision_binding))
+    multi_basis.basis_provider = lambda basis: None  # type: ignore[attr-defined]
+    with pytest.raises(snapshot.SnapshotUnsupportedError, match="route enumeration"):
+        snapshot.reading_for(multi_basis, "0.1.1")
+    with pytest.raises(snapshot.SnapshotUnsupportedError, match="route enumeration"):
+        snapshot.build_snapshot(version="0.1.1", binding=multi_basis)
 
 
 def _revision_over(components: list[str]) -> dict[str, Any]:
