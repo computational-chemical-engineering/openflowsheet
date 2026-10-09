@@ -592,3 +592,10 @@ Grep, don't read whole. Newest at the bottom.
   (VAPOR side from |δ| 2.48e-4, TWO_PHASE from L/n 3.37e-5; δ=1e-4 UNVERIFIED by the absolute screen limit and the
   witness stencil); D46 optional `coupling_initial` needs a frozen-schema amendment; F-A2-1; D45/D47 confirmations.
   Asked the WO-8 rulings architect (§14.4). Then the join (R-280 + W27 J1–J6).
+- M02 pre-join rulings (`d5df272`, §14.4, R-287…R-289, R-282 amended): D44 measured near-dew window ratified (verifies
+  from |δ| ≈ 2.5e-4 vapour side, L/n ≈ 3.4e-5 two-phase side; §14.3 C3 withdrawn; loop flash ~3,800× clear); D46
+  `coupling_initial` stays refused (start is solver state; warm start via ADR 0024 if M05 needs it); F-A2-1 yes —
+  each model binds on its own basis, `MODEL_BASES` single source; D45/D47 confirmed. Join list accepted + no exemptions;
+  the served MCP digest must not move.
+- `opus-engineer` M02 join (merge main; R-288/J1; R-280 registry move + corpus + fixtures + envelope; W27 J2–J6; R-282
+  G7(c)) launched on `wp/M02`.
