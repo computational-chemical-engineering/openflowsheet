@@ -101,7 +101,7 @@ def rough_prefix(tmp_path_factory: pytest.TempPathFactory) -> Study:
 
 
 def _attempt_files(root: Path) -> list[Path]:
-    return sorted(root.glob("experiments/*/*/attempt-*.json"))
+    return sorted(root.glob("experiments/*/*/attempts/*.json"))
 
 
 def _failed_indices(manifest: dict[str, Any]) -> dict[str, list[int]]:

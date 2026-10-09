@@ -76,7 +76,7 @@ def read(app: LocalApplication, artifact_id: str) -> dict[str, Any]:
 
 
 def attempts(app: LocalApplication) -> list[Path]:
-    return sorted(app.files_root.glob("experiments/*/*/attempt-*.json"))
+    return sorted(app.files_root.glob("experiments/*/*/attempts/*.json"))
 
 
 @pytest.fixture
