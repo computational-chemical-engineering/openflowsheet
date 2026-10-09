@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import tempfile
 import time
 from collections.abc import Callable, Mapping
@@ -61,6 +62,8 @@ from openflowsheet.application.coupled_run import (
     coupling_evidence,
     coupling_record_problem,
     external_units,
+    final_constants,
+    iterate_differences,
     reproducibility_class,
     solve_coupled,
 )
@@ -1016,18 +1019,28 @@ def reproduce_bundle(
             _inspected(directory, f"rerun_unsupported(route_unbound({solve_path}))")
         )
     coupling: Mapping[str, Any] | None = None
+    coupling_found: list[str] = []
     if route.solve_path == "revision_coupled":
         # M02 design note §7.2 step 1: the record against its schema, and each embedded request's
         # key against its content.
         if COUPLING_NAME not in manifest.artifacts:
             at("compare")
             return Reproduction(_inspected(directory, "rerun_unsupported(no_external_coupling)"))
-        coupling = read_artifact(directory, COUPLING_NAME)
-        problem = coupling_record_problem(coupling)
+        record: Mapping[str, Any] = read_artifact(directory, COUPLING_NAME)
+        coupling = record
+        problem = coupling_record_problem(record)
         if problem is not None:
             at("compare")
             return Reproduction(
                 _inspected(directory, f"rerun_unsupported(external_coupling_invalid({problem}))")
+            )
+        # §14.5 D8 (R-308) item 2: the constants digest's R0 guard, by recomputation.
+        constants = final_constants(route.binding, record)
+        if constants is not None and constants[0] != constants[1]:
+            final = record["iterations"][-1]
+            coupling_found.append(
+                f"coupling_constants: {constants[1]} rebuilt at the record's final w "
+                f"{final['w']!r} (k = {final['k']}), against the recorded {constants[0]}"
             )
     at("rerun")
     with tempfile.TemporaryDirectory(prefix="ofs-replay-") as scratch:
@@ -1056,10 +1069,25 @@ def reproduce_bundle(
             )
         except ReplayDivergenceError as error:
             at("compare")
-            return Reproduction(_diverged(directory, error.difference))
+            report = _diverged(directory, error.difference)
+            return Reproduction(_with_differences(report, coupling_found))
     artifacts = {
         name: read_artifact(Path(rerun_directory), name) for name in rerun_manifest.artifacts
     }
+    if coupling is not None:
+        # §14.5 D8 (R-308) items 1 and 3: the record's inner-solve constants digests for shape
+        # (item 2 guards the final one; the manifest is not compared), and the iterates under the
+        # archive's policy.
+        artifacts = {
+            name: _constants_for_shape(document, read_artifact(directory, name))
+            if name == COUPLING_NAME and name in manifest.artifacts
+            else document
+            for name, document in artifacts.items()
+        }
+        if COUPLING_NAME in artifacts:
+            coupling_found += iterate_differences(
+                artifacts[COUPLING_NAME], coupling, manifest.numerical_policy_id
+            )
     at("compare")
     # On `revision_coupled` the state is written over the final inner spec, whose columns and
     # kinds are the route's binding's (w moves constants only).
@@ -1067,7 +1095,48 @@ def reproduce_bundle(
     report = replay(directory, rerun_result)
     if experiments is not None and coupling is not None:
         report = _replayed_from_record(report, experiments, coupling)
-    return Reproduction(report, rerun_manifest)
+    return Reproduction(_with_differences(report, coupling_found), rerun_manifest)
+
+
+_HEX64: Final = re.compile(r"[0-9a-f]{64}")
+
+
+def _constants_for_shape(fresh: Any, archived: Any) -> Any:
+    """§14.5 D8 (R-308) item 1. On `revision_coupled` every `constants_sha256` digests an inner
+    solve's X̂ and ΔT̂, which Broyden computes in floating point: by ADR 0007's criterion a digest
+    of an R1/R2 quantity, compared for shape, never for value. `fresh` with each well-formed
+    `constants_sha256` that the archive also has, well-formed, at the same place replaced by the
+    archive's; anything else is left for `replay` to compare, so a malformed digest is a
+    difference. The final digest's R0 guard is `final_constants`'s recomputation."""
+    if isinstance(fresh, dict) and isinstance(archived, dict):
+        shaped: dict[str, Any] = {}
+        for key, value in fresh.items():
+            theirs = archived.get(key)
+            if (
+                key == "constants_sha256"
+                and isinstance(value, str)
+                and isinstance(theirs, str)
+                and _HEX64.fullmatch(value)
+                and _HEX64.fullmatch(theirs)
+            ):
+                shaped[key] = theirs
+            else:
+                shaped[key] = _constants_for_shape(value, theirs) if key in archived else value
+        return shaped
+    if isinstance(fresh, list) and isinstance(archived, list):
+        return [
+            _constants_for_shape(value, archived[index]) if index < len(archived) else value
+            for index, value in enumerate(fresh)
+        ]
+    return fresh
+
+
+def _with_differences(report: ReplayReport, found: list[str]) -> ReplayReport:
+    """`report` with the coupled route's own differences (§14.5 D8) added: any one is a
+    `MISMATCH`."""
+    if not found:
+        return report
+    return replace(report, differences=(*report.differences, *found), verdict="MISMATCH")
 
 
 def _diverged(directory: Path, difference: str) -> ReplayReport:
