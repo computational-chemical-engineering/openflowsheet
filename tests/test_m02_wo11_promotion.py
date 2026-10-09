@@ -3,11 +3,12 @@
 
 On a project with `C1-LOOP-M02-v1` (stand-in) solved once:
 
-- G9 (a) as the gate states it — stand-in → `c1.reactor` @ the real variant, every facet `pass` —
-  is a strict xfail: §6.2's `validity` includes the variant hard domain, and the real variant
-  bounds the per-tube flow (ADR 0034 D10) where the stand-in does not, so the real domain does not
-  contain the stand-in's (build log D61, escalated). Its measured outcome is asserted beside it.
-  The commit's machinery is (a) in the direction §6.2 allows: a compatible promotion (to a
+- G9 (a1) as restated (design note §14.5 D6, R-306): stand-in → `c1.reactor` @ the shipped real
+  variant is `rejected`, `model_replacement_incompatible`, on `validity` alone, by design: the
+  other eight facets `pass`, and `validity`'s detail names exactly the hard-domain dimensions in
+  which the real variant is narrower — computed here from the two variant documents (data, not the
+  code under test) — with v2's literal `hard_domain.tube_flow_mol_s None -> [...]`.
+- G9 (a2), the commit machinery, unchanged: a compatible promotion (to a
   test-only copy of the stand-in, and real → stand-in) is `committed`, every facet `pass`,
   `invalidations == ["run-<that job>"]`, the coarse diff names `instances` and `diff_revisions`'
   `elements` the instance's `model.*` paths, and the report is an artifact whose SHA-256 is in the
@@ -138,26 +139,28 @@ def test_the_report_facets_are_the_schemas_in_its_order() -> None:
 # == G9 (a) ======================================================================================
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "G9 (a) vs §6.2 (escalated, build log D61): the real variant's hard domain bounds the "
-        "per-tube flow to [0.5, 2] F_nom (ADR 0034 D10), the stand-in's does not, so `validity` "
-        "(the new domain contains the old) fails"
-    ),
-)
-def test_g9a_standin_to_the_real_reactor_commits_with_every_facet_passing(
-    solved: tuple[LocalApplication, str, dict[str, Any]],
-) -> None:
-    app, revision_id, _ = solved
-    result = app.commit_change(change(reference(REAL)), revision_id, "promote")
-    assert result.status == "committed"
+def narrower_dimensions(old: variants.Variant, new: variants.Variant) -> set[str]:
+    """The hard-domain dimensions in which `new` declares less than `old`, from the documents: an
+    interval (`null` unbounded) that does not contain the old one, or a lower `inert_max`."""
+    before, after = old.boundary["hard_domain"], new.boundary["hard_domain"]
+    found = set()
+    for name, interval in after.items():
+        inner = before.get(name)
+        if name == "inert_max":
+            if inner is None or interval < inner:
+                found.add(name)
+        elif interval is not None and (
+            inner is None or not interval[0] <= inner[0] <= inner[1] <= interval[1]
+        ):
+            found.add(name)
+    return found
 
 
-def test_g9a_standin_to_the_real_reactor_as_section_6_2_judges_it(
+def test_g9a1_standin_to_the_real_reactor_is_rejected_on_validity_alone(
     solved: tuple[LocalApplication, str, dict[str, Any]],
 ) -> None:
-    """The measured outcome the escalation cites: every facet but `validity` passes."""
+    """§14.5 D6 (R-306): the real variant's declared domain is narrower than the stand-in's, so
+    the promotion is refused by `validity`, by design; every other facet passes."""
     app, revision_id, _ = solved
     result = app.commit_change(change(reference(REAL)), revision_id, "promote")
     valid(result)
@@ -165,7 +168,15 @@ def test_g9a_standin_to_the_real_reactor_as_section_6_2_judges_it(
     assert result.error.code == "model_replacement_incompatible"
     assert facets(result) == {facet: "pass" for facet in FACETS} | {"validity": "fail"}
     (validity,) = [f for f in result.error.detail["report"]["facets"] if f["facet"] == "validity"]
-    assert "hard_domain.tube_flow_mol_s None" in validity["detail"]
+    prefix = "the new domain does not contain the old: "
+    assert validity["detail"].startswith(prefix)
+    items = validity["detail"].removeprefix(prefix).split("; ")
+    named = {item.split(" ", 1)[0].removeprefix("hard_domain.") for item in items}
+    assert all(item.startswith("hard_domain.") for item in items)
+    assert named == narrower_dimensions(STANDIN, REAL) == {"tube_flow_mol_s"}
+    assert items == [
+        "hard_domain.tube_flow_mol_s None -> [0.003573480649651052, 0.014293922598604208]"
+    ]
     report = result.error.detail["report"]
     assert report["from"]["synthetic"] is True and report["to"]["synthetic"] is False
     assert head(app) == revision_id
