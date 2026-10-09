@@ -328,8 +328,9 @@ def _link_toy_objective(
     return (v["T_out"] - 760.0) ** 2 / 100.0
 
 
-def link_toy_projection(shape: str, **options: Any) -> Any:
-    """The link toy in its `forward` or `implicit` shape, projected with the decision `z`."""
+def link_toy_projection(shape: str, truth: Any = None, **options: Any) -> Any:
+    """The link toy in its `forward` or `implicit` shape, projected with the decision `z`; its
+    link is bound to `truth` (`LinkToyTruth` by default)."""
     from openflowsheet.studies.trust_region.projection import (
         DecisionSpec,
         ExternalLinkSpec,
@@ -362,7 +363,11 @@ def link_toy_projection(shape: str, **options: Any) -> Any:
         decisions=[DecisionSpec("z", 0.9, 1.1)],
         objective=ObjectiveSpec("link-toy-objective", "minimize", _link_toy_objective, 1.0),
         domain={},
-        external_links=[ExternalLinkSpec("R", "R.X", "R.dT", LINK_TOY_INLET, LinkToyTruth())],
+        external_links=[
+            ExternalLinkSpec(
+                "R", "R.X", "R.dT", LINK_TOY_INLET, LinkToyTruth() if truth is None else truth
+            )
+        ],
         **options,
     )
 
@@ -436,39 +441,9 @@ def implicit_block_projection(block: Any, start_t: float, **options: Any) -> Any
 
 
 def affine_block_basis(projection: Any) -> dict[str, Any]:
-    """An affine Taylor basis at the projection's start for every property-block EF:
-    b(w) = (y_k(w₀) + ∇y_k(w₀)ᵀ(w − w₀)) / s_k, from each block's own values and Jacobian at x₀,
-    in the EF's scaled units. A test's basis, not M05-basis-v1's (WO-4 builds that)."""
-    import pyomo.environ as pyo
+    """An affine Taylor basis at the projection's start for every property-block EF: M05-basis-v1's
+    (`studies.trust_region.basis`, WO-4), which replaced this module's test basis of WO-3a with
+    the same arithmetic."""
+    from openflowsheet.studies.trust_region.basis import affine_block_basis as production
 
-    from openflowsheet.studies.trust_region.trf_state import EFBasis
-
-    spec = projection.spec
-    start = {
-        name: float(pyo.value(projection.model.x[i])) for i, name in enumerate(spec.variable_ids)
-    }
-    blocks = {block.block_id: block for block in spec.blocks}
-    basis = {}
-    for entry in projection.source_map["block_outputs"]:
-        block = blocks[entry["block_id"]]
-        k = list(block.output_ids).index(entry["output_id"])
-        w0 = [start[name] for name in entry["input_variable_ids"]]
-        value = float(block.values(w0)[k])
-        gradient = [0.0] * len(w0)
-        for row, column, entry_value in block.jacobian(w0):
-            if row == k:
-                gradient[column] += float(entry_value)
-        scale = float(entry["output_scale"])
-
-        def build(
-            args: Sequence[Any],
-            value: float = value,
-            gradient: Sequence[float] = tuple(gradient),
-            w0: Sequence[float] = tuple(w0),
-            scale: float = scale,
-        ) -> Any:
-            terms = zip(gradient, args, w0, strict=True)
-            return (value + sum(g * (a - w) for g, a, w in terms)) / scale
-
-        basis[entry["ef"]] = EFBasis("affine_taylor", build)
-    return basis
+    return production(projection)
