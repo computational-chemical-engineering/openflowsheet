@@ -56,6 +56,7 @@ from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.models.c1.boundary import (
     DEFECT_LIMIT,
     EPS_PRESSURE,
+    HardDomain,
     data_domain_violations,
     hard_domain_violations,
     project,
@@ -94,11 +95,17 @@ def composition(ratio: float, inert: float) -> tuple[float, ...]:
 
 
 def inlet_inside(
-    temperature: float, pressure: float, ratio: float, inert: float, multiple: float
+    temperature: float,
+    pressure: float,
+    ratio: float,
+    inert: float,
+    multiple: float,
+    domain: HardDomain | None = None,
 ) -> tuple[StreamState, dict[str, Any]]:
     """The point's process inlet (N_tubes = 1), each coordinate that rounds outside the variant's
-    hard domain moved inward by 2^-40 relative (§8.15); the moves are returned."""
-    domain = variants.hard_domain(variants.registered_variant(VARIANT_ID))
+    hard domain (or `domain`) moved inward by 2^-40 relative (§8.15); the moves are returned."""
+    if domain is None:
+        domain = variants.hard_domain(variants.registered_variant(VARIANT_ID))
     flow = F_NOM * multiple
     nudged: dict[str, Any] = {}
     for _ in range(4):

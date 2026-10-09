@@ -4,10 +4,13 @@ flow bound, and `ExecutionFailure` in the evaluation seam.
 - **G6 (b), the pin test.** Every registered variant loads, its `document_sha256` is the
   registry's, the directory holds exactly the registered documents, and no registered document
   carries a test-only member; an out-of-process variant's `overlay_sha256` and discretization
-  estimate are the overlay's and `reference_values.yaml`'s. Exactly one out-of-process variant,
+  estimate are the overlay's and `reference_values.yaml`'s. At most one out-of-process variant,
   the current one, has this child's `runner_sha256`; every other is superseded (append-only,
-  §3.1: a changed child is a new variant) — `...-v1`, the child before R-251, is the one, and the
-  child refuses it at its environment check (`test_m02_pymrm_child.py`). An edited document is
+  §3.1: a changed child is a new variant) — `...-v1`, the child before R-251, and `...-v2`, the
+  child before §14.5 D1/D2; the child refuses a superseded one at its environment check
+  (`test_m02_pymrm_child.py`). Until WO-12b registers v3, no registered variant is current: the
+  child's only document is the provisional evidence variant (§14.5 D4), which is never registered
+  and differs from v2 exactly in its id, runner, profile and timeout. An edited document is
   refused, not re-pinned.
 - **Resolution (§6.1).** A model reference resolves only on the registered id, the exact hash and
   the variant's own model id.
@@ -58,9 +61,12 @@ from openflowsheet.thermo.pr_c1 import PrC1Provider
 
 VARIANT_DIR = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "variants"
 STANDIN_ID = "standin-x025-v1"
-#: The current real variant and the ones it supersedes (their runner is an earlier child).
-CURRENT_ID = "pymrm-6089593-g2-nz800-s123-v2"
-SUPERSEDED_IDS = ("pymrm-6089593-g2-nz800-s123-v1",)
+#: The current real variants and the ones superseded (their runner is an earlier child). None is
+#: current until WO-12b registers v3 (§14.5 D4); the child's document meanwhile is the provisional
+#: evidence variant, never registered.
+CURRENT_IDS: tuple[str, ...] = ()
+SUPERSEDED_IDS = ("pymrm-6089593-g2-nz800-s123-v1", "pymrm-6089593-g2-nz800-s123-v2")
+PROVISIONAL = REPO_ROOT / "benchmarks" / "m02" / "variant-v3-provisional.json"
 PROBE: dict[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m01" / "reactor-probe.json")
 F_NOM: float = PROBE["pinned"]["F_ret_in_mol_s"]
 #: R-232: the real reactor's variant's per-tube flow bound, as registered in the note (§3.1).
@@ -110,8 +116,34 @@ def test_g6b_every_registered_variant_loads_at_its_pinned_hash() -> None:
             assert variant.evaluation["overlay_sha256"] == file_sha256(overlay)
             assert variant.accuracy["discretization_estimate"] == estimate
             assert not variant.synthetic
-    assert current == [CURRENT_ID]
+    assert current == list(CURRENT_IDS)
     assert sorted(superseded) == sorted(SUPERSEDED_IDS)
+
+
+def test_d4_the_provisional_variant_is_v2_with_v3s_child_profile_and_600_s() -> None:
+    """§14.5 D4: v3's child and profile, v2's boundary block, a 600 s timeout; never registered."""
+    document = load_json(PROVISIONAL)
+    variant = variants.variant_from_document(document)
+    v2 = load_json(VARIANT_DIR / f"{SUPERSEDED_IDS[-1]}.json")
+    child = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "pymrm" / "child.py"
+    assert variant.variant_id == "pymrm-6089593-g2-nz800-s123-v3-provisional"
+    assert variant.variant_id not in variants.registry()
+    assert not (VARIANT_DIR / PROVISIONAL.name).exists()
+    assert variant.evaluation["runner_sha256"] == file_sha256(child)
+    assert variant.evaluation["profile"]["id"] == "M01-S123-v2"
+    assert variant.execution["timeout_s"] == 600
+    expected = {
+        **v2,
+        "variant_id": document["variant_id"],
+        "evaluation": {
+            **v2["evaluation"],
+            "runner_sha256": document["evaluation"]["runner_sha256"],
+            "profile": document["evaluation"]["profile"],
+        },
+        "execution": {**v2["execution"], "timeout_s": 600},
+    }
+    assert document == expected
+    assert document["boundary"] == v2["boundary"]
 
 
 @pytest.fixture

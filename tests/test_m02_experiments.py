@@ -11,6 +11,11 @@ synthetic child (out of process, `tests/support/synthetic_child.py`).
   `not_converged`, `reactor_not_accepted(model_exception)` — one attempt, its type, first message
   line and traceback hash recorded, cached (the repeat is a hit); a `MemoryError` there is
   `crashed`, retried once, never cached.
+- G11v3-7 (design note §14.5 D2): a NaN in the outlet's flows (`nonfinite`) or in one diagnostic
+  (`nonfinite_diag`) is `not_converged`, `reactor_not_accepted(nonfinite)` — one attempt, cached
+  (the repeat is a hit), `diagnostics.nonfinite_paths` the hook's pointer, the child's written
+  document parsing with `allow_nan=False`; a `not_accepted` refusal with a NaN diagnostic keeps
+  its stage.
 - (e) A perturbation with defect_rel 2 × 10⁻⁶ → `not_converged`, `element_balance_defect`, no
   outlet values, deterministic: the repeat is a hit.
 - (f) y_NH3 = 10⁻¹⁰ → a result whose attempt is `not_executed`, `nh3_below_trace`.
@@ -252,6 +257,60 @@ def test_r251_an_exception_inside_the_model_is_a_cached_deterministic_refusal(
     repeat = _run(project.runner(), variant)
     assert repeat.cache_hit and repeat.attempts == () and repeat.result == first.result
     assert len(project.records().attempts(first.key)) == 1
+
+
+@pytest.mark.parametrize(
+    ("hook", "pointer"),
+    [("nonfinite", "/tube_outlet/flows/2"), ("nonfinite_diag", "/diagnostics/nonfinite_diag")],
+)
+def test_g11v3_7_a_nonfinite_value_is_a_cached_deterministic_refusal(
+    project: Project, hook: str, pointer: str
+) -> None:
+    variant = synthetic_variant(hook.replace("_", "-"), [hook])
+    first = _run(project.runner(), variant)
+    _valid(first)
+    assert not first.transient and first.result is not None
+    envelope = first.result["envelope"]
+    assert (envelope["status"], envelope["code"]) == (
+        "not_converged",
+        "reactor_not_accepted(nonfinite)",
+    )
+    assert all(envelope[name] is None for name in ("outlet", "xi", "Q", "defect", "defect_rel"))
+    (attempt,) = first.attempts  # no retry
+    execution = attempt["execution"]
+    assert (execution["status"], execution["exit_code"], execution["stage"]) == (
+        "completed",
+        0,
+        "nonfinite",
+    )
+    assert execution["tube_outlet"] is None
+    assert execution["diagnostics"]["nonfinite_paths"] == [pointer]
+    written = project.records().attempt_directory(first.key, 1) / "result.json"
+    document = json.loads(written.read_text(encoding="utf-8"), parse_constant=_refuse_constant)
+    assert "tube_outlet" not in document and document["stage"] == "nonfinite"
+    json.dumps(document, allow_nan=False)
+    repeat = _run(project.runner(), variant)
+    assert repeat.cache_hit and repeat.attempts == () and repeat.result == first.result
+    assert len(project.records().attempts(first.key)) == 1
+
+
+def test_g11v3_7_a_refusal_with_a_nonfinite_diagnostic_keeps_its_stage(project: Project) -> None:
+    variant = synthetic_variant("s1-nonfinite-diag", ["not_accepted(S1)", "nonfinite_diag"])
+    first = _run(project.runner(), variant)
+    _valid(first)
+    assert first.result is not None
+    assert first.result["envelope"]["code"] == "reactor_not_accepted(S1)"
+    (attempt,) = first.attempts
+    execution = attempt["execution"]
+    assert execution["stage"] == "S1"
+    assert execution["diagnostics"] == {
+        "nonfinite_diag": None,
+        "nonfinite_paths": ["/diagnostics/nonfinite_diag"],
+    }
+
+
+def _refuse_constant(name: str) -> None:
+    raise AssertionError(f"the written document holds {name}")
 
 
 def test_r251_a_memory_error_inside_the_model_is_a_crash_retried_once(project: Project) -> None:

@@ -24,6 +24,10 @@ answers. `configuration.hooks` (a list, applied in order) reaches every failure 
   classified by the real child's own `model_exception` (loaded from `child.py` by path, so the
   two cannot drift): covered, it is `not_accepted` at `model_exception` with its record and the
   traceback on stderr; not covered (`MemoryError`, `OSError`), it propagates — exit 1, a crash.
+- `nonfinite` — a NaN in the outlet's `tube_outlet.flows[2]`; `nonfinite_diag` — a NaN in one
+  diagnostic (`diagnostics.nonfinite_diag`), with any outcome (§14.5 D2). Every evaluation's
+  result goes through the real child's own `nonfinite_screen` before it is written, and is
+  written with `allow_nan=False`, as the real child's is.
 
 A hook acts on evaluations only; `handshake:<hook>` acts on the handshake only (`--handshake`).
 
@@ -139,7 +143,9 @@ def _fingerprint(expected: dict[str, object], runner: str) -> dict[str, object]:
 def _write(document: dict[str, object] | str) -> None:
     temporary = Path(RESULT_TEMPORARY)
     with open(temporary, "w", encoding="utf-8") as handle:
-        handle.write(document if isinstance(document, str) else json.dumps(document))
+        handle.write(
+            document if isinstance(document, str) else json.dumps(document, allow_nan=False)
+        )
         handle.flush()
         os.fsync(handle.fileno())
     os.rename(temporary, RESULT_FILE)
@@ -163,6 +169,8 @@ def _evaluate(
     if "nondeterministic" in hooks:
         for _ in range(_counter()):
             temperature = math.nextafter(temperature, math.inf)
+    if "nonfinite" in hooks:
+        flows[2] = math.nan
     return {
         "outcome": OUTCOME_OUTLET,
         "tube_outlet": {
@@ -239,7 +247,7 @@ def main() -> None:
             assert isinstance(raised, type) and issubclass(raised, BaseException), hook
     solve_started = time.monotonic()
     timing = {"startup_s": solve_started - started}
-    if HANDSHAKE_ARGUMENT in sys.argv:
+    if handshake:
         document: dict[str, object] = {"outcome": OUTCOME_HANDSHAKE, "fingerprint": full}
     elif stage is not None:
         document = {"outcome": OUTCOME_NOT_ACCEPTED, "stage": stage, "fingerprint": cheap}
@@ -263,7 +271,14 @@ def main() -> None:
                 "fingerprint": cheap,
             }
     timing["solve_s"] = time.monotonic() - solve_started
-    _write({"protocol": PROTOCOL_VERSION, "request_sha256": digest, **document, "timing": timing})
+    result = {"protocol": PROTOCOL_VERSION, "request_sha256": digest, **document, "timing": timing}
+    if not handshake:
+        if "nonfinite_diag" in hooks:
+            diagnostics = result.setdefault("diagnostics", {})
+            assert isinstance(diagnostics, dict)
+            diagnostics["nonfinite_diag"] = math.nan
+        result = _child().nonfinite_screen(result)
+    _write(result)
     os._exit(0)
 
 

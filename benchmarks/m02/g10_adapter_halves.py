@@ -21,10 +21,19 @@ numbers in the default gate, which never runs the reactor.
   ``pinned.inlet_n_mol_s`` at T_in ∈ {653.15, 673.15, 693.15} K (A41; 673.15 K is A47 (b)), then
   two runs of the nominal request with the cache bypassed (A43).
 
+**G10v3** (design note §14.5): ``--variant-file`` runs the same points under an unregistered
+variant document — v3's provisional one (§14.5 D4), whose child is profile ``M01-S123-v2`` — and
+``--compare`` names the v2 record. The record then also states, per run, whether its outlet equals
+the v2 record's bitwise and whether S3's second round (D1) ran.
+
 Usage (from a checkout)::
 
     PYTHONPATH=src python benchmarks/m02/g10_adapter_halves.py \\
         --out benchmarks/m02/g10-adapter-halves.json
+    PYTHONPATH=src python benchmarks/m02/g10_adapter_halves.py \\
+        --variant-file benchmarks/m02/variant-v3-provisional.json \\
+        --compare benchmarks/m02/g10-adapter-halves.json \\
+        --out benchmarks/m02/g10-adapter-halves-v3.json
 """
 
 from __future__ import annotations
@@ -82,9 +91,20 @@ def _bitwise(outlet: dict[str, Any], flows: list[float], temperature: float) -> 
     return all(same) and float(outlet["temperature"]).hex() == float(temperature).hex()
 
 
+def load_variant(path: Path | None) -> variants.Variant:
+    """The registered variant this script runs, or the unregistered document at `path`."""
+    if path is None:
+        return variants.registered_variant(VARIANT_ID)
+    return variants.variant_from_document(json.loads(path.read_text(encoding="utf-8")))
+
+
 def _summary(label: str, execution: dict[str, Any], timing: dict[str, Any]) -> dict[str, Any]:
     diagnostics = execution.get("diagnostics") or {}
     defects = diagnostics.get("element_defect_rel") or {}
+    s3 = (diagnostics.get("stages") or {}).get("S3") or {}
+    extra = {name: s3[name] for name in ("defect_round1", "round2") if name in s3}
+    if "nonfinite_paths" in diagnostics:
+        extra["nonfinite_paths"] = diagnostics["nonfinite_paths"]
     return {
         "label": label,
         "status": execution["status"],
@@ -96,7 +116,10 @@ def _summary(label: str, execution: dict[str, Any], timing: dict[str, Any]) -> d
             name: stage["steps"] for name, stage in (diagnostics.get("stages") or {}).items()
         },
         "tube_outlet": execution.get("tube_outlet"),
-        "element_defect_max": max(map(abs, defects.values())) if defects else None,
+        # A screened non-finite defect is null (§14.5 D2); a finite list gives G10's value.
+        "element_defect_max": max(
+            (abs(value) for value in defects.values() if value is not None), default=None
+        ),
         "dP_over_P": diagnostics.get("dP_over_P"),
         "u_ret_min": diagnostics.get("u_ret_min"),
         "min_axial_flow_mol_s": diagnostics.get("min_axial_flow_mol_s"),
@@ -104,7 +127,16 @@ def _summary(label: str, execution: dict[str, Any], timing: dict[str, Any]) -> d
         "certificate_wall_s": (diagnostics.get("certificate") or {}).get("wall_s"),
         "startup_s": timing.get("startup_s"),
         "solve_s": timing.get("solve_s"),
+        **extra,
     }
+
+
+def outlet_bits(outlet: dict[str, Any] | None) -> list[str | None] | None:
+    """Every number of a tube outlet as its float hex (None stays None), for a bitwise compare."""
+    if outlet is None:
+        return None
+    values = [*outlet["flows"], *(outlet[name] for name in sorted(outlet) if name != "flows")]
+    return [None if value is None else float(value).hex() for value in values]
 
 
 def _direct(
@@ -124,8 +156,10 @@ def _direct(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--variant-file", type=Path, default=None)
+    parser.add_argument("--compare", type=Path, default=None)
     arguments = parser.parse_args()
-    variant = variants.registered_variant(VARIANT_ID)
+    variant = load_variant(arguments.variant_file)
     probe = json.loads(PROBE.read_text(encoding="utf-8"))
     pinned = probe["pinned"]
     estimate = yaml.safe_load(REFERENCE.read_text(encoding="utf-8"))["derived_from_measured"][
@@ -284,11 +318,44 @@ def main() -> int:
         "runs": runs,
         "elapsed_s": round(elapsed, 1),
     }
+    if arguments.variant_file is not None:
+        record["variant"]["registered"] = False
+        record["variant"]["file"] = arguments.variant_file.as_posix()
+    if arguments.compare is not None:
+        record["G10v3"] = g10v3(record, json.loads(arguments.compare.read_text(encoding="utf-8")))
+        record["G10v3"]["compared_record_sha256"] = file_sha256(arguments.compare)
     for value in record["assertions"]["A45"]["element_defect_max"]:
         assert value is not None and math.isfinite(value)
     arguments.out.write_text(json.dumps(record, indent=1, ensure_ascii=False) + "\n", "utf-8")
     print(json.dumps(record["assertions"], indent=1))
     return 0
+
+
+def g10v3(record: dict[str, Any], previous: dict[str, Any]) -> dict[str, Any]:
+    """§14.5 G10v3: each run's outlet against the previous record's run of the same label, by
+    bits, and where S3's second round ran (it must run nowhere)."""
+    before = {run["label"]: run for run in previous["runs"]}
+    bitwise = {
+        run["label"]: outlet_bits(run["tube_outlet"])
+        == outlet_bits(before[run["label"]]["tube_outlet"])
+        for run in record["runs"]
+    }
+    round1 = {
+        run["label"]: run.get("defect_round1") == before[run["label"]]["element_defect_max"]
+        for run in record["runs"]
+    }
+    ran = [run["label"] for run in record["runs"] if run.get("round2") is not None]
+    return {
+        "compared_variant": previous["variant"],
+        "outlets_bitwise_equal": bitwise,
+        "defect_round1_equals_element_defect_max": round1,
+        "round2_ran": ran,
+        "assertions_equal": {
+            name: value == previous["assertions"][name]
+            for name, value in record["assertions"].items()
+        },
+        "met": all(bitwise.values()) and all(round1.values()) and not ran,
+    }
 
 
 if __name__ == "__main__":

@@ -28,13 +28,14 @@ the pinned `MembraneReactor1D` with the F-R1 subclass (the five-species backflow
 geometry of the configured case, every permeance pre-factor zero, the tube's inlet (F_ret_in,
 y_ret_in, T_in, p_ret_out = P_in) and coolant (pure N2 at sweep_ratio x F_ret_in, T_in, 1 bar);
 the start strategy S1 (cold at the trace inlet), S2 (warm at the true inlet from S1's fields),
-S3 (the polish of profile `M01-S123-v1`); then the evaluation's four acceptance criteria. The
-first one that fails is the answer `not_accepted` at its registered stage (`S1`, `S2`, `S3`,
-`certificate`, `backflow`, `nonpositive_flow`); otherwise the raw outlet — the retentate's axial
-face flows at z = L, the last cell's temperature, the Ergun pressure drop, the coolant's heat
-uptake and the inlet-face heat loss — with the diagnostics. The pressure convention and the
-element defect are the boundary's to judge (Amendment 1). The computation is a pure function of
-the request: every limit is a count, never a clock.
+S3 (the polish of profile `M01-S123-v2`: `M01-S123-v1`'s, plus one conditional round when A45's
+element defect exceeds 10⁻⁷ after it, design note §14.5 D1); then the evaluation's four
+acceptance criteria. The first one that fails is the answer `not_accepted` at its registered stage
+(`S1`, `S2`, `S3`, `certificate`, `backflow`, `nonpositive_flow`); otherwise the raw outlet —
+the retentate's axial face flows at z = L, the last cell's temperature, the Ergun pressure drop,
+the coolant's heat uptake and the inlet-face heat loss — with the diagnostics. The pressure
+convention and the element defect are the boundary's to judge (Amendment 1). The computation is a
+pure function of the request: every limit is a count, never a clock.
 
 **An exception inside the model** (R-251; design note §14.1 B9) is the registered stage
 `model_exception`, not a crash: purity makes it recur on every attempt. The window runs from
@@ -43,6 +44,14 @@ building the first reactor object through the outlet's extraction (S1, S2, S3, t
 and their subclasses — and what the diagnostics record (the qualified type name, the message's
 first line, the formatted traceback's SHA-256; the traceback itself goes to stderr). Everything
 else — an exception outside the window, `MemoryError`, `OSError`, a signal — stays a crash.
+
+**A non-finite value** (design note §14.5 D2) is the registered stage `nonfinite`, not a crash:
+before the result is written, `nonfinite_screen` scans it whole (`nonfinite_paths`). An `outlet`
+with any non-finite value becomes `not_accepted` at `nonfinite`, without its `tube_outlet`; a
+`not_accepted` keeps its stage (the first refusal wins). Either way every non-finite value is
+written as null and its JSON pointer listed in `diagnostics.nonfinite_paths`. The child writes no
+NaN of its own: a value the group's code does not return is null. `_write` keeps
+`allow_nan=False`, so a non-finite value that escaped the scan is still a crash.
 
 **Evidence-only switches.** `OFS_EVIDENCE_S2_DT_INIT` (S2's `dt_init`, M01.A42) and
 `OFS_EVIDENCE_BACKFLOW_ALT` (the backflow inflow `[0, 0, 0, 1, 0]`, M01.A44) are read from the
@@ -80,6 +89,8 @@ OUTCOME_NOT_ACCEPTED = "not_accepted"
 OUTCOME_HANDSHAKE = "handshake"
 #: R-251: the stage of an exception the model raised inside its window (`model_exception`).
 STAGE_MODEL_EXCEPTION = "model_exception"
+#: §14.5 D2: the stage of an evaluation whose result holds a non-finite value.
+STAGE_NONFINITE = "nonfinite"
 MODEL_EXCEPTION_MESSAGE_LIMIT = 512
 SELF_DEADLINE_MARGIN_S = 30.0
 DEADLINE_MARGIN_VARIABLE = "OFS_TEST_DEADLINE_MARGIN_S"
@@ -111,7 +122,7 @@ DESIGN_GHSV_H = 1000.0
 DESIGN_H2_N2 = 3.0
 #: The solver profile this child implements (M01 spec §8.7); the variant's `profile` must equal it.
 PROFILE: dict[str, Any] = {
-    "id": "M01-S123-v1",
+    "id": "M01-S123-v2",
     "S1": {
         "inlet": "y_NH3 := trace_NH3, renormalized",
         "trace_NH3": 1e-9,
@@ -132,6 +143,17 @@ PROFILE: dict[str, Any] = {
         "dt_init": 1.0,
         "max_steps": 400,
         "target": "1e-6*(num_z/100)^2",
+        "round2": {
+            "when": "A45's element defect after S3 > defect_threshold",
+            "defect": "max over H, N, C, Ar of |element_defect_rel| (outlet's formula)",
+            "defect_threshold": 1e-7,
+            "target": "S3's target / 10",
+            "rtol": 1e-12,
+            "atol_factor": 0.1,
+            "dt_init": 1.0,
+            "max_steps": 400,
+            "accepted": "S3 is accepted iff round 2 converged; the certificate receives its status",
+        },
     },
     "acceptance": [
         "S3 converged at its target",
@@ -208,6 +230,60 @@ def model_exception(error: Exception) -> tuple[dict[str, str], str] | None:
         "traceback_sha256": hashlib.sha256(text.encode("utf-8", "backslashreplace")).hexdigest(),
     }
     return record, text
+
+
+def nonfinite_paths(document: Any) -> list[str]:
+    """§14.5 D2: the RFC 6901 pointers of every non-finite float in `document`, in document
+    order (a mapping's own iteration order). A pure function; the synthetic child
+    (`tests/support/synthetic_child.py`) calls this same function."""
+    found: list[str] = []
+
+    def visit(value: Any, pointer: str) -> None:
+        if isinstance(value, float):
+            if not math.isfinite(value):
+                found.append(pointer)
+        elif isinstance(value, dict):
+            for key, item in value.items():
+                visit(item, f"{pointer}/{str(key).replace('~', '~0').replace('/', '~1')}")
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                visit(item, f"{pointer}/{index}")
+
+    visit(document, "")
+    return found
+
+
+def _set_null(document: Any, pointer: str) -> None:
+    *parents, last = [part.replace("~1", "/").replace("~0", "~") for part in pointer.split("/")[1:]]
+    node = document
+    for part in parents:
+        node = node[int(part)] if isinstance(node, list) else node[part]
+    if isinstance(node, list):
+        node[int(last)] = None
+    else:
+        node[last] = None
+
+
+def nonfinite_screen(document: dict[str, Any]) -> dict[str, Any]:
+    """§14.5 D2: an evaluation's result with no non-finite value, as written. When it holds
+    one, every such value becomes null and its pointer is listed in
+    `diagnostics.nonfinite_paths`; an `outlet` becomes `not_accepted` at `nonfinite`, without its
+    `tube_outlet`; a `not_accepted` keeps its stage. A result with none is returned unchanged
+    (the same object). The synthetic child calls this same function."""
+    paths = nonfinite_paths(document)
+    if not paths:
+        return document
+    for pointer in paths:
+        _set_null(document, pointer)
+    if document.get("outcome") == OUTCOME_OUTLET:
+        document["outcome"] = OUTCOME_NOT_ACCEPTED
+        document["stage"] = STAGE_NONFINITE
+        document.pop("tube_outlet", None)
+    diagnostics = document.get("diagnostics")
+    if not isinstance(diagnostics, dict):
+        diagnostics = document["diagnostics"] = {}
+    diagnostics["nonfinite_paths"] = paths
+    return document
 
 
 # -- the environment -------------------------------------------------------------------------------
@@ -395,6 +471,14 @@ def h_group(database: dict[str, Any], species: str, temperature: float) -> float
 
 def steady_state_target(num_z: int) -> float:
     return 1e-6 * (num_z / 100.0) ** 2
+
+
+def element_defects(np: Any, n_in: list[float], n_out: list[float]) -> dict[str, float]:
+    """M01.A45's relative element defects of the retentate between its inlet and outlet faces."""
+    return {
+        element: float((np.dot(weights, n_out) - np.dot(weights, n_in)) / np.dot(weights, n_in))
+        for element, weights in ELEMENTS.items()
+    }
 
 
 class Reactor:
@@ -591,17 +675,55 @@ class Reactor:
         stages["S3"]["steady_state_target"] = target
         if not stages["S3"]["accepted"]:
             return "S3"
+        status3 = self._round2(second, status3, target, stages["S3"])
+        if not stages["S3"]["accepted"]:
+            return "S3"
         started = time.perf_counter()
         certificate = self.runner.certify_convergence_1d(second, status3, meta)
         drift = certificate.get("kpi_drift_rel") or {}
+        residual = certificate.get("achieved_residual")
         diagnostics["certificate"] = {
             "kpi_drift_ok": certificate.get("kpi_drift_ok"),
             "kpi_drift_rel_max": max(drift.values()) if drift else None,
-            "residual": float(certificate.get("achieved_residual", float("nan"))),
+            "residual": None if residual is None else float(residual),
             "wall_s": time.perf_counter() - started,
         }
         outlet = self.outlet(second, float(tube["temperature"]), float(tube["coolant_temperature"]))
         return certificate, outlet
+
+    def _round2(self, model: Any, status3: Any, target: float, stage: dict[str, Any]) -> Any:
+        """§14.5 D1: profile `M01-S123-v2`'s conditional round after an accepted S3. A45's defect
+        δ is read from the model's flows (no state changes); δ ≤ the threshold leaves everything
+        as under v1. Otherwise one more polish round on the same object at a tenth of S3's
+        target: S3 is accepted iff it converged, and its status is the one the certificate
+        receives. `stage` (S3's diagnostics) gets `defect_round1` and `round2`."""
+        policy: Any = PROFILE["S3"]["round2"]
+        retentate = model.compute_flows()[0]
+        n_in = [float(value) for value in retentate[0, :]]
+        n_out = [float(value) for value in retentate[-1, :]]
+        delta = max(map(abs, element_defects(self.np, n_in, n_out).values()))
+        stage["defect_round1"] = delta
+        stage["round2"] = None
+        if delta <= policy["defect_threshold"]:
+            return status3
+        started = time.perf_counter()
+        target2 = target / 10.0
+        model.rtol, model.atol = policy["rtol"], policy["atol_factor"] * target2
+        status = model.solve(
+            num_timesteps=policy["max_steps"],
+            dt_init=policy["dt_init"],
+            steady_state_atol=target2,
+            return_status=True,
+            verbose=0,
+        )
+        stage["round2"] = {
+            "steps": int(status.num_steps_attempted),
+            "converged": bool(status.converged),
+            "steady_state_target": target2,
+            "wall_s": time.perf_counter() - started,
+        }
+        stage["accepted"] = bool(status.converged)
+        return status
 
     @staticmethod
     def _stage(status: Any, accepted: bool, started: float) -> dict[str, Any]:
@@ -621,10 +743,7 @@ class Reactor:
         retentate, _, permeate, _ = model.compute_flows()
         n_in = [float(value) for value in retentate[0, :]]
         n_out = [float(value) for value in retentate[-1, :]]
-        defects = {
-            element: float((np.dot(weights, n_out) - np.dot(weights, n_in)) / np.dot(weights, n_in))
-            for element, weights in ELEMENTS.items()
-        }
+        defects = element_defects(np, n_in, n_out)
         t_out = float(model.cpT[-1, 1, -1])
         t_coolant_out = float(model.cpT[-1, 0, -1])
         coolant_flow = float(np.sum(permeate[0, :]))
@@ -713,15 +832,13 @@ def main() -> None:
             "backflow_alt": backflow_alt,
         }
     timing["solve_s"] = time.monotonic() - solve_started
-    _write(
-        {
-            "protocol": PROTOCOL_VERSION,
-            "request_sha256": request["request_sha256"],
-            **document,
-            "timing": timing,
-        },
-        attempt,
-    )
+    result = {
+        "protocol": PROTOCOL_VERSION,
+        "request_sha256": request["request_sha256"],
+        **document,
+        "timing": timing,
+    }
+    _write(result if handshake else nonfinite_screen(result), attempt)
     _exit(0)
 
 

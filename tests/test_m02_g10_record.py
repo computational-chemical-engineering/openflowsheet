@@ -5,6 +5,10 @@ committed record of the adapter halves of M01.A41-A48, never the reactor
 The record belongs to the registered variant, the child, the lock and the probe record it was
 measured against: a change to any of them leaves the record stale and fails here until G10 is run
 again. Each assertion is judged against the record's own numbers, at G10's bounds.
+
+Since §14.5 D1/D2 the child is v3's, and this record's variant (v2) is superseded: the record is
+pinned to v2's own runner, which is no longer this tree's child (v2's child is in git history), and
+G10v3's record (`g10-adapter-halves-v3.json`, `test_m02_g10v3_record.py`) is the current child's.
 """
 
 from __future__ import annotations
@@ -32,7 +36,8 @@ def test_the_record_is_a_measurement_of_the_registered_variant_in_its_environmen
     variant = variants.registered_variant(RECORD["variant"]["variant_id"])
     assert RECORD["variant"]["sha256"] == variant.sha256
     environment = RECORD["environment"]
-    assert environment["runner_sha256"] == file_sha256(CHILD) == variant.evaluation["runner_sha256"]
+    assert environment["runner_sha256"] == variant.evaluation["runner_sha256"]
+    assert environment["runner_sha256"] != file_sha256(CHILD)  # v2 is superseded (§14.5 D1/D2)
     assert environment["lock_sha256"] == file_sha256(env.packaged_lock())
     assert environment["env_id"] == variant.evaluation["environment"]["env_id"]
     assert RECORD["probe_record_sha256"] == file_sha256(PROBE_PATH)
