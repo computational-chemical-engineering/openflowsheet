@@ -539,3 +539,11 @@ Grep, don't read whole. Newest at the bottom.
   (alternative `TRF_STALLED_INCONSISTENT`; matters for the retry policy). Other engineer choices (refusal raises
   `TrfConfigurationRefusedError`; zero_basis only for exempt_oracle; refusal names undetermined variables; `EFBasis`)
   for the M05 review.
+- M02 WO-8 built on `wp/M02` (`df7a568`…`9f94727`, head `8734905`; check.sh 8081 passed, 1 xfailed): C1 PR blocks,
+  `classify`, six C1 units, `vapour_only`/`VapourOnlyForm`, region PR dispatch, `verify/pr_c1.py`. G2: 50 T07 revisions
+  byte-identical (44 certificates, `659748576adb9730…`). G7(a) β 1.3e-16; (b) VERIFIED; (c) F4 UNVERIFIED rank-deficient
+  (rcond 5.9e-19; still UNVERIFIED at δ = 1e-5, rcond 4.2e-9) — strict xfail; (d) VERIFIED; (e)–(k) pass. Open for the
+  design lane: D36 C1 builders kept in a separate `C1_MODEL_BUILDERS` (joining breaks 13 registry/list_models/W27 tests);
+  D40 certificate witness excludes exactly-zero PR columns (`d9c7cd4`, ratify); D41 G7(c) VERIFIED unreachable at the
+  dew point (structural singularity, as SYN-001's DEW_POINT_LIMITATION); D39 three SYN-001 assumptions fixed on the
+  revision path. Sent to the WO-8 rulings architect.
