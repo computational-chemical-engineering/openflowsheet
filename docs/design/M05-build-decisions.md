@@ -125,7 +125,10 @@ S5 P3's scales (§7.4 "within 1e-9 × its scale"; the formulation has no inequal
    variable's unit. The bounds checked: the decision box, the variant's inlet T/P, the link bounds, the provider
    domain on every T and P, molar flows ≥ 0. A parent that evaluated no constraint fails P3. Reversible:
    `study.c1_constraint_values`.
-S6 (see the next commit.)
+S6 Stage A (§7.3 gives the retry and the `FAILED(trf_aborted)` stop for stage C only): A is retried the same way;
+   a second abort is recorded (`stage_a.outcome`) and stage C starts from S0, since stage A only accelerates the
+   parent study; a defect (`TRF_ERROR`) or the study budget still stops it. Alternative: stop
+   `FAILED(trf_aborted:<outcome>)` as in C. Reversible: this commit (`run_study`'s stage-A branch and one test).
 S7 Retry and aborts (§7.3, §6.7, §17.4): a candidate from every `RETURNS_MODEL` outcome (`TRF_MAX_ITERATIONS`
    whatever θ_recheck: W2's current behaviour, unchanged, no separate commit needed); `TRF_ERROR(*)` a defect,
    `FAILED(trf_aborted:<outcome>)` at once, never retried; `TRF_TRUTH_REFUSED(budget:budget_exhausted)` is

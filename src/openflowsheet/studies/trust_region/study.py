@@ -742,9 +742,12 @@ def run_study(
     else:
         staged, stopped, ids = run(stage_a, "A", 0, s0)
         result.stage_a = {"executed": True, "runs": ids}
-        if staged is None:
+        if staged is None and disposition(result.runs[-1]["outcome"], budget) != "abort":
             assert stopped is not None
             return stop(stopped)
+        if staged is None:
+            # A second stage-A abort leaves stage C to start from S0 (build log S6).
+            result.stage_a["outcome"] = stopped
         else:
             candidate = check(staged, "A", stage_a_reference)
             result.produced_by[candidate.candidate_id] = ids

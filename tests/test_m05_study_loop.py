@@ -496,11 +496,18 @@ def test_stage_a_s_point_is_excluded_from_the_argmax_when_its_regime_changed() -
     assert found.candidates[0].status == REGIME_CHANGED
 
 
-def test_a_stage_a_abort_twice_fails_the_study() -> None:
+def test_a_stage_a_abort_twice_leaves_stage_c_to_start_from_s0() -> None:
     stage_a = FakeStage([(TRF_SUBPROBLEM_FAILED, None), (TRF_SUBPROBLEM_FAILED, None)])
     stage_c = FakeStage([(TRF_CONVERGED, 673.0)])
     found = study(FakeParent(), stage_c, stage_a=stage_a)
-    assert found.status == f"FAILED(trf_aborted:{TRF_SUBPROBLEM_FAILED})" and stage_c.calls == []
+    assert found.status == DECISION_STABLE and stage_c.calls[0][2] == "S0"
+    assert found.stage_a["outcome"] == f"FAILED(trf_aborted:{TRF_SUBPROBLEM_FAILED})"
+
+
+def test_a_stage_a_defect_still_fails_the_study() -> None:
+    stage_a, stage_c = FakeStage([(trf_error("exit_mismatch"), None)]), FakeStage([])
+    found = study(FakeParent(), stage_c, stage_a=stage_a)
+    assert found.status == "FAILED(trf_aborted:TRF_ERROR(exit_mismatch))" and stage_c.calls == []
 
 
 # == the record (§8.3, §9.1) =======================================================================
