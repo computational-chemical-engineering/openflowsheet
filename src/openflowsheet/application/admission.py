@@ -26,6 +26,10 @@ The steps, in order:
 
 A `reproduce` is admitted by `admit_reproduce`: its bundle artifact exists (`not_found`) and is a
 `replay_bundle` (`invalid_request`), then steps 7–8, which bound every job (`admit_budgets`).
+An `experiment` (ADR 0033 D9, M02 design note §3.5) by `admit_experiment`: its model reference
+resolves to a registered variant whose SHA-256 is `artifact_ref` (`invalid_request` at
+`/body/model/artifact_ref`), its components are the variant's boundary's, in order, with one flow
+each (`invalid_request` at `/body/inlet/components` or `/body/inlet/n`), then steps 7–8.
 
 **Only tightening is admitted** (I3). The effective check policy keeps `REGISTERED_POLICY_ID`, so
 tightening factor 1 is the registered policy byte for byte (R5); the effective solve policy is the
@@ -39,6 +43,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from typing import Any, Final
 
+from openflowsheet.adapters import variants
 from openflowsheet.application.policies import (
     APPLICATION_POLICIES,
     DEFAULT_POLICY_ID,
@@ -47,8 +52,16 @@ from openflowsheet.application.policies import (
     resolve_policy,
 )
 from openflowsheet.application.revision_run import Route, select_route
-from openflowsheet.application.types import ApiError, Budgets, Limits, ReproduceBody, SolveBody
+from openflowsheet.application.types import (
+    ApiError,
+    Budgets,
+    ExperimentBody,
+    Limits,
+    ReproduceBody,
+    SolveBody,
+)
 from openflowsheet.application.validation import validate
+from openflowsheet.models.c1 import COMPONENTS as C1_COMPONENTS
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
 from openflowsheet.verify.checks import KIND_TOLERANCE
@@ -57,6 +70,7 @@ __all__ = [
     "POLICY_UNSUPPORTED_ON_ROUTE",
     "SolveAdmission",
     "admit_budgets",
+    "admit_experiment",
     "admit_reproduce",
     "admit_solve",
     "resolve_policies",
@@ -283,3 +297,39 @@ def admit_reproduce(
             kind=bundle_kind,
         )
     return admit_budgets(budgets, limits, active_jobs)
+
+
+def admit_experiment(
+    body: ExperimentBody,
+    *,
+    budgets: Budgets,
+    limits: Limits,
+    active_jobs: int,
+) -> tuple[variants.Variant, float | None] | ApiError:
+    """§3.5's admission of an `experiment`: the variant, then the inlet's components, then steps
+    7–8. The resolved variant and the job's wall-time budget, or the first refusal."""
+    model = body.model
+    variant = variants.resolve(model.id, model.version, model.artifact_ref)
+    if variant is None:
+        return _error(
+            "invalid_request",
+            f"model {model.id!r} @ {model.version!r} with artifact_ref {model.artifact_ref!r} is "
+            "not a registered variant at that SHA-256",
+            pointer="/body/model/artifact_ref",
+        )
+    if body.inlet.components != C1_COMPONENTS:
+        return _error(
+            "invalid_request",
+            f"the variant's components are {list(C1_COMPONENTS)}, in that order",
+            pointer="/body/inlet/components",
+        )
+    if len(body.inlet.n) != len(body.inlet.components):
+        return _error(
+            "invalid_request",
+            "n has one flow per component",
+            pointer="/body/inlet/n",
+        )
+    wall_time_s = admit_budgets(budgets, limits, active_jobs)
+    if isinstance(wall_time_s, ApiError):
+        return wall_time_s
+    return variant, wall_time_s

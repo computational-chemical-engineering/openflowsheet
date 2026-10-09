@@ -225,7 +225,7 @@ def test_the_existing_commands_are_unchanged_byte_for_byte(tmp_path: Path) -> No
 NOMINAL = "SYN-001-nominal"
 #: §11.6: the members a twin project cannot repeat (clock readings), removed before comparing.
 CLOCK_MEMBERS = frozenset(
-    {"recorded_at", "created_at", "started_at", "ended_at", "elapsed_seconds", "timestamp"}
+    {"recorded_at", "created_at", "started_at", "ended_at", "elapsed_seconds", "timestamp", "at"}
 )
 #: The artifacts whose bytes hold clock readings (`run-manifest.json` records `started_at` and
 #: `elapsed_seconds`, and the bundle holds the manifest): their digests and sizes are removed.
@@ -295,6 +295,8 @@ def scenario(revision_id: str, job_id: str, bundle: Path) -> list[tuple[str, dic
         ("diff_revisions", {"from_revision": revision_id, "to_revision": revision_id}),
         ("inspect_structure", {"revision_id": revision_id, "depth": 2}),
         ("get_artifact", {"artifact_id": state, "pointer": "/variable_ids", "limit": 5}),
+        # ADR 0019 Amendment 3 (A3.3); `at` is a clock reading (`CLOCK_MEMBERS`).
+        ("list_audit", {"order": "descending", "limit": 4}),
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
@@ -304,11 +306,16 @@ def api(project: Path, name: str, request: Any, *extra: str) -> tuple[int, str, 
 
 
 def clockless(document: Any) -> Any:
-    """`document` without its clock readings and the digests of the bytes that hold them."""
+    """`document` without its clock readings and the digests of the bytes that hold them, and
+    without the random part of an in-process `solve`'s or `reproduce`'s `auto:` key where an
+    audit row shows it (ADR 0019 Amendment 3), with the request hash that covers it."""
     if isinstance(document, dict):
         removed = CLOCK_MEMBERS | CLOCKED_DIGESTS
         if document.get("kind") in CLOCKED_ARTIFACTS:
             removed |= {"sha256", "size_bytes"}
+        if str(document.get("idempotency_key")).startswith("auto:") and "seq" in document:
+            document = {**document, "idempotency_key": "auto:"}
+            removed |= {"request_sha256"}
         return {k: clockless(v) for k, v in document.items() if k not in removed}
     if isinstance(document, list):
         return [clockless(item) for item in document]
@@ -369,10 +376,12 @@ SECTION_5_8 = (
     "limit_exceeded",
     "unsupported",
     "internal_error",
+    # ADR 0035 D3 (M02): appended, so every earlier code keeps its exit code.
+    "model_replacement_incompatible",
 )
 
 
-def test_the_exit_codes_are_2_to_15_in_section_5_8_order() -> None:
+def test_the_exit_codes_are_2_to_16_in_section_5_8_order() -> None:
     assert dict(API_EXIT_CODES) == {code: 2 + index for index, code in enumerate(SECTION_5_8)}
 
 

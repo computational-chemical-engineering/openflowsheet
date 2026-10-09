@@ -359,7 +359,8 @@ The units on `pr-c1-v1` (flash, heater/cooler, mixer, splitter; M02) use `T05b-p
 1. **Regimes.** A PR split's lattice is `LIQUID — TWO_PHASE — VAPOR` with `ZERO_FLOW` adjacent to each (ADR 0012 D4).
    LIQUID is admissible only when no light gas flows in the split's feed; with light gas flowing the reachable regimes
    are VAPOR and TWO_PHASE.
-2. **Rows.** TWO_PHASE: material rows n_in,i − n_V,i − n_L,i = 0 for every i; the liquid's light-gas flows are not
+2. **Rows** *(the equilibrium row and the realization of the structural zeros are amended by Amendment 3 below)*.
+   TWO_PHASE: material rows n_in,i − n_V,i − n_L,i = 0 for every i; the liquid's light-gas flows are not
    variables (structural zeros, ADR 0001 D3.3); **one equilibrium row, division-free and log-free (R-008's form):
    E = n_V,NH₃ · φ_NH₃^V(T, P, n_V) − n_V,tot · φ_NH₃^L(T, P) = 0** (mol/s; it is y φ^V = φ^L multiplied by n_V,tot),
    scaled by the registered flow scale. VAPOR: n_L,i = 0 rows, no equilibrium row. LIQUID: n_V,i = 0 rows.
@@ -379,6 +380,20 @@ The units on `pr-c1-v1` (flash, heater/cooler, mixer, splitter; M02) use `T05b-p
 M02 registers these as tests of its units; M01's provider supplies everything they read (ln φ, h, the flash). The
 equilibrium row's derivatives come from `evaluate_phase`'s ln φ derivatives (§4.6); `flash` is called without
 `derivatives`, which it refuses (§5.4 step 0, Amendment 1).
+
+**Amendment 3 (2026-10-09; design lane, M02 WO-8 rulings — `docs/design/M02-pymrm-adapter.md` §14.2 B11, B12;
+R-254; ADR 0026 Amendment 2).** Rule 2's row E is not zero on the VAPOR branch: it equals V(yφ^V − φ^L) there, and
+above T_c,EOS φ^L has no root. Yet the region drops equilibrium rows on a single-phase branch because they must
+vanish there identically, and K04's verifier evaluates every declared row at the certified state. The row is
+therefore restated in R-008's pairwise form:
+
+    E = L · n_V,NH₃ · φ^V_NH₃(T, P, n_V) − V · n_L,NH₃ · φ^L_NH₃(T, P) = 0,     kind molar_flow_squared,
+
+with V and L the products' total flows. On TWO_PHASE it is L·V·(yφ^V − φ^L), so its root set is rule 2's. It is
+exactly zero on VAPOR (L = n_L = 0) and on LIQUID (V = n_V = 0). The light-gas liquid flows are columns of the nTP-v1
+liquid stream, fixed by rows n_L,i = 0 in the equilibrium family and pinned at +0.0 in the TWO_PHASE attempt. Nothing
+else here changes: no closed form, provider behaviour, registered state, expectation value or assertion of this
+specification.
 
 ## 8. The reactor boundary (ADR 0027)
 

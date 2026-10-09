@@ -1,0 +1,255 @@
+{
+  "_comment": "M06 gate G3: canonical SHA-256 per T07-corpus revision, taken before WO-1 at f085d14 (src/ identical to 67029fa): route_analysis(route).as_document() (null when no route binds), validate(doc, \"simulation\").as_document() without provenance (it carries a clock reading), and route_structure(doc) as it was (the pre-amendment inspect_structure document).",
+  "snapshots": {
+    "SYN-001-A02-340-two-phase-guess": {
+      "route_analysis": "574e622a6cfaeabee3b1bef3a7807d98e0edbec87be43b6f834c0a468a233c9a",
+      "route_structure": "2b13bd02b5bb436eafe945acda8e8edddf045f030f9a2a7899169658ddacf28e",
+      "validate": "85d222470c8bde21266804acb92f23727d8941f72e8f3a6a82d87a6812407c3a"
+    },
+    "SYN-001-A02-352-vapor-guess-410": {
+      "route_analysis": "40668c64efe17cd9fc32a920df3b04840cd0da3282f0d3b0b491ecf9a0d6d062",
+      "route_structure": "3a097eb0daba5f3c1c7056125240d3a0bb027696625dd54ee95220047eed22c7",
+      "validate": "85508d49938a255416eb5c4b61c81db968bd7f064c9b2e957d24227453a8807f"
+    },
+    "SYN-001-A02-355": {
+      "route_analysis": "485aa6063c902ec49c7d2df02645d20520d9ca640d247dea4e75ea19abd526b5",
+      "route_structure": "5a22b68e7c8a131f8b5b63178f2d24fbabb4b552db2a7f4416968ee701c6b312",
+      "validate": "803d838aef4962f394dee1234b829b7c106e24f6bdc2c3120058e949fffe235d"
+    },
+    "SYN-001-A02-355-dew-guess": {
+      "route_analysis": "485aa6063c902ec49c7d2df02645d20520d9ca640d247dea4e75ea19abd526b5",
+      "route_structure": "5a22b68e7c8a131f8b5b63178f2d24fbabb4b552db2a7f4416968ee701c6b312",
+      "validate": "53530d1593c69fe9133969ada5d3d4ec5966e172940b03e4e96028ecf01b281a"
+    },
+    "SYN-001-A02-355-dew-guess-377": {
+      "route_analysis": "485aa6063c902ec49c7d2df02645d20520d9ca640d247dea4e75ea19abd526b5",
+      "route_structure": "5a22b68e7c8a131f8b5b63178f2d24fbabb4b552db2a7f4416968ee701c6b312",
+      "validate": "d0fa95d8a2d9d49fef8f04e61fd778d402b6b5bd3a77dcab70b1196ee50931f2"
+    },
+    "SYN-001-A02-355-liquid-guess": {
+      "route_analysis": "485aa6063c902ec49c7d2df02645d20520d9ca640d247dea4e75ea19abd526b5",
+      "route_structure": "5a22b68e7c8a131f8b5b63178f2d24fbabb4b552db2a7f4416968ee701c6b312",
+      "validate": "95403a4642407147ca5e590756513abb50aa8344651189be5b5f8251c8395c53"
+    },
+    "SYN-001-A02-360": {
+      "route_analysis": "b7330a1555c5db3c90d74c5c5c3effb7a3369cd2a729657a0c336c4fdf341f60",
+      "route_structure": "f742dc03ee349940ae6de9c21ad2565605cc6e5f2407254a1b283eca74e8e3b3",
+      "validate": "140a32ac14b2e3e9e8e679b47a1376f7fb96de5daed5a5617ce0b3044bf3fddd"
+    },
+    "SYN-001-A02-360-liquid-guess": {
+      "route_analysis": "b7330a1555c5db3c90d74c5c5c3effb7a3369cd2a729657a0c336c4fdf341f60",
+      "route_structure": "f742dc03ee349940ae6de9c21ad2565605cc6e5f2407254a1b283eca74e8e3b3",
+      "validate": "87f19c4c46542658039aed80bf624254640f0382d9153ece75152ca8e896f914"
+    },
+    "SYN-001-A02-360-no-guess": {
+      "route_analysis": "b7330a1555c5db3c90d74c5c5c3effb7a3369cd2a729657a0c336c4fdf341f60",
+      "route_structure": "f742dc03ee349940ae6de9c21ad2565605cc6e5f2407254a1b283eca74e8e3b3",
+      "validate": "65d742bdfe26fea4366e581a63995d89a785aca4e2b8302ba4753b6065ec3185"
+    },
+    "SYN-001-A02-360-vapor-guess": {
+      "route_analysis": "b7330a1555c5db3c90d74c5c5c3effb7a3369cd2a729657a0c336c4fdf341f60",
+      "route_structure": "f742dc03ee349940ae6de9c21ad2565605cc6e5f2407254a1b283eca74e8e3b3",
+      "validate": "5a072f21381717144b593ab7c50ffa72df81e9a1451336664d008117c3c1f196"
+    },
+    "SYN-001-A02-365": {
+      "route_analysis": "75b274879b89124c7b660c4a650ba3fc945b9ab3e316a485aa510619bfbd2bc0",
+      "route_structure": "bee9652f11e1ddca9926f82b4b1d91a63336d98ecbb0043405cf9e66abbf580b",
+      "validate": "7f89bf233de704cc9f32615cf73fdaac7c4c9416fbf8fb771e99dc5305e32766"
+    },
+    "SYN-001-T06-NET02": {
+      "route_analysis": "a8c7eff73e8596e6f8a6c830479da8b35484b9111839d24fdd7264014d022baf",
+      "route_structure": "1f836ec48eab25669c26e4c6cc955dfe2c64688dde9a7188632a1881d02190bc",
+      "validate": "f9940d5d34834789aa81a745efa2ea6602460582e33646e6c3b9f834761e3cf8"
+    },
+    "SYN-001-T06-NET03": {
+      "route_analysis": "a43059f6b87d33d3b6ab805e1ca7ad01b53cc84f995d19dfc1c84907e952bb85",
+      "route_structure": "fc84aec57c4b150fb70d7bf0d3a5d1ab7d0eb5d01c01717ac01e764f822f8958",
+      "validate": "85dd82a51f14053a4390e82d519d9e83cbc6e243754b314ae44c4d96167fcf66"
+    },
+    "SYN-001-T06-NET06": {
+      "route_analysis": "f5820059b554a52d9295632772e95f4cb0d4fa8fb5441e58f7d92aeadc28c722",
+      "route_structure": "1af9d64272c0fd5e7b88f87367ab771c4e0fd69a88009a72fc78f0f519a62087",
+      "validate": "bd65627cc2cf94ebe7abb422dc6e32df4329a7c23fbc0dad194e710c166a136b"
+    },
+    "SYN-001-T06-NET09": {
+      "route_analysis": "8b7e9303e3973388091fd959a0a26967d16d07b2b8252f727ec768691fcf415f",
+      "route_structure": "75ac65e25ee233c471d145b1304eaa13f2f5a9ff90486bb505b3b48b219484f6",
+      "validate": "63283649bc4de40d7f1909ea9f699cad5694739a68b6584a0edee8caedc6883b"
+    },
+    "SYN-001-T06-NET10": {
+      "route_analysis": "44ac48a89682f89944a12c25912be040cc9d96e7aa92037c2e19b4781ea04d2a",
+      "route_structure": "cddface669acb8a7851beb781bad3abee8e15e5912421e8355322dda9225d4d3",
+      "validate": "720931e7e35f0f1b5352acac78cf94434d7dbe53091e532456099748de706b02"
+    },
+    "SYN-001-T06-NET11": {
+      "route_analysis": "47aaa7baa3c8dcba2f57b42303f593c24bd4c56102d10e72a630ddad497bfa53",
+      "route_structure": "92353ff1f2a3daf6bc5204c647e7dc58c0e2c4f962fce721fd7338539eb622e0",
+      "validate": "21f340b92625977fe81c49f77594a3756ca0877280a076ca16051d3c39b70f07"
+    },
+    "SYN-001-T06-PC2": {
+      "route_analysis": "cf2de7bf32dcfea28d6a968d0a28bff00611ac678cbde2fe418be816eccd8ade",
+      "route_structure": "5e251840dc5c44f625e7bada1e794f428fa9761a7ab3917a833eaea8513ee2f7",
+      "validate": "70ac6527978f1b60d4a56ef83d3e5f97858dcfa02ab64e00d5c4bd0843f0f085"
+    },
+    "SYN-001-T06-REF01": {
+      "route_analysis": "78c720a7f2ece784b5d2e5e8e6e8eb0ddc5a85143a5a5ea8ca7b34ffa981dab8",
+      "route_structure": "569f2afaa551c7b867e4ef23380f5031cd45620460535c7d77e58437579e9597",
+      "validate": "7e7f11b982b8eab4a8b2a63cd9b3edacfda533322bdfc639a649e81781563d42"
+    },
+    "SYN-001-T06-REF02": {
+      "route_analysis": "52f07232347244c3312332b792f45ba2491c0cfefe6b42adba8b134bd09108ea",
+      "route_structure": "7a5446f1e7ee0b95ae9330a09355d4b6f8460bf6e63e3b8a574a8df0ec689a02",
+      "validate": "a3f6e6d0c60c66f50478aeb4f16c4e459b3905d7309e1b90022e93a07b5c6126"
+    },
+    "SYN-001-T06-REF03": {
+      "route_analysis": "8825997b12c6b0dd11aec11fc348afdcb499972a166115d9d8fca6e79dce9ecb",
+      "route_structure": "b04fb5a6c0b852547167bacd3601bb0f5d51e1eee52880a0065f89f228f8618d",
+      "validate": "66d7315fd53b3e7385d62a796ab5a026ac1ed237b95e991b089a0fe3c51c196d"
+    },
+    "SYN-001-T06-REF04": {
+      "route_analysis": "b0e06f497915ed1cac6c6630ba4f3c4953b1cd8c099fc1a22a7c3e6cbadc54d1",
+      "route_structure": "f17ade7b2b7df3ab0ea875d0ca0375c400ed74874a4fe8d0c66401129a54649f",
+      "validate": "5f9df8da8cbe4c2089aa22883ad44e08dffb2a3b5d559e952054c35ba319b2c6"
+    },
+    "SYN-001-T06-REF05": {
+      "route_analysis": "2dc86df4b522caa75298c09ebb57ec1bfb2e006513f52d1e7d596815805f6023",
+      "route_structure": "c5d567d8c17537afe7c6cd41606ec3f88e104d651c73d5eb589e13b4e7c0f295",
+      "validate": "b4f777020def34ab94bd15faf3cee2b4078b0581d7f563170fa654395b1f4af6"
+    },
+    "SYN-001-T06-REF06": {
+      "route_analysis": "b073684d9e78e2cfd8b49d91bda72d1098ff76d9754147a34ff89fe2c5fbe2fc",
+      "route_structure": "05512352954d1a204d416bc0d95513b2ed5dea67763a1df143a29c7ff3d590b6",
+      "validate": "b404d7ba0eb6221b381fc6afcfc614a401fea2d78d628dea56ebef47218d914f"
+    },
+    "SYN-001-T06-REF07": {
+      "route_analysis": "95a23b18a0325b6df761a82139db1d7fe64bdaea843921fe561b5d2bf7f2b440",
+      "route_structure": "17e92e0fc34643a3f77fe7eb3a5bf5563c7c004d96b52eca6486d1abeac0cede",
+      "validate": "46018a95e8639cbc09b38a134fe28cff386a4afbd7e64a68844adeac043e4218"
+    },
+    "SYN-001-T06-STA02": {
+      "route_analysis": "ee6643e5e2e55c8539d9bec7605f723c4ae14e4010d20c6b96537c5546b803ba",
+      "route_structure": "a909f54d8e8d32260173b7ee8557b43bcf8a1282121626353038df10f56d0261",
+      "validate": "4579fbec105df01b760f9bcf4385fe5b5953dd9caafbc98c8d078f738ab870b3"
+    },
+    "SYN-001-T06-STA03-degC": {
+      "route_analysis": "cc814b824963b915c8c61e42f8a0effdcd00c85e9d6a7d16fadd03e94efbc4a7",
+      "route_structure": "018c7395c4b07c05874508fa27e0be4cf3d0c70ba59425b0aa493248a0b0aea7",
+      "validate": "5e4ef0dae925ee4b9d543db2322ec0a215bfb2660705b2627b8816d2c5f822a6"
+    },
+    "SYN-001-T06-STA03-kgs": {
+      "route_analysis": "cc814b824963b915c8c61e42f8a0effdcd00c85e9d6a7d16fadd03e94efbc4a7",
+      "route_structure": "018c7395c4b07c05874508fa27e0be4cf3d0c70ba59425b0aa493248a0b0aea7",
+      "validate": "40860127a6ec89e67537e49947028c2d91ad6387328a7677a2794fdb02aa6487"
+    },
+    "SYN-001-T06-STA04": {
+      "route_analysis": "8ba260f7872235db964af53de53090e3b7f241cd56d7289e4bd2fb3449efa6a0",
+      "route_structure": "0e72084621272b99896dd4ae9d02e530596652ac2835ef821de20bd0c84f81db",
+      "validate": "1d8c0b539d5a9d0cab84d62a496679d6648d983c7e71ef152d08e45bb682d22f"
+    },
+    "SYN-001-T06-STR02": {
+      "route_analysis": null,
+      "route_structure": "97957c327590ab8bec029df6b89e800d6250de35fe280d50ff80c0d4e9d5e337",
+      "validate": "8ad3dc38ad9282cdc60990632a0e36f7b83e1d2965cb76d8aff130765609bea1"
+    },
+    "SYN-001-T06-STR06": {
+      "route_analysis": null,
+      "route_structure": "4a497e3074787a702417567c0542d9b1bfdc857fb754cc8db813096cd2db3feb",
+      "validate": "be3b3f411829614d697ee79e115dea95d4b58866e87aa045ca0202e4a213cbc0"
+    },
+    "SYN-001-T06-THM01": {
+      "route_analysis": "a1f74580e95397fa354595d4a85bd53349448e756fb5bebf5bc73d1c4a4ec8b3",
+      "route_structure": "a50aa16391960cbfd6a429075a8c576f5869c7805ecedba0814b3141649f9fc4",
+      "validate": "763224193d9b1e487d77af014bbbc8a93d17cd66c520efc169d4b1aed253cdf5"
+    },
+    "SYN-001-T06-THM02": {
+      "route_analysis": "6cd5a35437528f2c703153cee455ef9790cb11b3d1d82d9ed87cba21725f989d",
+      "route_structure": "7285b9f888012d58eac1f55c2d5be9de6bb5e3cc2953496de42f4ad6a4d1c515",
+      "validate": "4b6e4c0a2d67339c87de3d4dff3effa3031eff84f3dfc72d4957d1f517b4c0b7"
+    },
+    "SYN-001-T06-THM10": {
+      "route_analysis": "4b689d85f56a56529d898c6e0bc1042efbef9a7624e27022ef19f52d2da9b4cd",
+      "route_structure": "e6017d6a49ad5dad22ba540175c384d7cc2dd0b4d11367d148dd5d5db6f22bb8",
+      "validate": "febdaa63c0664f49497e359b19e55428ab110b51707871e42ce9c519910b6b28"
+    },
+    "SYN-001-UL-C1": {
+      "route_analysis": "8fbd4b47eeba14d6d63d29f99a3a87b1232bad28e60fcf06759c286c9a6bb5ed",
+      "route_structure": "9f1ac203a581ce484446b353acd4bfbec6a6802f907ca3f58c32499777257f43",
+      "validate": "6dc0f23e160fe62d1b5b768a107b96411dbed32962ad273627d97c6333ceb566"
+    },
+    "SYN-001-UL-C2": {
+      "route_analysis": "8ba260f7872235db964af53de53090e3b7f241cd56d7289e4bd2fb3449efa6a0",
+      "route_structure": "0e72084621272b99896dd4ae9d02e530596652ac2835ef821de20bd0c84f81db",
+      "validate": "893d73c95ccb51f80025174b204fe7553e6f69c22fb122a30d3eede38ce76537"
+    },
+    "SYN-001-UL-C3": {
+      "route_analysis": "19724efba84f9fba12475e90cfd527b163e385ede881a4d3938ce4ddfea96750",
+      "route_structure": "efb2099e0271021e91eda0d6949b3c40a46e0aa69b783bbdd2499ea616540273",
+      "validate": "6d8afb720a228ee74de622f6eb9d1f107f8fae6f6b995abb1255b85d1c8b1193"
+    },
+    "SYN-001-UL-C3X": {
+      "route_analysis": "d6f5e313a2f44f86b0edea94a9dff24603cc84074adb89830f5da3fb05e8b91a",
+      "route_structure": "8b34923dd4b1a16aaeb823d76c0fc495d687655e01122f196a96e5dd967928ca",
+      "validate": "5a74d7dfd2c2008845cfb1c9a697ec12aaddf486def62ec5976ff5a672d0f431"
+    },
+    "SYN-001-all-liquid-310K": {
+      "route_analysis": "54e06f28f0c9acaa1384d464bad556f19e5f0c1fb4a46693a19f0ed7eece3319",
+      "route_structure": "244144fa59ed7ed08071cc19fd077d30f4c86b6a64354cb39e0d4d1a70a2e071",
+      "validate": "11e53f3484167992869108edccc49b60cc33637bcc3fbea90de3e51e5430e62f"
+    },
+    "SYN-001-all-vapor-420K": {
+      "route_analysis": "5588ba81b3b777d15ce73ef70cae37f7aa463a262ddaa0ff13786efa9bc07939",
+      "route_structure": "2120c22d5efc53bc3c860f17a65d22d68a71af65824c2bbafc30cdfd2b3c2d3e",
+      "validate": "2209ec0096afcbd801a32e3b1bf8f75cb38c6e84a6a214c9324cf9f988e5bae8"
+    },
+    "SYN-001-conflicting-heater-spec": {
+      "route_analysis": null,
+      "route_structure": "e2859dcc5e2bc65f19b2857bc86d93ada0e350fd994ebadf1d82bbb5b47b2c54",
+      "validate": "dc27bfeac64453a3cf8875f08b192bbb1f987d18dedceead8565289aa18d04e2"
+    },
+    "SYN-001-high-recycle": {
+      "route_analysis": "bf7645045908c3b86bc72101c11bef2d05390e8a42f3f1b281173c09e50851bc",
+      "route_structure": "88db32720c544b97d675bf6e7dc5e569ddcd7dfe1d3e019d97179b012156909b",
+      "validate": "be6753168286efc7c9ce63a7c8d6036d6904c97c6427c443cb373779b1a61ae6"
+    },
+    "SYN-001-nominal": {
+      "route_analysis": "cc814b824963b915c8c61e42f8a0effdcd00c85e9d6a7d16fadd03e94efbc4a7",
+      "route_structure": "018c7395c4b07c05874508fa27e0be4cf3d0c70ba59425b0aa493248a0b0aea7",
+      "validate": "46c5cbb97385d1b57f30e8a88dea3c0254781730bfb2d8b24a8a650af3bd98bf"
+    },
+    "SYN-001-once-through": {
+      "route_analysis": "5a2f5e4de96d723878584368d4562ab619ab76cd4668cb7564e14fc9142861bf",
+      "route_structure": "e8fa80c00c6c622a9b2f97fccfd46b253bf828a4297b63db71ec16b9a7f01c15",
+      "validate": "4e70a1d4fda501d53f33ef83d5983dde165aeeb72508e5d00e9ebf5055696852"
+    },
+    "T05b:DZ-3": {
+      "route_analysis": "dc07b5337ecbaf0df8e37005c3917bccc4b23358d22295f2e5349dee5704ee3e",
+      "route_structure": "b8e6dcc114af8d1e737ea56b0bae0627a4f46542314c0df836d0ab988149c557",
+      "validate": "fed5973db440c998a2ebd0579dd2d7a020ea65fc706786014edac036af3a0b17"
+    },
+    "T05b:DZ-7": {
+      "route_analysis": "7424f13987985afc589facf52a35b25a05dacac726e23b35a441006b1014fd39",
+      "route_structure": "f2a3b5f1a6b99071d503ae4b90840d2d35fa6f14507328b95af29b48ace3ea6f",
+      "validate": "8bd8233a703e5da67df104d2570cf546ead12f224df7dd9821d9ccd41d12e46d"
+    },
+    "T05b:NP-1": {
+      "route_analysis": "fae8fa87265189124ffcba1ca2132af7d2e36f1ae0d1eed4ee85feb068ad8bbc",
+      "route_structure": "29d409724812fdd781e1003bed17cb7e86844b48ffd41ba6e026be594b16a531",
+      "validate": "afd320e2f0095e5a652a4d2b0406e6af57c5e8bdbd974e9fd41ce68259676ddd"
+    },
+    "T05b:SC-1": {
+      "route_analysis": "794f503ad1a462f8002eb2c1b0d47a7b218fa99391e32906776b18359dbfb517",
+      "route_structure": "1c668dd66729798d29f6725fdc3b217ed363ce5ff9e376d28fe8b18733bc4dbf",
+      "validate": "5262cedab2138709e8f6cb4a60018e67d26c4f6c7199dae4060803b43be782db"
+    },
+    "T05b:SC-2": {
+      "route_analysis": "1d9ea03deff201a109ec3a1d846b57f3824d2133e4da678401ba902b0cd79566",
+      "route_structure": "a6e768a7d7e2ec3ec3994e408a2e1d34d55d21d249cc212a57d9fd3d89490365",
+      "validate": "6349f63e3f8c10a1cd99994e1c730388545addc555e4b69034ddd188492b299e"
+    },
+    "T05b:SC-3": {
+      "route_analysis": "a7398c0e3edb8fa08e58f50b45ed723186dacf5483ca8246d2ee0a2773f477db",
+      "route_structure": "0a810390b1f67151c62da352384788a60cf2ea9e0f92455e07d83985e256651b",
+      "validate": "7de8ba8d1a62d5d7dc25e6a3000220cec0a34c6b71531cbf2c31d73450f687ea"
+    }
+  }
+}

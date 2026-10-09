@@ -33,11 +33,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
+from openflowsheet._files import atomic_write_bytes as atomic_write_bytes  # re-export, R-237
 from openflowsheet.application.revisions import Revision, content_hash
 from openflowsheet.application.types import (
     LOCAL_OWNER_PRINCIPAL,
     ApiError,
     ArtifactRef,
+    AuditRecord,
     EffectiveBudgets,
     ExecutorSettings,
     Job,
@@ -129,19 +131,46 @@ def _load(blob: bytes | str | None) -> Any:
     return None if blob is None else json.loads(blob)
 
 
-def atomic_write_bytes(path: Path, data: bytes) -> None:
-    """Write a temporary file beside `path`, `fsync` it, rename it over `path`, `fsync` the dir."""
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
-    with open(temporary, "wb") as handle:
-        handle.write(data)
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temporary, path)
-    directory = os.open(path.parent, os.O_RDONLY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
+class ArtifactTableSink:
+    """The `artifacts` table as an experiment store's `ArtifactSink` (M02 design note §14 B4,
+    R-237): each `record` is one row, inserted in its own write transaction. The id is the owning
+    job (or `nojob`), the kind, the name and the file's stem, with `-<n>` added when a row of that
+    id exists (a cache hit or a determinism finding names the result file again)."""
+
+    def __init__(self, store: ProjectStore) -> None:
+        self.store = store
+
+    def record(
+        self,
+        *,
+        job_id: str | None,
+        kind: str,
+        name: str,
+        relpath: str,
+        sha256: str,
+        size_bytes: int,
+        parent_artifact_id: str | None,
+    ) -> str:
+        base = f"{job_id if job_id is not None else 'nojob'}:{kind}:{name}:{Path(relpath).stem}"
+        with self.store.writing() as connection:
+            artifact_id, number = base, 1
+            while connection.execute(
+                "SELECT 1 FROM artifacts WHERE artifact_id = ?", (artifact_id,)
+            ).fetchone():
+                number += 1
+                artifact_id = f"{base}-{number}"
+            row = ArtifactRow(
+                artifact_id=artifact_id,
+                job_id=job_id,
+                kind=kind,
+                name=name,
+                sha256=sha256,
+                size_bytes=size_bytes,
+                relpath=relpath,
+                parent_artifact_id=parent_artifact_id,
+            )
+            self.store.register_artifacts(connection, [row])
+        return artifact_id
 
 
 def policy_file_bytes(policy: ProjectPolicy) -> bytes:
@@ -495,6 +524,66 @@ class ProjectStore:
         """A refusal, in a transaction of its own (an effect is audited inside its own)."""
         with self.writing() as connection:
             self.audit(connection, entry)
+
+    def list_audit(
+        self,
+        *,
+        principal_id: str | None,
+        operation: str | None,
+        descending: bool,
+        after_seq: int | None,
+        limit: int,
+    ) -> tuple[list[AuditRecord], bool]:
+        """At most `limit` audit rows in `seq` order (descending when asked), after `after_seq`
+        in that order, with the ledger's idempotency key of each `allowed` row; and whether more
+        follow (ADR 0019 Amendment 3, A3.3; M06 design note §4.3).
+
+        One read-only query, a LEFT JOIN of `audit` with `ledger` on `(principal_id, operation,
+        request_sha256)`, which the ledger's primary-key prefix `(principal_id, operation)`
+        bounds. A keyed request's hash covers its key (R2, tested), so at most one ledger row
+        matches; a second would repeat a `seq`, which is refused as a defect, never shown."""
+        clauses: list[str] = []
+        parameters: list[str | int] = []
+        if principal_id is not None:
+            clauses.append("a.principal_id = ?")
+            parameters.append(principal_id)
+        if operation is not None:
+            clauses.append("a.operation = ?")
+            parameters.append(operation)
+        if after_seq is not None:
+            clauses.append("a.seq < ?" if descending else "a.seq > ?")
+            parameters.append(after_seq)
+        where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        direction = "DESC" if descending else "ASC"
+        with self.reading() as connection:
+            rows = connection.execute(
+                "SELECT a.seq, a.at, a.principal_id, a.capability_id, a.operation, a.outcome,"
+                " a.code, a.request_sha256, a.effect, l.idempotency_key FROM audit a"
+                " LEFT JOIN ledger l ON a.outcome = 'allowed'"
+                " AND l.principal_id = a.principal_id AND l.operation = a.operation"
+                f" AND l.request_sha256 = a.request_sha256{where}"
+                f" ORDER BY a.seq {direction} LIMIT ?",
+                (*parameters, limit + 1),
+            ).fetchall()
+        sequence = [int(row[0]) for row in rows]
+        if len(set(sequence)) != len(sequence):
+            raise StoreError("an audit row joins more than one ledger row")
+        records = [
+            AuditRecord(
+                seq=int(row[0]),
+                at=str(row[1]),
+                principal_id=str(row[2]),
+                capability_id=str(row[3]),
+                operation=str(row[4]),
+                outcome=row[5],
+                code=row[6],
+                request_sha256=row[7],
+                effect=row[8],
+                idempotency_key=row[9],
+            )
+            for row in rows
+        ]
+        return records[:limit], len(records) > limit
 
     def audit_rows(self) -> list[dict[str, Any]]:
         with self.reading() as connection:

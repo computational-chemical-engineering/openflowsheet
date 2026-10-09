@@ -4,6 +4,7 @@
 **Amended 2026-09-25 (second design pass):** D12 (a zero-flow form for dormant non-lifted outlets — Frank's answer to spec §18 Q2), D4 (c)'s swapped-row test, D7's rulings on the build lane's W4 questions; D9 (2) reversed by D12. Spec §7.6–§7.10, B23–B30; register R-058.  
 **Amended 2026-09-25 (F9 pass):** D7 gains a second substitution class (unresolved two-phase splits) and D9 (1) is closed, both by ADR 0013 (`docs/derivations/K04-F9-spec.md`).  
 **Amended 2026-09-25 (ruling round, `docs/briefs/T05b-rulings.md` §4; the implementation review `docs/reviews/T05b-review.md` M1, S1, S2):** D4 (a) — an opening writes the closure's temperature to *every* product's temperature column, and the screen of a flagged PH-type trial decides its regime from the band's end enthalpies with a `τ_E` margin, asking the full closure only inside it (spec §6.2; exact wherever the closure answers `ok`); D4 (c) and D12 — every opening (attempt 0 and every restart) is brought to agree with exact dormancy by one fixed point over every lifted split's `ZERO_FLOW` membership, the items and the outlet resets, with a typed `ACTIVE_SET_CYCLING` (`opening_not_settled(<id>)`) if it does not settle, and the screen runs at an empty signature too (spec §7.4, §7.8 (ii)–(iii); R-065); D7 — a dormant exchanger side's terminal checks carry K04's reason `ZERO_FLOW`; D9 (1)'s band measured with no `FAILED` state (W0.7); and, for the near-pure restarts this ADR's directive covers, K03 §5.3 releases an absent component's structural zeros before declaring `BOUND_BLOCKED` (R-064). Acceptance gains B31–B33. Registered records that move: the `t05b` key's SC-3 and DZ-12 entries (both products' temperatures at their restart openings), re-registered with that reason.  
+**Amended 2026-10-09 (M02 WO-8 rulings, `docs/design/M02-pymrm-adapter.md` §14.2 B12–B14, B16, B17; R-254–R-256, R-258):** `pr-c1-v1` splits under v2. Their kernel is the TP flash classified by M01 §7 rule 3 with τ_dew. A split may declare vapour-only components, whose liquid flows a TWO_PHASE attempt pins. They have no degenerate or unresolved routing. Non-lifted PR outlets are not screened. A PR block has a dormancy convention. See the Amendment section at the end. No SYN-001 registration, identity or registered value moves.  
 **Date:** 2026-09-25  
 **Author:** design lane (`specifier`); brief `docs/briefs/T05b-limitations.md` (`de64cc8`)  
 **Directive:** Frank, 2026-09-25, answering T05 spec §19 Q11 and Q12: *"I want the software to have as little limitations as possible. So, yes: the PH solver should be able handle near-pure feeds, and EO solves can handle a single flowing component that is partly vaporised."* The build lane put T05 §4.7 (a) (a dormant PH-type outlet) in the same scope because its remedy is the same ADR 0005 change. **Design steer**, Frank, 2026-09-25: *"The important thing for me is robustness, if a method cannot solve a hard case and the solver then switches to another method this is also fine.."* — a primary method with a typed, recorded fallback chain is preferred to a single method that refuses a hard case; each switch is an event in the trace, deterministic, and never a relaxed check; the certificate stays independent (R-016). D10 states the chain.  
@@ -140,3 +141,60 @@ One schema widens (C1): every existing `SolvePolicy` document stays valid and me
 - `evidence/T05b/<commit>/manifest.json` `tested`: B00–B30 of the specification *(and B31–B33, ruling round 2026-09-25)*, in particular B01 (near-pure grid), B02 (registered kernel outputs bitwise), B07 (v2 ≡ v1 on C1–C3), B08–B11 (single component), B12–B13 (near-pure EO and the residual limitation's evidence), B15–B17 (dormant), B18 (injections), B19 (R-007), B20 (every switch recorded), B21 (bit identity); *(D12)* B23–B27 (dormant non-lifted outlets), B28–B29 (zero-flow conflicts and their injections), B30 (the amendment inert on every registered result).
 - `t05b_reference.py --check` passes and the committed reference file's SHA-256 matches the specification's header; `t05_reference.py --check` still passes with T05's file unchanged.
 - The gate green on x86-64 and aarch64 with the K05 identity comparison including `t05b`, every other key unchanged.
+
+---
+
+## Amendment (2026-10-09, M02 WO-8): `pr-c1-v1` splits under `T05b-phase-contract-v2`
+
+**Author:** design lane (`architect`), M02. **Normative text:** `docs/design/M02-pymrm-adapter.md` §14.2 B11–B17,
+and M01 spec §7 with its Amendment 3. **Register:** R-254 to R-256, R-258.
+
+### Context
+
+M02's Peng–Robinson flash (`c1.tp_flash`) is the first lifted split on a provider whose liquid is a pure component
+(R-143). There, SYN-001's machinery fails in four places. Dropped equilibrium rows must hold on the branch that
+drops them, which M01 §7's first row did not. The liquid's light-gas flows are columns, since `assemble` allocates
+every flow of every stream. The admissibility check reads `lnK`, which `pr-c1-v1` lacks. And the saturation band has
+no lower end.
+
+### Decision
+
+- **A1 (D4 (a), "the kernel", for a TP-type `pr-c1-v1` split).** The kernel is the provider's TP flash, classified by
+  M01 §7 rule 3: TWO_PHASE with `l_NH₃ ≤ τ_dew n_tot` (τ_dew = 1e-10, R-230) is VAPOR, with the split pinned as a
+  VAPOR restart pins it. ADR 0005 D3's screen and the closure conversions read the same classification, not K03
+  §8.2's `Σ y/K` at `admissibility_epsilon`. The region dispatches on the provider id, and every other provider runs
+  the unchanged rules.
+- **A2 (D4, attempt construction).** A split rule may declare `vapour_only` components. In a TWO_PHASE attempt, their
+  liquid flows are pinned at `+0.0` and their zero rows `n_L,i = 0` (equilibrium-family rows) are dropped; this
+  realizes M01 §7 rule 2's "not variables". VAPOR and ZERO_FLOW already pin them, and LIQUID leaves them to the mole
+  rows. The form, `VapourOnlyForm`, sits beside the split's descriptor, as `ZeroFlowForm` does, so `LiftedSplit`'s
+  registered digest does not move.
+- **A3 (D7).** A `pr-c1-v1` stream that carries light gas is never temperature-degenerate, because its band is
+  half-open (M01 §7 rule 4). It is never unresolved in ADR 0013 D3's sense either, since `w = ∞` makes the floor 0.
+  Its routing is therefore empty.
+- **A4 (D12).** The dormancy-form registry gains `c1.adiabatic_mixer`'s outlet, whose declared phase is VAPOR.
+- **A5 (scope).** PR outlets that are not lifted (the mixer's, the heater's) are not screened during a solve. Their
+  units' causal evaluates refuse them, and the certificate's declared-port check judges them at the solution, as
+  SYN-001's declared-liquid outlets are judged. No outcome is added.
+- **A6 (residual and Jacobian at dormancy).** At exact dormancy a PR vapour block takes the ideal-gas limit
+  (`∂Ḣ/∂n_j = h^ig_j(T)`, `ln φ = 0`). A pure-NH₃ liquid block takes the provider at a unit probe, falling back to
+  the pure fluid's vapour root where no liquid root exists. This is a registered convention at a point where no
+  derivative exists.
+
+### Alternatives rejected
+
+- A `pr-c1-v1` admissibility in SolvePolicy: a frozen-schema change for a property of the provider's convention.
+- Leaving the light-gas liquid columns free under their zero rows: roundoff makes them nonzero, which reaches the
+  liquid blocks and defeats ADR 0013's exact-zero projection.
+- A solve outcome for an inadmissible non-lifted outlet: a frozen-schema change, while the certificate already types
+  the failure.
+
+### Consequences
+
+- No schema, literal, policy hash or SYN-001 record changes.
+- The region gains a provider-id dispatch in `_kernel` and `_admissible` and a TWO_PHASE term in `_pinned` and
+  `_dropped`. Each is a branch that SYN-001's provider and rules never take; M02's G2 proves it.
+
+### Acceptance evidence
+
+M02 gates G2 and G7 as amended by the design note's §14.2, recorded in `evidence/M02/<commit>/manifest.json`.

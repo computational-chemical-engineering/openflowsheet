@@ -21,13 +21,15 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal, NamedTuple
 
 from openflowsheet.canonical import first_noncanonical
 
 if TYPE_CHECKING:
     from openflowsheet.application.binding import Unbound
     from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.graph.process import ProcessGraph
+    from openflowsheet.graph.trace import Declaration
 
 Task = Literal["simulation", "optimization"]
 ValidationStatus = Literal["DRAFT", "READY_FOR_SIMULATION", "READY_FOR_OPTIMIZATION", "INVALID"]
@@ -268,11 +270,14 @@ def validate(
     connections = list(document.get("connections") or [])
     specifications = list(document.get("specifications") or [])
 
+    from openflowsheet.models.revision_flowsheet import component_basis
+
     checks.append(
         _dimensions(
             list((document.get("component_set") or {}).get("components") or []),
             instances,
             specifications,
+            component_basis(document).molecular_weights,
         )
     )
     checks.append(
@@ -396,12 +401,30 @@ def _not_run(reason: str, hint: str | None) -> str:
     return f"not run: {reason}" if hint is None else f"not run: {reason}. {hint}"
 
 
-def _analysed(
-    document: Mapping[str, Any],
-) -> tuple[Any, Unbound | None, Mapping[str, tuple[str, ...]], bool]:
+class StructuralAnalysis(NamedTuple):
+    """`_structural`'s choice of binder and what it analysed."""
+
+    #: The analysed report, if any.
+    report: Any
+    #: The refusal it reports, if any, which then decides the checks.
+    refusal: Unbound | None
+    #: The specification labels of the revision binder's columns.
+    pins: Mapping[str, tuple[str, ...]]
+    #: Whether the revision binder was the one analysed.
+    fallback: bool
+    #: The binding analysed, the declaration its report was analysed from and its process graph
+    #: (M06 design note §4.1: `inspect_structure`'s index on the unroutable branch). `None` where
+    #: no report was analysed; the declaration is `None` too when it could not be traced.
+    binding: Any = None
+    declaration: Declaration | None = None
+    graph: ProcessGraph | None = None
+
+
+def _analysed(document: Mapping[str, Any]) -> StructuralAnalysis:
     """`_structural`'s choice of binder: the analysed report, if any; the refusal it reports, if
     any (which then decides the checks); the specification labels of the revision binder's
-    columns; and whether that binder was the one analysed."""
+    columns; whether that binder was the one analysed; and the binding, declaration and graph the
+    report came from."""
     from openflowsheet.application.binding import (
         Binding,
         bind_revision_or_reason,
@@ -411,7 +434,7 @@ def _analysed(
         RevisionBinding,
         bind_revision_flowsheet,
     )
-    from openflowsheet.graph.analysis import analyse
+    from openflowsheet.application.revision_run import traced_analysis
     from openflowsheet.models.revision_flowsheet import pin_specifications
     from openflowsheet.orchestrator.execution import declaration_identity
 
@@ -420,8 +443,10 @@ def _analysed(
     report: Any = None
     pins: Mapping[str, tuple[str, ...]] = {}
     fallback = False
+    analysed: Any = None
+    declaration: Declaration | None = None
     if isinstance(binding, Binding):
-        report = analyse(
+        report, declaration = traced_analysis(
             binding.spec,
             binding.graph,
             model_version=binding.model_version,
@@ -429,6 +454,7 @@ def _analysed(
             specification_ids=binding.specification_ids,
             row_units=binding.row_units,
         )
+        analysed = binding
         if report.finding == "STRUCTURALLY_CLOSED":
             # Ruling rounds 6 (B1) and 7 (M1, M2): a closed legacy analysis is READY only if
             # `legacy_eo` may solve the revision. When `legacy_admission` refuses it, the legacy
@@ -446,7 +472,7 @@ def _analysed(
             revision = _free_class_refusal(document, revision)
         if isinstance(revision, RevisionBinding):
             model_version, constants = declaration_identity(revision.spec)
-            report = analyse(
+            report, declaration = traced_analysis(
                 revision.spec,
                 revision.graph,
                 model_version=model_version,
@@ -454,6 +480,7 @@ def _analysed(
                 specification_ids={},
                 row_units=revision.row_units,
             )
+            analysed = revision
             pins = pin_specifications(document)
             fallback = True
         elif (
@@ -469,7 +496,15 @@ def _analysed(
             # free class the revision side is the probe's refusal (ruling round 7, S1).
             refusal = binding
 
-    return report, refusal, pins, fallback
+    return StructuralAnalysis(
+        report,
+        refusal,
+        pins,
+        fallback,
+        analysed,
+        declaration,
+        None if analysed is None else analysed.graph,
+    )
 
 
 def _free_class_refusal(document: Mapping[str, Any], refusal: Unbound) -> Unbound:
@@ -496,7 +531,14 @@ def _free_class_refusal(document: Mapping[str, Any], refusal: Unbound) -> Unboun
 def structural_refusal(document: Mapping[str, Any]) -> Unbound | None:
     """The binder refusal `validate()`'s structural stage reports for `document`, or `None` when
     it analyses one (T07 ruling round 6, B1: `inspect_structure`'s `hint` is this refusal's)."""
-    return _analysed(document)[1]
+    return _analysed(document).refusal
+
+
+def structural_analysis(document: Mapping[str, Any]) -> StructuralAnalysis:
+    """What `validate()`'s structural stage analysed for `document` (`_analysed`): the report,
+    the refusal, and the binding, declaration and graph the report came from (M06 design note
+    §4.1, `inspect_structure`'s unroutable branch)."""
+    return _analysed(document)
 
 
 def _structural(
@@ -527,7 +569,7 @@ def _structural(
     — a validator that reported `READY_FOR_SIMULATION` because it could not look would be the
     placeholder success the repository's rules forbid.
     """
-    report, refusal, pins, fallback = _analysed(document)
+    report, refusal, pins, fallback, *_ = _analysed(document)
 
     if refusal is not None:
         if refusal.kind == "conflict":
@@ -821,6 +863,7 @@ def _dimensions(
     components: Sequence[str],
     instances: Sequence[Mapping[str, Any]],
     specifications: Sequence[Mapping[str, Any]],
+    molecular_weights: Mapping[str, float],
 ) -> Check:
     """`DIM-01` (ADR 0016; T06 spec §8.5, reader R4; register R-077): `unit-conversion-v2`
     applied to every specification value and, through R6, to every instance parameter.
@@ -862,7 +905,7 @@ def _dimensions(
         # code. Its unit and kind are still judged.
         value = read_number(raw)
         try:
-            _, conversion = convert_specification(entry, value)
+            _, conversion = convert_specification(entry, value, molecular_weights)
         except RevisionError as error:
             refusals.append((name, _with_hint(error)))
             continue
@@ -873,7 +916,9 @@ def _dimensions(
         parameters = instance.get("parameters") or {}
         for parameter in sorted(str(name) for name in parameters):
             try:
-                _, conversion = read_parameter(unit, parameter, parameters[parameter])
+                _, conversion = read_parameter(
+                    unit, parameter, parameters[parameter], molecular_weights
+                )
             except RevisionError as error:
                 refusals.append((f"{unit}.{parameter}", _with_hint(error)))
                 continue

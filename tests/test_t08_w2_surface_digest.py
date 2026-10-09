@@ -14,6 +14,24 @@ exactly those two files:
 - serving `v17-c2`'s two texts (byte copies in `tests/fixtures/t08/v17_c2_descriptions/`) in their
   place reproduces `6d13e13d…`, so nothing else on the served tool list (names, input schemas,
   the other 15 texts) moved.
+
+**ADR 0019 Amendment 3 (M06, A3.2; approved by Frank on 2026-10-08).** `diff_revisions`'s
+`outputSchema` gains the required member `elements`, so the served tool list moves again, to
+`M06_A3_SERVED_SHA256`. With that one member taken out of that one tool's `outputSchema`
+(`_without_a3_2`), the served list is R-133's `171dd768…` exactly, and with `v17-c2`'s two texts as
+well it is `6d13e13d…`: nothing else moved. (Registered here pending the register entry the
+amendment's surface move needs; M06 WO-2.)
+
+**M02 (ADR 0033-0035) widens the served tool list additively** — the `experiment` operation and
+its body, five artifact kinds, `revision_coupled`, `COUPLING_NOT_CONVERGED`,
+`model_replacement_incompatible`, two widened descriptions — so the served digest moves again.
+R-234 (design note M02 §14 B1, following R-192) rules how: this file's 0.1 constants and
+`scripts/t08_rc.py`'s A49 constant are not edited; the move is bound to M02's additions by a
+decomposition test — with M02's additions removed (`without_m02`, `tests/m02_schema_support.py`)
+the served list is the base's registered digest (`M02_BASE_SERVED_SHA256`, M06's `6c4375b4…`
+above, R-192), and the served tool descriptions are byte-identical. M02's own served digest is
+registered at the merge commit, on the combined tree; the value measured without M06
+(`8de83946…`) is evidence, not a pin.
 """
 
 from __future__ import annotations
@@ -21,11 +39,14 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Iterator
 from types import ModuleType
+from typing import Any
 
 import pytest
 from conftest import REPO_ROOT, load_yaml
+from m02_schema_support import without_m02
 
 from openflowsheet.application.operations import OPERATIONS, Operation
+from openflowsheet.canonical import canonical_json
 
 DESCRIPTIONS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings" / "descriptions"
 V17_C2_TEXTS = REPO_ROOT / "tests" / "fixtures" / "t08" / "v17_c2_descriptions"
@@ -33,6 +54,12 @@ MCP_OPERATIONS = sorted(name for name, op in OPERATIONS.items() if "mcp" in op.t
 
 #: R-133: the served descriptions' digest after N1 and N2 (`harness.tool_descriptions_sha256`).
 T08_DESCRIPTIONS_SHA256 = "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14"
+#: ADR 0019 Amendment 3 (A3.2): the served tool list with `diff_revisions`'s `elements`.
+M06_A3_SERVED_SHA256 = "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9"
+#: R-234: the base's registered served digest that M02's surface move decomposes onto: R-192's
+#: (M06's Amendment 3), on `main` at M02's merge of it. (Evidence, not a pin: served with M02 and
+#: without M06, the digest was `8de83946…`.)
+M02_BASE_SERVED_SHA256 = M06_A3_SERVED_SHA256
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -63,6 +90,31 @@ def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _tools(mcp: ModuleType) -> list[dict[str, Any]]:
+    """The served tool list as `harness.tool_descriptions_sha256` digests it."""
+    return [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
+
+
+def _digest(tools: list[dict[str, Any]]) -> str:
+    return hashlib.sha256(canonical_json(tools)).hexdigest()
+
+
+def _served_without_m02(mcp: ModuleType) -> str:
+    """The served tool list's digest with M02's additive members removed (R-234)."""
+    return _digest(without_m02(_tools(mcp)))
+
+
+def _without_a3_2(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """`tools` with ADR 0019 Amendment 3's `elements` taken out of `diff_revisions`'s
+    `outputSchema` alone (in place; returned for chaining)."""
+    (diff,) = [tool for tool in tools if tool["name"] == "diff_revisions"]
+    schema = diff["outputSchema"]
+    assert schema["required"] == ["added", "changed", "elements", "removed"]
+    del schema["properties"]["elements"]
+    schema["required"].remove("elements")
+    return tools
+
+
 def _v17_c2_digest() -> str:
     """`v17-c2`'s served digest as registered (not changed by R-133)."""
     reference = load_yaml(REPO_ROOT / "benchmarks" / "t08" / "reference_values.yaml")
@@ -87,7 +139,31 @@ def test_the_served_digest_is_registered(mcp: ModuleType) -> None:
     from benchmarks.t07.v17 import harness
 
     assert _v17_c2_digest() == "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d"
-    assert harness.tool_descriptions_sha256() == T08_DESCRIPTIONS_SHA256 != _v17_c2_digest()
+    # R-234: M02 moved the served list; without M02's additions it is M06's (R-192), and without
+    # Amendment 3's member as well it is R-133's.
+    assert harness.tool_descriptions_sha256() != M06_A3_SERVED_SHA256
+    assert _served_without_m02(mcp) == M06_A3_SERVED_SHA256
+    assert _digest(_without_a3_2(without_m02(_tools(mcp)))) == T08_DESCRIPTIONS_SHA256
+    assert T08_DESCRIPTIONS_SHA256 != _v17_c2_digest()
+
+
+def test_m02s_surface_move_decomposes_onto_the_base(mcp: ModuleType) -> None:
+    """R-234: the served list minus M02's additions is the base's registered list, and M02 changed
+    no tool's name or description text (T08.A18 is not reopened)."""
+    from benchmarks.t07.v17 import harness
+
+    served = [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
+    stripped = without_m02(served)
+    assert harness.tool_descriptions_sha256() != M02_BASE_SERVED_SHA256
+    assert hashlib.sha256(canonical_json(stripped)).hexdigest() == M02_BASE_SERVED_SHA256
+    assert [(t["name"], t["description"]) for t in served] == [
+        (t["name"], t["description"]) for t in stripped
+    ]
+    # The texts are the files, byte for byte; the files are pinned against the base below.
+    by_tool = {op.mcp_tool: name for name, op in OPERATIONS.items() if op.mcp_tool is not None}
+    for tool in served:
+        name = by_tool[tool["name"]]
+        assert tool["description"] == (DESCRIPTIONS / f"{name}.md").read_text("utf-8")
 
 
 def test_the_served_files_differ_from_v17_c2_in_exactly_the_two_reviewed_files() -> None:
@@ -105,8 +181,6 @@ def test_the_served_files_differ_from_v17_c2_in_exactly_the_two_reviewed_files()
 def test_restoring_the_two_files_reproduces_v17_c2s_digest(
     mcp: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from benchmarks.t07.v17 import harness
-
     served = mcp.description
 
     def v17_c2_description(operation: Operation) -> str:
@@ -118,4 +192,4 @@ def test_restoring_the_two_files_reproduces_v17_c2s_digest(
 
     monkeypatch.setattr(mcp, "description", v17_c2_description)
     mcp.tools.cache_clear()
-    assert harness.tool_descriptions_sha256() == _v17_c2_digest()
+    assert _digest(_without_a3_2(without_m02(_tools(mcp)))) == _v17_c2_digest()

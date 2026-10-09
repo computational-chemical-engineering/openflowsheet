@@ -215,6 +215,8 @@ def _requests(name: str, text: str, hostile: Hostile) -> list[dict[str, Any]]:
             {"artifact_id": f"{hostile.imported}/failure-bundle.json", "depth": 12},
         ],
         "artifact_bytes": [{"artifact_id": state}],
+        # ADR 0019 Amendment 3 (A3.3): injected text as the operation filter grants nothing.
+        "list_audit": [{"operation": text[:128]}],
         "submit_job": [
             {
                 "operation": "solve",
@@ -258,8 +260,10 @@ def test_g11_through_every_transport_the_decision_is_the_table_whatever_the_text
         with client_for(transport, hostile.project, hostile.grants.get(principal), tmp_path) as c:
             for name in sorted(_carried(transport)):
                 needed = {OPERATIONS[name].right}
-                if name == "cancel_job" and principal != "local-owner":
-                    needed.add("policy")  # every probe cancels another principal's job
+                if name in ("cancel_job", "list_audit") and principal != "local-owner":
+                    # every probe cancels another principal's job; every `list_audit` probe asks
+                    # for every principal's rows (ADR 0019 Amendment 3)
+                    needed.add("policy")
                 expected = needed <= set(rights)
                 for text in INJECTIONS:
                     for request in _requests(name, text, hostile):

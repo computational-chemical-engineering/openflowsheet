@@ -156,3 +156,61 @@ transactions. Register entries R-091 onward are added on acceptance.
 - **Rejected.** An example specification per pin: every member of a specification other than
   `kind`, `unit` and `target` is independent of the model, and an example would duplicate the
   encoding and need its own rule for tolerance and provenance.
+
+## Amendment 3 (Proposed 2026-10-06; approved by Frank 2026-10-08, M06) — what the diagnostic web shell needs: a structure index, element-level diffs, and the audit
+
+**Status:** **Accepted, 2026-10-08**: approved by Frank 2026-10-08; accepted on the green CI runs 37839253802 and
+37839266960 (review F1/F2 closed; `evidence/M06/4719a1a…/manifest.json` tested). Proposed 2026-10-06
+by the design lane (`architect`), M06. Design note `docs/design/M06-web-shell.md` §4, where the detail and
+rationale are; register R-172, R-192. The design-lane review (`docs/reviews/M06-review.md` §5) found it built as
+designed; it moves to Accepted when the M06 manifest records G10 measured and a green CI run on both legs and
+on `default-install` (review F1, F2). Additive: no existing member, value or signature changes. Frank informed; as for
+Amendment 1, a design-lane ADR is what the change rule of `docs/interfaces-frozen.md` requires.
+
+- **A3.1 — `inspect_structure` (Asks 1 and 2 of the M06 gap triage).** Its document gains, on the routed
+  branch, `rows` and `columns`; on the branch where no route binds, `validation_structural_report` (the
+  structural report `validate()` analysed for the document, or null), `rows` and `columns`. `rows` and
+  `columns` are null on either branch when no declaration was traced: on the unroutable branch when no
+  analysis ran, and on the routed branch when the declaration cannot be traced (the UNSUPPORTED report, with
+  nothing to index; `revision_run.traced_analysis`, tested by
+  `tests/test_m06_wo1_structure_index.py::test_an_untraceable_declaration_has_no_index`; M06 review F3a). A row entry is `{row_id, unit_id, instance_id, role, specification_id, kind, si_unit,
+  columns}`; a column entry is `{column_id, kind, si_unit, owner_unit, owner_instance, connection, coordinate,
+  component}`; members and derivations as in the design note §4.1. Both come from the same traced declaration
+  and process graph that produced the report in that call; no member is parsed from an id (R-019). They sit
+  beside `structural_report`, never inside it: `structural_sha256` and R0 cannot move, and
+  `inspect_structure` is in no identity key.
+- **A3.2 — `diff_revisions` (new Ask 6).** `application-results.schema.json#/$defs/semantic_diff` gains the
+  required member `elements`: `[{member, id, change, paths}]` pairing the items of `instances`, `connections`
+  and `specifications` by `id` (design note §4.2). `added`, `removed` and `changed` are unchanged.
+  `transaction-result.schema.json` is not changed: `commit_change` and `preview_change` results, and every
+  ledger replay, are as before. Because the MCP binding serves each tool's `outputSchema`, the served MCP
+  tool-list digest moves from R-133's `171dd768…` to `6c4375b4…` (R-192), and by this member alone:
+  `tests/test_t08_w2_surface_digest.py` takes `elements` out of `diff_revisions`' served `outputSchema` and
+  recovers `171dd768…`. No tool description changes. This supersedes the design note's §2 item 2 ("every
+  registered digest stays bit-identical") on this one point (M06 review F3b).
+- **A3.3 — `list_audit` (Ask 4).** `Inspection` gains a ninth method,
+  `list_audit(*, principal_id=None, operation=None, order="ascending", cursor=None, limit=50) ->
+  Page[AuditRecord]`; `AuditRecord` joins the frozen result-type names. `OPERATIONS` row: right `read`,
+  `GET /v1/audit`, transports Python, CLI and HTTP (no MCP tool). Schemas: `$defs` `audit_record` (closed:
+  `seq, at, principal_id, capability_id, operation, outcome, code, request_sha256, effect, idempotency_key`,
+  all required) and `audit_page`. `idempotency_key` is joined from the ledger on
+  `(principal_id, operation, request_sha256)`. **D4 is amended:** `authorize` reads `target_principal` for
+  `cancel_job` and `list_audit`; reading rows of another principal, or of all principals, needs `policy` as
+  well as `read`. Cursor `{order, seq}`; a cursor used with the other order is `invalid_request`.
+- **Deferred:** `blocked_by` in failure-bundle observations (Ask 3) — it writes a hashed replay artifact and is
+  solver-record work outside M06. **Rejected:** operation rights in `get_project` (Ask 5) — the shell's route
+  table is generated from `OPERATIONS` and checked; an agent learns a missing right from `forbidden`'s
+  `required` detail.
+- **Unchanged.** D1–D3, D5, D6; every other schema and operation; the store schema (`t07-store-v1`: no table,
+  column or index added); every hashed artifact. Not unchanged: the served MCP tool-list digest (A3.2, R-192).
+- **Migration.** No store migration. Released 0.1.x clients that validate `diff_revisions` responses against the
+  0.1 schema would reject `elements` (a closed object); MCP clients read `outputSchema` from the serving
+  version, and no other such client is known.
+- **Acceptance evidence.** Design note gates G2 (17 operations schema-valid over HTTP), G3 (structural reports
+  and validation reports of the 50-revision T07 corpus byte-identical to `67029fa`; identity checks unchanged),
+  G4 (index), G5 (elements; coarse members equal the pre-amendment output on every corpus pair), G6 (audit
+  authorization matrix, key join, paging). R4-G3's snapshot is re-taken for `diff_revisions` only; with
+  `elements` removed it equals the previous snapshot; likewise the served MCP tool-list digest, `6c4375b4…`
+with `elements`, is `171dd768…` without it (`tests/test_t08_w2_surface_digest.py`, R-192). Fixtures: one valid per new or changed `$def` from a real
+  response, one invalid each (`scripts/t07_schema_fixtures.py`). `docs/interfaces-frozen.md` §1–§2 list the
+  method, the result name and the `$defs`.

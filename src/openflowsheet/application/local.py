@@ -43,6 +43,7 @@ from typing import Any, Final, Literal, NoReturn, Self, get_args
 from openflowsheet.application import validation
 from openflowsheet.application.admission import (
     active_jobs_refusal,
+    admit_experiment,
     admit_reproduce,
     admit_solve,
     resolve_policies,
@@ -88,16 +89,20 @@ from openflowsheet.application.store import (
 from openflowsheet.application.transactions import (
     EditPathError,
     apply_edits,
+    revision_diff,
     semantic_diff,
 )
 from openflowsheet.application.types import (
     ApiError,
     ApiErrorCode,
+    AuditOrder,
+    AuditRecord,
     CapabilityReference,
     Change,
     DocumentSchemaError,
     EffectiveBudgets,
     ExecutorSettings,
+    ExperimentBody,
     Job,
     JobEvent,
     JobRequest,
@@ -129,6 +134,9 @@ TASKS: tuple[str, ...] = get_args(Task)
 WAIT_POLL_S: Final[float] = 0.1
 #: §11.4: page sizes — job lists as arrays (default 50, at most 200), events (100, at most 500).
 MAX_JOB_PAGE: Final[int] = 200
+#: ADR 0019 Amendment 3 (A3.3): `list_audit`'s orders, and its `operation` filter's length bound.
+AUDIT_ORDERS: Final[tuple[str, ...]] = ("ascending", "descending")
+_AUDIT_OPERATION_LIMIT: Final[int] = 128
 MAX_EVENT_PAGE: Final[int] = 500
 
 
@@ -736,6 +744,14 @@ class LocalApplication:
                 wall_time_s=admission.wall_time_s,
                 max_property_calls=admission.policy.max_property_calls,
             )
+        if isinstance(body, ExperimentBody):
+            admitted = admit_experiment(
+                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+            )
+            if isinstance(admitted, ApiError):
+                self._refuse_error(admitted, operation, request_sha256)
+            # R-233: an experiment's property calls are its own, never a solve's budget.
+            return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
         archive = store.artifact(body.bundle_artifact_id)
         wall_time_s = admit_reproduce(
             archive.kind if archive is not None else None,
@@ -793,6 +809,14 @@ class LocalApplication:
                 replay_report=None,
                 error=job.error,
             )
+        if job.operation == "experiment":
+            return JobResult(
+                operation="experiment",
+                run_result=None,
+                replay_report=None,
+                error=job.error,
+                experiment=self._experiment_answer(job),
+            )
         report = None
         for output in job.outputs:
             if output.kind == "replay_report":
@@ -800,6 +824,17 @@ class LocalApplication:
         return JobResult(
             operation="reproduce", run_result=None, replay_report=report, error=job.error
         )
+
+    def _experiment_answer(self, job: Job) -> dict[str, Any] | None:
+        """ADR 0033 D9: the experiment's `result` when the job output one (its own, a cache hit's
+        row or the producing row), else its last `attempt`; `None` when it output neither."""
+        results = [output for output in job.outputs if output.kind == "experiment_result"]
+        attempts = [output for output in job.outputs if output.kind == "experiment_attempt"]
+        chosen = results[-1] if results else (attempts[-1] if attempts else None)
+        if chosen is None:
+            return None
+        answer: dict[str, Any] = json.loads(self._artifact_path(chosen).read_bytes())
+        return answer
 
     def _run_result(self, job: Job) -> RunResult:
         """§5.7, read from what the job produced: the resolution and run facts its runner
@@ -1066,12 +1101,14 @@ class LocalApplication:
 
     def diff_revisions(self, from_revision: str, to_revision: str) -> SemanticDiff:
         """§4.2: the semantic diff (content paths added, removed, changed; the title and other
-        descriptive members excluded) from one stored revision to another. `read`."""
+        descriptive members excluded) from one stored revision to another, with its
+        `elements` (ADR 0019 Amendment 3, A3.2: the items of `instances`, `connections` and
+        `specifications` that differ, paired by id). `read`."""
         operation = "diff_revisions"
         self._authorize(operation)
         before = self._revision(from_revision, operation)
         after = self._revision(to_revision, operation)
-        return semantic_diff(before.document, after.document)
+        return revision_diff(before.document, after.document)
 
     def inspect_structure(
         self,
@@ -1148,6 +1185,87 @@ class LocalApplication:
         return self._project(
             operation, document, artifact_id, row.sha256, pointer, depth, cursor, limit
         )
+
+    def list_audit(
+        self,
+        *,
+        principal_id: str | None = None,
+        operation: str | None = None,
+        order: AuditOrder = "ascending",
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> Page[AuditRecord]:
+        """ADR 0019 Amendment 3 (A3.3; M06 design note §4.3): the project's audit rows — every
+        effect and every refusal — by `seq`, optionally of one principal and one operation, each
+        `allowed` row with the ledger's idempotency key. `read`; another principal's rows, or all
+        principals' (`principal_id` omitted), need `policy` as well (`cancel_job`'s rule). The
+        cursor is `{order, seq}`; one issued for the other order is refused at `/cursor`."""
+        name = "list_audit"
+        self._authorize(name, target_principal=principal_id)
+        if principal_id is not None and not isinstance(principal_id, str):
+            self._refuse(
+                "invalid_request", "principal_id is an id", operation=name, pointer="/principal_id"
+            )
+        if operation is not None and (
+            not isinstance(operation, str) or not 1 <= len(operation) <= _AUDIT_OPERATION_LIMIT
+        ):
+            self._refuse(
+                "invalid_request",
+                f"operation is a string of 1 to {_AUDIT_OPERATION_LIMIT} characters",
+                operation=name,
+                pointer="/operation",
+            )
+        if order not in AUDIT_ORDERS:
+            self._refuse(
+                "invalid_request",
+                f"order is one of {list(AUDIT_ORDERS)}",
+                operation=name,
+                pointer="/order",
+            )
+        self._check_limit(limit, MAX_PAGE, name)
+        after = self._decode_audit_cursor(cursor, order, name)
+        rows, more = self._store.list_audit(
+            principal_id=principal_id,
+            operation=operation,
+            descending=order == "descending",
+            after_seq=after,
+            limit=limit,
+        )
+        next_cursor = _encode_audit_cursor(order, rows[-1].seq) if more else None
+        return Page(items=tuple(rows), next_cursor=next_cursor)
+
+    def _decode_audit_cursor(self, cursor: str | None, order: str, operation: str) -> int | None:
+        """`list_audit`'s cursor, `{order, seq}`, as the `seq` to continue after; `None` for the
+        first page. A cursor of the other order, or one this list did not issue, is refused."""
+        if cursor is None:
+            return None
+        try:
+            decoded = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
+        except (ValueError, TypeError, binascii.Error):
+            decoded = None
+        seq = decoded.get("seq") if isinstance(decoded, dict) else None
+        if (
+            not isinstance(decoded, dict)
+            or set(decoded) != {"order", "seq"}
+            or decoded["order"] not in AUDIT_ORDERS
+            or isinstance(seq, bool)
+            or not isinstance(seq, int)
+            or seq < 0
+        ):
+            self._refuse(
+                "invalid_request",
+                "cursor is not one this list issued",
+                operation=operation,
+                pointer="/cursor",
+            )
+        if decoded["order"] != order:
+            self._refuse(
+                "invalid_request",
+                f"cursor was issued for order {decoded['order']!r}, not {order!r}",
+                operation=operation,
+                pointer="/cursor",
+            )
+        return int(seq)
 
     def artifact_bytes(self, artifact_id: str) -> bytes:
         """§4.3, §10.4: an artifact file's bytes exactly as stored — the raw export (Python, CLI,
@@ -1464,6 +1582,13 @@ def _file_document(path: Path) -> Any:
             if first_noncanonical(document) is None:
                 return document
     return raw.decode("utf-8", errors="replace").splitlines()
+
+
+def _encode_audit_cursor(order: str, seq: int) -> str:
+    """ADR 0019 Amendment 3 (A3.3): `list_audit`'s cursor, `base64url(canonical_json({"order":
+    o, "seq": s}))` unpadded, `s` the `seq` of the last row returned."""
+    encoded = base64.urlsafe_b64encode(canonical_json({"order": order, "seq": seq}))
+    return encoded.decode("ascii").rstrip("=")
 
 
 def _encode_cursor(ordinal: int) -> str:

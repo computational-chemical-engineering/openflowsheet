@@ -42,8 +42,9 @@ from openflowsheet.models import (
     pressure_id,
     temperature_id,
 )
+from openflowsheet.models.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.models.syn001.flowsheet import MODEL_LABEL
-from openflowsheet.thermo import Phase, PropertyProvider, PropertyStatus, StreamState
+from openflowsheet.thermo import Phase, PropertyProvider, PropertyStatus, StreamState, pr_c1
 from openflowsheet.units import (
     CONVERSION_ROWS,
     KIND_SI_UNITS,
@@ -56,6 +57,8 @@ from openflowsheet.units import (
 
 __all__ = [
     "MOLECULAR_WEIGHTS",
+    "SYN001_BASIS",
+    "ComponentBasis",
     "PHASE_CAPABILITIES",
     "TARGET_PATH_KINDS",
     "FlowsheetPass",
@@ -65,6 +68,7 @@ __all__ = [
     "RevisionFlowsheet",
     "RevisionView",
     "canonical_components",
+    "component_basis",
     "configuration_sha256",
     "convert_specification",
     "parse_revision",
@@ -83,9 +87,50 @@ _COMPONENTS = ("A", "B", "C")
 #: SYN-001's `ComponentRecord.molecular_weight`, kg/mol, **by component id** (plan §3.1;
 #: `benchmarks/syn001/components.yaml`, which a test asserts this equals, as it asserts
 #: `conversion_reactor.MOLAR_MASSES` equals it in the provider's order). `unit-conversion-v2`'s
-#: mass basis reads it (ADR 0016 D3; T06 spec §8.5); never indexed by position. The revision's
-#: `component_set.record_source` is not read at bind time (a v0.1 limit, T06 spec §15).
+#: mass basis reads it (ADR 0016 D3; T06 spec §8.5); never indexed by position. A revision whose
+#: `component_set.record_source` names the C1 records reads the C1 basis instead (ADR 0034 D8).
 MOLECULAR_WEIGHTS: Mapping[str, float] = MappingProxyType({"A": 0.100, "B": 0.100, "C": 0.100})
+
+
+@dataclass(frozen=True)
+class ComponentBasis:
+    """The component set, molar masses and property provider a revision binds on (ADR 0034 D8).
+
+    Selected by the revision's `component_set.record_source` (`component_basis`): the C1 records'
+    path (`benchmarks/m01/components.yaml`, the string `pr_c1.RECORDS_PATH` names) selects
+    `pr-c1-v1`; **every other value**, absent included, selects SYN-001 exactly as before M02, when
+    `record_source` was not read at bind time (T06 spec §15's v0.1 limit).
+    """
+
+    #: The provider's `describe().provider_id`; the binder and the verifier construct it.
+    provider_id: str
+    #: The provider's component order, onto which a declared permutation is mapped (§8.6).
+    components: tuple[str, ...]
+    #: kg/mol by component id, `unit-conversion-v2`'s mass basis (ADR 0016 D3).
+    molecular_weights: Mapping[str, float]
+
+
+#: SYN-001's basis: every revision whose `record_source` does not name the C1 records.
+SYN001_BASIS: ComponentBasis = ComponentBasis(SYN001_PROVIDER_ID, _COMPONENTS, MOLECULAR_WEIGHTS)
+
+
+def _c1_basis() -> ComponentBasis:
+    """`pr-c1-v1`'s basis: its components and the records' molar masses (`load_records` reads the
+    file once per process)."""
+    records = pr_c1.load_records()
+    return ComponentBasis(
+        pr_c1.PROVIDER_ID,
+        pr_c1.COMPONENTS,
+        MappingProxyType({record.id: record.molar_mass for record in records.components}),
+    )
+
+
+def component_basis(document: Mapping[str, Any]) -> ComponentBasis:
+    """The basis `document`'s `component_set.record_source` selects (ADR 0034 D8, R-231)."""
+    source = (document.get("component_set") or {}).get("record_source")
+    return _c1_basis() if source == pr_c1.RECORDS_PATH else SYN001_BASIS
+
+
 #: R4: a connection's `phase_capability` as the declared phase of the ports it joins.
 _DECLARED: Mapping[str, Phase | None] = {"liquid": "LIQUID", "vapor": "VAPOR", "vapor_liquid": None}
 #: R6: the kind each parameter of §1.3's table is a value of, by its name up to the first `.`
@@ -160,6 +205,10 @@ class InstanceView:
     parameters: Mapping[str, float]
     #: R5: column id -> the value a `role: fixed` specification pins it to, routed here.
     pins: Mapping[str, float]
+    #: `model.version` and `model.artifact_ref` as declared, `None` when absent (M02 design note
+    #: §6.1): a variant-backed model's variant id and its SHA-256, which the binder resolves.
+    model_version: str | None = None
+    model_artifact_ref: str | None = None
 
     @property
     def wiring(self) -> Wiring:
@@ -195,6 +244,8 @@ class RevisionView:
     #: `(stream, producer, consumer)`, in connection order.
     edges: tuple[tuple[str, str, str], ...]
     input_mapping: InputMapping = InputMapping()
+    #: The basis `component_set.record_source` selected (ADR 0034 D8).
+    basis: ComponentBasis = SYN001_BASIS
 
 
 def parse_revision(
@@ -225,11 +276,12 @@ def _require_id(value: Any) -> str:
     return text
 
 
-def canonical_components(declared: Any) -> tuple[str, ...]:
+def canonical_components(declared: Any, basis: ComponentBasis = SYN001_BASIS) -> tuple[str, ...]:
     """The provider's component order for a declared `component_set.components` (T06 spec §8.6,
     ADR 0014 D9, register R-076).
 
-    A declared list is accepted iff it is a permutation of `_COMPONENTS` — same length, no
+    A declared list is accepted iff it is a permutation of `basis.components` (SYN-001's
+    `_COMPONENTS` unless the revision names the C1 records, ADR 0034 D8) — same length, no
     repetition, same members — and the provider's order is returned: every component-keyed input
     (`target.component`, `nu.<c>`, `conversion.<c>`, `split.<c>`, `<S>.n.<c>`) is keyed by id, so
     nothing is re-keyed and nothing downstream sees the declared order. Anything else (a missing,
@@ -239,12 +291,12 @@ def canonical_components(declared: Any) -> tuple[str, ...]:
     """
     members = tuple(declared or ())
     if (
-        len(members) != len(_COMPONENTS)
+        len(members) != len(basis.components)
         or not all(isinstance(member, str) for member in members)
-        or set(members) != set(_COMPONENTS)
+        or set(members) != set(basis.components)
     ):
         raise RevisionError("unsupported", "components_unsupported")
-    return _COMPONENTS
+    return basis.components
 
 
 def _connection_hint() -> str:
@@ -275,7 +327,8 @@ def _read(
     document: Mapping[str, Any], instance_targets: Mapping[str, str] | None = None
 ) -> tuple[RevisionView, dict[str, tuple[str, ...]]]:
     declared_components = tuple((document.get("component_set") or {}).get("components") or ())
-    components = canonical_components(declared_components)
+    basis = component_basis(document)
+    components = canonical_components(declared_components, basis)
     component_set = ", ".join(str(component) for component in declared_components)
     targets = instance_targets or {}
 
@@ -286,10 +339,15 @@ def _read(
         unit = _require_id(entry.get("id"))
         if unit in instances:
             raise RevisionError("conflict", f"id_duplicate({unit})")
-        parameters, converted = _parameters(unit, entry.get("parameters") or {})
+        parameters, converted = _parameters(
+            unit, entry.get("parameters") or {}, basis.molecular_weights
+        )
         parameter_conversions.extend(converted)
+        model = entry.get("model") or {}
         instances[unit] = {
-            "model": str((entry.get("model") or {}).get("id", "")),
+            "model": str(model.get("id", "")),
+            "version": model.get("version"),
+            "artifact_ref": model.get("artifact_ref"),
             "parameters": parameters,
             "ports": {},
             "directions": {},
@@ -360,7 +418,9 @@ def _read(
                 f"Component {target.get('component')} is not in the component set {component_set}.",
             )
         value, conversion = convert_specification(
-            entry, _number(entry.get("value"), f"specification_value_unreadable({name})")
+            entry,
+            _number(entry.get("value"), f"specification_value_unreadable({name})"),
+            basis.molecular_weights,
         )
         if conversion is not None:
             conversions.append(conversion)
@@ -439,6 +499,8 @@ def _read(
                 phases=phases[unit],
                 parameters=dict(record["parameters"]),
                 pins=dict(record["pins"]),
+                model_version=_optional_text(record["version"]),
+                model_artifact_ref=_optional_text(record["artifact_ref"]),
             )
             for unit, record in instances.items()
         ),
@@ -448,8 +510,13 @@ def _read(
             declared_components=declared_components,
             conversions=(*conversions, *parameter_conversions),
         ),
+        basis=basis,
     )
     return view, {column: tuple(names) for column, names in sources.items()}
+
+
+def _optional_text(value: Any) -> str | None:
+    return None if value is None else str(value)
 
 
 def _number(value: Any, code: str) -> float:
@@ -470,16 +537,24 @@ def required_kind(path: str) -> str | None:
 
 @overload
 def convert_specification(
-    entry: Mapping[str, Any], value: float
+    entry: Mapping[str, Any],
+    value: float,
+    molecular_weights: Mapping[str, float] = MOLECULAR_WEIGHTS,
 ) -> tuple[float, UnitConversion | None]: ...
 
 
 @overload
-def convert_specification(entry: Mapping[str, Any], value: None) -> tuple[None, None]: ...
+def convert_specification(
+    entry: Mapping[str, Any],
+    value: None,
+    molecular_weights: Mapping[str, float] = MOLECULAR_WEIGHTS,
+) -> tuple[None, None]: ...
 
 
 def convert_specification(
-    entry: Mapping[str, Any], value: float | None
+    entry: Mapping[str, Any],
+    value: float | None,
+    molecular_weights: Mapping[str, float] = MOLECULAR_WEIGHTS,
 ) -> tuple[float | None, UnitConversion | None]:
     """A specification's `value` (as its reader read it) in its target's SI unit, by
     `unit-conversion-v2` (ADR 0016), with the conversion's record or `None`.
@@ -489,7 +564,8 @@ def convert_specification(
     target's component first, in its own vocabulary (ADR 0016 D5). Refusals are the revision
     binding's registered codes, `specification_kind_unsupported(<id>)`,
     `specification_unit_unsupported(<id>)` and `specification_value_unsupported(<id>)`, raised as
-    `RevisionError`.
+    `RevisionError`. `molecular_weights` is the revision's basis's (`component_basis`), SYN-001's
+    by default.
     """
     name = str(entry.get("id", ""))
     target = entry.get("target") or {}
@@ -504,7 +580,7 @@ def convert_specification(
             required_kind(path),
             path,
             None if component is None else str(component),
-            MOLECULAR_WEIGHTS,
+            molecular_weights,
         )
     except UnitConversionError as error:
         hint = None
@@ -567,7 +643,7 @@ def units_hint(kind: Any) -> str | None:
 
 
 def _parameters(
-    unit: str, parameters: Mapping[str, Any]
+    unit: str, parameters: Mapping[str, Any], molecular_weights: Mapping[str, float]
 ) -> tuple[dict[str, float], list[UnitConversion]]:
     """R6: each parameter's Quantity `value` in its kind's SI unit, from a Quantity whose SI twin
     `check_quantity` passes whole; and the conversions, by parameter name in code-point order
@@ -575,13 +651,18 @@ def _parameters(
     values: dict[str, float] = {}
     conversions: list[UnitConversion] = []
     for name, quantity in parameters.items():
-        values[str(name)], conversion = read_parameter(unit, str(name), quantity)
+        values[str(name)], conversion = read_parameter(unit, str(name), quantity, molecular_weights)
         if conversion is not None:
             conversions.append(conversion)
     return values, sorted(conversions, key=lambda conversion: conversion.input_id)
 
 
-def read_parameter(unit: str, name: str, quantity: Any) -> tuple[float, UnitConversion | None]:
+def read_parameter(
+    unit: str,
+    name: str,
+    quantity: Any,
+    molecular_weights: Mapping[str, float] = MOLECULAR_WEIGHTS,
+) -> tuple[float, UnitConversion | None]:
     """R6 for one instance parameter (ADR 0016 D1, D5): its Quantity `value` in the SI unit of the
     kind its name requires, converted by `unit-conversion-v2` when written in a unit of ADR 0016's
     table, with the conversion's record or `None`; the Quantity must pass `check_quantity` as its
@@ -612,7 +693,7 @@ def read_parameter(unit: str, name: str, quantity: Any) -> tuple[float, UnitConv
             _PARAMETER_KINDS.get(name.split(".")[0]),
             f"parameters.{name}",
             None,
-            MOLECULAR_WEIGHTS,
+            molecular_weights,
             source="parameter",
         )
         return (raw if number is None else converted), conversion

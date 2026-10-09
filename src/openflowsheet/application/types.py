@@ -81,6 +81,8 @@ ApiErrorCode = Literal[
     "limit_exceeded",
     "unsupported",
     "internal_error",
+    # ADR 0035 D3 (M02 design note §6.2): a promotion whose replacement check failed.
+    "model_replacement_incompatible",
 ]
 #: §5.8's HTTP status of each code.
 API_ERROR_HTTP_STATUS: Final[Mapping[str, int]] = {
@@ -98,6 +100,7 @@ API_ERROR_HTTP_STATUS: Final[Mapping[str, int]] = {
     "limit_exceeded": 429,
     "unsupported": 501,
     "internal_error": 500,
+    "model_replacement_incompatible": 422,
 }
 #: Blueprint §11.3's six rights (ADR 0019 D4).
 Right = Literal["read", "draft", "execute", "install", "policy", "publish"]
@@ -432,24 +435,58 @@ class ChangeSet:
 # ========================================================================= TransactionResult
 
 
+#: ADR 0019 Amendment 3 (A3.2): the list members whose items `diff_revisions` pairs by `id`.
+DiffMember = Literal["instances", "connections", "specifications"]
+DiffChange = Literal["added", "removed", "changed"]
+
+
+@dataclass(frozen=True)
+class DiffElement:
+    """ADR 0019 Amendment 3 (A3.2; M06 design note §4.2): one item of `instances`, `connections`
+    or `specifications` that differs between two revisions. `id` is `None` when the member's
+    items cannot be paired by id; `paths` are the key paths inside a `changed` item, from its
+    root, in code-point order (empty for `added`, `removed` and an unpaired member)."""
+
+    member: DiffMember
+    id: str | None
+    change: DiffChange
+    paths: tuple[tuple[str, ...], ...] = ()
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "member": self.member,
+            "id": self.id,
+            "change": self.change,
+            "paths": [list(path) for path in self.paths],
+        }
+
+
 @dataclass(frozen=True)
 class SemanticDiff:
-    """What changed, by path, in the revision's *content* — not its title or provenance."""
+    """What changed, by path, in the revision's *content* — not its title or provenance.
+
+    `elements` is `diff_revisions`'s alone (ADR 0019 Amendment 3, A3.2): `None` — and absent from
+    the document — in `commit_change`'s and `preview_change`'s `TransactionResult.diff`, whose
+    schema and ledger replays it does not change."""
 
     added: tuple[str, ...]
     removed: tuple[str, ...]
     changed: tuple[str, ...]
+    elements: tuple[DiffElement, ...] | None = None
 
     @property
     def empty(self) -> bool:
         return not (self.added or self.removed or self.changed)
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document: dict[str, Any] = {
             "added": list(self.added),
             "removed": list(self.removed),
             "changed": list(self.changed),
         }
+        if self.elements is not None:
+            document["elements"] = [element.as_document() for element in self.elements]
+        return document
 
 
 def _validation_report_build(document: Mapping[str, Any]) -> ValidationReport:
@@ -599,10 +636,81 @@ class ReproduceBody:
         )
 
 
+@dataclass(frozen=True)
+class ExperimentModel:
+    """`experiment.schema.json#/$defs/model_ref`: a variant-backed model (M02 design note §6.1)."""
+
+    id: str
+    version: str
+    artifact_ref: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {"id": self.id, "version": self.version, "artifact_ref": self.artifact_ref}
+
+
+@dataclass(frozen=True)
+class ExperimentInlet:
+    """`experiment.schema.json#/$defs/inputs`: a process inlet in SI units (mol/s, K, Pa), copied
+    exactly — no Quantity, no conversion (M02 design note §3.5)."""
+
+    components: tuple[str, ...]
+    n: tuple[float, ...]
+    temperature: float  # `T`, K
+    pressure: float  # `P`, Pa
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "components": list(self.components),
+            "n": list(self.n),
+            "T": self.temperature,
+            "P": self.pressure,
+        }
+
+
+@dataclass(frozen=True)
+class ExperimentBody:
+    """`experiment.schema.json#/$defs/experiment_body` (ADR 0033 D9; M02 design note §3.5): one
+    experiment per job. The inlet is the experiment's definition, a model input — never a solver
+    state (R-235)."""
+
+    model: ExperimentModel
+    inlet: ExperimentInlet
+    n_tubes: float
+    cache: Literal["use", "bypass"] = "use"
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "model": self.model.as_document(),
+            "inlet": self.inlet.as_document(),
+            "n_tubes": self.n_tubes,
+            "cache": self.cache,
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        model, inlet = document["model"], document["inlet"]
+        return cls(
+            model=ExperimentModel(
+                id=model["id"], version=model["version"], artifact_ref=model["artifact_ref"]
+            ),
+            inlet=ExperimentInlet(
+                components=tuple(inlet["components"]),
+                n=tuple(inlet["n"]),
+                temperature=inlet["T"],
+                pressure=inlet["P"],
+            ),
+            n_tubes=document["n_tubes"],
+            cache=document.get("cache", "use"),
+        )
+
+
+JobBody = SolveBody | ReproduceBody | ExperimentBody
+
 #: J3: one body type per operation, as one `oneOf` branch per enum value in the schema.
-_BODY_TYPES: Final[Mapping[str, type[SolveBody] | type[ReproduceBody]]] = {
+_BODY_TYPES: Final[Mapping[str, type[SolveBody] | type[ReproduceBody] | type[ExperimentBody]]] = {
     "solve": SolveBody,
     "reproduce": ReproduceBody,
+    "experiment": ExperimentBody,
 }
 
 
@@ -612,7 +720,7 @@ class JobRequest:
 
     operation: JobOperation
     idempotency_key: str
-    body: SolveBody | ReproduceBody
+    body: JobBody
     budgets: Budgets = field(default_factory=Budgets)
 
     def __post_init__(self) -> None:
@@ -648,6 +756,10 @@ class JobRequest:
     @classmethod
     def _build(cls, document: Mapping[str, Any]) -> Self:
         operation = document["operation"]
+        if operation not in _BODY_TYPES:
+            # A schema-valid operation this build cannot run: refused here, typed, never routed
+            # to another operation's body.
+            raise ValueError(f"operation {operation!r} is not executable by this build")
         return cls(
             operation=operation,
             idempotency_key=document["idempotency_key"],
@@ -1053,21 +1165,27 @@ class JobResult:
 
     `run_result` is present iff the operation is `solve` (a failed or cancelled solve has one
     too); `replay_report` only for a `reproduce` whose report was produced; `error` is the job's.
+    `experiment` (ADR 0033 D9) is an `experiment` job's answer and only its: the deterministic
+    `result`, or the last `attempt` of a transient outcome, or `None` for a job that ended before
+    any attempt was recorded (cancelled while queued).
     """
 
     operation: JobOperation
     run_result: RunResult | None
     replay_report: ReplayReport | None
     error: ApiError | None
+    experiment: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if (self.run_result is not None) != (self.operation == "solve"):
             raise ValueError("a job result carries a run result iff its operation is 'solve'")
         if self.replay_report is not None and self.operation != "reproduce":
             raise ValueError("only a 'reproduce' job result carries a replay report")
+        if self.experiment is not None and self.operation != "experiment":
+            raise ValueError("only an 'experiment' job result carries an experiment record")
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document: dict[str, Any] = {
             "operation": self.operation,
             "run_result": self.run_result.as_document() if self.run_result is not None else None,
             "replay_report": (
@@ -1075,6 +1193,11 @@ class JobResult:
             ),
             "error": _error_document(self.error),
         }
+        if self.operation == "experiment":
+            document["experiment"] = (
+                copy.deepcopy(dict(self.experiment)) if self.experiment is not None else None
+            )
+        return document
 
     @classmethod
     def from_document(cls, document: Mapping[str, Any], *, lenient: bool = False) -> Self:
@@ -1095,6 +1218,7 @@ class JobResult:
                     else None
                 ),
                 error=_error_build(d["error"]),
+                experiment=d.get("experiment"),
             ),
             document,
         )
@@ -1435,6 +1559,43 @@ class RevisionSummary:
             "principal_id": self.principal_id,
             "created_at": self.created_at,
             "head": self.head,
+        }
+
+
+AuditOutcome = Literal["allowed", "refused"]
+AuditOrder = Literal["ascending", "descending"]
+
+
+@dataclass(frozen=True)
+class AuditRecord:
+    """ADR 0019 Amendment 3 (A3.3; M06 design note §4.3) `list_audit`: one row of the project's
+    audit (§10.7) — an effect or a refusal — as the store holds it. `effect` is `<kind>:<id>`;
+    `idempotency_key` is the ledger's key of an `allowed` row whose principal, operation and
+    request hash it shares (a keyed request's hash covers its key), else `None`."""
+
+    seq: int
+    at: str
+    principal_id: str
+    capability_id: str
+    operation: str
+    outcome: AuditOutcome
+    code: str | None
+    request_sha256: str | None
+    effect: str | None
+    idempotency_key: str | None
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "seq": self.seq,
+            "at": self.at,
+            "principal_id": self.principal_id,
+            "capability_id": self.capability_id,
+            "operation": self.operation,
+            "outcome": self.outcome,
+            "code": self.code,
+            "request_sha256": self.request_sha256,
+            "effect": self.effect,
+            "idempotency_key": self.idempotency_key,
         }
 
 

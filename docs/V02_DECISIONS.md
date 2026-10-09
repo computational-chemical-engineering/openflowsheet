@@ -335,3 +335,57 @@ Grep, don't read whole. Newest at the bottom.
   manifest `evidence/M01/3c80392…/manifest.json` tested. M02 items: boundary.py hash in the reactor identity;
   `Boundary.__post_init__` validating n_tubes; §8.15 A45 restricted to A41's points; no A10 check at a three-root
   state or for pure-vapour n-derivatives. M01 reviewer asked to confirm closure.
+- M06 review fixes done on `wp/M06-build` (`f47a243`…`c5e6890`): F2a exact repr from the run's own bundle; F2b routes
+  from OPERATIONS; F2c module-level skips moved; F4 h() brands its trees (WeakSet); F5 registration §20 (ten → nine;
+  scorer rules W27-R59…R61; P2 pin `dd0b7f02…`); F3 Amendment 3 text + R-192 recorded; F8 as-built §14; F9;
+  `4719a1a` cherry-picks M01's `7e0eb67`. check.sh at C=`4719a1a` 7469 passed, Node 92/92, browser 31/31;
+  default-install reproduced locally (7203 passed, 0 failed). G10 measured locally on a clean wheel install: PASSED.
+  Manifest `evidence/M06/4719a1a…/manifest.json` status **implemented** (G3, G12 wait for CI; G16 n/a). Preflight
+  P1–P8 pass (P6/P7 by stub canaries). F5's ratification text wants `specifier` eyes before WO-17's first canary.
+  F14 → M07 list: register v0.2's served surface, retarget A49.
+- Pushed `wp/M06-build` @ `c5e6890`; CI push run 37839253802 and dispatch (rc_distribution) 37839266960. After green:
+  `scripts/m06_evidence_manifest.py --commit 4719a1a… --add-ci --ci-run <ids> --harvest`, commit, then ADR 0030 and
+  Amendment 3 → Accepted, merge.
+- M01 review closure (`9098f14`): all five findings closed; Amendment 2 ratified; ADR 0026 → **Accepted** (`ab57fcc`);
+  R-219 (session) records the declared no-walk-up exception. ADR 0027 stays Proposed (needs M02's adapter halves +
+  review, the A49 supersession record, the boundary.py identity choice).
+- **M01 merged into main** (`997c7da`). check.sh on main after the merge: 7142 passed, 31 skipped, PASSED.
+- M04 recon done (digest inline): no M04 code/schema/ADR/register entry; no approved experiment budget or registered
+  reference distribution; surrogate seam = M02's pinned (X̂, ΔT̂) (ADR 0034 D1). Brief `docs/briefs/M04-specification.md`
+  (`418a891` on `wp/M04`). `specifier` M04 launched on `wp/M04` (ADR 0036+, R-240+).
+- M06 CI green: push run 37839253802 (check both architectures, default-install, identity) and dispatch 37839266960
+  (+ dist, clean-install both, bundle-set, bundle-replay both). `--add-ci` → manifest `evidence/M06/4719a1a…` **tested**
+  (G1–G15 pass, G16 n/a). ADR 0030 and ADR 0019 Amendment 3 → **Accepted** (`19a1379`).
+- `opus-engineer` merging `wp/M06-build` into main on `merge/M06` (reconcile register, envelope, matrix, changelog
+  test with M01); main fast-forwards after a green gate.
+- **M06 merged into main**: `7473f35` (merge onto M01; register rebuilt in numerical order, 190 entries, next free
+  R-238; envelope + matrix regenerated, 51 limitations, 278 harvest rows; changelog test takes R-216's form and drops
+  M01's `ADDED_AFTER_V0_1_0`, R-217 merge note; package data both kinds) — gate on that tree: 7717 passed, 52 skipped,
+  Node 92/92, browser 34/34, matrix --check 0. `47baa4d` brings main's two state-file commits (docs only). Pushed.
+- `specifier` v0.2 alpha release gate launched on `wp/V02-alpha-gate` (ADR 0028, R-238/239): what `0.2.0a1` claims,
+  carried and moved v0.1 records (digest, envelope, CHANGELOG notes, review table, A49), W21/W22 verdict criteria,
+  gate script work orders. Against M02's N3 default (v0.1 gate unchanged + W21, W22 met).
+- M04 specification done on `wp/M04` (`35ace09`, `408a960`, `6e48ffb`): `docs/derivations/M04-spec.md` (A01–A35),
+  ADR 0036 (surrogate evidence + Default split-conformal), ADR 0037 (surrogate unit, promotion, rollback; amends
+  ADR 0035 additively and ADR 0019 as Amendment 5), R-240…R-249, generator `m04_reference.py` (5269 claims),
+  `plan-it1.json`. Native unit `c1.reactor_surrogate` (frozen quadratic in 7 scaled inputs → (X, ΔT)) on
+  `revision_eo`; reference distribution uniform on a box inside the data domain; one joint score scaled by width
+  limits (0.0025 in X, 1.5 K); failures score +∞ and stay in denominators; promotion decided in integers (H ≥ h_min);
+  new facet `surrogate_evidence`. Plan it.1: 144 train / 118 cal (k=114) / 300 test + 5×14 gradient stencil = 632
+  cold experiments ≈ 95 min; power 0.9035 with no parent failures. WO-1, 2, 3, 10 need nothing from M02.
+- M04 Needs Frank (defaults proceed): N1 experiment budget 632 (≈95 min) for it.1 + up to two more (≈4 h total); N2
+  width limits 0.0025 / 1.5 K; N3 gradient limit 0.25; N6 M04 `tested` whatever the real verdict, M05 proceeds on the
+  parent model if not promotable. N4 (reference box vs the real loop inlet) and N5 (runner concurrency) are facts
+  for M02's measurements.
+- `opus-engineer` M04 WO-1, 2, 3, 10 launched on `wp/M04`.
+- M02 WO-1b, rulings, WO-5, WO-6 done on `wp/M02` (`100fd12`, `3f37c2e`, `d0eb848`, `2e63211`; check.sh 7236
+  passed, 2 pymrm deselected). Reactor env built from pins (fresh clone, 20.6 s): lock `032a050c…` (85 dists), variant
+  `pymrm-6089593-g2-nz800-s123-v1` = `2302cddf…`, fingerprint `238123dc…`. **G10 all pass**: A41 3/3; A42
+  1.559285305616933e-08 (= probe); A43/A44 bitwise; A45 3.84e-8 ≤ 1e-7; A46 5.06e-5 ≤ 1e-3; **A47(a) bitwise**; A47(b)
+  1.43e-8 ≤ 1e-6; A48 3/3. G5 15 tests over 4 transports. Real experiment job: 31.7 s; cache hit 1.88 s.
+- **Finding (D22): one real evaluation costs 25–45 s, not ~9 s** — the probe's wall_s omitted the group's KPI
+  certificate (12–35 s). 120 s timeout keeps 2.7×. Consequence: M04's iteration 1 (632 experiments) ≈ 4.4–7.9 h, not
+  95 min; three iterations ≈ 12–20 h. Frank's M04 N1 restated. Open for the design lane: D22 (timing, R-224/§5.2/G12),
+  D24 (`job_result.experiment` null before any attempt), D23 (every experiment job records through
+  ArtifactTableSink), D18 (model exception → crashed), D14 (frozen handshake failure recorded per experiment).
+- `opus-engineer` M02 merge-main + WO-7, WO-8 (+WO-9) launched on `wp/M02`.

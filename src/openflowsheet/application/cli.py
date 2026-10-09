@@ -15,7 +15,7 @@ knowing which of eleven modules to start from.
 [--raw-out FILE]` opens the project as `LOCAL_OWNER` (§10.2), sends the request document through
 `operations.dispatch` — the one path every binding takes — and prints the response as canonical
 JSON. Exit 0 is a domain result, whatever its status; an `ApiError` is printed the same way and
-exits `API_EXIT_CODES[code]`, 2–15 in §5.8's order. Exit 1 means no call was made: the request
+exits `API_EXIT_CODES[code]`, 2–16 in §5.8's order. Exit 1 means no call was made: the request
 file could not be read or the project could not be opened (the message is on stderr).
 
 `api` runs jobs on the inline executor only. §11.5 names `--executor inline|process`, but a
@@ -24,9 +24,10 @@ job it still runs `cancelled(server_shutdown)` (§9.3) — so the process execut
 servers, which live as long as their jobs (build-lane decision W5b-Q1, `docs/T07_DECISIONS.md`).
 
 **The servers** (§11.2, §10.2). `serve-http` opens the project with the process executor and
-serves it with `bindings.http.serve` until interrupted; `serve-mcp` is `serving.serve_mcp`, over
-stdio. Both need the `server` extra; without it, or when the project cannot be opened, they
-refuse to start with exit 1 and the reason on stderr.
+serves it with `bindings.http.serve` until interrupted (with `--ui`, `bindings.web.serve`, which
+adds the diagnostic web shell at `/ui/`, M06); `serve-mcp` is `serving.serve_mcp`, over stdio.
+Both need the `server` extra; without it, or when the project cannot be opened, or (`--ui`) when
+the shell's packaged files are missing, they refuse to start with exit 1 and the reason on stderr.
 """
 
 from __future__ import annotations
@@ -46,7 +47,7 @@ from openflowsheet.application.validation import validate
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
 
-#: §11.5: an `ApiError`'s exit code, 2–15 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
+#: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
 #: domain result; 1 is a call that was never made. argparse's own usage error is also 2.
 API_EXIT_CODES: Final[Mapping[str, int]] = {
     code: 2 + index for index, code in enumerate(get_args(ApiErrorCode))
@@ -393,7 +394,9 @@ def _loopback(host: str) -> bool:
 
 
 def command_serve_http(arguments: argparse.Namespace) -> int:
-    """§11.2: `serve-http --project DIR [--host 127.0.0.1] [--port 8765] [--allow-remote]`."""
+    """§11.2: `serve-http --project DIR [--host 127.0.0.1] [--port 8765] [--allow-remote]
+    [--ui]`. `--ui` (M06, ADR 0030 D3) also serves the diagnostic web shell at `/ui/`
+    (`bindings.web`); without it nothing differs, and `bindings.web` is not even imported."""
     if not _loopback(arguments.host) and not arguments.allow_remote:
         print(
             f"--host {arguments.host} is not loopback: pass --allow-remote (there is no TLS in "
@@ -414,13 +417,23 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 1
+    serve = binding.serve
+    if arguments.ui:
+        from openflowsheet.application.bindings import web
+
+        try:
+            web.static_directory()
+        except web.WebShellMissingError as error:
+            print(f"serve-http: refused to start: {error}", file=sys.stderr)
+            return 1
+        serve = web.serve
     try:
         application = LocalApplication.open(arguments.project, executor="process")
     except (StoreError, PolicyRefusedError) as error:
         print(f"serve-http: refused to start: {error}", file=sys.stderr)
         return 1
     with application:
-        binding.serve(
+        serve(
             application,
             host=arguments.host,
             port=arguments.port,
@@ -515,7 +528,7 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Send one request document through the operations table, as the in-process "
             "local owner, and print the response as canonical JSON. Exit 0 is a domain "
-            f"result; 2-15 is an ApiError, in the order {', '.join(API_EXIT_CODES)}; 1 "
+            f"result; 2-16 is an ApiError, in the order {', '.join(API_EXIT_CODES)}; 1 "
             "means no call was made."
         ),
     )
@@ -537,6 +550,12 @@ def build_parser() -> argparse.ArgumentParser:
     http_command.add_argument("--port", type=int, default=8765)
     http_command.add_argument(
         "--allow-remote", action="store_true", help="needed for a non-loopback --host"
+    )
+    http_command.add_argument(
+        "--ui",
+        action="store_true",
+        help="also serve the diagnostic web shell at /ui/ — static files only; every data "
+        "request needs a bearer token",
     )
     http_command.set_defaults(handler=command_serve_http)
 

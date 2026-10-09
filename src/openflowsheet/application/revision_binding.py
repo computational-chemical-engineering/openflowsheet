@@ -29,11 +29,13 @@ from dataclasses import dataclass, field, replace
 from functools import partial
 from typing import Any, Final, Literal
 
+from openflowsheet.adapters import variants
 from openflowsheet.application.binding import Unbound, _column_owners
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.process import Connection, ProcessGraph
+from openflowsheet.graph.trace import Declaration
 from openflowsheet.models import (
     Port,
     SpecificationError,
@@ -45,7 +47,9 @@ from openflowsheet.models import (
 )
 from openflowsheet.models.revision_flowsheet import (
     PHASE_CAPABILITIES,
+    SYN001_BASIS,
     TARGET_PATH_KINDS,
+    ComponentBasis,
     InputMapping,
     InstanceView,
     RevisionError,
@@ -95,10 +99,12 @@ __all__ = [
     "PinColumn",
     "RevisionBinding",
     "SpecificationChoice",
+    "basis_provider",
     "bind_revision_flowsheet",
     "instance_contract",
     "pin_encodings",
     "render_encoding",
+    "specification_rows",
     "target_path_table",
 ]
 
@@ -129,6 +135,30 @@ class RevisionBinding:
     #: How the revision's inputs were read (T06 spec §8.5): `parse_revision`'s record, which is
     #: also what `verify_revision` reads. Empty for every registered revision.
     input_mapping: InputMapping = field(default_factory=InputMapping)
+    #: Instance id -> {pinned column -> the specification that pins it}: what each builder was
+    #: handed and consumed, recorded where the units are built (M06 design note §4.1, R3). The
+    #: first specification in document order names a column two equal specifications pin, as
+    #: `specification_unconsumed` and `specification_conflict` name it. Read only by
+    #: `specification_rows`, for `inspect_structure`'s index; never by the structural analysis.
+    specification_pins: Mapping[str, Mapping[str, str]] = field(default_factory=dict)
+
+
+def specification_rows(binding: RevisionBinding, declaration: Declaration) -> dict[str, str]:
+    """Row id -> the revision specification the row realises, on `revision_eo` (M06 design note
+    §4.1): a specification row (`TracedRow.is_specification_row`) whose one column is a pin its
+    authoring instance consumed. Joined on the row's traced incidence and the binder's own
+    routing record, never on id text (R-019). For `inspect_structure`'s index only: the route's
+    analysis is given no specification ids on `revision_eo`, and its report does not change."""
+    attributed: dict[str, str] = {}
+    for row_id in declaration.row_ids:
+        row = declaration.rows[row_id]
+        if row.unit is None or row.coefficients is None or not row.is_specification_row:
+            continue
+        (column,) = row.coefficients
+        specification = binding.specification_pins.get(row.unit, {}).get(column)
+        if specification is not None:
+            attributed[row_id] = specification
+    return attributed
 
 
 # -- model signatures (T07 design note §4.2 `list_models`, §15 W5c) -----------------------------
@@ -1164,10 +1194,28 @@ def _refusing_unit(flowsheet: RevisionFlowsheet) -> str | None:
     return None
 
 
+def _variant_backed_models() -> frozenset[str]:
+    """The model ids a registered variant names (M02 design note §6.1): their instances must pin
+    a registered variant by id and SHA-256. Read per call (≈ 2 ms, measured), not cached: no
+    process-global state (T07 G20)."""
+    return frozenset(variants.registered_variant(name).model_id for name in variants.registry())
+
+
+def basis_provider(basis: ComponentBasis) -> PropertyProvider:
+    """A fresh provider of `basis` (ADR 0034 D8): `pr-c1-v1` or SYN-001's."""
+    from openflowsheet.thermo.pr_c1 import PROVIDER_ID, PrC1Provider
+    from openflowsheet.thermo.syn001 import Syn001Provider
+
+    if basis.provider_id == PROVIDER_ID:
+        return PrC1Provider()
+    if basis != SYN001_BASIS:
+        raise ValueError(f"no provider for basis {basis.provider_id!r}")
+    return Syn001Provider()
+
+
 def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Unbound:
     """Build and bind a revision's flowsheet, or say which of R-022's kinds prevented it (§1.4)."""
     from openflowsheet.orchestrator.budget import PropertyMeter
-    from openflowsheet.thermo.syn001 import Syn001Provider
 
     # R-088 Q29 (T07 design note §12.5): a non-canonical number is refused typed at entry,
     # whether or not a reader reads its field; in a field nothing reads, a digest would
@@ -1183,12 +1231,22 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
         return Unbound(error.kind, error.code, hint=error.hint)
 
     for instance in view.instances:
+        # M02 design note §6.1 (ADR 0035 D1): a variant-backed model is pinned by variant id
+        # and SHA-256, resolved against the registry; a native model's `version` is unread.
+        if instance.model_id in _variant_backed_models() and (
+            variants.resolve(instance.model_id, instance.model_version, instance.model_artifact_ref)
+            is None
+        ):
+            return Unbound("unsupported", f"model_variant_mismatch({instance.unit_id})")
+    for instance in view.instances:
         if instance.model_id not in MODEL_BUILDERS:
             return Unbound("unsupported", f"model_unsupported({instance.model_id})")
 
     # Metered from construction: the declaration's property blocks capture the provider here,
-    # and a plan run counts their calls (T02; `PropertyMeter`).
-    provider = PropertyMeter(Syn001Provider())
+    # and a plan run counts their calls (T02; `PropertyMeter`). The provider is the one the
+    # revision's `record_source` selects (ADR 0034 D8): `pr-c1-v1` for the C1 records, SYN-001
+    # for every other value, exactly as before.
+    provider = PropertyMeter(basis_provider(view.basis))
     built: list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] = []
     for instance in view.instances:
         reader = _PinReader(instance.pins)
@@ -1282,4 +1340,8 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
         row_units=row_units,
         revision_sha256=document_sha256(document),
         input_mapping=view.input_mapping,
+        specification_pins={
+            instance.unit_id: {column: sources[column][0] for column in instance.pins}
+            for instance in view.instances
+        },
     )

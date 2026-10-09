@@ -126,7 +126,14 @@ def test_t02_2_is_draft_names_the_missing_pin_and_is_not_solved(
     assert refused.value.code == "revision_not_ready"
     assert _jobs(t02) == before
     structure = t02.inspect_structure(revision).value
-    assert set(structure) == {"not_run_reason", "hint"}
+    # ADR 0019 Amendment 3 (A3.1) adds three members, by addition only (M06 WO-1).
+    assert set(structure) == {
+        "not_run_reason",
+        "hint",
+        "validation_structural_report",
+        "rows",
+        "columns",
+    }
     assert "specification_missing(S4.P)" in structure["not_run_reason"]
     assert structure["hint"] is not None and "path: outlet.P" in structure["hint"]
 
