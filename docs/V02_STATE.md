@@ -93,7 +93,6 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 WO-9 + R-281/R-282 (join after W27 amendment) | `wp/M02` (`m02`) |
-| `opus-engineer` | M06 WO-16h (W27 classifier/scorer per Amendment 2) | `wp/M06-w27-c1map` (`w27-c1map`) |
 | `opus-engineer` | M04 WO-13…17 (Amendment 1 items, pre-warm) | `wp/M04` (`m04`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).

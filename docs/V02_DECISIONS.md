@@ -580,3 +580,7 @@ Grep, don't read whole. Newest at the bottom.
   632 `experiment` jobs at max_workers 16 (≈16–30 min), study then fully cached, recorded only in the package manifest;
   surface move R-295. Work items WO-13…17.
 - `opus-engineer` M04 WO-13…17 launched on `wp/M04`.
+- M06 WO-16h done (`b8d3211`…`552555b`): R62 + R24 (d)/(e) in coverage.py (A16–A19), amended R59 + S19/S20 in scorer.py
+  (closes M06 review F5), 0.1.1 guard + `bases-v1` reading in snapshot.py; coverage.json re-taken (rows unchanged, 0
+  candidates); preflight P1–P8 pass (P6/P7 by stub canaries); G15 20/20. **Merged into main** (`e88fb96`). M02's join:
+  J1 must expose SELECTABLE_BASES, MODEL_BASES, MODEL_BUILDERS, basis_provider; J5 updates three snapshot tests.
