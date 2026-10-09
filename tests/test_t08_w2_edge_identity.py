@@ -45,7 +45,7 @@ import numpy.typing as npt
 import pytest
 import yaml
 from conftest import REPO_ROOT
-from m02_c1_corpus import C1_CORPUS
+from m02_c1_corpus import C1_CORPUS, surrogates
 from t07_corpus import CORPUS
 from test_t02_recycle import manufactured, recycle_problem
 from test_t05b_openings import CASES as B31_CASES
@@ -387,7 +387,7 @@ def _manifests_by_model() -> dict[str, list[Mapping[str, Any]]]:
     documents += [C1_CORPUS[name]() for name in sorted(C1_CORPUS)]
     found: dict[str, list[Mapping[str, Any]]] = {}
     for document in documents:
-        binding = bind_revision_flowsheet(copy.deepcopy(document))
+        binding = bind_revision_flowsheet(copy.deepcopy(document), surrogates=surrogates)
         if isinstance(binding, RevisionBinding):
             for unit in binding.flowsheet.units():
                 manifest = unit.manifest()

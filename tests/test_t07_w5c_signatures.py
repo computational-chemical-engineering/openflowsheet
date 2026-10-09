@@ -36,7 +36,7 @@ if str(TESTS) not in sys.path:  # the `__main__` generator runs outside pytest's
 import t05b_support as t05b  # noqa: E402
 import t08_cstr_support as t08  # noqa: E402
 from conftest import REPO_ROOT, load_yaml  # noqa: E402
-from m02_c1_corpus import C1_CORPUS  # noqa: E402
+from m02_c1_corpus import C1_CORPUS, surrogates  # noqa: E402
 
 from openflowsheet.application.revision_binding import (  # noqa: E402
     MODEL_BUILDERS,
@@ -123,7 +123,7 @@ def _structure(binding: RevisionBinding) -> dict[str, Any]:
 
 def outcome(document: Document) -> str:
     """`binds <sha256 of the structure>`, or the `Unbound`'s kind and detail verbatim."""
-    result = bind_revision_flowsheet(document)
+    result = bind_revision_flowsheet(document, surrogates=surrogates)
     if isinstance(result, RevisionBinding):
         text = json.dumps(_structure(result), sort_keys=True, separators=(",", ":"))
         return f"binds {hashlib.sha256(text.encode('utf-8')).hexdigest()}"
@@ -345,7 +345,7 @@ def _bound() -> tuple[tuple[Document, RevisionBinding], ...]:
     out = []
     for name in revision_names():
         document = _document(name)
-        binding = bind_revision_flowsheet(document)
+        binding = bind_revision_flowsheet(document, surrogates=surrogates)
         if isinstance(binding, RevisionBinding):
             out.append((document, binding))
     return tuple(out)

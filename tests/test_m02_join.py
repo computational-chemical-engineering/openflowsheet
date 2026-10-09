@@ -25,7 +25,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
-from m02_c1_corpus import C1_CORPUS, FILES
+from m02_c1_corpus import C1_CORPUS, FILES, surrogates
 from m02_c1_support import connection, feed_specifications, instance, revision
 from m02_wo8_support import flash_revision
 from t07_corpus import CORPUS
@@ -189,7 +189,7 @@ def test_each_c1_corpus_revision_is_registered_valid_and_binds(name: str) -> Non
     assert document["revision_id"] == name
     assert [e.message for e in validator_for("process_revision").iter_errors(document)] == []
     assert document["component_set"]["components"] == list(COMPONENTS)
-    assert isinstance(bind_revision_flowsheet(document), RevisionBinding)
+    assert isinstance(bind_revision_flowsheet(document, surrogates=surrogates), RevisionBinding)
     built = _built().get(name)
     if built is not None:  # C1-LOOP-M02-v1 is §8.1's, checked by test_m02_wo9_reactor
         own = {key: document[key] for key in OWN}
@@ -199,7 +199,7 @@ def test_each_c1_corpus_revision_is_registered_valid_and_binds(name: str) -> Non
 def test_the_c1_corpus_binds_an_instance_of_every_c1_model() -> None:
     models: set[str] = set()
     for build in C1_CORPUS.values():
-        binding = bind_revision_flowsheet(build())
+        binding = bind_revision_flowsheet(build(), surrogates=surrogates)
         assert isinstance(binding, RevisionBinding)
         models |= {unit.model_id for unit in binding.flowsheet.units()}
     assert models == {model for model, bases in REGISTERED.items() if bases == C1}

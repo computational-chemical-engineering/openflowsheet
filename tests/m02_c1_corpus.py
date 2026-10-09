@@ -13,10 +13,12 @@ equals the builder its provenance names. Each entry is a factory, so every calle
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from functools import partial
 from pathlib import Path
 from typing import Any
+
+from openflowsheet.canonical import document_sha256
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 Document = dict[str, Any]
@@ -40,3 +42,26 @@ def _load(path: Path) -> Document:
 C1_CORPUS: dict[str, Callable[[], Document]] = {
     name: partial(_load, path) for name, path in FILES.items()
 }
+
+
+#: W27 Amendment 3 §22.4 (R-302; M04 build decision E5): the committed fixture SurrogateManifests
+#: the corpus resolves, and nothing else. Its one entry is the A19 manifest M04's WO-7 tests bind.
+SURROGATE_MANIFESTS: tuple[Path, ...] = (
+    REPO_ROOT
+    / "tests"
+    / "fixtures"
+    / "schemas"
+    / "surrogate_manifest"
+    / "valid"
+    / "a19_smooth_prefix.json",
+)
+_BY_SHA256: dict[str, Document] = {
+    document_sha256(manifest): manifest for manifest in map(_load, SURROGATE_MANIFESTS)
+}
+
+
+def surrogates(reference: str) -> Mapping[str, Any] | None:
+    """The corpus's `SurrogateResolver`: the committed fixture manifest whose canonical SHA-256 is
+    `reference`, else `None`. Every corpus test passes it to the binder, so a corpus revision
+    with a `c1.reactor_surrogate` instance binds there; one that does not bind is a failure."""
+    return _BY_SHA256.get(reference)
