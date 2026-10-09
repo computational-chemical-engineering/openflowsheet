@@ -663,3 +663,9 @@ Grep, don't read whole. Newest at the bottom.
   (a)–(e), §17.2 (i)–(iv), §17.3, §17.4 pass; G4 C1 68×68, worst ratios unchanged. TR-E2 TRF: `TRF_MAX_ITERATIONS` at
   30, θ_recheck 4.01e-4, T 673.667 K. Escalated (batched): Z2 SYN-001 jointly pinned zero flows, W2. Choices Z1, Z5, W1
   logged. M02 WO-14 launched in its own worktree (`wp/M02-wo14`) beside WO-12a.
+
+- **M02 WO-12a stopped / WO-11a done** (2026-10-09, `wp/M02` `9142032`, gate 8267). G10v3 FAIL: δ recorded after the
+  certificate (runner.py:548, +20 pseudo-time steps), so D1's round fires at every point (δ 4e-5…8.4e-5 after S3).
+  Experiment D78 (δ after certificate): G10v3, G11v3-1..3 met; no box qualifies (B1 12/21, B2 11/19, B3 11/19): every
+  zero-inert corner `nonpositive_flow`, absent-element defect 0/0, low-T/high-P zero-inert and B1 643.15 K at S1; all
+  0.2-inert corners and centres ok. Timeout rule 360–370 s. Round-7 `specifier` ruling launched.
