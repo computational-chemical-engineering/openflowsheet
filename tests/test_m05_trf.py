@@ -47,6 +47,9 @@ pytestmark = pytest.mark.nlp
 TR_E1_CONFIG = {"solver": TRSP_SOLVER_ALIAS}
 #: Probe P2′'s request sequence for TR-E1: F a cold value, f a memo hit, g a gradient.
 PROBE_SEQUENCE = "FFfffgfFfffgFfffgFfffgF"
+#: The same through `run_trf`: R-276's pre-flight makes the cold start request, so TRF's own first
+#: request — `EFReplacement`'s start value — is a memo hit, and every other request is unchanged.
+RUN_SEQUENCE = "Ff" + PROBE_SEQUENCE[1:]
 VALUE_TOLERANCE = 1e-10
 
 
@@ -185,7 +188,7 @@ def test_g3_tr_e1_reproduces_the_native_example(record_property: Any) -> None:
     cold = [e for e in holder.ledger if e.call == "value" and e.served == "cold"]
     assert summary["value_cold"] == len({e.inputs_sha256 for e in cold}) == 6
     assert summary["jacobian_cold"] == 4
-    assert sequence(holder) == PROBE_SEQUENCE
+    assert sequence(holder) == RUN_SEQUENCE
 
     # §8.3's request identity, with an analytic gradient: start 1, PMP 1, trials K, gradients
     # 1 + A − [the final logged iteration was accepted].
@@ -336,12 +339,51 @@ def test_p6_a_refusal_aborts_the_run_typed_with_no_candidate() -> None:
     assert holder.ledger[-1].status == "property_domain_error:bb"
 
 
-def test_a_refusal_at_the_start_value_is_not_lost() -> None:
-    """Pyomo 6.10.1's `EFReplacement.exitNode` evaluates the start value inside a bare `except:`
-    and sets the holder variable to 0 on any exception. The holder keeps the refusal, so the run
-    is `TRF_TRUTH_REFUSED` even though TRF never saw the first one."""
-    projection, result = run(RefusingBlock(refuse_from=2))
+class OnceRefusingBlock(SineBlock):
+    """Refuses (a `DomainError`) on its `refuse_on`-th value call only."""
+
+    def __init__(self, refuse_on: int) -> None:
+        super().__init__()
+        self.refuse_on = refuse_on
+
+    def values(self, inputs: Any) -> Any:
+        self.value_calls += 1
+        if self.value_calls == self.refuse_on:
+            raise DomainError("outside the stated domain")
+        return [math.sin(inputs[0] - inputs[1])]
+
+
+def test_r276_a_refusal_at_the_start_is_caught_before_trf_runs() -> None:
+    """The pre-flight: call 1 is the projection's start value (direct), call 2 the pre-flight's
+    request at x₀, which refuses; TRF is never invoked — no log, no `EXIT:` line, one request."""
+    block = OnceRefusingBlock(refuse_on=2)
+    projection, result = run(block)
+    assert result.outcome == "TRF_TRUTH_REFUSED(start:property_domain_error:bb)"
+    assert (result.model, result.final, result.trf_map) == (None, None, ())
+    assert (result.iterations, result.exit_lines, result.log) == ((), (), ())
+    assert result.refusal is not None and result.refusal.code == "property_domain_error:bb"
+    assert block.value_calls == 2
+    (holder,) = projection.holders
+    assert len(holder.ledger) == 1
+    assert holder.ledger[0].purpose == TRF_START_VALUE
+    assert holder.ledger[0].status == "property_domain_error:bb"
+
+
+def test_r276_the_backstop_refuses_a_run_trf_called_optimal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The backstop, with the pre-flight bypassed: the same one-off refusal reaches Pyomo 6.10.1's
+    `EFReplacement.exitNode`, whose bare `except:` swallows it and sets the holder variable to 0.
+    TRF carries on and prints "EXIT: Optimal solution found." — and the run is still
+    `TRF_TRUTH_REFUSED`, with no candidate."""
+    from openflowsheet.studies.trust_region import trf
+
+    monkeypatch.setattr(trf, "_preflight", lambda projection: None)
+    projection, result = run(OnceRefusingBlock(refuse_on=2))
+    assert result.exit_lines == (EXIT_OPTIMAL,)  # TRF's own account: optimal
+    assert result.iterations  # TRF ran
     assert result.outcome == "TRF_TRUTH_REFUSED(property_domain_error:bb)"
+    assert (result.model, result.final, result.trf_map) == (None, None, ())
     (holder,) = projection.holders
     assert holder.ledger[0].purpose == TRF_START_VALUE
     assert holder.ledger[0].status == "property_domain_error:bb"

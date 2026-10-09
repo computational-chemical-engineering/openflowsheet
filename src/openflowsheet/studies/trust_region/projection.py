@@ -315,6 +315,9 @@ class Projection:
     centers: tuple[float, ...]
     half_widths: tuple[float, ...]
     holders: tuple[EFHolder, ...]
+    #: Each holder's `x` indices, in its box's input order: the arguments its `ExternalFunction`s
+    #: are called with (R-276's pre-flight evaluates them at x₀).
+    holder_inputs: tuple[tuple[int, ...], ...]
     row_ids: tuple[str, ...]
     row_expressions: tuple[Any, ...]
     ef_names: Mapping[Callable[..., float], str]
@@ -471,6 +474,7 @@ def project(
 
     # 3. External links.
     holders: list[EFHolder] = []
+    holder_inputs: list[tuple[int, ...]] = []
     ef_names: dict[Callable[..., float], str] = {}
     link_starts = [
         float(spec.parameters[parameter])
@@ -490,6 +494,7 @@ def project(
         scales = link_scales[2 * position : 2 * position + 2]
         holder = EFHolder(f"link:{link.unit_id}", box, scales, kind="truth")
         holders.append(holder)
+        holder_inputs.append(tuple(variable_index[name] for name in link.inlet_variable_ids))
         inlet = [model.x[variable_index[name]] for name in link.inlet_variable_ids]
         for coordinate, parameter in enumerate((link.x_param_id, link.dt_param_id)):
             k = 2 * position + coordinate
@@ -531,6 +536,7 @@ def project(
             f"block:{block.block_id}", PropertyBlockBox(block), scales, kind="property_block"
         )
         holders.append(holder)
+        holder_inputs.append(tuple(variable_index[name] for name in feeding))
         inputs = [model.x[variable_index[name]] for name in feeding]
         for k, output_id in enumerate(block.output_ids):
             g = len(output_starts)
@@ -661,6 +667,7 @@ def project(
         centers=tuple(centers),
         half_widths=tuple(half_widths),
         holders=tuple(holders),
+        holder_inputs=tuple(holder_inputs),
         row_ids=row_ids,
         row_expressions=tuple(expressions),
         ef_names=ef_names,

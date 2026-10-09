@@ -8,16 +8,21 @@ executable: it passes `keepfiles` and `tee` to its subproblem solver, which PyNu
 refuses (probe P8).
 
 **A run** (`run_trf`) checks the pin first — any mismatch raises `TrustRegionUnsupportedError` and
-nothing runs — then gives every holder of the projection the run's `RunState` and budgets, puts a
-`TrfLogHandler` on `pyomo.contrib.trustregion` at INFO with propagation off, captures `stdout`
-(TRF's `EXIT:` prints and its `model.display()`), and calls
+nothing runs — then gives every holder of the projection the run's `RunState` and budgets, and
+**pre-flights** the start (R-276, design note §4 P13, §16.3): every holder is asked for its values
+at x₀ — the request TRF's `EFReplacement.exitNode` makes first, inside a bare `except:` that
+swallows a refusal and sets the holder variable to 0. A refusal there is
+`TRF_TRUTH_REFUSED(start:<status>:<reason>)` and TRF is never invoked; otherwise TRF's own start
+evaluation is a memo hit, and the ledger's `trf_start_value` request is the pre-flight's, so §8.3's
+request identity is unchanged. Then it puts a `TrfLogHandler` on `pyomo.contrib.trustregion` at
+INFO with propagation off, captures `stdout` (TRF's `EXIT:` prints and its `model.display()`), and
+calls
 `SolverFactory("trustregion").solve(model, decisions, basis_rule, **config)` — the configuration
 goes to `solve()`, never to the constructor (probe P8). The outcome is design note §6.7's:
 
-- `TRF_TRUTH_REFUSED(<status>:<reason>)` whenever a holder refused during the run, whether or not
-  TRF saw the exception: Pyomo 6.10.1's `EFReplacement.exitNode` swallows any exception from the
-  start-value evaluation and sets the holder variable to 0, so TRF's own account cannot be trusted
-  after a refusal;
+- `TRF_TRUTH_REFUSED(<status>:<reason>)` whenever a holder refused during the run, whatever TRF
+  returned or printed (R-276's backstop): a swallowed refusal can be followed by a run that ends
+  "optimal", so TRF's own account cannot be trusted after one;
 - `TRF_SUBPROBLEM_FAILED` for TRF's `ArithmeticError("EXIT: Model solve failed …")`;
 - `TRF_ERROR(<exception class>)` for anything else raised, including the `ValueError` of TRF's DOF
   check, and `TRF_ERROR(exit_mismatch | log | trf_map)` when what TRF returned does not read back;
@@ -179,6 +184,32 @@ def _run(
     refused_before = {holder.name: len(holder.refusals) for holder in projection.holders}
     for holder in projection.holders:
         holder.begin_run(run, budgets.get(holder.name, ()))
+    preflight_start = time.perf_counter()
+    try:
+        refused = _preflight(projection)
+    except BaseException:
+        for holder in projection.holders:
+            holder.end_run()
+        raise
+    if refused is not None:
+        for holder in projection.holders:
+            holder.end_run()
+        return TrfRun(
+            run_id=run_id,
+            outcome=truth_refused(f"start:{refused.code}"),
+            iterations=(),
+            filter=(),
+            exit_lines=(),
+            warnings=(),
+            log=(),
+            config=dict(config),
+            final=None,
+            model=None,
+            trf_map=(),
+            refusal=refused,
+            error=None,
+            wall_s=time.perf_counter() - preflight_start,
+        )
     logger.setLevel(logging.INFO)
     logger.propagate = False
     logger.addHandler(handler)
@@ -280,6 +311,21 @@ def _run(
         wall_s=wall,
         omitted_rows_final=omitted_rows_final,
     )
+
+
+def _preflight(projection: Projection) -> TruthRefused | None:
+    """R-276: every holder's values at the start, in the projection's holder order, from the
+    model's `x` exactly as TRF's `EFReplacement` reads them; the first refusal, or `None`.
+
+    Stops at the first refusal: the run is refused whatever the other holders would answer, and a
+    truth's evaluation is the expensive request the budgets exist for."""
+    model = projection.model
+    for holder, inputs in zip(projection.holders, projection.holder_inputs, strict=True):
+        try:
+            holder.request_values([float(pyo.value(model.x[i])) for i in inputs])
+        except TruthRefused as refusal:
+            return refusal
+    return None
 
 
 def _trf_map(projection: Projection, model: Any) -> tuple[Mapping[str, str], ...]:
