@@ -19,7 +19,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M02 | Build | M01 | W21 | WO-1…12 run; rulings §14.5 D1–D10 (`7be4084`, R-303…R-310, ADR 0027 Am. 2): reactor variant v3 (extra polish round when defect > 1e-7, nonfinite → refusal, first passing of 3 registered boxes); WO-12a (+WO-11a) running; then WO-14 (driver reset, R3 rule bug, D58 replay digest, `at_coupling` refusal); WO-12b (register v3, re-run) after all three; WO-13 manifest; `reviewer` |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435); W27 Amendment 3 (`14c8695` on main, R-301/302): surrogate → no function (`surrogate_model`), `hypothetical_v02_a3`, corpus resolver; next WO-16i on main, then J3′–J6′ + WO-8 on `wp/M04`; WO-9 after M02 merged; WO-11 real run; WO-12 manifest |
-| M05 | Design | M03, M04 | W24 | WO-1…5 done (`6b54b8d`); rulings §17 (`5bb026e`, R-296…R-300): zero-flow elimination, `M05-fd-v2`, TR-E1 bound 2e-5, Optimal-with-θ → `TRF_STALLED_INCONSISTENT`; WO-2b, 3b, 4a running; WO-5b in M02 WO-12; then WO-6+; relay R-309: use `at_coupling` (WO-5c), real records bind reactor v3, decision box may shrink to [653.15, 693.15] K (R-304) |
+| M05 | Design | M03, M04 | W24 | WO-1…5, 2b, 3b, 4a done (`7bc8c56`, gate 8473; §17 acceptance pass; TR-E2 check now `TRF_MAX_ITERATIONS`, no refusal); open for next M05 ruling batch: Z2 (SYN-001 jointly-pinned zero flows at P1/P2/B2 refused `unpinned`, 15 strict xfails), W2 (max-iterations with θ_recheck > 1e-5 keeps its candidate?); WO-5c (`at_coupling`, R-309) + E2 guard after M02 merges; real records bind reactor v3; box may shrink (R-304); WO-6+ next |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
@@ -97,7 +97,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 WO-12a + WO-11a (design note §14.5, l.1984–1990) | `wp/M02` (`m02`) |
-| `opus-engineer` | M05 WO-2b, WO-3b, WO-4a (design note §17.6) | `wp/M05` (`m05`) |
+| `opus-engineer` | M02 WO-14 (§14.5 D5, D7, D8, D9) | `wp/M02-wo14` (`m02-wo14`, off `wp/M02` `1328da0`; merge back after) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);

@@ -658,3 +658,8 @@ Grep, don't read whole. Newest at the bottom.
   bug → registered external-provider set (empty). R-308 replay digest recomputed at recorded iterate (ADR 0007). R-309
   M05 uses `at_coupling` (supersedes R-300 E7). R-310 `other_basis_providers`, docstring erratum. N7 to Frank (default:
   measured box). WO-12a + WO-11a launched.
+
+- **M05 WO-2b/3b/4a done** (2026-10-09, `wp/M05` `7bc8c56`, gate 8473; opt-in 105 passed, 15 xfailed = Z2). §17.1
+  (a)–(e), §17.2 (i)–(iv), §17.3, §17.4 pass; G4 C1 68×68, worst ratios unchanged. TR-E2 TRF: `TRF_MAX_ITERATIONS` at
+  30, θ_recheck 4.01e-4, T 673.667 K. Escalated (batched): Z2 SYN-001 jointly pinned zero flows, W2. Choices Z1, Z5, W1
+  logged. M02 WO-14 launched in its own worktree (`wp/M02-wo14`) beside WO-12a.
