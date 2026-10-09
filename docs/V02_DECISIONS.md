@@ -742,3 +742,9 @@ Grep, don't read whole. Newest at the bottom.
 - **M05 WO-7 done** (2026-10-09, `wp/M05` `7f17a50`…`71804a6`, gate 8606): schema `trust-region-study-v1` + tests;
   S11 M05 addendum (4 sha256 names exact; `--check` generalised over ADDENDA, v2 policy bytes unchanged); 17 float
   rules, every float of every record classified. S16, S18 → M05 review. M07 recon launched (design prep while M02 WO-13 runs).
+
+- **M02 merged into main** (2026-10-09, `9f6a9be`; manifest `tested` at `ba90619`; WO-13 `550d2ec`…`2277d33`: D130 failure
+  bundle compare rules, ADR 0034 Am. 1, R-310, `external_execution` envelope axis, manifest generator; digest 383b4e2c…,
+  G2 659748576adb9730… unchanged). Register conflict rebuilt as the numeric union (wp/M02's amended R-46/R-60 kept).
+  Main gate PASS 8371. M07 recon digest + spec brief on `wp/M07` (`e35b16d`); specifier stopped at Frank's pause request.
+  Paused for the token budget; no agents running.

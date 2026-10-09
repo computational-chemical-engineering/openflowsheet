@@ -16,12 +16,12 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | all WOs except WO-13 done; review fixes F1–F5 + RP-2 done (`ef03f97`, gate 8358, no xfail, G2 unchanged); WO-13 running (D124 failure-bundle compare rules, ADR 0034 Am. 1, R-310, manifest `tested`, pointers, support matrix); then merge into main, alpha gate WO-5…11 |
+| M02 | Build | M01 | W21 | **tested, reviewed by the design lane (`docs/reviews/M02-review.md`), merged into main `9f6a9be`** (manifest `evidence/M02/ba90619…/manifest.json`; main gate 8371 passed). Reactor v3 on V5. Unruled build choices D130–D132 for a later design read; G12 cross-architecture reproduce not run (stated limitation) |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 + W27 part done (`4cd23ad`, gate 8444): surrogate registered, J3′–J6′ + G14 pass, 0/450 class changes, `list_models` → `f070fbe0…`; open for M04 review batch: envelope wording (22 models, not marked synthetic), corpus revision settings (E10), strip pattern (E12); WO-8 after M02 merges to main; WO-9, WO-11 real run, WO-12 manifest, `reviewer` |
 | M05 | Design | M03, M04 | W24 | WO-1…7, 2b, 3b, 4a done (`71804a6`, gate 8606; M05 numerical-policy addendum S11, floats classified); REAL box [653.15, 693.15] K; next after M02/M04 merge: real parent adapter (S3), WO-5c (`at_coupling`), WO-8 runs; review batch: Z2, W2, S1–S18 |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
-| M07 | Design | M05, M06 | W25, W21–W27 | not started |
+| M07 | Design | M05, M06 | W25, W21–W27 | spec not started: branch `wp/M07` (`.claude/worktrees/m07`) holds `docs/briefs/M07-recon-digest.md` + `docs/briefs/M07-specification.md` (`e35b16d`); a `specifier` was launched and stopped at Frank's pause request (left an uncommitted `docs/derivations/scripts/m07_reference.py`, unreviewed) — relaunch fresh with the same brief |
 
 ## Milestone 0 (housekeeping)
 
@@ -93,14 +93,14 @@ F5 education mode deferred.
 
 ## Next action
 
-Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rules in `CLAUDE.md` apply. The three below were started before the change and finish as they are.
+**Paused 2026-10-09 at Frank's request (token budget). No agents running.** Resume in this order, at most 2 agents:
+1. Merge `main` (`9f6a9be`, M02 in) into `wp/V02-alpha-gate` → alpha-gate WO-5…11 → `0.2.0a1` (Frank publishes).
+2. Merge `main` into `wp/M04` → WO-8 (needs M02 WO-11, now on main), WO-9, WO-11 real run, WO-12 manifest, `reviewer`
+   (batch: E10, E12, E14 envelope wording).
+3. Merge `main` into `wp/M05` → WO-5c (`at_coupling`, delete `with_coupling`, R-309), real parent adapter (S3), WO-8 runs;
+   `reviewer` batch: Z2, W2, S1–S18.
+4. M07: fresh `specifier` on `wp/M07` with `docs/briefs/M07-specification.md` (decide whether to keep `m07_reference.py`).
 
-| Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
-| --- | --- | --- |
-| `opus-engineer` | M02 WO-13 (+ D124) | `wp/M02` (`m02`) |
-| `recon` | M07 recon digest (`docs/briefs/M07-recon-digest.md`) for the M07 specification | main |
-
-Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
-Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
-M03 WO-8 after N1; M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
-Push `main` at milestones (authorised). W27 archive for tests: symlink the directory `.claude/worktrees/m06-w27h/evidence/M06/W27/artifacts` to `evidence/M06/W27/artifacts` (not just the tarball), remove after.
+In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the
+directory `.claude/worktrees/m06-w27h/evidence/M06/W27/artifacts` to `evidence/M06/W27/artifacts`, remove after.
+Push `main` at milestones (authorised).
