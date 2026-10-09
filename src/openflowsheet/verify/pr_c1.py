@@ -57,6 +57,8 @@ if TYPE_CHECKING:
 
 __all__ = [
     "PROVIDER_ID",
+    "REACTION_NU",
+    "REACTOR_MODELS",
     "VAPOUR_ONLY",
     "band",
     "declared_port_checks",
@@ -70,6 +72,18 @@ PROVIDER_ID: Final = "pr-c1-v1"
 #: The condensable component, and the vapour-only ones: the verifier's own reading of R-143.
 CONDENSABLE: Final = "NH3"
 VAPOUR_ONLY: Final[tuple[str, ...]] = ("H2", "N2", "Ar", "CH4")
+#: The C1 reactor's two model ids (M02 design note §4.1; ADR 0034 D9; WO-9).
+REACTOR_MODELS: Final = frozenset({"c1.reactor", "c1.reactor_standin"})
+#: N2 + 3 H2 -> 2 NH3 (M01 spec §8.2), the verifier's own copy: no revision states a C1 reactor's
+#: stoichiometry (SYN-001's reactors carry `nu.<c>` as instance parameters), so the reaction
+#: envelope and the reactor's material rule read it here, never from the model (build log D47).
+REACTION_NU: Final[Mapping[str, float]] = {
+    "H2": -3.0,
+    "N2": -1.0,
+    "NH3": 2.0,
+    "Ar": 0.0,
+    "CH4": 0.0,
+}
 #: B15 item 7: the qualification each `pr-c1-v1` admissibility check appends.
 DEW_FORM: Final = "dew band, liquid NH3 fraction of a fresh TP flash"
 CLOSURE_FORM: Final = "first-order distance in K from the vapour's NH3 dew point"

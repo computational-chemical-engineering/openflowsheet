@@ -19,6 +19,7 @@ from openflowsheet.verify.table import (
     MODEL_CHECKS,
     PRODUCT_MODELS,
     _c1_flash_material,
+    _c1_reactor_material,
     _feed_specification,
     _flash_energy,
     _flash_specification,
@@ -27,6 +28,7 @@ from openflowsheet.verify.table import (
     _mixer_energy,
     _mixer_material,
     _pump_material,
+    _reactor_energy,
     _splitter_energy,
     _splitter_material,
     _splitter_specification,
@@ -155,14 +157,34 @@ def test_model_checks_hold_the_c1_entries_from_syn001s_rule_functions() -> None:
             _flash_specification,
             (("inlet", False),),
         ),
+        # M02 WO-9: the reactor's two ids (tests/test_m02_wo9_reactor.py pins their rules).
+        "c1.reactor": (
+            _c1_reactor_material,
+            _reactor_energy,
+            nothing,
+            (("inlet", False), ("outlet", False)),
+        ),
+        "c1.reactor_standin": (
+            _c1_reactor_material,
+            _reactor_energy,
+            nothing,
+            (("inlet", False), ("outlet", False)),
+        ),
     }
 
 
 def test_the_envelope_sets_gain_the_c1_ids() -> None:
     assert FEED_MODELS == {"syn001.feed_source", "c1.feed_source"}
     assert PRODUCT_MODELS == {"syn001.product_sink", "c1.product_sink"}
-    assert EXTERNAL_DUTY_MODELS[-2:] == ("c1.tp_heater", "c1.tp_flash")
+    assert EXTERNAL_DUTY_MODELS[-4:] == (
+        "c1.tp_heater",
+        "c1.tp_flash",
+        "c1.reactor",
+        "c1.reactor_standin",
+    )
     assert [m for m in EXTERNAL_DUTY_MODELS if m.startswith("c1.")] == [
         "c1.tp_heater",
         "c1.tp_flash",
+        "c1.reactor",
+        "c1.reactor_standin",
     ]

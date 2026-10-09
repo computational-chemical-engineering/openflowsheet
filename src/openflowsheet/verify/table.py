@@ -135,13 +135,20 @@ EXTERNAL_DUTY_MODELS: Final = (
     "syn001.kinetic_cstr",
     "c1.tp_heater",
     "c1.tp_flash",
+    # M02 WO-9: the C1 reactor's duty `<U>.Q`, positive into the unit (design note §4.1).
+    "c1.reactor",
+    "c1.reactor_standin",
 )
 #: `W`: the shaft work `<U>.W`.
 WORK_MODELS: Final = frozenset({"syn001.liquid_pump"})
 #: `ν_c ξ` on the material envelope; ADR 0011 D2's note on the energy balances. A conversion
 #: reactor's `ξ` is its extent column; a kinetic CSTR's is its rate `r`, which it does not own and
 #: the table recomputes from the state and the revision (`_cstr_rate`, T08 build-first §A1.6).
-REACTING_MODELS: Final = frozenset({"syn001.conversion_reactor", "syn001.kinetic_cstr"})
+#: The C1 reactors' `ξ` is their extent column too, and their `ν` the verifier's own copy of the
+#: C1 reaction (`pr_c1.REACTION_NU`; M02 WO-9), which no revision states.
+REACTING_MODELS: Final = frozenset(
+    {"syn001.conversion_reactor", "syn001.kinetic_cstr", *pr_c1.REACTOR_MODELS}
+)
 KINETIC_CSTR: Final = "syn001.kinetic_cstr"
 
 
@@ -694,6 +701,22 @@ def _reactor_material(unit: Unit, components: Sequence[str]) -> list[CheckResult
     return checks + _lifted_outlet_material(unit, outlet, components)
 
 
+def _c1_reactor_material(unit: Unit, components: Sequence[str]) -> list[CheckResult]:
+    """`n_in + ν ξ − n_out` per component, as `_reactor_material` with `ν` the verifier's own
+    copy of the C1 reaction (M02 WO-9); the outlet is not lifted."""
+    inlet, outlet = unit.stream("inlet"), unit.stream("outlet")
+    extent = unit.state[extent_id(unit.id)]
+    return [
+        unit.check(
+            "material_balance",
+            c,
+            unit.n(inlet, c) + pr_c1.REACTION_NU[c] * extent - unit.n(outlet, c),
+            "molar_flow",
+        )
+        for c in components
+    ]
+
+
 def _reactor_key(unit: Unit) -> str:
     """The key component `k` of the one `conversion.<k>` parameter (the builder allows one)."""
     keys = [name for name in unit.view.parameters if name.startswith("conversion.")]
@@ -1046,6 +1069,19 @@ MODEL_CHECKS: Final[Mapping[str, ModelChecks]] = {
         specification=_flash_specification,
         declared_ports=(("inlet", False),),
     ),
+    # M02 WO-9 (design note §4.1; build log D47): the C1 reactor's material balance on the C1
+    # reaction and SYN-001's reactor energy balance `Ḣ(in) + Q − Ḣ(out)`; both ports declared
+    # vapour. No specification entry: X̂ and ΔT̂ are the coupled route's inputs, not the
+    # revision's, so the verifier holds no independent value of them; their rows are judged as
+    # residual rows, and on the coupled route against the experiment (§4.4).
+    **{
+        model: ModelChecks(
+            material=_c1_reactor_material,
+            energy=_reactor_energy,
+            declared_ports=(("inlet", False), ("outlet", False)),
+        )
+        for model in sorted(pr_c1.REACTOR_MODELS)
+    },
 }
 
 
@@ -1081,6 +1117,14 @@ def _extent(reactor: InstanceView, state: Mapping[str, float]) -> float:
     return state[extent_id(reactor.unit_id)]
 
 
+def _nu(reactor: InstanceView, component: str) -> float:
+    """A reacting instance's `ν_c`: the revision's `nu.<c>`, or for a C1 reactor the verifier's
+    own copy of the C1 reaction (M02 WO-9)."""
+    if reactor.model_id in pr_c1.REACTOR_MODELS:
+        return pr_c1.REACTION_NU[component]
+    return reactor.parameters[f"nu.{component}"]
+
+
 def _envelope_material(
     view: RevisionView, state: Mapping[str, float], tolerances: Mapping[str, float]
 ) -> list[CheckResult]:
@@ -1093,7 +1137,7 @@ def _envelope_material(
         for stream in feeds:
             value += state[flow_id(stream, c)]
         for reactor in reactors:
-            value += reactor.parameters[f"nu.{c}"] * _extent(reactor, state)
+            value += _nu(reactor, c) * _extent(reactor, state)
         for stream in products:
             value -= state[flow_id(stream, c)]
         checks.append(
