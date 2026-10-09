@@ -137,12 +137,14 @@ def test_an_unbound_provider_is_rendered_apart_from_the_axes_with_its_limitation
     rendered = MATRIX.render(envelope).splitlines()
     (components,) = (line for line in rendered if line.startswith("- **Components:**"))
     assert "pr-c1-v1" not in components and "`syn001`" in components
-    (shipped,) = (line for line in rendered if line.startswith("- **Shipped, bound by no model:**"))
+    (shipped,) = (
+        line for line in rendered if line.startswith("- **Shipped, bound on another basis:**")
+    )
     assert "`pr-c1-v1`" in shipped and "no mixture VLE validation" in shipped
     assert shipped.endswith("(L42)")
     mutated = copy.deepcopy(envelope)
     (axis,) = (row for row in mutated["axes"] if row["id"] == "property_model")
-    axis["unbound_providers"] = [
+    axis["other_basis_providers"] = [
         {"id": "pr-c1-v1", "limitation": "L99", "caveat": "x"},
         {"id": "pr", "limitation": "L42", "caveat": " "},
     ]

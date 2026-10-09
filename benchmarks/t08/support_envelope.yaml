@@ -28,14 +28,13 @@ axes:
     statement: >-
       SYN-001 for every revision, unit model and operation: ideal vapour, incompressible ideal
       liquid, VLE; reference convention SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no
-      critical region, no extra phase. Since M01 the package also carries `pr-c1-v1`
-      (Peng–Robinson for the five C1 components, the light gases vapour-only, reference convention
-      PR-C1-ref-v1; ADR 0026), a provider no model of `MODEL_BUILDERS` binds yet (M02 adds its
-      units).
+      critical region, no extra phase. Since M02 the C1 models (`c1.*`) bind `pr-c1-v1` on their
+      own basis (R-288).
     providers: [pr-c1-v1, syn001]
-    #: Shipped providers no model binds: each has its own surface and a limitation row (M01
-    #: review F1); the components and domain axes below are the bound provider's.
-    unbound_providers:
+    #: Shipped providers that bind on a basis other than syn001's (R-288's `MODEL_BASES`); each
+    #: has its own components, domain and limitation row; the components and domain axes below
+    #: are syn001's.
+    other_basis_providers:
       - id: pr-c1-v1
         limitation: L42
         caveat: >-
@@ -739,7 +738,7 @@ limitations:
   - id: L42
     text: >-
       `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is
-      bound by no model of `MODEL_BUILDERS` yet (M02 adds its units) and does not share the axes'
+      bound by the C1 models (`c1.*`) on their own basis (R-288) and does not share the axes'
       components and domain: it takes the five real components H2, N2, NH3, Ar, CH4 (the only
       liquid is pure NH3) over 200–1000 K and 10⁴–3 × 10⁷ Pa. It is validated for pure-component
       behaviour only, within M01 spec §11's bands (NH3 saturation pressure within 2 %, liquid NH3

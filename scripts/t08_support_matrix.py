@@ -199,8 +199,8 @@ def check_structure(envelope: Mapping[str, Any]) -> list[str]:
             problems.append(f"unit_models.synthetic_members: not members {stray}")
     property_model = [a for a in envelope.get("axes") or () if a.get("id") == "property_model"]
     for axis in property_model:
-        for provider in axis.get("unbound_providers") or ():
-            where = f"property_model.unbound_providers.{provider.get('id')}"
+        for provider in axis.get("other_basis_providers") or ():
+            where = f"property_model.other_basis_providers.{provider.get('id')}"
             if provider.get("id") not in axis.get("providers", ()):
                 problems.append(f"{where}: not a listed provider")
             if provider.get("limitation") not in limitations:
@@ -376,8 +376,8 @@ def render(envelope: Mapping[str, Any]) -> str:
         + ", ".join(f"`{p}`" for p in _axis(envelope, "solve_policies")["members"])
     )
     property_model = _axis(envelope, "property_model")
-    unbound = property_model.get("unbound_providers") or ()
-    bound = [p for p in property_model["providers"] if p not in {u["id"] for u in unbound}]
+    other_basis = property_model.get("other_basis_providers") or ()
+    bound = [p for p in property_model["providers"] if p not in {u["id"] for u in other_basis}]
     lines.append(
         "- **Components:** "
         + ", ".join(f"`{c}`" for c in _axis(envelope, "components")["members"])
@@ -388,10 +388,10 @@ def render(envelope: Mapping[str, Any]) -> str:
         f"- **Domain:** T in [{domain['temperature_K'][0]:g}, {domain['temperature_K'][1]:g}] K, "
         f"P in [{domain['pressure_Pa'][0]:g}, {domain['pressure_Pa'][1]:g}] Pa"
     )
-    for provider in unbound:
-        # M01 review F1: a shipped provider no model binds is not the axes' provider.
+    for provider in other_basis:
+        # M01 review F1, R-310: a shipped provider on another basis is not the axes' provider.
         lines.append(
-            f"- **Shipped, bound by no model:** `{provider['id']}`, with {provider['caveat']} "
+            f"- **Shipped, bound on another basis:** `{provider['id']}`, with {provider['caveat']} "
             f"({provider['limitation']})"
         )
     lines.append(

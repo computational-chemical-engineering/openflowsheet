@@ -1399,6 +1399,8 @@ MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _C1_STREAM_SPLITTER.model_id: _c1_stream_splitter,
     _C1_PRODUCT_SINK.model_id: _c1_product_sink,
     _C1_REACTOR.model_id: _c1_reactor,
+    # R-310: `models/c1/reactor_standin.py`'s sentence "Not registered in `MODEL_BUILDERS`" is a
+    # recorded erratum (the module's bytes are the stand-in variant's pinned artifact).
     _C1_REACTOR_STANDIN.model_id: _c1_reactor,
 }
 
