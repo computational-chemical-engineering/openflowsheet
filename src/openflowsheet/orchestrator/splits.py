@@ -39,6 +39,14 @@ and — for the exchanger — its `specification`, names each: the outlet port, 
 swapped energy row's family and the label row's. `dormancy_forms` builds each instance's
 `DormancyForm`; `check_agreement` (g) checks them against the declaration. Only v2's region reads
 a form.
+
+**Vapour-only components** (M02 design note §14.2 B12–B13; register R-254, R-255). A rule may
+name components whose liquid flow is a structural zero — the C1 flash's light gases, whose liquid
+is pure NH3 (R-143). Their equilibrium-family rows are the unit's zero rows `l_i = 0` (kind
+`molar_flow`), not `molar_flow_squared` rows; `check_agreement` (b) and (e) take a branch for such a
+rule, and its new check (h) checks the split's `VapourOnlyForm` (`vapour_only_forms`), which a
+`TWO_PHASE` attempt reads. Every SYN-001 rule has an empty `vapour_only` and runs the original
+statements.
 """
 
 from __future__ import annotations
@@ -62,6 +70,7 @@ from openflowsheet.orchestrator.region import (
     ClosureType,
     DormancyForm,
     LiftedSplit,
+    VapourOnlyForm,
     ZeroFlowForm,
 )
 
@@ -79,6 +88,7 @@ __all__ = [
     "dormancy_forms",
     "lifted_splits",
     "split_temperatures",
+    "vapour_only_forms",
     "zero_flow_forms",
 ]
 
@@ -111,6 +121,9 @@ class SplitRule:
     #: T05b spec §6.1: the energy row a PH-type split's form swaps for its label row; `None` for
     #: a model that is never PH-type.
     energy: str | None
+    #: M02 design note §14.2 B13: components whose liquid flow is a structural zero, fixed by a
+    #: zero row in the equilibrium family; empty for every SYN-001 model.
+    vapour_only: tuple[str, ...] = ()
 
 
 #: One rule per model id (§3.1). The T05 models need only their ids here; no model class is read.
@@ -120,6 +133,14 @@ SPLIT_RULES: Final[Mapping[str, SplitRule]] = {
     "syn001.valve": SplitRule("outlet", "VLV-equilibrium", "PH", "split", "VLV-energy"),
     "syn001.conversion_reactor": SplitRule("outlet", "RX-equilibrium", None, "split", "RX-duty"),
     "syn001.ph_flash": SplitRule("products", "PHF-equilibrium", "PH", "PHF-mole", "PHF-duty"),
+    "c1.tp_flash": SplitRule(
+        "products",
+        "C1FL-equilibrium",
+        "TP",
+        "C1FL-mole",
+        None,
+        vapour_only=("H2", "N2", "Ar", "CH4"),
+    ),
 }
 
 
@@ -137,8 +158,8 @@ class DormancyRule:
     #: The label row's side suffix: `<U>:zero-flow-label` when `None`, else
     #: `<U>:zero-flow-label:<side>`.
     side: str | None
-    #: The outlet's declared phase: `LIQUID`, or the configuration attribute that holds it
-    #: (`hot_phase`, `cold_phase`).
+    #: The outlet's declared phase: `LIQUID` or `VAPOR`, or the configuration attribute that
+    #: holds it (`hot_phase`, `cold_phase`).
     declared_phase: str
 
 
@@ -147,6 +168,8 @@ _CONFIGURED_BY: Final[Mapping[str, str]] = {"syn001.heat_exchanger": "specificat
 
 _PUMP_OUTLET: Final = DormancyRule("outlet", "inlet", "PUMP-energy", None, "LIQUID")
 _MIXER_OUTLET: Final = DormancyRule("outlet", "inlet", "MIX-energy", None, "LIQUID")
+#: M02 design note §14.2 B13 (ADR 0012 Amendment A4): the C1 mixer's vapour outlet.
+_C1_MIXER_OUTLET: Final = DormancyRule("outlet", "inlet", "C1MIX-energy", None, "VAPOR")
 _HOT_SIDE: Final = DormancyRule("hot_outlet", "hot_inlet", "HX-energy-hot", "hot", "hot_phase")
 _COLD_SIDE: Final = DormancyRule(
     "cold_outlet", "cold_inlet", "HX-energy-cold", "cold", "cold_phase"
@@ -162,8 +185,11 @@ DORMANCY_RULES: Final[Mapping[tuple[str, str | None], tuple[DormancyRule, ...]]]
     ("syn001.heat_exchanger", "duty"): (_HOT_SIDE, _COLD_SIDE),
     ("syn001.heat_exchanger", "hot_outlet_temperature"): (_COLD_SIDE,),
     ("syn001.heat_exchanger", "cold_outlet_temperature"): (_HOT_SIDE,),
+    ("c1.adiabatic_mixer", None): (_C1_MIXER_OUTLET,),
 }
 _DORMANCY_MODELS: Final = frozenset(model for model, _ in DORMANCY_RULES)
+#: A `declared_phase` read as the phase itself rather than as a configuration attribute.
+_LITERAL_PHASES: Final = frozenset({"LIQUID", "VAPOR"})
 
 
 def _dormancy_rules(unit: UnitModel) -> tuple[DormancyRule, ...]:
@@ -201,7 +227,9 @@ def dormancy_forms(
             triggers = tuple(wiring.streams.get(rule.trigger, ()))
             outlet = outlets[0] if len(outlets) == 1 else ""
             declared: PhaseSignature = (
-                "LIQUID" if rule.declared_phase == "LIQUID" else getattr(unit, rule.declared_phase)
+                rule.declared_phase  # type: ignore[assignment]
+                if rule.declared_phase in _LITERAL_PHASES
+                else getattr(unit, rule.declared_phase)
             )
             label_row = (
                 row_id(unit.unit_id, LABEL_FAMILY)
@@ -367,6 +395,30 @@ def zero_flow_forms(
     return forms
 
 
+def vapour_only_forms(
+    instances: Sequence[tuple[str, str, Wiring]],
+    splits: Sequence[LiftedSplit],
+    components: Sequence[str],
+) -> dict[str, VapourOnlyForm]:
+    """M02 design note §14.2 B13: each split whose rule declares `vapour_only` components, by
+    unit id, with its `VapourOnlyForm` — the split's liquid flows of those components and their
+    equilibrium-family rows, both in component order. Kept beside the descriptor, as
+    `zero_flow_forms`, so `LiftedSplit`'s registered `repr` digest does not move."""
+    models = {unit: model for unit, model, _ in instances}
+    forms: dict[str, VapourOnlyForm] = {}
+    for split in splits:
+        rule = SPLIT_RULES[models[split.unit]]
+        if not rule.vapour_only:
+            continue
+        chosen = [index for index, c in enumerate(components) if c in rule.vapour_only]
+        forms[split.unit] = VapourOnlyForm(
+            split.unit,
+            tuple(split.liquid[index] for index in chosen),
+            tuple(split.equilibrium_rows[index] for index in chosen),
+        )
+    return forms
+
+
 def check_agreement(
     instances: Sequence[tuple[str, str, Wiring]],
     splits: Sequence[LiftedSplit],
@@ -375,6 +427,7 @@ def check_agreement(
     declaration: Declaration,
     forms: Mapping[str, ZeroFlowForm] | None = None,
     dormancy: Sequence[DormancyForm] | None = None,
+    vapour_only: Mapping[str, VapourOnlyForm] | None = None,
 ) -> None:
     """§3.3: the registry and the rows the units authored describe the same splits.
 
@@ -395,6 +448,15 @@ def check_agreement(
     reads the outlet's temperature and the first trigger stream's, every column it names is a
     column of the spec, and its swapped row is a row its unit authored that reads the outlet's
     temperature (`dormancy_form_disagrees(<item>, …)`).
+
+    For a rule with `vapour_only` components (M02 design note §14.2 B13), (b) compares only the
+    other components' rows with the unit's `molar_flow_squared` rows, and requires each
+    vapour-only row to be a row the unit authored, of kind `molar_flow`; (e) checks the other
+    rows as above and requires each vapour-only row to read exactly its liquid flow. With
+    `vapour_only` (the forms, `vapour_only_forms`), also: (h) exactly the splits whose rule
+    declares vapour-only components have a form; each form's columns are columns of the spec and
+    exactly that split's liquid flows of those components, in component order; each of its rows
+    is its unit's row and reads exactly its column (`vapour_only_form_disagrees(<unit>, …)`).
     """
     models = {unit: model for unit, model, _ in instances}
     squared: dict[str, list[str]] = {}
@@ -412,11 +474,28 @@ def check_agreement(
 
     columns = set(spec.variable_ids)
     for split in splits:
-        if split.equilibrium_rows != tuple(squared[split.unit]):
-            raise ValueError(
-                f"lifted_split_rows_disagree({split.unit}): the rule names "
-                f"{list(split.equilibrium_rows)}, the unit authors {squared[split.unit]}"
-            )
+        rule = _rule(models, split)
+        if rule.vapour_only:
+            zero = _vapour_only_rows(split, rule)
+            others = tuple(row for row in split.equilibrium_rows if row not in zero)
+            authored = [
+                row
+                for row in split.equilibrium_rows
+                if row in zero
+                and (row_units.get(row) != split.unit or spec.row_kinds.get(row) != "molar_flow")
+            ]
+            if others != tuple(squared[split.unit]) or authored:
+                raise ValueError(
+                    f"lifted_split_rows_disagree({split.unit}): the rule names "
+                    f"{list(others)} and the zero rows {sorted(zero)}, the unit authors "
+                    f"{squared[split.unit]}; not molar_flow rows of the unit: {authored}"
+                )
+        else:
+            if split.equilibrium_rows != tuple(squared[split.unit]):
+                raise ValueError(
+                    f"lifted_split_rows_disagree({split.unit}): the rule names "
+                    f"{list(split.equilibrium_rows)}, the unit authors {squared[split.unit]}"
+                )
         named = (
             *split.feed,
             split.temperature,
@@ -441,15 +520,33 @@ def check_agreement(
                     f"{[*flows, total]}"
                 )
         totals = {split.vapor_total, split.liquid_total}
-        for equilibrium, vapor, liquid in zip(
-            split.equilibrium_rows, split.vapor, split.liquid, strict=True
-        ):
-            read = set(declaration.rows[equilibrium].columns)
-            if not {vapor, liquid, *totals} <= read:
-                raise ValueError(
-                    f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): does not "
-                    f"read {sorted({vapor, liquid, *totals} - read)}"
-                )
+        if rule.vapour_only:
+            zero = _vapour_only_rows(split, rule)
+            for equilibrium, vapor, liquid in zip(
+                split.equilibrium_rows, split.vapor, split.liquid, strict=True
+            ):
+                read = set(declaration.rows[equilibrium].columns)
+                if equilibrium in zero:
+                    if read != {liquid}:
+                        raise ValueError(
+                            f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): "
+                            f"reads {sorted(read)}, not exactly {liquid}"
+                        )
+                elif not {vapor, liquid, *totals} <= read:
+                    raise ValueError(
+                        f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): does "
+                        f"not read {sorted({vapor, liquid, *totals} - read)}"
+                    )
+        else:
+            for equilibrium, vapor, liquid in zip(
+                split.equilibrium_rows, split.vapor, split.liquid, strict=True
+            ):
+                read = set(declaration.rows[equilibrium].columns)
+                if not {vapor, liquid, *totals} <= read:
+                    raise ValueError(
+                        f"lifted_split_equilibrium_disagrees({split.unit}, {equilibrium}): does "
+                        f"not read {sorted({vapor, liquid, *totals} - read)}"
+                    )
     for split in splits if forms is not None else ():
         assert forms is not None
         form = forms.get(split.unit)
@@ -476,6 +573,69 @@ def check_agreement(
     wirings = {unit: wiring for unit, _, wiring in instances}
     for dormant in dormancy or ():
         _check_dormancy_form(dormant, wirings, columns, row_units, declaration)
+    if vapour_only is not None:
+        _check_vapour_only_forms(models, splits, vapour_only, columns, row_units, declaration)
+
+
+def _rule(models: Mapping[str, str], split: LiftedSplit) -> SplitRule:
+    """The rule a descriptor was read by; an empty `vapour_only` for a model the registry does
+    not hold (a test's stand-in)."""
+    rule = SPLIT_RULES.get(models.get(split.unit, ""))
+    return rule if rule is not None else _NO_RULE
+
+
+#: What `_rule` answers for a descriptor whose model the registry does not hold.
+_NO_RULE: Final = SplitRule("products", "", None, "", None)
+
+
+def _vapour_only_rows(split: LiftedSplit, rule: SplitRule) -> frozenset[str]:
+    """The descriptor's equilibrium-family rows of the rule's vapour-only components."""
+    return frozenset(row_id(split.unit, rule.equilibrium, c) for c in rule.vapour_only)
+
+
+def _check_vapour_only_forms(
+    models: Mapping[str, str],
+    splits: Sequence[LiftedSplit],
+    forms: Mapping[str, VapourOnlyForm],
+    columns: set[str],
+    row_units: Mapping[str, str],
+    declaration: Declaration,
+) -> None:
+    """`check_agreement` (h)."""
+    declared = {split.unit: split for split in splits if _rule(models, split).vapour_only}
+    for unit in forms:
+        if unit not in declared:
+            raise ValueError(
+                f"vapour_only_form_disagrees({unit}): its rule declares no vapour-only component"
+            )
+    for unit, split in declared.items():
+        form = forms.get(unit)
+        if form is None:
+            raise ValueError(f"vapour_only_form_disagrees({unit}): no form")
+        zero = _vapour_only_rows(split, _rule(models, split))
+        expected = tuple(
+            liquid
+            for row, liquid in zip(split.equilibrium_rows, split.liquid, strict=True)
+            if row in zero
+        )
+        absent = [name for name in form.columns if name not in columns]
+        if absent or form.columns != expected:
+            raise ValueError(
+                f"vapour_only_form_disagrees({unit}): the form names {list(form.columns)}, the "
+                f"split's vapour-only liquid flows are {list(expected)}; not columns: {absent}"
+            )
+        if len(form.rows) != len(form.columns):
+            raise ValueError(
+                f"vapour_only_form_disagrees({unit}): {len(form.rows)} rows for "
+                f"{len(form.columns)} columns"
+            )
+        for row, column in zip(form.rows, form.columns, strict=True):
+            traced = declaration.rows.get(row)
+            if row_units.get(row) != unit or traced is None or set(traced.columns) != {column}:
+                raise ValueError(
+                    f"vapour_only_form_disagrees({unit}, {row}): not a row of {unit} reading "
+                    f"exactly {column}"
+                )
 
 
 def _check_dormancy_form(

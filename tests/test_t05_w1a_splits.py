@@ -54,7 +54,13 @@ def legacy() -> dict[str, Any]:
 
 
 def test_registry_holds_one_rule_per_lifting_model() -> None:
-    assert {model: (rule.style, rule.equilibrium) for model, rule in SPLIT_RULES.items()} == {
+    # M02 design note §14.2 B13: restricted to the `syn001.` keys, the literal unchanged; the full
+    # key set and the `c1.` entries are pinned by `test_m02_wo8_registries`.
+    assert {
+        model: (rule.style, rule.equilibrium)
+        for model, rule in SPLIT_RULES.items()
+        if model.startswith("syn001.")
+    } == {
         "syn001.tp_heater": ("outlet", "HEAT-equilibrium"),
         "syn001.tp_flash": ("products", "FLASH-equilibrium"),
         "syn001.valve": ("outlet", "VLV-equilibrium"),

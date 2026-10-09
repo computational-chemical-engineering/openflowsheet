@@ -1,0 +1,513 @@
+{
+  "component_set": {
+    "components": [
+      "H2",
+      "N2",
+      "NH3",
+      "Ar",
+      "CH4"
+    ],
+    "record_source": "benchmarks/m01/components.yaml"
+  },
+  "connections": [
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "makeup",
+        "port": "outlet"
+      },
+      "id": "S1",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "mixer",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "splitter",
+        "port": "recycle"
+      },
+      "id": "S8",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "mixer",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "mixer",
+        "port": "outlet"
+      },
+      "id": "S2",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "preheater",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "preheater",
+        "port": "outlet"
+      },
+      "id": "S3",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "reactor",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "reactor",
+        "port": "outlet"
+      },
+      "id": "S4",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "flash",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "flash",
+        "port": "vapor"
+      },
+      "id": "S5",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "splitter",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "flash",
+        "port": "liquid"
+      },
+      "id": "S6",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "liquid",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "NH3",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "splitter",
+        "port": "purge"
+      },
+      "id": "S7",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "purge",
+        "port": "inlet"
+      }
+    }
+  ],
+  "description": "M02 design note §8.1: makeup 1.0 mol/s (H2/N2 = 3, inerts 0.5 %) at 300 K, 1e7 Pa -> adiabatic mixer (with the recycle) -> preheater to 673.15 K -> reactor (N_tubes = 1000) -> flash at 253.15 K, 1e7 Pa (liquid -> NH3 sink; vapour -> splitter, purge fraction 0.02 -> purge sink, rest -> mixer). Zero pressure drop everywhere. The reactor is the synthetic stand-in (variant standin-x025-v1).",
+  "instances": [
+    {
+      "id": "makeup",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.feed_source",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "feed"
+    },
+    {
+      "id": "mixer",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.adiabatic_mixer",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "mixer"
+    },
+    {
+      "id": "preheater",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.tp_heater",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "heater"
+    },
+    {
+      "id": "reactor",
+      "model": {
+        "artifact_ref": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1",
+        "id": "c1.reactor_standin",
+        "version": "standin-x025-v1"
+      },
+      "parameters": {
+        "n_tubes": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "number of reactor tubes (design note §8.1)",
+          "role": "fixed",
+          "unit": "1",
+          "value": 1000.0
+        }
+      },
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "reactor"
+    },
+    {
+      "id": "flash",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.tp_flash",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "flash"
+    },
+    {
+      "id": "splitter",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.stream_splitter",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {
+        "split_fraction": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "the recycle's share; purge fraction 0.02 (design note §8.1)",
+          "role": "fixed",
+          "unit": "1",
+          "value": 0.98
+        }
+      },
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "splitter"
+    },
+    {
+      "id": "NH3",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "product_sink"
+    },
+    {
+      "id": "purge",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "product_sink"
+    }
+  ],
+  "parent_revision": null,
+  "provenance": {
+    "actor": "M02 WO-9 (build lane)",
+    "notes": "registered test case C1-LOOP-M02-v1, stand-in reactor; the real-reactor document differs only in the reactor instance's model (WO-12)",
+    "operation": "create",
+    "source_references": [
+      "docs/design/M02-pymrm-adapter.md §8.1"
+    ],
+    "timestamp": "2026-10-09T00:00:00Z"
+  },
+  "revision_id": "C1-LOOP-M02-v1",
+  "schema_version": 1,
+  "specifications": [
+    {
+      "id": "SPEC-S1-n-H2",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "H2",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.74625
+    },
+    {
+      "id": "SPEC-S1-n-N2",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "N2",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.24875
+    },
+    {
+      "id": "SPEC-S1-n-NH3",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "NH3",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.0
+    },
+    {
+      "id": "SPEC-S1-n-Ar",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "Ar",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.002
+    },
+    {
+      "id": "SPEC-S1-n-CH4",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "CH4",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.003
+    },
+    {
+      "id": "SPEC-S1-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 300.0
+    },
+    {
+      "id": "SPEC-S1-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000000.0
+    },
+    {
+      "id": "SPEC-S3-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S3",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 673.15
+    },
+    {
+      "id": "SPEC-S5-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S5",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 253.15
+    },
+    {
+      "id": "SPEC-S5-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S5",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000000.0
+    },
+    {
+      "id": "SPEC-S6-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S6",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 253.15
+    },
+    {
+      "id": "SPEC-S6-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S6",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000000.0
+    }
+  ],
+  "title": "C1-LOOP-M02-v1 (stand-in reactor)"
+}

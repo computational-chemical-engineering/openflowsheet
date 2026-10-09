@@ -9,19 +9,19 @@ This file states the **current position**, not the history that produced it. Clo
 the P00, P01 and P02 handoffs, reviews and findings — is in `docs/progress-archive.md`, which is
 not read at session start.
 
-Last updated: 6 October 2026.
+Last updated: 8 October 2026.
 
 ## Start here
 
 | | |
 | --- | --- |
-| Branch | `main` (T07 merged 2026-09-28; T06 merged 2026-09-27; T05b merged 2026-09-25; T05 merged 2026-09-25; T04 and T03 merged 2026-09-24). v0.0.0 is tagged at `9a4391f`. `wp/T06-refs` pushed, not merged |
+| Branch | `main`: v0.2's **M01 merged 2026-10-08 (`997c7da`)** and **M06 merged 2026-10-08 (`7473f35`)**; T07 merged 2026-09-28 and earlier packages before. Work branches: `wp/M02`, `wp/M03`, `wp/M04`, `wp/M05`, `wp/V02-alpha-gate` (worktrees under `.claude/worktrees/`) |
 | Name | **OpenFlowsheet** (R-149, 2026-10-02): distribution, import package and console script `openflowsheet`; environment variables `OPENFLOWSHEET_*`. Install `.venv/bin/pip install -e . --no-deps`; run `openflowsheet solve SYN-001-nominal --out ./bundle` (or `python -m openflowsheet.application.cli …`). Records before 2026-10-02 say `process_runtime` / `process-runtime` |
-| Gate | `PATH=.venv/bin:$PATH ./scripts/check.sh` — ruff, ruff format, mypy strict, pytest. Last run green, **4245 tests** (3141 before T06) |
+| Gate | `PATH=.venv/bin:$PATH ./scripts/check.sh` — ruff, ruff format, mypy strict, pytest, Node web tests (and the browser module when Chromium is present). Last run on main with M06 merged: green, **7717 passed, 52 skipped**, Node 92/92. In a worktree: `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh` |
 | Done | P00–P03 `tested` and merged — **Phase 0 complete**. **K01 `tested`** and reviewed by Fable, findings closed. **K02 `tested`**, reviewed by Fable, all findings closed including the row-shape consolidation. ADR 0001, 0002, 0003, 0006 and 0008 accepted and applied |
-| Next | **v0.2 halted for budget 2026-10-06** — the position is in `docs/V02_STATE.md` (read it first). Milestone 0 done (ci.yml pins, T08 close-out review → spec Amendment R8, R-152 K_NH₃, R-153 order). M06 design done on `wp/M06`; M01 spec and M06 WO-4…6 are WIP branches. Local `main` is not pushed. 0.1.1 is released |
+| Next | **v0.2 in progress** — the position is `docs/V02_STATE.md` (read it first); history in `docs/V02_DECISIONS.md`. M01 and M06 `tested`, design-lane reviewed and merged. M03 complete, waits for Frank's N1 (licences of the optional `nlp` extra) and CI. M02 WO-7…13 in progress (WO-1…6 done; G10 passes, A47 bitwise). M04 spec done, WO-1…3 built. M05 in design. `0.2.0a1` gate being specified. 0.1.1 is released |
 | Not done | No package is `reviewed` — that needs human numerical and process-modeling sign-off, which no agent may claim. Nothing is empirically validated |
-| Pushing | You authorised pushing and merging at milestones on 2026-09-17; that is the standing instruction being followed. `main` is current on `origin/main` |
+| Pushing | Frank authorised pushing to `origin` on 2026-10-08; `main` is pushed at milestones |
 
 **Environment.** `.venv` from `requirements.lock`. The two backend spikes live in `.venv-casadi`
 and `.venv-pyomo`, git-ignored and rebuilt by `scripts/build-backend-envs.sh`;

@@ -78,6 +78,7 @@ PH_TYPE_ENERGY_ROWS: Final[Mapping[str, str]] = {
 PRODUCT_MOLE_ROWS: Final[Mapping[str, str]] = {
     "syn001.tp_flash": "FLASH-mole",
     "syn001.ph_flash": "PHF-mole",
+    "c1.tp_flash": "C1FL-mole",
 }
 
 
@@ -174,6 +175,8 @@ class DormantOutlet:
 DORMANT_OUTLETS: Final[Mapping[str, tuple[DormantOutlet, ...]]] = {
     "syn001.liquid_pump": (DormantOutlet("outlet", "inlet", "PUMP-energy", None),),
     "syn001.adiabatic_mixer": (DormantOutlet("outlet", "inlet", "MIX-energy", None),),
+    # M02 design note §14.2 B13: the C1 mixer's vapour outlet.
+    "c1.adiabatic_mixer": (DormantOutlet("outlet", "inlet", "C1MIX-energy", None),),
     "syn001.heat_exchanger": (
         DormantOutlet("hot_outlet", "hot_inlet", "HX-energy-hot", "hot", "hot_outlet_temperature"),
         DormantOutlet(

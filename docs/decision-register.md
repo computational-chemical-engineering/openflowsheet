@@ -5256,6 +5256,11 @@ Provider-generic rewrites of SYN-001's functions: they put W1.d's bitwise pairin
 **Watch for.** A PR check that silently passes where the provider refused. A SYN-001 certificate byte that moves
 (G2 (ii)).
 
+> **Amended 2026-10-09 (§14.3 C2, C4; R-281):** confirmed as built (D39). The alias certificates' pressure shift
+> reads the fresh provider's domain; qualifications and statements name the fresh provider; the provider is chosen
+> from `component_basis(revision)` before the guard; a refused `.dew` flash is `unsupported` (`dew_<status>`). The
+> derivative witness skips exactly-zero `pr-c1-v1` stream flows, and records that it did (R-281).
+
 ---
 
 ## R-258 — At exact dormancy a PR vapour block takes the ideal-gas limit; a pure-NH₃ liquid block takes a unit probe, falling back to the vapour root
@@ -5308,6 +5313,248 @@ liquid.
 manifest key.
 
 ---
+
+## R-280 — The C1 builders join `MODEL_BUILDERS` in one commit at the end of WO-9; until then a binder-only C1 registry is an interim that may not merge
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D36 |
+| Normative text | design note §14.3 C1 |
+| Evidence | joining in WO-8 fails 13 registry and coverage tests in 10 files (D36); they need registered C1 corpus revisions, which WO-9's loop creates |
+| Affected packages | M02 (WO-9), M06 (W27 snapshot, R-176), T08 envelope (R-193) |
+
+**Decision.** `C1_MODEL_BUILDERS` and `C1_MODEL_SIGNATURES` are read by the binder only, through WO-9. WO-9's last
+commit moves all eight entries into `MODEL_BUILDERS` and `MODEL_SIGNATURES`. The same commit adds:
+- registered C1 corpus revisions, so that the coverage tests are met by evidence;
+- the pinned surface fixtures, re-taken with a decomposition test (the `c1.` entries stripped = pre-M02);
+- the envelope listing, with the stand-in marked synthetic;
+- the W27 snapshot, re-pinned with a design-lane mapping amendment.
+
+There is no merge and no `tested` manifest while the interim registry exists.
+
+**Rejected alternatives, and why.** A permanent split registry: the binder would accept models that `list_models`
+does not name. Joining in WO-8: the coverage tests would need exemptions.
+
+**Watch for.** The interim surviving into a merge. Coverage tests exempted instead of satisfied.
+
+---
+
+## R-281 — The certificate's derivative witness does not difference exactly-zero `pr-c1-v1` stream-flow columns, and says so in the certificate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D40 (ratifies `d9c7cd4` with a narrower scope and a record) |
+| Normative text | design note §14.3 C2; ADR 0013 Amendment 3 item 7 |
+| Evidence | D40: at such columns the stencil leaves the provider's domain (negative flow, `light_gas_in_liquid`, `no_liquid_root`), so every C1 flash was UNVERIFIED; R-258's conventions have no derivative to compare |
+| Affected packages | M02, K04 (revision path only) |
+
+**Decision.**
+- **Scope.** Only `<S>.n.<c>` columns exactly `0.0` at the witnessed state, on a `pr-c1-v1` basis. Totals and other
+  columns are still differenced.
+- **Record.** Both witness checks carry the qualification `"not differenced: <k> exactly-zero pr-c1-v1 stream-flow
+  columns (design note §14.3 C2)"`. The certificate carries the limitation `derivative_witness_partial`, listing the
+  columns.
+- **The claim, restated.** The witness covers the differentiable columns. The excluded entries are checked by G7 (h)
+  and M01's derivative assertions, not by the certificate.
+
+**Rejected alternatives, and why.** The full stencil: it fails for a mathematical reason, not a state defect. A
+forward stencil: it needs an unregistered tolerance, and at dormant columns it would test a convention against a
+derivative that does not exist. An unrecorded exclusion: that would be a hidden weakening.
+
+**Watch for.** The exclusion widened to other columns or bases. A certificate whose witness was partial but which
+carries no `derivative_witness_partial` limitation.
+
+---
+
+## R-282 — A `pr-c1-v1` flash near its dew point certifies UNVERIFIED: a registered near-dew window, not a widened τ_dew
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D41 |
+| Normative text | design note §14.3 C3; `c1.tp_flash` manifest limitation |
+| Evidence | D41: at F4, rcond_1 ≈ 5.9e-19 (E and Ldef proportional on (L, l_NH₃)); TWO_PHASE side rcond_1 ≈ 7e-3 L/n_tot (δ = 1e-8, 1e-7, 1e-5 measured); SYN-001's `DEW_POINT_LIMITATION` is the same fact |
+| Affected packages | M02, M05, M07 (a flash run near its dew point) |
+
+**Decision.** At the dew point the certificate is UNVERIFIED with RANK_DEFICIENT, which is asserted as the
+registered expectation. On the TWO_PHASE side the window is `L/n_tot < ~1.4e-6`: the certificate is VERIFIED from
+there, and its verdict is promised (not near threshold) from about 1.4e-5. The VAPOR side is measured by G7 (c) and
+stated in the manifest. The loop's flash, at `L/n_tot ≈ 0.05`, is about four decades clear.
+
+**Rejected alternatives, and why.** Widening τ_dew (it would read genuinely two-phase states as vapour). A
+reformulated equilibrium row near the dew point (a new formulation for a case the loop never visits).
+
+**Watch for.** An operating point (M05, M07) inside the window reported as a solver failure rather than this
+limitation.
+
+> **Amended 2026-10-09 (§14.4 D1, build log D44):** the thresholds above (from τ_ill alone) are withdrawn. As
+> measured at F4, `rcond_1 = 4.23e-4 |δ|` on both sides. The window ends where the last of three registered limits
+> clears:
+> - τ_ill: L/n_tot ≈ 1.45e-6;
+> - the screen's absolute limit: |δ| ≈ 2.48e-4;
+> - the witness stencil: TWO_PHASE L/n_tot ≈ 3.37e-5.
+>
+> So the certificate is VERIFIED from |δ| ≈ 2.5e-4 on the VAPOR side and from L/n_tot ≈ 3.4e-5 on the TWO_PHASE
+> side, at the measured state. No limit is relaxed.
+
+---
+
+## R-283 — W27 maps the six C1 units as their SYN-001 namesakes with no token, both C1 reactors to no function, and `pr-c1-v1` to `cubic_pr`
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | Design lane (`specifier`), M06, W27 registration Amendment 2 |
+| Normative text | `docs/derivations/M06-W27-registration.md` §21.1–§21.2; `benchmarks/m06/openidaes450/registration.json#/units/model_functions`, `#/routes/provider_methods` |
+| Evidence | GC-MODEL-1/2, GC-A2-1/2/5/6; W27-A16-a…h; `wp/M02` `2587f14` signatures and manifests |
+| Affected packages | M02 (join commit, R-280 (d)), M06, M07 |
+
+**Decision.** `c1.feed_source`, `c1.product_sink`, `c1.adiabatic_mixer`, `c1.tp_heater`, `c1.tp_flash`, `c1.stream_splitter`
+perform their SYN-001 namesakes' functions and offer no token. `c1.reactor` performs no function (`fixed_design_reactor`:
+one pinned geometry, catalyst, coolant and kinetics no case JSON can establish); `c1.reactor_standin` performs none
+(`synthetic_stand_in`, R-199). `pr-c1-v1` is `cubic_pr`; its vapour-only light gases are a per-component phase admission.
+
+**Rejected alternative, and why.** Phase tokens for the vapour-only heater and mixer and the LIQUID-less flash (no case
+option expresses them; port phases are unchecked by registration, as for SYN-001's liquid-only units; GC-A2-5 shows they
+separate no archive case). `c1.reactor` as `kinetic_reactor` (it is not a CSTR) or a new `plug_flow_reactor` function
+(re-keys a default-none archive key for no class change). A separate `cubic_pr_vapour_only` method (duplicates W27-R20).
+
+**Watch for.** A sampled candidate whose C1 units meet a liquid or a light-gas-free feed: §7's scripted build catches it.
+
+---
+
+## R-284 — W27 judges units on the serving route's models, and refuses snapshots that rule cannot judge
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | Design lane (`specifier`), M06, W27 registration Amendment 2 |
+| Normative text | registration §21.3 (W27-R62, W27-R24 (d)–(e)) |
+| Evidence | GC-A2-4 (no class changes at the hypothetical v0.2; `ngfc_atr`'s reasons change); W27-A16-c/d, A17–A19 |
+| Affected packages | M06 (WO-16h), M07 |
+
+**Decision.** When one route serves a case's single method group, its units are judged against that route's `model_ids`
+only (`units_judged_on`); otherwise against every model, as before. A snapshot with `routes_per_revision ≠ 1`, two
+routes of one method, a route model not among the models, or a model on no route is refused.
+
+**Rejected alternative, and why.** Units on every model whatever the route: a revision binds on one basis, so that counts
+a composition across bases as coverage (W27-A16-c). Evaluating each route and keeping the best: needless while a
+method has one route, which the refusal now makes explicit.
+
+**Watch for.** A second route of an existing method (a second PR provider): an amendment, not a code change.
+
+---
+
+## R-285 — W27's v0.2 snapshot reading is chosen by what the binder exposes (`SELECTABLE_BASES`, `MODEL_BASES`), not by version
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | Design lane (`specifier`), M06, W27 registration Amendment 2 |
+| Normative text | registration §21.4 (W27-R63), §21.8 J1–J6 |
+| Evidence | `wp/M02` `2587f14`: `__version__` `0.1.1`; `record_source` selects the basis; SYN-001's builders bind on the C1 basis (probe of §21.4) |
+| Affected packages | M02 (join commit), M06 (WO-16h), M07 |
+
+**Decision.** `bases-v1` reads one route per basis of `SELECTABLE_BASES`, its models from `MODEL_BASES` (the table the
+binder's own `model_unsupported` refusal reads); the 0.1.1 reading applies only to a binder without `basis_provider`;
+anything else refuses. Whether SYN-001's builders bind on the C1 basis is M02's (F-A2-1; default no); W27 reads either.
+
+**Rejected alternative, and why.** Readings keyed by version (the joined binder still says 0.1.1 and would be read as one
+SYN-001 route, silently). Probing every (model, basis) with a minimal revision (fragile, slow). Listing `c1.*` on
+`pr-c1-v1` by prefix (a hand list; wrong if SYN-001's builders stay unguarded).
+
+**Watch for.** The join's live snapshot differing from both registered expectations (J3): stop, amend.
+
+---
+
+## R-286 — Ruling on W27 Amendment 1: the erratum, W27-R60 and W27-R61 ratified; W27-R59 amended so a matched item is never contradicted
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | Design lane (`specifier`), M06, W27 registration Amendment 2, on the M06 review F5 |
+| Normative text | registration §21.6 |
+| Evidence | `access_report.json` (9 inaccessible assets); GC-SCORE-1 (13 cases with an alias naming an available unit and an unavailable reason); GC-SCORE-2; `scorer.judge_limitation` on `ngcc_gas_turbine_subflowsheet` (`Mixer`: matched and contradicted, as built) |
+| Affected packages | M06 (WO-16h scorer, before WO-17's first canary) |
+
+**Decision.** "Nine" stands. A quantity at several time points is unjudged; a reference component the product stream
+lacks is 0 mol/s. W27-R59 holds with one addition: an item that matches a recorded reason (W27-R40) is not contradicted.
+Scorer states W27-S19, S20.
+
+**Rejected alternative, and why.** Ratifying W27-R59 as built: in 13 cases a correct, matching item would also count as a
+semantic error. Dropping the lenient matching instead: W27-R40 is lenient on purpose (R-177).
+
+**Watch for.** Semantic-error counts computed before WO-16h: re-score; no outcome class moves.
+
+---
+
+## R-287 — The coupled reactor's initial iterate is not a revision parameter: `coupling_initial.*` is refused, and w₀ is the variant's
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D46 |
+| Normative text | design note §14.4 D2 (amends the WO-9 row) |
+| Evidence | `ModelSignature` has no optional slot, and `list_models`' signature schema is closed and frozen (D46) |
+| Affected packages | M02, M05 (warm-started coupling) |
+
+**Decision.** `parameter_unsupported(<U>.coupling_initial.X | .dT)`; w₀ is the variant's `coupling.initial`.
+Warm-starting the outer loop belongs to ADR 0024's compatible warm starts.
+
+**Rejected alternatives, and why.** An `optional` signature member, which would need an ADR 0019 amendment and a
+surface move. A start point is solver state (ADR 0020 D7), and it would split one model's identity by its start.
+
+**Watch for.** A start point smuggled in as a "parameter" of any external model.
+
+---
+
+## R-288 — Each model binds on its own component basis only; `MODEL_BASES` is the table the binder's refusal and W27 both read
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, answering W27 Amendment 2's F-A2-1 (Q8) |
+| Normative text | design note §14.4 D3; `docs/derivations/M06-W27-registration.md` §21.8 J1 |
+| Evidence | a probe at `2587f14`: SYN-001's feed→sink and splitter bind and traverse on the C1 basis while their manifests declare SYN-001's provider and reference convention |
+| Affected packages | M02 (the join), M06 (W27-R63), every later basis |
+
+**Decision.**
+- In `MODEL_BASES`, each `syn001.*` model is on SYN-001's basis and each `c1.*` model on the C1 basis.
+- `set(MODEL_BASES) == set(MODEL_BUILDERS)`.
+- The binder's `model_unsupported(<id>)` pass reads the table, with a hint naming the other basis's same-function
+  model. The per-builder basis checks are removed.
+
+**Rejected alternatives, and why.** SYN-001's models binding on both bases: a mismatch between the manifest's declared
+convention and the streams (ADR 0001 D5.2 in kind). Per-builder checks: a second source of truth that W27 cannot
+read.
+
+**Watch for.** A model added to `MODEL_BUILDERS` without a `MODEL_BASES` row.
+
+---
+
+## R-289 — The C1 reactor's verifier entries: the verifier's own ν, no specification check, B16's vapour refusal in its evaluate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, confirming the build lane's D45 and D47 |
+| Normative text | design note §14.4 D4 |
+| Evidence | no revision states a C1 reactor's ν; X̂ and ΔT̂ are the coupled route's inputs |
+| Affected packages | M02, K04 (revision table) |
+
+**Decision.**
+- Material balance `n_in + ν ξ − n_out`, with `verify/pr_c1.REACTION_NU`, compared as data with `models.c1.NU`.
+- SYN-001's reactor energy rule.
+- No specification check: X̂ and ΔT̂ are judged by the residual rows and by §4.4's coupling checks.
+- The temperature row is `offset_row(T_in, T_out, dT)`, the exact negation of the stated form.
+- The extent column is `U.xi`.
+
+**Rejected alternatives, and why.** `nu.<c>` as required revision parameters (it changes the case and the signature).
+A specification check that reads the compiled constants (not independent).
+
+**Watch for.** The verifier importing the unit's ν.
 
 ---
 

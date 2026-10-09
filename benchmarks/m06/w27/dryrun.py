@@ -10,7 +10,7 @@ committed checkout:
 3. three canaries — stub sessions through the production harness, as WO-17's real ones will be;
 4. the preflight P1–P8 against that campaign directory (P1 cannot pass until Frank approves the
    spend; it is reported, not bypassed);
-5. the eighteen scorer states (`stubs.run_states`) and G15's judgement of them;
+5. the twenty scorer states (`stubs.run_states`; S19, S20 by Amendment 2) and G15's judgement;
 6. W27-A23 on every harness run's `run.json`.
 
 Everything is written under `--out` (git-ignored `evidence/**/artifacts/`); `summary.json` holds

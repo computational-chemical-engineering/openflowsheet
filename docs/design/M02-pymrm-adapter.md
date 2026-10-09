@@ -374,7 +374,7 @@ member removed (`scripts/t07_schema_fixtures.py`'s pattern).
 ### 4.1 The embedded unit `C1Reactor` (both `c1.reactor` and `c1.reactor_standin`)
 
 Unit `U`, components (H₂, N₂, NH₃, Ar, CH₄), ν = (−3, −1, 2, 0, 0). Owned variables: outlet n (5), T_out, P_out, ξ
-(`U.extent`), Q (the duty, `duty_id(U)`). Parameters (pinned inputs, in `constants_sha256`): `U.nu.<i>` and the two
+(`U.extent`; built as `extent_id(U)` = `U.xi`, §14.4 D4), Q (the duty, `duty_id(U)`). Parameters (pinned inputs, in `constants_sha256`): `U.nu.<i>` and the two
 **coupling parameters** `U.coupling.X` (dimensionless) and `U.coupling.dT` (K). N_tubes is **not** a parameter of the
 inner problem (no row depends on it); it is a builder-read instance pin carried in the unit's configuration for the
 experiment request.
@@ -694,7 +694,7 @@ phase logic, scaling, certificates or replay identity). "Opus" = `opus-engineer`
 | **WO-6** | Opus | `experiment` job operation (§3.5): schema branch, admission, body, outputs, events, `get_job_result`; emits the valid `experiment_body` fixture | WO-4 | G5 entire |
 | **WO-7** | Opus, **R** | C1 binding by `record_source`; per-provider components and molecular weights; `InstanceView.model_version/artifact_ref`; `model_variant_mismatch` | WO-2 | G2 (T07 corpus and SYN-001 identities byte-identical); G6 (a) |
 | **WO-8** | Opus, **R** | PR units (§8), blocks over `pr-c1-v1`, lifted-split / zero-flow / dormancy registrations, manifests, the six §7 tests; as amended by §14.2, in items WO-8.1–WO-8.5 | WO-7 | G7 (a)–(e), (g)–(k); G2 as amended (G7 (f) moves to WO-9) |
-| **WO-9** | Opus, **R** | `C1Reactor` (§4.1) and the two `MODEL_BUILDERS` entries (pins `n_tubes`, optional `coupling_initial.X`, `coupling_initial.dT`); envelope `unit_models` lists `c1.reactor` and, as synthetic, `c1.reactor_standin`; M01.A49's binder clause replaced by G8 (e); the reactor's `MODEL_CHECKS` / `REACTING_MODELS` entries, its duty row on §14.2 B17's vapour blocks | WO-8 | inner solve of `C1-LOOP-M02-v1` at fixed w converges from `traversal-G0-v1` and verifies; G7 (f) |
+| **WO-9** | Opus, **R** | `C1Reactor` (§4.1) and the two `MODEL_BUILDERS` entries (pins `n_tubes`; the optional `coupling_initial.X`, `coupling_initial.dT` are refused, §14.4 D2); envelope `unit_models` lists `c1.reactor` and, as synthetic, `c1.reactor_standin`; M01.A49's binder clause replaced by G8 (e); the reactor's `MODEL_CHECKS` / `REACTING_MODELS` entries, its duty row on §14.2 B17's vapour blocks | WO-8 | inner solve of `C1-LOOP-M02-v1` at fixed w converges from `traversal-G0-v1` and verifies; G7 (f) |
 | **WO-10** | Opus, **R** | Coupling driver (§4.2–4.4), route `revision_coupled`, outcomes, certificate checks and limitations, `external-coupling.json`, R3 class, recorded backend for `reproduce` (§7.2); emits the valid `coupling` fixture | WO-4, WO-9 | G8 entire |
 | **WO-11** | Opus, **R** | Replacement check and promotion (§6.2–6.3): `application/replacement.py`, commit/preview integration, api-error code, report artifact and provenance hash, `EVIDENCE_OPERATIONS`; emits the report fixture | WO-9 | G9 entire |
 | **WO-12** | Opus (runs) | Opt-in evidence with the real reactor: G10, G11 (Q-F4 17 points, Q-F5 flow points, ΔP ramp, timing), G12 (real loop: solve, replay, live rerun); records under `benchmarks/m02/` with `judged: false`; timeout re-registration per §5.2 | WO-5, WO-10, WO-11 | G10–G12 numbers recorded; any inside-domain failure handled by §10.3's rule |
@@ -758,7 +758,7 @@ Each gate is decided by a recorded number or an exact assertion. "Default gate" 
   `fail`, certificate `FAILED`).
   (f) Scaling: at the stand-in loop's solution, the scaled Jacobian's `rcond_1` ≥ 10 × τ_ill (recorded); if not, a
   C1 nominal set is proposed to the design lane — not chosen by the build lane. *(Measured at WO-9, §14.2.)*
-  (b), (c) as extended and (g)–(k): §14.2 "Gates as amended".
+  (b), (c) as extended and (g)–(k): §14.2 "Gates as amended"; (a) and (c) as amended again by §14.3 C3 and "G7 (a) amended".
 - **G8 Coupled route with the stand-in.** On `C1-LOOP-M02-v1` (stand-in): (a) `CONVERGED` at k = 1 with exactly two
   experiments; certificate `VERIFIED`; both coupling checks `pass`, the ξ check's value ≤ 10⁻¹² (roundoff of the
   per-tube mapping and the projection) and the T check's exactly 0.0; (b) flowsheet element balance
@@ -1409,3 +1409,198 @@ The TWO_PHASE root set is unchanged, and no closed form, provider behaviour, reg
 moves. Nothing in F4 needs one: every tolerance it uses is already registered (B15).
 
 **Risks added to §11:** K14 to K18.
+
+### 14.3 Fourth round, 2026-10-09 (`wp/M02` @ `8734905`: WO-8 built; gate green, 8081 passed; build log D34–D42)
+
+WO-8 is built against §14.2. G2 holds: the 50 T07 corpus revisions dump byte-identically at `bfbad26`, `bd861bd`
+and the head; `SPLITS_REPR` is unchanged; only B13's four tests were edited. G7 (b), (d), (e) and (g)–(k) pass,
+and the policy hash is unchanged. D34, D35 (CasADi-legal block ids), D37 and D38 are ratified as built. Four
+questions came back. Register R-280 to R-282.
+
+**C1 (D36) — The C1 builders join `MODEL_BUILDERS` before M02 is `tested`. The binder-only registry is an interim
+that ends with WO-9 (R-280).**
+
+`list_models` is the discovery surface. A binder that accepts model ids `list_models` does not name contradicts it.
+D14/N4 intend the C1 models, the stand-in among them, to be listed, and the v0.2 envelope (R-193, T08.A20) and W27
+(R-176) need them. So:
+- **Interim (now to the end of WO-9).** `revision_binding.C1_MODEL_BUILDERS` and `C1_MODEL_SIGNATURES` are
+  binder-only. WO-9 adds `c1.reactor` and `c1.reactor_standin` there.
+- **The join is one isolated commit, WO-9's last.** It moves all eight entries into `MODEL_BUILDERS` and
+  `MODEL_SIGNATURES`, and deletes the C1 registry. It also does four things:
+  - (a) It registers C1 corpus revisions: `C1-LOOP-M02-v1` with the stand-in, plus G7's flash, heater and mixer
+    revisions. The coverage tests (T07 r6 hints, w5c signatures, T08 A14, E1/E2, A33) are then met by evidence;
+    no builder is exempted.
+  - (b) Every pinned `list_models` and surface fixture is re-taken, with a decomposition test: with the `c1.`
+    entries stripped, each equals its pre-M02 fixture (R-234's method).
+  - (c) The v0.2 envelope lists the eight models, the stand-in as synthetic.
+  - (d) M06's W27 registry snapshot is re-pinned with a mapping of the `c1.*` units by function. R-176 refuses
+    unmapped ids, so that mapping is a design-lane amendment to the W27 table, requested before the join.
+- No `wp/M02` merge and no M02 `tested` manifest while the interim registry exists.
+
+*Rejected.*
+- A permanent second registry: the surface would understate what the server binds.
+- Joining now: the coverage tests need the C1 loop corpus that WO-9 creates, so joining now would force
+  exemptions.
+
+**C2 (D40) — The certificate's witness skips exactly-zero `pr-c1-v1` stream flows. Ratified, narrowed and recorded
+(R-281).**
+
+The certificate's derivative witness (K04 §4.8) is a finite-difference Jacobian check, and B17's *Consequence*
+covers it. At an exactly-zero stream-flow column of a `pr-c1-v1` revision there is no two-sided derivative to
+witness:
+- the backward point is a negative flow, which the provider refuses;
+- the forward point is light gas in the pure liquid, which is refused, or the column is B17's convention for a
+  dormant stream;
+- for an absent component of a flowing stream (for example the makeup's NH₃), the derivative exists one-sided,
+  but a central stencil cannot reach it.
+
+So **the exclusion does weaken the witness's claim, and it must be visible.** The witness then certifies the
+Jacobian on every differentiable column. The excluded entries are B17's conventions, exact coefficients of linear
+rows, or the provider's analytic derivatives at infinite dilution (M01 §4.6). G7 (h) and M01's derivative
+assertions check them, the certificate does not. A regularity verdict at such a root is a statement about the
+declared Jacobian. Amendments to `d9c7cd4`:
+- **Scope.** Only stream component-flow columns (`<S>.n.<c>`, `stream_variables`) that are exactly `0.0` at the
+  witnessed state, and only for a `pr-c1-v1` basis. Totals (`<S>.N`), duties and all other columns keep the stencil;
+  perturbing them makes no provider call.
+- **Record.** No schema change is needed.
+  - Both witness checks carry `independence_qualification` = `"not differenced: <k> exactly-zero pr-c1-v1
+    stream-flow columns (design note §14.3 C2)"`.
+  - The certificate carries one limitation, `{"kind": "derivative_witness_partial", "columns": [<sorted ids>],
+    "reason": "pr_c1_zero_flow_columns"}`. `limitations` items are open objects with a required `kind`.
+  - When nothing is excluded, neither is written, so SYN-001 certificates do not move (G2 (ii)).
+
+*Rejected.*
+- Keeping the full stencil: every C1 flash would be UNVERIFIED for a mathematical reason, not a defect of the state.
+- A forward stencil for one-sided columns: its O(step) truncation error needs a tolerance the check policy lacks,
+  and at dormant columns it would test the convention against a derivative that does not exist.
+
+**C3 (D41) — The dew point is a bifurcation, so a registered near-dew limitation replaces G7 (c)'s "VERIFIED"
+(R-282).**
+
+*(Thresholds and G7 (c)'s δ = 1e-4 clause superseded by §14.4 D1 as measured.)*
+
+At the dew point, E's and Ldef's rows are proportional on (L, l_NH₃), which is §14.2's prediction ("singular
+exactly at the dew point") and SYN-001's `DEW_POINT_LIMITATION`. The measured law on the TWO_PHASE side at F4 is
+`rcond_1 ≈ 7e-3 · L/n_tot`. With τ_ill = 1e-8:
+- **UNVERIFIED** (`rank_limitation`) for `L/n_tot` below about 1.4e-6.
+- **VERIFIED** from there.
+- **Promised** (not near threshold, ADR 0007 D2.4) from about 1.4e-5.
+
+The VAPOR side is ∝ undersaturation, and is measured below. `c1.tp_flash`'s manifest states the window,
+analogous to SYN-001's `DEW_POINT_LIMITATION`. The text: "A flash whose solution lies within the near-dew window of
+its dew point is certified UNVERIFIED with a rank limitation, because the equilibrium and liquid-total rows are
+singular at the dew point: on the TWO_PHASE side the window is L/n_tot < 1.4e-6 at the measured state (rcond_1 ≈
+7e-3 L/n_tot), and on the VAPOR side it is as measured by G7 (c). τ_dew does not move."
+
+*The loop.* The flash runs at 253.15 K with `L/n_tot` ≈ 0.05–0.07, so this mode gives `rcond_1` ≈ 4e-4, four
+decades above τ_ill. G8 and G12 record the flash's `L/n_tot` and the certificate's `rcond_1`.
+
+*G7 (c) as amended.* The feed is vapour at 300 K, flashed at 268.15 K and 10⁷ Pa.
+- At F4: CONVERGED, VAPOR, `.dew` = 0.0, and UNVERIFIED with RANK_DEFICIENT, **asserted as the registered
+  expectation** (the strict xfail goes).
+- At F4 × (1 + δ):
+  - δ = 1e-5: UNVERIFIED (measured);
+  - δ = 1e-4: VERIFIED, with `rcond_1` near threshold;
+  - δ = 1e-3: VERIFIED, no near-threshold flag.
+- At F4 × (1 − δ), for δ = 1e-6, 1e-4 and 1e-2: record the VAPOR-side law and the δ from which the certificate is
+  VERIFIED, and put it in the manifest's statement.
+- If δ = 1e-3 is not VERIFIED, the work stops and goes to the design lane.
+
+**C4 (D39) — All confirmed. None is a relaxed check.** Each replaces a SYN-001 constant that was wrong on a C1 revision
+with the revision's own provider:
+- (a) The alias certificates' shifted pressure is checked against the fresh provider's domain. Before, every C1
+  alias check was `unsupported`; now it is evaluated and can fail.
+- (b) Qualifications and statements name the provider actually used ([A09]).
+- (c) The provider is selected from `component_basis(revision)` before the guard, and checked equal to `view.basis`.
+- (d) A `.dew` whose fresh flash is refused is `unsupported` (`dew_<status>`), which makes the certificate
+  UNVERIFIED; it is never a pass. A declared vapour that flashes LIQUID fails with value 1.
+
+**G7 (a) amended.** The C1 flash's inlet is declared vapour and its `Ḣ_in` is a vapour block (B12). So F1 and F11
+fed *at their own T* are two-phase feeds outside the unit, and the FAILED declared-port check is correct.
+
+The gate now feeds F1's and F11's compositions as vapour at 673.15 K, with the flash at their T and P. Its
+certificates are VERIFIED, as measured, and its agreement assertions are unchanged. It runs no Newton iteration,
+because the start is the exact split; the reactor-less loop exercises Newton.
+
+**What WO-9 needs:**
+- the reactor builders in the interim registry, then the join commit (C1);
+- the witness narrowing and its record (C2);
+- G7 (c) and the manifest statement (C3);
+- the W27 mapping amendment, requested from the design lane before the join.
+
+### 14.4 Fifth round, 2026-10-09 (`wp/M02` @ `33bf150`: WO-9 and R-281/R-282 built; gate green, 8106 passed; build log D43–D48)
+
+G2 holds (`659748576adb9730…`). R-281's skip counts change no verdict. `C1-LOOP-M02-v1` is registered and is VERIFIED
+at w₀ and at w*. G7 (f) is met: `rcond_1` = 1.42e-4, the flash's L/n_tot is 0.128, and the reactor inlet is inside
+the hard and data domains. D43 and D48 are ratified as built. Register R-287 to R-289; R-282 is amended.
+
+**D1 (D44) — The near-dew window is ratified as measured, and §14.3 C3's thresholds are withdrawn (R-282 amended).**
+
+C3 predicted the window from τ_ill alone. In fact three registered limits set it, and two of them bind before
+τ_ill. The law measured at F4 (268.15 K, 10⁷ Pa, n_tot 0.89 mol/s) is `rcond_1 = 4.23e-4 |δ|` on both sides; on
+the TWO_PHASE side that is `6.9e-3 L/n_tot`. The three limits, in the order they bind:
+
+| Limit | Binds at |
+| --- | --- |
+| τ_ill (relative) | L/n_tot ≈ 1.45e-6 |
+| the regularity screen's absolute limit, ‖J⁻¹‖₁ ≤ τ_min/(n ε) | \|δ\| ≈ 2.48e-4, on both sides |
+| the witness's central stencil (l_NH₃ under one step, 3e-5 mol/s) | TWO_PHASE δ ≈ 5.48e-4, L/n_tot ≈ 3.37e-5 |
+
+So the certificate is VERIFIED from |δ| ≈ 2.5e-4 on the VAPOR side, and from L/n_tot ≈ 3.4e-5 on the TWO_PHASE
+side.
+- `20e2a1b`'s manifest sentence is accepted with one addition: the window is stated "at the measured state", since
+  the law's coefficient depends on the state and its scales.
+- G7 (c) now asserts UNVERIFIED at δ = +1e-4 and δ = −1e-4, and VERIFIED at +1e-3 and −1e-2. It records both
+  bisected edges.
+- None of the three limits is relaxed. The witness's step stays K04's registered step. A flow column below one step is
+  not exactly zero, so R-281 does not apply to it.
+- The loop's flash, at L/n_tot = 0.128, is 3.8e3 times clear of the TWO_PHASE edge.
+
+**D2 (D46) — `coupling_initial.X` and `coupling_initial.dT` stay refused. w₀ is the variant's `coupling.initial`
+(R-287).**
+
+An initial iterate of the outer loop is solver state, not a model parameter. As a revision parameter it would put two
+revisions that differ only in their start point under different model identities. It would also bring a start point
+in from outside the solve, which ADR 0020 D7 forbids except by name. A later package that needs warm-started
+coupling, such as M05's trust region, uses ADR 0024's compatible warm starts. Accordingly:
+- the WO-9 row is amended;
+- the refusal `parameter_unsupported(<U>.coupling_initial.X)` stays asserted;
+- the frozen signature schema stays closed.
+
+*Rejected:* an `optional` member in `ModelSignature` and the `list_models` schema. That needs an ADR 0019 amendment
+and a surface move, for a value that is not a parameter.
+
+**D3 (F-A2-1) — Each model binds on its own basis only. `MODEL_BASES` is the binder's single source (R-288).**
+
+A `syn001.*` model on the C1 basis pairs a manifest that declares SYN-001's provider, domain and reference
+convention with `pr-c1-v1` streams. That is ADR 0001 D5.2's `REFERENCE_MISMATCH` in kind, even where no property
+call happens to be made (feed, sink, splitter). The rulings:
+- `MODEL_BASES` lists each `syn001.*` model on SYN-001's basis only, and each `c1.*` model on the C1 basis only.
+- `set(MODEL_BASES) == set(MODEL_BUILDERS)`.
+- The binder's existing `model_unsupported(<model id>)` pass refuses any instance whose model's bases do not include
+  the revision's. Its hint names the same-function model of the other basis.
+- The C1 builders' own `_c1_basis` refusal (D37 (d)) is removed, so the table is the only source.
+- W27-R63 reads the same table (J1). J3's expectation is the "SYN-001 only" branch.
+- Every T07 corpus revision is on SYN-001's basis, so G2 is unaffected, and G2 asserts it.
+- New test: a SYN-001 feed→sink and a SYN-001 splitter on the C1 basis are both refused.
+
+**D4 (D45, D47) — Confirmed.**
+- `offset_row(T_in, T_out, dT)`. Its residual is the exact negation of `T_out − T_in − ΔT̂`, with the same root,
+  check value magnitude and Newton step.
+- The extent column is `U.xi` (`extent_id`). §4.1's `U.extent` is a name in the text only.
+- The verifier keeps its own ν, compared as data with `models.c1.NU` by a test, as the band rule is (R-016).
+- The reactor has no specification check. X̂ and ΔT̂ are the route's inputs, so the verifier has no independent value
+  for them; they are judged by the residual rows and by §4.4's coupling checks against the experiment.
+- The reactor's evaluate applies B16's vapour refusal (R-289).
+
+**D5 — The join's list (R-280) is accepted, with these additions:**
+- *Precondition.* M06's WO-16h is on `main`, and `main` is merged into `wp/M02` before the join. J2 and J4 need the
+  WO-16h classifier.
+- *(a).* Two count tests pin the registry as a literal: `t05_w1b_revision`, which counts 13 models, and
+  `t08_kinetic_cstr`, which checks the CSTR is the 13th. They follow B13's rule: restricted to the `syn001.`
+  literal, unchanged, with an M02 test re-pinning all 21. Every coverage test is satisfied by a registered C1
+  corpus revision, never by an exemption.
+- *(b).* The served tool-list digest (A49/B50, R-234) must not move. `list_models`' schema is unchanged; only content
+  fixtures move, each with its decomposition test. A digest move stops the join and goes to the design lane.
+- *(d).* J1 is implemented as D3. If J3's live snapshot differs from the expectation, the join stops, as §21.8 says.
+- G2 (iv) gains the list of tests the join edits, each with its unchanged literal.

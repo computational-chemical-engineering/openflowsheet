@@ -17,11 +17,8 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT, load_yaml
-from t07_corpus import CORPUS
 from test_schemas_p01 import validator_for
 
-from openflowsheet.application.binding import Unbound
-from openflowsheet.application.revision_binding import MODEL_BUILDERS, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.c1 import COMPONENTS, ELEMENT_MATRIX, NU
@@ -337,26 +334,10 @@ def test_a49_every_ok_result_is_labelled_synthetic(inlet: StreamState) -> None:
     assert result.as_document()["identity"]["synthetic"] is True
 
 
-def test_a49_the_standin_is_not_bound_and_a_revision_naming_it_is_refused() -> None:
-    """A49's binder clause, as M02 supersedes it (design note §6.1, §10.1 G8 (e); ADR 0034 D9;
-    R-231): the stand-in is variant-backed, so an instance naming it must pin
-    `standin-x025-v1` by id and SHA-256 (`model_variant_mismatch` otherwise, M02 WO-7). Until
-    M02 WO-9 adds its builder, a pinned instance is still `model_unsupported`; G8 (e) replaces
-    this test then."""
-    from openflowsheet.adapters import variants
-
-    assert MODEL_ID not in MODEL_BUILDERS
-    document = CORPUS["SYN-001-nominal"]()
-    (heater,) = (i for i in document["instances"] if i["id"] == "heater")  # T08 U02/U04's path
-    heater["model"]["id"] = MODEL_ID
-    refused = bind_revision_flowsheet(document)
-    assert isinstance(refused, Unbound)
-    assert (refused.kind, refused.detail) == ("unsupported", "model_variant_mismatch(heater)")
-    heater["model"]["version"] = "standin-x025-v1"
-    heater["model"]["artifact_ref"] = variants.registry()["standin-x025-v1"]
-    refused = bind_revision_flowsheet(document)
-    assert isinstance(refused, Unbound)
-    assert (refused.kind, refused.detail) == ("unsupported", f"model_unsupported({MODEL_ID})")
+# A49's binder clause ("`MODEL_BUILDERS` has no key `c1.reactor_standin`") is superseded by ADR 0034
+# D9 and replaced by M02's G8 (e) (design note §10.1 G2, G8 (e); register R-231):
+# tests/test_m02_wo9_reactor.py::test_g8e_the_stand_in_binds_and_says_synthetic_everywhere. Its
+# label clauses stand, above.
 
 
 # -- A51: boundary paths beyond A30 (Amendment 1, §8.12) -------------------------------------------

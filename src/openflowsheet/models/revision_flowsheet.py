@@ -69,6 +69,7 @@ __all__ = [
     "RevisionView",
     "canonical_components",
     "component_basis",
+    "selectable_bases",
     "configuration_sha256",
     "convert_specification",
     "parse_revision",
@@ -129,6 +130,13 @@ def component_basis(document: Mapping[str, Any]) -> ComponentBasis:
     """The basis `document`'s `component_set.record_source` selects (ADR 0034 D8, R-231)."""
     source = (document.get("component_set") or {}).get("record_source")
     return _c1_basis() if source == pr_c1.RECORDS_PATH else SYN001_BASIS
+
+
+def selectable_bases() -> tuple[ComponentBasis, ...]:
+    """Every basis `component_basis` can return, SYN-001's first (W27-R63; register R-288). A
+    function, not a constant: the C1 basis reads the records, which an installed package without
+    them refuses on first use, not at import (R-219)."""
+    return (SYN001_BASIS, _c1_basis())
 
 
 #: R4: a connection's `phase_capability` as the declared phase of the ports it joins.
