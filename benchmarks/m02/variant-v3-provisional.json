@@ -133,15 +133,15 @@
         "dt_init": 1.0,
         "max_steps": 400,
         "round2": {
-          "accepted": "S3 is accepted iff round 2 converged; the certificate receives its status",
+          "accepted": "S3 is accepted iff round 2 converged; the certificate is then repeated on its status and decides",
           "atol_factor": 0.1,
-          "defect": "max over H, N, C, Ar of |element_defect_rel| (outlet's formula)",
+          "defect": "max over the elements present in the requested inlet of |element_defect_rel| (outlet's formula); NaN if any of them is NaN",
           "defect_threshold": 1e-07,
           "dt_init": 1.0,
           "max_steps": 400,
           "rtol": 1e-12,
           "target": "S3's target / 10",
-          "when": "A45's element defect after S3 > defect_threshold"
+          "when": "the certificate after S3 passed and A45's element defect read after it is not <= defect_threshold"
         },
         "rtol": 1e-12,
         "target": "1e-6*(num_z/100)^2"
@@ -150,7 +150,7 @@
         "S3 converged at its target",
         "the group's KPI-drift certificate after S3",
         "u_ret > 0 on every face",
-        "every axial flow > 0"
+        "every axial flow of a species present in the requested inlet > 0"
       ],
       "id": "M01-S123-v2"
     },
@@ -162,7 +162,7 @@
       "repository": "https://github.com/computational-chemical-engineering/ammonia_synthesis_reactor",
       "used_by_reference": true
     },
-    "runner_sha256": "c69ffec0ec2fac78d97887cc0ec31adf965013fbe428d172f31782ddaa5d5171"
+    "runner_sha256": "bbed02235f0a3a3e7ca47560de42a3ef04b3240ac21c416a8959583c84e58970"
   },
   "execution": {
     "kill_grace_s": 2,

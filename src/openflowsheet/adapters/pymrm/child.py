@@ -144,22 +144,25 @@ PROFILE: dict[str, Any] = {
         "max_steps": 400,
         "target": "1e-6*(num_z/100)^2",
         "round2": {
-            "when": "A45's element defect after S3 > defect_threshold",
-            "defect": "max over H, N, C, Ar of |element_defect_rel| (outlet's formula)",
+            "when": "the certificate after S3 passed and A45's element defect read after it is "
+            "not <= defect_threshold",
+            "defect": "max over the elements present in the requested inlet of "
+            "|element_defect_rel| (outlet's formula); NaN if any of them is NaN",
             "defect_threshold": 1e-7,
             "target": "S3's target / 10",
             "rtol": 1e-12,
             "atol_factor": 0.1,
             "dt_init": 1.0,
             "max_steps": 400,
-            "accepted": "S3 is accepted iff round 2 converged; the certificate receives its status",
+            "accepted": "S3 is accepted iff round 2 converged; the certificate is then repeated "
+            "on its status and decides",
         },
     },
     "acceptance": [
         "S3 converged at its target",
         "the group's KPI-drift certificate after S3",
         "u_ret > 0 on every face",
-        "every axial flow > 0",
+        "every axial flow of a species present in the requested inlet > 0",
     ],
 }
 #: The configuration members this child implements, and their types.
@@ -473,12 +476,115 @@ def steady_state_target(num_z: int) -> float:
     return 1e-6 * (num_z / 100.0) ** 2
 
 
-def element_defects(np: Any, n_in: list[float], n_out: list[float]) -> dict[str, float]:
-    """M01.A45's relative element defects of the retentate between its inlet and outlet faces."""
+def element_defects(
+    np: Any, n_in: list[float], n_out: list[float], composition: list[float]
+) -> dict[str, float]:
+    """M01.A45's relative element defects of the retentate between its inlet and outlet faces,
+    over the elements present in the requested inlet `composition` (§14.6 E2): element e is
+    present iff E_e · y_req > 0, tested exactly; an absent element has no key (its 0/0 carries
+    no information). The defect itself is taken on the faces passed in, as under v2."""
     return {
         element: float((np.dot(weights, n_out) - np.dot(weights, n_in)) / np.dot(weights, n_in))
         for element, weights in ELEMENTS.items()
+        if np.dot(weights, composition) > 0
     }
+
+
+def max_defect(np: Any, defects: dict[str, float]) -> float:
+    """§14.6 E2's δ: the largest |defect| over `defects` (the present elements), NaN if any of
+    them is NaN, whatever their order (`max` alone keeps a NaN only in the first position). The
+    NaN returned is the defect's own: the child makes none."""
+    values = [abs(value) for value in defects.values()]
+    for value in values:
+        if np.isnan(value):
+            return value
+    return max(values)
+
+
+def axial_flows(np: Any, retentate: Any, composition: list[float]) -> dict[str, Any]:
+    """§14.6 E2's positivity diagnostics of the retentate's axial flows (faces × species).
+    Species i is present iff its requested inlet mole fraction `composition[i]` is > 0, tested
+    exactly (never on the model's inlet face, whose absent entries carry roundoff of either
+    sign). `min_axial_flow_mol_s` is the minimum over present species and every face; the
+    absent species (only Ar or CH4 inside the domain) are listed in component order, with the
+    largest |flow| they carry on any face (`null` when none is absent)."""
+    flows = np.asarray(retentate)
+    present = np.array([value > 0.0 for value in composition])
+    absent = [species for species, kept in zip(SPECIES, present, strict=True) if not kept]
+    return {
+        "min_axial_flow_mol_s": float(np.min(flows[:, present])),
+        "absent_species": absent,
+        "absent_species_max_abs_flow_mol_s": (
+            float(np.max(np.abs(flows[:, ~present]))) if absent else None
+        ),
+    }
+
+
+def flows_positive(diagnostics: dict[str, Any]) -> bool:
+    """The acceptance's positivity clause: every axial flow of a present species is > 0 (a NaN
+    is not)."""
+    return bool(diagnostics["min_axial_flow_mol_s"] > 0.0)
+
+
+def certificate_diagnostics(certificate: dict[str, Any], wall_s: float) -> dict[str, Any]:
+    """The KPI-drift certificate as the result records it (`diagnostics.certificate`)."""
+    drift = certificate.get("kpi_drift_rel") or {}
+    residual = certificate.get("achieved_residual")
+    return {
+        "kpi_drift_ok": certificate.get("kpi_drift_ok"),
+        "kpi_drift_rel_max": max(drift.values()) if drift else None,
+        "residual": None if residual is None else float(residual),
+        "wall_s": wall_s,
+    }
+
+
+def certificate_passed(certificate: dict[str, Any]) -> bool:
+    return certificate.get("kpi_drift_ok") is True
+
+
+def after_s3(
+    status3: Any,
+    certify: Any,
+    read_defect: Any,
+    polish: Any,
+    stage: dict[str, Any],
+    diagnostics: dict[str, Any],
+) -> tuple[str | None, dict[str, Any] | None]:
+    """§14.6 E1: profile `M01-S123-v2`'s sequence after an accepted S3, over three injected
+    callables — `certify(status)` (the group's certificate, which marches the state),
+    `read_defect()` (δ from the model's current flows; a read) and `polish()` (round 2 on the same
+    object: `(status, record)`). Returns the stage this sequence refuses at (`S3`, `certificate`)
+    or None, and the deciding certificate (None when round 2 did not converge).
+
+    certificate₁ on S3's status; δ₁ read after it and recorded as `defect_round1` whatever its
+    verdict; a failed certificate₁ decides (no round 2); δ₁ ≤ the threshold leaves v2's path plus
+    the read; otherwise (a NaN included) round 2, S3's acceptance becomes its convergence, and a
+    converged round is certified again (certificate₂ decides). `diagnostics.certificate` holds
+    the deciding certificate; `stage.round2.certificate_round1` holds certificate₁ when round 2
+    ran."""
+    policy: Any = PROFILE["S3"]["round2"]
+    started = time.perf_counter()
+    certificate = certify(status3)
+    summary = certificate_diagnostics(certificate, time.perf_counter() - started)
+    delta = read_defect()
+    stage["defect_round1"] = delta
+    stage["round2"] = None
+    if not certificate_passed(certificate):
+        diagnostics["certificate"] = summary
+        return "certificate", certificate
+    if delta <= policy["defect_threshold"]:
+        diagnostics["certificate"] = summary
+        return None, certificate
+    status, record = polish()
+    record["certificate_round1"] = summary
+    stage["round2"] = record
+    stage["accepted"] = bool(record["converged"])
+    if not stage["accepted"]:
+        return "S3", None
+    started = time.perf_counter()
+    certificate = certify(status)
+    diagnostics["certificate"] = certificate_diagnostics(certificate, time.perf_counter() - started)
+    return (None if certificate_passed(certificate) else "certificate"), certificate
 
 
 class Reactor:
@@ -611,11 +717,11 @@ class Reactor:
             return refused(reached)
         certificate, outlet = reached
         diagnostics.update(outlet["diagnostics"])
-        if certificate.get("kpi_drift_ok") is not True:
+        if not certificate_passed(certificate):
             return refused("certificate")
         if not diagnostics["u_ret_min"] > 0.0:
             return refused("backflow")
-        if not diagnostics["min_axial_flow_mol_s"] > 0.0:
+        if not flows_positive(diagnostics):
             return refused("nonpositive_flow")
         return {
             "outcome": OUTCOME_OUTLET,
@@ -675,37 +781,32 @@ class Reactor:
         stages["S3"]["steady_state_target"] = target
         if not stages["S3"]["accepted"]:
             return "S3"
-        status3 = self._round2(second, status3, target, stages["S3"])
-        if not stages["S3"]["accepted"]:
+        refused, certificate = after_s3(
+            status3,
+            lambda status: self.runner.certify_convergence_1d(second, status, meta),
+            lambda: self._defect(second, y_in),
+            lambda: self._round2(second, target),
+            stages["S3"],
+            diagnostics,
+        )
+        if refused == "S3" or certificate is None:
             return "S3"
-        started = time.perf_counter()
-        certificate = self.runner.certify_convergence_1d(second, status3, meta)
-        drift = certificate.get("kpi_drift_rel") or {}
-        residual = certificate.get("achieved_residual")
-        diagnostics["certificate"] = {
-            "kpi_drift_ok": certificate.get("kpi_drift_ok"),
-            "kpi_drift_rel_max": max(drift.values()) if drift else None,
-            "residual": None if residual is None else float(residual),
-            "wall_s": time.perf_counter() - started,
-        }
-        outlet = self.outlet(second, float(tube["temperature"]), float(tube["coolant_temperature"]))
+        outlet = self.outlet(
+            second, float(tube["temperature"]), float(tube["coolant_temperature"]), y_in
+        )
         return certificate, outlet
 
-    def _round2(self, model: Any, status3: Any, target: float, stage: dict[str, Any]) -> Any:
-        """§14.5 D1: profile `M01-S123-v2`'s conditional round after an accepted S3. A45's defect
-        δ is read from the model's flows (no state changes); δ ≤ the threshold leaves everything
-        as under v1. Otherwise one more polish round on the same object at a tenth of S3's
-        target: S3 is accepted iff it converged, and its status is the one the certificate
-        receives. `stage` (S3's diagnostics) gets `defect_round1` and `round2`."""
-        policy: Any = PROFILE["S3"]["round2"]
+    def _defect(self, model: Any, composition: list[float]) -> float:
+        """§14.6 E2's δ of the model's current state (a read: no state changes)."""
         retentate = model.compute_flows()[0]
         n_in = [float(value) for value in retentate[0, :]]
         n_out = [float(value) for value in retentate[-1, :]]
-        delta = max(map(abs, element_defects(self.np, n_in, n_out).values()))
-        stage["defect_round1"] = delta
-        stage["round2"] = None
-        if delta <= policy["defect_threshold"]:
-            return status3
+        return max_defect(self.np, element_defects(self.np, n_in, n_out, composition))
+
+    def _round2(self, model: Any, target: float) -> tuple[Any, dict[str, Any]]:
+        """§14.5 D1's round 2 (settings unchanged by §14.6 E1): one more polish round on the same
+        object at a tenth of S3's target. Its status and its record."""
+        policy: Any = PROFILE["S3"]["round2"]
         started = time.perf_counter()
         target2 = target / 10.0
         model.rtol, model.atol = policy["rtol"], policy["atol_factor"] * target2
@@ -716,14 +817,12 @@ class Reactor:
             return_status=True,
             verbose=0,
         )
-        stage["round2"] = {
+        return status, {
             "steps": int(status.num_steps_attempted),
             "converged": bool(status.converged),
             "steady_state_target": target2,
             "wall_s": time.perf_counter() - started,
         }
-        stage["accepted"] = bool(status.converged)
-        return status
 
     @staticmethod
     def _stage(status: Any, accepted: bool, started: float) -> dict[str, Any]:
@@ -737,13 +836,16 @@ class Reactor:
             "wall_s": time.perf_counter() - started,
         }
 
-    def outlet(self, model: Any, t_in: float, t_coolant_in: float) -> dict[str, Any]:
-        """`reactor_probe.outlet`: the raw outlet and its diagnostics."""
+    def outlet(
+        self, model: Any, t_in: float, t_coolant_in: float, composition: list[float]
+    ) -> dict[str, Any]:
+        """`reactor_probe.outlet`: the raw outlet and its diagnostics; `composition` is the
+        requested inlet's, which decides the present species and elements (§14.6 E2)."""
         np, database = self.np, self.database
         retentate, _, permeate, _ = model.compute_flows()
         n_in = [float(value) for value in retentate[0, :]]
         n_out = [float(value) for value in retentate[-1, :]]
-        defects = element_defects(np, n_in, n_out)
+        defects = element_defects(np, n_in, n_out, composition)
         t_out = float(model.cpT[-1, 1, -1])
         t_coolant_out = float(model.cpT[-1, 0, -1])
         coolant_flow = float(np.sum(permeate[0, :]))
@@ -775,7 +877,7 @@ class Reactor:
                 "inlet_face_heat_loss_W": -(retentate_change + coolant_heat),
                 "element_defect_rel": defects,
                 "u_ret_min": float(np.min(model.u_ret_ax)),
-                "min_axial_flow_mol_s": float(np.min(retentate)),
+                **axial_flows(np, retentate, composition),
             },
         }
 

@@ -7,7 +7,7 @@
  "probe_record_sha256": "992cb1aa40b3b3e04c0b97cf151cc6e25dd031a78b3f2ac98449adeca0272ddb",
  "variant": {
   "variant_id": "pymrm-6089593-g2-nz800-s123-v3-provisional",
-  "sha256": "4c8816a8a852af963550766c7dce762befea2ba3d4228b35a652517f80b5c440",
+  "sha256": "d3f91323b3e3cb9b608b21ef8b10273d71878a316ea424278e656e5dce279ec1",
   "registered": false,
   "file": "benchmarks/m02/variant-v3-provisional.json"
  },
@@ -27,11 +27,11 @@
   "llvmlite": "0.50.0",
   "env_id": "pymrm-6089593-032a050c6cf3",
   "external_root_default": true,
-  "fingerprint_sha256": "8c475be6742eeb6b3e173287b4e690d2810186744cdbf4056348a60ed24e0d51",
+  "fingerprint_sha256": "04e2865ade8213db6549822f4af230cf9870b777f611b15ac573fb7299f17150",
   "lock_sha256": "032a050c6cf39e1eb2f01ebf03ea92a386f99967cb7fd0797c54431a33a60288",
   "export_tree_sha256": "c51b4734e453733ea2c3c473392d29255214e562d57446b5431406b424dfe3bd",
   "merged_database_sha256": "74cb058c545ad2056b7e7cc0b433642b5677e46dced8f55c04e7ec2326888454",
-  "runner_sha256": "c69ffec0ec2fac78d97887cc0ec31adf965013fbe428d172f31782ddaa5d5171",
+  "runner_sha256": "bbed02235f0a3a3e7ca47560de42a3ef04b3240ac21c416a8959583c84e58970",
   "worker_python": "3.13.5"
  },
  "probe_environment": {
@@ -63,7 +63,7 @@
     1e-06,
     0.1
    ],
-   "max_rel_diff": 1.083102675452347e-11,
+   "max_rel_diff": 1.559285305616933e-08,
    "bound": 1e-06,
    "probe_max_rel_diff": 1.559285305616933e-08
   },
@@ -84,46 +84,46 @@
    ],
    "bitwise_identical": true,
    "u_ret_min": [
-    0.00140484072471736,
-    0.0014048407319933176,
-    0.00140484072471736,
-    0.0013803491565340664,
-    0.0014048407356312964,
-    0.0014315773951238953,
-    0.0014048407356312964,
-    0.0014048407356312964
+    0.0014048407210793812,
+    0.001404840742907254,
+    0.0014048407210793812,
+    0.0013803491528960876,
+    0.0014048407283553388,
+    0.0014315774023998529,
+    0.0014048407283553388,
+    0.0014048407283553388
    ]
   },
   "A45": {
    "element_defect_max": [
-    2.5498644756482804e-09,
-    2.552208076210932e-09,
-    2.5498644756482804e-09,
-    4.511037509668341e-09,
-    7.350864734055475e-09,
-    1.099214572972002e-09,
-    7.350864734055475e-09,
-    7.350864734055475e-09
+    2.657411726677951e-08,
+    2.7273263445777032e-08,
+    2.657411726677951e-08,
+    2.2026158951237745e-08,
+    3.8383264652952895e-08,
+    3.4513952509350926e-08,
+    3.8383264652952895e-08,
+    3.8383264652952895e-08
    ],
    "bound": 1e-07
   },
   "A46": {
    "dP_over_P": [
-    4.9978984450548886e-05,
-    4.997898444905877e-05,
-    4.9978984450548886e-05,
-    4.943324963580817e-05,
-    4.997898445073515e-05,
-    5.05927478319034e-05,
-    4.997898445073515e-05,
-    4.997898445073515e-05
+    4.997898459658027e-05,
+    4.997898469939828e-05,
+    4.997898459658027e-05,
+    4.943324979916215e-05,
+    4.997898472435772e-05,
+    5.0592748045548796e-05,
+    4.997898472435772e-05,
+    4.997898472435772e-05
    ],
    "bound": 0.001
   },
   "A47": {
    "a_environment_block_equal": true,
-   "a_bitwise": false,
-   "b_max_rel_diff": 1.9294664884981245e-08,
+   "a_bitwise": true,
+   "b_max_rel_diff": 1.4289545806002592e-08,
    "b_bound": 1e-06
   },
   "A48": {
@@ -151,32 +151,27 @@
    },
    "tube_outlet": {
     "flows": [
-     0.004206722649713521,
-     0.0014141524854337215,
-     0.0007451756878955,
-     0.00010720441976288776,
-     0.00014293922635051748
+     0.004206722750696396,
+     0.0014141525193808178,
+     0.0007451757058514184,
+     0.00010720442233839437,
+     0.00014293922978452547
     ],
-    "temperature": 757.3353119104728,
-    "pressure_drop": 499.7898445054889,
-    "coolant_heat": 3.320049942976241,
-    "inlet_face_heat_loss": 6.506502024076679
+    "temperature": 757.3353119014521,
+    "pressure_drop": 499.78984596580267,
+    "coolant_heat": 3.3200499480531107,
+    "inlet_face_heat_loss": 6.50650082805223
    },
-   "element_defect_max": 2.5498644756482804e-09,
-   "dP_over_P": 4.9978984450548886e-05,
-   "u_ret_min": 0.00140484072471736,
-   "min_axial_flow_mol_s": 0.00010593911193280618,
-   "wall_s": 76.03232095799467,
-   "certificate_wall_s": 49.32907293199969,
-   "startup_s": 2.9083987139892997,
-   "solve_s": 73.02276095699926,
-   "defect_round1": 5.642585565747922e-05,
-   "round2": {
-    "steps": 9,
-    "converged": true,
-    "steady_state_target": 6.4e-06,
-    "wall_s": 7.014581627998268
-   }
+   "element_defect_max": 2.657411726677951e-08,
+   "dP_over_P": 4.997898459658027e-05,
+   "u_ret_min": 0.0014048407210793812,
+   "min_axial_flow_mol_s": 0.00010593911193312912,
+   "wall_s": 34.77608530900034,
+   "certificate_wall_s": 18.828823000992998,
+   "startup_s": 2.627075500000501,
+   "solve_s": 32.06473318400094,
+   "defect_round1": 2.657411726677951e-08,
+   "round2": null
   },
   {
    "label": "direct S2 dt_init 1e-1",
@@ -194,32 +189,27 @@
    },
    "tube_outlet": {
     "flows": [
-     0.0042067226497138795,
-     0.0014141524854338733,
-     0.0007451756879035711,
-     0.0001072044197631394,
-     0.0001429392263508524
+     0.0042067227701029644,
+     0.0014141525258603387,
+     0.0007451756942320031,
+     0.00010720442241334593,
+     0.0001429392298844388
     ],
-    "temperature": 757.3353119094234,
-    "pressure_drop": 499.7898444905877,
-    "coolant_heat": 3.3200499429315204,
-    "inlet_face_heat_loss": 6.506502024569931
+    "temperature": 757.3353138836449,
+    "pressure_drop": 499.7898469939828,
+    "coolant_heat": 3.32004996355337,
+    "inlet_face_heat_loss": 6.506499731651836
    },
-   "element_defect_max": 2.552208076210932e-09,
-   "dP_over_P": 4.997898444905877e-05,
-   "u_ret_min": 0.0014048407319933176,
-   "min_axial_flow_mol_s": 0.00010593911140078861,
-   "wall_s": 58.83384488199954,
-   "certificate_wall_s": 35.92562228599854,
-   "startup_s": 3.085334392992081,
-   "solve_s": 55.652460412005894,
-   "defect_round1": 8.44049911597566e-05,
-   "round2": {
-    "steps": 9,
-    "converged": true,
-    "steady_state_target": 6.4e-06,
-    "wall_s": 5.53284955098934
-   }
+   "element_defect_max": 2.7273263445777032e-08,
+   "dP_over_P": 4.997898469939828e-05,
+   "u_ret_min": 0.001404840742907254,
+   "min_axial_flow_mol_s": 0.0001059391114004383,
+   "wall_s": 52.432402168007684,
+   "certificate_wall_s": 40.56216213600419,
+   "startup_s": 2.6464131620014086,
+   "solve_s": 49.71343901200453,
+   "defect_round1": 2.7273263445777032e-08,
+   "round2": null
   },
   {
    "label": "direct backflow [0,0,0,1,0]",
@@ -237,32 +227,27 @@
    },
    "tube_outlet": {
     "flows": [
-     0.004206722649713521,
-     0.0014141524854337215,
-     0.0007451756878955,
-     0.00010720441976288776,
-     0.00014293922635051748
+     0.004206722750696396,
+     0.0014141525193808178,
+     0.0007451757058514184,
+     0.00010720442233839437,
+     0.00014293922978452547
     ],
-    "temperature": 757.3353119104728,
-    "pressure_drop": 499.7898445054889,
-    "coolant_heat": 3.320049942976241,
-    "inlet_face_heat_loss": 6.506502024076679
+    "temperature": 757.3353119014521,
+    "pressure_drop": 499.78984596580267,
+    "coolant_heat": 3.3200499480531107,
+    "inlet_face_heat_loss": 6.50650082805223
    },
-   "element_defect_max": 2.5498644756482804e-09,
-   "dP_over_P": 4.9978984450548886e-05,
-   "u_ret_min": 0.00140484072471736,
-   "min_axial_flow_mol_s": 0.00010593911193280618,
-   "wall_s": 48.94777833900298,
-   "certificate_wall_s": 32.704204234993085,
-   "startup_s": 1.8312354339868762,
-   "solve_s": 47.00271368501126,
-   "defect_round1": 5.642585565747922e-05,
-   "round2": {
-    "steps": 9,
-    "converged": true,
-    "steady_state_target": 6.4e-06,
-    "wall_s": 4.090520163998008
-   }
+   "element_defect_max": 2.657411726677951e-08,
+   "dP_over_P": 4.997898459658027e-05,
+   "u_ret_min": 0.0014048407210793812,
+   "min_axial_flow_mol_s": 0.00010593911193312912,
+   "wall_s": 37.94054581900127,
+   "certificate_wall_s": 20.947917048004456,
+   "startup_s": 2.6570425660029287,
+   "solve_s": 35.16866076600854,
+   "defect_round1": 2.657411726677951e-08,
+   "round2": null
   },
   {
    "label": "boundary T_in 653.15",
@@ -280,32 +265,27 @@
    },
    "tube_outlet": {
     "flows": [
-     0.004167323861930783,
-     0.001401019556196165,
-     0.000771441553378827,
-     0.00010720441997313439,
-     0.00014293922663084524
+     0.004167323942573274,
+     0.0014010195832862573,
+     0.0007714415615255545,
+     0.00010720442185083314,
+     0.00014293922913442746
     ],
-    "temperature": 753.0429812817708,
-    "pressure_drop": 494.3324963580817,
-    "coolant_heat": 3.920392719879207,
-    "inlet_face_heat_loss": 3.8662993637260787
+    "temperature": 753.0429821404381,
+    "pressure_drop": 494.3324979916215,
+    "coolant_heat": 3.9203927310962623,
+    "inlet_face_heat_loss": 3.866298056800982
    },
-   "element_defect_max": 4.511037509668341e-09,
-   "dP_over_P": 4.943324963580817e-05,
-   "u_ret_min": 0.0013803491565340664,
-   "min_axial_flow_mol_s": 0.00010605185225931498,
-   "wall_s": 68.19861482499982,
-   "certificate_wall_s": 43.48585757899855,
-   "startup_s": 2.726377136001247,
-   "solve_s": 65.39055854199978,
-   "defect_round1": 4.0261818054815375e-05,
-   "round2": {
-    "steps": 8,
-    "converged": true,
-    "steady_state_target": 6.4e-06,
-    "wall_s": 5.212638526005321
-   },
+   "element_defect_max": 2.2026158951237745e-08,
+   "dP_over_P": 4.943324979916215e-05,
+   "u_ret_min": 0.0013803491528960876,
+   "min_axial_flow_mol_s": 0.00010605185279887258,
+   "wall_s": 31.68948061700212,
+   "certificate_wall_s": 12.734761760002584,
+   "startup_s": 2.8674970239953836,
+   "solve_s": 28.729510980003397,
+   "defect_round1": 2.2026158951237745e-08,
+   "round2": null,
    "envelope_status": "ok",
    "envelope_code": "ok",
    "discretization_estimate": {
@@ -329,7 +309,7 @@
      0.01943
     ]
    },
-   "experiment_key": "8c353f9ceb5bfc20bf610afb0b732ead225f05c630ba180e0116e20f60e9d684"
+   "experiment_key": "595d84cf465357f14dc5c05c9c28c2048b27fd9bcf80890392dcc7c71b381281"
   },
   {
    "label": "boundary T_in 673.15",
@@ -347,32 +327,27 @@
    },
    "tube_outlet": {
     "flows": [
-     0.004206722669909372,
-     0.0014141524922228438,
-     0.0007451756914735029,
-     0.00010720442027757622,
-     0.000142939227036769
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
     ],
-    "temperature": 757.3353119104044,
-    "pressure_drop": 499.7898445073515,
-    "coolant_heat": 3.3200499429708197,
-    "inlet_face_heat_loss": 6.506501785157865
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
    },
-   "element_defect_max": 7.350864734055475e-09,
-   "dP_over_P": 4.997898445073515e-05,
-   "u_ret_min": 0.0014048407356312964,
-   "min_axial_flow_mol_s": 0.00010593911139991517,
-   "wall_s": 66.54768669999612,
-   "certificate_wall_s": 45.291031953995116,
-   "startup_s": 2.759323331003543,
-   "solve_s": 63.66249781499209,
-   "defect_round1": 5.642105452394378e-05,
-   "round2": {
-    "steps": 9,
-    "converged": true,
-    "steady_state_target": 6.4e-06,
-    "wall_s": 4.691514340011054
-   },
+   "element_defect_max": 3.8383264652952895e-08,
+   "dP_over_P": 4.997898472435772e-05,
+   "u_ret_min": 0.0014048407283553388,
+   "min_axial_flow_mol_s": 0.00010593911166748371,
+   "wall_s": 39.73487828299403,
+   "certificate_wall_s": 21.77099649500451,
+   "startup_s": 2.828686884997296,
+   "solve_s": 36.78601791300753,
+   "defect_round1": 3.8383264652952895e-08,
+   "round2": null,
    "envelope_status": "ok",
    "envelope_code": "ok",
    "discretization_estimate": {
@@ -396,7 +371,7 @@
      0.01943
     ]
    },
-   "experiment_key": "3a2b93287051b81b024c9f0ddc9861d9a891b0ce80364d015a32524f2b1aa1ef"
+   "experiment_key": "577dc726dfb3c233a4b8f88914256b16ffb23d7e758cf32028d29f8509c963f8"
   },
   {
    "label": "boundary T_in 693.15",
@@ -414,32 +389,27 @@
    },
    "tube_outlet": {
     "flows": [
-     0.0042500013463284345,
-     0.0014285787175952183,
-     0.0007163232105325992,
-     0.0001072044193716909,
-     0.0001429392258289214
+     0.004250001507108143,
+     0.0014285787716149447,
+     0.0007163232294102798,
+     0.0001072044231895798,
+     0.00014293923091941984
     ],
-    "temperature": 762.2135873145922,
-    "pressure_drop": 505.927478319034,
-    "coolant_heat": 2.7348423831230653,
-    "inlet_face_heat_loss": 8.875264429942515
+    "temperature": 762.2135884491616,
+    "pressure_drop": 505.92748045548797,
+    "coolant_heat": 2.7348423941471056,
+    "inlet_face_heat_loss": 8.875261962569532
    },
-   "element_defect_max": 1.099214572972002e-09,
-   "dP_over_P": 5.05927478319034e-05,
-   "u_ret_min": 0.0014315773951238953,
-   "min_axial_flow_mol_s": 0.00010577764955305776,
-   "wall_s": 63.29942874101107,
-   "certificate_wall_s": 42.56290930398973,
-   "startup_s": 2.6775684989988804,
-   "solve_s": 60.54978175999713,
-   "defect_round1": 5.030309804160589e-05,
-   "round2": {
-    "steps": 9,
-    "converged": true,
-    "steady_state_target": 6.4e-06,
-    "wall_s": 4.929456231999211
-   },
+   "element_defect_max": 3.4513952509350926e-08,
+   "dP_over_P": 5.0592748045548796e-05,
+   "u_ret_min": 0.0014315774023998529,
+   "min_axial_flow_mol_s": 0.00010577764981831999,
+   "wall_s": 45.683405231000506,
+   "certificate_wall_s": 28.45519032800803,
+   "startup_s": 2.9370192420028616,
+   "solve_s": 42.63320361998922,
+   "defect_round1": 3.4513952509350926e-08,
+   "round2": null,
    "envelope_status": "ok",
    "envelope_code": "ok",
    "discretization_estimate": {
@@ -463,7 +433,7 @@
      0.01943
     ]
    },
-   "experiment_key": "6e7b485515de188cee07caf597f3d6d47344668c59dba4d0305e1b7c8ce807fd"
+   "experiment_key": "c819ff4f360667f5296fbc3a21cd8a8c505abb8ab033fe8ad14e9b393626c77f"
   },
   {
    "label": "boundary bypass repeat 1",
@@ -481,32 +451,27 @@
    },
    "tube_outlet": {
     "flows": [
-     0.004206722669909372,
-     0.0014141524922228438,
-     0.0007451756914735029,
-     0.00010720442027757622,
-     0.000142939227036769
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
     ],
-    "temperature": 757.3353119104044,
-    "pressure_drop": 499.7898445073515,
-    "coolant_heat": 3.3200499429708197,
-    "inlet_face_heat_loss": 6.506501785157865
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
    },
-   "element_defect_max": 7.350864734055475e-09,
-   "dP_over_P": 4.997898445073515e-05,
-   "u_ret_min": 0.0014048407356312964,
-   "min_axial_flow_mol_s": 0.00010593911139991517,
-   "wall_s": 74.0508914610109,
-   "certificate_wall_s": 51.118542552998406,
-   "startup_s": 2.6475941719982075,
-   "solve_s": 71.2781484540028,
-   "defect_round1": 5.642105452394378e-05,
-   "round2": {
-    "steps": 9,
-    "converged": true,
-    "steady_state_target": 6.4e-06,
-    "wall_s": 6.61783039799775
-   },
+   "element_defect_max": 3.8383264652952895e-08,
+   "dP_over_P": 4.997898472435772e-05,
+   "u_ret_min": 0.0014048407283553388,
+   "min_axial_flow_mol_s": 0.00010593911166748371,
+   "wall_s": 42.623770829013665,
+   "certificate_wall_s": 24.424183997994987,
+   "startup_s": 2.9400686910084914,
+   "solve_s": 39.58154173199728,
+   "defect_round1": 3.8383264652952895e-08,
+   "round2": null,
    "repeat_bitwise_equal": true
   },
   {
@@ -525,82 +490,68 @@
    },
    "tube_outlet": {
     "flows": [
-     0.004206722669909372,
-     0.0014141524922228438,
-     0.0007451756914735029,
-     0.00010720442027757622,
-     0.000142939227036769
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
     ],
-    "temperature": 757.3353119104044,
-    "pressure_drop": 499.7898445073515,
-    "coolant_heat": 3.3200499429708197,
-    "inlet_face_heat_loss": 6.506501785157865
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
    },
-   "element_defect_max": 7.350864734055475e-09,
-   "dP_over_P": 4.997898445073515e-05,
-   "u_ret_min": 0.0014048407356312964,
-   "min_axial_flow_mol_s": 0.00010593911139991517,
-   "wall_s": 136.02504648100876,
-   "certificate_wall_s": 77.30586544900143,
-   "startup_s": 3.563768413005164,
-   "solve_s": 132.32528213800106,
-   "defect_round1": 5.642105452394378e-05,
-   "round2": {
-    "steps": 9,
-    "converged": true,
-    "steady_state_target": 6.4e-06,
-    "wall_s": 30.564145100011956
-   },
+   "element_defect_max": 3.8383264652952895e-08,
+   "dP_over_P": 4.997898472435772e-05,
+   "u_ret_min": 0.0014048407283553388,
+   "min_axial_flow_mol_s": 0.00010593911166748371,
+   "wall_s": 45.733785374992294,
+   "certificate_wall_s": 25.736119147011777,
+   "startup_s": 3.264090804994339,
+   "solve_s": 42.34641532199748,
+   "defect_round1": 3.8383264652952895e-08,
+   "round2": null,
    "repeat_bitwise_equal": true
   }
  ],
- "elapsed_s": 603.2,
+ "elapsed_s": 341.9,
  "G10v3": {
   "compared_variant": {
    "variant_id": "pymrm-6089593-g2-nz800-s123-v2",
    "sha256": "04d4ef9c1ebbd8f727ec6f59709c54e19c365dec4c3ae86718c5e84270750b11"
   },
   "outlets_bitwise_equal": {
-   "direct nominal": false,
-   "direct S2 dt_init 1e-1": false,
-   "direct backflow [0,0,0,1,0]": false,
-   "boundary T_in 653.15": false,
-   "boundary T_in 673.15": false,
-   "boundary T_in 693.15": false,
-   "boundary bypass repeat 1": false,
-   "boundary bypass repeat 2": false
+   "direct nominal": true,
+   "direct S2 dt_init 1e-1": true,
+   "direct backflow [0,0,0,1,0]": true,
+   "boundary T_in 653.15": true,
+   "boundary T_in 673.15": true,
+   "boundary T_in 693.15": true,
+   "boundary bypass repeat 1": true,
+   "boundary bypass repeat 2": true
   },
   "defect_round1_equals_element_defect_max": {
-   "direct nominal": false,
-   "direct S2 dt_init 1e-1": false,
-   "direct backflow [0,0,0,1,0]": false,
-   "boundary T_in 653.15": false,
-   "boundary T_in 673.15": false,
-   "boundary T_in 693.15": false,
-   "boundary bypass repeat 1": false,
-   "boundary bypass repeat 2": false
+   "direct nominal": true,
+   "direct S2 dt_init 1e-1": true,
+   "direct backflow [0,0,0,1,0]": true,
+   "boundary T_in 653.15": true,
+   "boundary T_in 673.15": true,
+   "boundary T_in 693.15": true,
+   "boundary bypass repeat 1": true,
+   "boundary bypass repeat 2": true
   },
-  "round2_ran": [
-   "direct nominal",
-   "direct S2 dt_init 1e-1",
-   "direct backflow [0,0,0,1,0]",
-   "boundary T_in 653.15",
-   "boundary T_in 673.15",
-   "boundary T_in 693.15",
-   "boundary bypass repeat 1",
-   "boundary bypass repeat 2"
-  ],
+  "round2_ran": [],
   "assertions_equal": {
    "A41": true,
-   "A42": false,
+   "A42": true,
    "A43": true,
-   "A44": false,
-   "A45": false,
-   "A46": false,
-   "A47": false,
+   "A44": true,
+   "A45": true,
+   "A46": true,
+   "A47": true,
    "A48": true
   },
-  "met": false,
+  "met": true,
   "compared_record_sha256": "7fe008dd76224525ef3c844c44e2ed637a988bb2098ae793d77224843206f19d"
  }
 }
