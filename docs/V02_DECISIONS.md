@@ -732,3 +732,9 @@ Grep, don't read whole. Newest at the bottom.
   following M02's precedent (dbc9e8a) and classify the record's floats (ADR 0007 D2.3, as the M02 review's F1
   demanded). Alternative: per-machine hashes outside identity. Reversible by: reverting the isolated commit. Five
   spec-vs-producer choices logged for the M05 review. Opus engineer finishing WO-7.
+
+- **M02 review fixes done** (2026-10-09, `wp/M02` `88b3ab4`…`ef03f97`, gate 8358, 0 xfail; G2 unchanged): F2/RP-2(a)
+  `attributed_request`; F1/RP-2(b) per-float compare rules in the packaged addendum, RP-2 → MATCH; F3 e2e
+  COUPLING_NOT_CONVERGED; F4 nonlinear synthetic child (4 iterates = closed form); F5 `inner_failure` kept. D124: failure
+  bundle's record copy and `record_sha256` still under old rules → DECISION: apply the same rules, digest shape-only, in
+  WO-13 (isolated commit). D122/D123/D126/D127 logged. WO-13 launched.

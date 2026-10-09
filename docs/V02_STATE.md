@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…12b, 11a, 14 done; review `4c3623a` (`docs/reviews/M02-review.md`, R-317/R-318): numerics sound; must-fix F1 (new recorded floats unclassified, ADR 0007 D2.3), F2 (replay EXT-COUPLING uses old request), F3 (f5 e2e test) + RP-2 per R-317 (τ-scaled floors) + should-fix F4/F5 → fix WO running; then WO-13 (manifest `tested`, ADR 0034 Am. 1, R-310), merge, alpha gate |
+| M02 | Build | M01 | W21 | all WOs except WO-13 done; review fixes F1–F5 + RP-2 done (`ef03f97`, gate 8358, no xfail, G2 unchanged); WO-13 running (D124 failure-bundle compare rules, ADR 0034 Am. 1, R-310, manifest `tested`, pointers, support matrix); then merge into main, alpha gate WO-5…11 |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 + W27 part done (`4cd23ad`, gate 8444): surrogate registered, J3′–J6′ + G14 pass, 0/450 class changes, `list_models` → `f070fbe0…`; open for M04 review batch: envelope wording (22 models, not marked synthetic), corpus revision settings (E10), strip pattern (E12); WO-8 after M02 merges to main; WO-9, WO-11 real run, WO-12 manifest, `reviewer` |
 | M05 | Design | M03, M04 | W24 | WO-1…6, 2b, 3b, 4a done (`c5aa61b`, gate 8522; nlp 121 passed, 15 xfail = Z2); REAL box [653.15, 693.15] K (σ 0.0125, §6.7 stale); WO-7 schema + 58 tests drafted (Sonnet; stopped on 4 unclassified sha256 names) → Opus finishing with an M05 numerical-policy addendum; real parent adapter (S3) + WO-5c (`at_coupling`) + WO-8 after M02/M04 merge; review batch: Z2, W2 (kept: max-iter stays candidate), S1–S10, P5-skip, retry rules |
@@ -97,7 +97,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `opus-engineer` | M02 review fixes F1–F5 + RP-2 | `wp/M02` (`m02`) |
+| `opus-engineer` | M02 WO-13 (+ D124) | `wp/M02` (`m02`) |
 | `opus-engineer` | M05 WO-7 finish (Sonnet's uncommitted schema + tests; M05 numerical-policy addendum) | `wp/M05` (`m05`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
