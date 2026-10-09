@@ -380,3 +380,47 @@ def test_seven_distinct_keys_run_concurrently_and_serially_give_identical_record
             assert _bare(path) == _bare(serial[relative]), relative
         else:
             assert path.read_bytes() == serial[relative].read_bytes(), relative
+
+
+def test_g7_mechanics_on_a_unit_run(tmp_path: Path) -> None:
+    """G7's arithmetic on one run of requests a TRF run makes (values, then gradients at accepted
+    points, a rejected trial, repeats), on the FD parent truth: cold + store hit + memo hit equals
+    requests; every attempt record in the store is attributed to the ledger — per key, the store's
+    attempts equal the executions the ledger's entries at that key caused; no non-finite value is
+    returned."""
+    holder = holder_of(interior_truth(tmp_path))
+    holder.begin_run(RunState("unit"), [ColdBudget("run", 250)])
+    moved = (*INLET[:5], 675.0, INLET[6])
+    trial = (*INLET[:5], 676.5, INLET[6])
+    returned = [holder.request_values(INLET), holder.request_values(INLET)]
+    holder.request_jacobian(INLET)
+    returned += [holder.request_values(moved), holder.request_values(trial)]
+    holder.request_jacobian(moved)
+    returned.append(holder.request_values(moved))
+    holder.end_run()
+    assert all(math.isfinite(value) for values in returned for value in values)
+    values = [entry for entry in holder.ledger if entry.call == "value"]
+    served = {
+        kind: sum(1 for e in values if e.served == kind)
+        for kind in ("cold", "store_hit", "memo_hit")
+    }
+    assert (
+        sum(served.values())
+        == len(values)
+        == holder.summary()["value_cold"]
+        + holder.summary()["value_store_hit"]
+        + holder.summary()["value_memo_hit"]
+    )
+    assert served["cold"] == 3 + 7 + 7
+    executed: dict[str, int] = {}
+    for entry in values:
+        if entry.experiment_key is not None:
+            executed[entry.experiment_key] = (
+                executed.get(entry.experiment_key, 0) + entry.executions
+            )
+    records = holder.box.truth.runner.records  # type: ignore[attr-defined]
+    keys = {
+        path.parent.parent.name for path in store_files(tmp_path) if path.parent.name == "attempts"
+    }
+    assert keys == set(executed)
+    assert all(len(records.attempts(key)) == executed[key] for key in keys)
