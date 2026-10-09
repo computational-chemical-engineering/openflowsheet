@@ -1,15 +1,20 @@
 """M02 WO-8.5: M01 spec §7's six registered tests of the PR units and gate G7 (a)–(e) (design note
-§8, §10.1 G7, §14.2 *Gates as amended*; register R-230, R-254–R-258).
+§8, §10.1 G7, §14.2 *Gates as amended*, §14.3 C3; register R-230, R-254–R-258, R-282).
 
 One test per rule of M01 §7 (with Amendment 3), then G7 (a)–(e) on solves through the revision
 path under `T06-revision-v2`. Expectations are the provider's own flash and enthalpies (M01.A15–A22
 verified them against 50-digit closed forms) and the rulings' exact statements. G7 (f) is WO-9's.
 
-**G7 (c) is not met as written** (build log D41, OPEN): at F4, a vapour exactly at its own dew
-point, the solve opens VAPOR and converges and `.dew` is 0.0, but the declaration's Jacobian is
-singular there (E's and Ldef's rows are proportional in the (L, l_NH3) columns when y φ^V = φ^L), so
-the certificate is UNVERIFIED with regularity RANK_DEFICIENT. That clause is a strict `xfail`, so it
-reads as a failed gate and turns into a failure the day it passes.
+**G7 (a) as amended** (§14.3): F1's and F11's compositions are fed as vapour at 673.15 K into the
+flash at their T and P, and certify VERIFIED. Fed at their own state they are two-phase feeds
+outside the unit, whose declared-vapour inlet correctly fails (recorded).
+
+**G7 (c) as amended** (§14.3 C3, R-282): the dew point is a bifurcation. At F4 exactly, E's and
+Ldef's rows are proportional in (L, l_NH3), so the certificate is UNVERIFIED with regularity
+RANK_DEFICIENT — the registered expectation, not a failure. F4 × (1 ± δ) records the near-dew
+window on both sides: rcond_1 = 4.23e-4 δ on each, VERIFIED from δ ≈ 2.5e-4 on the VAPOR side
+(the regularity screen's absolute limit, ‖J⁻¹‖₁ ≤ τ_min/(n ε)) and from δ ≈ 5.5e-4 on the
+TWO_PHASE side (where the witness's central stencil first fits inside the liquid NH3 flow).
 """
 
 from __future__ import annotations
@@ -264,15 +269,19 @@ def test_m01_s7_rule_6_the_verifiers_fresh_flash_of_a_vapour_at_its_own_dew_poin
 # == G7 (a)–(e) ===================================================================================
 
 
+#: G7 (a) as amended (§14.3): the registered compositions are fed as vapour at this temperature.
+VAPOUR_FEED_T = 673.15
+
+
 @pytest.mark.parametrize("fid", ["F1", "F11"])
 def test_g7a_the_flash_at_a_registered_two_phase_state(fid: str) -> None:
-    """The EO solve's vapour fraction and `y*_NH3` agree with `pr-c1-v1.flash` within 1e-9
-    relative; material closure ≤ 1e-12 n_tot; energy closure ≤ 1e-9 |Ḣ_in|. The feed is the
-    registered state at its own T and P, so the declared-vapour inlet is two-phase there and the
-    certificate fails `phase_admissibility.U.inlet` (recorded, not part of (a))."""
+    """The registered composition fed as vapour at 673.15 K into the flash at the registered T
+    and P (§14.3 "G7 (a) amended"): the EO solve's vapour fraction and `y*_NH3` agree with
+    `pr-c1-v1.flash` within 1e-9 relative; material closure ≤ 1e-12 n_tot; energy closure ≤ 1e-9
+    |Ḣ_in|; the certificate `VERIFIED`. The start is the exact split, so no Newton iteration."""
     registered = FLASH[fid]
     n, t, p = tuple(registered["n_mol_s"]), registered["T_K"], registered["P_Pa"]
-    document = flash_revision(n, t, p)
+    document = flash_revision(n, t, p, feed_temperature=VAPOUR_FEED_T)
     solved = solve(document)
     assert solved.run.outcome == "CONVERGED"
     state = solved.run.state
@@ -294,34 +303,27 @@ def test_g7a_the_flash_at_a_registered_two_phase_state(fid: str) -> None:
     assert material <= 1e-12 * total
     vapour = tuple(state[f"S2.n.{c}"] for c in COMPONENTS)
     liquid = tuple(state[f"S3.n.{c}"] for c in COMPONENTS)
-    h_in = _h(n, t, "VAPOR", p)
+    h_in = _h(n, VAPOUR_FEED_T, "VAPOR", p)
     energy = state["U.Q"] - (_h(vapour, t, "VAPOR", p) + _h(liquid, t, "LIQUID", p) - h_in)
     assert abs(energy) <= 1e-9 * abs(h_in)
-    certificate = _certify(solved, document)
-    failed = sorted(c.id for c in certificate.checks if c.result == "fail")
-    assert certificate.verification_status == "FAILED"
-    assert "phase_admissibility.U.inlet" in failed
-
-
-@pytest.mark.parametrize("fid", ["F1", "F11"])
-def test_g7a_with_a_vapour_feed_the_flash_certifies(fid: str) -> None:
-    """The same flash fed the registered composition as a vapour at 673.15 K (so the declared
-    inlet phase holds): the same split, and `VERIFIED`."""
-    registered = FLASH[fid]
-    n, t, p = tuple(registered["n_mol_s"]), registered["T_K"], registered["P_Pa"]
-    document = flash_revision(n, t, p, feed_temperature=673.15)
-    solved = solve(document)
     certificate = _certify(solved, document)
     assert certificate.verification_status == "VERIFIED", [
         (c.id, c.result) for c in certificate.checks if c.result != "pass"
     ]
-    state = solved.run.state
-    assert state is not None
-    flashed = PROVIDER.flash(
-        FlashRequest(state=StreamState(n=n, temperature=t, pressure=p)), CONTEXT
-    )
-    assert flashed.vapor_fraction is not None
-    assert abs(state["S2.N"] / sum(n) - flashed.vapor_fraction) <= 1e-9 * flashed.vapor_fraction
+
+
+@pytest.mark.parametrize("fid", ["F1", "F11"])
+def test_g7a_fed_at_its_own_state_the_declared_vapour_inlet_fails(fid: str) -> None:
+    """Recorded (§14.3 "G7 (a) amended"): the registered state fed at its own T and P is a
+    two-phase feed outside the unit, so the flash's declared-vapour inlet fails
+    `phase_admissibility.U.inlet` and the certificate is `FAILED` — correctly."""
+    registered = FLASH[fid]
+    n, t, p = tuple(registered["n_mol_s"]), registered["T_K"], registered["P_Pa"]
+    document = flash_revision(n, t, p)
+    certificate = _certify(solve(document), document)
+    failed = sorted(c.id for c in certificate.checks if c.result == "fail")
+    assert certificate.verification_status == "FAILED"
+    assert "phase_admissibility.U.inlet" in failed
 
 
 def test_g7b_a_vapour_feed() -> None:
@@ -348,8 +350,11 @@ def _f4(delta: float = 0.0, feed_temperature: float = 300.0) -> tuple[dict[str, 
     return document, solve(document)
 
 
-def test_g7c_a_feed_at_its_own_dew_point_opens_vapour_by_the_band() -> None:
-    """F4: the kernel opens VAPOR, the solve converges there, `.dew ≤ τ_dew / 10` (it is 0.0)."""
+def test_g7c_a_feed_at_its_own_dew_point_opens_vapour_and_is_unverified_rank_deficient() -> None:
+    """F4 (§14.3 C3, R-282): the kernel opens VAPOR, the solve converges there, `.dew` is 0.0
+    (≤ τ_dew / 10); the certificate is UNVERIFIED with regularity RANK_DEFICIENT and a
+    `rank_limitation` — the registered expectation at a dew point, where E's and Ldef's rows are
+    proportional in (L, l_NH3) (build log D41)."""
     document, solved = _f4()
     assert _attempts(solved) == [((("U", "VAPOR"),), "CONVERGED", 0, "")]
     state = solved.run.state
@@ -357,40 +362,118 @@ def test_g7c_a_feed_at_its_own_dew_point_opens_vapour_by_the_band() -> None:
     assert all(is_positive_zero(state[f"S3.n.{c}"]) for c in COMPONENTS)
     certificate = _certify(solved, document)
     (dew,) = [c for c in certificate.checks if c.id == "phase_admissibility.U.S1.dew"]
-    assert dew.result == "pass" and dew.value <= TAU_DEW / 10
-    # D41: what the certificate says at the dew point, recorded.
+    assert dew.result == "pass" and dew.value == 0.0 and dew.value <= TAU_DEW / 10
     assert certificate.regularity is not None
     assert certificate.regularity.status == "RANK_DEFICIENT"
     assert certificate.regularity.rcond_1 is not None and certificate.regularity.rcond_1 < 1e-15
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "G7 (c) VERIFIED not met (build log D41, OPEN): at the dew point the declaration's "
-        "Jacobian is singular (E and Ldef proportional in (L, l_NH3)); RANK_DEFICIENT"
-    ),
-)
-def test_g7c_the_certificate_at_the_dew_point_is_verified() -> None:
-    document, solved = _f4()
-    assert _certify(solved, document).verification_status == "VERIFIED"
+    assert certificate.verification_status == "UNVERIFIED"
+    assert [item.detail for item in certificate.limitations if item.kind == "rank_limitation"] == [
+        {"status": "RANK_DEFICIENT", "reason": None}
+    ]
 
 
 @pytest.mark.parametrize("delta", [1e-8, 1e-7, 1e-5])
 def test_g7c_k18_just_past_the_band_is_recorded(delta: float) -> None:
     """K18: F4 × (1 + δ), `l/n_tot ≈ 0.0616 δ`, past τ_dew: the outcome, `rcond_1` and the verdict,
-    recorded (design note §14.2 G7 (c)). Measured: TWO_PHASE, CONVERGED in 0 iterations,
-    ILL_CONDITIONED with rcond_1 ≈ 4.2e-4 δ, UNVERIFIED. Never handled by widening τ_dew."""
+    recorded (design note §14.2 G7 (c); §14.3 C3: δ = 1e-5 UNVERIFIED). Measured: TWO_PHASE,
+    CONVERGED in 0 iterations, ILL_CONDITIONED (`relative`, rcond_1 < τ_ill) with rcond_1 ≈ 4.2e-4
+    δ, UNVERIFIED. Never handled by widening τ_dew."""
     document, solved = _f4(delta)
     assert _attempts(solved) == [((("U", "TWO_PHASE"),), "CONVERGED", 0, "")]
     certificate = _certify(solved, document)
     assert certificate.regularity is not None
     rcond = certificate.regularity.rcond_1
-    assert rcond is not None and rcond == pytest.approx(4.2316e-4 * delta, rel=1e-3)
+    assert rcond is not None and rcond == pytest.approx(RCOND_PER_DELTA * delta, rel=1e-3)
     assert certificate.regularity.status == "ILL_CONDITIONED"
+    assert certificate.regularity.ill_conditioned_reason == "relative"
     assert certificate.verification_status == "UNVERIFIED"
     (closure,) = [c for c in certificate.checks if c.id == "phase_admissibility.U.S1.closure"]
     assert closure.result == "pass"
+
+
+#: The measured near-dew law at F4 (§14.3 C3): rcond_1 = 4.2316e-4 δ on both sides of the dew
+#: point, δ the relative NH3 excess (TWO_PHASE) or deficit (VAPOR) against the dew composition.
+RCOND_PER_DELTA = 4.2316e-4
+
+
+def test_g7c_at_delta_1e_4_two_phase_is_recorded_unverified() -> None:
+    """§14.3 C3 expected δ = 1e-4 VERIFIED near threshold (τ_ill alone). Measured: UNVERIFIED, by
+    two registered limits τ_ill does not include. rcond_1 = 4.23e-8 passes τ_ill = 1e-8, but
+    ‖J⁻¹‖₁ = 4.66e6 exceeds the screen's absolute limit τ_min/(n ε) = 1.88e6 (n = 24;
+    ILL_CONDITIONED, `absolute`). And the liquid NH3 flow, 6.2e-6 n_tot = 5.5e-6 mol/s, is
+    below one witness step (1e-5 × 3 mol/s), so the central stencil leaves the domain there."""
+    document, solved = _f4(1e-4)
+    assert _attempts(solved) == [((("U", "TWO_PHASE"),), "CONVERGED", 0, "")]
+    certificate = _certify(solved, document)
+    regularity = certificate.regularity
+    assert regularity is not None and regularity.rcond_1 is not None
+    assert regularity.rcond_1 == pytest.approx(RCOND_PER_DELTA * 1e-4, rel=1e-3)
+    assert regularity.rcond_1 > 1e-8
+    assert (regularity.status, regularity.ill_conditioned_reason) == ("ILL_CONDITIONED", "absolute")
+    assert regularity.inverse_one_norm_threshold is not None
+    assert regularity.inverse_one_norm_estimate is not None
+    assert regularity.inverse_one_norm_estimate > regularity.inverse_one_norm_threshold
+    witness = [
+        (c.result, c.reason) for c in certificate.checks if c.category == "derivative_witness"
+    ]
+    assert witness == [("unsupported", "witness_stencil_invalid_trial_state(S3.n.NH3)")] * 2
+    assert certificate.verification_status == "UNVERIFIED"
+
+
+def test_g7c_at_delta_1e_3_two_phase_is_verified_and_not_near_threshold() -> None:
+    """§14.3 C3: F4 × (1 + 1e-3) is VERIFIED, with no near-threshold flag (the gate's stop
+    condition: were it not, the work would go to the design lane)."""
+    document, solved = _f4(1e-3)
+    assert _attempts(solved) == [((("U", "TWO_PHASE"),), "CONVERGED", 0, "")]
+    certificate = _certify(solved, document)
+    assert certificate.verification_status == "VERIFIED", certificate.limitations
+    regularity = certificate.regularity
+    assert regularity is not None and regularity.status == "NO_RANK_LOSS_DETECTED"
+    assert regularity.rcond_1 == pytest.approx(RCOND_PER_DELTA * 1e-3, rel=1e-3)
+    assert not any(item.kind == "near_threshold" for item in certificate.limitations)
+    assert not any(check.near_threshold for check in certificate.checks)
+
+
+@pytest.mark.parametrize(
+    ("delta", "status", "reason", "verdict"),
+    [
+        (1e-6, "ILL_CONDITIONED", "relative", "UNVERIFIED"),
+        (1e-4, "ILL_CONDITIONED", "absolute", "UNVERIFIED"),
+        (1e-2, "NO_RANK_LOSS_DETECTED", None, "VERIFIED"),
+    ],
+)
+def test_g7c_the_vapour_side_law_is_recorded(
+    delta: float, status: str, reason: str | None, verdict: str
+) -> None:
+    """§14.3 C3: F4 × (1 − δ), an undersaturated vapour: VAPOR, `.dew` 0.0, and rcond_1 =
+    4.23e-4 δ — the TWO_PHASE side's law mirrored (within 8e-4 relative at δ = 1e-2)."""
+    n = (*F4[:2], F4[2] * (1.0 - delta), *F4[3:])
+    document = flash_revision(n, 268.15, feed_temperature=300.0)
+    solved = solve(document)
+    assert [signature for signature, *_ in _attempts(solved)] == [(("U", "VAPOR"),)]
+    certificate = _certify(solved, document)
+    (dew,) = [c for c in certificate.checks if c.id == "phase_admissibility.U.S1.dew"]
+    assert dew.result == "pass" and dew.value == 0.0
+    regularity = certificate.regularity
+    assert regularity is not None and regularity.rcond_1 is not None
+    assert regularity.rcond_1 == pytest.approx(RCOND_PER_DELTA * delta, rel=1e-3)
+    assert (regularity.status, regularity.ill_conditioned_reason) == (status, reason)
+    assert certificate.verification_status == verdict
+
+
+@pytest.mark.parametrize(
+    ("delta", "verdict"),
+    [(-2.4e-4, "UNVERIFIED"), (-2.6e-4, "VERIFIED"), (5.3e-4, "UNVERIFIED"), (5.7e-4, "VERIFIED")],
+)
+def test_g7c_the_near_dew_window_edges_as_the_manifest_states_them(
+    delta: float, verdict: str
+) -> None:
+    """The window's edges, bisected at F4 and stated in `c1.tp_flash`'s manifest: on the VAPOR
+    side (δ < 0) VERIFIED from |δ| = 2.483e-4, where ‖J⁻¹‖₁ meets the absolute limit; on the
+    TWO_PHASE side from δ = 5.480e-4 (L/n_tot = 3.37e-5), where the liquid NH3 flow reaches one
+    witness step. Each edge is asserted 3-4 % to either side."""
+    document, solved = _f4(delta)
+    assert _certify(solved, document).verification_status == verdict
 
 
 def test_g7d_a_zero_flow_feed() -> None:
