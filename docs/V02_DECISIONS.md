@@ -698,3 +698,8 @@ Grep, don't read whole. Newest at the bottom.
   7748 passed; W27 tests with the archive dir linked 124 passed, 0 skipped. Interpretations to check in M04 review: optional
   `model_functions` parameter in `check_snapshot`/`classify`; `C1_MODEL_IDS` excludes the surrogate; `hypothetical_v02_a3`
   basis string wording.
+
+- **M02 WO-12a″ done** (2026-10-09, `wp/M02` `764cab5`/`39620d1`/`bcfd0af`, gate 8290; G2 unchanged): V4 20/21
+  (`V4-corner-T653.15-P1.1e+07-r2.5-i0.03` S1), V5 21/21, V6 21/21 in both runs → **V5 selected**; timeout 450 s
+  (slowest 149.7 s); G10v3 bitwise vs D83; G11v3-11 87×2 labels 0 differences. D100–D102, D105 to reviewer batch.
+  WO-14 merged into `wp/M02` (`ba13ce3`; build log joined in D-order).

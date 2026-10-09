@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-12a′ done to G11v3-4 (no box of V1–V3); round 8 §14.7 (`756e123`, R-315/R-316, ADR 0027 Am. 4): rungs V4 (inerts ≥ 3 %), V5 (≥ 3.5 %), V6 (V5 + P [9.5, 10.5] MPa, H₂/N₂ [2.75, 3.25]), all T_in [653.15, 693.15] K; round 2 whenever δ₁ > 1e-7; WO-12a″ running (full re-measure); WO-14 running; then WO-12b (on the selected rung, before Frank's N7 answer), WO-13, `reviewer`; WO-14 done on `wp/M02-wo14` (`e8c7777`, gate 8281; G8(f) f1–f5 pass, D50 xfail gone; G8 records byte-identical) — merge into `wp/M02` after WO-12a″; for the `reviewer` batch: RP-2 (cross-platform rerun still MISMATCH: certificate inlet check + exact-0 ρ/r_ξ, no floor), D94, AC-1 meaning, f5 end-to-end test |
+| M02 | Build | M01 | W21 | WO-1…12a″, 11a, 14 done; WO-12a″ (`bcfd0af`, gate 8290): **V5 selected** (inerts ≥ 3.5 %, T_in [653.15, 693.15] K; V4 20/21, V5/V6 21/21 both runs), timeout 450 s, G10v3 bitwise; WO-14 merged in (`ba13ce3`, gate running); next WO-12b (register v3 on V5), WO-13 manifest, `reviewer` (batch: RP-2, D94, AC-1, f5 e2e, D100–D102, D105) |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435); W27 Amendment 3 (`14c8695` on main, R-301/302): surrogate → no function (`surrogate_model`), `hypothetical_v02_a3`, corpus resolver; WO-16i merged into main (`b3216dc`; W27 tests 124 passed with archive); next merge main into `wp/M04`, J3′–J6′ + corpus resolver + WO-8; WO-9 after M02 merged; WO-11 real run; WO-12 manifest |
 | M05 | Design | M03, M04 | W24 | WO-1…5, 2b, 3b, 4a done (`7bc8c56`, gate 8473; §17 acceptance pass; TR-E2 check now `TRF_MAX_ITERATIONS`, no refusal); open for next M05 ruling batch: Z2 (SYN-001 jointly-pinned zero flows at P1/P2/B2 refused `unpinned`, 15 strict xfails), W2 (max-iterations with θ_recheck > 1e-5 keeps its candidate?); WO-5c (`at_coupling`, R-309) + E2 guard after M02 merges; real records bind reactor v3; box may shrink (R-304); WO-6+ next; R-313: REAL decision box → [653.15, 693.15] K (WO-5c) |
@@ -78,7 +78,7 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   approval, marked pre-release. Preferences on defaults: cut `C_α` before M03 merges; freeze distribution paths from
   `C_α` to dispatch.
 
-- **M02 N7 (live; default R-315: ship the first of V4 (inerts ≥ 3 %), V5 (≥ 3.5 %), V6 (V5 narrowed in P, H₂/N₂) that
+- **M02 N7 (V5 selected by measurement: inerts ≥ 3.5 %, T_in [653.15, 693.15] K, V3's P and H₂/N₂; default R-315: ship the first of V4 (inerts ≥ 3 %), V5 (≥ 3.5 %), V6 (V5 narrowed in P, H₂/N₂) that
   qualifies, all at T_in [653.15, 693.15] K; inlets below the floor refused `out_of_domain`; the loop runs at 4.0–4.5 %):** shipped reactor domain = the box the v3 measurements select (R-304: [643.15, 733.15] K
   if it passes, else [653.15, 693.15] K, else narrowed P and H₂/N₂). Full 573–773 K would need a new start strategy,
   outside M02's plan row.
@@ -97,7 +97,6 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `opus-engineer` | M02 WO-12a″ (§14.7) | `wp/M02` (`m02`) |
 | `opus-engineer` | M04 merge main + register surrogate + J3′–J6′ + corpus resolver (§22) | `wp/M04` (`m04`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
