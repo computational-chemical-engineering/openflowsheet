@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…9 + join done (`f71d55e`, gate 8203; digest unchanged; W27 J3/J4 as predicted); WO-10, 11 running; then WO-12 (real-reactor G10–G12), WO-13 manifest, `reviewer` |
+| M02 | Build | M01 | W21 | WO-1…11 done (`770969d`, gate 8251, 2 strict xfails; G2 byte-identical; digest unmoved); WO-12 (real G10–G12) running; then WO-13 manifest + `reviewer` with batched rulings: D50 (G8(f) G=1.8 Broyden vs §4.3 reset), D61 (G9(a) stand-in→real fails `validity` on per-tube flow bound), D55 (every C1 run classed R3), D58 (cross-platform replay last-bit), envelope `unbound_providers` + stand-in docstring |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435; G2 dump unchanged); **registration blocked**: `c1.reactor_surrogate` needs a W27 `model_functions` row + J3 re-pin (design lane, batched); WO-8 after that + M02 WO-11; WO-9 after M02 WO-10/11 merged; WO-11 real run ≈16–30 min; WO-12 manifest |
 | M05 | Design | M03, M04 | W24 | WO-1…5 done (`wp/M05` `6b54b8d`, gate 8465; G4 (C1) pass, G7 mechanics pass); **STOP**: C1 TRF aborts on exact-zero flows going roundoff-negative; FD policy misses (WO-4 FD 4.1e-2, G6 gradient check fails on truncation), §16.4 1e-6 missed narrowly (1.18e-6), Optimal-with-θ label → ruling round `docs/briefs/v02-rulings-M05-M04.md` running; `with_coupling` accessor must also land on `wp/M02` |
@@ -92,7 +92,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `opus-engineer` | M02 WO-10, WO-11 (coupled route + replay; promotion) | `wp/M02` (`m02`) |
+| `opus-engineer` | M02 WO-12 (real-reactor G10–G12; brief `docs/briefs/M02-WO12.md`) | `wp/M02` (`m02`) |
 | `architect` | Ruling round M05 A1–A4 + M04 B1 (W27 row) | `wp/M05` + `main` |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).

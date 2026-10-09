@@ -633,3 +633,9 @@ Grep, don't read whole. Newest at the bottom.
   (exact-zero flows unbounded per ADR 0032 D4). Misses committed as strict xfails: WO-4 FD 4.1e-2 (dX/dT), gradient
   check 0.0373 vs 2.27e-3 (truncation; η escalation worsens), §16.4 |Δz| 1.18e-6. Batched with M04 B1 into one
   `architect` ruling round (brief `docs/briefs/v02-rulings-M05-M04.md`).
+
+- **M02 WO-10/11 done** (2026-10-09, `wp/M02` `770969d`): gate 8251 passed, 2 strict xfails; G2 dump unchanged; digest
+  unmoved. G8 (a)–(d), (g), G6 (c), R3, G9 (b)–(e) pass (G8(c) 62 vars within 3.0e-14 of the independent oracle).
+  Escalated: D50 G8(f) G=1.8 ends `no_decrease` under §4.3's reset; D61 G9(a) stand-in→real fails `validity` (stand-in
+  per-tube flow bound null). Findings D55 (all C1 runs R3 via "external" text match), D58 (exact compare of Broyden
+  iterate floats in `constants_sha256`), D64 fixed. Rulings batched into M02's reviewer pass. WO-12 launched.
