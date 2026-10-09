@@ -626,3 +626,10 @@ Grep, don't read whole. Newest at the bottom.
   level) measured, see `docs/design/M04-build-decisions.md` E1–E8. Registration blocked: W27 classifier refuses
   `c1.reactor_surrogate` (W27-R24(a)); needs a `model_functions` row + snapshot/J3 re-pin from the design lane (batched
   into the M04 ruling round). `reproduce_bundle` gives `rerun_unsupported` for surrogate runs until bundles carry the manifest.
+
+- **M05 WO-4/5 done** (2026-10-09, `wp/M05` `6b54b8d`; merge `3e7df38`; M02 schemas added to registry, R-213). Gate 8465
+  passed; opt-in 104 passed. G4 (C1) pass (73×73 matching; alias rows omitted per R-274); T_ref 673.6434377969885 K;
+  G7 mechanics pass. STOP: TRF on TR-E2 → `TRF_TRUTH_REFUSED(property_domain_error:S1_Hdot_V)`, S1.n.NH3 = -3.448e-27
+  (exact-zero flows unbounded per ADR 0032 D4). Misses committed as strict xfails: WO-4 FD 4.1e-2 (dX/dT), gradient
+  check 0.0373 vs 2.27e-3 (truncation; η escalation worsens), §16.4 |Δz| 1.18e-6. Batched with M04 B1 into one
+  `architect` ruling round (brief `docs/briefs/v02-rulings-M05-M04.md`).
