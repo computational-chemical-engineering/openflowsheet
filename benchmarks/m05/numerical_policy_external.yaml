@@ -1,14 +1,52 @@
-# M05 (ADR 0025 D2.3, ADR 0007 D2.3, every float classified): the `sha256`-bearing names that M05's
-# schema adds (`trust-region-study`). A separate table beside M02's, so that the registered
-# numerical policies (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) keep their ids and
-# their contents (M02's precedent, its design note §3.6; M05 build decision S11).
+# M05 (ADR 0025 D2.3, ADR 0007 D2.3, every float classified): the classes of the floats and the
+# `sha256`-bearing names that M05's schema adds (`trust-region-study`). The classes are M02's
+# (design note D14, "replay classes follow M02"; §9.3). A separate table beside M02's, so that the
+# registered numerical policies (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) keep their
+# ids and their contents (M02's precedent, its design note §3.6; M05 build decision S11).
 #
-# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
-# addendum after another).
+# Read by `tests/test_m05_study_record.py` (A32's rule over the records `run_study` produces and
+# WO-8's committed ones) and by `scripts/t08_numerical_policy.py --check` (the closed partition of
+# `sha256` names, one addendum after another).
 numerical_policy_external:
   id: M05-numerical-policy-external-v1
   schemas:
   - trust-region-study.schema.json
+  classes:
+    exact: copied or registered values, compared exactly (the study specification, the TRF
+      configuration and the retry's radius factor, the noise floor's registered steps, the start
+      decisions, the budget's wall-clock cap)
+    r3_recorded_external: outputs of an external model; compared exactly against the record on a
+      replay from record, within the variant's precision_floor_rel on a live rerun (ADR 0034 D6).
+      The record carries none (the truth's outputs live in the ledger artifact and in M02's
+      records); the class is listed so that the four classes are M02's (design note D14)
+    r1_r2_existing_floors: TRF iterates, the parent solves' objectives, couplings and residuals, and
+      every quantity derived from them; compared under the registered policy's floors (R1/R2;
+      design note §9.3, "floats under the policy")
+    excluded: timings; outside every identity and every comparison (§9.3 asks only that `wall_s`
+      be positive)
+  # Paths: the dotted path of a float inside the record (`[i]` for an array index), as a full-match
+  # regular expression; a decision id may contain dots, hence `.+` after `decisions.`. The first
+  # matching rule classifies; a float no rule matches is unclassified and the test fails naming it.
+  # A parent solve's summary (§8.2) is `start` or `candidates[i].solves[j]`.
+  rules:
+    trust_region_study:
+    - {path: '\.spec\..*', class: exact}
+    - {path: '\.(start|candidates\[\d+\]\.solves\[\d+\])\.wall_s', class: excluded}
+    - {path: '\.start\.decisions\..+', class: exact}
+    - {path: '\.(start|candidates\[\d+\]\.solves\[\d+\])\.(objective|coupling\[\d+\]|coupling_residuals\[\d+\])', class: r1_r2_existing_floors}
+    - {path: '\.candidates\[\d+\]\.solves\[\d+\]\.decisions\..+', class: r1_r2_existing_floors}
+    - {path: '\.runs\[\d+\]\.(config\..*|radius_factor)', class: exact}
+    - {path: '\.runs\[\d+\]\.iterations\[\d+\]\.(theta|objective|radius|step_norm)', class: r1_r2_existing_floors}
+    - {path: '\.runs\[\d+\]\.filter\[\d+\]\.(f|theta)', class: r1_r2_existing_floors}
+    - {path: '\.runs\[\d+\]\.final\.(decisions\..+|objective|theta)', class: r1_r2_existing_floors}
+    - {path: '\.runs\[\d+\]\.(theta_recheck|theta_logged)', class: r1_r2_existing_floors}
+    - {path: '\.candidates\[\d+\]\.noise_floor\.(h_X|h_T)', class: exact}
+    - {path: '\.candidates\[\d+\]\.noise_floor\.(dJ_dX|dJ_dT|e_star|inner\[\d+\]\.(w\[\d+\]|J))', class: r1_r2_existing_floors}
+    - {path: '\.candidates\[\d+\]\.(decisions\..+|checks\.P[1-5]\.values\..*)', class: r1_r2_existing_floors}
+    - {path: '\.candidates\[\d+\]\.poll\[\d+\]\.(decisions\..+|J|e)', class: r1_r2_existing_floors}
+    - {path: '\.candidates\[\d+\]\.(curvature|indifference_halfwidth)\..+', class: r1_r2_existing_floors}
+    - {path: '\.best\.(decisions\..+|objective)', class: r1_r2_existing_floors}
+    - {path: '\.accounting\.budgets\.study_wall_s', class: exact}
   # The `sha256`-bearing property names M05's schema adds, all exact digests (none is a float
   # digest, ADR 0007 D1 row 3): the bound revision, the projection's source map, the pinned TRF
   # modules (an object of digests by file) and the audited TRSP executable. The names it reuses

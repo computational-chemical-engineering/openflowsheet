@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import sys
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from typing import Any
 
 import pytest
@@ -542,3 +543,45 @@ def test_the_m05_partition_refuses_an_unclassified_and_a_reclassified_name() -> 
     claimed = {**EXTERNAL_M05, "schemas": [*EXTERNAL_M05["schemas"], "experiment.schema.json"]}
     problems = t08_numerical_policy.external_audit(POLICY_V2, claimed, [EXTERNAL_M02])
     assert "(m05) schemas of an earlier addendum: ['experiment.schema.json']" in problems
+
+
+# -- the classification of the record's floats (ADR 0007 D2.3; A32's rule, as M02's) --------------
+
+FLOAT_RULES = [
+    (re.compile(rule["path"]), rule["class"])
+    for rule in EXTERNAL_M05["rules"]["trust_region_study"]
+]
+
+
+def _floats(node: Any, path: str = "") -> Iterator[str]:
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from _floats(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            yield from _floats(value, f"{path}[{index}]")
+    elif isinstance(node, float):
+        yield path
+
+
+def test_the_m05_addendum_uses_m02s_four_classes() -> None:
+    """Design note D14: the replay classes follow M02."""
+    assert set(EXTERNAL_M05["classes"]) == set(EXTERNAL_M02["classes"])
+    assert set(EXTERNAL_M05["rules"]) == {"trust_region_study"}
+    assert all(cls in EXTERNAL_M05["classes"] for _, cls in FLOAT_RULES)
+
+
+@pytest.mark.parametrize("make", _records())
+def test_every_float_of_every_record_is_classified(make: Callable[[], dict[str, Any]]) -> None:
+    """ADR 0007 D2.3 for M05's floats: each one matches a rule of the addendum."""
+    found = list(_floats(make()))
+    assert found  # every record carries the specification's decision box
+    unclassified = [where for where in found if not any(p.fullmatch(where) for p, _ in FLOAT_RULES)]
+    assert unclassified == []
+
+
+def test_every_float_rule_classifies_a_float_of_the_generated_records() -> None:
+    """No dead rule: a mistyped path would otherwise pass unnoticed."""
+    paths = [where for make in GENERATED.values() for where in _floats(make())]
+    dead = [p.pattern for p, _ in FLOAT_RULES if not any(p.fullmatch(where) for where in paths)]
+    assert dead == []
