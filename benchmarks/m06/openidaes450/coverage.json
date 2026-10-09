@@ -91723,7 +91723,7 @@
   "schema": "w27-coverage-v1",
   "snapshot": {
     "basis": "built by benchmarks.m06.w27.snapshot from the build at git_commit",
-    "git_commit": "6adf386fc8e47f3f0e870a3e9199f288b1eb62de",
+    "git_commit": "14a1397b8af6da9fb87993882021acf81f773ad0",
     "list_models_sha256": "f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4",
     "models": [
       {
@@ -91919,7 +91919,7 @@
     "routes_per_revision": 1,
     "schema": "w27-registry-snapshot-v1"
   },
-  "snapshot_sha256": "0e2e6bf868af11bfca32c59318afa5779931c1132daaaa1dcd675dd132f5db91",
+  "snapshot_sha256": "8f4bb0c8df0a7654276a9ba410cad489dd1f241749aa1fb3d3eadce35c4e5343",
   "summary": {
     "all_450": {
       "by_family": {
