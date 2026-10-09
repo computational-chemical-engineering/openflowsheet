@@ -28,7 +28,7 @@ pytestmark = pytest.mark.pymrm
 
 #: The variant that built the environment, and the current one, which executes in it.
 BUILT_BY = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v1")
-VARIANT = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v2")
+VARIANT = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v3")
 PROBE: dict[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m01" / "reactor-probe.json")
 
 
