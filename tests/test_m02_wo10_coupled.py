@@ -34,6 +34,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
+from jsonschema import Draft202012Validator
 from m02_variant_support import register_variants
 from t07_jobs_support import commit, lifecycle_violations, response_schema_violations
 
@@ -65,6 +66,7 @@ from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.compare import CURRENT_POLICY_ID
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.failure import OUTCOME_ACTIONS
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from m02_schema_fixtures import synthetic_backend, synthetic_variant  # noqa: E402
@@ -351,6 +353,43 @@ def test_g8f_a_nonlinear_in_process_variant_converges_end_to_end(
     assert 2 < len(accepted) <= 15
     assert accepted[-1]["rho"] <= 1.0
     # Measured: four accepted iterates, ρ 964.5, 227.0, 91.2, 0.257.
+
+
+# == f5 end to end (M02 review F3; note §14.5's table: `COUPLING_NOT_CONVERGED`, failure bundle,
+# no certificate) =================================================================================
+
+
+def test_f5_max_outer_ends_coupling_not_converged_with_a_bundle_and_no_certificate(
+    app: LocalApplication, register: Any
+) -> None:
+    """A test-only stand-in whose coupling block has `max_outer: 1`: its initial X̂ = 0.15 is not
+    the stand-in's 0.25, so k = 0 is not converged and is the last iterate allowed."""
+    coupling_block = {**STANDIN.document["coupling"], "max_outer": 1}
+    document = {**STANDIN.document, "variant_id": "test-max-outer-1-v1", "coupling": coupling_block}
+    variant = register(variants.variant_from_document(document))
+    job = submit_solve(app, "f5", commit(app, pinned(loop(), variant)))
+    result = dispatch(app, "get_job_result", {"job_id": job["job_id"]})["run_result"]
+    assert result["outcome"] == "COUPLING_NOT_CONVERGED", (job["status"], job["error"], result)
+    bundle = bundle_of(app, job)
+    manifest = read_manifest(bundle)[0]
+    assert (manifest.outcome, manifest.verification_status) == ("COUPLING_NOT_CONVERGED", None)
+    assert "solution-certificate.json" not in manifest.artifacts
+    failure = read_artifact(bundle, "failure-bundle.json")
+    schema = json.loads((REPO_ROOT / "schemas" / "failure-bundle.schema.json").read_text())
+    assert list(Draft202012Validator(schema).iter_errors(failure)) == []
+    assert failure["outcome"] == "COUPLING_NOT_CONVERGED"
+    assert failure["taxonomy"] == "initialization and recycle failures"
+    observations = failure["observations"]
+    assert (observations["reason"], observations["outer_iterations"]) == ("max_outer", 1)
+    # The taxonomy's action (no outcome-specific one is registered for COUPLING_NOT_CONVERGED).
+    assert "COUPLING_NOT_CONVERGED" not in OUTCOME_ACTIONS
+    assert [entry["action"] for entry in failure["suggested_actions"]] == ["supply_initial_guess"]
+    record = read_artifact(bundle, "external-coupling.json")
+    assert schema_errors(COUPLING, record) == []
+    assert (record["outcome"], record["reason"]) == ("COUPLING_NOT_CONVERGED", "max_outer")
+    (only,) = record["iterations"]
+    assert only["k"] == 0 and only["rho"] > 1.0 and only["w"][0] == 0.15
+    assert observations["external_coupling"]["iterations"][0]["rho"] == only["rho"]
 
 
 # == G8 (g) ======================================================================================
