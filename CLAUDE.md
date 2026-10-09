@@ -27,6 +27,26 @@ The session runs the build lane; the design lane runs as subagents at the highes
 - The build lane does not resolve a scientific ambiguity by choosing; it escalates to the design lane in `docs/progress.md`. The design lane does not resolve a tooling ambiguity by improvising; it delegates to the build lane with a stated acceptance test.
 - Build-lane chunks inside a design-led package are delegated as subagents (worktree isolation), and the design lane reviews the result before merging.
 
+## Agent budget (Frank, 2026-10-09)
+
+Token usage is a constraint. These rules cut it without dropping a review, a gate, or a design-lane ruling:
+
+- **At most 2 agents at a time.** Let running agents finish; never stop one mid-work to save tokens.
+- **Never resume a large-context agent for a follow-up.** Each follow-up rereads the agent's whole context, often
+  400–500k tokens. Ask a fresh design agent with a tight brief instead: the question, the measured facts, and the
+  `file:line` anchors it needs.
+- **Batch design-lane questions per package.** The engineer makes each open choice as an isolated, revertible commit,
+  logs it in the package's build-decisions file, and carries on. One ruling round happens at a natural break, preferably
+  folded into the package's single `reviewer` pass. Stop early only when a choice would change numerics, identity, or a
+  frozen interface.
+- **Small work orders, about 150k context per engineer.** An engineer that reaches the cap commits what is complete,
+  writes where it stopped, and ends. A fresh agent continues from the commit log.
+- **Sonnet for bounded items**: manifests, docs, fixture re-takes, generator-check tests, mechanical edits. Opus for
+  numerics and design-adjacent code.
+- **Short reports, 200–300 words.** Full detail goes into the package's build-decisions log in the repository.
+- **Unchanged:** one design-lane spec or design pass and one `reviewer` pass per package, the full gate before every
+  commit, and decisions recorded in the register.
+
 ## Branch and merge discipline
 
 - One branch per work package, named `wp/<ID>` (for example `wp/K03`). The lead lane owns it.

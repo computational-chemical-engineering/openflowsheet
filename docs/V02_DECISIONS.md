@@ -613,3 +613,9 @@ Grep, don't read whole. Newest at the bottom.
   join); the stand-in's docstring says "Not registered" but its file hash is the pinned artifact hash.
 - Launched: `opus-engineer` M02 WO-10, WO-11 (coupled route + replay; promotion); `opus-engineer` M04 merge `f71d55e` +
   WO-7 (surrogate unit); `opus-engineer` M05 merge `f71d55e` + WO-4, WO-5 (truth adapters, C1 formulation).
+- Frank (2026-10-09): "Token usage is too large" → approved changes 1–6 and "Make sure future sessions have the same
+  workflow". Recorded as `CLAUDE.md` "Agent budget": at most 2 agents; never resume a large-context agent (fresh agent,
+  tight brief); batch design-lane questions per package (isolated commits, one ruling round, preferably in the reviewer
+  pass); ~150k context cap per engineer; Sonnet for bounded items; 200–300-word reports, detail in the repo's
+  build-decisions logs. Unchanged: one design pass + one reviewer pass per package, full gate before every commit. Also
+  saved as project memory. The three engineers already running finish as briefed.

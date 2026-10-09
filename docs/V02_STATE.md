@@ -8,7 +8,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | Objective | Plan v1.2 §4.4: M01–M07, the scientific reactor replacement; release gate W21–W27; release `0.2.0` |
 | Chemistry | C1, the ammonia synthesis loop (ADR 0022, R-120); `docs/v02-real-chemistry-dossier.md`; reactor `ammonia_synthesis_reactor` `main` @ `6089593` (MIT) |
 | Order | R-153: M01 design first; M06 built alongside; M03 when the critical path allows; pre-release `0.2.0a1` after M02 `tested`; `0.2.0` after M07 |
-| Concurrency | At most 4 agents at a time (Frank, 2026-10-06) |
+| Concurrency | **At most 2 agents at a time** (Frank, 2026-10-09; was 4). Agent budget rules: `CLAUDE.md` "Agent budget" |
 | Repository | Public `origin` only (R-150); pre-push guard installed; pushing to `origin` authorised (Frank, 2026-10-08) |
 
 ## Packages
@@ -88,7 +88,7 @@ F5 education mode deferred.
 
 ## Next action
 
-Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
+Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rules in `CLAUDE.md` apply. The three below were started before the change and finish as they are.
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
