@@ -441,6 +441,7 @@ def project(
     inequalities: Sequence[InequalitySpec] = (),
     omitted_rows: Collection[str] | None = None,
     shape_check: ShapeCheck = "required",
+    variable_bounds: Mapping[str, tuple[float, float]] | None = None,
 ) -> Projection:
     """Project `spec` at the state `x0` (every variable id → binary64) for TRF (§6.1).
 
@@ -454,7 +455,11 @@ def project(
     differ; an id that is not an equation of the spec is a `ValueError`.
 
     `shape_check="exempt_oracle"` is TR-E1's alone (R-278): the shape check's verdict is recorded
-    but does not refuse."""
+    but does not refuse.
+
+    `variable_bounds` tightens named variables' bounds beyond their kind's (§7.1: a truth's hard
+    domain on its inlet T and P): each bound is the intersection, and the source map records the
+    result. A name that is not a variable is a `ValueError`."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
@@ -468,6 +473,14 @@ def project(
     variable_ids = spec.variable_ids
     variable_index = {name: index for index, name in enumerate(variable_ids)}
     bounds = [_variable_bounds(spec, name, float(x0[name]), domain) for name in variable_ids]
+    for name, (low, high) in (variable_bounds or {}).items():
+        if name not in variable_index:
+            raise ValueError(f"variable_bounds names {name!r}, which is not a variable")
+        before_low, before_high = bounds[variable_index[name]]
+        bounds[variable_index[name]] = (
+            float(low) if before_low is None else max(before_low, float(low)),
+            float(high) if before_high is None else min(before_high, float(high)),
+        )
     model.x = pyo.Var(
         range(len(variable_ids)),
         initialize={index: float(x0[name]) for index, name in enumerate(variable_ids)},
