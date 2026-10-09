@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…7 done (`6a46cdd`; G10 bitwise, re-recorded on variant v2); WO-8 built (`8734905`, gate green, G2 byte-identical); rulings R-280…282 (`2587f14`); WO-9 done (`33bf150`; C1 loop VERIFIED with the stand-in); rulings R-287…289 (`d5df272`); join running; then (R-280 + W27 J1–J6), WO-10…13 |
+| M02 | Build | M01 | W21 | WO-1…9 + join done (`f71d55e`, gate 8203; digest unchanged; W27 J3/J4 as predicted); WO-10, 11 running; then WO-12 (real-reactor G10–G12), WO-13 manifest, `reviewer` |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | spec + Amendment 1; WO-1…6, 10, 13…17 done (`2aa86ec`, gate green); WO-7/8/9 after the M02 join; WO-11 real run = one pre-warm command (≈16–30 min); WO-12 manifest |
 | M05 | Design | M03, M04 | W24 | design done; WO-2, 3 done (`dd9e364`; G2, G3, G4 (SYN-001/TR-E1), G13); WO-1 audit PASS (merged `aef41bf`); rulings R-274…279 implemented (`2dc50d9`; WO-2a/3a done; one ruling pending for WO-6: Optimal-with-θ>1e-5 label); WO-4+ need M02 + M04 merged |
@@ -92,7 +92,9 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `opus-engineer` | M02 join (main merge, registry move, corpus, fixtures, envelope, W27 J1–J6) | `wp/M02` (`m02`) |
+| `opus-engineer` | M02 WO-10, WO-11 (coupled route + replay; promotion) | `wp/M02` (`m02`) |
+| `opus-engineer` | M04 merge M02 `f71d55e` + WO-7 (surrogate unit) | `wp/M04` (`m04`) |
+| `opus-engineer` | M05 merge M02 `f71d55e` + WO-4, WO-5 (truth adapters, C1 formulation) | `wp/M05` (`m05`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);

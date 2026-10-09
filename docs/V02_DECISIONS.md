@@ -605,3 +605,11 @@ Grep, don't read whole. Newest at the bottom.
   bypass repeats). WO-14…16 were not gated separately (each carries a reverted schema-description edit that would trip
   R4-G3); HEAD gate covers them. Remaining: WO-7/8/9 after the M02 join; WO-11 real run (pre-warm command recorded);
   WO-12 manifest.
+- **M02 join done** on `wp/M02` (`61defce` merge of main, `a10dac3` R-282, `4c57bce` join, `fc54944` J4/J6, `386191b` D49,
+  `f71d55e`): gate 8203 passed, 0 failed. Served MCP digest unchanged (`383b4e2c…`). J3: live snapshot = hypothetical_v02
+  (SYN-001-only branch). J4: coverage 0/450, 0/82 candidates, G14 pass. G2 byte-identical (C1 corpus kept separate,
+  `tests/m02_c1_corpus.py`). B50 fixture not re-taken (strip the 8 C1 ids, R-234 method). Fifth C1 revision
+  `C1-REACTOR-M02-v1`. Left for the design lane: envelope still lists pr-c1-v1 under `unbound_providers` (false since the
+  join); the stand-in's docstring says "Not registered" but its file hash is the pinned artifact hash.
+- Launched: `opus-engineer` M02 WO-10, WO-11 (coupled route + replay; promotion); `opus-engineer` M04 merge `f71d55e` +
+  WO-7 (surrogate unit); `opus-engineer` M05 merge `f71d55e` + WO-4, WO-5 (truth adapters, C1 formulation).
