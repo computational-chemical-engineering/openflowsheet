@@ -46,6 +46,7 @@ from openflowsheet.application.admission import (
     admit_experiment,
     admit_reproduce,
     admit_solve,
+    admit_surrogate_study,
     resolve_policies,
 )
 from openflowsheet.application.authz import (
@@ -119,6 +120,7 @@ from openflowsheet.application.types import (
     ServerInfo,
     SolveBody,
     SubmitResult,
+    SurrogateStudyBody,
     TransactionResult,
     _replay_report_build,
     validate_document,
@@ -752,6 +754,14 @@ class LocalApplication:
                 self._refuse_error(admitted, operation, request_sha256)
             # R-233: an experiment's property calls are its own, never a solve's budget.
             return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
+        if isinstance(body, SurrogateStudyBody):
+            study = admit_surrogate_study(
+                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+            )
+            if isinstance(study, ApiError):
+                self._refuse_error(study, operation, request_sha256)
+            # R-233 again: a study's experiments are experiments; their calls are their own.
+            return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
         archive = store.artifact(body.bundle_artifact_id)
         wall_time_s = admit_reproduce(
             archive.kind if archive is not None else None,
@@ -816,6 +826,16 @@ class LocalApplication:
                 replay_report=None,
                 error=job.error,
                 experiment=self._experiment_answer(job),
+            )
+        if job.operation == "surrogate_study":
+            worker = self._store.worker_result(job.job_id)
+            study = worker.get("study") if isinstance(worker, Mapping) else None
+            return JobResult(
+                operation="surrogate_study",
+                run_result=None,
+                replay_report=None,
+                error=job.error,
+                surrogate_study=study,
             )
         report = None
         for output in job.outputs:

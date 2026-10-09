@@ -178,6 +178,10 @@ def test_c_each_operation_has_exactly_one_request_branch() -> None:
         # M02 (ADR 0033 D9, ADR 0019 Amendment 4): the `experiment` body lives with its records.
         "experiment": "https://github.com/frankp/process-runtime/schemas/experiment.schema.json"
         "#/$defs/experiment_body",
+        # M04 (ADR 0037 D6, ADR 0019 Amendment 5): the `surrogate_study` body lives with its
+        # manifest.
+        "surrogate_study": "https://github.com/frankp/process-runtime/schemas/"
+        "surrogate-manifest.schema.json#/$defs/surrogate_study_body",
     }
 
 

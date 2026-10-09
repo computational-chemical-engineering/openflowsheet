@@ -34,6 +34,7 @@ import pytest
 from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
+from m04_schema_support import without_m04
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
@@ -175,6 +176,23 @@ SNAPSHOT_M02: dict[str, str | None] = {
 }
 
 
+#: M04 (ADR 0037 D6, ADR 0019 Amendment 5): the operations whose resolved response embeds
+#: `job.schema.json`, which gains the `surrogate_study` operation, its body branch, two artifact
+#: kinds and `job_result`'s `surrogate_study` member. Re-taken; with M04's additions removed
+#: (`tests/m04_schema_support.py`) every one is its `SNAPSHOT_M02` value again
+#: (`tests/test_m04_study_job.py`).
+SNAPSHOT_M04: dict[str, str | None] = {
+    "solve": "5b57cd405a07bb31faa5dbd975099aaef6acff63369a80679b2fc38d18be245a",
+    "submit_job": "b1cc344756b6e93007eeec9099033aac5c1b069a6fb7c7793a41c1a2b1d79697",
+    "get_job": "fb3477d20571a998f921365456287157943cdd6fe2f631fa307f348966e13096",
+    "cancel_job": "fb3477d20571a998f921365456287157943cdd6fe2f631fa307f348966e13096",
+    "list_jobs": "43d2f174cf68136f53f72773c507586e237e265c601d0269a69444f6c51d0ebc",
+    "list_job_events": "fea66b274012462bf3b573a88ade48356e41c93cbbea288f480db93e5bdbbcbf",
+    "wait_job": "4e126df59e7f29700e78527ad9e76494f66dd7149d29205cb0bf50195e753588",
+    "get_job_result": "a4ae235fb61b8566dbc660f1f864a7c7f8ab122e4000fee0825b5f414bfa988a",
+}
+
+
 def _without_specifications(schema: Any) -> Any:
     """`schema` with Amendment 2's member taken out of every pin and option: its property and its
     entry in `required`."""
@@ -198,6 +216,7 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_AMENDMENT_2,
         **SNAPSHOT_AMENDMENT_3,
         **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
     }
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
@@ -214,7 +233,8 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     moved = [
         name
         for name in SNAPSHOT_AT_B13D556
-        if _digest(without_m02(resolved_response(OPERATIONS[name]))) != SNAPSHOT_AT_B13D556[name]
+        if _digest(without_m02(without_m04(resolved_response(OPERATIONS[name]))))
+        != SNAPSHOT_AT_B13D556[name]
     ]
     assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["list_audit"]
     # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.

@@ -30,6 +30,10 @@ An `experiment` (ADR 0033 D9, M02 design note §3.5) by `admit_experiment`: its 
 resolves to a registered variant whose SHA-256 is `artifact_ref` (`invalid_request` at
 `/body/model/artifact_ref`), its components are the variant's boundary's, in order, with one flow
 each (`invalid_request` at `/body/inlet/components` or `/body/inlet/n`), then steps 7–8.
+A `surrogate_study` (ADR 0037 D6, M04 spec §10.3) by `admit_surrogate_study`: its parent resolves
+to a registered variant (`invalid_request` at `/body/parent/variant_sha256`) and its plan is
+registered for that parent with every request inside the box, the hard domain and the data domain
+(`invalid_request` at `/body/plan_id`, detail `reason` the plan guard's code), then steps 7–8.
 
 **Only tightening is admitted** (I3). The effective check policy keeps `REGISTERED_POLICY_ID`, so
 tightening factor 1 is the registered policy byte for byte (R5); the effective solve policy is the
@@ -59,10 +63,13 @@ from openflowsheet.application.types import (
     Limits,
     ReproduceBody,
     SolveBody,
+    SurrogateStudyBody,
 )
 from openflowsheet.application.validation import validate
 from openflowsheet.models.c1 import COMPONENTS as C1_COMPONENTS
 from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.studies.surrogate.plan import PlanRefusedError
+from openflowsheet.studies.surrogate.study import prepare
 from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
 from openflowsheet.verify.checks import KIND_TOLERANCE
 
@@ -71,6 +78,7 @@ __all__ = [
     "SolveAdmission",
     "admit_budgets",
     "admit_experiment",
+    "admit_surrogate_study",
     "admit_reproduce",
     "admit_solve",
     "resolve_policies",
@@ -333,3 +341,35 @@ def admit_experiment(
     if isinstance(wall_time_s, ApiError):
         return wall_time_s
     return variant, wall_time_s
+
+
+def admit_surrogate_study(
+    body: SurrogateStudyBody,
+    *,
+    budgets: Budgets,
+    limits: Limits,
+    active_jobs: int,
+) -> float | None | ApiError:
+    """M04 spec §10.3's admission of a `surrogate_study`: the parent is a registered variant, the
+    plan is registered for it and every request lies in the box, the hard domain and the data
+    domain (spec §5.1, M04.A03), then steps 7–8. The job's wall-time budget, or the first refusal.
+    The budget of cold experiments is judged by the study against the cache, not here."""
+    parent = body.parent
+    variant = variants.resolve(parent.model_id, parent.variant_id, parent.variant_sha256)
+    if variant is None:
+        return _error(
+            "invalid_request",
+            f"model {parent.model_id!r} @ {parent.variant_id!r} with SHA-256 "
+            f"{parent.variant_sha256!r} is not a registered variant at that SHA-256",
+            pointer="/body/parent/variant_sha256",
+        )
+    try:
+        prepare(variant, body.plan_id)
+    except PlanRefusedError as refused:
+        return _error(
+            "invalid_request",
+            str(refused),
+            pointer="/body/plan_id",
+            reason=refused.code,
+        )
+    return admit_budgets(budgets, limits, active_jobs)

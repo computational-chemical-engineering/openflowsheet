@@ -24,8 +24,9 @@ if TYPE_CHECKING:
 
 #: J3's closed discriminator (§5.3). A later operation is an added value and an added `oneOf`
 #: branch in `job.schema.json#/$defs/job_request`; resume would arrive as `solve_resume`.
-#: `experiment` is ADR 0033 D9's (ADR 0019 Amendment 4, part 1; M02 design note §3.5).
-JobOperation = Literal["solve", "reproduce", "experiment"]
+#: `experiment` is ADR 0033 D9's (ADR 0019 Amendment 4, part 1; M02 design note §3.5);
+#: `surrogate_study` is ADR 0037 D6's (ADR 0019 Amendment 5; M04 spec §10.3).
+JobOperation = Literal["solve", "reproduce", "experiment", "surrogate_study"]
 JobStatus = Literal["queued", "running", "completed", "failed", "cancelled", "timed_out"]
 TerminalStatus = Literal["completed", "failed", "cancelled", "timed_out"]
 EventKind = Literal["accepted", "started", "progress", "output", "cancel_requested", "ended"]
@@ -45,7 +46,8 @@ EndingReason = Literal[
 #: §5.4, producer kinds version 1; `solution_state` added by ruling round 2 and `solve_path` (the
 #: bundle's `solve-path.json`, ruling round 1 R2.4) by the W1 follow-up, both additively; the
 #: experiment records, the coupled route's bundle member and the replacement report by M02
-#: (ADR 0033 D9, ADR 0034 D6, ADR 0035), additively.
+#: (ADR 0033 D9, ADR 0034 D6, ADR 0035), additively; a surrogate study's two records by M04
+#: (ADR 0037 D6), additively.
 ArtifactKind = Literal[
     "solve_trace",
     "solve_plan",
@@ -68,6 +70,8 @@ ArtifactKind = Literal[
     "experiment_attempt",
     "external_coupling",
     "model_replacement_report",
+    "surrogate_manifest",
+    "model_evidence",
 ]
 
 JOB_OPERATIONS: Final[tuple[str, ...]] = get_args(JobOperation)
@@ -140,6 +144,9 @@ ARTIFACT_FILE_NAMES: Final[Mapping[str, str | None]] = {
     "external_coupling": "external-coupling.json",
     #: ADR 0035: a commit's report, stored with `job_id` null; named per instance.
     "model_replacement_report": None,
+    #: M04 spec §10.3: a `surrogate_study` job's two records, `<job_id>:<file>`.
+    "surrogate_manifest": "surrogate-manifest.json",
+    "model_evidence": "model-evidence.json",
 }
 
 

@@ -243,12 +243,16 @@ def test_t07_q26_no_external_state() -> None:
         "T",  # R-235: the `experiment` inlet's, and its tube count
         "P",
         "n_tubes",
+        "max_cold_experiments",  # M04: a `surrogate_study`'s budget, a count, not a state
     }, scalars
     assert {path for _, path in scalars if path.endswith("wall_time_s")} == {"budgets/wall_time_s"}
     assert {(o, path) for o, path in scalars if path.split("/")[-1] in ("T", "P", "n_tubes")} == {
         ("submit_job", "body/inlet/T"),
         ("submit_job", "body/inlet/P"),
         ("submit_job", "body/n_tubes"),
+    }
+    assert {(o, path) for o, path in scalars if path.endswith("max_cold_experiments")} == {
+        ("submit_job", "body/budget/max_cold_experiments")
     }
     untyped = {(f.operation, "/".join(f.path)) for f in findings if f.kind == "untyped"}
     assert untyped == {

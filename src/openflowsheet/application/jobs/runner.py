@@ -1,5 +1,5 @@
-"""The operation bodies of a job: `solve`, `reproduce` and `experiment` (T07 design note §5.4,
-§6.2–§6.4, §8; M02 design note §3.5).
+"""The operation bodies of a job: `solve`, `reproduce`, `experiment` and `surrogate_study` (T07
+design note §5.4, §6.2–§6.4, §8; M02 design note §3.5; M04 spec §10.3).
 
 `execute(context, job, check=…, cancel=…)` runs one job's operation and returns its
 `WorkerResult` — the termination the owner turns into the one `ended` event (§6.2: a body never
@@ -15,7 +15,9 @@ solve and check policies), `bind` (the route's binder, afresh for this run), `pl
 function a direct caller uses, so a job's bundle *is* that function's bundle (gate G6).
 `reproduce`: `integrity`, `rerun` (only when `rerun`), `compare`. `experiment`: `resolve` (the
 variant and the inlet), `evaluate` (`adapters.experiments`' runner: key, lock, cache, attempts,
-records), `record` (the outputs).
+records), `record` (the outputs). `surrogate_study`: `resolve` (the variant), `study`
+(`studies.surrogate.study.run_study`: the plan, the budget, the experiments one by one, the
+evidence), `record` (the evidence and the manifest).
 
 **Experiments (ADR 0033 D9, M02 design note §3.5).** An `experiment` job evaluates one request and
 ends `completed` whatever the experiment's outcome — a refusal or a transient failure is a result,
@@ -24,6 +26,12 @@ registered them — the request, the attempts, the result, or a cache hit's row 
 producing result — and, for a deterministic outcome it did not write (a bypassed repeat), the
 producing result's row. The body is read here and by the runner only: nothing in it reaches a
 solve (R-235). Its property calls are its own and unmetered (R-233).
+
+**Surrogate studies (ADR 0037 D6, M04 spec §10.3).** A `surrogate_study` ends `completed`
+whatever its verdict, with its answer (`job_result.surrogate_study`) in `worker_result.study`. Its
+outputs are the evidence and the manifest (none for a budget refusal); its experiment records are
+artifacts of the job, not outputs. A cancellation recorded by another caller is honoured between
+experiments. A cancelled study keeps its records; a new job re-reads them through the cache.
 
 **Interruption (§8.1).** `check` raises `JobInterrupted` once cancellation is requested or the
 wall-time deadline has passed; it runs at every `Trace.record` (installed by the executor) and at
@@ -90,6 +98,7 @@ from openflowsheet.application.types import (
     Progress,
     ReproduceBody,
     SolveBody,
+    SurrogateStudyBody,
 )
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
@@ -97,6 +106,8 @@ from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.studies.surrogate.plan import PlanRefusedError
+from openflowsheet.studies.surrogate.study import run_study
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.verify.checks import VerifierError
@@ -105,6 +116,7 @@ __all__ = [
     "EXPERIMENT_STAGES",
     "REPRODUCE_STAGES",
     "SOLVE_STAGES",
+    "SURROGATE_STUDY_STAGES",
     "RunContext",
     "WorkerResult",
     "bundle_rows",
@@ -117,6 +129,7 @@ _LOG = logging.getLogger(__name__)
 SOLVE_STAGES: Final[tuple[str, ...]] = ("resolve", "bind", "plan", "solve", "verify", "bundle")
 REPRODUCE_STAGES: Final[tuple[str, ...]] = ("integrity", "rerun", "compare")
 EXPERIMENT_STAGES: Final[tuple[str, ...]] = ("resolve", "evaluate", "record")
+SURROGATE_STUDY_STAGES: Final[tuple[str, ...]] = ("resolve", "study", "record")
 #: §5.4: the producer kind of each fixed file name.
 KIND_OF_FILE: Final[Mapping[str, str]] = {
     name: kind for kind, name in ARTIFACT_FILE_NAMES.items() if name is not None
@@ -125,6 +138,8 @@ PARTIAL_TRACE: Final[str] = ARTIFACT_FILE_NAMES["partial_solve_trace"] or ""
 REPLAY_REPORT: Final[str] = ARTIFACT_FILE_NAMES["replay_report"] or ""
 CERTIFICATE: Final[str] = ARTIFACT_FILE_NAMES["solution_certificate"] or ""
 FAILURE: Final[str] = ARTIFACT_FILE_NAMES["failure_bundle"] or ""
+MANIFEST_FILE: Final[str] = ARTIFACT_FILE_NAMES["surrogate_manifest"] or ""
+EVIDENCE_FILE: Final[str] = ARTIFACT_FILE_NAMES["model_evidence"] or ""
 
 
 @dataclass(frozen=True)
@@ -149,19 +164,25 @@ class WorkerResult:
     interruption: Interruption | None
     error: ApiError | None
     run: Mapping[str, Any] | None = None
+    #: A `surrogate_study` job's answer (M04 spec §10.3), written only when the study ended; the
+    #: member is absent from the document otherwise, so the other operations' are unchanged.
+    study: Mapping[str, Any] | None = None
 
     @property
     def ending(self) -> JobEnding:
         return JobEnding(status=self.status, reason=self.reason, interruption=self.interruption)
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document = {
             "status": self.status,
             "reason": self.reason,
             "interruption": self.interruption,
             "error": self.error.as_document() if self.error is not None else None,
             "run": dict(self.run) if self.run is not None else None,
         }
+        if self.study is not None:
+            document["study"] = dict(self.study)
+        return document
 
     @classmethod
     def from_document(cls, document: Mapping[str, Any]) -> Self:
@@ -172,6 +193,7 @@ class WorkerResult:
             interruption=document["interruption"],
             error=ApiError._build(error) if error is not None else None,
             run=document["run"],
+            study=document.get("study"),
         )
 
 
@@ -655,6 +677,71 @@ class _Body:
             status="completed", reason="operation_completed", interruption=None, error=None
         )
 
+    # -- surrogate study ----------------------------------------------------------------------
+
+    def surrogate_study(self) -> WorkerResult:
+        """M04 spec §10.3: the registered plan through the experiment runner, cache first, then
+        the evidence; the manifest and the evidence are the job's two outputs, in that order
+        after the evidence it names. The experiment records are registered as artifacts of the
+        job (R-237's sink) but are not outputs: a study writes hundreds. A budget refusal writes
+        nothing. The job ends `completed` whatever the verdict; the answer is `study`."""
+        body = self.job.request.body
+        assert isinstance(body, SurrogateStudyBody)
+        self.stages = SURROGATE_STUDY_STAGES
+        records = ExperimentStore(self.context.root, ArtifactTableSink(self.context.store))
+        try:
+            self.at("resolve")
+            parent = body.parent
+            variant = variants.resolve(parent.model_id, parent.variant_id, parent.variant_sha256)
+            if variant is None:  # admitted, and registered variants are package data: a defect
+                return _failed(_error("internal_error", "variant_unresolved"), None)
+            runner = ExperimentRunner(
+                records,
+                PrC1Provider(),
+                EvaluationContext(
+                    model_version=variant.variant_id, constants_sha256=variant.sha256
+                ),
+                job_id=self.job.job_id,
+                check=self.check,
+            )
+            self.at("study")
+            outcome = run_study(
+                runner,
+                variant,
+                body.plan_id,
+                body.max_cold_experiments,
+                between=self._honour_interruption,
+            )
+            self.at("record")
+            manifest_sha256 = evidence_sha256 = None
+            if outcome.manifest is not None and outcome.evidence is not None:
+                evidence_sha256 = self._file_output(EVIDENCE_FILE, outcome.evidence).sha256
+                manifest_sha256 = self._file_output(MANIFEST_FILE, outcome.manifest).sha256
+        except PlanRefusedError as refused:  # admission checked the plan: a defect if reached
+            return _failed(_error("internal_error", f"plan_refused({refused.code})"), None)
+        except JobInterrupted as interrupted:
+            return _interrupted(interrupted, None)
+        except _FenceLost:
+            return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+        answer = {
+            "verdict": outcome.verdict,
+            "insufficient": list(outcome.insufficient),
+            "not_promotable": list(outcome.not_promotable),
+            "surrogate_id": outcome.surrogate_id,
+            "manifest_sha256": manifest_sha256,
+            "evidence_sha256": evidence_sha256,
+            "cold_experiments": outcome.cold_experiments,
+            "cache_hits": outcome.cache_hits,
+            "cache_misses": outcome.cache_misses,
+        }
+        return WorkerResult(
+            status="completed",
+            reason="operation_completed",
+            interruption=None,
+            error=None,
+            study=answer,
+        )
+
 
 def execute(
     context: RunContext,
@@ -678,4 +765,6 @@ def execute(
         return body.solve()
     if job.operation == "experiment":
         return body.experiment()
+    if job.operation == "surrogate_study":
+        return body.surrogate_study()
     return body.reproduce()

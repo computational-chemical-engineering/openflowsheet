@@ -203,6 +203,9 @@ class ExperimentRunner:
         self._backends: dict[str, Backend] = {}
         #: Per variant: the handshake's outcome and the failed handshakes before it (R-236).
         self._handshakes: dict[str, tuple[Environment, tuple[Execution, ...]]] = {}
+        #: The variants whose failed handshakes are already written as attempts (by the first
+        #: `run`, whichever call handshook).
+        self._recorded: set[str] = set()
 
     def backend(self, variant: Variant) -> Backend:
         """One backend per variant for the runner's life: its handshake is the job's (§6.1)."""
@@ -219,6 +222,25 @@ class ExperimentRunner:
     def check(self) -> Callable[[], None] | None:
         return self._check if self._check is not None else INTERRUPT_CHECK.get()
 
+    def request(
+        self,
+        variant: Variant,
+        inlet: StreamState,
+        components: Sequence[str],
+        n_tubes: float,
+    ) -> dict[str, Any]:
+        """The keyed request `run` would evaluate for this inlet, with no experiment record
+        written: a caller can count a plan's cache misses before running any of it (M04 spec
+        §5.4). The job's handshake runs here if it has not run yet, once per runner (R-236);
+        its failed attempts, if any, are written by the first `run`, as without this call."""
+        capabilities = self.provider.describe()
+        supported(variant, capabilities)
+        backend = self.backend(variant)
+        environment, _, _ = self._environment(
+            variant, backend, int(variant.execution["max_retries"])
+        )
+        return build_request(variant, capabilities, n_tubes, components, inlet, environment.sha256)
+
     def run(
         self,
         variant: Variant,
@@ -233,7 +255,9 @@ class ExperimentRunner:
         backend = self.backend(variant)
         check = self.check()
         retries = int(variant.execution["max_retries"])
-        environment, failed, first = self._environment(variant, backend, retries)
+        environment, failed, _ = self._environment(variant, backend, retries)
+        first = variant.sha256 not in self._recorded
+        self._recorded.add(variant.sha256)
         request = build_request(
             variant, capabilities, n_tubes, components, inlet, environment.sha256
         )

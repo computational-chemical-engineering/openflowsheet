@@ -44,6 +44,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_yaml
 from m02_schema_support import without_m02
+from m04_schema_support import without_m04
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.canonical import canonical_json
@@ -100,8 +101,9 @@ def _digest(tools: list[dict[str, Any]]) -> str:
 
 
 def _served_without_m02(mcp: ModuleType) -> str:
-    """The served tool list's digest with M02's additive members removed (R-234)."""
-    return _digest(without_m02(_tools(mcp)))
+    """The served tool list's digest with M04's and then M02's additive members removed (R-234;
+    M04's decomposes onto M02's the same way, `test_m04s_surface_move_decomposes_onto_m02s`)."""
+    return _digest(without_m02(without_m04(_tools(mcp))))
 
 
 def _without_a3_2(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -143,7 +145,7 @@ def test_the_served_digest_is_registered(mcp: ModuleType) -> None:
     # Amendment 3's member as well it is R-133's.
     assert harness.tool_descriptions_sha256() != M06_A3_SERVED_SHA256
     assert _served_without_m02(mcp) == M06_A3_SERVED_SHA256
-    assert _digest(_without_a3_2(without_m02(_tools(mcp)))) == T08_DESCRIPTIONS_SHA256
+    assert _digest(_without_a3_2(without_m02(without_m04(_tools(mcp))))) == T08_DESCRIPTIONS_SHA256
     assert T08_DESCRIPTIONS_SHA256 != _v17_c2_digest()
 
 
@@ -152,7 +154,7 @@ def test_m02s_surface_move_decomposes_onto_the_base(mcp: ModuleType) -> None:
     no tool's name or description text (T08.A18 is not reopened)."""
     from benchmarks.t07.v17 import harness
 
-    served = [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
+    served = without_m04([tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()])
     stripped = without_m02(served)
     assert harness.tool_descriptions_sha256() != M02_BASE_SERVED_SHA256
     assert hashlib.sha256(canonical_json(stripped)).hexdigest() == M02_BASE_SERVED_SHA256
@@ -192,4 +194,17 @@ def test_restoring_the_two_files_reproduces_v17_c2s_digest(
 
     monkeypatch.setattr(mcp, "description", v17_c2_description)
     mcp.tools.cache_clear()
-    assert _digest(_without_a3_2(without_m02(_tools(mcp)))) == _v17_c2_digest()
+    assert _digest(_without_a3_2(without_m02(without_m04(_tools(mcp))))) == _v17_c2_digest()
+
+
+def test_m04s_surface_move_decomposes_onto_m02s(mcp: ModuleType) -> None:
+    """M04 (ADR 0037 D6), following R-234: the served list minus M04's additions is M02's served
+    list (which in turn decomposes onto the base above), M04 moved it, and M04 changed no tool's
+    name or description text."""
+    served = _tools(mcp)
+    stripped = without_m04(served)
+    assert _digest(stripped) != _digest(served)
+    assert _digest(without_m02(stripped)) == M02_BASE_SERVED_SHA256
+    assert [(t["name"], t["description"]) for t in served] == [
+        (t["name"], t["description"]) for t in stripped
+    ]
