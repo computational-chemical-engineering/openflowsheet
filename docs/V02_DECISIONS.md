@@ -715,3 +715,9 @@ Grep, don't read whole. Newest at the bottom.
   gate), F5 (inner failure reason dropped). RP-2: (a) recompute request at rerun inlet, live check stays bitwise; (b)
   floors = each quantity's own threshold, B/du reported not compared → ADR 0034 Am. 1 in WO-13. D94 kept; AC-1 = D9's
   acceptance; D100–D115 ratified; c1-reactor.json stays v2.
+
+- **M04 W27 part done** (2026-10-09, `wp/M04` `2018dca`…`4cd23ad`, gate 8444): main merged; corpus resolver; surrogate
+  registered; J3′–J6′ vs `hypothetical_v02_a3` equal (22 models); 0/450 cases differ; G14 pass; `list_models`
+  90d9da8e…→f070fbe0…, registry snapshot 0b2f4596…→8f4bb0c8…. Flaky under load (passed on rerun): browser smoke, W27
+  S18 scorer, `t07_w5b` replay (fails alone without OMP_NUM_THREADS etc.). Open → M04 review batch (E10, E12, E14
+  envelope wording). M05 WO-6 launched.
