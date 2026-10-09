@@ -105,3 +105,42 @@ Measured (synthetic truth, TR-E2's start inlet): (i) Richardson error 1.25e-6 �
 S1 REAL box: `study.REAL_BOX` is [653.15, 693.15] K (R-313, M02 seventh round: M05's REAL box unconditionally; ADR 0039
    D1's [643.15, 733.15] K is superseded there, not by M05). σ for REAL becomes 0.5·0.5/20 = 0.0125, as TR-E2's; §6.7's
    0.005556 is stale text for the design lane. Reversible: the constant and one test assertion.
+S2 `LINK_BOUNDS` and `LINK_COORDINATES` move from `projection` to `holders` (Pyomo-free) and `projection` imports them:
+   P3 (§7.4) reads the admissibility bounds on (X̂, ΔT̂) in the default install. Same object, same values; the M05
+   `nlp` tier is unchanged. Reversible: the move.
+S3 The real parent adapter is not built here. §7.4's checks solve through `run_revision_session` on
+   `revision_coupled`, which is `wp/M02`'s (`application/coupled_run.py`, with `EXT-COUPLING`'s achieved residuals);
+   `wp/M05` has neither. `checks.py` reads the parent through the `Parent` protocol (`solve` → `ParentSolve`:
+   outcome, certificate, J, state, converged w, achieved (ΔX, ΔT), regimes, P3's `ConstraintValue`s,
+   executions/store hits, record sha256; `inner_objective(solve, w)`), so WO-5c (after M02 merges) or WO-8 adds the
+   adapter: `pinned_at` (the one `with_coupling` site, R-309's swap to `at_coupling`) and `c1_constraint_values`
+   are its parts. The loop and checks are tested on fakes; the readiness projection/start halves and `TrfStage`
+   in the `nlp` tier.
+S4 Check evaluation (§7.4 "all evaluated results are recorded, the status is the first failure"): a failed P1 stops
+   (no certified state); P4, P3 and P2 cost no solve and are always evaluated together; P5 (2 coupled + 4 inner
+   solves) only when all three pass, since only such a candidate consumes the poll. Alternative: always poll.
+   Reversible: `checks.check_candidate`. P2 on a candidate no TRF run produced (S0) is `pass: null`.
+S5 P3's scales (§7.4 "within 1e-9 × its scale"; the formulation has no inequality scale): an expression row
+   max(|bound|, F) with F the reactor-inlet Σn (Σn/N_tubes for the per-tube rows); a bound max(|bound|, 1) in the
+   variable's unit. The bounds checked: the decision box, the variant's inlet T/P, the link bounds, the provider
+   domain on every T and P, molar flows ≥ 0. A parent that evaluated no constraint fails P3. Reversible:
+   `study.c1_constraint_values`.
+S6 (see the next commit.)
+S7 Retry and aborts (§7.3, §6.7, §17.4): a candidate from every `RETURNS_MODEL` outcome (`TRF_MAX_ITERATIONS`
+   whatever θ_recheck: W2's current behaviour, unchanged, no separate commit needed); `TRF_ERROR(*)` a defect,
+   `FAILED(trf_aborted:<outcome>)` at once, never retried; `TRF_TRUTH_REFUSED(budget:budget_exhausted)` is
+   `BUDGET_EXHAUSTED` when the study cap is reached and an abort (retried) when only the run's 250 cap is; every
+   other no-model outcome an abort. Reversible: `study.disposition`.
+S8 Budgets: one `ColdBudget("study")` shared by the parent holders (live) and charged with each parent solve's
+   executions and, after a run, an in-process truth's cold value requests (its holder takes no parent budget,
+   R-300 E4); exhaustion (cold or wall) is checked before S0, every run, every parent solve and the noise floor.
+   The record's accounting: `trf_cold` by run, `parent_executions`/`store_hits` by solve, by stage (S0, A, C, B), by
+   study iteration (S0 and A are 0) and by candidate (its runs including an aborted try, and its check solves).
+S9 Stage A's argmax (§7.3) takes S0 unconditionally (it is `best` before A; checked P1 only) and u_A and A's poll
+   points only when they pass P1, P3 and P4. Stage C's restart takes the best feasible (P1, P3) poll point, as written.
+S10 Readiness: the framework half first; `TRUST_REGION_FRAMEWORK_UNAVAILABLE` returns alone (the default install).
+   Otherwise every reason: the start half (P1 → `START_NOT_CERTIFIED`) and the projection half on any start with a
+   state. The projection reasons are §6.8's four plus the later rulings' four (`PROJECTION_SCALES_UNAVAILABLE`,
+   `_IMPLICIT_EF_INPUT`, `_OMITTED_ROW_UNCERTIFIED`, `_ZERO_FLOW`); `project` raises the first refusal only. In
+   `run_study` the start half is S0 (`FAILED(start_not_certified)`, §7.2) and a projection refusal at S0 is
+   `UNSUPPORTED(<code>)`.
