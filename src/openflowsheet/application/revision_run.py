@@ -1075,12 +1075,12 @@ def reproduce_bundle(
         name: read_artifact(Path(rerun_directory), name) for name in rerun_manifest.artifacts
     }
     if coupling is not None:
-        # §14.5 D8 (R-308) items 1 and 3: the record's inner-solve constants digests for shape
-        # (item 2 guards the final one; the manifest is not compared), and the iterates under the
-        # archive's policy.
+        # §14.5 D8 (R-308) items 1 and 3: the inner solves' constants digests for shape, in the
+        # record and in every artifact that carries the final one (build log D94; item 2 guards
+        # it; the manifest is not compared), and the iterates under the archive's policy.
         artifacts = {
             name: _constants_for_shape(document, read_artifact(directory, name))
-            if name == COUPLING_NAME and name in manifest.artifacts
+            if name in manifest.artifacts
             else document
             for name, document in artifacts.items()
         }
