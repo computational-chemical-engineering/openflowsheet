@@ -78,8 +78,10 @@ def shaped() -> RevisionBinding:
 
 def test_builders_hold_the_thirteen_models_of_the_table() -> None:
     """The six K02 models (W1.b), the six T05 ones (W11) and T08's kinetic CSTR (build-first
-    §A1.7, §E.4: "the thirteen of `MODEL_BUILDERS`")."""
-    assert set(MODEL_BUILDERS) == {
+    §A1.7, §E.4: "the thirteen of `MODEL_BUILDERS`"). Since M02's join (R-280; design note §14.4
+    D5, B13's rule) restricted to the `syn001.` keys, the literal unchanged;
+    `tests/test_m02_join.py` pins all twenty-one."""
+    assert {model for model in MODEL_BUILDERS if model.startswith("syn001.")} == {
         "syn001.feed_source",
         "syn001.adiabatic_mixer",
         "syn001.tp_heater",

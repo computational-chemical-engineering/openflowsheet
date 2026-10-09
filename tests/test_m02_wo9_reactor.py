@@ -5,14 +5,15 @@ register R-231, R-280).
 - §4.1: `c1.reactor` and `c1.reactor_standin` are one embedded unit, extent-fixed at the pinned
   coupling parameters `<U>.coupling.X` and `<U>.coupling.dT`; it never calls the external model.
   The traversal start satisfies its linear rows to the last bit.
-- The builders sit in R-280's interim registry (`C1_MODEL_BUILDERS`), not yet `MODEL_BUILDERS`.
+- The builders are in `MODEL_BUILDERS` since R-280's join, on the C1 basis only (R-288).
 - The verifier's entries: the material rule on its own copy of the C1 reaction, SYN-001's reactor
   energy rule, both ports declared vapour; the reaction envelope and the external duty.
 - `C1-LOOP-M02-v1` (`benchmarks/m02/c1-loop-standin.json`, registered here): its inner solve at
   fixed w converges from `traversal-G0-v1` and verifies, at the variant's initial w and at the
   stand-in's fixed point w* = (0.25, 0 K), which is the stand-in loop's solution.
 - G7 (f): the scaled Jacobian's `rcond_1` at that solution is ≥ 10 τ_ill (recorded).
-- G8 (e), interim form: replaces M01.A49's binder clause (R-231; test_m01_reactor_boundary.py).
+- G8 (e): replaces M01.A49's binder clause (R-231; test_m01_reactor_boundary.py); since the join
+  the stand-in is in `MODEL_BUILDERS` and the v0.2 envelope lists it as synthetic only.
 """
 
 from __future__ import annotations
@@ -40,8 +41,7 @@ from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application.revision_binding import (
-    C1_MODEL_BUILDERS,
-    C1_MODEL_SIGNATURES,
+    MODEL_BASES,
     MODEL_BUILDERS,
     MODEL_SIGNATURES,
     RevisionBinding,
@@ -367,14 +367,14 @@ def test_each_manifest_is_valid_and_states_the_embedding(model: str) -> None:
         assert manifest["execution_requirements"]["evaluation_cost_class"] == "cheap"
 
 
-# == the builders (R-280's interim registry) ======================================================
+# == the builders (R-280's join) ==================================================================
 
 
-def test_the_two_builders_sit_in_the_interim_registry() -> None:
+def test_the_two_builders_are_in_the_shared_registry() -> None:
     for model in MODEL_IDS:
-        assert model in C1_MODEL_BUILDERS and model in C1_MODEL_SIGNATURES
-        assert model not in MODEL_BUILDERS and model not in MODEL_SIGNATURES  # until the join
-        assert C1_MODEL_SIGNATURES[model].required == ("n_tubes",)
+        assert model in MODEL_BUILDERS and model in MODEL_SIGNATURES
+        assert MODEL_BASES[model] == {"pr-c1-v1"}
+        assert MODEL_SIGNATURES[model].required == ("n_tubes",)
 
 
 def test_the_real_reactor_binds_at_its_variants_initial_coupling() -> None:
@@ -496,13 +496,13 @@ def test_g7f_the_stand_in_loops_solution_is_well_conditioned() -> None:
     assert low <= per_tube <= high  # Q-F5's bound holds for the real variant too
 
 
-# == G8 (e), interim form =========================================================================
+# == G8 (e) ======================================================================================
 
 
 def test_g8e_the_stand_in_binds_and_says_synthetic_everywhere(tmp_path: Path) -> None:
     """G8 (e) (design note §10.1; ADR 0034 D9; R-231), replacing M01.A49's binder clause: the
-    stand-in binds — through R-280's interim registry until WO-9's join commit moves it into
-    `MODEL_BUILDERS` and the envelope lists it as synthetic only — its manifest says
+    stand-in binds — through `MODEL_BUILDERS` since R-280's join, the v0.2 envelope listing it as
+    synthetic only (`test_m02_join.py`) — its manifest says
     SYNTHETIC where M01.A49 puts the label, and every `ok` result's identity at the loop's
     reactor inlet says synthetic. At w* the experiment agrees with the embedded rows to
     roundoff (|ξ_E − X̂ n_N2,in| / n_tot ≤ 1e-12, T_E − T_in = 0.0): w* is the coupled solution."""
@@ -510,7 +510,9 @@ def test_g8e_the_stand_in_binds_and_says_synthetic_everywhere(tmp_path: Path) ->
     binding = at_coupling(bound(document), "reactor", W_STAR)
     reactor = unit_of(binding, "reactor")
     assert reactor.synthetic and reactor.model_id == "c1.reactor_standin"
-    assert "c1.reactor_standin" in C1_MODEL_BUILDERS and "c1.reactor_standin" not in MODEL_BUILDERS
+    assert "c1.reactor_standin" in MODEL_BUILDERS and MODEL_BASES["c1.reactor_standin"] == {
+        "pr-c1-v1"
+    }
     manifest = reactor.manifest()
     assert "synthetic" in manifest["title"].lower()
     assert manifest["description"].startswith("SYNTHETIC")

@@ -263,13 +263,13 @@ class _Mutant:
 def _mutated(
     monkeypatch: pytest.MonkeyPatch, alter: Callable[[Contribution], Contribution]
 ) -> RevisionBinding:
-    builder = revision_binding.C1_MODEL_BUILDERS["c1.tp_flash"]
+    builder = revision_binding.MODEL_BUILDERS["c1.tp_flash"]
 
     def build(*arguments: Any) -> Any:
         unit, configuration = builder(*arguments)
         return _Mutant(unit, alter), configuration
 
-    monkeypatch.setitem(revision_binding.C1_MODEL_BUILDERS, "c1.tp_flash", build)  # type: ignore[arg-type]
+    monkeypatch.setitem(revision_binding.MODEL_BUILDERS, "c1.tp_flash", build)  # type: ignore[arg-type]
     return bind(flash_revision(F1, 268.15))
 
 

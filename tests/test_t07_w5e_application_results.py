@@ -247,7 +247,7 @@ def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:
         with LocalApplication.create(Path(scratch) / "p", project_id="g-r6-6") as application:
             view = application.list_models().as_document()
     assert schema_errors(f"{SCHEMA}#/$defs/model_registry_view", view) == []
-    checked = 0
+    checked = {"syn001.": 0, "c1.": 0}
     for model in view["models"]:
         signature = MODEL_SIGNATURES[model["model_id"]]
         options = [o for c in signature.choices for o in c.options]
@@ -256,8 +256,9 @@ def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:
             assert entry["name"] == pin.name
             expected = [e.as_document() for e in pin_encodings(signature, pin)]
             assert entry["specifications"] == expected
-            checked += 1
-    assert checked == 16
+            checked[model["model_id"].split(".", 1)[0] + "."] += 1
+    # SYN-001's 16 as before; M02's join (R-280) adds the C1 feed's 3, heater's 1, flash's 4.
+    assert checked == {"syn001.": 16, "c1.": 8}
 
 
 def test_the_schema_is_draft_2020_12_with_an_id_and_a_description() -> None:

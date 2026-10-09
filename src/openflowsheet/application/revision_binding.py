@@ -27,7 +27,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from functools import partial
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, overload
 
 from openflowsheet.adapters import variants
 from openflowsheet.application.binding import Unbound, _column_owners
@@ -65,8 +65,10 @@ from openflowsheet.models.revision_flowsheet import (
     parse_revision,
     pin_specifications,
     required_kind,
+    selectable_bases,
     si_unit,
 )
+from openflowsheet.models.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.models.syn001 import (
     component_separator,
     conversion_reactor,
@@ -96,12 +98,13 @@ from openflowsheet.models.syn001.sink import ProductSink
 from openflowsheet.models.syn001.splitter import StreamSplitter
 from openflowsheet.models.syn001.valve import Valve
 from openflowsheet.thermo import Phase, PropertyProvider
+from openflowsheet.thermo.pr_c1 import PROVIDER_ID as C1_PROVIDER_ID
 
 __all__ = [
-    "C1_MODEL_BUILDERS",
-    "C1_MODEL_SIGNATURES",
+    "MODEL_BASES",
     "MODEL_BUILDERS",
     "MODEL_SIGNATURES",
+    "SELECTABLE_BASES",
     "Builder",
     "Encoding",
     "ModelSignature",
@@ -1120,19 +1123,8 @@ def _heat_exchanger(
 #
 # The C1 units are their own classes (`models.c1`): SYN-001's carry SYN-001 constants in their
 # manifests and row origins. Their signatures read what SYN-001's read, port for port, so the
-# verifier's rules (`verify.table`) read the same pins. They bind only on the C1 basis.
-
-
-def _c1_basis(view: InstanceView, components: tuple[str, ...]) -> None:
-    """A `c1.*` model binds only in a revision whose `record_source` names the C1 records."""
-    from openflowsheet.models.c1 import COMPONENTS as C1_COMPONENTS
-
-    if components != C1_COMPONENTS:
-        raise RevisionError(
-            "unsupported",
-            f"model_unsupported({view.model_id})",
-            f"{view.model_id} binds on the C1 records' components {list(C1_COMPONENTS)}",
-        )
+# verifier's rules (`verify.table`) read the same pins. They bind only on the C1 basis, which
+# `MODEL_BASES` states and the binder enforces (R-288); the builders do not check it.
 
 
 _C1_FEED_SOURCE: Final = ModelSignature(
@@ -1154,7 +1146,6 @@ def _c1_feed_source(
 ) -> tuple[UnitModel, Configuration]:
     signature = _C1_FEED_SOURCE
     instance_contract(view, signature, components)
-    _c1_basis(view, components)
     pin = signature.pin("flows")
     flows = _columns(view, pin, components)
     unit = c1_feed.FeedSource(
@@ -1182,7 +1173,6 @@ def _c1_adiabatic_mixer(
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
     instance_contract(view, _C1_ADIABATIC_MIXER, components)
-    _c1_basis(view, components)
     unit = c1_mixer.AdiabaticMixer(
         unit_id=view.unit_id, provider=provider, context=context, components=components
     )
@@ -1205,7 +1195,6 @@ def _c1_tp_heater(
 ) -> tuple[UnitModel, Configuration]:
     signature = _C1_TP_HEATER
     instance_contract(view, signature, components)
-    _c1_basis(view, components)
     unit = c1_heater.TPHeater(
         unit_id=view.unit_id,
         provider=provider,
@@ -1239,7 +1228,6 @@ def _c1_tp_flash(
 ) -> tuple[UnitModel, Configuration]:
     signature = _C1_TP_FLASH
     instance_contract(view, signature, components)
-    _c1_basis(view, components)
     _stream(view, "inlet")
     _stream(view, "vapor")
     _stream(view, "liquid")
@@ -1272,7 +1260,6 @@ def _c1_stream_splitter(
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
     parameters = instance_contract(view, _C1_STREAM_SPLITTER, components)
-    _c1_basis(view, components)
     unit = c1_splitter.StreamSplitter(
         unit_id=view.unit_id,
         split_fraction=parameters["split_fraction"],
@@ -1291,7 +1278,6 @@ def _c1_product_sink(
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
     instance_contract(view, _C1_PRODUCT_SINK, components)
-    _c1_basis(view, components)
     return c1_sink.ProductSink(unit_id=view.unit_id, components=components), {}
 
 
@@ -1317,7 +1303,6 @@ def _c1_reactor(
 ) -> tuple[UnitModel, Configuration]:
     signature = _C1_REACTOR if view.model_id == _C1_REACTOR.model_id else _C1_REACTOR_STANDIN
     parameters = instance_contract(view, signature, components)
-    _c1_basis(view, components)
     variant = variants.resolve(view.model_id, view.model_version, view.model_artifact_ref)
     if variant is None:  # the binder resolved every variant-backed instance before building
         raise RevisionError("unsupported", f"model_variant_mismatch({view.unit_id})")
@@ -1338,54 +1323,61 @@ def _c1_reactor(
     return unit, {}
 
 
-#: Model id -> signature: what each builder reads (§1.3's table), for `list_models` (T07 §4.2).
+#: SYN-001's thirteen models: the six K02 ones, the six T05 ones (§1.3's table) and T08's kinetic
+#: CSTR (build-first §A1). They bind on SYN-001's basis only (R-288).
+_SYN001_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
+    _FEED_SOURCE,
+    _ADIABATIC_MIXER,
+    _TP_HEATER,
+    _TP_FLASH,
+    _STREAM_SPLITTER,
+    _PRODUCT_SINK,
+    _PH_FLASH,
+    _VALVE,
+    _LIQUID_PUMP,
+    _CONVERSION_REACTOR,
+    _COMPONENT_SEPARATOR,
+    _HEAT_EXCHANGER,
+    _KINETIC_CSTR,
+)
+
+#: M02's eight C1 models: the six units (design note §8) and the reactor's two ids (§4.1, WO-9).
+#: They bind on the C1 basis only (R-288).
+_C1_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
+    _C1_FEED_SOURCE,
+    _C1_ADIABATIC_MIXER,
+    _C1_TP_HEATER,
+    _C1_TP_FLASH,
+    _C1_STREAM_SPLITTER,
+    _C1_PRODUCT_SINK,
+    _C1_REACTOR,
+    _C1_REACTOR_STANDIN,
+)
+
+#: Model id -> signature: what each builder reads (§1.3's table), for `list_models` (T07 §4.2):
+#: SYN-001's thirteen and, since M02's join (R-280), the eight C1 models.
 MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
-    signature.model_id: signature
-    for signature in (
-        _FEED_SOURCE,
-        _ADIABATIC_MIXER,
-        _TP_HEATER,
-        _TP_FLASH,
-        _STREAM_SPLITTER,
-        _PRODUCT_SINK,
-        _PH_FLASH,
-        _VALVE,
-        _LIQUID_PUMP,
-        _CONVERSION_REACTOR,
-        _COMPONENT_SEPARATOR,
-        _HEAT_EXCHANGER,
-        _KINETIC_CSTR,
-    )
+    signature.model_id: signature for signature in (*_SYN001_SIGNATURES, *_C1_SIGNATURES)
 }
 
-#: M02's C1 units (design note §8) and the reactor's two ids (§4.1, WO-9), by model id: their
-#: signatures, read by the binder only (R-280's interim registry, until WO-9's join commit).
-#: Kept apart from `MODEL_SIGNATURES`/`MODEL_BUILDERS`, which `list_models` serves and the
-#: registered corpus's coverage tests pin, until the design lane rules on the surface change
-#: (build log D36). Joining them is moving these entries; nothing else reads the split.
-C1_MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
-    signature.model_id: signature
-    for signature in (
-        _C1_FEED_SOURCE,
-        _C1_ADIABATIC_MIXER,
-        _C1_TP_HEATER,
-        _C1_TP_FLASH,
-        _C1_STREAM_SPLITTER,
-        _C1_PRODUCT_SINK,
-        _C1_REACTOR,
-        _C1_REACTOR_STANDIN,
-    )
+#: Model id -> the provider ids of the bases it binds on (register R-288, design note §14.4 D3):
+#: each `syn001.*` model on SYN-001's basis only, each `c1.*` model on the C1 basis only. The one
+#: source of which basis accepts which model: the binder's `model_unsupported(<model id>)` pass
+#: reads it, and so does W27's registry snapshot (W27-R63 `bases-v1`). Every builder has a row
+#: (`set(MODEL_BASES) == set(MODEL_BUILDERS)`, asserted by the tests).
+MODEL_BASES: Final[Mapping[str, frozenset[str]]] = {
+    **{s.model_id: frozenset({SYN001_PROVIDER_ID}) for s in _SYN001_SIGNATURES},
+    **{s.model_id: frozenset({C1_PROVIDER_ID}) for s in _C1_SIGNATURES},
 }
 
 #: Model id -> what an instance of it takes as a target path, for `parse_revision`'s
 #: `specification_unsupported` hint on an instance target (ruling round 6, B2).
 _INSTANCE_TARGETS: Final[Mapping[str, str]] = {
-    model_id: _instance_targets(signature)
-    for model_id, signature in (*MODEL_SIGNATURES.items(), *C1_MODEL_SIGNATURES.items())
+    model_id: _instance_targets(signature) for model_id, signature in MODEL_SIGNATURES.items()
 }
 
-#: Model id -> builder: the six K02 models, the six T05 ones (§1.3's table) and T08's kinetic
-#: CSTR (build-first §A1).
+#: Model id -> builder: the six K02 models, the six T05 ones (§1.3's table), T08's kinetic CSTR
+#: (build-first §A1), and M02's six C1 units and two C1 reactor ids (R-280).
 MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _FEED_SOURCE.model_id: _feed_source,
     _ADIABATIC_MIXER.model_id: _adiabatic_mixer,
@@ -1400,10 +1392,6 @@ MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _COMPONENT_SEPARATOR.model_id: _component_separator,
     _HEAT_EXCHANGER.model_id: _heat_exchanger,
     _KINETIC_CSTR.model_id: _kinetic_cstr,
-}
-
-#: M02's C1 builders, as `C1_MODEL_SIGNATURES` (build log D36; R-280).
-C1_MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _C1_FEED_SOURCE.model_id: _c1_feed_source,
     _C1_ADIABATIC_MIXER.model_id: _c1_adiabatic_mixer,
     _C1_TP_HEATER.model_id: _c1_tp_heater,
@@ -1414,11 +1402,55 @@ C1_MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _C1_REACTOR_STANDIN.model_id: _c1_reactor,
 }
 
+#: The model performing the same function on the other basis, both ways (R-288's hint): the six
+#: C1 units are their SYN-001 namesakes (design note §8; W27's R-283). The C1 reactors have none.
+_NAMESAKES: Final[tuple[tuple[str, str], ...]] = tuple(
+    (syn001_unit.model_id, c1_unit.model_id)
+    for syn001_unit, c1_unit in (
+        (_FEED_SOURCE, _C1_FEED_SOURCE),
+        (_ADIABATIC_MIXER, _C1_ADIABATIC_MIXER),
+        (_TP_HEATER, _C1_TP_HEATER),
+        (_TP_FLASH, _C1_TP_FLASH),
+        (_STREAM_SPLITTER, _C1_STREAM_SPLITTER),
+        (_PRODUCT_SINK, _C1_PRODUCT_SINK),
+    )
+)
+_SAME_FUNCTION: Final[Mapping[str, str]] = {
+    **dict(_NAMESAKES),
+    **{c1_id: syn001_id for syn001_id, c1_id in _NAMESAKES},
+}
 
-def _builder(model_id: str) -> Builder | None:
-    """The builder `bind_revision_flowsheet` constructs `model_id` with, read per call."""
-    found = MODEL_BUILDERS.get(model_id)
-    return found if found is not None else C1_MODEL_BUILDERS.get(model_id)
+
+class _SelectableBases(Sequence[ComponentBasis]):
+    """`selectable_bases()` read per access: the C1 basis reads the records on first use, never at
+    import (R-219), and this holds no state (T07 G20)."""
+
+    @overload
+    def __getitem__(self, index: int) -> ComponentBasis: ...
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[ComponentBasis]: ...
+    def __getitem__(self, index: int | slice) -> ComponentBasis | Sequence[ComponentBasis]:
+        return selectable_bases()[index]
+
+    def __len__(self) -> int:
+        return len(selectable_bases())
+
+
+#: Every `ComponentBasis` the binder selects a revision's provider for (`component_basis`), in a
+#: fixed order, SYN-001's first (W27-R63; R-288). `basis_provider(b)` describes `b`'s provider id
+#: and components.
+SELECTABLE_BASES: Final[Sequence[ComponentBasis]] = _SelectableBases()
+
+
+def _basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
+    """R-288: `model_id` does not bind on `basis`. The hint names the bases it binds on and, when
+    there is one, the model of the same function on `basis`."""
+    own = ", ".join(sorted(MODEL_BASES[model_id]))
+    hint = f"{model_id} binds on the {own} basis only, not on this revision's {basis.provider_id}"
+    other = _SAME_FUNCTION.get(model_id)
+    if other is not None and basis.provider_id in MODEL_BASES[other]:
+        hint += f"; on {basis.provider_id} the same function is {other}"
+    return Unbound("unsupported", f"model_unsupported({model_id})", hint=hint)
 
 
 class _PinReader(Mapping[str, float]):
@@ -1513,8 +1545,11 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
         ):
             return Unbound("unsupported", f"model_variant_mismatch({instance.unit_id})")
     for instance in view.instances:
-        if _builder(instance.model_id) is None:
+        # R-288: a model binds on the bases `MODEL_BASES` lists for it, and nowhere else.
+        if instance.model_id not in MODEL_BASES:
             return Unbound("unsupported", f"model_unsupported({instance.model_id})")
+        if view.basis.provider_id not in MODEL_BASES[instance.model_id]:
+            return _basis_refusal(instance.model_id, view.basis)
 
     # Metered from construction: the declaration's property blocks capture the provider here,
     # and a plan run counts their calls (T02; `PropertyMeter`). The provider is the one the
@@ -1524,10 +1559,8 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
     built: list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] = []
     for instance in view.instances:
         reader = _PinReader(instance.pins)
-        builder = _builder(instance.model_id)
-        assert builder is not None  # every model id was checked above
         try:
-            unit, configuration = builder(
+            unit, configuration = MODEL_BUILDERS[instance.model_id](
                 replace(instance, pins=reader), provider, _CONTEXT, view.components
             )
         except RevisionError as error:

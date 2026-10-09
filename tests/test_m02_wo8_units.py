@@ -19,9 +19,9 @@ from test_schemas_p01 import schema_errors
 
 from openflowsheet.application.binding import Unbound
 from openflowsheet.application.revision_binding import (
-    C1_MODEL_BUILDERS,
-    C1_MODEL_SIGNATURES,
+    MODEL_BASES,
     MODEL_BUILDERS,
+    MODEL_SIGNATURES,
     RevisionBinding,
     bind_revision_flowsheet,
 )
@@ -56,14 +56,20 @@ P = 1.0e7
 # -- registry and manifests -----------------------------------------------------------------------
 
 
-def test_the_six_c1_units_bind_through_their_own_registry() -> None:
-    """Build log D36: the C1 builders sit beside `MODEL_BUILDERS`, which `list_models` serves,
-    until the design lane rules on the surface change."""
-    # M02 WO-9 adds the reactor's two ids (R-280's interim registry; tests/test_m02_wo9_reactor.py).
-    assert set(C1_MODEL_BUILDERS) == set(C1_MODEL_SIGNATURES) == set(MODULES) | set(MODEL_IDS)
-    assert not any(model.startswith("c1.") for model in MODEL_BUILDERS)
-    for model_id, signature in C1_MODEL_SIGNATURES.items():
+def test_the_six_c1_units_bind_through_the_shared_registry() -> None:
+    """R-280's join: the C1 builders are in `MODEL_BUILDERS` and `MODEL_SIGNATURES`, which
+    `list_models` serves, on the C1 basis only (R-288); the interim registry is gone."""
+    from openflowsheet.application import revision_binding  # noqa: PLC0415
+
+    c1 = {model for model in MODEL_BUILDERS if model.startswith("c1.")}
+    assert c1 == {model for model in MODEL_SIGNATURES if model.startswith("c1.")}
+    assert c1 == set(MODULES) | set(MODEL_IDS)
+    assert all(MODEL_BASES[model] == {"pr-c1-v1"} for model in c1)
+    for model_id in c1:
+        signature = MODEL_SIGNATURES[model_id]
         assert signature.ports == (MODULES[model_id].PORTS if model_id in MODULES else PORTS)
+    for name in ("C1_MODEL_BUILDERS", "C1_MODEL_SIGNATURES", "_builder"):
+        assert not hasattr(revision_binding, name), name
 
 
 def _units() -> dict[str, Any]:
@@ -296,8 +302,9 @@ def test_each_minimal_flowsheet_traverses(model_id: str) -> None:
 
 
 def test_a_c1_model_in_a_syn001_revision_is_refused() -> None:
-    """A `c1.*` model binds only on the C1 records' components: in a SYN-001 revision the
-    builder refuses it `model_unsupported` (build log D36)."""
+    """A `c1.*` model binds only on the C1 basis: in a SYN-001 revision the binder refuses it
+    `model_unsupported` from `MODEL_BASES`, its hint naming the SYN-001 model of the same function
+    (R-288; before the join the builder refused it, build log D37 (d))."""
     flows = [
         specification(
             f"SPEC-S1-n-{c}", "connection", "S1", "state.n", 1.0, "molar_flow", component=c
@@ -318,7 +325,10 @@ def test_a_c1_model_in_a_syn001_revision_is_refused() -> None:
     assert bind_revision_flowsheet(document) == Unbound(
         "unsupported",
         "model_unsupported(c1.feed_source)",
-        hint="c1.feed_source binds on the C1 records' components ['H2', 'N2', 'NH3', 'Ar', 'CH4']",
+        hint=(
+            "c1.feed_source binds on the pr-c1-v1 basis only, not on this revision's syn001; "
+            "on syn001 the same function is syn001.feed_source"
+        ),
     )
 
 
