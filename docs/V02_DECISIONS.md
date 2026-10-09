@@ -639,3 +639,8 @@ Grep, don't read whole. Newest at the bottom.
   Escalated: D50 G8(f) G=1.8 ends `no_decrease` under §4.3's reset; D61 G9(a) stand-in→real fails `validity` (stand-in
   per-tube flow bound null). Findings D55 (all C1 runs R3 via "external" text match), D58 (exact compare of Broyden
   iterate floats in `constants_sha256`), D64 fixed. Rulings batched into M02's reviewer pass. WO-12 launched.
+
+- **Ruling round M05/M04** (2026-10-09, `architect`): M05 §17 `5bb026e` on `wp/M05` (R-296 zero flows eliminated as
+  constants with their pinning rows, G4 → 68×68; R-297 `M05-fd-v2` three-step curvature-aware check, FD kept at 2⁻¹⁴;
+  R-298 TR-E1 ‖Δz‖ ≤ 2e-5; R-299 → `TRF_STALLED_INCONSISTENT`, retried once; R-300 E1–E7 confirmed). W27 Amendment 3
+  `14c8695` on main (R-301/302). WO-2b/3b/4a launched; WO-5b folded into M02 WO-12.
