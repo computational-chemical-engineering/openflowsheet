@@ -48,6 +48,7 @@ from openflowsheet.application.admission import (
     admit_solve,
     admit_surrogate_study,
     resolve_policies,
+    stored_surrogate_manifests,
 )
 from openflowsheet.application.authz import (
     LOCAL_OWNER,
@@ -756,7 +757,11 @@ class LocalApplication:
             return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
         if isinstance(body, SurrogateStudyBody):
             study = admit_surrogate_study(
-                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+                body,
+                budgets=request.budgets,
+                limits=caller.limits,
+                active_jobs=active,
+                manifests=lambda: stored_surrogate_manifests(store, self.files_root),
             )
             if isinstance(study, ApiError):
                 self._refuse_error(study, operation, request_sha256)

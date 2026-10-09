@@ -1019,6 +1019,17 @@ class ProjectStore:
             ).fetchone()
         return None if row is None else ArtifactRow(*row)
 
+    def artifacts_of_kind(self, kind: str) -> list[ArtifactRow]:
+        """Every registered artifact of `kind`, in id order (M04: the surrogate manifests an
+        iteration's admission reads, spec §18 A1.2)."""
+        with self.reading() as connection:
+            rows = connection.execute(
+                "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
+                " parent_artifact_id FROM artifacts WHERE kind = ? ORDER BY artifact_id",
+                (kind,),
+            ).fetchall()
+        return [ArtifactRow(*row) for row in rows]
+
     def artifact_children(self, parent_artifact_id: str) -> list[ArtifactRow]:
         """The registered members of a bundle, in id order."""
         with self.reading() as connection:

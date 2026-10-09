@@ -18,6 +18,13 @@ operation below is therefore in the registered order and nothing is rearranged f
 * the request at N_tubes = 1: y_N2 = (1 − y_NH3 − y_Ar − y_CH4)/(1 + r) left to right,
   y_H2 = r·y_N2, n = (F·y_H2, F·y_N2, F·y_NH3, F·y_Ar, F·y_CH4), T = u₁, P = u₂.
 
+Iteration i ≥ 2 (spec §5.5, §18 A1.2; R-290) draws fresh calibration, test and gradient sets with
+seed(i, ·) and lists, as its training split, every P_ref draw of the earlier iterations by origin —
+iterations ascending; within each, the draws it made itself (iteration 1: training, calibration,
+test; later ones: calibration, test); index order. An origin resolves bitwise to the earlier plan's
+draw, so its request is the same experiment and the runner's cache serves it.
+`benchmarks/m04/plan-it2.json` and `plan-it3.json` are the bitwise expectations (M04.A36).
+
 The sampler is a pure function of its seed: there is no generator object and no global state
 (G20). The input map u(s) and the scaled input z = (u − c)/h live here too, because the plan
 guard judges every request by them and the surrogate (`quadratic`) is a function of the same z.
@@ -57,6 +64,8 @@ PREFIX_COUNTS: Final[Mapping[Split, int]] = {
     "test": 60,
     "gradient": 2,
 }
+#: The iterations registered under this specification (spec §5.5: at most three).
+MAX_ITERATION: Final = 3
 #: The gradient centres are drawn from c ∓ GRADIENT_INNER·h; the stencil step is GRADIENT_STEP_Z·h.
 GRADIENT_INNER: Final = 0.95
 GRADIENT_STEP_Z: Final = 0.05
@@ -105,7 +114,9 @@ class PlanRefusedError(ValueError):
 
     `code` is `plan_invalid` (a request outside the box, the parent's hard domain or its data
     domain, or a repeated request), `plan_not_registered_for_parent` (`it1-prefix` for a parent
-    that is not synthetic) or `plan_not_registered` (an id without a committed plan, spec §5.5).
+    that is not synthetic), `plan_not_registered` (an id without a committed plan, spec §5.5) or
+    `iteration_not_permitted` (an `it<i>` whose earlier iterations do not permit it, spec §18
+    A1.2; `studies.surrogate.iterations`).
     """
 
     def __init__(self, code: str, message: str) -> None:
@@ -222,12 +233,23 @@ def scaled(u: Sequence[float]) -> tuple[float, ...]:
 
 
 @dataclass(frozen=True)
+class Origin:
+    """An inherited training draw's source (spec §18 A1.2): `split`[`index`] of `iteration`."""
+
+    iteration: int
+    split: Split
+    index: int
+
+
+@dataclass(frozen=True)
 class Draw:
-    """One draw of the training, calibration or test split: its u and its experiment inlet."""
+    """One draw of the training, calibration or test split: its u and its experiment inlet, and
+    for a training draw of iteration ≥ 2 the earlier draw it is (`None` for a fresh draw)."""
 
     index: int
     u: tuple[float, ...]
     request: StreamState
+    origin: Origin | None = None
 
 
 @dataclass(frozen=True)
@@ -292,14 +314,45 @@ class SamplePlan:
         return tuple(out)
 
 
+def fresh_splits(iteration: int) -> tuple[Split, ...]:
+    """The P_ref splits an iteration draws itself: iteration 1 all three, later ones no training
+    (its training split is the earlier draws, spec §18 A1.2)."""
+    return ("training", "calibration", "test") if iteration == 1 else ("calibration", "test")
+
+
+def _fresh(iteration: int, split: Split, count: int) -> tuple[Draw, ...]:
+    return tuple(
+        Draw(index=j, u=u, request=request_of(u))
+        for j, u in enumerate(draws(iteration, split, count))
+    )
+
+
+def inherited_training(iteration: int) -> tuple[Draw, ...]:
+    """Iteration ≥ 2's training split: every P_ref draw of iterations 1 … i−1, by origin, in
+    iteration order, then `fresh_splits` order, then index order (spec §18 A1.2). Each draw is
+    the earlier plan's own (`_fresh` with the earlier seed and the full counts), so its request is
+    bitwise that experiment's."""
+    out: list[Draw] = []
+    for j in range(1, iteration):
+        for split in fresh_splits(j):
+            for row in _fresh(j, split, COUNTS[split]):
+                out.append(Draw(len(out), row.u, row.request, Origin(j, split, row.index)))
+    return tuple(out)
+
+
 def build_plan(plan_id: str, iteration: int, counts: Mapping[Split, int]) -> SamplePlan:
-    """The plan of `iteration` with the first `counts[split]` draws of every split (spec §5.1)."""
+    """The plan of `iteration` with the first `counts[split]` draws of every split (spec §5.1);
+    for iteration ≥ 2 the training split is `inherited_training`, whose length is the count."""
 
     def rows(split: Split) -> tuple[Draw, ...]:
-        return tuple(
-            Draw(index=j, u=u, request=request_of(u))
-            for j, u in enumerate(draws(iteration, split, counts[split]))
-        )
+        if split == "training" and iteration >= 2:
+            inherited = inherited_training(iteration)
+            if len(inherited) != counts[split]:
+                raise ValueError(
+                    f"{plan_id}: {len(inherited)} inherited training draws, not {counts[split]}"
+                )
+            return inherited
+        return _fresh(iteration, split, counts[split])
 
     centres = []
     for j, u in enumerate(draws(iteration, "gradient", counts["gradient"])):
@@ -320,12 +373,24 @@ def build_plan(plan_id: str, iteration: int, counts: Mapping[Split, int]) -> Sam
     )
 
 
-#: The registered plans (spec §5.2, §9.3). `it<i>` for i ≥ 2 is registered only when its plan file
-#: is emitted by the generator and committed (spec §5.5), which has not happened.
+def iteration_counts(iteration: int) -> Mapping[Split, int]:
+    """The counts of `it<i>` (spec §5.2, §18 A1.2): iteration 1's; for i ≥ 2 the fresh splits
+    are iteration 1's counts and the training split lists every earlier P_ref draw (562 for
+    `it2`, 980 for `it3`)."""
+    if iteration == 1:
+        return COUNTS
+    inherited = sum(COUNTS[split] for j in range(1, iteration) for split in fresh_splits(j))
+    return {**COUNTS, "training": inherited}
+
+
+#: The registered plans (spec §5.2, §5.5, §9.3, §18 A1.2). `it<i>` for i ≥ 2 is registered because
+#: its plan file is emitted by the generator and committed (`plan-it2.json`, `plan-it3.json`); at
+#: most three iterations under this specification.
 REGISTERED_PLANS: Final[Mapping[str, tuple[int, Mapping[Split, int], bool]]] = {
     # plan id: (iteration, counts, synthetic parents only)
     "it1": (1, COUNTS, False),
     "it1-prefix": (1, PREFIX_COUNTS, True),
+    **{f"it{i}": (i, iteration_counts(i), False) for i in range(2, MAX_ITERATION + 1)},
 }
 
 

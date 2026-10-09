@@ -78,6 +78,7 @@ __all__ = [
     "QUALIFICATIONS",
     "build_records",
     "check_manifest",
+    "familywise_bound",
     "qualifications",
     "schema_errors",
 ]
@@ -197,10 +198,23 @@ def _hard_domain(variant: Variant) -> dict[str, Any]:
     return dict(variant.boundary["hard_domain"])
 
 
+def familywise_bound(predecessors: int, coverage_evaluated: bool) -> float:
+    """Spec §5.5: δ = 0.05 per iteration whose coverage test was evaluated — every predecessor
+    (the guard admits `it<i>` only after coverage failures) and this iteration if its test ran;
+    exact (a multiple of 1/20 rounded once)."""
+    return float(DELTA * (predecessors + (1 if coverage_evaluated else 0)))
+
+
 def build_records(
-    variant: Variant, plan_id: str, surrogate_id: str, evaluation: SurrogateEvaluation
+    variant: Variant,
+    plan_id: str,
+    surrogate_id: str,
+    evaluation: SurrogateEvaluation,
+    *,
+    predecessors: Sequence[str] = (),
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """The SurrogateManifest and its ModelEvidence for a run plan (spec §10.1, §10.2)."""
+    """The SurrogateManifest and its ModelEvidence for a run plan (spec §10.1, §10.2);
+    `predecessors` are the earlier iterations' manifest SHA-256s, in order (spec §18 A1.2)."""
     plan = evaluation.plan
     verdict = evaluation.verdict
     fit = evaluation.fit
@@ -244,7 +258,7 @@ def build_records(
         "synthetic": synthetic,
         "iteration": plan.iteration,
         "plan_id": plan_id,
-        "predecessors": [],
+        "predecessors": list(predecessors),
         "parent": {
             "model_id": variant.model_id,
             "variant_id": variant.variant_id,
@@ -343,9 +357,7 @@ def build_records(
             "verdict": verdict.verdict,
             "insufficient": list(verdict.insufficient),
             "not_promotable": list(verdict.not_promotable),
-            # Spec §5.5: 0.05 per iteration whose coverage test was evaluated (iteration 1 has no
-            # predecessors).
-            "familywise_false_pass_bound": float(DELTA) if coverage_evaluated else 0.0,
+            "familywise_false_pass_bound": familywise_bound(len(predecessors), coverage_evaluated),
         },
     }
     evidence: dict[str, Any] = {
@@ -458,6 +470,11 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     iteration, counts, synthetic_only = registered
     if manifest["iteration"] != iteration:
         found.append(f"iteration {manifest['iteration']} is not plan {plan_id!r}'s {iteration}")
+    if len(manifest["predecessors"]) != iteration - 1:
+        found.append(
+            f"{len(manifest['predecessors'])} predecessors; iteration {iteration} has "
+            f"{iteration - 1}"
+        )
     if synthetic_only and not manifest["synthetic"]:
         found.append(f"plan {plan_id!r} is registered for synthetic parents only")
 
@@ -549,6 +566,14 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
         found.append(
             f"verdict {recorded} is inconsistent with the stored metrics "
             f"({derived.verdict}, {derived.insufficient}, {derived.not_promotable})"
+        )
+    bound = familywise_bound(
+        len(manifest["predecessors"]), derived.hits is not None and derived.h_min is not None
+    )
+    if promotion["familywise_false_pass_bound"] != bound:
+        found.append(
+            f"familywise_false_pass_bound {promotion['familywise_false_pass_bound']!r} is not "
+            f"0.05 x the iterations whose coverage test was evaluated ({bound!r})"
         )
     if (manifest["predictor"]["coefficients"] is None) != (
         "training_unidentifiable" in derived.insufficient

@@ -407,17 +407,24 @@ def run_study(
     max_cold_experiments: int,
     *,
     plan: SamplePlan | None = None,
+    predecessors: Sequence[str] = (),
     between: Callable[[], None] | None = None,
 ) -> StudyOutcome:
     """Run the study (module docstring). `PlanRefusedError` when the plan may not run.
 
-    `between` is called before every experiment (a job's cancellation check): what it raises
-    propagates, with every record written so far kept."""
+    `predecessors` are the manifest SHA-256s of iterations 1 … i−1 that permit `it<i>`, in order
+    (`studies.surrogate.iterations.predecessors`, the admission guard; spec §18 A1.2): one per
+    earlier iteration. `between` is called before every experiment (a job's cancellation check):
+    what it raises propagates, with every record written so far kept."""
     from openflowsheet.studies.surrogate.manifest import build_records
 
     if max_cold_experiments < 0:
         raise ValueError(f"max_cold_experiments = {max_cold_experiments} is negative")
     chosen = prepare(variant, plan_id, plan)
+    if len(predecessors) != chosen.iteration - 1:
+        raise ValueError(
+            f"{plan_id}: {len(predecessors)} predecessors for iteration {chosen.iteration}"
+        )
     identifier = surrogate_id(variant, plan_id)
     labelled = chosen.requests()
     keys = [
@@ -472,7 +479,9 @@ def run_study(
         split: Split = label.split("[", 1)[0]  # type: ignore[assignment]
         observations[split].append(observe(label, state, outcome))
     evaluation = evaluate(chosen, observations)
-    manifest, evidence = build_records(variant, plan_id, identifier, evaluation)
+    manifest, evidence = build_records(
+        variant, plan_id, identifier, evaluation, predecessors=predecessors
+    )
     return StudyOutcome(
         evaluation.verdict.verdict,
         evaluation.verdict.insufficient,

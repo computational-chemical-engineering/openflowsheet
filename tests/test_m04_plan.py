@@ -205,5 +205,68 @@ def test_a03_the_prefix_plan_is_refused_for_a_non_synthetic_parent() -> None:
         sp.registered_plan("it1-prefix", synthetic_parent=False)
     assert refused.value.code == "plan_not_registered_for_parent"
     with pytest.raises(sp.PlanRefusedError) as unknown:
-        sp.registered_plan("it2", synthetic_parent=True)
+        sp.registered_plan("it4", synthetic_parent=True)  # spec §5.5: at most three iterations
     assert unknown.value.code == "plan_not_registered"
+
+
+# -- A36: the plans of iterations 2 and 3 ---------------------------------------------------------
+
+LATER = {i: load_json(REPO_ROOT / "benchmarks" / "m04" / f"plan-it{i}.json") for i in (2, 3)}
+PLAN_FILES: Mapping[int, Mapping[str, Any]] = {1: PLAN_IT1, **LATER}
+
+
+@pytest.mark.parametrize(("iteration", "origins"), [(2, 562), (3, 980)])
+def test_a36_later_iterations_are_derived_bitwise(iteration: int, origins: int) -> None:
+    """M04.A36: `it2`/`it3` from registered constants equal the committed files bitwise; each
+    training origin expands to the earlier plan's request bitwise (spec §18 A1.2)."""
+    plan = sp.registered_plan(f"it{iteration}", synthetic_parent=False)
+    document = PLAN_FILES[iteration]
+    assert (plan.iteration, document["iteration"]) == (iteration, iteration)
+    assert plan.counts == document["counts"] == dict(sp.iteration_counts(iteration))
+    assert plan.counts == {"training": origins, "calibration": 118, "test": 300, "gradient": 5}
+    assert plan.seeds == document["seeds"] == {s: sp.seed(iteration, s) for s in sp.SPLITS}
+    assert len(plan.training) == len(document["training"]) == origins
+    for row, expected in zip(plan.training, document["training"], strict=True):
+        origin = expected["origin"]
+        assert row.index == expected["index"]
+        assert row.origin == sp.Origin(origin["iteration"], origin["split"], origin["index"])
+        source = PLAN_FILES[origin["iteration"]][origin["split"]][origin["index"]]
+        assert _hex(row.u) == _hex(source["u"]), f"training[{row.index}].u"
+        assert _request_hex(row.request) == _expected_request_hex(source["request"])
+    for split in ("calibration", "test"):
+        for row, expected in zip(getattr(plan, split), document[split], strict=True):
+            assert row.index == expected["index"] and row.origin is None
+            assert _hex(row.u) == _hex(expected["u"]), f"{split}[{row.index}].u"
+            assert _request_hex(row.request) == _expected_request_hex(expected["request"])
+    for centre, expected in zip(plan.gradient, document["gradient"], strict=True):
+        assert _hex(centre.u) == _hex(expected["u"])
+        for point, stencil in zip(centre.stencil, expected["stencil"], strict=True):
+            assert (point.coordinate, point.sign) == (stencil["coordinate"], stencil["sign"])
+            assert _request_hex(point.request) == _expected_request_hex(stencil["request"])
+    # Order: earlier iterations ascending; within each its own draws (it1: training,
+    # calibration, test; later ones: calibration, test); index order.
+    order = [(r.origin.iteration, r.origin.split) for r in plan.training if r.origin is not None]
+    runs = [key for i, key in enumerate(order) if i == 0 or order[i - 1] != key]
+    expected_runs = [(1, "training"), (1, "calibration"), (1, "test")]
+    if iteration == 3:
+        expected_runs += [(2, "calibration"), (2, "test")]
+    assert runs == expected_runs
+    # Every request runs: 562 (980) inherited, 488 fresh, none repeated; the guard passes.
+    requests = plan.requests()
+    assert len(requests) == origins + 488
+    assert len({tuple(_request_hex(request)) for _, request in requests}) == len(requests)
+    assert sp.plan_violations(plan, parent_domain) == ()
+
+
+def test_a36_a_later_iteration_inherits_the_earlier_draws_not_copies_of_them() -> None:
+    """The inherited rows are the earlier plans' own draws: the cache serves them (A1.2)."""
+    it2 = sp.registered_plan("it2", synthetic_parent=False)
+    it3 = sp.registered_plan("it3", synthetic_parent=False)
+    earlier = (*FULL.training, *FULL.calibration, *FULL.test)
+    assert [(r.u, r.request) for r in it2.training] == [(r.u, r.request) for r in earlier]
+    assert [(r.u, r.request) for r in it3.training[:562]] == [
+        (r.u, r.request) for r in it2.training
+    ]
+    assert [(r.u, r.request) for r in it3.training[562:]] == [
+        (r.u, r.request) for r in (*it2.calibration, *it2.test)
+    ]

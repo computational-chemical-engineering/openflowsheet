@@ -71,7 +71,7 @@ from typing import Any, Final, Self
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ArtifactSink, ExperimentStore
-from openflowsheet.application.admission import resolve_policies
+from openflowsheet.application.admission import resolve_policies, stored_surrogate_manifests
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -107,7 +107,8 @@ from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import policy_sha256
-from openflowsheet.studies.surrogate.plan import PlanRefusedError
+from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
+from openflowsheet.studies.surrogate.plan import REGISTERED_PLANS, PlanRefusedError
 from openflowsheet.studies.surrogate.study import run_study
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
@@ -705,12 +706,22 @@ class _Body:
                 job_id=self.job.job_id,
                 check=self.check,
             )
+            # Spec §18 A1.2: admission judged the earlier iterations; their manifests are the
+            # predecessors (an `it<i>` refused here was permitted at admission: a defect).
+            predecessors = iteration_predecessors(
+                variant,
+                body.plan_id,
+                stored_surrogate_manifests(self.context.store, self.context.root)
+                if REGISTERED_PLANS[body.plan_id][0] > 1
+                else (),
+            )
             self.at("study")
             outcome = run_study(
                 runner,
                 variant,
                 body.plan_id,
                 body.max_cold_experiments,
+                predecessors=predecessors,
                 between=self._honour_interruption,
             )
             self.at("record")

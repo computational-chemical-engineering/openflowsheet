@@ -211,8 +211,10 @@ def test_a_budget_below_the_cache_misses_is_refused_with_nothing_written(
     [
         # A03: the prefix plan is registered for synthetic parents only.
         (body(REAL), "/body/plan_id", "plan_not_registered_for_parent"),
-        # Spec §5.5: `it2` has no committed plan file.
-        (body(plan_id="it2"), "/body/plan_id", "plan_not_registered"),
+        # Spec §5.5: at most three iterations; `it4` has no committed plan file.
+        (body(plan_id="it4"), "/body/plan_id", "plan_not_registered"),
+        # Spec §18 A1.2: `it2` with no `it1` manifest of the parent in the project.
+        (body(plan_id="it2"), "/body/plan_id", "iteration_not_permitted"),
         (body(sha256="0" * 64), "/body/parent/variant_sha256", None),
     ],
 )
