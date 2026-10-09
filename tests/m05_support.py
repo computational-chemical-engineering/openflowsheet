@@ -385,6 +385,26 @@ def _toy_a_objective(
     return (block_output - 96.1) ** 2 / 100.0
 
 
+class ParabolaBlock:
+    """Probe P14 (c)'s block, `y = 90 + (T − 300)²/100`: nearly stationary in its input near the
+    start, so the affine basis's subproblems move T far for a small change in y."""
+
+    block_id = "pb"
+    input_ids = ("T",)
+    output_ids = ("y",)
+
+    def jacobian_pattern(self) -> tuple[tuple[int, int], ...]:
+        return ((0, 0),)
+
+    def values(self, inputs: Sequence[float]) -> Sequence[float]:
+        (t,) = inputs
+        return [90.0 + (t - 300.0) ** 2 / 100.0]
+
+    def jacobian(self, inputs: Sequence[float]) -> Sequence[tuple[int, int, float]]:
+        (t,) = inputs
+        return [(0, 0, 2.0 * (t - 300.0) / 100.0)]
+
+
 def implicit_block_projection(block: Any, start_t: float, **options: Any) -> Any:
     """P14's implicit shape on a one-input, one-output property `block`, started at T = `start_t`
     with z = y(T)/90, the decision z in [0.5, 1.5] (the probe's d = 2(z − 1) ∈ [−1, 1])."""
@@ -408,3 +428,45 @@ def implicit_block_projection(block: Any, start_t: float, **options: Any) -> Any
         domain={},
         **options,
     )
+
+
+# -- bases for the tests (R-277) ------------------------------------------------------------------
+
+
+def affine_block_basis(projection: Any) -> dict[str, Any]:
+    """An affine Taylor basis at the projection's start for every property-block EF:
+    b(w) = (y_k(w₀) + ∇y_k(w₀)ᵀ(w − w₀)) / s_k, from each block's own values and Jacobian at x₀,
+    in the EF's scaled units. A test's basis, not M05-basis-v1's (WO-4 builds that)."""
+    import pyomo.environ as pyo
+
+    from openflowsheet.studies.trust_region.trf_state import EFBasis
+
+    spec = projection.spec
+    start = {
+        name: float(pyo.value(projection.model.x[i])) for i, name in enumerate(spec.variable_ids)
+    }
+    blocks = {block.block_id: block for block in spec.blocks}
+    basis = {}
+    for entry in projection.source_map["block_outputs"]:
+        block = blocks[entry["block_id"]]
+        k = list(block.output_ids).index(entry["output_id"])
+        w0 = [start[name] for name in entry["input_variable_ids"]]
+        value = float(block.values(w0)[k])
+        gradient = [0.0] * len(w0)
+        for row, column, entry_value in block.jacobian(w0):
+            if row == k:
+                gradient[column] += float(entry_value)
+        scale = float(entry["output_scale"])
+
+        def build(
+            args: Sequence[Any],
+            value: float = value,
+            gradient: Sequence[float] = tuple(gradient),
+            w0: Sequence[float] = tuple(w0),
+            scale: float = scale,
+        ) -> Any:
+            terms = zip(gradient, args, w0, strict=True)
+            return (value + sum(g * (a - w) for g, a, w in terms)) / scale
+
+        basis[entry["ef"]] = EFBasis("affine_taylor", build)
+    return basis

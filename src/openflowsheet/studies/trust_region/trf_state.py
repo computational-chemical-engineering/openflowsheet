@@ -3,9 +3,10 @@
 
 Everything here is plain Python so that the default gate can test it: the version and module-hash
 pin and the readiness it gives, the subproblem options `M05-trsp-ipopt-v1` and the configuration
-`M05-trf-config-v1`, the parser of the `pyomo.contrib.trustregion` INFO records, the filter rebuilt
-from θ-type steps, and the outcome read from the captured `EXIT:` lines checked against the logged
-values. `trf.py` is the half that imports Pyomo and runs it.
+`M05-trf-config-v1`, the basis a run must be given and its completeness check, the parser of the
+`pyomo.contrib.trustregion` INFO records, the filter rebuilt from θ-type steps, and the outcome
+read from the captured `EXIT:` lines checked against the logged values and against θ re-checked
+from the returned model. `trf.py` is the half that imports Pyomo and runs it.
 
 **Why the log.** Pyomo 6.10.1's TRF keeps its iteration history, its filter and its exit reason in
 locals of `trust_region_method`; the only views it gives are the INFO records of
@@ -23,7 +24,7 @@ import importlib.util
 import logging
 import re
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, Literal
@@ -234,6 +235,59 @@ def trf_config_v1(sigma: float) -> dict[str, Any]:
     return {**TRF_CONFIG_V1, "step_size_termination": sigma}
 
 
+# -- the basis (D7; R-277) ------------------------------------------------------------------------
+
+#: What an `EFBasis` is, for the record (design note §6.6): `zero` is TRF's default b ≡ 0, TR-E1's
+#: only; `constant`, `affine_taylor` and `surrogate` are M05-basis-v1's.
+BasisKind = Literal["zero", "constant", "affine_taylor", "surrogate"]
+TRF_CONFIGURATION_REFUSED: Final = "TRF_CONFIGURATION_REFUSED"
+#: The projection's `shape_check` status of TR-E1, the one projection a zero basis is allowed on.
+SHAPE_CHECK_EXEMPT_ORACLE: Final = "exempt_oracle"
+
+
+@dataclass(frozen=True)
+class EFBasis:
+    """One `ExternalFunction`'s basis b(w) (design note §6.6). `build` is given the EF's arguments
+    as TRF's clone holds them — `ef_expr.args`, never the original model's variables — and returns
+    the Pyomo expression (or number) TRF uses as b; `kind` is what the run records."""
+
+    kind: BasisKind
+    build: Callable[[Sequence[Any]], Any]
+
+
+def _zero(args: Sequence[Any]) -> int:
+    return 0
+
+
+def zero_basis(ef_names: Collection[str]) -> dict[str, EFBasis]:
+    """TRF's default b ≡ 0 for every EF, made explicit — test-only, for TR-E1 (R-277). It returns
+    the integer 0 that TRF's own default `lambda comp, ef: 0` returns, so TR-E1 run with it is the
+    native example. `run_trf` refuses it on any projection other than TR-E1's exempt oracle."""
+    return {name: EFBasis("zero", _zero) for name in ef_names}
+
+
+def basis_refusals(
+    ef_names: Collection[str], basis: Mapping[str, EFBasis] | None, shape_check: str
+) -> tuple[str, ...]:
+    """R-277: why `basis` is not a configuration a run may use on a projection with these EF names
+    and shape-check status, as `TRF_CONFIGURATION_REFUSED(<reason>)` codes; empty if it may.
+
+    - `basis_missing:<ef>`: no basis at all, or none for this EF — TRF would fill in b ≡ 0;
+    - `basis_unknown:<name>`: a basis for no EF of the projection;
+    - `zero_basis_not_oracle:<ef>`: a zero basis on a projection that is not TR-E1's oracle."""
+    given = {} if basis is None else dict(basis)
+    names = sorted(ef_names)
+    reasons = [f"basis_missing:{name}" for name in names if name not in given]
+    reasons += [f"basis_unknown:{name}" for name in sorted(set(given) - set(names))]
+    if shape_check != SHAPE_CHECK_EXEMPT_ORACLE:
+        reasons += [
+            f"zero_basis_not_oracle:{name}"
+            for name in names
+            if name in given and given[name].kind == "zero"
+        ]
+    return tuple(f"{TRF_CONFIGURATION_REFUSED}({reason})" for reason in reasons)
+
+
 # -- the INFO records (D8) ------------------------------------------------------------------------
 
 StepType = Literal["f", "theta", "rejected"]
@@ -403,11 +457,19 @@ def last_accepted(iterations: Sequence[IterationRecord]) -> IterationRecord | No
 
 Outcome = str
 TRF_CONVERGED: Final = "TRF_CONVERGED"
+#: R-279: "Optimal" with no accepted TRSP step — not a convergence claim; the study sends the point
+#: to stage B's parent checks (WO-6).
+TRF_EXIT_WITHOUT_STEP: Final = "TRF_EXIT_WITHOUT_STEP"
 TRF_FEASIBLE_STALLED: Final = "TRF_FEASIBLE_STALLED"
+#: R-279: "Feasible" with θ re-checked above the feasibility termination — no candidate; the
+#: retry policy treats it as an abort.
+TRF_STALLED_INCONSISTENT: Final = "TRF_STALLED_INCONSISTENT"
 TRF_MAX_ITERATIONS: Final = "TRF_MAX_ITERATIONS"
 TRF_SUBPROBLEM_FAILED: Final = "TRF_SUBPROBLEM_FAILED"
-#: The outcomes after which TRF returned its clone and a candidate exists.
-RETURNS_MODEL: Final = frozenset({TRF_CONVERGED, TRF_FEASIBLE_STALLED, TRF_MAX_ITERATIONS})
+#: The outcomes after which the run keeps TRF's clone and a candidate exists.
+RETURNS_MODEL: Final = frozenset(
+    {TRF_CONVERGED, TRF_EXIT_WITHOUT_STEP, TRF_FEASIBLE_STALLED, TRF_MAX_ITERATIONS}
+)
 
 
 def truth_refused(code: str) -> Outcome:
@@ -418,37 +480,53 @@ def trf_error(name: str) -> Outcome:
     return f"TRF_ERROR({name})"
 
 
+def accepted_steps(iterations: Sequence[IterationRecord]) -> int:
+    """The number of accepted TRSP steps (f- or θ-type); iteration 0, the PMP, is no step."""
+    return sum(1 for record in iterations if record.step_type in ("f", "theta"))
+
+
 def classify_exit(
     *,
     exit_lines: Sequence[str],
     warnings: Sequence[str],
     iterations: Sequence[IterationRecord],
+    theta_recheck: float,
     feasibility_termination: float,
     step_size_termination: float,
     maximum_iterations: int,
 ) -> Outcome:
-    """The outcome of a run that returned, from its `EXIT:` lines checked against its log.
+    """The outcome of a run that returned, from its `EXIT:` lines checked against its log and
+    against `theta_recheck`, θ recomputed from the model TRF returned (R-279: probe P14 shows that
+    either `EXIT:` line can be false).
 
-    - `TRF_CONVERGED`: exactly `EXIT: Optimal solution found.`, and the last logged iteration's θ
-      and step norm — the values `TRF.py`'s termination test read — within the configured
-      terminations.
-    - `TRF_FEASIBLE_STALLED`: exactly `EXIT: Feasible solution found.`, with TRF's
-      `Insufficient progress` warning.
+    - `EXIT: Optimal solution found.` needs the last logged iteration's θ and step norm — the
+      values `TRF.py`'s termination test read — within the configured terminations, and
+      `theta_recheck` within the feasibility termination. Then it is `TRF_CONVERGED` after at
+      least one accepted TRSP step, and `TRF_EXIT_WITHOUT_STEP` after none.
+    - `EXIT: Feasible solution found.` needs TRF's `Insufficient progress` warning. Then it is
+      `TRF_FEASIBLE_STALLED` with `theta_recheck` within the feasibility termination, and
+      `TRF_STALLED_INCONSISTENT` above it (`TRF.py`'s stall test compares θ with itself after an
+      accepted step, so it fires at any θ).
     - `TRF_MAX_ITERATIONS`: no printed `EXIT:` line, TRF's maximum-iterations warning naming the
       configured count, and that many iterations logged after iteration 0.
 
-    Anything else is `TRF_ERROR(exit_mismatch)`: the printed outcome and the logged values
-    disagree, and neither is believed."""
+    Anything else is `TRF_ERROR(exit_mismatch)`: the printed outcome, the logged values and the
+    model disagree, and none of them is believed."""
     if not iterations:
         return trf_error("exit_mismatch")
     last = iterations[-1]
+    feasible = theta_recheck <= feasibility_termination
     if list(exit_lines) == [EXIT_OPTIMAL]:
-        if last.theta <= feasibility_termination and last.step_norm <= step_size_termination:
-            return TRF_CONVERGED
+        if (
+            last.theta <= feasibility_termination
+            and last.step_norm <= step_size_termination
+            and feasible
+        ):
+            return TRF_CONVERGED if accepted_steps(iterations) else TRF_EXIT_WITHOUT_STEP
         return trf_error("exit_mismatch")
     if list(exit_lines) == [EXIT_FEASIBLE]:
         if WARNING_INSUFFICIENT_PROGRESS in warnings:
-            return TRF_FEASIBLE_STALLED
+            return TRF_FEASIBLE_STALLED if feasible else TRF_STALLED_INCONSISTENT
         return trf_error("exit_mismatch")
     if not exit_lines:
         reached = [m for m in (_MAX_ITERATIONS.match(w) for w in warnings) if m is not None]

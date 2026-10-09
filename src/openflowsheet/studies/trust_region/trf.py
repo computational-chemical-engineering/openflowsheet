@@ -8,31 +8,45 @@ executable: it passes `keepfiles` and `tee` to its subproblem solver, which PyNu
 refuses (probe P8).
 
 **A run** (`run_trf`) checks the pin first — any mismatch raises `TrustRegionUnsupportedError` and
-nothing runs — then gives every holder of the projection the run's `RunState` and budgets, and
-**pre-flights** the start (R-276, design note §4 P13, §16.3): every holder is asked for its values
-at x₀ — the request TRF's `EFReplacement.exitNode` makes first, inside a bare `except:` that
-swallows a refusal and sets the holder variable to 0. A refusal there is
-`TRF_TRUTH_REFUSED(start:<status>:<reason>)` and TRF is never invoked; otherwise TRF's own start
+nothing runs — then the basis (R-277, design note §6.6): every `ExternalFunction` of the projection
+needs an `EFBasis`, or TRF would silently use its default b ≡ 0, under which a PMP can be infeasible
+at iteration 0 (probe P14 a). A missing or incomplete basis, a basis for an unknown EF, or a zero
+basis on any projection but TR-E1's exempt oracle raises `TrfConfigurationRefusedError`
+(`TRF_CONFIGURATION_REFUSED(<reason>)`) and nothing runs; TR-E1 is given the explicit, test-only
+`zero_basis`, which the run records as `basis: zero`. Then it gives every holder of the projection
+the run's `RunState` and budgets, and **pre-flights** the start (R-276, design note §4 P13, §16.3):
+every holder is asked for its values at x₀ — the request TRF's `EFReplacement.exitNode` makes first,
+inside a bare `except:` that swallows a refusal and sets the holder variable to 0. A refusal there
+is `TRF_TRUTH_REFUSED(start:<status>:<reason>)` and TRF is never invoked; otherwise TRF's own start
 evaluation is a memo hit, and the ledger's `trf_start_value` request is the pre-flight's, so §8.3's
-request identity is unchanged. Then it puts a `TrfLogHandler` on `pyomo.contrib.trustregion` at
-INFO with propagation off, captures `stdout` (TRF's `EXIT:` prints and its `model.display()`), and
-calls
-`SolverFactory("trustregion").solve(model, decisions, basis_rule, **config)` — the configuration
-goes to `solve()`, never to the constructor (probe P8). The outcome is design note §6.7's:
+request identity is unchanged. Then it puts a `TrfLogHandler` on `pyomo.contrib.trustregion` at INFO
+with propagation off, captures `stdout` (TRF's `EXIT:` prints and its `model.display()`), and calls
+`SolverFactory("trustregion").solve(model, decisions, rule, **config)`, with `rule` the basis as
+TRF's `ext_fcn_surrogate_map_rule` — the configuration goes to `solve()`, never to the constructor
+(probe P8). The outcome is design note §6.7's:
 
 - `TRF_TRUTH_REFUSED(<status>:<reason>)` whenever a holder refused during the run, whatever TRF
   returned or printed (R-276's backstop): a swallowed refusal can be followed by a run that ends
   "optimal", so TRF's own account cannot be trusted after one;
 - `TRF_SUBPROBLEM_FAILED` for TRF's `ArithmeticError("EXIT: Model solve failed …")`;
 - `TRF_ERROR(<exception class>)` for anything else raised, including the `ValueError` of TRF's DOF
-  check, and `TRF_ERROR(exit_mismatch | log | trf_map)` when what TRF returned does not read back;
-- otherwise `trf_state.classify_exit`: `TRF_CONVERGED`, `TRF_FEASIBLE_STALLED` or
-  `TRF_MAX_ITERATIONS`, the three outcomes that return TRF's clone.
+  check, and `TRF_ERROR(exit_mismatch | log | theta_recheck | trf_map)` when what TRF returned does
+  not read back;
+- otherwise `trf_state.classify_exit`, from the `EXIT:` lines, the log and **θ re-checked from
+  the returned model** (R-279): `TRF_CONVERGED` (≥ 1 accepted TRSP step), `TRF_EXIT_WITHOUT_STEP`,
+  `TRF_FEASIBLE_STALLED`, `TRF_STALLED_INCONSISTENT` or `TRF_MAX_ITERATIONS`. All but
+  `TRF_STALLED_INCONSISTENT` keep TRF's clone.
 
-For those three, the projection's omitted rows are evaluated at the returned state and recorded as
-`TrfRun.omitted_rows_final` (R-274's fact 4). That is the hook P2 reads: P2 (stage B's parent
-checks, design note §7.4) is not built yet, and a failed check there is `PROJECTION_DISAGREES`;
-the run's own outcome does not change.
+The re-check is `TRF.py`'s own feasibility measure, Σᵢ |yᵢ − dᵢ(w)| over its holder variables,
+evaluated on the returned clone while the holders still serve the run: every truth value it needs
+is one TRF requested at that state, so it is all memo hits, recorded in the ledger. It is
+`TrfRun.theta_recheck` for every run TRF returned from. TRF itself is not patched (the pin, R-260):
+only its labelling is guarded.
+
+For the outcomes that keep the clone, the projection's omitted rows are evaluated at the returned
+state and recorded as `TrfRun.omitted_rows_final` (R-274's fact 4). That is the hook P2 reads: P2
+(stage B's parent checks, design note §7.4) is not built yet, and a failed check there is
+`PROJECTION_DISAGREES`; the run's own outcome does not change.
 
 `stdout` capture is process-global, so there is **one TRF run per process**: a second concurrent
 call raises rather than interleaving.
@@ -45,7 +59,7 @@ import io
 import logging
 import threading
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Final
 
@@ -62,10 +76,12 @@ from openflowsheet.studies.trust_region.trf_state import (
     TRF_SUBPROBLEM_FAILED,
     TRSP_OPTIONS,
     TRSP_SOLVER_ALIAS,
+    EFBasis,
     IterationRecord,
     ReadinessReason,
     TrfLogError,
     TrfLogHandler,
+    basis_refusals,
     classify_exit,
     framework_readiness,
     last_accepted,
@@ -88,6 +104,15 @@ class TrspIpopt(IPOPT):  # type: ignore[misc]
         super().__init__(**kwds)
         self.set_executable(str(trsp_executable()), validate=True)
         self.options.update(TRSP_OPTIONS)
+
+
+class TrfConfigurationRefusedError(ValueError):
+    """The run's configuration is refused (`TRF_CONFIGURATION_REFUSED(<reason>)`, R-277); nothing
+    was run and no holder was asked for anything."""
+
+    def __init__(self, codes: Sequence[str]) -> None:
+        super().__init__("; ".join(codes))
+        self.codes = tuple(codes)
 
 
 class TrustRegionUnsupportedError(RuntimeError):
@@ -130,6 +155,10 @@ class TrfRun:
     refusal: TruthRefused | None
     error: str | None
     wall_s: float
+    #: Each EF's basis kind (`EFBasis.kind`), by EF name: `zero` flags TR-E1's native b ≡ 0.
+    basis: Mapping[str, str]
+    #: R-279: TRF's θ recomputed from the model it returned; `None` when it returned none.
+    theta_recheck: float | None
     #: R-274's fact 4 at the returned state, for the outcomes in `RETURNS_MODEL` only.
     omitted_rows_final: OmittedRowsCheck | None = None
 
@@ -141,28 +170,33 @@ class TrfRun:
         return document_sha256(self.source_map(projection))
 
 
-BasisRule = Callable[[Any, Any], Any]
-
-
 def run_trf(
     projection: Projection,
     config: Mapping[str, Any],
     *,
-    basis_rule: BasisRule | None = None,
+    basis: Mapping[str, EFBasis] | None = None,
     budgets: Mapping[str, Sequence[ColdBudget]] | None = None,
     run_id: str = "trf-1",
 ) -> TrfRun:
-    """Run TRF once on `projection` with `config` (passed to `solve()`) and read back its state.
+    """Run TRF once on `projection` with `config` (passed to `solve()`) and `basis` (one
+    `EFBasis` per `ExternalFunction`, by EF name), and read back its state.
 
     `budgets` maps a holder's name to the caps its cold value requests are admitted against.
-    Raises `TrustRegionUnsupportedError` before any run if the pin does not hold."""
+    Raises `TrustRegionUnsupportedError` before any run if the pin does not hold, and
+    `TrfConfigurationRefusedError` if the basis is missing, incomplete or a zero basis off TR-E1."""
     readiness = framework_readiness()
     if readiness.status != "READY":
         raise TrustRegionUnsupportedError(readiness.reasons)
+    refused = basis_refusals(
+        projection.ef_names.values(), basis, projection.source_map["shape_check"]["status"]
+    )
+    if refused:
+        raise TrfConfigurationRefusedError(refused)
+    assert basis is not None  # basis_refusals refuses None
     if not _RUN_LOCK.acquire(blocking=False):
         raise RuntimeError("one TRF run per process: stdout capture is process-global (§6.7)")
     try:
-        return _run(projection, config, basis_rule, budgets or {}, run_id)
+        return _run(projection, config, basis, budgets or {}, run_id)
     finally:
         _RUN_LOCK.release()
 
@@ -170,12 +204,13 @@ def run_trf(
 def _run(
     projection: Projection,
     config: Mapping[str, Any],
-    basis_rule: BasisRule | None,
+    basis: Mapping[str, EFBasis],
     budgets: Mapping[str, Sequence[ColdBudget]],
     run_id: str,
 ) -> TrfRun:
     solver = SolverFactory("trustregion")
     effective = solver.config(dict(config))
+    kinds = {name: basis[name].kind for name in sorted(basis)}
     run = RunState(run_id)
     handler = TrfLogHandler(run)
     logger = logging.getLogger(TRF_PACKAGE)
@@ -210,6 +245,8 @@ def _run(
             refusal=refused,
             error=None,
             wall_s=time.perf_counter() - preflight_start,
+            basis=kinds,
+            theta_recheck=None,
         )
     logger.setLevel(logging.INFO)
     logger.propagate = False
@@ -217,13 +254,25 @@ def _run(
     start = time.perf_counter()
     returned: Any = None
     raised: BaseException | None = None
+    theta_recheck: float | None = None
+    recheck_error: str | None = None
     try:
         with contextlib.redirect_stdout(captured):
             returned = solver.solve(
-                projection.model, projection.decision_variables, basis_rule, **dict(config)
+                projection.model,
+                projection.decision_variables,
+                _surrogate_map_rule(projection, basis),
+                **dict(config),
             )
     except Exception as error:  # noqa: BLE001 - every exception is mapped to a typed outcome
         raised = error
+    else:
+        try:
+            theta_recheck = recheck_theta(returned)
+        except TruthRefused:
+            pass  # kept on its holder: the outcome below is that refusal
+        except Exception as error:  # noqa: BLE001 - mapped to TRF_ERROR(theta_recheck)
+            recheck_error = f"{type(error).__name__}: {error}"
     finally:
         wall = time.perf_counter() - start
         logger.removeHandler(handler)
@@ -263,11 +312,15 @@ def _run(
     elif log_error is not None:
         outcome = trf_error("log")
         error_text = log_error
+    elif theta_recheck is None:
+        outcome = trf_error("theta_recheck")
+        error_text = recheck_error
     else:
         outcome = classify_exit(
             exit_lines=exit_lines,
             warnings=handler.warnings,
             iterations=iterations,
+            theta_recheck=theta_recheck,
             feasibility_termination=float(effective.feasibility_termination),
             step_size_termination=float(effective.step_size_termination),
             maximum_iterations=int(effective.maximum_iterations),
@@ -310,6 +363,8 @@ def _run(
         refusal=refusal,
         error=error_text,
         wall_s=wall,
+        basis=kinds,
+        theta_recheck=theta_recheck,
         omitted_rows_final=omitted_rows_final,
     )
 
@@ -327,6 +382,38 @@ def _preflight(projection: Projection) -> TruthRefused | None:
         except TruthRefused as refusal:
             return refusal
     return None
+
+
+def _surrogate_map_rule(projection: Projection, basis: Mapping[str, EFBasis]) -> Any:
+    """TRF's `ext_fcn_surrogate_map_rule(component, ef_expr)`: the `EFBasis` of the EF that
+    `ef_expr` calls, built on its inputs — the first of `ef_expr.args`, the clone's variables; a
+    Python-callback `ExternalFunction` appends its function id after them (as the holder reads
+    only its first `n_in` arguments). The EF is found by its value callback, which the clone
+    shares with the original (as `_trf_map` finds it)."""
+    source = projection.source_map
+    inputs = {
+        entry["ef"]: len(entry["input_variable_ids"])
+        for entry in (*source["block_outputs"], *source["external_links"])
+    }
+
+    def rule(component: Any, ef_expr: Any) -> Any:
+        name = projection.ef_names[ef_expr._fcn._fcn]
+        return basis[name].build(list(ef_expr.args[: inputs[name]]))
+
+    return rule
+
+
+def recheck_theta(model: Any) -> float:
+    """R-279: TRF's feasibility measure θ = Σᵢ |yᵢ − dᵢ(w)| recomputed on the model TRF returned —
+    `TRFInterface.calculateFeasibility`'s expression, in its order, over `trf_data.ef_outputs` —
+    with every dᵢ evaluated through its holder at the state the model holds."""
+    data = model.trf_data
+    return float(
+        sum(
+            abs(pyo.value(output) - pyo.value(data.truth_models[output]))
+            for _, output in data.ef_outputs.items()
+        )
+    )
 
 
 def _trf_map(projection: Projection, model: Any) -> tuple[Mapping[str, str], ...]:

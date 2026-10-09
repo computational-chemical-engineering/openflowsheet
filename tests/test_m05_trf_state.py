@@ -18,20 +18,24 @@ from openflowsheet.studies.trust_region.trf_state import (
     EXIT_FEASIBLE,
     EXIT_OPTIMAL,
     PYOMO_VERSION,
+    RETURNS_MODEL,
     TRF_CONFIG_V1,
     TRF_MODULE_SHA256,
     TRSP_EXECUTABLE_SHA256,
     TRSP_OPTIONS,
     WARNING_INSUFFICIENT_PROGRESS,
+    EFBasis,
     IterationRecord,
     TrfLogError,
     TrfLogHandler,
+    basis_refusals,
     classify_exit,
     framework_readiness,
     last_accepted,
     reconstruct_filter,
     step_size_termination,
     trf_config_v1,
+    zero_basis,
 )
 
 #: TRF 6.10.1's INFO records of TR-E1 through `openflowsheet_trsp_ipopt` (measured, WO-3).
@@ -190,11 +194,18 @@ def classify(
     warnings: list[str],
     iterations: tuple[IterationRecord, ...],
     maximum: int = 50,
+    theta_recheck: float | None = None,
 ) -> str:
+    """`classify_exit` at TR-E1's terminations; θ re-checked equal to the last accepted logged θ
+    unless given (what a model left at that iterate gives, bitwise)."""
+    accepted = last_accepted(iterations)
+    if theta_recheck is None:
+        theta_recheck = accepted.theta if accepted is not None else 0.0
     return classify_exit(
         exit_lines=exit_lines,
         warnings=warnings,
         iterations=iterations,
+        theta_recheck=theta_recheck,
         feasibility_termination=1e-5,
         step_size_termination=1e-5,
         maximum_iterations=maximum,
@@ -231,6 +242,111 @@ def test_max_iterations_needs_the_warning_and_that_many_logged_iterations() -> N
     assert classify([], reached, iterations, maximum=4) == "TRF_MAX_ITERATIONS"
     assert classify([], reached, iterations, maximum=5) == "TRF_ERROR(exit_mismatch)"
     assert classify([], reached, iterations[:4], maximum=4) == "TRF_ERROR(exit_mismatch)"
+
+
+#: Probe P14 (b)'s log through `run_trf`: the PMP leaves the start, θ_PMP = 0, and TRF prints
+#: "Optimal" before any subproblem (toy A with the constant basis).
+P14B_LOG = """\
+****** Iteration 0 ******
+trustRadius = 1.0
+feasibility = 0.0
+objectiveValue = 0.3721
+stepNorm = 0"""
+#: Probe P14 (c)'s log through `run_trf` (the parabola block from T = 300.5, affine basis, Pyomo's
+#: defaults): the radius collapses to the minimum, and TRF prints "Feasible" at θ = 1.80.
+P14C_LOG = """\
+****** Iteration 0 ******
+trustRadius = 1.0
+feasibility = 29.046489250485404
+objectiveValue = 0.0
+stepNorm = 0
+****** Iteration 1 ******
+trustRadius = 1e-06
+feasibility = 7.249727765372173
+objectiveValue = 0.0
+stepNorm = 2.9764e-09
+INFO: theta-type step
+****** Iteration 2 ******
+trustRadius = 1e-06
+feasibility = 1.800595684745263
+objectiveValue = 0.0
+stepNorm = 3.6287e-07
+INFO: theta-type step"""
+
+
+def test_r279_optimal_without_an_accepted_step_is_exit_without_step() -> None:
+    """P14 (b): no TRSP at all, or only rejected ones — the model is the PMP's, TRF's "Optimal" is
+    no convergence claim."""
+    _, pmp_only = parsed(P14B_LOG)
+    assert classify([EXIT_OPTIMAL], [], pmp_only) == "TRF_EXIT_WITHOUT_STEP"
+    rejected = (*pmp_only, IterationRecord(1, 1e-7, 0.3, 0.5, 1e-6, "rejected"))
+    assert classify([EXIT_OPTIMAL], [], rejected) == "TRF_EXIT_WITHOUT_STEP"
+    _, iterations = parsed()
+    assert classify([EXIT_OPTIMAL], [], iterations) == "TRF_CONVERGED"
+
+
+def test_r279_optimal_needs_theta_rechecked_within_the_tolerance() -> None:
+    """A model whose θ disagrees with TRF's "Optimal" is believed over the line: no candidate."""
+    _, iterations = parsed()
+    assert classify([EXIT_OPTIMAL], [], iterations, theta_recheck=1e-5) == "TRF_CONVERGED"
+    assert classify([EXIT_OPTIMAL], [], iterations, theta_recheck=2e-5) == (
+        "TRF_ERROR(exit_mismatch)"
+    )
+    _, pmp_only = parsed(P14B_LOG)
+    assert classify([EXIT_OPTIMAL], [], pmp_only, theta_recheck=0.5) == ("TRF_ERROR(exit_mismatch)")
+
+
+def test_r279_a_feasible_exit_above_the_tolerance_is_stalled_inconsistent() -> None:
+    """P14 (c): `TRF.py`'s stall test compares θ with itself after an accepted step, so the
+    "Feasible" line says nothing about θ; the re-check decides."""
+    _, iterations = parsed(P14C_LOG)
+    warning = [WARNING_INSUFFICIENT_PROGRESS]
+    assert classify([EXIT_FEASIBLE], warning, iterations) == "TRF_STALLED_INCONSISTENT"
+    assert classify([EXIT_FEASIBLE], warning, iterations, theta_recheck=1e-5) == (
+        "TRF_FEASIBLE_STALLED"
+    )
+    assert classify([EXIT_FEASIBLE], [], iterations) == "TRF_ERROR(exit_mismatch)"
+
+
+def test_r279_which_outcomes_keep_the_model() -> None:
+    assert RETURNS_MODEL == {
+        "TRF_CONVERGED",
+        "TRF_EXIT_WITHOUT_STEP",
+        "TRF_FEASIBLE_STALLED",
+        "TRF_MAX_ITERATIONS",
+    }
+    assert "TRF_STALLED_INCONSISTENT" not in RETURNS_MODEL
+
+
+# -- the basis (R-277) ----------------------------------------------------------------------------
+
+
+def test_r277_a_missing_or_incomplete_basis_is_refused() -> None:
+    efs = ("ef_0", "ef_1", "ef_ext_0")
+    affine = EFBasis("affine_taylor", lambda args: args[0])
+    assert basis_refusals(efs, None, "pass") == tuple(
+        f"TRF_CONFIGURATION_REFUSED(basis_missing:{name})" for name in efs
+    )
+    assert basis_refusals(efs, {"ef_0": affine, "ef_ext_0": affine}, "pass") == (
+        "TRF_CONFIGURATION_REFUSED(basis_missing:ef_1)",
+    )
+    complete = {name: affine for name in efs}
+    assert basis_refusals(efs, complete, "pass") == ()
+    assert basis_refusals(efs, {**complete, "ef_9": affine}, "pass") == (
+        "TRF_CONFIGURATION_REFUSED(basis_unknown:ef_9)",
+    )
+
+
+def test_r277_the_zero_basis_is_tr_e1s_only() -> None:
+    efs = ("ef_0",)
+    zero = zero_basis(efs)
+    assert {name: basis.kind for name, basis in zero.items()} == {"ef_0": "zero"}
+    result = zero["ef_0"].build([1.0, 2.0])
+    assert result == 0 and type(result) is int  # TRF's own default, `lambda comp, ef: 0`
+    assert basis_refusals(efs, zero, "exempt_oracle") == ()
+    assert basis_refusals(efs, zero, "pass") == (
+        "TRF_CONFIGURATION_REFUSED(zero_basis_not_oracle:ef_0)",
+    )
 
 
 # -- the registered configurations ----------------------------------------------------------------
