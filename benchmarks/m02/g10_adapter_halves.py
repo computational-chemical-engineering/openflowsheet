@@ -24,7 +24,9 @@ numbers in the default gate, which never runs the reactor.
 **G10v3** (design note §14.5): ``--variant-file`` runs the same points under an unregistered
 variant document — v3's provisional one (§14.5 D4), whose child is profile ``M01-S123-v2`` — and
 ``--compare`` names the v2 record. The record then also states, per run, whether its outlet equals
-the v2 record's bitwise and whether S3's second round (D1) ran.
+the v2 record's bitwise and whether S3's second round (D1) ran. ``--previous-v3`` names an earlier
+G10v3 record (§14.7: D83's): each run's outlet and ``defect_round1`` are compared with its run of
+the same label, bitwise.
 
 Usage (from a checkout)::
 
@@ -33,6 +35,7 @@ Usage (from a checkout)::
     PYTHONPATH=src python benchmarks/m02/g10_adapter_halves.py \\
         --variant-file benchmarks/m02/variant-v3-provisional.json \\
         --compare benchmarks/m02/g10-adapter-halves.json \\
+        --previous-v3 evidence/M02/wo12a-double-prime/artifacts/g10-adapter-halves-v3-d83.json \\
         --out benchmarks/m02/g10-adapter-halves-v3.json
 """
 
@@ -118,7 +121,8 @@ def _summary(label: str, execution: dict[str, Any], timing: dict[str, Any]) -> d
         "tube_outlet": execution.get("tube_outlet"),
         # A screened non-finite defect is null (§14.5 D2); a finite list gives G10's value.
         "element_defect_max": max(
-            (abs(value) for value in defects.values() if value is not None), default=None
+            (abs(value) for value in defects.values() if value is not None),
+            default=None,
         ),
         "dP_over_P": diagnostics.get("dP_over_P"),
         "u_ret_min": diagnostics.get("u_ret_min"),
@@ -135,12 +139,19 @@ def outlet_bits(outlet: dict[str, Any] | None) -> list[str | None] | None:
     """Every number of a tube outlet as its float hex (None stays None), for a bitwise compare."""
     if outlet is None:
         return None
-    values = [*outlet["flows"], *(outlet[name] for name in sorted(outlet) if name != "flows")]
+    values = [
+        *outlet["flows"],
+        *(outlet[name] for name in sorted(outlet) if name != "flows"),
+    ]
     return [None if value is None else float(value).hex() for value in values]
 
 
 def _direct(
-    variant: variants.Variant, tube: TubeInlet, work: Path, label: str, switches: dict[str, str]
+    variant: variants.Variant,
+    tube: TubeInlet,
+    work: Path,
+    label: str,
+    switches: dict[str, str],
 ) -> tuple[Execution, dict[str, Any]]:
     backend = OutOfProcessBackend(variant, test_environment=switches or None)
     environment = backend.environment(work / f"{label}-handshake")
@@ -158,6 +169,7 @@ def main() -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--variant-file", type=Path, default=None)
     parser.add_argument("--compare", type=Path, default=None)
+    parser.add_argument("--previous-v3", type=Path, default=None)
     arguments = parser.parse_args()
     variant = load_variant(arguments.variant_file)
     probe = json.loads(PROBE.read_text(encoding="utf-8"))
@@ -302,7 +314,9 @@ def main() -> int:
             "A47": {
                 "a_environment_block_equal": environment_block == probe["environment"],
                 "a_bitwise": _bitwise(
-                    dict(nominal.tube_outlet or {}), pinned["outlet_n_mol_s"], pinned["T_out_K"]
+                    dict(nominal.tube_outlet or {}),
+                    pinned["outlet_n_mol_s"],
+                    pinned["T_out_K"],
                 ),
                 "b_max_rel_diff": _rel(a47b_outlet, probe_outlet),
                 "b_bound": REL_BOUND,
@@ -324,6 +338,10 @@ def main() -> int:
     if arguments.compare is not None:
         record["G10v3"] = g10v3(record, json.loads(arguments.compare.read_text(encoding="utf-8")))
         record["G10v3"]["compared_record_sha256"] = file_sha256(arguments.compare)
+    if arguments.previous_v3 is not None:
+        previous_v3 = json.loads(arguments.previous_v3.read_text(encoding="utf-8"))
+        record["G10v3"]["previous_v3"] = g10v3_previous(record, previous_v3)
+        record["G10v3"]["previous_v3"]["record_sha256"] = file_sha256(arguments.previous_v3)
     for value in record["assertions"]["A45"]["element_defect_max"]:
         assert value is not None and math.isfinite(value)
     arguments.out.write_text(json.dumps(record, indent=1, ensure_ascii=False) + "\n", "utf-8")
@@ -355,6 +373,37 @@ def g10v3(record: dict[str, Any], previous: dict[str, Any]) -> dict[str, Any]:
             for name, value in record["assertions"].items()
         },
         "met": all(bitwise.values()) and all(round1.values()) and not ran,
+    }
+
+
+def g10v3_previous(record: dict[str, Any], previous: dict[str, Any]) -> dict[str, Any]:
+    """§14.7 G10v3: each run's outlet and `defect_round1` against an earlier G10v3 record's run of
+    the same label, bitwise (`float.hex`), and where round 2 ran (it must run nowhere)."""
+    before = {run["label"]: run for run in previous["runs"]}
+
+    def bits(value: Any) -> str | None:
+        return None if value is None else float(value).hex()
+
+    outlets = {
+        run["label"]: outlet_bits(run["tube_outlet"])
+        == outlet_bits(before[run["label"]]["tube_outlet"])
+        for run in record["runs"]
+    }
+    round1 = {
+        run["label"]: bits(run.get("defect_round1"))
+        == bits(before[run["label"]].get("defect_round1"))
+        for run in record["runs"]
+    }
+    ran = [run["label"] for run in record["runs"] if run.get("round2") is not None]
+    return {
+        "compared_runner_sha256": previous["environment"]["runner_sha256"],
+        "outlets_bitwise_equal": outlets,
+        "defect_round1_bitwise_equal": round1,
+        "round2_ran": ran,
+        "met": len(outlets) == len(before)
+        and all(outlets.values())
+        and all(round1.values())
+        and not ran,
     }
 
 
