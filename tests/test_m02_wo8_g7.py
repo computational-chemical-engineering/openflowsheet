@@ -476,6 +476,33 @@ def test_g7c_the_near_dew_window_edges_as_the_manifest_states_them(
     assert _certify(solved, document).verification_status == verdict
 
 
+@pytest.mark.parametrize(
+    ("delta", "verdict"),
+    [(1e-4, "UNVERIFIED"), (-1e-4, "UNVERIFIED"), (1e-3, "VERIFIED"), (-1e-2, "VERIFIED")],
+)
+def test_g7c_as_amended_by_r282(delta: float, verdict: str) -> None:
+    """G7 (c) as amended (design note §14.4 D1, R-282 amended): at F4 × (1 + δ) the certificate is
+    UNVERIFIED at δ = ±1e-4, inside the measured window on both sides, and VERIFIED at δ = +1e-3
+    (TWO_PHASE) and δ = −1e-2 (VAPOR). The edges are the bisection test's above."""
+    document, solved = _f4(delta)
+    regime = "TWO_PHASE" if delta > 0 else "VAPOR"
+    assert [signature for signature, *_ in _attempts(solved)] == [(("U", regime),)]
+    assert _certify(solved, document).verification_status == verdict
+
+
+def test_g7c_the_manifest_states_the_window_at_the_measured_state() -> None:
+    """R-282 amended: `c1.tp_flash`'s manifest states the window "at the measured state", with
+    the two bisected edges the test above asserts (|δ| = 2.5e-4 VAPOR, L/n_tot = 3.4e-5
+    TWO_PHASE, δ = 5.5e-4)."""
+    manifest = TPFlash("U", PROVIDER, 268.15, P, CONTEXT).manifest()
+    limitations = manifest["validity"]["limitations"]
+    (window,) = [text for text in limitations if "near-dew window" in text]
+    assert "R-282 as amended" in window and "At the measured state" in window
+    assert "VAPOR side the certificate is VERIFIED from delta = 2.5e-4" in window
+    assert "TWO_PHASE side from L/n_tot = 3.4e-5 (delta = 5.5e-4)" in window
+    assert "tau_dew does not move" in window
+
+
 def test_g7d_a_zero_flow_feed() -> None:
     """ADR 0012 D4 (c)'s forms, Q = +0.0, and the certificate `VERIFIED`."""
     document = flash_revision((0.0,) * 5, 268.15)
