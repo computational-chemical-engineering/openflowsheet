@@ -57,7 +57,7 @@ def _raised(n: tuple[float, ...], delta: float) -> tuple[float, ...]:
 
 
 def test_the_verifier_builds_its_fresh_provider_from_the_basis() -> None:
-    assert set(FRESH_PROVIDERS) == {"syn001", "pr-c1-v1"}
+    assert FRESH_PROVIDERS == ("syn001", "pr-c1-v1")
     assert isinstance(fresh_provider("syn001"), Syn001Provider)
     assert isinstance(fresh_provider("pr-c1-v1"), PrC1Provider)
     with pytest.raises(VerifierError, match=r"^provider_unknown\(other\)$"):

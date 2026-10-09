@@ -590,20 +590,21 @@ def verify_bound(
     )
 
 
-#: M02 design note §14.2 B15: the verifier's own table from a revision's basis to its fresh
-#: provider. It never calls the binder's constructor (`revision_binding.basis_provider`).
-FRESH_PROVIDERS: Final[Mapping[str, Callable[[], PropertyProvider]]] = {
-    SYN001_PROVIDER_ID: Syn001Provider,
-    "pr-c1-v1": PrC1Provider,
-}
+#: M02 design note §14.2 B15: the provider ids the verifier's own table constructs a fresh
+#: provider for (`fresh_provider`). It never calls the binder's constructor
+#: (`revision_binding.basis_provider`).
+FRESH_PROVIDERS: Final = ("syn001", "pr-c1-v1")
 
 
 def fresh_provider(provider_id: str) -> PropertyProvider:
-    """A fresh provider of `provider_id` from `FRESH_PROVIDERS`; any other id is refused."""
-    construct = FRESH_PROVIDERS.get(provider_id)
-    if construct is None:
-        raise VerifierError(f"provider_unknown({provider_id})")
-    return construct()
+    """A fresh provider of `provider_id`: SYN-001's or `pr-c1-v1`'s; any other id is refused.
+    The classes are read from this module at the call, as `verify_revision` always read
+    `Syn001Provider`."""
+    if provider_id == SYN001_PROVIDER_ID:
+        return Syn001Provider()
+    if provider_id == "pr-c1-v1":
+        return PrC1Provider()
+    raise VerifierError(f"provider_unknown({provider_id})")
 
 
 def verify_revision(
@@ -858,6 +859,9 @@ class BoundDeclaration:
 
     #: K03 §7.2's second state: every pressure moved by a distinct amount, as the tear's.
     PRESSURE_SHIFT: Final = 997.0
+    #: The fresh provider's declared pressure range the shifted copy stays inside (ADR 0014 D5);
+    #: `None` reads SYN-001's at the shift (M02 design note §14.2 B15: a revision's basis's).
+    pressure_domain: tuple[float, float] | None = None
 
     def __init__(
         self,
@@ -869,13 +873,7 @@ class BoundDeclaration:
     ) -> None:
         self.spec = spec
         self.compiled = compiled
-        #: The fresh provider's declared pressure range the shifted copy stays inside (ADR 0014
-        #: D5): SYN-001's unless given (M02 design note §14.2 B15: the revision's basis's).
-        self.pressure_domain = (
-            pressure_domain
-            if pressure_domain is not None
-            else Syn001Provider().describe().domain["P"]
-        )
+        self.pressure_domain = pressure_domain
         metadata = compiled.metadata
         self.context = EvaluationContext(
             model_version=metadata.model_version,
@@ -899,7 +897,11 @@ class BoundDeclaration:
         provider's pressure domain both ways, `pressure_shift_not_generic` when two pressures
         distinct at `state` coincide after the moves (equal ones never can: the amounts are
         distinct and each is positive)."""
-        low, high = self.pressure_domain
+        low, high = (
+            self.pressure_domain
+            if self.pressure_domain is not None
+            else Syn001Provider().describe().domain["P"]
+        )
         shifted = dict(state)
         moved: list[str] = []
         for index, name in enumerate(self.spec.variable_ids):
