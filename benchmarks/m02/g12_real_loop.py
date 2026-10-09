@@ -22,10 +22,22 @@ job wrapper, so each experiment call can be timed):
    (``repeat_bitwise_equal``, §5.3). The script also compares each re-executed tube outlet with
    the solve's own, by bits, in call order.
 
+**Under v3** (§14.5 G12v3-1, §14.6, §14.7 G12v3-2; RP-1 of §14.5 D8) the record also states
+which experiments ran the polish round (round 2), the RP-1 recomputation of the final inner
+model's `constants_sha256`, and, with ``--compare``, whether the iterate sequence (k, w_k, ρ_k)
+equals a previous variant's record bitwise (G12v3-1 requires it when no experiment ran round 2).
+With ``--t-in`` (repeatable) the script runs G12v3-2 instead: the loop with SPEC-S3-T (the
+reactor-inlet temperature) set to each value, solve only, as D87 ran it, recording the outcome,
+every reactor request's refusal and inert fraction y_Ar + y_CH4, and its minimum.
+
 Usage (from a checkout)::
 
     OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=src \\
-        python benchmarks/m02/g12_real_loop.py --out benchmarks/m02/g12-real-loop.json
+        python benchmarks/m02/g12_real_loop.py --out benchmarks/m02/g12-real-loop-v3.json \\
+        --compare benchmarks/m02/g12-real-loop.json
+    OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=src \\
+        python benchmarks/m02/g12_real_loop.py --t-in 653.15 --t-in 693.15 \\
+        --out benchmarks/m02/g12-real-loop-v3-edges.json
 
 The three thread pins are required (the replay compares the worker's pins, as CI sets them); the
 script refuses to run without them. The experiment runner's job ids are `job-000001` (solve) and
@@ -47,7 +59,7 @@ from typing import Any
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import CacheMode, ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
-from openflowsheet.application.coupled_run import LiveExperiments, answer_of
+from openflowsheet.application.coupled_run import LiveExperiments, answer_of, final_constants
 from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_run import (
     Route,
@@ -59,7 +71,7 @@ from openflowsheet.canonical import document_sha256, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.models.c1.boundary import data_domain_violations, hard_domain_violations
-from openflowsheet.run.bundle import read_artifact
+from openflowsheet.run.bundle import BundleError, read_artifact
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.verify.certificate import CheckPolicy
@@ -92,6 +104,7 @@ class TimedExperiments(LiveExperiments):
         ended = time.perf_counter()
         attempt = outcome.attempts[-1] if outcome.attempts else {}
         execution = attempt.get("execution") or {}
+        stages = (execution.get("diagnostics") or {}).get("stages") or {}
         self.calls.append(
             {
                 "started": started,
@@ -106,6 +119,9 @@ class TimedExperiments(LiveExperiments):
                 "tube_outlet": execution.get("tube_outlet"),
                 "repeat_bitwise_equal": attempt.get("repeat_bitwise_equal"),
                 "repeat_of": attempt.get("repeat_of"),
+                "y_inert": (inlet.n[3] + inlet.n[4]) / sum(inlet.n),
+                "inlet": {"n_mol_s": list(inlet.n), "T_K": inlet.T, "P_Pa": inlet.P},
+                "round2": (stages.get("S3") or {}).get("round2"),
             }
         )
         return answer_of(
@@ -160,14 +176,133 @@ def _calls(calls: list[dict[str, Any]], started: float, ended: float) -> list[di
     return found
 
 
+def _round2_ran(calls: list[dict[str, Any]]) -> list[int]:
+    """The calls (by number) whose experiment ran the polish round (§14.6 E1, §14.7 F2)."""
+    return [number for number, call in enumerate(calls) if call["round2"] is not None]
+
+
+def _iterates(iterations: list[dict[str, Any]]) -> list[list[Any]]:
+    """(k, w_k, ρ_k) with every float as `float.hex`: the G12v3-1 comparison, bit for bit."""
+    return [
+        [
+            item["k"],
+            [float(v).hex() for v in item["w"]],
+            None if item["rho"] is None else float(item["rho"]).hex(),
+        ]
+        for item in iterations
+    ]
+
+
+def edges(
+    document: dict[str, Any], variant: variants.Variant, temperatures: list[float]
+) -> dict[str, Any]:
+    """G12v3-2 (§14.7): the loop at each reactor-inlet T (SPEC-S3-T), solve only, as D87 ran it."""
+    (reactor,) = [item for item in document["instances"] if item["id"] == "reactor"]
+    n_tubes = float(reactor["parameters"]["n_tubes"]["value"])
+    (inlet_stream,) = [c["id"] for c in document["connections"] if c["to"]["instance"] == "reactor"]
+    domain = variants.hard_domain(variant)
+    found = []
+    for temperature in temperatures:
+        edge = json.loads(json.dumps(document))
+        (spec,) = [s for s in edge["specifications"] if s["id"] == "SPEC-S3-T"]
+        spec["value"] = temperature
+        with tempfile.TemporaryDirectory(prefix="m02-g12v3-2-") as scratch:
+            work = Path(scratch)
+            experiments = TimedExperiments(runner_in(work / "project", "job-000001"))
+            manifest, started, ended = solve(edge, work / "bundle", "run-m02-g12v3-2", experiments)
+            record_doc = read_artifact(work / "bundle", "external-coupling.json")
+            try:
+                state = read_artifact(work / "bundle", "solution-state.json")["variables"]
+            except BundleError:
+                state = None  # recorded as such; (a) then fails on the outcome
+        inlet = (
+            None
+            if state is None
+            else StreamState(
+                tuple(state[f"{inlet_stream}.n.{c}"] for c in COMPONENTS),
+                state[f"{inlet_stream}.T"],
+                state[f"{inlet_stream}.P"],
+            )
+        )
+        calls = experiments.calls
+        requests = [
+            StreamState(tuple(c["inlet"]["n_mol_s"]), c["inlet"]["T_K"], c["inlet"]["P_Pa"])
+            for c in calls
+        ]
+        found.append(
+            {
+                "T_in_spec_K": temperature,
+                "outcome": manifest.outcome,
+                "reason": record_doc.get("reason"),
+                "verification_status": manifest.verification_status,
+                "outer_iterations": max(item["k"] for item in record_doc["iterations"]),
+                "experiments": len(calls),
+                "refused_out_of_domain": [
+                    n for n, c in enumerate(calls) if c["envelope_status"] == "out_of_domain"
+                ],
+                "requests_outside_hard_domain": [
+                    n
+                    for n, request in enumerate(requests)
+                    if hard_domain_violations(request, domain, n_tubes)
+                ],
+                "envelopes": [[c["envelope_status"], c["envelope_code"]] for c in calls],
+                "round2_ran": _round2_ran(calls),
+                "y_inert_solution": None
+                if inlet is None
+                else (inlet.n[3] + inlet.n[4]) / inlet.total_flow,
+                "y_inert_min_requests": min(c["y_inert"] for c in calls) if calls else None,
+                "reactor_inlet": None
+                if inlet is None
+                else {
+                    "stream": inlet_stream,
+                    "n_mol_s": list(inlet.n),
+                    "T_K": inlet.temperature,
+                    "P_Pa": inlet.pressure,
+                    "hard_domain_violations": hard_domain_violations(inlet, domain, n_tubes),
+                },
+                "solve_wall_s": round(ended - started, 1),
+                "calls": _calls(calls, started, ended),
+            }
+        )
+    return {
+        "record": "m02-g12v3-2-loop-edges",
+        "version": 1,
+        "status": "measured",
+        "judged": False,
+        "specification": "docs/design/M02-pymrm-adapter.md §14.7 G12v3-2",
+        "loop_sha256": file_sha256(LOOP),
+        "variant": {"variant_id": variant.variant_id, "sha256": variant.sha256},
+        "summary": {
+            "a_converged_verified": all(
+                (e["outcome"], e["verification_status"]) == ("CONVERGED", "VERIFIED") for e in found
+            ),
+            "b_no_out_of_domain": all(not e["refused_out_of_domain"] for e in found),
+            "c_y_inert": {
+                str(e["T_in_spec_K"]): [e["y_inert_solution"], e["y_inert_min_requests"]]
+                for e in found
+            },
+        },
+        "edges": found,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--compare", type=Path, help="G12v3-1: the previous variant's record")
+    parser.add_argument("--t-in", type=float, action="append", help="G12v3-2: SPEC-S3-T, K")
     arguments = parser.parse_args()
     unpinned = [name for name in THREAD_PINS if os.environ.get(name) != "1"]
     if unpinned:
         raise SystemExit(f"set {', '.join(unpinned)}=1 (the replay compares the thread pins)")
     document = json.loads(LOOP.read_text(encoding="utf-8"))
+    if arguments.t_in:
+        (reactor,) = [item for item in document["instances"] if item["id"] == "reactor"]
+        variant = variants.registered_variant(reactor["model"]["version"])
+        found = edges(document, variant, arguments.t_in)
+        arguments.out.write_text(json.dumps(found, indent=1, ensure_ascii=False) + "\n", "utf-8")
+        print(json.dumps(found["summary"]))
+        return 0
     (reactor,) = [item for item in document["instances"] if item["id"] == "reactor"]
     variant = variants.registered_variant(reactor["model"]["version"])
     n_tubes = float(reactor["parameters"]["n_tubes"]["value"])
@@ -225,12 +360,24 @@ def main() -> int:
         for a, b in zip(first.calls, second.calls, strict=False)
     ]
     rhos = [item["rho"] for item in iterations if item["rho"] is not None]
+    route = select_route(document)
+    assert isinstance(route, Route), route
+    rp1 = final_constants(route.binding, record_doc)
+    compared = None
+    if arguments.compare is not None:
+        previous = json.loads(arguments.compare.read_text(encoding="utf-8"))
+        compared = {
+            "record_sha256": file_sha256(arguments.compare),
+            "variant": previous["variant"],
+            "applies": not _round2_ran(first.calls),
+            "iterates_bitwise_equal": _iterates(iterations) == _iterates(previous["iterations"]),
+        }
     result = {
         "record": "m02-g12-real-loop",
-        "version": 1,
+        "version": 2,
         "status": "measured",
         "judged": False,
-        "specification": "docs/design/M02-pymrm-adapter.md §10.2 G12, §8.1",
+        "specification": "docs/design/M02-pymrm-adapter.md §10.2 G12, §8.1; §14.5 G12v3-1, D8 RP-1",
         "loop_sha256": file_sha256(LOOP),
         "variant": {"variant_id": variant.variant_id, "sha256": variant.sha256},
         "summary": {
@@ -246,12 +393,18 @@ def main() -> int:
             "coupling_checks": checks,
             "rcond_1": (certificate.get("regularity") or {}).get("rcond_1"),
             "experiments": len(first.calls),
+            "round2_ran": _round2_ran(first.calls),
+            "rp1_constants_sha256": None
+            if rp1 is None
+            else {"recorded": rp1[0], "recomputed": rp1[1], "equal": rp1[0] == rp1[1]},
+            "g12v3_1_compare": compared,
             "reactor_inlet": {
                 "stream": inlet_stream,
                 "n_mol_s": list(inlet.n),
                 "T_K": inlet.temperature,
                 "P_Pa": inlet.pressure,
                 "per_tube_multiple_of_F_nom": inlet.total_flow / n_tubes / F_NOM,
+                "y_inert": (inlet.n[3] + inlet.n[4]) / inlet.total_flow,
                 "hard_domain_violations": hard_domain_violations(
                     inlet, variants.hard_domain(variant), n_tubes
                 ),

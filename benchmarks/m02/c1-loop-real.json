@@ -139,7 +139,7 @@
       }
     }
   ],
-  "description": "M02 design note §8.1: makeup 1.0 mol/s (H2/N2 = 3, inerts 0.5 %) at 300 K, 1e7 Pa -> adiabatic mixer (with the recycle) -> preheater to 673.15 K -> reactor (N_tubes = 1000) -> flash at 253.15 K, 1e7 Pa (liquid -> NH3 sink; vapour -> splitter, purge fraction 0.02 -> purge sink, rest -> mixer). Zero pressure drop everywhere. The reactor is the real PyMRM reactor (variant pymrm-6089593-g2-nz800-s123-v2), out of process.",
+  "description": "M02 design note §8.1: makeup 1.0 mol/s (H2/N2 = 3, inerts 0.5 %) at 300 K, 1e7 Pa -> adiabatic mixer (with the recycle) -> preheater to 673.15 K -> reactor (N_tubes = 1000) -> flash at 253.15 K, 1e7 Pa (liquid -> NH3 sink; vapour -> splitter, purge fraction 0.02 -> purge sink, rest -> mixer). Zero pressure drop everywhere. The reactor is the real PyMRM reactor (variant pymrm-6089593-g2-nz800-s123-v3), out of process.",
   "instances": [
     {
       "id": "makeup",
@@ -186,9 +186,9 @@
     {
       "id": "reactor",
       "model": {
-        "artifact_ref": "04d4ef9c1ebbd8f727ec6f59709c54e19c365dec4c3ae86718c5e84270750b11",
+        "artifact_ref": "8b92540adc772a454e212b7054a98da4f7995899955a43a54d07669a70aa203c",
         "id": "c1.reactor",
-        "version": "pymrm-6089593-g2-nz800-s123-v2"
+        "version": "pymrm-6089593-g2-nz800-s123-v3"
       },
       "parameters": {
         "n_tubes": {
