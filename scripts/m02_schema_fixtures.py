@@ -8,6 +8,8 @@ document}`). Fixtures live under `tests/fixtures/schemas/<def>/{valid,invalid}/`
   pinned hash (the documents are package data, not run output; the record fixtures are).
 - **`experiment_body`** (WO-6): the body of an `experiment` job request for the registered
   stand-in at the nominal inlet below, as `JobRequest` normalizes it (every default written).
+- **`model_replacement`** (WO-11): the report of a real replacement check of `C1-LOOP-M02-v1`'s
+  reactor, real variant -> stand-in.
 - **`experiment` `coupling`** (WO-10): `external-coupling.json` of a real coupled run of
   `C1-LOOP-M02-v1` with the stand-in, in a scratch project.
 - **`experiment` `request`, `result`, `attempt`**: one real `ExperimentRunner.run` of the
@@ -42,6 +44,7 @@ REFERENCES: Final[Mapping[str, str]] = {
     "experiment_attempt": "experiment.schema.json#/$defs/attempt",
     "experiment_body": "experiment.schema.json#/$defs/experiment_body",
     "experiment_coupling": "experiment.schema.json#/$defs/coupling",
+    "model_replacement": "model-replacement.schema.json",
 }
 #: Members that differ between machines, code versions and runs; masked by `stable`.
 VOLATILE: Final = frozenset(
@@ -264,12 +267,35 @@ def coupling_documents() -> dict[str, Any]:
     return _pair("experiment_coupling", "standin_loop", record)
 
 
+def replacement_documents() -> dict[str, Any]:
+    """WO-11: the report of a real replacement check — `C1-LOOP-M02-v1`'s reactor replaced from
+    `c1.reactor` @ the real variant to the stand-in (§6.2's allowed direction; compatible)."""
+    from openflowsheet.adapters import variants
+    from openflowsheet.application.replacement import check_replacement
+
+    loop = json.loads(
+        (ROOT / "benchmarks" / "m02" / "c1-loop-standin.json").read_text(encoding="utf-8")
+    )
+    real = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v2")
+    before = json.loads(json.dumps(loop))
+    for item in before["instances"]:
+        if item["id"] == "reactor":
+            item["model"] = {
+                "id": real.model_id,
+                "version": real.variant_id,
+                "artifact_ref": real.sha256,
+            }
+    report = check_replacement(before, loop, "reactor").as_document()
+    return _pair("model_replacement", "real_to_standin", report)
+
+
 def documents() -> dict[str, Any]:
     return {
         **variant_documents(),
         **body_documents(),
         **record_documents(),
         **coupling_documents(),
+        **replacement_documents(),
     }
 
 
