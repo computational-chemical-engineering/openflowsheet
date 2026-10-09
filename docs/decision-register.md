@@ -4559,3 +4559,53 @@ Scorer states W27-S19, S20.
 semantic error. Dropping the lenient matching instead: W27-R40 is lenient on purpose (R-177).
 
 **Watch for.** Semantic-error counts computed before WO-16h: re-score; no outcome class moves.
+
+---
+
+## R-301 — W27 Amendment 3: `c1.reactor_surrogate` performs no function, for a new reason `surrogate_model`; J3–J6 compare a surrogate-carrying build with `hypothetical_v02_a3`
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), batched ruling round M05/M04 (B1) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §22.1–§22.3, §22.5 |
+| Evidence | `wp/M04` `2841cd3`: `RefusalError: unregistered model ids ['c1.reactor_surrogate']` (W27-R24 (a)); 4 tests in `test_m06_w27_coverage` fail; `list_models` `f070fbe0…`, 22 models, 9 on `pr-c1-v1` |
+| Affected packages | M06 (W27), M04 |
+
+**Decision.**
+- *The row.* Function null, offers [], `why_none` = `surrogate_model`: a fitted surrogate of one parent on one box,
+  which no case JSON can identify.
+- *The generator.* It keeps the id in `M04_MODEL_IDS`, so GC-MODEL-2 is unchanged.
+- *The snapshot.* `hypothetical_v02` is not re-pinned. A build carrying the surrogate compares with
+  `hypothetical_v02_a3`: the same snapshot plus the id in `models` and in `pr-c1-v1`'s `model_ids`. That snapshot must
+  classify identically, case by case (GC-A3-2).
+- *Re-taking.* `list_models`, the snapshot SHA-256 and `coverage.json` are re-taken at the merge (G14). Preflight's pins
+  are re-taken with the registration.
+
+**Rejected alternative, and why.**
+- `fixed_design_reactor`: it describes the parent, not a fit.
+- `synthetic_stand_in`: it is not a closed-form stand-in.
+- Inheriting the parent's function: a box-limited fit is never a model of an arbitrary case unit (W27-R01).
+
+**Watch for.** A future surrogate whose parent has a function. It still maps to none, under this reason.
+
+---
+
+## R-302 — Corpus tests that bind every builder get a fixture-only `SurrogateResolver`, not an exclusion list
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), batched ruling round M05/M04 (B1) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §22.4 |
+| Evidence | M04 build decision E5: the registered builder refuses without a manifest; WO-7's unit tests bind the A19 fixture manifest |
+| Affected packages | M04, M02 (corpus tests) |
+
+**Decision.** The resolver maps SHA-256 to committed fixture manifests only. Its one entry is
+`tests/fixtures/schemas/surrogate_manifest/valid/a19_smooth_prefix.json`. A builder that fails to bind is a failure,
+never a skip.
+
+**Rejected alternative, and why.** Excluding manifest-needing builders: the corpus would stop exercising a registered
+builder (no removed cases).
+
+**Watch for.** A new builder that needs external configuration. It gets a resolver entry, not an exclusion.
