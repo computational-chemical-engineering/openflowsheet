@@ -131,7 +131,19 @@ def coupling_block(units: Sequence[C1Reactor]) -> tuple[CouplingBlock, Mapping[s
 
 
 def at_coupling(binding: RevisionBinding, w: Mapping[str, tuple[float, float]]) -> RevisionBinding:
-    """`binding` with each named unit's coupling parameters (X̂, ΔT̂) at `w`; the spec rebuilt."""
+    """`binding` with each named unit's coupling parameters (X̂, ΔT̂) at `w`; the spec rebuilt.
+
+    Raises `ValueError` naming every key of `w` (sorted) that is not the `unit_id` of a
+    `C1Reactor` of the binding (§14.5 D9, R-309). The values are not coerced: callers pass Python
+    floats, and they reach the rebuilt units bit for bit."""
+    reactors = {
+        model.unit_id for model in binding.flowsheet.instances if isinstance(model, C1Reactor)
+    }
+    unknown = sorted(set(w) - reactors)
+    if unknown:
+        raise ValueError(
+            "not an embedded C1 reactor of this flowsheet: " + ", ".join(map(repr, unknown))
+        )
     instances = tuple(
         replace(model, conversion=w[model.unit_id][0], temperature_rise=w[model.unit_id][1])
         if isinstance(model, C1Reactor) and model.unit_id in w
