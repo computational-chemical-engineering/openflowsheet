@@ -526,3 +526,9 @@ Grep, don't read whole. Newest at the bottom.
   is); unsafe = EF output pinned by decisions alone. Proposed rules: refuse `basis_rule=None`; projection refusal
   `PROJECTION_IMPLICIT_EF_INPUT` (Dulmage–Mendelsohn); Taylor basis for the reactor EF without a promoted surrogate + no
   TRF_CONVERGED without an accepted TRSP; re-check θ on stalled exits. ADR 0040 T2 not fired. Sent to the M05 architect.
+- M05 P14 rulings (`4c80ae4`; ADR 0038 Amendment 1; R-277…R-279; ADR 0040 T2 does not fire): R-277 mandatory basis
+  (explicit test-only `zero_basis` for TR-E1; reactor gets the affine Taylor basis without a promoted surrogate, WO-4);
+  R-278 `PROJECTION_IMPLICIT_EF_INPUT` = structural perfect matching with decisions + link EF outputs fixed (property
+  relations stay functions), WO-2a; R-279 θ re-check after every exit, `TRF_CONVERGED` needs an accepted step, new
+  `TRF_EXIT_WITHOUT_STEP` and `TRF_STALLED_INCONSISTENT`, WO-3a (+WO-6 handling).
+- `opus-engineer` M05 WO-2a, WO-3a launched.
