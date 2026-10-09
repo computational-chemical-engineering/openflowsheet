@@ -58,6 +58,7 @@ from openflowsheet.application.coupled_run import (
     Experiments,
     RecordedExperiments,
     ReplayDivergenceError,
+    compact_differences,
     compact_record,
     coupling_evidence,
     coupling_record_problem,
@@ -1126,6 +1127,24 @@ def reproduce_bundle(
             coupling_found += floored
             artifacts[COUPLING_NAME] = shaped
             classified_bitwise = shaped == fresh_record
+        # Build log D130 (D124): a failure bundle's compact copy of the record by the same rules,
+        # its `record_sha256` for shape.
+        failure = artifacts.get(FAILURE_NAME)
+        if FAILURE_NAME in manifest.artifacts and isinstance(failure, dict):
+            archived = read_artifact(directory, FAILURE_NAME)
+            fresh_copy = failure.get("observations", {}).get("external_coupling")
+            archived_copy = archived.get("observations", {}).get("external_coupling")
+            if isinstance(fresh_copy, dict) and isinstance(archived_copy, dict):
+                shaped_copy, floored = compact_differences(
+                    fresh_copy,
+                    archived_copy,
+                    coupling["coupling_block"],
+                    manifest.numerical_policy_id,
+                )
+                coupling_found += floored
+                classified_bitwise = classified_bitwise and shaped_copy == fresh_copy
+                observations = {**failure["observations"], "external_coupling": shaped_copy}
+                artifacts[FAILURE_NAME] = {**failure, "observations": observations}
     at("compare")
     # On `revision_coupled` the state is written over the final inner spec, whose columns and
     # kinds are the route's binding's (w moves constants only).
@@ -1139,6 +1158,7 @@ def reproduce_bundle(
 
 
 _HEX64: Final = re.compile(r"[0-9a-f]{64}")
+FAILURE_NAME: Final = "failure-bundle.json"
 
 
 def _constants_for_shape(fresh: Any, archived: Any) -> Any:

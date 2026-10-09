@@ -623,6 +623,70 @@ def test_rp2b_a_w_dependent_rerun_one_ulp_off_matches_not_bitwise(
     assert served in report.reasons
 
 
+def test_d130_a_failure_bundle_rerun_one_ulp_off_matches_not_bitwise(
+    tmp_path: Path, register: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Build log D130 (D124): RP-2's case on a failure bundle. F4's loop with `max_outer` 3 ends
+    `COUPLING_NOT_CONVERGED` after k = 0, 1, 2 (ρ > 1 at each), so the bundle carries the compact
+    copy of the record (`observations.external_coupling`) and its `record_sha256`. A rerun whose X̂
+    moved in its last bits at k = 1 (RP-2's seam) is `MATCH`, not bitwise: the copy's floats are
+    compared by the record's rules (R-317) and the digest for shape (R-318's reason)."""
+    from test_m02_wo14 import OneUlpOnTheFirstClip
+
+    from openflowsheet.orchestrator import coupling
+
+    base = out_of_process("d130-max-outer-3", ["nonlinear"]).document
+    document = {**base, "coupling": {**base["coupling"], "max_outer": 3}}
+    variant = register(variants.variant_from_document(document))
+    runner = runner_in(tmp_path / "records", backend_for=synthetic_backend(tmp_path / "env"))
+    manifest, artifacts = solve(
+        pinned(loop(), variant), tmp_path / "bundle", LiveExperiments(runner)
+    )
+    assert manifest.outcome == "COUPLING_NOT_CONVERGED"
+    record = artifacts["external-coupling.json"]
+    assert [item["k"] for item in record["iterations"]] == [0, 1, 2]
+    compact = artifacts["failure-bundle.json"]["observations"]["external_coupling"]
+    monkeypatch.setattr(coupling, "np", OneUlpOnTheFirstClip())
+    reproduction = reproduce_bundle(
+        tmp_path / "bundle", rerun=True, rerun_directory=tmp_path / "rerun", run_id="run-rerun"
+    )
+    report = reproduction.report
+    assert report.verdict == "MATCH", report.differences
+    assert report.differences == ()
+    assert report.bitwise_floats is False
+    rerun = read_artifact(tmp_path / "rerun", "failure-bundle.json")["observations"]
+    copy_rerun = rerun["external_coupling"]
+    # The case exercises the old failure: the copy's iterates and its digest moved.
+    assert copy_rerun["iterations"][1]["w"][0] != compact["iterations"][1]["w"][0]
+    assert copy_rerun["record_sha256"] != compact["record_sha256"]
+
+
+def test_d130_a_failure_bundle_copy_outside_its_floor_is_a_difference() -> None:
+    """The compact copy's floats at the record's floors: ρ 2 off (floor 1) is named; a digest
+    that is not one is left for `replay` and so is a difference too."""
+    recorded = {
+        "record_sha256": "a" * 64,
+        "iterations": [
+            {"k": 0, "w": [0.15, 80.0], "rho": 8000.0, "units": {"reactor": {"r_xi": 0.0}}}
+        ],
+    }
+    block = {"tau_xi_rel": 1e-5, "tau_T_K": 1e-2}
+    near = copy.deepcopy(recorded)
+    near["record_sha256"] = "b" * 64
+    near["iterations"][0]["rho"] = 8000.5
+    near["iterations"][0]["units"]["reactor"]["r_xi"] = 1e-7
+    shaped, found = coupled_run.compact_differences(near, recorded, block, CURRENT_POLICY_ID)
+    assert (shaped, found) == (recorded, [])
+    far = copy.deepcopy(near)
+    far["record_sha256"] = "not a digest"
+    far["iterations"][0]["rho"] = 8002.0
+    shaped, found = coupled_run.compact_differences(far, recorded, block, CURRENT_POLICY_ID)
+    assert shaped["record_sha256"] == "not a digest"
+    assert len(found) == 1 and found[0].startswith(
+        "failure-bundle.json<root>.observations.external_coupling.iterations[0].rho"
+    )
+
+
 def test_r3_a_request_that_is_not_the_records_is_a_mismatch_naming_it(
     r3_run: tuple[Path, Any, dict[str, Any], Path],
 ) -> None:

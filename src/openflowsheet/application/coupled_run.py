@@ -295,6 +295,35 @@ def record_differences(
     return shaped, [f"{COUPLING_NAME}{line}" for line in found]
 
 
+#: Where a failure bundle carries the record's compact copy (`compact_record`).
+COMPACT_PATH: Final = ".observations.external_coupling"
+_DIGEST: Final = re.compile(r"[0-9a-f]{64}")
+
+
+def compact_differences(
+    fresh: Mapping[str, Any], recorded: Mapping[str, Any], block: Mapping[str, Any], policy_id: str
+) -> tuple[dict[str, Any], list[str]]:
+    """Build log D130 (D124): a rerun's compact copy of the record (a failure bundle's
+    `observations.external_coupling`) against the archive's. Its floats sit at the record's own
+    paths, so `rules.coupling` classifies them as `record_differences` does (R-317 (b)), against
+    the archived record's `coupling_block`; `record_sha256` digests the record's floats and is
+    compared for shape (R-318's reason): a well-formed digest on both sides is replaced by the
+    archive's, anything else is left for `replay`, so a malformed one is a difference."""
+    found: list[str] = []
+    shaped = _classified(fresh, recorded, "", _RULES["coupling"], block, policy_id, found)
+    mine, theirs = shaped.get("record_sha256"), recorded.get("record_sha256")
+    if (
+        isinstance(mine, str)
+        and isinstance(theirs, str)
+        and _DIGEST.fullmatch(mine)
+        and _DIGEST.fullmatch(theirs)
+    ):
+        shaped["record_sha256"] = theirs
+    return shaped, [
+        f"failure-bundle.json{line.replace('<root>', f'<root>{COMPACT_PATH}', 1)}" for line in found
+    ]
+
+
 def envelope_differences(
     fresh: Mapping[str, Any], recorded: Mapping[str, Any], policy_id: str
 ) -> list[str]:
