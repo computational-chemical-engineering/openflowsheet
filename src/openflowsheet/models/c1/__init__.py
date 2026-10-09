@@ -21,7 +21,17 @@ __all__ = [
     "NU",
     "PROVIDER_ID",
     "REFERENCE_CONVENTION",
+    "TAU_DEW",
 ]
+
+#: τ_dew, the dew band of `pr-c1-v1`'s phase convention (M01 spec §7 rule 3; R-230, R-256): a TP
+#: flash that answers TWO_PHASE with liquid NH3 `l_NH3 ≤ τ_dew · n_tot` is read as VAPOR. It equals
+#: ADR 0001 D6's normalized-composition tolerance, the registered resolution of a mole fraction,
+#: and `l_NH3 / n_tot` is one. At least 1e4 above both the flash's O(ε) liquid at a vapour's own dew
+#: point (M01 F4) and y*'s bisection error (design note §8). A property of the provider's
+#: convention, not of the solve policy (design note §14.2 B14), and never widened to rescue a
+#: near-dew failure (R-256).
+TAU_DEW: Final = 1e-10
 
 #: N2 + 3 H2 -> 2 NH3 over (H2, N2, NH3, Ar, CH4) (spec §8.2).
 NU: Final[tuple[int, ...]] = (-3, -1, 2, 0, 0)

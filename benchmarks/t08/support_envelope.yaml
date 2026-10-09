@@ -79,9 +79,20 @@ axes:
   - id: unit_models
     title: Unit models
     statement: >-
-      The thirteen models of `MODEL_BUILDERS`, each with its registered limitations (L02, L27–L31,
-      L-CSTR-1..3). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
+      The twenty-one models of `MODEL_BUILDERS`, each with its registered limitations (L02,
+      L27–L31, L-CSTR-1..3): SYN-001's thirteen, on SYN-001's basis only, and since M02's join
+      (R-280) the eight C1 models, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
+      synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
+      manifest and in every result's identity (R-199, R-231). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
     members:
+      - c1.adiabatic_mixer
+      - c1.feed_source
+      - c1.product_sink
+      - c1.reactor
+      - c1.reactor_standin
+      - c1.stream_splitter
+      - c1.tp_flash
+      - c1.tp_heater
       - syn001.adiabatic_mixer
       - syn001.component_separator
       - syn001.conversion_reactor
@@ -95,9 +106,13 @@ axes:
       - syn001.tp_flash
       - syn001.tp_heater
       - syn001.valve
+    #: Listed, and synthetic only (R-280 (c)): checked against the variant registry (T08.A20).
+    synthetic_members: [c1.reactor_standin]
     evidence:
       - tests/test_t05_w1b_revision.py::test_builders_hold_the_thirteen_models_of_the_table
       - tests/test_t08_kinetic_cstr.py::test_b10_the_model_is_the_thirteenth_builder_with_its_signature
+      - tests/test_m02_join.py::test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis
+      - tests/test_m02_wo9_reactor.py::test_g8e_the_stand_in_binds_and_says_synthetic_everywhere
       - check:T05.A17
       - check:T05.A18
       - check:T05.A19

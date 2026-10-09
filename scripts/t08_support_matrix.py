@@ -5,7 +5,8 @@ its rendering. This script renders the one from the other and checks both agains
 evidence tree:
 
 - **T08.A20** — the enumerated axes equal the code: the twenty operations of `OPERATIONS` (with
-  their transports), the thirteen models of `MODEL_BUILDERS`, the offered policies
+  their transports), the models of `MODEL_BUILDERS` (SYN-001's thirteen and, since M02's join,
+  the eight C1 models, R-280) and which of them are synthetic only, the offered policies
   (`APPLICATION_POLICIES`), the unit spellings of `CONVERSION_ROWS` *and* of ADR 0016's table, the
   providers of `openflowsheet.thermo` (by `PROVIDER_ID`), the provider's components and domain,
   and the platform facts (the lock's hash, the CI matrix's Python and architectures).
@@ -130,8 +131,19 @@ def _ci() -> tuple[list[str], list[str]]:
     return pythons, sorted(RUNNER_ARCHITECTURE.get(runner, runner) for runner in runners)
 
 
+def _synthetic_models(variants: Any, models: Any) -> list[str]:
+    """The models every registered variant of which is synthetic (R-199, R-280 (c)): the C1
+    stand-in, whose only variant is `standin-x025-v1`."""
+    by_model: dict[str, set[bool]] = {}
+    for name in variants.registry():
+        variant = variants.registered_variant(name)
+        by_model.setdefault(variant.model_id, set()).add(bool(variant.synthetic))
+    return sorted(m for m in models if by_model.get(m) == {True})
+
+
 def code_facts() -> dict[str, Any]:
     """What the enumerated axes are compared with (T08.A20)."""
+    from openflowsheet.adapters import variants
     from openflowsheet.application.operations import OPERATIONS
     from openflowsheet.application.policies import APPLICATION_POLICIES
     from openflowsheet.application.revision_binding import MODEL_BUILDERS
@@ -143,6 +155,7 @@ def code_facts() -> dict[str, Any]:
     return {
         "operations": {name: list(row.transports) for name, row in OPERATIONS.items()},
         "models": sorted(MODEL_BUILDERS),
+        "synthetic_models": _synthetic_models(variants, MODEL_BUILDERS),
         "policies": sorted(APPLICATION_POLICIES),
         "unit_spellings": sorted([kind, unit] for kind, unit in CONVERSION_ROWS),
         "adr_0016_spellings": _adr_0016_spellings(),
@@ -180,6 +193,10 @@ def check_structure(envelope: Mapping[str, Any]) -> list[str]:
             if not row.get("evidence"):
                 problems.append(f"{section}.{row.get('id')}: no evidence (spec §5.1)")
     limitations = {row.get("id") for row in envelope.get("limitations") or ()}
+    for axis in (a for a in envelope.get("axes") or () if a.get("id") == "unit_models"):
+        stray = sorted(set(axis.get("synthetic_members") or ()) - set(axis.get("members") or ()))
+        if stray:
+            problems.append(f"unit_models.synthetic_members: not members {stray}")
     property_model = [a for a in envelope.get("axes") or () if a.get("id") == "property_model"]
     for axis in property_model:
         for provider in axis.get("unbound_providers") or ():
@@ -202,6 +219,7 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
             for name, transports in _axis(envelope, "interfaces")["operations"].items()
         },
         "models": sorted(_axis(envelope, "unit_models")["members"]),
+        "synthetic_models": sorted(_axis(envelope, "unit_models").get("synthetic_members", [])),
         "policies": sorted(_axis(envelope, "solve_policies")["members"]),
         "unit_spellings": sorted(_axis(envelope, "specifications")["unit_spellings"]),
         "adr_0016_spellings": sorted(_axis(envelope, "specifications")["unit_spellings"]),
@@ -221,9 +239,12 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
     ]
     # ADR 0019 Amendment 3 (M06, approved by Frank on 2026-10-08) adds `list_audit` to spec §9's
     # 20 operations; this file is v0.2's working envelope (R-193), v0.1's stays as released.
-    if len(claimed["operations"]) != 21 or len(claimed["models"]) != 13:
+    # M02's join (R-280 (c)) adds the eight C1 models to spec §9's 13 SYN-001 models.
+    syn001 = [model for model in claimed["models"] if model.startswith("syn001.")]
+    if len(claimed["operations"]) != 21 or len(syn001) != 13 or len(claimed["models"]) != 21:
         problems.append(
-            "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models"
+            "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models (21 "
+            "with M02's eight C1 models)"
         )
     return problems
 
@@ -345,7 +366,11 @@ def render(envelope: Mapping[str, Any]) -> str:
         )
     lines += ["", "### Enumerated (checked against the code, T08.A20)", ""]
     models = _axis(envelope, "unit_models")["members"]
-    lines.append("- **Unit models:** " + ", ".join(f"`{m}`" for m in models))
+    synthetic = set(_axis(envelope, "unit_models").get("synthetic_members", ()))
+    lines.append(
+        "- **Unit models:** "
+        + ", ".join(f"`{m}`" + (" (synthetic only)" if m in synthetic else "") for m in models)
+    )
     lines.append(
         "- **Solve policies:** "
         + ", ".join(f"`{p}`" for p in _axis(envelope, "solve_policies")["members"])

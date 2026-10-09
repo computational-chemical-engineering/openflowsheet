@@ -14,8 +14,9 @@ class (`execution.UnsupportedRankStructureError`). The rank error has two kinds 
   more than two columns, or two that do not cancel. Row shapes are fixed by the model builders,
   never by values: every pressure-only row of `MODEL_BUILDERS` is a copy or a declared drop (one
   inflow, one outflow, `+1`/`-1`) or a single-column specification. The test below executes that
-  premise on every revision of the T07 corpus and T08's CSTR documents that either binder binds
-  (all thirteen models, both binders' declarations), from the declaration's own affine
+  premise on every revision of the T07 corpus, T08's CSTR documents and M02's C1 corpus
+  (`m02_c1_corpus`, R-280 (a)) that either binder binds (all twenty-one models, both binders'
+  declarations), from the declaration's own affine
   coefficients, which are the verifier's Jacobian entries for these rows;
 - *numerical* — the two-state mismatch spread exceeds `LINEARITY_TOLERANCE` (1e-4 Pa). On ±1
   difference rows the mismatch telescopes to the path's constant identically, so the spread is
@@ -46,6 +47,7 @@ from typing import Any
 
 import pytest
 import t08_cstr_support as cstr
+from m02_c1_corpus import C1_CORPUS
 from t07_corpus import CORPUS
 from t07_jobs_support import commit
 
@@ -75,6 +77,8 @@ def _documents() -> dict[str, dict[str, Any]]:
     documents["T08-cstr-dormant"] = cstr.dormant_revision()
     documents["T08-cstr-liquid"] = cstr.liquid_variant_revision()
     documents["T08-ptc-r1"] = cstr.ptc_r1_revision()
+    # M02's join (R-280 (a)): the C1 models' instances are registered C1 corpus revisions.
+    documents |= {name: build() for name, build in C1_CORPUS.items()}
     return documents
 
 

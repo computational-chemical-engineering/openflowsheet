@@ -43,6 +43,7 @@ from typing import Any, Final, Literal, NoReturn, Self, get_args
 from openflowsheet.application import validation
 from openflowsheet.application.admission import (
     active_jobs_refusal,
+    admit_experiment,
     admit_reproduce,
     admit_solve,
     resolve_policies,
@@ -101,6 +102,7 @@ from openflowsheet.application.types import (
     DocumentSchemaError,
     EffectiveBudgets,
     ExecutorSettings,
+    ExperimentBody,
     Job,
     JobEvent,
     JobRequest,
@@ -742,6 +744,14 @@ class LocalApplication:
                 wall_time_s=admission.wall_time_s,
                 max_property_calls=admission.policy.max_property_calls,
             )
+        if isinstance(body, ExperimentBody):
+            admitted = admit_experiment(
+                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+            )
+            if isinstance(admitted, ApiError):
+                self._refuse_error(admitted, operation, request_sha256)
+            # R-233: an experiment's property calls are its own, never a solve's budget.
+            return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
         archive = store.artifact(body.bundle_artifact_id)
         wall_time_s = admit_reproduce(
             archive.kind if archive is not None else None,
@@ -799,6 +809,14 @@ class LocalApplication:
                 replay_report=None,
                 error=job.error,
             )
+        if job.operation == "experiment":
+            return JobResult(
+                operation="experiment",
+                run_result=None,
+                replay_report=None,
+                error=job.error,
+                experiment=self._experiment_answer(job),
+            )
         report = None
         for output in job.outputs:
             if output.kind == "replay_report":
@@ -806,6 +824,17 @@ class LocalApplication:
         return JobResult(
             operation="reproduce", run_result=None, replay_report=report, error=job.error
         )
+
+    def _experiment_answer(self, job: Job) -> dict[str, Any] | None:
+        """ADR 0033 D9: the experiment's `result` when the job output one (its own, a cache hit's
+        row or the producing row), else its last `attempt`; `None` when it output neither."""
+        results = [output for output in job.outputs if output.kind == "experiment_result"]
+        attempts = [output for output in job.outputs if output.kind == "experiment_attempt"]
+        chosen = results[-1] if results else (attempts[-1] if attempts else None)
+        if chosen is None:
+            return None
+        answer: dict[str, Any] = json.loads(self._artifact_path(chosen).read_bytes())
+        return answer
 
     def _run_result(self, job: Job) -> RunResult:
         """§5.7, read from what the job produced: the resolution and run facts its runner

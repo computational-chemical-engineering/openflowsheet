@@ -45,6 +45,7 @@ import numpy.typing as npt
 import pytest
 import yaml
 from conftest import REPO_ROOT
+from m02_c1_corpus import C1_CORPUS
 from t07_corpus import CORPUS
 from test_t02_recycle import manufactured, recycle_problem
 from test_t05b_openings import CASES as B31_CASES
@@ -379,9 +380,11 @@ def test_e12_a_ptc_solve_keeps_the_declaration() -> None:
 
 
 def _manifests_by_model() -> dict[str, list[Mapping[str, Any]]]:
-    """Every unit manifest of the revisions that bind: the T07 corpus and PTC-R1's revision
-    (the kinetic CSTR's only registered instance), by model id."""
+    """Every unit manifest of the revisions that bind: the T07 corpus, PTC-R1's revision (the
+    kinetic CSTR's only registered instance) and M02's C1 corpus (the C1 models' registered
+    instances, R-280 (a)), by model id."""
     documents = [CORPUS[name]() for name in sorted(CORPUS)] + [compare.revision_document()]
+    documents += [C1_CORPUS[name]() for name in sorted(C1_CORPUS)]
     found: dict[str, list[Mapping[str, Any]]] = {}
     for document in documents:
         binding = bind_revision_flowsheet(copy.deepcopy(document))
@@ -399,11 +402,12 @@ def test_e1_e2_no_offered_policy_or_unit_reaches_a_recycle_iteration() -> None:
 
     (1) Every `MODEL_BUILDERS` model that can sit in a loop — one with an outlet port — declares
     exact residual derivatives, by the predicate `auto` resolves with. A model without an outlet
-    (the product sink, whose manifest declares `unavailable` because it has no output) is in no
-    loop, and is the only kind exempted. (2) No policy of `APPLICATION_POLICIES` requests
-    `anderson`, and on SYN-001-nominal's loop each plans a `newton_tear` converge step through
-    `build_execution_plan`; the same plan with `anderson` requested does plan one, so the check
-    can fail. Either part fails when a unit or an offered policy reaches the edge."""
+    (a product sink, whose manifest declares `unavailable` because it has no output) is in no
+    loop, and is the only kind exempted: SYN-001's and, since M02's join, the C1 one. (2) No
+    policy of `APPLICATION_POLICIES` requests `anderson`, and on SYN-001-nominal's loop each
+    plans a `newton_tear` converge step through `build_execution_plan`; the same plan with
+    `anderson` requested does plan one, so the check can fail. Either part fails when a unit or
+    an offered policy reaches the edge."""
     manifests = _manifests_by_model()
     assert set(manifests) == set(MODEL_BUILDERS), "a model with no bound instance to read"
     exempt = set()
@@ -414,7 +418,7 @@ def test_e1_e2_no_offered_policy_or_unit_reaches_a_recycle_iteration() -> None:
                 continue
             capable, method = eo_capability(manifest)
             assert capable, f"{model_id} declares {method!r}: `auto` resolves to anderson"
-    assert exempt == {"syn001.product_sink"}
+    assert exempt == {"syn001.product_sink", "c1.product_sink"}
 
     binding = bind_revision_or_reason(copy.deepcopy(CORPUS["SYN-001-nominal"]()))
     assert isinstance(binding, Binding)

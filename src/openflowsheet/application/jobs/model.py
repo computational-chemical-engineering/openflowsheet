@@ -24,7 +24,8 @@ if TYPE_CHECKING:
 
 #: J3's closed discriminator (§5.3). A later operation is an added value and an added `oneOf`
 #: branch in `job.schema.json#/$defs/job_request`; resume would arrive as `solve_resume`.
-JobOperation = Literal["solve", "reproduce"]
+#: `experiment` is ADR 0033 D9's (ADR 0019 Amendment 4, part 1; M02 design note §3.5).
+JobOperation = Literal["solve", "reproduce", "experiment"]
 JobStatus = Literal["queued", "running", "completed", "failed", "cancelled", "timed_out"]
 TerminalStatus = Literal["completed", "failed", "cancelled", "timed_out"]
 EventKind = Literal["accepted", "started", "progress", "output", "cancel_requested", "ended"]
@@ -42,7 +43,9 @@ EndingReason = Literal[
     "wall_time_exhausted",
 ]
 #: §5.4, producer kinds version 1; `solution_state` added by ruling round 2 and `solve_path` (the
-#: bundle's `solve-path.json`, ruling round 1 R2.4) by the W1 follow-up, both additively.
+#: bundle's `solve-path.json`, ruling round 1 R2.4) by the W1 follow-up, both additively; the
+#: experiment records, the coupled route's bundle member and the replacement report by M02
+#: (ADR 0033 D9, ADR 0034 D6, ADR 0035), additively.
 ArtifactKind = Literal[
     "solve_trace",
     "solve_plan",
@@ -60,6 +63,11 @@ ArtifactKind = Literal[
     "replay_report",
     "partial_solve_trace",
     "worker_log",
+    "experiment_request",
+    "experiment_result",
+    "experiment_attempt",
+    "external_coupling",
+    "model_replacement_report",
 ]
 
 JOB_OPERATIONS: Final[tuple[str, ...]] = get_args(JobOperation)
@@ -123,6 +131,15 @@ ARTIFACT_FILE_NAMES: Final[Mapping[str, str | None]] = {
     "replay_report": "replay-report.json",
     "partial_solve_trace": "partial-solve-events.json",
     "worker_log": "worker.log",
+    #: M02 design note §3.4: an experiment record's row is named by its key, and lives under
+    #: `experiments/<key[0:2]>/<key>/`, not under the job: no fixed file name.
+    "experiment_request": None,
+    "experiment_result": None,
+    "experiment_attempt": None,
+    #: ADR 0034 D6: the `revision_coupled` bundle's member beside D4's files.
+    "external_coupling": "external-coupling.json",
+    #: ADR 0035: a commit's report, stored with `job_id` null; named per instance.
+    "model_replacement_report": None,
 }
 
 

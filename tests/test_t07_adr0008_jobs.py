@@ -172,7 +172,13 @@ def test_c_each_operation_has_exactly_one_request_branch() -> None:
         branch["properties"]["operation"]["const"]: branch["properties"]["body"]["$ref"]
         for branch in request["oneOf"]
     }
-    assert bodies == {"solve": "#/$defs/solve_body", "reproduce": "#/$defs/reproduce_body"}
+    assert bodies == {
+        "solve": "#/$defs/solve_body",
+        "reproduce": "#/$defs/reproduce_body",
+        # M02 (ADR 0033 D9, ADR 0019 Amendment 4): the `experiment` body lives with its records.
+        "experiment": "https://github.com/frankp/process-runtime/schemas/experiment.schema.json"
+        "#/$defs/experiment_body",
+    }
 
 
 @pytest.mark.parametrize("operation", ["solve_resume", "optimize", "SOLVE", ""])

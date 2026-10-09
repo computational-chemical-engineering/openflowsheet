@@ -1,0 +1,327 @@
+{
+  "component_set": {
+    "components": [
+      "H2",
+      "N2",
+      "NH3",
+      "Ar",
+      "CH4"
+    ],
+    "record_source": "benchmarks/m01/components.yaml"
+  },
+  "connections": [
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "F",
+        "port": "outlet"
+      },
+      "id": "S1",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "U",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "U",
+        "port": "vapor"
+      },
+      "id": "S2",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "K",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "U",
+        "port": "liquid"
+      },
+      "id": "S3",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "liquid",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "L",
+        "port": "inlet"
+      }
+    }
+  ],
+  "description": "G7 (a) as amended: M01's F1 fed as vapour at 673.15 K into c1.tp_flash at F1's T and P",
+  "instances": [
+    {
+      "id": "F",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.feed_source",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "feed"
+    },
+    {
+      "id": "U",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.tp_flash",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "flash"
+    },
+    {
+      "id": "K",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "product_sink"
+    },
+    {
+      "id": "L",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "product_sink"
+    }
+  ],
+  "parent_revision": null,
+  "provenance": {
+    "actor": "M02 join (build lane)",
+    "notes": "registered C1 corpus revision (R-280 (a)); equals tests/m02_wo8_support.py flash_revision(F1, T, P, feed_temperature=673.15) with this id, title, description and provenance",
+    "operation": "create",
+    "source_references": [
+      "docs/design/M02-pymrm-adapter.md §14.3 C1 (a), §14.4 D5"
+    ],
+    "timestamp": "2026-10-09T00:00:00Z"
+  },
+  "revision_id": "C1-FLASH-F1-M02-v1",
+  "schema_version": 1,
+  "specifications": [
+    {
+      "id": "SPEC-S1-n-H2",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "H2",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.6
+    },
+    {
+      "id": "SPEC-S1-n-N2",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "N2",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.2
+    },
+    {
+      "id": "SPEC-S1-n-NH3",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "NH3",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.165
+    },
+    {
+      "id": "SPEC-S1-n-Ar",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "Ar",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.015
+    },
+    {
+      "id": "SPEC-S1-n-CH4",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "CH4",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.02
+    },
+    {
+      "id": "SPEC-S1-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 673.15
+    },
+    {
+      "id": "SPEC-S1-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000000.0
+    },
+    {
+      "id": "SPEC-S2-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S2",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 268.15
+    },
+    {
+      "id": "SPEC-S2-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S2",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000000.0
+    },
+    {
+      "id": "SPEC-S3-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S3",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 268.15
+    },
+    {
+      "id": "SPEC-S3-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S3",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000000.0
+    }
+  ],
+  "title": "C1-FLASH-F1-M02-v1"
+}

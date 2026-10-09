@@ -25,6 +25,7 @@ from t05_syn001_shaped import shaped_revision
 
 from openflowsheet.application.binding import Unbound
 from openflowsheet.application.revision_binding import (
+    MODEL_BASES,
     MODEL_BUILDERS,
     RevisionBinding,
     bind_revision_flowsheet,
@@ -297,6 +298,8 @@ def test_an_unregistered_lifted_split_is_a_defect(monkeypatch: pytest.MonkeyPatc
         return _Lifter(unit), configuration
 
     monkeypatch.setitem(MODEL_BUILDERS, "test.lifter", lifter)  # type: ignore[arg-type]
+    # Since M02's join a builder binds only on the bases `MODEL_BASES` gives it (R-288).
+    monkeypatch.setitem(MODEL_BASES, "test.lifter", frozenset({"syn001"}))  # type: ignore[arg-type]
     document = shaped_revision()
     (entry,) = (i for i in document["instances"] if i["id"] == "U-HEAT")
     entry["model"]["id"] = "test.lifter"

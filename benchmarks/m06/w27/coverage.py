@@ -6,7 +6,9 @@ and `registration.json`'s tables. The classifier is deterministic and reads noth
 
 - Units (§5.4): a unit is available iff some snapshot model performs its function **and** offers
   every token it requires; a function match with a missing token is `partial`, and partial is
-  unavailable. `junction` needs no model.
+  unavailable. `junction` needs no model. Which models (W27-R62, Amendment 2): when the case's
+  non-reaction packages form one method group and a route serves it, that route's `model_ids`
+  only (the row's `units_judged_on` names the route); otherwise every model of the snapshot.
 - Components (§5.5): identity by CAS RN through the alias table; available iff a non-synthetic
   record of some snapshot route carries that CAS RN. Ions and unidentified names never are.
 - Property routes (§5.6): non-reaction packages grouped by method; with one route per revision
@@ -14,9 +16,10 @@ and `registration.json`'s tables. The classifier is deterministic and reads noth
   group needs a route of **the same method** admitting every available component in every phase
   kind the group declares.
 - Refusals (W27-R24): a snapshot holding a model id, provider id, or registry chemical spelling
-  the registration does not map stops classification (`RefusalError`), naming every item; no
-  `coverage.json` is written. A gap in the tables is the design lane's amendment, never a local
-  default.
+  the registration does not map, (d) whose `routes_per_revision` is not 1 or two of whose routes
+  share a method, or (e) whose routes list a model id that is not among its models, or leave a
+  model on no route, stops classification (`RefusalError`), naming every item; no `coverage.json`
+  is written. A gap in the tables is the design lane's amendment, never a local default.
 
 Run: `python -m benchmarks.m06.w27.coverage [--out PATH]` writes `coverage.json` (W27-R25) for
 the build at hand, or exits 2 naming the refusal.
@@ -183,6 +186,22 @@ def check_snapshot(
         problems.append(f"unregistered provider ids {unknown_providers}")
     if unaliased:
         problems.append(f"archive spellings of registry chemicals not aliased {sorted(unaliased)}")
+    # (d), Amendment 2: W27-R62 is registered for one route per revision and one route per method.
+    if snapshot["routes_per_revision"] != 1:
+        problems.append(f"routes_per_revision {snapshot['routes_per_revision']} is not 1")
+    per_method = Counter(
+        methods[r["provider_id"]] for r in snapshot["routes"] if r["provider_id"] in methods
+    )
+    shared = sorted(m for m, n in per_method.items() if n > 1)
+    if shared:
+        problems.append(f"routes sharing a method {shared}")
+    # (e): the routes' model ids are the snapshot's models, and every model is on a route.
+    listed = {m["model_id"] for m in snapshot["models"]}
+    on_routes = {m for r in snapshot["routes"] for m in r["model_ids"]}
+    if on_routes - listed:
+        problems.append(f"route model ids not among the models {sorted(on_routes - listed)}")
+    if listed - on_routes:
+        problems.append(f"models on no route {sorted(listed - on_routes)}")
     if problems:
         raise RefusalError("; ".join(problems))
 
@@ -214,16 +233,24 @@ def _not_steady_rules(case: Mapping[str, Any]) -> list[str]:
     return fired
 
 
+def _judging_models(snapshot: Mapping[str, Any], serving: str | None) -> list[str]:
+    """W27-R62: the serving route's `model_ids`, or every model of the snapshot when no route
+    serves the case's single method group."""
+    if serving is None:
+        return sorted(m["model_id"] for m in snapshot["models"])
+    (route,) = [r for r in snapshot["routes"] if r["provider_id"] == serving]
+    return sorted(route["model_ids"])
+
+
 def _unit_reasons(
-    case: Mapping[str, Any], snapshot: Mapping[str, Any]
+    case: Mapping[str, Any], model_ids: Sequence[str]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """W27-R12/R13 for every unit group, against the models `model_ids` (W27-R62)."""
     model_functions: Mapping[str, Mapping[str, Any]] = _table("units", "model_functions")
-    by_function: dict[str, list[tuple[str, set[str]]]] = {}
-    for model in snapshot["models"]:
-        entry = model_functions[model["model_id"]]
-        by_function.setdefault(entry["function"], []).append(
-            (model["model_id"], set(entry["offers"]))
-        )
+    by_function: dict[str | None, list[tuple[str, set[str]]]] = {}
+    for model_id in model_ids:
+        entry = model_functions[model_id]
+        by_function.setdefault(entry["function"], []).append((model_id, set(entry["offers"])))
     rows: list[dict[str, Any]] = []
     unavailable: dict[str, dict[str, Any]] = {}
     for unit in case["units"]:
@@ -319,11 +346,12 @@ def _route_detail(
     available_cas: Sequence[str],
     snapshot: Mapping[str, Any],
     methods: Mapping[str, str],
-) -> str | None:
-    """W27-R20 for one group: `None` when a route serves it, else why none does."""
+) -> tuple[str | None, str | None]:
+    """W27-R20 for one group: `(the serving route's provider id, None)` when a route serves it,
+    else `(None, why none does)`."""
     routes = [r for r in snapshot["routes"] if methods[r["provider_id"]] == method]
     if not routes:
-        return f"no_route:{method}"
+        return None, f"no_route:{method}"
     detail: str | None = None
     for route in routes:
         admitted = {
@@ -340,14 +368,14 @@ def _route_detail(
             if p in ("vapor", "liquid", "solid") and p not in admitted[cas]
         ]
         if not missing and not bad_phase:
-            return None
+            return str(route["provider_id"]), None
         detail = (
             f"route_mismatch:{route['provider_id']}:missing="
             + ",".join(missing)
             + ":phase="
             + ",".join(bad_phase)
         )
-    return detail
+    return None, detail
 
 
 def _route_reasons(
@@ -355,7 +383,9 @@ def _route_reasons(
     snapshot: Mapping[str, Any],
     component_rows: Sequence[Mapping[str, Any]],
     methods: Mapping[str, str],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str | None]:
+    """W27-R19/R20: package rows, route reasons, and the provider id of the route serving the
+    case's one method group (`None` for no package, several groups, or no serving route)."""
     package_methods: Mapping[str, str] = _table("routes", "package_methods")
     available_cas = sorted({c["cas"] for c in component_rows if c["available"]})
     rows: list[dict[str, Any]] = []
@@ -369,13 +399,16 @@ def _route_reasons(
     route_aliases = set(case["topology_package_names"]) | set(case["topology_entry_ids"])
     multiple = len(groups) > 1 and snapshot["routes_per_revision"] == 1
     reasons: list[dict[str, Any]] = []
+    serving: str | None = None
     for method in sorted(groups):
         members = groups[method]
         phases = sorted({p for package, _ in members for p in package["phases"]})
         if multiple:
             detail: str | None = "multiple_routes_per_revision:" + ",".join(sorted(groups))
         else:
-            detail = _route_detail(method, phases, available_cas, snapshot, methods)
+            route, detail = _route_detail(method, phases, available_cas, snapshot, methods)
+            if len(groups) == 1:
+                serving = route
         for _, row in members:
             row["available"] = detail is None
             row["detail"] = detail or "available"
@@ -406,7 +439,7 @@ def _route_reasons(
                 "aliases": [],
             }
         )
-    return rows, reasons
+    return rows, reasons, serving
 
 
 def classify_case(
@@ -437,9 +470,9 @@ def classify_case(
                 "aliases": [],
             }
         )
-    unit_rows, unit_reasons = _unit_reasons(case, snapshot)
     component_rows, component_reasons = _component_reasons(case, snapshot)
-    package_rows, route_reasons = _route_reasons(case, snapshot, component_rows, methods)
+    package_rows, route_reasons, serving = _route_reasons(case, snapshot, component_rows, methods)
+    unit_rows, unit_reasons = _unit_reasons(case, _judging_models(snapshot, serving))
     reasons += unit_reasons + component_reasons + route_reasons
     kinds = {r["kind"] for r in reasons}
     order = registration.classes()
@@ -452,6 +485,7 @@ def classify_case(
         "residual_check": case["residual_check"],
         "class": klass,
         "reasons": reasons,
+        "units_judged_on": serving,
         "units": unit_rows,
         "components": component_rows,
         "packages": package_rows,

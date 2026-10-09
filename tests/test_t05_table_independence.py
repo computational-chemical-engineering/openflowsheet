@@ -221,16 +221,21 @@ def test_the_verifiers_dormant_outlets_are_the_solvers_as_data() -> None:
     from openflowsheet.orchestrator.splits import DORMANCY_RULES
     from openflowsheet.verify.zero_flow import DORMANT_OUTLETS
 
+    # M02 design note §14.2 B13: restricted to the `syn001.` keys, the literal unchanged; the full
+    # key sets and the `c1.` entries are pinned by `test_m02_wo8_registries`.
     solver = {
         key: [(rule.outlet, rule.trigger, rule.swapped, rule.side) for rule in rules]
         for key, rules in DORMANCY_RULES.items()
+        if key[0].startswith("syn001.")
     }
     configurations: dict[str, list[str | None]] = {
         "syn001.liquid_pump": [None],
         "syn001.adiabatic_mixer": [None],
         "syn001.heat_exchanger": ["duty", "hot_outlet_temperature", "cold_outlet_temperature"],
     }
-    assert set(DORMANT_OUTLETS) == set(configurations)
+    assert {model for model in DORMANT_OUTLETS if model.startswith("syn001.")} == set(
+        configurations
+    )
     verifier = {
         (model, configuration): [
             (entry.outlet, entry.trigger, entry.swapped, entry.side)

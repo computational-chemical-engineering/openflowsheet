@@ -1,4 +1,5 @@
-"""The operation bodies of a job: `solve` and `reproduce` (T07 design note §5.4, §6.2–§6.4, §8).
+"""The operation bodies of a job: `solve`, `reproduce` and `experiment` (T07 design note §5.4,
+§6.2–§6.4, §8; M02 design note §3.5).
 
 `execute(context, job, check=…, cancel=…)` runs one job's operation and returns its
 `WorkerResult` — the termination the owner turns into the one `ended` event (§6.2: a body never
@@ -12,7 +13,17 @@ nothing. `solve`: `resolve` (the request against the stored revision: the route,
 solve and check policies), `bind` (the route's binder, afresh for this run), `plan`, `solve`,
 `verify`, `bundle` — the last four called back from `revision_run.run_revision_session`, the same
 function a direct caller uses, so a job's bundle *is* that function's bundle (gate G6).
-`reproduce`: `integrity`, `rerun` (only when `rerun`), `compare`.
+`reproduce`: `integrity`, `rerun` (only when `rerun`), `compare`. `experiment`: `resolve` (the
+variant and the inlet), `evaluate` (`adapters.experiments`' runner: key, lock, cache, attempts,
+records), `record` (the outputs).
+
+**Experiments (ADR 0033 D9, M02 design note §3.5).** An `experiment` job evaluates one request and
+ends `completed` whatever the experiment's outcome — a refusal or a transient failure is a result,
+recorded; `failed` is kept for a defect. Its outputs are the records it wrote, as the store's sink
+registered them — the request, the attempts, the result, or a cache hit's row whose parent is the
+producing result — and, for a deterministic outcome it did not write (a bypassed repeat), the
+producing result's row. The body is read here and by the runner only: nothing in it reaches a
+solve (R-235). Its property calls are its own and unmetered (R-233).
 
 **Interruption (§8.1).** `check` raises `JobInterrupted` once cancellation is requested or the
 wall-time deadline has passed; it runs at every `Trace.record` (installed by the executor) and at
@@ -48,6 +59,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final, Self
 
+from openflowsheet.adapters import variants
+from openflowsheet.adapters.experiments.runner import ExperimentRunner
+from openflowsheet.adapters.experiments.store import ArtifactSink, ExperimentStore
 from openflowsheet.application.admission import resolve_policies
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
@@ -65,11 +79,12 @@ from openflowsheet.application.revision_run import (
     run_revision_session,
     select_route,
 )
-from openflowsheet.application.store import JOBS_DIR, ArtifactRow, ProjectStore
+from openflowsheet.application.store import JOBS_DIR, ArtifactRow, ArtifactTableSink, ProjectStore
 from openflowsheet.application.types import (
     ApiError,
     ApiErrorCode,
     ArtifactRef,
+    ExperimentBody,
     Job,
     JobEnding,
     Progress,
@@ -77,13 +92,17 @@ from openflowsheet.application.types import (
     SolveBody,
 )
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
+from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.thermo import StreamState
+from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.verify.checks import VerifierError
 
 __all__ = [
+    "EXPERIMENT_STAGES",
     "REPRODUCE_STAGES",
     "SOLVE_STAGES",
     "RunContext",
@@ -97,6 +116,7 @@ _LOG = logging.getLogger(__name__)
 #: §6.4.
 SOLVE_STAGES: Final[tuple[str, ...]] = ("resolve", "bind", "plan", "solve", "verify", "bundle")
 REPRODUCE_STAGES: Final[tuple[str, ...]] = ("integrity", "rerun", "compare")
+EXPERIMENT_STAGES: Final[tuple[str, ...]] = ("resolve", "evaluate", "record")
 #: §5.4: the producer kind of each fixed file name.
 KIND_OF_FILE: Final[Mapping[str, str]] = {
     name: kind for kind, name in ARTIFACT_FILE_NAMES.items() if name is not None
@@ -176,6 +196,38 @@ def warm_start_candidate(
     except (OSError, ValueError):
         document = None
     return WarmStartCandidate(document, source_job_id, source_revision_id)
+
+
+class _RecordingSink:
+    """An `ArtifactSink` that forwards to the project's and keeps a reference to each record it
+    made, in order: an experiment job's outputs (R-237)."""
+
+    def __init__(self, inner: ArtifactSink) -> None:
+        self.inner = inner
+        self.refs: list[ArtifactRef] = []
+
+    def record(
+        self,
+        *,
+        job_id: str | None,
+        kind: str,
+        name: str,
+        relpath: str,
+        sha256: str,
+        size_bytes: int,
+        parent_artifact_id: str | None,
+    ) -> str:
+        artifact_id = self.inner.record(
+            job_id=job_id,
+            kind=kind,
+            name=name,
+            relpath=relpath,
+            sha256=sha256,
+            size_bytes=size_bytes,
+            parent_artifact_id=parent_artifact_id,
+        )
+        self.refs.append(ArtifactRef(kind, artifact_id, sha256, size_bytes, name))
+        return artifact_id
 
 
 class _FenceLost(Exception):  # noqa: N818 - a signal inside this module, not an error type
@@ -542,6 +594,67 @@ class _Body:
             status="completed", reason="operation_completed", interruption=None, error=None
         )
 
+    # -- experiment ---------------------------------------------------------------------------
+
+    def experiment(self) -> WorkerResult:
+        body = self.job.request.body
+        assert isinstance(body, ExperimentBody)
+        self.stages = EXPERIMENT_STAGES
+        sink = _RecordingSink(ArtifactTableSink(self.context.store))
+        records = ExperimentStore(self.context.root, sink)
+        emitted = 0
+
+        def emit_records() -> None:
+            nonlocal emitted
+            for ref in sink.refs[emitted:]:
+                self._emit(output=ref)
+            emitted = len(sink.refs)
+
+        try:
+            self.at("resolve")
+            model = body.model
+            variant = variants.resolve(model.id, model.version, model.artifact_ref)
+            if variant is None:  # admitted, and registered variants are package data: a defect
+                return _failed(_error("internal_error", "variant_unresolved"), None)
+            runner = ExperimentRunner(
+                records,
+                PrC1Provider(),
+                EvaluationContext(
+                    model_version=variant.variant_id, constants_sha256=variant.sha256
+                ),
+                job_id=self.job.job_id,
+                check=self.check,
+            )
+            inlet = StreamState(
+                n=body.inlet.n,
+                temperature=body.inlet.temperature,
+                pressure=body.inlet.pressure,
+            )
+            self.at("evaluate")
+            outcome = runner.run(
+                variant, inlet, body.inlet.components, body.n_tubes, cache=body.cache
+            )
+            self.at("record")
+            emit_records()
+            if outcome.result is not None and not any(
+                ref.kind == "experiment_result" for ref in sink.refs
+            ):
+                producing = records.producing_artifact_id(outcome.key)
+                row = self.context.store.artifact(producing) if producing is not None else None
+                if row is not None:
+                    self._emit(output=row.as_ref())
+        except JobInterrupted as interrupted:
+            try:
+                emit_records()  # the attempts written before the interruption (§3.3)
+            except _FenceLost:
+                return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+            return _interrupted(interrupted, None)
+        except _FenceLost:
+            return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+        return WorkerResult(
+            status="completed", reason="operation_completed", interruption=None, error=None
+        )
+
 
 def execute(
     context: RunContext,
@@ -563,4 +676,6 @@ def execute(
     body = _Body(context, job, check, cancel, on_stage)
     if job.operation == "solve":
         return body.solve()
+    if job.operation == "experiment":
+        return body.experiment()
     return body.reproduce()
