@@ -456,7 +456,8 @@ backtrack: u ← u_prev + ½ (u - u_prev), at most 3 times per iteration (inner 
 The first step from B = −I is successive substitution (u₁ = D F(w₀)). `max_outer` = 15 counts outer iterations
 (each one experiment per unit, retries excluded); backtracks do not count. A second reset in a row ends
 `COUPLING_NOT_CONVERGED` (reason `no_decrease`). The dense 2m × 2m solve is `numpy.linalg.solve`; a singular B ends
-`COUPLING_NOT_CONVERGED` (reason `broyden_singular`).
+`COUPLING_NOT_CONVERGED` (reason `broyden_singular`). *Amended by §14.5 D5 (R-305): the reset applies only for
+k ≥ 2n, where n = 2m.*
 
 **Expected behaviour on the C1 loop.** With no feed–effluent exchanger, ΔT̂ does not reach the reactor inlet (the
 preheater fixes T_in), so ∂F/∂ΔT̂ = 0 and the problem is effectively scalar in X̂, with a positive gain below one
@@ -517,7 +518,8 @@ Per attempt, `timeout_s` from the variant (120 s for the design-grid variant). A
 re-registers it as max(120, 3 × the slowest accepted point's `wall_s`), rounded up to 10 s, **as a new variant only
 if it changes** (§3.1's append-only rule). The job's wall time is enforced by ADR 0020's machinery and reaches the
 child through layers L1–L2. Retries: §3.3's table; each retry is a new attempt of the same experiment, inside the same
-flock.
+flock. *Amended by §14.5 D4 (R-304): the sample is every completed in-box evaluation, and v3's timeout comes from
+G11v3.*
 
 ### 5.3 Cache bypass as a determinism monitor
 
@@ -629,7 +631,8 @@ per §3.6.
    `recorded_environment` gains the frozen fingerprints. A **live rerun** (calling the reactor again) is the
    evidence script of G12, never `reproduce`.
 
-`RunManifest.reproducibility_class` is `R3` iff any variant used is out-of-process; else as today.
+`RunManifest.reproducibility_class` is `R3` iff any variant used is out-of-process; else as today. "As today" means
+R1 for every in-process provider (§14.5 D7, R-307). For the coupled route's constants digests, see §14.5 D8 (R-308).
 
 ---
 
@@ -700,6 +703,8 @@ phase logic, scaling, certificates or replay identity). "Opus" = `opus-engineer`
 | **WO-12** | Opus (runs) | Opt-in evidence with the real reactor: G10, G11 (Q-F4 17 points, Q-F5 flow points, ΔP ramp, timing), G12 (real loop: solve, replay, live rerun); records under `benchmarks/m02/` with `judged: false`; timeout re-registration per §5.2 | WO-5, WO-10, WO-11 | G10–G12 numbers recorded; any inside-domain failure handled by §10.3's rule |
 | **WO-13** | bounded | Evidence manifest `evidence/M02/<commit>/manifest.json`; `docs/support-matrix.md` row for `external-subprocess-v1`; pointer paragraphs added to ADR 0019 (Amendment 4 → ADR 0033 D9, ADR 0034 D7, ADR 0035 D4), ADR 0020 (→ ADR 0033 D2, ADR 0034 D6), ADR 0027 (→ ADR 0034 D10) at merge time; `docs/progress.md` | all | manifest `status: tested` iff G1–G12 pass |
 
+§14.5 adds WO-11a, WO-12a, WO-12b and WO-14, and extends WO-13.
+
 M04 can begin against records once WO-4 and WO-6 are merged (the stand-in produces schema-valid records) and against
 real data once WO-5 is; the session decides whether to branch M04 early.
 
@@ -768,11 +773,11 @@ Each gate is decided by a recorded number or an exact assertion. "Default gate" 
   re-evaluated; (e) the stand-in binds via `MODEL_BUILDERS`, its manifest and every `ok` identity say synthetic, and
   the envelope lists it as synthetic only; (f) driver-level, with the inner solve and the experiments stubbed by
   an affine map F(w) = w* + G (w − w*): G = diag(0.5, 0) and G = diag(1.8, 0) (non-contractive) both converge, the
-  second within 2·2 + 1 = 5 iterations (Gay's finite termination of Broyden's method on affine maps); F(w) = w + (1, 0)
+  second within 2·2 + 1 = 5 iterations (Gay's finite termination of Broyden's method on affine maps; the cases and tolerances are §14.5 D5's f1–f5); F(w) = w + (1, 0)
   (no fixed point) ends `COUPLING_NOT_CONVERGED` with a failure bundle embedding the record and no certificate;
   end-to-end, a test-only in-process variant with ξ = (0.15 + 2 (y_inert,in − 0.05)) n_N₂,in and T_out = T_in + 80 K +
   1000 K × (y_NH₃,in − 0.02) converges on `C1-LOOP-M02-v1` with ρ ≤ 1 in ≤ 15 iterations and needs more than two; (g) a cancel at k = 1 leaves `partial_solve_trace` plus the experiment artifacts only.
-- **G9 Promotion.** On a project with `C1-LOOP-M02-v1` (stand-in) solved once: (a) a commit replacing the reactor
+- **G9 Promotion** (G9 (a) is restated by §14.5 D6, R-306). On a project with `C1-LOOP-M02-v1` (stand-in) solved once: (a) a commit replacing the reactor
   with `c1.reactor` @ the real variant → `committed`, every facet `pass`, `invalidations == ["run-<that job>"]`,
   `diff.changed` contains the instance's `model.id`, `model.version` and `model.artifact_ref` paths (and the
   `elements` entry when M06's amendment is on `main`), the report artifact's SHA-256 in the new revision's provenance;
@@ -807,6 +812,11 @@ Each gate is decided by a recorded number or an exact assertion. "Default gate" 
   compile+inner time.
 
 ### 10.3 Rules that act on the numbers
+
+*Amended by §14.5 D3 (R-304):*
+- An inside-domain failure is classified first; D1's defect mechanism is never narrowed.
+- v3's box is selected from B1–B3.
+- Q-F5's widening is suspended for v3.
 
 - A Q-F4 or Q-F5 point **inside** the hard domain that is not accepted: the variant's hard domain is narrowed to exclude
   the failing region by a **new variant** (append-only) and a register entry; the failing point becomes a registered
@@ -872,6 +882,8 @@ Frank decides (§12, N3).
 - **N6 (preference — cost vs reproducibility).** DECISION: no warm start of the reactor. Alternative: S2 from a
   neighbour's fields (cheaper loop iterations, history-dependent results). Reversible by: a new variant with a warm
   profile whose requests carry the warm source in their identity.
+- **N7 (preference: scope of the shipped reactor domain).** See §14.5. DECISION: the box that §14.5 D3's rule
+  selects from measurement.
 - **Informed, not asked:** the additive contract changes (ADR 0019 Amendment 4 via ADR 0033–0035), as Amendments 1 and 3
   were; the ADR 0020 D3 widening (group kill).
 
@@ -886,6 +898,7 @@ Frank decides (§12, N3).
 - Not the convergence of coupled loops in general: the outer iteration is tested on the C1 loop and synthetic maps.
 - Not that the stand-in certifies anything: its numbers certify code paths only (R-199).
 - Not M07's loop design: `C1-LOOP-M02-v1` is a test case.
+- §14.5's "What this round does not establish" applies as well.
 
 ---
 
@@ -1604,3 +1617,428 @@ call happens to be made (feed, sink, splitter). The rulings:
   fixtures move, each with its decomposition test. A digest move stops the join and goes to the design lane.
 - *(d).* J1 is implemented as D3. If J3's live snapshot differs from the expectation, the join stops, as §21.8 says.
 - G2 (iv) gains the list of tests the join edits, each with its unchanged literal.
+
+### 14.5 Sixth round, 2026-10-09 (`wp/M02` @ `bdb756e`: WO-10, WO-11, WO-12; gate green, 8251 passed, 2 xfailed; build log D49–D72)
+
+G12 is met: the real loop converged in 3 outer iterations, VERIFIED, replayed MATCH from the record, and the live
+rerun was bitwise. G11 triggered §10.3 (D69), and §10.3 could not be applied mechanically. The cause is that two of
+the three failure mechanisms are not regions of the inlet space. D1–D3 separate the three mechanisms and give each
+its own remedy. All three remedies land in one new variant, `pymrm-6089593-g2-nz800-s123-v3`. D4–D10 rule the other
+items. Register R-303 to R-310.
+
+Not ruled here: D51–D54, D56, D57 and D62–D68 are as-built readings. They go to the package's single `reviewer` pass.
+
+**D1 (D69, mechanism 1). The element-defect refusals come from S3's stopping rule, not from a region of the inlet
+space. Profile `M01-S123-v2`: the child polishes once more when A45's defect exceeds 10⁻⁷. The boundary's limit is
+unchanged (R-303).**
+
+These are every G11 point at which S1–S3 were accepted and the boundary refused `element_balance_defect`. Here δ is
+A45's quantity, max over H, N, C, Ar of `element_defect_rel` (the record's `element_defect_max`).
+
+| Point | S3 steps | δ (child) | projection defect (boundary, limit 10⁻⁶) |
+| --- | --- | --- | --- |
+| corner 573.15 K, 5 MPa, H₂/N₂ 1, inerts 0.2 | 1 | 7.57e-5 | not recorded |
+| corner 773.15 K, 15 MPa, 1, 0.2 | 10 | 2.07e-5 | not recorded |
+| corner 773.15 K, 15 MPa, 4, 0.2 | 9 | 4.17e-5 | not recorded |
+| Q-F5 centre, 0.5 × F_nom | 11 | 7.07e-5 | not recorded |
+| ramp, 673.15 K, 5 MPa, 0.5 × | 10 | 1.40e-5 | 4.98e-6 |
+| ramp, 673.15 K, 5 MPa, 2 × | 6 | 2.05e-5 | 7.29e-6 |
+
+Every point the boundary accepted had δ between 1.25e-9 and 4.67e-8; the centre's was 8.23e-9. S3 stops at the
+first pseudo-time step at which the group's absolute RMS norm falls to 10⁻⁶ (num_z/100)², which is 6.4 × 10⁻⁵ at
+num_z 800 (the measured floor is 2.2 × 10⁻⁶, M01 §10.2). That norm does not bound the relative element defect.
+
+- Where S3's last Newton step overshoots, δ is about 10⁻⁸.
+- Where the step lands just inside the target, δ is 10⁻⁵ to 10⁻⁴.
+- At 5 MPa the outcome alternates with flow: 0.5 × fails, 1 × passes, 2 × fails, 4 × passes.
+- One corner stopped after a single S3 step.
+
+So the stopping rule admits the judged quantity two decades above its limit. That is not a region.
+
+*Ruling: profile `M01-S123-v2` = `M01-S123-v1` plus one conditional round.*
+1. After S3 is accepted, the child computes δ from the model's flows with `outlet`'s formula. Computing it is a
+   read and changes no state.
+2. If δ ≤ δ_pol = 10⁻⁷, the evaluation goes on exactly as under v1: the certificate receives S3's status, then the
+   outlet is extracted.
+3. Otherwise the child runs one more polish round on the same reactor object. The round uses S3's settings with a
+   tenth of its target: `steady_state_atol` = target₂ = target/10 (6.4 × 10⁻⁶ at num_z 800), `atol` = 0.1 ×
+   target₂, `rtol` 10⁻¹², `dt_init` 1, at most 400 steps.
+   - S3 is accepted iff this round converged. Its status is the one the certificate receives.
+   - If the round fails, the stage is `S3`.
+4. The four acceptance criteria and the boundary then apply unchanged.
+5. Diagnostics: `stages.S3.defect_round1` (always) and `stages.S3.round2` (null, or {steps, converged,
+   steady_state_target, wall_s}).
+6. The child never refuses on δ. The boundary judges the projection defect at 10⁻⁶, as before.
+
+*Why this is not a relaxed check.* The boundary's `defect_limit`, A45's bound and every acceptance criterion are
+unchanged. The state handed to the boundary is more converged than before, never less.
+
+*Why 10⁻⁷.* It is A45's bound on the same quantity. Every accepted G10 and G11 evaluation measured at most
+4.7 × 10⁻⁸, so the round never runs at those points. The child-to-projection ratio was measured at 2.8 (1.40e-5 /
+4.98e-6, 2.05e-5 / 7.29e-6, 4.67e-8 / 1.66e-8). δ_pol therefore sits near 3.6 × 10⁻⁸ in projection units, 28 times
+below the boundary's limit.
+
+*Why target/10.* It is the only decade between S3's target and the floor (6.4e-5 → 6.4e-6, against 2.2e-6). A
+tighter target sits on the floor; the first probe run spent 185 s against one.
+
+*Rejected:*
+- **Relaxing `defect_limit` to about 10⁻⁴.** δ = 7 × 10⁻⁵ is 7 times τ_ξ = 10⁻⁵ (§4.2). The coupling verdict would
+  then judge the reactor's iteration error, and §4.2's floor argument (ε_eval = 10⁻⁶) would fail.
+- **Narrowing the domain around these points.** They are not a region.
+- **Tightening S3's target for every evaluation.** It moves every v2 outlet, A47's pins and G12's experiments among
+  them. The conditional round leaves those bitwise. G10v3 and G11v3-2 assert that; it is not assumed.
+- **The child refusing on δ.** It would duplicate the boundary's judgement on a different measure.
+
+**D2 (D69, mechanism 2). A non-finite value is a deterministic `reactor_not_accepted(nonfinite)`, and the child
+never writes a NaN of its own (R-303).**
+
+At the four 773.15 K zero-inert corners, the child's result held a NaN or inf. `json.dumps(allow_nan=False)` raised
+outside R-251's window, and the child exited with code 1. The runner typed this as `external_crashed`, transient,
+and retried once; the retry ended the same way. So a deterministic model failure was typed as a transient crash. In
+a coupled solve that ends the run with EVALUATION_ERROR where §4.3 would backtrack.
+
+*Ruling, in v3's child:*
+1. A pure function `nonfinite_paths(document) -> list[str]` returns JSON pointers in document order. It lives in
+   `child.py`, and the synthetic child calls the same function, as with `model_exception` (R-251).
+2. Before `_write`, the child scans the whole result.
+   - An `outlet` result with any non-finite value becomes `not_accepted`, stage `nonfinite`, with no `tube_outlet`.
+   - A `not_accepted` result keeps its stage: the first refusal wins.
+   - In both cases every non-finite diagnostic is written as null, and its pointer is listed in
+     `diagnostics.nonfinite_paths`.
+3. The child's own NaN defaults are removed. A value the group's code does not return is null; `child.py:600`'s
+   `achieved_residual` is one such default. Otherwise a missing diagnostic would refuse a good evaluation.
+4. `_write` keeps `allow_nan=False`. A non-finite value that escapes the scan is still a crash, never a silent
+   result.
+5. The boundary maps the new stage as it maps every stage: `not_converged`, `reactor_not_accepted(nonfinite)`. The
+   refusal is deterministic, cached and not retried.
+
+`stage` is a free pattern in the schema (`^[A-Za-z0-9_]+$`), so no schema changes.
+
+*Rejected:*
+- **Typing the failure in the parent.** The parent sees only an exit code. It could judge determinism only by
+  retrying.
+- **Leaving it a crash.** The failure is deterministic and repeatable.
+
+**D3 (D69, mechanism 3). v3's hard domain is the largest of three registered boxes in which every registered point
+is accepted under v3. §10.3 is amended (R-304).**
+
+*Facts.* All 16 corners fail. At 573.15 K, S1 fails at 7 of 8 corners; the eighth is a D1 point. At 773.15 K there
+are 2 certificate failures, 2 D1 points and 4 D2 points. The accepted inlet temperatures are 653.15, 673.15 and
+693.15 K (A41, at 10⁷ Pa and the nominal composition), plus the centre. Every failure that can be attributed to one
+dimension is attributable to T_in. Nothing was measured at an accepted T_in with P, H₂/N₂ or inerts at their
+extremes.
+
+*§10.3 as amended.* An inside-domain failure is classified first.
+1. A boundary `element_balance_defect` after accepted S1–S3 is D1's mechanism. It is handled by the profile, never by
+   narrowing and never by relaxing.
+2. A crash (`error`) inside the domain is a child defect, and it stops the WO.
+3. Any other typed refusal inside the domain narrows the domain by the rule below.
+
+The Q-F5 widening clause is suspended for v3, which keeps [0.5, 2] × F_nom. The clause assumed that the centre
+represents the box, and G11 showed that the corners do not. A later widening needs the selected box's corners at the
+new edge multiples. G11v3 records 0.25 × and 4 × at the selected box's centre (evaluated directly) for information.
+
+*Candidate boxes.* All three keep inerts ≤ 0.2 and the per-tube flow bound [0.5, 2] × F_nom (ADR 0034 D10).
+
+| Box | T_in (K) | P_in (MPa) | H₂/N₂ | Centre (K, MPa, H₂/N₂, y_inert) | Why this box |
+| --- | --- | --- | --- | --- | --- |
+| B1 | [643.15, 733.15] | [5, 15] | [1, 4] | (688.15, 10, 2.5, 0.1) | T_in narrowed to the kinetics' data span (R-169), which is M05's REAL box; T_in is the only dimension with attributable failures |
+| B2 | [653.15, 693.15] | [5, 15] | [1, 4] | (673.15, 10, 2.5, 0.1), G11's centre | T_in narrowed to A41's measured span |
+| B3 | [653.15, 693.15] | [7.5, 12.5] | [2, 4] | (673.15, 10, 3, 0.1) | B2 with P and H₂/N₂ narrowed around the loop's operating point |
+
+The loop runs at H₂/N₂ = 3 to within roundoff and at P = 10⁷ Pa exactly. No box puts either on a face, which the
+data domain's [1.5, 3] would.
+
+*A box's registered points:*
+- its 16 corners: T × P × H₂/N₂ × inerts {0, 0.2}, built as §8.15 builds them (y_NH₃ 0.03, Ar:CH₄ 3:4, F_nom,
+  num_z 800, nudged inward by at most 2⁻⁴⁰);
+- its centre at 1 ×, 0.5 × and 2 × F_nom;
+- for B1 only, the two M05 edge points: T_in 643.15 and 733.15 K at 10⁷ Pa, with G12's reactor-inlet composition
+  n = (4.033380311567345, 1.3444601038557868, 0.16913270331830627, 0.09999999999999991, 0.14999999999999986) mol/s
+  over 1000 tubes, i.e. 0.811 × F_nom per tube.
+
+That is 21 points for B1 and 19 for each of B2 and B3.
+
+*Selection.* v3's hard domain is the first of B1, B2, B3 whose registered points all end `ok` through the boundary,
+in each of two full runs. If no box qualifies, the WO stops and the design lane rules from the record: the nominal
+neighbourhood itself has failed (§10.3's last clause).
+
+*Consequences:*
+- **M05 (N-F6).** If B1 is selected, the REAL box [643.15, 733.15] K stands, and both of its edges are measured
+  points. If B2 or B3 is selected, M05's REAL box becomes [653.15, 693.15] K. That is N-F6's registered alternative,
+  and already M05's box for TR-E2 and the loops; here it follows from a fact, not a preference. M05's real records
+  bind v3.
+- **M07 (K6).** The journey's design space is v3's box: T_in in its T interval; N_tubes chosen so that the per-tube
+  flow lies in [0.5, 2] × F_nom; P and H₂/N₂ in its intervals. R-304 informs M07.
+- **G12.** G12's state (673.15 K, 10⁷ Pa, H₂/N₂ 3.000, inerts 4.3 %, 0.811 × F_nom) lies inside all three boxes.
+
+*Refusal tests (Q-F4's default, as amended):*
+- **Default gate.** A `Boundary` is built from v3's hard domain with the stand-in evaluation, as in WO-2.
+  1. Each of G11's 16 corner inlets → `out_of_domain`. The violation set is computed from the box: `T_K` for every
+     box, plus `P_Pa` and `H2_N2` at the B3 corners that lie outside those intervals.
+  2. Each face of the selected box (T, P, H₂/N₂, `inert_max`, and the flow bound's two edges), with the other
+     dimensions at the box's centre, moved outward by 10⁻⁹ relative → `out_of_domain` naming that dimension.
+  3. Each such face point nudged inward as in §8.15 → evaluated `ok`.
+- **Opt-in record.** The 16 corners are evaluated under v3 directly, with the domain check bypassed as for Q-F5's
+  direct points. Each must end `ok` or a typed `not_accepted`, never `error`. The four 773.15 K zero-inert corners
+  are expected to end `nonfinite`. Another typed stage is recorded as measured; an `error` stops the WO.
+
+**D4 (D70). The timeout is registered in v3 from v3's own sweep. §5.2's sample becomes every completed in-box
+evaluation, not only the accepted ones (R-304).**
+
+The deferral is confirmed. The amended rule is:
+
+  timeout_s = max(120, 3 × the slowest `wall_s` over every v3 evaluation whose inlet lies in the selected box,
+  whatever its typed outcome, over both runs), rounded up to 10 s.
+
+The reason: a timeout must never turn a deterministic refusal into a transient failure. The coupled driver backtracks
+on the first and ends EVALUATION_ERROR on the second. Whatever the host load is, it is recorded and not corrected
+for. For orientation: under v2 and a load of 37–67, the completed in-box points took 38–76 s, so about 230 s is
+expected.
+
+G11v3 runs on a provisional variant document that is never registered: v3's child and profile, v2's boundary block,
+and a 600 s timeout. v3 differs from it only in `hard_domain` and `timeout_s`. The records name both documents'
+hashes. One variant is registered, not two.
+
+**D5 (D50). §4.3's reset is inactive for the first 2n iterations, where n = 2m is the dimension of u. G8 (f) holds as
+written (R-305).**
+
+The design lane rebuilt §4.3 independently (a scratch replica, not in the repository). It reproduces D50's §4.3
+path: X̂ goes 0.15 → 0.07 → 0 (clipped), ρ goes 8000 → 3310 → 4598, and the run ends `no_decrease`. D50's ρ values
+fit a stub n_tot,in of about 4.3495 rather than exactly 4.35. D50's unclipped "6077" is not reproduced (the replica
+gives 6006.7; 6007 transposed is likely); no assertion uses it. The replica also shows that the monotone reset
+defeats every non-contractive direction, not only this case. The reset returns to substitution from the best
+iterate, and substitution is exactly the method that diverges in such a direction. From w₀ = (0.15, 0 K), the first
+substitution step itself raises ρ (1839.08 → 3310.34), and §4.3 ends `no_decrease` at k = 2. The clause cites Gay's
+theorem, which is about pure Broyden; the safeguard is what broke it.
+
+*Ruling.* §4.3's reset line becomes:
+
+```
+if best is not None and ρ_k > ρ_best:
+    if k >= 2n: B = -I; u_k, r̂_k = u_best, r̂_best     # reset to substitution from best (as before)
+    # k < 2n: no reset; B is updated as usual; best does not move
+else: best = k
+```
+
+Everything else is unchanged: a second reset in a row still ends `no_decrease`, and `max_outer`, the clip, the
+backtracks and the singular-B end all stay as they were. 2n is Gay's bound: on an affine map, pure Broyden reaches
+the root by k = 2n, and a reset inside that window can only undo it. For one unit, n = 2, so resets are possible
+from k = 4.
+
+*Inert where ρ never rose:*
+- G8 (a), (c) and (d);
+- G8 (f) with G = diag(0.5, 0);
+- G8 (f)'s end-to-end variant (964.5, 227.0, 91.2, 0.257);
+- the no-fixed-point map (ρ constant, never above ρ_best);
+- G12 (319.6, 197.5, 103.6, 0.298).
+
+*Rejected:*
+- **Restating the clause as the typed failure.** It leaves K4's risk unmitigated for any loop with gain above one in
+  some direction.
+- **A Grippo-type rule over the last M values of ρ.** It has more parameters and the same effect at this size.
+
+*G8 (f) as amended.* Every case is driver-level on the affine stub F(w) = w* + G (w − w*), with w* = (0.25, 0 K).
+The iterates do not depend on the stub's flows, because Broyden works on r̂ = D r. ρ_k = max(|r_X| n_N₂,in /
+(τ_ξ n_tot,in), |r_T| / τ_T) uses the stub's own n_N₂,in and n_tot,in. The figures in brackets are for n_N₂,in = 1 and
+n_tot,in = 4.35 exactly. The test computes its expectations from an independent test-support replica of §4.3 as
+amended, which does not import the driver. The table's figures are the design lane's replica values.
+
+| # | Map, w₀ | X̂_k (ΔT̂_k) | ρ_k [at 4.35] | End | Why this case |
+| --- | --- | --- | --- | --- | --- |
+| f1 | diag(0.5, 0), (0.15, 80 K) | 0.15 (80), 0.2 (0), 0.225048732943 (0), 0.25 (0) | 8000, [574.7126437], [286.7961731], ≤ 10⁻⁹ | CONVERGED, k = 3 | contractive; inert under the change |
+| f2 | diag(1.8, 0), (0.15, 80 K) | 0.15 (80), 0.07 (0), 0 (clipped from −0.0766129032), 0.25 (0) | 8000, [3310.344828], [4597.701149], ≤ 10⁻⁹ | CONVERGED, k = 3 ≤ 4 (the clause's 5 iterations); no reset | D50's case: ρ_2 > ρ_1 (r_X −0.2 against −0.144), *which is why it is registered* |
+| f3 | diag(1.8, 0), (0.15, 0 K) | 0.15, 0.07, 0.25 (ΔT̂ 0 throughout) | [1839.08046], [3310.344828], ≤ 10⁻⁹ | CONVERGED, k = 2 | substitution's own step raises ρ (ρ_1 > ρ_0 for any flows), with no clip: isolates the window from the clip |
+| f4 | scripted residual stub (engineer's values; the test asserts no step was clipped) | decreasing to k = 2n − 1, then above ρ_best at k = 2n and k = 2n + 1 | reset recorded at k = 2n; `no_decrease` at k = 2n + 1. The same stub with its rise moved to k = 2 shows no reset there | the safeguard is still live after the window |
+| f5 | F(w) = w + (1, 0) | as built | `COUPLING_NOT_CONVERGED`, failure bundle, no certificate | unchanged |
+
+Tolerances:
+- X̂_k and ρ_k agree with the test's replica to a relative 10⁻⁹. The ordering relations in the last column hold
+  exactly. Each ρ_k is a few flops on O(1) numbers, so the roundoff floor is
+  about 10⁻¹⁵ relative. A wrong scale, τ or sign moves it by at least 10⁻³.
+- The final ρ is ≤ 10⁻⁹. The replica measured 1.3 × 10⁻¹² and 2.6 × 10⁻¹², and any wrong secant leaves ρ at O(1)
+  or above.
+- k, the step kinds and the reset markers are exact.
+
+The strict xfail and its measured-end assertion are replaced by f2. The coupling records of G8 (a), (c), (d), f1 and
+the end-to-end variant must be byte-identical before and after the change.
+
+**D6 (D61). §6.2's `validity` stands. G9 (a) is restated: the stand-in → real promotion is `rejected` on `validity`
+alone, by design (R-306).**
+
+The real variant's declared domain is narrower than the stand-in's: the stand-in has no flow bound, and under v3 its
+temperature interval is narrower too. A commit that would let a loop solved at 0.3 × F_nom with the stand-in pass
+silently onto the real reactor is exactly what the facet exists to refuse.
+
+*Rejected:*
+- **Judging the flow bound as an operating-point check.** It contradicts ADR 0034 D10, which made it a hard-domain
+  dimension.
+- **Giving the stand-in the real variant's domain.** It needs a new stand-in variant on every real narrowing, and a
+  re-take of `c1-loop-standin.json` and G8, for no gain in what is tested.
+
+*G9 (a) as restated:*
+- **(a1)** Stand-in → `c1.reactor` @ the shipped real variant: `rejected`, `model_replacement_incompatible`. The other
+  eight facets `pass`, and `validity` `fail`s. Its detail names exactly the hard-domain dimensions in which the real
+  variant is narrower. The test computes that set from the two variant documents, which are data, not the code under
+  test, and also asserts v2's literal: `hard_domain.tube_flow_mol_s None -> [0.003573480649651052,
+  0.014293922598604208]`. Under v3 the set also holds `T_K`, and, if B3 is selected, `P_Pa` and `H2_N2`.
+- **(a2)** The commit machinery, as built: real → stand-in, and the compatible test-only copy. Neither changes.
+
+(a1) replaces the strict xfail. M07 builds its real revision directly, as `c1-loop-real.json` does; it does not
+promote.
+
+**D7 (D55). The provider half of the run-class rule is a bug. R3 comes from a registered fact, never from provenance
+text (R-307).**
+
+`"external" in data_provenance` matches `pr-c1-v1` because its text names the file `external-crosscheck.json`, and
+that provider is in-process. §7.2's "as today" meant R1 for in-process C1 runs.
+
+*Ruling:*
+- `run.session` gets `EXTERNAL_PROVIDERS: frozenset[str]` of provider ids that evaluate outside this process. It is
+  empty today.
+- `_reproducibility_class` returns R3 iff the provider's id is in that set. The coupled route adds §7.2's variant rule
+  on top, unchanged (`coupled_run.reproducibility_class`).
+- Every in-process C1 run (`revision_eo`, and the stand-in on `revision_coupled`) becomes R1. A run with an
+  out-of-process variant stays R3.
+
+*Assertions:*
+- SYN-001 → R1;
+- a C1 `revision_eo` run → R1;
+- the stand-in coupled run → R1;
+- the synthetic out-of-process coupled run → R3;
+- a test provider whose provenance contains "external" and which is not in the set → R1.
+
+Every committed record or fixture that the change moves is re-taken in one isolated commit, which lists them. G2 and
+the served digest must not move.
+
+*Rejected:* a field on `ProviderCapabilities`. It is a frozen interface (§2.1) and would need an ADR for a set that
+is empty today.
+
+**D8 (D58). On `revision_coupled`, the inner solve's constants digests are compared for shape. Their R0 guard is kept
+by recomputing the digest at the recorded iterate (R-308).**
+
+The final inner solve's `constants_sha256` (in the manifest and in the record) digests X̂ and ΔT̂. Broyden computes
+those in floating point. By ADR 0007's own criterion (a float on the path), such a digest is a digest of an R1/R2
+quantity, never compared for value. Comparing it exactly contradicts ADR 0007. This is not a v0.2 tolerance question.
+
+*Ruling, in `reproduce` of a coupled bundle:*
+1. The manifest's `constants_sha256` and every `iterations[].inner.constants_sha256` are compared for shape only.
+2. The R0 guard is kept by recomputation. `reproduce` rebuilds the final inner model at the record's final w (the
+   recorded floats, bit for bit) through `at_coupling`, and compiles it. Its `constants_sha256` must equal the
+   recorded one exactly, or the result is MISMATCH `coupling_constants`. This holds on every platform, because the
+   same bits go through the same canonical encoding.
+3. The rerun's iterates (each iteration's `w` and `u`) are compared with the record's under the archive's numerical
+   policy, as the request inputs already are. A difference beyond the policy is MISMATCH `coupling_iterate(<k>)`.
+4. Integer control flow, step kinds, outcome, reason and request identity fields stay R0. ADR 0007 D2.4's
+   near-threshold rule applies to the outer verdict as it does to every verdict.
+
+Same-machine replay stays bitwise (`bitwise_floats`).
+
+*Assertions:*
+- **RP-1.** The recomputation equals the recorded digest for G8 (d)'s bundle, and for G12v3's bundle.
+- **RP-2.** A rerun whose final w is moved by one ulp through a test seam gives MATCH with `bitwise_floats: false`.
+  The test also asserts that the rerun's `constants_sha256` differs, which shows the case exercises the old failure.
+- **RP-3.** A test-built bundle whose recorded final w differs by one ulp from the w its digest was computed at
+  gives MISMATCH `coupling_constants`.
+
+No ADR changes, because ADR 0007's criterion already classifies the digest. WO-13's pointer paragraph to ADR 0034 D6
+says so.
+
+**D9 (D71). One function, M02's `at_coupling`, gains M05's guard. M05 calls it, and `with_coupling` is not landed
+(R-309; supersedes R-300 E7).**
+
+- `at_coupling(binding, w)` raises `ValueError` naming every key of `w`, sorted, that is not the `unit_id` of a
+  `C1Reactor` instance of the binding. Today an unknown id is a silent no-op.
+- The function does not coerce to float: callers pass Python floats, and M05's E2 guard compares bitwise.
+- The driver's path is unchanged, because it passes exactly its units (D52 (f)). G8's records must stay
+  byte-identical.
+- M05 keeps `with_coupling` only until `wp/M02` is on `main`. At its first merge of `main` after that, M05 deletes it,
+  calls `at_coupling`, re-points its inertness test and its E2 guard at `at_coupling`, and must not reach `main` with
+  both.
+
+*Rejected:* landing both. Two functions with one meaning; M05's E2 guard asks for "M02's own code path".
+
+**D10 (item 8). Envelope and stand-in docstring (R-310).**
+- **Envelope.** `benchmarks/t08/support_envelope.yaml`, axis `property_model`:
+  - the key `unbound_providers` is renamed `other_basis_providers`, and its entry keeps its shape {id, limitation,
+    caveat};
+  - the comment above it becomes: "Shipped providers that bind on a basis other than syn001's (R-288's
+    `MODEL_BASES`); each has its own components, domain and limitation row; the components and domain axes below are
+    syn001's.";
+  - the statement's last sentence becomes: "Since M02 the C1 models (`c1.*`) bind `pr-c1-v1` on their own basis
+    (R-288).";
+  - L42's text replaces "is bound by no model of `MODEL_BUILDERS` yet (M02 adds its units)" with "is bound by the C1
+    models (`c1.*`) on their own basis (R-288)", and is otherwise unchanged.
+
+  The test and `scripts/t08_support_matrix.py` follow the rename, and `docs/support-matrix.md` is re-emitted. If the
+  served tool-list digest moves, the WO stops.
+- **Stand-in docstring.** `models/c1/reactor_standin.py` is not edited: its bytes are the stand-in variant's pinned
+  artifact. Its sentence "Not registered in `MODEL_BUILDERS`" is a recorded erratum. A comment at its
+  `MODEL_BUILDERS` entry says so and cites R-310. The sentence is corrected only when the module changes for a
+  substantive reason, which needs a new stand-in variant anyway.
+
+**Work orders (this round)**
+
+| WO | Owner | Content | Depends | Acceptance |
+| --- | --- | --- | --- | --- |
+| **WO-12a** | Opus, **R** | v3's child: D1's round, D2's scan, no NaN defaults, the synthetic child's `nonfinite` and `nonfinite_diag` hooks; profile `M01-S123-v2`; the provisional evidence variant (D4). Then the opt-in runs: G10v3 once and G11v3 twice in full; box selection; records `benchmarks/m02/g10-adapter-halves-v3.json` and `g11-coverage-v3.json`, both `judged: false` | — | G10v3, G11v3-1 to -5, G11v3-7; default gate green |
+| **WO-12b** | Opus | Register v3: variant file and registry row; `hard_domain` = the selected box; `timeout_s` by D4; profile v2; runner hash. Then D3's default-gate refusal tests (G11v3-6); `c1-loop-real.json` re-pointed to v3; G12 under v3 (`g12-real-loop-v3.json`); G9 (a1) extended to v3 | WO-12a, WO-14, WO-11a (G12v3 runs on the final driver and replay code) | G11v3-6, G12 as written, G12v3-1, RP-1 (G12v3); default gate green |
+| **WO-14** | Opus, **R** | D5 (driver window and G8 (f) as amended); D9 (`at_coupling` guard); D7 (`EXTERNAL_PROVIDERS` and the re-takes); D8 (coupled replay digests). One commit per decision; D7's re-takes in their own commit | — | G8 (f) f1–f5; the G8 records byte-identical; AC-1; D7's assertions; RP-1 (G8 (d)), RP-2, RP-3 |
+| **WO-11a** | bounded | D6: G9 (a1) for v2 replaces the strict xfail; (a2) unchanged | — | G9 (a1), (a2) |
+| **WO-13** | bounded | As §9, plus D10, and the ADR 0034 D6 pointer (D8). Run last | all | as §9 |
+
+WO-12a, WO-14 and WO-11a are independent of one another. Run at most two at a time. WO-12b follows all three. The package's single `reviewer` pass covers
+WO-10 to WO-14. On `wp/M05`, M05's own WO-5c carries D9 (bounded) and, if B2 or B3 is selected, N-F6's pair.
+
+**Gates as amended (numbered; the manifest cites them)**
+
+- **G10v3.** G10 (a)–(i) re-run under v3's child. Every outlet the v2 record stores must equal v3's bitwise, and
+  round 2 must run nowhere (v2's A45 values are all ≤ 10⁻⁷). A47 (a) must hold. Any bit that differs stops the WO:
+  the inertness premise is false.
+- **G11v3-1 (D1's hypothesis; falsifiable).** At Q-F5's centre at 0.5 × and at the ramp's 0.5 × and 2 ×, where v2
+  refused `element_balance_defect`:
+  - v3 runs round 2;
+  - the envelope is `ok`;
+  - the projection defect is ≤ 10⁻⁶ (the boundary's own limit; its value is recorded);
+  - `defect_round1` equals v2's recorded `element_defect_max` bitwise.
+
+  If any of these fails, the WO stops: the D1 diagnosis is refuted and the design lane rules again.
+- **G11v3-2 (inertness).** At every point where v2's child accepted S1–S3 with δ ≤ 10⁻⁷, round 2 does not run,
+  and `tube_outlet` is bitwise v2's. These points are the centre, Q-F5 2 × and 4 ×, and the ramp at 1 ×, 4 ×, 8 ×
+  and 16 ×. Any bit that differs stops the WO.
+- **G11v3-3 (D2).** None of the 16 old corners ends `error`. Each stage is recorded, and the 773.15 K zero-inert
+  corners are expected to end `nonfinite`. A repeat of one `nonfinite` corner is a cache hit with one attempt.
+- **G11v3-4 (D3).** The B1, B2 and B3 point sets, all three measured in both runs whichever is selected; the
+  selection, with the selected box stated in the record. If no
+  box qualifies, the WO stops.
+- **G11v3-5.** Two full runs, with every point's status, code, stage and `tube_outlet` equal. Also recorded: the ΔP
+  ramp at 5 MPa, 673.15 K and 0.5–16 × (direct), and five nominal timing repeats. The record states the ramp's first
+  multiple above ε_P and the largest |ΔP|/P_in inside the flow bound.
+- **G11v3-6 (default gate).** D3's refusal tests.
+- **G11v3-7 (default gate).** Through the runner, the synthetic child's `nonfinite` hook (NaN in
+  `tube_outlet.flows[2]`) and its `nonfinite_diag` hook (NaN in one diagnostic) both give:
+  - `not_converged` with code `reactor_not_accepted(nonfinite)`;
+  - one attempt, and a cache hit on repeat;
+  - `diagnostics.nonfinite_paths` equal to the pointer the hook used;
+  - a written document that parses under `allow_nan=False`.
+
+  A `not_accepted` refusal with a NaN in its diagnostics keeps its stage.
+- **G12v3-1.** G12 under v3, with its own clauses unchanged. The record states which experiments, if any, ran round
+  2. If none did, the iterate sequence (w_k, ρ_k) must equal the v2 record bitwise; any difference stops the WO.
+- **G8 (f)** as D5; **G9 (a)** as D6.
+
+**Needs Frank** (added to §12)
+- **N7 (preference: scope of the shipped reactor domain).** DECISION: v0.2 ships the real reactor on the box D3's
+  rule selects from measurement. The full 573.15–773.15 K box would need a new start strategy: S1 fails at 573.15 K
+  after 400 steps, and NaN and certificate failures occur at 773.15 K. That is design-lane and build work outside
+  M02's plan row. Alternative: fund that strategy before 0.2.0. Reversible by: a later variant with a wider box,
+  appended.
+
+**What this round does not establish** (added to §13)
+- That the reactor evaluates everywhere inside v3's box. Only its corners, its centre, the centre's flow edges and
+  (for B1) M05's two edge points are measured.
+- That D1's round suffices away from num_z 800. The variant pins num_z 800, and target/10 is argued from the 800
+  floor only.
+- That the outer iteration converges on non-contractive maps beyond affine ones. f2 and f3 are affine; Gay's bound is
+  a theorem about affine maps.
+- That a stand-in → real promotion can commit. It cannot, by design (D6).

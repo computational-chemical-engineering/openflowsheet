@@ -156,3 +156,26 @@ R-199, R-200. No port, row, convention, threshold or refusal code of the draft c
   the 10⁻⁶ bound of §10.3 applies. The design grid's discretization estimate is registered machine-readably for every
   result (`derived_from_measured.discretization_estimate`, claim DX-01). Q-F4's corner sweep is defined. The per-tube
   flow, which no hard-domain bound covers, is Q-F5.
+
+## Amendment 2 (2026-10-09): the hard domain and the polish, measured (M02 R-303, R-304)
+
+**Status:** design lane (`specifier`), M02 sixth ruling round; normative text in `docs/design/M02-pymrm-adapter.md`
+§14.5 D1–D4.
+
+M02's G11 measured the adapter on the hard domain stated in D3 (573.15–773.15 K, 5–15 MPa, H₂/N₂ ∈ [1, 4], inerts
+≤ 20 %). Only the centre of the 16 corners and centre was accepted. Three mechanisms caused the failures:
+- S3's stopping rule, which does not bound the element defect;
+- a non-finite child result, which was typed as a crash;
+- start failures at both temperature faces (S1 at 573.15 K; certificate and non-finite at 773.15 K).
+
+Amended:
+- The real variant's profile becomes `M01-S123-v2`, with one conditional polish round and the stage `nonfinite`
+  (R-303). The boundary's element-defect limit (10⁻⁶) is unchanged.
+- The shipped real variant `pymrm-6089593-g2-nz800-s123-v3` carries a narrower hard domain: the first of three
+  registered boxes whose registered points are all accepted (R-304). The box is stated in that variant's document,
+  which is the authority on its own domain. D3's numbers above remain the domain of v1 and v2.
+- D10's per-tube flow bound [0.5, 2] × F_nom is unchanged; its widening clause is suspended for v3.
+- D3's ordering argument (no liquid exists inside the hard domain) holds a fortiori in a narrower box.
+
+Acceptance evidence: M02 gates G10v3, G11v3-1 to -7 and G12v3-1 (design note §14.5), recorded under
+`benchmarks/m02/*-v3.json`.

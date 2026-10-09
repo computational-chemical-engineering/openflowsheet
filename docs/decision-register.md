@@ -5353,3 +5353,202 @@ A specification check that reads the compiled constants (not independent).
 **Watch for.** The verifier importing the unit's ν.
 
 ---
+
+## R-303 — The real reactor's child polishes once more when A45's defect exceeds 10⁻⁷, and types a non-finite result as `reactor_not_accepted(nonfinite)` (profile `M01-S123-v2`, variant v3)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D69 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D1, D2; M01 spec §8.7 (Amendment 3 pointer) |
+| Evidence | `benchmarks/m02/g11-coverage.json`. Defect refusals with S1–S3 accepted have δ 1.4e-5 to 7.6e-5 and alternate with flow at 5 MPa (0.5 × fails, 1 × passes, 2 × fails, 4 × passes); every accepted point has δ ≤ 4.7e-8. At four 773.15 K corners, NaN/inf in the result exits with code 1 and is typed `external_crashed` |
+| Affected packages | M02 (child, variant v3), M01 (profile pointer), M05 and M07 (bind v3) |
+
+**Decision.**
+- After S3 is accepted, if δ = max_e |element_defect_rel[e]| > 10⁻⁷, the child runs one more round with S3's
+  settings at target/10. S3 is accepted iff that round converges.
+- The boundary's `defect_limit` (10⁻⁶) is unchanged.
+- A result holding any non-finite value becomes `not_accepted`, stage `nonfinite`. The first refusal wins; non-finite
+  diagnostics are written as null and listed in `nonfinite_paths`. The child writes no NaN default of its own.
+- Inert wherever v2 met δ ≤ 10⁻⁷: G10v3 and G11v3-2 assert bitwise equality.
+
+**Rejected alternatives, and why.**
+- Relaxing `defect_limit`: δ of 7 × 10⁻⁵ is 7 τ_ξ, so coupling would judge iteration error.
+- Narrowing the domain around the points: they are not a region.
+- Tightening S3 for every evaluation: it moves A47's pins and G12.
+- Typing the non-finite result in the parent: the parent sees only an exit code.
+
+**Watch for.** A G11v3-1 point that still fails the boundary after round 2 refutes the diagnosis; the WO stops.
+Never answer it with a looser limit.
+
+---
+
+## R-304 — v3's hard domain is the first of three registered boxes whose registered points are all accepted; §10.3 classifies a failure before narrowing; the timeout is sampled over every completed in-box evaluation
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D69, D70 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D3, D4; ADR 0027 Amendment 2 |
+| Evidence | G11: 1 of 17 accepted. At 573.15 K S1 fails; at 773.15 K the failures are certificate, defect and non-finite. Accepted T_in: 653.15–693.15 K |
+| Affected packages | M02, M05 (N-F6), M07 (K6) |
+
+**Decision.**
+- The candidate boxes are B1 (T_in [643.15, 733.15] K; 5–15 MPa; H₂/N₂ 1–4), B2 (T_in [653.15, 693.15] K, otherwise
+  as B1) and B3 (B2 with 7.5–12.5 MPa and H₂/N₂ 2–4). All three keep inerts ≤ 0.2 and the per-tube flow bound
+  [0.5, 2] × F_nom.
+- v3 takes the first box whose 16 corners, centre, the centre's flow edges and (for B1) M05's two edge points all end
+  `ok` in two full runs. If none does, the WO stops.
+- In §10.3, D1's defect mechanism is never a reason to narrow, and an in-domain crash stops the WO. Q-F5's widening is
+  suspended for v3.
+- timeout_s = max(120, 3 × the slowest in-box completed evaluation), rounded up to 10 s.
+- If B2 or B3 is selected, M05's REAL box becomes [653.15, 693.15] K. M07's journey lies inside v3's box.
+
+**Rejected alternatives, and why.**
+- Inventing a box from G11 alone: every corner failed, so G11 bounds no region.
+- The data domain as the hard domain: it would put the loop's P and H₂/N₂ on a face.
+- Sampling only accepted points for the timeout: a timeout would then turn deterministic refusals into transient
+  failures.
+
+**Watch for.** Widening the flow bound from a centre-only measurement.
+
+---
+
+## R-305 — The coupling driver does not reset during the first 2n outer iterations (n = 2m)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D50 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D5 (§4.3 amended) |
+| Evidence | D50, plus a design-lane replica of §4.3: G = diag(1.8, 0) ends `no_decrease` under §4.3 and converges at k = 3 (ρ ≤ 3e-12) with the window. From w₀ = (0.15, 0 K) the first substitution step raises ρ, so the monotone rule fails at k = 2 |
+| Affected packages | M02 (driver), M05 (consumes coupled runs) |
+
+**Decision.** `if ρ_k > ρ_best: reset only if k ≥ 2n`. Inside the window B keeps updating and the best iterate does
+not move. Everything else in §4.3 is unchanged. G8 (f) holds as written (f1–f5). The change is inert on every
+recorded run, because ρ never rose in any of them.
+
+**Rejected alternatives, and why.**
+- Restating G8 (f) as a typed failure: K4 would stay unmitigated for gain > 1.
+- A Grippo window over the last M values: more parameters for the same effect.
+
+**Watch for.** A real loop that resets at k ≥ 2n: that is the safeguard working, not a bug.
+
+---
+
+## R-306 — `validity` stands: stand-in → real promotion is rejected on `validity` alone; G9 (a) is restated
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D61 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D6 |
+| Evidence | D61: the promotion is `rejected`, eight facets `pass`, and `validity` fails with "hard_domain.tube_flow_mol_s None -> [...]" |
+| Affected packages | M02, M07 (builds its real revision directly) |
+
+**Decision.**
+- G9 (a1): stand-in → real is `rejected`, and only `validity` fails. Its detail names exactly the narrowed
+  dimensions, computed from the two variant documents.
+- G9 (a2): the commit machinery is tested on real → stand-in and on the compatible test copy.
+- The strict xfail is removed.
+
+**Rejected alternatives, and why.**
+- Treating the flow bound as an operating-point check: it contradicts ADR 0034 D10.
+- A stand-in variant carrying the real domain: it means churn on every narrowing.
+
+**Watch for.** Any request to let a narrower real domain commit silently over a stand-in.
+
+---
+
+## R-307 — R3 comes from a registered set of external providers, never from provenance text
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D55 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D7 |
+| Evidence | `run/session.py:134` matches "external" in `pr-c1-v1`'s provenance (`external-crosscheck.json`), so in-process C1 runs are R3 |
+| Affected packages | M02, every package with C1 runs |
+
+**Decision.**
+- `EXTERNAL_PROVIDERS: frozenset[str]` is empty today, and the class is R3 iff the provider is in it.
+- §7.2's variant rule stays on top for the coupled route.
+- In-process C1 runs are R1. The records this moves are re-taken in one commit.
+
+**Rejected alternatives, and why.** A `ProviderCapabilities` field: it is a frozen interface, for a set that is empty
+today.
+
+**Watch for.** A future provider that evaluates out of process must be added to the set in the same commit.
+
+---
+
+## R-308 — On `revision_coupled`, inner-solve constants digests are compared for shape; `reproduce` recomputes the final one at the recorded iterate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D58 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D8; ADR 0007's row "digests of R1/R2 quantities" |
+| Evidence | D58: the final `constants_sha256` digests Broyden's X̂ and ΔT̂ and was compared exactly |
+| Affected packages | M02 (replay), M05 (replays coupled runs) |
+
+**Decision.**
+- The manifest's and the record's inner-solve `constants_sha256` are compared for shape.
+- `reproduce` rebuilds the final inner model at the record's final w and requires its digest to equal the recorded one
+  exactly (`coupling_constants`).
+- The iterates are compared under the archive's numerical policy (`coupling_iterate(<k>)`). Integer control flow
+  stays R0.
+
+**Rejected alternatives, and why.**
+- Keeping the exact comparison: it contradicts ADR 0007, because there is a float on its path.
+- Removing w from the constants digest: it changes compile identity for one route.
+
+**Watch for.** Any other digest whose preimage holds an iterate.
+
+---
+
+## R-309 — One coupling-parameter function: `coupled_run.at_coupling`, with a refusal of unknown units; M05 calls it (supersedes R-300 E7)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D71 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D9 |
+| Evidence | D71: `with_coupling` (wp/M05 `1ed8c6c`) duplicates `at_coupling`; `at_coupling` silently ignores an unknown unit id |
+| Affected packages | M02, M05 (its WO-5c) |
+
+**Decision.**
+- `at_coupling` raises `ValueError` naming every key that is not a `C1Reactor` unit of the binding. It does no float
+  coercion.
+- M05 deletes `with_coupling` at its first merge of `main` after M02 lands, and calls `at_coupling`.
+- The G8 records stay byte-identical.
+
+**Rejected alternatives, and why.** Landing both: two functions with one meaning, and M05's E2 guard asks for M02's
+own code path.
+
+**Watch for.** M05 reaching `main` with both functions.
+
+---
+
+## R-310 — The envelope's `unbound_providers` becomes `other_basis_providers`; the stand-in module's stale docstring is a recorded erratum
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D49 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D10 |
+| Evidence | D49: `pr-c1-v1` is bound by the C1 models since the join, while the envelope and L42 still say it is not. The stand-in module's bytes are the stand-in variant's pinned artifact |
+| Affected packages | M02, T08 (envelope tests and script), M07 (finalises the envelope) |
+
+**Decision.**
+- Rename the key `unbound_providers` to `other_basis_providers` and keep the entry's shape. Correct the axis
+  statement and L42's text.
+- `reactor_standin.py` is not edited. A comment at its `MODEL_BUILDERS` entry records the erratum.
+- If the served tool-list digest moves, the WO stops.
+
+**Rejected alternatives, and why.** Editing the docstring: it changes the pinned artifact hash, so it needs a new
+stand-in variant and a re-take of the stand-in loop and G8.
+
+**Watch for.** The stand-in module changing for any reason: correct the sentence in that same new variant.
+
+---
