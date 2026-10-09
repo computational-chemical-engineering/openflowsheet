@@ -584,3 +584,11 @@ Grep, don't read whole. Newest at the bottom.
   (closes M06 review F5), 0.1.1 guard + `bases-v1` reading in snapshot.py; coverage.json re-taken (rows unchanged, 0
   candidates); preflight P1–P8 pass (P6/P7 by stub canaries); G15 20/20. **Merged into main** (`e88fb96`). M02's join:
   J1 must expose SELECTABLE_BASES, MODEL_BASES, MODEL_BUILDERS, basis_provider; J5 updates three snapshot tests.
+- M02 WO-9 + R-281/R-282 built on `wp/M02` (`fd1427b`…`33bf150`; gate 8106 passed; G2 byte-identical): witness skip
+  narrowed and recorded; G7(a) vapour feed VERIFIED; G7(c) F4 UNVERIFIED asserted; `C1Reactor` + stand-in in the
+  interim registry; `C1-LOOP-M02-v1` registered (`benchmarks/m02/c1-loop-standin.json`), converges in 4 iterations,
+  VERIFIED; G7(f) at w* rcond 1.42e-4, flash L/n 0.128, reactor inlet inside both domains (P, H₂/N₂ at the data
+  domain's upper edges), per-tube flow 0.576 F_nom. Escalated: D44 the near-dew window is narrower than R-282 stated
+  (VAPOR side from |δ| 2.48e-4, TWO_PHASE from L/n 3.37e-5; δ=1e-4 UNVERIFIED by the absolute screen limit and the
+  witness stencil); D46 optional `coupling_initial` needs a frozen-schema amendment; F-A2-1; D45/D47 confirmations.
+  Asked the WO-8 rulings architect (§14.4). Then the join (R-280 + W27 J1–J6).
