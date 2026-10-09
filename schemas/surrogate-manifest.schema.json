@@ -1352,7 +1352,7 @@
           "minimum": 0
         }
       },
-      "description": "M04 spec §10.3: a `surrogate_study` job's answer — the verdict and both reason lists (spec §7.3), the surrogate id, the SHA-256s of the manifest and evidence artifacts it wrote, in that order (spec §18 A1.4) (`null` for a budget refusal, which writes neither), the plan experiments it executed or found cached, and the cache misses counted at study start."
+      "description": "M04 spec §10.3: a `surrogate_study` job's answer — the verdict and both reason lists (spec §7.3), the surrogate id, the SHA-256s of the manifest and evidence artifacts it wrote (`null` for a budget refusal, which writes neither), the plan experiments it executed or found cached, and the cache misses counted at study start."
     }
   }
 }
