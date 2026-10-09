@@ -147,3 +147,41 @@ S10 Readiness: the framework half first; `TRUST_REGION_FRAMEWORK_UNAVAILABLE` re
    `_IMPLICIT_EF_INPUT`, `_OMITTED_ROW_UNCERTIFIED`, `_ZERO_FLOW`); `project` raises the first refusal only. In
    `run_study` the start half is S0 (`FAILED(start_not_certified)`, §7.2) and a projection refusal at S0 is
    `UNSUPPORTED(<code>)`.
+
+## WO-7 — the record schema `trust-region-study-v1` (§9.1, §8.3, G12)
+
+All items go to M05's review batch.
+
+S11 The schema's four new `sha256` names (`revision_sha256`, `source_map_sha256`, `trf_module_sha256`,
+   `trsp_executable_sha256`) are unclassified under ADR 0025 D2.3 (`t08_numerical_policy.py --check`). M02's
+   precedent (dbc9e8a): an addendum `benchmarks/m05/numerical_policy_external.yaml`
+   (`M05-numerical-policy-external-v1`) classifies all four `exact_sha256`, and `--check` audits every addendum in
+   `ADDENDA` in turn (a name v2 or an earlier addendum classified keeps its class; no schema claimed twice). v2's
+   content does not move (regenerated sha256 6b449911…707c before and after); for M02 the old and new scripts give
+   identical `build` bytes, name sets, audit results and `--check` output. Alternative: a v3 policy. Reversible:
+   revert c6c229e (and the float rules of S17, which live in the same file).
+S12 `runs[].ledger`: §9.1 says `{sha256, summary}`; `TrfStage` writes `{summary, cold_parent}` (the ledger itself
+   is the `artifacts.ledger` file). The schema requires `summary`, allows `sha256` and `cold_parent`. Alternative:
+   the producer adds the ledger's sha256 and the schema requires it. Reversible: one `required` list.
+S13 `readiness`, `start`, `stage_a` and `best` are top-level fields `as_document` writes that §9.1 does not list;
+   declared and optional (`readiness` and `start` null when absent). Alternative: amend §9.1 or nest them.
+S14 The top level and `accounting`, `claims`, `checks` are closed; `spec`, `environment`, a run, a candidate,
+   `projection`, `final` and `artifacts` require §9.1's fields and tolerate the producer's extras (a run's
+   `config`, `exit_lines`, `theta_recheck`, …; a candidate's `stage`, `stopped_by`, `solves`). Alternative: close
+   them and declare every extra.
+S15 `indifference_halfwidth` is an object (decision → number or null) or null: §9.1's "| null" is read as the
+   per-decision value, which is what the producer writes; the whole field null is also accepted.
+S16 §8.3's TRF request identity (`trf_start_value` = 1, `trf_trial_value` = K, …) is not checked by WO-7: the
+   ledger summary is counts by call and service (`value_cold`, `jacobian_memo_hit`, …), with no per-purpose counts.
+   Deferred to WO-8, which has the ledger artifacts (or needs a per-purpose summary from the holder).
+S17 Float classes (ADR 0007 D2.3; M02's four classes, D14 "replay classes follow M02"; §9.3): `exact` for the spec,
+   the start decisions, the run's `config` and `radius_factor`, the noise floor's `h_X`/`h_T`, the budget's
+   `study_wall_s`; `excluded` for `wall_s`; `r1_r2_existing_floors` for every TRF iterate, parent-solve objective,
+   coupling, residual and everything derived (P-values, poll, noise floor, curvature, half-width, best). No float
+   of the record is an external model's output, so `r3_recorded_external` has no rule. A test holds every float
+   of every generated (and committed) record to a rule, and every rule to a float.
+S18 Producer-vs-§9.1 gaps fixed in the schema: iteration 0 is the PMP and `TrfStage` writes `type: null` for it
+   (§9.1's enum has no value for it): null at k = 0, a §9.1 type at k ≥ 1. A check that does not apply (P2 without a
+   TRF point, `checks.py`) is `pass: null`. Digests follow the schemas' `^[0-9a-f]{64}$` (the fakes now give real
+   hex). Open: `artifacts.coupled_runs[].sha256` is required, but `ParentSolve.coupling_record_sha256` is None for a
+   parent with no external unit; the C1 parent always has one.
