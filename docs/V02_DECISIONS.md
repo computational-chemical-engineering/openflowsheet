@@ -619,3 +619,10 @@ Grep, don't read whole. Newest at the bottom.
   pass); ~150k context cap per engineer; Sonnet for bounded items; 200–300-word reports, detail in the repo's
   build-decisions logs. Unchanged: one design pass + one reviewer pass per package, full gate before every commit. Also
   saved as project memory. The three engineers already running finish as briefed.
+
+- **M04 WO-7 done** (2026-10-09, `wp/M04` `2841cd3`): merge of M02 `f71d55e` (`4ba0e6b`, register joined in order); unit
+  `studies/surrogate/reactor.py`, binder resolution, `verify/surrogate.py`; WO-16 helper fix `d8bd39f` (A20/A39 were
+  vacuous); resolver threaded through the application. Gate 8435 passed / 31 skipped. A12–A15, A26 (revision + project
+  level) measured, see `docs/design/M04-build-decisions.md` E1–E8. Registration blocked: W27 classifier refuses
+  `c1.reactor_surrogate` (W27-R24(a)); needs a `model_functions` row + snapshot/J3 re-pin from the design lane (batched
+  into the M04 ruling round). `reproduce_bundle` gives `rerun_unsupported` for surrogate runs until bundles carry the manifest.
