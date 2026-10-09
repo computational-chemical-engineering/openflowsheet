@@ -3,7 +3,7 @@
 **Status:** Proposed, 2026-10-09. Design lane (`architect`). Branch `wp/M05` from `main` `1ecf576`.
 **Brief:** `docs/briefs/M05-design.md`. **ADRs:** 0038 (the trust-region adapter and its composition), 0039 (the C1
 study: decision, objective, parent checks, refinement loop, accounting, records), 0040 (the conditional fallback).
-**Register:** R-260 to R-276 (R-274 to R-276: §16 rulings).
+**Register:** R-260 to R-279 (R-274 to R-279: §16 rulings).
 **Plan row (v1.2 §4.4, L267):** "M05 — M03, M04: distinct trust-region integration spike and fixed-topology refinement
 loop." Acceptance: ExternalFunction/glass-box composition with source maps; parent-model checks at candidate optima;
 true-model call accounting; constraints and limitations retained. Gate W24 (M05's half). Requirements A06, D13.
@@ -114,6 +114,7 @@ as a test.
 | P12 | Executable linkage (`ldd bin/ipopt`) | Loads `libipoptamplinterface.so.3`, `libipopt.so.3`, `libasl.so`, `libspral.so`, `libdmumps_seq.so`, `libmetis.so`, `libgomp.so.1`, `libhwloc`, `libgfortran`. Absent from M03's inventory: `bin/ipopt`, `libipoptamplinterface.so.3.14.20`, `libgomp.so.1` |
 
 | P13 | (found in WO-3, 2026-10-09) An EF refusal during TRF's start-value evaluation | **Swallowed.** `EFReplacement.exitNode` (`interface.py:86`) wraps it in a bare `except:` and sets the holder variable to 0. It is the module's only bare `except` |
+| P14 | (2026-10-09, `scratchpad/m05-probe2`) An EF output pinned by the decisions alone (`y − 90z = 0`); a C1-shaped toy | (a) **TRF's default basis b ≡ 0 makes the PMP infeasible at iteration 0.** It forces d = −2 ∉ [−1, 1], before any radius exists and with no restoration. With b(w₀) = d(w₀) (constant or Taylor) the run converges to d = 0.135556. The C1-shaped toy with b ≡ 0 aborts in TRSP₁; with a constant or Taylor basis, 6 of 6 starts end within 4e-3 of the grid optimum (5 Optimal, 1 at maximum iterations with θ = 3.1e-5). (b) **'Optimal' with zero TRSPs when θ_PMP = 0** (`TRF.py:78`, `:109`): one Ipopt solve, θ = 0, objective 0.3721 against a true optimum of 0, with a constant basis. (c) **The stall test compares θ with itself after any accepted step** (`:120` with `:265`), and the radius collapses to γ_c‖s‖ over the decisions (`:196`): 'Feasible solution found' at θ = 1.80 (true y 326.6, holder 96.1) |
 
 **What the probe settles.** The framework composes with Python-callback EFs. It needs a gradient for every EF, the
 ASL executable for its subproblems, identity-preserving callbacks, finite values, and an outer handler for refusals.
@@ -245,7 +246,7 @@ Each `build` is a builder over the projection's symbols and an `Algebra`, exactl
 **not a compile backend**: it implements no `CompiledProblem`, no route can select it, and it is imported only from
 `studies/trust_region/` (guard test, G13).
 
-**Refusals** (typed, raised before TRF runs):
+**Refusals** (typed, raised before TRF runs; `PROJECTION_IMPLICIT_EF_INPUT` is added by §16.5, R-278):
 - `PARAMETER_NOT_DIFFERENTIABLE(<equation_id>)`: a builder fails when a decision or link symbol is not a float (Pyomo
   raises on a boolean conversion of an expression). This is the same code and the same meaning as ADR 0031 D2.
 - `PROJECTION_NONSMOOTH(<equation_id>)`: an expression contains `abs`, `Expr_if` or a piecewise node (walked with
@@ -353,7 +354,14 @@ never the original model's.
   - with a **promoted** M04 surrogate for the bound parent: its quadratic, compiled from the manifest's coefficients
     through `PyomoAlgebra` on the clone's inlet arguments (M04 `basis(z)` over Pyomo expressions, z from the inlet as
     in M04 spec §3.1). It must agree with `QuadraticSurrogate.predict` at M04's J1–J3 within 1e-14 relative (WO-4);
-  - otherwise the constant d(w₀), which costs nothing: TRF evaluates d(w₀) when it builds its holders.
+  - otherwise **the affine Taylor model at w₀** (amended by §16.5, R-277; it was the constant d(w₀)). With a constant
+    basis, C1's PMP freezes X̂ and ΔT̂, its objective no longer depends on T_in, Ipopt stays at the start, θ_PMP = 0,
+    and TRF exits 'Optimal' with no subproblem step (probe P14 b). The gradient at w₀ comes from the truth adapter;
+    for an FD truth, the study's first run reuses the gradient check's G(η) at the same w₀, and later runs pay n_in
+    cold experiments.
+- **A basis is mandatory** (R-277). `run_trf` refuses a missing or incomplete basis rule
+  (`TRF_CONFIGURATION_REFUSED(basis_missing:<ef>)`). TRF's default b ≡ 0 is used only by TR-E1, through an explicit,
+  test-only `zero_basis` that reproduces Pyomo's native example and is flagged in the record.
 - **Stage A (surrogate as truth):** a constant basis; the truth is already exact and cheap.
 
 The basis is frozen for the whole TRF run and the whole study: blueprint L427, and L437 (retraining voids the theory).
@@ -423,8 +431,10 @@ TR-E1 uses Pyomo's defaults except `solver`, to reproduce the native example.
 
 | Outcome | When |
 | --- | --- |
-| `TRF_CONVERGED` | "EXIT: Optimal solution found." with θ_k ≤ 1e-5 and ‖s_k‖ ≤ σ |
-| `TRF_FEASIBLE_STALLED` | "EXIT: Feasible solution found." (minimum radius, insufficient progress) |
+| `TRF_CONVERGED` | "EXIT: Optimal solution found." with ≥ 1 accepted TRSP step, ‖s_k‖ ≤ σ, and θ re-checked from the returned model ≤ 1e-5 (§16.5, R-279) |
+| `TRF_EXIT_WITHOUT_STEP` | "EXIT: Optimal solution found." with no accepted TRSP step (probe P14 b). It is not a convergence claim; the study treats the returned point as a candidate for stage B |
+| `TRF_FEASIBLE_STALLED` | "EXIT: Feasible solution found." **and** θ re-checked ≤ 1e-5 (probe P14 c) |
+| `TRF_STALLED_INCONSISTENT` | "EXIT: Feasible solution found." with θ re-checked > 1e-5. No candidate; the study treats it as an abort (retry once) |
 | `TRF_MAX_ITERATIONS` | the maximum-iterations warning |
 | `TRF_SUBPROBLEM_FAILED` | `ArithmeticError` from `solveModel` (the TRSP is not optimal) |
 | `TRF_TRUTH_REFUSED(<status>:<reason>)` | `TruthRefused` |
@@ -644,6 +654,8 @@ which embeds every request and attempt.
   - `trf_start_value` = 1;
   - `trf_pmp_value` = 1, or 0 with the recorded flag `pmp_point_equals_start`;
   - `trf_trial_value` = K, the number of logged iterations ≥ 1;
+  - `basis_fd_point` = n_in for a reactor EF with an FD truth and no promoted surrogate (§6.6). These are store or
+    memo hits when the gradient check already ran at the same w₀;
   - `trf_fd_point` = n_in · (1 + A − [the final logged iteration was accepted]), with A the number of accepted steps
     and n_in = 7.
 
@@ -949,3 +961,62 @@ Nothing more is needed: `interface.py:86` is the module's only bare `except`, an
 | Affine property basis (§6.6) | WO-4 (Opus) | At w₀ the basis value equals the block's value bitwise, and its `differentiate` gradient equals the block Jacobian within 1e-15 relative; every basis variable belongs to the clone; TR-E1 with an affine basis on `bb` converges to native within 1e-6 (probe P5's analogue) |
 | `trust_region_readiness`: projection and start halves (§6.8) | WO-6 (Opus) | Each reason code is produced by a fixture; `READY` on TR-E2's configuration |
 | `TruthBox`'s `meta` contract | WO-4 (Opus) | Every `TruthModel.evaluate` returns `meta = {status, cache_hit, experiment_key, executions, extrapolated}`. `SurrogateTruth` and in-process test truths return `status: "ok"`, `cache_hit: false`, `experiment_key: null`, `executions: 0`, `extrapolated: false`; the ledger records them with `truth.kind` and they never count against parent budgets. `ParentExperimentTruth` maps M02's `ExperimentOutcome` exactly |
+
+### 16.5 Probe P14 (R-277 to R-279)
+
+**Verdict.** P14 is a configuration defect and two mislabelled exits. It is not a failure of the trust-region method.
+The abort comes from TRF's default b ≡ 0, which ADR 0038 D7 already rejects: `run_trf` had been called with
+`basis_rule=None` because M05-basis-v1 was not built yet. **ADR 0040's T2 does not fire.** A
+`PROJECTION_IMPLICIT_EF_INPUT` refusal on C1 itself would count as a structural composition failure under T2. That
+should not happen: C1 is forward by construction (the inner problem at pinned w is S0's certified simulation).
+
+**R-277 — a basis is mandatory; the reactor's fallback basis is affine.** Recommendations 1 and 3(a) are accepted:
+- `run_trf` refuses a missing or incomplete basis rule;
+- `zero_basis` exists only for TR-E1;
+- without a promoted surrogate, the reactor EF gets the affine Taylor basis at w₀ (§6.6 amended). With a Taylor basis
+  and an exact gradient, an early exit at θ_PMP = 0 means the start satisfies the KKT conditions of the true problem;
+  with an FD gradient, it is qualified.
+
+**R-278 — shape check `PROJECTION_IMPLICIT_EF_INPUT`.** Recommendation 2 is accepted with one amendment: only the
+**link** (expensive) EF outputs are fixed. Property-block relations y = s·EF(inputs) stay structural functions.
+- *Why the amendment:* with property outputs fixed as well, the check would refuse every property-based flowsheet. A
+  mixer outlet temperature enters the rows only through h(T), so fixing h leaves T undetermined. Property EFs are
+  cheap, have exact gradients, and their Taylor models determine those inputs in every TRSP.
+- *The test.* Unknowns: every projection variable except the decisions. Equations: the kept rows, the block
+  definitions (incident on y and on all of their inputs), and the link definitions (incident on w only, because the
+  holder is fixed).
+- *Pass iff* the square incidence has a perfect matching: `scipy.sparse.csgraph.maximum_bipartite_matching`, or Pyomo's
+  `incidence_analysis` if it yields the same verdict. It is structural; numeric regularity is S0's K04 certificate on
+  the same system.
+- *Refusal:* the unmatched variables and equations, with the link-EF inputs flagged.
+- *Coverage.* This is exactly the probe's definition of "safe". It catches an EF output pinned by the decisions
+  (`y = 90z`) and a conversion target. An outlet-temperature specification passes if the remaining glass box still
+  determines the inputs given ΔT̂ (a forward loop, like C1's recycle). The criterion, not a list of examples, governs.
+- *Exemption.* TR-E1 is exempt, recorded as `shape_check: exempt_oracle`. Pyomo's example is itself implicit: x1 enters
+  only through the EF, and c2 involves only decisions.
+
+**R-279 — exits are classified from the model, not from the EXIT line.** Recommendations 3(b) and 4 are accepted and
+generalized:
+- after every exit, θ is re-computed from the returned model: the truth at the final w against the holder values, all
+  memo hits;
+- `TRF_CONVERGED` needs at least one accepted TRSP step and θ ≤ 1e-5. An Optimal exit without a step is
+  `TRF_EXIT_WITHOUT_STEP`, and the study sends its point to stage B;
+- a "Feasible" exit with θ > 1e-5 is `TRF_STALLED_INCONSISTENT`, an abort for the retry policy;
+- θ_recheck is recorded for every run.
+
+Defect 2's radius collapse is TRF's own behaviour. It is not patched (pin, R-260); only its labelling is guarded.
+
+**Work orders:**
+
+| Item | WO |
+| --- | --- |
+| Basis refusal and `zero_basis`; the exit classification (`TRF_EXIT_WITHOUT_STEP`, `TRF_STALLED_INCONSISTENT`, θ_recheck) | WO-3a (amends the built `trf.py`) |
+| `PROJECTION_IMPLICIT_EF_INPUT` | WO-2a (amends `projection.py`) |
+| Affine reactor basis with FD reuse; `basis_fd_point` in the ledger | WO-4 |
+| Study handling of the new outcomes | WO-6 |
+
+**Acceptance:**
+- WO-3a reproduces P14 (a)–(c) as tests: refusal on `None`; toy A with a constant basis gives `TRF_EXIT_WITHOUT_STEP`;
+  the implicit toy gives `TRF_STALLED_INCONSISTENT` at θ = 1.80.
+- WO-2a refuses `y − 90z` and passes SYN-001 and C1 (C1 when it exists).
+- G3 is unchanged (TR-E1 with `zero_basis`, exempt from the shape check).

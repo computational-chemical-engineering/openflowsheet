@@ -21,6 +21,9 @@ stop it, and plan L271 requires a ready alternative.
 - **T2.** A recorded composition failure that the registered remedies cannot fix. Either G4 fails for a structural
   reason, or at least 2 of the 4 in-process configurations (TR-E2, TR-E2-FD, LOOP-S, LOOP-R) end
   `FAILED(trf_aborted…)` after the retry.
+  *Ruled 2026-10-09 (R-279):* probe P14's abort, from TRF's default b ≡ 0 (a configuration ADR 0038 D7 rejects),
+  and its two mislabelled exits do not count toward T2. A `PROJECTION_IMPLICIT_EF_INPUT` refusal on C1's own
+  formulation would.
 - **T3.** The TRSP audit extension (G1) fails, and the cyipopt-shim contingency of ADR 0038 D4 also fails to reproduce
   TR-E1 within 1e-8.
 

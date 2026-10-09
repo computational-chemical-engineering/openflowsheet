@@ -180,6 +180,17 @@ The basis is frozen for the run and the study (blueprint L427, L437).
 
 None. No identity, schema or registered value changes.
 
+## Amendment 1 (2026-10-09): rulings on the build (design note §16)
+
+- **D2.** Omitted rows are exactly the certified alias elimination's (R-274). Scales come from K03's
+  `Scaling.from_spec` (R-275). The shape check `PROJECTION_IMPLICIT_EF_INPUT` uses a perfect matching with the
+  decisions and the link-EF outputs fixed (R-278).
+- **D5.** `run_trf` pre-flights every EF at x₀, and any refusal recorded in a run means no candidate (R-276; probe P13).
+- **D7.** A basis is mandatory. The reactor EF without a promoted surrogate gets the affine Taylor basis at w₀, not
+  the constant d(w₀). TRF's default b ≡ 0 is allowed only as TR-E1's explicit `zero_basis` (R-277; probe P14).
+- **D8.** Exits are classified with θ re-checked from the returned model. `TRF_CONVERGED` needs at least one accepted
+  TRSP step. The new outcomes are `TRF_EXIT_WITHOUT_STEP` and `TRF_STALLED_INCONSISTENT` (R-279; probe P14).
+
 ## Acceptance evidence
 
 Design note gates G1 (audit), G2 (pin), G3 (TR-E1), G4 (equivalence), G7 (accounting mechanics), G12 (default gate)

@@ -5226,3 +5226,66 @@ unchanged, because the start request is the pre-flight's.
 still end "optimal".
 
 **Watch for.** A Pyomo upgrade that changes `exitNode`. This is covered by the pin (R-260).
+
+---
+
+## R-277 — A TRF basis is mandatory; without a promoted surrogate the reactor EF's basis is the affine Taylor model at w₀, not the constant d(w₀)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on probe P14; Proposed; amends R-264 |
+| Normative text | `docs/design/M05-trust-region.md` §6.6, §16.5; ADR 0038 Amendment 1 |
+| Evidence | `scratchpad/m05-probe2`. With b ≡ 0, the PMP is infeasible at iteration 0 (d = −2 ∉ [−1, 1]) and a C1-shaped toy aborts in TRSP₁. With a constant or Taylor basis, 6 of 6 starts end within 4e-3 of the grid optimum. A constant basis with an objective that does not see the frozen output exits "Optimal" with zero steps |
+| Affected packages | M05 |
+
+**Decision.** `run_trf` refuses a missing or incomplete basis rule. `zero_basis` is test-only, for TR-E1. The reactor's
+fallback basis is affine, with its gradient from the truth adapter. An FD truth reuses the gradient check's G(η) at the
+study's first w₀; later runs pay n_in cold experiments.
+
+**Rejected alternatives, and why.** TRF's default b ≡ 0: infeasible PMP. A constant d(w₀): C1's PMP cannot move, so TRF
+exits without a step and the loop degenerates into pattern search.
+
+**Watch for.** A PMP over the whole decision box with a linear reactor model can land at a corner, and walking back
+costs parent calls. Measure it in WO-8 and WO-9.
+
+---
+
+## R-278 — The projection refuses `PROJECTION_IMPLICIT_EF_INPUT` unless, with the decisions and the link-EF outputs fixed and the property relations kept, the glass box has a perfect matching
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on probe P14; Proposed |
+| Normative text | Design note §16.5; ADR 0038 Amendment 1 |
+| Evidence | Probe P14: an EF output pinned by the decisions alone makes the input undetermined and the output over-determined |
+| Affected packages | M05 |
+
+**Decision.** The check is structural, via `scipy.sparse.csgraph.maximum_bipartite_matching`, on the unknowns other
+than the decisions. Block definitions are incident on y and on their inputs; link definitions only on w. Numeric
+regularity is S0's K04 certificate. TR-E1 is exempt as the oracle.
+
+**Rejected alternatives, and why.** Fixing the property outputs as well, which would refuse every property-based
+flowsheet (a mixer temperature enters only through h(T)). A list of forbidden shapes in place of a criterion.
+
+**Watch for.** A refusal on C1, which counts toward ADR 0040 T2.
+
+---
+
+## R-279 — TRF exits are classified from the returned model: θ re-checked, `TRF_CONVERGED` only after ≥ 1 accepted TRSP step, a stalled exit with θ > 1e-5 is `TRF_STALLED_INCONSISTENT`
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on probe P14; Proposed |
+| Normative text | Design note §6.7, §16.5; ADR 0038 Amendment 1; ADR 0040 T2 ruling |
+| Evidence | Probe P14 (b): "Optimal" with zero TRSPs when θ_PMP = 0 (objective 0.3721 against a true optimum of 0). P14 (c): the stall test compares θ with itself (`TRF.py:120`, `:265`), giving "Feasible solution found" at θ = 1.80 |
+| Affected packages | M05 |
+
+**Decision.** New outcomes `TRF_EXIT_WITHOUT_STEP` (its point goes to stage B) and `TRF_STALLED_INCONSISTENT` (an
+abort for the retry policy). θ_recheck is recorded for every run. TRF's radius collapse is not patched (pin), only its
+labelling. P14 does not fire ADR 0040's T2.
+
+**Rejected alternative, and why.** Trusting the EXIT lines (P14 shows both lines can be false).
+
+**Watch for.** A rate of `TRF_STALLED_INCONSISTENT` on C1, which would be evidence for T2.
