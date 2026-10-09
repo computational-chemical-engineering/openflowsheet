@@ -5185,4 +5185,82 @@ reformulated equilibrium row near the dew point (a new formulation for a case th
 **Watch for.** An operating point (M05, M07) inside the window reported as a solver failure rather than this
 limitation.
 
+> **Amended 2026-10-09 (§14.4 D1, build log D44):** the thresholds above (from τ_ill alone) are withdrawn. As
+> measured at F4, `rcond_1 = 4.23e-4 |δ|` on both sides. The window ends where the last of three registered limits
+> clears:
+> - τ_ill: L/n_tot ≈ 1.45e-6;
+> - the screen's absolute limit: |δ| ≈ 2.48e-4;
+> - the witness stencil: TWO_PHASE L/n_tot ≈ 3.37e-5.
+>
+> So the certificate is VERIFIED from |δ| ≈ 2.5e-4 on the VAPOR side and from L/n_tot ≈ 3.4e-5 on the TWO_PHASE
+> side, at the measured state. No limit is relaxed.
+
+---
+
+## R-287 — The coupled reactor's initial iterate is not a revision parameter: `coupling_initial.*` is refused, and w₀ is the variant's
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D46 |
+| Normative text | design note §14.4 D2 (amends the WO-9 row) |
+| Evidence | `ModelSignature` has no optional slot, and `list_models`' signature schema is closed and frozen (D46) |
+| Affected packages | M02, M05 (warm-started coupling) |
+
+**Decision.** `parameter_unsupported(<U>.coupling_initial.X | .dT)`; w₀ is the variant's `coupling.initial`.
+Warm-starting the outer loop belongs to ADR 0024's compatible warm starts.
+
+**Rejected alternatives, and why.** An `optional` signature member, which would need an ADR 0019 amendment and a
+surface move. A start point is solver state (ADR 0020 D7), and it would split one model's identity by its start.
+
+**Watch for.** A start point smuggled in as a "parameter" of any external model.
+
+---
+
+## R-288 — Each model binds on its own component basis only; `MODEL_BASES` is the table the binder's refusal and W27 both read
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, answering W27 Amendment 2's F-A2-1 (Q8) |
+| Normative text | design note §14.4 D3; `docs/derivations/M06-W27-registration.md` §21.8 J1 |
+| Evidence | a probe at `2587f14`: SYN-001's feed→sink and splitter bind and traverse on the C1 basis while their manifests declare SYN-001's provider and reference convention |
+| Affected packages | M02 (the join), M06 (W27-R63), every later basis |
+
+**Decision.**
+- In `MODEL_BASES`, each `syn001.*` model is on SYN-001's basis and each `c1.*` model on the C1 basis.
+- `set(MODEL_BASES) == set(MODEL_BUILDERS)`.
+- The binder's `model_unsupported(<id>)` pass reads the table, with a hint naming the other basis's same-function
+  model. The per-builder basis checks are removed.
+
+**Rejected alternatives, and why.** SYN-001's models binding on both bases: a mismatch between the manifest's declared
+convention and the streams (ADR 0001 D5.2 in kind). Per-builder checks: a second source of truth that W27 cannot
+read.
+
+**Watch for.** A model added to `MODEL_BUILDERS` without a `MODEL_BASES` row.
+
+---
+
+## R-289 — The C1 reactor's verifier entries: the verifier's own ν, no specification check, B16's vapour refusal in its evaluate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, confirming the build lane's D45 and D47 |
+| Normative text | design note §14.4 D4 |
+| Evidence | no revision states a C1 reactor's ν; X̂ and ΔT̂ are the coupled route's inputs |
+| Affected packages | M02, K04 (revision table) |
+
+**Decision.**
+- Material balance `n_in + ν ξ − n_out`, with `verify/pr_c1.REACTION_NU`, compared as data with `models.c1.NU`.
+- SYN-001's reactor energy rule.
+- No specification check: X̂ and ΔT̂ are judged by the residual rows and by §4.4's coupling checks.
+- The temperature row is `offset_row(T_in, T_out, dT)`, the exact negation of the stated form.
+- The extent column is `U.xi`.
+
+**Rejected alternatives, and why.** `nu.<c>` as required revision parameters (it changes the case and the signature).
+A specification check that reads the compiled constants (not independent).
+
+**Watch for.** The verifier importing the unit's ν.
+
 ---
