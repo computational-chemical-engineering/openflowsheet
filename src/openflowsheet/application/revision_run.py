@@ -639,6 +639,28 @@ def _failed_run(
     raise RunUnsupportedError(f"failure_bundle_unmapped({run.outcome},{step_kind},{held})")
 
 
+def _inner_failure(
+    route: Route,
+    plan: ExecutionPlan,
+    report: StructuralReport,
+    run: PlanResult,
+    region_plan: SolvePlan | None,
+) -> dict[str, Any]:
+    """M02 review F5: the diagnosis of a coupled run's last failed inner solve — the outcome,
+    taxonomy and attempt tree of the failure bundle §12.3 gives that inner run on its own, or,
+    for an inner failure §12.3 maps to no bundle, its outcome with an empty tree and the reason."""
+    try:
+        failed = _failed_run(route, plan, report, run, region_plan).failure
+    except RunUnsupportedError as error:
+        return {"outcome": str(run.outcome), "attempt_tree": [], "unmapped": error.code}
+    assert failed is not None
+    return {
+        "outcome": failed.outcome,
+        "taxonomy": failed.taxonomy,
+        "attempt_tree": [dict(entry) for entry in failed.attempt_tree],
+    }
+
+
 def _solve_coupled(
     route: Route,
     document: Mapping[str, Any],
@@ -720,6 +742,11 @@ def _solve_coupled(
             implicated=[unit.unit_id for unit in solved.units],
             plan=plan,
             counters=run.counters,
+            inner_failure=(
+                _inner_failure(final, plan, inner.report, run, region_plan)
+                if coupling.reason == "inner_failed"
+                else None
+            ),
         )
         return RouteRun(
             final,

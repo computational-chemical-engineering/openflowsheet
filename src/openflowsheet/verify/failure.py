@@ -477,15 +477,20 @@ def coupling_bundle(
     implicated: Sequence[str],
     plan: Any,
     counters: Any,
+    inner_failure: Mapping[str, Any] | None = None,
 ) -> FailureBundle:
     """M02 design note §4.4 (ADR 0034 D3): the bundle of a coupled run that ended
-    `COUPLING_NOT_CONVERGED` or `EVALUATION_ERROR` in its outer iteration. Every inner solve it
-    judges converged, so the observations are the coupling's own: its reason and its record of
-    iterates (`coupling`, the record without its embedded documents, which the run bundle's
-    `external-coupling.json` holds), and the last inner solve's counters. The attempt tree is
-    empty — no inner attempt failed — and the replay identity is the last inner solve's plan's."""
+    `COUPLING_NOT_CONVERGED` or `EVALUATION_ERROR` in its outer iteration. The observations are
+    the coupling's own: its reason and its record of iterates (`coupling`, the record without its
+    embedded documents, which the run bundle's `external-coupling.json` holds), and the last inner
+    solve's counters. The bundle's own attempt tree is empty: the coupling, not an inner attempt,
+    ended the run. On `inner_failed` (a trial's inner solve failed at the step and at every
+    halving) `inner_failure` is the last failed inner solve's diagnosis — its outcome and its
+    attempt tree (M02 review F5) — kept under `observations.inner_failure`. The replay identity
+    is the last inner solve's plan's."""
     taxonomy = TAXONOMY[outcome]
     iterations = coupling.get("iterations", [])
+    extra = {} if inner_failure is None else {"inner_failure": dict(inner_failure)}
     return FailureBundle(
         outcome=outcome,
         taxonomy=taxonomy,
@@ -494,6 +499,7 @@ def coupling_bundle(
             "reason": reason,
             "outer_iterations": len({item["k"] for item in iterations if item["rho"] is not None}),
             "external_coupling": dict(coupling),
+            **extra,
             "counters": {
                 name: getattr(counters, name, 0)
                 for name in (

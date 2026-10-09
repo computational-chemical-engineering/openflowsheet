@@ -42,6 +42,7 @@ from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.backends import InProcessBackend
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
+from openflowsheet.application import coupled_run
 from openflowsheet.application.coupled_run import (
     LiveExperiments,
     RecordedExperiments,
@@ -390,6 +391,37 @@ def test_f5_max_outer_ends_coupling_not_converged_with_a_bundle_and_no_certifica
     (only,) = record["iterations"]
     assert only["k"] == 0 and only["rho"] > 1.0 and only["w"][0] == 0.15
     assert observations["external_coupling"]["iterations"][0]["rho"] == only["rho"]
+
+
+def test_f5_inner_failed_keeps_the_last_inner_failures_diagnosis(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """M02 review F5: every inner solve after k = 0 is starved (one iteration per attempt, a test
+    seam on the policy), so the k = 1 trial fails at the step and at its three halvings and the
+    run ends `COUPLING_NOT_CONVERGED(inner_failed)`; the bundle keeps why the inner solve failed."""
+    real = coupled_run.execute_plan
+    calls: list[str] = []
+
+    def starved(*, policy: Any, **kwargs: Any) -> Any:
+        if calls:
+            policy = dataclasses.replace(policy, max_iterations_per_attempt=1)
+        result = real(policy=policy, **kwargs)
+        calls.append(str(result.outcome))
+        return result
+
+    monkeypatch.setattr(coupled_run, "execute_plan", starved)
+    manifest, artifacts = solve(loop(), tmp_path / "bundle", LiveExperiments(runner_in(tmp_path)))
+    assert manifest.outcome == "COUPLING_NOT_CONVERGED"
+    assert "solution-certificate.json" not in artifacts
+    assert calls[0] == "CONVERGED" and len(calls) == 1 + 4 and "CONVERGED" not in calls[1:]
+    record = artifacts["external-coupling.json"]
+    assert (record["outcome"], record["reason"]) == ("COUPLING_NOT_CONVERGED", "inner_failed")
+    observations = artifacts["failure-bundle.json"]["observations"]
+    assert (observations["reason"], observations["outer_iterations"]) == ("inner_failed", 1)
+    diagnosis = observations["inner_failure"]
+    assert diagnosis["outcome"] == calls[-1] == record["iterations"][-1]["inner"]["outcome"]
+    assert diagnosis["attempt_tree"], diagnosis
+    assert artifacts["failure-bundle.json"]["attempt_tree"] == []
 
 
 # == G8 (g) ======================================================================================
