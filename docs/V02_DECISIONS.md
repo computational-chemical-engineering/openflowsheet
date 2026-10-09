@@ -599,3 +599,9 @@ Grep, don't read whole. Newest at the bottom.
   the served MCP digest must not move.
 - `opus-engineer` M02 join (merge main; R-288/J1; R-280 registry move + corpus + fixtures + envelope; W27 J2–J6; R-282
   G7(c)) launched on `wp/M02`.
+- M04 WO-13…17 done on `wp/M04` (`ee83ea1`…`2aa86ec`; check.sh 8102 passed): evidence → manifest pointer (A38); numerical
+  addendum + conditional R0 (A37; A19's decision gaps ≥ 1.4e-3); it2/it3 + admission guard + family-wise bound (A36);
+  refusal/record tests (A39, A42); `scripts/m04_prewarm.py` (A40: 4 processes reproduce A19 bitwise, cold 0; A41
+  bypass repeats). WO-14…16 were not gated separately (each carries a reverted schema-description edit that would trip
+  R4-G3); HEAD gate covers them. Remaining: WO-7/8/9 after the M02 join; WO-11 real run (pre-warm command recorded);
+  WO-12 manifest.
