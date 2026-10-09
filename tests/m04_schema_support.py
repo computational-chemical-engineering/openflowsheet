@@ -17,6 +17,9 @@ from typing import Any, Final
 M04_ENUM_VALUES: Final = frozenset(
     {"surrogate_study", "surrogate_manifest", "model_evidence", "surrogate_evidence"}
 )
+#: The model M04 adds to `MODEL_BUILDERS`, hence to `list_models` (W27 Amendment 3, R-301). A
+#: test of an earlier package's registry or served surface takes it out first (R-295).
+M04_MODELS: Final = ("c1.reactor_surrogate",)
 #: The `surrogate_study_body` `$def`'s description prefix.
 _STUDY_BODY: Final = "M04 spec §10.3 (ADR 0037 D6, ADR 0019 Amendment 5)"
 

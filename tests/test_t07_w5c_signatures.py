@@ -333,6 +333,11 @@ EXPECTED: dict[str, str] = {
     "M02:C1-REACTOR-M02-v1": (
         "binds 68f5821bd967758a371284eda807ee90bcc2b9429c1bf601b6ca48c4f8ae6e66"
     ),
+    # W27 Amendment 3 §22.4 (R-302): M04's surrogate revision, bound through the corpus's fixture
+    # resolver; generated at its registration. The rows above are unchanged by it.
+    "M02:C1-SURROGATE-M04-v1": (
+        "binds 291932ea44010ce04fd47b8ddb916da1aa962428d4705b06da6de9f3ef7469b0"
+    ),
 }
 
 

@@ -179,6 +179,35 @@
       },
       {
         "choices": [],
+        "model_id": "c1.reactor_surrogate",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "inlet"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "outlet"
+          },
+          {
+            "direction": "inlet",
+            "kind": "energy",
+            "multiplicity": 1,
+            "name": "duty"
+          }
+        ],
+        "required": [
+          "n_tubes"
+        ],
+        "zero": []
+      },
+      {
+        "choices": [],
         "model_id": "c1.stream_splitter",
         "pins": [],
         "ports": [

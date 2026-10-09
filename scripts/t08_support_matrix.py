@@ -239,12 +239,13 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
     ]
     # ADR 0019 Amendment 3 (M06, approved by Frank on 2026-10-08) adds `list_audit` to spec §9's
     # 20 operations; this file is v0.2's working envelope (R-193), v0.1's stays as released.
-    # M02's join (R-280 (c)) adds the eight C1 models to spec §9's 13 SYN-001 models.
+    # M02's join (R-280 (c)) adds the eight C1 models to spec §9's 13 SYN-001 models, and W27
+    # Amendment 3 (R-301) M04's `c1.reactor_surrogate`.
     syn001 = [model for model in claimed["models"] if model.startswith("syn001.")]
-    if len(claimed["operations"]) != 21 or len(syn001) != 13 or len(claimed["models"]) != 21:
+    if len(claimed["operations"]) != 21 or len(syn001) != 13 or len(claimed["models"]) != 22:
         problems.append(
-            "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models (21 "
-            "with M02's eight C1 models)"
+            "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models (22 "
+            "with M02's eight C1 models and M04's surrogate)"
         )
     return problems
 

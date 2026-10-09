@@ -15,6 +15,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_yaml
 from m02_c1_support import connection, feed_specifications, instance, revision, specification
+from m04_schema_support import M04_MODELS
 from test_schemas_p01 import schema_errors
 
 from openflowsheet.application.binding import Unbound
@@ -61,8 +62,9 @@ def test_the_six_c1_units_bind_through_the_shared_registry() -> None:
     `list_models` serves, on the C1 basis only (R-288); the interim registry is gone."""
     from openflowsheet.application import revision_binding  # noqa: PLC0415
 
-    c1 = {model for model in MODEL_BUILDERS if model.startswith("c1.")}
-    assert c1 == {model for model in MODEL_SIGNATURES if model.startswith("c1.")}
+    # M04's surrogate (R-301) is M04's C1 model, not M02's: it is taken out first (R-295).
+    c1 = {model for model in MODEL_BUILDERS if model.startswith("c1.")} - set(M04_MODELS)
+    assert c1 == {model for model in MODEL_SIGNATURES if model.startswith("c1.")} - set(M04_MODELS)
     assert c1 == set(MODULES) | set(MODEL_IDS)
     assert all(MODEL_BASES[model] == {"pr-c1-v1"} for model in c1)
     for model_id in c1:

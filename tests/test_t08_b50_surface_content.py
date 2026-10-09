@@ -23,6 +23,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
+from m04_schema_support import M04_MODELS
 
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
@@ -100,9 +101,11 @@ def _taken_out(entries: list[dict[str, Any]], key: str, names: tuple[str, ...]) 
 
 
 def test_b50_list_models_differs_by_the_kinetic_cstr_only(served: dict[str, Any]) -> None:
-    """With M02's eight C1 models stripped (each exactly once; R-280 (b), the decomposition onto
-    the pre-M02 surface), `list_models` differs from `c7bbc98`'s by the kinetic CSTR only."""
+    """With M04's surrogate (R-295, R-301) and M02's eight C1 models stripped (each exactly once;
+    R-280 (b), the decomposition onto the pre-M02 surface), `list_models` differs from
+    `c7bbc98`'s by the kinetic CSTR only."""
     today = copy.deepcopy(served["list_models"])
+    today["models"] = _taken_out(today["models"], "model_id", M04_MODELS)
     today["models"] = _taken_out(today["models"], "model_id", M02_MODELS)
     today["models"] = _taken_out(today["models"], "model_id", NEW_MODELS)
     assert today == FIXTURE["list_models"]

@@ -4,10 +4,14 @@ The revisions on the C1 basis that the registry-coverage tests read beside T07's
 (`t07_corpus.CORPUS`, which stays W0.2's 50 SYN-001 revisions): the loop `C1-LOOP-M02-v1` with
 the stand-in (WO-9), G7 (a)'s flash at F1, the heater and the mixer in their WO-8.2 minimal
 flowsheets, and the real reactor between a feed and a sink (WO-9; binding never executes it).
-Together they bind an instance of each of the eight `c1.*` models, so every coverage test that
-asks for a bound instance of each builder is met by a registered revision, never by an exemption.
-Each file is canonical JSON under `benchmarks/m02/`; `tests/test_m02_join.py` checks that each
-equals the builder its provenance names. Each entry is a factory, so every caller gets a copy.
+Since W27 Amendment 3 (§22.4, R-302) it also holds M04's `c1.reactor_surrogate` between a feed
+and a sink (`benchmarks/m04/c1-surrogate.json`), which binds through `surrogates`, the corpus's
+resolver of committed fixture manifests; every corpus test passes it to the binder. Together they
+bind an instance of each of the nine `c1.*` models, so every coverage test that asks for a bound
+instance of each builder is met by a registered revision, never by an exemption or a skip.
+Each file is canonical JSON under `benchmarks/m02/` or `benchmarks/m04/`; `tests/test_m02_join.py`
+and `tests/test_m04_wo7_surrogate_unit.py` check that each equals the builder its provenance names.
+Each entry is a factory, so every caller gets a copy.
 """
 
 from __future__ import annotations
@@ -30,6 +34,8 @@ FILES: dict[str, Path] = {
     "C1-HEATER-M02-v1": REPO_ROOT / "benchmarks" / "m02" / "c1-heater.json",
     "C1-MIXER-M02-v1": REPO_ROOT / "benchmarks" / "m02" / "c1-mixer.json",
     "C1-REACTOR-M02-v1": REPO_ROOT / "benchmarks" / "m02" / "c1-reactor.json",
+    # W27 Amendment 3 §22.4 (R-302): M04's surrogate of the reactor, bound through `surrogates`.
+    "C1-SURROGATE-M04-v1": REPO_ROOT / "benchmarks" / "m04" / "c1-surrogate.json",
 }
 
 

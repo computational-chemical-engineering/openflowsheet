@@ -15,7 +15,7 @@ from __future__ import annotations
 import copy
 import json
 import math
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -89,15 +89,6 @@ FIXTURE = with_coefficients(
 def resolver(*manifests: Mapping[str, Any]) -> Callable[[str], Mapping[str, Any] | None]:
     """An in-memory artifact store of SurrogateManifests, by canonical SHA-256."""
     return {document_sha256(m): m for m in manifests}.get
-
-
-@pytest.fixture(autouse=True)
-def registered(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    """`c1.reactor_surrogate` in the binder's registry for these tests (its registration in
-    `MODEL_BUILDERS` moves the served `list_models` and W27's snapshot; it is its own commit)."""
-    monkeypatch.setitem(rb.MODEL_BUILDERS, sr.MODEL_ID, rb._c1_reactor_surrogate)  # type: ignore[index]
-    monkeypatch.setitem(rb.MODEL_BASES, sr.MODEL_ID, frozenset({"pr-c1-v1"}))  # type: ignore[index]
-    yield
 
 
 def _n_tubes(value: float) -> dict[str, Any]:
@@ -324,6 +315,34 @@ def test_the_registered_builder_without_a_manifest_refuses() -> None:
     (reactor,) = (i for i in view.instances if i.unit_id == UNIT)
     with pytest.raises(RevisionError, match=r"surrogate_manifest_mismatch\(R\)"):
         rb._c1_reactor_surrogate(reactor, PrC1Provider(), rb._CONTEXT, COMPONENTS)
+
+
+# -- W27 Amendment 3 §22.4 (R-302): the C1 corpus's surrogate revision ----------------------------
+
+#: The registered C1 corpus revision with a `c1.reactor_surrogate` instance (`m02_c1_corpus`).
+CORPUS_PATH: Path = REPO_ROOT / "benchmarks" / "m04" / "c1-surrogate.json"
+
+
+def corpus_revision() -> dict[str, Any]:
+    """F → R → K with R the A19 surrogate at the manifest's own configuration: one tube (its
+    parent's requests are per tube, spec §5.1) and the inlet at the centre of its input box."""
+    centre = [coordinate["centre"] for coordinate in A19["input_map"]["coordinates"]]
+    return reactor_revision(spl.request_of(centre), surrogate_instance(A19, 1.0))
+
+
+def test_the_corpus_revision_is_its_builder_and_binds_through_the_corpus_resolver() -> None:
+    from m02_c1_corpus import C1_CORPUS, surrogates  # noqa: PLC0415
+
+    document = json.loads(CORPUS_PATH.read_text(encoding="utf-8"))
+    own = {key: document[key] for key in ("revision_id", "title", "description", "provenance")}
+    assert {**corpus_revision(), **own} == document
+    assert C1_CORPUS[document["revision_id"]]() == document
+    binding = bind_revision_flowsheet(document, surrogates=surrogates)
+    assert isinstance(binding, RevisionBinding), binding
+    assert unit_of(binding).manifest_sha256 == document_sha256(A19)
+    refused = bind_revision_flowsheet(document)
+    assert isinstance(refused, Unbound)
+    assert (refused.kind, refused.detail) == ("unsupported", "surrogate_manifest_mismatch(R)")
 
 
 def test_a_nonpositive_n_tubes_is_outside_the_models_domain() -> None:

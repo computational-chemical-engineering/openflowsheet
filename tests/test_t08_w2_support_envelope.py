@@ -60,9 +60,10 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert MATRIX.check_a20(envelope, facts) == []
     assert len(facts["operations"]) == 21  # spec §9's 20 and ADR 0019 Amendment 3's `list_audit`
     # Spec §9's 13 SYN-001 models, literal unchanged; M02's join adds the eight C1 models (R-280),
-    # the stand-in synthetic only (R-280 (c)).
+    # the stand-in synthetic only (R-280 (c)); W27 Amendment 3 adds M04's surrogate (R-301), which
+    # has no variant, so it is not synthetic only.
     assert len([model for model in facts["models"] if model.startswith("syn001.")]) == 13
-    assert len(facts["models"]) == 21
+    assert len(facts["models"]) == 22
     assert facts["synthetic_models"] == ["c1.reactor_standin"]
     assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]

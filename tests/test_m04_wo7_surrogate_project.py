@@ -20,7 +20,6 @@ from conftest import REPO_ROOT
 from t07_jobs_support import commit, lifecycle_violations, response_schema_violations
 from test_m04_study_job import attempts, body, read, submit
 
-from openflowsheet.application import revision_binding as rb
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.canonical import document_sha256
@@ -28,15 +27,6 @@ from openflowsheet.studies.surrogate import reactor as sr
 from openflowsheet.studies.surrogate.manifest import Q0
 
 LOOP_PATH: Path = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
-
-
-@pytest.fixture(autouse=True)
-def registered(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    """`c1.reactor_surrogate` in the binder's registry for these tests (its registration in
-    `MODEL_BUILDERS` moves the served `list_models` and W27's snapshot; it is its own commit)."""
-    monkeypatch.setitem(rb.MODEL_BUILDERS, sr.MODEL_ID, rb._c1_reactor_surrogate)  # type: ignore[index]
-    monkeypatch.setitem(rb.MODEL_BASES, sr.MODEL_ID, frozenset({"pr-c1-v1"}))  # type: ignore[index]
-    yield
 
 
 @pytest.fixture

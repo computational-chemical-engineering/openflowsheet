@@ -1423,8 +1423,9 @@ _SYN001_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
     _KINETIC_CSTR,
 )
 
-#: M02's eight C1 models: the six units (design note §8) and the reactor's two ids (§4.1, WO-9).
-#: They bind on the C1 basis only (R-288).
+#: M02's eight C1 models: the six units (design note §8) and the reactor's two ids (§4.1, WO-9),
+#: and M04's surrogate of the reactor (W27 Amendment 3, R-301). They bind on the C1 basis only
+#: (R-288).
 _C1_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
     _C1_FEED_SOURCE,
     _C1_ADIABATIC_MIXER,
@@ -1434,10 +1435,11 @@ _C1_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
     _C1_PRODUCT_SINK,
     _C1_REACTOR,
     _C1_REACTOR_STANDIN,
+    _C1_REACTOR_SURROGATE,
 )
 
 #: Model id -> signature: what each builder reads (§1.3's table), for `list_models` (T07 §4.2):
-#: SYN-001's thirteen and, since M02's join (R-280), the eight C1 models.
+#: SYN-001's thirteen and, since M02's join (R-280), the eight C1 models; M04's surrogate (R-301).
 MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
     signature.model_id: signature for signature in (*_SYN001_SIGNATURES, *_C1_SIGNATURES)
 }
@@ -1459,7 +1461,9 @@ _INSTANCE_TARGETS: Final[Mapping[str, str]] = {
 }
 
 #: Model id -> builder: the six K02 models, the six T05 ones (§1.3's table), T08's kinetic CSTR
-#: (build-first §A1), and M02's six C1 units and two C1 reactor ids (R-280).
+#: (build-first §A1), M02's six C1 units and two C1 reactor ids (R-280), and M04's surrogate of
+#: the C1 reactor (R-301): its registered builder refuses; the binder hands a resolved manifest to
+#: `_c1_reactor_surrogate_of` instead.
 MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _FEED_SOURCE.model_id: _feed_source,
     _ADIABATIC_MIXER.model_id: _adiabatic_mixer,
@@ -1482,6 +1486,7 @@ MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _C1_PRODUCT_SINK.model_id: _c1_product_sink,
     _C1_REACTOR.model_id: _c1_reactor,
     _C1_REACTOR_STANDIN.model_id: _c1_reactor,
+    _C1_REACTOR_SURROGATE.model_id: _c1_reactor_surrogate,
 }
 
 #: The model performing the same function on the other basis, both ways (R-288's hint): the six

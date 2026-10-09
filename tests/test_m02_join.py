@@ -8,7 +8,8 @@
   pass reads it, its hint naming the same-function model of the other basis.
   `SELECTABLE_BASES` is every basis `component_basis` returns, and `basis_provider(b)` describes
   `b`'s provider id and components.
-- **R-280.** All twenty-one models pinned here (the `syn001.` literals of
+- **R-280.** All twenty-two models pinned here (twenty-one at the join, and M04's
+  `c1.reactor_surrogate` since W27 Amendment 3, R-301; the `syn001.` literals of
   `test_t05_w1b_revision` and `test_t08_kinetic_cstr` are unchanged, B13's rule); the C1 corpus
   (`m02_c1_corpus`) is registered, equals the builders it names, and binds every C1 model; every
   T07 corpus revision is on SYN-001's basis (G2 (i)).
@@ -51,7 +52,7 @@ from openflowsheet.thermo.pr_c1 import COMPONENTS
 SYN001 = frozenset({"syn001"})
 C1 = frozenset({"pr-c1-v1"})
 
-#: R-288: the twenty-one models and the bases each binds on.
+#: R-288: the twenty-two models and the bases each binds on.
 REGISTERED: dict[str, frozenset[str]] = {
     "syn001.feed_source": SYN001,
     "syn001.adiabatic_mixer": SYN001,
@@ -74,6 +75,8 @@ REGISTERED: dict[str, frozenset[str]] = {
     "c1.product_sink": C1,
     "c1.reactor": C1,
     "c1.reactor_standin": C1,
+    # W27 Amendment 3 (R-301): M04's surrogate of the C1 reactor, on the C1 basis only.
+    "c1.reactor_surrogate": C1,
 }
 
 
@@ -81,6 +84,8 @@ REGISTERED: dict[str, frozenset[str]] = {
 
 
 def test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis() -> None:
+    # The name is the support envelope's evidence reference (T08.A22); the table holds twenty-two
+    # since W27 Amendment 3 (R-301).
     assert dict(MODEL_BASES) == REGISTERED
     assert set(MODEL_BASES) == set(MODEL_BUILDERS) == set(MODEL_SIGNATURES)
 
