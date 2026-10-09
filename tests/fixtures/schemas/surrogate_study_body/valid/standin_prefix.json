@@ -1,0 +1,11 @@
+{
+  "parent": {
+    "model_id": "c1.reactor_standin",
+    "variant_id": "standin-x025-v1",
+    "variant_sha256": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1"
+  },
+  "plan_id": "it1-prefix",
+  "budget": {
+    "max_cold_experiments": 199
+  }
+}

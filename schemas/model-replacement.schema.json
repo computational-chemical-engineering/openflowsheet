@@ -101,7 +101,8 @@
               "boundary_condition",
               "degrees_of_freedom",
               "derivatives",
-              "validity"
+              "validity",
+              "surrogate_evidence"
             ]
           },
           "result": {

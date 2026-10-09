@@ -1,0 +1,83 @@
+{
+  "expect_error": "'schema_version' is a required property",
+  "document": {
+    "subject": {
+      "model_id": "c1.reactor_surrogate",
+      "version": "m04q7-m04-synthetic-smooth-v1-it1-prefix",
+      "artifact_ref": null
+    },
+    "parent": {
+      "model_id": "c1.reactor",
+      "variant_id": "m04-synthetic-smooth-v1",
+      "variant_sha256": "a6be23b9fbe7f90834c3d95455c22ccc440f1ece1d2c4a87f0eef4a98bc4e3df",
+      "synthetic": true
+    },
+    "data": [
+      {
+        "split": "training",
+        "count": 72,
+        "keys_sha256": "aa7f17e07cc96f7e721a4eb0c69b02a6a937741cae9b9b6a9a52b96cc5541a06"
+      },
+      {
+        "split": "calibration",
+        "count": 39,
+        "keys_sha256": "ff30f52408cc726d00c8abcd576c6e26f3daa6e06b6450d5c56671aac253d806"
+      },
+      {
+        "split": "test",
+        "count": 60,
+        "keys_sha256": "53a7e19e83a72971eca75209ff4cdc0732b65ed4dd1d02bc040dc9e4c15889ad"
+      },
+      {
+        "split": "gradient",
+        "count": 2,
+        "keys_sha256": "d185975fd24740ac3a15fd60a94f5f272e55febefcd6cb619fcff8631a93209b"
+      }
+    ],
+    "numerical": {
+      "parent_accuracy": {
+        "precision_floor_rel": 0.0,
+        "measured_path_independence_rel": 0.0,
+        "discretization_estimate": null
+      },
+      "fit": {
+        "training_ok": 71,
+        "singular_value_ratio": 0.059464163568044875
+      }
+    },
+    "comparisons": [
+      {
+        "reference": "parent_model",
+        "quantity": "surrogate approximation error",
+        "split": "test",
+        "pointer": "/evaluation"
+      }
+    ],
+    "experimental_comparisons": [],
+    "experimental_comparisons_reason": "none: no plant or literature data (M04 scope)",
+    "uncertainty": {
+      "method": "split-conformal-default-v1",
+      "claim": "joint, marginal over P_ref",
+      "nominal": 0.95,
+      "lower_bound": 0.9233600050654955,
+      "minimum": 0.9
+    },
+    "scope": {
+      "evidence_class": "synthetic_verification",
+      "establishes": [
+        "the band and its coverage statement with qualifications Q1-Q7",
+        "the error metrics on the independent test set",
+        "gradient agreement with the parent at the registered gradient centres",
+        "exact element conservation",
+        "the hard-domain and admissibility guards"
+      ],
+      "does_not_establish": [
+        "coverage at a flowsheet's solved operating point or an optimizer's candidate",
+        "coverage outside the reference box",
+        "anything about the physical reactor or plant data",
+        "simultaneous coverage over several units or queries",
+        "flowsheet sensitivities as the reactor's sensitivities"
+      ]
+    }
+  }
+}

@@ -154,6 +154,19 @@ to the schema list (M02 design note §3.6). Their floats and new `sha256` names 
 | `model-variant.schema.json` | `ModelVariant`: the frozen, append-only identity of one external model configuration — evaluation, boundary contract, accuracy, execution limits, coupling block; a revision pins its `document_sha256` |
 | `model-replacement.schema.json` | `ModelReplacementReport`: blueprint §5.3's replacement check of a promotion, facet by facet |
 
+Added by **M04** under ADR 0036 and ADR 0037 (D2, D6) — design-lane additions to the schema list
+(M04 spec §10). Their new `sha256` names are classified by
+`benchmarks/m04/numerical_policy_surrogate.yaml`, beside M02's addendum; their fixtures are emitted
+by `scripts/m04_schema_fixtures.py` from M04.A19's run. `job.schema.json` gains the operation
+`surrogate_study`, the artifact kinds `surrogate_manifest` and `model_evidence` and
+`job_result.surrogate_study`; `model-replacement.schema.json`'s facet enum gains
+`surrogate_evidence` (all additive):
+
+| File | Describes |
+| --- | --- |
+| `surrogate-manifest.schema.json` | `SurrogateManifest`: one surrogate study's frozen record — parent, input and output maps, splits by experiment key, predictor, score, calibration, evaluation, gradient check, domain, assumptions, qualifications Q0–Q7, promotion; its `document_sha256` is a surrogate instance's `model.artifact_ref`; `$defs` `surrogate_study_body` and `surrogate_study_result` (the job's body and answer); the rules a schema cannot state are `studies/surrogate/manifest.py::check_manifest` |
+| `model-evidence.schema.json` | `ModelEvidence`: the scope record of a surrogate's evidence — parent, data hashes, numerical accuracy, comparisons, uncertainty, what it establishes and what it does not; named by the manifest's `evidence_sha256` |
+
 Every member without a stated default is required, the nullable ones included; a member the note
 gives a default is optional, and `process_runtime.application.types` writes it at that default, so
 the typed documents' `as_document()` is the normalized form `request_sha256` hashes (§5.3). The
