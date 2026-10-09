@@ -738,3 +738,7 @@ Grep, don't read whole. Newest at the bottom.
   COUPLING_NOT_CONVERGED; F4 nonlinear synthetic child (4 iterates = closed form); F5 `inner_failure` kept. D124: failure
   bundle's record copy and `record_sha256` still under old rules → DECISION: apply the same rules, digest shape-only, in
   WO-13 (isolated commit). D122/D123/D126/D127 logged. WO-13 launched.
+
+- **M05 WO-7 done** (2026-10-09, `wp/M05` `7f17a50`…`71804a6`, gate 8606): schema `trust-region-study-v1` + tests;
+  S11 M05 addendum (4 sha256 names exact; `--check` generalised over ADDENDA, v2 policy bytes unchanged); 17 float
+  rules, every float of every record classified. S16, S18 → M05 review. M07 recon launched (design prep while M02 WO-13 runs).
