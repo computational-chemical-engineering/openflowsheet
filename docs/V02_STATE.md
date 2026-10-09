@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…7 done (`6a46cdd`; G10 bitwise, re-recorded on variant v2); WO-8 built (`8734905`, gate green, G2 byte-identical); rulings on D36/D40/D41 pending; then WO-9…13 |
+| M02 | Build | M01 | W21 | WO-1…7 done (`6a46cdd`; G10 bitwise, re-recorded on variant v2); WO-8 built (`8734905`, gate green, G2 byte-identical); rulings R-280…282 (`2587f14`); WO-9 running; join commit after the W27 mapping amendment; then WO-10…13 |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | spec done; WO-1, 2, 3, 10 done (`7613b5e`, gate green); WO-4…9 after `wp/M02` (WO-7/8) is merged into `wp/M04`; WO-11 real run needs M02 WO-5 env (built) + Frank's N1 budget |
 | M05 | Design | M03, M04 | W24 | design done; WO-2, 3 done (`dd9e364`; G2, G3, G4 (SYN-001/TR-E1), G13); WO-1 audit PASS (merged `aef41bf`); rulings R-274…279 implemented (`2dc50d9`; WO-2a/3a done; one ruling pending for WO-6: Optimal-with-θ>1e-5 label); WO-4+ need M02 + M04 merged |
@@ -92,7 +92,8 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `architect` | M02 WO-8 follow-up rulings D36, D40, D41, D39 | `wp/M02` (`m02`) |
+| `opus-engineer` | M02 WO-9 + R-281/R-282 (join after W27 amendment) | `wp/M02` (`m02`) |
+| `specifier` | W27 registration Amendment 2 (C1 map rows, §20 ratify) | `wp/M06-w27-c1map` (`w27-c1map`) |
 | `opus-engineer` | M04 merge M02 `bfbad26` + WO-4, 5, 6 | `wp/M04` (`m04`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).

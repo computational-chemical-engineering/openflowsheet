@@ -547,3 +547,12 @@ Grep, don't read whole. Newest at the bottom.
   D40 certificate witness excludes exactly-zero PR columns (`d9c7cd4`, ratify); D41 G7(c) VERIFIED unreachable at the
   dew point (structural singularity, as SYN-001's DEW_POINT_LIMITATION); D39 three SYN-001 assumptions fixed on the
   revision path. Sent to the WO-8 rulings architect.
+- M02 follow-up rulings (`2587f14`, note §14.3, R-280…R-282, ADR 0013 A3 items 7–8): R-280 the separate C1 registry is
+  interim until WO-9 ends; WO-9's last commit joins all eight C1 entries into MODEL_BUILDERS with registered C1 corpus
+  revisions, re-taken fixtures (stripping `c1.` restores pre-M02), envelope rows, and M06's W27 snapshot re-pinned under
+  a design-lane mapping amendment — no merge/tested manifest while the separate registry exists; R-281 witness skip
+  ratified but narrowed to exactly-zero `<S>.n.<c>` columns for pr-c1-v1, recorded as a qualification + limitation
+  `derivative_witness_partial`; R-282 near-dew window (rcond ≈ 7e-3·L/n_tot; verifies from L/n_tot ≈ 1.4e-6; the loop
+  sits ~4 decades clear); G7(c) asserts UNVERIFIED at F4, VERIFIED at δ = 1e-3; D39's three fixes confirmed.
+- Launched: `opus-engineer` M02 WO-9 + R-281/R-282 (no join yet); `specifier` W27 registration Amendment 2 (C1 map
+  rows, v0.2 READINGS, §20 ratification) on `wp/M06-w27-c1map` (R-283+).
