@@ -882,8 +882,9 @@ Frank decides (§12, N3).
 - **N6 (preference — cost vs reproducibility).** DECISION: no warm start of the reactor. Alternative: S2 from a
   neighbour's fields (cheaper loop iterations, history-dependent results). Reversible by: a new variant with a warm
   profile whose requests carry the warm source in their identity.
-- **N7 (preference: scope of the shipped reactor domain).** See §14.5 and §14.6. DECISION: the first of §14.6 E3's
-  rungs V1–V3 that measurement selects; zero-inert inlets are outside the real reactor's v0.2 domain.
+- **N7 (preference: scope of the shipped reactor domain).** See §14.5, §14.6 and §14.7. DECISION: the first of §14.7
+  F1's rungs V4–V6 that measurement selects (no rung of V1–V3 qualified, D84); inlets below its inert floor (0.03 or
+  0.035) are outside the real reactor's v0.2 domain.
 - **Informed, not asked:** the additive contract changes (ADR 0019 Amendment 4 via ADR 0033–0035), as Amendments 1 and 3
   were; the ADR 0020 D3 widening (group kill).
 
@@ -898,7 +899,7 @@ Frank decides (§12, N3).
 - Not the convergence of coupled loops in general: the outer iteration is tested on the C1 loop and synthetic maps.
 - Not that the stand-in certifies anything: its numbers certify code paths only (R-199).
 - Not M07's loop design: `C1-LOOP-M02-v1` is a test case.
-- §14.5's "What this round does not establish" applies as well.
+- §14.5's, §14.6's and §14.7's "What this round does not establish" apply as well.
 
 ---
 
@@ -2383,3 +2384,254 @@ by: a later variant with a wider box, appended. N7 needs Frank only if no rung q
 - That zero-inert inlets fail everywhere. Only that they fail S1 at registered corners.
 - That E1's re-certification behaves well where certificate₂ fails. No measured point exercised it.
 - That M05's loop stays above the floor across its box (Q-E1).
+
+### 14.7 Eighth round, 2026-10-09 (`wp/M02` @ `d1b8af1`: WO-12a′ stopped at G11v3-4; build log D80–D87)
+
+G10v3 is met, and so are G11v3-1, -2, -3, -5, -8, -9 and -10 (D83, D84, D86). G11v3-4 is not: no rung of V1–V3
+qualifies (D84). D85 refutes a premise of §14.6 E1, and D84 makes ADR 0027 Amendment 3's fourth bullet false. F1–F3
+rule the brief's three items; F4 ratifies the build's open choices. Register R-315 and R-316.
+
+**Authority.** This section amends §14.6 E1 (F2), E3 (F1) and the gates G10v3, G11v3-3, -4, -6 and -10, and adds
+G11v3-11, G11v3-12 and G12v3-2. Where §14.6 and this section differ, this section governs. Everything else in §14.6
+stands.
+
+**Facts this round rests on.** Sources: D84 (`benchmarks/m02/g11-coverage-v3.json` fa1b0254…, runner bbed0223…,
+provisional variant d3f91323…; two full runs, equal at every point), D85 and D87.
+
+- **Every rung failure is a 653.15 K corner on the 0.02 floor that ends `S1` after 400 steps, and each one's 0.2-inert
+  twin is `ok`.**
+
+  | Rung | Failing corners (653.15 K, y_inert 0.02) | 0.2-inert twins (S1 steps) |
+  | --- | --- | --- |
+  | V1 | 15 MPa, H₂/N₂ 1 and 4 | `ok` (39, 45) |
+  | V2 | 12.5 MPa, H₂/N₂ 2 and 4 | `ok` (39, 42) |
+  | V3 | 11 MPa, H₂/N₂ 2.5 | `ok` (38) |
+
+  At 653.15 K and y_inert 0.02, every corner at P ≤ 9 MPa is `ok`, and so is V3's 11 MPa, H₂/N₂ 3.5 corner. At
+  653.15 K a converging S1 takes 31–47 steps (22 points); a failing one exhausts its 400 (7 points). No point lies in
+  between.
+- **M05's two points are `ok`**: 653.15 K (S1 42 steps) and 693.15 K (S1 31), both at G12's 4.31 % inerts. Every centre
+  is `ok`.
+- **The loop's reactor inlet at M05's box edges (D87, answering Q-E1).** P is 10⁷ Pa throughout.
+
+  | T_in (K) | y_Ar + y_CH₄ | H₂/N₂ | Per-tube flow / F_nom | Child |
+  | --- | --- | --- | --- | --- |
+  | 653.15 | 0.045484 | 3.000008 | 0.7691 | v3 (provisional); v2's loop does not converge here |
+  | 673.15 | 0.043126 | — | — | v2 and v3 |
+  | 693.15 | 0.040468 | 2.999993 | 0.8644 | v2 |
+
+  The inert flows are 0.1 and 0.15 mol/s at both edges, so the fraction moves only with the total flow. Of the three
+  measured values the lowest, 0.040468, is at 693.15 K. M05's REAL study varies T_in alone (N-F6).
+- **D85.** Two points have a failed certificate₁ and δ₁ > 10⁻⁷: `corner-T773.15-P5e+06-r4-i0.2` (δ₁ 1.88e-5) and
+  `centre-x0.25` (δ₁ 2.28e-4). Under D78's ordering both ran round 2 (7 and 11 steps), passed certificate₂ and ended
+  `ok`. Now both end `certificate`. The other two `certificate` refusals, `corner-T773.15-P5e+06-r1-i0` and
+  `-r1-i0.2`, have δ₁ = 5.05e-8 and 1.90e-8. None of the four lies in a rung.
+
+**F1 (item 1; N7). The candidate rungs become V4, V5 and V6: V3 with its floor raised to 0.03, then to 0.035, then
+narrowed in P and H₂/N₂ about the loop's state. All three are measured; the first that qualifies is v3's domain
+(amends §14.6 E3; reverses R-313's rejection of a floor ≥ 0.03; R-315).**
+
+*Why the composition is narrowed first.*
+- **The floor separates every failure.** All five failing corners lie on the y_inert = 0.02 face, and all five
+  0.2-inert twins pass. No P or H₂/N₂ face separates them as cleanly: at 653.15 K and 15 MPa the 0.2-inert corners
+  pass.
+- **A floor costs M05 nothing.** M05 varies only T_in, and its reactor inlet carries 4.05–4.55 % inerts at both edges.
+  A P or H₂/N₂ narrowing would cost M07's design space instead.
+- **R-313's reason is gone.** It rejected a floor ≥ 0.03 for "too thin a margin under the loop's 4.31 %", before the
+  loop's inert fraction at the edges was known. Q-E1 has measured it. Loop fraction over floor:
+
+  | Floor | 653.15 K | 693.15 K |
+  | --- | --- | --- |
+  | 0.03 | 1.516 | 1.349 |
+  | 0.035 | 1.300 | 1.156 |
+
+- **The margin that matters is measured, not assumed.** It is whether the loop's solve ever requests a reactor inlet
+  below the floor. G12v3-2 measures that at both edges, and it replaces Q-E1's 1.5-margin revisit rule.
+
+*The family.* The rungs are nested, V6 ⊆ V5 ⊆ V4 ⊆ V3, so the first that qualifies is the widest that does. Every rung
+keeps T_in [653.15, 693.15] K, the flow bound [0.5, 2] × F_nom and `inert_max` 0.2. Every rung's centre is B3's,
+(673.15 K, 10 MPa, 3, 0.1), at 0.5, 1 and 2 × F_nom.
+
+| Rung | P_in (MPa) | H₂/N₂ | y_inert | Why this rung |
+| --- | --- | --- | --- | --- |
+| V4 | [9, 11] | [2.5, 3.5] | [0.03, 0.2] | V3 with the floor at 0.03 |
+| V5 | [9, 11] | [2.5, 3.5] | [0.035, 0.2] | V3 with the floor at 0.035 |
+| V6 | [9.5, 10.5] | [2.75, 3.25] | [0.035, 0.2] | V5 narrowed about the loop's state (10⁷ Pa, H₂/N₂ 3.000). The last rung: a narrower one would leave M07 no design space |
+
+*Registered points (21 per rung), as §14.6 E3.*
+- 16 corners, T × P × H₂/N₂ × y_inert {floor, 0.2}, built as §8.15 builds them and nudged into the rung by at most
+  2⁻⁴⁰ relative (D82's `below_floor` rule).
+- The centre at three flows, and M05's two points.
+- New inlets: V4's 8 floor corners, V5's 8 floor corners and V6's 16 corners, 32 in all. V4's and V5's 0.2-inert
+  corners are V3's.
+
+*Selection and stop rule.*
+- V4, V5 and V6 are all measured in both full runs, whichever is selected.
+- v3's hard domain is the first rung, in that order, whose 21 points all end `ok` through the boundary in each run.
+  Its floor is v3's `inert_min`, and its box is v3's box.
+- If no rung qualifies, the WO stops and N7 goes to Frank (below). The design lane does not narrow further on its own.
+
+*What is re-measured: everything, in two full runs.* Only the 32 new inlets would be needed for the selection if the
+child were unchanged. But F2 changes the child, so the runner hash changes, and the WO-12a′ record no longer measures
+it. Re-running every old point is also F2's inertness proof (G11v3-11).
+
+*Executable claims (G11v3-12).* The script refuses to write a record unless:
+- (a) V6 ⊆ V5 ⊆ V4 ⊆ V3 holds bound by bound;
+- (b) M05's two registered points and D87's two loop states (D87's n vectors, over 1000 tubes) lie in each of V4–V6:
+  on the T faces, and strictly inside in P, H₂/N₂, y_inert and per-tube flow;
+- (c) each rung has exactly 21 points, and each point lies in its rung after the nudge.
+
+*Consequences.*
+- **M05.** The admissibility inequality n_Ar + n_CH₄ − `inert_min` Σn ≥ 0 carries the selected floor. N-F6's pair is
+  unchanged.
+- **M07 (K6).** The design space is the selected rung, with its floor of 0.03 or 0.035.
+- **G11v3-6 and G9 (a1)** use the selected floor; for V4 the literal is `hard_domain.inert_min None -> 0.03`. At
+  G11's 16 old corners the violation set keeps its form: `T_K` always, `inert_min` at the 8 zero-inert corners, and
+  `P_Pa` and `H2_N2` where they lie outside.
+- **Q-E1** is closed by D87.
+
+*Rejected:*
+- **A floor ≥ 0.04.** The loop sits at 0.040468 at 693.15 K, which would put it on the face.
+- **A floor that depends on T_in.** Every failure is at 653.15 K, so it would buy back the warm side. But the domain
+  would stop being a box with one linear inequality, the schema would gain a new form, and nothing is measured
+  between the T faces.
+- **Narrowing P first, with the floor kept at 0.02** (for example P ≤ 10.5 MPa). It is unmeasured too, it costs M07's
+  design space, and P does not separate the failures.
+- **Raising T_in's lower bound.** M05's REAL box is [653.15, 693.15] K (R-313); its lower edge would leave the domain.
+- **Re-measuring only the 32 new inlets.** That is valid only for an unchanged child, and F2 changes it.
+- **Accepting the S1 refusals inside the domain.** It relaxes §14.5 D3's rule.
+
+**F2 (item 2, D85). Round 2 runs whenever δ₁ is not ≤ 10⁻⁷, whatever certificate₁'s verdict; when it runs and
+converges, certificate₂ decides (amends §14.6 E1 steps 4–6; reverses R-311's rejection of rescuing a failed
+certificate₁; R-316).**
+
+Steps 4–6 of E1's sequence become:
+
+4. If δ₁ ≤ δ_pol = 10⁻⁷, round 2 does not run, and certificate₁ decides: if it fails, the stage is `certificate`;
+   otherwise the outlet is extracted. Where certificate₁ passes, this is v2's path with one read added, as before.
+5. Otherwise round 2 runs, whatever certificate₁'s verdict, with §14.5 D1's settings unchanged.
+   - If the round does not converge, the stage is `S3`. `diagnostics.certificate` is absent, and certificate₁ is in
+     `stages.S3.round2.certificate_round1` (D80, ratified in F4).
+   - If it converges, certificate₂ = `certify_convergence_1d(reactor, status_round2, meta)` decides: the stage is
+     `certificate` if it fails; otherwise the outlet is extracted.
+
+Steps 1–3, step 7 and the trigger `not (δ₁ ≤ 10⁻⁷)` are unchanged.
+
+*Why.*
+- **One mechanism, two symptoms.** S3 stops on its own criterion. Certificate₁'s KPI drift and δ₁ both measure what
+  it left behind. D85's two points have δ₁ = 1.88e-5 and 2.28e-4, the size of the post-S3 defects round 2 was built
+  for (D77: 4.0e-5 to 8.4e-5).
+- **Measured.** D78 ran this ordering at both points: round 2 converged in 7 and 11 steps, certificate₂ passed, and
+  both ended `ok`.
+- **No check is relaxed.** The deciding certificate is always the one run on the state the boundary is handed, and the
+  boundary judges that state as before.
+- **E1's reason is gone.** It rested on "no measured point combined a failed certificate₁ with δ₁ > 10⁻⁷". D85 found
+  two.
+- **Inert elsewhere.** Where certificate₁ passes, or δ₁ ≤ 10⁻⁷, the executed sequence is unchanged. That covers all 8
+  G10 runs, every rung point, and the two `certificate` corners at δ₁ 5.05e-8 and 1.90e-8.
+
+*Effect on G10v3: none, by construction.* At all 8 G10 runs certificate₁ passes and δ₁ ≤ 3.84e-8 (D83), so round 2
+runs nowhere. G10v3 is re-run once on the new runner, and every outlet and `defect_round1` must equal D83's record
+(c6a520e0…) bitwise. Those equal v2's.
+
+*Rejected:*
+- **Keeping E1 as ruled.** It refuses evaluations that round 2 brings to a certified state (D78), and its stated reason
+  is gone.
+- **Round 2 after every failed certificate₁, whatever δ₁.** At δ₁ ≤ 10⁻⁷ the state is element-balanced, so the round
+  has nothing to fix. It would also change the two 773.15 K, H₂/N₂ 1 refusals with no measurement behind it.
+
+**F3 (item 3). ADR 0027 Amendment 4 is written in this commit.** Amendment 3's fourth bullet names V1–V3 as the family
+v3's domain is taken from. Its premise, that one of them qualifies, is refuted by D84. Amendment 4:
+- withdraws that sentence as an erratum and names V4–V6 (F1);
+- extends Amendment 3's third bullet with F2;
+- restates the acceptance evidence.
+
+Amendment 3's other bullets stand. WO-12b depends on Amendment 4 in place of Amendment 3.
+
+**F4. The build's unruled choices are ratified as built.**
+- D80: `after_s3`'s shape, and `diagnostics.certificate` absent when round 2 does not converge.
+- D81: the names, the first-NaN δ reduction, the diagnostic order, and the profile's text. F2 changes `round2.when`
+  and nothing else in it.
+- D82: the scripts, the 2⁻⁴⁰ floor nudge, and "no `nonfinite`" recorded rather than gated.
+- D83, D86 and D87.
+
+The profile id stays `M01-S123-v2`, for §14.6 E4's reason. The runner hash separates the superseded records.
+
+**Gates as amended (numbered; the manifest cites them)**
+
+- **G10v3.** As §14.6, plus: on WO-12a″'s runner, round 2 runs nowhere, and every outlet and `defect_round1` equals
+  D83's record (c6a520e0…) bitwise.
+- **G11v3-1, -2, -5, -7, -8, -9.** Unchanged. G11v3-5's list stays D78's 10 `S1` points. The five V1–V3 `S1` corners
+  are covered by G11v3-11.
+- **G11v3-3.** As §14.6, with its E1 clause replaced by two:
+  - The points with a failed certificate₁ and δ₁ > 10⁻⁷ are exactly `corner-T773.15-P5e+06-r4-i0.2` and
+    `centre-x0.25`, in each run, and round 2 ran at both. Their outcome is recorded; D78's was `ok` at both. Another
+    outcome is logged as a finding and does not stop the WO, since neither point is in a rung.
+  - `corner-T773.15-P5e+06-r1-i0` and `corner-T773.15-P5e+06-r1-i0.2` end `certificate`, without round 2.
+- **G11v3-4.** V4's, V5's and V6's point sets are all measured in both runs. The record states the selection and the
+  selected rung, by F1's rule. If no rung qualifies, the WO stops. V1–V3 are no longer candidates; their points stay
+  in the run under G11v3-11.
+- **G11v3-6 (default gate, WO-12b).** As amended by E3, with the selected floor.
+- **G11v3-10.** E1's table, with case 1 restated and cases 8–10 added. Cases 2–7 are unchanged.
+
+  | # | Scripted inputs | Expected |
+  | --- | --- | --- |
+  | 1 | certificate₁ fails; δ₁ = 3e-8 | `certificate`; certificate called once; no polish; δ₁ recorded; `diagnostics.certificate` = certificate₁ |
+  | 8 | certificate₁ fails; δ₁ = 2e-7; polish converges; certificate₂ passes | outlet; certificate called twice; `diagnostics.certificate` = certificate₂; `round2.certificate_round1` = certificate₁ |
+  | 9 | as 8, but the polish fails | `S3`; certificate called once; `diagnostics.certificate` absent |
+  | 10 | as 8, but certificate₂ fails | `certificate`; `diagnostics.certificate` = certificate₂ |
+
+  Case 8 fails under E1 as ruled. Case 1 fails if round 2 runs after every failed certificate.
+- **G11v3-11 (opt-in, new; F2's inertness).** Every point label of the WO-12a′ record (fa1b0254…), except the two
+  points of G11v3-3's first clause, ends in each run with that record's `stage` and `stage_steps`. Where it ends `ok`,
+  its `tube_outlet` equals that record's bitwise. The comparison reads the record's per-run entries, whose two runs are
+  equal at every point (D84). Any difference stops the WO.
+- **G11v3-12 (opt-in, new; F1's claims).** The script's refusals (a)–(c) in F1. A refusal writes no record, and the WO
+  stops.
+- **G12v3-1.** Unchanged.
+- **G12v3-2 (opt-in, new; WO-12b; F1).** The C1 loop at T_in 653.15 K and at 693.15 K, as D87 ran it (reactor-inlet
+  stream S3, SPEC-S3-T set to T_in, solve only), on the registered v3:
+  - (a) each solve ends CONVERGED and VERIFIED;
+  - (b) no reactor evaluation in either solve is refused `out_of_domain`;
+  - (c) the record states y_Ar + y_CH₄ at the solution and its minimum over every reactor request of the solve.
+
+  A failure stops WO-12b and goes to the design lane.
+
+*Tolerances.* Every clause is exact: stages, step counts, sets, refusals, and bitwise equality. The bitwise clauses
+rest on measured determinism: two full runs equal at every point (D84), and G10's outlets bitwise equal across the v2
+and v3 records (D83). A child change on a path a point does not execute therefore shows no difference at all, and any
+difference is worth catching.
+
+**Work orders (this round)**
+
+| WO | Owner | Content | Depends | Acceptance |
+| --- | --- | --- | --- | --- |
+| **WO-12a″** | Opus, **R** | F2 in `after_s3` (the trigger no longer reads certificate₁'s verdict) and the profile's `round2.when`; G11v3-10 as amended; the provisional variant regenerated. Script: V4–V6 with G11v3-12's refusals, and G11v3-11's comparison against fa1b0254…; the record's `specification` cites §14.7. Runs: G10v3 once and G11v3 twice in full. Records: `g10-adapter-halves-v3.json` and `g11-coverage-v3.json` (both `judged: false`), replacing c6a520e0… and fa1b0254… | — | G10v3; G11v3-1 to -5 and -7 to -12; default gate green |
+| **WO-12b** | Opus | As §14.6, with the selected rung's box and floor; G12v3-2 | WO-12a″ (a rung selected), WO-14, ADR 0027 Amendment 4 | As §14.6, plus G12v3-2 |
+| **WO-13** | bounded | Unchanged; run last | all | As §9 |
+
+On `wp/M05`, WO-5c's inert inequality takes the selected floor once v3 is registered.
+
+**Open questions (each with the default the work proceeds on)**
+
+- **Q-F1 (needs a fact).** Which of V4–V6, if any, qualifies? Settled by WO-12a″'s two runs. Default: F1's rule.
+- **Q-F2 (needs a fact).** Where does S1's failure boundary lie in y_inert at 653.15 K and 11 MPa? The floor corners at
+  0.02, 0.03 and 0.035 bracket it coarsely. Default: a stated limitation, not measured further in M02.
+- **Q-E3 (needs Frank's preference; part of N7).** Unchanged in form. Default: yes; inlets below the selected floor are
+  outside v3's domain.
+
+**Needs Frank (§12 N7, updated).** DECISION: v0.2 ships the real reactor on the first of V4–V6 that WO-12a″ qualifies:
+T_in [653.15, 693.15] K, P [9, 11] MPa, H₂/N₂ [2.5, 3.5], inerts ≥ 3 %; else inerts ≥ 3.5 %; else also P [9.5, 10.5]
+MPa and H₂/N₂ [2.75, 3.25]. Inlets below the floor are refused `out_of_domain`. Alternative: fund a new S1 start
+strategy before 0.2.0, or ship 0.2.0 with the stand-in only. Reversible by: a later variant with a wider box,
+appended. WO-12b proceeds on this default once a rung qualifies, without waiting for Frank, because registration is
+append-only. If no rung qualifies, WO-12b does not start, and N7 blocks it.
+
+**What this round does not establish** (added to §13)
+- That the reactor evaluates everywhere inside the selected rung. At 653.15 K, S1 either converges in 31–47 steps or
+  exhausts 400, so the boundary is a cliff that corner sampling can miss in the interior.
+- Where that boundary lies in y_inert (Q-F2).
+- That F2's rescue holds where certificate₂ fails. No measured point exercised it.
+- That M05's loop stays above the floor between its box edges. G12v3-2 measures the edges, and the inert fraction is
+  measured at three values of T_in only.
+- §14.6's list, except where this section supersedes it.

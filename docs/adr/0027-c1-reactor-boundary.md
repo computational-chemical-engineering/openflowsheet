@@ -192,3 +192,32 @@ The text below is §14.6 E5's proposed text, transcribed verbatim.
 - The real variant's hard domain may carry `inert_min` (absent means 0). v3's domain is the first of V1–V3
   (M02 §14.6 E3). Amendment 2's "three registered boxes" is superseded.
 - Acceptance evidence: G10v3, G11v3-1 to -10, and G12v3-1.
+
+## Amendment 4 (2026-10-09): M02 eighth ruling round (R-315, R-316); erratum to Amendment 3
+
+**Status:** design lane (`specifier`), M02 eighth ruling round; normative text in `docs/design/M02-pymrm-adapter.md`
+§14.7 F1–F3. Still Proposed.
+
+**Erratum.** Amendment 3's fourth bullet says "v3's domain is the first of V1–V3 (M02 §14.6 E3)". That sentence is
+withdrawn. Its premise, that one of V1–V3 qualifies, is refuted by measurement (M02 build log D84): in each rung a
+653.15 K corner at 2 % inerts and high pressure fails the reactor's own start (S1). The rest of that bullet stands:
+the real variant's hard domain may carry `inert_min` (absent means 0), and Amendment 2's "three registered boxes" is
+superseded.
+
+Amended:
+- **v3's domain** is the first of M02 §14.7 F1's nested rungs V4–V6 whose registered points are all accepted in two
+  full runs. All three have T_in ∈ [653.15, 693.15] K and the flow bound [0.5, 2] × F_nom.
+  - V4: 9–11 MPa, H₂/N₂ 2.5–3.5, inerts 0.03–0.2.
+  - V5: as V4, with inerts 0.035–0.2.
+  - V6: as V5, with 9.5–10.5 MPa and H₂/N₂ 2.75–3.25.
+
+  The selected rung's box and floor are stated in v3's variant document, which is the authority on its own domain. If
+  no rung qualifies, no v3 is registered.
+- **The polish round** (Amendment 3, third bullet) runs whenever the defect read after the first certificate exceeds
+  10⁻⁷ (or is not a number), whatever that certificate's verdict. When the round runs and converges, the certificate
+  repeated after it decides (M02 §14.7 F2). Where the first certificate passes, or the defect is ≤ 10⁻⁷, the sequence
+  is unchanged.
+- **Acceptance evidence:** M02 G10v3, G11v3-1 to -12, G12v3-1 and G12v3-2 (design note §14.7), recorded under
+  `benchmarks/m02/*-v3.json`.
+
+Amendment 3's other bullets stand.

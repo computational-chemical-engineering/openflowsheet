@@ -5577,6 +5577,9 @@ stand-in variant and a re-take of the stand-in loop and G8.
 
 **Watch for.** Any change to the group's certificate, which moves the state that δ describes.
 
+> **Amended 2026-10-09 (M02 eighth round):** the rejection of rescuing a failed certificate₁ is **reversed by R-316**
+> (build log D85 found two such points). Round 2 now runs whenever δ₁ > 10⁻⁷, whatever certificate₁'s verdict.
+
 ---
 
 ## R-312 — Positivity is judged on the species present in the inlet, and A45's relative defect on the elements present in the inlet
@@ -5636,6 +5639,9 @@ trace refusal.
 **Watch for.** Q-E1: M05's loop inert fraction at 653.15 K and 693.15 K. Below 0.03, the design lane revisits the
 floor.
 
+> **Amended 2026-10-09 (M02 eighth round):** no rung of V1–V3 qualified (D84). The family is **replaced by V4–V6, and
+> the rejection of a floor ≥ 0.03 is reversed, by R-315** (Q-E1 measured the loop at 4.05–4.55 % inerts, D87).
+
 ---
 
 ## R-314 — D73–D76 confirmed; the timeout rule of R-304 is confirmed on the selected rung
@@ -5661,5 +5667,65 @@ floor.
 separates the superseded record.
 
 **Watch for.** Host load at the registration run. It is recorded, not corrected.
+
+---
+
+## R-315 — The candidate rungs become V4–V6 (V3 with the floor at 0.03, then 0.035, then narrowed about the loop's state); all are measured and the first that qualifies is v3's domain (supersedes R-313's family and its floor)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 eighth ruling round, on build log D84 and D87 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.7 F1; ADR 0027 Amendment 4 |
+| Evidence | D84: V1 19/21, V2 19/21, V3 20/21 `ok` in both runs. All five failures are 653.15 K corners at y_inert 0.02 and high P that exhaust S1's 400 steps, and all five 0.2-inert twins are `ok`. M05's two points and every centre are `ok`. D87: the loop's reactor-inlet inert fraction is 0.045484 at 653.15 K and 0.040468 at 693.15 K |
+| Affected packages | M02 (v3's box and `inert_min`, G11v3-4, -6, -11, -12, G12v3-2, G9 (a1)), M05 (the floor inequality), M07 (design space) |
+
+**Decision.**
+- V4 = V3 with y_inert ∈ [0.03, 0.2]; V5 = V3 with y_inert ∈ [0.035, 0.2]; V6 = V5 with P ∈ [9.5, 10.5] MPa and
+  H₂/N₂ ∈ [2.75, 3.25]. All keep T_in [653.15, 693.15] K, the flow bound and B3's centre. V6 ⊆ V5 ⊆ V4 ⊆ V3.
+- 21 registered points per rung, as R-313. All three rungs are measured in both full runs, and the first that is all
+  `ok` in both is selected. If none is, the WO stops and N7 goes to Frank; no further narrowing without him.
+- Everything is re-measured, because R-316 changes the child. The old points are R-316's inertness proof.
+- The script refuses to write a record unless the rungs nest and the loop's measured states (M05's points, D87's two
+  edges) lie inside every rung.
+- G12v3-2: the loop at 653.15 K and 693.15 K on the registered v3 converges and verified, with no `out_of_domain`
+  refusal. It replaces Q-E1's 1.5-margin revisit rule.
+
+**Rejected alternatives, and why.**
+- A floor ≥ 0.04: the loop sits at 0.040468 at 693.15 K.
+- A T_in-dependent floor: the domain would stop being a box with one linear inequality, and it is unmeasured.
+- Narrowing P first with the floor at 0.02: unmeasured, costs M07's design space, and P does not separate the
+  failures.
+- Raising T_in's lower bound: M05's REAL box edge would leave the domain.
+- Re-measuring only the 32 new inlets: valid only for an unchanged child.
+
+**Watch for.** S1's cliff at 653.15 K (31–47 steps or 400, nothing between): corners can miss interior failures. Any
+M05 decision variable beyond T_in, which would move the loop's inert fraction outside what D87 measured.
+
+---
+
+## R-316 — Round 2 runs whenever δ₁ > 10⁻⁷, whatever certificate₁'s verdict; certificate₂ decides when it runs (amends R-311)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 eighth ruling round, on build log D85 and D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.7 F2; ADR 0027 Amendment 4 |
+| Evidence | D85: two points have a failed certificate₁ with δ₁ = 1.88e-5 and 2.28e-4; under D78's ordering both ran round 2, passed certificate₂ and ended `ok`. At all 8 G10 runs and every rung point certificate₁ passes with δ₁ ≤ 10⁻⁷ |
+| Affected packages | M02 (v3's child `after_s3`, profile `M01-S123-v2` `round2.when`, G10v3, G11v3-3, -10, -11) |
+
+**Decision.**
+- If δ₁ ≤ 10⁻⁷, round 2 does not run, and certificate₁ decides.
+- Otherwise round 2 runs whatever certificate₁'s verdict. If it does not converge, the stage is `S3`; if it does,
+  certificate₂ decides.
+- G10v3 is unchanged by construction and re-asserted bitwise against D83's record. G11v3-11 asserts every other old
+  point's stage, step counts and outlet bitwise.
+
+**Rejected alternatives, and why.**
+- Keeping R-311's rule: its stated reason ("no measured point") is refuted, and it refuses evaluations round 2 brings
+  to a certified state.
+- Round 2 after every failed certificate₁, whatever δ₁: an element-balanced state gives the round nothing to fix.
+
+**Watch for.** A point where certificate₂ fails; none has been measured.
 
 ---
