@@ -12,6 +12,34 @@
     "tools": "--tools \"\" with --allowedTools \"mcp__procsim__*\" and --strict-mcp-config",
     "wall_cap_s": 1800
   },
+  "amendments": [
+    {
+      "date": "2026-10-08",
+      "number": 1,
+      "rules": [
+        "W27-R57 erratum",
+        "W27-R59",
+        "W27-R60",
+        "W27-R61"
+      ],
+      "section": "§20"
+    },
+    {
+      "date": "2026-10-09",
+      "number": 2,
+      "rules": [
+        "W27-R14",
+        "W27-R19",
+        "W27-R23",
+        "W27-R24",
+        "W27-R25",
+        "W27-R59",
+        "W27-R62",
+        "W27-R63"
+      ],
+      "section": "§21"
+    }
+  ],
   "classes": [
     "ARTIFACT_INCOMPLETE",
     "NOT_STEADY_STATE_SIMULATION",
@@ -218,6 +246,16 @@
     {
       "claim": "GC-UNIT-4 functions and tokens used are in the registered vocabularies",
       "detail": "[] []",
+      "holds": true
+    },
+    {
+      "claim": "GC-MODEL-1 the model table is today's 13 ids and the 8 C1 ids; a row performs a function, or performs none for a registered reason and offers no token",
+      "detail": "bad rows []",
+      "holds": true
+    },
+    {
+      "claim": "GC-MODEL-2 each C1 unit maps as its SYN-001 namesake; the two C1 reactors perform no function (c1.reactor fixed_design_reactor, c1.reactor_standin synthetic_stand_in)",
+      "detail": "differ []; others ['c1.reactor', 'c1.reactor_standin']",
       "holds": true
     },
     {
@@ -1270,6 +1308,7 @@
       "watertap_contrib.reflo.property_models.fo_draw_solution_properties.FODrawSolutionParameterBlock": "watertap_aqueous"
     },
     "provider_methods": {
+      "pr-c1-v1": "cubic_pr",
       "syn001": "synthetic_syn001"
     }
   },
@@ -1855,6 +1894,40 @@
       }
     },
     "model_functions": {
+      "c1.adiabatic_mixer": {
+        "function": "mixer",
+        "offers": []
+      },
+      "c1.feed_source": {
+        "function": "feed",
+        "offers": []
+      },
+      "c1.product_sink": {
+        "function": "product",
+        "offers": []
+      },
+      "c1.reactor": {
+        "function": null,
+        "offers": [],
+        "why_none": "fixed_design_reactor"
+      },
+      "c1.reactor_standin": {
+        "function": null,
+        "offers": [],
+        "why_none": "synthetic_stand_in"
+      },
+      "c1.stream_splitter": {
+        "function": "splitter",
+        "offers": []
+      },
+      "c1.tp_flash": {
+        "function": "flash",
+        "offers": []
+      },
+      "c1.tp_heater": {
+        "function": "heater",
+        "offers": []
+      },
       "syn001.adiabatic_mixer": {
         "function": "mixer",
         "offers": []
@@ -1907,6 +1980,10 @@
         "function": "valve",
         "offers": []
       }
+    },
+    "model_none_reasons": {
+      "fixed_design_reactor": "a reactor of one fixed design (geometry, catalyst, coolant and kinetics fixed by its pin, ADR 0027): no case's JSON can show that its reactor is that reactor, so it serves no case unit",
+      "synthetic_stand_in": "a synthetic model whose defining relation is a closed-form stand-in (R-199): it certifies nothing about the unit it stands in for, so it serves no case unit"
     },
     "reviewed_none": {
       "idaes:AerationTank": "named_chemistry_reactor",
@@ -2010,6 +2087,7 @@
       "two_phase_feed": "the feed's state is flashed to vapour and liquid",
       "ua_area_relation": "duty from U*A*dT with the area and the coefficient as inputs",
       "valve_flow_relation": "flow set by a flow coefficient and opening (pressure-flow relation)"
-    }
+    },
+    "unit_model_pool": "the serving route's model_ids when one route serves the case's single method group; otherwise every model of the snapshot (W27-R62)"
   }
 }

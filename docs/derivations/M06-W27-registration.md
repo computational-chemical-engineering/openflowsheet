@@ -1,7 +1,9 @@
 # M06 W27 registration — the OpenIDAES-450 external agent benchmark adaptation
 
-**Status:** registered 2026-10-08, **before any W27 agent run**. Amended once, also before any run: §20
-(Amendment 1, 2026-10-08: one erratum and three scoring rules, W27-R59…R61, from the M06 review F5). Design lane (`specifier`), M06 WO-15, branch
+**Status:** registered 2026-10-08, **before any W27 agent run**. Amended twice, also before any run: §20
+(Amendment 1, 2026-10-08: one erratum and three scoring rules, W27-R59…R61, from the M06 review F5); §21 (Amendment 2,
+2026-10-09: the C1 model and provider rows, units judged on the serving route W27-R62, the v0.2 snapshot reading
+W27-R63, refusals W27-R24 (d)–(e), and the ruling on §20, which amends W27-R59). Design lane (`specifier`), M06 WO-15, branch
 `wp/M06-w27`. Brief: `docs/briefs/M06-W27-registration.md` (`1fb65c1`).
 **Machine-readable companion:** `benchmarks/m06/openidaes450/registration.json`, written by
 `docs/derivations/scripts/m06_w27_registration.py` from the tables in that script and from
@@ -17,9 +19,10 @@ drawn at M07 from the coverage of the v0.2 candidate by the procedure of §6.
 
 - A `verdict` agent judges W27 from **this document and the campaign record** (§13 lists what the record must
   hold). Nothing else is needed and nothing else is authority.
-- Numbered items: **W27-R01…R61** are registration rules (R59…R61 by Amendment 1, §20); **GC-*** are the generator's self-claims (§14.1);
-  **W27-A01…A40** are the assertions WO-16's tests and G15's dry run must pass (§14.2); **W27-S01…S18** are the
-  registered scorer states (§14.3).
+- Numbered items: **W27-R01…R63** are registration rules (R59…R61 by Amendment 1, §20; R62, R63 by Amendment 2,
+  §21); **GC-*** are the generator's self-claims (§14.1, §21.7); **W27-A01…A40** are the assertions WO-16's tests and
+  G15's dry run must pass (§14.2; A16…A19 by Amendment 2, §21.7); **W27-S01…S20** are the registered scorer states
+  (§14.3; S19, S20 by Amendment 2).
 - Authority order for W27: blueprint §11.4 > plan v1.2 W27 row > design note `docs/design/M06-web-shell.md` §9
   > this registration, for everything §9 delegates to it (the maps, the classifier's rules, the sample, the
   prompt, the final answer, scoring, reporting). Where this document reads §9 more narrowly, §3 says so.
@@ -235,6 +238,8 @@ offers (`registration.json#/units/model_functions`). Today: the 13 `syn001.*` mo
 `liquid_pump` → pump, `valve` → valve, `heat_exchanger` → heat_exchanger, `conversion_reactor` →
 conversion_reactor, `kinetic_cstr` → kinetic_reactor). Port phase capabilities (SYN-001's mixer, splitter,
 feed and pump are liquid-only) are **not** checked by the classifier; §7 catches them for candidates (§16).
+*Amended (§21.1):* the eight C1 model ids are registered; a row may perform **no** function (`function: null`, with
+a reason from `registration.json#/units/model_none_reasons`), which is registered (no refusal) and serves no unit.
 
 ### 5.5 The component map (component availability)
 
@@ -266,7 +271,7 @@ a reason).
 
 **W27-R19 (provider side).** Each OpenFlowsheet property provider id maps to a method
 (`registration.json#/routes/provider_methods`). Today: `syn001` → `synthetic_syn001`, which equals no case
-method.
+method. *Amended (§21.2):* `pr-c1-v1` → `cubic_pr`.
 
 **W27-R20 (availability).** The case's non-reaction packages are grouped by method. With
 `routes_per_revision = 1` (today; one route per revision) and more than one group, every package gets a
@@ -295,21 +300,23 @@ components: [{id, name, formula, cas, synthetic, phases}], model_ids}], routes_p
 `list_models`; routes from the providers the **revision binder** can select, each with `describe().provider_id`,
 its components with their records' `identifiers` and `synthetic`, the phases the provider admits per component,
 and the model ids the binder accepts with it — read from the binder's own tables, never from a hand-written
-list. At 0.1.1 there is one route (`syn001`, all 13 models, `routes_per_revision = 1`). How v0.2's binder exposes
-selectable routes is not known yet (§17 Q1).
+list. At 0.1.1 there is one route (`syn001`, all 13 models, `routes_per_revision = 1`). *Amended (§21.4):* v0.2's
+binder is read by W27-R63, and since W27-R62 the classifier reads each route's `model_ids`.
 
 **W27-R24 (refusals).** The classifier **refuses to classify** — writes no `coverage.json` and exits non-zero
 naming every item — when the snapshot holds (a) a model id not in `model_functions`, (b) a provider id not in
 `provider_methods`, or (c) a non-synthetic registry component one of whose archive spellings (a case name equal,
 ignoring case, to the record's `id`, `name` or `formula`) is not aliased to its CAS RN. Each is a gap in this
 registration and is closed by an amendment (design lane), before any run. An unregistered model is never
-silently "unavailable" and never silently "available".
+silently "unavailable" and never silently "available". *Amended (§21.3):* it refuses also on (d) a
+`routes_per_revision` other than 1, or two routes of one method; (e) a route model id that is not among the
+snapshot's models, or a model on no route.
 
 ### 5.8 Coverage record
 
 **W27-R25.** `coverage.json` (WO-16): `{snapshot, snapshot_sha256, list_models_sha256, registration_sha256,
 case_facts_sha256, rows: [{case_id, family, model_type, in_full82, residual_check, class, reasons, units,
-components, packages}], summary: {all_450, full82}}`, where each summary gives the class counts (summing to
+components, packages}], summary: {all_450, full82}}` (each row gains `units_judged_on`, §21.3), where each summary gives the class counts (summing to
 450 and 82), the number of cases carrying each reason kind, and the class counts per family. G14 passes iff
 450/450 rows carry a class, every non-`CANDIDATE` row carries a reason of its class, the summaries sum, and
 both SHA-256 values are recorded.
@@ -457,6 +464,7 @@ An item of kind `other`, or an item whose subject is null for the first three ki
 classification records as available for this case (a unit of an available group, an available component, an
 available package); it **names nothing** iff its subject matches no unit, component or package of the case.
 Both are semantic errors (reported, §11.10). They do not by themselves make a limitation wrong (W27-R43).
+*Amended (§21.6, W27-R59):* an item that matches a recorded reason is not contradicted.
 
 ## 11. Scoring per run
 
@@ -666,7 +674,7 @@ Exact, no tolerance unless stated. All hold at this commit.
 | GC-CP-1 | upper(0, 45) = 1 − 0.05^(1/45) within 1 × 10⁻¹² (solved to 40 digits; the difference is roundoff of the double conversion) and rounds to 0.06440 |
 | GC-CP-2 | upper(x, 45) strictly increasing in x; lower < upper for every x |
 | GC-CP-3 | lower(45, 45) = 0.05^(1/45) within 1 × 10⁻¹² |
-| GC-DRY-1…5 | (dry illustration, both snapshots where marked) 450 rows with a class; every non-`CANDIDATE` row has a reason of its class; summaries sum to 450 and 82; today's model ids equal `model_functions`; every reason with a subject has itself among its aliases |
+| GC-DRY-1…5 | (dry illustration, both snapshots where marked) 450 rows with a class; every non-`CANDIDATE` row has a reason of its class; summaries sum to 450 and 82; today's model ids are the registered 13 (`model_functions` holds them and, since §21, the eight C1 ids); every reason with a subject has itself among its aliases |
 | GC-SAMPLE-1 | W27-R28 sums to S, respects N_f and keeps minima for every S = 1…45 on today's frame |
 | GC-SAMPLE-2 | the dry sample is 45 distinct frame cases; the run order is a permutation of it; the 3 canaries are disjoint from it |
 | GC-TOL-1…3 | the boundary values of W27-A30…A32 pass and fail as registered, and each mis-implementation named there would flip one |
@@ -681,7 +689,7 @@ Expected values come from this document and the generator, which WO-16's code do
 | Id | Assertion | Expected |
 | --- | --- | --- |
 | W27-A01 | WO-16's classifier, run on `case_facts.json` and the snapshot stored in `dry_illustration.json#/snapshots/today`, reproduces every row's class and reason multiset `(kind, subject, detail)` | 450/450 equal |
-| W27-A02 | the same against `…/hypothetical_v02` (with `hypothetical-pr-c1` → `cubic_pr` passed as a test-only provider method) | the summaries equal those stored |
+| W27-A02 | the same against `…/hypothetical_v02` (*amended, §21.5:* the real `pr-c1-v1` route and the eight C1 models; no test-only provider method) | the summaries equal those stored |
 | W27-A03 | `watertap_metab` | `ARTIFACT_INCOMPLETE`; reasons exactly: ARTIFACT (six files), NOT_STEADY (`n1`), UNIT `AnaerobicReactor`, COMPONENT null (`components_not_declared`), ROUTE null (`no_property_package_declared`) |
 | W27-A04 | `official_gtep_5bus_three_stage` | `NOT_STEADY_STATE_SIMULATION`, detail contains `n1`, `n3`, `n5` |
 | W27-A05 | `variant_idaes_hx_ntu_e60_a80` | `UNIT_UNAVAILABLE`; unit reason `HeatExchangerNTU` with `partial:heat_exchanger:missing=ntu_relation`; component reasons exactly `CO2, H2O, HCO3_-, MEA, MEACOO_-, MEA_+` (three `chemical`, three `ion`); route reasons `fs.hotside_properties`, `fs.coldside_properties` with `no_route:aqueous_apparent_species` |
@@ -765,10 +773,11 @@ IAPWS-95 pump variants (H₂O), `official_btx_flash_canary`, `variant_hda_once_t
 `official_idaes_skeleton_pervaporation` and `pareto_produced_water_network`. They are where coverage moves
 first if a route gains water, benzene/toluene or methanol.
 
-The hypothetical v0.2 snapshot adds one invented route (`hypothetical-pr-c1`, method `cubic_pr`, H₂, N₂, Ar, CH₄
-vapour-only, NH₃ both phases) and no model. Classes are unchanged — **still 0 candidates** — while the reasons
-of 107 cases change (hydrogen, methane, nitrogen become available;
-`dry_illustration.json#/snapshots/hypothetical_v02/cases_whose_reasons_change`). The one case whose chemistry is the
+The hypothetical v0.2 snapshot was, at registration, today's plus one invented route (`hypothetical-pr-c1`, method
+`cubic_pr`, H₂, N₂, Ar, CH₄ vapour-only, NH₃ both phases) and no model. *Amended (§21.5):* it is now today's plus the
+real `pr-c1-v1` route, read from the C1 records and the provider, with the eight C1 models. Classes are unchanged —
+**still 0 candidates** — while the reasons of 107 cases change (hydrogen, methane, nitrogen, argon, ammonia become
+available; `dry_illustration.json#/snapshots/hypothetical_v02/cases_whose_reasons_change`). The one case whose chemistry is the
 ammonia loop, `variant_idaes_ammonia_synthesis_intercool_condense`, is a conservation-only reduced model with
 an `EquilibriumReactor`: unit and route reasons remain. Expect few or no candidates at M07 unless v0.2's units
 and route match a case's method; §17 Q5 says what then.
@@ -821,8 +830,8 @@ reported metric, not an optimisation. Each was fixed in the table or the rule, n
 
 | # | Question | Kind | Default (applies until answered) |
 | --- | --- | --- | --- |
-| Q1 | How does v0.2's revision binder expose selectable property routes and their models (W27-R23)? | **needs a fact** — WO-16 reads `wp/M01`/`wp/M02` at M07 and names the table | the snapshot builder refuses (`registry_snapshot: unsupported(route enumeration)`) until the reading is registered by an amendment; at 0.1.1 the single implicit route is read from `syn001` and `canonical_components` |
-| Q2 | M01's provider id and per-component phases, and M02's new model ids | **needs a fact** (M01/M02 code at M07) | W27-R24 refuses; the amendment adds `provider_methods[<M01 id>] = cubic_pr` and one `model_functions` row per new model, before coverage is run |
+| Q1 | How does v0.2's revision binder expose selectable property routes and their models (W27-R23)? | **answered by Amendment 2** (§21.4, W27-R63; the fact measured at `wp/M02` `2587f14`) | — |
+| Q2 | M01's provider id and per-component phases, and M02's new model ids | **answered by Amendment 2** (§21.1, §21.2) | — |
 | Q3 | Re-canary allowance if a canary fails for a harness reason | **needs Frank** (spend) | DECISION: up to 3 further canary runs within the approved USD 15–45, each recorded; more needs Frank. Alternative: stop at the first failed canary. Reversible by: Frank's answer before M07 |
 | Q4 | Is agent false verification gated (as V17) or reported? | **needs Frank** (what W27 is for) | DECISION: reported with its bound (W27-R56, R-179). Alternative: gated at 0. Reversible by: one line in W27-R56 before the first run |
 | Q5 | With 0 candidates at M07, run the 45 anyway? | **needs Frank** (spend) | DECISION: run the approved 45 (limitation behaviour and false-verification exposure are the measurement). Alternative: Tier 1 cheap (15 runs) to save about two thirds. Reversible by: Frank's answer before the first run |
@@ -979,3 +988,296 @@ carries all of them.
 
 **What the scorer reports is unchanged:** each of the three is applied and reported in `scores.json` exactly as
 before the amendment; this section makes the rules normative rather than the module's.
+
+## 21. Amendment 2 — the C1 rows, units on the serving route, the v0.2 snapshot reading, and the ruling on §20 (2026-10-09, before any W27 run)
+
+**Source and authority.** Design lane (`specifier`), branch `wp/M06-w27-c1map` from `main` `95a874d`. Two requests:
+M02's design note §14.3 C1 (R-280 (d)) — the commit that joins the eight C1 builders into `MODEL_BUILDERS` re-pins the
+W27 snapshot, and W27-R24 refuses unmapped ids, so the rows are registered first; and the M06 review's request to read
+§20 (F5). Facts read at `wp/M02` `2587f14`: `revision_binding.C1_MODEL_BUILDERS` (six ids), ADR 0034 D9 and design note
+§4.1 (`c1.reactor`, `c1.reactor_standin`, WO-9), the `models/c1/` manifests and ports; the provider `pr-c1-v1`
+(`thermo/pr_c1.py`, byte-identical on `main` and `wp/M02`) and its records `benchmarks/m01/components.yaml`. Register
+entries R-283…R-286 (`docs/decision-register.md`). Preflight P2's pins (`benchmarks/m06/w27/preflight.py`,
+`REGISTERED_SHA256`) are re-taken in the commit that records this amendment.
+
+**What changes.** `registration.json#/units/model_functions` (eight rows) and `…/model_none_reasons` (new);
+`…/routes/provider_methods` (one row); `…/amendments` (new); W27-R14, R19, R23, R24, R25 (one row member) and R59 are
+amended in place by pointers to this section; W27-R62 and R63 are new; `dry_illustration.json` is re-derived. **What does
+not.** `case_facts.json`; the unit-key, token, alias, intrinsic-component and package-method tables; every other rule.
+The 450 rows at today's snapshot keep their class and their reasons exactly (W27-A01 is unchanged and passes on the
+classifier as built).
+
+### 21.1 The C1 model rows (W27-R14 amended)
+
+| Model id | Function | Offers | Why |
+| --- | --- | --- | --- |
+| `c1.feed_source` | feed | — | `syn001.feed_source`'s three rows under a C1 identity; ports liquid or vapour |
+| `c1.product_sink` | product | — | as `syn001.product_sink`; the scorer's product connections are read through this row (W27-R45) |
+| `c1.adiabatic_mixer` | mixer | — | component, energy and SYN-001's equal-pressure rows (W27-R13 reading (a) holds) |
+| `c1.tp_heater` | heater | — | outlet T pinned, ΔP zero-only, duty row — as `syn001.tp_heater` |
+| `c1.tp_flash` | flash | — | isothermal, isobaric split with a duty row and a pressure pin — as `syn001.tp_flash` (reading (b) holds) |
+| `c1.stream_splitter` | splitter | — | two outlets (recycle, purge) at one fraction — as `syn001.stream_splitter` |
+| `c1.reactor` | **none** | — | `fixed_design_reactor` |
+| `c1.reactor_standin` | **none** | — | `synthetic_stand_in` |
+
+*The six units.* Their signatures read what their SYN-001 namesakes' read, port for port (M02 WO-8.2; the comment above
+`_c1_basis` in `revision_binding.py`), so each performs its namesake's function and, like it, offers no token
+(GC-MODEL-2). Their narrower capabilities are limits of state space, not of the defining relation: the heater and the
+mixer have vapour ports and the regimes {VAPOR, ZERO_FLOW} (a two-phase outlet is refused `vapour_phase_inadmissible`
+or fails the certificate's declared-port check); the flash takes a vapour inlet, has the regimes VAPOR, TWO_PHASE and
+ZERO_FLOW and no LIQUID, and refuses a feed with no light gas `pure_nh3_flash_unsupported` (R-230). (That refusal is
+the flash's: `c1.feed_source` accepts a liquid or a vapour.) No case-side option expresses such a limit — W27-R13's
+tokens are defining relations and configuration options — and this registration does not check port phase capabilities
+(W27-R14, §16), exactly as it registered SYN-001's liquid-only mixer, splitter, feed and pump. So they get no token.
+What makes that safe on this archive is measured: **GC-A2-5** — the three cases `pr-c1-v1` serves at the hypothetical
+v0.2 snapshot (`ngfc_atr`, `official_idaes_smr_equilibrium_flowsheet`, `official_idaes_smr_gibbs_flowsheet`) declare
+only the vapour phase and hold no NH₃, so the vapour-only heater and mixer and the flash's missing LIQUID regime
+separate no archive case. A case where they would is a candidate the classifier does not see through — W27-A16-g
+registers one, synthetic — and §7's scripted build of a sampled candidate catches it.
+
+*The two reactors perform no function* (`function: null`, a reason from `registration.json#/units/model_none_reasons`).
+A null row is registered: it does not refuse (W27-R24 (a)), and it serves no unit.
+- `c1.reactor` — `fixed_design_reactor`. It is the pinned one-dimensional packed bed (`MembraneReactor1D` with zero
+  permeances, a co-current coolant channel), non-isothermal, of one geometry, catalyst, coolant and kinetics (case
+  `G2 — GHSV sweep_1000`, M01 spec §8.1–§8.2, ADR 0027), reacting N₂ + 3 H₂ → 2 NH₃ only; its one free parameter is
+  N_tubes. The vocabulary's reactors are a stated-conversion reactor (`conversion_reactor`) and a CSTR with the case's
+  kinetics (`kinetic_reactor`, required by IDAES `CSTR` with `general_rate_kinetics`). It is neither: its conversion is
+  computed, not stated, and it is not a stirred tank. A case unit it could serve would be a plug-flow reactor of that
+  geometry, catalyst and kinetics, which no case JSON can establish (W27-R01). The archive's one plug-flow key,
+  `idaes:PFR` (one case, `official_idaes_eg_pfr_flowsheet`, default none: GC-A2-6), stays unavailable. *Rejected:*
+  `kinetic_reactor` with no token (it is not a CSTR; W27-A16-f tells the two apart by its detail); a new function
+  `plug_flow_reactor` (it would re-key a default-none archive key and change today's records, for no change of class).
+- `c1.reactor_standin` — `synthetic_stand_in`. R-199 and ADR 0034 D9: listed as synthetic, it certifies nothing about the
+  reactor. Mapping it to any function would count a closed-form stand-in as coverage.
+
+W27-A16-e and A16-f show the null rows: on the C1 route a stoichiometric reactor is `no_model:conversion_reactor` and a
+CSTR `no_model:kinetic_reactor`.
+
+### 21.2 The provider row (W27-R19 amended) and the C1 components
+
+**`pr-c1-v1` → `cubic_pr`.** Peng–Robinson 1976 with van der Waals one-fluid mixing and k_ij = 0 for every pair (ADR 0026
+D1, D3; M01 spec §4). `cubic_pr` is "Peng–Robinson in the phases the package declares" (W27-R18), and method equality
+is by class (R-177): k_ij = 0 against a case's parameters is a difference inside the method, judged by the stream
+tolerances and §7's floor, not by the route rule. Its vapour-only light gases are a **phase admission**, read per
+component (W27-R63): H₂, N₂, Ar and CH₄ vapour; NH₃ liquid and vapour (the only liquid is pure NH₃, R-143). With W27-R20
+that is exact for the five components: a package that declares a liquid phase is served only when NH₃ is its only
+available component (W27-A16-g), and H₂ beside NH₃ in a liquid phase is refused `phase=1333-74-0:liquid` (A16-h).
+*Rejected:* a method of its own (`cubic_pr_vapour_only`) — it would duplicate W27-R20's phase admission and make every
+PR package unservable by construction.
+
+| Id | Name | Formula (record) | CAS RN | Phases admitted | Archive spellings aliased (W27-R15) |
+| --- | --- | --- | --- | --- | --- |
+| H2 | hydrogen | H2 | 1333-74-0 | vapor | `H2`, `hydrogen` |
+| N2 | nitrogen | N2 | 7727-37-9 | vapor | `N2`, `nitrogen` |
+| NH3 | ammonia | H3N | 7664-41-7 | liquid, vapor | `NH3` |
+| Ar | argon | Ar | 7440-37-1 | vapor | `Ar`, `argon` |
+| CH4 | methane | CH4 | 74-82-8 | vapor | `CH4`, `methane` |
+
+Every value is read from the records and the provider by the generator, not transcribed (`c1_route_components`).
+NH₃'s record formula is the Hill form `H3N`; no case component is named so, nor `ammonia`, and W27-R24 (c) does not
+refuse (GC-A2-1). Each record's id is aliased to its record's CAS RN (GC-A2-2), and every archive spelling of the five was
+aliased already (GC-COMP-2). No alias is added.
+
+### 21.3 Units are judged on the serving route (W27-R62), and two more refusals (W27-R24 amended)
+
+**W27-R62.** If a case's non-reaction packages form exactly one method group and a snapshot route serves it (W27-R20:
+the same method, every available component admitted in every declared phase), every unit of the case is judged by
+W27-R13 against **that route's `model_ids`** only, and the row records `units_judged_on` = that route's provider id.
+Otherwise — no package, several groups, or no serving route — the units are judged against every model of the snapshot,
+as before, and `units_judged_on` is null. Detail strings keep their form.
+
+*Why.* A revision binds on one basis, chosen by its `record_source` (ADR 0034 D8), so all its units must be models the
+binder accepts on that basis; a unit that only another route's model performs is not representable. W27-R23 already
+recorded each route's `model_ids`; the classifier never read them, which was harmless while there was one route.
+*Rejected:* every model, whatever the route (it counts a composition across bases as coverage: W27-A16-c is a
+`CANDIDATE` under it); judging each route separately and keeping the best (needless while a method has one route, which
+(d) below makes a refusal rather than an assumption).
+
+*Effect.* At today's snapshot, none: no case has SYN-001's method. At the hypothetical v0.2 snapshot, one case's reasons
+and no class (GC-A2-4): `ngfc_atr`'s `HeatExchanger` goes from `partial:heat_exchanger:missing=ua_area_relation` to
+`no_model:heat_exchanger` (no C1 model exchanges heat between two streams).
+
+**W27-R24 (d), (e).** The classifier also refuses a snapshot (d) whose `routes_per_revision` is not 1, or in which two
+routes map to one method — W27-R62 is registered for one route per revision and per method; (e) in which a route lists a
+model id that is not among the snapshot's models, or a model is on no route. W27-A17…A19.
+
+### 21.4 The v0.2 snapshot reading (W27-R63; §17 Q1 and Q2 answered)
+
+**Fact (measured at `wp/M02` `2587f14`).** `openflowsheet.__version__` is still `"0.1.1"`. The binder selects its basis
+by `record_source` (`models.revision_flowsheet.component_basis`, `revision_binding.basis_provider`). The C1 builders
+refuse the SYN-001 basis (`_c1_basis`, `model_unsupported`), but SYN-001's builders carry no basis check: in a revision
+over the C1 records, `syn001.feed_source` → `syn001.product_sink` binds, and a C1 feed through
+`syn001.stream_splitter` into C1 sinks binds and traverses (`tests/test_m02_wo8_units.py::minimal` with the model id
+swapped); `syn001.tp_heater`, `syn001.adiabatic_mixer` and `syn001.tp_flash` are refused there only by the instance's
+port-phase or domain checks (`port_phase_unsupported`, `value_outside_model_domain`), not for their model id. After the join, which models a basis
+accepts would live only inside the C1 builders. So WO-16's readings, keyed by version alone, would read the joined
+two-basis binder, still carrying `0.1.1`, as 0.1.1's one SYN-001 route — silently, once this amendment registers the
+C1 ids.
+
+**W27-R63 (how a snapshot reading is chosen, and `bases-v1`).** The snapshot builder chooses its reading by what the
+binder exposes:
+1. **`bases-v1`** iff `openflowsheet.application.revision_binding` exposes `SELECTABLE_BASES` (every `ComponentBasis` that
+   `component_basis` can return) and `MODEL_BASES` (model id → the frozenset of provider ids of the bases on which the
+   binder accepts it — the table its own `model_unsupported(<id>)` refusal reads). One route per basis `b`, in
+   `SELECTABLE_BASES` order:
+   - `provider_id` = `basis_provider(b).describe().provider_id`, which must equal `b.provider_id`, with
+     `describe().components` equal to `b.components`; otherwise refuse;
+   - `components`, in `b.components` order: `{id, name, formula, cas, synthetic}` from the provider's records —
+     SYN-001 `benchmarks/syn001/components.yaml`, `pr-c1-v1` `pr_c1.load_records()`; a provider not named here: refuse;
+   - `phases` per component, as W27-R06's kinds, sorted: SYN-001 — `describe().phases` for every component (as at
+     0.1.1); `pr-c1-v1` — `vapor` for the indices in `pr_c1.LIGHT`, `describe().phases` for the others; a provider not
+     named here: refuse;
+   - `model_ids` = the sorted ids `m` of `MODEL_BASES` with `b.provider_id ∈ MODEL_BASES[m]`.
+
+   `routes_per_revision = 1` (one `record_source`, hence one basis, per revision). Refuse unless
+   `set(MODEL_BASES) = set(MODEL_BUILDERS) =` the `list_models` ids and every model is on a route.
+2. **`0.1.1`** (WO-16's `_routes_0_1_1`) iff `__version__ == "0.1.1"` **and** `revision_binding` has no `basis_provider`.
+3. Otherwise refuse: `registry_snapshot: unsupported(route enumeration)`.
+
+The tables say *which* bases and models; the per-provider lines say only where each provider keeps its records and its
+phases — a provider this reading does not name refuses rather than being guessed. `SELECTABLE_BASES` and `MODEL_BASES`
+are the registered default names (§21.10 Q9).
+
+**Finding F-A2-1 (for M02's design lane; not decided here).** Whether SYN-001's builders should refuse the C1 basis, as
+the C1 builders refuse SYN-001's. *Recommended default:* yes — their manifests carry SYN-001's provider, convention and
+domain constants, which is the reason M02 gave for not reusing the classes (`models/c1/*.py` docstrings). W27 reads either
+answer through `MODEL_BASES`, and the dry counts do not depend on it (GC-A2-3; the measured binder's route is stored as
+`dry_illustration.json#/amendment_2/binder_2587f14`).
+
+### 21.5 The dry illustration, re-derived (W27-A02 amended)
+
+The hypothetical v0.2 snapshot (SHA-256 `1a2a8a9f…5e2e`) is today's SYN-001 route plus the `pr-c1-v1` route read as
+W27-R63 reads it — the C1 records, the provider's phases, the eight C1 models — and the 21 models; `list_models` is
+unknown until the join (`null`). W27-A02 classifies it with the registered `provider_methods` and no test-only method.
+
+| Class | today, of 450 / 82 | hypothetical v0.2, of 450 / 82 |
+| --- | --- | --- |
+| `ARTIFACT_INCOMPLETE` | 1 / 0 | 1 / 0 |
+| `NOT_STEADY_STATE_SIMULATION` | 65 / 8 | 65 / 8 |
+| `UNIT_UNAVAILABLE` | 367 / 73 | 367 / 73 |
+| `COMPONENT_UNAVAILABLE` | 17 / 1 | 17 / 1 |
+| `PROPERTY_ROUTE_UNAVAILABLE` | 0 / 0 | 0 / 0 |
+| `CANDIDATE` | **0 / 0** | **0 / 0** |
+
+Cases carrying each reason (450 / 82), hypothetical: artifact 1 / 0; not steady 66 / 8; unit 433 / 81; component 449 / 82
+(today 450 / 82); property route 447 / 80 (today 450 / 82). The reasons of 107 cases change against today; the sample
+drawn from it equals today's (§15.2; GC-A2-7). **The WO-15 prediction — 0 candidates even with a Peng–Robinson route — is
+confirmed** with the real ids and the C1 units. The reason is structural: the C1 units add no function SYN-001's lacked,
+so coverage can move only through components and routes. The one case all of whose components become available,
+`variant_idaes_ammonia_synthesis_intercool_condense`, keeps an `EquilibriumReactor` (no function) and a
+`conservation_only` route; the three cases `pr-c1-v1` serves keep Gibbs or equilibrium reactors and compressors (and, in
+`ngfc_atr`, a heat exchanger and an expander) and components v0.2 lacks: CO, CO₂ and H₂O (in `ngfc_atr` also C₂H₆,
+C₃H₈, O₂ and the unidentified C₄H₁₀). At M07, expect |C| = 0: W27-R27's third branch and §17 Q5 apply.
+
+### 21.6 The ruling on §20 (Amendment 1)
+
+- **Erratum, W27-R57 "nine": confirmed.** `access_report.json` holds 9 `inaccessible_assets`: the three LoRA adapters,
+  the SFT records and knowledge base, the seven-role workflow, the scoring harness, the binding of `splits/full82.json`
+  to the score run, the agents' own outputs on the 82, and the supplementary material. W27-R57 reads "the nine".
+- **W27-R60 (several time points → unjudged): ratified as written.** It is what `scorer._single` and the
+  `flow_mol_phase_comp` branch do, and it reduces the check visibly (`multiple_time_points`), never silently.
+- **W27-R61 (a reference component the product stream lacks → 0 mol/s): ratified as written** (`_compatible` reads
+  `values.get(key, 0.0)`); moot whenever W27-R44 passes.
+- **W27-R59: amended.** Measured (GC-SCORE-1): at today's snapshot **13 cases** have a unit alias that names both an
+  available unit and an `UNIT_UNAVAILABLE` reason — in `ngcc_gas_turbine_subflowsheet`, `Mixer` names the available
+  `fs.mx1`–`fs.mx3` and the reason for `fs.inject1` (no momentum balance). As built, `{unit_unavailable, "Mixer"}` there
+  is *matched* and *contradicted* at once (measured with `scorer.judge_limitation` on the committed `coverage.json` row):
+  a correct item counted as a semantic error. **W27-R59 as amended:** *(R59's text, and) an item that matches a recorded
+  reason (W27-R40) is not contradicted.* W27-R40 matches leniently on purpose; a subject the record itself uses for an
+  unavailable group cannot also be the error of calling an available one unavailable. No outcome class moves (W27-R47
+  never reads contradiction); only W27-R52's counts do. W27-S19 and S20 register the case and its contrast (GC-SCORE-2).
+
+### 21.7 New self-claims, assertions and scorer states
+
+| Id | Claim (generator; refuses to emit when false) |
+| --- | --- |
+| GC-MODEL-1 | `model_functions` is today's 13 ids and the 8 C1 ids; each row performs a function, or performs none for a reason in `model_none_reasons` and offers no token |
+| GC-MODEL-2 | each C1 unit maps as its SYN-001 namesake; `c1.reactor` is `fixed_design_reactor`, `c1.reactor_standin` `synthetic_stand_in` |
+| GC-A2-1 | the hypothetical v0.2 snapshot is not refused (W27-R24 (a)–(e)) |
+| GC-A2-2 | each C1 record's id is aliased to the record's CAS RN, with a valid check digit |
+| GC-A2-3 | the hypothetical's summary equals the measured binder's (SYN-001's models also on `pr-c1-v1`) |
+| GC-A2-4 | W27-R62 changes no class at the hypothetical; the changed cases are recorded (`ngfc_atr`) |
+| GC-A2-5 | every case `pr-c1-v1` serves declares only the vapour phase and holds no NH₃ |
+| GC-A2-6 | `idaes:PFR` occurs in exactly one case and is default none |
+| GC-A2-7 | the dry sample drawn at the hypothetical equals today's |
+| GC-SCORE-1 | 13 cases at today's snapshot have a unit alias naming an available unit and an unavailable reason, `ngcc_gas_turbine_subflowsheet` (`mixer`) among them |
+| GC-SCORE-2 | on that row `Mixer` is matched and, as amended, not contradicted (as built: contradicted); `fs.mx1` is unmatched and contradicted |
+| GC-DRY-4 | (amended) today's model ids are the registered 13 |
+
+Assertions for WO-16h's tests (states stored in `dry_illustration.json#/amendment_2/adversarial_states`, each on the
+hypothetical v0.2 snapshot with the registered methods plus `test-pr` → `cubic_pr`; each changes one thing; expected
+reasons exact as `(kind, subject, detail)`):
+
+| Id | State | Expected | Why it is in the list |
+| --- | --- | --- | --- |
+| W27-A16-a | W27-A13's synthetic row (Feed, Heater, Product; H₂ vapour PR) | `CANDIDATE`, no reason, `units_judged_on = pr-c1-v1` | the C1 feed, heater and product serve |
+| W27-A16-b | the row with Feed, Mixer, Heater, Flash, Separator (2 outlets), Product | `CANDIDATE` | all six C1 functions; a wrong row for any flips it |
+| W27-A16-c | A16-a plus an `idaes:Pump` | `UNIT_UNAVAILABLE`, exactly `(UNIT_UNAVAILABLE, Pump, no_model:pump units=fs.pump)`; before W27-R62 `CANDIDATE` | W27-R62 bites |
+| W27-A16-d | A16-c with the package `generic[Vap:VaporPhase:Ideal]` | exactly `(PROPERTY_ROUTE_UNAVAILABLE, fs.props, no_route:ideal_gas)` | no serving route: the pump is judged on every model |
+| W27-A16-e | A16-a plus an `idaes:StoichiometricReactor` | exactly `(UNIT_UNAVAILABLE, StoichiometricReactor, no_model:conversion_reactor units=fs.rxr)`; before W27-R62 `CANDIDATE` | neither C1 reactor is a conversion reactor |
+| W27-A16-f | A16-a plus an `idaes:CSTR` | exactly `(UNIT_UNAVAILABLE, CSTR, no_model:kinetic_reactor units=fs.cstr)` | `c1.reactor` is not a kinetic reactor (as one it would read `partial:…`) |
+| W27-A16-g | A16-a with the package `generic[Liq:…;Vap:…]` holding NH₃ only | `CANDIDATE` | NH₃ admitted liquid; port phases unchecked (§16) |
+| W27-A16-h | A16-g holding H₂ and NH₃ | exactly `(PROPERTY_ROUTE_UNAVAILABLE, fs.props, route_mismatch:pr-c1-v1:missing=:phase=1333-74-0:liquid)` | phase admission is per component |
+| W27-A17 | the hypothetical plus a second `cubic_pr` route | refusal naming `routes sharing a method ['cubic_pr']` | W27-R24 (d) |
+| W27-A18 | (a) a route model id `c1.ghost` not among the models; (b) `c1.reactor` on no route | refusals naming `route model ids not among the models ['c1.ghost']`, `models on no route ['c1.reactor']` | W27-R24 (e) |
+| W27-A19 | the hypothetical with `routes_per_revision = 2` | refusal naming `routes_per_revision 2 is not 1` | W27-R24 (d) |
+
+W27-A12…A15's test route now carries today's 13 model ids (`added_route_model_ids`): under W27-R62 a route with no model
+would make W27-A13's candidate `UNIT_UNAVAILABLE`. Their expected reasons do not change.
+
+| Id | Case | Session and answer | Expected class | Why it is in the list |
+| --- | --- | --- | --- | --- |
+| W27-S19 | `ngcc_gas_turbine_subflowsheet` at today's snapshot | limitation, `{unit_unavailable, "Mixer"}` | `CORRECT_LIMITATION`; matched 1, contradicted 0 | W27-R59 as amended (as built: contradicted 1) |
+| W27-S20 | the same | limitation, `{unit_unavailable, "fs.mx1"}` | `WRONG_LIMITATION`; contradicted 1, names nothing 0 | an available unit named without a matching reason is still contradicted |
+
+W27-S01…S18 keep their expected values (S03's available `hot_feed` matches no reason, so it stays contradicted). G15
+now passes iff all 20 states score as registered.
+
+### 21.8 Work orders
+
+**WO-16h — M06 build lane, on `main`, before M02's join and before WO-17's first canary** (the scorer part closes F5):
+- `benchmarks/m06/w27/coverage.py`: W27-R62 (and the row member `units_judged_on`), W27-R24 (d) and (e). Tests: W27-A16…A19
+  from the stored states; `with_route` gives its route today's model ids; `test_coverage_document_and_g14`'s row keys.
+- `benchmarks/m06/w27/scorer.py`: W27-R59 as amended; W27-S19, S20.
+- `benchmarks/m06/w27/snapshot.py`: W27-R63 item 2's guard (the `0.1.1` reading refuses when `revision_binding` has
+  `basis_provider`); item 1 waits for the binder tables.
+- Re-take `coverage.json` and `docs/m06-w27-coverage.md` (their rows and summaries do not change at today's snapshot;
+  `registration_sha256` and the row member do).
+
+**M02's join commit (R-280 (d)) — to re-pin the W27 snapshot:**
+- J1. Expose `SELECTABLE_BASES` and `MODEL_BASES` in `revision_binding`, and make the binder's `model_unsupported`
+  refusal read `MODEL_BASES` (replacing the per-builder `_c1_basis`), with `set(MODEL_BASES) = set(MODEL_BUILDERS)`.
+  Decide F-A2-1 (default: SYN-001's models on SYN-001's basis only).
+- J2. Implement W27-R63 item 1 (`bases-v1`) in `snapshot.py`.
+- J3. Build the live snapshot. It must not be refused; its set of model ids must equal that of
+  `dry_illustration.json#/snapshots/hypothetical_v02/snapshot`, and each of its routes, matched by `provider_id`, must
+  equal that snapshot's — or, if F-A2-1 is answered "SYN-001's models bind on both", the same with `pr-c1-v1`'s
+  `model_ids` equal to `#/amendment_2/binder_2587f14/c1_route_model_ids`. Anything else stops the join's W27 part and
+  goes to the design lane (the illustration no longer describes the binder).
+- J4. Re-take `coverage.json` from the live snapshot with the WO-16h classifier; G14 passes; its summary must equal the
+  hypothetical's (0 candidates); a difference goes to the design lane before merging.
+- J5. Update the snapshot tests: the live registry is no longer 0.1.1's (`test_snapshot_of_this_build_is_todays_registry`
+  compares with J3's expectation); each route binds a revision over its own component set with its own `model_ids`
+  (`test_each_route_binds_a_revision_with_its_component_set` no longer expects every route to hold all of
+  `MODEL_BUILDERS`).
+- J6. Regenerate `docs/m06-w27-coverage.md`; record the new `list_models` and snapshot SHA-256 values (G14). Do not
+  re-emit `dry_illustration.json` (it is the registration's record; its `today` is 0.1.1's), and do not run the
+  generator's `dry --snapshot-live` on the joined build (it refuses a multi-basis binder).
+
+### 21.9 What this amendment does not establish
+
+- **No coverage of v0.2.** The hypothetical snapshot is built from the records and the provider at this commit and the
+  ids M02 names; the coverage that counts is the build under test's, at M07 (P3).
+- **Not that the C1 units can represent any case.** Their rows are necessary conditions. Their phase limits are
+  unchecked; GC-A2-5 shows only that no archive case depends on them.
+- **No numerical agreement** between `pr-c1-v1` and any IDAES Peng–Robinson package (k_ij, parameters).
+- **Not whether SYN-001's builders should bind on the C1 basis** (F-A2-1, M02's), nor a reading of any binder other than
+  W27-R63's two.
+- The binder facts of §21.4 are of `wp/M02` `2587f14`; J3 re-checks them at the join.
+
+### 21.10 Open questions
+
+| # | Question | Kind | Default (applies until answered) |
+| --- | --- | --- | --- |
+| Q8 | Do SYN-001's builders bind on the C1 basis after the join (F-A2-1)? | **needs M02's design lane** | no: `MODEL_BASES` lists each `syn001.*` on SYN-001's basis only. W27 reads either answer; J3 names both expectations |
+| Q9 | The names of the binder's two tables | build lane's naming | `SELECTABLE_BASES`, `MODEL_BASES`. Another name is recorded in the join commit and W27-R63 reads it; what is registered is the property — the binder's own refusal reads the table the snapshot reads |
