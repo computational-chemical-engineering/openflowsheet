@@ -113,7 +113,7 @@ TransactionStatus = Literal["committed", "replayed", "conflict", "rejected", "pr
 #: The certificate's own verdicts (ruling round 1 R5): copied into `RunResult`, never mapped.
 VerificationStatus = Literal["VERIFIED", "RELAXED", "UNVERIFIED", "FAILED"]
 #: `policies.SolvePath` (ruling round 1 R2.4), restated so this module imports no solver code.
-SolvePath = Literal["revision_eo", "legacy_eo"]
+SolvePath = Literal["revision_eo", "legacy_eo", "revision_coupled"]
 
 EVENT_COMMON_MEMBERS: Final[tuple[str, ...]] = (
     "job_id",

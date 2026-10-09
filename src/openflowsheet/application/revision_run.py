@@ -50,6 +50,16 @@ from openflowsheet.application.binding import (
     legacy_admission,
     refusal_code,
 )
+from openflowsheet.application.coupled_run import (
+    COUPLING_NAME,
+    CouplingUnsupportedError,
+    Experiments,
+    compact_record,
+    coupling_evidence,
+    external_units,
+    reproducibility_class,
+    solve_coupled,
+)
 from openflowsheet.application.policies import SolvePath
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.structure_index import structure_index
@@ -87,6 +97,7 @@ from openflowsheet.verify.certificate import (
 )
 from openflowsheet.verify.failure import (
     FailureBundle,
+    coupling_bundle,
     initializer_bundle,
     initializer_source,
     refusal_bundle,
@@ -118,8 +129,8 @@ __all__ = [
     "traced_analysis",
 ]
 
-#: R2.4: the routes a `solve-path.json` may record.
-SOLVE_PATHS: Final[tuple[SolvePath, ...]] = ("revision_eo", "legacy_eo")
+#: R2.4: the routes a `solve-path.json` may record; `revision_coupled` is M02's (ADR 0034 D2).
+SOLVE_PATHS: Final[tuple[SolvePath, ...]] = ("revision_eo", "legacy_eo", "revision_coupled")
 
 #: A stage callback (§6.4): called with a stage's name at its start, and never for a stage that
 #: is skipped. The job runner emits progress and checks for interruption there (§8.1); `None`,
@@ -197,15 +208,16 @@ def _refusal(unbound: Unbound) -> str:
 
 
 def select_route(document: Mapping[str, Any]) -> Route | NoRoute:
-    """R2.1 as amended by ruling rounds 6 and 7: `revision_eo` whenever the revision binder binds;
-    else `legacy_eo` when the legacy binder binds and `legacy_admission` admits the revision; else
-    no route. A legacy binding not admitted is reported as
+    """R2.1 as amended by ruling rounds 6 and 7: `revision_eo` whenever the revision binder binds
+    — `revision_coupled` when the binding has an external (variant-backed) unit (M02 design note
+    §4.4, ADR 0034 D2); else `legacy_eo` when the legacy binder binds and `legacy_admission`
+    admits the revision; else no route. A legacy binding not admitted is reported as
     `unsupported(legacy_route_not_admitted(<code>))`, beside the refusal `legacy_admission`
     reports. The route's reason stays the revision binder's refusal. A pure function of the
     document; each binder reads its own copy."""
     revision = bind_revision_flowsheet(copy.deepcopy(dict(document)))
     if isinstance(revision, RevisionBinding):
-        return Route("revision_eo", revision)
+        return Route(_revision_path(revision), revision)
     legacy = bind_revision_or_reason(copy.deepcopy(dict(document)))
     if isinstance(legacy, Binding):
         why = legacy_admission(document, revision, legacy)
@@ -218,13 +230,25 @@ def select_route(document: Mapping[str, Any]) -> Route | NoRoute:
     return NoRoute(revision, legacy)
 
 
+def _revision_path(binding: RevisionBinding) -> SolvePath:
+    """`revision_coupled` iff the binding has an external unit (§4.4), else `revision_eo`."""
+    return "revision_coupled" if external_units(binding) else "revision_eo"
+
+
 def bind_route(solve_path: SolvePath, document: Mapping[str, Any]) -> Route | Unbound:
     """The named route's binder only (R2.5: a rerun follows the recorded route and never
     re-routes). On `legacy_eo` the route's reason is the revision binder's refusal, as
-    `select_route` records it, or `None` when that binder binds (a route taken by request)."""
+    `select_route` records it, or `None` when that binder binds (a route taken by request). On
+    `revision_coupled` the binding must have an external unit."""
     revision = bind_revision_flowsheet(copy.deepcopy(dict(document)))
     if solve_path == "revision_eo":
         return Route("revision_eo", revision) if isinstance(revision, RevisionBinding) else revision
+    if solve_path == "revision_coupled":
+        if not isinstance(revision, RevisionBinding):
+            return revision
+        if not external_units(revision):
+            return Unbound("unsupported", "no_external_unit")
+        return Route("revision_coupled", revision)
     legacy = bind_revision_or_reason(copy.deepcopy(dict(document)))
     if not isinstance(legacy, Binding):
         return legacy
@@ -403,9 +427,19 @@ class RouteRun:
     failure: FailureBundle | None
     #: The certified state, `None` without a certificate.
     state: Mapping[str, float] | None
+    #: `revision_coupled` only (ADR 0034 D6): `external-coupling.json`. The other fields are the
+    #: last inner solve's, and `route.binding` is its binding (at the final w).
+    coupling: Mapping[str, Any] | None = None
+    #: `revision_coupled` only: the coupling's outcome when it is not the inner solve's
+    #: (`COUPLING_NOT_CONVERGED`, `EVALUATION_ERROR`; ADR 0034 D3).
+    coupled_outcome: str | None = None
+    #: `revision_coupled` only: the run's reproducibility class (§7.2), else the flowsheet's.
+    reproducibility_class: str | None = None
 
     @property
     def outcome(self) -> str:
+        if self.coupled_outcome is not None:
+            return self.coupled_outcome
         if self.run is not None:
             return str(self.run.outcome)
         assert isinstance(self.plan, PlanRefusal)
@@ -451,6 +485,8 @@ def solve_route(
     trace: Trace | None = None,
     stage: Stage | None = None,
     warm_start: WarmStartCandidate | None = None,
+    experiments: Experiments | None = None,
+    on_iteration: Callable[[int, int], None] | None = None,
 ) -> RouteRun:
     """§12.1's steps on `route` (R2.2's table), from the registered initializer (`user_start`
     unset). A `VerifierError` propagates: the verifier refused to judge, so nothing is certified
@@ -462,10 +498,28 @@ def solve_route(
     (§8.1). `stage` is called at the start of `plan`, `solve` and `verify` (§6.4).
 
     `warm_start` is the source-2 candidate the caller found (ADR 0024 D2) or recorded (D5); it is
-    read only on `revision_eo`, under a policy whose chain names the source (`execute_plan`).
+    read only on `revision_eo` and `revision_coupled` (its k = 0 inner solve), under a policy
+    whose chain names the source (`execute_plan`).
+
+    On `revision_coupled` (M02 design note §4.4) `experiments` runs the experiments — the job's
+    runner, or a replay's recorded backend — and `on_iteration(k, max_outer)` is called at each
+    outer iteration's start; a coupled run without `experiments` is
+    `unsupported(external_runner_unavailable)`.
     """
     at = stage if stage is not None else _no_stage
     binding = route.binding
+    if route.solve_path == "revision_coupled":
+        return _solve_coupled(
+            route,
+            document,
+            policy=policy,
+            check_policy=check_policy,
+            trace=trace,
+            at=at,
+            warm_start=warm_start,
+            experiments=experiments,
+            on_iteration=on_iteration,
+        )
     at("plan")
     try:
         if route.solve_path == "revision_eo":
@@ -480,13 +534,7 @@ def solve_route(
         raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
 
     if isinstance(plan, PlanRefusal):
-        # §12.3: T02's registered mapping of a refused plan; `plan_refused` where it has none
-        # (§14.6 S11, logged for the design lane).
-        try:
-            failure = refusal_bundle(plan)
-        except KeyError as error:
-            raise RunUnsupportedError(f"plan_refused({plan.outcome})") from error
-        return RouteRun(route, plan, report, None, None, None, failure, None)
+        return _refused_plan(route, plan, report)
 
     at("solve")
     run = execute_plan(
@@ -538,7 +586,27 @@ def solve_route(
         # verifier on this route.
         kinds = ",".join(step.kind for step in plan.steps)
         raise RunUnsupportedError(f"certificate_unmapped({route.solve_path},{kinds})")
+    return _failed_run(route, plan, report, run, region_plan)
 
+
+def _refused_plan(route: Route, plan: PlanRefusal, report: StructuralReport) -> RouteRun:
+    """§12.3: T02's registered mapping of a refused plan; `plan_refused` where it has none
+    (§14.6 S11, logged for the design lane)."""
+    try:
+        failure = refusal_bundle(plan)
+    except KeyError as error:
+        raise RunUnsupportedError(f"plan_refused({plan.outcome})") from error
+    return RouteRun(route, plan, report, None, None, None, failure, None)
+
+
+def _failed_run(
+    route: Route,
+    plan: ExecutionPlan,
+    report: StructuralReport,
+    run: PlanResult,
+    region_plan: SolvePlan | None,
+) -> RouteRun:
+    """§12.3's failure bundle of a plan run that did not converge, or `RunUnsupportedError`."""
     last = run.steps[-1] if run.steps else None
     if last is not None and isinstance(last.detail, RegionResult):
         failure = region_bundle(last.detail, run.trace, step_index=last.index, plan=plan)
@@ -562,6 +630,103 @@ def solve_route(
     raise RunUnsupportedError(f"failure_bundle_unmapped({run.outcome},{step_kind},{held})")
 
 
+def _solve_coupled(
+    route: Route,
+    document: Mapping[str, Any],
+    *,
+    policy: SolvePolicy,
+    check_policy: CheckPolicy,
+    trace: Trace | None,
+    at: Stage,
+    warm_start: WarmStartCandidate | None,
+    experiments: Experiments | None,
+    on_iteration: Callable[[int, int], None] | None,
+) -> RouteRun:
+    """`revision_coupled` (M02 design note §4.3–§4.4): the outer coupling, then the final inner
+    solve certified with the coupling's evidence, or a bundle. Each inner solve is planned and run
+    as `revision_eo`'s; `plan` and `solve` are called once, before the first inner solve."""
+    from openflowsheet.run.session import _reproducibility_class
+
+    if experiments is None:
+        raise RunUnsupportedError("external_runner_unavailable")
+    at("plan")
+    at("solve")
+    try:
+        solved = solve_coupled(
+            route.binding,
+            policy=policy,
+            experiments=experiments,
+            trace=trace,
+            warm_start=warm_start,
+            on_iteration=on_iteration,
+        )
+    except CouplingUnsupportedError as error:
+        raise RunUnsupportedError(error.code) from error
+    except UnsupportedRankStructureError as error:
+        raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
+    inner, coupling = solved.inner, solved.coupling
+    final = Route("revision_coupled", inner.binding)
+    extra: dict[str, Any] = {
+        "coupling": solved.record,
+        "reproducibility_class": reproducibility_class(
+            solved.units, _reproducibility_class(inner.binding.flowsheet)
+        ),
+    }
+    if isinstance(inner.plan, PlanRefusal):  # at k = 0: the plan's own outcome, passed through
+        return replace(_refused_plan(final, inner.plan, inner.report), **extra)
+    run = inner.run
+    assert run is not None
+    plan = inner.plan
+    region_plan = plan.steps[-1].solve_plan
+    if coupling.outcome == "CONVERGED":
+        assert run.state is not None
+        at("verify")
+        certificate = _run_identity(
+            verify_revision(
+                inner.binding,
+                document,
+                run,
+                policy=check_policy,
+                solve_plan=region_plan,
+                external=coupling_evidence(solved, run.state),
+            ),
+            plan,
+        )
+        return RouteRun(
+            final,
+            plan,
+            inner.report,
+            run,
+            region_plan,
+            certificate,
+            None,
+            _judged(run, run),
+            **extra,
+        )
+    if coupling.outcome in ("COUPLING_NOT_CONVERGED", "EVALUATION_ERROR"):
+        failure = coupling_bundle(
+            coupling.outcome,
+            coupling.reason,
+            coupling=compact_record(solved.record),
+            implicated=[unit.unit_id for unit in solved.units],
+            plan=plan,
+        )
+        return RouteRun(
+            final,
+            plan,
+            inner.report,
+            run,
+            region_plan,
+            None,
+            failure,
+            None,
+            coupled_outcome=coupling.outcome,
+            **extra,
+        )
+    # §4.4: an inner failure at k = 0 passes its own outcome through, with its own bundle.
+    return replace(_failed_run(final, plan, inner.report, run, region_plan), **extra)
+
+
 def run_revision_session(
     route: Route,
     document: Mapping[str, Any],
@@ -574,13 +739,17 @@ def run_revision_session(
     trace: Trace | None = None,
     stage: Stage | None = None,
     warm_start: WarmStartCandidate | None = None,
+    experiments: Experiments | None = None,
+    on_iteration: Callable[[int, int], None] | None = None,
 ) -> RunManifest:
     """Solve, verify and write the bundle (§12.3 as amended by R2.4). Mirrors `run_session`.
 
     `document` is the stored revision's canonical document; `policy` is the resolved policy and
     `policy_requested` the id as submitted (`"default"` or a registered id). Nothing is written
-    when the run ends in a `VerifierError` or `RunUnsupportedError`. `trace`, `stage` and
-    `warm_start` are `solve_route`'s; `stage` is also called at the start of `bundle`.
+    when the run ends in a `VerifierError` or `RunUnsupportedError`. `trace`, `stage`,
+    `warm_start`, `experiments` and `on_iteration` are `solve_route`'s; `stage` is also called at
+    the start of `bundle`. A `revision_coupled` bundle is the final inner solve's, plus
+    `external-coupling.json` (ADR 0034 D6).
     `solve-path.json` gains `warm_start` (ADR 0024 D4) iff the solve consulted the source.
     """
     from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
@@ -595,8 +764,13 @@ def run_revision_session(
         trace=trace,
         stage=stage,
         warm_start=warm_start,
+        experiments=experiments,
+        on_iteration=on_iteration,
     )
     (stage if stage is not None else _no_stage)("bundle")
+    # The route the result was solved on: on `revision_coupled`, its binding is the final inner
+    # solve's (at the final w); on every other route it is `route` itself.
+    route = result.route
 
     if result.run is not None:
         trace = result.run.trace
@@ -636,6 +810,8 @@ def run_revision_session(
     else:
         assert result.failure is not None
         artifacts["failure-bundle.json"] = result.failure.as_document()
+    if result.coupling is not None:
+        artifacts[COUPLING_NAME] = dict(result.coupling)
 
     # R0 of the documents **as written**: ADR 0002 spells an integral float as an integer, and
     # `execution_plan_r0` keeps a float as its `repr` but an integer as itself, so the projection
@@ -660,7 +836,11 @@ def run_revision_session(
         verification_status=(
             result.certificate.verification_status if result.certificate is not None else None
         ),
-        reproducibility_class=_reproducibility_class(route.binding.flowsheet),
+        reproducibility_class=(
+            result.reproducibility_class
+            if result.reproducibility_class is not None
+            else _reproducibility_class(route.binding.flowsheet)
+        ),
         started_at=started,
         elapsed_seconds=time.monotonic() - clock,
     )

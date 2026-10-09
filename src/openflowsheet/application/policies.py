@@ -42,6 +42,7 @@ from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE
 __all__ = [
     "APPLICATION_POLICIES",
     "DEFAULT_POLICY_ID",
+    "INNER_ROUTE",
     "REGISTERED_POLICY_IDS",
     "ROUTE_DEFAULT_POLICY",
     "T04_W12",
@@ -54,8 +55,9 @@ __all__ = [
     "resolve_policy",
 ]
 
-#: The two solve routes (ruling round 1 R2.1). The tear path is not reachable through `solve`.
-SolvePath = Literal["revision_eo", "legacy_eo"]
+#: The solve routes (ruling round 1 R2.1; `revision_coupled`, M02 design note §4.4, ADR 0034
+#: D2). The tear path is not reachable through `solve`.
+SolvePath = Literal["revision_eo", "legacy_eo", "revision_coupled"]
 
 #: ADR 0012 D4: the T05b cases' policy, the defaults with phase contract v2.
 T05B_V2: Final[SolvePolicy] = SolvePolicy(
@@ -129,10 +131,15 @@ ROUTE_DEFAULT_POLICY: Final[Mapping[SolvePath, str]] = {
 }
 
 
+#: M02 design note §4.4: a route whose inner solves are another route's, and so whose default
+#: policy is that route's (`revision_coupled`'s inner plan is `plan_revision`'s, as `revision_eo`).
+INNER_ROUTE: Final[Mapping[SolvePath, SolvePath]] = {"revision_coupled": "revision_eo"}
+
+
 def resolve_policy(policy_id: str, solve_path: SolvePath) -> SolvePolicy | None:
     """The policy a requested id names on `solve_path`: `"default"` is the route's registered
-    policy, a registered id is itself on either route, and anything else is `None` (admission's
-    `not_found`, §5.3 step 4)."""
+    policy (on `revision_coupled`, its inner route's), a registered id is itself on every route,
+    and anything else is `None` (admission's `not_found`, §5.3 step 4)."""
     if policy_id == DEFAULT_POLICY_ID:
-        return APPLICATION_POLICIES[ROUTE_DEFAULT_POLICY[solve_path]]
+        return APPLICATION_POLICIES[ROUTE_DEFAULT_POLICY[INNER_ROUTE.get(solve_path, solve_path)]]
     return APPLICATION_POLICIES.get(policy_id)

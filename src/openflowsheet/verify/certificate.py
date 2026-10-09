@@ -374,6 +374,18 @@ class SolutionCertificate:
         }
 
 
+@dataclass(frozen=True)
+class ExternalEvidence:
+    """What a coupled run's driver supplies about its external units (M02 design note §4.4;
+    ADR 0034 D3): two `residual` checks per unit, judged with the rest of the check set; an
+    `external_model` limitation per unit; and, per unit, the derivative the external map does not
+    have (`unavailable`), recorded under `derivative_provenance.external_map`."""
+
+    checks: tuple[CheckResult, ...]
+    limitations: tuple[Limitation, ...]
+    derivatives: Mapping[str, str]
+
+
 #: ADR 0010 D9: the `transformations.declaration` of a nominal certificate — nothing freed or
 #: promoted. R0.
 NOMINAL_DECLARATION: Final[Mapping[str, Any]] = {
@@ -616,6 +628,7 @@ def verify_revision(
     policy: CheckPolicy | None = None,
     state: Mapping[str, float] | None = None,
     solve_plan: Any = None,
+    external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
     """K04 on a **revision-built** flowsheet (T05 design note §4.2): the binding's declaration,
     judged by the table of `verify.table` against the revision's own values.
@@ -626,6 +639,10 @@ def verify_revision(
     provider, never the binding's flowsheet or units (R-016). `binding` is an
     `application.revision_binding.RevisionBinding`; `revision` must be the document it was bound
     from, else `declaration_mismatch(revision)`.
+
+    `external` (M02 design note §4.4) is a coupled run's evidence about its external units: its
+    checks are judged with the table's, its limitations and derivative record added. `None` on
+    every other route, where nothing here differs.
     """
     from openflowsheet.models.revision_flowsheet import (
         RevisionError,
@@ -757,6 +774,7 @@ def verify_revision(
         )
         if basis == "pr-c1-v1"
         else frozenset(),
+        external=external,
     )
 
 
@@ -1175,6 +1193,7 @@ def _issue(
     projection: Projection,
     provider: PropertyProvider | None = None,
     unstenciled: frozenset[str] = frozenset(),
+    external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
@@ -1189,6 +1208,9 @@ def _issue(
     resolved = policy
     plan = getattr(result, "plan", None)
     plan_id = getattr(plan, "plan_id", "")
+    if external is not None:
+        # M02 design note §4.4: the coupling checks are judged with the check set.
+        checks += external.checks
     checks += derivative_witness(target, final_state, unstenciled=unstenciled)
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
@@ -1222,6 +1244,8 @@ def _issue(
                 {"columns": skipped, "reason": "pr_c1_zero_flow_columns"},
             )
         )
+    if external is not None:
+        limitations += external.limitations
     # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
     # qualifications and the statements name; SYN-001's unless given.
     if provider is None:
@@ -1275,6 +1299,8 @@ def _issue(
                 ),
                 default=None,
             ),
+            # M02 design note §4.4: an external unit's map has no derivative (ADR 0034 D4).
+            **({} if external is None else {"external_map": dict(external.derivatives)}),
         },
         independence_qualifications=tuple(
             {

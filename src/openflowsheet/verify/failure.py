@@ -469,6 +469,49 @@ def refusal_bundle(refusal: Any) -> FailureBundle:
     )
 
 
+def coupling_bundle(
+    outcome: str,
+    reason: str | None,
+    *,
+    coupling: Mapping[str, Any],
+    implicated: Sequence[str],
+    plan: Any,
+) -> FailureBundle:
+    """M02 design note §4.4 (ADR 0034 D3): the bundle of a coupled run that ended
+    `COUPLING_NOT_CONVERGED` or `EVALUATION_ERROR` in its outer iteration. Every inner solve it
+    judges converged, so the observations are the coupling's own: its reason and its record of
+    iterates (`coupling`, the record without its embedded documents, which the run bundle's
+    `external-coupling.json` holds). The attempt tree is empty — no inner attempt failed — and
+    the replay identity is the last inner solve's plan's."""
+    taxonomy = TAXONOMY[outcome]
+    iterations = coupling.get("iterations", [])
+    return FailureBundle(
+        outcome=outcome,
+        taxonomy=taxonomy,
+        observations={
+            "message": reason,
+            "reason": reason,
+            "outer_iterations": len({item["k"] for item in iterations if item["rho"] is not None}),
+            "external_coupling": dict(coupling),
+        },
+        inferred_causes=(),
+        implicated_sources=tuple(implicated),
+        attempt_tree=(),
+        replay_identity={
+            "model_version": getattr(plan, "model_version", ""),
+            "constants_sha256": getattr(plan, "constants_sha256", ""),
+            "policy_id": getattr(plan, "policy_id", ""),
+            "plan_id": getattr(plan, "plan_id", ""),
+        },
+        suggested_actions=(
+            SuggestedActionEntry(
+                action=OUTCOME_ACTIONS.get(outcome, ACTIONS[taxonomy]),
+                preconditions=f"the coupled run ended {outcome}({reason}), as recorded above",
+            ),
+        ),
+    )
+
+
 def _merge_observation(result: Any) -> dict[str, Any]:
     decision = getattr(result, "merge_into_eo", None)
     if decision is None:

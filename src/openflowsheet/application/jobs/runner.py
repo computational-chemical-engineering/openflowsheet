@@ -63,6 +63,7 @@ from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ArtifactSink, ExperimentStore
 from openflowsheet.application.admission import resolve_policies
+from openflowsheet.application.coupled_run import LiveExperiments
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -112,6 +113,9 @@ __all__ = [
 ]
 
 _LOG = logging.getLogger(__name__)
+
+#: The evaluation context of a coupled job's experiments (the provider reads none of it).
+COUPLING_CONTEXT: Final[str] = "revision_coupled-experiments"
 
 #: §6.4.
 SOLVE_STAGES: Final[tuple[str, ...]] = ("resolve", "bind", "plan", "solve", "verify", "bundle")
@@ -421,6 +425,17 @@ class _Body:
         run: dict[str, Any] | None = None
         #: The route the solve runs on, once selected (and re-bound): named by a typed end.
         selected: Route | None = None
+        #: `revision_coupled`'s experiment records, emitted as outputs as they are written (M02
+        #: design note §4.4).
+        sink = _RecordingSink(ArtifactTableSink(store))
+        emitted = 0
+
+        def emit_records() -> None:
+            nonlocal emitted
+            for ref in sink.refs[emitted:]:
+                self._emit(output=ref)
+            emitted = len(sink.refs)
+
         try:
             self.at("resolve")
             with store.reading() as connection:
@@ -481,8 +496,14 @@ class _Body:
             # ADR 0024 D2: the lookup is here, where the store is, and only when the policy opts
             # in on the route that reads it; the orchestrator never reads the store.
             warm_start = None
-            if bound.solve_path == "revision_eo" and WARM_START_SOURCE in policy.initializer_chain:
+            if (
+                bound.solve_path in ("revision_eo", "revision_coupled")
+                and WARM_START_SOURCE in policy.initializer_chain
+            ):
                 warm_start = warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+            experiments = None
+            if bound.solve_path == "revision_coupled":
+                experiments = self._experiments(sink, emit_records)
             directory = self.directory / "bundle"
             manifest = run_revision_session(
                 bound,
@@ -495,8 +516,16 @@ class _Body:
                 trace=trace,
                 stage=self.at,
                 warm_start=warm_start,
+                experiments=experiments,
+                on_iteration=self._outer_iteration,
             )
         except JobInterrupted as interrupted:
+            # M02 design note §4.4: an interrupted coupled job keeps the experiment records it
+            # wrote (retained facts, not solve artifacts) beside the partial trace.
+            try:
+                emit_records()
+            except _FenceLost:
+                return _failed(_error("internal_error", "fence_lost"), run, "owner_lost")
             self.partial_trace(trace)
             return _interrupted(interrupted, run)
         except KeyboardInterrupt:
@@ -533,6 +562,33 @@ class _Body:
             interruption=None,
             error=None,
             run=run,
+        )
+
+    def _experiments(self, sink: ArtifactSink, emit: Callable[[], None]) -> LiveExperiments:
+        """The coupled route's experiments (M02 design note §4.3, §6.1): one runner for the job —
+        one handshake per variant, frozen — recording into the project's experiment store through
+        the job's sink, its records emitted as outputs after each experiment. The provider is a
+        fresh, unmetered one: an experiment's property calls are its own (R-233)."""
+        runner = ExperimentRunner(
+            ExperimentStore(self.context.root, sink),
+            PrC1Provider(),
+            EvaluationContext(model_version=COUPLING_CONTEXT, constants_sha256="0" * 64),
+            job_id=self.job.job_id,
+            check=self.check,
+        )
+        return LiveExperiments(runner, on_evaluated=emit)
+
+    def _outer_iteration(self, k: int, max_outer: int) -> None:
+        """M02 design note §4.4: one progress event per outer iteration. Its counts are the
+        `solve` stage's — a job's progress total is fixed and its count never goes back (§6.3
+        rule 7) — and the iteration is named in `stage` (build log D54)."""
+        self._honour_interruption()
+        self._emit(
+            progress=Progress(
+                completed=self.stages.index("solve"),
+                total=len(self.stages),
+                stage=f"solve:outer {k + 1}/{max_outer}",
+            )
         )
 
     # -- reproduce ----------------------------------------------------------------------------
