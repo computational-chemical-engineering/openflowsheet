@@ -556,3 +556,11 @@ Grep, don't read whole. Newest at the bottom.
   sits ~4 decades clear); G7(c) asserts UNVERIFIED at F4, VERIFIED at δ = 1e-3; D39's three fixes confirmed.
 - Launched: `opus-engineer` M02 WO-9 + R-281/R-282 (no join yet); `specifier` W27 registration Amendment 2 (C1 map
   rows, v0.2 READINGS, §20 ratification) on `wp/M06-w27-c1map` (R-283+).
+- M04 WO-4, 5, 6 done on `wp/M04` (`cadef83` merge of M02 `bfbad26`; `a16c3fa`, `2a4370a`, `846820c`, `b975a5d`,
+  `d5736ac`): check.sh 8062 passed. A17 q̂ 1.8e-15 from reference, H 283/300, PROMOTABLE (632 experiments in 1.15 s);
+  A18 NOT_PROMOTABLE; A19 PROMOTABLE; A16 stand-in through the job; A20 budget refusal + bitwise cached rerun; A21–A24.
+  Added `ExperimentRunner.request()` in M02's runner (M02 tests unchanged); `surrogate_study` job op; schemas
+  surrogate-manifest, model-evidence; served surface moved (SNAPSHOT_M04, stripping restores M02's). Open → M04
+  Amendment 1 (sent to the M04 specifier, R-290+): A11 text; it≥2 plans; float classification for fit values (ADR 0007
+  D2.3 / ADR 0025); manifest–evidence hash cycle; outputs/refusals/new schema members; WO-11 concurrency (R-250); surface
+  move register entry.
