@@ -282,12 +282,41 @@ def test_a21_a_request_without_a_deterministic_result_makes_the_plan_incomplete(
         assert manifest is not None
         (named,) = manifest["splits"]["gradient"]["incomplete"]
         assert named["label"] == "gradient[1].T+"
+        assert named["key"] == manifest["splits"]["gradient"]["keys"][named["index"]]
         assert (named["status"], named["code"]) == ("error", "external_crashed")
         key = manifest["splits"]["gradient"]["keys"][named["index"]]
         assert runner.records.result(key) is None  # never cached
         assert [c["status"] for c in manifest["gradient"]["centres"]] == ["ok", "incomplete"]
         assert all(not manifest["splits"][s]["incomplete"] for s in ("training", "test"))
+        # M04.A39 (spec §18 A1.5): the incomplete centre has no errors, and the verdict says why.
+        assert manifest["gradient"]["centres"][1]["errors"] is None
+        assert outcome.insufficient == ("plan_incomplete", "gradient_check_incomplete")
         assert check_manifest(manifest) == []
+
+
+def test_a39_an_incomplete_test_draw_is_listed_with_a_null_score(tmp_path: Path) -> None:
+    """M04.A39: a test draw with no deterministic result is in the test split's `incomplete`
+    list with a `null` score, counted in m; the plan is incomplete, never promotable."""
+    plan = sp.registered_plan("it1-prefix", synthetic_parent=True)
+    designated = plan.test[7]
+    variant = parents.synthetic_variant(parents.TRANSIENT_ID)
+    outcome = run_study(_runner(tmp_path, (designated.request,)), variant, "it1-prefix", PLENTY)
+    assert (outcome.verdict, outcome.insufficient) == (
+        "INSUFFICIENT_EVIDENCE",
+        ("plan_incomplete",),
+    )
+    manifest = outcome.manifest
+    assert manifest is not None
+    (named,) = manifest["splits"]["test"]["incomplete"]
+    assert (named["index"], named["label"]) == (7, "test[7]")
+    assert named["key"] == manifest["splits"]["test"]["keys"][7]
+    assert outcome.evaluation is not None
+    assert outcome.evaluation.observations["test"][7].status == "incomplete"
+    assert manifest["evaluation"]["scores"][7] is None
+    assert manifest["evaluation"]["m"] == 60  # not narrowed
+    assert manifest["splits"]["test"]["failed"] == []
+    assert [c["status"] for c in manifest["gradient"]["centres"]] == ["ok", "ok"]
+    assert check_manifest(manifest) == []
 
 
 # -- A22, A23: failures and split integrity --------------------------------------------------------

@@ -454,6 +454,7 @@
                 "additionalProperties": false,
                 "required": [
                   "index",
+                  "key",
                   "label",
                   "status",
                   "code"
@@ -462,6 +463,11 @@
                   "index": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "key": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "description": "The request's experiment key, `keys[index]` (spec §18 A1.5)."
                   },
                   "label": {
                     "type": "string",
@@ -546,6 +552,7 @@
                 "additionalProperties": false,
                 "required": [
                   "index",
+                  "key",
                   "label",
                   "status",
                   "code"
@@ -554,6 +561,11 @@
                   "index": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "key": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "description": "The request's experiment key, `keys[index]` (spec §18 A1.5)."
                   },
                   "label": {
                     "type": "string",
@@ -638,6 +650,7 @@
                 "additionalProperties": false,
                 "required": [
                   "index",
+                  "key",
                   "label",
                   "status",
                   "code"
@@ -646,6 +659,11 @@
                   "index": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "key": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "description": "The request's experiment key, `keys[index]` (spec §18 A1.5)."
                   },
                   "label": {
                     "type": "string",
@@ -731,6 +749,7 @@
                 "additionalProperties": false,
                 "required": [
                   "index",
+                  "key",
                   "label",
                   "status",
                   "code"
@@ -739,6 +758,11 @@
                   "index": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "key": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "description": "The request's experiment key, `keys[index]` (spec §18 A1.5)."
                   },
                   "label": {
                     "type": "string",

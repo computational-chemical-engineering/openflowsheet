@@ -14,6 +14,7 @@ Floor: the stand-in's map is X ≡ 0.25 exactly, ΔT ≡ 0, so the residuals are
 
 from __future__ import annotations
 
+import dataclasses
 import inspect
 import json
 from collections.abc import Iterator
@@ -185,9 +186,11 @@ def test_a_resubmission_with_every_record_cached_reproduces_the_manifest(
     assert attempts(app) == before
 
 
-def test_a_budget_below_the_cache_misses_is_refused_with_nothing_written(
+def test_a39_a_budget_below_the_cache_misses_is_refused_with_nothing_written(
     app: LocalApplication,
 ) -> None:
+    """M04.A39 (spec §18 A1.5): no experiment, no manifest, no evidence, no output; the answer
+    carries `cache_misses` = 199 (A20), so the refusal is checkable against the request's 198."""
     job = submit(app, "short", body(budget=198))["job"]
     assert (job["status"], job["outputs"]) == ("completed", [])
     answer = result_of(app, job["job_id"])["surrogate_study"]
@@ -218,9 +221,11 @@ def test_a_budget_below_the_cache_misses_is_refused_with_nothing_written(
         (body(sha256="0" * 64), "/body/parent/variant_sha256", None),
     ],
 )
-def test_admission_refuses_an_unregistered_parent_or_plan(
+def test_a39_admission_refuses_an_unregistered_parent_or_plan(
     app: LocalApplication, document: dict[str, Any], pointer: str, reason: str | None
 ) -> None:
+    """M04.A39: one admission case per guard code, as `invalid_request` with the code in
+    `detail.reason`; `plan_invalid` is the next test. Nothing is created or run."""
     with pytest.raises(ApplicationError) as raised:
         submit(app, "refused", document)
     error = raised.value.error
@@ -231,8 +236,40 @@ def test_admission_refuses_an_unregistered_parent_or_plan(
     assert attempts(app) == []
 
 
-def test_m04s_responses_decompose_onto_m02s_snapshots() -> None:
-    """With M04's additions removed, every operation's resolved response is its M02 snapshot."""
+def test_a39_a_registered_plan_with_a_request_outside_the_box_is_refused_at_admission(
+    app: LocalApplication, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """M04.A39/A03 through the application: the registered prefix plan with one training T set to
+    700.0 K (outside the box) is `invalid_request` / `plan_invalid` before any job exists."""
+    from openflowsheet.studies.surrogate import plan as sp
+    from openflowsheet.studies.surrogate import study
+
+    registered = sp.registered_plan
+
+    def broken(plan_id: str, *, synthetic_parent: bool) -> sp.SamplePlan:
+        plan = registered(plan_id, synthetic_parent=synthetic_parent)
+        row = plan.training[0]
+        request = dataclasses.replace(row.request, temperature=700.0)
+        moved = dataclasses.replace(row, request=request)
+        return dataclasses.replace(plan, training=(moved, *plan.training[1:]))
+
+    monkeypatch.setattr(study, "registered_plan", broken)
+    with pytest.raises(ApplicationError) as raised:
+        submit(app, "invalid", body())
+    error = raised.value.error
+    assert (error.code, error.detail["pointer"], error.detail["reason"]) == (
+        "invalid_request",
+        "/body/plan_id",
+        "plan_invalid",
+    )
+    assert "training[0]: outside the reference box in ['T']" in error.message
+    assert dispatch(app, "list_jobs", {})["items"] == []
+    assert attempts(app) == []
+
+
+def test_a42_m04s_responses_decompose_onto_m02s_snapshots() -> None:
+    """M04.A42 (R-295): with M04's additions removed, every operation's resolved response is its
+    M02 snapshot. (`max_cold_experiments` as a Q26 pinned scalar: `tests/test_t07_q26.py`.)"""
     import test_t07_w5e_application_results as r4
 
     before = {

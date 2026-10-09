@@ -174,7 +174,13 @@ def _split_block(observations: Sequence[Observation], count: int) -> dict[str, A
             if o.status == "failed"
         ],
         "incomplete": [
-            {"index": i, "label": o.label, "status": o.envelope_status, "code": o.code}
+            {
+                "index": i,
+                "key": o.key,
+                "label": o.label,
+                "status": o.envelope_status,
+                "code": o.code,
+            }
             for i, o in enumerate(observations)
             if o.status == "incomplete"
         ],
@@ -499,6 +505,10 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
         for entry in (*block["failed"], *block["incomplete"]):
             if not 0 <= entry["index"] < len(keys):
                 found.append(f"{split}: index {entry['index']} is outside the split")
+            elif "key" in entry and entry["key"] != keys[entry["index"]]:
+                found.append(
+                    f"{split}: incomplete key {entry['key']} is not keys[{entry['index']}]"
+                )
     centres = splits["gradient"]["centres"]
     stencil_keys = [key for centre in centres for key in centre["stencil_keys"]]
     if stencil_keys != splits["gradient"]["keys"]:
