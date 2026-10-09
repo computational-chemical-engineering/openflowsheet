@@ -13,6 +13,7 @@ Amendment 3; register R-257; gates G2 (i), G7 (j), (k)).
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from typing import Any
 
@@ -294,3 +295,40 @@ def test_g2i_view_components_are_syn001s_at_every_t07_corpus_revision() -> None:
         assert view.components == ("A", "B", "C"), name
         assert view.basis.provider_id == "syn001", name
     assert (len(CORPUS), parsed) == (50, 38)
+
+
+def test_the_witness_does_not_difference_exactly_zero_pr_flow_columns() -> None:
+    """B17 *Consequence* (build log D40): V1's certificate is VERIFIED with its witness run over
+    every column but the exactly-zero flows; differencing those leaves the provider's domain."""
+    from openflowsheet.compile.casadi_backend import compile_problem
+    from openflowsheet.verify.certificate import BoundDeclaration
+    from openflowsheet.verify.checks import derivative_witness
+
+    document = FLOWSHEETS["V1"]()
+    solved = solve(document)
+    assert solved.run.state is not None
+    state = solved.run.state
+    target = BoundDeclaration(
+        solved.binding.spec,
+        compile_problem(solved.binding.spec),
+        state,
+        pressure_domain=PROVIDER.describe().domain["P"],
+    )
+    zero = frozenset(
+        name
+        for name in solved.binding.spec.variable_ids
+        if solved.binding.spec.variable_kinds.get(name) == "molar_flow" and state[name] == 0.0
+    )
+    assert zero >= {f"S3.n.{c}" for c in COMPONENTS}
+    full = derivative_witness(target, state)
+    assert {c.result for c in full} == {"unsupported"}
+    witnessed = derivative_witness(target, state, unstenciled=zero)
+    assert [(c.id, c.result) for c in witnessed] == [
+        ("derivative_witness.on_pattern", "pass"),
+        ("derivative_witness.off_pattern", "pass"),
+    ]
+    certificate = verify_revision(
+        solved.binding, document, solved.run, solve_plan=solved.plan.steps[-1].solve_plan
+    )
+    assert certificate.verification_status == "VERIFIED"
+    assert math.isfinite(certificate.regularity.rcond_1)  # type: ignore[union-attr]

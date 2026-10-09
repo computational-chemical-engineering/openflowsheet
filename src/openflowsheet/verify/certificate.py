@@ -744,6 +744,15 @@ def verify_revision(
         screened=screened,
         projection=projection,
         provider=fresh,
+        # B17 *Consequence* (build log D40): a `pr-c1-v1` revision's exactly-zero flow columns
+        # are not differenced by the witness; none for any other basis.
+        unstenciled=frozenset(
+            name
+            for name in binding.spec.variable_ids
+            if binding.spec.variable_kinds.get(name) == "molar_flow" and final_state[name] == 0.0
+        )
+        if basis == "pr-c1-v1"
+        else frozenset(),
     )
 
 
@@ -1160,6 +1169,7 @@ def _issue(
     screened: _Screened,
     projection: Projection,
     provider: PropertyProvider | None = None,
+    unstenciled: frozenset[str] = frozenset(),
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
@@ -1174,7 +1184,7 @@ def _issue(
     resolved = policy
     plan = getattr(result, "plan", None)
     plan_id = getattr(plan, "plan_id", "")
-    checks += derivative_witness(target, final_state)
+    checks += derivative_witness(target, final_state, unstenciled=unstenciled)
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
     identity, regularity = screened.identity, screened.regularity

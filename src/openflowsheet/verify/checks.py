@@ -854,7 +854,9 @@ FD_RELATIVE_STEP: Final = 1e-5
 DERIVATIVE_TOLERANCE: Final = 1e-7
 
 
-def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckResult]:
+def derivative_witness(
+    tear: object, state: Mapping[str, float], *, unstenciled: frozenset[str] = frozenset()
+) -> list[CheckResult]:
     """§4.8: central differences of the **compiled 49-row function** against its AD Jacobian.
 
     Of the compiled function, not of the traversal: plan §4.2 demotes a finite-difference tear
@@ -869,6 +871,12 @@ def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckRe
     evaluate — a pressure within one step of the provider's domain edge — makes both witness
     checks `unsupported`, naming the column and the status, and never raises (T06 spec §8.2;
     ADR 0014 D5).
+
+    `unstenciled` (M02 design note §14.2 B17 *Consequence*; build log D40) names columns the
+    witness does not difference: a `pr-c1-v1` revision's flow columns that are exactly `0.0` at
+    `state`, where every stencil point leaves the provider's domain (a negative flow, or light gas
+    in the pure-NH3 liquid) and the AD entries are B17's registered dormancy convention, at which
+    no derivative exists. Empty for every other revision, which runs the stencil as before.
     """
     from openflowsheet.compile.reference import state_vector
 
@@ -889,6 +897,8 @@ def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckRe
 
     worst_on, worst_off = 0.0, 0.0
     for column, name in enumerate(jacobian.col_ids):
+        if name in unstenciled:
+            continue
         step = FD_RELATIVE_STEP * scaling.column[name]
         forward, backward = base.copy(), base.copy()
         forward[column] += step
