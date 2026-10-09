@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…12, 11a done (`9142032`); round 7 §14.6 (`2e22c29`, R-311…R-314): δ after the certificate, positivity/defect over present species only, `inert_min` 0.02, new boxes V1–V3 all T_in [653.15, 693.15] K; WO-12a′ running (+ ADR 0027 Am. 3 from §14.6 E5, + Q-E1 inert fraction at M05's edges); WO-14 running (`wp/M02-wo14`); then WO-12b, WO-13, `reviewer` |
+| M02 | Build | M01 | W21 | WO-12a′ (`bd446ab`, gate 8286; G10v3 met bitwise; ADR 0027 Am. 3 `6145b48`; Q-E1 4.0–4.5 % inerts) **stopped at G11v3-4: no box qualifies** (V1 19/21, V2 19/21, V3 20/21; all failures 653.15 K high-P 2 %-inert corners at S1) → round-8 ruling running (`docs/briefs/M02-rulings-3.md`; default: raise `inert_min`); WO-14 running; then WO-12b, WO-13, `reviewer` |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435); W27 Amendment 3 (`14c8695` on main, R-301/302): surrogate → no function (`surrogate_model`), `hypothetical_v02_a3`, corpus resolver; next WO-16i on main, then J3′–J6′ + WO-8 on `wp/M04`; WO-9 after M02 merged; WO-11 real run; WO-12 manifest |
 | M05 | Design | M03, M04 | W24 | WO-1…5, 2b, 3b, 4a done (`7bc8c56`, gate 8473; §17 acceptance pass; TR-E2 check now `TRF_MAX_ITERATIONS`, no refusal); open for next M05 ruling batch: Z2 (SYN-001 jointly-pinned zero flows at P1/P2/B2 refused `unpinned`, 15 strict xfails), W2 (max-iterations with θ_recheck > 1e-5 keeps its candidate?); WO-5c (`at_coupling`, R-309) + E2 guard after M02 merges; real records bind reactor v3; box may shrink (R-304); WO-6+ next; R-313: REAL decision box → [653.15, 693.15] K (WO-5c) |
@@ -78,7 +78,8 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   approval, marked pre-release. Preferences on defaults: cut `C_α` before M03 merges; freeze distribution paths from
   `C_α` to dispatch.
 
-- **M02 N7 (new; default set):** shipped reactor domain = the box the v3 measurements select (R-304: [643.15, 733.15] K
+- **M02 N7 (now live: no box qualified, V3 20/21; default being ruled: keep T_in [653.15, 693.15] K, raise `inert_min`
+  above 2 %; the loop runs at 4.0–4.5 %):** shipped reactor domain = the box the v3 measurements select (R-304: [643.15, 733.15] K
   if it passes, else [653.15, 693.15] K, else narrowed P and H₂/N₂). Full 573–773 K would need a new start strategy,
   outside M02's plan row.
 
@@ -96,7 +97,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
-| `opus-engineer` | M02 WO-12a′ (§14.6) + ADR 0027 Am. 3 + Q-E1 | `wp/M02` (`m02`) |
+| `specifier` | M02 round-8 ruling (no box; brief `docs/briefs/M02-rulings-3.md`) | `wp/M02` (`m02`) |
 | `opus-engineer` | M02 WO-14 (§14.5 D5, D7, D8, D9) | `wp/M02-wo14` (`m02-wo14`, off `wp/M02` `1328da0`; merge back after) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).

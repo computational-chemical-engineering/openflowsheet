@@ -675,3 +675,9 @@ Grep, don't read whole. Newest at the bottom.
   composition), zero-inert outside shipped domain; E3 `inert_min` 0.02, boxes V1–V3 at T_in [653.15, 693.15] K → M05
   REAL box [653.15, 693.15] K; E4 D73–D76 + timeout rule confirmed. E5: ADR 0027 D6/Am. 2 contradicted → Am. 3 (text in
   §14.6 E5) before WO-12b. Q-E1 open fact (inert fraction at M05's edges; floor revisited if < 0.03).
+
+- **M02 WO-12a′ stopped at G11v3-4** (2026-10-09, `wp/M02` `bd446ab`/`6145b48`/`d1b8af1`, gate 8286; G2 unchanged). G10v3
+  met bitwise; G11v3-1,2,3,5,8,9,10 met. No box: V1 19/21, V2 19/21, V3 20/21; failures all 653.15 K, high-P, 2 %
+  inert, at S1. Q-E1: 4.047 % (693.15 K), 4.548 % (653.15 K, v3 child only). D85: 2 points with failed first
+  certificate and δ₁ > 1e-7. DECISION: N7 default → raise `inert_min`, keep T_in [653.15, 693.15] K; alternative: new
+  S1 start strategy (outside plan row); reversible: append-only variant. Round-8 `specifier` launched.
