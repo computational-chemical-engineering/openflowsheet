@@ -669,3 +669,9 @@ Grep, don't read whole. Newest at the bottom.
   Experiment D78 (δ after certificate): G10v3, G11v3-1..3 met; no box qualifies (B1 12/21, B2 11/19, B3 11/19): every
   zero-inert corner `nonpositive_flow`, absent-element defect 0/0, low-T/high-P zero-inert and B1 643.15 K at S1; all
   0.2-inert corners and centres ok. Timeout rule 360–370 s. Round-7 `specifier` ruling launched.
+
+- **M02 round 7** (2026-10-09, `specifier`, `wp/M02` `2e22c29`, R-311…R-314): E1 δ read after the first certificate,
+  round 2 only if it passed, re-certified; E2 positivity and A45 defect over present species (presence from requested
+  composition), zero-inert outside shipped domain; E3 `inert_min` 0.02, boxes V1–V3 at T_in [653.15, 693.15] K → M05
+  REAL box [653.15, 693.15] K; E4 D73–D76 + timeout rule confirmed. E5: ADR 0027 D6/Am. 2 contradicted → Am. 3 (text in
+  §14.6 E5) before WO-12b. Q-E1 open fact (inert fraction at M05's edges; floor revisited if < 0.03).
