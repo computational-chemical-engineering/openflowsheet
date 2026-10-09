@@ -99,3 +99,9 @@ Measured (synthetic truth, TR-E2's start inlet): (i) Richardson error 1.25e-6 �
    (2⁻¹⁴, `noise_dominated`), 0.00511 (2⁻¹², `noise_dominated`), 0.00122 (2⁻¹⁰, `truncation_dominated`: passes
    there). §17.3: TR-E1 affine against native ‖Δz‖_∞ 1.18e-6 ≤ 2e-5 (margin 17), |ΔJ|/max(1, |J|) 1.2e-11, both
    `TRF_CONVERGED` with θ_recheck ≤ 1e-5.
+
+## WO-6 — checks, the study loop, readiness (§7.2-§7.5, §6.8, §16.4, §16.5, §17.4)
+
+S1 REAL box: `study.REAL_BOX` is [653.15, 693.15] K (R-313, M02 seventh round: M05's REAL box unconditionally; ADR 0039
+   D1's [643.15, 733.15] K is superseded there, not by M05). σ for REAL becomes 0.5·0.5/20 = 0.0125, as TR-E2's; §6.7's
+   0.005556 is stale text for the design lane. Reversible: the constant and one test assertion.

@@ -8,8 +8,9 @@ block and the admissibility definitions, never authored per case:
   coupled route's inner problem: the embedded reactor pinned at w₀ (`with_coupling`, M02's
   accessor), its coupling parameters promoted to the link variables (X̂, ΔT̂) (ADR 0038 D3).
 - **Decision.** The outlet-temperature specification of the `c1.tp_heater` that feeds the
-  reactor (its `T_spec`, a pinned input, ADR 0031 D1), in a registered box: [643.15, 733.15] K for
-  the REAL study (the kinetics' inlet data span, R-169), [653.15, 693.15] K for TR-E2 and the loops.
+  reactor (its `T_spec`, a pinned input, ADR 0031 D1), in a registered box: [653.15, 693.15] K for
+  the REAL study (R-313: v3's T_in span, superseding ADR 0039 D1's [643.15, 733.15] K) and for
+  TR-E2 and the loops.
   The purge fraction stays the revision's (0.02).
 - **Objective `c1-obj-nh3-liquid-v1`.** Maximize the NH₃ molar flow of the `c1.tp_flash`'s liquid
   outlet, mol/s, scale 1.
@@ -62,8 +63,9 @@ __all__ = [
 
 STUDY_ID: Final = "c1-trf-study-v1"
 OBJECTIVE_ID: Final = "c1-obj-nh3-liquid-v1"
-#: ADR 0039 D1: the REAL decision box (the kinetics' inlet data span, R-169), K.
-REAL_BOX: Final = (643.15, 733.15)
+#: The REAL decision box, K: R-313 (M02 seventh round) makes it v3's T_in span unconditionally,
+#: superseding ADR 0039 D1's [643.15, 733.15] K (the kinetics' inlet data span, R-169).
+REAL_BOX: Final = (653.15, 693.15)
 #: ADR 0039 D2: TR-E2's and the loops' decision box, K.
 TR_E2_BOX: Final = (653.15, 693.15)
 #: §7.1: the relative margin on expression constraints.

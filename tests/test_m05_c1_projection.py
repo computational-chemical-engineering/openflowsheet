@@ -168,7 +168,7 @@ def test_the_real_variant_adds_the_per_tube_flow_bounds() -> None:
         ("hard_domain.tube_flow.upper", high, "<="),
     ]
     (decision,) = formulation.decisions
-    assert (decision.lower, decision.upper) == REAL_BOX == (643.15, 733.15)
+    assert (decision.lower, decision.upper) == REAL_BOX == (653.15, 693.15)
     projection = project_c1(binding, state, formulation)
     assert projection.source_map["shape_check"]["status"] == "pass"
 
