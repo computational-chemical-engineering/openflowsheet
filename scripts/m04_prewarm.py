@@ -27,6 +27,9 @@ In order:
    never changes a bit — a result is a function of its key.
 4. Optionally (`--study`), **the study** itself with `max_cold_experiments = 0`, which refuses if
    anything is still missing and otherwise runs fully cached.
+5. Optionally (`--repeat-test N`, M04.A41), **serial bypass repeats** of test requests 0 … N−1
+   (`cache: "bypass"`, one at a time, inline): each writes one attempt whose
+   `repeat_bitwise_equal` says whether the concurrently written record is reproduced bitwise.
 
 The report (`--report`) records the parent, the plan, `max_workers`, the command, the misses
 before, each round's submissions, every retry and what remains incomplete, and the wall time.
@@ -34,7 +37,7 @@ before, each round's submissions, every retry and what remains incomplete, and t
 Usage (WO-11, the real reactor; never in the default gate):
     PYTHONPATH=src .venv/bin/python scripts/m04_prewarm.py --project <dir> \\
         --variant pymrm-6089593-g2-nz800-s123-v2 --plan it1 --budget <approved> \\
-        --max-workers 16 --retries 2 --report <evidence>/prewarm.json --study
+        --max-workers 16 --retries 2 --report <evidence>/prewarm.json --study --repeat-test 8
 """
 
 from __future__ import annotations
@@ -109,6 +112,7 @@ class Report:
     incomplete: list[dict[str, str]] = field(default_factory=list)
     wall_time_s: float = 0.0
     study: dict[str, Any] | None = None
+    repeats: list[dict[str, Any]] = field(default_factory=list)
 
     def as_document(self) -> dict[str, Any]:
         return {
@@ -126,10 +130,13 @@ class Report:
             "incomplete": self.incomplete,
             "wall_time_s": self.wall_time_s,
             "study": self.study,
+            "repeats": self.repeats,
         }
 
 
-def experiment_body(variant: variants.Variant, state: StreamState) -> dict[str, Any]:
+def experiment_body(
+    variant: variants.Variant, state: StreamState, cache: str = "use"
+) -> dict[str, Any]:
     """The `experiment` job body of one plan request (one tube, the plan's inlet exactly)."""
     return {
         "model": {
@@ -144,7 +151,7 @@ def experiment_body(variant: variants.Variant, state: StreamState) -> dict[str, 
             "P": state.pressure,
         },
         "n_tubes": PLAN_N_TUBES,
-        "cache": "use",
+        "cache": cache,
     }
 
 
@@ -179,6 +186,7 @@ def prewarm(
     budget: int,
     retries: int = 2,
     study: bool = False,
+    repeats: int = 0,
     command: Sequence[str] = (),
 ) -> Report:
     """Pre-warm `plan_id`'s experiments for `variant` in the project at `directory` (module
@@ -186,8 +194,8 @@ def prewarm(
     would refuse; a budget refusal is a report with `refused` set and nothing submitted."""
     if not 1 <= max_workers <= physical_cores():
         raise ValueError(f"max_workers = {max_workers}: 1 to {physical_cores()} physical cores")
-    if budget < 0 or retries < 0:
-        raise ValueError("budget and retries are counts >= 0")
+    if budget < 0 or retries < 0 or repeats < 0:
+        raise ValueError("budget, retries and repeats are counts >= 0")
     started = time.monotonic()
     plan = prepare(variant, plan_id)  # PlanRefusedError (a ValueError) before anything runs
     application = LocalApplication.open(directory)
@@ -300,6 +308,31 @@ def prewarm(
             report.study = {"job_id": job["job_id"], "answer": answer["surrogate_study"]}
         finally:
             application.close()
+    if repeats and not report.incomplete:
+        application = LocalApplication.open(directory)  # inline: one repeat at a time
+        try:
+            for row in plan.test[:repeats]:
+                request = {
+                    "operation": "experiment",
+                    "idempotency_key": f"m04-prewarm-{plan_id}-{token}-repeat-{row.index}",
+                    "body": experiment_body(variant, row.request, cache="bypass"),
+                }
+                job = dispatch(application, "submit_job", request)["job"]
+                (attempt_ref,) = [o for o in job["outputs"] if o["kind"] == "experiment_attempt"]
+                stored = application.store.artifact(attempt_ref["artifact_id"])
+                assert stored is not None
+                attempt = json.loads((application.files_root / stored.relpath).read_bytes())
+                report.repeats.append(
+                    {
+                        "label": f"test[{row.index}]",
+                        "key": attempt["experiment_key"],
+                        "job_id": job["job_id"],
+                        "repeat_of": attempt.get("repeat_of"),
+                        "repeat_bitwise_equal": attempt.get("repeat_bitwise_equal"),
+                    }
+                )
+        finally:
+            application.close()
     report.wall_time_s = time.monotonic() - started
     return report
 
@@ -314,6 +347,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--study", action="store_true", help="then run the study, budget 0")
+    parser.add_argument(
+        "--repeat-test", type=int, default=0, help="A41: bypass repeats of test[:N]"
+    )
     arguments = parser.parse_args(argv)
     variant = variants.registered_variant(arguments.variant)
     report = prewarm(
@@ -324,6 +360,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         budget=arguments.budget,
         retries=arguments.retries,
         study=arguments.study,
+        repeats=arguments.repeat_test,
         command=[SCRIPT, *(argv if argv is not None else sys.argv[1:])],
     )
     document = report.as_document()
@@ -333,6 +370,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         arguments.report.write_text(text, encoding="utf-8")
     print(text, end="")
     if report.refused is not None or report.incomplete:
+        return 1
+    if any(repeat["repeat_bitwise_equal"] is not True for repeat in report.repeats):
         return 1
     return 0
 

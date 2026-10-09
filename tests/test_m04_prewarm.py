@@ -121,7 +121,7 @@ def test_a40_the_prewarm_script_under_the_process_executor_changes_no_bit(tmp_pa
     directory = tmp_path / "prewarmed"
     LocalApplication.create(directory).close()
     report = m04_prewarm.prewarm(
-        directory, STANDIN, "it1-prefix", max_workers=WORKERS, budget=199, study=True
+        directory, STANDIN, "it1-prefix", max_workers=WORKERS, budget=199, study=True, repeats=2
     )
     document = report.as_document()
     assert document["refused"] is None
@@ -129,6 +129,12 @@ def test_a40_the_prewarm_script_under_the_process_executor_changes_no_bit(tmp_pa
     assert (document["requests"], document["cache_misses_before"]) == (199, 199)
     assert document["rounds"] == [{"round": 0, "submitted": 199, "without_result": 0}]
     assert (document["retries"], document["incomplete"]) == ([], [])
+    # A41's mechanics (opt-in on the real reactor): serial bypass repeats reproduce the
+    # concurrently written records bitwise.
+    assert [(r["label"], r["repeat_of"], r["repeat_bitwise_equal"]) for r in report.repeats] == [
+        ("test[0]", 1, True),
+        ("test[1]", 1, True),
+    ]
     assert report.study is not None
     cached = report.study["answer"]
     assert (cached["cold_experiments"], cached["cache_hits"], cached["cache_misses"]) == (0, 199, 0)
@@ -150,7 +156,7 @@ def test_a40_the_prewarm_script_under_the_process_executor_changes_no_bit(tmp_pa
         assert policy["executor"]["max_workers"] == 1
         jobs = [app.store.get_job(job_id) for job_id in app.store.job_ids()]
         operations = [job.operation for job in jobs if job is not None]
-        assert (operations.count("experiment"), operations.count("surrogate_study")) == (199, 1)
+        assert (operations.count("experiment"), operations.count("surrogate_study")) == (201, 1)
         assert {job.status for job in jobs if job is not None} == {"completed"}
         prewarmed_root = app.files_root
     finally:
