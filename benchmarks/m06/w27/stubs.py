@@ -354,7 +354,8 @@ def synthetic_row_case() -> dict[str, Any]:
 
 def candidate_coverage() -> dict[str, Any]:
     """A coverage document holding the synthetic `CANDIDATE` row, classified by the production
-    classifier against today's snapshot plus a test route with H₂ vapour."""
+    classifier against today's snapshot plus a test route with H₂ vapour and today's model ids
+    (W27-R62 judges the row's units on the route that serves it, registration §21.7)."""
     today = json.loads(registration.COVERAGE_JSON.read_bytes())["snapshot"]
     h2 = {
         "id": "H2",
@@ -368,7 +369,11 @@ def candidate_coverage() -> dict[str, Any]:
         **today,
         "routes": [
             *today["routes"],
-            {"provider_id": TEST_PROVIDER, "components": [h2], "model_ids": []},
+            {
+                "provider_id": TEST_PROVIDER,
+                "components": [h2],
+                "model_ids": sorted(m["model_id"] for m in today["models"]),
+            },
         ],
         "basis": "TEST: today's snapshot plus a test route (W27-A13); not a registry",
     }

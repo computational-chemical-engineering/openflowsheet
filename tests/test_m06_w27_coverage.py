@@ -1,6 +1,7 @@
 """M06 WO-16a–c: the W27 coverage classifier, the registry snapshot and the sampler.
 
-Registration `docs/derivations/M06-W27-registration.md` §14.2: W27-A01…A15 and A20. Expected values
+Registration `docs/derivations/M06-W27-registration.md` §14.2: W27-A01…A15 and A20, and §21.7
+(Amendment 2): W27-A16…A19 on the hypothetical v0.2 snapshot. Expected values
 come from the registration document and the generator's committed output
 (`dry_illustration.json`), which this code does not import. Tests that read the pinned archive
 (the extraction equals `case_facts.json`; W27-A21's cards) skip when it is absent: it is
@@ -20,6 +21,8 @@ from benchmarks.m06.w27 import coverage, facts, registration, sample, snapshot
 
 DRY: dict[str, Any] = json.loads(registration.DRY_JSON.read_bytes())
 TODAY: dict[str, Any] = DRY["snapshots"]["today"]["snapshot"]
+HYPOTHETICAL: dict[str, Any] = DRY["snapshots"]["hypothetical_v02"]["snapshot"]
+AMENDMENT_2: dict[str, Any] = DRY["amendment_2"]
 FACTS: dict[str, Any] = facts.load_facts()
 BY_ID: dict[str, dict[str, Any]] = {c["case_id"]: c for c in FACTS["cases"]}
 TEST_PROVIDER = "test-pr"
@@ -31,7 +34,10 @@ needs_archive = pytest.mark.skipif(
 
 
 def with_route(components: list[dict[str, Any]], provider: str = TEST_PROVIDER) -> dict[str, Any]:
-    route = {"provider_id": provider, "components": components, "model_ids": []}
+    """Today's snapshot plus a test route carrying today's model ids (§21.7: under W27-R62 a route
+    with no model would make W27-A13's candidate `UNIT_UNAVAILABLE`)."""
+    model_ids = sorted(m["model_id"] for m in TODAY["models"])
+    route = {"provider_id": provider, "components": components, "model_ids": model_ids}
     return {**TODAY, "routes": [*TODAY["routes"], route]}
 
 
@@ -88,6 +94,15 @@ def test_a02_hypothetical_v02_summaries() -> None:
     methods = {**registration.provider_methods(), "hypothetical-pr-c1": "cubic_pr"}
     classified = coverage.classify(FACTS, stored["snapshot"], methods)
     assert classified["summary"] == stored["summary"]
+    # W27-R62 (GC-A2-4): the three cases pr-c1-v1 serves are judged on its models; ngfc_atr's
+    # heat exchanger is `no_model` there (no C1 model exchanges heat between two streams).
+    by_id = {r["case_id"]: r for r in classified["rows"]}
+    served = {c: r["units_judged_on"] for c, r in by_id.items() if r["units_judged_on"]}
+    assert served == DRY["amendment_2"]["served_cases"]
+    assert DRY["amendment_2"]["route_scoped_unit_changes"] == ["ngfc_atr"]
+    assert ("HeatExchanger", "no_model:heat_exchanger units=fs.reformer_recuperator") in [
+        (s, d) for k, s, d in triples(by_id["ngfc_atr"]) if k == "UNIT_UNAVAILABLE"
+    ]
 
 
 def test_a03_watertap_metab(today_rows: dict[str, dict[str, Any]]) -> None:
@@ -315,6 +330,106 @@ def test_adversarial_states_equal_the_stored_record() -> None:
         ], state["state"]
 
 
+# =================================================================================================
+# Amendment 2: units on the serving route (A16, W27-R62) and the refusals (A17–A19, W27-R24 (d)/(e))
+# =================================================================================================
+
+A16_STATES = [s for s in AMENDMENT_2["adversarial_states"] if "case" in s]
+REFUSAL_STATES = {s["state"]: s for s in AMENDMENT_2["adversarial_states"] if "case" not in s}
+
+
+def every_model_on_every_route(snap: dict[str, Any]) -> dict[str, Any]:
+    """The rule before W27-R62 (units on every model), as a snapshot: each route carries all."""
+    model_ids = sorted(m["model_id"] for m in snap["models"])
+    return {**snap, "routes": [{**r, "model_ids": model_ids} for r in snap["routes"]]}
+
+
+def test_a16_the_stored_states_are_the_registered_eight() -> None:
+    assert [s["state"].split(" ")[0] for s in A16_STATES] == [f"A16-{x}" for x in "abcdefgh"]
+    assert all(s["snapshot"] == "hypothetical_v02" for s in A16_STATES)
+
+
+@pytest.mark.parametrize("state", A16_STATES, ids=lambda s: s["state"].split(" ")[0])
+def test_a16_units_are_judged_on_the_serving_route(state: dict[str, Any]) -> None:
+    coverage.check_snapshot(HYPOTHETICAL, FACTS, TEST_METHODS)
+    row = coverage.classify_case(state["case"], HYPOTHETICAL, TEST_METHODS)
+    assert row["class"] == state["expected_class"]
+    assert [{"kind": k, "subject": s, "detail": d} for k, s, d in triples(row)] == state["reasons"]
+    assert row["units_judged_on"] == state["units_judged_on"]
+    before = coverage.classify_case(
+        state["case"], every_model_on_every_route(HYPOTHETICAL), TEST_METHODS
+    )
+    assert before["class"] == state["class_before_w27_r62"]
+
+
+def test_a16_c_and_e_are_where_w27_r62_bites() -> None:
+    bites = [s["state"].split(" ")[0] for s in A16_STATES
+             if s["expected_class"] != s["class_before_w27_r62"]]  # fmt: skip
+    assert bites == ["A16-c", "A16-e"]
+    (pump,) = [s for s in A16_STATES if s["state"].startswith("A16-c")]
+    row = coverage.classify_case(pump["case"], HYPOTHETICAL, TEST_METHODS)
+    (unit,) = [u for u in row["units"] if u["key"] == "idaes:Pump"]
+    assert unit["models"] == [] and unit["detail"] == "no_model:pump"
+    served = [u for u in row["units"] if u["available"]]
+    assert {m for u in served for m in u["models"]} <= set(HYPOTHETICAL["routes"][-1]["model_ids"])
+
+
+def _refused(snap: dict[str, Any]) -> str:
+    with pytest.raises(coverage.RefusalError) as refusal:
+        coverage.check_snapshot(snap, FACTS, TEST_METHODS)
+    return str(refusal.value)
+
+
+def test_a17_two_routes_of_one_method() -> None:
+    c1_route = HYPOTHETICAL["routes"][-1]
+    extra = {
+        "provider_id": TEST_PROVIDER,
+        "components": [h2(["vapor"])],
+        "model_ids": list(c1_route["model_ids"]),
+    }
+    message = _refused({**HYPOTHETICAL, "routes": [*HYPOTHETICAL["routes"], extra]})
+    expected = REFUSAL_STATES["A17 two routes of one method"]["expected"]
+    assert expected == "refusal naming routes sharing a method ['cubic_pr']"
+    assert message == "routes sharing a method ['cubic_pr']"
+
+
+def test_a18_route_and_model_lists_must_match() -> None:
+    *others, c1_route = HYPOTHETICAL["routes"]
+    ghost = {**c1_route, "model_ids": [*c1_route["model_ids"], "c1.ghost"]}
+    assert _refused({**HYPOTHETICAL, "routes": [*others, ghost]}) == (
+        "route model ids not among the models ['c1.ghost']"
+    )
+    dropped = {**c1_route, "model_ids": [m for m in c1_route["model_ids"] if m != "c1.reactor"]}
+    assert _refused({**HYPOTHETICAL, "routes": [*others, dropped]}) == (
+        "models on no route ['c1.reactor']"
+    )
+    for label, needle in (
+        ("A18-a a route model id not among the models", "['c1.ghost']"),
+        ("A18-b a model on no route", "['c1.reactor']"),
+    ):
+        assert REFUSAL_STATES[label]["expected"].endswith(needle)
+
+
+def test_a19_two_routes_per_revision() -> None:
+    message = _refused({**HYPOTHETICAL, "routes_per_revision": 2})
+    assert REFUSAL_STATES["A19 two routes per revision"]["expected"].endswith(message)
+    assert message == "routes_per_revision 2 is not 1"
+
+
+def test_a17_a19_refuse_through_the_cli(tmp_path: Path) -> None:
+    """No coverage.json is written for a refused snapshot (W27-R24), whatever the reason."""
+    snap_file = tmp_path / "snapshot.json"
+    snap_file.write_bytes(registration.dump({**HYPOTHETICAL, "routes_per_revision": 2}))
+    out = tmp_path / "coverage.json"
+    assert coverage.main(["--snapshot", str(snap_file), "--out", str(out)]) == 2
+    assert not out.exists()
+
+
+def test_the_hypothetical_v02_and_today_are_not_refused() -> None:
+    coverage.check_snapshot(HYPOTHETICAL, FACTS)
+    coverage.check_snapshot(TODAY, FACTS)
+
+
 def test_every_subject_is_among_its_aliases(today_rows: dict[str, dict[str, Any]]) -> None:
     for row in today_rows.values():
         for reason in row["reasons"]:
@@ -395,6 +510,7 @@ def test_coverage_document_and_g14() -> None:
         "residual_check",
         "class",
         "reasons",
+        "units_judged_on",
         "units",
         "components",
         "packages",

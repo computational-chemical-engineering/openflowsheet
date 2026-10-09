@@ -1,7 +1,7 @@
 {
   "case_facts_sha256": "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7",
   "list_models_sha256": "4a60f5a3ad5def32a872407a75255370249560036e5718c848803637b2a5123a",
-  "registration_sha256": "ce59200a0bdaf26bbf6c830fb56e69d187d6dba81a0cb348a713d638e4544f7a",
+  "registration_sha256": "14ff19d98bb031a17917019e299661d7af5839d2fe3f13bad0fd2725a0717f84",
   "rows": [
     {
       "case_id": "blind_synthesized_anaerobic_digester_unit",
@@ -148,7 +148,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_asm2d",
@@ -623,7 +624,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_boron_removal_unit",
@@ -766,7 +768,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_bped_unit",
@@ -895,7 +898,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_coag_floc_unit",
@@ -1010,7 +1014,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_crystallization",
@@ -1097,7 +1102,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_electrodialysis_1stack",
@@ -1238,7 +1244,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_electrodialysis_conc_recirc",
@@ -1419,7 +1426,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_gac_unit",
@@ -1533,7 +1541,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_hda_distillation",
@@ -1807,7 +1816,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_hda_flash",
@@ -1997,7 +2007,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_ion_exchange_unit",
@@ -2111,7 +2122,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_methanol_recycle",
@@ -2391,7 +2403,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_methanol_single",
@@ -2655,7 +2668,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_mvc_single_stage",
@@ -2928,7 +2942,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_nf_dspmde_bypass",
@@ -3209,7 +3224,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_ngcc",
@@ -4154,7 +4170,8 @@
             "valve_flow_relation"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_cmi_process",
@@ -4676,7 +4693,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_cmi_process_pfd",
@@ -5198,7 +5216,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_crusher_unit",
@@ -5439,7 +5458,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_diafiltration_two_salt",
@@ -5593,7 +5613,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_evaporation_pond_unit",
@@ -5717,7 +5738,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_hydrogen_decrepitation_flowsheet",
@@ -5862,7 +5884,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_hydrogen_decrepitation_furnace",
@@ -6007,7 +6030,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_ion_exchange_multicomponent",
@@ -6170,7 +6194,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_leach_flowsheet",
@@ -6674,7 +6699,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_membrane_cascade_flowsheet",
@@ -6942,7 +6968,8 @@
             "energy_split_basis_other"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_mixer_settler_ex_steady",
@@ -7464,7 +7491,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_multi_component_diafiltration_unit",
@@ -7565,7 +7593,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_nanofiltration_membrane_schematic",
@@ -7666,7 +7695,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_nanofiltration_ui_flowsheet",
@@ -7821,7 +7851,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_nf_brine_advanced_costing",
@@ -7976,7 +8007,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_ree_oxalate_roaster",
@@ -8323,7 +8355,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_simplified_uky_flowsheet",
@@ -9256,7 +9289,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_solvent_extraction_steady",
@@ -9778,7 +9812,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_superstructure_pathway_npv",
@@ -9901,7 +9936,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_uky_costing",
@@ -10834,7 +10870,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_uky_flowsheet",
@@ -11767,7 +11804,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_uky_tutorial_flowsheet_pfd",
@@ -12700,7 +12738,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_prommis_uky_ui_flowsheet",
@@ -13633,7 +13672,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_ro_no_energy_recovery",
@@ -13760,7 +13800,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_ro_pressure_exchanger",
@@ -13936,7 +13977,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_ro_pump_as_turbine",
@@ -14085,7 +14127,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_subcritical_power_plant",
@@ -14833,7 +14876,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_watertap_electroNP_bsm2_no_bioP",
@@ -15628,7 +15672,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "blind_synthesized_watertap_electroNP_flowsheet",
@@ -15980,7 +16025,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_grid_integrated_rankine_surrogate",
@@ -16289,7 +16335,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_nuclear_double_loop",
@@ -16573,7 +16620,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_nuclear_multiperiod",
@@ -16882,7 +16930,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_simple_rankine",
@@ -17184,7 +17233,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_solar_battery_hydrogen",
@@ -17488,7 +17538,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_ultra_supercritical_plant",
@@ -17835,7 +17886,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_usc_tes_charge_superstructure",
@@ -18211,7 +18263,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_usc_tes_discharge_superstructure",
@@ -18525,7 +18578,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_usc_tes_integrated",
@@ -18845,7 +18899,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_wind_battery_pem_tank_turbine",
@@ -19192,7 +19247,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "dispatches_wind_pem_double_loop",
@@ -19292,7 +19348,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_123bus_high_growth_coal_transition",
@@ -19493,7 +19550,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_123bus_resilience_no_outage_baseline",
@@ -19694,7 +19752,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_5bus_n1_line_derating",
@@ -19877,7 +19936,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_5bus_reserve_constrained_commitment",
@@ -20078,7 +20138,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_9bus_firm_candidates",
@@ -20279,7 +20340,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_9bus_generation_storage_expansion",
@@ -20480,7 +20542,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_9bus_generation_transmission_coexpansion",
@@ -20663,7 +20726,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_9bus_renewable_candidates",
@@ -20864,7 +20928,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_9bus_storage_only_investment",
@@ -21065,7 +21130,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_wecc_34bus_dc_corridor",
@@ -21246,7 +21312,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_wecc_reduced_copperplate",
@@ -21427,7 +21494,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "gtep_v2_wecc_reduced_dc_expansion",
@@ -21608,7 +21676,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_bfb_methane_combustion",
@@ -21698,7 +21767,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_bfb_oc_oxidation",
@@ -21788,7 +21858,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_co2_membrane_1d",
@@ -21889,7 +21960,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_drum_1d",
@@ -21963,7 +22035,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_dynamic_feedwater_heater",
@@ -22045,7 +22118,8 @@
             "dynamic"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_dynamic_tga",
@@ -22143,7 +22217,8 @@
             "dynamic"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_feed_flash",
@@ -22234,7 +22309,8 @@
             "two_phase_feed"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_heat_exchanger_2d",
@@ -22328,7 +22404,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_liquid_liquid_extraction",
@@ -22411,7 +22488,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_moving_bed_methane",
@@ -22501,7 +22579,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_mscontactor",
@@ -22598,7 +22677,8 @@
             "mixer_no_momentum_balance"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_natural_gas_pipeline_network",
@@ -22735,7 +22815,8 @@
             "dynamic"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_ngcc_soec",
@@ -23777,7 +23858,8 @@
             "valve_flow_relation"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_pipe",
@@ -23840,7 +23922,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_shell_and_tube_1d",
@@ -23963,7 +24046,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_soc_pid_control",
@@ -24359,7 +24443,8 @@
             "dynamic"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_temperature_swing_adsorption",
@@ -24442,7 +24527,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "idaes_valve",
@@ -24518,7 +24604,8 @@
             "valve_flow_relation"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_official_transcritical_co2_discretized",
@@ -24681,7 +24768,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_official_transcritical_co2_surrogate_gbdt",
@@ -24884,7 +24972,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_full_compressor_limited_221",
@@ -25067,7 +25156,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_full_condenser_limited_212",
@@ -25250,7 +25340,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_full_evaporator_limited_122",
@@ -25433,7 +25524,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_full_flexible_333",
@@ -25616,7 +25708,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_full_standardized_111",
@@ -25799,7 +25892,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_high_capacity_weighted",
@@ -25982,7 +26076,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_hot_climate_weighted",
@@ -26165,7 +26260,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_legacy_platform_retrofit",
@@ -26348,7 +26444,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_minimax_worst_variant_cost",
@@ -26531,7 +26628,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_v2_supply_constrained_alternatives",
@@ -26714,7 +26812,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_variant_transcritical_co2_cool_climate",
@@ -26877,7 +26976,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_variant_transcritical_co2_high_capacity",
@@ -27040,7 +27140,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_variant_transcritical_co2_high_demand_flexible",
@@ -27203,7 +27304,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_variant_transcritical_co2_high_demand_standardized",
@@ -27366,7 +27468,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_variant_transcritical_co2_hot_climate",
@@ -27529,7 +27632,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "mvo_variant_transcritical_co2_low_capacity",
@@ -27692,7 +27796,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "ngcc_gas_turbine_subflowsheet",
@@ -28210,7 +28315,8 @@
             "valve_flow_relation"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "ngcc_hrsg_subflowsheet",
@@ -28590,7 +28696,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "ngcc_steam_turbine_subflowsheet",
@@ -28796,7 +28903,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "ngfc_atr",
@@ -29166,7 +29274,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_btx_flash_canary",
@@ -29248,7 +29357,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_co2_adsorption_desorption",
@@ -29439,7 +29549,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_123bus_coal",
@@ -29600,7 +29711,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_123bus_resilience_week",
@@ -29781,7 +29893,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_5bus_candidate_expansion",
@@ -29962,7 +30075,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_5bus_dispatch_only",
@@ -30123,7 +30237,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_5bus_jsc_baseline",
@@ -30304,7 +30419,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_5bus_resource_adequacy",
@@ -30465,7 +30581,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_5bus_three_stage",
@@ -30646,7 +30763,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_9bus_candidate_expansion",
@@ -30827,7 +30945,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_gtep_texas_2000",
@@ -31008,7 +31127,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_eg_cstr_flowsheet",
@@ -31188,7 +31308,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_eg_pfr_flowsheet",
@@ -31366,7 +31487,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_eg_stoichiometric_flowsheet",
@@ -31535,7 +31657,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_hx1d_unit",
@@ -31664,7 +31787,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_hx_lumped_capacitance",
@@ -31794,7 +31918,8 @@
             "ua_area_relation"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_hx_ntu_unit",
@@ -31964,7 +32089,8 @@
             "ntu_relation"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_plate_heat_exchanger",
@@ -32134,7 +32260,8 @@
             "ua_area_relation"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_pz_afs_carbon_capture",
@@ -32294,7 +32421,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_rsofc_soec_mode",
@@ -32546,7 +32674,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_skeleton_pervaporation",
@@ -32652,7 +32781,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_smr_equilibrium_flowsheet",
@@ -32866,7 +32996,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_smr_gibbs_flowsheet",
@@ -33071,7 +33202,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_sofc_power_plant",
@@ -33609,7 +33741,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_idaes_sofc_soec_coproduction",
@@ -34285,7 +34418,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_ngcc",
@@ -35230,7 +35364,8 @@
             "valve_flow_relation"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_sco2_surrogate_flowsheet",
@@ -35370,7 +35505,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_subcritical_boiler",
@@ -35597,7 +35733,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_supercritical_power_plant",
@@ -35951,7 +36088,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "official_supercritical_steam_cycle",
@@ -36211,7 +36349,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "pareto_integrated_md",
@@ -36311,7 +36450,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "pareto_integrated_mvr",
@@ -36411,7 +36551,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "pareto_operational_network",
@@ -36593,7 +36734,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "pareto_produced_water_network",
@@ -36707,7 +36849,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "prommis_dynamic_mixer_settler",
@@ -36818,7 +36961,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "prommis_ree_feed_roaster_dynamic",
@@ -36929,7 +37073,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reaktoro_biogas_combustion",
@@ -37002,7 +37147,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reaktoro_redox_tracking",
@@ -37075,7 +37221,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reaktoro_simple_desalination",
@@ -37149,7 +37296,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reaktoro_simple_ion_exchange",
@@ -37212,7 +37360,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reaktoro_softening_acid_ro",
@@ -37325,7 +37474,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reaktoro_thermal_precipitation",
@@ -37399,7 +37549,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_air_stripping_0d",
@@ -37462,7 +37613,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_chemical_softening",
@@ -37525,7 +37677,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_crystallizer_effect",
@@ -37631,7 +37784,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_deep_well_injection",
@@ -37694,7 +37848,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_fo_trevi",
@@ -37892,7 +38047,8 @@
             "outlets_gt_2"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_kbhdp_rpt1",
@@ -38259,7 +38415,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_kbhdp_rpt2",
@@ -38617,7 +38774,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_kbhdp_rpt3",
@@ -39877,7 +40035,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_kbhdp_soa",
@@ -40222,7 +40381,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_kbhdp_zld",
@@ -40430,7 +40590,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_ltmed_vagmd_semibatch",
@@ -40696,7 +40857,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_multi_effect_crystallizer",
@@ -40802,7 +40964,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_solar_still",
@@ -40865,7 +41028,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_vagmd_multiperiod",
@@ -41257,7 +41421,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "reflo_waiv",
@@ -41320,7 +41485,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_ad_biogas_h2s_guard_emergency_flare",
@@ -41551,7 +41717,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_ad_chp_absorption_chiller_digestate_cooling",
@@ -41753,7 +41920,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_ammonia_recovery_storage_scrubber_recycle",
@@ -41956,7 +42124,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_dispatches_pem_oxygen_coproduct_methanation",
@@ -42142,7 +42311,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_distillation_heat_pump",
@@ -42311,7 +42481,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_methanol_steam_level_integration",
@@ -42531,7 +42702,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_once_through_single_flash",
@@ -42685,7 +42857,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_once_through_two_flash",
@@ -42968,7 +43141,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_psa_hydrogen_recovery_tailgas_fuel",
@@ -43123,7 +43297,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_psa_tailgas_furnace_heat_recovery",
@@ -43347,7 +43522,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_reactor_effluent_side_reboiler",
@@ -43555,7 +43731,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_recycle_purge_optimized",
@@ -43829,7 +44006,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_runaway_hydrogen_cutoff_nitrogen_quench",
@@ -44040,7 +44218,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_hda_staged_hydrogen_quench_guard_bed",
@@ -44245,7 +44424,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_ammonia_synthesis_intercool_condense",
@@ -44421,7 +44601,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_bfb_staged_air_flue_gas_recycle",
@@ -44613,7 +44794,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_biogas_h2s_co2_polishing",
@@ -44802,7 +44984,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_biomass_boiler_capture_mineralization",
@@ -45033,7 +45216,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_boiler_biomass_cofire_fgr",
@@ -45239,7 +45423,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_boiler_startup_fuel_transition_fgr",
@@ -45451,7 +45636,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_btx_extractive_distillation_solvent_recycle",
@@ -45602,7 +45788,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_btx_extractive_solvent_recycle",
@@ -45791,7 +45978,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_co2_electrolysis_gas_recycle_small",
@@ -45968,7 +46156,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_co2_electroreduction_gas_recycle",
@@ -46184,7 +46373,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_co2_h2_membrane_two_stage",
@@ -46366,7 +46556,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_co2_membrane_recompress_recycle",
@@ -46555,7 +46746,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_co2_membrane_two_stage_recycle",
@@ -46705,7 +46897,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_dac_co2_electroreduction_methanation",
@@ -46929,7 +47122,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_dac_humidity_swing_calciner_recovery",
@@ -47138,7 +47332,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_ethanol_dehydration_water_knockout",
@@ -47314,7 +47509,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_ethanol_water_pervaporation_polish",
@@ -47482,7 +47678,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_feedwater_heater_drain_cascade",
@@ -47639,7 +47836,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_formaldehyde_reactor_absorber",
@@ -47815,7 +48013,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hda_benzene_toluene_side_draw",
@@ -48004,7 +48203,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hda_psa_tailgas_recycle",
@@ -48193,7 +48393,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx2d_pcm_thermal_buffer",
@@ -48360,7 +48561,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a25_ua5_cf50",
@@ -48515,7 +48717,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a30_ua10_cf60",
@@ -48670,7 +48873,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a30_ua60_cf85",
@@ -48825,7 +49029,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a40_ua15_cf70",
@@ -48980,7 +49185,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a45_ua20_cf80",
@@ -49135,7 +49341,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a45_ua70_cf65",
@@ -49290,7 +49497,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a55_ua25_cf90",
@@ -49445,7 +49653,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a60_ua30_cf70",
@@ -49600,7 +49809,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a65_ua80_cf75",
@@ -49755,7 +49965,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a70_ua40_cf80",
@@ -49910,7 +50121,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_a80_ua50_cf90",
@@ -50065,7 +50277,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_lumped_compact_crossflow",
@@ -50220,7 +50433,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e55_a70",
@@ -50416,7 +50630,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e60_a80",
@@ -50612,7 +50827,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e65_a90",
@@ -50808,7 +51024,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e70_a120",
@@ -51004,7 +51221,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e72_a130",
@@ -51200,7 +51418,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e75_a110",
@@ -51396,7 +51615,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e80_a120",
@@ -51592,7 +51812,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e85_a160",
@@ -51788,7 +52009,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e88_a150",
@@ -51984,7 +52206,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_e90_a160",
@@ -52180,7 +52403,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_hx_ntu_high_effectiveness",
@@ -52376,7 +52600,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_high_pressure_pump",
@@ -52468,7 +52693,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp1000k_eff75",
@@ -52560,7 +52786,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp1200k_eff80",
@@ -52652,7 +52879,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp1500k_eff85",
@@ -52744,7 +52972,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp2000k_eff90",
@@ -52836,7 +53065,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp200k_eff75",
@@ -52928,7 +53158,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp300k_eff80",
@@ -53020,7 +53251,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp400k_eff85",
@@ -53112,7 +53344,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp600k_eff75",
@@ -53204,7 +53437,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp700k_eff80",
@@ -53296,7 +53530,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_iapws_pump_dp800k_eff85",
@@ -53388,7 +53623,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_mea_absorber_flash_regeneration",
@@ -53571,7 +53807,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_methanation_co2_recycle",
@@ -53747,7 +53984,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_methanol_water_pressure_swing",
@@ -53908,7 +54146,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_natural_gas_glycol_dehydration",
@@ -54078,7 +54317,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_ngcc_supplementary_firing_district_heat",
@@ -54301,7 +54541,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_pervaporation_two_stage_recycle",
@@ -54438,7 +54679,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_pipeline_teg_compressor_aftercool",
@@ -54627,7 +54869,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_plate_hx_cip_standby_train",
@@ -54803,7 +55046,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_propane_propylene_heat_pump",
@@ -54964,7 +55208,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_pz_capture_lean_vapor_recompression",
@@ -55147,7 +55392,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_pz_capture_rich_split_intercooling",
@@ -55344,7 +55590,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_pz_solvent_reclaimer_degradation_purge",
@@ -55547,7 +55794,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_rsofc_hydrogen_storage_heat_cascade",
@@ -55736,7 +55984,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_sco2_recompression_dry_cooling",
@@ -55905,7 +56154,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_soec_oxygen_depolarized_bped",
@@ -56104,7 +56354,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_sofc_anode_recycle_oxyfuel_capture",
@@ -56322,7 +56573,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_sofc_fuel_trip_inert_purge_heat_dump",
@@ -56525,7 +56777,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_sour_gas_dehydration_sulfur_co2_capture",
@@ -56744,7 +56997,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_sour_gas_zno_claus_tailgas",
@@ -56933,7 +57187,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_steady_feedwater_heater",
@@ -57008,7 +57263,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_supercritical_double_reheat_feedwater_split",
@@ -57202,7 +57458,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_teg_dehydration_flash_regeneration",
@@ -57385,7 +57642,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_teg_regenerator_stripping_column",
@@ -57574,7 +57832,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_tga_redox_oxygen_switching_cycle",
@@ -57766,7 +58025,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_tsa_dual_bed_heat_recovery",
@@ -57939,7 +58199,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_tsa_water_co2_coadsorption",
@@ -58110,7 +58371,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_vsa_co2_dual_bed",
@@ -58267,7 +58529,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_wgs_interstage_cooling_condensate_knockout",
@@ -58432,7 +58695,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_wgs_shift_condensate_recycle",
@@ -58608,7 +58872,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_idaes_zno_h2s_guard_regeneration",
@@ -58779,7 +59044,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_methanol_capture_electrolysis_heat_integration",
@@ -58990,7 +59256,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_methanol_co2_cofeed_water_knockout",
@@ -59216,7 +59483,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_methanol_emergency_quench_relief_recovery",
@@ -59458,7 +59726,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_methanol_reaction_water_condense_reheat",
@@ -59648,7 +59917,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_methanol_recycle_purge_optimized",
@@ -59928,7 +60198,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_methanol_two_bed_intercooled",
@@ -60190,7 +60461,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_methanol_two_reactor_intercooling",
@@ -60355,7 +60627,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_methanol_water_nrtl_partial_condensation",
@@ -60434,7 +60707,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_natural_gas_compressor_heat_teg_regeneration",
@@ -60635,7 +60909,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_natural_gas_hydrate_inhibitor_slug_recovery",
@@ -60838,7 +61113,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_natural_gas_zno_guard_claus_sulfur_recovery",
@@ -61030,7 +61306,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_official_co2_adsorption_steam_vacuum_hybrid",
@@ -61207,7 +61484,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_cobalt_nickel_sx_recycle",
@@ -61360,7 +61638,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_copper_leach_sxew_raffinate_recycle",
@@ -61564,7 +61843,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_copper_sxew_raffinate",
@@ -61717,7 +61997,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_evaporation_pond_staged_salt_harvest",
@@ -61906,7 +62187,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_leach_spill_neutralization_ree_recovery",
@@ -62129,7 +62411,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_li_mg_nf_diafiltration",
@@ -62325,7 +62608,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_lithium_carbonate_seed_recycle",
@@ -62507,7 +62791,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_lithium_magnesium_nf_cascade",
@@ -62671,7 +62956,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_lithium_nf_bped_crystallization",
@@ -62914,7 +63200,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_lithium_sx_solvent_wash",
@@ -63067,7 +63354,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_ndfeb_hydrogen_recycle_magnetic_classification",
@@ -63258,7 +63546,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_nickel_cobalt_staged_ph_separation",
@@ -63453,7 +63742,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_ree_diafiltration_wash_recycle",
@@ -63604,7 +63894,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_ree_leach_sx_acid_recycle_small",
@@ -63771,7 +64062,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_ree_leach_sx_bped_acid_loop",
@@ -63976,7 +64268,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_ree_oxalate_precipitation_wash",
@@ -64158,7 +64451,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_ree_oxalate_seed_roaster_heat_recovery",
@@ -64361,7 +64655,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_ree_staged_leach_acid_recycle",
@@ -64553,7 +64848,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_ree_sx_scrub_strip",
@@ -64706,7 +65002,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_spray_dryer_exhaust_recycle",
@@ -64896,7 +65193,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_prommis_sx_scrub_strip_organic_recycle",
@@ -65050,7 +65348,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reaktoro_biogas_oxygen_enriched_fgr",
@@ -65240,7 +65539,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reaktoro_lithium_brine_borate_then_carbonate",
@@ -65450,7 +65750,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reflo_air_stripping_offgas_gac_polishing",
@@ -65628,7 +65929,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reflo_crystallizer_mother_liquor_recycle",
@@ -65810,7 +66112,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reflo_evaporator_condensate_flash_cascade",
@@ -65983,7 +66286,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reflo_multi_effect_crystallizer_mvr_heat_integrated",
@@ -66167,7 +66471,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reflo_nacl_seeded_cooling_crystallization",
@@ -66335,7 +66640,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reflo_softening_seed_recycle_recarbonation",
@@ -66567,7 +66873,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reflo_voc_air_stripper_condensate_recovery",
@@ -66750,7 +67057,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_reflo_voc_rotary_concentrator_rto_heat_recovery",
@@ -66940,7 +67248,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n10p5119_t323_y35_40",
@@ -67030,7 +67339,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n10p5119_t333_y45_45",
@@ -67120,7 +67430,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n10p5119_t338_y50_35",
@@ -67210,7 +67521,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n11_t328_y30_45",
@@ -67300,7 +67612,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n11_t333_y40_35",
@@ -67390,7 +67703,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n12_t323_y30_50",
@@ -67480,7 +67794,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n12_t328_y45_30",
@@ -67570,7 +67885,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n12_t333_y50_45",
@@ -67660,7 +67976,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n13_t328_y35_35",
@@ -67750,7 +68067,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n13_t338_y45_50",
@@ -67840,7 +68158,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n14_t328_y35_50",
@@ -67930,7 +68249,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n14_t333_y45_40",
@@ -68020,7 +68340,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n14_t338_y50_50",
@@ -68110,7 +68431,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n16_t333_y55_35",
@@ -68200,7 +68522,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n8_t323_y30_30",
@@ -68290,7 +68613,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n8_t328_y35_45",
@@ -68380,7 +68704,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n8_t333_y45_35",
@@ -68470,7 +68795,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n8_t338_y50_40",
@@ -68560,7 +68886,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n9_t323_y35_40",
@@ -68650,7 +68977,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_cryst_n9_t328_y40_50",
@@ -68740,7 +69068,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_45_10",
@@ -68870,7 +69199,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_45_15",
@@ -69000,7 +69330,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_45_20",
@@ -69130,7 +69461,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_50_10",
@@ -69260,7 +69592,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_50_15",
@@ -69390,7 +69723,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_50_20",
@@ -69520,7 +69854,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_55_10",
@@ -69650,7 +69985,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_55_15",
@@ -69780,7 +70116,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_55_20",
@@ -69910,7 +70247,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_60_10",
@@ -70040,7 +70378,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_60_15",
@@ -70170,7 +70509,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_65_10",
@@ -70300,7 +70640,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_65_15",
@@ -70430,7 +70771,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_65_20",
@@ -70560,7 +70902,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_gac_replace_70_15",
@@ -70690,7 +71033,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f08_s10_p16_08_a60_80",
@@ -70822,7 +71166,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f08_s20_p18_09_a65_90",
@@ -70954,7 +71299,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f08_s30_p22_10_a70_100",
@@ -71086,7 +71432,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f09_s15_p17_08_a80_90",
@@ -71218,7 +71565,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f09_s20_p19_09_a70_100",
@@ -71350,7 +71698,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f09_s25_p20_10_a75_110",
@@ -71482,7 +71831,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f09_s35_p24_12_a85_120",
@@ -71614,7 +71964,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f10_s15_p19_09_a70_100",
@@ -71746,7 +72097,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f10_s25_p21_10_a75_110",
@@ -71878,7 +72230,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f10_s30_p22_11_a80_120",
@@ -72010,7 +72363,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f11_s15_p19_09_a85_110",
@@ -72142,7 +72496,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f11_s20_p21_10_a85_120",
@@ -72274,7 +72629,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f11_s25_p23_11_a90_130",
@@ -72406,7 +72762,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f12_s20_p23_11_a95_130",
@@ -72538,7 +72895,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_v4_ro_f12_s30_p25_12_a100_140",
@@ -72670,7 +73028,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ad_biogas_chp_heat_integrated",
@@ -72817,7 +73176,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ad_digestate_ammonia_stripping",
@@ -73015,7 +73375,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ad_digestate_dewatering_recycle",
@@ -73204,7 +73565,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_adm1_biogas_water_scrubbing",
@@ -73373,7 +73735,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_adm1_two_stage_acidogenic_methanogenic",
@@ -73563,7 +73926,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ammonia_acid_absorption_crystallization",
@@ -73746,7 +74110,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ammonia_membrane_contactor_heat_recovery",
@@ -73917,7 +74282,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_anoxic_aerobic_nitrate_recycle",
@@ -74106,7 +74472,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_asm1_clarifier_only_ras",
@@ -74503,7 +74870,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_asm1_dewatering_unit",
@@ -74730,7 +75098,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_asm1_step_feed_internal_recycle",
@@ -74915,7 +75284,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_asm2d_sidestream_struvite",
@@ -75086,7 +75456,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_biogas_co2_water_scrubber",
@@ -75269,7 +75640,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_bped_acid_base_product_recycle",
@@ -75448,7 +75820,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_bped_carbonate_mineralization",
@@ -75671,7 +76044,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_bped_ix_brine_acid_base_recovery",
@@ -75854,7 +76228,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_bped_ix_brine_recovery_small",
@@ -76031,7 +76406,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_bsm2_equalization_peak_shaving",
@@ -76212,7 +76588,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_bsm2p_centrate_struvite_recovery",
@@ -76396,7 +76773,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_chlorine_contact_dechlorination_bypass",
@@ -76586,7 +76964,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_coag_floc_sludge_seed_recycle",
@@ -76776,7 +77155,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ebpr_struvite_sidestream",
@@ -76979,7 +77359,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ed_concentrate_recycle_purge",
@@ -77127,7 +77508,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ed_metathesis_sulfate_control",
@@ -77310,7 +77692,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ed_nitrate_concentrate_recycle",
@@ -77473,7 +77856,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ed_organic_acid_recovery",
@@ -77642,7 +78026,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_edr_softening_purge",
@@ -77819,7 +78204,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_electrocoagulation_hydrogen_recovery",
@@ -78003,7 +78389,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_electronp_nutrient_polishing",
@@ -78206,7 +78593,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_electronp_struvite_polish",
@@ -78369,7 +78757,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_fermentation_ed_vfa_bnr",
@@ -78592,7 +78981,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_fo_draw_regeneration_ro",
@@ -78748,7 +79138,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_gac_biological_regeneration_loop",
@@ -78951,7 +79342,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_gac_lead_lag",
@@ -79065,7 +79457,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_gac_pfas_lead_lag",
@@ -79222,7 +79615,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_gac_thermal_regeneration_makeup",
@@ -79380,7 +79774,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_gypsum_precipitation_seed_recycle",
@@ -79562,7 +79957,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ix_ammonium_regeneration",
@@ -79747,7 +80143,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ix_nitrate_selective_brine_recovery",
@@ -79985,7 +80382,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ix_regeneration_recycle",
@@ -80113,7 +80511,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_lsrro_two_stage",
@@ -80306,7 +80705,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_md_heat_recovery_bypass",
@@ -80480,7 +80880,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_md_multistage_condensation",
@@ -80664,7 +81065,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_mdc_osmotic_crystallization",
@@ -80853,7 +81255,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_modified_asm2d_primary_fermentation",
@@ -81056,7 +81459,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_mother_liquor_recycle_crystallization",
@@ -81143,7 +81547,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_oaro_ro_hybrid",
@@ -81311,7 +81716,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ro_antiscalant_recycle_purge",
@@ -81460,7 +81866,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ro_boron_polishing_second_pass",
@@ -81624,7 +82031,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ro_cip_recovery_neutralization",
@@ -81849,7 +82257,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ro_ed_concentrate_desalting",
@@ -82032,7 +82441,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ro_md_crystallizer_zld",
@@ -82241,7 +82651,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_ro_nf_softening_pretreatment",
@@ -82437,7 +82848,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_struvite_ph_control_crystallization",
@@ -82619,7 +83031,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_two_pass_permeate_polishing_ro",
@@ -82751,7 +83164,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_two_stage_crystallization",
@@ -82838,7 +83252,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_uconn_sidestream_deammonification",
@@ -83039,7 +83454,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_wrrf_ad_struvite_chp_cascade",
@@ -83277,7 +83693,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "variant_watertap_wrrf_equalization_bnr",
@@ -83480,7 +83897,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_adm1",
@@ -83935,7 +84353,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_anaerobic_digester_unit",
@@ -84082,7 +84501,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_asm1",
@@ -84467,7 +84887,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_asm2d",
@@ -84942,7 +85363,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_boron_removal",
@@ -85085,7 +85507,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_bped_unit",
@@ -85214,7 +85637,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_bsm2",
@@ -86009,7 +86433,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_bsm2_p_extension",
@@ -86682,7 +87107,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_coagulation_flocculation_unit",
@@ -86797,7 +87223,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_crystallization",
@@ -86884,7 +87311,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_dye_desalination",
@@ -87244,7 +87672,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_electrodialysis_conc_recirc",
@@ -87431,7 +87860,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_flex_desal",
@@ -87617,7 +88047,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_gac",
@@ -87731,7 +88162,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_generic_desalination_train",
@@ -87914,7 +88346,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_ion_exchange",
@@ -88034,7 +88467,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_lsrro",
@@ -88233,7 +88667,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_membrane_distillation",
@@ -88484,7 +88919,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_metab",
@@ -88586,7 +89022,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_modified_adm1_translators",
@@ -88676,7 +89113,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_modified_asm2d",
@@ -88875,7 +89313,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_modular_bped_tea",
@@ -88938,7 +89377,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_nf_dspmde_base",
@@ -89182,7 +89622,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_nf_dspmde_with_bypass",
@@ -89463,7 +89904,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_oaro",
@@ -89645,7 +90087,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_oaro_multi",
@@ -89912,7 +90355,8 @@
             "outlets_gt_2"
           ]
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_ro_no_energy_recovery",
@@ -90045,7 +90489,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_ro_pump_as_turbine",
@@ -90200,7 +90645,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_ro_with_energy_recovery",
@@ -90382,7 +90828,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_seawater_ro_desalination",
@@ -90946,7 +91393,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_seawater_ro_pump_as_turbine",
@@ -91483,7 +91931,8 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     },
     {
       "case_id": "watertap_uconn_wrrf",
@@ -91867,13 +92316,14 @@
           ],
           "tokens": []
         }
-      ]
+      ],
+      "units_judged_on": null
     }
   ],
   "schema": "w27-coverage-v1",
   "snapshot": {
     "basis": "built by benchmarks.m06.w27.snapshot from the build at git_commit",
-    "git_commit": "b8a0518e6c19cf738f6fbcce9c697492ea87863d",
+    "git_commit": "0bb7a1508573e19447e0795101e88b5c39704dda",
     "list_models_sha256": "4a60f5a3ad5def32a872407a75255370249560036e5718c848803637b2a5123a",
     "models": [
       {
@@ -91975,7 +92425,7 @@
     "routes_per_revision": 1,
     "schema": "w27-registry-snapshot-v1"
   },
-  "snapshot_sha256": "f71c1f05b44dcf6f0e5409ee734f82b3a7d8a143ac548599671e4fa13491d2f8",
+  "snapshot_sha256": "941f81ad8810bc66d18ab3c377b14ae51ea0ecff5eaaad1b2f41cd7555fa71a5",
   "summary": {
     "all_450": {
       "by_family": {
