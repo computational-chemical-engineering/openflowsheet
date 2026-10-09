@@ -161,6 +161,9 @@ def test_with_the_pre_rename_self_hashes_the_w5c_table_is_the_pre_rename_one(
     record_process_runtime(monkeypatch)
     outcomes = revision_outcomes()
     assert list(outcomes) == list(EXPECTED)
+    # M02's join (R-280 (a)) appended its C1 corpus rows (`M02:`), which the pre-rename table
+    # never had; the pre-rename table is the rest.
+    outcomes = {name: value for name, value in outcomes.items() if not name.startswith("M02:")}
     digest = hashlib.sha256(json.dumps(outcomes, sort_keys=True).encode()).hexdigest()
     assert digest == W5C_PRE_RENAME_SHA256
     # Only `binds` digests moved: every other outcome is the committed table's.
