@@ -52,7 +52,9 @@ def main() -> int:
                 revision_id = _commit(application, document, f"m02-g2:{case}")
                 report = application.validate(revision_id, "simulation")
                 request = JobRequest(
-                    "solve", f"m02-g2:{case}", SolveBody(revision_id=revision_id, policy_id="default")
+                    "solve",
+                    f"m02-g2:{case}",
+                    SolveBody(revision_id=revision_id, policy_id="default"),
                 )
                 try:
                     job = application.submit_job(request).job
@@ -73,9 +75,7 @@ def main() -> int:
                     "components": components,
                     "validation": report.as_document()["status"],
                     "outcome": None if result is None else result.outcome,
-                    "verification_status": None
-                    if result is None
-                    else result.verification_status,
+                    "verification_status": None if result is None else result.verification_status,
                 }
                 for output in job.outputs:
                     row = application.store.artifact(output.artifact_id)
