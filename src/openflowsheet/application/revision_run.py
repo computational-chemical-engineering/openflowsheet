@@ -51,7 +51,11 @@ from openflowsheet.application.binding import (
     refusal_code,
 )
 from openflowsheet.application.policies import SolvePath
-from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.application.revision_binding import (
+    RevisionBinding,
+    SurrogateResolver,
+    bind_revision_flowsheet,
+)
 from openflowsheet.application.structure_index import structure_index
 from openflowsheet.canonical import canonical_json
 from openflowsheet.compile.reference import state_vector
@@ -196,14 +200,17 @@ def _refusal(unbound: Unbound) -> str:
     return f"{unbound.kind}({unbound.detail})"
 
 
-def select_route(document: Mapping[str, Any]) -> Route | NoRoute:
+def select_route(
+    document: Mapping[str, Any], *, surrogates: SurrogateResolver | None = None
+) -> Route | NoRoute:
     """R2.1 as amended by ruling rounds 6 and 7: `revision_eo` whenever the revision binder binds;
     else `legacy_eo` when the legacy binder binds and `legacy_admission` admits the revision; else
     no route. A legacy binding not admitted is reported as
     `unsupported(legacy_route_not_admitted(<code>))`, beside the refusal `legacy_admission`
     reports. The route's reason stays the revision binder's refusal. A pure function of the
-    document; each binder reads its own copy."""
-    revision = bind_revision_flowsheet(copy.deepcopy(dict(document)))
+    document and of `surrogates`, the project's SurrogateManifest resolver (M04 spec §8.2); each
+    binder reads its own copy."""
+    revision = bind_revision_flowsheet(copy.deepcopy(dict(document)), surrogates=surrogates)
     if isinstance(revision, RevisionBinding):
         return Route("revision_eo", revision)
     legacy = bind_revision_or_reason(copy.deepcopy(dict(document)))
@@ -218,11 +225,16 @@ def select_route(document: Mapping[str, Any]) -> Route | NoRoute:
     return NoRoute(revision, legacy)
 
 
-def bind_route(solve_path: SolvePath, document: Mapping[str, Any]) -> Route | Unbound:
+def bind_route(
+    solve_path: SolvePath,
+    document: Mapping[str, Any],
+    *,
+    surrogates: SurrogateResolver | None = None,
+) -> Route | Unbound:
     """The named route's binder only (R2.5: a rerun follows the recorded route and never
     re-routes). On `legacy_eo` the route's reason is the revision binder's refusal, as
     `select_route` records it, or `None` when that binder binds (a route taken by request)."""
-    revision = bind_revision_flowsheet(copy.deepcopy(dict(document)))
+    revision = bind_revision_flowsheet(copy.deepcopy(dict(document)), surrogates=surrogates)
     if solve_path == "revision_eo":
         return Route("revision_eo", revision) if isinstance(revision, RevisionBinding) else revision
     legacy = bind_revision_or_reason(copy.deepcopy(dict(document)))
@@ -301,7 +313,9 @@ def _index(
     return structure_index(declaration, graph, binding, document)
 
 
-def route_structure(document: Mapping[str, Any]) -> dict[str, Any]:
+def route_structure(
+    document: Mapping[str, Any], *, surrogates: SurrogateResolver | None = None
+) -> dict[str, Any]:
     """`inspect_structure`'s document (§4.2 as amended by ruling round 1 R1.5 and ruling round 6,
     B1): the structural report of the formulation `solve` will use, naming its `solve_path` and
     its `route_reason` (the revision binder's refusal on `legacy_eo`, `None` on `revision_eo`) —
@@ -315,13 +329,13 @@ def route_structure(document: Mapping[str, Any]) -> dict[str, Any]:
     with the index of its declaration — each `None` when no structural stage ran."""
     from openflowsheet.application.validation import structural_analysis, validate
 
-    route = select_route(document)
+    route = select_route(document, surrogates=surrogates)
     if not isinstance(route, Route):
-        report = validate(document, "simulation")
+        report = validate(document, "simulation", surrogates=surrogates)
         # The hint of the refusal `validate()` reports, when its structural stage ran (ruling
         # round 6, B1 item 4); a document refused before that stage reports none.
         ran = any(check.stage == "structural_analysis" for check in report.checks)
-        analysis = structural_analysis(document) if ran else None
+        analysis = structural_analysis(document, surrogates=surrogates) if ran else None
         reported = None if analysis is None else analysis.refusal
         structure: dict[str, Any] = {
             "not_run_reason": report.structural_counts_absent_reason or route.reason,

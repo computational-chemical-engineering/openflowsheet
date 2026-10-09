@@ -59,6 +59,7 @@ from openflowsheet.application.policies import (
     SolvePath,
     resolve_policy,
 )
+from openflowsheet.application.revision_binding import SurrogateResolver
 from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.types import (
@@ -88,6 +89,7 @@ __all__ = [
     "admit_experiment",
     "admit_surrogate_study",
     "stored_surrogate_manifests",
+    "surrogate_resolver",
     "admit_reproduce",
     "admit_solve",
     "resolve_policies",
@@ -127,16 +129,18 @@ def admit_solve(
     budgets: Budgets,
     limits: Limits,
     active_jobs: int,
+    surrogates: SurrogateResolver | None = None,
 ) -> SolveAdmission | ApiError:
     """§5.3's semantic admission of `body` for the stored revision `document` (`None` when the
     store has no revision `revision_id`). `limits` are the caller's capability's; `active_jobs`
-    counts the caller's queued and running jobs."""
+    counts the caller's queued and running jobs; `surrogates` resolves the project's
+    SurrogateManifests for the binder (M04 spec §8.2, `surrogate_resolver`)."""
     # 1. The revision exists.
     if document is None:
         return _error("not_found", f"no revision {revision_id!r}", revision_id=revision_id)
 
     # 2. It is ready for simulation.
-    report = validate(document, "simulation")
+    report = validate(document, "simulation", surrogates=surrogates)
     if report.status != "READY_FOR_SIMULATION":
         return _error(
             "revision_not_ready",
@@ -145,7 +149,7 @@ def admit_solve(
         )
 
     # 3. A route exists (R2.6).
-    route = select_route(document)
+    route = select_route(document, surrogates=surrogates)
     if not isinstance(route, Route):
         return _error(
             "revision_unsupported",
@@ -362,6 +366,20 @@ def stored_surrogate_manifests(store: ProjectStore, root: Path) -> list[StoredMa
         if path.is_file() and file_sha256(path) == row.sha256:
             found.append(StoredManifest(row.sha256, json.loads(path.read_bytes())))
     return found
+
+
+def surrogate_resolver(store: ProjectStore, root: Path) -> SurrogateResolver:
+    """The binder's SurrogateManifest resolver over the project's artifact store (M04 spec §8.2;
+    ADR 0037 D2; R-237's injection): the intact `surrogate_manifest` artifact whose SHA-256 is
+    asked for, else `None`. The store is read only when a revision binds a surrogate."""
+
+    def resolve(sha256: str) -> Mapping[str, Any] | None:
+        for stored in stored_surrogate_manifests(store, root):
+            if stored.sha256 == sha256:
+                return stored.document
+        return None
+
+    return resolve
 
 
 def admit_surrogate_study(

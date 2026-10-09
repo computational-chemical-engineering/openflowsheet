@@ -276,7 +276,7 @@ def test_a_closed_legacy_analysis_reports_a_refusal_not_admitted(
     """Item 2: the existing refusal path, unchanged, for each kind."""
     refusal = Unbound(kind, "revision-detail(X)", ("revision-object",))  # type: ignore[arg-type]
     monkeypatch.setattr(
-        revision_binding_module, "bind_revision_flowsheet", lambda document: refusal
+        revision_binding_module, "bind_revision_flowsheet", lambda document, **_: refusal
     )
     report = validate(CORPUS["SYN-001-nominal"](), now=lambda: AT)
     assert report.status == status

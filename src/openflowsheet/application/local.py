@@ -49,6 +49,7 @@ from openflowsheet.application.admission import (
     admit_surrogate_study,
     resolve_policies,
     stored_surrogate_manifests,
+    surrogate_resolver,
 )
 from openflowsheet.application.authz import (
     LOCAL_OWNER,
@@ -74,6 +75,7 @@ from openflowsheet.application.revision_binding import (
     MODEL_SIGNATURES,
     ModelSignature,
     PinColumn,
+    SurrogateResolver,
     pin_encodings,
 )
 from openflowsheet.application.revision_run import Route, route_structure, select_route
@@ -305,6 +307,15 @@ class LocalApplication:
             self._scratch = tempfile.TemporaryDirectory(prefix="openflowsheet-")
         return Path(self._scratch.name)
 
+    def _surrogates(self) -> SurrogateResolver:
+        """The binder's SurrogateManifest resolver over this project's artifacts (M04 spec §8.2).
+        Lazy: the store and `files_root` are read only when a revision binds a surrogate."""
+
+        def resolve(sha256: str) -> Mapping[str, Any] | None:
+            return surrogate_resolver(self._store, self.files_root)(sha256)
+
+        return resolve
+
     def _context(self) -> RunContext:
         return RunContext(
             store=self._store, root=self.files_root, owner_instance=self.owner_instance
@@ -402,7 +413,7 @@ class LocalApplication:
             self._refuse(
                 "not_found", "no such revision", operation="validate", revision_id=revision_id
             )
-        return validation.validate(revision.as_document(), task)
+        return validation.validate(revision.as_document(), task, surrogates=self._surrogates())
 
     def commit_change(
         self, change: Change, expected_revision: str | None, idempotency_key: str
@@ -740,6 +751,7 @@ class LocalApplication:
                 budgets=request.budgets,
                 limits=caller.limits,
                 active_jobs=active,
+                surrogates=self._surrogates(),
             )
             if isinstance(admission, ApiError):
                 self._refuse_error(admission, operation, request_sha256)
@@ -895,7 +907,7 @@ class LocalApplication:
     def _resolution(self, revision: Revision, body: SolveBody) -> dict[str, Any]:
         from openflowsheet.run.manifest import policy_sha256
 
-        route = select_route(revision.as_document())
+        route = select_route(revision.as_document(), surrogates=self._surrogates())
         resolved = resolve_policies(route, body) if isinstance(route, Route) else None
         if not isinstance(route, Route) or not isinstance(resolved, tuple):
             raise api_error(
@@ -1151,7 +1163,7 @@ class LocalApplication:
         self._authorize(operation)
         self._check_view(operation, pointer, depth, cursor, limit)
         revision = self._revision(revision_id, operation)
-        document = route_structure(revision.as_document())
+        document = route_structure(revision.as_document(), surrogates=self._surrogates())
         return self._project(
             operation,
             document,
@@ -1468,7 +1480,9 @@ class LocalApplication:
         )
         return _Prepared(
             revision=revision,
-            report=validation.validate(revision.as_document(), change.task),
+            report=validation.validate(
+                revision.as_document(), change.task, surrogates=self._surrogates()
+            ),
             diff=semantic_diff(expected, document),
         )
 

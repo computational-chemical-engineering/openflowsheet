@@ -245,7 +245,7 @@ def test_a_job_that_finds_no_route_carries_the_revision_binders_hint(
     assert isinstance(none, NoRoute)
     with LocalApplication.create(tmp_path / "p", project_id="g-r6-4-noroute") as application:
         revision = commit(application, CORPUS["SYN-001-nominal"]())
-        monkeypatch.setattr(runner_module, "select_route", lambda document: none)
+        monkeypatch.setattr(runner_module, "select_route", lambda document, **_: none)
         failed = _solve(application, revision)
     assert failed.status == "failed"
     assert failed.error is not None and failed.error.code == "revision_unsupported"

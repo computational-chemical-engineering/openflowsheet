@@ -136,7 +136,7 @@ def test_step3_no_route_is_revision_unsupported(monkeypatch: pytest.MonkeyPatch)
         Unbound("unsupported", "revision-reason", hint="revision-hint"),
         Unbound("incomplete", "legacy-reason"),
     )
-    monkeypatch.setattr(admission_module, "select_route", lambda document: none)
+    monkeypatch.setattr(admission_module, "select_route", lambda document, **_: none)
     error = _refused(_admit("SYN-001-T06-NET03"), "revision_unsupported")
     assert error.detail["unbound"] == ("unsupported(revision-reason); incomplete(legacy-reason)")
     # Ruling round 6, B1 item 4: the revision binder's hint.
@@ -153,7 +153,7 @@ def test_step3_a_legacy_route_not_admitted_carries_the_revision_binders_hint(
     document = schema_conformant(c1_document("T02-2", "rev-000002"))
     route = select_route(document)
     assert isinstance(route, NoRoute)
-    monkeypatch.setattr(admission_module, "select_route", lambda document: route)
+    monkeypatch.setattr(admission_module, "select_route", lambda document, **_: route)
     error = _refused(_admit("SYN-001-T06-NET03"), "revision_unsupported")
     assert error.detail["unbound"] == (
         "incomplete(specification_missing(S4.P)); "

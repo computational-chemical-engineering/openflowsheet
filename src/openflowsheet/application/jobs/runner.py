@@ -71,7 +71,11 @@ from typing import Any, Final, Self
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ArtifactSink, ExperimentStore
-from openflowsheet.application.admission import resolve_policies, stored_surrogate_manifests
+from openflowsheet.application.admission import (
+    resolve_policies,
+    stored_surrogate_manifests,
+    surrogate_resolver,
+)
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -452,7 +456,9 @@ class _Body:
             if revision is None:
                 return _failed(_error("not_found", "no such revision"), run)
             document = revision.as_document()
-            route = select_route(document)
+            # M04 spec §8.2: a surrogate's manifest resolves from this project's artifacts.
+            surrogates = surrogate_resolver(store, self.context.root)
+            route = select_route(document, surrogates=surrogates)
             if not isinstance(route, Route):
                 return _failed(
                     _error(
@@ -491,7 +497,7 @@ class _Body:
                 )
 
             self.at("bind")
-            bound = bind_route(route.solve_path, document)
+            bound = bind_route(route.solve_path, document, surrogates=surrogates)
             if not isinstance(bound, Route):
                 return _failed(
                     _error(

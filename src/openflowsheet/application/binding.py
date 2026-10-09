@@ -27,7 +27,7 @@ from __future__ import annotations
 import copy
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
-from typing import Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal
 
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
@@ -42,6 +42,9 @@ from openflowsheet.models.revision_flowsheet import (
     read_parameter,
 )
 from openflowsheet.units import UnitConversion, read_number
+
+if TYPE_CHECKING:
+    from openflowsheet.application.revision_binding import SurrogateResolver
 
 __all__ = [
     "Binding",
@@ -319,7 +322,10 @@ def _argument(detail: str) -> str:
 
 
 def revision_probe(
-    document: Mapping[str, Any], binding: Binding | None
+    document: Mapping[str, Any],
+    binding: Binding | None,
+    *,
+    surrogates: SurrogateResolver | None = None,
 ) -> tuple[Unbound | None, tuple[tuple[str, Unbound], ...]]:
     """The revision binder's reading of `document` with every `role: free` specification read as
     `fixed` (T07 design note, ruling round 7, M1 and M2): `None` when it binds once the cross-unit
@@ -362,7 +368,8 @@ def revision_probe(
                     for entry in specifications
                     if str(entry.get("id")) not in removed
                 ],
-            }
+            },
+            surrogates=surrogates,
         )
         if not isinstance(result, Unbound):
             return None, tuple(targets)

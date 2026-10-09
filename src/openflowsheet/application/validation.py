@@ -28,6 +28,7 @@ from openflowsheet.canonical import first_noncanonical
 if TYPE_CHECKING:
     from openflowsheet.application.binding import Unbound
     from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.revision_binding import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
 
@@ -176,12 +177,16 @@ def validate(
     task: Task = "simulation",
     *,
     now: Callable[[], str] = utc_timestamp,
+    surrogates: SurrogateResolver | None = None,
 ) -> ValidationReport:
     """Blueprint §4.3's order: schema, dimensions, connectivity, components, then structural
     analysis.
 
     `now` is read once, when the report is made, for `provenance.timestamp` (T07 ruling round 1
     R3); it is injectable so that a test can fix it. Nothing else in the report depends on it.
+
+    `surrogates` is the project's SurrogateManifest resolver, which the structural stage hands the
+    revision binder (M04 spec §8.2); without one a surrogate-bound revision is not READY.
 
     `task="optimization"` raises ADR 0019's `unsupported`, detail `task_unsupported(optimization)`,
     and builds no report (T08 review 2, Ruling 1; envelope U05): blueprint §4.3 defines
@@ -314,7 +319,7 @@ def validate(
         )
         status = "READY_FOR_SIMULATION"
 
-    structural, counts, absent_reason, fallback = _structural(document)
+    structural, counts, absent_reason, fallback = _structural(document, surrogates)
     checks += structural
 
     failed = {check.id for check in checks if check.result == "FAIL"}
@@ -420,7 +425,9 @@ class StructuralAnalysis(NamedTuple):
     graph: ProcessGraph | None = None
 
 
-def _analysed(document: Mapping[str, Any]) -> StructuralAnalysis:
+def _analysed(
+    document: Mapping[str, Any], surrogates: SurrogateResolver | None = None
+) -> StructuralAnalysis:
     """`_structural`'s choice of binder: the analysed report, if any; the refusal it reports, if
     any (which then decides the checks); the specification labels of the revision binder's
     columns; whether that binder was the one analysed; and the binding, declaration and graph the
@@ -461,15 +468,15 @@ def _analysed(document: Mapping[str, Any]) -> StructuralAnalysis:
             # binder would solve a different problem, so its refusal is the one reported, through
             # the refusal path below. A legacy finding that is not closed stands: it is already
             # not READY.
-            revision = bind_revision_flowsheet(document)
+            revision = bind_revision_flowsheet(document, surrogates=surrogates)
             if not isinstance(revision, RevisionBinding):
                 refusal = legacy_admission(document, revision, binding)
     elif binding.kind in ("conflict", "inadmissible"):
         refusal = binding
     else:
-        revision = bind_revision_flowsheet(document)
+        revision = bind_revision_flowsheet(document, surrogates=surrogates)
         if not isinstance(revision, RevisionBinding):
-            revision = _free_class_refusal(document, revision)
+            revision = _free_class_refusal(document, revision, surrogates)
         if isinstance(revision, RevisionBinding):
             model_version, constants = declaration_identity(revision.spec)
             report, declaration = traced_analysis(
@@ -507,7 +514,11 @@ def _analysed(document: Mapping[str, Any]) -> StructuralAnalysis:
     )
 
 
-def _free_class_refusal(document: Mapping[str, Any], refusal: Unbound) -> Unbound:
+def _free_class_refusal(
+    document: Mapping[str, Any],
+    refusal: Unbound,
+    surrogates: SurrogateResolver | None = None,
+) -> Unbound:
     """The revision side of the rank-and-tie comparison when the legacy binder refuses (T07
     design note, ruling round 7, S1, amending round 3's Q2). In the free class (`legacy_answers`),
     `refusal` says only that the binder cannot read the free role; with every free specification
@@ -522,27 +533,31 @@ def _free_class_refusal(document: Mapping[str, Any], refusal: Unbound) -> Unboun
     free = [e for e in document.get("specifications") or () if e.get("role") == "free"]
     if any(entry.get("value") is None for entry in free):
         return refusal
-    probed, _ = revision_probe(document, None)
+    probed, _ = revision_probe(document, None, surrogates=surrogates)
     if probed is not None and probed.kind in ("incomplete", "unsupported"):
         return probed
     return refusal
 
 
-def structural_refusal(document: Mapping[str, Any]) -> Unbound | None:
+def structural_refusal(
+    document: Mapping[str, Any], *, surrogates: SurrogateResolver | None = None
+) -> Unbound | None:
     """The binder refusal `validate()`'s structural stage reports for `document`, or `None` when
     it analyses one (T07 ruling round 6, B1: `inspect_structure`'s `hint` is this refusal's)."""
-    return _analysed(document).refusal
+    return _analysed(document, surrogates).refusal
 
 
-def structural_analysis(document: Mapping[str, Any]) -> StructuralAnalysis:
+def structural_analysis(
+    document: Mapping[str, Any], *, surrogates: SurrogateResolver | None = None
+) -> StructuralAnalysis:
     """What `validate()`'s structural stage analysed for `document` (`_analysed`): the report,
     the refusal, and the binding, declaration and graph the report came from (M06 design note
     §4.1, `inspect_structure`'s unroutable branch)."""
-    return _analysed(document)
+    return _analysed(document, surrogates)
 
 
 def _structural(
-    document: Mapping[str, Any],
+    document: Mapping[str, Any], surrogates: SurrogateResolver | None = None
 ) -> tuple[list[Check], Mapping[str, int] | None, str | None, bool]:
     """T01's checks `STR-01`..`STR-05` (specification §12.3), or the reason there are none; and
     whether the revision binder's flowsheet was the one analysed.
@@ -569,7 +584,7 @@ def _structural(
     — a validator that reported `READY_FOR_SIMULATION` because it could not look would be the
     placeholder success the repository's rules forbid.
     """
-    report, refusal, pins, fallback, *_ = _analysed(document)
+    report, refusal, pins, fallback, *_ = _analysed(document, surrogates)
 
     if refusal is not None:
         if refusal.kind == "conflict":

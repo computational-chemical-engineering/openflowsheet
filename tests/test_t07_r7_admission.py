@@ -133,9 +133,9 @@ def test_g_r7_4_a_free_specification_without_a_value_starts_at_the_declared_defa
     seen: list[dict[str, Any]] = []
     binder = revision_binding_module.bind_revision_flowsheet
 
-    def recording(probe: dict[str, Any]) -> RevisionBinding | Unbound:
+    def recording(probe: dict[str, Any], **keywords: Any) -> RevisionBinding | Unbound:
         seen.append(copy.deepcopy(probe))
-        return binder(probe)
+        return binder(probe, **keywords)
 
     monkeypatch.setattr(revision_binding_module, "bind_revision_flowsheet", recording)
     assert revision_probe(document, legacy)[0] is None

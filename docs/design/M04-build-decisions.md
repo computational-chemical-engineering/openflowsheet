@@ -47,3 +47,12 @@ spec left to the build lane, so the design lane can accept, reword or revert it.
   `F_tube`; several refusals in one message are joined by `; `.
 - **E7. The verifier's entry.** `c1.reactor_surrogate` joins `pr_c1.REACTOR_MODELS` (M02's
   material and energy rules, the verifier's own ν, `REACTING_MODELS`) and `EXTERNAL_DUTY_MODELS`.
+- **E8. Where the application injects the resolver.** `admission.surrogate_resolver(store, root)`
+  reads the project's intact `surrogate_manifest` artifacts (`stored_surrogate_manifests`) only
+  when a revision binds a surrogate. It is passed to every binding the project performs: `validate`
+  (its structural stage and the free-class probe), `select_route`, `bind_route`, `route_structure`
+  (`inspect_structure`), `admit_solve`, the solve job's route and re-bind, and a transaction's
+  validation. Not to `reproduce_bundle`: a bundle is replayed from its own members, and a
+  surrogate run's bundle does not carry the manifest, so its rerun is
+  `rerun_unsupported(route_unbound(revision_eo))` until a bundle member carries it (K05/M05). The
+  CLI's `validate` of a file has no project and refuses a surrogate-bound revision the same way.
