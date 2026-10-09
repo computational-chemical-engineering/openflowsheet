@@ -1,10 +1,11 @@
-"""W27's stub sessions: the registered scorer states W27-S01…S18, with no model and no spend.
+"""W27's stub sessions: the registered scorer states W27-S01…S20, with no model and no spend.
 
 Normative text: registration §14.3 ("each state is a stub session (scripted transcript and store,
 no model) scored against a registered coverage row") and design note §11 G15. Two kinds of stub,
 because two kinds of store are needed:
 
-- **Harness stubs** (S01–S10, S17, S18; the non-`CANDIDATE` row `variant_idaes_hx_ntu_e60_a80`):
+- **Harness stubs** (S01–S10, S17, S18 on the non-`CANDIDATE` row `variant_idaes_hx_ntu_e60_a80`;
+  S19, S20 on `ngcc_gas_turbine_subflowsheet`, registration §21.6–§21.7, W27-R59 as amended):
   the real W27 harness (`harness.run`) launches a stand-in `claude` — a Python script that makes
   no network or model call. It reads the `mcp.json` the harness wrote, acts on the fresh project
   as `agent-w27` through the application (commit a registered SYN-001 revision, solve it, or
@@ -46,6 +47,9 @@ STUB_MODEL: Final[str] = "claude-w27-stub-no-model"
 STUB_VERSION: Final[str] = "0.0.0-w27-stub"
 STUB_ADDRESS: Final[str] = "operator@w27-stub.invalid"
 NON_CANDIDATE: Final[str] = "variant_idaes_hx_ntu_e60_a80"
+#: W27-S19/S20's row (Amendment 2): `Mixer` names the available `fs.mx1`–`fs.mx3` and the
+#: unavailable `fs.inject1` (GC-SCORE-1).
+AMBIGUOUS_ALIAS_CASE: Final[str] = "ngcc_gas_turbine_subflowsheet"
 SYNTHETIC: Final[str] = "synthetic-w27"
 TEST_PROVIDER: Final[str] = "test-pr"
 #: Registered SYN-001 revisions the harness stubs commit: one ends VERIFIED, one does not.
@@ -83,8 +87,8 @@ def _limitation(*items: tuple[str, str | None]) -> dict[str, Any]:
 
 
 def states() -> list[State]:
-    """§14.3's eighteen states, in order."""
-    nc, sy = NON_CANDIDATE, SYNTHETIC
+    """§14.3's eighteen states and §21.7's two (S19, S20), in order."""
+    nc, sy, am = NON_CANDIDATE, SYNTHETIC, AMBIGUOUS_ALIAS_CASE
     s01 = _answer(nc, "limitation", limitation=_limitation(("component_unavailable", "H2O")))
     built_nc = _answer(
         nc,
@@ -195,6 +199,20 @@ def states() -> list[State]:
             s01,
             actions=("solve_verified", "alter_bundle"),
             killed=True,
+        ),
+        State(
+            "W27-S19",
+            am,
+            "CORRECT_LIMITATION",
+            _answer(am, "limitation", limitation=_limitation(("unit_unavailable", "Mixer"))),
+            counters={"matched": 1, "contradicted": 0},
+        ),
+        State(
+            "W27-S20",
+            am,
+            "WRONG_LIMITATION",
+            _answer(am, "limitation", limitation=_limitation(("unit_unavailable", "fs.mx1"))),
+            counters={"contradicted": 1, "names_nothing": 0},
         ),
     ]
 
@@ -674,9 +692,10 @@ def judge(state: State, scores: Mapping[str, Any]) -> dict[str, Any]:
     """One state against §14.3: its class, and the counters the table states."""
     checks: dict[str, bool] = {"class": scores["outcome"] == state.expected}
     agent = scores["agent_false_verification"]
-    if "contradicted" in state.counters:
-        counts = (scores["limitation"] or {}).get("counts") or {}
-        checks["contradicted"] = counts.get("contradicted") == state.counters["contradicted"]
+    counts = (scores["limitation"] or {}).get("counts") or {}
+    for counter in ("matched", "contradicted", "names_nothing"):
+        if counter in state.counters:
+            checks[counter] = counts.get(counter) == state.counters[counter]
     if "agent_count" in state.counters:
         checks["agent_count"] = (
             agent["established"] and agent["count"] == state.counters["agent_count"]
@@ -695,6 +714,7 @@ def g15(results: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
     by_id = {s.state_id: s for s in states()}
     verdicts = {k: judge(by_id[k], v["scores"]) for k, v in sorted(results.items())}
     return {
-        "passed": len(verdicts) == 18 and all(v["passed"] for v in verdicts.values()),
+        # G15: all twenty registered states (S01–S18, and S19/S20 by Amendment 2).
+        "passed": len(verdicts) == 20 and all(v["passed"] for v in verdicts.values()),
         "states": verdicts,
     }
