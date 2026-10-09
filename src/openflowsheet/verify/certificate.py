@@ -34,6 +34,7 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.models import flow_id
 from openflowsheet.models.syn001.flowsheet import STREAMS, Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.rank import AliasElimination, eliminate_alias_rows
@@ -745,12 +746,14 @@ def verify_revision(
         screened=screened,
         projection=projection,
         provider=fresh,
-        # B17 *Consequence* (build log D40): a `pr-c1-v1` revision's exactly-zero flow columns
-        # are not differenced by the witness; none for any other basis.
+        # §14.2 B17 *Consequence* as narrowed by §14.3 C2 (R-281): a `pr-c1-v1` revision's
+        # stream component-flow columns that are exactly 0.0 are not differenced by the witness;
+        # none for any other basis.
         unstenciled=frozenset(
             name
-            for name in binding.spec.variable_ids
-            if binding.spec.variable_kinds.get(name) == "molar_flow" and final_state[name] == 0.0
+            for stream in view.streams
+            for component in view.components
+            if final_state[name := flow_id(stream, component)] == 0.0
         )
         if basis == "pr-c1-v1"
         else frozenset(),
@@ -1180,7 +1183,7 @@ def _issue(
     ran at `final_state` before its fresh-flash categories (ADR 0013 D1), on the zero-flow form of
     its `ZERO_FLOW` splits (T05b spec §9.3; none for SYN-001), and `projection` where those
     categories were judged, recorded as `transformations.projection` (K04-F9 spec §5.5)."""
-    from openflowsheet.verify.checks import derivative_witness
+    from openflowsheet.verify.checks import derivative_witness, witness_skipped_columns
     from openflowsheet.verify.regularity import solution_error_bound
 
     resolved = policy
@@ -1209,6 +1212,16 @@ def _issue(
         regularity_reason=regularity.ill_conditioned_reason,
         derivative_ok=derivative_ok,
     )
+    # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
+    # where a reader enumerates what was not established; nothing when none was skipped.
+    skipped = witness_skipped_columns(target.spec.variable_ids, unstenciled)
+    if skipped:
+        limitations.append(
+            Limitation(
+                "derivative_witness_partial",
+                {"columns": skipped, "reason": "pr_c1_zero_flow_columns"},
+            )
+        )
     # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
     # qualifications and the statements name; SYN-001's unless given.
     if provider is None:

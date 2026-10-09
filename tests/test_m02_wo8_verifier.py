@@ -298,9 +298,12 @@ def test_g2i_view_components_are_syn001s_at_every_t07_corpus_revision() -> None:
 
 
 def test_the_witness_does_not_difference_exactly_zero_pr_flow_columns() -> None:
-    """B17 *Consequence* (build log D40): V1's certificate is VERIFIED with its witness run over
-    every column but the exactly-zero flows; differencing those leaves the provider's domain."""
+    """§14.2 B17 *Consequence* as narrowed by §14.3 C2 (R-281): V1's certificate is VERIFIED with
+    its witness run over every column but the exactly-zero stream component flows (`<S>.n.<c>`);
+    differencing those leaves the provider's domain. The skip is recorded: both witness checks
+    name the count, and one `derivative_witness_partial` limitation lists the columns."""
     from openflowsheet.compile.casadi_backend import compile_problem
+    from openflowsheet.models import flow_id
     from openflowsheet.verify.certificate import BoundDeclaration
     from openflowsheet.verify.checks import derivative_witness
 
@@ -314,21 +317,57 @@ def test_the_witness_does_not_difference_exactly_zero_pr_flow_columns() -> None:
         state,
         pressure_domain=PROVIDER.describe().domain["P"],
     )
+    view = parse_revision(document)
     zero = frozenset(
+        name
+        for stream in view.streams
+        for c in view.components
+        if state[name := flow_id(stream, c)] == 0.0
+    )
+    assert zero >= {f"S3.n.{c}" for c in COMPONENTS}
+    # The scope is the stream component flows: no other column is skipped, flow-kind or not.
+    flow_kind = {
         name
         for name in solved.binding.spec.variable_ids
         if solved.binding.spec.variable_kinds.get(name) == "molar_flow" and state[name] == 0.0
-    )
-    assert zero >= {f"S3.n.{c}" for c in COMPONENTS}
+    }
+    assert zero <= flow_kind
     full = derivative_witness(target, state)
     assert {c.result for c in full} == {"unsupported"}
     witnessed = derivative_witness(target, state, unstenciled=zero)
-    assert [(c.id, c.result) for c in witnessed] == [
-        ("derivative_witness.on_pattern", "pass"),
-        ("derivative_witness.off_pattern", "pass"),
+    note = (
+        f"not differenced: {len(zero)} exactly-zero pr-c1-v1 stream-flow columns "
+        "(design note §14.3 C2)"
+    )
+    assert [(c.id, c.result, c.independence_qualification) for c in witnessed] == [
+        ("derivative_witness.on_pattern", "pass", note),
+        ("derivative_witness.off_pattern", "pass", note),
     ]
     certificate = verify_revision(
         solved.binding, document, solved.run, solve_plan=solved.plan.steps[-1].solve_plan
     )
     assert certificate.verification_status == "VERIFIED"
     assert math.isfinite(certificate.regularity.rcond_1)  # type: ignore[union-attr]
+    witness = [c for c in certificate.checks if c.category == "derivative_witness"]
+    assert [c.independence_qualification for c in witness] == [note, note]
+    partial = [
+        item.as_document()
+        for item in certificate.limitations
+        if item.kind == "derivative_witness_partial"
+    ]
+    assert partial == [
+        {
+            "kind": "derivative_witness_partial",
+            "columns": sorted(zero),
+            "reason": "pr_c1_zero_flow_columns",
+        }
+    ]
+
+
+def test_the_witness_skips_nothing_and_records_nothing_without_unstenciled_columns() -> None:
+    """§14.3 C2: when nothing is excluded, neither the qualification nor the limitation is
+    written; G2 (ii)'s dump holds every T07 corpus certificate byte-identical."""
+    from openflowsheet.verify.checks import witness_skipped_columns
+
+    assert witness_skipped_columns(("a", "b"), frozenset()) == []
+    assert witness_skipped_columns(("b", "a", "c"), frozenset({"a", "b", "z"})) == ["a", "b"]
