@@ -64,6 +64,7 @@ from openflowsheet.application.coupled_run import (
     external_units,
     final_constants,
     iterate_differences,
+    record_differences,
     reproducibility_class,
     solve_coupled,
 )
@@ -1020,6 +1021,7 @@ def reproduce_bundle(
         )
     coupling: Mapping[str, Any] | None = None
     coupling_found: list[str] = []
+    classified_bitwise = True
     if route.solve_path == "revision_coupled":
         # M02 design note §7.2 step 1: the record against its schema, and each embedded request's
         # key against its content.
@@ -1085,14 +1087,25 @@ def reproduce_bundle(
             for name, document in artifacts.items()
         }
         if COUPLING_NAME in artifacts:
+            fresh_record = artifacts[COUPLING_NAME]
             coupling_found += iterate_differences(
-                artifacts[COUPLING_NAME], coupling, manifest.numerical_policy_id
+                fresh_record, coupling, manifest.numerical_policy_id
             )
+            # R-317 (b): the record's floats at their registered floors; `replay` compares the
+            # rest. A float taken from the record is not a bitwise match.
+            shaped, floored = record_differences(
+                fresh_record, coupling, manifest.numerical_policy_id
+            )
+            coupling_found += floored
+            artifacts[COUPLING_NAME] = shaped
+            classified_bitwise = shaped == fresh_record
     at("compare")
     # On `revision_coupled` the state is written over the final inner spec, whose columns and
     # kinds are the route's binding's (w moves constants only).
     rerun_result = Rerun(artifacts, variable_kinds=declared_kinds(route.binding.spec))
     report = replay(directory, rerun_result)
+    if not classified_bitwise and report.bitwise_floats:
+        report = replace(report, bitwise_floats=False)
     if experiments is not None and coupling is not None:
         report = _replayed_from_record(report, experiments, coupling)
     return Reproduction(_with_differences(report, coupling_found), rerun_manifest)

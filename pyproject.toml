@@ -65,6 +65,8 @@ openflowsheet = [
     "_data/benchmarks/syn001/reference_values.yaml",
     "_data/benchmarks/t08/numerical_policy_v2.yaml",
     "_data/benchmarks/m01/components.yaml",
+    # M02 (register R-317 (b)): the external addendum, whose `compare` rules a coupled replay reads.
+    "_data/benchmarks/m02/numerical_policy_external.yaml",
     # M06 (ADR 0030 D2): the diagnostic web shell, `_data/web` → `apps/web/`, one glob per
     # directory (`serve-http --ui`).
     "_data/web/*.html",

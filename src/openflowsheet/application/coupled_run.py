@@ -36,6 +36,7 @@ experiments; this module hands it the two callables it needs and turns its end i
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -66,8 +67,9 @@ from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import WarmStartCandidate
+from openflowsheet.resources import packaged
 from openflowsheet.run import solution_state
-from openflowsheet.run.compare import differences
+from openflowsheet.run.compare import KIND_FLOOR, differences, floored_difference
 from openflowsheet.thermo import StreamState
 from openflowsheet.verify import CheckResult, Limitation
 from openflowsheet.verify.certificate import ExternalEvidence
@@ -191,6 +193,122 @@ def iterate_differences(
                 for line in differences(mine[key], theirs[key], policy_id=policy_id)
             ]
     return found
+
+
+# -- the record's floats as a replay compares them (R-317 (b), ADR 0007 D2.2–D2.3) ----------------
+
+#: M02's addendum to the numerical policy (design note §3.6), runtime data since R-317: its rules
+#: say how a replay compares each float of the coupling record and of a re-evaluated envelope.
+EXTERNAL_POLICY: Final = "benchmarks/m02/numerical_policy_external.yaml"
+
+
+def _external_rules() -> dict[str, tuple[tuple[re.Pattern[str], Any], ...]]:
+    import yaml  # noqa: PLC0415
+
+    document = yaml.safe_load(packaged(EXTERNAL_POLICY).read_text(encoding="utf-8"))
+    rules = document["numerical_policy_external"]["rules"]
+    return {
+        name: tuple((re.compile(rule["path"]), rule.get("compare")) for rule in entries)
+        for name, entries in rules.items()
+    }
+
+
+_RULES: Final = _external_rules()
+
+
+def _comparison(rules: Sequence[tuple[re.Pattern[str], Any]], path: str) -> Any:
+    """The `compare` of the first rule whose path matches `path`, `None` when it names none."""
+    for pattern, compare in rules:
+        if pattern.fullmatch(path):
+            return compare
+    return None
+
+
+def _floor(compare: Any, block: Mapping[str, Any]) -> tuple[float, str] | None:
+    """A rule's `compare` as an absolute floor and its source, `None` for `relative` (and none)."""
+    if isinstance(compare, dict) and "floor" in compare:
+        return float(compare["floor"]), "its registered threshold, R-317"
+    if isinstance(compare, dict) and "block" in compare:
+        name = str(compare["block"])
+        return abs(float(block[name])), f"the record's coupling_block.{name}, R-317"
+    if isinstance(compare, dict) and "kind" in compare:
+        kind = str(compare["kind"])
+        return KIND_FLOOR[kind], f"tau_kind of {kind}, R-317"
+    return None
+
+
+def _real(value: Any) -> bool:
+    return isinstance(value, int | float) and not isinstance(value, bool)
+
+
+def _classified(
+    fresh: Any,
+    recorded: Any,
+    path: str,
+    rules: Sequence[tuple[re.Pattern[str], Any]],
+    block: Mapping[str, Any],
+    policy_id: str,
+    found: list[str],
+) -> Any:
+    """`fresh` with each float a rule floors or reports replaced by `recorded`'s at the same
+    place, each one outside its floor added to `found`; everything else is left as it is, for
+    `differences` (and `replay`) to compare under the archive's policy."""
+    if isinstance(fresh, dict) and isinstance(recorded, dict):
+        return {
+            key: _classified(value, recorded[key], f"{path}.{key}", rules, block, policy_id, found)
+            if key in recorded
+            else value
+            for key, value in fresh.items()
+        }
+    if isinstance(fresh, list) and isinstance(recorded, list) and len(fresh) == len(recorded):
+        return [
+            _classified(mine, theirs, f"{path}[{index}]", rules, block, policy_id, found)
+            for index, (mine, theirs) in enumerate(zip(fresh, recorded, strict=True))
+        ]
+    if not (_real(fresh) and _real(recorded)):
+        return fresh
+    compare = _comparison(rules, path)
+    if compare == "shape":
+        # A secant quantity, reported and not compared (D2.2's comparability window): its R0
+        # consequences — the step's kind and k — are compared exactly.
+        return recorded
+    floor = _floor(compare, block)
+    if floor is None:
+        return fresh
+    found += floored_difference(
+        fresh, recorded, f"<root>{path}", floor[0], floor[1], policy_id=policy_id
+    )
+    return recorded
+
+
+def record_differences(
+    fresh: Mapping[str, Any], recorded: Mapping[str, Any], policy_id: str
+) -> tuple[dict[str, Any], list[str]]:
+    """R-317 (b): a rerun's `external-coupling.json` against the record. Returns `fresh` with each
+    float the addendum floors or reports (`compare` of `rules.coupling`) replaced by the record's,
+    and every one outside its floor as an `external-coupling.json<root>…` difference. The rest —
+    relative floats, exact members, structure — is `replay`'s, under the archive's policy."""
+    found: list[str] = []
+    shaped = _classified(
+        fresh, recorded, "", _RULES["coupling"], recorded["coupling_block"], policy_id, found
+    )
+    return shaped, [f"{COUPLING_NAME}{line}" for line in found]
+
+
+def envelope_differences(
+    fresh: Mapping[str, Any], recorded: Mapping[str, Any], policy_id: str
+) -> list[str]:
+    """R-317 (b): a re-evaluated envelope against the recorded one, each float at the floor of
+    `rules.result`'s `.envelope.<field>` rule (`defect_rel` at 10⁻⁶, ADR 0027 D3; `defect` and the
+    outlet flows at the molar-flow floor; the rest relative), as `<root>…` differences."""
+    found: list[str] = []
+    rules = tuple(
+        (re.compile(pattern.pattern.removeprefix(r"\.envelope")), compare)
+        for pattern, compare in _RULES["result"]
+        if pattern.pattern.startswith(r"\.envelope")
+    )
+    shaped = _classified(fresh, recorded, "", rules, {}, policy_id, found)
+    return found + differences(shaped, recorded, policy_id=policy_id)
 
 
 def inlet_of(binding: RevisionBinding, unit: C1Reactor, state: Mapping[str, float]) -> UnitInlet:
@@ -343,7 +461,7 @@ class RecordedExperiments:
     within ADR 0007 D2 (bitwise is observed, not required) — else `ReplayDivergenceError`. Then an
     **out-of-process** result is served from the record (`replayed`), and an **in-process** one
     (the stand-in) is re-evaluated in `scratch` and its envelope compared with the record's
-    (`differences`, under the current numerical policy); the rerun reads the re-evaluated
+    (`envelope_differences`, R-317 (b)); the rerun reads the re-evaluated
     envelope. Either way the rerun's record embeds the recorded documents, so the two records
     differ only where the coupling's numbers do."""
 
@@ -419,7 +537,9 @@ class RecordedExperiments:
             else:
                 self.differences += [
                     f"external_result({k}, {unit.unit_id}){line}"
-                    for line in differences(envelope, result["envelope"], policy_id=self.policy_id)
+                    for line in envelope_differences(
+                        envelope, result["envelope"], policy_id=self.policy_id
+                    )
                 ]
         # R-317 (a): the rerun's record embeds the recorded (served) documents; the answer is
         # attributed to the request recomputed here, at the rerun's inlet.

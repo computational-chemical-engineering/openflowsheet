@@ -38,9 +38,11 @@ from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifa
 from openflowsheet.application.coupled_run import (
     LiveExperiments,
     at_coupling,
+    envelope_differences,
     external_units,
     final_constants,
     iterate_differences,
+    record_differences,
 )
 from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_run import (
@@ -237,16 +239,10 @@ def test_rp2_a_rerun_one_ulp_off_at_the_final_w_matches_not_bitwise(
     assert certificate["false_success_detected"] is False
     checks = [c for c in certificate["checks"] if c["id"].startswith("EXT-COUPLING:")]
     assert len(checks) == 2 and all(c["result"] == "pass" for c in checks)
-    # Until the record's floats are classified (R-317 (b), review F1), exactly these differ.
-    differing = sorted(entry.split(":")[0] for entry in report.differences)
-    assert differing == [
-        "external-coupling.json<root>.iterations[1].rho",
-        "external-coupling.json<root>.iterations[1].units.reactor.r_xi",
-        "external_result(1, reactor)<root>.defect[0]",
-        "external_result(1, reactor)<root>.defect[2]",
-        "external_result(1, reactor)<root>.defect[4]",
-        "external_result(1, reactor)<root>.defect_rel",
-    ], report.differences
+    # R-317 (b): ρ and r_ξ are floored at their thresholds, the re-evaluated envelope's defects at
+    # the molar-flow floor and 1e-6 (they differed: ρ 2.0e-12 vs 0, r_ξ -8.3e-17 vs 0, defect_rel
+    # 1.1e-16 vs 2.7e-17; build log D120).
+    assert (report.verdict, report.differences) == ("MATCH", ())
     assert report.bitwise_floats is False
     rerun = read_artifact(tmp_path / "rerun", "external-coupling.json")
     (final, recorded) = (rerun["iterations"][-1], record["iterations"][-1])
@@ -316,3 +312,65 @@ def test_d8_constants_digests_are_compared_for_shape() -> None:
         "a": {"constants_sha256": "a" * 64},
         "b": [{"constants_sha256": "not a digest"}],
     }
+
+
+# == R-317 (b): the record's floats at their registered floors =====================================
+
+
+def a_record() -> dict[str, Any]:
+    unit = {"inlet": {"n": [3.0, 1.0, 0.0], "T": 673.15, "P": 1e7}, "r_xi": 0.0, "r_T": 0.0}
+    unit |= {"n_N2_in": 1.0, "n_tot_in": 4.0, "xi_E": 0.25, "T_E": 673.15}
+    return {
+        "coupling_block": {"tau_xi_rel": 1e-5, "tau_T_K": 1e-2},
+        "iterations": [
+            {
+                "k": 0,
+                "w": [0.15, 80.0],
+                "rho": 8000.0,
+                "step": {"kind": "broyden", "du": [1.0, -8.0], "B": [[-1.0, 0.0], [0.0, -1.0]]},
+                "units": {"reactor": unit},
+            }
+        ],
+    }
+
+
+def test_r317_rho_r_xi_r_t_and_flows_are_floored_and_the_secant_is_reported() -> None:
+    recorded = a_record()
+    fresh = a_record()
+    item, unit = fresh["iterations"][0], fresh["iterations"][0]["units"]["reactor"]
+    item["rho"] = 8000.0 * (1 + 1e-12)  # relative, inside 1e-9
+    item["step"] = {"kind": "broyden", "du": [1.5, -7.0], "B": [[-2.0, 0.1], [0.3, -1.0]]}
+    unit |= {"r_xi": 9e-6, "r_T": -9e-3, "n_N2_in": 1.0 + 1e-8}
+    unit["inlet"]["n"][2] = 3e-8
+    shaped, found = record_differences(fresh, recorded, CURRENT_POLICY_ID)
+    assert found == []
+    assert shaped == recorded  # each floored or reported float taken from the record
+    # Outside: ρ by more than 1 near zero, r_ξ by more than τ_ξ, a flow by more than τ_flow;
+    # w is relative and left for `replay`.
+    unit |= {"r_xi": 2e-5, "n_N2_in": 1.0 + 1e-7}
+    item["rho"] = 8001.5
+    fresh["iterations"][0]["w"] = [0.15 * (1 + 1e-6), 80.0]
+    shaped, found = record_differences(fresh, recorded, CURRENT_POLICY_ID)
+    where = sorted(line.split(":")[0] for line in found)
+    assert where == [
+        "external-coupling.json<root>.iterations[0].rho",
+        "external-coupling.json<root>.iterations[0].units.reactor.n_N2_in",
+        "external-coupling.json<root>.iterations[0].units.reactor.r_xi",
+    ]
+    assert "coupling_block.tau_xi_rel" in next(line for line in found if "r_xi" in line)
+    assert shaped["iterations"][0]["w"] == fresh["iterations"][0]["w"]
+    # A step kind that differs is R0: left for `replay` to compare exactly.
+    item["step"]["kind"] = "reset"
+    shaped, _ = record_differences(fresh, recorded, CURRENT_POLICY_ID)
+    assert shaped["iterations"][0]["step"]["kind"] == "reset"
+
+
+def test_r317_a_reevaluated_envelope_is_floored_at_its_thresholds() -> None:
+    recorded = {"outlet": {"n": [3.0, 0.0], "T": 700.0}, "xi": 0.25, "defect": [0.0, 1e-16]}
+    recorded |= {"defect_rel": 2.7e-17}
+    fresh = {"outlet": {"n": [3.0, 1e-9], "T": 700.0}, "xi": 0.25, "defect": [4e-16, 0.0]}
+    fresh |= {"defect_rel": 9e-7}
+    assert envelope_differences(fresh, recorded, CURRENT_POLICY_ID) == []
+    fresh |= {"defect_rel": 1.1e-6, "xi": 0.25 * (1 + 1e-6)}
+    found = envelope_differences(fresh, recorded, CURRENT_POLICY_ID)
+    assert sorted(line.split(":")[0] for line in found) == ["<root>.defect_rel", "<root>.xi"]

@@ -149,6 +149,100 @@ def test_g1_a32_every_float_of_every_m02_fixture_is_classified(directory: str) -
     assert found > 0, directory
 
 
+# -- A32 over `experiment.schema.json` (register R-317 (b), M02 review F1) -------------------------
+
+#: The coupling record's members a replay copies or serves rather than recomputes: compared
+#: exactly, so their rules carry no `compare` (R-317 (a)).
+COPIED = re.compile(
+    r"\.(variants|frozen|coupling_block)\..*|.*\.units\.[^.]+\.(request|result|attempts)\b.*"
+)
+#: A rule's `compare`: how a replay compares a float the rerun recomputes.
+COMPARES = {"relative", "shape"}
+
+
+def _number_leaves(node: Any, path: str, definitions: dict[str, Any]) -> Iterator[str]:
+    """Every `number` leaf a document of the schema `node` can carry, as a path the addendum's
+    rules match (`[0]` for an array index, `u` for a key of a map)."""
+    reference = node.get("$ref")
+    if isinstance(reference, str):
+        if reference.startswith("#/$defs/"):
+            yield from _number_leaves(definitions[reference.split("/")[-1]], path, definitions)
+        return  # another schema's document (a variant): copied, registered elsewhere
+    types = node.get("type")
+    if types == "number" or (isinstance(types, list) and "number" in types):
+        yield path
+    for branch in node.get("anyOf", []):
+        yield from _number_leaves(branch, path, definitions)
+    for key, child in node.get("properties", {}).items():
+        yield from _number_leaves(child, f"{path}.{key}", definitions)
+    if isinstance(node.get("additionalProperties"), dict):
+        yield from _number_leaves(node["additionalProperties"], f"{path}.u", definitions)
+    if isinstance(node.get("items"), dict):
+        yield from _number_leaves(node["items"], f"{path}[0]", definitions)
+
+
+def _rule_of(rules: list[dict[str, Any]], path: str) -> dict[str, Any] | None:
+    return next((rule for rule in rules if re.fullmatch(rule["path"], path)), None)
+
+
+def _a32_compare_is_well_formed(compare: Any) -> bool:
+    from openflowsheet.run.compare import KIND_FLOOR
+
+    if isinstance(compare, str):
+        return compare in COMPARES
+    if not isinstance(compare, dict) or len(compare) != 1:
+        return False
+    ((how, value),) = compare.items()
+    return (
+        (how == "floor" and isinstance(value, float) and value > 0.0)
+        or (how == "block" and value in ("tau_xi_rel", "tau_T_K"))
+        or (how == "kind" and value in KIND_FLOOR)
+    )
+
+
+def test_a32_every_number_of_the_coupling_record_and_the_envelope_is_classified() -> None:
+    """ADR 0007 D2.3 over the schema, not only the fixtures: every `number` the coupling record
+    (`$defs/coupling`) can carry matches an addendum rule, and every one a replay recomputes —
+    outside the copied and served members — has a well-formed `compare`; so does every `number`
+    of `$defs/envelope`, which an in-process variant's replay re-evaluates (R-317 (b))."""
+    schema = load_json(REPO_ROOT / "schemas" / "experiment.schema.json")
+    definitions = schema["$defs"]
+    coupling_rules = EXTERNAL["rules"]["coupling"]
+    recomputed: list[str] = []
+    for path in _number_leaves(definitions["coupling"], "", definitions):
+        rule = _rule_of(coupling_rules, path)
+        assert rule is not None, f"{path} is unclassified"
+        if COPIED.fullmatch(path):
+            assert "compare" not in rule, f"{path} is copied, compared exactly"
+            continue
+        recomputed.append(path)
+        assert _a32_compare_is_well_formed(rule.get("compare")), (path, rule)
+    assert {"rho", "r_xi", "r_T", "du[0]", "B[0][0]", "w[0]"} <= {
+        path.rsplit(".", 1)[-1] for path in recomputed
+    }
+    envelope = list(_number_leaves(definitions["envelope"], ".envelope", definitions))
+    assert ".envelope.defect_rel" in envelope and ".envelope.outlet.n[0]" in envelope
+    for path in envelope:
+        rule = _rule_of(EXTERNAL["rules"]["result"], path)
+        assert rule is not None and _a32_compare_is_well_formed(rule.get("compare")), path
+
+
+def test_r317_the_registered_thresholds() -> None:
+    """R-317 (b)'s table, as the addendum carries it."""
+    coupling, result = EXTERNAL["rules"]["coupling"], EXTERNAL["rules"]["result"]
+    unit = ".iterations[0].units.reactor"
+    assert _rule_of(coupling, ".iterations[0].rho")["compare"] == {"floor": 1.0}
+    assert _rule_of(coupling, f"{unit}.r_xi")["compare"] == {"block": "tau_xi_rel"}
+    assert _rule_of(coupling, f"{unit}.r_T")["compare"] == {"block": "tau_T_K"}
+    assert _rule_of(coupling, ".iterations[0].step.du[1]")["compare"] == "shape"
+    assert _rule_of(coupling, ".iterations[0].step.B[1][0]")["compare"] == "shape"
+    for flow in (f"{unit}.inlet.n[2]", f"{unit}.n_N2_in", f"{unit}.n_tot_in"):
+        assert _rule_of(coupling, flow)["compare"] == {"kind": "molar_flow"}
+    assert _rule_of(result, ".envelope.defect_rel")["compare"] == {"floor": 1e-6}
+    for flow in (".envelope.defect[0]", ".envelope.outlet.n[4]"):
+        assert _rule_of(result, flow)["compare"] == {"kind": "molar_flow"}
+
+
 # -- G1 (c): R4-G3's method -----------------------------------------------------------------------
 
 

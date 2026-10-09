@@ -7,8 +7,15 @@
 # (`tests/test_k04f9_reference.py`, X00), so the addendum is this file (M02 build-lane decision,
 # reported to the design lane).
 #
-# Read by `tests/test_m02_schemas.py` (A32's rule over M02's emitted fixtures) and by
-# `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names).
+# Read by `tests/test_m02_schemas.py` (A32's rule over M02's emitted fixtures), by
+# `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names) and, since
+# register R-317 (b), at run time by `application/coupled_run.py`: a rule's `compare` says how a
+# replay compares a float the rerun recomputes (`relative`: the archive's relative tolerance, no
+# floor; `{floor: x}`: the threshold the quantity registers; `{block: name}`: the record's own
+# `coupling_block.<name>`; `{kind: k}`: tau_kind of the quantity kind k (ADR 0025 D5); `shape`: a
+# secant quantity, reported and not compared, its R0 consequences — step kind and k — exact).
+# A rule without `compare` is a copied or served member, compared exactly. Scoped to the coupled
+# record and the re-evaluated envelope; no pre-M02 comparison and no pinned digest moves.
 numerical_policy_external:
   id: M02-numerical-policy-external-v1
   schemas:
@@ -31,7 +38,11 @@ numerical_policy_external:
     - {path: '\.inputs\.(n\[\d+\]|T|P)', class: exact}
     - {path: '\.boundary\.(n_tubes|sweep_ratio)', class: exact}
     result:
-    - {path: '\.envelope\..*', class: r3_recorded_external}
+    # A re-evaluated envelope (an in-process variant, §7.2): ADR 0027 D3's defect limit; the
+    # defect and the outlet flows at the molar-flow floor; the rest relative (R-317 (b)).
+    - {path: '\.envelope\.defect_rel', class: r3_recorded_external, compare: {floor: 1.0e-6}}
+    - {path: '\.envelope\.(defect|outlet\.n)\[\d+\]', class: r3_recorded_external, compare: {kind: molar_flow}}
+    - {path: '\.envelope\..*', class: r3_recorded_external, compare: relative}
     - {path: '\.accuracy\..*', class: exact}
     attempt:
     - {path: '\.execution\.tube_inlet\..*', class: exact}
@@ -45,11 +56,15 @@ numerical_policy_external:
     - {path: '\.iterations\[\d+\]\.units\.[^.]+\.attempts\[\d+\]\.execution\.tube_inlet\..*', class: exact}
     - {path: '\.iterations\[\d+\]\.units\.[^.]+\.attempts\[\d+\]\.execution\.(tube_outlet|diagnostics|fingerprint)\..*', class: r3_recorded_external}
     - {path: '\.iterations\[\d+\]\.units\.[^.]+\.attempts\[\d+\]\.execution\.timing\..*', class: excluded}
-    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.(xi_E|T_E)', class: r3_recorded_external}
-    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.(inlet\..*|n_N2_in|n_tot_in|r_xi|r_T|floor_ratio_xi|floor_ratio_T)', class: r1_r2_existing_floors}
-    - {path: '\.iterations\[\d+\]\.(w|u)\[\d+\]', class: r1_r2_existing_floors}
-    - {path: '\.iterations\[\d+\]\.rho', class: r1_r2_existing_floors}
-    - {path: '\.iterations\[\d+\]\.step\.(du\[\d+\]|B\[\d+\]\[\d+\])', class: r1_r2_existing_floors}
+    # R-317 (b): the floats a replay recomputes, each at the threshold it registers.
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.(xi_E|T_E)', class: r3_recorded_external, compare: relative}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.(inlet\.n\[\d+\]|n_N2_in|n_tot_in)', class: r1_r2_existing_floors, compare: {kind: molar_flow}}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.r_xi', class: r1_r2_existing_floors, compare: {block: tau_xi_rel}}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.r_T', class: r1_r2_existing_floors, compare: {block: tau_T_K}}
+    - {path: '\.iterations\[\d+\]\.units\.[^.]+\.(inlet\.(T|P)|floor_ratio_xi|floor_ratio_T)', class: r1_r2_existing_floors, compare: relative}
+    - {path: '\.iterations\[\d+\]\.(w|u)\[\d+\]', class: r1_r2_existing_floors, compare: relative}
+    - {path: '\.iterations\[\d+\]\.rho', class: r1_r2_existing_floors, compare: {floor: 1.0}}
+    - {path: '\.iterations\[\d+\]\.step\.(du\[\d+\]|B\[\d+\]\[\d+\])', class: r1_r2_existing_floors, compare: shape}
     experiment_body:
     - {path: '\.inlet\.(n\[\d+\]|T|P)', class: exact}
     - {path: '\.n_tubes', class: exact}
