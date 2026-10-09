@@ -7,7 +7,7 @@
  "probe_record_sha256": "992cb1aa40b3b3e04c0b97cf151cc6e25dd031a78b3f2ac98449adeca0272ddb",
  "variant": {
   "variant_id": "pymrm-6089593-g2-nz800-s123-v3-provisional",
-  "sha256": "d3f91323b3e3cb9b608b21ef8b10273d71878a316ea424278e656e5dce279ec1",
+  "sha256": "f1d5524b8ac794bc7fc6fc4bef187b348a79a2cd63bc3ceacb14f62c7e96f9dc",
   "registered": false,
   "file": "benchmarks/m02/variant-v3-provisional.json"
  },
@@ -27,11 +27,11 @@
   "llvmlite": "0.50.0",
   "env_id": "pymrm-6089593-032a050c6cf3",
   "external_root_default": true,
-  "fingerprint_sha256": "04e2865ade8213db6549822f4af230cf9870b777f611b15ac573fb7299f17150",
+  "fingerprint_sha256": "dfce4150194f9d4a1b2e4814f0d803187e441fef435f65709b8ca9164c0beaaf",
   "lock_sha256": "032a050c6cf39e1eb2f01ebf03ea92a386f99967cb7fd0797c54431a33a60288",
   "export_tree_sha256": "c51b4734e453733ea2c3c473392d29255214e562d57446b5431406b424dfe3bd",
   "merged_database_sha256": "74cb058c545ad2056b7e7cc0b433642b5677e46dced8f55c04e7ec2326888454",
-  "runner_sha256": "bbed02235f0a3a3e7ca47560de42a3ef04b3240ac21c416a8959583c84e58970",
+  "runner_sha256": "0d2c345f1d414c457e047f698b9e6a3235701b91c4990ef2300d4375f753d893",
   "worker_python": "3.13.5"
  },
  "probe_environment": {
@@ -166,10 +166,10 @@
    "dP_over_P": 4.997898459658027e-05,
    "u_ret_min": 0.0014048407210793812,
    "min_axial_flow_mol_s": 0.00010593911193312912,
-   "wall_s": 34.77608530900034,
-   "certificate_wall_s": 18.828823000992998,
-   "startup_s": 2.627075500000501,
-   "solve_s": 32.06473318400094,
+   "wall_s": 43.03470185000333,
+   "certificate_wall_s": 27.16161391600326,
+   "startup_s": 3.289501014005509,
+   "solve_s": 39.63027503299236,
    "defect_round1": 2.657411726677951e-08,
    "round2": null
   },
@@ -204,10 +204,10 @@
    "dP_over_P": 4.997898469939828e-05,
    "u_ret_min": 0.001404840742907254,
    "min_axial_flow_mol_s": 0.0001059391114004383,
-   "wall_s": 52.432402168007684,
-   "certificate_wall_s": 40.56216213600419,
-   "startup_s": 2.6464131620014086,
-   "solve_s": 49.71343901200453,
+   "wall_s": 79.06492412999796,
+   "certificate_wall_s": 60.50472648799769,
+   "startup_s": 4.000104632010334,
+   "solve_s": 74.93983921899053,
    "defect_round1": 2.7273263445777032e-08,
    "round2": null
   },
@@ -242,10 +242,10 @@
    "dP_over_P": 4.997898459658027e-05,
    "u_ret_min": 0.0014048407210793812,
    "min_axial_flow_mol_s": 0.00010593911193312912,
-   "wall_s": 37.94054581900127,
-   "certificate_wall_s": 20.947917048004456,
-   "startup_s": 2.6570425660029287,
-   "solve_s": 35.16866076600854,
+   "wall_s": 52.39909767099016,
+   "certificate_wall_s": 31.410576547001256,
+   "startup_s": 3.322278350999113,
+   "solve_s": 48.950558809010545,
    "defect_round1": 2.657411726677951e-08,
    "round2": null
   },
@@ -280,10 +280,10 @@
    "dP_over_P": 4.943324979916215e-05,
    "u_ret_min": 0.0013803491528960876,
    "min_axial_flow_mol_s": 0.00010605185279887258,
-   "wall_s": 31.68948061700212,
-   "certificate_wall_s": 12.734761760002584,
-   "startup_s": 2.8674970239953836,
-   "solve_s": 28.729510980003397,
+   "wall_s": 40.291709514000104,
+   "certificate_wall_s": 18.83843658900878,
+   "startup_s": 3.161978635995183,
+   "solve_s": 37.00891835600487,
    "defect_round1": 2.2026158951237745e-08,
    "round2": null,
    "envelope_status": "ok",
@@ -309,7 +309,7 @@
      0.01943
     ]
    },
-   "experiment_key": "595d84cf465357f14dc5c05c9c28c2048b27fd9bcf80890392dcc7c71b381281"
+   "experiment_key": "b5edd1f1664d53f843c01aaab73f0495fdc982d8a217e5c74e7db2f2aea05ab4"
   },
   {
    "label": "boundary T_in 673.15",
@@ -342,10 +342,10 @@
    "dP_over_P": 4.997898472435772e-05,
    "u_ret_min": 0.0014048407283553388,
    "min_axial_flow_mol_s": 0.00010593911166748371,
-   "wall_s": 39.73487828299403,
-   "certificate_wall_s": 21.77099649500451,
-   "startup_s": 2.828686884997296,
-   "solve_s": 36.78601791300753,
+   "wall_s": 51.201686036001774,
+   "certificate_wall_s": 29.711681571003282,
+   "startup_s": 3.543040826989454,
+   "solve_s": 47.524487312999554,
    "defect_round1": 3.8383264652952895e-08,
    "round2": null,
    "envelope_status": "ok",
@@ -371,7 +371,7 @@
      0.01943
     ]
    },
-   "experiment_key": "577dc726dfb3c233a4b8f88914256b16ffb23d7e758cf32028d29f8509c963f8"
+   "experiment_key": "209dc3910d3e4be19b071bb7cd0b60789d603a890a68f898bee785923939a021"
   },
   {
    "label": "boundary T_in 693.15",
@@ -404,10 +404,10 @@
    "dP_over_P": 5.0592748045548796e-05,
    "u_ret_min": 0.0014315774023998529,
    "min_axial_flow_mol_s": 0.00010577764981831999,
-   "wall_s": 45.683405231000506,
-   "certificate_wall_s": 28.45519032800803,
-   "startup_s": 2.9370192420028616,
-   "solve_s": 42.63320361998922,
+   "wall_s": 53.46165165300772,
+   "certificate_wall_s": 33.74100845999783,
+   "startup_s": 3.1600905759987654,
+   "solve_s": 50.17204264900647,
    "defect_round1": 3.4513952509350926e-08,
    "round2": null,
    "envelope_status": "ok",
@@ -433,7 +433,7 @@
      0.01943
     ]
    },
-   "experiment_key": "c819ff4f360667f5296fbc3a21cd8a8c505abb8ab033fe8ad14e9b393626c77f"
+   "experiment_key": "d965c426df02f2ae03a7f62d33c9d0041b822dffaf8f21e54935581f4c3f824c"
   },
   {
    "label": "boundary bypass repeat 1",
@@ -466,10 +466,10 @@
    "dP_over_P": 4.997898472435772e-05,
    "u_ret_min": 0.0014048407283553388,
    "min_axial_flow_mol_s": 0.00010593911166748371,
-   "wall_s": 42.623770829013665,
-   "certificate_wall_s": 24.424183997994987,
-   "startup_s": 2.9400686910084914,
-   "solve_s": 39.58154173199728,
+   "wall_s": 52.09816151500854,
+   "certificate_wall_s": 30.333340178010985,
+   "startup_s": 3.36272744499729,
+   "solve_s": 48.61654999300663,
    "defect_round1": 3.8383264652952895e-08,
    "round2": null,
    "repeat_bitwise_equal": true
@@ -505,16 +505,16 @@
    "dP_over_P": 4.997898472435772e-05,
    "u_ret_min": 0.0014048407283553388,
    "min_axial_flow_mol_s": 0.00010593911166748371,
-   "wall_s": 45.733785374992294,
-   "certificate_wall_s": 25.736119147011777,
-   "startup_s": 3.264090804994339,
-   "solve_s": 42.34641532199748,
+   "wall_s": 52.837310091999825,
+   "certificate_wall_s": 30.94850108200626,
+   "startup_s": 3.687261214989121,
+   "solve_s": 49.03350022700033,
    "defect_round1": 3.8383264652952895e-08,
    "round2": null,
    "repeat_bitwise_equal": true
   }
  ],
- "elapsed_s": 341.9,
+ "elapsed_s": 439.2,
  "G10v3": {
   "compared_variant": {
    "variant_id": "pymrm-6089593-g2-nz800-s123-v2",
@@ -552,6 +552,32 @@
    "A48": true
   },
   "met": true,
-  "compared_record_sha256": "7fe008dd76224525ef3c844c44e2ed637a988bb2098ae793d77224843206f19d"
+  "compared_record_sha256": "7fe008dd76224525ef3c844c44e2ed637a988bb2098ae793d77224843206f19d",
+  "previous_v3": {
+   "compared_runner_sha256": "bbed02235f0a3a3e7ca47560de42a3ef04b3240ac21c416a8959583c84e58970",
+   "outlets_bitwise_equal": {
+    "direct nominal": true,
+    "direct S2 dt_init 1e-1": true,
+    "direct backflow [0,0,0,1,0]": true,
+    "boundary T_in 653.15": true,
+    "boundary T_in 673.15": true,
+    "boundary T_in 693.15": true,
+    "boundary bypass repeat 1": true,
+    "boundary bypass repeat 2": true
+   },
+   "defect_round1_bitwise_equal": {
+    "direct nominal": true,
+    "direct S2 dt_init 1e-1": true,
+    "direct backflow [0,0,0,1,0]": true,
+    "boundary T_in 653.15": true,
+    "boundary T_in 673.15": true,
+    "boundary T_in 693.15": true,
+    "boundary bypass repeat 1": true,
+    "boundary bypass repeat 2": true
+   },
+   "round2_ran": [],
+   "met": true,
+   "record_sha256": "c6a520e08433791cdea48821b981dd661a606e86bf99c740ff6bd26c86022586"
+  }
  }
 }
