@@ -56,3 +56,46 @@ spec left to the build lane, so the design lane can accept, reword or revert it.
   surrogate run's bundle does not carry the manifest, so its rerun is
   `rerun_unsupported(route_unbound(revision_eo))` until a bundle member carries it (K05/M05). The
   CLI's `validate` of a file has no project and refuses a surrogate-bound revision the same way.
+
+## W27 Amendment 3 on wp/M04 — the surrogate's registration (2026-10-09)
+
+Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.5 (register R-301, R-302).
+
+- **E9. The registration.** `c1.reactor_surrogate` joins `_C1_SIGNATURES` (last, so
+  `MODEL_SIGNATURES` and `MODEL_BUILDERS` keep the same order, t07_w5c), hence `MODEL_BASES`
+  (`{pr-c1-v1}`), `list_models` and `MODEL_BUILDERS` (`_c1_reactor_surrogate`, which refuses: the
+  binder hands a resolved manifest to `_c1_reactor_surrogate_of`, E5). WO-7's two autouse
+  monkeypatch fixtures are removed. Measured at the registration: 0 of 450 cases differ in class or
+  reasons from `hypothetical_v02`; live models and routes equal `hypothetical_v02_a3`'s; G14 PASS.
+- **E10. The corpus revision's configuration** (§22.4 "the manifest's own"). The A19 manifest
+  carries no N_tubes: its parent's requests are per tube (`per_tube_scaling`, spec §5.1). So the
+  instance has N_tubes = 1 and the feed is `plan.request_of` at the centre of the manifest's
+  `input_map` box (T 673.15 K, P 9.5e6 Pa, F 0.00715 mol/s). Registered as the file
+  `benchmarks/m04/c1-surrogate.json` (`C1-SURROGATE-M04-v1`), in `m02_c1_corpus.FILES`, checked
+  equal to `corpus_revision()` in `test_m04_wo7_surrogate_unit`. Rejected: M02's reactor
+  revision's N_tubes = 1000 (not the manifest's); a code-only factory (the corpus is registered
+  files). Reversible by: the file and its builder.
+- **E11. WO-16i's `C1_MODEL_IDS` exclusion is removed** (`test_m06_w27_coverage`): the
+  constructed-binder tests take Amendment 3's nine C1 ids and compare with `hypothetical_v02_a3`;
+  F-A2-1's other answer with `binder_2587f14`'s C1 route plus the surrogate (§22.2). Rejected:
+  keeping the exclusion, which `build_snapshot` refuses (`list_models-only
+  ['c1.reactor_surrogate']`) once `list_models` serves 22 ids.
+- **E12. Earlier packages' registry tests strip M04's model** (R-295's pattern):
+  `m04_schema_support.M04_MODELS`, taken out before M02's eight in `test_t08_b50_surface_content`
+  and before M02's C1 set in `test_m02_wo8_units`. `test_m02_join.REGISTERED` (the live table)
+  gains the row; its R-280 (b) decomposition is unchanged (it strips every `c1.` entry).
+- **E13. Re-taken values (old → new).** `list_models` SHA-256 `90d9da8e…9533e` → `f070fbe0c676…ea49b4`
+  (22 models; §22.2 predicted `f070fbe0…`). `list_models` response fixtures (file SHA-256):
+  `registered_models.json` `19b6c5e1…` → `d45fde36…`, `pin_missing_specifications.json`
+  `004731f4…` → `c09ab92b…` (each +29 lines, the surrogate's entry only). t07_w5c gains the row
+  `M02:C1-SURROGATE-M04-v1` (`binds 291932ea…`); every other row unchanged. Registry snapshot
+  SHA-256 `0b2f4596…cc34` (at `4c57bce`) → `8f4bb0c8df0a…5343` (at `14a1397`; it carries
+  `git_commit`), `coverage.json` re-taken there; `registration.json` `14ff19d9…` → `ba627342…` (WO-16i).
+- **E14. The v0.2 support envelope lists the surrogate** (T08.A20 compares its `unit_models` axis
+  with `MODEL_BUILDERS`): `benchmarks/t08/support_envelope.yaml` gains the member and its statement
+  says twenty-two models (the surrogate's Q0–Q7 among the limitations); `scripts/t08_support_matrix.py`'s
+  count check is 22; `docs/support-matrix.md` re-emitted. It is not in `synthetic_members`: it has
+  no registered variant (`_synthetic_models` reads the variant registry). The evidence reference
+  `test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis` keeps its name. For the
+  design lane: the statement is a public support claim (wording only; no claim on the surrogate's
+  accuracy is added).
