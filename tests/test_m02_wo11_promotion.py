@@ -7,7 +7,9 @@ On a project with `C1-LOOP-M02-v1` (stand-in) solved once:
   variant is `rejected`, `model_replacement_incompatible`, on `validity` alone, by design: the
   other eight facets `pass`, and `validity`'s detail names exactly the hard-domain dimensions in
   which the real variant is narrower — computed here from the two variant documents (data, not the
-  code under test) — with v2's literal `hard_domain.tube_flow_mol_s None -> [...]`.
+  code under test) — with v2's literal `hard_domain.tube_flow_mol_s None -> [...]`; extended to v3
+  (WO-12b; §14.6 E3, §14.7 F1): T, P, H2/N2, the flow bound and the literal
+  `hard_domain.inert_min None -> 0.035` (an absent floor is 0).
 - G9 (a2), the commit machinery, unchanged: a compatible promotion (to a
   test-only copy of the stand-in, and real → stand-in) is `committed`, every facet `pass`,
   `invalidations == ["run-<that job>"]`, the coarse diff names `instances` and `diff_revisions`'
@@ -51,6 +53,27 @@ from openflowsheet.models.revision_flowsheet import RevisionError
 LOOP_PATH = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 STANDIN = variants.registered_variant("standin-x025-v1")
 REAL = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v2")
+V3 = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v3")
+FLOW = "[0.003573480649651052, 0.014293922598604208]"
+#: G9 (a1)'s literal `validity` items, stand-in → each real variant (§14.5 D6; §14.6 E3).
+NARROWER: dict[str, list[str]] = {
+    REAL.variant_id: [f"hard_domain.tube_flow_mol_s None -> {FLOW}"],
+    V3.variant_id: [
+        "hard_domain.T_K [573.15, 773.15] -> [653.15, 693.15]",
+        "hard_domain.P_Pa [5000000.0, 15000000.0] -> [9000000, 11000000]",
+        "hard_domain.H2_N2 [1.0, 4.0] -> [2.5, 3.5]",
+        f"hard_domain.tube_flow_mol_s None -> {FLOW}",
+        "hard_domain.inert_min None -> 0.035",
+    ],
+}
+#: The manifest's `validity` items before them: its T and P intervals, from the same documents.
+MANIFEST_NARROWER: dict[str, list[str]] = {
+    REAL.variant_id: [],
+    V3.variant_id: [
+        "temperature_K (573.15, 773.15) -> (653.15, 693.15)",
+        "pressure_Pa (5000000.0, 15000000.0) -> (9000000.0, 11000000.0)",
+    ],
+}
 REPORT = "model-replacement.schema.json"
 
 
@@ -141,13 +164,17 @@ def test_the_report_facets_are_the_schemas_in_its_order() -> None:
 
 def narrower_dimensions(old: variants.Variant, new: variants.Variant) -> set[str]:
     """The hard-domain dimensions in which `new` declares less than `old`, from the documents: an
-    interval (`null` unbounded) that does not contain the old one, or a lower `inert_max`."""
+    interval (`null` unbounded) that does not contain the old one, a lower `inert_max`, or a higher
+    `inert_min` (absent is 0)."""
     before, after = old.boundary["hard_domain"], new.boundary["hard_domain"]
     found = set()
     for name, interval in after.items():
         inner = before.get(name)
         if name == "inert_max":
             if inner is None or interval < inner:
+                found.add(name)
+        elif name == "inert_min":
+            if interval > (inner or 0.0):
                 found.add(name)
         elif interval is not None and (
             inner is None or not interval[0] <= inner[0] <= inner[1] <= interval[1]
@@ -156,13 +183,14 @@ def narrower_dimensions(old: variants.Variant, new: variants.Variant) -> set[str
     return found
 
 
+@pytest.mark.parametrize("real", [REAL, V3], ids=lambda v: v.variant_id[-2:])
 def test_g9a1_standin_to_the_real_reactor_is_rejected_on_validity_alone(
-    solved: tuple[LocalApplication, str, dict[str, Any]],
+    solved: tuple[LocalApplication, str, dict[str, Any]], real: variants.Variant
 ) -> None:
     """§14.5 D6 (R-306): the real variant's declared domain is narrower than the stand-in's, so
     the promotion is refused by `validity`, by design; every other facet passes."""
     app, revision_id, _ = solved
-    result = app.commit_change(change(reference(REAL)), revision_id, "promote")
+    result = app.commit_change(change(reference(real)), revision_id, "promote")
     valid(result)
     assert result.status == "rejected" and result.error is not None
     assert result.error.code == "model_replacement_incompatible"
@@ -171,12 +199,15 @@ def test_g9a1_standin_to_the_real_reactor_is_rejected_on_validity_alone(
     prefix = "the new domain does not contain the old: "
     assert validity["detail"].startswith(prefix)
     items = validity["detail"].removeprefix(prefix).split("; ")
+    # The manifest's own T and P intervals are the variant's hard-domain T_K and P_Pa
+    # (`reactor.py`), so where those narrow (v3) the manifest's items come first (build log D111).
+    declared = [item for item in items if not item.startswith("hard_domain.")]
+    assert declared == MANIFEST_NARROWER[real.variant_id]
+    items = items[len(declared) :]
     named = {item.split(" ", 1)[0].removeprefix("hard_domain.") for item in items}
     assert all(item.startswith("hard_domain.") for item in items)
-    assert named == narrower_dimensions(STANDIN, REAL) == {"tube_flow_mol_s"}
-    assert items == [
-        "hard_domain.tube_flow_mol_s None -> [0.003573480649651052, 0.014293922598604208]"
-    ]
+    assert named == narrower_dimensions(STANDIN, real)
+    assert items == NARROWER[real.variant_id]
     report = result.error.detail["report"]
     assert report["from"]["synthetic"] is True and report["to"]["synthetic"] is False
     assert head(app) == revision_id

@@ -60,8 +60,10 @@ CHILD = PACKAGE / "adapters" / "pymrm" / "child.py"
 REAL_ID = "pymrm-6089593-g2-nz800-s123-v2"
 #: The variant of the child before R-251 (`model_exception`): registered, loadable, superseded.
 SUPERSEDED_ID = "pymrm-6089593-g2-nz800-s123-v1"
-#: §14.5 D4: the document of this child until WO-12b registers v3 (never registered); v2, the
+#: §14.5 D4: the document of this child until WO-12b registered v3 (never registered); v2, the
 #: child before D1/D2, is superseded like v1.
+#: WO-12b: v3, this child's registered variant (the provisional with V5's box and 450 s).
+CURRENT_ID = "pymrm-6089593-g2-nz800-s123-v3"
 PROVISIONAL_FILE = REPO_ROOT / "benchmarks" / "m02" / "variant-v3-provisional.json"
 
 
@@ -868,11 +870,13 @@ def test_the_superseded_variant_is_refused_at_the_environment_check(
 ) -> None:
     """v1's runner is the child before R-251, v2's the child before §14.5 D1/D2: on an
     environment that meets every other pin of both variants, the child exits 72 on the superseded
-    variant's request, and its `Environment` takes the provisional variant's (§14.5 D4)."""
+    variant's request, and its `Environment` takes v3's (WO-12b), the provisional variant's
+    (§14.5 D4) registered."""
     superseded = variants.registered_variant(superseded_id)
-    current = _provisional()
+    current = variants.registered_variant(CURRENT_ID)
     runner = file_sha256(CHILD)
     assert superseded.evaluation["runner_sha256"] != runner == current.evaluation["runner_sha256"]
+    assert _provisional().evaluation["runner_sha256"] == runner
     for name in ("commit", "lock_sha256"):
         assert (
             backends.OutOfProcessBackend(superseded).expected[name]
@@ -990,11 +994,13 @@ def test_the_real_variant_is_registered_from_the_files_it_names() -> None:
         "lock_sha256": lock_sha256,
         "env_id": f"pymrm-6089593-{lock_sha256[:12]}",
     }
-    # v2's runner is the child before §14.5 D1/D2 (superseded); this child's document is the
-    # provisional variant, whose profile is this child's and otherwise v1's (D1).
+    # v2's runner is the child before §14.5 D1/D2 (superseded); this child's documents are the
+    # provisional variant and v3 (WO-12b), whose profile is this child's and otherwise v1's (D1).
     provisional = _provisional().evaluation
+    current = variants.registered_variant(CURRENT_ID).evaluation
     assert evaluation["runner_sha256"] != file_sha256(CHILD) == provisional["runner_sha256"]
-    assert provisional["profile"] == CHILD_MODULE.PROFILE
+    assert provisional["profile"] == CHILD_MODULE.PROFILE == current["profile"]
+    assert current["runner_sha256"] == provisional["runner_sha256"]
     assert evaluation["profile"]["id"] == "M01-S123-v1"
     reactor = evaluation["reactor"]
     assert reactor["commit"] == reactor_probe.PIN == PROBE["reactor_commit"]

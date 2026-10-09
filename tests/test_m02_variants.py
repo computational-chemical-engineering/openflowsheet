@@ -8,10 +8,10 @@ flow bound, and `ExecutionFailure` in the evaluation seam.
   the current one, has this child's `runner_sha256`; every other is superseded (append-only,
   §3.1: a changed child is a new variant) — `...-v1`, the child before R-251, and `...-v2`, the
   child before §14.5 D1/D2; the child refuses a superseded one at its environment check
-  (`test_m02_pymrm_child.py`). Until WO-12b registers v3, no registered variant is current: the
-  child's only document is the provisional evidence variant (§14.5 D4), which is never registered
-  and differs from v2 exactly in its id, runner, profile and timeout. An edited document is
-  refused, not re-pinned.
+  (`test_m02_pymrm_child.py`). WO-12b registered v3, the current one: the provisional evidence
+  variant (§14.5 D4; never registered, and differing from v2 exactly in its id, runner, profile
+  and timeout) with V5's box and 450 s (`test_m02_wo12b_v3.py`). An edited document is refused,
+  not re-pinned.
 - **Resolution (§6.1).** A model reference resolves only on the registered id, the exact hash and
   the variant's own model id.
 - **The stand-in variant is M01's boundary**: its boundary block holds M01's constants and its hard
@@ -61,10 +61,10 @@ from openflowsheet.thermo.pr_c1 import PrC1Provider
 
 VARIANT_DIR = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "variants"
 STANDIN_ID = "standin-x025-v1"
-#: The current real variants and the ones superseded (their runner is an earlier child). None is
-#: current until WO-12b registers v3 (§14.5 D4); the child's document meanwhile is the provisional
-#: evidence variant, never registered.
-CURRENT_IDS: tuple[str, ...] = ()
+#: The current real variants and the ones superseded (their runner is an earlier child). v3 is
+#: current from WO-12b (§14.5 D4); the provisional evidence variant it was measured on is never
+#: registered.
+CURRENT_IDS: tuple[str, ...] = ("pymrm-6089593-g2-nz800-s123-v3",)
 SUPERSEDED_IDS = ("pymrm-6089593-g2-nz800-s123-v1", "pymrm-6089593-g2-nz800-s123-v2")
 PROVISIONAL = REPO_ROOT / "benchmarks" / "m02" / "variant-v3-provisional.json"
 PROBE: dict[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m01" / "reactor-probe.json")

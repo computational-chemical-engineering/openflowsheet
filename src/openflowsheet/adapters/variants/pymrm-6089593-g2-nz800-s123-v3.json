@@ -1,0 +1,177 @@
+{
+  "accuracy": {
+    "discretization_estimate": {
+      "NH3_out_high_rel": [
+        0.0102,
+        0.01376
+      ],
+      "T_out_low_K": [
+        1.244,
+        1.673
+      ],
+      "inputs": "grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect 2.2e-6, still moving)",
+      "meaning": "spec section 10.1's discretization estimate at the design grid (Richardson, two orders, two differences); an estimate, not a bound; what every reactor result reports (section 8.12, M01.A48)",
+      "num_z": 800,
+      "order_p": [
+        0.6192,
+        0.783
+      ],
+      "xi_high_rel": [
+        0.01438,
+        0.01943
+      ]
+    },
+    "measured_path_independence_rel": 1.56e-08,
+    "precision_floor_rel": 1e-06
+  },
+  "boundary": {
+    "data_domain": {
+      "H2_N2": [
+        1.5,
+        3
+      ],
+      "P_Pa": [
+        5000000,
+        10000000
+      ],
+      "T_K": [
+        643.15,
+        733.15
+      ]
+    },
+    "defect_limit": 1e-06,
+    "duty": "process_side",
+    "eps_P": 0.001,
+    "hard_domain": {
+      "H2_N2": [
+        2.5,
+        3.5
+      ],
+      "P_Pa": [
+        9000000,
+        11000000
+      ],
+      "T_K": [
+        653.15,
+        693.15
+      ],
+      "inert_max": 0.2,
+      "inert_min": 0.035,
+      "tube_flow_mol_s": [
+        0.003573480649651052,
+        0.014293922598604208
+      ]
+    },
+    "per_tube_scaling": true,
+    "pressure_convention": "zero_drop",
+    "projection": "lsq_extent_v1",
+    "provider": "pr-c1-v1",
+    "reference_convention": "PR-C1-ref-v1"
+  },
+  "coupling": {
+    "bounds": {
+      "X": [
+        0,
+        0.95
+      ],
+      "dT_K": [
+        -50,
+        250
+      ]
+    },
+    "initial": {
+      "X": 0.15,
+      "dT_K": 80
+    },
+    "max_outer": 15,
+    "method": "broyden_good_v1",
+    "scales": {
+      "X": 0.1,
+      "dT_K": 10
+    },
+    "tau_T_K": 0.01,
+    "tau_xi_rel": 1e-05
+  },
+  "evaluation": {
+    "configuration": {
+      "backflow": [
+        0,
+        0.9999,
+        0.0001,
+        0,
+        0
+      ],
+      "coolant": "pure N2, co-current, T_perm_in = T_in, 1 bar",
+      "geometry_case": "G2 — GHSV sweep_1000",
+      "num_z": 800,
+      "permeance_prefactors": 0,
+      "sweep_ratio": 1
+    },
+    "environment": {
+      "env_id": "pymrm-6089593-032a050c6cf3",
+      "lock_sha256": "032a050c6cf39e1eb2f01ebf03ea92a386f99967cb7fd0797c54431a33a60288",
+      "python": "3.13.5"
+    },
+    "kind": "out_of_process",
+    "overlay_sha256": "0f6ff0017291f14a5bc5136dfa7cd71ce8954e7bd38b5cb6383ee58ec35f81ff",
+    "profile": {
+      "S1": {
+        "acceptance": "group solver_acceptance, STEADY_STATE_ACCEPT_FACTOR",
+        "dt_init": 1e-06,
+        "inlet": "y_NH3 := trace_NH3, renormalized",
+        "solver": "group SOLVER_1D",
+        "trace_NH3": 1e-09
+      },
+      "S2": {
+        "acceptance": "group solver_acceptance, STEADY_STATE_ACCEPT_FACTOR",
+        "dt_init": 1e-06,
+        "inlet": "true",
+        "solver": "group SOLVER_1D",
+        "start": "S1 fields (c, p, T)"
+      },
+      "S3": {
+        "atol_factor": 0.1,
+        "dt_init": 1.0,
+        "max_steps": 400,
+        "round2": {
+          "accepted": "S3 is accepted iff round 2 converged; the certificate is then repeated on its status and decides",
+          "atol_factor": 0.1,
+          "defect": "max over the elements present in the requested inlet of |element_defect_rel| (outlet's formula); NaN if any of them is NaN",
+          "defect_threshold": 1e-07,
+          "dt_init": 1.0,
+          "max_steps": 400,
+          "rtol": 1e-12,
+          "target": "S3's target / 10",
+          "when": "A45's element defect read after the certificate after S3 is not <= defect_threshold, whatever that certificate's verdict"
+        },
+        "rtol": 1e-12,
+        "target": "1e-6*(num_z/100)^2"
+      },
+      "acceptance": [
+        "S3 converged at its target",
+        "the group's KPI-drift certificate after S3",
+        "u_ret > 0 on every face",
+        "every axial flow of a species present in the requested inlet > 0"
+      ],
+      "id": "M01-S123-v2"
+    },
+    "reactor": {
+      "commit": "6089593464fc9bc2c0a0cb58e30ad5433ece6332",
+      "licence": "MIT",
+      "licence_notice_sha256": "795d48d7719fe12bf405bbaa8dc1c28bbf21caedf4d4c7fd1e138d8c60a80f63",
+      "model_class": "MembraneReactor1D",
+      "repository": "https://github.com/computational-chemical-engineering/ammonia_synthesis_reactor",
+      "used_by_reference": true
+    },
+    "runner_sha256": "0d2c345f1d414c457e047f698b9e6a3235701b91c4990ef2300d4375f753d893"
+  },
+  "execution": {
+    "kill_grace_s": 2,
+    "max_retries": 1,
+    "timeout_s": 450
+  },
+  "model_id": "c1.reactor",
+  "schema_version": "model-variant-v1",
+  "synthetic": false,
+  "variant_id": "pymrm-6089593-g2-nz800-s123-v3"
+}
