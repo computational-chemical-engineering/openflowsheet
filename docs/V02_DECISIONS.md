@@ -532,3 +532,10 @@ Grep, don't read whole. Newest at the bottom.
   relations stay functions), WO-2a; R-279 θ re-check after every exit, `TRF_CONVERGED` needs an accepted step, new
   `TRF_EXIT_WITHOUT_STEP` and `TRF_STALLED_INCONSISTENT`, WO-3a (+WO-6 handling).
 - `opus-engineer` M05 WO-2a, WO-3a launched.
+- M05 WO-2a, WO-3a done (`2f9022c`, `2dc50d9`): default 7962 passed; M05 opt-in 94 passed; G3 bitwise unchanged
+  (one extra trailing memo-hit `f` from the θ re-check). P14 (a) basis refusal, (b) `TRF_EXIT_WITHOUT_STEP`, (c)
+  `TRF_STALLED_INCONSISTENT` at θ = 1.8006 — all tested; WO-2a refuses `y − 90z`, passes SYN-001 (74/74 matched).
+  Open for the design lane before WO-6: "Optimal" exit with θ_recheck > 1e-5 → engineer chose `TRF_ERROR(exit_mismatch)`
+  (alternative `TRF_STALLED_INCONSISTENT`; matters for the retry policy). Other engineer choices (refusal raises
+  `TrfConfigurationRefusedError`; zero_basis only for exempt_oracle; refusal names undetermined variables; `EFBasis`)
+  for the M05 review.
