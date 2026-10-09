@@ -1,0 +1,20 @@
+# M05 (ADR 0025 D2.3, ADR 0007 D2.3, every float classified): the `sha256`-bearing names that M05's
+# schema adds (`trust-region-study`). A separate table beside M02's, so that the registered
+# numerical policies (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) keep their ids and
+# their contents (M02's precedent, its design note §3.6; M05 build decision S11).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
+# addendum after another).
+numerical_policy_external:
+  id: M05-numerical-policy-external-v1
+  schemas:
+  - trust-region-study.schema.json
+  # The `sha256`-bearing property names M05's schema adds, all exact digests (none is a float
+  # digest, ADR 0007 D1 row 3): the bound revision, the projection's source map, the pinned TRF
+  # modules (an object of digests by file) and the audited TRSP executable. The names it reuses
+  # (`sha256`, `manifest_sha256`) keep their T08 classes.
+  exact_sha256:
+  - revision_sha256
+  - source_map_sha256
+  - trf_module_sha256
+  - trsp_executable_sha256

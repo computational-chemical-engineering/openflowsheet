@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import copy
 import json
+import sys
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import REPO_ROOT, load_yaml
 from jsonschema import Draft202012Validator
 from test_m05_study_loop import (
     DECISIONS,
@@ -32,6 +33,9 @@ from openflowsheet.studies.trust_region.trf_state import (
     FrameworkReadiness,
     ReadinessReason,
 )
+
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import t08_numerical_policy  # noqa: E402
 
 SCHEMA_PATH = REPO_ROOT / "schemas" / "trust-region-study.schema.json"
 VALIDATOR = Draft202012Validator(json.loads(SCHEMA_PATH.read_text(encoding="utf-8")))
@@ -504,3 +508,37 @@ def test_the_default_install_study_is_unsupported_without_running_the_parent() -
         assert sorted(VALIDATOR.iter_errors(record), key=str) == []
     else:
         pytest.skip("Pyomo is installed")
+
+
+# -- the classification of the record's digests (ADR 0025 D2.3; build decision S11) ---------------
+
+POLICY_V2: dict[str, Any] = load_yaml(
+    REPO_ROOT / "benchmarks" / "t08" / "numerical_policy_v2.yaml"
+)["numerical_policy"]
+EXTERNAL_M02: dict[str, Any] = t08_numerical_policy.external_policy()
+EXTERNAL_M05: dict[str, Any] = t08_numerical_policy.external_policy(
+    REPO_ROOT / "benchmarks" / "m05" / "numerical_policy_external.yaml"
+)
+
+
+def test_the_m05_addendum_is_audited_after_m02s_and_its_partition_holds() -> None:
+    assert [path.parent.name for path in t08_numerical_policy.ADDENDA] == ["m02", "m05"]
+    assert EXTERNAL_M05["id"] == "M05-numerical-policy-external-v1"
+    assert EXTERNAL_M05["schemas"] == ["trust-region-study.schema.json"]
+    assert t08_numerical_policy.external_audit(POLICY_V2, EXTERNAL_M05, [EXTERNAL_M02]) == []
+    declared = t08_numerical_policy.schema_sha256_names(external=True, addendum=EXTERNAL_M05)
+    assert set(EXTERNAL_M05["exact_sha256"]) <= declared
+    # v2's partition is computed without either addendum's files, so v2's content does not move.
+    assert not declared & t08_numerical_policy.schema_sha256_names() - {"sha256", "manifest_sha256"}
+
+
+def test_the_m05_partition_refuses_an_unclassified_and_a_reclassified_name() -> None:
+    missing = {**EXTERNAL_M05, "exact_sha256": EXTERNAL_M05["exact_sha256"][1:]}
+    (problem,) = t08_numerical_policy.external_audit(POLICY_V2, missing, [EXTERNAL_M02])
+    assert problem == "(m05) unclassified sha256 names: ['revision_sha256']"
+    doubled = {**EXTERNAL_M05, "exact_sha256": [*EXTERNAL_M05["exact_sha256"], "variant_sha256"]}
+    problems = t08_numerical_policy.external_audit(POLICY_V2, doubled, [EXTERNAL_M02])
+    assert "(m05) already classified by an earlier addendum: ['variant_sha256']" in problems
+    claimed = {**EXTERNAL_M05, "schemas": [*EXTERNAL_M05["schemas"], "experiment.schema.json"]}
+    problems = t08_numerical_policy.external_audit(POLICY_V2, claimed, [EXTERNAL_M02])
+    assert "(m05) schemas of an earlier addendum: ['experiment.schema.json']" in problems
