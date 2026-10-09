@@ -87,6 +87,8 @@ __all__ = [
     "coupling_evidence",
     "coupling_record_problem",
     "external_units",
+    "final_constants",
+    "iterate_differences",
     "reproducibility_class",
     "solve_coupled",
     "unit_variant",
@@ -131,7 +133,19 @@ def coupling_block(units: Sequence[C1Reactor]) -> tuple[CouplingBlock, Mapping[s
 
 
 def at_coupling(binding: RevisionBinding, w: Mapping[str, tuple[float, float]]) -> RevisionBinding:
-    """`binding` with each named unit's coupling parameters (X̂, ΔT̂) at `w`; the spec rebuilt."""
+    """`binding` with each named unit's coupling parameters (X̂, ΔT̂) at `w`; the spec rebuilt.
+
+    Raises `ValueError` naming every key of `w` (sorted) that is not the `unit_id` of a
+    `C1Reactor` of the binding (§14.5 D9, R-309). The values are not coerced: callers pass Python
+    floats, and they reach the rebuilt units bit for bit."""
+    reactors = {
+        model.unit_id for model in binding.flowsheet.instances if isinstance(model, C1Reactor)
+    }
+    unknown = sorted(set(w) - reactors)
+    if unknown:
+        raise ValueError(
+            "not an embedded C1 reactor of this flowsheet: " + ", ".join(map(repr, unknown))
+        )
     instances = tuple(
         replace(model, conversion=w[model.unit_id][0], temperature_rise=w[model.unit_id][1])
         if isinstance(model, C1Reactor) and model.unit_id in w
@@ -140,6 +154,43 @@ def at_coupling(binding: RevisionBinding, w: Mapping[str, tuple[float, float]]) 
     )
     flowsheet = replace(binding.flowsheet, instances=instances)
     return replace(binding, flowsheet=flowsheet, spec=flowsheet.spec())
+
+
+def final_constants(binding: RevisionBinding, record: Mapping[str, Any]) -> tuple[str, str] | None:
+    """§14.5 D8 (R-308) item 2, the R0 guard on the inner solve's constants digest: `(recorded,
+    recomputed)`, the record's final inner `constants_sha256` and that of the final inner model
+    rebuilt at the record's final w (the recorded floats, bit for bit) through `at_coupling`, or
+    `None` when the record holds no final digest. The two must be equal exactly: the same bits go
+    through the same canonical encoding on every platform."""
+    iterations = record.get("iterations") or []
+    if not iterations:
+        return None
+    final = iterations[-1]
+    recorded = (final.get("inner") or {}).get("constants_sha256")
+    if not isinstance(recorded, str):
+        return None
+    flat = [float(value) for value in final["w"]]  # a JSON integer (e.g. 80) is that float
+    w = {
+        unit.unit_id: (flat[2 * j], flat[2 * j + 1])
+        for j, unit in enumerate(external_units(binding))
+    }
+    return recorded, declaration_identity(at_coupling(binding, w).spec)[1]
+
+
+def iterate_differences(
+    fresh: Mapping[str, Any], recorded: Mapping[str, Any], policy_id: str
+) -> list[str]:
+    """§14.5 D8 (R-308) item 3: each rerun iteration's `w` and `u` against the record's, under the
+    archive's numerical policy, as `coupling_iterate(<k>)…` differences. Iterations are paired in
+    order; a different count is the record comparison's (integer control flow, R0)."""
+    found: list[str] = []
+    for mine, theirs in zip(fresh["iterations"], recorded["iterations"], strict=False):
+        for key in ("w", "u"):
+            found += [
+                f"coupling_iterate({theirs['k']}).{key}{line}"
+                for line in differences(mine[key], theirs[key], policy_id=policy_id)
+            ]
+    return found
 
 
 def inlet_of(binding: RevisionBinding, unit: C1Reactor, state: Mapping[str, float]) -> UnitInlet:

@@ -17,11 +17,12 @@ numbers per unit against the external model:
 - **The iteration (§4.3, `broyden_good_v1`).** Scaled coordinates u = D w, D = diag(1/s_X,
   1/s_dT) per unit; B₀ = −I, so the first step is successive substitution; Broyden's good update
   B += ((r̂_k − r̂_b) − B Δu) Δuᵀ / (Δuᵀ Δu) from the base b the step was taken from; on no
-  decrease against the best iterate, B = −I and a substitution step from the best (a second reset
-  in a row ends `no_decrease`); steps clipped to the bounds; at most `max_outer` accepted
-  iterates. An inner failure or a deterministic external refusal halves the step back towards
-  its base, at most three times per iteration (the inner solve repeated, the experiments run only
-  at the accepted point); an inner failure at k = 0 passes its own outcome through.
+  decrease against the best iterate at k ≥ 2n (n = 2m; §14.5 D5), B = −I and a substitution step
+  from the best (a second reset in a row ends `no_decrease`; before 2n, no reset); steps clipped
+  to the bounds; at most `max_outer` accepted iterates. An inner failure or a deterministic
+  external refusal halves the step back towards its base, at most three times per iteration (the
+  inner solve repeated, the experiments run only at the accepted point); an inner failure at
+  k = 0 passes its own outcome through.
 
 **The record (§7.1).** Every trial point — accepted or backtracked — is one entry of
 `iterations`: its outer index `k`, `w`, `u`, the inner solve's facts, each unit's experiment
@@ -408,12 +409,16 @@ def couple(
             return end("CONVERGED", None, inner, u, answers)
         if k == block.max_outer - 1:
             return end("COUPLING_NOT_CONVERGED", "max_outer", inner, u)
-        if best is not None and rho > best.rho:
+        rose = best is not None and rho > best.rho
+        if best is not None and rose and k >= 2 * m2:
             if reset_last:
                 return end("COUPLING_NOT_CONVERGED", "no_decrease", inner, u)
             b_matrix = -np.eye(m2)
             step_from, kind, reset_last = best, "reset", True
         else:
+            # §14.5 D5 (R-305): a rise inside the first 2n iterations (n = 2m, Gay's bound for
+            # Broyden on an affine map) does not reset; B is updated as usual and the best
+            # iterate does not move.
             if base is not None:
                 du = point.u - base.u
                 denominator = float(du @ du)
@@ -424,7 +429,9 @@ def couple(
                 b_matrix = b_matrix + np.outer((point.r_hat - base.r_hat) - b_matrix @ du, du) / (
                     denominator
                 )
-            best, step_from, kind, reset_last = point, point, "broyden", False
+            if not rose:
+                best = point
+            step_from, kind, reset_last = point, "broyden", False
         try:
             step = np.linalg.solve(b_matrix, -step_from.r_hat)
         except np.linalg.LinAlgError:

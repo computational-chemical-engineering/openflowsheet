@@ -1,15 +1,17 @@
 """M02 WO-10: the outer coupling driver with the inner solve and the experiments stubbed (design
 note §4.2–§4.3; ADR 0034 D2, D3; G8 (f), driver level).
 
-- G8 (f): affine maps F(w) = w* + G (w − w*) with w* = (0.25, 0 K), the stand-in's fixed point:
-  G = diag(0.5, 0) converges; G = diag(1.8, 0) (non-contractive) — see the xfail below, which
-  records a conflict between the gate and §4.3's own safeguard; F(w) = w + (1, 0) (no fixed point)
-  ends `COUPLING_NOT_CONVERGED`.
+- G8 (f) as amended (§14.5 D5, R-305), f1–f5, against an independent replica of §4.3
+  (`tests/m02_broyden_replica.py`): affine maps F(w) = w* + G (w − w*) with w* = (0.25, 0 K), the
+  stand-in's fixed point — G = diag(0.5, 0) converges (f1); G = diag(1.8, 0) (non-contractive)
+  converges at k = 3 with ρ rising at k = 2 inside the 2n window (f2), and from ΔT̂ = 0 with the
+  rise on substitution's own step (f3); a scripted residual resets at k = 2n and ends
+  `no_decrease` at k = 2n + 1, and does not reset on a rise at k = 2 (f4); F(w) = w + (1, 0) (no
+  fixed point) ends `COUPLING_NOT_CONVERGED` (f5).
 - §4.3: the first step from B₀ = −I is successive substitution; steps are clipped to the bounds;
-  a second reset in a row ends `no_decrease`; `max_outer` accepted iterates at most; an inner
-  failure or a deterministic refusal halves the step towards its base at most three times; an
-  inner failure at k = 0 passes its outcome through; a transient answer ends `EVALUATION_ERROR`
-  `external_<status>(<unit>)`.
+  `max_outer` accepted iterates at most; an inner failure or a deterministic refusal halves the
+  step towards its base at most three times; an inner failure at k = 0 passes its outcome
+  through; a transient answer ends `EVALUATION_ERROR` `external_<status>(<unit>)`.
 - §4.2: ρ and the residual's components as the record carries them.
 """
 
@@ -21,6 +23,7 @@ from typing import Any
 
 import numpy as np
 import pytest
+from m02_broyden_replica import Replica, replicate
 
 from openflowsheet.adapters import variants
 from openflowsheet.orchestrator.coupling import (
@@ -102,46 +105,129 @@ def test_g8f_a_contractive_affine_map_converges() -> None:
     assert run.w["R"][0] == pytest.approx(0.25, abs=1e-12) and run.w["R"][1] == 0.0
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "G8 (f) vs §4.3 (escalated, build log D50): pure Broyden on G = diag(1.8, 0) converges "
-        "at k = 3 (Gay), but passes through rho_2 = 6.1e3 > rho_1 = 3.3e3 (4.7e3 with X clipped "
-        "to its bound 0), so §4.3's reset fires at k = 2 and again at k = 3: no_decrease"
-    ),
-)
-def test_g8f_a_non_contractive_affine_map_converges_within_five_iterations() -> None:
-    run = Stub(affine((1.8, 0.0))).run()
-    assert run.outcome == "CONVERGED"
-    assert run.outer_iterations <= 2 * 2 + 1
+def scripted(residuals: list[float]) -> Callable[[tuple[float, float]], tuple[float, float]]:
+    """G8 (f4)'s scripted residual stub: r_X = 0 and r_T = residuals[call] K, whatever w is."""
+    calls = iter(residuals)
+    return lambda w: (w[0], w[1] + next(calls))
 
 
-def test_g8f_the_non_contractive_map_as_section_4_3_ends_it_measured() -> None:
-    """The measured end of the G = diag(1.8, 0) case under the registered safeguards (the record
-    the escalation cites): ρ falls at k = 1 (X̂ = 0.07), rises at k = 2 (the Broyden step leaves the
-    bound and is clipped to X̂ = 0: reset to substitution from k = 1), and the substitution step
-    lands on the same clipped point (second reset in a row)."""
+def agrees_with_the_replica(run: CouplingRun, replica: Replica) -> None:
+    """X̂_k, ΔT̂_k and ρ_k to a relative 1e-9; k and the step kinds exactly."""
+    assert [item["k"] for item in run.iterations] == [it.k for it in replica.iterates]
+    kinds = [item["step"]["kind"] for item in run.iterations]
+    assert kinds[:-1] == [it.kind for it in replica.iterates][:-1]
+    for item, it in zip(run.iterations, replica.iterates, strict=True):
+        assert item["w"] == pytest.approx(list(it.w), rel=1e-9, abs=1e-12)
+        assert item["rho"] == pytest.approx(it.rho, rel=1e-9)
+
+
+N_TOT = sum(INLET.n)
+
+
+def test_g8f1_a_contractive_affine_map_agrees_with_the_replica() -> None:
+    """f1: G = diag(0.5, 0) from (0.15, 80 K), CONVERGED at k = 3; inert under §14.5 D5."""
+    run = Stub(affine((0.5, 0.0))).run()
+    replica = replicate(affine((0.5, 0.0)), BLOCK.initial, n_tot=N_TOT)
+    assert replica.end == "converged"
+    agrees_with_the_replica(run, replica)
+    assert (run.outcome, run.iterations[-1]["k"]) == ("CONVERGED", 3)
+    assert run.iterations[-1]["rho"] <= 1e-9
+    # The design lane's replica values (n_tot,in = 4.35 exactly).
+    table = replicate(affine((0.5, 0.0)), BLOCK.initial)
+    assert [it.w[0] for it in table.iterates] == pytest.approx(
+        [0.15, 0.2, 0.225048732943, 0.25], rel=1e-9
+    )
+    assert [it.rho for it in table.iterates[:3]] == pytest.approx(
+        [8000.0, 574.7126437, 286.7961731], rel=1e-9
+    )
+
+
+def test_g8f2_the_non_contractive_affine_map_converges_without_a_reset() -> None:
+    """f2 (D50's case): G = diag(1.8, 0) from (0.15, 80 K). ρ rises at k = 2 (the step to X̂ =
+    −0.0766 clipped to 0) inside the 2n = 4 window, so there is no reset; pure Broyden then lands on
+    the root at k = 3 ≤ 4 (the clause's five iterations)."""
     run = Stub(affine((1.8, 0.0))).run()
+    replica = replicate(affine((1.8, 0.0)), BLOCK.initial, n_tot=N_TOT)
+    agrees_with_the_replica(run, replica)
+    assert (run.outcome, run.reason) == ("CONVERGED", None)
+    assert run.iterations[-1]["k"] == 3 and run.outer_iterations <= 2 * 2 + 1
+    assert [item["step"]["kind"] for item in run.iterations] == ["broyden"] * 3 + ["converged"]
+    rhos = [item["rho"] for item in run.iterations]
+    assert rhos[2] > rhos[1]  # why the case is registered
+    assert rhos[3] <= 1e-9
+    assert run.iterations[2]["w"][0] == 0.0  # clipped to the bound
+    assert [it.clipped for it in replica.iterates[:3]] == [False, True, False]
+    table = replicate(affine((1.8, 0.0)), BLOCK.initial)
+    assert [it.w[0] for it in table.iterates] == pytest.approx([0.15, 0.07, 0.0, 0.25], abs=1e-12)
+    assert [it.rho for it in table.iterates[:3]] == pytest.approx(
+        [8000.0, 3310.344828, 4597.701149], rel=1e-9
+    )
+
+
+def test_g8f3_substitutions_own_step_raises_rho_without_a_clip() -> None:
+    """f3: G = diag(1.8, 0) from (0.15, 0 K). The first (substitution) step raises ρ, with no clip:
+    the window, not the clip, is what lets the run converge (k = 2)."""
+    from dataclasses import replace
+
+    stub = Stub(affine((1.8, 0.0)))
+    run = couple(["R"], replace(BLOCK, initial=(0.15, 0.0)), stub.solve, stub.evaluate)
+    replica = replicate(affine((1.8, 0.0)), (0.15, 0.0), n_tot=N_TOT)
+    agrees_with_the_replica(run, replica)
+    assert (run.outcome, run.iterations[-1]["k"]) == ("CONVERGED", 2)
+    assert not any(it.clipped for it in replica.iterates)
+    rhos = [item["rho"] for item in run.iterations]
+    assert rhos[1] > rhos[0] and rhos[2] <= 1e-9
+    assert [item["w"][1] for item in run.iterations] == [0.0, 0.0, 0.0]
+    table = replicate(affine((1.8, 0.0)), (0.15, 0.0))
+    assert [it.w[0] for it in table.iterates] == pytest.approx([0.15, 0.07, 0.25], rel=1e-9)
+    assert [it.rho for it in table.iterates[:2]] == pytest.approx(
+        [1839.08046, 3310.344828], rel=1e-9
+    )
+
+
+#: G8 (f4): ρ = 100 |r_T| falls to k = 3 = 2n − 1, then rises above ρ_best at k = 4 and k = 5.
+F4_LATE = [-8.0, -4.0, -2.0, -1.0, -3.0, -5.0]
+#: The same stub with its rise moved to k = 2, then falling to convergence.
+F4_EARLY = [-8.0, -4.0, -6.0, -3.0, -2.0, -1.0, -0.005]
+
+
+def test_g8f4_the_safeguard_is_live_after_the_window() -> None:
+    """f4: a rise at k = 2n resets (to substitution from the best); a second rise at k = 2n + 1
+    ends `no_decrease`. No step is clipped."""
+    run = Stub(scripted(F4_LATE)).run()
+    replica = replicate(scripted(F4_LATE), BLOCK.initial, n_tot=N_TOT)
+    agrees_with_the_replica(run, replica)
+    assert replica.end == "no_decrease"
+    assert not any(it.clipped for it in replica.iterates)
     assert (run.outcome, run.reason) == ("COUPLING_NOT_CONVERGED", "no_decrease")
     kinds = [item["step"]["kind"] for item in run.iterations]
-    assert kinds == ["broyden", "broyden", "reset", "none"]
-    n_tot = sum(INLET.n)
+    assert kinds == ["broyden"] * 4 + ["reset", "none"]
+    assert run.iterations[4]["step"]["B"] == [[-1.0, 0.0], [0.0, -1.0]]
+    # The reset steps from the best iterate (k = 3), not from k = 4.
+    du = run.iterations[4]["step"]["du"]
+    assert run.iterations[5]["u"] == pytest.approx(
+        [a + b for a, b in zip(run.iterations[3]["u"], du, strict=True)], abs=1e-15
+    )
 
-    def rho(x: float) -> float:
-        return abs(0.8 * (x - 0.25)) * INLET.n_key / (1e-5 * n_tot)
 
+def test_g8f4_a_rise_inside_the_window_does_not_reset() -> None:
+    """f4's stub with its rise moved to k = 2: no reset there."""
+    run = Stub(scripted(F4_EARLY)).run()
+    replica = replicate(scripted(F4_EARLY), BLOCK.initial, n_tot=N_TOT)
+    agrees_with_the_replica(run, replica)
+    assert not any(it.clipped for it in replica.iterates)
     rhos = [item["rho"] for item in run.iterations]
-    assert rhos[0] == pytest.approx(80.0 / 1e-2)
-    assert rhos[1] == pytest.approx(rho(0.07), rel=1e-12)
-    assert rhos[2] == pytest.approx(rho(0.0), rel=1e-12) == rhos[3]
     assert rhos[2] > rhos[1]
-    assert run.iterations[2]["w"][0] == 0.0 == run.iterations[3]["w"][0]  # clipped to the bound
+    assert run.iterations[2]["step"]["kind"] == "broyden"
+    assert "reset" not in [item["step"]["kind"] for item in run.iterations]
+    assert run.outcome == "CONVERGED"
 
 
-def test_g8f_no_fixed_point_ends_coupling_not_converged() -> None:
+def test_g8f5_no_fixed_point_ends_coupling_not_converged() -> None:
+    """f5, as built: r = (1, 0) at every w, so the secant update leaves B singular at k = 1."""
     run = Stub(lambda w: (w[0] + 1.0, w[1])).run()
-    assert run.outcome == "COUPLING_NOT_CONVERGED"
-    assert run.reason in {"broyden_singular", "no_decrease", "max_outer"}
+    assert (run.outcome, run.reason) == ("COUPLING_NOT_CONVERGED", "broyden_singular")
+    assert [item["k"] for item in run.iterations] == [0, 1]
     assert not run.answers
 
 
@@ -230,20 +316,6 @@ def test_a_transient_answer_ends_evaluation_error_naming_the_unit() -> None:
     run = Stub(affine((0.5, 0.0)), answers={1: "transient"}).run()
     assert (run.outcome, run.reason) == ("EVALUATION_ERROR", "external_timed_out(R)")
     assert run.iterations[-1]["units"]["R"]["result"] is None
-
-
-def test_two_resets_in_a_row_end_no_decrease() -> None:
-    """ρ rises against the best twice in a row: the second reset ends the run."""
-    calls = {"n": 0}
-
-    def rising(w: tuple[float, float]) -> tuple[float, float]:
-        calls["n"] += 1
-        # ρ is set by |ΔT̂ residual|: 80 at k = 0, then 10, then 40, then 40.
-        return (w[0], {1: 0.0, 2: w[1] - 10.0, 3: w[1] - 40.0}.get(calls["n"], w[1] - 40.0))
-
-    run = Stub(rising).run()
-    assert (run.outcome, run.reason) == ("COUPLING_NOT_CONVERGED", "no_decrease")
-    assert [item["step"]["kind"] for item in run.iterations][-2:] == ["reset", "none"]
 
 
 def test_at_most_max_outer_accepted_iterates() -> None:
