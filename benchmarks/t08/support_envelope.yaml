@@ -2686,3 +2686,45 @@ harvest:
   to:
   - U14
   note: W27 campaign is M07's (G16)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[0]
+  sha256: b24a4c8006bd8fb9d37d3eef51ef54911404e6305f33edfa78cbe142ddcba456
+  class: P
+  to: []
+  note: W21 outside the requirements pattern; its verdict is the verdict lane's
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[1]
+  sha256: dfd8ca7840569a3f97f92f6b90b8036a97ad876adb24439d3c0c24bfcd8bdb6b
+  class: P
+  to: []
+  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[2]
+  sha256: 28b3606f19c531f178ddbaf9a38af13559d1cec586dbe744c30d50a4c4e670e7
+  class: P
+  to: []
+  note: isolation profile not a sandbox (stated in the envelope's external_execution axis)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[3]
+  sha256: 5266e33ca1cc2b8fdffd15c7726369a905a1559b897d91f8cd3a8d6a166dba4c
+  class: P
+  to: []
+  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[4]
+  sha256: 314efcaecdb681cc1bcbc3b78d4908bb0057435bcf0815128701ea2edcdd7e9f
+  class: P
+  to: []
+  note: G8 (c) oracle shares pr_c1 (review F10)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[5]
+  sha256: d5b5618ed4f463dbd9b8b1b981b3de6414227e7be25eb69400f82d27a78699a7
+  class: P
+  to: []
+  note: self-generated records are regression fixtures (review F10)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[6]
+  sha256: 326d3a4be0be30a8f73651217aaf41b9b8cbcef12ab1517c1019ae7fdf100476
+  class: P
+  to: []
+  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled
