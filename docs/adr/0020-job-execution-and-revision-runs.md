@@ -167,3 +167,16 @@ cancellation).
 
 Design note gates G1, G5, G6, G7, G8, G9, G10, G12, G18 and G20. Register entries are added on
 acceptance.
+
+## Amended by ADR 0033 D2 and ADR 0034 D6 (M02) — pointer
+
+- **D3 — ADR 0033 D2.** The executor's forced kill reaches the worker's process group: the worker makes itself a
+  process-group leader (`os.setpgid(0, 0)`, its first statement), and the forced kill is `os.killpg(worker_pid,
+  SIGKILL)` while the worker is unreaped, falling back to `Process.kill()`.
+- **D4 — ADR 0034 D6.** A bundle on the route `revision_coupled` holds D4's files for the final inner solve plus
+  `external-coupling.json`, and an interrupted coupled job keeps its experiment artifacts. `reproduce` re-runs the
+  coupling with a recorded backend; a run that used an out-of-process variant is R3. In such a bundle every
+  `constants_sha256` is compared for shape, and the final one's R0 guard is its recomputation at the recorded final w
+  (M02 design note §14.5 D8; R-308, R-318). No ADR change is needed for that: ADR 0007's criterion already classifies
+  a digest of floats computed on the path as R1/R2.
+

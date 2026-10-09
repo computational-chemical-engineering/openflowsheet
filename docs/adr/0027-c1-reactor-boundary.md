@@ -221,3 +221,10 @@ Amended:
   `benchmarks/m02/*-v3.json`.
 
 Amendment 3's other bullets stand.
+
+## Amended by ADR 0034 D10 (M02) — pointer
+
+D9's hard domain gains, for the real reactor's variant, the per-tube flow bound of Q-F5: F_ret_in ∈ [0.5, 2] ×
+0.007146961299302104 mol/s, `out_of_domain` outside, through a hard-domain field the `Boundary` reads. The stand-in has
+no flow bound, so M01's registered stand-in states are unaffected (ADR 0034 D10; R-232).
+

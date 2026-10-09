@@ -1959,6 +1959,8 @@ says so.
 - M05 keeps `with_coupling` only until `wp/M02` is on `main`. At its first merge of `main` after that, M05 deletes it,
   calls `at_coupling`, re-points its inertness test and its E2 guard at `at_coupling`, and must not reach `main` with
   both.
+- **AC-1** (the WO-14 acceptance column) is this decision's acceptance: the guard's refusal, no coercion, and the G8
+  records unchanged (M02 review §3, ratifying build log D91).
 
 *Rejected:* landing both. Two functions with one meaning; M05's E2 guard asks for "M02's own code path".
 
