@@ -24,6 +24,7 @@ ROLES = {
     "c1.stream_splitter": "splitter",
     "c1.reactor": "reactor",
     "c1.reactor_standin": "reactor",
+    "c1.reactor_surrogate": "reactor",
 }
 
 #: `kind` -> a specification's `tolerance` (ADR 0001 D6's registered values, as SYN-001's cases).

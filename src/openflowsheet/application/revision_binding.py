@@ -97,6 +97,8 @@ from openflowsheet.models.syn001.pump import LiquidPump
 from openflowsheet.models.syn001.sink import ProductSink
 from openflowsheet.models.syn001.splitter import StreamSplitter
 from openflowsheet.models.syn001.valve import Valve
+from openflowsheet.studies.surrogate import reactor as c1_surrogate
+from openflowsheet.studies.surrogate.manifest import check_manifest
 from openflowsheet.thermo import Phase, PropertyProvider
 from openflowsheet.thermo.pr_c1 import PROVIDER_ID as C1_PROVIDER_ID
 
@@ -106,6 +108,7 @@ __all__ = [
     "MODEL_SIGNATURES",
     "SELECTABLE_BASES",
     "Builder",
+    "SurrogateResolver",
     "Encoding",
     "ModelSignature",
     "PinColumn",
@@ -130,6 +133,10 @@ Builder = Callable[
     [InstanceView, PropertyProvider, EvaluationContext, tuple[str, ...]],
     tuple[UnitModel, Configuration],
 ]
+#: M04 spec §8.2 (ADR 0037 D2): a SurrogateManifest by its SHA-256, or `None` when the project
+#: holds none. Injected by the application from the project's artifact store (R-237's pattern);
+#: the binder never reads a store.
+SurrogateResolver = Callable[[str], Mapping[str, Any] | None]
 
 
 @dataclass(frozen=True)
@@ -153,6 +160,11 @@ class RevisionBinding:
     #: `specification_unconsumed` and `specification_conflict` name it. Read only by
     #: `specification_rows`, for `inspect_structure`'s index; never by the structural analysis.
     specification_pins: Mapping[str, Mapping[str, str]] = field(default_factory=dict)
+    #: Instance id -> the SurrogateManifest its `model.artifact_ref` resolved to, hash- and
+    #: checker-verified by the binder (M04 spec §8.2): what the certificate's
+    #: `SURROGATE-DOMAIN:<unit>` check and `surrogate_model` limitation read (spec §8.6). Empty
+    #: when the revision binds no surrogate.
+    surrogate_manifests: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
 
 
 def specification_rows(binding: RevisionBinding, declaration: Declaration) -> dict[str, str]:
@@ -1323,6 +1335,76 @@ def _c1_reactor(
     return unit, {}
 
 
+#: M04 WO-7 (spec §8.1, §8.2; ADR 0037 D1, D2): `c1.reactor_surrogate` is M02's embedded unit with
+#: (X̂, ΔT̂) the frozen quadratic of its SurrogateManifest, pinned by the manifest's SHA-256. It
+#: reads `n_tubes` (the surrogate's per-tube flow). The binder resolves and checks the manifest
+#: before building (`_resolve_surrogate`) and hands it to `_c1_reactor_surrogate_of`; the
+#: registered builder, called without one, refuses as an unresolved manifest does.
+_C1_REACTOR_SURROGATE: Final = ModelSignature(
+    model_id=c1_surrogate.MODEL_ID, ports=c1_surrogate.PORTS, required=("n_tubes",)
+)
+
+
+def _c1_reactor_surrogate_of(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+    manifest: Mapping[str, Any],
+) -> tuple[UnitModel, Configuration]:
+    parameters = instance_contract(view, _C1_REACTOR_SURROGATE, components)
+    assert view.model_artifact_ref is not None  # `_resolve_surrogate` resolved it
+    unit = c1_surrogate.C1ReactorSurrogate(
+        unit_id=view.unit_id,
+        provider=provider,
+        context=context,
+        surrogate_manifest=manifest,
+        manifest_sha256=view.model_artifact_ref,
+        n_tubes=parameters["n_tubes"],
+        components=components,
+    )
+    # The manifest (its coefficients) and N_tubes select the block's expression without changing
+    # an id: the configuration digest, hence the label and `model_version`, carries both (ADR
+    # 0002 D2.7). Neither is a pinned input: no row reads them symbolically (build log, WO-7).
+    return unit, {
+        "surrogate_manifest_sha256": view.model_artifact_ref,
+        "n_tubes": repr(float(parameters["n_tubes"])),
+    }
+
+
+def _c1_reactor_surrogate(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    raise RevisionError("unsupported", f"surrogate_manifest_mismatch({view.unit_id})")
+
+
+def _resolve_surrogate(
+    instance: InstanceView, surrogates: SurrogateResolver | None
+) -> Mapping[str, Any] | None:
+    """M04 spec §8.2: the instance's SurrogateManifest, or `None` — no resolver, an unknown hash,
+    a document whose canonical SHA-256 is not `model.artifact_ref`, a `model.version` that is not
+    its `surrogate_id`, or a manifest its checker refuses (M04.A24)."""
+    reference = instance.model_artifact_ref
+    if surrogates is None or reference is None:
+        return None
+    manifest = surrogates(reference)
+    if manifest is None:
+        return None
+    try:
+        if document_sha256(manifest) != reference:
+            return None
+    except (TypeError, ValueError):
+        return None
+    if check_manifest(manifest):
+        return None
+    if manifest["surrogate_id"] != instance.model_version:
+        return None
+    return manifest
+
+
 #: SYN-001's thirteen models: the six K02 ones, the six T05 ones (§1.3's table) and T08's kinetic
 #: CSTR (build-first §A1). They bind on SYN-001's basis only (R-288).
 _SYN001_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
@@ -1519,8 +1601,13 @@ def basis_provider(basis: ComponentBasis) -> PropertyProvider:
     return Syn001Provider()
 
 
-def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Unbound:
-    """Build and bind a revision's flowsheet, or say which of R-022's kinds prevented it (§1.4)."""
+def bind_revision_flowsheet(
+    document: Mapping[str, Any], *, surrogates: SurrogateResolver | None = None
+) -> RevisionBinding | Unbound:
+    """Build and bind a revision's flowsheet, or say which of R-022's kinds prevented it (§1.4).
+
+    `surrogates` resolves a `c1.reactor_surrogate` instance's manifest by its SHA-256 (M04 spec
+    §8.2); without one, such an instance is refused `surrogate_manifest_mismatch(<instance>)`."""
     from openflowsheet.orchestrator.budget import PropertyMeter
 
     # R-088 Q29 (T07 design note §12.5): a non-canonical number is refused typed at entry,
@@ -1550,6 +1637,15 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
             return Unbound("unsupported", f"model_unsupported({instance.model_id})")
         if view.basis.provider_id not in MODEL_BASES[instance.model_id]:
             return _basis_refusal(instance.model_id, view.basis)
+    manifests: dict[str, Mapping[str, Any]] = {}
+    for instance in view.instances:
+        # M04 spec §8.2 (ADR 0037 D2): a surrogate is pinned by its manifest's SHA-256, resolved
+        # through the injected resolver and checked; `revision_unsupported` otherwise.
+        if instance.model_id == c1_surrogate.MODEL_ID:
+            manifest = _resolve_surrogate(instance, surrogates)
+            if manifest is None:
+                return Unbound("unsupported", f"surrogate_manifest_mismatch({instance.unit_id})")
+            manifests[instance.unit_id] = manifest
 
     # Metered from construction: the declaration's property blocks capture the provider here,
     # and a plan run counts their calls (T02; `PropertyMeter`). The provider is the one the
@@ -1559,8 +1655,11 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
     built: list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] = []
     for instance in view.instances:
         reader = _PinReader(instance.pins)
+        builder = MODEL_BUILDERS[instance.model_id]
+        if instance.unit_id in manifests:
+            builder = partial(_c1_reactor_surrogate_of, manifest=manifests[instance.unit_id])
         try:
-            unit, configuration = MODEL_BUILDERS[instance.model_id](
+            unit, configuration = builder(
                 replace(instance, pins=reader), provider, _CONTEXT, view.components
             )
         except RevisionError as error:
@@ -1653,4 +1752,5 @@ def bind_revision_flowsheet(document: Mapping[str, Any]) -> RevisionBinding | Un
             instance.unit_id: {column: sources[column][0] for column in instance.pins}
             for instance in view.instances
         },
+        surrogate_manifests=manifests,
     )

@@ -432,7 +432,8 @@ def test_the_verifier_entries_read_the_c1_reaction() -> None:
         assert model in REACTING_MODELS and model in EXTERNAL_DUTY_MODELS
     # The verifier's own copy of N2 + 3 H2 -> 2 NH3 equals the model's, as data.
     assert tuple(pr_c1.REACTION_NU[c] for c in COMPONENTS) == tuple(float(v) for v in NU)
-    assert pr_c1.REACTOR_MODELS == frozenset(MODEL_IDS)
+    # M04 WO-7: and the surrogate, whose rows are these with (X̂, ΔT̂) its prediction.
+    assert pr_c1.REACTOR_MODELS == frozenset(MODEL_IDS) | {"c1.reactor_surrogate"}
 
 
 # == the loop: WO-9's acceptance and G7 (f) =======================================================

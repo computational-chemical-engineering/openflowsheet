@@ -16,7 +16,12 @@ and two that run and record a study (spec §5.4, §10):
 
 * `study` — the plan and budget refused before anything runs, the plan's experiments one by one
   through M02's `ExperimentRunner` (cache first), and the evidence and verdict of the run plan;
-* `manifest` — the SurrogateManifest, the ModelEvidence and the manifest checker (M04.A24).
+* `manifest` — the SurrogateManifest, the ModelEvidence and the manifest checker (M04.A24);
+
+and the unit a promoted surrogate becomes in a flowsheet (spec §8.1, WO-7):
+
+* `reactor` — `c1.reactor_surrogate`, M02's embedded C1 reactor with (X̂, ΔT̂) the frozen quadratic
+  of its manifest, which the binder builds once it has resolved the manifest by its SHA-256.
 
 Nothing here keeps global state: the sampler is a pure function of its seed (G20). Nothing here
 imports `application`, which runs a study as the `surrogate_study` job operation.

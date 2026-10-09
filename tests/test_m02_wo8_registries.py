@@ -170,21 +170,32 @@ def test_model_checks_hold_the_c1_entries_from_syn001s_rule_functions() -> None:
             nothing,
             (("inlet", False), ("outlet", False)),
         ),
+        # M04 WO-7: the surrogate takes the reactor's entry (its domain is the certificate's
+        # `SURROGATE-DOMAIN:<unit>`, tests/test_m04_wo7_surrogate_unit.py).
+        "c1.reactor_surrogate": (
+            _c1_reactor_material,
+            _reactor_energy,
+            nothing,
+            (("inlet", False), ("outlet", False)),
+        ),
     }
 
 
 def test_the_envelope_sets_gain_the_c1_ids() -> None:
     assert FEED_MODELS == {"syn001.feed_source", "c1.feed_source"}
     assert PRODUCT_MODELS == {"syn001.product_sink", "c1.product_sink"}
-    assert EXTERNAL_DUTY_MODELS[-4:] == (
+    # M04 WO-7 appends the surrogate's duty after M02's four.
+    assert EXTERNAL_DUTY_MODELS[-5:] == (
         "c1.tp_heater",
         "c1.tp_flash",
         "c1.reactor",
         "c1.reactor_standin",
+        "c1.reactor_surrogate",
     )
     assert [m for m in EXTERNAL_DUTY_MODELS if m.startswith("c1.")] == [
         "c1.tp_heater",
         "c1.tp_flash",
         "c1.reactor",
         "c1.reactor_standin",
+        "c1.reactor_surrogate",
     ]

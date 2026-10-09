@@ -72,8 +72,9 @@ PROVIDER_ID: Final = "pr-c1-v1"
 #: The condensable component, and the vapour-only ones: the verifier's own reading of R-143.
 CONDENSABLE: Final = "NH3"
 VAPOUR_ONLY: Final[tuple[str, ...]] = ("H2", "N2", "Ar", "CH4")
-#: The C1 reactor's two model ids (M02 design note §4.1; ADR 0034 D9; WO-9).
-REACTOR_MODELS: Final = frozenset({"c1.reactor", "c1.reactor_standin"})
+#: The C1 reactor's model ids: M02's two (design note §4.1; ADR 0034 D9; WO-9) and M04's surrogate
+#: (spec §8.1, WO-7), whose rows are M02's with the extent and the rise its prediction's.
+REACTOR_MODELS: Final = frozenset({"c1.reactor", "c1.reactor_standin", "c1.reactor_surrogate"})
 #: N2 + 3 H2 -> 2 NH3 (M01 spec §8.2), the verifier's own copy: no revision states a C1 reactor's
 #: stoichiometry (SYN-001's reactors carry `nu.<c>` as instance parameters), so the reaction
 #: envelope and the reactor's material rule read it here, never from the model (build log D47).
