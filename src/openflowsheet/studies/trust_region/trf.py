@@ -185,15 +185,16 @@ def _run(
     for holder in projection.holders:
         holder.begin_run(run, budgets.get(holder.name, ()))
     preflight_start = time.perf_counter()
+    refused: TruthRefused | None = None
+    preflown = False
     try:
         refused = _preflight(projection)
-    except BaseException:
-        for holder in projection.holders:
-            holder.end_run()
-        raise
+        preflown = True
+    finally:
+        if not preflown or refused is not None:
+            for holder in projection.holders:
+                holder.end_run()
     if refused is not None:
-        for holder in projection.holders:
-            holder.end_run()
         return TrfRun(
             run_id=run_id,
             outcome=truth_refused(f"start:{refused.code}"),
