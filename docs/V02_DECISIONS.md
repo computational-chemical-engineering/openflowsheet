@@ -564,3 +564,11 @@ Grep, don't read whole. Newest at the bottom.
   Amendment 1 (sent to the M04 specifier, R-290+): A11 text; it≥2 plans; float classification for fit values (ADR 0007
   D2.3 / ADR 0025); manifest–evidence hash cycle; outputs/refusals/new schema members; WO-11 concurrency (R-250); surface
   move register entry.
+- W27 registration Amendment 2 (`0bb7a15` on `wp/M06-w27-c1map`, §21, R-283…R-286; registration.json `14ff19d9…`):
+  six C1 units map to their SYN-001 namesakes' functions (no token; state limits not expressible case-side, checked
+  GC-A2-5); `c1.reactor` → no function (`fixed_design_reactor`); stand-in → no function (`synthetic_stand_in`);
+  `pr-c1-v1` → `cubic_pr`; components by CAS. New R62 (units judged on the serving route's models), R24 (d)/(e), R63
+  `bases-v1` READINGS (`SELECTABLE_BASES`/`MODEL_BASES`). Dry v0.2 coverage: still 0 CANDIDATE of 450 and of 82. §20
+  ratified; W27-R59 amended (S19/S20). Finding F-A2-1 for M02: should SYN-001 builders refuse the C1 basis (recommended
+  yes). M02 join steps J1–J6 recorded in §21.8.
+- `opus-engineer` M06 WO-16h (R62, R24 d/e, R59, S19/S20, bases-v1, 0.1.1 guard) launched on `wp/M06-w27-c1map`.
