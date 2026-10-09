@@ -33,6 +33,12 @@ hard domain: no liquid exists inside it (its lowest T_in, 573.15 K, lies above N
 405.55 K; claim BD-06), so a liquid inlet always has a second defect, and in any other order
 `liquid_at_reactor_inlet` could never be returned (F7's state, M01.A30 and A51). The kinetics' data
 domain flags, never refuses (ADR 0027 D9).
+
+**M02 adds two things and changes no M01 path** (design note §3.1, §5.1). The hard domain is a
+`HardDomain` value that defaults to M01's constants; a variant may add a per-tube flow bound
+(ADR 0034 D10, Q-F5), checked last inside the hard-domain check. And the evaluation may answer
+`ExecutionFailure` — it did not run to an answer (a timeout, a crash, an environment failure) —
+which the evaluation step maps to `error`, `external_<kind>` (ADR 0033 D10).
 """
 
 from __future__ import annotations
@@ -75,8 +81,31 @@ DATA_TEMPERATURE_K: Final = (643.15, 733.15)
 DATA_PRESSURE_PA: Final = (5.0e6, 1.0e7)
 DATA_H2_N2: Final = (1.5, 3.0)
 
+
+@dataclass(frozen=True)
+class HardDomain:
+    """The adapter's hard domain (spec §8.12, ADR 0027 D9); outside it a request is `out_of_domain`.
+
+    The defaults are M01's constants. `tube_flow` bounds the per-tube flow F_ret_in = n_tot,in /
+    N_tubes, mol/s (ADR 0034 D10, Q-F5): a variant field, `None` (unbounded) for the stand-in.
+    `inert_min` is the floor y_Ar + y_CH4 >= inert_min (ADR 0027 Amendments 3 and 4, M02 design
+    note §14.6 E3): a variant field, 0 (no floor) when the variant does not declare it.
+    """
+
+    temperature_k: tuple[float, float] = HARD_TEMPERATURE_K
+    pressure_pa: tuple[float, float] = HARD_PRESSURE_PA
+    h2_n2: tuple[float, float] = HARD_H2_N2
+    inert_fraction: float = HARD_INERT_FRACTION
+    tube_flow: tuple[float, float] | None = None
+    inert_min: float = 0.0
+
+
+#: M01's hard domain: no per-tube flow bound.
+DEFAULT_HARD_DOMAIN: Final = HardDomain()
+
 #: The grammar of `NotAccepted.stage` (spec §8.12, Amendment 1); the registered stages are S1, S2,
-#: S3, certificate, backflow and nonpositive_flow, and M02 may register more.
+#: S3, certificate, backflow and nonpositive_flow, and M02 may register more (it registers
+#: model_exception, R-251).
 _STAGE: Final = re.compile(r"[A-Za-z0-9_]+")
 
 ReactorStatus = Literal["ok", "unsupported", "out_of_domain", "not_converged", "error"]
@@ -180,14 +209,51 @@ class NotAccepted:
             raise ValueError(f"NotAccepted.stage must match [A-Za-z0-9_]+, got {self.stage!r}")
 
 
+#: Why an evaluation did not run to an answer (ADR 0033 D5, D10): the transient execution
+#: statuses of design note §3.3 that reach the boundary (`cancelled` propagates as an interrupt).
+EXECUTION_FAILURE_KINDS: Final[frozenset[str]] = frozenset(
+    {
+        "timed_out",
+        "crashed",
+        "protocol_error",
+        "spawn_failed",
+        "environment_unavailable",
+        "environment_mismatch",
+        "environment_changed",
+    }
+)
+
+
+@dataclass(frozen=True)
+class ExecutionFailure:
+    """The evaluation did not run to an answer (ADR 0033 D10): it timed out, crashed, broke the
+    protocol, could not be spawned, or found its environment absent, mismatched or changed.
+
+    A fact about the execution, not about the inlet: the boundary maps it to `error`,
+    `external_<kind>`, with no outlet values, and the experiment runner never caches it. `kind` is
+    one of `EXECUTION_FAILURE_KINDS`; anything else is a `ValueError`.
+    """
+
+    kind: str
+    message: str
+
+    def __post_init__(self) -> None:
+        if self.kind not in EXECUTION_FAILURE_KINDS:
+            raise ValueError(
+                f"ExecutionFailure.kind must be one of {sorted(EXECUTION_FAILURE_KINDS)}, "
+                f"got {self.kind!r}"
+            )
+
+
 class ExternalEvaluation(Protocol):
     """The reactor behind the boundary: one tube's inlet in, that tube's raw outlet out.
 
     A `NotAccepted` answer becomes `not_converged`, `reactor_not_accepted(<stage>)`, with no outlet
-    values. The stand-in is closed-form; M02's adapter runs the pinned reactor.
+    values; an `ExecutionFailure` becomes `error`, `external_<kind>` (ADR 0033 D10). The stand-in
+    is closed-form and never fails; M02's adapter runs the pinned reactor out of process.
     """
 
-    def __call__(self, tube: TubeInlet) -> TubeOutlet | NotAccepted: ...
+    def __call__(self, tube: TubeInlet) -> TubeOutlet | NotAccepted | ExecutionFailure: ...
 
 
 # -- 3. the extent projection (§8.9) -------------------------------------------------------------
@@ -299,18 +365,36 @@ def state_space_violation(inlet: StreamState) -> str | None:
     return None
 
 
-def hard_domain_violations(inlet: StreamState) -> list[str]:
-    """The adapter's hard-domain bounds a flowing inlet violates (spec §8.12, ADR 0027 D9)."""
+def hard_domain_violations(
+    inlet: StreamState,
+    domain: HardDomain = DEFAULT_HARD_DOMAIN,
+    n_tubes: float | None = None,
+) -> list[str]:
+    """The hard-domain bounds a flowing inlet violates (spec §8.12, ADR 0027 D9).
+
+    With a per-tube flow bound (ADR 0034 D10) `n_tubes` is required, and F_ret_in is formed as
+    `tube_inlet` forms it; that bound is checked last, so M01's messages are unchanged. The inert
+    floor, n_Ar + n_CH4 >= inert_min n_tot,in (§14.6 E3), is checked only when it is above 0, so a
+    domain without one gives M01's messages too.
+    """
     n = inlet.n
     violated = []
-    if not _within(inlet.temperature, HARD_TEMPERATURE_K):
-        violated.append(f"T_in {inlet.temperature!r} K outside {list(HARD_TEMPERATURE_K)}")
-    if not _within(inlet.pressure, HARD_PRESSURE_PA):
-        violated.append(f"P_in {inlet.pressure!r} Pa outside {list(HARD_PRESSURE_PA)}")
-    if not _h2_n2_within(n, HARD_H2_N2):
-        violated.append(f"H2/N2 outside {list(HARD_H2_N2)}")
-    if not (n[3] + n[4]) <= HARD_INERT_FRACTION * inlet.total_flow:
-        violated.append(f"inert fraction above {HARD_INERT_FRACTION}")
+    if not _within(inlet.temperature, domain.temperature_k):
+        violated.append(f"T_in {inlet.temperature!r} K outside {list(domain.temperature_k)}")
+    if not _within(inlet.pressure, domain.pressure_pa):
+        violated.append(f"P_in {inlet.pressure!r} Pa outside {list(domain.pressure_pa)}")
+    if not _h2_n2_within(n, domain.h2_n2):
+        violated.append(f"H2/N2 outside {list(domain.h2_n2)}")
+    if not (n[3] + n[4]) <= domain.inert_fraction * inlet.total_flow:
+        violated.append(f"inert fraction above {domain.inert_fraction}")
+    if domain.inert_min > 0.0 and not (n[3] + n[4]) >= domain.inert_min * inlet.total_flow:
+        violated.append(f"inert fraction below {domain.inert_min}")
+    if domain.tube_flow is not None:
+        if n_tubes is None:
+            raise ValueError("a per-tube flow bound needs n_tubes")
+        flow = inlet.total_flow / n_tubes
+        if not _within(flow, domain.tube_flow):
+            violated.append(f"F_ret_in {flow!r} mol/s outside {list(domain.tube_flow)}")
     return violated
 
 
@@ -357,6 +441,15 @@ class Boundary:
     identity: Mapping[str, Any]
     sweep_ratio: float = 1.0
     discretization_estimate: Mapping[str, Any] | None = None
+    #: M01's constants unless a variant says otherwise (ADR 0034 D10).
+    hard_domain: HardDomain = DEFAULT_HARD_DOMAIN
+
+    def __post_init__(self) -> None:
+        # M01 review (passed to M02): the per-tube scaling divides by `n_tubes` (§8.3), so a
+        # zero, negative or non-finite count is a configuration defect, refused at construction
+        # rather than surfacing as a NaN or a sign flip inside an evaluation.
+        if not 0.0 < self.n_tubes < math.inf:
+            raise ValueError(f"n_tubes {self.n_tubes!r} is not finite and positive")
 
     def evaluate(
         self,
@@ -411,11 +504,13 @@ class Boundary:
                 "nh3_below_trace",
                 f"y_NH3,in below {NH3_TRACE}: the rate carries a negative power of a_NH3",
             )
-        violated = hard_domain_violations(inlet)
+        violated = hard_domain_violations(inlet, self.hard_domain, self.n_tubes)
         if violated:
             return refused("out_of_domain", "out_of_domain", "; ".join(violated))
 
         tube = evaluation(tube_inlet(inlet, self.n_tubes, self.sweep_ratio))
+        if isinstance(tube, ExecutionFailure):
+            return refused("error", f"external_{tube.kind}", tube.message)
         if isinstance(tube, NotAccepted):
             return refused(
                 "not_converged",

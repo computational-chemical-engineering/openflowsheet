@@ -7,6 +7,10 @@ cancel event, the cancel reason and the started event.
 
 In order, the worker:
 
+0. makes itself the leader of its own process group (`os.setpgid(0, 0)`, its first statement), so
+   that the supervisor's forced kill reaches every child it runs (ADR 0033 D2, amending ADR 0020
+   D3) — an external model's attempt never outlives a killed worker; a child must therefore never
+   be given a session of its own (R-221);
 1. redirects its stdout and stderr, at the file-descriptor level, to `jobs/<job_id>/worker.log`
    (§9.1) — before it imports anything heavier than the standard library, so what an import
    prints is in the log too — and ignores `SIGINT`, so that a terminal's Ctrl-C reaches the
@@ -31,7 +35,12 @@ In order, the worker:
   event every 10 ms; it continues when `jobs/<id>/resume` appears, and a set cancel event ends the
   pause at once, so the stage boundary's check stops the job cooperatively;
 - `OPENFLOWSHEET_TEST_BLOCK=1`: once running, the worker sleeps without checkpoints, so only
-  the forced stop (§8.2) can end it.
+  the forced stop (§8.2) can end it;
+- `OPENFLOWSHEET_TEST_CHILD=<script>` (M02 gate G3 (d), (e)): once running, the worker runs
+  `<script>` as one external attempt through the launcher, **ignoring the cooperative check**,
+  writes the child's pid to `jobs/<id>/child.pid`, and sleeps without checkpoints after it — so
+  only the forced stop, or killing the worker, can end the job; the child's attempt directory is
+  `jobs/<id>/child-attempt`.
 """
 
 from __future__ import annotations
@@ -52,6 +61,9 @@ if TYPE_CHECKING:
 #: §15 W4c's two environment variables; read only by a worker started with test hooks.
 PAUSE_AT_STAGE_VARIABLE: Final[str] = "OPENFLOWSHEET_TEST_PAUSE_AT_STAGE"
 BLOCK_VARIABLE: Final[str] = "OPENFLOWSHEET_TEST_BLOCK"
+CHILD_VARIABLE: Final[str] = "OPENFLOWSHEET_TEST_CHILD"
+CHILD_PID_FILE: Final[str] = "child.pid"
+CHILD_ATTEMPT_DIR: Final[str] = "child-attempt"
 PAUSED_FILE: Final[str] = "paused"
 RESUME_FILE: Final[str] = "resume"
 #: §5.4's `worker_log` file (`jobs.model.ARTIFACT_FILE_NAMES`), where stdout and stderr go.
@@ -76,6 +88,8 @@ def main(
     test_hooks: bool,
 ) -> None:
     """Run the job `job_id` of the project at `project_dir` under `owner_instance`, then exit."""
+    if hasattr(os, "setpgid"):
+        os.setpgid(0, 0)  # first: the forced kill reaches this worker's children (ADR 0033 D2)
     job_directory = Path(project_dir) / "jobs" / job_id  # `store.JOBS_DIR`, not imported here
     job_directory.mkdir(parents=True, exist_ok=True)
     _redirect_output(job_directory / WORKER_LOG)
@@ -134,12 +148,18 @@ class _TestHooks:
     """§15 W4c's hooks, read from the environment the worker inherited."""
 
     def __init__(
-        self, job_directory: Path, signal_: _WorkerSignal, pause_at: str | None, block: bool
+        self,
+        job_directory: Path,
+        signal_: _WorkerSignal,
+        pause_at: str | None,
+        block: bool,
+        child: str | None = None,
     ) -> None:
         self.job_directory = job_directory
         self.signal = signal_
         self.pause_at = pause_at
         self.block = block
+        self.child = child
 
     @classmethod
     def from_environment(cls, job_directory: Path, signal_: _WorkerSignal) -> _TestHooks:
@@ -148,12 +168,41 @@ class _TestHooks:
             signal_,
             os.environ.get(PAUSE_AT_STAGE_VARIABLE) or None,
             os.environ.get(BLOCK_VARIABLE) == "1",
+            os.environ.get(CHILD_VARIABLE) or None,
         )
 
     def block_forever(self) -> None:
         """Sleep without a checkpoint: only `Process.kill()` ends this."""
         while True:
             time.sleep(3600)
+
+    def run_child(self) -> None:
+        """Run `self.child` as one external attempt that ignores cancellation, then block."""
+        import sys
+
+        from openflowsheet.adapters.external.launcher import ChildProgram, Limits, launch
+        from openflowsheet.canonical import file_sha256
+
+        assert self.child is not None
+        script = Path(self.child)
+        pid_file = self.job_directory / CHILD_PID_FILE
+
+        def record(pid: int) -> None:
+            pid_file.write_text(str(pid), encoding="utf-8")
+
+        launch(
+            ChildProgram(Path(sys.executable), script, self.job_directory),
+            {
+                "deadline_s": 3600.0,
+                "expected": {"runner_sha256": file_sha256(script)},
+                "configuration": {"hooks": ["sleep(3600)"]},
+            },
+            self.job_directory / CHILD_ATTEMPT_DIR,
+            Limits(timeout_s=3600.0),
+            on_spawn=record,
+            use_installed_check=False,
+        )
+        self.block_forever()
 
     def pause(self, stage: str) -> None:
         if stage != self.pause_at:
@@ -194,6 +243,8 @@ def _run(
         if hooks is not None:
             if hooks.block:
                 hooks.block_forever()
+            if hooks.child is not None:
+                hooks.run_child()
             on_stage = hooks.pause
         context = RunContext(store=store, root=directory, owner_instance=owner_instance)
         result: WorkerResult

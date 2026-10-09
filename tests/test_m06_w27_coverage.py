@@ -523,12 +523,29 @@ def test_every_subject_is_among_its_aliases(today_rows: dict[str, dict[str, Any]
 # =================================================================================================
 
 
+#: §21.8 J6: `list_models`' SHA-256 at M02's join (21 models), recorded in the coverage document.
+JOINED_LIST_MODELS_SHA256 = "90d9da8e08f344814f78fc995c0596e5eaf0cb2f7e7a568d3b212c143fc9533e"
+
+
 def test_snapshot_of_this_build_is_todays_registry() -> None:
+    """§21.8 J3 (M02's join): this build's binder exposes `SELECTABLE_BASES` and `MODEL_BASES`
+    and is read `bases-v1`. Its model set, and each route matched by `provider_id`, are those of
+    `dry_illustration.json#/snapshots/hypothetical_v02` — the "SYN-001 only" branch, since R-288
+    puts each `syn001.*` model on SYN-001's basis only (F-A2-1)."""
+    from openflowsheet.application import revision_binding  # noqa: PLC0415
+
     live = snapshot.build_snapshot()
+    assert snapshot.reading_for(revision_binding, live["package_version"]) == "bases-v1"
     assert live["schema"] == "w27-registry-snapshot-v1"
     assert live["package_version"] == "0.1.1"
-    assert live["list_models_sha256"] == TODAY["list_models_sha256"]
-    assert live["models"] == TODAY["models"] and live["routes"] == TODAY["routes"]
+    assert live["list_models_sha256"] == JOINED_LIST_MODELS_SHA256
+    assert live["list_models_sha256"] != TODAY["list_models_sha256"]
+    ids = {m["model_id"] for m in live["models"]}
+    assert ids == {m["model_id"] for m in HYPOTHETICAL["models"]}
+    assert {r["provider_id"]: r for r in live["routes"]} == {
+        r["provider_id"]: r for r in HYPOTHETICAL["routes"]
+    }
+    assert live["models"] == HYPOTHETICAL["models"] and live["routes"] == HYPOTHETICAL["routes"]
     assert live["routes_per_revision"] == 1
     assert set(live) == {
         "schema",
@@ -543,19 +560,32 @@ def test_snapshot_of_this_build_is_todays_registry() -> None:
 
 
 def test_snapshot_refuses_an_unregistered_binder_reading() -> None:
+    """A binder without the two tables (TEST INPUT since M02's join: today's binder without
+    them) at a version no reading names is refused."""
+    from openflowsheet.application import revision_binding  # noqa: PLC0415
+
+    untabled = ModuleType("constructed_revision_binding")
+    untabled.__dict__.update(vars(revision_binding))
+    del untabled.SELECTABLE_BASES, untabled.MODEL_BASES
     with pytest.raises(snapshot.SnapshotUnsupportedError, match="route enumeration"):
-        snapshot.build_snapshot(version="0.2.0")
+        snapshot.build_snapshot(version="0.2.0", binding=untabled)
 
 
 def test_the_0_1_1_reading_refuses_a_binder_with_basis_provider() -> None:
     """W27-R63 item 2: a binder that selects its basis (M02's `basis_provider`) and still says
-    0.1.1 is not read as 0.1.1's one SYN-001 route. TEST INPUT: today's binder plus the name."""
+    0.1.1 is not read as 0.1.1's one SYN-001 route. TEST INPUT: since M02's join, today's binder
+    without the two tables (as `wp/M02` was before the join), and without `basis_provider` too
+    (0.1.1's binder)."""
     from openflowsheet.application import revision_binding  # noqa: PLC0415
 
-    assert snapshot.reading_for(revision_binding, "0.1.1") == "0.1.1"
+    assert snapshot.reading_for(revision_binding, "0.1.1") == "bases-v1"
     multi_basis = ModuleType("constructed_revision_binding")
     multi_basis.__dict__.update(vars(revision_binding))
-    multi_basis.basis_provider = lambda basis: None  # type: ignore[attr-defined]
+    del multi_basis.SELECTABLE_BASES, multi_basis.MODEL_BASES
+    one_basis = ModuleType("constructed_revision_binding")
+    one_basis.__dict__.update(vars(multi_basis))
+    del one_basis.basis_provider
+    assert snapshot.reading_for(one_basis, "0.1.1") == "0.1.1"
     with pytest.raises(snapshot.SnapshotUnsupportedError, match="route enumeration"):
         snapshot.reading_for(multi_basis, "0.1.1")
     with pytest.raises(snapshot.SnapshotUnsupportedError, match="route enumeration"):
@@ -563,8 +593,9 @@ def test_the_0_1_1_reading_refuses_a_binder_with_basis_provider() -> None:
 
 
 # -- W27-R63 item 1, `bases-v1`, on a constructed binder ------------------------------------------
-# TEST INPUT, not a registry: M02 is not merged, so today's binder exposes neither table. The
-# module below mirrors the shape §21.8 J1 asks M02's join to expose in `revision_binding`
+# TEST INPUT, not a registry: written before M02's join, when the binder exposed neither table;
+# since the join, today's binder is read `bases-v1` (above). The module below mirrors the shape
+# §21.8 J1 asked M02's join to expose in `revision_binding`
 # (`SELECTABLE_BASES` of `ComponentBasis`-like values, `MODEL_BASES`, `MODEL_BUILDERS`,
 # `basis_provider`), with the recommended `MODEL_BASES` (each model on its own basis, F-A2-1).
 
@@ -652,16 +683,16 @@ def test_bases_v1_with_syn001_models_on_both_bases() -> None:
 
 
 def test_bases_v1_build_snapshot_on_a_constructed_binder() -> None:
-    """Through `build_snapshot`: `list_models` is this build's (today's 13 ids), so a binder whose
-    tables hold the C1 ids refuses, and one whose C1 basis carries no model reads."""
-    with pytest.raises(snapshot.SnapshotUnsupportedError, match="list_models-only"):
-        snapshot.build_snapshot(binding=constructed_binder())
-    today_only = constructed_binder({m: frozenset({"syn001"}) for m in TODAY_MODEL_IDS})
-    live = snapshot.build_snapshot(binding=today_only)
+    """Through `build_snapshot`: `list_models` is this build's (since M02's join, the 21 ids), so
+    a binder whose tables hold the C1 ids reads, as the hypothetical v0.2's routes, and one whose
+    tables hold 0.1.1's 13 ids only refuses."""
+    live = snapshot.build_snapshot(binding=constructed_binder())
     assert live["routes_per_revision"] == 1
-    assert live["routes"][0] == TODAY["routes"][0]
-    assert live["routes"][1] == {**HYPOTHETICAL["routes"][1], "model_ids": []}
+    assert live["routes"] == HYPOTHETICAL["routes"]
     coverage.check_snapshot(live, FACTS)
+    today_only = constructed_binder({m: frozenset({"syn001"}) for m in TODAY_MODEL_IDS})
+    with pytest.raises(snapshot.SnapshotUnsupportedError, match="list_models-only"):
+        snapshot.build_snapshot(binding=today_only)
 
 
 @pytest.mark.parametrize(
@@ -724,22 +755,40 @@ def _revision_over(components: list[str]) -> dict[str, Any]:
     return dict(document)
 
 
+def _c1_revision_over(components: list[str]) -> dict[str, Any]:
+    """M02's registered loop `C1-LOOP-M02-v1` (every C1 model but the real reactor) whose
+    component set is `components`."""
+    from m02_c1_corpus import C1_CORPUS  # noqa: PLC0415
+
+    document = C1_CORPUS["C1-LOOP-M02-v1"]()
+    document["component_set"]["components"] = components
+    return document
+
+
 def test_each_route_binds_a_revision_with_its_component_set() -> None:
-    """WO-16b: each (route, component set) the snapshot lists binds a revision over that set,
-    with each of the route's models available to the binder."""
+    """WO-16b, as §21.8 J5 amends it: each (route, component set) the snapshot lists binds a
+    revision over that set whose models are among the route's own `model_ids`, which are the
+    models `MODEL_BASES` puts on the route's basis (R-288) — not every model of
+    `MODEL_BUILDERS`."""
     from openflowsheet.application.binding import Unbound  # noqa: PLC0415
     from openflowsheet.application.revision_binding import (  # noqa: PLC0415
-        MODEL_BUILDERS,
+        MODEL_BASES,
+        RevisionBinding,
         bind_revision_flowsheet,
     )
 
     live = snapshot.build_snapshot()
+    over = {"syn001": (_revision_over, "H2"), "pr-c1-v1": (_c1_revision_over, "A")}
+    assert {route["provider_id"] for route in live["routes"]} == set(over)
     for route in live["routes"]:
+        provider = route["provider_id"]
+        assert route["model_ids"] == sorted(m for m, b in MODEL_BASES.items() if provider in b)
+        build, extra = over[provider]
         ids = [c["id"] for c in route["components"]]
-        bound = bind_revision_flowsheet(_revision_over(ids))
-        assert not isinstance(bound, Unbound), bound
-        assert set(route["model_ids"]) == set(MODEL_BUILDERS)
-        refused = bind_revision_flowsheet(_revision_over([*ids, "H2"]))
+        bound = bind_revision_flowsheet(build(ids))
+        assert isinstance(bound, RevisionBinding), bound
+        assert {unit.model_id for unit in bound.flowsheet.units()} <= set(route["model_ids"])
+        refused = bind_revision_flowsheet(build([*ids, extra]))
         assert isinstance(refused, Unbound) and refused.detail == "components_unsupported"
 
 

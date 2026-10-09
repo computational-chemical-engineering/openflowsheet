@@ -493,6 +493,19 @@ def _outside(emitted: Any, committed: Any, where: str, floor: float, source: str
     ]
 
 
+def floored_difference(
+    emitted: float, committed: float, where: str, floor: float, source: str, *, policy_id: str
+) -> list[str]:
+    """D2.1 on one pair of numbers under `policy_id`'s relative tolerance and the absolute `floor`
+    a record's own registered classification gives (D2.2, D2.3), labelled with `source`. For a
+    record whose floats are classified where they are recorded rather than by this module's name
+    table (M02's `external-coupling.json`, register R-317 (b)); only the current policy carries
+    such records."""
+    if policy_id != CURRENT_POLICY_ID:
+        raise ValueError(f"a floored comparison is defined under {CURRENT_POLICY_ID} only")
+    return _outside(emitted, committed, where, floor, source)
+
+
 def _post_pivoting(where: str, key: str, emitted: Mapping[str, Any], committed: Any) -> list[str]:
     """Row 3, D4.1: the kind of a pivot-path diagnostic, never its value."""
     value = emitted[key]

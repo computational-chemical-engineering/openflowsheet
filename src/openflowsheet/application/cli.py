@@ -15,7 +15,7 @@ knowing which of eleven modules to start from.
 [--raw-out FILE]` opens the project as `LOCAL_OWNER` (§10.2), sends the request document through
 `operations.dispatch` — the one path every binding takes — and prints the response as canonical
 JSON. Exit 0 is a domain result, whatever its status; an `ApiError` is printed the same way and
-exits `API_EXIT_CODES[code]`, 2–15 in §5.8's order. Exit 1 means no call was made: the request
+exits `API_EXIT_CODES[code]`, 2–16 in §5.8's order. Exit 1 means no call was made: the request
 file could not be read or the project could not be opened (the message is on stderr).
 
 `api` runs jobs on the inline executor only. §11.5 names `--executor inline|process`, but a
@@ -47,7 +47,7 @@ from openflowsheet.application.validation import validate
 if TYPE_CHECKING:
     from openflowsheet.application.local import LocalApplication
 
-#: §11.5: an `ApiError`'s exit code, 2–15 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
+#: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
 #: domain result; 1 is a call that was never made. argparse's own usage error is also 2.
 API_EXIT_CODES: Final[Mapping[str, int]] = {
     code: 2 + index for index, code in enumerate(get_args(ApiErrorCode))
@@ -528,7 +528,7 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Send one request document through the operations table, as the in-process "
             "local owner, and print the response as canonical JSON. Exit 0 is a domain "
-            f"result; 2-15 is an ApiError, in the order {', '.join(API_EXIT_CODES)}; 1 "
+            f"result; 2-16 is an ApiError, in the order {', '.join(API_EXIT_CODES)}; 1 "
             "means no call was made."
         ),
     )

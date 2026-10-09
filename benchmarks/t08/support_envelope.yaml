@@ -28,14 +28,13 @@ axes:
     statement: >-
       SYN-001 for every revision, unit model and operation: ideal vapour, incompressible ideal
       liquid, VLE; reference convention SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no
-      critical region, no extra phase. Since M01 the package also carries `pr-c1-v1`
-      (Peng–Robinson for the five C1 components, the light gases vapour-only, reference convention
-      PR-C1-ref-v1; ADR 0026), a provider no model of `MODEL_BUILDERS` binds yet (M02 adds its
-      units).
+      critical region, no extra phase. Since M02 the C1 models (`c1.*`) bind `pr-c1-v1` on their
+      own basis (R-288).
     providers: [pr-c1-v1, syn001]
-    #: Shipped providers no model binds: each has its own surface and a limitation row (M01
-    #: review F1); the components and domain axes below are the bound provider's.
-    unbound_providers:
+    #: Shipped providers that bind on a basis other than syn001's (R-288's `MODEL_BASES`); each
+    #: has its own components, domain and limitation row; the components and domain axes below
+    #: are syn001's.
+    other_basis_providers:
       - id: pr-c1-v1
         limitation: L42
         caveat: >-
@@ -79,9 +78,20 @@ axes:
   - id: unit_models
     title: Unit models
     statement: >-
-      The thirteen models of `MODEL_BUILDERS`, each with its registered limitations (L02, L27–L31,
-      L-CSTR-1..3). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
+      The twenty-one models of `MODEL_BUILDERS`, each with its registered limitations (L02,
+      L27–L31, L-CSTR-1..3): SYN-001's thirteen, on SYN-001's basis only, and since M02's join
+      (R-280) the eight C1 models, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
+      synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
+      manifest and in every result's identity (R-199, R-231). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
     members:
+      - c1.adiabatic_mixer
+      - c1.feed_source
+      - c1.product_sink
+      - c1.reactor
+      - c1.reactor_standin
+      - c1.stream_splitter
+      - c1.tp_flash
+      - c1.tp_heater
       - syn001.adiabatic_mixer
       - syn001.component_separator
       - syn001.conversion_reactor
@@ -95,9 +105,13 @@ axes:
       - syn001.tp_flash
       - syn001.tp_heater
       - syn001.valve
+    #: Listed, and synthetic only (R-280 (c)): checked against the variant registry (T08.A20).
+    synthetic_members: [c1.reactor_standin]
     evidence:
       - tests/test_t05_w1b_revision.py::test_builders_hold_the_thirteen_models_of_the_table
       - tests/test_t08_kinetic_cstr.py::test_b10_the_model_is_the_thirteenth_builder_with_its_signature
+      - tests/test_m02_join.py::test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis
+      - tests/test_m02_wo9_reactor.py::test_g8e_the_stand_in_binds_and_says_synthetic_everywhere
       - check:T05.A17
       - check:T05.A18
       - check:T05.A19
@@ -260,6 +274,30 @@ axes:
       - check:K05.G05.two_platform_structural_equality
       - doc:.github/workflows/ci.yml
       - doc:requirements.lock
+
+  - id: external_execution
+    title: External model execution
+    statement: >-
+      Since M02, a variant-backed model (`c1.reactor`) runs out of process under the isolation
+      profile `external-subprocess-v1` (ADR 0033 D2): a separate interpreter and dependencies, a
+      separate address space, an environment allowlist, a private working directory, one thread, a
+      wall-clock limit, termination on cancel, forced kill and parent death, output from one
+      validated file, and verified code identity. It is **not a sandbox**: no filesystem
+      confinement, network isolation, memory or CPU quota, or syscall filtering; trust rests on
+      provenance. Linux is registered; macOS best effort; Windows is refused before spawn. The
+      reactor needs the separately built, pinned reactor environment, and a run that used it is
+      R3 (ADR 0034 D6).
+    evidence:
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/design/M02-pymrm-adapter.md §2.3
+      - tests/test_m02_kill_chain.py::test_refusals_before_any_spawn
+      - tests/test_m02_kill_chain.py::test_g3a_a_cooperative_cancel_reaps_the_child_and_propagates
+      - tests/test_m02_kill_chain.py::test_g3b_a_timeout_ends_the_attempt_timed_out
+      - tests/test_m02_kill_chain.py::test_g3c_a_child_ignoring_sigterm_is_killed_after_the_grace
+      - tests/test_m02_kill_chain.py::test_g3d_the_executors_forced_kill_takes_the_worker_and_its_child
+      - tests/test_m02_kill_chain.py::test_g3e_a_worker_killed_alone_leaves_its_child_to_its_lifeline
+      - tests/test_m02_kill_chain.py::test_g3f_the_self_deadline_exits_71
+      - tests/test_m02_kill_chain.py::test_g3g_an_abort_is_a_crash_with_its_signal
 
 unsupported:
   - id: U01
@@ -724,7 +762,7 @@ limitations:
   - id: L42
     text: >-
       `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is
-      bound by no model of `MODEL_BUILDERS` yet (M02 adds its units) and does not share the axes'
+      bound by the C1 models (`c1.*`) on their own basis (R-288) and does not share the axes'
       components and domain: it takes the five real components H2, N2, NH3, Ar, CH4 (the only
       liquid is pure NH3) over 200–1000 K and 10⁴–3 × 10⁷ Pa. It is validated for pure-component
       behaviour only, within M01 spec §11's bands (NH3 saturation pressure within 2 %, liquid NH3
@@ -2648,3 +2686,45 @@ harvest:
   to:
   - U14
   note: W27 campaign is M07's (G16)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[0]
+  sha256: b24a4c8006bd8fb9d37d3eef51ef54911404e6305f33edfa78cbe142ddcba456
+  class: P
+  to: []
+  note: W21 outside the requirements pattern; its verdict is the verdict lane's
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[1]
+  sha256: dfd8ca7840569a3f97f92f6b90b8036a97ad876adb24439d3c0c24bfcd8bdb6b
+  class: P
+  to: []
+  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[2]
+  sha256: 28b3606f19c531f178ddbaf9a38af13559d1cec586dbe744c30d50a4c4e670e7
+  class: P
+  to: []
+  note: isolation profile not a sandbox (stated in the envelope's external_execution axis)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[3]
+  sha256: 5266e33ca1cc2b8fdffd15c7726369a905a1559b897d91f8cd3a8d6a166dba4c
+  class: P
+  to: []
+  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[4]
+  sha256: 314efcaecdb681cc1bcbc3b78d4908bb0057435bcf0815128701ea2edcdd7e9f
+  class: P
+  to: []
+  note: G8 (c) oracle shares pr_c1 (review F10)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[5]
+  sha256: d5b5618ed4f463dbd9b8b1b981b3de6414227e7be25eb69400f82d27a78699a7
+  class: P
+  to: []
+  note: self-generated records are regression fixtures (review F10)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[6]
+  sha256: 326d3a4be0be30a8f73651217aaf41b9b8cbcef12ab1517c1019ae7fdf100476
+  class: P
+  to: []
+  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled

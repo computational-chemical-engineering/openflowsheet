@@ -156,3 +156,75 @@ R-199, R-200. No port, row, convention, threshold or refusal code of the draft c
   the 10⁻⁶ bound of §10.3 applies. The design grid's discretization estimate is registered machine-readably for every
   result (`derived_from_measured.discretization_estimate`, claim DX-01). Q-F4's corner sweep is defined. The per-tube
   flow, which no hard-domain bound covers, is Q-F5.
+
+## Amendment 2 (2026-10-09): the hard domain and the polish, measured (M02 R-303, R-304)
+
+**Status:** design lane (`specifier`), M02 sixth ruling round; normative text in `docs/design/M02-pymrm-adapter.md`
+§14.5 D1–D4.
+
+M02's G11 measured the adapter on the hard domain stated in D3 (573.15–773.15 K, 5–15 MPa, H₂/N₂ ∈ [1, 4], inerts
+≤ 20 %). Only the centre of the 16 corners and centre was accepted. Three mechanisms caused the failures:
+- S3's stopping rule, which does not bound the element defect;
+- a non-finite child result, which was typed as a crash;
+- start failures at both temperature faces (S1 at 573.15 K; certificate and non-finite at 773.15 K).
+
+Amended:
+- The real variant's profile becomes `M01-S123-v2`, with one conditional polish round and the stage `nonfinite`
+  (R-303). The boundary's element-defect limit (10⁻⁶) is unchanged.
+- The shipped real variant `pymrm-6089593-g2-nz800-s123-v3` carries a narrower hard domain: the first of three
+  registered boxes whose registered points are all accepted (R-304). The box is stated in that variant's document,
+  which is the authority on its own domain. D3's numbers above remain the domain of v1 and v2.
+- D10's per-tube flow bound [0.5, 2] × F_nom is unchanged; its widening clause is suspended for v3.
+- D3's ordering argument (no liquid exists inside the hard domain) holds a fortiori in a narrower box.
+
+Acceptance evidence: M02 gates G10v3, G11v3-1 to -7 and G12v3-1 (design note §14.5), recorded under
+`benchmarks/m02/*-v3.json`.
+
+## Amendment 3 (2026-10-09): M02 seventh ruling round (R-311, R-312, R-313)
+
+**Status:** design lane, M02 seventh ruling round; normative text in `docs/design/M02-pymrm-adapter.md` §14.6 E1–E3.
+The text below is §14.6 E5's proposed text, transcribed verbatim.
+
+- D6's positivity clause applies to the species present in the inlet. An absent species (only Ar or CH₄ can be) is
+  judged by D3's projection defect.
+- A45's relative element defect is taken over the elements present in the inlet.
+- The polish round reads δ after the KPI-drift certificate, and the certificate is repeated after the round.
+- The real variant's hard domain may carry `inert_min` (absent means 0). v3's domain is the first of V1–V3
+  (M02 §14.6 E3). Amendment 2's "three registered boxes" is superseded.
+- Acceptance evidence: G10v3, G11v3-1 to -10, and G12v3-1.
+
+## Amendment 4 (2026-10-09): M02 eighth ruling round (R-315, R-316); erratum to Amendment 3
+
+**Status:** design lane (`specifier`), M02 eighth ruling round; normative text in `docs/design/M02-pymrm-adapter.md`
+§14.7 F1–F3. Still Proposed.
+
+**Erratum.** Amendment 3's fourth bullet says "v3's domain is the first of V1–V3 (M02 §14.6 E3)". That sentence is
+withdrawn. Its premise, that one of V1–V3 qualifies, is refuted by measurement (M02 build log D84): in each rung a
+653.15 K corner at 2 % inerts and high pressure fails the reactor's own start (S1). The rest of that bullet stands:
+the real variant's hard domain may carry `inert_min` (absent means 0), and Amendment 2's "three registered boxes" is
+superseded.
+
+Amended:
+- **v3's domain** is the first of M02 §14.7 F1's nested rungs V4–V6 whose registered points are all accepted in two
+  full runs. All three have T_in ∈ [653.15, 693.15] K and the flow bound [0.5, 2] × F_nom.
+  - V4: 9–11 MPa, H₂/N₂ 2.5–3.5, inerts 0.03–0.2.
+  - V5: as V4, with inerts 0.035–0.2.
+  - V6: as V5, with 9.5–10.5 MPa and H₂/N₂ 2.75–3.25.
+
+  The selected rung's box and floor are stated in v3's variant document, which is the authority on its own domain. If
+  no rung qualifies, no v3 is registered.
+- **The polish round** (Amendment 3, third bullet) runs whenever the defect read after the first certificate exceeds
+  10⁻⁷ (or is not a number), whatever that certificate's verdict. When the round runs and converges, the certificate
+  repeated after it decides (M02 §14.7 F2). Where the first certificate passes, or the defect is ≤ 10⁻⁷, the sequence
+  is unchanged.
+- **Acceptance evidence:** M02 G10v3, G11v3-1 to -12, G12v3-1 and G12v3-2 (design note §14.7), recorded under
+  `benchmarks/m02/*-v3.json`.
+
+Amendment 3's other bullets stand.
+
+## Amended by ADR 0034 D10 (M02) — pointer
+
+D9's hard domain gains, for the real reactor's variant, the per-tube flow bound of Q-F5: F_ret_in ∈ [0.5, 2] ×
+0.007146961299302104 mol/s, `out_of_domain` outside, through a hard-domain field the `Boundary` reads. The stand-in has
+no flow bound, so M01's registered stand-in states are unaffected (ADR 0034 D10; R-232).
+

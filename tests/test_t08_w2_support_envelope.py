@@ -47,12 +47,23 @@ def facts() -> dict[str, Any]:
 
 def test_the_envelope_has_spec_5_1s_form(envelope: dict[str, Any]) -> None:
     assert MATRIX.check_structure(envelope) == []
+    # R-280 (c): a synthetic-only model is a listed one.
+    mutated = copy.deepcopy(envelope)
+    (row,) = (row for row in mutated["axes"] if row["id"] == "unit_models")
+    row["synthetic_members"] = ["c1.ghost"]
+    assert MATRIX.check_structure(mutated) == [
+        "unit_models.synthetic_members: not members ['c1.ghost']"
+    ]
 
 
 def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, Any]) -> None:
     assert MATRIX.check_a20(envelope, facts) == []
     assert len(facts["operations"]) == 21  # spec §9's 20 and ADR 0019 Amendment 3's `list_audit`
-    assert len(facts["models"]) == 13
+    # Spec §9's 13 SYN-001 models, literal unchanged; M02's join adds the eight C1 models (R-280),
+    # the stand-in synthetic only (R-280 (c)).
+    assert len([model for model in facts["models"] if model.startswith("syn001.")]) == 13
+    assert len(facts["models"]) == 21
+    assert facts["synthetic_models"] == ["c1.reactor_standin"]
     assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]
 
@@ -61,6 +72,8 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     ("axis", "key", "change"),
     [
         ("unit_models", "members", lambda members: members[:-1]),
+        ("unit_models", "synthetic_members", lambda members: []),
+        ("unit_models", "synthetic_members", lambda members: [*members, "c1.reactor"]),
         ("solve_policies", "members", lambda members: [*members, "T06-revision-v1"]),
         ("components", "members", lambda members: ["A", "B"]),
         ("specifications", "unit_spellings", lambda rows: [*rows, ["pressure", "barg"]]),
@@ -124,12 +137,14 @@ def test_an_unbound_provider_is_rendered_apart_from_the_axes_with_its_limitation
     rendered = MATRIX.render(envelope).splitlines()
     (components,) = (line for line in rendered if line.startswith("- **Components:**"))
     assert "pr-c1-v1" not in components and "`syn001`" in components
-    (shipped,) = (line for line in rendered if line.startswith("- **Shipped, bound by no model:**"))
+    (shipped,) = (
+        line for line in rendered if line.startswith("- **Shipped, bound on another basis:**")
+    )
     assert "`pr-c1-v1`" in shipped and "no mixture VLE validation" in shipped
     assert shipped.endswith("(L42)")
     mutated = copy.deepcopy(envelope)
     (axis,) = (row for row in mutated["axes"] if row["id"] == "property_model")
-    axis["unbound_providers"] = [
+    axis["other_basis_providers"] = [
         {"id": "pr-c1-v1", "limitation": "L99", "caveat": "x"},
         {"id": "pr", "limitation": "L42", "caveat": " "},
     ]

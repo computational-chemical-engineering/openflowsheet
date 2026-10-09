@@ -212,7 +212,10 @@ SPEC_PIN_KINDS = {
 
 
 def test_b10_the_model_is_the_thirteenth_builder_with_its_signature() -> None:
-    assert MODEL_ID in MODEL_BUILDERS and len(MODEL_BUILDERS) == 13
+    # Since M02's join (R-280; design note §14.4 D5, B13's rule) restricted to the `syn001.`
+    # keys, the literal unchanged; `tests/test_m02_join.py` pins all twenty-one.
+    syn001 = [model for model in MODEL_BUILDERS if model.startswith("syn001.")]
+    assert MODEL_ID in syn001 and len(syn001) == 13
     signature = MODEL_SIGNATURES[MODEL_ID]
     assert signature.ports == PORTS
     assert [(p.name, p.kind, p.direction, p.multiplicity) for p in PORTS] == [

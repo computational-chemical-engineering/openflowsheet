@@ -74,8 +74,10 @@ def test_the_web_shell_holds_no_link_and_nothing_outside_the_packaged_globs() ->
 
 def test_every_packaged_file_reads_the_repository_bytes() -> None:
     expected = _repository_files()
-    assert sum(1 for r in expected if r.startswith("schemas/")) == 32
-    assert sum(1 for r in expected if r in PACKAGED) == 4
+    # M02 (ADR 0033-0035) added three: experiment, model-variant, model-replacement.
+    assert sum(1 for r in expected if r.startswith("schemas/")) == 32 + 3
+    # M02 (R-317 (b)) added the external addendum.
+    assert sum(1 for r in expected if r in PACKAGED) == 4 + 1
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
     assert sorted(
@@ -90,7 +92,7 @@ def test_the_published_schemas_are_the_repository_schemas_by_id() -> None:
         ).hexdigest()
         for document in published_schemas().values()
     }
-    assert len(by_id) == 32
+    assert len(by_id) == 35
     for schema_id, digest in by_id.items():
         name = schema_id.rsplit("/", 1)[1]
         assert hashlib.sha256(packaged(f"schemas/{name}").read_bytes()).hexdigest() == digest

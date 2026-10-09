@@ -34,12 +34,15 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.models import flow_id
 from openflowsheet.models.syn001.flowsheet import STREAMS, Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.rank import AliasElimination, eliminate_alias_rows
 from openflowsheet.orchestrator.tear import Syn001TearProblem
 from openflowsheet.run.compare import CURRENT_POLICY_ID
 from openflowsheet.thermo import PropertyProvider
+from openflowsheet.thermo.pr_c1 import PrC1Provider
+from openflowsheet.thermo.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import (
     FAILING_CATEGORIES,
@@ -371,6 +374,18 @@ class SolutionCertificate:
         }
 
 
+@dataclass(frozen=True)
+class ExternalEvidence:
+    """What a coupled run's driver supplies about its external units (M02 design note §4.4;
+    ADR 0034 D3): two `residual` checks per unit, judged with the rest of the check set; an
+    `external_model` limitation per unit; and, per unit, the derivative the external map does not
+    have (`unavailable`), recorded under `derivative_provenance.external_map`."""
+
+    checks: tuple[CheckResult, ...]
+    limitations: tuple[Limitation, ...]
+    derivatives: Mapping[str, str]
+
+
 #: ADR 0010 D9: the `transformations.declaration` of a nominal certificate — nothing freed or
 #: promoted. R0.
 NOMINAL_DECLARATION: Final[Mapping[str, Any]] = {
@@ -588,6 +603,23 @@ def verify_bound(
     )
 
 
+#: M02 design note §14.2 B15: the provider ids the verifier's own table constructs a fresh
+#: provider for (`fresh_provider`). It never calls the binder's constructor
+#: (`revision_binding.basis_provider`).
+FRESH_PROVIDERS: Final = ("syn001", "pr-c1-v1")
+
+
+def fresh_provider(provider_id: str) -> PropertyProvider:
+    """A fresh provider of `provider_id`: SYN-001's or `pr-c1-v1`'s; any other id is refused.
+    The classes are read from this module at the call, as `verify_revision` always read
+    `Syn001Provider`."""
+    if provider_id == SYN001_PROVIDER_ID:
+        return Syn001Provider()
+    if provider_id == "pr-c1-v1":
+        return PrC1Provider()
+    raise VerifierError(f"provider_unknown({provider_id})")
+
+
 def verify_revision(
     binding: Any,
     revision: Mapping[str, Any],
@@ -596,6 +628,7 @@ def verify_revision(
     policy: CheckPolicy | None = None,
     state: Mapping[str, float] | None = None,
     solve_plan: Any = None,
+    external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
     """K04 on a **revision-built** flowsheet (T05 design note §4.2): the binding's declaration,
     judged by the table of `verify.table` against the revision's own values.
@@ -606,13 +639,25 @@ def verify_revision(
     provider, never the binding's flowsheet or units (R-016). `binding` is an
     `application.revision_binding.RevisionBinding`; `revision` must be the document it was bound
     from, else `declaration_mismatch(revision)`.
+
+    `external` (M02 design note §4.4) is a coupled run's evidence about its external units: its
+    checks are judged with the table's, its limitations and derivative record added. `None` on
+    every other route, where nothing here differs.
     """
-    from openflowsheet.models.revision_flowsheet import RevisionError, parse_revision
+    from openflowsheet.models.revision_flowsheet import (
+        RevisionError,
+        component_basis,
+        parse_revision,
+    )
     from openflowsheet.orchestrator.splits import lifted_splits
     from openflowsheet.verify.table import revision_checks, revision_phase_branch
     from openflowsheet.verify.zero_flow import dormant_outlets, zero_flow_splits
 
     _require_converged(result)
+    # M02 design note §14.2 B15: the fresh provider of the revision's basis (the basis
+    # `parse_revision` reads into `view.basis`), from the verifier's own table.
+    basis = component_basis(revision).provider_id
+    fresh = fresh_provider(basis)
     compiled = compile_problem(binding.spec)
     solved = _guard(
         binding.spec,
@@ -630,10 +675,12 @@ def verify_revision(
         phase_signature=None,
     )
     if solved.final_state is None:
-        return _absent(context, result, resolved)
+        return _absent(context, result, resolved, provider=fresh)
 
     final_state = solved.final_state
-    target = BoundDeclaration(binding.spec, compiled, final_state)
+    target = BoundDeclaration(
+        binding.spec, compiled, final_state, pressure_domain=fresh.describe().domain["P"]
+    )
     if solve_plan is not None:
         found = [alias_document(row) for row in target.partition.elimination.eliminated]
         planned = [alias_document(row) for row in solve_plan.eliminated_rows]
@@ -648,6 +695,8 @@ def verify_revision(
         view = parse_revision(revision)
     except RevisionError as error:
         raise VerifierError(f"revision_unreadable({error.code})") from error
+    if view.basis.provider_id != basis:
+        raise VerifierError(f"basis_mismatch({view.basis.provider_id}, {basis})")
     splits = lifted_splits(
         [(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components
     )
@@ -674,7 +723,6 @@ def verify_revision(
     checks += alias_checks(
         target.partition.elimination.eliminated, values, target.alias_unsupported
     )
-    fresh = Syn001Provider()
     screened = _screen(target, final_state, zero_flow)
     projection = _project(
         target,
@@ -685,6 +733,7 @@ def verify_revision(
         streams=view.streams,
         provider=fresh,
         policy=resolved,
+        components=view.components,
     )
     checks += _judged_at(
         lambda judged_at: revision_checks(
@@ -708,9 +757,24 @@ def verify_revision(
         digest=digest,
         policy=resolved,
         declaration=NOMINAL_DECLARATION,
-        phase_branch=revision_phase_branch(final_state, view.streams, splits),
+        phase_branch=revision_phase_branch(
+            final_state, view.streams, splits, components=view.components
+        ),
         screened=screened,
         projection=projection,
+        provider=fresh,
+        # §14.2 B17 *Consequence* as narrowed by §14.3 C2 (R-281): a `pr-c1-v1` revision's
+        # stream component-flow columns that are exactly 0.0 are not differenced by the witness;
+        # none for any other basis.
+        unstenciled=frozenset(
+            name
+            for stream in view.streams
+            for component in view.components
+            if final_state[name := flow_id(stream, component)] == 0.0
+        )
+        if basis == "pr-c1-v1"
+        else frozenset(),
+        external=external,
     )
 
 
@@ -816,12 +880,21 @@ class BoundDeclaration:
 
     #: K03 §7.2's second state: every pressure moved by a distinct amount, as the tear's.
     PRESSURE_SHIFT: Final = 997.0
+    #: The fresh provider's declared pressure range the shifted copy stays inside (ADR 0014 D5);
+    #: `None` reads SYN-001's at the shift (M02 design note §14.2 B15: a revision's basis's).
+    pressure_domain: tuple[float, float] | None = None
 
     def __init__(
-        self, spec: ProblemSpec, compiled: CompiledProblem, state: Mapping[str, float]
+        self,
+        spec: ProblemSpec,
+        compiled: CompiledProblem,
+        state: Mapping[str, float],
+        *,
+        pressure_domain: tuple[float, float] | None = None,
     ) -> None:
         self.spec = spec
         self.compiled = compiled
+        self.pressure_domain = pressure_domain
         metadata = compiled.metadata
         self.context = EvaluationContext(
             model_version=metadata.model_version,
@@ -845,7 +918,11 @@ class BoundDeclaration:
         provider's pressure domain both ways, `pressure_shift_not_generic` when two pressures
         distinct at `state` coincide after the moves (equal ones never can: the amounts are
         distinct and each is positive)."""
-        low, high = Syn001Provider().describe().domain["P"]
+        low, high = (
+            self.pressure_domain
+            if self.pressure_domain is not None
+            else Syn001Provider().describe().domain["P"]
+        )
         shifted = dict(state)
         moved: list[str] = []
         for index, name in enumerate(self.spec.variable_ids):
@@ -906,8 +983,15 @@ class _BoundPartition:
     tear_rows: tuple[str, ...] = ()
 
 
-def _absent(context: EvaluationContext, result: Any, resolved: CheckPolicy) -> SolutionCertificate:
-    """§3.1: a converged solve of this declaration that carries no final state."""
+def _absent(
+    context: EvaluationContext,
+    result: Any,
+    resolved: CheckPolicy,
+    *,
+    provider: PropertyProvider | None = None,
+) -> SolutionCertificate:
+    """§3.1: a converged solve of this declaration that carries no final state. `provider` is the
+    fresh provider the statements name: SYN-001's unless given (M02 design note §14.2 B15)."""
     plan_id = getattr(getattr(result, "plan", None), "plan_id", "")
     checks = absent_state_certificate()
     status, limitations = grade(checks, policy=resolved)
@@ -932,7 +1016,7 @@ def _absent(context: EvaluationContext, result: Any, resolved: CheckPolicy) -> S
         derivative_provenance={},
         independence_qualifications=(),
         limitations=tuple(limitations),
-        statements=statements_for(Syn001Provider()),
+        statements=statements_for(provider if provider is not None else Syn001Provider()),
     )
 
 
@@ -1043,6 +1127,7 @@ def _project(
     streams: Sequence[str],
     provider: PropertyProvider,
     policy: CheckPolicy,
+    components: Sequence[str] | None = None,
 ) -> Projection:
     """ADR 0013 D1: where the fresh-flash categories are judged — the verifier's one Newton
     step of the screened matrix from `final_state`, or `final_state` itself when a precondition
@@ -1061,6 +1146,7 @@ def _project(
         streams=streams,
         domain=provider.describe().domain,
         tolerances=routing_tolerances(policy.tolerances),
+        **({} if components is None else {"components": components}),
     )
 
 
@@ -1105,6 +1191,9 @@ def _issue(
     phase_branch: Mapping[str, Any],
     screened: _Screened,
     projection: Projection,
+    provider: PropertyProvider | None = None,
+    unstenciled: frozenset[str] = frozenset(),
+    external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
@@ -1113,13 +1202,16 @@ def _issue(
     ran at `final_state` before its fresh-flash categories (ADR 0013 D1), on the zero-flow form of
     its `ZERO_FLOW` splits (T05b spec §9.3; none for SYN-001), and `projection` where those
     categories were judged, recorded as `transformations.projection` (K04-F9 spec §5.5)."""
-    from openflowsheet.verify.checks import derivative_witness
+    from openflowsheet.verify.checks import derivative_witness, witness_skipped_columns
     from openflowsheet.verify.regularity import solution_error_bound
 
     resolved = policy
     plan = getattr(result, "plan", None)
     plan_id = getattr(plan, "plan_id", "")
-    checks += derivative_witness(target, final_state)
+    if external is not None:
+        # M02 design note §4.4: the coupling checks are judged with the check set.
+        checks += external.checks
+    checks += derivative_witness(target, final_state, unstenciled=unstenciled)
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
     identity, regularity = screened.identity, screened.regularity
@@ -1142,7 +1234,22 @@ def _issue(
         regularity_reason=regularity.ill_conditioned_reason,
         derivative_ok=derivative_ok,
     )
-    provider = Syn001Provider()
+    # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
+    # where a reader enumerates what was not established; nothing when none was skipped.
+    skipped = witness_skipped_columns(target.spec.variable_ids, unstenciled)
+    if skipped:
+        limitations.append(
+            Limitation(
+                "derivative_witness_partial",
+                {"columns": skipped, "reason": "pr_c1_zero_flow_columns"},
+            )
+        )
+    if external is not None:
+        limitations += external.limitations
+    # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
+    # qualifications and the statements name; SYN-001's unless given.
+    if provider is None:
+        provider = Syn001Provider()
     capabilities = provider.describe()
 
     return SolutionCertificate(
@@ -1192,6 +1299,8 @@ def _issue(
                 ),
                 default=None,
             ),
+            # M02 design note §4.4: an external unit's map has no derivative (ADR 0034 D4).
+            **({} if external is None else {"external_map": dict(external.derivatives)}),
         },
         independence_qualifications=tuple(
             {

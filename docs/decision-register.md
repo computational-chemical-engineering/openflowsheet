@@ -1383,6 +1383,11 @@ release note calling V14 passed.
 
 **Watch for.** A new model with equilibrium rows and no split rule (refused `lifted_split_unregistered`); a model without a check-table entry (`UNVERIFIED`, never `VERIFIED`).
 
+> **Amended 2026-10-09 (R-255, R-257):** a rule may declare `vapour_only` components (the C1 flash). Those
+> components' equilibrium rows are zero rows of kind molar_flow, checked by the generalized (b), (e) and the new (h);
+> SYN-001's rules run the original statements. `MODEL_CHECKS` gains the `c1.` entries, built from SYN-001's rule
+> functions, and the table's PR forms live in `verify/pr_c1.py`.
+
 ---
 
 ## R-047 — A revision-built flowsheet's label carries `configuration_sha256`; `compiled-problem-structure-v2` is not introduced
@@ -1676,6 +1681,9 @@ release note calling V14 passed.
 
 **Watch for.** `ε_adm` widened "to be safe" (it is K03's registered admissibility tolerance, not a free parameter); the rule applied to a split's feed.
 
+> **Amended 2026-10-09 (R-257):** on `pr-c1-v1`, which has no K-values, the analogue reads a TWO_PHASE fresh flash
+> as VAPOR iff its liquid NH₃ is at most τ_dew · n_tot (τ_dew = 1e-10, R-230). `ε_adm` is not read there.
+
 ---
 
 ## R-061 — A two-phase split whose band the fresh flash cannot resolve is judged by its stored split (closes T05b D9 (1); reverses R-057 (1))
@@ -1956,6 +1964,24 @@ release note calling V14 passed.
 > **Closed 2026-09-26 by R-075** (ADR 0015, `docs/design/T06-F4-recovery.md`; Frank approved): NET-02 is registered `VERIFIED` under `T06-revision-v1` through edge 3's sequential restart; under `T05b-v2` and `T05-W13` it stays registered `BOUND_BLOCKED` as the edge-off control. NET-02's parameters did not change.
 ---
 
+## R-075 — A revision-built region that fails its EO globalization is re-initialized once, from the traversal continued to 8 passes (edge 3's second action)
+
+| | |
+| --- | --- |
+| Date | 2026-09-26 |
+| Decided by | design lane (`architect`, T06 F4); the schema widenings approved by Frank on 2026-09-26 (`docs/T06_DECISIONS.md`) |
+| Normative text | `docs/design/T06-F4-recovery.md` §5; ADR 0015 D1–D4 (Accepted 2026-09-27) |
+| Evidence | design note §2 (*measured* probes) |
+| Affected packages | T06, T02, T04, T05; T07 through the design note's Q2 |
+
+**Decision.** ADR 0015 D1–D4: `globalization.eo_recovery = homotopy_or_sequential_restart` makes edge 3's action the specification continuation when the region has a continuation parameter, else one region solve from `traversal-G0-pass8-v1` on a revision-built flowsheet (preconditions P3–P5), else `unsupported(<reason>)`; the trigger set and the count of one are unchanged. NET-02 is `VERIFIED` under `T06-revision-v1`, and R-074 is closed.
+
+**Rejected alternatives, and why.** Those listed in ADR 0015: split-fraction or tear-connection continuation, PTC mappings for T05 units, a projected or bound-aware Newton step, a longer registered initializer, seeding from the failed opening's torn values, an adaptive pass count, a restart ladder, folding the restart into `homotopy`.
+
+**Watch for.** `RESTART_PASSES` changed without a new initializer id; the restart made the default of `GlobalizationPolicy` (it would move registered policy documents); the restart seeded from a failed state; the pass count tuned on the gate's own starts.
+
+---
+
 ## R-076 — A permuted component order is mapped onto the provider's; the label and the certificate are the unpermuted twin's
 
 | | |
@@ -2049,24 +2075,6 @@ release note calling V14 passed.
 **Watch for.** Someone "fixing" the certificate to match K04 §8.2's text; a new fresh-flash or energy check without its qualification entry.
 
 **Amended 2026-09-26 (T06 Amendment 4, ADR 0014 D11).** The qualified ids are the prefixed checks whose result is `pass` or `fail`. A `not_applicable` check (`ZERO_FLOW`, `temperature_degenerate`, `fresh_flash_unresolved`) consulted no provider and carries no entry; run 1's 137 A33 failures were all such entries. *Watch for:* qualifying `not_applicable` checks to satisfy the old wording.
-
----
-
-## R-075 — A revision-built region that fails its EO globalization is re-initialized once, from the traversal continued to 8 passes (edge 3's second action)
-
-| | |
-| --- | --- |
-| Date | 2026-09-26 |
-| Decided by | design lane (`architect`, T06 F4); the schema widenings approved by Frank on 2026-09-26 (`docs/T06_DECISIONS.md`) |
-| Normative text | `docs/design/T06-F4-recovery.md` §5; ADR 0015 D1–D4 (Accepted 2026-09-27) |
-| Evidence | design note §2 (*measured* probes) |
-| Affected packages | T06, T02, T04, T05; T07 through the design note's Q2 |
-
-**Decision.** ADR 0015 D1–D4: `globalization.eo_recovery = homotopy_or_sequential_restart` makes edge 3's action the specification continuation when the region has a continuation parameter, else one region solve from `traversal-G0-pass8-v1` on a revision-built flowsheet (preconditions P3–P5), else `unsupported(<reason>)`; the trigger set and the count of one are unchanged. NET-02 is `VERIFIED` under `T06-revision-v1`, and R-074 is closed.
-
-**Rejected alternatives, and why.** Those listed in ADR 0015: split-fraction or tear-connection continuation, PTC mappings for T05 units, a projected or bound-aware Newton step, a longer registered initializer, seeding from the failed opening's torn values, an adaptive pass count, a restart ladder, folding the restart into `homotopy`.
-
-**Watch for.** `RESTART_PASSES` changed without a new initializer id; the restart made the default of `GlobalizationPolicy` (it would move registered policy documents); the restart seeded from a failed state; the pass count tuned on the gate's own starts.
 
 ---
 
@@ -4473,6 +4481,722 @@ typed result. Revisit with Frank's answer.
 
 ---
 
+## R-220 — The reactor runs as a fresh child process per experiment attempt inside the job worker, in a venv built from a hash-pinned lock
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D1; `docs/design/M02-pymrm-adapter.md` §2 |
+| Evidence | the reactor's numpy 2.5.3 / scipy 1.18.1 differ from the project's pins; ≈ 9 s per design-grid solve; `max_workers = 1` (ADR 0020 D1) |
+| Affected packages | M02, M04, M05, M07 |
+
+**Decision.** One subprocess per attempt, synchronous, started by the job worker; the child imports only stdlib,
+numpy, scipy, pymrm and the exported reactor; the environment is built by `adapters/pymrm/env.py` from a `git archive`
+export and a hash-pinned lock, never vendored.
+
+**Rejected alternatives, and why.** A job per experiment (job-to-job scheduling, deadlock at one worker, still needs a
+grandchild); a persistent per-job child (state carry-over; revisit on measurement, R-224); in-process import (pins,
+crash containment).
+
+**Watch for.** G11 (d)'s start-up share.
+
+---
+
+## R-221 — The kill chain has three layers, the executor's forced kill is a process-group kill, and the isolation profile `external-subprocess-v1` is stated as not a sandbox
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D2 (amends ADR 0020 D3); design note §2.3 |
+| Evidence | to be measured: design note G3 (a)–(h) |
+| Affected packages | M02; every later package that spawns a process from a job |
+
+**Decision.** L1 adapter (0.2 s poll, cooperative check, timeout; TERM, 2 s, KILL; reap); L2 the worker leads its own
+process group and the forced kill is `killpg`; L3 the child's stdin lifeline and self-deadline. Linux registered, macOS
+best effort, Windows refused.
+
+**Rejected alternatives, and why.** Kill by pid (orphans the grandchild); PDEATHSIG alone (Linux-only, thread-scoped).
+
+**Watch for.** Any later subprocess started from a job must stay in the worker's group (no `start_new_session`).
+
+---
+
+## R-222 — Experiment identity is process-level and exact; every request reaching the runner is retained; outcomes are deterministic or transient
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D4, D5; design note §3.2–§3.4 |
+| Evidence | M01.A43 (bitwise repeatability), M01.A36 (exact keys), blueprint §9.1 |
+| Affected packages | M02, M04 (trains on the records), M05 |
+
+**Decision.** Key = SHA-256 of {model, variant id and hash, provider identity, N_tubes, sweep ratio, components, exact
+n, T, P, environment fingerprint}. Completed executions and pre-execution refusals are deterministic (one write-once
+result); timeouts, crashes, protocol and environment failures and cancellations are transient (attempts only).
+
+**Rejected alternatives, and why.** Tube-level keys (the boundary's provider calls outside the identity; two records per
+fact); quantized keys (forbidden on the exact path).
+
+**Watch for.** (k n, k N_tubes) is a different key by design.
+
+---
+
+## R-223 — The exact cache serves deterministic outcomes only, a per-key `flock` prevents duplicate executions, bypass is a determinism monitor, and experiments are never invalidated
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D6, ADR 0035 D4; design note §3.4, §5.3, §6.3 |
+| Evidence | blueprint §7.7, §11.2 |
+| Affected packages | M02, M04, M05 |
+
+**Decision.** As the title. Records are files plus rows in the existing `artifacts` table; no store table is added.
+
+**Rejected alternatives, and why.** Caching only `ok` (re-runs known refusals); caching timeouts (a load fact); a global
+lock (serializes unrelated experiments); a new table (a store migration for no gain).
+
+**Watch for.** Network filesystems with unreliable `flock`.
+
+---
+
+## R-224 — Bounded transient-only retry, a 120 s per-attempt timeout, cold S1–S3 only (no reactor warm start), and no persistent child — each revisited only on a measurement
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed (N6 for Frank) |
+| Normative text | ADR 0033 D7, D8; design note §5.2, §5.4 |
+| Evidence | 9 s measured (M01 §10.1); path independence 1.6 × 10⁻⁸ measured at one point only |
+| Affected packages | M02, M04, M05 |
+
+**Decision.** One retry after `crashed`, `protocol_error`, `spawn_failed`; none after a timeout, an environment failure
+or a cancel. Timeout re-registered from G11 as max(120, 3 × the slowest accepted point), as a new variant if it changes.
+
+**Rejected alternatives, and why.** Retrying timeouts (silently doubles a known cost); warm starts (history-dependent
+results an exact cache cannot key); a persistent child (state carry-over) — the last two to be revisited if G11 (d)
+shows start-up above 30 % of a call or M05's budget demands it.
+
+**Watch for.** M05's call budget.
+
+---
+
+## R-225 — The reactor enters a flowsheet by an extent-fixed embedding with an outer Broyden coupling on (X̂, ΔT̂); converged at 10⁻⁵ n_tot,in and 10⁻² K
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0034 D1–D4; design note §4 |
+| Evidence | M01 §8.2 (two numbers carry the reactor's effect), §10.3 (floor), §10.1 (bias); T02 §4.2 (EO capability), R-045 |
+| Affected packages | M02, M03 (refuses sensitivities on the route), M05, M07 |
+
+**Decision.** Route `revision_coupled`; the compiled unit pins X̂ and ΔT̂; one experiment per unit per outer iteration at
+the inner solution's exact inlet; Broyden's good method, B₀ = −I, scales 0.1 and 10 K, at most 15 iterations; the
+tolerances sit ≥ 13 × above the propagated precision floor and ≥ 56 × below the design grid's bias.
+
+**Rejected alternatives, and why.** The reactor inside Newton with finite differences; a seven-coordinate inlet tear;
+the SYN-001 tear path; leaving the loop to the agent or to M05; the absolute extent as coordinate.
+
+**Watch for.** A loop with a feed–effluent exchanger couples ΔT̂ into the inlet; the 2m × 2m Broyden covers it, G12 does
+not test it.
+
+---
+
+## R-226 — Model versions are frozen by pinning variants by hash in the revision, by append-only variants, and by one environment fingerprint per attempt
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D3, ADR 0034 D5, ADR 0035 D1; design note §3.1, §6.1 |
+| Evidence | today `model.version` and `artifact_ref` are unchecked (`revision_binding.py`); blueprint §5.3 |
+| Affected packages | M02, M04 (surrogate variants), M05 |
+
+**Decision.** `model.version` = variant id, `model.artifact_ref` = variant SHA-256, binder-enforced
+(`model_variant_mismatch`); any change to child, overlay, profile, grid, lock or timeout is a new variant; the handshake
+fingerprint is frozen for the job and checked on every call.
+
+**Rejected alternatives, and why.** Trusting version strings; re-reading the environment per call without freezing.
+
+**Watch for.** Native models still carry unchecked versions.
+
+---
+
+## R-227 — A coupled run that used an out-of-process model is R3 and is replayed from its record; in-process models are re-evaluated on replay
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0034 D6 (amends ADR 0020 D4); design note §7 |
+| Evidence | blueprint §8.3 (R3), ADR 0024 D5 (replay from the bundle alone), ADR 0007 D4 |
+| Affected packages | M02, M05, M07 |
+
+**Decision.** The bundle gains `external-coupling.json` embedding every variant, request, result, attempt and iterate;
+`reproduce` checks each recomputed request (identity exact, inputs within ADR 0007 D2) before serving the recorded
+result, and says so in `reasons`. A live rerun is an evidence script.
+
+**Rejected alternatives, and why.** Rerunning the reactor on replay (needs the environment; not from the bundle alone).
+
+**Watch for.** A cross-platform replay whose iteration count differs is a `MISMATCH` unless a near-threshold flag explains
+it.
+
+---
+
+## R-228 — Promotion is a commit that changes a model reference, checked against blueprint §5.3's facets when either side is variant-backed; invalidation is the existing `invalidations` rule, generalized by operation
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0035; design note §6.2–§6.3 |
+| Evidence | `local.py:444` (runs of the expected revision already invalidated on commit); `transaction-result.schema.json` |
+| Affected packages | M02, M04 (surrogate promotion, rollback), M05 |
+
+**Decision.** Facets resolvable, ports, components, conserved quantities, reference states, boundary condition, DOF,
+derivatives, validity; `model_replacement_incompatible` with the report on failure; the report's hash in the new
+revision's provenance on success; `EVIDENCE_OPERATIONS` (M02: `solve → run-`).
+
+**Rejected alternatives, and why.** A separate `promote_model` (bypassable); in-place invalidation flags (evidence is
+immutable); checking native swaps now (could reject v0.1 corpus transactions).
+
+**Watch for.** Extend the check to native models when they carry real versions.
+
+---
+
+## R-229 — Standalone experiments are an `experiment` job operation, one request per job; batches are M04's
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D9 (ADR 0019 Amendment 4); design note §3.5 |
+| Evidence | ADR 0019 D2: "A later operation is an added enum value and branch" |
+| Affected packages | M02, M04, M06 (the shell lists jobs generically) |
+
+**Decision.** Body: model reference, SI inlet, N_tubes, cache mode; right `execute`; `completed` whatever the outcome.
+
+**Rejected alternatives, and why.** Experiments only inside solves (M04 would have no producer).
+
+**Watch for.** M04's sampling should submit through this operation or a batch operation of its own, not around it.
+
+---
+
+## R-230 — The M02 PR units: vapour-outlet heater and mixer, one split unit (the flash, VAPOR / TWO_PHASE / ZERO_FLOW); a feed without light gas is refused; τ_dew = 10⁻¹⁰
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed (N5 for Frank) |
+| Normative text | design note §8; M01 spec §7 |
+| Evidence | the C1 loop's streams: vapour except the separator; M01 F4 (O(ε) liquid at a dew point) |
+| Affected packages | M02, M05, M07 |
+
+**Decision.** `c1.feed_source`, `c1.product_sink`, `c1.stream_splitter`, `c1.adiabatic_mixer`, `c1.tp_heater`,
+`c1.tp_flash`; the flash's NH₃ equilibrium row in R-008's form with the liquid's light-gas flows as structural zeros;
+`pure_nh3_flash_unsupported` for feeds with no light gas.
+
+**Rejected alternatives, and why.** Two-phase heaters and mixers (not needed by the loop); the pure-NH₃ LIQUID and
+saturation route now (ADR 0012's band route for a case the loop never visits).
+
+**Watch for.** M07's journey adding a cooler into the two-phase region must use the flash.
+
+> **Amended 2026-10-09 (R-254, R-256):** "R-008's form" is now literal: `E = L v_NH₃ φ^V − V l_NH₃ φ^L`, kind
+> molar_flow_squared. M01 §7's first statement, `v φ^V − V φ^L`, did not vanish on the VAPOR branch. The light-gas
+> liquid flows are zero rows, pinned in TWO_PHASE. τ_dew acts in the kernel, the screen, the closure, the causal
+> evaluates and the verifier. A non-lifted outlet that fails the band is refused by its evaluate and failed by the
+> certificate; there is no solve outcome for it.
+
+---
+
+## R-231 — C1 revisions bind on `pr-c1-v1` by `record_source`; `c1.reactor` and `c1.reactor_standin` are both bindable; the stand-in is listed synthetic only
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed (N4 for Frank) |
+| Normative text | ADR 0034 D8, D9; design note §8 |
+| Evidence | `revision_binding.py:1191` (the binder is hard-wired to SYN-001); R-199 (M02 decides whether to bind the stand-in) |
+| Affected packages | M01 (A49's binder clause superseded), M02, M07 (the envelope) |
+
+**Decision.** Every `record_source` other than the C1 records binds exactly as today. M01.A49's "`MODEL_BUILDERS` has no
+key `c1.reactor_standin`" is replaced by design note G8 (e); its label clauses stand.
+
+**Rejected alternatives, and why.** Not binding the stand-in (no default-gate coverage of the coupled route).
+
+**Watch for.** A W21 or M07 claim on a result with `identity.synthetic: true` is invalid (R-199).
+
+---
+
+## R-232 — Q-F5: the real reactor's variant bounds the per-tube flow to [0.5, 2] × nominal; the stand-in has no flow bound
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0034 D10 (amends ADR 0027 D9 for that variant); design note §3.1, §10.3 |
+| Evidence | M01 Q-F5 (start strategy measured at GHSV 1000 only); M01.A25's stand-in inlet is 140 × nominal per tube |
+| Affected packages | M02, M05, M07 (N_tubes) |
+
+**Decision.** F_ret_in ∈ [0.003573480649651052, 0.014293922598604208] mol/s, `out_of_domain` outside, as a variant
+hard-domain field read by `Boundary`; widened to [0.25, 4] × only if both ends are measured accepted (a new variant).
+
+**Rejected alternatives, and why.** A module-level bound (refuses M01's registered stand-in states).
+
+**Watch for.** M07's choice of N_tubes must keep the loop's per-tube flow inside the bound.
+
+---
+
+## R-233 — Property calls inside an experiment are not metered by the solve's property budget; each experiment records its own
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02; Proposed |
+| Normative text | ADR 0033 D11; design note §4.4 |
+| Evidence | ADR 0007 D5.1 (a deterministic cap); a cache hit makes no provider calls |
+| Affected packages | M02, M05 |
+
+**Decision.** As the title.
+
+**Rejected alternatives, and why.** Metering them (a cache hit would change a solve's count and the point at which
+`BUDGET_EXHAUSTED` fires).
+
+**Watch for.** M05's true-model call accounting counts experiments (executions and hits), not property calls.
+
+---
+
+## R-234 — M02's served-surface move follows R-192: the 0.1 A49 constant is not edited, a decomposition test binds the move to M02's additions, and the v0.2 gate pins its own surface through a chain back to R-133
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's Q1 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14 B1, §10.4 |
+| Evidence | `wp/M02-wo1b-proposed` @ `631b1c7`: 10 operations move, served `8de83946…`; with M02's additions stripped, the 20 operations' resolved responses equal their pre-M02 snapshots and the served list is byte-identical to the base |
+| Affected packages | M02, M06 (R-192), M07 (the v0.2 surface), W27 |
+
+**Decision.** `scripts/t08_rc.py`'s `R133_DESCRIPTIONS_SHA256` stays as it is: it is a 0.1 RC record. With M02's
+additions stripped, the served digest equals the base's registered digest at merge time, which is R-192's if M06 has
+landed and R-133's if not. The description texts are unchanged. M02's digest is registered at the merge commit.
+The v0.2 gate pins the release commit's served digest, with one decomposition entry per surface change back to
+R-133.
+
+**Rejected alternatives, and why.**
+- Editing the 0.1 constant: it rewrites a release record.
+- Pinning `8de83946…` now: it is not the merged tree's digest.
+- Keeping M02's members out of MCP `outputSchema`s: that breaks transport parity (R-096).
+
+**Watch for.** Every later surface change needs its own entry and test. A v0.2 gate that runs the 0.1 A49 check as a
+pass criterion would fail by design.
+
+---
+
+## R-235 — The `experiment` body's inlet (`body/inlet/n`, `T`, `P`, `n_tubes`) is a model input and is allowed by name under T07 Q26; nowhere else
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's Q2 |
+| Normative text | design note §14 B2; ADR 0020 D7 (read, not amended) |
+| Evidence | `test_t07_q26_no_external_state` fails on WO-1b only for `submit_job body/inlet/n` |
+| Affected packages | M02, M04 (sampled inlets) |
+
+**Decision.** Allowed by name, with a companion test proving that no path leads from the `experiment` body to a solver
+start, a warm start or a coupling iterate.
+
+**Rejected alternatives, and why.**
+- A body that references a stream of an existing run: M04 could not sample arbitrary inlets.
+- Treating the inlet as a solver state: it identifies the experiment, and it is certified about nothing else.
+
+**Watch for.** Any other numeric array in a request still fails Q26. An operation that does feed submitted numbers to a
+solver needs ADR 0020 D7's W14 path test.
+
+---
+
+## R-236 — A failed handshake keys its request on an explicit unmeasured fingerprint (transient, never cached); the handshake and the evaluation have separate retry budgets; a job handshakes once
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's Q3 (confirms its D7 and D8, amends the budget) |
+| Normative text | design note §14 B3, §3.3, §6.1 |
+| Evidence | `wp/M02` @ `6a1319c` (`backends.unmeasured_fingerprint`) |
+| Affected packages | M02 |
+
+**Decision.**
+- The key preimage is `{measured: false, variant_sha256, env_id, status}`.
+- A crashed handshake is retried before the key is built.
+- The handshake and the evaluation each have `max_retries` = 1.
+- A job keeps its handshake outcome for its lifetime.
+
+**Rejected alternatives, and why.**
+- A shared retry budget: a job-level failure would consume an experiment's retry.
+- Handshaking per experiment: it repeats a job-level check and could let the fingerprint vary within an attempt.
+
+**Watch for.** An unmeasured key must never be served from the cache.
+
+---
+
+## R-237 — The experiment store writes artifact rows through an injected `ArtifactSink`; `adapters` never imports `application`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's Q4 (replaces its D10) |
+| Normative text | design note §14 B4 |
+| Evidence | `adapters/experiments/store.py`'s lazy import of `application.store` at `6a1319c` |
+| Affected packages | M02, M04, M05 (later adapters) |
+
+**Decision.**
+- The application passes the runner a sink that writes `artifacts` rows.
+- Tests and the in-memory path pass a list-backed sink.
+- `atomic_write_bytes` moves to `openflowsheet/_files.py` and is re-exported from `application.store`.
+- `test_package_imports` forbids every import from `adapters` into `application`, including lazy ones.
+
+**Rejected alternatives, and why.** The lazy upward import hides a layering cycle from the import-time check, and the
+store cannot be tested without an application.
+
+**Watch for.** Later adapters must take their sinks by injection too.
+
+---
+
+## R-250 — A design-grid evaluation costs 25–45 s, of which the group's KPI-drift certificate is 12–35 s; the certificate stays, because no cheaper check makes an equal claim
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's finding D22 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14 B6 (amends §0, §4.5, §5.2's numbers, G12's budget) |
+| Evidence | `wp/M02` @ `d0eb848`: wall 25–45 s, start-up 1.8 s, S1–S3 ≈ 10 s, `certify_convergence_1d` 12–35 s (20 implicit steps at dt 10⁶ s under S3's rtol 10⁻¹²); the outlet is extracted after the march; A47 (a) bitwise |
+| Affected packages | M02, M04 (sampling budget), M05, M07 |
+
+**Decision.** Acceptance is unchanged (ADR 0027 D6). The timeout stays 120 s until G11 re-registers it by §5.2's
+rule over registered requests. The coupled-loop estimate becomes 2–6 min; G12 runs with `wall_time_s` = 3600. Wall
+time for many experiments is reduced only by concurrency across distinct keys, which does not change any bit.
+
+**Rejected alternatives, and why.**
+- Fewer certificate steps, or the group's looser tolerance in the march: these weaken the claim, and the looser
+  tolerance makes the march vacuous and moves the registered outlet bits.
+- A persistent child: start-up is 4–7 % of a call.
+- Skipping the certificate on intermediate coupling iterates: it creates two classes of record under one key.
+
+**Watch for.** If G11 shows the drift ≤ 10⁻⁶ wherever S3 is accepted, put the certificate's added claim to the
+specifier. Concurrency above the physical core count turns load into `timed_out`.
+
+---
+
+## R-251 — M02 registers the stage `model_exception`: an exception raised inside the model's computation is a deterministic, cached refusal, not a transient crash
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's D18 |
+| Normative text | design note §14 B9; ADR 0027 A1.2 (M02 may register stages) |
+| Evidence | §3.3's purity invariant (count-based limits, one thread, fixed environment); M01.A43 |
+| Affected packages | M02, M04, M05 |
+
+**Decision.**
+- **Window.** From constructing the first reactor object through extracting the outlet.
+- **Covered.** Any `Exception` raised in the window, except `MemoryError` and `OSError`. It becomes
+  `reactor_not_accepted(model_exception)` with its type, first message line and traceback hash recorded.
+- **Not covered.** Everything else remains `crashed`.
+
+**Rejected alternatives, and why.** Leaving every exception as `crashed`: each recurrence costs 25–45 s and, never
+cached, repeats in every coupled iteration and sample.
+
+**Watch for.** A determinism finding on a `model_exception` key would mean the classification is wrong for that
+exception type.
+
+---
+
+## R-252 — `job_result.experiment` is `null` iff the experiment job wrote no experiment artifact
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`architect`), M02, on the build lane's D24 |
+| Normative text | design note §14 B7 |
+| Evidence | `wp/M02` @ `2e63211`: a job cancelled while queued has no attempt; G1 (c) and R-234 re-checked with the snapshots re-taken |
+| Affected packages | M02, M06 (the shell renders job results) |
+
+**Decision.** `null` is only possible for a job that ended `cancelled`, `timed_out` or `failed` before its first
+attempt. A `completed` experiment job always carries a result or an attempt. Both directions are tested.
+
+**Rejected alternatives, and why.** Requiring a result-or-attempt for every job: a job cancelled while queued cannot have
+one, and a fabricated attempt would record an execution that never happened.
+
+**Watch for.** A `completed` job with `null`.
+
+---
+
+## R-254 — The C1 flash's NH₃ equilibrium row is in R-008's pairwise form; the liquid's light-gas flows are zero rows pinned in TWO_PHASE
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D30 F1 and the architect's own finding; specifier ratification optional (ADR 0026 A2) |
+| Normative text | design note §14.2 B11, B12; M01 spec §7 Amendment 3; ADR 0012 Amendment (A2); ADR 0026 Amendment 2 |
+| Evidence | `LiftedSplit.dropped` ("rows a pinned phase satisfies identically"); K04 §4.1 and §7.1 evaluate every declared row at `x_final`; M01's row equals `V(yφ^V − φ^L) ≠ 0` on VAPOR, and φ^L has no root above T_c,EOS (G7 (b), 673.15 K) |
+| Affected packages | M02 (WO-8), M05, M07 (any PR split) |
+
+**Decision.** The row is `E = L · v_NH₃ · exp(ln φ^V_NH₃) − V · l_NH₃ · exp(ln φ^L_NH₃)`, of kind
+molar_flow_squared. It is exactly zero on VAPOR and on LIQUID, and on TWO_PHASE it equals `L V (yφ^V − φ^L)`. The
+equilibrium family is completed by the rows `l_i = 0` (molar_flow, one per light gas), which read only their own
+column. A `VapourOnlyForm` pins those columns at `+0.0` and drops those rows in a TWO_PHASE attempt. The mole rows and
+Ldef keep all five flows.
+
+**Rejected alternatives, and why.** M01's `v φ^V − V φ^L`: it fails on every VAPOR-branch certificate.
+Rows alone: the factorization's roundoff makes `l_i ≠ 0`, the liquid blocks are refused, and ADR 0013's exact-zero
+projection is defeated. Changing `assemble`: it is frozen. Singleton columns, by leaving `l_i` out of the mole rows
+and out of Ldef: the LIQUID attempt becomes singular and agreement check (d) needs a special case.
+
+**Watch for.** Any PR row that is not identically zero on the branch that drops it. Light-gas liquid columns that are
+not bitwise `+0.0` at an iterate (G7 (g)).
+
+---
+
+## R-255 — `check_agreement` and the split registry are generalized by `SplitRule.vapour_only`; SYN-001's statements run verbatim
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D30 F2 |
+| Normative text | design note §14.2 B13 |
+| Evidence | `splits.py` (a)–(g) as read at `6a46cdd`; with E of kind molar_flow_squared, (a), (c), (d), (f) and (g) hold for the C1 flash unchanged |
+| Affected packages | M02, any later split with vapour-only components |
+
+**Decision.** `SplitRule.vapour_only: tuple[str, ...] = ()`, and `c1.tp_flash` declares `("H2", "N2", "Ar", "CH4")`.
+When `vapour_only` is non-empty, (b) compares only the other components' rows with the unit's molar_flow_squared
+rows, and requires each vapour-only row to be the unit's own row of kind molar_flow. (e) requires a vapour-only row
+to read exactly its liquid flow. A new check (h) checks the `VapourOnlyForm`. With an empty `vapour_only`, today's
+code runs unedited.
+
+The registries stay single, one rule per model id: `SPLIT_RULES`, `DORMANCY_RULES`, `MODEL_CHECKS`,
+`DORMANT_OUTLETS` and `PRODUCT_MOLE_ROWS`. The four tests that pin a registry literally are restricted to their
+`syn001.` keys, with their literals unchanged, and M02 tests pin the full key sets and the `c1.` entries.
+
+**Rejected alternatives, and why.** A second registry for C1 rules: two naming sites per lookup. Marking PR equilibrium
+rows by a new quantity kind: a check-policy change.
+
+**Watch for.** Restricting a registry test without re-pinning the full set elsewhere, which would be a narrowed check.
+
+---
+
+## R-256 — On the solve side a `pr-c1-v1` split is classified by M01 §7 rule 3 with τ_dew (kernel, screen, closure, causal evaluate); non-lifted PR outlets have no solve-time screen
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D30 F3 and F5 |
+| Normative text | design note §14.2 B14, B16; ADR 0012 Amendment (A1, A5) |
+| Evidence | `region._admissible` reads `k_values` (3-wide, `lnK`); `pr-c1-v1` answers `state_length`; a feed at its own dew point flashes TWO_PHASE with liquid of order ε, where the TWO_PHASE Jacobian is singular (the branches bifurcate there) |
+| Affected packages | M02; ADR 0005 D3's reading for PR splits |
+
+**Decision.** The solver side has one function, `models/c1/phase.py::classify`: the provider's TP flash, with
+TWO_PHASE and `l_NH₃ / n_tot ≤ τ_dew` read as VAPOR. It is used in four places:
+- the region's `_kernel`, where a band VAPOR is pinned as a VAPOR restart pins it;
+- `_admissible`, where `admissibility_epsilon` is not read for PR;
+- the mixer's and the heater's causal evaluates, which refuse with `vapour_phase_inadmissible`;
+- the flash's evaluate.
+
+The region dispatches on the provider id; `describe` is uncounted. τ_dew = 1e-10 is `models/c1.TAU_DEW` (R-230;
+ADR 0001 D6's composition tolerance). Non-lifted vapour outlets are judged by the certificate, and no solve outcome is
+added.
+
+**Rejected alternatives, and why.** τ_dew as a SolvePolicy field: a frozen schema, and it is the provider's convention.
+Dispatch by unit model: a second entry for every future PR split. The region importing the verifier's copy: R-016,
+since the two copies are compared as data instead. A screen for non-lifted outlets, with a new outcome: a
+frozen-schema change for a case the certificate already types.
+
+**Watch for.** τ_dew widened to rescue a K18 near-dew failure. A PR `_kernel` that returns the flash's ulp-sized
+liquid.
+
+---
+
+## R-257 — The verifier's `pr-c1-v1` forms: fresh provider by basis; dew band, first-order dew-distance closure, band-read enthalpies; no new tolerance
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D30 F4 |
+| Normative text | design note §14.2 B15; ADR 0013 Amendment 3 |
+| Evidence | `certificate.py:677` (`Syn001Provider()`), `checks.stream_of` (`COMPONENTS`), `table._declared_phase` (`h_<c>`), `saturation_closure` (`lnK`); the tolerances used are R-230's τ_dew and K04's τ_T, τ_flow and τ_E |
+| Affected packages | M02, K04 (the revision table only) |
+
+**Decision.**
+- The verifier selects the provider from `view.basis.provider_id` through its own table, and streams are read with
+  the view's components.
+- **D2 analogue:** a TWO_PHASE fresh flash within τ_dew is read as VAPOR.
+- **No degeneracy or unresolved routing**, because the band is half-open.
+- **VAPOR branch:** `.dew`, the liquid NH₃ fraction of a fresh flash of the feed, one-sided against τ_dew.
+- **TWO_PHASE:** `.closure`, `|g / g_T|` in kelvin against τ_T, with g the NH₃ fugacity log-ratio on the state's own
+  phases.
+- **LIQUID branch:** `unsupported`.
+- **Independent split:** K04's formula.
+- **Declared vapour ports:** the τ_dew test.
+- **The flash:** `material_balance.<U>.liquid.<i>` for each vapour-only i.
+- **`MODEL_CHECKS` entries** reuse SYN-001's rule functions.
+
+The PR forms live in `verify/pr_c1.py`, and SYN-001's functions are not edited. `check_policy_sha256` stays unchanged.
+
+**Rejected alternatives, and why.** `|y − y*| ≤ 1e-10`: off-policy, and 500 to 16 000 times tighter than E's row
+tolerance permits. An exact dew temperature by bisection: a new iterative routine whose difference from the
+first-order value is second order. The K-distance declared-port form: it cannot see `l/n` below about 1.5e-9.
+Provider-generic rewrites of SYN-001's functions: they put W1.d's bitwise pairing at risk.
+
+**Watch for.** A PR check that silently passes where the provider refused. A SYN-001 certificate byte that moves
+(G2 (ii)).
+
+> **Amended 2026-10-09 (§14.3 C2, C4; R-281):** confirmed as built (D39). The alias certificates' pressure shift
+> reads the fresh provider's domain; qualifications and statements name the fresh provider; the provider is chosen
+> from `component_basis(revision)` before the guard; a refused `.dew` flash is `unsupported` (`dew_<status>`). The
+> derivative witness skips exactly-zero `pr-c1-v1` stream flows, and records that it did (R-281).
+
+---
+
+## R-258 — At exact dormancy a PR vapour block takes the ideal-gas limit; a pure-NH₃ liquid block takes a unit probe, falling back to the vapour root
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D30 F6 |
+| Normative text | design note §14.2 B17; ADR 0012 Amendment (A6) |
+| Evidence | `Ḣ_V = Σ n_j h^ig_j + n_tot h^dep`, where the departure is positively homogeneous of degree one and nonlinear in n, so not differentiable at 0; pure NH₃ has no vapour root at 253–300 K and 1e7 Pa, so the pure-component directional derivative does not exist there; `blocks.py:184-222` (SYN-001's probe) |
+| Affected packages | M02 (WO-8, WO-9: the reactor's duty row), any PR block |
+
+**Decision.**
+- **Vapour blocks at `n = 0`:** `Ḣ = 0`, `∂Ḣ/∂n_j = h^ig_j(T)` (`pr_c1.h_ig`), and `∂Ḣ/∂T = ∂Ḣ/∂P = 0`. ln φ is 0,
+  with zero derivatives.
+- **Liquid blocks at `n = 0`:** the provider at the probe `(0, 0, 1, 0, 0)` in LIQUID, or in VAPOR if it answers
+  `no_liquid_root`.
+- **Flowing streams:** the provider. A flowing liquid without a liquid root is refused; the fallback is never used
+  for it.
+
+**Rejected alternatives, and why.** Refusing a Jacobian at dormancy: a dormant feed's flows are live columns
+downstream. A probe at an equimolar composition: arbitrary, and the metastability guard can refuse it. Zero flow
+derivatives: Newton would lose the enthalpy of flow re-entering a dormant stream.
+
+**Watch for.** An FD witness "fixing" the convention at dormant columns. The liquid fallback reached by a flowing
+liquid.
+
+---
+
+## R-259 — The reactor environment manifest's `variant_id` is provenance, not a verification key
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D33 |
+| Normative text | design note §14.2 B19 |
+| Evidence | `env_id` depends on the lock only; v1 and v2 share it (D31); the child is identified by the variant's `runner_sha256`, not by the environment |
+| Affected packages | M02 (adapters/env), M04 (batch runs in one environment) |
+
+**Decision.**
+- `env verify --variant X` compares `env_id`, the lock hash, the interpreter and the distributions with X's pins. It
+  reports `variant_id` as information.
+- `env build --variant X` over an existing environment with X's `env_id` that verifies is a successful no-op. A
+  different `env_id` is refused, as today.
+- The field keeps its name.
+
+**Rejected alternatives, and why.** One environment per variant: an identical venv rebuilt for every runner change.
+
+**Watch for.** A variant whose runner needs a different environment: that is a new lock, hence a new `env_id`, never a
+manifest key.
+
+---
+
+## R-280 — The C1 builders join `MODEL_BUILDERS` in one commit at the end of WO-9; until then a binder-only C1 registry is an interim that may not merge
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D36 |
+| Normative text | design note §14.3 C1 |
+| Evidence | joining in WO-8 fails 13 registry and coverage tests in 10 files (D36); they need registered C1 corpus revisions, which WO-9's loop creates |
+| Affected packages | M02 (WO-9), M06 (W27 snapshot, R-176), T08 envelope (R-193) |
+
+**Decision.** `C1_MODEL_BUILDERS` and `C1_MODEL_SIGNATURES` are read by the binder only, through WO-9. WO-9's last
+commit moves all eight entries into `MODEL_BUILDERS` and `MODEL_SIGNATURES`. The same commit adds:
+- registered C1 corpus revisions, so that the coverage tests are met by evidence;
+- the pinned surface fixtures, re-taken with a decomposition test (the `c1.` entries stripped = pre-M02);
+- the envelope listing, with the stand-in marked synthetic;
+- the W27 snapshot, re-pinned with a design-lane mapping amendment.
+
+There is no merge and no `tested` manifest while the interim registry exists.
+
+**Rejected alternatives, and why.** A permanent split registry: the binder would accept models that `list_models`
+does not name. Joining in WO-8: the coverage tests would need exemptions.
+
+**Watch for.** The interim surviving into a merge. Coverage tests exempted instead of satisfied.
+
+---
+
+## R-281 — The certificate's derivative witness does not difference exactly-zero `pr-c1-v1` stream-flow columns, and says so in the certificate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D40 (ratifies `d9c7cd4` with a narrower scope and a record) |
+| Normative text | design note §14.3 C2; ADR 0013 Amendment 3 item 7 |
+| Evidence | D40: at such columns the stencil leaves the provider's domain (negative flow, `light_gas_in_liquid`, `no_liquid_root`), so every C1 flash was UNVERIFIED; R-258's conventions have no derivative to compare |
+| Affected packages | M02, K04 (revision path only) |
+
+**Decision.**
+- **Scope.** Only `<S>.n.<c>` columns exactly `0.0` at the witnessed state, on a `pr-c1-v1` basis. Totals and other
+  columns are still differenced.
+- **Record.** Both witness checks carry the qualification `"not differenced: <k> exactly-zero pr-c1-v1 stream-flow
+  columns (design note §14.3 C2)"`. The certificate carries the limitation `derivative_witness_partial`, listing the
+  columns.
+- **The claim, restated.** The witness covers the differentiable columns. The excluded entries are checked by G7 (h)
+  and M01's derivative assertions, not by the certificate.
+
+**Rejected alternatives, and why.** The full stencil: it fails for a mathematical reason, not a state defect. A
+forward stencil: it needs an unregistered tolerance, and at dormant columns it would test a convention against a
+derivative that does not exist. An unrecorded exclusion: that would be a hidden weakening.
+
+**Watch for.** The exclusion widened to other columns or bases. A certificate whose witness was partial but which
+carries no `derivative_witness_partial` limitation.
+
+---
+
+## R-282 — A `pr-c1-v1` flash near its dew point certifies UNVERIFIED: a registered near-dew window, not a widened τ_dew
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on D41 |
+| Normative text | design note §14.3 C3; `c1.tp_flash` manifest limitation |
+| Evidence | D41: at F4, rcond_1 ≈ 5.9e-19 (E and Ldef proportional on (L, l_NH₃)); TWO_PHASE side rcond_1 ≈ 7e-3 L/n_tot (δ = 1e-8, 1e-7, 1e-5 measured); SYN-001's `DEW_POINT_LIMITATION` is the same fact |
+| Affected packages | M02, M05, M07 (a flash run near its dew point) |
+
+**Decision.** At the dew point the certificate is UNVERIFIED with RANK_DEFICIENT, which is asserted as the
+registered expectation. On the TWO_PHASE side the window is `L/n_tot < ~1.4e-6`: the certificate is VERIFIED from
+there, and its verdict is promised (not near threshold) from about 1.4e-5. The VAPOR side is measured by G7 (c) and
+stated in the manifest. The loop's flash, at `L/n_tot ≈ 0.05`, is about four decades clear.
+
+**Rejected alternatives, and why.** Widening τ_dew (it would read genuinely two-phase states as vapour). A
+reformulated equilibrium row near the dew point (a new formulation for a case the loop never visits).
+
+**Watch for.** An operating point (M05, M07) inside the window reported as a solver failure rather than this
+limitation.
+
+> **Amended 2026-10-09 (§14.4 D1, build log D44):** the thresholds above (from τ_ill alone) are withdrawn. As
+> measured at F4, `rcond_1 = 4.23e-4 |δ|` on both sides. The window ends where the last of three registered limits
+> clears:
+> - τ_ill: L/n_tot ≈ 1.45e-6;
+> - the screen's absolute limit: |δ| ≈ 2.48e-4;
+> - the witness stencil: TWO_PHASE L/n_tot ≈ 3.37e-5.
+>
+> So the certificate is VERIFIED from |δ| ≈ 2.5e-4 on the VAPOR side and from L/n_tot ≈ 3.4e-5 on the TWO_PHASE
+> side, at the measured state. No limit is relaxed.
+
+---
+
 ## R-283 — W27 maps the six C1 units as their SYN-001 namesakes with no token, both C1 reactors to no function, and `pr-c1-v1` to `cubic_pr`
 
 | | |
@@ -4562,6 +5286,74 @@ semantic error. Dropping the lenient matching instead: W27-R40 is lenient on pur
 
 ---
 
+## R-287 — The coupled reactor's initial iterate is not a revision parameter: `coupling_initial.*` is refused, and w₀ is the variant's
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, on the build lane's D46 |
+| Normative text | design note §14.4 D2 (amends the WO-9 row) |
+| Evidence | `ModelSignature` has no optional slot, and `list_models`' signature schema is closed and frozen (D46) |
+| Affected packages | M02, M05 (warm-started coupling) |
+
+**Decision.** `parameter_unsupported(<U>.coupling_initial.X | .dT)`; w₀ is the variant's `coupling.initial`.
+Warm-starting the outer loop belongs to ADR 0024's compatible warm starts.
+
+**Rejected alternatives, and why.** An `optional` signature member, which would need an ADR 0019 amendment and a
+surface move. A start point is solver state (ADR 0020 D7), and it would split one model's identity by its start.
+
+**Watch for.** A start point smuggled in as a "parameter" of any external model.
+
+---
+
+## R-288 — Each model binds on its own component basis only; `MODEL_BASES` is the table the binder's refusal and W27 both read
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, answering W27 Amendment 2's F-A2-1 (Q8) |
+| Normative text | design note §14.4 D3; `docs/derivations/M06-W27-registration.md` §21.8 J1 |
+| Evidence | a probe at `2587f14`: SYN-001's feed→sink and splitter bind and traverse on the C1 basis while their manifests declare SYN-001's provider and reference convention |
+| Affected packages | M02 (the join), M06 (W27-R63), every later basis |
+
+**Decision.**
+- In `MODEL_BASES`, each `syn001.*` model is on SYN-001's basis and each `c1.*` model on the C1 basis.
+- `set(MODEL_BASES) == set(MODEL_BUILDERS)`.
+- The binder's `model_unsupported(<id>)` pass reads the table, with a hint naming the other basis's same-function
+  model. The per-builder basis checks are removed.
+
+**Rejected alternatives, and why.** SYN-001's models binding on both bases: a mismatch between the manifest's declared
+convention and the streams (ADR 0001 D5.2 in kind). Per-builder checks: a second source of truth that W27 cannot
+read.
+
+**Watch for.** A model added to `MODEL_BUILDERS` without a `MODEL_BASES` row.
+
+---
+
+## R-289 — The C1 reactor's verifier entries: the verifier's own ν, no specification check, B16's vapour refusal in its evaluate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M02, confirming the build lane's D45 and D47 |
+| Normative text | design note §14.4 D4 |
+| Evidence | no revision states a C1 reactor's ν; X̂ and ΔT̂ are the coupled route's inputs |
+| Affected packages | M02, K04 (revision table) |
+
+**Decision.**
+- Material balance `n_in + ν ξ − n_out`, with `verify/pr_c1.REACTION_NU`, compared as data with `models.c1.NU`.
+- SYN-001's reactor energy rule.
+- No specification check: X̂ and ΔT̂ are judged by the residual rows and by §4.4's coupling checks.
+- The temperature row is `offset_row(T_in, T_out, dT)`, the exact negation of the stated form.
+- The extent column is `U.xi`.
+
+**Rejected alternatives, and why.** `nu.<c>` as required revision parameters (it changes the case and the signature).
+A specification check that reads the compiled constants (not independent).
+
+**Watch for.** The verifier importing the unit's ν.
+
+---
+
 ## R-301 — W27 Amendment 3: `c1.reactor_surrogate` performs no function, for a new reason `surrogate_model`; J3–J6 compare a surrogate-carrying build with `hypothetical_v02_a3`
 
 | | |
@@ -4609,3 +5401,433 @@ never a skip.
 builder (no removed cases).
 
 **Watch for.** A new builder that needs external configuration. It gets a resolver entry, not an exclusion.
+## R-303 — The real reactor's child polishes once more when A45's defect exceeds 10⁻⁷, and types a non-finite result as `reactor_not_accepted(nonfinite)` (profile `M01-S123-v2`, variant v3)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D69 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D1, D2; M01 spec §8.7 (Amendment 3 pointer) |
+| Evidence | `benchmarks/m02/g11-coverage.json`. Defect refusals with S1–S3 accepted have δ 1.4e-5 to 7.6e-5 and alternate with flow at 5 MPa (0.5 × fails, 1 × passes, 2 × fails, 4 × passes); every accepted point has δ ≤ 4.7e-8. At four 773.15 K corners, NaN/inf in the result exits with code 1 and is typed `external_crashed` |
+| Affected packages | M02 (child, variant v3), M01 (profile pointer), M05 and M07 (bind v3) |
+
+**Decision.**
+- After S3 is accepted, if δ = max_e |element_defect_rel[e]| > 10⁻⁷, the child runs one more round with S3's
+  settings at target/10. S3 is accepted iff that round converges.
+- The boundary's `defect_limit` (10⁻⁶) is unchanged.
+- A result holding any non-finite value becomes `not_accepted`, stage `nonfinite`. The first refusal wins; non-finite
+  diagnostics are written as null and listed in `nonfinite_paths`. The child writes no NaN default of its own.
+- Inert wherever v2 met δ ≤ 10⁻⁷: G10v3 and G11v3-2 assert bitwise equality.
+
+**Rejected alternatives, and why.**
+- Relaxing `defect_limit`: δ of 7 × 10⁻⁵ is 7 τ_ξ, so coupling would judge iteration error.
+- Narrowing the domain around the points: they are not a region.
+- Tightening S3 for every evaluation: it moves A47's pins and G12.
+- Typing the non-finite result in the parent: the parent sees only an exit code.
+
+**Watch for.** A G11v3-1 point that still fails the boundary after round 2 refutes the diagnosis; the WO stops.
+Never answer it with a looser limit.
+
+---
+
+## R-304 — v3's hard domain is the first of three registered boxes whose registered points are all accepted; §10.3 classifies a failure before narrowing; the timeout is sampled over every completed in-box evaluation
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D69, D70 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D3, D4; ADR 0027 Amendment 2 |
+| Evidence | G11: 1 of 17 accepted. At 573.15 K S1 fails; at 773.15 K the failures are certificate, defect and non-finite. Accepted T_in: 653.15–693.15 K |
+| Affected packages | M02, M05 (N-F6), M07 (K6) |
+
+**Decision.**
+- The candidate boxes are B1 (T_in [643.15, 733.15] K; 5–15 MPa; H₂/N₂ 1–4), B2 (T_in [653.15, 693.15] K, otherwise
+  as B1) and B3 (B2 with 7.5–12.5 MPa and H₂/N₂ 2–4). All three keep inerts ≤ 0.2 and the per-tube flow bound
+  [0.5, 2] × F_nom.
+- v3 takes the first box whose 16 corners, centre, the centre's flow edges and (for B1) M05's two edge points all end
+  `ok` in two full runs. If none does, the WO stops.
+- In §10.3, D1's defect mechanism is never a reason to narrow, and an in-domain crash stops the WO. Q-F5's widening is
+  suspended for v3.
+- timeout_s = max(120, 3 × the slowest in-box completed evaluation), rounded up to 10 s.
+- If B2 or B3 is selected, M05's REAL box becomes [653.15, 693.15] K. M07's journey lies inside v3's box.
+
+**Rejected alternatives, and why.**
+- Inventing a box from G11 alone: every corner failed, so G11 bounds no region.
+- The data domain as the hard domain: it would put the loop's P and H₂/N₂ on a face.
+- Sampling only accepted points for the timeout: a timeout would then turn deterministic refusals into transient
+  failures.
+
+**Watch for.** Widening the flow bound from a centre-only measurement.
+
+---
+
+## R-305 — The coupling driver does not reset during the first 2n outer iterations (n = 2m)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D50 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D5 (§4.3 amended) |
+| Evidence | D50, plus a design-lane replica of §4.3: G = diag(1.8, 0) ends `no_decrease` under §4.3 and converges at k = 3 (ρ ≤ 3e-12) with the window. From w₀ = (0.15, 0 K) the first substitution step raises ρ, so the monotone rule fails at k = 2 |
+| Affected packages | M02 (driver), M05 (consumes coupled runs) |
+
+**Decision.** `if ρ_k > ρ_best: reset only if k ≥ 2n`. Inside the window B keeps updating and the best iterate does
+not move. Everything else in §4.3 is unchanged. G8 (f) holds as written (f1–f5). The change is inert on every
+recorded run, because ρ never rose in any of them.
+
+**Rejected alternatives, and why.**
+- Restating G8 (f) as a typed failure: K4 would stay unmitigated for gain > 1.
+- A Grippo window over the last M values: more parameters for the same effect.
+
+**Watch for.** A real loop that resets at k ≥ 2n: that is the safeguard working, not a bug.
+
+---
+
+## R-306 — `validity` stands: stand-in → real promotion is rejected on `validity` alone; G9 (a) is restated
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D61 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D6 |
+| Evidence | D61: the promotion is `rejected`, eight facets `pass`, and `validity` fails with "hard_domain.tube_flow_mol_s None -> [...]" |
+| Affected packages | M02, M07 (builds its real revision directly) |
+
+**Decision.**
+- G9 (a1): stand-in → real is `rejected`, and only `validity` fails. Its detail names exactly the narrowed
+  dimensions, computed from the two variant documents.
+- G9 (a2): the commit machinery is tested on real → stand-in and on the compatible test copy.
+- The strict xfail is removed.
+
+**Rejected alternatives, and why.**
+- Treating the flow bound as an operating-point check: it contradicts ADR 0034 D10.
+- A stand-in variant carrying the real domain: it means churn on every narrowing.
+
+**Watch for.** Any request to let a narrower real domain commit silently over a stand-in.
+
+---
+
+## R-307 — R3 comes from a registered set of external providers, never from provenance text
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D55 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D7 |
+| Evidence | `run/session.py:134` matches "external" in `pr-c1-v1`'s provenance (`external-crosscheck.json`), so in-process C1 runs are R3 |
+| Affected packages | M02, every package with C1 runs |
+
+**Decision.**
+- `EXTERNAL_PROVIDERS: frozenset[str]` is empty today, and the class is R3 iff the provider is in it.
+- §7.2's variant rule stays on top for the coupled route.
+- In-process C1 runs are R1. The records this moves are re-taken in one commit.
+
+**Rejected alternatives, and why.** A `ProviderCapabilities` field: it is a frozen interface, for a set that is empty
+today.
+
+**Watch for.** A future provider that evaluates out of process must be added to the set in the same commit.
+
+---
+
+## R-308 — On `revision_coupled`, inner-solve constants digests are compared for shape; `reproduce` recomputes the final one at the recorded iterate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D58 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D8; ADR 0007's row "digests of R1/R2 quantities" |
+| Evidence | D58: the final `constants_sha256` digests Broyden's X̂ and ΔT̂ and was compared exactly |
+| Affected packages | M02 (replay), M05 (replays coupled runs) |
+
+**Decision.**
+- The manifest's and the record's inner-solve `constants_sha256` are compared for shape.
+- `reproduce` rebuilds the final inner model at the record's final w and requires its digest to equal the recorded one
+  exactly (`coupling_constants`).
+- The iterates are compared under the archive's numerical policy (`coupling_iterate(<k>)`). Integer control flow
+  stays R0.
+
+**Rejected alternatives, and why.**
+- Keeping the exact comparison: it contradicts ADR 0007, because there is a float on its path.
+- Removing w from the constants digest: it changes compile identity for one route.
+
+**Watch for.** Any other digest whose preimage holds an iterate.
+
+---
+
+## R-309 — One coupling-parameter function: `coupled_run.at_coupling`, with a refusal of unknown units; M05 calls it (supersedes R-300 E7)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D71 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D9 |
+| Evidence | D71: `with_coupling` (wp/M05 `1ed8c6c`) duplicates `at_coupling`; `at_coupling` silently ignores an unknown unit id |
+| Affected packages | M02, M05 (its WO-5c) |
+
+**Decision.**
+- `at_coupling` raises `ValueError` naming every key that is not a `C1Reactor` unit of the binding. It does no float
+  coercion.
+- M05 deletes `with_coupling` at its first merge of `main` after M02 lands, and calls `at_coupling`.
+- The G8 records stay byte-identical.
+
+**Rejected alternatives, and why.** Landing both: two functions with one meaning, and M05's E2 guard asks for M02's
+own code path.
+
+**Watch for.** M05 reaching `main` with both functions.
+
+---
+
+## R-310 — The envelope's `unbound_providers` becomes `other_basis_providers`; the stand-in module's stale docstring is a recorded erratum
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D49 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D10 |
+| Evidence | D49: `pr-c1-v1` is bound by the C1 models since the join, while the envelope and L42 still say it is not. The stand-in module's bytes are the stand-in variant's pinned artifact |
+| Affected packages | M02, T08 (envelope tests and script), M07 (finalises the envelope) |
+
+**Decision.**
+- Rename the key `unbound_providers` to `other_basis_providers` and keep the entry's shape. Correct the axis
+  statement and L42's text.
+- `reactor_standin.py` is not edited. A comment at its `MODEL_BUILDERS` entry records the erratum.
+- If the served tool-list digest moves, the WO stops.
+
+**Rejected alternatives, and why.** Editing the docstring: it changes the pinned artifact hash, so it needs a new
+stand-in variant and a re-take of the stand-in loop and G8.
+
+**Watch for.** The stand-in module changing for any reason: correct the sentence in that same new variant.
+
+---
+
+## R-311 — The real reactor's child reads A45's defect after the certificate; round 2 runs only after a passed certificate and is re-certified (amends R-303)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D77 and D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E1; M01 §8.7 Amendment 4 |
+| Evidence | D77: the group's certificate marches 20 pseudo-time steps and keeps the state. Right after S3, δ = 4.0e-5…8.4e-5 at every G10 run; every recorded δ was post-certificate (2.2e-8…3.8e-8). D78: the post-certificate ordering meets G10v3 (bitwise v2) and G11v3-1 (projection defects 1.7e-9, 1.1e-9, 2.0e-11) |
+| Affected packages | M02 (v3's child, profile `M01-S123-v2`), M01 (pointer), M05 (binds v3) |
+
+**Decision.**
+- δ₁ is read after certificate₁, from the state the outlet is extracted from.
+- If certificate₁ fails, the stage is `certificate`, and round 2 does not run.
+- If δ₁ ≤ 10⁻⁷, the evaluation follows v2's path.
+- Otherwise round 2 runs at target/10, then certificate₂, and certificate₂'s verdict decides.
+- The trigger is `not (δ₁ ≤ 10⁻⁷)`. The sequence is one function of injected callables, tested in the default gate.
+
+**Rejected alternatives, and why.**
+- §14.5 D1 as written, with δ read right after S3: round 2 runs at every evaluation, which tightens S3 everywhere.
+- Rescuing a failed certificate₁ with round 2: no measurement motivates it.
+- Not re-certifying after round 2: the boundary would be handed a state the certificate never judged.
+
+**Watch for.** Any change to the group's certificate, which moves the state that δ describes.
+
+> **Amended 2026-10-09 (M02 eighth round):** the rejection of rescuing a failed certificate₁ is **reversed by R-316**
+> (build log D85 found two such points). Round 2 now runs whenever δ₁ > 10⁻⁷, whatever certificate₁'s verdict.
+
+---
+
+## R-312 — Positivity is judged on the species present in the inlet, and A45's relative defect on the elements present in the inlet
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E2; M01 §8.7 Amendment 4. ADR 0027 D6 needs Amendment 3 (§14.6 E5) |
+| Evidence | D78: at zero-inert inlets the minimum axial flow is Ar's or CH₄'s, exactly 0.0 or −1.8e-25…−1.8e-27 mol/s, and A45's C and Ar defects are 0/0. Python's `max` over a list holding NaN depends on the order |
+| Affected packages | M02 (v3's child), M01 (pointer), ADR 0027 (finding) |
+
+**Decision.**
+- A species is present iff its requested inlet mole fraction (`tube_inlet.composition`) is > 0. It is not tested on
+  the model's inlet face, which carries roundoff. `nonpositive_flow` judges present species only.
+- New diagnostics: `absent_species` and `absent_species_max_abs_flow_mol_s`.
+- `element_defect_rel` holds the present elements only.
+- δ is the maximum over present elements, and NaN if any present value is NaN.
+- Where all five species are present, everything is bitwise v2.
+
+**Rejected alternatives, and why.**
+- A tolerance ε on positivity: it needs an ε, and it still judges a species that carries no information.
+- Normalizing an absent element by n_tot,in: one map would hold values with two meanings.
+- `null` for an absent element: `null` already means a screened non-finite value.
+- The domain alone: the floor bounds Ar + CH₄, not each species.
+
+**Watch for.** A species that can be absent and is not inert. Today none can be: H₂/N₂ is bounded and NH₃ has its
+trace refusal.
+
+---
+
+## R-313 — v3's hard domain gains `inert_min` = 0.02; the candidate boxes become V1–V3, all at T_in ∈ [653.15, 693.15] K; M05's REAL box is [653.15, 693.15] K unconditionally (supersedes R-304's box list)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E3. ADR 0027 needs Amendment 3 (§14.6 E5) |
+| Evidence | D78: B1 12/21, B2 11/19, B3 11/19 `ok`. In each box every zero-inert corner fails, the low-T, high-P pair at `S1`. M05's 643.15 K point fails at `S1` with 4.31 % inerts. Every 0.2-inert corner, every centre and M05's 733.15 K point are `ok` |
+| Affected packages | M02 (v3, schema `hard_domain.inert_min`, boundary, G9 (a1)), M05 (N-F6 now; the floor inequality), M07 (design space) |
+
+**Decision.**
+- The family: V1 = B2's box with y_inert ∈ [0.02, 0.2], V2 = B3's box with the same floor, and V3 = 653.15–693.15 K,
+  9–11 MPa, H₂/N₂ 2.5–3.5, with the same floor.
+- Each rung has 21 registered points: 16 corners, its centre at three flows, and M05's points at 653.15 K and
+  693.15 K.
+- The first rung that is all `ok` in two runs is selected. If none is, the WO stops and N7 goes to Frank.
+- Zero-inert inlets are outside v3's domain.
+
+**Rejected alternatives, and why.**
+- Re-judging B1–B3: they fail at S1, which runs before every change.
+- A P ≤ 10 MPa box: the loop's pressure would sit on a face, and it is unmeasured.
+- Raising the T_in bound: M05 has not registered such a box.
+- A floor ≥ 0.03: too thin a margin under the loop's 4.31 %.
+- Accepting the zero-inert refusals: it relaxes the rule.
+
+**Watch for.** Q-E1: M05's loop inert fraction at 653.15 K and 693.15 K. Below 0.03, the design lane revisits the
+floor.
+
+> **Amended 2026-10-09 (M02 eighth round):** no rung of V1–V3 qualified (D84). The family is **replaced by V4–V6, and
+> the rejection of a floor ≥ 0.03 is reversed, by R-315** (Q-E1 measured the loop at 4.05–4.55 % inerts, D87).
+
+---
+
+## R-314 — D73–D76 confirmed; the timeout rule of R-304 is confirmed on the selected rung
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E4 |
+| Evidence | D73–D76 as built. D78: the timeout rule gives 360–370 s at loadavg 45–48 |
+| Affected packages | M02 |
+
+**Decision.**
+- D73 (child in place, provisional variant): confirmed.
+- D74: confirmed, as amended by R-311 and R-312. The profile id stays `M01-S123-v2`, since no registered variant binds
+  it.
+- D75: confirmed.
+- D76: confirmed, and extended to V1–V3 and G11v3-8.
+- The timeout is max(120, 3 × the slowest wall over every completed in-rung evaluation, over both runs), rounded up
+  to 10 s.
+
+**Rejected alternatives, and why.** Bumping the profile id: no shipped record binds it, and the runner hash already
+separates the superseded record.
+
+**Watch for.** Host load at the registration run. It is recorded, not corrected.
+
+---
+
+## R-315 — The candidate rungs become V4–V6 (V3 with the floor at 0.03, then 0.035, then narrowed about the loop's state); all are measured and the first that qualifies is v3's domain (supersedes R-313's family and its floor)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 eighth ruling round, on build log D84 and D87 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.7 F1; ADR 0027 Amendment 4 |
+| Evidence | D84: V1 19/21, V2 19/21, V3 20/21 `ok` in both runs. All five failures are 653.15 K corners at y_inert 0.02 and high P that exhaust S1's 400 steps, and all five 0.2-inert twins are `ok`. M05's two points and every centre are `ok`. D87: the loop's reactor-inlet inert fraction is 0.045484 at 653.15 K and 0.040468 at 693.15 K |
+| Affected packages | M02 (v3's box and `inert_min`, G11v3-4, -6, -11, -12, G12v3-2, G9 (a1)), M05 (the floor inequality), M07 (design space) |
+
+**Decision.**
+- V4 = V3 with y_inert ∈ [0.03, 0.2]; V5 = V3 with y_inert ∈ [0.035, 0.2]; V6 = V5 with P ∈ [9.5, 10.5] MPa and
+  H₂/N₂ ∈ [2.75, 3.25]. All keep T_in [653.15, 693.15] K, the flow bound and B3's centre. V6 ⊆ V5 ⊆ V4 ⊆ V3.
+- 21 registered points per rung, as R-313. All three rungs are measured in both full runs, and the first that is all
+  `ok` in both is selected. If none is, the WO stops and N7 goes to Frank; no further narrowing without him.
+- Everything is re-measured, because R-316 changes the child. The old points are R-316's inertness proof.
+- The script refuses to write a record unless the rungs nest and the loop's measured states (M05's points, D87's two
+  edges) lie inside every rung.
+- G12v3-2: the loop at 653.15 K and 693.15 K on the registered v3 converges and verified, with no `out_of_domain`
+  refusal. It replaces Q-E1's 1.5-margin revisit rule.
+
+**Rejected alternatives, and why.**
+- A floor ≥ 0.04: the loop sits at 0.040468 at 693.15 K.
+- A T_in-dependent floor: the domain would stop being a box with one linear inequality, and it is unmeasured.
+- Narrowing P first with the floor at 0.02: unmeasured, costs M07's design space, and P does not separate the
+  failures.
+- Raising T_in's lower bound: M05's REAL box edge would leave the domain.
+- Re-measuring only the 32 new inlets: valid only for an unchanged child.
+
+**Watch for.** S1's cliff at 653.15 K (31–47 steps or 400, nothing between): corners can miss interior failures. Any
+M05 decision variable beyond T_in, which would move the loop's inert fraction outside what D87 measured.
+
+---
+
+## R-316 — Round 2 runs whenever δ₁ > 10⁻⁷, whatever certificate₁'s verdict; certificate₂ decides when it runs (amends R-311)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 eighth ruling round, on build log D85 and D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.7 F2; ADR 0027 Amendment 4 |
+| Evidence | D85: two points have a failed certificate₁ with δ₁ = 1.88e-5 and 2.28e-4; under D78's ordering both ran round 2, passed certificate₂ and ended `ok`. At all 8 G10 runs and every rung point certificate₁ passes with δ₁ ≤ 10⁻⁷ |
+| Affected packages | M02 (v3's child `after_s3`, profile `M01-S123-v2` `round2.when`, G10v3, G11v3-3, -10, -11) |
+
+**Decision.**
+- If δ₁ ≤ 10⁻⁷, round 2 does not run, and certificate₁ decides.
+- Otherwise round 2 runs whatever certificate₁'s verdict. If it does not converge, the stage is `S3`; if it does,
+  certificate₂ decides.
+- G10v3 is unchanged by construction and re-asserted bitwise against D83's record. G11v3-11 asserts every other old
+  point's stage, step counts and outlet bitwise.
+
+**Rejected alternatives, and why.**
+- Keeping R-311's rule: its stated reason ("no measured point") is refuted, and it refuses evaluations round 2 brings
+  to a certified state.
+- Round 2 after every failed certificate₁, whatever δ₁: an element-balanced state gives the round nothing to fix.
+
+**Watch for.** A point where certificate₂ fails; none has been measured.
+
+---
+
+## R-317 — A coupled replay checks the inlet against the request the answer is attributed to, and the coupling record's floats are floored at their registered thresholds (resolves RP-2; amends R-308's acceptance)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`reviewer`), M02 review (`docs/reviews/M02-review.md` F1, F2, §3) |
+| Normative text | `docs/reviews/M02-review.md` §3 rows RP-2 (a) and (b); to be carried into ADR 0034 as Amendment 1 by WO-13 |
+| Evidence | Build log D93 (RP-2's seam: EXT-COUPLING checks fail on the recorded request; ρ 0 → 2.0e-12 and r_ξ 0 → −8.3e-17 compared relative-only). Review F1: on G12's real loop, r_ξ ≈ 1.5e-5 is a cancellation of terms ≈ 0.2, so an inner-state difference of 1e-13 relative moves it 1.3e-9 relative, so (b) is not limited to the stand-in |
+| Affected packages | M02 (replay, certificate evidence, A32 coverage), M05 (binds coupled replays) |
+
+**Decision.**
+- **(a)** EXT-COUPLING's bitwise inlet check compares the certified inlet with the inputs of the request the answer is attributed to:
+  - live: the request sent (unchanged);
+  - replay: the request `RecordedExperiments` recomputes at the rerun's inlet, whose agreement with the recorded one within the archive's policy is the replay's guarantee.
+
+  The rerun record keeps embedding the recorded documents.
+- **(b)** Every float of `experiment.schema.json#/$defs/coupling`, and every envelope field a re-evaluation compares, is classified under ADR 0007 D2.2 and D2.3:
+  - `rho` is floored at 1;
+  - `r_xi` at the record's `tau_xi_rel`;
+  - `r_T` at its `tau_T_K`;
+  - `defect_rel` at 1e-6;
+  - `defect` and flows at the flow kind's floor;
+  - `step.B` and `step.du` are reported, not compared (comparability window), while step kinds and k stay R0;
+  - the rest is relative.
+
+  The floors are scoped to the coupled record, and no pre-M02 comparison or pinned digest moves. A32, or an M02 twin, enumerates the schema.
+- RP-2 then passes without an xfail. A second case runs on a w-dependent synthetic loop.
+
+**Rejected alternatives, and why.**
+- An absolute floor of 1e-9 on ρ: an invented floor, which ADR 0007 D2.2 rejects.
+- Writing the recomputed request into the rerun record: it would pair a request that was never sent with a served result.
+- Descoping cross-platform coupled replay: D2.3 makes the recording package own the classification.
+
+**Watch for.** A new float in the coupling record without a row; a live path that stops being bitwise.
+
+---
+
+## R-318 — On `revision_coupled`, every `constants_sha256` in the bundle is compared for shape (ratifies build log D94)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`reviewer`), M02 review §3 |
+| Normative text | `docs/reviews/M02-review.md` §3 row D94; build log D94; R-308 item 1 |
+| Evidence | D94: the final digest is copied into five artifacts (8 places), so a last-bit rerun could never be MATCH under item 1 read literally |
+| Affected packages | M02 (`revision_run._constants_for_shape`) |
+
+**Decision.** The shape rule applies to every `constants_sha256` in every artifact of a coupled bundle. The R0 guard is R-308 item 2's recomputation of the final digest at the recorded w, with the current build, which also catches a build that changed the constants.
+
+**Rejected alternatives, and why.** Item 1 read literally, covering the manifest and `iterations[].inner` only. The copies stay exact, and RP-2 becomes unreachable.
+
+**Watch for.** A `constants_sha256` field that digests something other than an inner solve of w, added to a coupled bundle.
+
+---

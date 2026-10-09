@@ -1,0 +1,1097 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/experiment.schema.json",
+  "title": "Experiment",
+  "description": "M02 design note §3.2–§3.5 and §7.1, ADR 0033 D4–D6, D9, ADR 0034 D6. The records of external-model evaluations: a `request` (its `experiment_key` is the `document_sha256` of the request without the key; nothing is quantized), a write-once `result` for a deterministic outcome, one `attempt` per execution, the coupled route's `coupling` record (the bundle member `external-coupling.json`) and the `experiment` job body. A transient failure leaves attempts and no result; no record carries fabricated outlet values. Timings are excluded from every identity.",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "model_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "artifact_ref"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "artifact_ref": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "description": "A variant-backed model: its id, the variant id and the variant's SHA-256 (§6.1)."
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "components",
+        "n",
+        "T",
+        "P"
+      ],
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "n": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "description": "mol/s, exact binary64, in `components` order."
+        },
+        "T": {
+          "type": "number",
+          "description": "K"
+        },
+        "P": {
+          "type": "number",
+          "description": "Pa"
+        }
+      },
+      "description": "A process inlet in SI units, copied exactly (no Quantity, no conversion)."
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "experiment_key",
+        "model",
+        "boundary",
+        "inputs",
+        "environment_fingerprint_sha256"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "experiment-request-v1"
+        },
+        "experiment_key": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "model": {
+          "$ref": "#/$defs/model_ref"
+        },
+        "boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provider_id",
+            "provider_identity_sha256",
+            "n_tubes",
+            "sweep_ratio"
+          ],
+          "properties": {
+            "provider_id": {
+              "type": "string"
+            },
+            "provider_identity_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "`document_sha256` of the provider's `describe()`."
+            },
+            "n_tubes": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "sweep_ratio": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "inputs": {
+          "$ref": "#/$defs/inputs"
+        },
+        "environment_fingerprint_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "description": "§3.2. Context — the requesting job, purpose, timestamps, timeout, cache mode — is not in the identity."
+    },
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "code",
+        "message",
+        "outlet",
+        "xi",
+        "Q",
+        "defect",
+        "defect_rel",
+        "pressure_drop_relative",
+        "Q_coolant",
+        "inlet_face_heat_loss",
+        "discretization_estimate",
+        "domain_status",
+        "extrapolated_bounds",
+        "identity"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ok",
+            "unsupported",
+            "out_of_domain",
+            "not_converged",
+            "error"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "outlet": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "n",
+                "T",
+                "P"
+              ],
+              "properties": {
+                "n": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "T": {
+                  "type": "number"
+                },
+                "P": {
+                  "type": "number"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "xi": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "Q": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "defect": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "defect_rel": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pressure_drop_relative": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "Q_coolant": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "inlet_face_heat_loss": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "discretization_estimate": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "domain_status": {
+          "enum": [
+            "within_data_domain",
+            "extrapolated",
+            null
+          ]
+        },
+        "extrapolated_bounds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "model_id",
+                "synthetic",
+                "reactor_commit",
+                "pymrm_version",
+                "overlay_sha256",
+                "configuration_sha256",
+                "profile"
+              ],
+              "properties": {
+                "model_id": {
+                  "type": "string"
+                },
+                "synthetic": {
+                  "type": "boolean"
+                },
+                "reactor_commit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "pymrm_version": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "overlay_sha256": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "configuration_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "profile": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "maxProperties": 0
+            }
+          ],
+          "description": "M01 spec §8.12: the full identity on `ok`; a refusal (`boundary.refused`) carries an empty one."
+        }
+      },
+      "description": "M01 spec §8.12: `ReactorResult.as_document()`. A refusal carries no outlet values: every member but status, code, message and identity is null."
+    },
+    "accuracy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "precision_floor_rel",
+        "measured_path_independence_rel",
+        "discretization_estimate"
+      ],
+      "properties": {
+        "precision_floor_rel": {
+          "type": "number",
+          "minimum": 0
+        },
+        "measured_path_independence_rel": {
+          "type": "number",
+          "minimum": 0
+        },
+        "discretization_estimate": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "description": "The variant's accuracy block, copied."
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "experiment_key",
+        "request_sha256",
+        "outcome_class",
+        "envelope",
+        "accuracy",
+        "produced_by",
+        "provenance",
+        "provider_calls",
+        "determinism_findings"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "experiment-result-v1"
+        },
+        "experiment_key": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "request_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "`document_sha256` of the stored `request` document (key included)."
+        },
+        "outcome_class": {
+          "const": "deterministic"
+        },
+        "envelope": {
+          "$ref": "#/$defs/envelope"
+        },
+        "accuracy": {
+          "$ref": "#/$defs/accuracy"
+        },
+        "produced_by": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "job_id",
+            "attempt"
+          ],
+          "properties": {
+            "job_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^job-[0-9]{6,}$"
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "variant_id",
+            "variant_sha256",
+            "reactor",
+            "fingerprint_sha256"
+          ],
+          "properties": {
+            "variant_id": {
+              "type": "string"
+            },
+            "variant_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "reactor": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "description": "The variant's rights block; null for an in-process variant."
+            },
+            "fingerprint_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "provider_calls": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "R-233: the experiment's own provider calls, unmetered by any solve budget."
+        },
+        "determinism_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "attempt",
+              "differing_fields"
+            ],
+            "properties": {
+              "attempt": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "differing_fields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "description": "§5.3: a bypassed repeat that differed; appending here is the one permitted update of a result."
+        }
+      },
+      "description": "§3.3: a deterministic outcome, written once."
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "experiment_key",
+        "attempt",
+        "job_id",
+        "execution",
+        "repeat_of",
+        "repeat_bitwise_equal"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "experiment-attempt-v1"
+        },
+        "experiment_key": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "job_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^job-[0-9]{6,}$"
+        },
+        "execution": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "status",
+            "exit_code",
+            "signal",
+            "message",
+            "tube_inlet",
+            "tube_outlet",
+            "stage",
+            "diagnostics",
+            "fingerprint",
+            "logs",
+            "timing"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "in_process",
+                "out_of_process"
+              ]
+            },
+            "status": {
+              "enum": [
+                "completed",
+                "not_executed",
+                "timed_out",
+                "crashed",
+                "protocol_error",
+                "spawn_failed",
+                "environment_unavailable",
+                "environment_mismatch",
+                "environment_changed",
+                "cancelled"
+              ]
+            },
+            "exit_code": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "signal": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "tube_inlet": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "flow",
+                    "composition",
+                    "temperature",
+                    "outlet_pressure",
+                    "coolant_flow",
+                    "coolant_composition",
+                    "coolant_temperature",
+                    "coolant_outlet_pressure"
+                  ],
+                  "properties": {
+                    "flow": {
+                      "type": "number"
+                    },
+                    "composition": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "temperature": {
+                      "type": "number"
+                    },
+                    "outlet_pressure": {
+                      "type": "number"
+                    },
+                    "coolant_flow": {
+                      "type": "number"
+                    },
+                    "coolant_composition": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "coolant_temperature": {
+                      "type": "number"
+                    },
+                    "coolant_outlet_pressure": {
+                      "type": "number"
+                    }
+                  },
+                  "description": "`boundary.TubeInlet`, as sent to the evaluation."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "tube_outlet": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "flows",
+                    "temperature",
+                    "pressure_drop",
+                    "coolant_heat",
+                    "inlet_face_heat_loss"
+                  ],
+                  "properties": {
+                    "flows": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "temperature": {
+                      "type": "number"
+                    },
+                    "pressure_drop": {
+                      "type": "number"
+                    },
+                    "coolant_heat": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "inlet_face_heat_loss": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  },
+                  "description": "`boundary.TubeOutlet`, raw, as received from the evaluation."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "stage": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-Za-z0-9_]+$"
+            },
+            "diagnostics": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "description": "The child's own: stages, u_ret_min, min_axial_flow, dP, coolant heat, inlet-face loss, wall per stage."
+            },
+            "fingerprint": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "description": "What the child reported (the handshake's full fingerprint, or an evaluation's cheap part)."
+            },
+            "logs": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "stdout_sha256",
+                    "stderr_sha256",
+                    "relpaths"
+                  ],
+                  "properties": {
+                    "stdout_sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "stderr_sha256": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "relpaths": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "stdout",
+                        "stderr"
+                      ],
+                      "properties": {
+                        "stdout": {
+                          "type": "string"
+                        },
+                        "stderr": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "timing": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "wall_s",
+                "startup_s",
+                "solve_s"
+              ],
+              "properties": {
+                "wall_s": {
+                  "type": "number"
+                },
+                "startup_s": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "solve_s": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "repeat_of": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "repeat_bitwise_equal": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "§3.3: one execution, written before its result is used. Statuses: `completed` and `not_executed` are deterministic; the others transient."
+    },
+    "coupling_unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inlet",
+        "request",
+        "result",
+        "attempts",
+        "cache_hit",
+        "xi_E",
+        "T_E",
+        "n_N2_in",
+        "n_tot_in",
+        "r_xi",
+        "r_T",
+        "floor_ratio_xi",
+        "floor_ratio_T"
+      ],
+      "properties": {
+        "inlet": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "n",
+            "T",
+            "P"
+          ],
+          "properties": {
+            "n": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "T": {
+              "type": "number"
+            },
+            "P": {
+              "type": "number"
+            }
+          }
+        },
+        "request": {
+          "$ref": "#/$defs/request"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/result"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attempts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/attempt"
+          }
+        },
+        "cache_hit": {
+          "type": "boolean"
+        },
+        "xi_E": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "T_E": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "n_N2_in": {
+          "type": "number"
+        },
+        "n_tot_in": {
+          "type": "number"
+        },
+        "r_xi": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "r_T": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "floor_ratio_xi": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "floor_ratio_T": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "coupling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "route",
+        "variants",
+        "frozen",
+        "coupling_block",
+        "iterations",
+        "outcome",
+        "reason"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "external-coupling-v1"
+        },
+        "route": {
+          "const": "revision_coupled"
+        },
+        "variants": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "https://github.com/frankp/process-runtime/schemas/model-variant.schema.json"
+          }
+        },
+        "frozen": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "variant_sha256",
+              "fingerprint_sha256",
+              "fingerprint"
+            ],
+            "properties": {
+              "variant_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "fingerprint_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "fingerprint": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "coupling_block": {
+          "type": "object"
+        },
+        "iterations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "k",
+              "w",
+              "u",
+              "inner",
+              "units",
+              "rho",
+              "step"
+            ],
+            "properties": {
+              "k": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "w": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "u": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "inner": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "outcome",
+                  "iterations",
+                  "start",
+                  "constants_sha256",
+                  "state_sha256"
+                ],
+                "properties": {
+                  "outcome": {
+                    "type": "string"
+                  },
+                  "iterations": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "start": {
+                    "type": "string"
+                  },
+                  "constants_sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state_sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              "units": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/$defs/coupling_unit"
+                }
+              },
+              "rho": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "step": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "du",
+                  "B"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "du": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "B": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "§7.1: the bundle member `external-coupling.json` of a `revision_coupled` run. The documents are embedded, so the bundle stands alone."
+    },
+    "experiment_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "inlet",
+        "n_tubes"
+      ],
+      "properties": {
+        "model": {
+          "$ref": "#/$defs/model_ref"
+        },
+        "inlet": {
+          "$ref": "#/$defs/inputs"
+        },
+        "n_tubes": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "cache": {
+          "enum": [
+            "use",
+            "bypass"
+          ],
+          "default": "use"
+        }
+      },
+      "description": "§3.5 (ADR 0019 Amendment 4, part 1): one request per job; SI only. `bypass` re-executes and records the repeat, never overwriting the result (§5.3)."
+    }
+  }
+}
