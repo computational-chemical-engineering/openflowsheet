@@ -138,6 +138,8 @@ from openflowsheet.orchestrator.rank import (
 )
 from openflowsheet.studies.sensitivity import TAU_ALIAS
 from openflowsheet.studies.trust_region.holders import (
+    LINK_BOUNDS,
+    LINK_COORDINATES,
     EFHolder,
     PropertyBlockBox,
     TruthBox,
@@ -147,10 +149,6 @@ from openflowsheet.studies.trust_region.holders import (
 SOURCE_MAP_SCHEMA: Final = "projection-source-map-v1"
 #: §6.1: the floor under |y(x₀)| in an output scale, so a zero start value gets a finite scale.
 OUTPUT_SCALE_FLOOR: Final = 1e-6
-#: §6.1 step 3 / ADR 0038 D3: an external unit's coupling coordinates and their admissible ranges
-#: (M04 spec §3.2's A(s) bounds on X̂ and ΔT̂, in K).
-LINK_COORDINATES: Final = ("X", "dT")
-LINK_BOUNDS: Final[Mapping[str, tuple[float, float]]] = {"X": (0.0, 0.95), "dT": (-50.0, 250.0)}
 #: §6.1: the inlet order of an external link, (n_H₂, n_N₂, n_NH₃, n_Ar, n_CH₄, T, P).
 LINK_INLET_SIZE: Final = 7
 #: R-275: the provenance of the unit scales a spec without any declared kind is projected with.

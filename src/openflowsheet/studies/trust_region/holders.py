@@ -60,6 +60,12 @@ TRF_FD_POINT: Final = "trf_fd_point"
 BASIS_FD_POINT: Final = "basis_fd_point"
 FDCHECK_POINT: Final = "fdcheck_point"
 
+#: §6.1 step 3 / ADR 0038 D3: an external unit's coupling coordinates and their admissible ranges
+#: (M04 spec §3.2's A(s) bounds on X̂ and ΔT̂, in K). Here, not in `projection`, so the Pyomo-free
+#: parent checks (P3, §7.4) read the same object the projection bounds its link variables with.
+LINK_COORDINATES: Final = ("X", "dT")
+LINK_BOUNDS: Final[Mapping[str, tuple[float, float]]] = {"X": (0.0, 0.95), "dT": (-50.0, 250.0)}
+
 #: `describe()["kind"]` of a truth whose evaluations are M02 experiments: the one kind of box that
 #: counts against a parent budget (§16.4). Surrogates and in-process test truths never do.
 PARENT_EXPERIMENT: Final = "parent_experiment"
