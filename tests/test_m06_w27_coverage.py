@@ -26,6 +26,8 @@ DRY: dict[str, Any] = json.loads(registration.DRY_JSON.read_bytes())
 TODAY: dict[str, Any] = DRY["snapshots"]["today"]["snapshot"]
 HYPOTHETICAL: dict[str, Any] = DRY["snapshots"]["hypothetical_v02"]["snapshot"]
 AMENDMENT_2: dict[str, Any] = DRY["amendment_2"]
+AMENDMENT_3: dict[str, Any] = DRY["amendment_3"]
+HYPOTHETICAL_A3: dict[str, Any] = AMENDMENT_3["snapshot"]
 FACTS: dict[str, Any] = facts.load_facts()
 BY_ID: dict[str, dict[str, Any]] = {c["case_id"]: c for c in FACTS["cases"]}
 TEST_PROVIDER = "test-pr"
@@ -428,6 +430,82 @@ def test_a17_a19_refuse_through_the_cli(tmp_path: Path) -> None:
     assert not out.exists()
 
 
+# =================================================================================================
+# Amendment 3: `c1.reactor_surrogate` (§22; W27-A20–A22 of §22.3, not the sample tests below)
+# =================================================================================================
+
+SURROGATE = "c1.reactor_surrogate"
+A3_STATES = [s for s in AMENDMENT_3["adversarial_states"] if "case" in s]
+A3_REFUSALS = {s["state"]: s for s in AMENDMENT_3["adversarial_states"] if "case" not in s}
+
+
+def test_amendment_3_row_and_snapshot() -> None:
+    row = registration.load()["units"]["model_functions"][SURROGATE]
+    assert row == {"function": None, "offers": [], "why_none": "surrogate_model"}
+    assert "surrogate_model" in registration.load()["units"]["model_none_reasons"]
+    models = [m["model_id"] for m in HYPOTHETICAL_A3["models"]]
+    assert models == sorted(models) and len(models) == 22 and SURROGATE in models
+    assert [m["model_id"] for m in HYPOTHETICAL["models"]] == [m for m in models if m != SURROGATE]
+    assert len(HYPOTHETICAL_A3["routes"][-1]["model_ids"]) == 9
+    assert SURROGATE in HYPOTHETICAL_A3["routes"][-1]["model_ids"]
+    assert AMENDMENT_3["snapshot_sha256"] == registration.sha256_bytes(
+        registration.dump(HYPOTHETICAL_A3)
+    )
+    coverage.check_snapshot(HYPOTHETICAL_A3, FACTS, TEST_METHODS)
+
+
+def test_amendment_3_changes_no_case() -> None:
+    """GC-A3-2: classified with the registered methods, the a3 snapshot equals the hypothetical."""
+    methods = {**registration.provider_methods(), "hypothetical-pr-c1": "cubic_pr"}
+    on_a3 = coverage.classify(FACTS, HYPOTHETICAL_A3, methods)
+    on_hyp = coverage.classify(FACTS, HYPOTHETICAL, methods)
+    assert [(r["case_id"], r["class"], triples(r)) for r in on_a3["rows"]] == [
+        (r["case_id"], r["class"], triples(r)) for r in on_hyp["rows"]
+    ]
+    assert on_a3["summary"] == AMENDMENT_3["summary"] == on_hyp["summary"]
+    assert on_a3["summary"] == DRY["snapshots"]["hypothetical_v02"]["summary"]
+    assert AMENDMENT_3["cases_whose_class_or_reasons_differ_from_hypothetical_v02"] == {
+        "count": 0,
+        "cases": [],
+    }
+
+
+def test_a20_the_surrogate_serves_neither_reactor_function() -> None:
+    assert [s["state"].split(" ")[0] for s in A3_STATES] == ["A20-e", "A20-f"]
+    by_label = {s["state"].split(" ")[0]: s for s in A16_STATES}
+    for state, source in zip(A3_STATES, (by_label["A16-e"], by_label["A16-f"]), strict=True):
+        assert state["snapshot"] == "hypothetical_v02_a3"
+        row = coverage.classify_case(state["case"], HYPOTHETICAL_A3, TEST_METHODS)
+        got = [{"kind": k, "subject": s, "detail": d} for k, s, d in triples(row)]
+        assert row["class"] == state["expected_class"] == "UNIT_UNAVAILABLE"
+        assert got == state["reasons"] == source["reasons"]
+    assert [r["detail"] for s in A3_STATES for r in s["reasons"]] == [
+        "no_model:conversion_reactor units=fs.rxr",
+        "no_model:kinetic_reactor units=fs.cstr",
+    ]
+
+
+def test_a21_the_surrogate_on_no_route_is_refused() -> None:
+    *others, c1_route = HYPOTHETICAL_A3["routes"]
+    dropped = {**c1_route, "model_ids": [m for m in c1_route["model_ids"] if m != SURROGATE]}
+    message = _refused({**HYPOTHETICAL_A3, "routes": [*others, dropped]})
+    assert message == f"models on no route ['{SURROGATE}']"
+    (state,) = [s for k, s in A3_REFUSALS.items() if k.startswith("A21")]
+    assert state["expected"].endswith(message)
+
+
+def test_a22_amendment_2s_model_functions_refuse_the_surrogate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    amended = copy.deepcopy(registration.load())
+    del amended["units"]["model_functions"][SURROGATE]
+    monkeypatch.setattr(registration, "load", lambda: amended)
+    message = _refused(HYPOTHETICAL_A3)
+    assert message == f"unregistered model ids ['{SURROGATE}']"
+    (state,) = [s for k, s in A3_REFUSALS.items() if k.startswith("A22")]
+    assert state["expected"].endswith(message)
+
+
 def test_the_hypothetical_v02_and_today_are_not_refused() -> None:
     coverage.check_snapshot(HYPOTHETICAL, FACTS)
     coverage.check_snapshot(TODAY, FACTS)
@@ -531,8 +609,12 @@ class _ConstructedBasis:
 
 
 TODAY_MODEL_IDS = sorted(m["model_id"] for m in TODAY["models"])
+#: The eight C1 ids of Amendment 2. A build carrying `c1.reactor_surrogate` compares J3-J6 with
+#: `hypothetical_v02_a3` (§22.2); that is wp/M04's, so the surrogate is left out here.
 C1_MODEL_IDS = sorted(
-    m for m in registration.load()["units"]["model_functions"] if m.startswith("c1.")
+    m
+    for m in registration.load()["units"]["model_functions"]
+    if m.startswith("c1.") and m != "c1.reactor_surrogate"
 )
 
 
