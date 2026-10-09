@@ -519,3 +519,10 @@ Grep, don't read whole. Newest at the bottom.
   reverting that merge; M02's later commits merge cumulatively.
 - `opus-engineer` diagnosis probe of the TRF infeasible-subproblem shape (`y − 90z`), with C1 formulation implications
   (scratchpad only, no src commits).
+- TRF shape probe (scratchpad `m05-probe2`): the `y − 90z` "infeasible subproblem" is TRF's default basis b ≡ 0 (already
+  rejected by ADR 0038) failing the iteration-0 PMP; with b(w₀) = d(w₀) it converges. C1-shaped toy converges with the
+  registered bases (6 starts within 4e-3 of the grid optimum). Two TRF defects found: "Optimal" with zero TRSPs when
+  θ_PMP = 0; stall test compares θ with itself ("Feasible solution found" at θ = 1.80). Safe = forward shape (C1's link
+  is); unsafe = EF output pinned by decisions alone. Proposed rules: refuse `basis_rule=None`; projection refusal
+  `PROJECTION_IMPLICIT_EF_INPUT` (Dulmage–Mendelsohn); Taylor basis for the reactor EF without a promoted surrogate + no
+  TRF_CONVERGED without an accepted TRSP; re-check θ on stalled exits. ADR 0040 T2 not fired. Sent to the M05 architect.
