@@ -708,3 +708,10 @@ Grep, don't read whole. Newest at the bottom.
   (sha 8b92540a…, V5, `inert_min` 0.035, timeout 450 s); G12 under v3 met (ρ 0.292, VERIFIED, replay MATCH bitwise);
   G12v3-2 both edges met (min inert request 0.039076 = 1.116× floor; slowest experiment 108.8 s). Digest 383b4e2c…
   unmoved. M02 `reviewer` launched with the batched rulings.
+
+- **M02 review** (2026-10-09, `reviewer`, `wp/M02` `4c3623a`, R-317/R-318): numerics sound (driver honest per §4.3/R-305;
+  v3 child per R-311→R-316, R-312). Must-fix F1 unclassified recorded floats in `external-coupling.json`; F2 replay
+  EXT-COUPLING compares the recorded request; F3 f5 end-to-end. Should-fix F4 (no w-dependent external map in default
+  gate), F5 (inner failure reason dropped). RP-2: (a) recompute request at rerun inlet, live check stays bitwise; (b)
+  floors = each quantity's own threshold, B/du reported not compared → ADR 0034 Am. 1 in WO-13. D94 kept; AC-1 = D9's
+  acceptance; D100–D115 ratified; c1-reactor.json stays v2.
