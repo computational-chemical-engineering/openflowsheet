@@ -125,9 +125,10 @@ def test_g20_every_hit_is_allowlisted_and_every_entry_is_hit() -> None:
     # By line: W0.5's 16 code hits (3 + 1 on regularity.py's three lines, 12 `_artifact_hash`),
     # W1's 4 schema `@cache`s, W3e's solution-state validator, W4b's INTERRUPT_CHECK, W6b's
     # `published_schemas` and MCP tool list; T08 W2's kinetic CSTR `_artifact_hash` (13th model);
-    # M01's `pr-c1-v1` records, parameters and source hash (3), its stand-in's `_artifact_hash`.
+    # M01's `pr-c1-v1` records, parameters and source hash (3), its stand-in's `_artifact_hash`;
+    # M04's surrogate-manifest checker's schema validators.
     per_line = Counter(hit for hits, count in found.values() for hit in hits for _ in range(count))
-    assert per_line == Counter({"cache": 24, "np.random": 3, "random": 1, "ContextVar": 1})
+    assert per_line == Counter({"cache": 25, "np.random": 3, "random": 1, "ContextVar": 1})
 
 
 def test_openflowsheet_never_imports_benchmarks() -> None:

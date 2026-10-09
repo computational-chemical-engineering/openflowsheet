@@ -51,6 +51,13 @@
       "justification": "The solution-state schema's validator, from the packaged schema file (immutable for the process's life)."
     },
     {
+      "file": "studies/surrogate/manifest.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "M04: the surrogate-manifest and model-evidence schemas' validators, keyed by schema file name, with their `$ref` registry, all from the packaged schema files (immutable for the process's life); never mutated, no job or request state."
+    },
+    {
       "file": "models/syn001/component_separator.py",
       "line": "@cache",
       "patterns": ["cache"],
