@@ -98,6 +98,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 WO-12a″ (§14.7) | `wp/M02` (`m02`) |
+| `opus-engineer` | M04 merge main + register surrogate + J3′–J6′ + corpus resolver (§22) | `wp/M04` (`m04`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
