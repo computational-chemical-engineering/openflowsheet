@@ -278,11 +278,13 @@ class LinkToyTruth:
     identity."""
 
     def describe(self) -> Mapping[str, Any]:
-        return {"kind": "test", "id": "link-toy", "sha256": None}
+        return {"kind": "test", "id": "link-toy", "sha256": None, "gradient": "analytic"}
 
     def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]:
+        from openflowsheet.studies.trust_region.truths import in_process_meta
+
         conversion = 0.2 + 1e-4 * (inlet[5] - 680.0)
-        return conversion, 350.0 * conversion, {"status": "ok"}
+        return conversion, 350.0 * conversion, in_process_meta()
 
     def gradient(self, inlet: Sequence[float]) -> Sequence[Sequence[float]]:
         row = [0.0, 0.0, 0.0, 0.0, 0.0, 1e-4, 0.0]

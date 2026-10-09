@@ -39,7 +39,8 @@ import math
 import threading
 import time
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import dataclass, field, replace
 from typing import Any, Final, Literal, Protocol
 
 from openflowsheet.canonical import encode_doubles
@@ -53,6 +54,15 @@ Served = Literal["cold", "store_hit", "memo_hit"]
 TRF_START_VALUE: Final = "trf_start_value"
 TRF_PMP_VALUE: Final = "trf_pmp_value"
 TRF_TRIAL_VALUE: Final = "trf_trial_value"
+#: The finite-difference policy's points (`truths.py`, M05-fd-v1): a gradient TRF asked for, the
+#: affine basis's gradient at w₀ (§6.6), and the once-per-study gradient-quality check (§6.5).
+TRF_FD_POINT: Final = "trf_fd_point"
+BASIS_FD_POINT: Final = "basis_fd_point"
+FDCHECK_POINT: Final = "fdcheck_point"
+
+#: `describe()["kind"]` of a truth whose evaluations are M02 experiments: the one kind of box that
+#: counts against a parent budget (§16.4). Surrogates and in-process test truths never do.
+PARENT_EXPERIMENT: Final = "parent_experiment"
 
 #: Orders refusals across holders, so the runner can name the first one of a run.
 _REFUSAL_ORDER = itertools.count()
@@ -63,13 +73,17 @@ _BUDGET_LOCK = threading.Lock()
 class TruthRefused(Exception):  # noqa: N818 - the design note's name (§6.3; ADR 0038 D5)
     """A black box refused a request (ADR 0038 D5). `status` is the class of refusal — a truth's
     experiment status, `property_domain_error`, `non_finite_output`, `non_finite_input` or
-    `budget` — and `reason` names what refused or why; `detail` is free text for the record."""
+    `budget` — and `reason` names what refused or why; `detail` is free text for the record.
+    `meta` is the refusing truth's (§16.4), so a refused experiment is still accounted for."""
 
-    def __init__(self, status: str, reason: str, detail: str = "") -> None:
+    def __init__(
+        self, status: str, reason: str, detail: str = "", meta: Mapping[str, Any] | None = None
+    ) -> None:
         super().__init__(f"{status}:{reason}" + (f" ({detail})" if detail else ""))
         self.status = status
         self.reason = reason
         self.detail = detail
+        self.meta: Mapping[str, Any] = {} if meta is None else dict(meta)
         self.order = next(_REFUSAL_ORDER)
 
     @property
@@ -145,6 +159,12 @@ class HolderRequest:
     purpose: str | None
     status: str
     wall_s: float
+    #: §16.4's `meta` of the value served (a truth's; `None`, 0, `False` for a property block and
+    #: for a Jacobian): the experiment's key, the executions this request caused (0 unless it was
+    #: served `cold` by an experiment), and whether the point is extrapolated.
+    experiment_key: str | None = None
+    executions: int = 0
+    extrapolated: bool = False
 
     def as_document(self) -> dict[str, Any]:
         return {
@@ -157,15 +177,20 @@ class HolderRequest:
             "purpose": self.purpose,
             "status": self.status,
             "wall_s": self.wall_s,
+            "experiment_key": self.experiment_key,
+            "executions": self.executions,
+            "extrapolated": self.extrapolated,
         }
 
 
 @dataclass(frozen=True)
 class BoxValues:
-    """A box's outputs at one input, and whether a truth served them from its store."""
+    """A box's outputs at one input, whether a truth served them from its store, and the truth's
+    `meta` (§16.4; empty for a property block)."""
 
     values: tuple[float, ...]
     store_hit: bool = False
+    meta: Mapping[str, Any] = field(default_factory=dict)
 
 
 class BlackBox(Protocol):
@@ -221,9 +246,11 @@ class PropertyBlockBox:
 
 class TruthModel(Protocol):
     """Design note §6.4: an expensive model of the seven inlet coordinates with two outputs, the
-    coupling coordinates (X, ΔT). `evaluate` returns them with a `meta` mapping whose `status`
-    is `ok` for a usable result and whose `cache_hit` says the store served it; `gradient` is the
-    2 × 7 Jacobian. The adapters live in `truths.py` (WO-4)."""
+    coupling coordinates (X, ΔT). `evaluate` returns them with §16.4's `meta`
+    `{status, cache_hit, experiment_key, executions, extrapolated}`, whose `status` is `ok` for a
+    usable result; `gradient` is the 2 × 7 Jacobian. A truth whose `describe()["gradient"]` is
+    `finite_difference` has no gradient of its own: its `finite_difference` policy is applied by
+    the holder, which requests every point. The adapters live in `truths.py`."""
 
     def describe(self) -> Mapping[str, Any]: ...
 
@@ -234,7 +261,12 @@ class TruthModel(Protocol):
 
 class TruthBox:
     """A `TruthModel` as a two-output black box. A status other than `ok` is a refusal with that
-    status (`out_of_domain`, `model_exception`, `timed_out`, `external_environment_changed`, …)."""
+    status and the truth's `code` as its reason when it gives one (`out_of_domain`,
+    `error:external_timed_out`, …), carrying the truth's `meta`.
+
+    `parent` says whether its evaluations are parent experiments, the only ones a parent budget
+    counts (§16.4). `finite_difference` is the truth's FD policy when its gradient is
+    `finite_difference`, else `None`; the holder then forms the Jacobian from value requests."""
 
     n_in: Final = 7
     n_out: Final = 2
@@ -242,17 +274,44 @@ class TruthBox:
     def __init__(self, truth: TruthModel) -> None:
         self.truth = truth
         self.identity = dict(truth.describe())
+        self.parent = self.identity.get("kind") == PARENT_EXPERIMENT
+        self.finite_difference: Any = None
+        if self.identity.get("gradient") == "finite_difference":
+            self.finite_difference = truth.finite_difference  # type: ignore[attr-defined]
+            if self.finite_difference is None:
+                raise ValueError(f"truth {self.identity.get('id')!r}: no finite-difference policy")
 
     def values(self, inputs: tuple[float, ...]) -> BoxValues:
         conversion, rise, meta = self.truth.evaluate(inputs)
         status = str(meta.get("status", "ok"))
         if status != "ok":
-            raise TruthRefused(status, str(self.identity.get("id", "truth")), str(meta))
-        return BoxValues((float(conversion), float(rise)), bool(meta.get("cache_hit", False)))
+            reason = str(meta.get("code") or self.identity.get("id", "truth"))
+            raise TruthRefused(status, reason, str(dict(meta)), meta)
+        return BoxValues(
+            (float(conversion), float(rise)), bool(meta.get("cache_hit", False)), dict(meta)
+        )
 
     def jacobian(self, inputs: tuple[float, ...]) -> tuple[tuple[float, ...], ...]:
+        if self.finite_difference is not None:
+            raise TypeError(
+                f"truth {self.identity.get('id')!r}: its Jacobian is the holder's finite "
+                "difference (EFHolder.request_jacobian)"
+            )
         matrix = self.truth.gradient(inputs)
         return tuple(tuple(float(value) for value in row) for row in matrix)
+
+
+def _settle(future: Future[Any]) -> Any:
+    """A finished future's result, or the exception it raised (returned, not raised)."""
+    error = future.exception()
+    return error if error is not None else future.result()
+
+
+def _call(function: Callable[..., Any], *args: Any) -> Any:
+    try:
+        return function(*args)
+    except Exception as error:  # noqa: BLE001 - returned to the batch, which re-raises it in order
+        return error
 
 
 class _InFlight:
@@ -300,7 +359,15 @@ class EFHolder:
     # -- the run --------------------------------------------------------------------------------
 
     def begin_run(self, run: RunState, budgets: Sequence[ColdBudget] = ()) -> None:
-        """Serve one TRF run: attribute requests to it and admit cold ones against `budgets`."""
+        """Serve one TRF run: attribute requests to it and admit cold ones against `budgets`.
+
+        A truth that is not a parent experiment never counts against a parent budget (§16.4):
+        budgets given to its holder are a configuration error."""
+        if budgets and not self._charges_budgets:
+            raise ValueError(
+                f"holder {self.name!r}: truth {self.truth_identity.get('id')!r} is not a parent "
+                "experiment and never counts against a parent budget (design note §16.4)"
+            )
         with self._lock:
             if self._run is not None:
                 raise RuntimeError(f"holder {self.name!r} already serves run {self._run.run_id!r}")
@@ -344,64 +411,47 @@ class EFHolder:
     ) -> tuple[float, ...]:
         """The box's outputs at the first `n_in` of `args`, from the memo or one evaluation.
 
-        `purpose` overrides the call-order purpose of a first request (the finite-difference
-        policy of WO-4 labels its points `trf_fd_point`)."""
-        inputs, key = self._key(args)
-        start = time.perf_counter()
-        while True:
-            with self._lock:
-                held = self._values.get(key)
-                if held is None:
-                    first_in_run = key not in self._run_value_keys
-                    run = self._run
-                    budgets = self._budgets
-                    self._values[key] = flight = _InFlight()
-                    break
-                if isinstance(held, _InFlight):
-                    pending = held
-                else:
-                    self._run_value_keys.add(key)
-                    self._append("value", key, "memo_hit", None, held, start)
-                    return self._unwrap(held)
-            pending.done.wait()
-
-        exhausted = _admit(budgets)
-        if exhausted is not None:
-            refusal = TruthRefused(
-                "budget", "budget_exhausted", f"{exhausted.name}: cap {exhausted.cap} reached"
-            )
-            with self._lock:
-                del self._values[key]
-                self._refusals.append(refusal)
-            flight.done.set()
-            raise refusal
-
-        outcome: BoxValues | TruthRefused
-        try:
-            outcome = self.box.values(inputs)
-            if not all(math.isfinite(value) for value in outcome.values):
-                outcome = TruthRefused("non_finite_output", self.name, "values")
-        except TruthRefused as refusal:
-            outcome = refusal
-
+        `purpose` labels the request whether it is served cold or from the memo (the
+        finite-difference points: `trf_fd_point`, `basis_fd_point`, `fdcheck_point`); without
+        one, the first request at a key in a run gets its purpose from TRF's call order, served
+        cold or not, and a repeated one gets none (design note §8.3)."""
+        outcome, entry = self._values_request(args, purpose)
         with self._lock:
-            self._values[key] = outcome
-            if isinstance(outcome, TruthRefused):
-                self._refusals.append(outcome)
-            if first_in_run:
-                chosen = purpose if purpose is not None else self._call_order_purpose(run)
-            else:
-                chosen = purpose
-            self._run_value_keys.add(key)
-            served: Served = (
-                "store_hit" if isinstance(outcome, BoxValues) and outcome.store_hit else "cold"
-            )
-            self._append("value", key, served, chosen, outcome, start)
-        flight.done.set()
+            self._ledger.append(replace(entry, seq=len(self._ledger)))
         return self._unwrap(outcome)
 
-    def request_jacobian(self, args: Sequence[float]) -> tuple[tuple[float, ...], ...]:
-        """The box's dense Jacobian at the first `n_in` of `args`, from the memo or one call."""
+    def request_batch(
+        self, points: Sequence[Sequence[float]], *, purpose: str, workers: int
+    ) -> tuple[tuple[float, ...], ...]:
+        """`request_values` at every point, on up to `workers` threads (§6.5), with the ledger
+        entries appended in point order whatever the completion order, so the ledger is the same
+        serial or concurrent. Every point is requested before any refusal is raised; the first
+        refusal in point order is then raised (any other exception likewise)."""
+        if workers > 1 and len(points) > 1:
+            with ThreadPoolExecutor(max_workers=min(workers, len(points))) as pool:
+                futures = [pool.submit(self._values_request, point, purpose) for point in points]
+            settled = [_settle(future) for future in futures]
+        else:
+            settled = [_call(self._values_request, point, purpose) for point in points]
+        with self._lock:
+            for result in settled:
+                if not isinstance(result, BaseException):
+                    self._ledger.append(replace(result[1], seq=len(self._ledger)))
+        values = []
+        for result in settled:
+            if isinstance(result, BaseException):
+                raise result
+            values.append(self._unwrap(result[0]))
+        return tuple(values)
+
+    def request_jacobian(
+        self, args: Sequence[float], *, purpose: str | None = None
+    ) -> tuple[tuple[float, ...], ...]:
+        """The box's dense Jacobian at the first `n_in` of `args`, from the memo or one call.
+
+        A box with a `finite_difference` policy (a parent truth, §6.5) has it formed here: the
+        base value (memo, normally), then its seven points through `request_batch`, labelled
+        `purpose` (`trf_fd_point` by default; `basis_fd_point` for the affine basis, §6.6)."""
         inputs, key = self._key(args)
         start = time.perf_counter()
         with self._lock:
@@ -411,24 +461,108 @@ class EFHolder:
                 return self._unwrap_jacobian(held)
         outcome: tuple[tuple[float, ...], ...] | TruthRefused
         try:
-            matrix = self.box.jacobian(inputs)
+            policy = getattr(self.box, "finite_difference", None)
+            if policy is not None:
+                base = self.request_values(inputs)
+                points = policy.points(inputs)
+                values = self.request_batch(
+                    points, purpose=purpose or TRF_FD_POINT, workers=policy.workers
+                )
+                matrix = policy.quotients(inputs, base, points, values)
+            else:
+                matrix = self.box.jacobian(inputs)
             if len(matrix) != self.n_out or any(len(row) != self.n_in for row in matrix):
                 raise ValueError(
                     f"holder {self.name!r}: the box returned a Jacobian that is not "
                     f"{self.n_out} x {self.n_in}"
                 )
             if all(math.isfinite(entry) for row in matrix for entry in row):
-                outcome = matrix
+                outcome = tuple(tuple(float(entry) for entry in row) for row in matrix)
             else:
                 outcome = TruthRefused("non_finite_output", self.name, "jacobian")
         except TruthRefused as refusal:
             outcome = refusal
         with self._lock:
             self._jacobians.setdefault(key, outcome)
-            if isinstance(outcome, TruthRefused):
+            if isinstance(outcome, TruthRefused) and outcome not in self._refusals:
                 self._refusals.append(outcome)
             self._append("jacobian", key, "cold", None, outcome, start)
         return self._unwrap_jacobian(outcome)
+
+    def _values_request(
+        self, args: Sequence[float], purpose: str | None
+    ) -> tuple[BoxValues | TruthRefused, HolderRequest]:
+        """One value request, and its ledger entry (unnumbered: the caller appends it)."""
+        inputs, key = self._key(args)
+        start = time.perf_counter()
+        while True:
+            with self._lock:
+                held = self._values.get(key)
+                first_in_run = key not in self._run_value_keys
+                if held is None:
+                    budgets = self._budgets if self._charges_budgets else ()
+                    chosen = purpose
+                    if chosen is None and first_in_run:
+                        chosen = self._call_order_purpose(self._run)
+                    self._run_value_keys.add(key)
+                    self._values[key] = flight = _InFlight()
+                    break
+                if not isinstance(held, _InFlight):
+                    chosen = purpose
+                    if chosen is None and first_in_run:
+                        chosen = self._call_order_purpose(self._run)
+                    self._run_value_keys.add(key)
+                    return held, self._entry("value", key, "memo_hit", chosen, held, start)
+                pending = held
+            pending.done.wait()
+
+        exhausted = _admit(budgets)
+        if exhausted is not None:
+            refusal = TruthRefused(
+                "budget", "budget_exhausted", f"{exhausted.name}: cap {exhausted.cap} reached"
+            )
+            with self._lock:
+                del self._values[key]
+                if first_in_run:
+                    self._run_value_keys.discard(key)
+                self._refusals.append(refusal)
+            flight.done.set()
+            raise refusal
+
+        outcome: BoxValues | TruthRefused
+        try:
+            outcome = self.box.values(inputs)
+            if not all(math.isfinite(value) for value in outcome.values):
+                outcome = TruthRefused(
+                    "non_finite_output", self.name, "values", getattr(outcome, "meta", None)
+                )
+        except TruthRefused as refusal:
+            outcome = refusal
+
+        with self._lock:
+            self._values[key] = outcome
+            if isinstance(outcome, TruthRefused):
+                self._refusals.append(outcome)
+            served: Served = (
+                "store_hit" if isinstance(outcome, BoxValues) and outcome.store_hit else "cold"
+            )
+            entry = self._entry("value", key, served, chosen, outcome, start)
+        flight.done.set()
+        return outcome, entry
+
+    @property
+    def _charges_budgets(self) -> bool:
+        """Whether cold requests are admitted against budgets: every box but a truth that is not a
+        parent experiment (a property block's budget is the WO-3 mechanism's test, G7)."""
+        return not isinstance(self.box, TruthBox) or self.box.parent
+
+    @property
+    def truth_identity(self) -> Mapping[str, Any]:
+        """The ledger's `truth: {kind, id}` (§8.1): a truth's `describe()`, or the block's."""
+        if isinstance(self.box, TruthBox):
+            return dict(self.box.identity)
+        block = getattr(self.box, "block", None)
+        return {"kind": "property_block", "id": getattr(block, "block_id", self.name)}
 
     # -- what the runner and the record read ----------------------------------------------------
 
@@ -479,6 +613,33 @@ class EFHolder:
             return TRF_START_VALUE if not self._run_value_keys else TRF_PMP_VALUE
         return TRF_TRIAL_VALUE
 
+    def _entry(
+        self,
+        call: CallKind,
+        key: bytes,
+        served: Served,
+        purpose: str | None,
+        outcome: object,
+        start: float,
+    ) -> HolderRequest:
+        """A ledger entry, unnumbered (`seq` −1 until it is appended)."""
+        run = self._run
+        meta: Mapping[str, Any] = getattr(outcome, "meta", None) or {}
+        return HolderRequest(
+            seq=-1,
+            run_id=run.run_id if run is not None else None,
+            call=call,
+            inputs_sha256=hashlib.sha256(key).hexdigest(),
+            served=served,
+            trf_iteration=run.current_iteration if run is not None else None,
+            purpose=purpose,
+            status=outcome.code if isinstance(outcome, TruthRefused) else "ok",
+            wall_s=time.perf_counter() - start,
+            experiment_key=meta.get("experiment_key"),
+            executions=0 if served == "memo_hit" else int(meta.get("executions", 0)),
+            extrapolated=bool(meta.get("extrapolated", False)),
+        )
+
     def _append(
         self,
         call: CallKind,
@@ -488,20 +649,8 @@ class EFHolder:
         outcome: object,
         start: float,
     ) -> None:
-        run = self._run
-        self._ledger.append(
-            HolderRequest(
-                seq=len(self._ledger),
-                run_id=run.run_id if run is not None else None,
-                call=call,
-                inputs_sha256=hashlib.sha256(key).hexdigest(),
-                served=served,
-                trf_iteration=run.current_iteration if run is not None else None,
-                purpose=purpose,
-                status=outcome.code if isinstance(outcome, TruthRefused) else "ok",
-                wall_s=time.perf_counter() - start,
-            )
-        )
+        entry = self._entry(call, key, served, purpose, outcome, start)
+        self._ledger.append(replace(entry, seq=len(self._ledger)))
 
     @staticmethod
     def _unwrap(outcome: BoxValues | TruthRefused) -> tuple[float, ...]:
