@@ -40,15 +40,15 @@ Verdict = dict[str, Any]
 #: P1: where Frank's answer to F1 is recorded, and the line that records it.
 APPROVAL_FILE: Final[Path] = registration.ROOT / "docs" / "V02_DECISIONS.md"
 APPROVAL_LINE: Final[str] = "- **W27 Tier 1 approved**"
-#: P2: the registered files' SHA-256 at registration (WO-15, `5ceb32c`), the document's as amended
-#: by its §20 (Amendment 1, M06 review F5). An amendment of the registration changes these pins in
-#: the commit that records it.
+#: P2: the registered files' SHA-256 at registration (WO-15, `5ceb32c`), as amended by the
+#: document's §20 (Amendment 1, M06 review F5) and §21 (Amendment 2: the C1 rows, W27-R62/R63). An
+#: amendment of the registration changes these pins in the commit that records it.
 REGISTERED_SHA256: Final[Mapping[Path, str]] = {
     registration.REGISTRATION_JSON: (
-        "ce59200a0bdaf26bbf6c830fb56e69d187d6dba81a0cb348a713d638e4544f7a"
+        "14ff19d98bb031a17917019e299661d7af5839d2fe3f13bad0fd2725a0717f84"
     ),
-    registration.DOCUMENT: "dd0b7f02798d6cc7123c309999a7ca3e8805ed2d6542c3a6abcb39a42773c540",
-    registration.GENERATOR: "98425556530bde87f07a1340e3217a36919862d802de1199204f550c38420f23",
+    registration.DOCUMENT: "42496ab921d2cb7317dda3f984bc4f7285af23d012132d1dabf18e3e697dbb51",
+    registration.GENERATOR: "67ec6e857c1ca081086a465a85ddf70a6c7b8d69847064ff6e230f6556c01835",
 }
 #: P5: the scripted reference builds of §7.
 CONFIRMATION: Final[Path] = registration.RECORDS / "confirmation"

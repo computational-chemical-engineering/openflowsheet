@@ -13,6 +13,21 @@
           "synthetic": false
         }
       ],
+      "added_route_model_ids": [
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
+      ],
       "case": {
         "case_id": "synthetic-w27",
         "expected_dof": 0,
@@ -82,6 +97,21 @@
     },
     {
       "added_route_components": [],
+      "added_route_model_ids": [
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
+      ],
       "case": {
         "case_id": "synthetic-w27",
         "expected_dof": 0,
@@ -167,6 +197,21 @@
           ],
           "synthetic": false
         }
+      ],
+      "added_route_model_ids": [
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
       ],
       "case": {
         "case_id": "synthetic-w27",
@@ -261,6 +306,21 @@
           ],
           "synthetic": false
         }
+      ],
+      "added_route_model_ids": [
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
       ],
       "case": {
         "case_id": "synthetic-w27",
@@ -357,6 +417,21 @@
           ],
           "synthetic": false
         }
+      ],
+      "added_route_model_ids": [
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
       ],
       "case": {
         "case_id": "synthetic-w27",
@@ -462,6 +537,21 @@
           "synthetic": false
         }
       ],
+      "added_route_model_ids": [
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
+      ],
       "case": {
         "case_id": "synthetic-w27",
         "expected_dof": 0,
@@ -548,6 +638,21 @@
           ],
           "synthetic": false
         }
+      ],
+      "added_route_model_ids": [
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
       ],
       "case": {
         "case_id": "synthetic-w27",
@@ -643,6 +748,21 @@
           "synthetic": false
         }
       ],
+      "added_route_model_ids": [
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
+      ],
       "case": "variant_idaes_iapws_pump_dp200k_eff75",
       "expected_class": "PROPERTY_ROUTE_UNAVAILABLE",
       "reasons": [
@@ -667,6 +787,781 @@
       "state": "A11 a registry chemical with an unaliased archive spelling"
     }
   ],
+  "amendment_2": {
+    "adversarial_states": [
+      {
+        "case": {
+          "case_id": "synthetic-w27",
+          "expected_dof": 0,
+          "family": "synthetic",
+          "files_missing": [],
+          "in_full82": false,
+          "listed_components": [
+            "H2"
+          ],
+          "model_type": "native_IDAES",
+          "objective_declared": false,
+          "package_source": "property_packages.json",
+          "packages": [
+            {
+              "classes": [
+                "GenericParameterBlock"
+              ],
+              "components": [
+                "H2"
+              ],
+              "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+              "name": "fs.props",
+              "phases": [
+                "vapor"
+              ]
+            }
+          ],
+          "parse_errors": [],
+          "residual_check": "pass",
+          "solve_dynamic": false,
+          "steady_state": true,
+          "topology_entry_ids": [],
+          "topology_kinds": [
+            "Feed",
+            "Heater",
+            "Product"
+          ],
+          "topology_package_names": [],
+          "unit_source": "units.json",
+          "units": [
+            {
+              "class_leaf": "_ScalarFeed",
+              "key": "idaes:Feed",
+              "names": [
+                "fs.feed"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarHeater",
+              "key": "idaes:Heater",
+              "names": [
+                "fs.heater"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarProduct",
+              "key": "idaes:Product",
+              "names": [
+                "fs.product"
+              ]
+            }
+          ]
+        },
+        "class_before_w27_r62": "CANDIDATE",
+        "expected_class": "CANDIDATE",
+        "reasons": [],
+        "snapshot": "hypothetical_v02",
+        "state": "A16-a C1 feed, heater and product serve the synthetic row",
+        "units_judged_on": "pr-c1-v1"
+      },
+      {
+        "case": {
+          "case_id": "synthetic-w27",
+          "expected_dof": 0,
+          "family": "synthetic",
+          "files_missing": [],
+          "in_full82": false,
+          "listed_components": [
+            "H2"
+          ],
+          "model_type": "native_IDAES",
+          "objective_declared": false,
+          "package_source": "property_packages.json",
+          "packages": [
+            {
+              "classes": [
+                "GenericParameterBlock"
+              ],
+              "components": [
+                "H2"
+              ],
+              "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+              "name": "fs.props",
+              "phases": [
+                "vapor"
+              ]
+            }
+          ],
+          "parse_errors": [],
+          "residual_check": "pass",
+          "solve_dynamic": false,
+          "steady_state": true,
+          "topology_entry_ids": [],
+          "topology_kinds": [
+            "Feed",
+            "Heater",
+            "Product"
+          ],
+          "topology_package_names": [],
+          "unit_source": "units.json",
+          "units": [
+            {
+              "class_leaf": "_ScalarFeed",
+              "key": "idaes:Feed",
+              "names": [
+                "fs.feed"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarMixer",
+              "config": {},
+              "key": "idaes:Mixer",
+              "names": [
+                "fs.mix"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarHeater",
+              "key": "idaes:Heater",
+              "names": [
+                "fs.heater"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarFlash",
+              "key": "idaes:Flash",
+              "names": [
+                "fs.flash"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarSeparator",
+              "config": {
+                "num_outlets": 2
+              },
+              "key": "idaes:Separator",
+              "names": [
+                "fs.split"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarProduct",
+              "key": "idaes:Product",
+              "names": [
+                "fs.product"
+              ]
+            }
+          ]
+        },
+        "class_before_w27_r62": "CANDIDATE",
+        "expected_class": "CANDIDATE",
+        "reasons": [],
+        "snapshot": "hypothetical_v02",
+        "state": "A16-b the six C1 unit functions in one chain",
+        "units_judged_on": "pr-c1-v1"
+      },
+      {
+        "case": {
+          "case_id": "synthetic-w27",
+          "expected_dof": 0,
+          "family": "synthetic",
+          "files_missing": [],
+          "in_full82": false,
+          "listed_components": [
+            "H2"
+          ],
+          "model_type": "native_IDAES",
+          "objective_declared": false,
+          "package_source": "property_packages.json",
+          "packages": [
+            {
+              "classes": [
+                "GenericParameterBlock"
+              ],
+              "components": [
+                "H2"
+              ],
+              "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+              "name": "fs.props",
+              "phases": [
+                "vapor"
+              ]
+            }
+          ],
+          "parse_errors": [],
+          "residual_check": "pass",
+          "solve_dynamic": false,
+          "steady_state": true,
+          "topology_entry_ids": [],
+          "topology_kinds": [
+            "Feed",
+            "Heater",
+            "Product"
+          ],
+          "topology_package_names": [],
+          "unit_source": "units.json",
+          "units": [
+            {
+              "class_leaf": "_ScalarFeed",
+              "key": "idaes:Feed",
+              "names": [
+                "fs.feed"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarHeater",
+              "key": "idaes:Heater",
+              "names": [
+                "fs.heater"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarProduct",
+              "key": "idaes:Product",
+              "names": [
+                "fs.product"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarPump",
+              "key": "idaes:Pump",
+              "names": [
+                "fs.pump"
+              ]
+            }
+          ]
+        },
+        "class_before_w27_r62": "CANDIDATE",
+        "expected_class": "UNIT_UNAVAILABLE",
+        "reasons": [
+          {
+            "detail": "no_model:pump units=fs.pump",
+            "kind": "UNIT_UNAVAILABLE",
+            "subject": "Pump"
+          }
+        ],
+        "snapshot": "hypothetical_v02",
+        "state": "A16-c a pump, judged on the serving route",
+        "units_judged_on": "pr-c1-v1"
+      },
+      {
+        "case": {
+          "case_id": "synthetic-w27",
+          "expected_dof": 0,
+          "family": "synthetic",
+          "files_missing": [],
+          "in_full82": false,
+          "listed_components": [
+            "H2"
+          ],
+          "model_type": "native_IDAES",
+          "objective_declared": false,
+          "package_source": "property_packages.json",
+          "packages": [
+            {
+              "classes": [
+                "GenericParameterBlock"
+              ],
+              "components": [
+                "H2"
+              ],
+              "key": "generic[Vap:VaporPhase:Ideal]",
+              "name": "fs.props",
+              "phases": [
+                "vapor"
+              ]
+            }
+          ],
+          "parse_errors": [],
+          "residual_check": "pass",
+          "solve_dynamic": false,
+          "steady_state": true,
+          "topology_entry_ids": [],
+          "topology_kinds": [
+            "Feed",
+            "Heater",
+            "Product"
+          ],
+          "topology_package_names": [],
+          "unit_source": "units.json",
+          "units": [
+            {
+              "class_leaf": "_ScalarFeed",
+              "key": "idaes:Feed",
+              "names": [
+                "fs.feed"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarHeater",
+              "key": "idaes:Heater",
+              "names": [
+                "fs.heater"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarProduct",
+              "key": "idaes:Product",
+              "names": [
+                "fs.product"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarPump",
+              "key": "idaes:Pump",
+              "names": [
+                "fs.pump"
+              ]
+            }
+          ]
+        },
+        "class_before_w27_r62": "PROPERTY_ROUTE_UNAVAILABLE",
+        "expected_class": "PROPERTY_ROUTE_UNAVAILABLE",
+        "reasons": [
+          {
+            "detail": "no_route:ideal_gas",
+            "kind": "PROPERTY_ROUTE_UNAVAILABLE",
+            "subject": "fs.props"
+          }
+        ],
+        "snapshot": "hypothetical_v02",
+        "state": "A16-d the same pump with no serving route",
+        "units_judged_on": null
+      },
+      {
+        "case": {
+          "case_id": "synthetic-w27",
+          "expected_dof": 0,
+          "family": "synthetic",
+          "files_missing": [],
+          "in_full82": false,
+          "listed_components": [
+            "H2"
+          ],
+          "model_type": "native_IDAES",
+          "objective_declared": false,
+          "package_source": "property_packages.json",
+          "packages": [
+            {
+              "classes": [
+                "GenericParameterBlock"
+              ],
+              "components": [
+                "H2"
+              ],
+              "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+              "name": "fs.props",
+              "phases": [
+                "vapor"
+              ]
+            }
+          ],
+          "parse_errors": [],
+          "residual_check": "pass",
+          "solve_dynamic": false,
+          "steady_state": true,
+          "topology_entry_ids": [],
+          "topology_kinds": [
+            "Feed",
+            "Heater",
+            "Product"
+          ],
+          "topology_package_names": [],
+          "unit_source": "units.json",
+          "units": [
+            {
+              "class_leaf": "_ScalarFeed",
+              "key": "idaes:Feed",
+              "names": [
+                "fs.feed"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarHeater",
+              "key": "idaes:Heater",
+              "names": [
+                "fs.heater"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarProduct",
+              "key": "idaes:Product",
+              "names": [
+                "fs.product"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarStoichiometricReactor",
+              "key": "idaes:StoichiometricReactor",
+              "names": [
+                "fs.rxr"
+              ]
+            }
+          ]
+        },
+        "class_before_w27_r62": "CANDIDATE",
+        "expected_class": "UNIT_UNAVAILABLE",
+        "reasons": [
+          {
+            "detail": "no_model:conversion_reactor units=fs.rxr",
+            "kind": "UNIT_UNAVAILABLE",
+            "subject": "StoichiometricReactor"
+          }
+        ],
+        "snapshot": "hypothetical_v02",
+        "state": "A16-e a stoichiometric reactor: neither C1 reactor serves it",
+        "units_judged_on": "pr-c1-v1"
+      },
+      {
+        "case": {
+          "case_id": "synthetic-w27",
+          "expected_dof": 0,
+          "family": "synthetic",
+          "files_missing": [],
+          "in_full82": false,
+          "listed_components": [
+            "H2"
+          ],
+          "model_type": "native_IDAES",
+          "objective_declared": false,
+          "package_source": "property_packages.json",
+          "packages": [
+            {
+              "classes": [
+                "GenericParameterBlock"
+              ],
+              "components": [
+                "H2"
+              ],
+              "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+              "name": "fs.props",
+              "phases": [
+                "vapor"
+              ]
+            }
+          ],
+          "parse_errors": [],
+          "residual_check": "pass",
+          "solve_dynamic": false,
+          "steady_state": true,
+          "topology_entry_ids": [],
+          "topology_kinds": [
+            "Feed",
+            "Heater",
+            "Product"
+          ],
+          "topology_package_names": [],
+          "unit_source": "units.json",
+          "units": [
+            {
+              "class_leaf": "_ScalarFeed",
+              "key": "idaes:Feed",
+              "names": [
+                "fs.feed"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarHeater",
+              "key": "idaes:Heater",
+              "names": [
+                "fs.heater"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarProduct",
+              "key": "idaes:Product",
+              "names": [
+                "fs.product"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarCSTR",
+              "key": "idaes:CSTR",
+              "names": [
+                "fs.cstr"
+              ]
+            }
+          ]
+        },
+        "class_before_w27_r62": "UNIT_UNAVAILABLE",
+        "expected_class": "UNIT_UNAVAILABLE",
+        "reasons": [
+          {
+            "detail": "no_model:kinetic_reactor units=fs.cstr",
+            "kind": "UNIT_UNAVAILABLE",
+            "subject": "CSTR"
+          }
+        ],
+        "snapshot": "hypothetical_v02",
+        "state": "A16-f a CSTR: neither C1 reactor serves it",
+        "units_judged_on": "pr-c1-v1"
+      },
+      {
+        "case": {
+          "case_id": "synthetic-w27",
+          "expected_dof": 0,
+          "family": "synthetic",
+          "files_missing": [],
+          "in_full82": false,
+          "listed_components": [
+            "NH3"
+          ],
+          "model_type": "native_IDAES",
+          "objective_declared": false,
+          "package_source": "property_packages.json",
+          "packages": [
+            {
+              "classes": [
+                "GenericParameterBlock"
+              ],
+              "components": [
+                "NH3"
+              ],
+              "key": "generic[Liq:LiquidPhase:Cubic(type=PR);Vap:VaporPhase:Cubic(type=PR)]",
+              "name": "fs.props",
+              "phases": [
+                "liquid",
+                "vapor"
+              ]
+            }
+          ],
+          "parse_errors": [],
+          "residual_check": "pass",
+          "solve_dynamic": false,
+          "steady_state": true,
+          "topology_entry_ids": [],
+          "topology_kinds": [
+            "Feed",
+            "Heater",
+            "Product"
+          ],
+          "topology_package_names": [],
+          "unit_source": "units.json",
+          "units": [
+            {
+              "class_leaf": "_ScalarFeed",
+              "key": "idaes:Feed",
+              "names": [
+                "fs.feed"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarHeater",
+              "key": "idaes:Heater",
+              "names": [
+                "fs.heater"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarProduct",
+              "key": "idaes:Product",
+              "names": [
+                "fs.product"
+              ]
+            }
+          ]
+        },
+        "class_before_w27_r62": "CANDIDATE",
+        "expected_class": "CANDIDATE",
+        "reasons": [],
+        "snapshot": "hypothetical_v02",
+        "state": "A16-g NH3 alone in a liquid and vapour PR package: admitted (port phases unchecked)",
+        "units_judged_on": "pr-c1-v1"
+      },
+      {
+        "case": {
+          "case_id": "synthetic-w27",
+          "expected_dof": 0,
+          "family": "synthetic",
+          "files_missing": [],
+          "in_full82": false,
+          "listed_components": [
+            "H2",
+            "NH3"
+          ],
+          "model_type": "native_IDAES",
+          "objective_declared": false,
+          "package_source": "property_packages.json",
+          "packages": [
+            {
+              "classes": [
+                "GenericParameterBlock"
+              ],
+              "components": [
+                "H2",
+                "NH3"
+              ],
+              "key": "generic[Liq:LiquidPhase:Cubic(type=PR);Vap:VaporPhase:Cubic(type=PR)]",
+              "name": "fs.props",
+              "phases": [
+                "liquid",
+                "vapor"
+              ]
+            }
+          ],
+          "parse_errors": [],
+          "residual_check": "pass",
+          "solve_dynamic": false,
+          "steady_state": true,
+          "topology_entry_ids": [],
+          "topology_kinds": [
+            "Feed",
+            "Heater",
+            "Product"
+          ],
+          "topology_package_names": [],
+          "unit_source": "units.json",
+          "units": [
+            {
+              "class_leaf": "_ScalarFeed",
+              "key": "idaes:Feed",
+              "names": [
+                "fs.feed"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarHeater",
+              "key": "idaes:Heater",
+              "names": [
+                "fs.heater"
+              ]
+            },
+            {
+              "class_leaf": "_ScalarProduct",
+              "key": "idaes:Product",
+              "names": [
+                "fs.product"
+              ]
+            }
+          ]
+        },
+        "class_before_w27_r62": "PROPERTY_ROUTE_UNAVAILABLE",
+        "expected_class": "PROPERTY_ROUTE_UNAVAILABLE",
+        "reasons": [
+          {
+            "detail": "route_mismatch:pr-c1-v1:missing=:phase=1333-74-0:liquid",
+            "kind": "PROPERTY_ROUTE_UNAVAILABLE",
+            "subject": "fs.props"
+          }
+        ],
+        "snapshot": "hypothetical_v02",
+        "state": "A16-h H2 beside NH3 in that package: H2's liquid is not admitted",
+        "units_judged_on": null
+      },
+      {
+        "expected": "refusal naming routes sharing a method ['cubic_pr']",
+        "state": "A17 two routes of one method"
+      },
+      {
+        "expected": "refusal naming route model ids not among the models ['c1.ghost']",
+        "state": "A18-a a route model id not among the models"
+      },
+      {
+        "expected": "refusal naming models on no route ['c1.reactor']",
+        "state": "A18-b a model on no route"
+      },
+      {
+        "expected": "refusal naming routes_per_revision 2 is not 1",
+        "state": "A19 two routes per revision"
+      }
+    ],
+    "ambiguous_unit_alias_cases_today": {
+      "blind_synthesized_ngcc": [
+        "helmsplitter",
+        "mixer",
+        "separator"
+      ],
+      "blind_synthesized_subcritical_power_plant": [
+        "helmmixer",
+        "mixer"
+      ],
+      "dispatches_ultra_supercritical_plant": [
+        "helmsplitter"
+      ],
+      "idaes_ngcc_soec": [
+        "helmsplitter",
+        "mixer",
+        "separator"
+      ],
+      "ngcc_gas_turbine_subflowsheet": [
+        "mixer"
+      ],
+      "ngcc_hrsg_subflowsheet": [
+        "helmsplitter",
+        "mixer",
+        "separator"
+      ],
+      "ngcc_steam_turbine_subflowsheet": [
+        "heater"
+      ],
+      "official_idaes_sofc_power_plant": [
+        "mixer"
+      ],
+      "official_idaes_sofc_soec_coproduction": [
+        "mixer"
+      ],
+      "official_ngcc": [
+        "helmsplitter",
+        "mixer",
+        "separator"
+      ],
+      "official_supercritical_power_plant": [
+        "mixer"
+      ],
+      "reflo_fo_trevi": [
+        "separator"
+      ],
+      "watertap_oaro_multi": [
+        "separator"
+      ]
+    },
+    "binder_2587f14": {
+      "c1_route_model_ids": [
+        "c1.adiabatic_mixer",
+        "c1.feed_source",
+        "c1.product_sink",
+        "c1.reactor",
+        "c1.reactor_standin",
+        "c1.stream_splitter",
+        "c1.tp_flash",
+        "c1.tp_heater",
+        "syn001.adiabatic_mixer",
+        "syn001.component_separator",
+        "syn001.conversion_reactor",
+        "syn001.feed_source",
+        "syn001.heat_exchanger",
+        "syn001.kinetic_cstr",
+        "syn001.liquid_pump",
+        "syn001.ph_flash",
+        "syn001.product_sink",
+        "syn001.stream_splitter",
+        "syn001.tp_flash",
+        "syn001.tp_heater",
+        "syn001.valve"
+      ],
+      "snapshot_sha256": "df117ffba58fb07399a14a598b1a6af252e8aeaeb4d0ada608830d7b3ef0398e",
+      "summary_equals_hypothetical_v02": true
+    },
+    "route_scoped_unit_changes": [
+      "ngfc_atr"
+    ],
+    "scorer_states_s19_s20": {
+      "case_id": "ngcc_gas_turbine_subflowsheet",
+      "items": {
+        "Mixer": {
+          "contradicted": false,
+          "contradicted_as_built": true,
+          "matched": true
+        },
+        "fs.mx1": {
+          "contradicted": true,
+          "contradicted_as_built": true,
+          "matched": false
+        }
+      }
+    },
+    "served_cases": {
+      "ngfc_atr": "pr-c1-v1",
+      "official_idaes_smr_equilibrium_flowsheet": "pr-c1-v1",
+      "official_idaes_smr_gibbs_flowsheet": "pr-c1-v1"
+    }
+  },
   "case_facts_sha256": "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7",
   "generator_claims": [
     {
@@ -685,7 +1580,7 @@
       "holds": true
     },
     {
-      "claim": "[today] GC-DRY-4 today's registry is fully registered (model ids = MODEL_FUNCTIONS)",
+      "claim": "[today] GC-DRY-4 today's registry is the registered 0.1.1 one (model ids = TODAY_MODEL_IDS, all in MODEL_FUNCTIONS)",
       "detail": "[]",
       "holds": true
     },
@@ -717,6 +1612,11 @@
     {
       "claim": "[hypothetical_v02] GC-DRY-3 class counts sum to 450 and to 82",
       "detail": "{'ARTIFACT_INCOMPLETE': 1, 'NOT_STEADY_STATE_SIMULATION': 65, 'UNIT_UNAVAILABLE': 367, 'COMPONENT_UNAVAILABLE': 17, 'PROPERTY_ROUTE_UNAVAILABLE': 0, 'CANDIDATE': 0}",
+      "holds": true
+    },
+    {
+      "claim": "GC-A2-7 the dry sample drawn at the hypothetical v0.2 snapshot equals today's",
+      "detail": "same 45, order and canaries",
       "holds": true
     },
     {
@@ -761,7 +1661,7 @@
     },
     {
       "claim": "GC-ADV A09 an unregistered model id: refused, naming x.test",
-      "detail": "unregistered model ids ['x.test']",
+      "detail": "unregistered model ids ['x.test']; models on no route ['x.test']",
       "holds": true
     },
     {
@@ -773,9 +1673,109 @@
       "claim": "GC-ADV A11 a registry chemical with an unaliased archive spelling: refused, naming TDS->7647-14-5",
       "detail": "archive spellings of registry chemicals not aliased ['TDS->7647-14-5', 'tds->7647-14-5']",
       "holds": true
+    },
+    {
+      "claim": "GC-A2-1 the hypothetical v0.2 snapshot is not refused by W27-R24 (every C1 model id, pr-c1-v1 and every archive spelling of a C1 record are registered)",
+      "detail": "not refused",
+      "holds": true
+    },
+    {
+      "claim": "GC-A2-2 each C1 record's id is aliased to the record's CAS RN, a valid one",
+      "detail": "wrong []",
+      "holds": true
+    },
+    {
+      "claim": "GC-A2-3 the hypothetical's summary does not depend on whether SYN-001's models also bind on pr-c1-v1 (the binder at wp/M02 2587f14 vs the recommended MODEL_BASES)",
+      "detail": "{'ARTIFACT_INCOMPLETE': 1, 'NOT_STEADY_STATE_SIMULATION': 65, 'UNIT_UNAVAILABLE': 367, 'COMPONENT_UNAVAILABLE': 17, 'PROPERTY_ROUTE_UNAVAILABLE': 0, 'CANDIDATE': 0}",
+      "holds": true
+    },
+    {
+      "claim": "GC-A2-4 W27-R62 changes no class of the hypothetical; the cases whose reasons it changes are recorded",
+      "detail": "1 cases: ['ngfc_atr']",
+      "holds": true
+    },
+    {
+      "claim": "GC-A2-5 every case pr-c1-v1 serves declares only the vapour phase and holds no NH3, so the C1 units' phase limits (vapour-only heater and mixer, a flash refusing a feed without light gas) separate no archive case",
+      "detail": "served ['ngfc_atr', 'official_idaes_smr_equilibrium_flowsheet', 'official_idaes_smr_gibbs_flowsheet']; unsafe []",
+      "holds": true
+    },
+    {
+      "claim": "GC-A2-6 idaes:PFR occurs in exactly one case and is default none",
+      "detail": "['official_idaes_eg_pfr_flowsheet']",
+      "holds": true
+    },
+    {
+      "claim": "GC-SCORE-1 at today's snapshot 13 cases have a unit alias naming both an available unit and an unavailable reason, among them ngcc_gas_turbine_subflowsheet with 'mixer'",
+      "detail": "13",
+      "holds": true
+    },
+    {
+      "claim": "GC-SCORE-2 on that row 'Mixer' is matched and not contradicted (as built: contradicted); 'fs.mx1' is unmatched and contradicted",
+      "detail": "{'Mixer': {'matched': True, 'contradicted': False, 'contradicted_as_built': True}, 'fs.mx1': {'matched': False, 'contradicted': True, 'contradicted_as_built': True}}",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A16-a C1 feed, heater and product serve the synthetic row: CANDIDATE",
+      "detail": "CANDIDATE []; before W27-R62 CANDIDATE",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A16-b the six C1 unit functions in one chain: CANDIDATE",
+      "detail": "CANDIDATE []; before W27-R62 CANDIDATE",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A16-c a pump, judged on the serving route: UNIT_UNAVAILABLE (before W27-R62: CANDIDATE)",
+      "detail": "UNIT_UNAVAILABLE [('UNIT_UNAVAILABLE', 'Pump', 'no_model:pump units=fs.pump')]; before W27-R62 CANDIDATE",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A16-d the same pump with no serving route: PROPERTY_ROUTE_UNAVAILABLE",
+      "detail": "PROPERTY_ROUTE_UNAVAILABLE [('PROPERTY_ROUTE_UNAVAILABLE', 'fs.props', 'no_route:ideal_gas')]; before W27-R62 PROPERTY_ROUTE_UNAVAILABLE",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A16-e a stoichiometric reactor: neither C1 reactor serves it: UNIT_UNAVAILABLE (before W27-R62: CANDIDATE)",
+      "detail": "UNIT_UNAVAILABLE [('UNIT_UNAVAILABLE', 'StoichiometricReactor', 'no_model:conversion_reactor units=fs.rxr')]; before W27-R62 CANDIDATE",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A16-f a CSTR: neither C1 reactor serves it: UNIT_UNAVAILABLE (before W27-R62: UNIT_UNAVAILABLE)",
+      "detail": "UNIT_UNAVAILABLE [('UNIT_UNAVAILABLE', 'CSTR', 'no_model:kinetic_reactor units=fs.cstr')]; before W27-R62 UNIT_UNAVAILABLE",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A16-g NH3 alone in a liquid and vapour PR package: admitted (port phases unchecked): CANDIDATE",
+      "detail": "CANDIDATE []; before W27-R62 CANDIDATE",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A16-h H2 beside NH3 in that package: H2's liquid is not admitted: PROPERTY_ROUTE_UNAVAILABLE",
+      "detail": "PROPERTY_ROUTE_UNAVAILABLE [('PROPERTY_ROUTE_UNAVAILABLE', 'fs.props', 'route_mismatch:pr-c1-v1:missing=:phase=1333-74-0:liquid')]; before W27-R62 PROPERTY_ROUTE_UNAVAILABLE",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A17 two routes of one method: refused, naming routes sharing a method ['cubic_pr']",
+      "detail": "routes sharing a method ['cubic_pr']",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A18-a a route model id not among the models: refused, naming route model ids not among the models ['c1.ghost']",
+      "detail": "route model ids not among the models ['c1.ghost']",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A18-b a model on no route: refused, naming models on no route ['c1.reactor']",
+      "detail": "models on no route ['c1.reactor']",
+      "holds": true
+    },
+    {
+      "claim": "GC-ADV A19 two routes per revision: refused, naming routes_per_revision 2 is not 1",
+      "detail": "routes_per_revision 2 is not 1",
+      "holds": true
     }
   ],
-  "registration_sha256": "ce59200a0bdaf26bbf6c830fb56e69d187d6dba81a0cb348a713d638e4544f7a",
+  "registration_sha256": "14ff19d98bb031a17917019e299661d7af5839d2fe3f13bad0fd2725a0717f84",
   "schema": "w27-dry-illustration-v1",
   "snapshots": {
     "hypothetical_v02": {
@@ -1411,9 +2411,33 @@
         }
       },
       "snapshot": {
-        "basis": "HYPOTHETICAL: today's snapshot plus an invented PR route; not a registry",
-        "list_models_sha256": "4a60f5a3ad5def32a872407a75255370249560036e5718c848803637b2a5123a",
+        "basis": "HYPOTHETICAL (registration Amendment 2): today's SYN-001 route plus pr-c1-v1 with the eight C1 models; each model on its own basis (the recommended MODEL_BASES)",
+        "list_models_sha256": null,
         "models": [
+          {
+            "model_id": "c1.adiabatic_mixer"
+          },
+          {
+            "model_id": "c1.feed_source"
+          },
+          {
+            "model_id": "c1.product_sink"
+          },
+          {
+            "model_id": "c1.reactor"
+          },
+          {
+            "model_id": "c1.reactor_standin"
+          },
+          {
+            "model_id": "c1.stream_splitter"
+          },
+          {
+            "model_id": "c1.tp_flash"
+          },
+          {
+            "model_id": "c1.tp_heater"
+          },
           {
             "model_id": "syn001.adiabatic_mixer"
           },
@@ -1454,7 +2478,7 @@
             "model_id": "syn001.valve"
           }
         ],
-        "package_version": "0.1.1",
+        "package_version": "v0.2 (hypothetical)",
         "routes": [
           {
             "components": [
@@ -1512,26 +2536,6 @@
           {
             "components": [
               {
-                "cas": "7440-37-1",
-                "formula": "Ar",
-                "id": "Ar",
-                "name": "argon",
-                "phases": [
-                  "vapor"
-                ],
-                "synthetic": false
-              },
-              {
-                "cas": "74-82-8",
-                "formula": "CH4",
-                "id": "CH4",
-                "name": "methane",
-                "phases": [
-                  "vapor"
-                ],
-                "synthetic": false
-              },
-              {
                 "cas": "1333-74-0",
                 "formula": "H2",
                 "id": "H2",
@@ -1553,7 +2557,7 @@
               },
               {
                 "cas": "7664-41-7",
-                "formula": "NH3",
+                "formula": "H3N",
                 "id": "NH3",
                 "name": "ammonia",
                 "phases": [
@@ -1561,16 +2565,45 @@
                   "vapor"
                 ],
                 "synthetic": false
+              },
+              {
+                "cas": "7440-37-1",
+                "formula": "Ar",
+                "id": "Ar",
+                "name": "argon",
+                "phases": [
+                  "vapor"
+                ],
+                "synthetic": false
+              },
+              {
+                "cas": "74-82-8",
+                "formula": "CH4",
+                "id": "CH4",
+                "name": "methane",
+                "phases": [
+                  "vapor"
+                ],
+                "synthetic": false
               }
             ],
-            "model_ids": [],
-            "provider_id": "hypothetical-pr-c1"
+            "model_ids": [
+              "c1.adiabatic_mixer",
+              "c1.feed_source",
+              "c1.product_sink",
+              "c1.reactor",
+              "c1.reactor_standin",
+              "c1.stream_splitter",
+              "c1.tp_flash",
+              "c1.tp_heater"
+            ],
+            "provider_id": "pr-c1-v1"
           }
         ],
         "routes_per_revision": 1,
         "schema": "w27-registry-snapshot-v1"
       },
-      "snapshot_sha256": "6e84f87712b0b4ae17c35899e65affe16c53058c8e9b069e0f4d50003bf4f329",
+      "snapshot_sha256": "1a2a8a9f511d05bab53d686abb4a23e6aee83b3ff148a43d560fcf576c585e2e",
       "summary": {
         "all_450": {
           "by_family": {

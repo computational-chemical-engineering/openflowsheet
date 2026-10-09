@@ -22,7 +22,10 @@ Three stages, three committed files under ``benchmarks/m06/openidaes450/``:
     records); without it the snapshot stored in ``dry_illustration.json`` is reused. It then
     classifies all 450 cases against that snapshot and against a *hypothetical* v0.2 snapshot,
     and draws the sample from each, as an illustration. **Neither is the campaign sample**: that
-    is drawn at M07 from the coverage of the v0.2 candidate (registration §6).
+    is drawn at M07 from the coverage of the v0.2 candidate (registration §6). Since Amendment 2
+    (registration §21) the hypothetical snapshot's ``pr-c1-v1`` route is read from the C1 records
+    and ``openflowsheet.thermo.pr_c1``, so this stage (and ``--check``) needs ``PYTHONPATH=src``;
+    ``--snapshot-live`` refuses a multi-basis binder (W27-R63).
 
 Run from the repository root::
 
@@ -407,9 +410,48 @@ SUSPICIOUS_UNIT_NAME: Final = re.compile(
     r"|separat|junction|condens|boil|evapor|sink|source|drum|tank",
     re.IGNORECASE,
 )
+#: Why a registered model performs no function of the vocabulary (Amendment 2, W27-R14). A model
+#: with `function: null` serves no case unit; it is registered, so it does not refuse (§5.7).
+MODEL_NONE_REASONS: Final = {
+    "synthetic_stand_in": "a synthetic model whose defining relation is a closed-form stand-in "
+    "(R-199): it certifies nothing about the unit it stands in for, so it serves no case unit",
+    "fixed_design_reactor": "a reactor of one fixed design (geometry, catalyst, coolant and "
+    "kinetics fixed by its pin, ADR 0027): no case's JSON can show that its reactor is that "
+    "reactor, so it serves no case unit",
+}
+#: The registry the registration was written against (0.1.1, `list_models` `4a60f5a3…`), and the
+#: eight C1 model ids of M02 (ADR 0034 D9; design note §14.3 C1, R-280), registered by Amendment 2.
+TODAY_MODEL_IDS: Final = (
+    "syn001.adiabatic_mixer", "syn001.component_separator", "syn001.conversion_reactor",
+    "syn001.feed_source", "syn001.heat_exchanger", "syn001.kinetic_cstr", "syn001.liquid_pump",
+    "syn001.ph_flash", "syn001.product_sink", "syn001.stream_splitter", "syn001.tp_flash",
+    "syn001.tp_heater", "syn001.valve",
+)  # fmt: skip
+C1_MODEL_IDS: Final = (
+    "c1.adiabatic_mixer", "c1.feed_source", "c1.product_sink", "c1.reactor",
+    "c1.reactor_standin", "c1.stream_splitter", "c1.tp_flash", "c1.tp_heater",
+)  # fmt: skip
+#: Amendment 2: each C1 unit whose signature reads what its SYN-001 namesake's reads (M02 WO-8.2)
+#: performs that namesake's function (GC-MODEL-2).
+C1_NAMESAKES: Final = {
+    "c1.adiabatic_mixer": "syn001.adiabatic_mixer",
+    "c1.feed_source": "syn001.feed_source",
+    "c1.product_sink": "syn001.product_sink",
+    "c1.stream_splitter": "syn001.stream_splitter",
+    "c1.tp_flash": "syn001.tp_flash",
+    "c1.tp_heater": "syn001.tp_heater",
+}
 #: OpenFlowsheet model id -> the function it performs and the tokens it offers (§5.4). A model
 #: id in a registry snapshot that is not here refuses the classification (§5.7).
 MODEL_FUNCTIONS: Final[dict[str, dict[str, Any]]] = {
+    "c1.adiabatic_mixer": {"function": "mixer", "offers": []},
+    "c1.feed_source": {"function": "feed", "offers": []},
+    "c1.product_sink": {"function": "product", "offers": []},
+    "c1.reactor": {"function": None, "offers": [], "why_none": "fixed_design_reactor"},
+    "c1.reactor_standin": {"function": None, "offers": [], "why_none": "synthetic_stand_in"},
+    "c1.stream_splitter": {"function": "splitter", "offers": []},
+    "c1.tp_flash": {"function": "flash", "offers": []},
+    "c1.tp_heater": {"function": "heater", "offers": []},
     "syn001.adiabatic_mixer": {"function": "mixer", "offers": []},
     "syn001.component_separator": {"function": "component_separator", "offers": []},
     "syn001.conversion_reactor": {"function": "conversion_reactor", "offers": []},
@@ -692,8 +734,9 @@ PACKAGE_METHODS: Final = {
     "topology-entry:prommis.superstructure.superstructure_function.build_model": "unidentified",
 }
 #: OpenFlowsheet property provider id -> method (§5.6). A provider id in a snapshot that is not
-#: here refuses the classification (§5.7).
-PROVIDER_METHODS: Final = {"syn001": "synthetic_syn001"}
+#: here refuses the classification (§5.7). `pr-c1-v1` (Amendment 2): Peng–Robinson 1976 with
+#: k_ij = 0 (ADR 0026); its vapour-only light gases are a phase admission (W27-R20), not a method.
+PROVIDER_METHODS: Final = {"pr-c1-v1": "cubic_pr", "syn001": "synthetic_syn001"}
 
 # =================================================================================================
 # §6 The sample
@@ -1433,6 +1476,25 @@ def check_snapshot(
         problems.append(f"unregistered provider ids {unknown_providers}")
     if unaliased:
         problems.append(f"archive spellings of registry chemicals not aliased {sorted(unaliased)}")
+    # Amendment 2, W27-R24 (d): W27-R62 is registered for one route per revision and one route
+    # per method; anything else is not judged.
+    if snapshot["routes_per_revision"] != 1:
+        problems.append(f"routes_per_revision {snapshot['routes_per_revision']} is not 1")
+    methods_seen = Counter(
+        provider_methods[r["provider_id"]]
+        for r in snapshot["routes"]
+        if r["provider_id"] in provider_methods
+    )
+    shared = sorted(m for m, n in methods_seen.items() if n > 1)
+    if shared:
+        problems.append(f"routes sharing a method {shared}")
+    # W27-R24 (e): the routes' model ids are the snapshot's models, and every model is on a route.
+    listed = {m["model_id"] for m in snapshot["models"]}
+    on_routes = {m for r in snapshot["routes"] for m in r["model_ids"]}
+    if on_routes - listed:
+        problems.append(f"route model ids not among the models {sorted(on_routes - listed)}")
+    if listed - on_routes:
+        problems.append(f"models on no route {sorted(listed - on_routes)}")
     if problems:
         raise RefusalError("; ".join(problems))
 
@@ -1468,8 +1530,10 @@ def classify_case(
     case: Mapping[str, Any],
     snapshot: Mapping[str, Any],
     provider_methods: Mapping[str, str] = PROVIDER_METHODS,
+    route_scoped_units: bool = True,
 ) -> dict[str, Any]:
-    """§5: every applicable reason, then the class by precedence."""
+    """§5: every applicable reason, then the class by precedence. `route_scoped_units=False`
+    is the rule before Amendment 2 (units on every model), kept to measure W27-R62's effect."""
     reasons: list[dict[str, Any]] = []
     if case["files_missing"] or case["parse_errors"]:
         reasons.append(
@@ -1490,12 +1554,121 @@ def classify_case(
                 "aliases": [],
             }
         )
-    # Units.
-    models_by_function: dict[str, list[dict[str, Any]]] = {}
-    for model in snapshot["models"]:
-        entry = MODEL_FUNCTIONS[model["model_id"]]
+    # Components (their reasons are appended after the units', as before Amendment 2).
+    component_reasons: list[dict[str, Any]] = []
+    route_reasons: list[dict[str, Any]] = []
+    registry_cas: dict[str, set[str]] = {}
+    for route in snapshot["routes"]:
+        for component in route["components"]:
+            if not component["synthetic"] and component.get("cas"):
+                registry_cas.setdefault(component["cas"], set()).add(route["provider_id"])
+    component_rows = []
+    declared = declared_components(case)
+    if not declared:
+        component_reasons.append(
+            {
+                "kind": "COMPONENT_UNAVAILABLE",
+                "subject": None,
+                "detail": "components_not_declared",
+                "aliases": [],
+            }
+        )
+    for name in declared:
+        kind, cas = component_identity(name)
+        available = kind == "chemical" and cas in registry_cas
+        component_rows.append({"name": name, "class": kind, "cas": cas, "available": available})
+        if not available:
+            component_reasons.append(
+                {
+                    "kind": "COMPONENT_UNAVAILABLE",
+                    "subject": name,
+                    "detail": f"{kind}" + (f":{cas}:not_in_registry" if cas else ""),
+                    "aliases": [name],
+                }
+            )
+    # Property routes.
+    available_cas = sorted({c["cas"] for c in component_rows if c["available"]})
+    package_rows = []
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for package in case["packages"]:
+        method = PACKAGE_METHODS[package["key"]]
+        row = {"name": package["name"], "key": package["key"], "method": method}
+        package_rows.append(row)
+        if method != "reaction":
+            groups.setdefault(method, []).append({**package, "row": row})
+    route_aliases = set(case["topology_package_names"]) | set(case["topology_entry_ids"])
+    multiple = len(groups) > 1 and snapshot["routes_per_revision"] == 1
+    fits_by_method: dict[str, list[str]] = {}
+    for method in sorted(groups):
+        members = groups[method]
+        phases = sorted({p for m in members for p in m["phases"]})
+        detail = None
+        if multiple:
+            detail = "multiple_routes_per_revision:" + ",".join(sorted(groups))
+        else:
+            routes = [r for r in snapshot["routes"] if provider_methods[r["provider_id"]] == method]
+            if not routes:
+                detail = f"no_route:{method}"
+            else:
+                fits = []
+                for route in routes:
+                    admitted = {
+                        c["cas"]: set(c["phases"])
+                        for c in route["components"]
+                        if not c["synthetic"] and c.get("cas")
+                    }
+                    missing = [cas for cas in available_cas if cas not in admitted]
+                    bad_phase = [
+                        f"{cas}:{p}"
+                        for cas in available_cas
+                        if cas in admitted
+                        for p in phases
+                        if p in ("vapor", "liquid", "solid") and p not in admitted[cas]
+                    ]
+                    if not missing and not bad_phase:
+                        fits.append(route["provider_id"])
+                    else:
+                        detail = (
+                            f"route_mismatch:{route['provider_id']}:missing="
+                            + ",".join(missing)
+                            + ":phase="
+                            + ",".join(bad_phase)
+                        )
+                if fits:
+                    detail = None
+                fits_by_method[method] = fits
+        for member in members:
+            member["row"]["available"] = detail is None
+            member["row"]["detail"] = detail or "available"
+        if detail is not None:
+            for member in members:
+                aliases = {member["name"], member["name"].split(".")[-1], member["key"]}
+                aliases |= {c for c in member["classes"]} | {_leaf(c) for c in member["classes"]}
+                aliases |= route_aliases
+                route_reasons.append(
+                    {
+                        "kind": "PROPERTY_ROUTE_UNAVAILABLE",
+                        "subject": member["name"],
+                        "detail": detail,
+                        "aliases": sorted(aliases),
+                    }
+                )
+    # Units (Amendment 2, W27-R62): judged on the serving route's models when one route serves
+    # the case's single method group; otherwise on every model of the snapshot (0.1.1's rule).
+    serving = (
+        fits_by_method.get(next(iter(groups)), []) if len(groups) == 1 and not multiple else []
+    )
+    pool = sorted(
+        {m for r in snapshot["routes"] if r["provider_id"] in serving for m in r["model_ids"]}
+        if serving and route_scoped_units
+        else {m["model_id"] for m in snapshot["models"]}
+    )
+    judged_on = serving[0] if serving and route_scoped_units else None
+    models_by_function: dict[str | None, list[dict[str, Any]]] = {}
+    for model_id in pool:
+        entry = MODEL_FUNCTIONS[model_id]
         models_by_function.setdefault(entry["function"], []).append(
-            {"model_id": model["model_id"], "offers": set(entry["offers"])}
+            {"model_id": model_id, "offers": set(entry["offers"])}
         )
     unit_rows = []
     unavailable_by_key: dict[str, dict[str, Any]] = {}
@@ -1543,107 +1716,12 @@ def classify_case(
                 "aliases": sorted(slot["aliases"] | {key.split(":", 1)[1]}),
             }
         )
-    # Components.
-    registry_cas: dict[str, set[str]] = {}
-    for route in snapshot["routes"]:
-        for component in route["components"]:
-            if not component["synthetic"] and component.get("cas"):
-                registry_cas.setdefault(component["cas"], set()).add(route["provider_id"])
-    component_rows = []
-    declared = declared_components(case)
-    if not declared:
-        reasons.append(
-            {
-                "kind": "COMPONENT_UNAVAILABLE",
-                "subject": None,
-                "detail": "components_not_declared",
-                "aliases": [],
-            }
-        )
-    for name in declared:
-        kind, cas = component_identity(name)
-        available = kind == "chemical" and cas in registry_cas
-        component_rows.append({"name": name, "class": kind, "cas": cas, "available": available})
-        if not available:
-            reasons.append(
-                {
-                    "kind": "COMPONENT_UNAVAILABLE",
-                    "subject": name,
-                    "detail": f"{kind}" + (f":{cas}:not_in_registry" if cas else ""),
-                    "aliases": [name],
-                }
-            )
-    # Property routes.
-    available_cas = sorted({c["cas"] for c in component_rows if c["available"]})
-    package_rows = []
-    groups: dict[str, list[dict[str, Any]]] = {}
-    for package in case["packages"]:
-        method = PACKAGE_METHODS[package["key"]]
-        row = {"name": package["name"], "key": package["key"], "method": method}
-        package_rows.append(row)
-        if method != "reaction":
-            groups.setdefault(method, []).append({**package, "row": row})
-    route_aliases = set(case["topology_package_names"]) | set(case["topology_entry_ids"])
-    multiple = len(groups) > 1 and snapshot["routes_per_revision"] == 1
-    for method in sorted(groups):
-        members = groups[method]
-        phases = sorted({p for m in members for p in m["phases"]})
-        detail = None
-        if multiple:
-            detail = "multiple_routes_per_revision:" + ",".join(sorted(groups))
-        else:
-            routes = [r for r in snapshot["routes"] if provider_methods[r["provider_id"]] == method]
-            if not routes:
-                detail = f"no_route:{method}"
-            else:
-                fits = []
-                for route in routes:
-                    admitted = {
-                        c["cas"]: set(c["phases"])
-                        for c in route["components"]
-                        if not c["synthetic"] and c.get("cas")
-                    }
-                    missing = [cas for cas in available_cas if cas not in admitted]
-                    bad_phase = [
-                        f"{cas}:{p}"
-                        for cas in available_cas
-                        if cas in admitted
-                        for p in phases
-                        if p in ("vapor", "liquid", "solid") and p not in admitted[cas]
-                    ]
-                    if not missing and not bad_phase:
-                        fits.append(route["provider_id"])
-                    else:
-                        detail = (
-                            f"route_mismatch:{route['provider_id']}:missing="
-                            + ",".join(missing)
-                            + ":phase="
-                            + ",".join(bad_phase)
-                        )
-                if fits:
-                    detail = None
-        for member in members:
-            member["row"]["available"] = detail is None
-            member["row"]["detail"] = detail or "available"
-        if detail is not None:
-            for member in members:
-                aliases = {member["name"], member["name"].split(".")[-1], member["key"]}
-                aliases |= {c for c in member["classes"]} | {_leaf(c) for c in member["classes"]}
-                aliases |= route_aliases
-                reasons.append(
-                    {
-                        "kind": "PROPERTY_ROUTE_UNAVAILABLE",
-                        "subject": member["name"],
-                        "detail": detail,
-                        "aliases": sorted(aliases),
-                    }
-                )
     for row in package_rows:
         if row["method"] == "reaction":
             row["available"] = None
             row["detail"] = "reaction_package_not_a_route"
     if not groups:
-        reasons.append(
+        route_reasons.append(
             {
                 "kind": "PROPERTY_ROUTE_UNAVAILABLE",
                 "subject": None,
@@ -1651,6 +1729,7 @@ def classify_case(
                 "aliases": [],
             }
         )
+    reasons += component_reasons + route_reasons
     kinds = {r["kind"] for r in reasons}
     klass = next((c for c in CLASSES[:-1] if c in kinds), "CANDIDATE")
     return {
@@ -1661,6 +1740,7 @@ def classify_case(
         "residual_check": case["residual_check"],
         "class": klass,
         "reasons": reasons,
+        "units_judged_on": judged_on,
         "units": unit_rows,
         "components": component_rows,
         "packages": package_rows,
@@ -1671,9 +1751,13 @@ def classify(
     facts: Mapping[str, Any],
     snapshot: Mapping[str, Any],
     provider_methods: Mapping[str, str] = PROVIDER_METHODS,
+    route_scoped_units: bool = True,
 ) -> dict[str, Any]:
     check_snapshot(snapshot, facts, provider_methods)
-    rows = [classify_case(case, snapshot, provider_methods) for case in facts["cases"]]
+    rows = [
+        classify_case(case, snapshot, provider_methods, route_scoped_units)
+        for case in facts["cases"]
+    ]
     return {"rows": rows, "summary": summarise(rows)}
 
 
@@ -1866,6 +1950,31 @@ def _all_component_names(facts: Mapping[str, Any]) -> Counter[str]:
 
 Claims = list[tuple[str, bool, str]]
 
+#: The registration's amendments, each before any W27 run (document §20, §21).
+AMENDMENTS: Final = [
+    {
+        "number": 1,
+        "date": "2026-10-08",
+        "section": "§20",
+        "rules": ["W27-R57 erratum", "W27-R59", "W27-R60", "W27-R61"],
+    },
+    {
+        "number": 2,
+        "date": "2026-10-09",
+        "section": "§21",
+        "rules": [
+            "W27-R14",
+            "W27-R19",
+            "W27-R23",
+            "W27-R24",
+            "W27-R25",
+            "W27-R59",
+            "W27-R62",
+            "W27-R63",
+        ],
+    },
+]
+
 
 def registration_claims(facts: Mapping[str, Any]) -> Claims:
     """The self-claims GC-* of registration §14; each must hold or nothing is emitted."""
@@ -1926,7 +2035,7 @@ def registration_claims(facts: Mapping[str, Any]) -> Claims:
         ("GC-UNIT-3 every mapped or reviewed key occurs in the archive", not dead, f"dead: {dead}")
     )
     functions_used = {e["function"] for e in UNIT_KEYS.values() if e["function"]} | {
-        e["function"] for e in MODEL_FUNCTIONS.values()
+        e["function"] for e in MODEL_FUNCTIONS.values() if e["function"] is not None
     }
     tokens_used = {t for e in UNIT_KEYS.values() for t in e.get("tokens", [])} | {
         t for e in MODEL_FUNCTIONS.values() for t in e["offers"]
@@ -1937,6 +2046,37 @@ def registration_claims(facts: Mapping[str, Any]) -> Claims:
             functions_used <= set(UNIT_FUNCTIONS) and tokens_used <= set(UNIT_TOKENS),
             f"{sorted(functions_used - set(UNIT_FUNCTIONS))} "
             f"{sorted(tokens_used - set(UNIT_TOKENS))}",
+        )
+    )
+    # Amendment 2.
+    bad_rows = sorted(
+        m
+        for m, e in MODEL_FUNCTIONS.items()
+        if set(e) - {"function", "offers", "why_none"}
+        or (e["function"] is None) != ("why_none" in e)
+        or (e["function"] is None and (e["offers"] or e["why_none"] not in MODEL_NONE_REASONS))
+    )
+    claims.append(
+        (
+            "GC-MODEL-1 the model table is today's 13 ids and the 8 C1 ids; a row performs a "
+            "function, or performs none for a registered reason and offers no token",
+            not bad_rows and sorted(MODEL_FUNCTIONS) == sorted(TODAY_MODEL_IDS + C1_MODEL_IDS),
+            f"bad rows {bad_rows}",
+        )
+    )
+    namesakes = sorted(
+        c1 for c1, syn in C1_NAMESAKES.items() if MODEL_FUNCTIONS[c1] != MODEL_FUNCTIONS[syn]
+    )
+    others = sorted(set(C1_MODEL_IDS) - set(C1_NAMESAKES))
+    claims.append(
+        (
+            "GC-MODEL-2 each C1 unit maps as its SYN-001 namesake; the two C1 reactors perform no "
+            "function (c1.reactor fixed_design_reactor, c1.reactor_standin synthetic_stand_in)",
+            not namesakes
+            and others == ["c1.reactor", "c1.reactor_standin"]
+            and MODEL_FUNCTIONS["c1.reactor"].get("why_none") == "fixed_design_reactor"
+            and MODEL_FUNCTIONS["c1.reactor_standin"].get("why_none") == "synthetic_stand_in",
+            f"differ {namesakes}; others {others}",
         )
     )
     package_keys = _all_package_keys(facts)
@@ -2136,6 +2276,7 @@ def build_registration(facts: Mapping[str, Any]) -> dict[str, Any]:
         "schema": "w27-registration-v1",
         "document": DOCUMENT,
         "registered": "2026-10-08",
+        "amendments": AMENDMENTS,
         "status": "registered before any W27 agent run; the campaign sample is drawn at M07",
         "inputs": {
             "archive_sha256": facts["source"]["archive_sha256"],
@@ -2163,6 +2304,9 @@ def build_registration(facts: Mapping[str, Any]) -> dict[str, Any]:
             "default_none": default_none,
             "suspicious_name_pattern": SUSPICIOUS_UNIT_NAME.pattern,
             "model_functions": MODEL_FUNCTIONS,
+            "model_none_reasons": MODEL_NONE_REASONS,
+            "unit_model_pool": "the serving route's model_ids when one route serves the case's "
+            "single method group; otherwise every model of the snapshot (W27-R62)",
         },
         "components": {
             "aliases": COMPONENT_ALIASES,
@@ -2247,33 +2391,57 @@ def build_registration(facts: Mapping[str, Any]) -> dict[str, Any]:
 # The dry illustration
 # =================================================================================================
 
-#: A hypothetical v0.2 snapshot: today's models plus a Peng-Robinson route with ADR 0022's five
-#: components (H2, N2, Ar, CH4 vapour-only; NH3 both phases). Not a registry document: the
-#: provider id is invented and M02's unit models are unknown. It exists to exercise the route
-#: rules on the chemistry v0.2 will have; nothing in the registration depends on it.
-HYPOTHETICAL_PROVIDER: Final = "hypothetical-pr-c1"
-HYPOTHETICAL_V02_ROUTE: Final = {
-    "provider_id": HYPOTHETICAL_PROVIDER,
-    "components": [
-        {"id": "Ar", "name": "argon", "formula": "Ar", "cas": "7440-37-1", "synthetic": False,
-         "phases": ["vapor"]},
-        {"id": "CH4", "name": "methane", "formula": "CH4", "cas": "74-82-8", "synthetic": False,
-         "phases": ["vapor"]},
-        {"id": "H2", "name": "hydrogen", "formula": "H2", "cas": "1333-74-0", "synthetic": False,
-         "phases": ["vapor"]},
-        {"id": "N2", "name": "nitrogen", "formula": "N2", "cas": "7727-37-9", "synthetic": False,
-         "phases": ["vapor"]},
-        {"id": "NH3", "name": "ammonia", "formula": "NH3", "cas": "7664-41-7", "synthetic": False,
-         "phases": ["liquid", "vapor"]},
-    ],
-}  # fmt: skip
+#: The hypothetical v0.2 snapshot (Amendment 2): today's SYN-001 route, plus the `pr-c1-v1` route
+#: read from the C1 records (`benchmarks/m01/components.yaml`) and the provider's own phase table
+#: (`pr_c1.LIGHT` vapour-only; the rest in `describe().phases`), and the eight C1 model ids. It is
+#: what W27-R63's reading gives for a binder with the recommended `MODEL_BASES` (each model on
+#: its own basis); `binder_2587f14` gives the binder as measured at `wp/M02` 2587f14, whose
+#: SYN-001 builders also bind on the C1 basis. Not a registry document: `list_models` is unknown
+#: until M02's join commit.
+V02_PROVIDER: Final = "pr-c1-v1"
+PHASE_KINDS: Final = {"LIQUID": "liquid", "VAPOR": "vapor", "SOLID": "solid"}
+
+
+def c1_route_components() -> list[dict[str, Any]]:
+    """W27-R63 for `pr-c1-v1`: its records' identifiers and its per-component phases."""
+    import yaml  # noqa: PLC0415
+
+    from openflowsheet.thermo import pr_c1  # noqa: PLC0415
+
+    records = yaml.safe_load((ROOT / pr_c1.RECORDS_PATH).read_text("utf-8"))
+    by_id = {r["id"]: r for r in records["components"]}
+    every = sorted(PHASE_KINDS[str(p)] for p in pr_c1.PrC1Provider().describe().phases)
+    components = []
+    for index, cid in enumerate(pr_c1.COMPONENTS):
+        record = by_id[cid]
+        identifiers = record.get("identifiers") or {}
+        components.append(
+            {
+                "id": cid,
+                "name": record.get("name"),
+                "formula": identifiers.get("formula"),
+                "cas": identifiers.get("cas"),
+                "synthetic": bool(record.get("synthetic")),
+                "phases": ["vapor"] if index in pr_c1.LIGHT else every,
+            }
+        )
+    return components
 
 
 def live_snapshot() -> dict[str, Any]:
-    """§5.7 at this commit: `list_models` through the operations table; the SYN-001 provider."""
+    """§5.7 at this commit: `list_models` through the operations table; the SYN-001 provider.
+    Only for a single-basis binder (W27-R63 item 2): a binder that selects its basis by
+    `record_source` (M02) is read by WO-16's `bases-v1`, never by this function."""
     import yaml  # noqa: PLC0415
 
     from openflowsheet import __version__  # noqa: PLC0415
+    from openflowsheet.application import revision_binding  # noqa: PLC0415
+
+    if hasattr(revision_binding, "basis_provider"):
+        raise RefusalError(
+            "registry_snapshot: unsupported(route enumeration): a multi-basis binder is read by "
+            "W27-R63's bases-v1 (benchmarks/m06/w27/snapshot.py), not by --snapshot-live"
+        )
     from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
     from openflowsheet.application.operations import dispatch  # noqa: PLC0415
     from openflowsheet.canonical import canonical_json  # noqa: PLC0415
@@ -2318,13 +2486,24 @@ def live_snapshot() -> dict[str, Any]:
     }
 
 
-def hypothetical_snapshot(today: Mapping[str, Any]) -> dict[str, Any]:
+def hypothetical_snapshot(today: Mapping[str, Any], syn001_on_c1: bool = False) -> dict[str, Any]:
+    """Amendment 2's hypothetical v0.2 snapshot; `syn001_on_c1` is the binder as measured."""
+    c1_models = sorted(C1_MODEL_IDS) + (sorted(TODAY_MODEL_IDS) if syn001_on_c1 else [])
     return {
         **today,
-        "routes": [*today["routes"], {**HYPOTHETICAL_V02_ROUTE, "model_ids": []}],
-        "basis": "HYPOTHETICAL: today's snapshot plus an invented PR route; not a registry",
-        "list_models_sha256": today["list_models_sha256"],
-    }
+        "package_version": "v0.2 (hypothetical)",
+        "list_models_sha256": None,
+        "models": [{"model_id": m} for m in sorted(MODEL_FUNCTIONS)],
+        "routes": [
+            *today["routes"],
+            {"provider_id": V02_PROVIDER, "components": c1_route_components(),
+             "model_ids": c1_models},
+        ],
+        "basis": "HYPOTHETICAL (registration Amendment 2): today's SYN-001 route plus pr-c1-v1 "
+        "with the eight C1 models"
+        + ("; SYN-001's models also on pr-c1-v1 (the binder at wp/M02 2587f14)"
+           if syn001_on_c1 else "; each model on its own basis (the recommended MODEL_BASES)"),
+    }  # fmt: skip
 
 
 def dry_claims(
@@ -2364,9 +2543,10 @@ def dry_claims(
     models = {m["model_id"] for m in snapshot["models"]}
     claims.append(
         (
-            "GC-DRY-4 today's registry is fully registered (model ids = MODEL_FUNCTIONS)",
-            models == set(MODEL_FUNCTIONS),
-            f"{sorted(models ^ set(MODEL_FUNCTIONS))}",
+            "GC-DRY-4 today's registry is the registered 0.1.1 one (model ids = TODAY_MODEL_IDS, "
+            "all in MODEL_FUNCTIONS)",
+            models == set(TODAY_MODEL_IDS) and models <= set(MODEL_FUNCTIONS),
+            f"{sorted(models ^ set(TODAY_MODEL_IDS))}",
         )
     )
     named = [
@@ -2454,7 +2634,13 @@ def synthetic_case(**changes: Any) -> dict[str, Any]:
 
 
 def test_snapshot(today: Mapping[str, Any], components: Sequence[Mapping[str, Any]]) -> dict:
-    route = {"provider_id": TEST_PROVIDER, "components": list(components), "model_ids": []}
+    """A test route of method `cubic_pr` holding `components`, with today's models on it (since
+    Amendment 2 the units of a case it serves are judged on its models, W27-R62)."""
+    route = {
+        "provider_id": TEST_PROVIDER,
+        "components": list(components),
+        "model_ids": sorted(m["model_id"] for m in today["models"]),
+    }
     return {**today, "routes": [*today["routes"], route], "basis": "TEST: adversarial claims"}
 
 
@@ -2590,6 +2776,9 @@ def adversarial_claims(
                 "added_route_components": snapshot["routes"][-1]["components"]
                 if snapshot is not today
                 else None,
+                "added_route_model_ids": snapshot["routes"][-1]["model_ids"]
+                if snapshot is not today
+                else None,
                 "expected_class": expected,
                 "reasons": [
                     {"kind": x["kind"], "subject": x["subject"], "detail": x["detail"]}
@@ -2629,6 +2818,290 @@ def adversarial_claims(
     return claims, record
 
 
+#: W27-R59 as amended (Amendment 2): at today's snapshot, the cases in which one unit alias names
+#: both an available unit and an UNIT_UNAVAILABLE reason (measured; GC-SCORE-1), and the case
+#: W27-S19/S20 score against.
+AMBIGUOUS_UNIT_ALIAS_CASES_TODAY: Final = 13
+AMBIGUOUS_STATE_CASE: Final = "ngcc_gas_turbine_subflowsheet"
+
+
+def ambiguous_unit_aliases(row: Mapping[str, Any]) -> list[str]:
+    """Normalized (W27-R39) unit aliases that name an available unit of `row` (as W27-R59 names
+    one) and are also aliases of one of its UNIT_UNAVAILABLE reasons (W27-R40)."""
+    available: set[str] = set()
+    for unit in row["units"]:
+        if unit["available"]:
+            available.add(unit["key"].split(":", 1)[1].strip().casefold())
+            for name in unit["names"]:
+                available |= {name.strip().casefold(), name.split(".")[-1].strip().casefold()}
+    shared: set[str] = set()
+    for reason in row["reasons"]:
+        if reason["kind"] == "UNIT_UNAVAILABLE":
+            shared |= {a.strip().casefold() for a in reason["aliases"]} & available
+    return sorted(shared)
+
+
+def _unit(key: str, name: str, config: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    leaf = key.split(":", 1)[1]
+    unit: dict[str, Any] = {"key": key, "class_leaf": f"_Scalar{leaf}", "names": [name]}
+    if config is not None:
+        unit["config"] = dict(config)
+    return unit
+
+
+def amendment2_claims(
+    facts: Mapping[str, Any], today: Mapping[str, Any], today_rows: Sequence[Mapping[str, Any]]
+) -> tuple[Claims, dict[str, Any]]:
+    """Registration §21 (Amendment 2): the C1 rows, W27-R62, W27-R24 (d)/(e), W27-R59 amended."""
+    claims: Claims = []
+    methods = {**PROVIDER_METHODS, TEST_PROVIDER: "cubic_pr"}
+    hyp = hypothetical_snapshot(today)
+    measured = hypothetical_snapshot(today, syn001_on_c1=True)
+    try:
+        check_snapshot(hyp, facts)
+        refused = "not refused"
+    except RefusalError as refusal:
+        refused = str(refusal)
+    claims.append(
+        (
+            "GC-A2-1 the hypothetical v0.2 snapshot is not refused by W27-R24 (every C1 model id, "
+            "pr-c1-v1 and every archive spelling of a C1 record are registered)",
+            refused == "not refused",
+            refused,
+        )
+    )
+    records = hyp["routes"][-1]["components"]
+    wrong = [
+        f"{c['id']}:{c['cas']}"
+        for c in records
+        if COMPONENT_ALIASES.get(c["id"]) != c["cas"] or not cas_valid(c["cas"])
+    ]
+    claims.append(
+        (
+            "GC-A2-2 each C1 record's id is aliased to the record's CAS RN, a valid one",
+            not wrong and len(records) == 5,
+            f"wrong {wrong}",
+        )
+    )
+    if refused != "not refused":
+        return claims, {}
+    on = classify(facts, hyp)
+    off = classify(facts, hyp, route_scoped_units=False)
+    both = classify(facts, measured)
+    claims.append(
+        (
+            "GC-A2-3 the hypothetical's summary does not depend on whether SYN-001's models also "
+            "bind on pr-c1-v1 (the binder at wp/M02 2587f14 vs the recommended MODEL_BASES)",
+            both["summary"] == on["summary"],
+            f"{both['summary']['all_450']['classes']}",
+        )
+    )
+    changed = [
+        a["case_id"]
+        for a, b in zip(on["rows"], off["rows"], strict=True)
+        if [(x["kind"], x["subject"], x["detail"]) for x in a["reasons"]]
+        != [(x["kind"], x["subject"], x["detail"]) for x in b["reasons"]]
+    ]
+    same_class = all(a["class"] == b["class"] for a, b in zip(on["rows"], off["rows"], strict=True))
+    claims.append(
+        (
+            "GC-A2-4 W27-R62 changes no class of the hypothetical; the cases whose reasons it "
+            "changes are recorded",
+            same_class and on["summary"] == off["summary"],
+            f"{len(changed)} cases: {changed}",
+        )
+    )
+    served = {r["case_id"]: r["units_judged_on"] for r in on["rows"] if r["units_judged_on"]}
+    by_id = {c["case_id"]: c for c in facts["cases"]}
+    nh3 = COMPONENT_ALIASES["NH3"]
+    unsafe = []
+    for case_id in served:
+        row = next(r for r in on["rows"] if r["case_id"] == case_id)
+        phases = {
+            p
+            for package in by_id[case_id]["packages"]
+            if PACKAGE_METHODS[package["key"]] != "reaction"
+            for p in package["phases"]
+        }
+        if phases != {"vapor"} or any(c["cas"] == nh3 for c in row["components"]):
+            unsafe.append(case_id)
+    claims.append(
+        (
+            "GC-A2-5 every case pr-c1-v1 serves declares only the vapour phase and holds no NH3, "
+            "so the C1 units' phase limits (vapour-only heater and mixer, a flash refusing a feed "
+            "without light gas) separate no archive case",
+            bool(served) and not unsafe and set(served.values()) == {V02_PROVIDER},
+            f"served {sorted(served)}; unsafe {unsafe}",
+        )
+    )
+    pfr = [c["case_id"] for c in facts["cases"] if any(u["key"] == "idaes:PFR" for u in c["units"])]
+    claims.append(
+        (
+            "GC-A2-6 idaes:PFR occurs in exactly one case and is default none",
+            len(pfr) == 1 and "idaes:PFR" not in UNIT_KEYS and "idaes:PFR" not in REVIEWED_NONE,
+            f"{pfr}",
+        )
+    )
+    ambiguous = {
+        r["case_id"]: ambiguous_unit_aliases(r) for r in today_rows if ambiguous_unit_aliases(r)
+    }
+    claims.append(
+        (
+            f"GC-SCORE-1 at today's snapshot {AMBIGUOUS_UNIT_ALIAS_CASES_TODAY} cases have a unit "
+            f"alias naming both an available unit and an unavailable reason, among them "
+            f"{AMBIGUOUS_STATE_CASE} with 'mixer'",
+            len(ambiguous) == AMBIGUOUS_UNIT_ALIAS_CASES_TODAY
+            and "mixer" in ambiguous.get(AMBIGUOUS_STATE_CASE, []),
+            f"{len(ambiguous)}",
+        )
+    )
+    # W27-S19/S20's two items on that case's row, judged by W27-R40, R41 and R59 as amended: a
+    # matched item is never contradicted.
+    row = next(r for r in today_rows if r["case_id"] == AMBIGUOUS_STATE_CASE)
+    reason_aliases = {
+        a.strip().casefold()
+        for x in row["reasons"]
+        if x["kind"] == "UNIT_UNAVAILABLE"
+        for a in x["aliases"]
+    }
+    pool = set()
+    for unit in row["units"]:
+        if unit["available"]:
+            pool.add(unit["key"].split(":", 1)[1].casefold())
+            pool |= {n.casefold() for n in unit["names"]} | {
+                n.split(".")[-1].casefold() for n in unit["names"]
+            }
+    judged = {}
+    for subject in ("Mixer", "fs.mx1"):
+        key = subject.strip().casefold()
+        matched = key in reason_aliases
+        judged[subject] = {
+            "matched": matched,
+            "contradicted": not matched and key in pool,
+            "contradicted_as_built": key in pool,
+        }
+    claims.append(
+        (
+            "GC-SCORE-2 on that row 'Mixer' is matched and not contradicted (as built: "
+            "contradicted); 'fs.mx1' is unmatched and contradicted",
+            judged["Mixer"] == {"matched": True, "contradicted": False,
+                                "contradicted_as_built": True}
+            and judged["fs.mx1"] == {"matched": False, "contradicted": True,
+                                     "contradicted_as_built": True},
+            f"{judged}",
+        )
+    )  # fmt: skip
+    # W27-A16: states on the hypothetical snapshot, each changing one thing.
+    base = synthetic_case()
+    pump = _unit("idaes:Pump", "fs.pump")
+    chain = [
+        _unit("idaes:Feed", "fs.feed"),
+        _unit("idaes:Mixer", "fs.mix", {}),
+        _unit("idaes:Heater", "fs.heater"),
+        _unit("idaes:Flash", "fs.flash"),
+        _unit("idaes:Separator", "fs.split", {"num_outlets": 2}),
+        _unit("idaes:Product", "fs.product"),
+    ]
+    ideal = [{**base["packages"][0], "key": f"{_GEN}[Vap:VaporPhase:Ideal]"}]
+    vle_nh3 = [{**base["packages"][0], "key": _PR_VLE_KEY, "phases": ["liquid", "vapor"],
+                "components": ["NH3"]}]  # fmt: skip
+    vle_both = [{**vle_nh3[0], "components": ["H2", "NH3"]}]
+    unit_reason = "UNIT_UNAVAILABLE"
+    route_reason = "PROPERTY_ROUTE_UNAVAILABLE"
+    states: list[tuple[str, dict[str, Any], str, list[tuple[str, Any, str]], str | None]] = [
+        ("A16-a C1 feed, heater and product serve the synthetic row", base, "CANDIDATE", [],
+         None),
+        ("A16-b the six C1 unit functions in one chain", synthetic_case(units=chain),
+         "CANDIDATE", [], None),
+        ("A16-c a pump, judged on the serving route", synthetic_case(units=[*base["units"], pump]),
+         unit_reason, [(unit_reason, "Pump", "no_model:pump units=fs.pump")], "CANDIDATE"),
+        ("A16-d the same pump with no serving route",
+         synthetic_case(units=[*base["units"], pump], packages=ideal), route_reason,
+         [(route_reason, "fs.props", "no_route:ideal_gas")], None),
+        ("A16-e a stoichiometric reactor: neither C1 reactor serves it",
+         synthetic_case(units=[*base["units"], _unit("idaes:StoichiometricReactor", "fs.rxr")]),
+         unit_reason,
+         [(unit_reason, "StoichiometricReactor", "no_model:conversion_reactor units=fs.rxr")],
+         "CANDIDATE"),
+        ("A16-f a CSTR: neither C1 reactor serves it",
+         synthetic_case(units=[*base["units"], _unit("idaes:CSTR", "fs.cstr")]), unit_reason,
+         [(unit_reason, "CSTR", "no_model:kinetic_reactor units=fs.cstr")], unit_reason),
+        ("A16-g NH3 alone in a liquid and vapour PR package: admitted (port phases unchecked)",
+         synthetic_case(packages=vle_nh3, listed_components=["NH3"]), "CANDIDATE", [], None),
+        ("A16-h H2 beside NH3 in that package: H2's liquid is not admitted",
+         synthetic_case(packages=vle_both, listed_components=["H2", "NH3"]), route_reason,
+         [(route_reason, "fs.props", "route_mismatch:pr-c1-v1:missing=:phase=1333-74-0:liquid")],
+         None),
+    ]  # fmt: skip
+    record_states: list[dict[str, Any]] = []
+    for label, case, expected, triples, before in states:
+        row = classify_case(case, hyp, methods)
+        got = [(x["kind"], x["subject"], x["detail"]) for x in row["reasons"]]
+        old = classify_case(case, hyp, methods, route_scoped_units=False)["class"]
+        holds = row["class"] == expected and got == triples
+        if before is not None:
+            holds = holds and old == before
+        claims.append(
+            (
+                f"GC-ADV {label}: {expected}"
+                + (f" (before W27-R62: {before})" if before is not None else ""),
+                holds,
+                f"{row['class']} {got}; before W27-R62 {old}",
+            )
+        )
+        record_states.append(
+            {
+                "state": label,
+                "case": case,
+                "snapshot": "hypothetical_v02",
+                "expected_class": expected,
+                "reasons": [{"kind": k, "subject": s_, "detail": d} for k, s_, d in triples],
+                "units_judged_on": row["units_judged_on"],
+                "class_before_w27_r62": old,
+            }
+        )
+    extra = {"provider_id": TEST_PROVIDER, "components": [_h2(["vapor"])],
+             "model_ids": sorted(C1_MODEL_IDS)}  # fmt: skip
+    c1_route = hyp["routes"][-1]
+    refusals = (
+        ("A17 two routes of one method", {**hyp, "routes": [*hyp["routes"], extra]},
+         "routes sharing a method ['cubic_pr']"),
+        ("A18-a a route model id not among the models",
+         {**hyp, "routes": [*hyp["routes"][:-1],
+                            {**c1_route, "model_ids": [*c1_route["model_ids"], "c1.ghost"]}]},
+         "route model ids not among the models ['c1.ghost']"),
+        ("A18-b a model on no route",
+         {**hyp, "routes": [*hyp["routes"][:-1],
+                            {**c1_route, "model_ids": [m for m in c1_route["model_ids"]
+                                                       if m != "c1.reactor"]}]},
+         "models on no route ['c1.reactor']"),
+        ("A19 two routes per revision", {**hyp, "routes_per_revision": 2},
+         "routes_per_revision 2 is not 1"),
+    )  # fmt: skip
+    for label, snapshot, needle in refusals:
+        try:
+            check_snapshot(snapshot, facts, methods)
+        except RefusalError as refusal:
+            holds, detail = needle in str(refusal), str(refusal)
+        else:
+            holds, detail = False, "no refusal"
+        claims.append((f"GC-ADV {label}: refused, naming {needle}", holds, detail))
+        record_states.append({"state": label, "expected": f"refusal naming {needle}"})
+    record = {
+        "served_cases": dict(sorted(served.items())),
+        "route_scoped_unit_changes": changed,
+        "binder_2587f14": {
+            "c1_route_model_ids": measured["routes"][-1]["model_ids"],
+            "snapshot_sha256": _sha256_bytes(dump(measured)),
+            "summary_equals_hypothetical_v02": both["summary"] == on["summary"],
+        },
+        "ambiguous_unit_alias_cases_today": dict(sorted(ambiguous.items())),
+        "scorer_states_s19_s20": {"case_id": AMBIGUOUS_STATE_CASE, "items": judged},
+        "adversarial_states": record_states,
+    }
+    return claims, record
+
+
 def build_dry(facts: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str, Any]:
     out: dict[str, Any] = {
         "schema": "w27-dry-illustration-v1",
@@ -2640,10 +3113,9 @@ def build_dry(facts: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str
         "snapshots": {},
     }
     all_claims: Claims = []
-    hypothetical_methods = {**PROVIDER_METHODS, HYPOTHETICAL_PROVIDER: "cubic_pr"}
     for label, snap, methods in (
         ("today", snapshot, PROVIDER_METHODS),
-        ("hypothetical_v02", hypothetical_snapshot(snapshot), hypothetical_methods),
+        ("hypothetical_v02", hypothetical_snapshot(snapshot), PROVIDER_METHODS),
     ):
         coverage = classify(facts, snap, methods)
         sample = draw_sample(coverage["rows"])
@@ -2678,7 +3150,7 @@ def build_dry(facts: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str
             else None,
         }
     today_rows = {r["case_id"]: r for r in out["snapshots"]["today"]["rows"]}
-    hyp_rows = classify(facts, hypothetical_snapshot(snapshot), hypothetical_methods)["rows"]
+    hyp_rows = classify(facts, hypothetical_snapshot(snapshot))["rows"]
     changed = sorted(
         r["case_id"]
         for r in hyp_rows
@@ -2689,9 +3161,19 @@ def build_dry(facts: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str
         "count": len(changed),
         "cases": changed,
     }
+    all_claims.append(
+        (
+            "GC-A2-7 the dry sample drawn at the hypothetical v0.2 snapshot equals today's",
+            out["snapshots"]["hypothetical_v02"]["sample"] == out["snapshots"]["today"]["sample"],
+            "same 45, order and canaries",
+        )
+    )
     adversarial, record = adversarial_claims(facts, snapshot)
     out["adversarial_states"] = record
     all_claims += adversarial
+    amended, record2 = amendment2_claims(facts, snapshot, classify(facts, snapshot)["rows"])
+    out["amendment_2"] = record2
+    all_claims += amended
     out["generator_claims"] = [{"claim": c, "holds": ok, "detail": d} for c, ok, d in all_claims]
     return out
 

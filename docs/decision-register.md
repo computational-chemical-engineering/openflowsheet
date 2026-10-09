@@ -4470,3 +4470,92 @@ review's F4. A user-supplied path for installed packages is not built; Q-N4 says
 
 **Watch for.** If Q-N4 is declined, an installed package without the records raises rather than refusing with a
 typed result. Revisit with Frank's answer.
+
+---
+
+## R-283 — W27 maps the six C1 units as their SYN-001 namesakes with no token, both C1 reactors to no function, and `pr-c1-v1` to `cubic_pr`
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | Design lane (`specifier`), M06, W27 registration Amendment 2 |
+| Normative text | `docs/derivations/M06-W27-registration.md` §21.1–§21.2; `benchmarks/m06/openidaes450/registration.json#/units/model_functions`, `#/routes/provider_methods` |
+| Evidence | GC-MODEL-1/2, GC-A2-1/2/5/6; W27-A16-a…h; `wp/M02` `2587f14` signatures and manifests |
+| Affected packages | M02 (join commit, R-280 (d)), M06, M07 |
+
+**Decision.** `c1.feed_source`, `c1.product_sink`, `c1.adiabatic_mixer`, `c1.tp_heater`, `c1.tp_flash`, `c1.stream_splitter`
+perform their SYN-001 namesakes' functions and offer no token. `c1.reactor` performs no function (`fixed_design_reactor`:
+one pinned geometry, catalyst, coolant and kinetics no case JSON can establish); `c1.reactor_standin` performs none
+(`synthetic_stand_in`, R-199). `pr-c1-v1` is `cubic_pr`; its vapour-only light gases are a per-component phase admission.
+
+**Rejected alternative, and why.** Phase tokens for the vapour-only heater and mixer and the LIQUID-less flash (no case
+option expresses them; port phases are unchecked by registration, as for SYN-001's liquid-only units; GC-A2-5 shows they
+separate no archive case). `c1.reactor` as `kinetic_reactor` (it is not a CSTR) or a new `plug_flow_reactor` function
+(re-keys a default-none archive key for no class change). A separate `cubic_pr_vapour_only` method (duplicates W27-R20).
+
+**Watch for.** A sampled candidate whose C1 units meet a liquid or a light-gas-free feed: §7's scripted build catches it.
+
+---
+
+## R-284 — W27 judges units on the serving route's models, and refuses snapshots that rule cannot judge
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | Design lane (`specifier`), M06, W27 registration Amendment 2 |
+| Normative text | registration §21.3 (W27-R62, W27-R24 (d)–(e)) |
+| Evidence | GC-A2-4 (no class changes at the hypothetical v0.2; `ngfc_atr`'s reasons change); W27-A16-c/d, A17–A19 |
+| Affected packages | M06 (WO-16h), M07 |
+
+**Decision.** When one route serves a case's single method group, its units are judged against that route's `model_ids`
+only (`units_judged_on`); otherwise against every model, as before. A snapshot with `routes_per_revision ≠ 1`, two
+routes of one method, a route model not among the models, or a model on no route is refused.
+
+**Rejected alternative, and why.** Units on every model whatever the route: a revision binds on one basis, so that counts
+a composition across bases as coverage (W27-A16-c). Evaluating each route and keeping the best: needless while a
+method has one route, which the refusal now makes explicit.
+
+**Watch for.** A second route of an existing method (a second PR provider): an amendment, not a code change.
+
+---
+
+## R-285 — W27's v0.2 snapshot reading is chosen by what the binder exposes (`SELECTABLE_BASES`, `MODEL_BASES`), not by version
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | Design lane (`specifier`), M06, W27 registration Amendment 2 |
+| Normative text | registration §21.4 (W27-R63), §21.8 J1–J6 |
+| Evidence | `wp/M02` `2587f14`: `__version__` `0.1.1`; `record_source` selects the basis; SYN-001's builders bind on the C1 basis (probe of §21.4) |
+| Affected packages | M02 (join commit), M06 (WO-16h), M07 |
+
+**Decision.** `bases-v1` reads one route per basis of `SELECTABLE_BASES`, its models from `MODEL_BASES` (the table the
+binder's own `model_unsupported` refusal reads); the 0.1.1 reading applies only to a binder without `basis_provider`;
+anything else refuses. Whether SYN-001's builders bind on the C1 basis is M02's (F-A2-1; default no); W27 reads either.
+
+**Rejected alternative, and why.** Readings keyed by version (the joined binder still says 0.1.1 and would be read as one
+SYN-001 route, silently). Probing every (model, basis) with a minimal revision (fragile, slow). Listing `c1.*` on
+`pr-c1-v1` by prefix (a hand list; wrong if SYN-001's builders stay unguarded).
+
+**Watch for.** The join's live snapshot differing from both registered expectations (J3): stop, amend.
+
+---
+
+## R-286 — Ruling on W27 Amendment 1: the erratum, W27-R60 and W27-R61 ratified; W27-R59 amended so a matched item is never contradicted
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | Design lane (`specifier`), M06, W27 registration Amendment 2, on the M06 review F5 |
+| Normative text | registration §21.6 |
+| Evidence | `access_report.json` (9 inaccessible assets); GC-SCORE-1 (13 cases with an alias naming an available unit and an unavailable reason); GC-SCORE-2; `scorer.judge_limitation` on `ngcc_gas_turbine_subflowsheet` (`Mixer`: matched and contradicted, as built) |
+| Affected packages | M06 (WO-16h scorer, before WO-17's first canary) |
+
+**Decision.** "Nine" stands. A quantity at several time points is unjudged; a reference component the product stream
+lacks is 0 mol/s. W27-R59 holds with one addition: an item that matches a recorded reason (W27-R40) is not contradicted.
+Scorer states W27-S19, S20.
+
+**Rejected alternative, and why.** Ratifying W27-R59 as built: in 13 cases a correct, matching item would also count as a
+semantic error. Dropping the lenient matching instead: W27-R40 is lenient on purpose (R-177).
+
+**Watch for.** Semantic-error counts computed before WO-16h: re-score; no outcome class moves.
