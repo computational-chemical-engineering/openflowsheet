@@ -267,6 +267,7 @@ def test_a_spec_without_kinds_ignores_its_own_scales() -> None:
         decisions=[DecisionSpec(name, None, None) for name in TR_E1_DECISIONS],
         objective=ObjectiveSpec("tr-e1-objective", "minimize", tr_e1_objective_build, 1.0),
         domain={},
+        shape_check="exempt_oracle",
     )
     assert suffix(projection) == ([1.0, 1.0], [1.0, 1.0])
     assert projection.source_map == tr_e1_projection().source_map
@@ -320,6 +321,7 @@ def tr_e1_variant(**changes: Any) -> Any:
 
     base = tr_e1_spec()
     decisions = changes.pop("decisions", TR_E1_DECISIONS)
+    shape_check = changes.pop("shape_check", "exempt_oracle")
     spec = ProblemSpec(**{**base.__dict__, **changes})
     return project(
         spec,
@@ -327,6 +329,7 @@ def tr_e1_variant(**changes: Any) -> Any:
         decisions=[DecisionSpec(name, None, None) for name in decisions],
         objective=ObjectiveSpec("tr-e1-objective", "minimize", tr_e1_objective_build, 1.0),
         domain={},
+        shape_check=shape_check,
     )
 
 
@@ -656,3 +659,73 @@ def test_a_spec_without_alias_rows_omits_none() -> None:
     assert projection.omitted_rows == ()
     assert projection.source_map["omitted_rows"] == []
     assert projection.omitted_rows_at(projection.model).status == "pass"
+
+
+# -- R-278: the shape check `PROJECTION_IMPLICIT_EF_INPUT` ----------------------------------------
+
+
+def test_r278_a_link_output_pinned_by_the_decisions_is_refused() -> None:
+    """Probe P14's `y − 90 z` on an external link: ΔT̂ − 90 z = 0 over-determines ΔT̂ and leaves
+    the link's inlet temperature to be found by inverting the link. The refusal names the
+    structurally undetermined variables, flags the link-EF input among them, and names the
+    unmatched equation."""
+    from m05_support import link_toy_projection
+
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    with pytest.raises(ProjectionRefusedError) as refused:
+        link_toy_projection("implicit")
+    assert refused.value.reason == "PROJECTION_IMPLICIT_EF_INPUT(T_in,T_out)"
+    assert "pairs 9 of the 10" in refused.value.detail
+    assert "of which link-EF inputs ['T_in']" in refused.value.detail
+    assert "unmatched equations ['link:R.dT']" in refused.value.detail
+
+
+def test_r278_the_same_link_in_the_forward_shape_passes() -> None:
+    from m05_support import link_toy_projection
+
+    check = link_toy_projection("forward").source_map["shape_check"]
+    assert (check["status"], check["matched"], check["size"], check["refusal"]) == (
+        "pass",
+        10,
+        10,
+        None,
+    )
+
+
+def test_r278_a_property_output_pinned_by_the_decisions_passes() -> None:
+    """R-278's amendment: only the link outputs are fixed. P14's toy A pins a property-block output
+    by the decision, and its input enters no other row; the block relation determines it."""
+    from m05_support import SquareBlock, implicit_block_projection
+
+    check = implicit_block_projection(SquareBlock(), 300.0).source_map["shape_check"]
+    assert (check["status"], check["matched"], check["size"]) == ("pass", 2, 2)
+
+
+def test_r278_tr_e1_is_exempt_as_the_oracle_and_would_be_refused() -> None:
+    """Pyomo's example is itself implicit (c2 holds decisions only): exempt, recorded, and refused
+    if the check were required."""
+    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+
+    check = tr_e1_projection().source_map["shape_check"]
+    assert (check["status"], check["matched"], check["size"]) == ("exempt_oracle", 2, 3)
+    assert check["refusal"] == "PROJECTION_IMPLICIT_EF_INPUT(x0,x1,bb.s)"
+    with pytest.raises(ProjectionRefusedError) as refused:
+        tr_e1_variant(shape_check="required")
+    assert refused.value.reason == check["refusal"]
+
+
+def test_r278_the_at_toy_passes() -> None:
+    from m05_support import at_projection
+
+    check = at_projection().source_map["shape_check"]
+    assert (check["status"], check["matched"], check["size"]) == ("pass", 5, 5)
+
+
+@pytest.mark.parametrize("state", ["P1", "P2", "P3", "B1", "B2", "B3"])
+def test_r278_syn001_passes_at_the_registered_states(state: str, record_property: Any) -> None:
+    projection, _ = syn001_projection(state)
+    check = projection.source_map["shape_check"]
+    record_property(f"M05.R278.syn001.{state}.matched", check["matched"])
+    assert check["status"] == "pass" and check["refusal"] is None
+    assert check["matched"] == check["size"] > 0

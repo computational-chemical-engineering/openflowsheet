@@ -55,7 +55,27 @@ symbol (ADR 0031 D2's meaning); `PROJECTION_NONSMOOTH(<id>)` — a row, inequali
 contains `abs`, `Expr_if`, `min`/`max`, `ceil`/`floor` or a piecewise node;
 `PROJECTION_STRUCTURE(<id>)` — a variable appears in no constraint (or a row in no variable);
 `PROJECTION_DOF(<n>)` — n_vars − n_equalities = n ≠ n_decisions, TRF's own count, repeated here so
-the failure is typed; `PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)` — above.
+the failure is typed; `PROJECTION_IMPLICIT_EF_INPUT(<ids>)` — below;
+`PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)` — above.
+
+**The shape check** (R-278, design note §16.5). TRF fixes an external link's output in every
+subproblem only through its model r_k(w), so the glass box must determine each link-EF input
+without inverting the link: an output pinned by the decisions alone (`X̂ − 90 z = 0`) leaves the
+link's inlet undetermined and the output over-determined. The check is structural. Unknowns: every
+projection variable except the decisions — `x`, the block outputs `y` and the link variables `w`.
+Equations: the projected rows (incident on the unknowns their expressions contain), the block
+definitions `ydef` (incident on their output and on every input of their block: property relations
+stay functions) and the link definitions `link` (incident on their `w` only: the link output is
+fixed). After the DOF check this incidence is square; the projection passes **iff** it has a
+perfect matching (`scipy.sparse.csgraph.maximum_bipartite_matching`). Otherwise it is refused
+`PROJECTION_IMPLICIT_EF_INPUT(<ids>)`, naming the structurally undetermined variables — those an
+alternating path reaches from a variable the maximum matching leaves unmatched, the column side of
+the Dulmage-Mendelsohn under-determined block, which does not depend on which maximum matching was
+found — with the link-EF inputs among them flagged, and the unmatched equations. Numeric regularity
+is S0's K04 certificate on the same system, not this check. TR-E1 is exempt as the oracle
+(`shape_check="exempt_oracle"`: Pyomo's example is itself implicit, `x1` entering only through the
+EF and `c2` only decisions); the verdict is still computed and recorded in the source map's
+`shape_check`.
 """
 
 from __future__ import annotations
@@ -68,7 +88,7 @@ from typing import Any, Final, Literal
 import numpy as np
 import numpy.typing as npt
 import pyomo.environ as pyo
-from pyomo.common.collections import ComponentSet
+from pyomo.common.collections import ComponentMap, ComponentSet
 from pyomo.core.expr.calculus.derivatives import Modes, differentiate
 from pyomo.core.expr.numeric_expr import (
     AbsExpression,
@@ -126,8 +146,15 @@ RefusalCode = Literal[
     "PROJECTION_NONSMOOTH",
     "PROJECTION_STRUCTURE",
     "PROJECTION_DOF",
+    "PROJECTION_IMPLICIT_EF_INPUT",
     "PROJECTION_OMITTED_ROW_UNCERTIFIED",
 ]
+#: R-278: whether `project` enforces the shape check. `exempt_oracle` is TR-E1's only (test-only).
+ShapeCheck = Literal["required", "exempt_oracle"]
+SHAPE_CHECK_CRITERION: Final = (
+    "structural perfect matching of the projected equations to every variable but the decisions, "
+    "link-EF outputs fixed and property relations kept (R-278)"
+)
 
 
 class ProjectionRefusedError(Exception):
@@ -413,6 +440,7 @@ def project(
     external_links: Sequence[ExternalLinkSpec] = (),
     inequalities: Sequence[InequalitySpec] = (),
     omitted_rows: Collection[str] | None = None,
+    shape_check: ShapeCheck = "required",
 ) -> Projection:
     """Project `spec` at the state `x0` (every variable id → binary64) for TRF (§6.1).
 
@@ -423,7 +451,10 @@ def project(
     The rows not projected are the certified alias rows, computed here (R-274; module docstring).
     `omitted_rows`, if given, must name exactly that set, or the projection is refused
     `PROJECTION_OMITTED_ROW_UNCERTIFIED(<id>)` with the first id, in spec order, on which the two
-    differ; an id that is not an equation of the spec is a `ValueError`."""
+    differ; an id that is not an equation of the spec is a `ValueError`.
+
+    `shape_check="exempt_oracle"` is TR-E1's alone (R-278): the shape check's verdict is recorded
+    but does not refuse."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
@@ -644,6 +675,9 @@ def project(
         if found is not None:
             raise ProjectionRefusedError("PROJECTION_NONSMOOTH", subject, f"contains {found}")
     _check_structure(model, spec, decisions, external_links, output_rows, len(decisions))
+    shape = _shape_check(model, spec, row_ids, expressions, output_rows, external_links)
+    if shape_check == "required" and shape.refusal is not None:
+        raise shape.refusal
     certified = _certify(spec, scaling, decisions, elimination, residuals_x0, derivatives)
 
     source_map = _source_map(
@@ -659,6 +693,7 @@ def project(
         inequalities,
         objective,
         certified,
+        shape.as_document(shape_check),
     )
     return Projection(
         model=model,
@@ -830,6 +865,119 @@ def _check_structure(
             f"{len(seen)} variables in constraints less {equalities} equalities is {dof}, "
             f"not the {n_decisions} decisions TRF is given",
         )
+
+
+# -- the shape check (R-278) ----------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class _ShapeVerdict:
+    """The shape check's result: the matching's size against the system's, and on a failure the
+    refusal it raises (unless the projection is TR-E1's exempt oracle)."""
+
+    matched: int
+    size: int
+    refusal: ProjectionRefusedError | None
+
+    def as_document(self, mode: ShapeCheck) -> dict[str, Any]:
+        status = "exempt_oracle" if mode == "exempt_oracle" else "pass"
+        return {
+            "status": status,
+            "criterion": SHAPE_CHECK_CRITERION,
+            "matched": self.matched,
+            "size": self.size,
+            "refusal": None if self.refusal is None else self.refusal.reason,
+        }
+
+
+def _shape_check(
+    model: Any,
+    spec: ProblemSpec,
+    row_ids: Sequence[str],
+    expressions: Sequence[Any],
+    output_rows: Sequence[Mapping[str, Any]],
+    links: Sequence[ExternalLinkSpec],
+) -> _ShapeVerdict:
+    """R-278 (module docstring): the structural incidence of the projected equations on every
+    variable but the decisions, with the link-EF outputs fixed and the property relations kept,
+    and whether it has a perfect matching. Called after the DOF check, so it is square."""
+    import scipy.sparse as sp
+    from scipy.sparse.csgraph import maximum_bipartite_matching
+
+    variable_index = {name: i for i, name in enumerate(spec.variable_ids)}
+    n_x, n_y = len(spec.variable_ids), len(output_rows)
+    link_parameters = [p for link in links for p in (link.x_param_id, link.dt_param_id)]
+    unknown_names = [
+        *spec.variable_ids,
+        *(f"{row['block_id']}.{row['output_id']}" for row in output_rows),
+        *link_parameters,
+    ]
+    column = ComponentMap(
+        [
+            *((model.x[i], i) for i in range(n_x)),
+            *((model.y[g], n_x + g) for g in range(n_y)),
+            *((model.w[k], n_x + n_y + k) for k in range(len(link_parameters))),
+        ]
+    )
+    # A row's incidence is the unknowns its expression contains; the decisions are not unknowns.
+    equations: list[tuple[str, list[int]]] = [
+        (name, sorted({column[v] for v in identify_variables(expression) if v in column}))
+        for name, expression in zip(row_ids, expressions, strict=True)
+    ]
+    for g, row in enumerate(output_rows):
+        inputs = {variable_index[name] for name in spec.block_inputs[row["block_id"]]}
+        equations.append((f"ydef:{row['block_id']}.{row['output_id']}", sorted({n_x + g, *inputs})))
+    for k, parameter in enumerate(link_parameters):
+        equations.append((f"link:{parameter}", [n_x + n_y + k]))
+
+    size = len(unknown_names)
+    if len(equations) != size:  # the DOF check guarantees it; a defect otherwise
+        raise AssertionError(f"shape check: {len(equations)} equations, {size} unknowns")
+    rows = [r for r, (_, columns) in enumerate(equations) for _ in columns]
+    columns = [c for _, cols in equations for c in cols]
+    incidence = sp.csr_matrix(
+        (np.ones(len(rows), dtype=np.int8), (rows, columns)), shape=(size, size)
+    )
+    row_match = maximum_bipartite_matching(incidence, perm_type="column")
+    matched = int(np.count_nonzero(row_match >= 0))
+    if matched == size:
+        return _ShapeVerdict(matched, size, None)
+
+    column_match = np.full(size, -1, dtype=np.int64)
+    for r, c in enumerate(row_match):
+        if c >= 0:
+            column_match[c] = r
+    incident: list[list[int]] = [[] for _ in range(size)]
+    for r, (_, cols) in enumerate(equations):
+        for c in cols:
+            incident[c].append(r)
+    # Alternating paths from the unmatched variables: variable → any incident equation → the
+    # variable that equation is matched to. What they reach is the under-determined block.
+    undetermined = {c for c in range(size) if column_match[c] < 0}
+    frontier = sorted(undetermined)
+    while frontier:
+        reached = []
+        for c in frontier:
+            for r in incident[c]:
+                partner = int(row_match[r])
+                if partner >= 0 and partner not in undetermined:
+                    undetermined.add(partner)
+                    reached.append(partner)
+        frontier = reached
+    link_inputs = {name for link in links for name in link.inlet_variable_ids}
+    under = [unknown_names[c] for c in sorted(undetermined)]
+    flagged = [name for name in under if name in link_inputs]
+    unmatched_equations = [equations[r][0] for r in range(size) if row_match[r] < 0]
+    unmatched_variables = [unknown_names[c] for c in range(size) if column_match[c] < 0]
+    refusal = ProjectionRefusedError(
+        "PROJECTION_IMPLICIT_EF_INPUT",
+        ",".join(under),
+        f"with the decisions and the link-EF outputs fixed, a maximum matching pairs {matched} of "
+        f"the {size} equations and unknowns; unmatched equations {unmatched_equations}, unmatched "
+        f"variables {unmatched_variables}; structurally undetermined variables {under}, of which "
+        f"link-EF inputs {flagged}",
+    )
+    return _ShapeVerdict(matched, size, refusal)
 
 
 # -- the omitted rows (R-274) ---------------------------------------------------------------------
@@ -1031,6 +1179,7 @@ def _source_map(
     inequalities: Sequence[InequalitySpec],
     objective: ObjectiveSpec,
     omitted: Sequence[OmittedRow],
+    shape_check: Mapping[str, Any],
 ) -> dict[str, Any]:
     """`projection-source-map-v1` (§6.2), without its `trf` part, which a run fills."""
     structure = structure_sha256(
@@ -1095,5 +1244,6 @@ def _source_map(
             "scale": objective.scale,
         },
         "scale_provenance": scaling.provenance,
+        "shape_check": dict(shape_check),
         "trf": [],
     }

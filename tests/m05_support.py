@@ -113,6 +113,7 @@ def tr_e1_projection(block: SineBlock | None = None) -> Any:
         decisions=[DecisionSpec(name, None, None) for name in TR_E1_DECISIONS],
         objective=ObjectiveSpec("tr-e1-objective", "minimize", tr_e1_objective_build, 1.0),
         domain={},
+        shape_check="exempt_oracle",
     )
 
 
@@ -250,4 +251,160 @@ def at_projection(
         objective=ObjectiveSpec("at-objective", "minimize", at_objective_build, 1.0),
         domain=domain,
         omitted_rows=omitted_rows,
+    )
+
+
+# -- R-278: the shape-check toys ------------------------------------------------------------------
+
+#: An external link `R` on seven inlet variables, with an energy balance `T_out = T_in + ΔT̂`. In
+#: the forward shape a heater row fixes `T_in = 680 z`, so the glass box determines the link's
+#: inlet and the link determines ΔT̂. In the implicit shape (probe P14's `y − 90 z`) a row pins the
+#: link output by the decision alone, `ΔT̂ − 90 z = 0`: ΔT̂ is over-determined, and `T_in` — a
+#: link-EF input — is fixed only by inverting the link.
+LINK_TOY_FLOWS: Final = ("n_H2", "n_N2", "n_NH3", "n_Ar", "n_CH4")
+LINK_TOY_FEED: Final[Mapping[str, float]] = {
+    "n_H2": 3.0,
+    "n_N2": 1.0,
+    "n_NH3": 0.1,
+    "n_Ar": 0.05,
+    "n_CH4": 0.05,
+}
+LINK_TOY_PRESSURE: Final = 1.5e7
+LINK_TOY_INLET: Final = (*LINK_TOY_FLOWS, "T_in", "P")
+
+
+class LinkToyTruth:
+    """A smooth (X, ΔT) of the inlet temperature, for the link toy; the projection reads only its
+    identity."""
+
+    def describe(self) -> Mapping[str, Any]:
+        return {"kind": "test", "id": "link-toy", "sha256": None}
+
+    def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]:
+        conversion = 0.2 + 1e-4 * (inlet[5] - 680.0)
+        return conversion, 350.0 * conversion, {"status": "ok"}
+
+    def gradient(self, inlet: Sequence[float]) -> Sequence[Sequence[float]]:
+        row = [0.0, 0.0, 0.0, 0.0, 0.0, 1e-4, 0.0]
+        return [row, [350.0 * value for value in row]]
+
+
+def _feed_row(name: str) -> EquationSpec:
+    def build(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
+        return v[name] - LINK_TOY_FEED[name]
+
+    return EquationSpec(f"feed.{name}", build, "algebraic", f"link toy feed {name}")
+
+
+def _link_toy_pressure(
+    v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
+) -> Expr:
+    return v["P"] - LINK_TOY_PRESSURE
+
+
+def _link_toy_heater(
+    v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
+) -> Expr:
+    return v["T_in"] - 680.0 * p["z"]
+
+
+def _link_toy_pinned_output(
+    v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
+) -> Expr:
+    return p["R.dT"] - 90.0 * p["z"]
+
+
+def _link_toy_energy(
+    v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
+) -> Expr:
+    return v["T_out"] - v["T_in"] - p["R.dT"]
+
+
+def _link_toy_objective(
+    v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
+) -> Expr:
+    return (v["T_out"] - 760.0) ** 2 / 100.0
+
+
+def link_toy_projection(shape: str, **options: Any) -> Any:
+    """The link toy in its `forward` or `implicit` shape, projected with the decision `z`."""
+    from openflowsheet.studies.trust_region.projection import (
+        DecisionSpec,
+        ExternalLinkSpec,
+        ObjectiveSpec,
+        project,
+    )
+
+    rise = 70.0 if shape == "forward" else 90.0
+    fix = (
+        EquationSpec("heater", _link_toy_heater, "algebraic", "link toy heater")
+        if shape == "forward"
+        else EquationSpec("pinned", _link_toy_pinned_output, "algebraic", "link toy y - 90 z")
+    )
+    spec = ProblemSpec(
+        label=f"M05-link-shape-toy-{shape}",
+        variable_ids=(*LINK_TOY_INLET, "T_out"),
+        equations=(
+            *(_feed_row(name) for name in LINK_TOY_FLOWS),
+            EquationSpec("pressure", _link_toy_pressure, "algebraic", "link toy pressure"),
+            fix,
+            EquationSpec("energy", _link_toy_energy, "algebraic", "link toy energy balance"),
+        ),
+        parameter_ids=("z", "R.X", "R.dT"),
+        parameters={"z": 1.0, "R.X": 0.2, "R.dT": rise},
+    )
+    start = {**LINK_TOY_FEED, "P": LINK_TOY_PRESSURE, "T_in": 680.0, "T_out": 680.0 + rise}
+    return project(
+        spec,
+        start,
+        decisions=[DecisionSpec("z", 0.9, 1.1)],
+        objective=ObjectiveSpec("link-toy-objective", "minimize", _link_toy_objective, 1.0),
+        domain={},
+        external_links=[ExternalLinkSpec("R", "R.X", "R.dT", LINK_TOY_INLET, LinkToyTruth())],
+        **options,
+    )
+
+
+# -- probe P14's toy A: a property-block output pinned by the decision ---------------------------
+
+#: `y = T²/1000` through the block `sq` (the AT toy's), and the row `y − 90 z = 0`: the block's
+#: input T enters no other row. With a property block this passes the shape check (R-278: property
+#: relations stay functions); the objective is P14's `(y − 96.1)²/100`.
+TOY_A_LABEL: Final = "M05-P14-toy-A"
+
+
+def _toy_a_row(v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any) -> Expr:
+    block_output = next(iter(b.values()))
+    return block_output - 90.0 * p["z"]
+
+
+def _toy_a_objective(
+    v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
+) -> Expr:
+    block_output = next(iter(b.values()))
+    return (block_output - 96.1) ** 2 / 100.0
+
+
+def implicit_block_projection(block: Any, start_t: float, **options: Any) -> Any:
+    """P14's implicit shape on a one-input, one-output property `block`, started at T = `start_t`
+    with z = y(T)/90, the decision z in [0.5, 1.5] (the probe's d = 2(z − 1) ∈ [−1, 1])."""
+    from openflowsheet.studies.trust_region.projection import DecisionSpec, ObjectiveSpec, project
+
+    (y0,) = block.values([start_t])
+    spec = ProblemSpec(
+        label=TOY_A_LABEL,
+        variable_ids=("T",),
+        equations=(EquationSpec("r", _toy_a_row, "algebraic", "P14 y - 90 z"),),
+        parameter_ids=("z",),
+        parameters={"z": y0 / 90.0},
+        blocks=(block,),
+        block_inputs={block.block_id: ("T",)},
+    )
+    return project(
+        spec,
+        {"T": start_t},
+        decisions=[DecisionSpec("z", 0.5, 1.5)],
+        objective=ObjectiveSpec("p14-objective", "minimize", _toy_a_objective, 1.0),
+        domain={},
+        **options,
     )
