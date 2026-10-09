@@ -141,7 +141,7 @@
           "max_steps": 400,
           "rtol": 1e-12,
           "target": "S3's target / 10",
-          "when": "the certificate after S3 passed and A45's element defect read after it is not <= defect_threshold"
+          "when": "A45's element defect read after the certificate after S3 is not <= defect_threshold, whatever that certificate's verdict"
         },
         "rtol": 1e-12,
         "target": "1e-6*(num_z/100)^2"
@@ -162,7 +162,7 @@
       "repository": "https://github.com/computational-chemical-engineering/ammonia_synthesis_reactor",
       "used_by_reference": true
     },
-    "runner_sha256": "bbed02235f0a3a3e7ca47560de42a3ef04b3240ac21c416a8959583c84e58970"
+    "runner_sha256": "0d2c345f1d414c457e047f698b9e6a3235701b91c4990ef2300d4375f753d893"
   },
   "execution": {
     "kill_grace_s": 2,

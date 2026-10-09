@@ -563,16 +563,31 @@ def test_e1_a_round_that_fails_is_the_stage_s3() -> None:
     assert "certificate" not in document["diagnostics"]
 
 
-def test_e1_a_failed_first_certificate_decides_and_round_2_does_not_run() -> None:
+def test_f2_a_failed_first_certificate_below_the_threshold_decides() -> None:
+    """§14.7 F2 step 4: δ₁ ≤ 10⁻⁷, no round 2, and a failed certificate₁ refuses."""
     calls: list[tuple[str, dict[str, Any]]] = []
     document = _stub_reactor(
-        None, ValueError(), defect=1e-5, calls=calls, verdicts=(False,)
+        None, ValueError(), defect=3e-8, calls=calls, verdicts=(False,)
     ).evaluate(TUBE, None, [0.0] * 5)
     assert (document["outcome"], document["stage"]) == ("not_accepted", "certificate")
     assert [name for name, _ in calls] == ["S1", "S2", "S3", "certificate"]
     s3 = document["diagnostics"]["stages"]["S3"]
-    assert s3["round2"] is None and s3["defect_round1"] == pytest.approx(1e-5, rel=1e-6)
+    assert s3["round2"] is None and s3["defect_round1"] == pytest.approx(3e-8, rel=1e-6)
     assert document["diagnostics"]["certificate"]["kpi_drift_ok"] is False
+
+
+def test_f2_a_failed_first_certificate_above_the_threshold_runs_round_2() -> None:
+    """§14.7 F2 step 5: δ₁ > 10⁻⁷ runs round 2 whatever certificate₁'s verdict; certificate₂
+    decides (D78's two points: round 2 converged, certificate₂ passed, `ok`)."""
+    calls: list[tuple[str, dict[str, Any]]] = []
+    document = _stub_reactor(
+        None, ValueError(), defect=1e-5, calls=calls, verdicts=(False, True)
+    ).evaluate(TUBE, None, [0.0] * 5)
+    assert document["outcome"] == CHILD_MODULE.OUTCOME_OUTLET
+    assert [name for name, _ in calls] == ["S1", "S2", "S3", "certificate", "round2", "certificate"]
+    s3 = document["diagnostics"]["stages"]["S3"]
+    assert s3["accepted"] is True and s3["round2"]["certificate_round1"]["kpi_drift_ok"] is False
+    assert document["diagnostics"]["certificate"]["kpi_drift_ok"] is True
 
 
 def test_e1_a_nonfinite_defect_is_not_below_the_threshold() -> None:
@@ -633,21 +648,26 @@ def _which(certificate: dict[str, Any] | None) -> float | None:
 @pytest.mark.parametrize(
     ("case", "verdicts", "defect", "converges", "expected"),
     [
-        (1, (False,), lambda n: 2e-7, True, ("certificate", ["S3"], 0, 1.0)),
+        (1, (False,), lambda n: 3e-8, True, ("certificate", ["S3"], 0, 1.0)),
         (2, (True,), lambda n: 3e-8, True, (None, ["S3"], 0, 1.0)),
         (3, (True, True), lambda n: 2e-7, True, (None, ["S3", "round2"], 1, 2.0)),
         (4, (True,), lambda n: 2e-7, False, ("S3", ["S3"], 1, None)),
         (5, (True, False), lambda n: 2e-7, True, ("certificate", ["S3", "round2"], 1, 2.0)),
         (6, (True, True), lambda n: math.nan, True, (None, ["S3", "round2"], 1, 2.0)),
         (7, (True,), lambda n: 5e-5 if n == 0 else 3e-8, True, (None, ["S3"], 0, 1.0)),
+        (8, (False, True), lambda n: 2e-7, True, (None, ["S3", "round2"], 1, 2.0)),
+        (9, (False,), lambda n: 2e-7, False, ("S3", ["S3"], 1, None)),
+        (10, (False, False), lambda n: 2e-7, True, ("certificate", ["S3", "round2"], 1, 2.0)),
     ],
 )
 def test_g11v3_10_the_post_s3_sequence(
     case: int, verdicts: tuple[bool, ...], defect: Any, converges: bool, expected: tuple[Any, ...]
 ) -> None:
-    """§14.6 G11v3-10's table: the stage, the certificate's and the polish's calls, and which
-    certificate `diagnostics.certificate` holds. Case 7 is D77's regression: δ read before the
-    certificate (5e-5) would run the polish."""
+    """§14.6 G11v3-10's table as §14.7 amends it: the stage, the certificate's and the polish's
+    calls, and which certificate `diagnostics.certificate` holds. Case 7 is D77's regression: δ
+    read before the certificate (5e-5) would run the polish. Case 8 fails under §14.6 E1 as ruled
+    (a failed certificate₁ decided); case 1 fails if round 2 runs after every failed
+    certificate₁. Cases 8–10 are F2's rescue: certificate₂ decides."""
     refused, certificate, stage, diagnostics, calls = _sequence(
         verdicts, defect, polish_converges=converges
     )

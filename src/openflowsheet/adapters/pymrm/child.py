@@ -144,8 +144,8 @@ PROFILE: dict[str, Any] = {
         "max_steps": 400,
         "target": "1e-6*(num_z/100)^2",
         "round2": {
-            "when": "the certificate after S3 passed and A45's element defect read after it is "
-            "not <= defect_threshold",
+            "when": "A45's element defect read after the certificate after S3 is not <= "
+            "defect_threshold, whatever that certificate's verdict",
             "defect": "max over the elements present in the requested inlet of "
             "|element_defect_rel| (outlet's formula); NaN if any of them is NaN",
             "defect_threshold": 1e-7,
@@ -550,18 +550,18 @@ def after_s3(
     stage: dict[str, Any],
     diagnostics: dict[str, Any],
 ) -> tuple[str | None, dict[str, Any] | None]:
-    """§14.6 E1: profile `M01-S123-v2`'s sequence after an accepted S3, over three injected
-    callables — `certify(status)` (the group's certificate, which marches the state),
-    `read_defect()` (δ from the model's current flows; a read) and `polish()` (round 2 on the same
-    object: `(status, record)`). Returns the stage this sequence refuses at (`S3`, `certificate`)
-    or None, and the deciding certificate (None when round 2 did not converge).
+    """§14.6 E1 as amended by §14.7 F2: profile `M01-S123-v2`'s sequence after an accepted S3,
+    over three injected callables — `certify(status)` (the group's certificate, which marches the
+    state), `read_defect()` (δ from the model's current flows; a read) and `polish()` (round 2 on
+    the same object: `(status, record)`). Returns the stage this sequence refuses at (`S3`,
+    `certificate`) or None, and the deciding certificate (None when round 2 did not converge).
 
     certificate₁ on S3's status; δ₁ read after it and recorded as `defect_round1` whatever its
-    verdict; a failed certificate₁ decides (no round 2); δ₁ ≤ the threshold leaves v2's path plus
-    the read; otherwise (a NaN included) round 2, S3's acceptance becomes its convergence, and a
-    converged round is certified again (certificate₂ decides). `diagnostics.certificate` holds
-    the deciding certificate; `stage.round2.certificate_round1` holds certificate₁ when round 2
-    ran."""
+    verdict; δ₁ ≤ the threshold: no round 2 and certificate₁ decides (v2's path plus the read);
+    otherwise (a NaN included), whatever certificate₁'s verdict, round 2, S3's acceptance becomes
+    its convergence, and a converged round is certified again (certificate₂ decides).
+    `diagnostics.certificate` holds the deciding certificate; `stage.round2.certificate_round1`
+    holds certificate₁ when round 2 ran."""
     policy: Any = PROFILE["S3"]["round2"]
     started = time.perf_counter()
     certificate = certify(status3)
@@ -569,12 +569,9 @@ def after_s3(
     delta = read_defect()
     stage["defect_round1"] = delta
     stage["round2"] = None
-    if not certificate_passed(certificate):
-        diagnostics["certificate"] = summary
-        return "certificate", certificate
     if delta <= policy["defect_threshold"]:
         diagnostics["certificate"] = summary
-        return None, certificate
+        return (None if certificate_passed(certificate) else "certificate"), certificate
     status, record = polish()
     record["certificate_round1"] = summary
     stage["round2"] = record
