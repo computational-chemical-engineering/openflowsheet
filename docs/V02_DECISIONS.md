@@ -686,3 +686,9 @@ Grep, don't read whole. Newest at the bottom.
   and H₂/N₂ narrowed), first qualifying = v3's domain, all measured in both runs; G12v3-2 loop at both T edges; G11v3-11
   full re-measure, G11v3-12 nesting/loop-inside check. R-316 round 2 whenever δ₁ > 1e-7 (reverses part of R-311).
   ADR 0027 Am. 4. WO-12b may proceed on the selected rung before Frank answers N7. WO-12a″ launched.
+
+- **M02 WO-14 done** (2026-10-09, `wp/M02-wo14` `e8c7777`, gate 8281): D5 reset at k ≥ 2n (f1–f5 vs independent replica
+  1e-9; D50 xfail → f2), D9 `at_coupling` guard, D7 `EXTERNAL_PROVIDERS` (no re-takes needed), D8 replay digests; D94
+  shape rule extended to all final-digest copies (isolated `e8c7777`). RP-2 not met (strict xfail): rerun with moved last
+  bits still MISMATCH via certificate inlet check + exact-0 ρ/r_ξ. RP-2, D94, AC-1, f5 → M02 reviewer batch. W27 WO-16i
+  (Sonnet) launched in worktree off main.
