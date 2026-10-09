@@ -27,6 +27,7 @@ from __future__ import annotations
 import base64
 import binascii
 import copy
+import hashlib
 import json
 import math
 import os
@@ -67,6 +68,7 @@ from openflowsheet.application.projection import (
     check_view_arguments,
     project,
 )
+from openflowsheet.application.replacement import ReplacementReport, check_replacements
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     MODEL_SIGNATURES,
@@ -85,6 +87,7 @@ from openflowsheet.application.store import (
     IdempotencyKeyReusedError,
     LedgerRow,
     ProjectStore,
+    atomic_write_bytes,
 )
 from openflowsheet.application.transactions import (
     EditPathError,
@@ -449,11 +452,10 @@ class LocalApplication:
                     capability_id=caller.capability_id,
                     policy_sha256=self._policy.current().policy_sha256,
                 )
+                # ADR 0035 D3: a promotion's reports, stored and registered with the revision.
+                self._store_replacements(connection, revision.revision_id, prepared.replacements)
                 invalidations = (
-                    tuple(
-                        f"run-{job_id}"
-                        for job_id in store.solve_jobs_for_revision(connection, expected_revision)
-                    )
+                    tuple(store.evidence_for_revision(connection, expected_revision))
                     if expected_revision is not None
                     else ()
                 )
@@ -1438,6 +1440,23 @@ class LocalApplication:
             )
         # What is validated is exactly what is stored: the canonical document, read back.
         document = json.loads(canonical_json(built))
+        # ADR 0035 D2–D3 (M02 design note §6.2): a change of a variant-backed model reference is a
+        # promotion, checked before anything is validated; any failed facet rejects it with the
+        # report. A compatible one writes each report's SHA-256 into the provenance (outside the
+        # content hash), so the preview and the commit name the same document.
+        reports = check_replacements(expected, document)
+        incompatible = [report for report in reports if not report.compatible]
+        if incompatible:
+            report = incompatible[0]
+            return self._rejected(
+                operation,
+                idempotency_key,
+                "model_replacement_incompatible",
+                f"model_replacement_incompatible({report.instance_id}: {', '.join(report.failed)})",
+                report=report.as_document(),
+            )
+        if reports:
+            document = json.loads(canonical_json(_with_report_hashes(document, reports)))
         revision = Revision(
             revision_id=revision_id, document=document, parent_revision=expected_revision
         )
@@ -1445,7 +1464,36 @@ class LocalApplication:
             revision=revision,
             report=validation.validate(revision.as_document(), change.task),
             diff=semantic_diff(expected, document),
+            replacements=reports,
         )
+
+    def _store_replacements(
+        self,
+        connection: sqlite3.Connection,
+        revision_id: str,
+        reports: tuple[ReplacementReport, ...],
+    ) -> None:
+        """ADR 0035 D3: each report as an artifact (kind `model_replacement_report`, no job),
+        its bytes the canonical document whose SHA-256 the revision's provenance names."""
+        for report in reports:
+            data = canonical_json(report.as_document())
+            relpath = f"{REPLACEMENTS_DIR}/{revision_id}/{report.instance_id}.json"
+            (self.files_root / relpath).parent.mkdir(parents=True, exist_ok=True)
+            atomic_write_bytes(self.files_root / relpath, data)
+            self._store.register_artifacts(
+                connection,
+                [
+                    ArtifactRow(
+                        artifact_id=f"{revision_id}:model_replacement:{report.instance_id}",
+                        job_id=None,
+                        kind="model_replacement_report",
+                        name=f"model-replacement-{report.instance_id}.json",
+                        sha256=hashlib.sha256(data).hexdigest(),
+                        size_bytes=len(data),
+                        relpath=relpath,
+                    )
+                ],
+            )
 
     def _replayed(
         self, prior: LedgerRow, request_sha256: str, idempotency_key: str
@@ -1487,6 +1535,27 @@ class _Prepared:
     revision: Revision
     report: ValidationReport
     diff: SemanticDiff
+    #: ADR 0035: the compatible promotions this change makes (empty for any other change).
+    replacements: tuple[ReplacementReport, ...] = ()
+
+
+#: ADR 0035 D3: where a promotion's reports live under the files root.
+REPLACEMENTS_DIR: Final = "replacements"
+
+
+def _with_report_hashes(
+    document: Mapping[str, Any], reports: tuple[ReplacementReport, ...]
+) -> dict[str, Any]:
+    """`document` with `provenance.artifact_hashes["model_replacement:<instance>"]` = each
+    report's SHA-256 (ADR 0035 D3; outside the content hash, ADR 0002 D4). A document without a
+    provenance object is returned as it is: its validation reports the missing member."""
+    provenance = document.get("provenance")
+    if not isinstance(provenance, Mapping):
+        return dict(document)
+    hashes = dict(provenance.get("artifact_hashes") or {})
+    for report in reports:
+        hashes[f"model_replacement:{report.instance_id}"] = document_sha256(report.as_document())
+    return {**document, "provenance": {**provenance, "artifact_hashes": hashes}}
 
 
 def _unproduced(job: Job) -> ApiError:

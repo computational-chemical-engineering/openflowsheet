@@ -131,6 +131,12 @@ def _load(blob: bytes | str | None) -> Any:
     return None if blob is None else json.loads(blob)
 
 
+#: ADR 0035 D4 (M02 design note §6.3): each evidence-producing job operation and the prefix its
+#: jobs carry in a commit's `invalidations`. M02 registers `solve` only; M03–M05 register theirs
+#: when they add them.
+EVIDENCE_OPERATIONS: Final[Mapping[str, str]] = {"solve": "run-"}
+
+
 class ArtifactTableSink:
     """The `artifacts` table as an experiment store's `ArtifactSink` (M02 design note §14 B4,
     R-237): each `record` is one row, inserted in its own write transaction. The id is the owning
@@ -1098,6 +1104,25 @@ class ProjectStore:
                 continue
             return str(job_id), str(revision_id), str(artifact[0])
         return None
+
+    @staticmethod
+    def evidence_for_revision(connection: sqlite3.Connection, revision_id: str) -> list[str]:
+        """ADR 0035 D4 (M02 design note §6.3): `invalidations` — every job of an operation in
+        `EVIDENCE_OPERATIONS` whose request names `revision_id`, as `<prefix><job_id>`, in
+        acceptance order. Experiment records are never in it: they describe a variant, not a
+        revision."""
+        operations = sorted(EVIDENCE_OPERATIONS)
+        marks = ", ".join("?" for _ in operations)
+        rows = connection.execute(
+            f"SELECT job_id, operation, request FROM jobs WHERE operation IN ({marks})"
+            " ORDER BY ordinal",
+            operations,
+        ).fetchall()
+        return [
+            f"{EVIDENCE_OPERATIONS[str(operation)]}{job_id}"
+            for job_id, operation, request in rows
+            if _load(request).get("body", {}).get("revision_id") == revision_id
+        ]
 
     @staticmethod
     def solve_jobs_for_revision(connection: sqlite3.Connection, revision_id: str) -> list[str]:

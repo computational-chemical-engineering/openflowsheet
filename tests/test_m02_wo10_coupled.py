@@ -34,6 +34,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
+from m02_variant_support import register_variants
 from t07_jobs_support import commit, lifecycle_violations, response_schema_violations
 
 from openflowsheet.adapters import variants
@@ -133,24 +134,7 @@ def pinned(document: Mapping[str, Any], variant: variants.Variant) -> dict[str, 
 @pytest.fixture
 def register(monkeypatch: pytest.MonkeyPatch) -> Any:
     """Register test-only variants for the binder (a registry patched for the test only)."""
-    extra: dict[str, variants.Variant] = {}
-    registry, registered = variants.registry, variants.registered_variant
-    monkeypatch.setattr(
-        variants,
-        "registry",
-        lambda: {**registry(), **{key: v.sha256 for key, v in extra.items()}},
-    )
-    monkeypatch.setattr(
-        variants,
-        "registered_variant",
-        lambda variant_id: extra[variant_id] if variant_id in extra else registered(variant_id),
-    )
-
-    def add(variant: variants.Variant) -> variants.Variant:
-        extra[variant.variant_id] = variant
-        return variant
-
-    return add
+    return register_variants(monkeypatch)
 
 
 @pytest.fixture
