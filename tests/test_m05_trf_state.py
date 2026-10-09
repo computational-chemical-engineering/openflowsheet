@@ -6,10 +6,12 @@ in the audited environment).
 
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 
 import pytest
+from conftest import REPO_ROOT
 
 from openflowsheet.studies.trust_region.holders import RunState
 from openflowsheet.studies.trust_region.trf_state import (
@@ -18,6 +20,7 @@ from openflowsheet.studies.trust_region.trf_state import (
     PYOMO_VERSION,
     TRF_CONFIG_V1,
     TRF_MODULE_SHA256,
+    TRSP_EXECUTABLE_SHA256,
     TRSP_OPTIONS,
     WARNING_INSUFFICIENT_PROGRESS,
     IterationRecord,
@@ -305,3 +308,21 @@ def test_without_pyomo_the_framework_is_unavailable(monkeypatch: pytest.MonkeyPa
     assert readiness.status == "UNSUPPORTED"
     assert readiness.codes == ("TRUST_REGION_FRAMEWORK_UNAVAILABLE",)
     assert "docs/m03-ipopt-audit.md" in readiness.reasons[0].detail
+
+
+#: WO-1's [A10] audit record of the Ipopt executable (audit §11), merged at `aef41bf`.
+TRSP_INVENTORY = REPO_ROOT / "benchmarks" / "m05" / "trsp-inventory-x86_64.json"
+
+
+def test_the_pin_is_what_wo1_audited() -> None:
+    """The adapter's pin (WO-3) and the audit record (WO-1) name the same framework and the same
+    executable: the five TRF module hashes, the Pyomo version, and `bin/ipopt`'s SHA-256 — as the
+    workload measured it and as the object inventory lists it."""
+    record = json.loads(TRSP_INVENTORY.read_text(encoding="utf-8"))
+    run = record["workload"]["executable"]
+    assert run["trf_modules"] == dict(TRF_MODULE_SHA256)
+    assert run["versions"]["pyomo"] == PYOMO_VERSION
+    assert run["executable_pinned"] == "$ENV/bin/ipopt"
+    assert run["executable"] == TRSP_EXECUTABLE_SHA256
+    (inventoried,) = [entry for entry in record["objects"] if entry["path"] == "$ENV/bin/ipopt"]
+    assert inventoried["sha256"] == TRSP_EXECUTABLE_SHA256
