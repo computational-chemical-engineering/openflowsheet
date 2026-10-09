@@ -19,7 +19,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M02 | Build | M01 | W21 | WO-1…12b, 11a, 14 done; review `4c3623a` (`docs/reviews/M02-review.md`, R-317/R-318): numerics sound; must-fix F1 (new recorded floats unclassified, ADR 0007 D2.3), F2 (replay EXT-COUPLING uses old request), F3 (f5 e2e test) + RP-2 per R-317 (τ-scaled floors) + should-fix F4/F5 → fix WO running; then WO-13 (manifest `tested`, ADR 0034 Am. 1, R-310), merge, alpha gate |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 + W27 part done (`4cd23ad`, gate 8444): surrogate registered, J3′–J6′ + G14 pass, 0/450 class changes, `list_models` → `f070fbe0…`; open for M04 review batch: envelope wording (22 models, not marked synthetic), corpus revision settings (E10), strip pattern (E12); WO-8 after M02 merges to main; WO-9, WO-11 real run, WO-12 manifest, `reviewer` |
-| M05 | Design | M03, M04 | W24 | WO-1…5, 2b, 3b, 4a done (`7bc8c56`, gate 8473; §17 acceptance pass; TR-E2 check now `TRF_MAX_ITERATIONS`, no refusal); open for next M05 ruling batch: Z2 (SYN-001 jointly-pinned zero flows at P1/P2/B2 refused `unpinned`, 15 strict xfails), W2 (max-iterations with θ_recheck > 1e-5 keeps its candidate?); WO-5c (`at_coupling`, R-309) + E2 guard after M02 merges; real records bind reactor v3; box may shrink (R-304); WO-6+ next; R-313: REAL decision box → [653.15, 693.15] K (WO-5c) |
+| M05 | Design | M03, M04 | W24 | WO-1…6, 2b, 3b, 4a done (`c5aa61b`, gate 8522; nlp 121 passed, 15 xfail = Z2); REAL box [653.15, 693.15] K (σ 0.0125, §6.7 stale); WO-7 (schema) running; real parent adapter (S3) + WO-5c (`at_coupling`) + WO-8 after M02/M04 merge; review batch: Z2, W2 (kept: max-iter stays candidate), S1–S10, P5-skip, retry rules |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
@@ -98,7 +98,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 review fixes F1–F5 + RP-2 | `wp/M02` (`m02`) |
-| `opus-engineer` | M05 WO-6 (checks.py, study.py loop) | `wp/M05` (`m05`) |
+| `sonnet-implementer` | M05 WO-7 (study-record schema + default-gate tests) | `wp/M05` (`m05`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);

@@ -721,3 +721,8 @@ Grep, don't read whole. Newest at the bottom.
   90d9da8e…→f070fbe0…, registry snapshot 0b2f4596…→8f4bb0c8…. Flaky under load (passed on rerun): browser smoke, W27
   S18 scorer, `t07_w5b` replay (fails alone without OMP_NUM_THREADS etc.). Open → M04 review batch (E10, E12, E14
   envelope wording). M05 WO-6 launched.
+
+- **M05 WO-6 done** (2026-10-09, `wp/M05` `39eebba`…`c5aa61b`, gate 8522; nlp 121 passed): checks P1–P5, study loop
+  S0/A/B/C, statuses with precedence (49 fake tests), readiness 12 codes, `TrfStage` bitwise = `run_trf`; REAL box per
+  R-313. Not done: real parent adapter (needs M02 `coupled_run.py`). Choices S1–S10 (S6 isolated `c5aa61b`) → M05 review.
+  WO-7 (Sonnet) launched.
