@@ -53,6 +53,9 @@ TAXONOMY: Final[Mapping[str, str]] = {
     "HOMOTOPY_STALLED": "homotopy/PTC/active-set stalls",
     "PTC_STALLED": "homotopy/PTC/active-set stalls",
     "PTC_MAPPING_INVALID": "model domain/conservation/derivative defects",
+    # ADR 0034 D3 (M02 WO-10): the outer coupling's give-up, classed as its closest analogue, the
+    # recycle iteration's `RECYCLE_STAGNATION` (an outer fixed-point iteration on a loop).
+    "COUPLING_NOT_CONVERGED": "initialization and recycle failures",
 }
 
 SuggestedAction = Literal[
