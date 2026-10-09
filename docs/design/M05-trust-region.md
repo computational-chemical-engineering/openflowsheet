@@ -80,7 +80,7 @@ M05 builds two things.
 | D5 | Callback contract: identity under `deepcopy`, exact-key memo, never a non-finite value, refusals raised as typed exceptions, budget enforced in the callback | Plain callbacks (probe: TRF's clone deep-copies them and accounting sees 0 of 23 calls); returning NaN (probe: TRF accepts NaN silently and reports optimal) | R-262 |
 | D6 | TRF state is read from the `pyomo.contrib.trustregion` INFO log and the captured EXIT lines; the filter is reconstructed from θ-type steps | Patching TRF internals (breaks the pin) | R-260 |
 | D7 | Basis b(w): property EFs get the affine Taylor model at w₀; the reactor EF gets the promoted M04 quadratic, or else the constant d(w₀) | TRF's default b = 0 (the first subproblem would see zero enthalpies and fugacities); an unpromoted surrogate (promotion is the project's permission to use) | R-264 |
-| D8 | A derivative-free truth gets forward differences in the 7 inlet coordinates, η = 2⁻¹⁴, exact differences, inward at hard bounds, 7 concurrent workers and a gradient-quality check (η against η/4) | Central differences (twice the cost, while the measured precision floor makes forward accurate); a finite-difference Hessian (not needed: TRF's model is first order) | R-265 |
+| D8 | A derivative-free truth gets forward differences in the 7 inlet coordinates, η = 2⁻¹⁴, exact differences, inward at hard bounds, 7 concurrent workers and a gradient-quality check (amended by §17.2, R-297: `M05-fd-v2`, three steps, escalation for noise only) | Central differences (twice the cost, while the measured precision floor makes forward accurate); a finite-difference Hessian (not needed: TRF's model is first order) | R-265 |
 | D9 | The eligible example is TR-E2: the C1 formulation with the reactor EF bound to the test-only C^∞ truth `m05-synthetic-interior-v1`, with an analytic gradient. TR-E1, Eason–Biegler example 1 as a `ProblemSpec`, is the framework-equivalence oracle | The real reactor (its gradient is FD and its smoothness is unproven, so it is qualified rather than eligible); Pyomo's example alone (no flowsheet composition) | R-266 |
 | D10 | The C1 decision is the reactor inlet temperature T_in ∈ [643.15, 733.15] K, with φ fixed at 0.02. The objective maximizes the liquid NH₃ product. Hard domains are constraints; `extrapolated` is a stated limit | (T_in, φ) jointly (under this objective φ runs to its bound); an economic objective (needs prices: Needs Frank N-F1); `extrapolated` as a constraint (infeasible: every registered state is extrapolated, R-169) | R-267 |
 | D11 | The refinement loop: stage A (TRF on the promoted surrogate) → B (parent checks) → C (TRF on the parent, basis = promoted surrogate or constant) → B, at most 3 study iterations, stopping on parent evidence. M05 does no retraining | Surrogate-based optimization with retraining between iterations (blueprint L437: retraining breaks the convergence theory; M04 owns its iterations) | R-268 |
@@ -213,7 +213,8 @@ Each `build` is a builder over the projection's symbols and an `Algebra`, exactl
 1. **Variables.** `m.x[i]` for `variable_ids[i]`, initialized to x₀. Bounds come from `variable_kinds`:
    - temperature [200, 1000] K and pressure [1e4, 3e7] Pa (the `pr-c1-v1` domain; the SYN-001 provider's own domain on
      SYN-001);
-   - molar_flow ≥ 0, except a flow exactly 0.0 in x₀, which gets no bound (ADR 0032 D4's rule);
+   - molar_flow ≥ 0, except a flow exactly 0.0 in x₀: it is no variable but the constant +0.0, eliminated with its
+     certified pinning row (§17.1, R-296; it was left unbounded under ADR 0032 D4);
    - none otherwise.
 
    Scaling suffix: `scaling_factor = 1/S_x[id]`, with S_x from K03's `Scaling.from_spec` (§16, R-275).
@@ -321,6 +322,9 @@ coupled check of the study. A changed fingerprint is `TRF_TRUTH_REFUSED(external
 fails.
 
 ### 6.5 The finite-difference policy `M05-fd-v1` (derivative-free truths only)
+
+**Amended by §17.2 (R-297):** the policy is `M05-fd-v2`. Its gradient-quality check replaces the one below, and its
+truncation analysis supersedes "Why forward". Scheme, steps, side rule and concurrency are unchanged.
 
 - **Scheme.** Forward differences in the process-level inlet coordinates w = (n_H₂, n_N₂, n_NH₃, n_Ar, n_CH₄, T, P).
 - **Step.** h_j = η · max(|w_j|, f_j), with f_n = 1e-3 · Σn, f_T = 1 K, f_P = 1e5 Pa and η = 2⁻¹⁴ (≈ 6.1e-5).
@@ -434,7 +438,7 @@ TR-E1 uses Pyomo's defaults except `solver`, to reproduce the native example.
 | `TRF_CONVERGED` | "EXIT: Optimal solution found." with ≥ 1 accepted TRSP step, ‖s_k‖ ≤ σ, and θ re-checked from the returned model ≤ 1e-5 (§16.5, R-279) |
 | `TRF_EXIT_WITHOUT_STEP` | "EXIT: Optimal solution found." with no accepted TRSP step (probe P14 b). It is not a convergence claim; the study treats the returned point as a candidate for stage B |
 | `TRF_FEASIBLE_STALLED` | "EXIT: Feasible solution found." **and** θ re-checked ≤ 1e-5 (probe P14 c) |
-| `TRF_STALLED_INCONSISTENT` | "EXIT: Feasible solution found." with θ re-checked > 1e-5. No candidate; the study treats it as an abort (retry once) |
+| `TRF_STALLED_INCONSISTENT` | "EXIT: Feasible solution found." or (§17.4, R-299) "EXIT: Optimal solution found." with θ re-checked > 1e-5, which takes precedence over the rows below; `exit_claim` recorded. No candidate; the study treats it as an abort (retry once) |
 | `TRF_MAX_ITERATIONS` | the maximum-iterations warning |
 | `TRF_SUBPROBLEM_FAILED` | `ArithmeticError` from `solveModel` (the TRSP is not optimal) |
 | `TRF_TRUTH_REFUSED(<status>:<reason>)` | `TruthRefused` |
@@ -649,7 +653,8 @@ which embeds every request and attempt.
      then the value at the trial point.
 
   The holder assigns each *first* request at a key a purpose from this order (the log handler's iteration state and
-  the call type). Repeated calls at a key are memo hits that the ledger counts but that carry no purpose. For each
+  the call type). Repeated TRF calls at a key are memo hits that the ledger counts but that carry no purpose; requests the FD policy
+  issues carry their purpose whether cold, store or memo hits (§17.5 E3). For each
   TRF run with an FD truth the ledger must show:
   - `trf_start_value` = 1;
   - `trf_pmp_value` = 1, or 0 with the recorded flag `pmp_point_equals_start`;
@@ -803,7 +808,7 @@ merge and M02's case JSON `C1-LOOP-M02-v1` exists: rebase `wp/M05` onto that mer
 | WO-1 | bounded | The TRSP audit extension. A workload `trf-trsp-executable` (TR-E1's native example through the alias) runs in the audited environment with M03's inventory tooling. New files: `benchmarks/m05/trsp-inventory-x86_64.json` (loaded objects, licences, sha256 of `bin/ipopt` and the five TRF modules) and `docs/m05-trsp-audit.md` (verdict). M03's inventory is not edited | G1 |
 | WO-2 | Opus | `projection.py`: `PyomoAlgebra`, `project()`, the source map, refusals, scales. `tests/test_m05_projection.py` covers SYN-001 at its K05 registered states and the TR-E1 spec. The backend-import guard's allow-list gains `studies/trust_region/` for `pyomo` only | G4 (SYN-001 and TR-E1 parts), G13 |
 | WO-3 | Opus | `trf.py` and `holders.py` (base): pin, alias with `M05-trsp-ipopt-v1`, configuration, log handler and parser, stdout capture, outcomes, the holder (deepcopy identity, memo, non-finite guard, refusal mapping, budget), and TR-E1. The probe's findings P2′, P3, P6, P7 and P8 become tests | G2, G3 |
-| WO-4 | Opus | `truths.py`: `ParentExperimentTruth` (M02 runner, the FD policy with thread pool and gradient check, hard-domain side rule), `SurrogateTruth` (M04), and `tests/support/m05_synthetic.py` (§5.2, analytic gradient). Concurrency equivalence: 7 distinct-key FD experiments run concurrently and serially give byte-identical store records (in-process synthetic). If `ExperimentRunner.run` is not safe for that, add `ExperimentRunner.run_batch` additively in M02's module, proven serial-equivalent; escalate if the handshake or lock logic must change. The M04 basis expression must match `predict` at J1–J3 within 1e-14 relative. **Also (§16.4):** the affine property basis of §6.6, and the `meta` contract `{status, cache_hit, experiment_key, executions, extrapolated}` for every adapter | Analytic against FD on the synthetic ≤ 1e-6 relative at η; G7's mechanics on a unit run; §16.4's basis acceptance |
+| WO-4 | Opus | `truths.py`: `ParentExperimentTruth` (M02 runner, the FD policy with thread pool and gradient check, hard-domain side rule), `SurrogateTruth` (M04), and `tests/support/m05_synthetic.py` (§5.2, analytic gradient). Concurrency equivalence: 7 distinct-key FD experiments run concurrently and serially give byte-identical store records (in-process synthetic). If `ExperimentRunner.run` is not safe for that, add `ExperimentRunner.run_batch` additively in M02's module, proven serial-equivalent; escalate if the handshake or lock logic must change. The M04 basis expression must match `predict` at J1–J3 within 1e-14 relative. **Also (§16.4):** the affine property basis of §6.6, and the `meta` contract `{status, cache_hit, experiment_key, executions, extrapolated}` for every adapter | §17.2 (i)–(iv) (replacing "analytic against FD on the synthetic ≤ 1e-6 relative at η", R-297); G7's mechanics on a unit run; §16.4's basis acceptance |
 | WO-5 | Opus | `study.py` (formulation): the C1 decision, objective and inequality generation from the boundary block and the admissibility definitions; projection of the coupled route's inner `ProblemSpec` with (X̂, ΔT̂) promoted; M02's inner-solve-at-pinned-w accessor (additive and bitwise-inert if it is not public); `tests/support/m05_reference.py` (§5.2) | G4 (C1 part) |
 | WO-6 | Opus | `checks.py` and `study.py` (loop): P1–P5, the noise floor, the poll, statuses, stages S0/A/B/C, retries, budgets, record assembly. **Also (§16.4):** `trust_region_readiness`'s projection and start halves | Unit tests on fakes for every status and precedence; every readiness reason produced by a fixture and `READY` on TR-E2's configuration; LOOP runs in WO-8 |
 | WO-7 | bounded | `schemas/trust-region-study.schema.json` from §9.1. Default-gate tests on the committed records: schema, accounting arithmetic and identities (§8.3), status precedence, log-parser fixtures, readiness refusals without Pyomo | G12 |
@@ -812,6 +817,9 @@ merge and M02's case JSON `C1-LOOP-M02-v1` exists: rebase `wp/M05` onto that mer
 | WO-10 | bounded | Support-matrix and limitation lines, `docs/progress.md`, `evidence/M05/<commit>/manifest.json`, the W24 gate table for `verdict` | Manifest `status: tested` with the commands actually run |
 | WO-F | Opus, **only if ADR 0040 is activated** | `studies/trust_region/fallback.py` per §10, sharing checks, accounting and records | ADR 0040's gates F1–F3 |
 
+Added by §17.6 (2026-10-09): WO-2b (zero-flow elimination), WO-3b (exit precedence), WO-4a (`M05-fd-v2`, the TR-E1
+tolerance, E2's guard test) and WO-5b (`with_coupling` on `wp/M02`).
+
 ## 13. Gates (each decidable from a recorded number)
 
 | Gate | Criterion | Configuration |
@@ -819,14 +827,14 @@ merge and M02's case JSON `C1-LOOP-M02-v1` exists: rebase `wp/M05` onto that mer
 | G1 | The TRSP workload inventory passes M03's G1–G6 criteria. Recorded: no object of unknown origin; no GPL without the runtime exception; no CasADi METIS-closure object; METIS ≥ 5; MUMPS as the linear solver and no HSL; the default install unchanged. The sha256 of `bin/ipopt` and the five TRF modules are recorded | x86_64 audited env |
 | G2 | Pin: the run proceeds with 6.10.1 and the recorded hashes; with a patched version string or one changed module byte, readiness is `UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNPINNED)` (two tests) | nlp |
 | G3 | TR-E1 against native: same iteration count (5) and step-type sequence; final values within 1e-10 absolute (bitwise equality reported); the original holder's ledger sees 6 distinct cold points and 4 gradient points; the options test finds every `M05-trsp-ipopt-v1` option echoed | nlp |
-| G4 | Projection equivalence at the registered states: SYN-001's K05 states; C1 at S0's certified state and at that state with every variable perturbed by a seeded relative 1e-3; TR-E1 at its start. (a) The source map is a bijection with DOF = n_d. (b) max \|r_pyomo − r_casadi\| / row_scale ≤ 1e-12 · max(1, \|r\|/row_scale). (c) x-Jacobian entries agree within 1e-10 · (\|J\| + J_scale), with J_scale = row_scale/column_scale. (d) Decision columns agree with central FD of the CasADi residual (test oracle, h = 1e-6 scaled) within 1e-7 relative. (e) No nonsmooth node | nlp |
+| G4 | Projection equivalence at the registered states: SYN-001's K05 states; C1 at S0's certified state and at that state with every variable perturbed by a seeded relative 1e-3; TR-E1 at its start. (a) The source map is a bijection with DOF = n_d. (b) max \|r_pyomo − r_casadi\| / row_scale ≤ 1e-12 · max(1, \|r\|/row_scale). (c) x-Jacobian entries agree within 1e-10 · (\|J\| + J_scale), with J_scale = row_scale/column_scale. (d) Decision columns agree with central FD of the CasADi residual (test oracle, h = 1e-6 scaled) within 1e-7 relative. (e) No nonsmooth node. (f) Exact-zero flows are eliminated with certified pins (§17.1, R-296); (a) is over the projected variables and rows; C1's R-278 matching is 68 × 68 | nlp |
 | G5 | TR-E2: `TRF_CONVERGED` in ≤ 30 iterations; θ_final ≤ 1e-5; \|T*_TRF − T_ref\| ≤ 0.5 K; candidate `PARENT_LOCAL_EVIDENCE`; study `DECISION_STABLE`; the assumptions block equals §5.2's TR-E2 column | nlp |
-| G6 | TR-E2-FD: `TRF_CONVERGED`; \|T*_FD − T*_exact\| ≤ 0.1 K; gradient check passes at η = 2⁻¹⁴; §8.3's request identity holds exactly for every run | nlp |
+| G6 | TR-E2-FD: `TRF_CONVERGED`; \|T*_FD − T*_exact\| ≤ 0.1 K; `fd_check` (`M05-fd-v2`, §17.2) passes at η = 2⁻¹⁴, class `clean` or `truncation_dominated`, no escalation; §8.3's request identity holds exactly for every run | nlp |
 | G7 | Accounting, every run: the store bijection holds; cold + store_hit + memo_hit equals requests; 0 non-finite outputs returned to TRF; cold requests ≤ cap (the budget test drives a run into the cap and finds exactly cap cold requests and `TRF_TRUTH_REFUSED(budget:budget_exhausted)`) | nlp, pymrm |
 | G8 | LOOP-S: stage A executed with the PROMOTABLE prefix-plan manifest; study `DECISION_STABLE`; \|T* − 653.15 K\| ≤ 1e-6 K (lower bound active: X decreases in T for M04's synthetic, a_T < 0) | nlp |
 | G9 | LOOP-R: stage A skipped with `surrogate_not_promoted`; stage C with the constant basis; `DECISION_STABLE`; \|T* − 653.15 K\| ≤ 1e-6 K | nlp |
 | G10 | Replay: TR-E2 re-evaluated and REAL from its record give bitwise-identical iteration logs, ledger sequences and candidates on the same machine; the cross-architecture comparison passes under `T08-numerical-policy-v2` with §9.3's pre-pass | nlp, pymrm, CI |
-| G11 | REAL mechanics (opt-in): the gradient check is recorded (pass, or η escalated per §6.5); stage C makes ≥ 1 accepted iteration and ends with a typed outcome within `M05-budget-v1`; G7 holds on the run; every candidate has a status; the limitations include `extrapolated` (with its count) and `fd_gradient`. The optimality outcome is reported, not gated (W25) | pymrm |
+| G11 | REAL mechanics (opt-in): `fd_check` is recorded with its class, τ̂, ν̂ and selected η (§17.2); stage C makes ≥ 1 accepted iteration and ends with a typed outcome within `M05-budget-v1`; G7 holds on the run; every candidate has a status; the limitations include `extrapolated` (with its count) and `fd_gradient`. The optimality outcome is reported, not gated (W25) | pymrm |
 | G12 | `./scripts/check.sh` passes with no Pyomo or Ipopt import; the committed records validate and pass §8.3's arithmetic; readiness without the `nlp` environment is `UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNAVAILABLE)` | default |
 | G13 | No second model and no backend: `projection.py` imports nothing from `openflowsheet.models`; `pyomo` is imported only under `studies/nlp/` and `studies/trust_region/`; no route or `compile_problem` path reaches `PyomoAlgebra` (guard tests) | default |
 
@@ -877,7 +885,7 @@ merge and M02's case JSON `C1-LOOP-M02-v1` exists: rebase `wp/M05` onto that mer
 
 ### 15.2 Facts, with what settles them and the default meanwhile
 
-- **The reactor's output noise.** Settled by WO-9's gradient check (14 experiments). Default η = 2⁻¹⁴.
+- **The reactor's output noise.** Settled by WO-9's `fd_check` (21 experiments, §17.2). Default η = 2⁻¹⁴.
 - **Whether `ExperimentRunner.run` is safe for concurrent distinct keys.** Settled by WO-4's test. Default: the
   additive `run_batch` if it is not.
 - **Whether M02 exposes an inner solve at pinned w.** Settled by WO-5. Default: an additive accessor.
@@ -958,7 +966,7 @@ Nothing more is needed: `interface.py:86` is the module's only bare `except`, an
 
 | Gap | Assigned to | Acceptance |
 | --- | --- | --- |
-| Affine property basis (§6.6) | WO-4 (Opus) | At w₀ the basis value equals the block's value bitwise, and its `differentiate` gradient equals the block Jacobian within 1e-15 relative; every basis variable belongs to the clone; TR-E1 with an affine basis on `bb` converges to native within 1e-6 (probe P5's analogue) |
+| Affine property basis (§6.6) | WO-4 (Opus) | At w₀ the basis value equals the block's value bitwise, and its `differentiate` gradient equals the block Jacobian within 1e-15 relative; every basis variable belongs to the clone; TR-E1 with an affine basis on `bb` and native both end `TRF_CONVERGED` with ‖Δz‖_∞ ≤ 2e-5 (probe P5's analogue; amended by §17.3, R-298, from 1e-6) |
 | `trust_region_readiness`: projection and start halves (§6.8) | WO-6 (Opus) | Each reason code is produced by a fixture; `READY` on TR-E2's configuration |
 | `TruthBox`'s `meta` contract | WO-4 (Opus) | Every `TruthModel.evaluate` returns `meta = {status, cache_hit, experiment_key, executions, extrapolated}`. `SurrogateTruth` and in-process test truths return `status: "ok"`, `cache_hit: false`, `experiment_key: null`, `executions: 0`, `extrapolated: false`; the ledger records them with `truth.kind` and they never count against parent budgets. `ParentExperimentTruth` maps M02's `ExperimentOutcome` exactly |
 
@@ -1020,3 +1028,283 @@ Defect 2's radius collapse is TRF's own behaviour. It is not patched (pin, R-260
   the implicit toy gives `TRF_STALLED_INCONSISTENT` at θ = 1.80.
 - WO-2a refuses `y − 90z` and passes SYN-001 and C1 (C1 when it exists).
 - G3 is unchanged (TR-E1 with `zero_basis`, exempt from the shape check).
+
+## 17. Rulings on WO-4 and WO-5 as built (2026-10-09)
+
+These rulings answer the build lane's escalations at `wp/M05` `6b54b8d` (brief `docs/briefs/v02-rulings-M05-M04.md`,
+Part A). They are register entries R-296 to R-300.
+
+### 17.1 Exact-zero flows at x₀ (R-296): eliminated as constants together with their pinning rows
+
+**Measured.** TRF on C1 TR-E2 stops before iteration 1 with `TRF_TRUTH_REFUSED(property_domain_error:S1_Hdot_V)`. At
+the PMP point `S1.n.NH3 = −3.448e-27`, and `pr-c1-v1` refuses n < 0. The flows that are exactly zero at x₀ are
+`S1.n.NH3` and `S6.n.{H2,N2,Ar,CH4}`.
+
+**Diagnosis (corrects the escalation's).** The rows that pin these flows *are* projected. R-274 omits only the two
+zero-ΔP pressure alias rows (`flash:C1FL-P:inlet`, `splitter:C1SPLIT-P:recycle`; `e1c9af0`). Two kinds of row pin the
+five flows:
+- `S1.n.NH3` is pinned by the feed's `specification_row`, n − n_spec with n_spec = 0.0 (`models/rows.py:75`);
+- the light-gas liquid flows are pinned by the flash's `zero_row`, r = l_i (`models/c1/flash.py:229`).
+
+§6.1 leaves these five flows unbounded (ADR 0032 D4). Ipopt satisfies a linear row only up to linear-algebra roundoff,
+so x = −O(1e-27) is a legitimate PMP iterate. TRF evaluates the truth at that iterate, outside Ipopt, and the provider
+is right to refuse it. Any projection that leaves an exactly-zero flow free and unbounded will meet this on some TRSP.
+Restoring a row cannot help, because the rows were never missing.
+
+**Ruling: rule `M05-zero-flow-v1`.** Such a flow is not a variable of the projection. It is a constant, eliminated
+together with the row that pins it. `project()` applies the rule after computing R-274's set and before step 1 of §6.1:
+
+1. **Candidates.** Z₀ = {j : kind(j) = `molar_flow` and x₀[j] == 0.0}. Start with E = ∅ (eliminated flows) and P = ∅
+   (their pins).
+2. **Pairing, repeated until nothing changes.** Look for a kept row e ∉ P, not omitted by R-274, whose structural
+   incidence minus E is exactly {j}, with j ∈ Z₀ \ E. The pair (j, e) is certified iff all three of these hold:
+   - (i) r_e(x₀) == 0.0 exactly;
+   - (ii) ∂r_e/∂x_j(x₀) ≠ 0, taken from the CasADi Jacobian that G4 already evaluates;
+   - (iii) the decision and link tangent of e at x₀ is exactly 0.0, computed as in R-274's criterion 3.
+
+   A certified pair adds j to E and e to P. Rows are visited in spec order and the first certified row for a given j
+   wins, so the result is deterministic. Repeating the pass handles a chain of zero flows: once a dormant unit's inlet
+   is eliminated, its outlet row has a single incidence.
+3. **Refusals.** Every j ∈ Z₀ must end up in E. The projection refuses with one code and three reasons:
+   - a j ∈ Z₀ that stays unpaired: `PROJECTION_ZERO_FLOW(<id>:unpinned)`;
+   - a kept row whose incidence minus E is empty and which is not in P: `PROJECTION_ZERO_FLOW(<row>:redundant_row)`;
+   - a j ∈ E among a link EF's inlet arguments: `PROJECTION_ZERO_FLOW(<id>:link_input)`. The FD policy has no rule for
+     a constant inlet coordinate, and no registered case needs one.
+4. **Substitution.** In `var_map`, each j ∈ E is the Python float `+0.0` (canonical, via `normalize_zero`), never a
+   `Var`. The rows in P are not built. A property-block EF receives the constant as an argument:
+   - Pyomo's `differentiate` and TRF's `identify_variables(..., include_fixed=False)` (`trustregion/interface.py:226`)
+     skip it, so TRF's Taylor model has no column for it;
+   - the affine basis of §6.6 builds terms only for `Var` arguments;
+   - the holder receives exactly `+0.0`, so every memo key equals x₀'s.
+5. **Record and check.** The source map records `zero_eliminated: [{variable_id, row_id, residual_x0, dr_dx}]`. The
+   inverse map writes `+0.0` for these variables into every TRF final state, and so into P1's re-solve start. At every
+   final state the rows in P are evaluated and recorded, as in R-274's criterion 4: a residual above the row's
+   tolerance fails P2 (`PROJECTION_DISAGREES`).
+
+*Why not `Var.fix`.* TRF counts degrees of freedom over every variable-type node in the active constraints, fixed or
+not (`interface.py:60–69`, `:184–193`). A fixed `Var` with its row deactivated is still counted, which is +1 degree of
+freedom per variable. With the row left active, Ipopt sees a row with no free variable.
+
+**Effects.**
+- *DOF.* |E| variables and |E| rows leave together, so §16.1's count is unchanged (C1: n_d = 1).
+- *LICQ.* Each pin has incidence {j} and a nonzero pivot, so J = [[∂_j r_e, 0], [a_j, A]] and rank J = 1 + rank A. The
+  reduced problem's constraint qualification is exactly the full problem's, and nothing degenerate is added.
+- *R-278 and G4's matching.* In every perfect matching a pin is matched to its own j, so removing the pairs leaves the
+  matching perfect. For C1 TR-E2 the matching goes from 73 × 73 to **68 × 68**.
+- *G4 (b) and (c)* are evaluated over the projected rows and columns. The perturbed state already keeps exact zeros at
+  zero.
+
+**Rejected.**
+- *A bound n ≥ 0.* The pin's gradient and the active bound's are parallel, so LICQ fails at every feasible point. With
+  `bound_relax_factor = 0` no strictly interior point satisfies n = 0, so MFCQ fails too, and Ipopt's `bound_push`
+  moves n off 0 at its start. This is ADR 0032 D4's own reason.
+- *Fixing it as a Pyomo `Var`.* It fails TRF's DOF count (above).
+- *Restoring a pinning row.* The rows were never missing.
+- *Clamping n ∈ (−ε, 0) to 0 in the holder.* It quantizes a state coordinate on the exact path (CLAUDE.md), and the
+  truth's key would no longer be the state.
+- *Widening `pr-c1-v1`'s domain.* That would move the identity of a frozen provider.
+
+**Scope.** This is an M05 projection rule. **ADR 0032 D4 is not amended.** D4's clause "pinned there by its regime's
+own rows" is exactly what (i)–(iii) certify; M05 makes the pin exact by construction instead of leaving it to Ipopt's
+roundoff.
+
+*Watch-for (M03; not decided here).* M03's full-space path also evaluates property blocks at Ipopt iterates while such
+flows are free and unbounded. If it ever hits n < 0 at O(1e-27), the remedy is this rule, adopted by an ADR 0032
+amendment.
+
+**Acceptance (WO-2b).**
+- (a) On C1 TR-E2, `zero_eliminated` is exactly five pairs:
+  - `S1.n.NH3` with the feed's specification row;
+  - `S6.n.{H2,N2,Ar,CH4}` with the four C1FL zero rows.
+
+  Each pair has `residual_x0 = 0.0` and |`dr_dx`| > 0.
+- (b) The shape check finds a perfect 68 × 68 matching, and DOF = 1. Any other count stops the work order and is
+  reported.
+- (c) G4 (a)–(e) are re-run at S0 and at the perturbed S0, and the worst ratios are recorded.
+- (d) TRF on TR-E2 gets past iteration 1 with no `TRF_TRUTH_REFUSED`. Every truth request's arguments at the five
+  positions are `+0.0`, bitwise.
+- (e) Toy fixtures produce each refusal reason: `unpinned` (a zero flow pinned by a decision-dependent row),
+  `redundant_row` and `link_input`.
+- (f) SYN-001's and TR-E1's G4 parts are unchanged. If SYN-001's K05 states hold exact-zero flows, WO-2b lists them, and
+  (a)–(c) apply to them as well.
+
+### 17.2 FD policy `M05-fd-v2` (R-297): forward differences kept, the check made curvature-aware
+
+**The measurement is truncation, and it was predictable.** Take TR-E2's start, where z_T = 0. M04's half-width is
+20 K, the step is h_T = η·673.15 K = 0.0411 K, and so δz = h_T / 20 K = 2.05e-3. The synthetic (§5.2) gives X′ = 0.05·X
+and X″ = −1.9975·X per unit z. The forward truncation error relative to the entry is then (δz/2)·|X″/X′| =
+**4.10e-2**, which is the measured worst value. Three consequences follow:
+- No forward scheme can meet 1e-6 at a step above the noise floor.
+- Truncation is linear in η, so G(η) − G(η/4) ≈ ¾ of the truncation at η. That is the measured 0.0373.
+- Escalating η makes that difference grow; the measurements are 0.149 and 0.598.
+
+`M05-fd-v1`'s check therefore reads curvature as noise.
+
+**What truncation costs the decision.**
+- *The optimum moves by about half a step.* Near a stationary point, a forward difference in coordinate j equals the
+  exact derivative at w + ½h_j·e_j, to second order. The stationary point of the FD-model problem is therefore
+  displaced by about ½h_j in the dominant coordinate. In T that is **≈ 0.02 K**, against δ_T = 0.5 K (N-F2), the poll's
+  ±0.5 K and G6's 0.1 K.
+- *Convergence is unaffected.* The model error after a step s is ≈ ½h·|d″|·|s|, which is second order, so θ → 0 still.
+
+Truncation is therefore bounded in advance by the step. What can destroy a gradient is noise, which scales as ε/h, and
+noise is what the check has to measure.
+
+**Ruling.** The scheme, steps, exact differences, side rule, concurrency and reuse of §6.5 are unchanged (D8 stands).
+The gradient-quality check is replaced, and the policy id becomes `M05-fd-v2`. `M05-fd-v1` produced no committed record
+and is retired.
+
+- **Three steps.** At the study's first parent-truth point w₀, evaluate d(w₀), then forward gradients at η/4, η and 4η
+  with η = 2⁻¹⁴: 1 + 21 cold experiments (v1 needed 1 + 14).
+  - G is scaled as before: G_kj = g_kj·m_j / s_k, with m_j = max(|w_j|, f_j).
+  - Each column's side is chosen once, at its largest step 4η·m_j, so all three steps of a column lie on one side.
+  - The reactor basis gradient at w₀ (§6.6) is the check's G at the selected η, with the check's per-column sides, so
+    its n_in requests are memo hits.
+- **Statistics,** entrywise:
+  - D₀ = G(η) − G(η/4);
+  - ρ = G(4η) − 5·G(η) + 4·G(η/4);
+  - truncation estimate τ̂ = (4/3)·‖D₀‖_∞;
+  - noise estimate ν̂ = ‖ρ‖_∞ / 14.
+
+  *Where the 14 comes from.* Write G(η) = G* + c₁η + c₂η² + noise. Then ρ cancels G* and c₁ exactly, and its truncation
+  part is 11.25·c₂η². For independent evaluation noise σ, sd(ρ) = 20.2σ/η, while the noise in G(η) has
+  sd = 1.41σ/η.
+- **Pass and class.** The check passes iff ν̂ ≤ 1e-3·max(1, ‖G(η)‖_∞), the registered allowance. A pass is classed
+  `clean` if τ̂ is also within that allowance, and `truncation_dominated` otherwise. A failure is `noise_dominated`.
+- **Escalation, for noise only.**
+  - The candidates are η ∈ {2⁻¹⁴, 2⁻¹², 2⁻¹⁰}. Each step up reuses two gradients and adds G(4η): 7 cold.
+  - Escalation continues only while ν̂ falls by at least a factor 2 per step. A residual that grows with η is
+    curvature, not noise.
+  - If the new largest step is not admissible on a column's chosen side, escalation stops (`side_limit`).
+  - If no candidate passes, the study proceeds with the candidate of smallest ν̂ (on a tie, the smaller η), and A3 is
+    marked `fd_unstable`. Production FD then uses the selected η.
+- **Cost.** The worst case is 1 + 35 cold, once per study. TRF iterations still cost 1 + 7.
+- **Record** `fd_check`:
+  - the policy id;
+  - for each candidate η: ‖G‖, τ̂, ν̂ and the class;
+  - the selected η and the result;
+  - ½h_j for each of the 7 coordinates.
+
+  The study ledger shows 7·(3 + e) check requests, where e is the number of escalations (G7).
+
+**Rejected.**
+- *Central differences.* The truncation error becomes h²·|f‴|/6, which is 4.2e-6 relative on dX/dT, so it still fails
+  1e-6. It doubles the cost per iteration to 1 + 14: 30 × 15 = 450 cold against the run cap of 250, which would bind at
+  about 16 iterations. All of that buys a 0.02 K displacement that is already irrelevant to the decision.
+- *Range-scaled steps* (h_T = η·20 K). These would pass v1's check (0.0373/33.7 = 1.1e-3 ≤ 2.27e-3), but only because
+  this synthetic's curvature scale happens to equal M04's half-width; the misreading would stay hidden. The steps would
+  also depend on a surrogate's box, need a range registry for the flows, and amplify noise 34-fold in T.
+- *A smaller η.* It tunes the step to the synthetic, whose noise is about 1e-16, and pushes the real reactor's unknown
+  noise floor toward failure.
+- *Escalating in both directions.* Choosing a direction needs a classification first, which is the check adopted here.
+  Truncation needs no smaller step.
+
+**New WO-4 acceptance, replacing "≤ 1e-6 relative at η".** On the synthetic, at TR-E2's start inlet:
+- (i) *Richardson.* ‖(4·G(η/4) − G(η))/3 − G_exact‖_∞ ≤ 1e-5·max(1, ‖G_exact‖_∞). Predicted ≈ 5e-7.
+- (ii) *The estimate bounds the error.* ‖G(η) − G_exact‖_∞ ≤ 2τ̂ + 1e-6·max(1, ‖G_exact‖_∞). Predicted 0.044 against
+  about 0.10.
+- (iii) *The check passes at 2⁻¹⁴ without escalating*, classed `truncation_dominated`. Predicted ν̂ ≈ 4e-6 against
+  2.27e-3.
+- (iv) *Noise is detected.* Add deterministic pseudo-noise of relative amplitude 1e-6 to (X, ΔT), as a function of the
+  exact input bits (SHA-256 mapped to [−1, 1]). The check is then `noise_dominated` at 2⁻¹⁴, and ν̂(2⁻¹²) < ν̂(2⁻¹⁴).
+
+**G6 restated.**
+- TR-E2-FD ends `TRF_CONVERGED`, with |T*_FD − T*_exact| ≤ 0.1 K (predicted ≈ 0.02 K).
+- `fd_check` passes at 2⁻¹⁴ with class `clean` or `truncation_dominated`, without escalation.
+- §8.3's identity holds exactly.
+
+**G11.** `fd_check` is recorded with its class, τ̂, ν̂ and selected η. Implemented by WO-4a.
+
+### 17.3 TR-E1 basis acceptance (R-298): restated at the termination TR-E1 actually runs with
+
+**Facts.**
+- *TR-E1's own stopping tolerance is 1e-5.* TR-E1 runs Pyomo's defaults, so `step_size_termination` =
+  `feasibility_termination` = 1e-5 (`TRF.py:383`, `:392`). "Within 1e-6" asked the two runs to agree ten times more
+  closely than the step at which either may stop.
+- *Measured:* |Δz| = 1.18e-6, 1.11e-6 and 5.7e-7, with the objectives within 4e-11 relative.
+- *The limit cannot tell bases apart.* Under the affine basis, r_k is the Taylor model at w_k for every k ≥ 1 (§6.6).
+  What tests the basis is the bitwise value test, the gradient-at-w₀ test and the clone-membership test.
+
+**Ruling.** §16.4's third criterion becomes:
+- both runs end `TRF_CONVERGED` with θ_recheck ≤ 1e-5;
+- ‖z_affine − z_native‖_∞ ≤ 2σ = **2e-5**, absolute (TR-E1 has unit scales and O(1) values). Each run's final point
+  lies within σ of the limit under a contraction of at most ½;
+- |ΔJ| / max(1, |J|) is recorded.
+
+The measured values pass with a margin of 17.
+
+**Rejected.** Tightening TRF's termination for this test. The steps would plateau at Ipopt's `tol` = 1e-8, risking
+`TRF_MAX_ITERATIONS`, and the result would still say nothing about the basis.
+
+Implemented by WO-4a; only the test's tolerance changes.
+
+### 17.4 An "Optimal" exit with θ_recheck > 1e-5 (R-299): `TRF_STALLED_INCONSISTENT`
+
+**Ruling.** An "EXIT: Optimal solution found." whose θ, re-checked from the returned model, exceeds 1e-5 is
+`TRF_STALLED_INCONSISTENT`. It yields no candidate and counts as an abort for §7.3's retry: once, with trust_radius × ¼.
+The record carries:
+- `exit_claim: "optimal"`;
+- θ_logged and θ_recheck;
+- `final_state_is_last_truth_point`: whether the returned w equals, bitwise, the w of the ledger's last truth request.
+
+Exits are classified in this order of precedence:
+1. `TRF_TRUTH_REFUSED` (the backstop, R-276);
+2. θ_recheck > 1e-5 gives `TRF_STALLED_INCONSISTENT`, whatever the EXIT line says;
+3. `TRF_EXIT_WITHOUT_STEP`;
+4. `TRF_CONVERGED` or `TRF_FEASIBLE_STALLED`.
+
+`TRF_ERROR(exit_mismatch)` keeps its meaning: an EXIT line that disagrees with TRF's own logged values, which is parser
+or framework drift. That is a defect and is never retried.
+
+**Why.** R-279 classifies an exit from the model; the EXIT line is only a claim. A point TRF calls optimal while its
+truth disagrees most plausibly means TRF terminated on a state other than the one it returned, for example after a
+rejected-step reset. A smaller radius changes the trajectory, which is what the retry is for. A holder defect cannot
+hide behind the retry: a second abort is `FAILED(trf_aborted:TRF_STALLED_INCONSISTENT)`, which reaches the design lane
+with the diagnostic fields.
+
+**Rejected.** `TRF_ERROR(exit_mismatch)`: it labels an inconsistent model state as a parser defect and forfeits the
+retry.
+
+**Acceptance (WO-3b; §6.7's table amended).** A test drives an "Optimal" exit with a holder value perturbed after the
+last truth request, and gets `TRF_STALLED_INCONSISTENT` with `exit_claim: "optimal"`. P14 (a)–(c) are unchanged.
+
+### 17.5 Build decisions at WO-4/5 (R-300)
+
+| # | Decision | Ruling |
+| --- | --- | --- |
+| E1 | The parent-truth `meta` has a sixth key, `code` | **Confirmed.** §16.4's contract has six keys: `{status, code, cache_hit, experiment_key, executions, extrapolated}`. `code` is M02's outcome code verbatim, `""` when there is none. Every adapter emits it, `""` for surrogate and test truths. WO-7's schema includes it |
+| E2 | (X, ΔT) computed from the envelope as (ξ/n_N₂,in, T_out − T_in) | **Confirmed, as an interim.** WO-4a adds a guard test at TR-E2's start and at two FD points. There M05's values must equal the coupling coordinates M02's coupled-route residual uses at the same envelope, obtained through M02's own code path. Bitwise is required, or within 4 ulp where only a reconstruction from the residual is available. When M02 exposes a coupling-coordinate function, M05 calls it (register watch-for) |
+| E3 | The ledger records explicit FD purposes on memo hits | **Confirmed.** It is needed to attribute requests to purposes under §8.3. §8.3's sentence is amended: repeated *TRF* calls at a key carry no purpose, while requests the FD policy issues (`basis_fd_point`, `trf_fd_point`, the check's) carry theirs, whether cold, a store hit or a memo hit |
+| E4 | A non-parent holder refuses a parent budget (`ValueError`) | **Confirmed.** It is a configuration error at construction, never a `TruthRefused` |
+| E5 | `project(variable_bounds=…)` | **Confirmed; additive.** It may only intersect a kind's bounds, and the result is recorded in the source map. Naming a decision or an eliminated zero flow (§17.1) raises `ValueError` |
+| E6 | The concurrency test runs without the artifact sink, because artifact ids depend on completion order | **Confirmed, for WO-4's store-record test only.** New invariant: nothing a record or the ledger carries may depend on completion order, and artifacts are referenced by SHA-256. WO-6's record assembly enforces this. WO-8 adds a test: the FD batch with the sink, run concurrently and serially, must give byte-identical store records and ledger. If that needs M02's lock or handshake logic changed, escalate (WO-4's clause) |
+| E7 | `revision_binding.with_coupling` | **Lands on `wp/M02` as a byte-identical cherry-pick with its inertness test (WO-5b). No separate review:** it changes no existing path, its test proves it inert, and M05's single `reviewer` pass covers it. It stays an accessor of the binding and never becomes a revision parameter (R-287). If `wp/M02` merges first, M05's rebase drops its own copy |
+
+### 17.6 Work orders and gates changed
+
+| WO | Lane | Deliverable | Acceptance |
+| --- | --- | --- | --- |
+| WO-2b | Opus | §17.1 in `projection.py`: the elimination, the source map's `zero_eliminated`, the refusals, the final-state evaluation of P | §17.1 (a)–(f) |
+| WO-3b | Opus | §17.4 in `trf.py` | §17.4's test; G3 unchanged |
+| WO-4a | Opus | `M05-fd-v2` (§17.2) in `truths.py`; tests (i)–(iv); §17.3's TR-E1 tolerance; E2's guard test | §17.2 (i)–(iv); §17.3 |
+| WO-5b | bounded | E7's cherry-pick to `wp/M02` | The inertness test passes on `wp/M02`; M02's full gate is unchanged |
+
+**Order.** WO-2b comes first, because it unblocks every C1 TRF run. WO-3b, WO-4a and WO-5b depend neither on it nor on
+each other. WO-6 continues meanwhile, and WO-8 needs all four.
+
+**Gates.**
+- G4 (C1): (a) is taken over the projected variables and rows, with `zero_eliminated` certified (§17.1). R-278's matching
+  is 68 × 68.
+- G6 is as restated in §17.2.
+- G11 also records the check's class.
+- §16.4's basis criterion is as restated in §17.3.
+
+### 17.7 Open questions, each with a default
+
+| # | Question | Kind | Default |
+| --- | --- | --- | --- |
+| F-9 | What is the real reactor's FD noise floor? | Fact: WO-9's `fd_check` | `M05-fd-v2` as ruled. If REAL is `noise_dominated` even at 2⁻¹⁰, the study runs `fd_unstable` and G11 reports it. The policy changes only by a new ruling |
+| F-10 | Do SYN-001's K05 states hold exact-zero flows? | Fact: WO-2b (f) | The rule applies uniformly, and G4's SYN-001 part is re-run |
+| F-11 | Is M03's full-space path exposed to §17.1's roundoff? | Fact: an M03 run on C1 | No change to M03. A hit opens an ADR 0032 amendment that adopts §17.1 |
+
+None of these needs Frank.

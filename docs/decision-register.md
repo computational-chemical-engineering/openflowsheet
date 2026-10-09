@@ -6191,3 +6191,136 @@ A specification check that reads the compiled constants (not independent).
 **Watch for.** The verifier importing the unit's ν.
 
 ---
+
+## R-296 — An exactly-zero flow at x₀ is eliminated from the trust-region projection as the constant +0.0, together with its certified pinning row; it is neither bounded nor left free
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round after WO-4/5 |
+| Normative text | Design note §17.1 (rule `M05-zero-flow-v1`), §6.1 step 1 as amended |
+| Evidence | C1 TR-E2: `TRF_TRUTH_REFUSED(property_domain_error:S1_Hdot_V)` at the PMP point, with `S1.n.NH3 = −3.448e-27`. The pins are projected (feed `specification_row`, C1FL `zero_row`); R-274 omits only the two pressure alias rows (`e1c9af0`). TRF counts fixed `Var`s as degrees of freedom (`pyomo/contrib/trustregion/interface.py:60–69, 184–193`) |
+| Affected packages | M05 (M03: watch-for only) |
+
+**Decision.** A molar flow that is exactly 0.0 at x₀ is paired with a kept row that pins it: single remaining
+incidence, residual exactly 0 at x₀, a nonzero pivot, and a decision/link tangent of exactly 0. The pairing repeats
+until nothing changes. The flow becomes the float +0.0 in the projection and its pin is not built; the pair is recorded
+in the source map and re-evaluated at every final state. An unpaired zero flow, a redundant row or a zero link input is
+refused as `PROJECTION_ZERO_FLOW(<id>:<reason>)`. DOF and LICQ are unchanged; C1's R-278 matching goes from 73 × 73 to
+68 × 68. ADR 0032 D4 is not amended: this rule certifies exactly the pin D4 presumes.
+
+**Rejected alternative, and why.**
+- A bound n ≥ 0: LICQ and MFCQ fail at every feasible point, and Ipopt's `bound_push` moves n off 0.
+- `Var.fix`: it breaks TRF's DOF count.
+- Restoring a row: the rows were never missing.
+- Clamping in the holder: it quantizes the exact path.
+- Widening the provider's domain: it moves a frozen identity.
+
+**Watch for.** M03's full-space path, which evaluates property blocks at Ipopt iterates with such flows free. A hit
+there means an ADR 0032 amendment that adopts this rule.
+
+---
+
+## R-297 — `M05-fd-v2`: forward differences at η = 2⁻¹⁴ are kept; the gradient check uses three steps, separates noise from truncation, and escalates η for noise only
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round after WO-4/5; supersedes R-265's check, keeps its scheme |
+| Normative text | Design note §17.2; §6.5 as amended; G6 and G11 restated |
+| Evidence | Synthetic at TR-E2's start: worst forward error 4.1e-2 on dX/dT, equal to the predicted truncation (δz/2)·\|X″/X′\| = (2.05e-3/2)·39.95. v1's check gave ‖ΔG‖ = 0.0373 against an allowance of 2.27e-3, then 0.149 at 2⁻¹² and 0.598 at 2⁻¹⁰: truncation, growing with η |
+| Affected packages | M05 |
+
+**Decision.**
+- *The check.* At w₀, compute G at η/4, η and 4η. The noise estimate ν̂ = ‖G(4η) − 5G(η) + 4G(η/4)‖_∞/14 cancels
+  first-order truncation. The truncation estimate is τ̂ = (4/3)‖G(η) − G(η/4)‖_∞. The check passes iff
+  ν̂ ≤ 1e-3·max(1, ‖G‖_∞); a pass is classed `clean` or `truncation_dominated`.
+- *Escalation.* Up to 2⁻¹⁰, only while ν̂ falls at least 2× per step; otherwise `fd_unstable`.
+- *Cost.* 1 + 21 cold (worst case 1 + 35), once per study.
+- *Why truncation is not gated.* It displaces the stationary point by about ½h, ≈ 0.02 K in T, against δ_T = 0.5 K.
+- *Acceptance.* WO-4's "≤ 1e-6 relative" is replaced by a Richardson agreement ≤ 1e-5, the τ̂ bound, a check pass and a
+  noise-injection test.
+
+**Rejected alternative, and why.**
+- Central differences: 2× the cost per iteration (the 250-cold cap binds at about 16 iterations), and still 4.2e-6 on
+  dX/dT.
+- Range-scaled steps: they hide the misreading on this synthetic only.
+- A smaller η: tuned to a noise-free synthetic.
+- Escalating in both directions: it needs this classification first.
+
+**Watch for.** REAL's `fd_check` class (F-9). A `noise_dominated` result at 2⁻¹⁰ means a new ruling, not a retune.
+
+---
+
+## R-298 — The TR-E1 affine-basis acceptance compares final states within 2 × TR-E1's own step-size termination (2e-5), not 1e-6
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round after WO-4/5 |
+| Normative text | Design note §17.3; §16.4's table as amended |
+| Evidence | TR-E1 runs Pyomo's defaults: `step_size_termination` = `feasibility_termination` = 1e-5 (`TRF.py:383, 392`). Measured \|Δz\| = 1.18e-6, 1.11e-6, 5.7e-7; objective within 4e-11 relative |
+| Affected packages | M05 |
+
+**Decision.** Both runs must end `TRF_CONVERGED` with θ_recheck ≤ 1e-5, and ‖Δz‖_∞ ≤ 2e-5; |ΔJ| is recorded. The
+basis itself is tested by the bitwise value test, the gradient-at-w₀ test and the clone-membership test, since the
+limit cannot discriminate between bases (§6.6).
+
+**Rejected alternative, and why.** Tightening TRF's termination for the test: the steps plateau at Ipopt's 1e-8 and
+risk `TRF_MAX_ITERATIONS`, and the tighter run still says nothing about the basis.
+
+**Watch for.** Nothing.
+
+---
+
+## R-299 — An "Optimal" TRF exit with θ_recheck > 1e-5 is `TRF_STALLED_INCONSISTENT` (an abort, retried once), not `TRF_ERROR(exit_mismatch)`
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round (pending since WO-3a) |
+| Normative text | Design note §17.4; §6.7's outcome table as amended |
+| Evidence | R-279's principle: exits are classified from the returned model |
+| Affected packages | M05 |
+
+**Decision.** Exits are classified in this order: `TRF_TRUTH_REFUSED`, then θ_recheck > 1e-5 →
+`TRF_STALLED_INCONSISTENT` whatever the EXIT line says, then `TRF_EXIT_WITHOUT_STEP`, then `TRF_CONVERGED` or
+`TRF_FEASIBLE_STALLED`. The record carries `exit_claim`, θ_logged, θ_recheck and `final_state_is_last_truth_point`.
+`exit_mismatch` remains the class for an EXIT line that disagrees with TRF's own logged values, and it is never retried.
+
+**Rejected alternative, and why.** `TRF_ERROR(exit_mismatch)`: it labels an inconsistent model state as a parser defect
+and forfeits the retry. A holder defect still surfaces, because a second abort is `FAILED(trf_aborted:…)`.
+
+**Watch for.** `final_state_is_last_truth_point: true` on such an exit. That would point to a holder or memo defect, not
+to a framework reset.
+
+---
+
+## R-300 — M05's WO-4/5 build decisions ratified: `meta.code`, envelope (X, ΔT) as a guarded interim, FD purposes on memo hits, budget refusal, `variable_bounds`, completion-order independence, `with_coupling` on `wp/M02` without separate review
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round after WO-4/5 |
+| Normative text | Design note §17.5 (E1–E7) |
+| Evidence | Build lane's commits `59725c6`…`6b54b8d` on `wp/M05` |
+| Affected packages | M05, M02 (E7) |
+
+**Decision.**
+- E1. `meta` has six keys; `code` is `""` when there is none.
+- E2. The envelope's (X, ΔT) stand, guarded by a test against M02's own code path.
+- E3. FD-issued requests keep their purpose on memo hits (§8.3 amended).
+- E4. A parent budget on a non-parent holder is a `ValueError` at construction.
+- E5. `variable_bounds` only intersects, and refuses decisions and eliminated zero flows.
+- E6. Records and ledger never depend on completion order, and artifacts are referenced by SHA-256 (WO-6, tested in
+  WO-8).
+- E7. `with_coupling` is cherry-picked byte-identically to `wp/M02` with its inertness test. It is covered by M05's
+  `reviewer` pass and never becomes a revision parameter (R-287).
+
+**Rejected alternative, and why.** Re-implementing M02's coupling coordinates permanently (§6.4 forbids it), and a
+separate design-lane review of an inert accessor (the bit-identity test is the proof).
+
+**Watch for.** M02 gaining a coupling-coordinate function: M05 switches to it. An artifact id appearing in a compared
+record.
+
+---
