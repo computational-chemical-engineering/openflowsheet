@@ -16,7 +16,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…12a″, 11a, 14 done; WO-12a″ (`bcfd0af`, gate 8290): **V5 selected** (inerts ≥ 3.5 %, T_in [653.15, 693.15] K; V4 20/21, V5/V6 21/21 both runs), timeout 450 s, G10v3 bitwise; WO-14 merged in (`ba13ce3`, gate running); next WO-12b (register v3 on V5), WO-13 manifest, `reviewer` (batch: RP-2, D94, AC-1, f5 e2e, D100–D102, D105) |
+| M02 | Build | M01 | W21 | WO-1…12a″, 11a, 14 done; WO-12a″ (`bcfd0af`, gate 8290): **V5 selected** (inerts ≥ 3.5 %, T_in [653.15, 693.15] K; V4 20/21, V5/V6 21/21 both runs), timeout 450 s, G10v3 bitwise; WO-14 merged in (`ba13ce3`, gate 8304 pass, 1 xfail RP-2); WO-12b running (register v3 on V5), WO-13 manifest, `reviewer` (batch: RP-2, D94, AC-1, f5 e2e, D100–D102, D105) |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435); W27 Amendment 3 (`14c8695` on main, R-301/302): surrogate → no function (`surrogate_model`), `hypothetical_v02_a3`, corpus resolver; WO-16i merged into main (`b3216dc`; W27 tests 124 passed with archive); next merge main into `wp/M04`, J3′–J6′ + corpus resolver + WO-8; WO-9 after M02 merged; WO-11 real run; WO-12 manifest |
 | M05 | Design | M03, M04 | W24 | WO-1…5, 2b, 3b, 4a done (`7bc8c56`, gate 8473; §17 acceptance pass; TR-E2 check now `TRF_MAX_ITERATIONS`, no refusal); open for next M05 ruling batch: Z2 (SYN-001 jointly-pinned zero flows at P1/P2/B2 refused `unpinned`, 15 strict xfails), W2 (max-iterations with θ_recheck > 1e-5 keeps its candidate?); WO-5c (`at_coupling`, R-309) + E2 guard after M02 merges; real records bind reactor v3; box may shrink (R-304); WO-6+ next; R-313: REAL decision box → [653.15, 693.15] K (WO-5c) |
@@ -97,6 +97,7 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
+| `opus-engineer` | M02 WO-12b (register v3 on V5) | `wp/M02` (`m02`) |
 | `opus-engineer` | M04 merge main + register surrogate + J3′–J6′ + corpus resolver (§22) | `wp/M04` (`m04`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
