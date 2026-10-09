@@ -179,3 +179,16 @@ Amended:
 
 Acceptance evidence: M02 gates G10v3, G11v3-1 to -7 and G12v3-1 (design note §14.5), recorded under
 `benchmarks/m02/*-v3.json`.
+
+## Amendment 3 (2026-10-09): M02 seventh ruling round (R-311, R-312, R-313)
+
+**Status:** design lane, M02 seventh ruling round; normative text in `docs/design/M02-pymrm-adapter.md` §14.6 E1–E3.
+The text below is §14.6 E5's proposed text, transcribed verbatim.
+
+- D6's positivity clause applies to the species present in the inlet. An absent species (only Ar or CH₄ can be) is
+  judged by D3's projection defect.
+- A45's relative element defect is taken over the elements present in the inlet.
+- The polish round reads δ after the KPI-drift certificate, and the certificate is repeated after the round.
+- The real variant's hard domain may carry `inert_min` (absent means 0). v3's domain is the first of V1–V3
+  (M02 §14.6 E3). Amendment 2's "three registered boxes" is superseded.
+- Acceptance evidence: G10v3, G11v3-1 to -10, and G12v3-1.
