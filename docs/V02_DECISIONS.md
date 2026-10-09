@@ -692,3 +692,9 @@ Grep, don't read whole. Newest at the bottom.
   shape rule extended to all final-digest copies (isolated `e8c7777`). RP-2 not met (strict xfail): rerun with moved last
   bits still MISMATCH via certificate inlet check + exact-0 ρ/r_ξ. RP-2, D94, AC-1, f5 → M02 reviewer batch. W27 WO-16i
   (Sonnet) launched in worktree off main.
+
+- **W27 WO-16i merged into main** (2026-10-09, `b3216dc`, Sonnet): registration Amendment 3 implemented; pre-existing
+  members byte-identical; P2 pins re-taken (registration.json `ba627342…`, .md `b5b5b3a5…`, script `57568204…`); gate
+  7748 passed; W27 tests with the archive dir linked 124 passed, 0 skipped. Interpretations to check in M04 review: optional
+  `model_functions` parameter in `check_snapshot`/`classify`; `C1_MODEL_IDS` excludes the surrogate; `hypothetical_v02_a3`
+  basis string wording.

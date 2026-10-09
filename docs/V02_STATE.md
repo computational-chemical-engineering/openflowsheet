@@ -18,7 +18,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
 | M02 | Build | M01 | W21 | WO-12a′ done to G11v3-4 (no box of V1–V3); round 8 §14.7 (`756e123`, R-315/R-316, ADR 0027 Am. 4): rungs V4 (inerts ≥ 3 %), V5 (≥ 3.5 %), V6 (V5 + P [9.5, 10.5] MPa, H₂/N₂ [2.75, 3.25]), all T_in [653.15, 693.15] K; round 2 whenever δ₁ > 1e-7; WO-12a″ running (full re-measure); WO-14 running; then WO-12b (on the selected rung, before Frank's N7 answer), WO-13, `reviewer`; WO-14 done on `wp/M02-wo14` (`e8c7777`, gate 8281; G8(f) f1–f5 pass, D50 xfail gone; G8 records byte-identical) — merge into `wp/M02` after WO-12a″; for the `reviewer` batch: RP-2 (cross-platform rerun still MISMATCH: certificate inlet check + exact-0 ρ/r_ξ, no floor), D94, AC-1 meaning, f5 end-to-end test |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
-| M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435); W27 Amendment 3 (`14c8695` on main, R-301/302): surrogate → no function (`surrogate_model`), `hypothetical_v02_a3`, corpus resolver; next WO-16i on main, then J3′–J6′ + WO-8 on `wp/M04`; WO-9 after M02 merged; WO-11 real run; WO-12 manifest |
+| M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 done (`2841cd3`, gate 8435); W27 Amendment 3 (`14c8695` on main, R-301/302): surrogate → no function (`surrogate_model`), `hypothetical_v02_a3`, corpus resolver; WO-16i merged into main (`b3216dc`; W27 tests 124 passed with archive); next merge main into `wp/M04`, J3′–J6′ + corpus resolver + WO-8; WO-9 after M02 merged; WO-11 real run; WO-12 manifest |
 | M05 | Design | M03, M04 | W24 | WO-1…5, 2b, 3b, 4a done (`7bc8c56`, gate 8473; §17 acceptance pass; TR-E2 check now `TRF_MAX_ITERATIONS`, no refusal); open for next M05 ruling batch: Z2 (SYN-001 jointly-pinned zero flows at P1/P2/B2 refused `unpinned`, 15 strict xfails), W2 (max-iterations with θ_recheck > 1e-5 keeps its candidate?); WO-5c (`at_coupling`, R-309) + E2 guard after M02 merges; real records bind reactor v3; box may shrink (R-304); WO-6+ next; R-313: REAL decision box → [653.15, 693.15] K (WO-5c) |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
@@ -98,9 +98,8 @@ Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rule
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 WO-12a″ (§14.7) | `wp/M02` (`m02`) |
-| `sonnet-implementer` | W27 WO-16i (registration §22.5, surrogate row) | `wp/W27-16i` (`w27-16i`, off main) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
 M03 WO-8 after N1; M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
-Push `main` at milestones (authorised).
+Push `main` at milestones (authorised). W27 archive for tests: symlink the directory `.claude/worktrees/m06-w27h/evidence/M06/W27/artifacts` to `evidence/M06/W27/artifacts` (not just the tarball), remove after.
