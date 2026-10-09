@@ -275,6 +275,30 @@ axes:
       - doc:.github/workflows/ci.yml
       - doc:requirements.lock
 
+  - id: external_execution
+    title: External model execution
+    statement: >-
+      Since M02, a variant-backed model (`c1.reactor`) runs out of process under the isolation
+      profile `external-subprocess-v1` (ADR 0033 D2): a separate interpreter and dependencies, a
+      separate address space, an environment allowlist, a private working directory, one thread, a
+      wall-clock limit, termination on cancel, forced kill and parent death, output from one
+      validated file, and verified code identity. It is **not a sandbox**: no filesystem
+      confinement, network isolation, memory or CPU quota, or syscall filtering; trust rests on
+      provenance. Linux is registered; macOS best effort; Windows is refused before spawn. The
+      reactor needs the separately built, pinned reactor environment, and a run that used it is
+      R3 (ADR 0034 D6).
+    evidence:
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/design/M02-pymrm-adapter.md §2.3
+      - tests/test_m02_kill_chain.py::test_refusals_before_any_spawn
+      - tests/test_m02_kill_chain.py::test_g3a_a_cooperative_cancel_reaps_the_child_and_propagates
+      - tests/test_m02_kill_chain.py::test_g3b_a_timeout_ends_the_attempt_timed_out
+      - tests/test_m02_kill_chain.py::test_g3c_a_child_ignoring_sigterm_is_killed_after_the_grace
+      - tests/test_m02_kill_chain.py::test_g3d_the_executors_forced_kill_takes_the_worker_and_its_child
+      - tests/test_m02_kill_chain.py::test_g3e_a_worker_killed_alone_leaves_its_child_to_its_lifeline
+      - tests/test_m02_kill_chain.py::test_g3f_the_self_deadline_exits_71
+      - tests/test_m02_kill_chain.py::test_g3g_an_abort_is_a_crash_with_its_signal
+
 unsupported:
   - id: U01
     capability: Real components, or a component set that is not exactly a permutation of {A, B, C}
