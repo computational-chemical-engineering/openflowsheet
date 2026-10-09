@@ -34,7 +34,7 @@ import re
 import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 from mpmath import mp, mpf
 
@@ -830,6 +830,127 @@ def plan_claims(plan: Mapping[str, Any]) -> dict[str, Any]:
     return {"min_inf_distance_training_to_heldout": s(dmin, 6), "experiments": n_exp}
 
 
+# -- later iterations (spec §5.5, Amendment 1 §A1.2) ---------------------------------------------
+
+ITERATIONS: Final = (2, 3)
+
+
+def fresh_splits(iteration: int) -> tuple[str, ...]:
+    """The P_ref splits an iteration draws itself: iteration 1 all three, later ones no training."""
+    return ("training", "calibration", "test") if iteration == 1 else ("calibration", "test")
+
+
+def build_plan_iteration(iteration: int) -> dict[str, Any]:
+    """Iteration i >= 2: training is every P_ref draw of iterations < i, listed by origin, in
+    iteration order and then split and index order; calibration, test and gradient are fresh."""
+    assert iteration >= 2
+    training = []
+    for j in range(1, iteration):
+        for split in fresh_splits(j):
+            for index in range(COUNTS[split]):
+                origin = {"iteration": j, "split": split, "index": index}
+                training.append({"index": len(training), "origin": origin})
+    plan: dict[str, Any] = {"training": training}
+    for split in ("calibration", "test"):
+        plan[split] = [
+            {"index": j, "u": list(u), "request": request_of(u)}
+            for j, u in enumerate(draws(iteration, split, COUNTS[split]))
+        ]
+    centres = []
+    for j, u in enumerate(draws(iteration, "gradient", COUNTS["gradient"])):
+        sten = []
+        for k in range(D):
+            for sign in (+1, -1):
+                v = stencil(u, k, sign)
+                sten.append(
+                    {"coordinate": BOX[k][0], "sign": sign, "u": list(v), "request": request_of(v)}
+                )
+        centres.append({"index": j, "u": list(u), "request": request_of(u), "stencil": sten})
+    plan["gradient"] = centres
+    return plan
+
+
+def plan_requests(plans: Mapping[int, Mapping[str, Any]], iteration: int) -> list[str]:
+    """Every request an iteration's own plan file carries (training origins excluded)."""
+    plan = plans[iteration]
+    out = [
+        json.dumps(row["request"])
+        for split in ("training", "calibration", "test")
+        for row in plan[split]
+        if "request" in row
+    ]
+    out += [json.dumps(st["request"]) for c in plan["gradient"] for st in c["stencil"]]
+    return out
+
+
+def iteration_claims(plans: Mapping[int, Mapping[str, Any]], iteration: int) -> dict[str, Any]:
+    plan = plans[iteration]
+    expected = sum(COUNTS[sp] for j in range(1, iteration) for sp in fresh_splits(j))
+    claim(len(plan["training"]) == expected, f"it{iteration}: training lists {expected} origins")
+    for row in plan["training"]:
+        o = row["origin"]
+        claim(o["iteration"] < iteration, f"it{iteration}: training origins are earlier draws")
+    for split in ("calibration", "test"):
+        for row in plan[split]:
+            z = z_of_request(row["request"])
+            claim(all(-1 <= x <= 1 for x in z), f"it{iteration} {split}[i] lies in the box")
+            u_req = u_of_request(row["request"]["n"], row["request"]["T"], row["request"]["P"])
+            claim(in_hard(u_req, real=True) and in_data(u_req), f"it{iteration} {split}[i] domains")
+    for c in plan["gradient"]:
+        for st in c["stencil"]:
+            z = z_of_request(st["request"])
+            claim(all(-1 <= x <= 1 for x in z), f"it{iteration}: stencil inside the box")
+    earlier: set[str] = set()
+    for j in range(1, iteration):
+        earlier |= set(plan_requests(plans, j))
+    own = plan_requests(plans, iteration)
+    claim(len(set(own)) == len(own), f"it{iteration}: its own requests are distinct")
+    claim(not (set(own) & earlier), f"it{iteration}: no request repeats an earlier iteration's")
+
+    def z_rows(rows: Sequence[Mapping[str, Any]]) -> list[list[Any]]:
+        return [z_of_request(r["request"]) for r in rows]
+
+    inherited = []
+    for row in plan["training"]:
+        o = row["origin"]
+        inherited.append(z_of_request(plans[o["iteration"]][o["split"]][o["index"]]["request"]))
+    held = z_rows(plan["calibration"]) + z_rows(plan["test"])
+    dmin = min(
+        max(abs(a - b) for a, b in zip(zt, zh, strict=True)) for zt in inherited for zh in held
+    )
+    claim(
+        dmin >= mpf("0.05"), f"it{iteration}: every held-out draw >= 0.05 from every training draw"
+    )
+    return {
+        "iteration": iteration,
+        "training_origins": expected,
+        "fresh_experiments": sum(COUNTS[sp] for sp in ("calibration", "test"))
+        + COUNTS["gradient"] * 2 * D,
+        "min_inf_distance_training_to_heldout": s(dmin, 6),
+    }
+
+
+def a11_fixture() -> dict[str, Any]:
+    """M04.A11 (Amendment 1): the prefix training draws with F set to the box centre."""
+    rows = []
+    for u in draws(1, "training", PREFIX["training"]):
+        v = list(u)
+        v[6] = CENTRE[6]
+        rows.append(basis(z_of_request(request_of(v))))
+    z7 = max(abs(r[7]) for r in rows)
+    # The z_F^2 column is ~1e-30, so the Gram matrix's smallest eigenvalue is ~1e-60 of its largest:
+    # evaluated at 150 digits.
+    with mp.workdps(150):
+        ratio = singular_ratio(rows)
+    claim(z7 < mpf("1e-12") and z7 > 0, "A11: z_F is roundoff-small but not exactly zero")
+    claim(ratio < mpf("1e-10"), "A11: the singular-value ratio is far below tau_id = 1e-8")
+    return {
+        "max_abs_z_F": s(z7, 3),
+        "singular_value_ratio": s(ratio, 3),
+        "vanishing_columns": ["z7"] + [f"z{i + 1}*z7" for i in range(D)],
+    }
+
+
 # -- pipeline expectations on a synthetic parent (spec §9) ----------------------------------------
 
 
@@ -1154,7 +1275,7 @@ def jacobian_states(beta: Mapping[str, Sequence[Any]]) -> list[dict[str, Any]]:
 # -- assembly -------------------------------------------------------------------------------------
 
 
-def build() -> tuple[dict[str, Any], dict[str, Any]]:
+def build() -> tuple[dict[str, Any], dict[int, Any]]:
     plan = build_plan()
     plan_summary = plan_claims(plan)
     claim(P_TERMS == 36 and len(PAIRS) == 28, "the full quadratic in 7 inputs has 36 terms")
@@ -1229,6 +1350,12 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
     )
     standin = run_case(plan, None, PREFIX, "standin-x025-v1/prefix")
     synthetic_claims(smooth, rough, standin)
+    gaps = smooth_prefix["margins"]
+    claim(
+        min(mpf(gaps[g]) for g in ("order_statistic_gap", "test_to_q_hat", "q_hat_to_width_limit"))
+        > mpf("1e-8"),
+        "smooth prefix: every decision gap exceeds 1e-8 (Amendment 1 A1.3)",
+    )
     fmargin = failure_margin(plan)
     claim(
         fmargin > mpf("1e-6"),
@@ -1319,6 +1446,7 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
         "basis_at_zstar": {"z": [s(x) for x in zstar], "phi": [s(x) for x in basis(zstar)]},
         "fixture_coefficients": fixture,
         "jacobian_states": jac,
+        "a11_fixture": a11_fixture(),
         "synthetic_failure_margin": s(fmargin, 6),
         "pipeline": {
             "smooth_full": smooth,
@@ -1331,17 +1459,29 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
             "distinct_statements": sorted({re.sub(r"\[\d+\]", "[i]", c) for c in CLAIMS}),
         },
     }
-    plan_doc = {
-        "schema_version": "m04-plan-v1",
-        "generated_by": GENERATOR,
-        "iteration": 1,
-        "n_tubes": N_TUBES_PLAN,
-        "components": list(COMPONENTS),
-        "seeds": {sp: seed_of(1, sp) for sp in SPLITS},
-        "counts": COUNTS,
-        **plan,
+    plans: dict[int, Any] = {1: plan}
+    for i in ITERATIONS:
+        plans[i] = build_plan_iteration(i)
+    later = [iteration_claims(plans, i) for i in ITERATIONS]
+    values["later_iterations"] = later
+    values["claims"] = {
+        "count": len(CLAIMS),
+        "distinct_statements": sorted({re.sub(r"\[\d+\]", "[i]", c) for c in CLAIMS}),
     }
-    return values, plan_doc
+    docs = {}
+    for i, body in plans.items():
+        counts = dict(COUNTS) if i == 1 else {**COUNTS, "training": len(body["training"])}
+        docs[i] = {
+            "schema_version": "m04-plan-v1",
+            "generated_by": GENERATOR,
+            "iteration": i,
+            "n_tubes": N_TUBES_PLAN,
+            "components": list(COMPONENTS),
+            "seeds": {sp: seed_of(i, sp) for sp in SPLITS},
+            "counts": counts,
+            **body,
+        }
+    return values, docs
 
 
 def encode(document: Mapping[str, Any]) -> bytes:
@@ -1355,12 +1495,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="re-derive every claim and compare with the committed files",
     )
-    parser.add_argument("--emit", action="store_true", help="write both files")
+    parser.add_argument("--emit", action="store_true", help="write every file")
     args = parser.parse_args(argv)
     if not (args.check or args.emit):
         parser.error("choose --check and/or --emit")
-    values, plan = build()
-    payloads = {OUT_VALUES: encode(values), OUT_PLAN: encode(plan)}
+    values, plans = build()
+    payloads = {OUT_VALUES: encode(values)}
+    for i, doc in plans.items():
+        payloads[OUT_PLAN.with_name(f"plan-it{i}.json")] = encode(doc)
     status = 0
     if args.check:
         print(f"{len(CLAIMS)} claims passed")

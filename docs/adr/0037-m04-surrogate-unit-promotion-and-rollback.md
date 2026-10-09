@@ -92,3 +92,24 @@ against earlier schemas would reject the new enum values (J5).
 
 M04.A12–A15, A25–A30, A35 `tested`; A33 recorded if the real surrogate is PROMOTABLE; the design-lane review of
 WO-7 and WO-8.
+
+## Amendment 1 (2026-10-09): the evidence names the manifest; outputs, refusals and concurrency
+
+**Normative text:** `docs/derivations/M04-spec.md` §18 (A1.4–A1.7). **Register:** R-292, R-293, R-294, R-295.
+
+**D6, amended.** The SurrogateManifest has no `evidence_sha256`. ModelEvidence's `subject.artifact_ref` is the
+manifest's SHA-256, required. The job's outputs are the manifest, then the evidence, and experiment records are
+artifacts but not outputs. A budget refusal writes nothing and answers with `cache_misses`. Plan and parent refusals,
+including `iteration_not_permitted`, are `invalid_request` at admission with the guard's code in `detail.reason`.
+Each split carries an `incomplete` list, and gradient centres carry the statuses `ok | parent_failed | incomplete |
+not_evaluated`. The manifest gains `domain.admissibility_margin`. *Rejected:* a `null` subject reference (spec
+§18 A1.4).
+
+**D8 (new). Concurrency is outside the study.** `surrogate_study` stays sequential. Many cold experiments are run
+concurrently only by pre-warming the cache with `experiment` jobs (`executor.max_workers` ≤ the physical cores,
+R-250; 16 on the 24-core host). No bit changes, because each record is a function of its exact key. Concurrency is
+telemetry: never in the manifest or the evidence, recorded in the package evidence manifest. *Rejected:* a
+`max_workers` member on the study request.
+
+**D9 (new). The served surface.** M04's additions are additive, and stripping them gives M02's surface exactly
+(R-234's pattern). `max_cold_experiments` is a Q26 pinned scalar.

@@ -5308,3 +5308,127 @@ liquid.
 manifest key.
 
 ---
+
+---
+
+## R-290 — A later surrogate iteration lists the earlier reference draws as requests; `it2` and `it3` are committed; admission enforces when one may run
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1, on the build lane's question |
+| Normative text | `docs/derivations/M04-spec.md` §18 A1.2; ADR 0036 Amendment 1 (D2) |
+| Evidence | `benchmarks/m04/plan-it2.json`, `plan-it3.json` (generator claims: fresh draws in the box and both domains, no repeated request, held-out ≥ 0.1437 from training) |
+| Affected packages | M04 |
+
+**Decision.** The training split of `it<i>` lists every P_ref draw of earlier iterations by origin and runs them as
+requests: cache hits cost nothing, and failures and incomplete draws are treated as in iteration 1. `it<i>` is admitted
+only after earlier iterations failed solely on the coverage test (`iteration_not_permitted` otherwise).
+
+**Rejected alternative, and why.** Reading earlier records outside the runner: two paths for cache and budget
+accounting. Leaving the iteration rule to prose: an unattended run could start an iteration that needs an amendment.
+
+**Watch for.** A design-lane amendment (new predictor or box) gets new plan ids, not `it2`.
+
+---
+
+## R-291 — M04's floats need no new class: R1/R2 given the same records, conditional R0 decisions with a 10⁻⁸ gap rule
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1 |
+| Normative text | ADR 0036 Amendment 1 (D8); `docs/derivations/M04-spec.md` §18 A1.3 |
+| Evidence | A17: q̂ in binary64 is 1.8 × 10⁻¹⁵ from its 50-digit value; generator: every registered decision gap > 10⁻⁸ (smallest 6.85 × 10⁻⁴) |
+| Affected packages | M04; whoever makes study records replay-comparable (R-253) |
+
+**Decision.** Values computed from the records are R1/R2 (relative 1e-9; floors from spec §11's tolerances).
+Integers, statuses and the verdict are R0 only when no decision comparing two recorded floats has a gap below 10⁻⁸.
+The addendum id stays `M04-numerical-policy-surrogate-v1`; the registered policies are untouched.
+
+**Rejected alternative, and why.** A class "derived from the records": R1/R2 under another name, with no comparison
+rule of its own. D2.4's ratio band for score comparisons: it marks the normal case as near.
+
+**Watch for.** No comparator exists. R-253: replay comparison of study records goes through `run/compare` and an ADR 0025
+amendment.
+
+---
+
+## R-292 — ModelEvidence names its manifest by hash; the manifest does not hash its evidence
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1, on the build lane's `null` workaround |
+| Normative text | ADR 0037 Amendment 1 (D6); `docs/derivations/M04-spec.md` §18 A1.4 |
+| Evidence | the cycle `manifest.evidence_sha256` ↔ `evidence.subject.artifact_ref` at `d5736ac` |
+| Affected packages | M04, M05, M07 (later evidence about a promoted surrogate) |
+
+**Decision.** `subject.artifact_ref` is the manifest's SHA-256, required; `evidence_sha256` leaves the manifest.
+
+**Rejected alternative, and why.** `artifact_ref: null`: the evidence cannot be shown to belong to its subject, and
+evidence added later would change the surrogate's identity.
+
+**Watch for.** Promotion must never require an evidence document; it rests on the manifest's checker.
+
+---
+
+## R-293 — The surrogate study's outputs and refusals: manifest then evidence; a budget refusal writes nothing; plan refusals at admission
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1, confirming the build lane's WO-5 choices |
+| Normative text | ADR 0037 Amendment 1 (D6); `docs/derivations/M04-spec.md` §18 A1.5 |
+| Evidence | `wp/M04` @ `d5736ac` (`application/jobs/runner.py` `surrogate_study`; `studies/surrogate/study.py`) |
+| Affected packages | M04 |
+
+**Decision.** As in the title. The budget refusal's answer must carry `cache_misses`. The `incomplete` lists and the
+centre statuses `incomplete` and `not_evaluated` are part of the record.
+
+**Rejected alternative, and why.** A manifest for a refused budget: a record with no evaluation behind it. Plan
+refusals as job outcomes: a request that cannot run is not evidence.
+
+**Watch for.** A refusal whose answer cannot be checked against the request.
+
+---
+
+## R-294 — Concurrency for surrogate studies is a cache pre-warm with `experiment` jobs, at most the physical cores; the study stays sequential
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1 (closes spec N5) |
+| Normative text | ADR 0037 Amendment 1 (D8); `docs/derivations/M04-spec.md` §18 A1.6 |
+| Evidence | R-250 (distinct-key concurrency changes no bit; above the physical cores load turns into `timed_out`); host 24 cores / 48 threads |
+| Affected packages | M04 (WO-11), M05, M07 |
+
+**Decision.** WO-11 runs the 632 requests as `experiment` jobs with `executor.max_workers = 16`, which takes
+≈ 16–30 min instead of 4.4–7.9 h. Then it runs the study fully cached. Concurrency is telemetry and is checked by A40
+(synthetic, bitwise) and A41 (8 real bypass repeats).
+
+**Rejected alternative, and why.** A `max_workers` member on `surrogate_study`: new in-job process management for one
+opt-in run.
+
+**Watch for.** `timed_out` under load: transient, retried, resumable. If it is frequent, lower `max_workers`; never
+raise the timeout ad hoc.
+
+---
+
+## R-295 — M04's served-surface additions are checked by stripping (R-234's pattern); `max_cold_experiments` is a Q26 pinned scalar
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1, registering the build lane's WO-5 change |
+| Normative text | ADR 0037 Amendment 1 (D9) |
+| Evidence | `tests/m04_schema_support.py` (`SNAPSHOT_M04`), `tests/test_t07_q26.py` |
+| Affected packages | M04, every later package that moves the served surface |
+
+**Decision.** Stripping M04's additions from the served surface gives M02's surface exactly.
+`max_cold_experiments` (a count, not a state) joins Q26's pinned scalars.
+
+**Rejected alternative, and why.** Re-snapshotting the surface without the strip check: an accidental change to M02's
+members would pass.
+
+**Watch for.** Each package's strip function must remove only its own additions.

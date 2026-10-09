@@ -1948,6 +1948,20 @@
    ]
   }
  ],
+ "a11_fixture": {
+  "max_abs_z_F": "9.44e-16",
+  "singular_value_ratio": "9.13e-32",
+  "vanishing_columns": [
+   "z7",
+   "z1*z7",
+   "z2*z7",
+   "z3*z7",
+   "z4*z7",
+   "z5*z7",
+   "z6*z7",
+   "z7*z7"
+  ]
+ },
  "synthetic_failure_margin": "0.0167545",
  "pipeline": {
   "smooth_full": {
@@ -3475,8 +3489,10 @@
   }
  },
  "claims": {
-  "count": 5269,
+  "count": 8634,
   "distinct_statements": [
+   "A11: the singular-value ratio is far below tau_id = 1e-8",
+   "A11: z_F is roundoff-small but not exactly zero",
    "CP bound brackets 0.90 at h = 279 / 278",
    "J1: chain-rule Jacobian equals mpmath differentiation (err 1.75e-51)",
    "J1: elements conserved",
@@ -3521,6 +3537,26 @@
    "gradient[i] stencil inside the box",
    "h_min is the exact Clopper-Pearson decision boundary at m = 300",
    "h_min(300) = 279",
+   "it2 calibration[i] domains",
+   "it2 calibration[i] lies in the box",
+   "it2 test[i] domains",
+   "it2 test[i] lies in the box",
+   "it2: every held-out draw >= 0.05 from every training draw",
+   "it2: its own requests are distinct",
+   "it2: no request repeats an earlier iteration's",
+   "it2: stencil inside the box",
+   "it2: training lists 562 origins",
+   "it2: training origins are earlier draws",
+   "it3 calibration[i] domains",
+   "it3 calibration[i] lies in the box",
+   "it3 test[i] domains",
+   "it3 test[i] lies in the box",
+   "it3: every held-out draw >= 0.05 from every training draw",
+   "it3: its own requests are distinct",
+   "it3: no request repeats an earlier iteration's",
+   "it3: stencil inside the box",
+   "it3: training lists 980 origins",
+   "it3: training origins are earlier draws",
    "m04-synthetic-rough-v1/prefix: FD truncation < 1e-3",
    "m04-synthetic-rough-v1/prefix: no score within 1e-8 of q_hat (integer outcomes are exact)",
    "m04-synthetic-rough-v1/prefix: q_hat not within 1e-6 of 1",
@@ -3539,6 +3575,7 @@
    "smooth X: no coefficient below 1e-8 of max",
    "smooth dT: coefficients pairwise distinct beyond 1e-8 of max",
    "smooth dT: no coefficient below 1e-8 of max",
+   "smooth prefix: every decision gap exceeds 1e-8 (Amendment 1 A1.3)",
    "smooth: q_hat does not vanish (rule 3)",
    "smooth: the failure region removes at least one draw from every split",
    "smooth: width passes",
@@ -3560,5 +3597,19 @@
    "w_T lies inside DX-01's T_out range 1.24-1.67 K",
    "w_X / X_nom lies inside DX-01's xi range 1.44-1.94 %"
   ]
- }
+ },
+ "later_iterations": [
+  {
+   "iteration": 2,
+   "training_origins": 562,
+   "fresh_experiments": 488,
+   "min_inf_distance_training_to_heldout": "0.180004"
+  },
+  {
+   "iteration": 3,
+   "training_origins": 980,
+   "fresh_experiments": 488,
+   "min_inf_distance_training_to_heldout": "0.143713"
+  }
+ ]
 }

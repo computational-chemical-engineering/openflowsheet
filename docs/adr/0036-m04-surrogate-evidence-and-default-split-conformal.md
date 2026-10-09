@@ -101,3 +101,25 @@ None. No identity, fixture or registered value moves.
 
 M04.A01–A24 and A34 `tested` in `evidence/M04/<commit>/manifest.json`; the generator's `--check` green; A31–A32
 recorded for the real variant (opt-in); the design-lane review of WO-2, WO-3, WO-5.
+
+## Amendment 1 (2026-10-09): later iterations' plans, and how M04's floats are classified
+
+**Normative text:** `docs/derivations/M04-spec.md` §18 (A1.2, A1.3). **Register:** R-290, R-291.
+
+**D2, extended.** An iteration's training split lists, as requests, every P_ref draw of the earlier iterations in a
+registered order. They run through the runner like any request, so the cache and the budget treat them uniformly.
+`plan-it2.json` and `plan-it3.json` are committed now. §5.5's rule that a further iteration follows only a
+coverage-only failure is enforced at admission (`iteration_not_permitted`).
+
+**D8. The floats of the M04 records (new; an addition to ADR 0007 D2.4, not a change to it).** No new class. A value
+computed from the experiment records is R1/R2 under ADR 0007 D1's rule, *given the same records*; records from another
+environment are other experiments (the fingerprint is in the key) and are never compared as the same study. Floors
+are the spec §11 tolerances that check each value (§18 A1.3's table). Integers, statuses, the verdict and the reason
+lists are R0 conditionally. For a decision that compares two recorded floats, *near threshold* means a gap below 10⁻⁸
+in the decision's own units. D2.4's ratio band [1/10, 10] remains for registered thresholds; for a score against q̂ it
+would mark the normal case as near. The addendum keeps the id `M04-numerical-policy-surrogate-v1` (never merged, never
+recorded). No comparator is added; R-253's watch-for governs any future replay comparison of study records.
+
+*Rejected:* a new class "derived from the records". It would duplicate R1/R2 under another name, and a class needs
+its own comparison rule, which this one would not have. *Rejected:* applying D2.4's ratio band to score comparisons.
+It would flag almost every test draw.

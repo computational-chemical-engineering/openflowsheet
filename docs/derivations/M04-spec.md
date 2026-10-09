@@ -4,9 +4,12 @@
 **Date:** 2026-10-08. **Author:** design lane (`specifier`). **Brief:** `docs/briefs/M04-specification.md`.
 **Decisions:** ADR 0036 (statistical semantics), ADR 0037 (the surrogate in a flowsheet; amends ADRs 0019, 0035);
 register R-240…R-249.
-**Machine-readable expectations:** `benchmarks/m04/reference_values.json` and the registered plan
-`benchmarks/m04/plan-it1.json`, both from `docs/derivations/scripts/m04_reference.py` (`--check` re-derives every
-claim this document makes about its own numbers and requires both files byte-identical; 5269 claims at this commit).
+**Machine-readable expectations:** `benchmarks/m04/reference_values.json` and the registered plans
+`benchmarks/m04/plan-it1.json` (and, since Amendment 1, `plan-it2.json`, `plan-it3.json`), all from
+`docs/derivations/scripts/m04_reference.py` (`--check` re-derives every claim this document makes about its own numbers
+and requires every file byte-identical; 8634 claims since Amendment 1).
+**Amendment 1** (2026-10-09, §18): rulings on the build lane's WO-1…6 questions; ADR 0036 and ADR 0037 Amendment 1;
+register R-290…R-295.
 **Built on:** M01 (`main`: the boundary, ADR 0027, DX-01), M02 (`wp/M02`: ADRs 0033–0035, the records, the coupling,
 the replacement check), M03 (`wp/M03`: ADR 0031's vocabulary, R-184's seeded-data convention).
 
@@ -293,7 +296,9 @@ never truncated to fit a budget, and a running plan is never stopped early on th
 Iteration i ≥ 2 uses seeds seed(i, ·), draws fresh calibration (118), test (300) and gradient (5) sets, and trains on
 every `ok` P_ref record of iterations < i (their training, calibration and test draws: i.i.d. from the same P_ref, so
 the next training set is still a sample of it). Its plan file `plan-it<i>.json` is emitted by the generator and
-committed before it runs. Rules:
+committed before it runs. *(Amendment 1 §A1.2: `plan-it2.json` and `plan-it3.json` are committed; the training split
+lists the earlier draws by origin and they run as requests like any other; admission enforces the first rule below.)*
+Rules:
 
 - an iteration may follow automatically only when the previous verdict's only reason is
   `coverage_bound_below_minimum` (which happens by chance with probability ≈ 0.10 for a correct pipeline);
@@ -586,8 +591,10 @@ assumptions, promotion result". Members (all required; `additionalProperties: fa
 - `assumptions`: the fixed list — exchangeability from i.i.d. draws of P_ref, predictor/transform/score frozen before
   calibration, failures scored +∞, deterministic parent within one fingerprint;
 - `qualifications`: Q0 (if synthetic) and Q1–Q7, with Q6's values filled;
-- `promotion`: `{verdict, insufficient: [..], not_promotable: [..], familywise_false_pass_bound}`;
-- `evidence_sha256`: the ModelEvidence document's hash.
+- `promotion`: `{verdict, insufficient: [..], not_promotable: [..], familywise_false_pass_bound}`.
+- *(Amendment 1 §A1.4: the member `evidence_sha256` is withdrawn — the evidence names the manifest, not the reverse.
+  §A1.5: each split also has `incomplete: [{index, key}]`, and a gradient centre's status is one of `ok`,
+  `parent_failed`, `incomplete`, `not_evaluated`.)*
 
 No non-finite number is serialized: a failed draw's score and an infinite q̂ are `null`, the reason in `failed` or in
 `promotion`. Rules a JSON Schema cannot express are a checker (A24) that the replacement check also runs.
@@ -597,8 +604,8 @@ No non-finite number is serialized: a failed draw's score and an infinite q̂ ar
 Blueprint App. A: "parent/data hashes, numerical convergence, experimental/reference comparisons, uncertainty and
 validation scope". A scope record that points into the manifest rather than repeating it:
 
-- `schema_version`, `subject` `{model_id, version, artifact_ref}` (the surrogate), `parent` `{model_id, variant_id,
-  variant_sha256, synthetic}`;
+- `schema_version`, `subject` `{model_id, version, artifact_ref}` (the surrogate; `artifact_ref` is the manifest's
+  SHA-256, required and non-null — Amendment 1 §A1.4), `parent` `{model_id, variant_id, variant_sha256, synthetic}`;
 - `data`: `[{split, count, keys_sha256}]` — equal to the manifest's (A23);
 - `numerical`: `{parent_accuracy: <the variant's accuracy block: precision floor, path independence, discretization
   estimate>, fit: {training_ok, singular_value_ratio}}`;
@@ -618,7 +625,8 @@ budget: {max_cold_experiments}}`. `it1-prefix` (§9.3) is accepted only for a sy
 training set is every `ok` P_ref record of `it1` … `it<i−1>` of the same parent (§5.5). It runs the plan's experiments through M02's runner one by one (cache first; M02 D12
 left batch sampling to M04), then fits, calibrates, tests, checks gradients, writes the manifest and the evidence as
 artifacts (kinds `surrogate_manifest`, `model_evidence`), and returns `{verdict, surrogate_id, manifest_sha256,
-evidence_sha256, cold_experiments, cache_hits}`. A cancelled job keeps its experiment artifacts; resuming re-reads them
+evidence_sha256, cold_experiments, cache_hits}`. *(Amendment 1 §A1.5: the outputs are the manifest and then the
+evidence; the answer also carries `insufficient`, `not_promotable` and `cache_misses`.)* A cancelled job keeps its experiment artifacts; resuming re-reads them
 through the cache. Determinism: with every record cached, the manifest is bitwise reproducible (A32).
 
 ## 11. Assertions
@@ -634,9 +642,12 @@ manifest with its command, never in the default gate.
 - **M04.A02** — The production sampler and request builder reproduce every `u` and every request (n, T, P) of
   `plan-it1.json` **bitwise** (562 draws, 5 centres, 70 stencils), and the 632 experiment keys are distinct. Exact:
   identity is exact (ADR 0033), so any difference is a different experiment.
-- **M04.A03** — A plan any of whose requests leaves the box, the hard domain or the data domain is refused at study
-  start (`plan_invalid`, nothing executed): checked with a copy of the plan with one T set to 700.0 K. The plan
-  `it1-prefix` requested for a non-synthetic parent is refused (`plan_not_registered_for_parent`).
+- **M04.A03** — A plan any of whose requests leaves the box, the hard domain or the data domain is refused
+  (`plan_invalid`, nothing executed): checked with a copy of the plan with one T set to 700.0 K. The plan
+  `it1-prefix` requested for a non-synthetic parent is refused (`plan_not_registered_for_parent`). *(Amendment 1
+  §A1.5: these refusals happen at admission, as `invalid_request` with the guard's code in `detail.reason`; an
+  unregistered plan id is `plan_not_registered`, and a later iteration that §5.5 does not permit is
+  `iteration_not_permitted`.)*
 
 **Finite-sample rule and verdicts (default gate, pure functions)**
 
@@ -661,8 +672,10 @@ manifest with its command, never in the default gate.
   roundoff of the records (ΔT's ulp 1.1 × 10⁻¹³ K at 750 K) ≈ 10⁻¹⁴ relative. Ceiling: the smallest coefficient is
   1.3 × 10⁻⁶ of the largest and all coefficients differ pairwise by more than 10⁻⁸ of it (generator), so a dropped or
   permuted term fails by four orders.
-- **M04.A11** — The prefix training set with every F set to the box centre (z₇ ≡ 0) is refused
-  `training_unidentifiable` (σ ratio < 10⁻⁸; exactly rank-deficient by two columns).
+- **M04.A11** — The prefix training set with every F set to the box centre is refused `training_unidentifiable`
+  (σ ratio < 10⁻⁸). *(Amendment 1 §A1.1: z_F is not exactly 0 after the request round trip but |z_F| ≤ 9.4 × 10⁻¹⁶,
+  and **eight** columns — z₇, z₁z₇ … z₆z₇, z₇² — are at roundoff; the exact ratio is 9.1 × 10⁻³², `a11_fixture`; in
+  binary64 the ratio is at the roundoff level, far below τ_id either way.)*
 - **M04.A12** — At J1–J3 with the fixture coefficients: the 14 inlet entries of R_ξ and R_T equal `jacobian_states`
   within 10⁻¹⁰ relative per entry; the ξ and T_out columns are exactly (1, 0) and (0, 1); the rows vanish at the
   registered causal outlet within 10⁻¹⁵ relative to (n_tot, T). Floor: cancellation ≤ 4.45 × ~250 terms × 1.1 × 10⁻¹⁶
@@ -694,7 +707,8 @@ manifest with its command, never in the default gate.
   taken — the integer count is exact, the nearest test score being 3.2 × 10⁻³ from q̂); verdict PROMOTABLE. (This manifest is
   the promoted surrogate of A25–A29 and the source of the schema fixtures.)
 - **M04.A20** — Budget: on a store without records, the smooth prefix study with `max_cold_experiments` = 198 (one
-  below its 199 cache misses) ends INSUFFICIENT_EVIDENCE `["budget_below_plan"]` with zero attempts written; on A19's
+  below its 199 cache misses) ends INSUFFICIENT_EVIDENCE `["budget_below_plan"]` with zero attempts written, no
+  manifest and no evidence, and a job answer carrying `cache_misses` = 199 (Amendment 1 §A1.5); on A19's
   store (all 199 records cached), `max_cold_experiments` = 0 reproduces A19's manifest bitwise (A32's rule) with zero
   new attempts.
 - **M04.A21** — Plan incomplete: a variant of the smooth test-only parent that returns `ExecutionFailure` (transient,
@@ -706,7 +720,7 @@ manifest with its command, never in the default gate.
   manifest's n = 118 and m = 300.
 - **M04.A23** — Split integrity: the key lists are pairwise disjoint, equal the plan's request keys in plan order, and
   their SHA-256s equal ModelEvidence's `data`; refitting from the listed training records reproduces the coefficients
-  bitwise.
+  bitwise. *(Amendment 1 §A1.4: and the evidence's `subject.artifact_ref` is the manifest's SHA-256.)*
 - **M04.A24** — The manifest checker accepts A17's manifest and rejects each single mutation: q̂ not the k-th
   smallest stored score; H ≠ #{score ≤ q̂}; a verdict inconsistent with the stored metrics; a missing qualification;
   a qualification with an unfilled `<…>` field; overlapping splits; n or m different from the plan's counts; a
@@ -800,8 +814,8 @@ WO-1, WO-2, WO-3 and WO-10 need nothing from M02 and can start now.
   The fact that settles it: the reactor inlet of M02's `C1-LOOP-M02-v1` solved with the real reactor (M02 G12) and M07's
   decision range for T_in. If the loop's inlet lies outside the box, register a new box (and a new P_ref id) by
   amendment before iteration 1. Reversible by: amendment; nothing has run.
-- **N5 — sequential versus concurrent experiments** *(needs a fact: whether M02's runner tolerates concurrent jobs on
-  one variant).* DECISION: sequential (95 min). Alternative: k workers, ≈ 95/k min; results are unaffected (exact
+- **N5 — sequential versus concurrent experiments** — *closed by Amendment 1 §A1.6 (R-250 supplied the fact; the
+  study stays sequential and WO-11 pre-warms the cache concurrently).* Original text: DECISION: sequential (95 min). Alternative: k workers, ≈ 95/k min; results are unaffected (exact
   identity, deterministic parent). Reversible by: a runner option; no record changes.
 - **N6 — the real verdict and the critical path** *(needs a fact: iteration 1's outcome).* DECISION: M04 is `tested`
   when A01–A35 hold, whatever A31's verdict; a NOT_PROMOTABLE real surrogate is recorded as a measured limitation and
@@ -868,3 +882,165 @@ PROMOTABLE real verdict is not part of W23 (N6).
 - **No sensitivity of the flowsheet** is established by the surrogate's analytic derivative (M03 C3 refuses EO-path
   sensitivities; M05 decides their use).
 - **Iteration 1 has not run.** The plan is registered; its outcome is unknown at this commit.
+
+## 18. Amendment 1 (2026-10-09): rulings on the build lane's questions after WO-1…6
+
+**Context.** `wp/M04` @ `d5736ac`, gate green (8062 passed). On the in-process synthetic parents the build lane
+measured: A17 q̂ 1.8 × 10⁻¹⁵ from the 50-digit value, H = 283 and L exact, failures 2/3/13, PROMOTABLE (632 experiments
+in 1.15 s); A18 and A19 as registered; A16 β_X[0] − 0.25 = 2.8 × 10⁻¹⁶; A20, A21–A24 and A08 pass. **No measurement
+contradicts a registered value or tolerance, and no tolerance changes.** The generator gains the plans of iterations 2
+and 3 and the A11 fixture (8634 claims); `tests/test_m04_reference_values.py` follows in the same commit.
+
+### A1.1 A11's text (item 1)
+
+Corrected in place (§11). With every F at the box centre, the request round trip leaves |z_F| ≤ 9.44 × 10⁻¹⁶, not 0,
+and eight columns (z₇, z₁z₇ … z₆z₇, z₇²) are at roundoff; the exact singular-value ratio is 9.13 × 10⁻³² (generator,
+150 digits, `a11_fixture`). The outcome is unchanged: refused `training_unidentifiable`.
+
+### A1.2 The plans of iterations 2 and 3 (item 2)
+
+**Ruled: yes — an iteration's training split lists the earlier iterations' draws as requests.** They pass through the
+runner like every other request: a cached record costs nothing against the budget; an earlier deterministic failure is
+again a cached failure and is excluded from the fit; an earlier draw with no result is retried and counts as a cache
+miss. Order: earlier iterations ascending; within each, the draws it made itself (iteration 1: training, calibration,
+test; later ones: calibration, test); index order. `plan-it2.json` (562 training origins; 118 / 300 / 5 fresh, 488 cold
+experiments) and `plan-it3.json` (980 origins; 488 fresh) are committed now. The file lists a training row by
+`origin: {iteration, split, index}`, resolved bitwise to that earlier plan's request. Generator claims: fresh draws in the
+box and both domains, no request repeating an earlier iteration's, every held-out draw ≥ 0.180 (it2) and ≥ 0.1437 (it3)
+from every training draw. **§5.5's first rule becomes an admission guard:** `it<i>` is admitted only when every
+`it<j>` (j < i) of the same parent has a manifest with verdict NOT_PROMOTABLE, `not_promotable ==
+["coverage_bound_below_minimum"]` and no IE reason; otherwise `invalid_request`, reason `iteration_not_permitted`. The
+`it<i>` manifest lists those manifests as `predecessors` and records the family-wise bound 0.05 × i.
+
+### A1.3 Classifying the M04 records' floats (item 3)
+
+**Ruled: no new class.** "Derived from the records" is ADR 0007 D1's R1/R2 rule as written — a float on a path through
+a rounding or a factorization — **given the same experiment records**. The records cannot differ in a comparison of one
+study: a record from another environment has another fingerprint and so another key (ADR 0033), and a study on other
+keys is another study, never compared with this one. Within that scope, the last bits of LAPACK's QR are exactly
+what D2.1's relative 1e-9 and D2.2's floors exist for.
+
+| Members (both schemas) | Class | Floor (provenance) |
+| --- | --- | --- |
+| registered constants and verbatim copies: `input_map` box values, `output_map.admissible`, `score.scales`, `evaluation.c_min`, `evaluation.delta`, `gradient.step_z`, `gradient.rho_g`, `parent.boundary`, `domain.hard`, `numerical.parent_accuracy`, `uncertainty.nominal`, `uncertainty.minimum`, `promotion.familywise_false_pass_bound` | exact | — |
+| `predictor.coefficients.*` | R1/R2 | 10⁻¹⁰ × max_i \|β_o,i\| (A10) |
+| `predictor.fit.singular_value_ratio`, `numerical.fit.singular_value_ratio` | R1/R2 | τ_id = 10⁻⁸, the threshold it is judged by (D2.2) |
+| `predictor.fit.training_rms.*`, `evaluation.errors.*.*` | R1/R2 | 10⁻¹⁰ × w_o (A17's score tolerance in physical units) |
+| `calibration.scores`, `calibration.q_hat`, `evaluation.scores` | R1/R2 | 10⁻¹⁰ in score units (A17) |
+| `evaluation.lower_bound`, `uncertainty.lower_bound` | R1/R2 | 10⁻⁹ (A06) |
+| `gradient.centres[*].errors.*` | R1/R2 | 10⁻⁸ (A17) |
+| `domain.admissibility_margin` (new, A1.4) | R1/R2 | 10⁻¹⁰ (in units of w_o) |
+| `evaluation.fraction_within_width` | R0, conditional (a ratio of counts) | — |
+| every integer, index, list, status, verdict, reason, key and key-list digest | R0, conditional | — |
+
+A float member that does not fit a row is classified by the same principle (a copied or registered constant is exact;
+a value computed from the records is R1/R2 with the floor of the §11 tolerance that checks it), and if none applies the
+build lane stops and asks — it never defaults (D2.3).
+
+**The conditional R0 promise (ADR 0036 Amendment 1, D8).** D2.4's near-threshold band q/τ ∈ [1/10, 10] is defined
+against a registered threshold. M04's decisions compare two recorded floats (s ≤ q̂, the order of the calibration
+scores at k, q̂ ≤ 1, e ≤ ρ_g, a prediction against an admissible bound), where a ratio within [1/10, 10] is the normal
+case. For these, **near threshold means a gap below 10⁻⁸ in the decision's own units** (score units; units of e; for
+admissibility, distance to the bound over w_o). H, k's index, the verdict and both reason lists are promised identical
+across registered platforms, given the same records, only when no decision they depend on is near threshold;
+otherwise a difference is a recorded observation, not a mismatch. 10⁻⁸ sits ≥ 6.7 decades above the measured binary64
+deviation (q̂, 1.8 × 10⁻¹⁵) and is what the generator asserts for every registered synthetic case (smallest gap 6.85 × 10⁻⁴).
+Every near status is computable from stored members once `domain.admissibility_margin` (the smallest distance of a
+calibration or test prediction to an admissible bound, over w_o) is added.
+
+**The policy id.** The addendum keeps `M04-numerical-policy-surrogate-v1`: it has never been merged or recorded in an
+artifact (the id occurs only in its own file at `d5736ac`), so the first merged content is the complete table.
+`K04-numerical-policy-v1`, `T08-numerical-policy-v2` and `M02-numerical-policy-external-v1` are untouched.
+**R-253's watch-for stands.** No comparator is added: a study has no `reproduce`, and A32 is a determinism test on one
+platform. If K05 bundles or M05 make surrogate records replay-comparable, these rows move into `run/compare` and the
+policy data through an amendment of ADR 0025.
+
+### A1.4 The manifest–evidence cycle (item 4)
+
+**Ruled: reverse the pointer.** The manifest — the surrogate's identity, `model.artifact_ref` — does not hash its
+evidence: `evidence_sha256` is withdrawn from the manifest. ModelEvidence's `subject.artifact_ref` is the manifest's
+SHA-256, required and non-null. Evidence is *about* a model and accumulates (M05's and M07's targeted checks, later
+validation) without changing the model's identity. Promotion rests on the manifest alone: its checker re-derives the
+verdict, and the qualifications are in the manifest. **Rejected:** the build lane's `null` artifact reference. An
+evidence document that cannot name its subject by hash cannot be shown to belong to it, and every later evidence
+document would change the surrogate's identity. The job writes the manifest first, then the evidence. The job answer
+keeps `evidence_sha256`, so the `sha256` partition keeps the name as long as a schema carries it.
+
+### A1.5 Outputs and refusals (item 5): confirmed, with one requirement
+
+- The outputs are the manifest and then the evidence (A1.4's order). Experiment records are artifacts of the job
+  (R-237's sink), not outputs. **Confirmed.**
+- A budget refusal writes no experiment, no manifest and no evidence. **Confirmed, on the condition that** the job
+  answer carries `verdict`, `insufficient: ["budget_below_plan"]` and `cache_misses`, so the refusal can be checked
+  against the request's `max_cold_experiments`.
+- Plan and parent refusals happen at admission, as `invalid_request` with the guard's code in `detail.reason`
+  (`plan_invalid`, `plan_not_registered`, `plan_not_registered_for_parent`, and A1.2's `iteration_not_permitted`).
+  **Confirmed**: a request that cannot be run is not evidence.
+- `incomplete: [{index, key}]` on each split; centre statuses `ok | parent_failed | incomplete | not_evaluated`. A
+  draw with no deterministic result has a `null` score and makes the verdict INSUFFICIENT_EVIDENCE (`plan_incomplete`).
+  Any centre that is not `ok` gives `gradient_check_incomplete`; the status says why, and `not_evaluated` occurs only
+  without a fit, which is IE already. **Confirmed.**
+
+### A1.6 Concurrency for WO-11 (item 6; closes N5)
+
+**Ruled: the study job stays sequential, and WO-11 pre-warms the cache concurrently.** No request member is added to
+`surrogate_study`. An evidence script submits the plan's 632 requests as M02 `experiment` jobs under the process
+executor with `executor.max_workers = 16`. The host has 24 physical cores (48 threads, 503 GB); R-250 caps workers at
+the physical cores, and the rest is left for the system and memory bandwidth. A timeout at 120 s needs a 2.7×
+slowdown of a 45 s evaluation. Before submitting anything, the script refuses with the study's own rule when the cache
+misses exceed the approved budget. Then the `surrogate_study` job runs with every record cached: cold 0, hits 632.
+Wall time is ≈ 16–30 min instead of 4.4–7.9 h. A `timed_out` under load is transient, so it is retried, and if the
+retries run out the plan is incomplete until it is resumed. It never changes a bit.
+
+**No bit changes, by construction:** each record is a deterministic function of its exact key (M01.A43, R-250), and the
+study reads records in plan order whatever order they were written in. Concurrency is telemetry (ADR 0007 D1, excluded
+from identity). It is never a member of the SurrogateManifest or ModelEvidence. The package evidence manifest records
+`max_workers`, the script, its command and the transient retries. It is checked by A40 (default gate) and A41 (opt-in).
+
+**Rejected:** in-study concurrency (a new request member and in-job process management for one opt-in run;
+reversible by a later amendment).
+
+### A1.7 The served surface (item 7)
+
+Registered (R-295): M04's additions to the served surface are additive and checked R-234's way. Stripping them gives
+M02's surface exactly (`tests/m04_schema_support.py`, `SNAPSHOT_M04`). `max_cold_experiments` is a Q26 pinned
+scalar: a count, never a state.
+
+### A1.8 New assertions
+
+- **M04.A36** — Production derives `plan-it2.json` and `plan-it3.json` bitwise, with training origins expanded to the
+  earlier plans' requests bitwise (562 and 980 requests). The iteration predicate of A1.2 is unit-tested on (verdict,
+  reason lists) cases: permitted; earlier PROMOTABLE; earlier width failure; earlier IE; earlier manifest missing.
+  `it2` for the smooth parent after A17's PROMOTABLE `it1` is `invalid_request` / `iteration_not_permitted`.
+- **M04.A37** — Every float in the emitted fixtures of both schemas is matched by a rule of
+  `M04-numerical-policy-surrogate-v1` (M02's `test_m02_schemas` pattern); `scripts/t08_numerical_policy.py --check`
+  passes with the `sha256` partition following the schemas.
+- **M04.A38** — The evidence's `subject.artifact_ref` equals the SHA-256 of the manifest written by the same job; the
+  manifest has no `evidence_sha256`; the outputs are [manifest, evidence] in that order; the checker reads no
+  evidence.
+- **M04.A39** — The refusals and records of A1.5. A budget refusal has no outputs and its answer carries
+  `cache_misses` = 199 (A20). There is one admission case per guard code, with `detail.reason`. A21's incomplete
+  draw is in its split's `incomplete` list with a `null` score, and its centre is `incomplete` with
+  `gradient_check_incomplete` reported.
+- **M04.A40** — The 199 requests of the smooth prefix plan are submitted as `experiment` jobs under the process
+  executor with `max_workers = 4`. The study then runs with `max_cold_experiments = 0` and gives cache hits 199,
+  cold 0, and a manifest and evidence bitwise equal to A19's sequential ones; every experiment result record is
+  bitwise equal to the sequential run's.
+- **M04.A41** *(opt-in, real)* — After WO-11's concurrent pre-warm, test requests 0–7 are re-run serially with
+  `cache: "bypass"`. `repeat_bitwise_equal` is true for all 8 (≈ 5 min), and the evidence manifest records
+  `max_workers`, the script and the retries.
+- **M04.A42** — Stripping M04's additions from the served surface gives M02's surface exactly, and
+  `max_cold_experiments` is in Q26's pinned scalar list.
+
+### A1.9 Work orders
+
+| WO | Lane | Content | Depends on | Acceptance |
+| --- | --- | --- | --- | --- |
+| WO-13 | Opus | A1.4: the manifest drops `evidence_sha256` and gains `domain.admissibility_margin`; the evidence's `subject.artifact_ref` is required; outputs reordered; checker; fixtures re-emitted; the `sha256` partition updated | — | A38, A23 |
+| WO-14 | Opus | A1.3: the addendum's classes and path rules; the A32-rule test over M04's fixtures | WO-13 | A37 |
+| WO-15 | Opus | A1.2: derive `it2`/`it3`, register them, the admission guard, predecessors and family-wise bound | — | A36 |
+| WO-16 | bounded | A1.5's refusal and record tests; A1.7's assertion if not already present | WO-13 | A39, A42 |
+| WO-17 | Opus | A1.6: the pre-warm script and A40; WO-11 then uses it | WO-13 | A40, A41 |
+
+W23's table (§15) gains A36 and A40 under "Frozen splits/transforms", A39 under "Insufficient-data outcome", and A37,
+A38 and A42 under "Default UQ".
