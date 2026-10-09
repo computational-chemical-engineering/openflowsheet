@@ -1,0 +1,19 @@
+# M04 (ADR 0007 D2.3, every SHA-256-bearing name classified): the SHA-256-bearing property names
+# that M04's schemas add (`surrogate-manifest`, `model-evidence`). A separate table beside M02's
+# addendum (`benchmarks/m02/numerical_policy_external.yaml`), so that the registered numerical
+# policies (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) and M02's addendum keep their ids
+# and their contents (M04 build-lane decision, reported to the design lane).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names).
+numerical_policy_surrogate:
+  id: M04-numerical-policy-surrogate-v1
+  schemas:
+  - model-evidence.schema.json
+  - surrogate-manifest.schema.json
+  # The `sha256`-bearing names M04's schemas add, all exact digests of documents or key lists
+  # (none is a float digest, ADR 0007 D1 row 3). The names M04 reuses keep their classes:
+  # `manifest_sha256` (T08 v2's), `variant_sha256` (M02's addendum's).
+  exact_sha256:
+  - evidence_sha256
+  - fingerprint_sha256s
+  - keys_sha256

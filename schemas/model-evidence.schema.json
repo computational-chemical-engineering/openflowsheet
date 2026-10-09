@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/model-evidence.schema.json",
+  "title": "ModelEvidence",
+  "description": "M04 spec §10.2 (ADR 0036, ADR 0037 D6). The scope record of a surrogate's evidence (blueprint App. A: parent and data hashes, numerical convergence, comparisons, uncertainty, validation scope); it points into its SurrogateManifest rather than repeating it. The manifest names it by `evidence_sha256`; `subject.artifact_ref` is `null`, because the manifest's own SHA-256 covers that member and cannot also be inside this document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject",
+    "parent",
+    "data",
+    "numerical",
+    "comparisons",
+    "experimental_comparisons",
+    "experimental_comparisons_reason",
+    "uncertainty",
+    "scope"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "model-evidence-v1"
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_id",
+        "version",
+        "artifact_ref"
+      ],
+      "properties": {
+        "model_id": {
+          "const": "c1.reactor_surrogate"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_ref": {
+          "type": "null"
+        }
+      }
+    },
+    "parent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_id",
+        "variant_id",
+        "variant_sha256",
+        "synthetic"
+      ],
+      "properties": {
+        "model_id": {
+          "type": "string"
+        },
+        "variant_id": {
+          "type": "string"
+        },
+        "variant_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "synthetic": {
+          "type": "boolean"
+        }
+      }
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "split",
+          "count",
+          "keys_sha256"
+        ],
+        "properties": {
+          "split": {
+            "enum": [
+              "training",
+              "calibration",
+              "test",
+              "gradient"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "keys_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "minItems": 4,
+      "maxItems": 4,
+      "description": "Equal to the manifest's splits (M04.A23)."
+    },
+    "numerical": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parent_accuracy",
+        "fit"
+      ],
+      "properties": {
+        "parent_accuracy": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/model-variant.schema.json#/$defs/accuracy"
+        },
+        "fit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "training_ok",
+            "singular_value_ratio"
+          ],
+          "properties": {
+            "training_ok": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "singular_value_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "comparisons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reference",
+          "quantity",
+          "split",
+          "pointer"
+        ],
+        "properties": {
+          "reference": {
+            "const": "parent_model"
+          },
+          "quantity": {
+            "type": "string"
+          },
+          "split": {
+            "const": "test"
+          },
+          "pointer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "experimental_comparisons": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "experimental_comparisons_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "uncertainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "claim",
+        "nominal",
+        "lower_bound",
+        "minimum"
+      ],
+      "properties": {
+        "method": {
+          "const": "split-conformal-default-v1"
+        },
+        "claim": {
+          "const": "joint, marginal over P_ref"
+        },
+        "nominal": {
+          "const": 0.95
+        },
+        "lower_bound": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minimum": {
+          "const": 0.9
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_class",
+        "establishes",
+        "does_not_establish"
+      ],
+      "properties": {
+        "evidence_class": {
+          "enum": [
+            "synthetic_verification",
+            "model_approximation"
+          ]
+        },
+        "establishes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "does_not_establish": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1326 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/surrogate-manifest.schema.json",
+  "title": "SurrogateManifest",
+  "description": "M04 spec §10.1 (ADR 0036, ADR 0037 D2). One surrogate study's frozen record: parent model, input/output mapping, splits, transform, predictor, score, error and gradient metrics, domain, calibration assumptions, qualifications and the promotion result (blueprint App. A). Its `document_sha256` is a surrogate instance's `model.artifact_ref`. No non-finite number is serialized: a failed draw's score and an absent q̂ are `null`. Rules a schema cannot express are `studies.surrogate.manifest.check_manifest` (M04.A24), which the replacement check also runs. `$defs` carry the `surrogate_study` job's body and answer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "surrogate_id",
+    "model_id",
+    "synthetic",
+    "iteration",
+    "plan_id",
+    "predecessors",
+    "parent",
+    "input_map",
+    "output_map",
+    "predictor",
+    "score",
+    "reference_distribution",
+    "splits",
+    "calibration",
+    "evaluation",
+    "gradient",
+    "domain",
+    "assumptions",
+    "qualifications",
+    "promotion",
+    "evidence_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "surrogate-manifest-v1"
+    },
+    "surrogate_id": {
+      "type": "string",
+      "pattern": "^m04q7-[a-z0-9][a-z0-9.-]*$",
+      "description": "Spec §8.2: `m04q7-<parent variant id>-<plan id>`; a surrogate instance's `model.version`."
+    },
+    "model_id": {
+      "const": "c1.reactor_surrogate"
+    },
+    "synthetic": {
+      "type": "boolean",
+      "description": "The parent's (R-199)."
+    },
+    "iteration": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^it[1-9][0-9]*(-prefix)?$",
+      "description": "Spec §5.5, §9.3: `it<i>`, or `it1-prefix` (synthetic parents only)."
+    },
+    "predecessors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "description": "Spec §5.5: the manifest SHA-256s of earlier iterations, in order."
+    },
+    "parent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_id",
+        "variant_id",
+        "variant_sha256",
+        "fingerprint_sha256s",
+        "boundary"
+      ],
+      "properties": {
+        "model_id": {
+          "type": "string"
+        },
+        "variant_id": {
+          "type": "string"
+        },
+        "variant_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "fingerprint_sha256s": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "uniqueItems": true,
+          "description": "The distinct environment fingerprints of the records used, sorted."
+        },
+        "boundary": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/model-variant.schema.json#/$defs/boundary",
+          "description": "The variant's `boundary` block, verbatim (ADR 0037 D3)."
+        }
+      }
+    },
+    "input_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "coordinates"
+      ],
+      "properties": {
+        "id": {
+          "const": "c1-inlet-u7-v1"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "unit",
+              "lo",
+              "hi",
+              "centre",
+              "half_width"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "lo": {
+                "type": "number"
+              },
+              "hi": {
+                "type": "number"
+              },
+              "centre": {
+                "type": "number"
+              },
+              "half_width": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          },
+          "minItems": 7,
+          "maxItems": 7
+        }
+      },
+      "description": "Spec §3.1: u = (T, P, H2/N2, y_NH3, y_Ar, y_CH4, n_tot/N_tubes), z = (u − centre)/half_width."
+    },
+    "output_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "outputs",
+        "admissible"
+      ],
+      "properties": {
+        "id": {
+          "const": "extent-fixed-xdt-v1"
+        },
+        "outputs": {
+          "const": [
+            "X",
+            "dT_K"
+          ]
+        },
+        "admissible": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "X",
+            "X_le_r_over_3",
+            "dT_K"
+          ],
+          "properties": {
+            "X": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "X_le_r_over_3": {
+              "const": true
+            },
+            "dT_K": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      },
+      "description": "Spec §3.2: X = ξ/n_N2,in, ΔT = T_out − T_in; the admissible set A(s), refused outside, never projected."
+    },
+    "predictor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis",
+        "terms",
+        "coefficients",
+        "fit"
+      ],
+      "properties": {
+        "basis": {
+          "const": "full-quadratic-v1"
+        },
+        "terms": {
+          "const": 36
+        },
+        "coefficients": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "X",
+                "dT_K"
+              ],
+              "properties": {
+                "X": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 36,
+                  "maxItems": 36
+                },
+                "dT_K": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 36,
+                  "maxItems": 36
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "β in basis order (spec §3.4); `null` when the fit was refused (`training_unidentifiable`)."
+        },
+        "fit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "training_ok",
+            "singular_value_ratio",
+            "training_rms"
+          ],
+          "properties": {
+            "method": {
+              "const": "householder-qr-v1"
+            },
+            "training_ok": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "singular_value_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "training_rms": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "X",
+                    "dT_K"
+                  ],
+                  "properties": {
+                    "X": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "dT_K": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "scales"
+      ],
+      "properties": {
+        "id": {
+          "const": "joint-max-scaled-abs-v1"
+        },
+        "scales": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "X",
+            "dT_K"
+          ],
+          "properties": {
+            "X": {
+              "const": 0.0025
+            },
+            "dT_K": {
+              "const": 1.5
+            }
+          }
+        }
+      }
+    },
+    "reference_distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "sampler",
+        "seeds"
+      ],
+      "properties": {
+        "id": {
+          "const": "m04-c1-box7-v1"
+        },
+        "kind": {
+          "const": "uniform_box"
+        },
+        "sampler": {
+          "const": "splitmix64-u53-v1"
+        },
+        "seeds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "training",
+            "calibration",
+            "test",
+            "gradient"
+          ],
+          "properties": {
+            "training": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "calibration": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "test": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "gradient": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "splits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "training",
+        "calibration",
+        "test",
+        "gradient"
+      ],
+      "properties": {
+        "training": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "count",
+            "keys",
+            "keys_sha256",
+            "failed",
+            "incomplete"
+          ],
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "keys_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "failed": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "status",
+                  "code"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "status": {
+                    "enum": [
+                      "unsupported",
+                      "out_of_domain",
+                      "not_converged",
+                      "error"
+                    ]
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "A registered request with a deterministic result that is not `ok` (spec §5.3): its position in the split's `keys`, and the reactor envelope's status and code."
+              }
+            },
+            "incomplete": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "label",
+                  "status",
+                  "code"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "status": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "A registered request without a deterministic result (a transient failure beyond M02's retries; spec §5.3's last row): the plan is incomplete. `label` is the plan's (`<split>[<i>]` or `gradient[<i>].<coordinate><sign>`); `status` and `code` are the transient envelope's."
+              }
+            }
+          },
+          "description": "One split (spec §10.1): `count` draws (gradient: centres), `keys` the experiment keys in plan order and `keys_sha256` the `document_sha256` of that list."
+        },
+        "calibration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "count",
+            "keys",
+            "keys_sha256",
+            "failed",
+            "incomplete"
+          ],
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "keys_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "failed": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "status",
+                  "code"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "status": {
+                    "enum": [
+                      "unsupported",
+                      "out_of_domain",
+                      "not_converged",
+                      "error"
+                    ]
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "A registered request with a deterministic result that is not `ok` (spec §5.3): its position in the split's `keys`, and the reactor envelope's status and code."
+              }
+            },
+            "incomplete": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "label",
+                  "status",
+                  "code"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "status": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "A registered request without a deterministic result (a transient failure beyond M02's retries; spec §5.3's last row): the plan is incomplete. `label` is the plan's (`<split>[<i>]` or `gradient[<i>].<coordinate><sign>`); `status` and `code` are the transient envelope's."
+              }
+            }
+          },
+          "description": "One split (spec §10.1): `count` draws (gradient: centres), `keys` the experiment keys in plan order and `keys_sha256` the `document_sha256` of that list."
+        },
+        "test": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "count",
+            "keys",
+            "keys_sha256",
+            "failed",
+            "incomplete"
+          ],
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "keys_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "failed": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "status",
+                  "code"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "status": {
+                    "enum": [
+                      "unsupported",
+                      "out_of_domain",
+                      "not_converged",
+                      "error"
+                    ]
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "A registered request with a deterministic result that is not `ok` (spec §5.3): its position in the split's `keys`, and the reactor envelope's status and code."
+              }
+            },
+            "incomplete": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "label",
+                  "status",
+                  "code"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "status": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "A registered request without a deterministic result (a transient failure beyond M02's retries; spec §5.3's last row): the plan is incomplete. `label` is the plan's (`<split>[<i>]` or `gradient[<i>].<coordinate><sign>`); `status` and `code` are the transient envelope's."
+              }
+            }
+          },
+          "description": "One split (spec §10.1): `count` draws (gradient: centres), `keys` the experiment keys in plan order and `keys_sha256` the `document_sha256` of that list."
+        },
+        "gradient": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "count",
+            "keys",
+            "keys_sha256",
+            "failed",
+            "incomplete",
+            "centres"
+          ],
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "keys_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "failed": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "status",
+                  "code"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "status": {
+                    "enum": [
+                      "unsupported",
+                      "out_of_domain",
+                      "not_converged",
+                      "error"
+                    ]
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "A registered request with a deterministic result that is not `ok` (spec §5.3): its position in the split's `keys`, and the reactor envelope's status and code."
+              }
+            },
+            "incomplete": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "label",
+                  "status",
+                  "code"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "status": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "A registered request without a deterministic result (a transient failure beyond M02's retries; spec §5.3's last row): the plan is incomplete. `label` is the plan's (`<split>[<i>]` or `gradient[<i>].<coordinate><sign>`); `status` and `code` are the transient envelope's."
+              }
+            },
+            "centres": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "index",
+                  "status",
+                  "stencil_keys"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "status": {
+                    "enum": [
+                      "ok",
+                      "parent_failed",
+                      "incomplete",
+                      "not_evaluated"
+                    ],
+                    "description": "`parent_failed`: a stencil experiment with a deterministic failure; `incomplete`: one without a deterministic result; `not_evaluated`: no predictor (the fit was refused)."
+                  },
+                  "stencil_keys": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "minItems": 14,
+                    "maxItems": 14
+                  }
+                }
+              }
+            }
+          },
+          "description": "One split (spec §10.1): `count` draws (gradient: centres), `keys` the experiment keys in plan order and `keys_sha256` the `document_sha256` of that list."
+        }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "alpha",
+        "n",
+        "k",
+        "scores",
+        "q_hat"
+      ],
+      "properties": {
+        "alpha": {
+          "const": "1/20"
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "scores": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "In plan order; `null` is +∞: a failed draw (spec §5.3), or one without a deterministic result (then listed in its split's `incomplete` and the verdict is INSUFFICIENT_EVIDENCE)."
+        },
+        "q_hat": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The k-th smallest score (an order statistic); `null` when there is no band."
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "m",
+        "scores",
+        "hits",
+        "lower_bound",
+        "h_min",
+        "c_min",
+        "delta",
+        "errors",
+        "fraction_within_width"
+      ],
+      "properties": {
+        "m": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scores": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "In plan order; `null` is +∞: a failed draw (spec §5.3), or one without a deterministic result (then listed in its split's `incomplete` and the verdict is INSUFFICIENT_EVIDENCE)."
+        },
+        "hits": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lower_bound": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "h_min": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "c_min": {
+          "const": 0.9
+        },
+        "delta": {
+          "const": 0.05
+        },
+        "errors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "X",
+            "dT_K"
+          ],
+          "properties": {
+            "X": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "max",
+                    "rms",
+                    "p95"
+                  ],
+                  "properties": {
+                    "max": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "rms": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "p95": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "description": "Spec §7.1 (reported, not judged): over the `ok` test draws, max |e|, RMS |e| and the empirical 95th percentile of |e| (nearest rank: the ⌈0.95 N⌉-th smallest)."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "dT_K": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "max",
+                    "rms",
+                    "p95"
+                  ],
+                  "properties": {
+                    "max": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "rms": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "p95": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "description": "Spec §7.1 (reported, not judged): over the `ok` test draws, max |e|, RMS |e| and the empirical 95th percentile of |e| (nearest rank: the ⌈0.95 N⌉-th smallest)."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "fraction_within_width": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "#{test draws with s ≤ 1} / m (a failed draw is not within)."
+        }
+      }
+    },
+    "gradient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_z",
+        "rho_g",
+        "centres"
+      ],
+      "properties": {
+        "step_z": {
+          "const": 0.05
+        },
+        "rho_g": {
+          "const": 0.25
+        },
+        "centres": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "status",
+              "errors"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "status": {
+                "enum": [
+                  "ok",
+                  "parent_failed",
+                  "incomplete",
+                  "not_evaluated"
+                ],
+                "description": "`parent_failed`: a stencil experiment with a deterministic failure; `incomplete`: one without a deterministic result; `not_evaluated`: no predictor (the fit was refused)."
+              },
+              "errors": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "X",
+                      "dT_K"
+                    ],
+                    "properties": {
+                      "X": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "dT_K": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "empirical",
+        "hard",
+        "inadmissible_predictions",
+        "parent_extrapolated"
+      ],
+      "properties": {
+        "empirical": {
+          "const": "box"
+        },
+        "hard": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/model-variant.schema.json#/$defs/hard_domain"
+        },
+        "inadmissible_predictions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parent_extrapolated": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "qualifications": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 7,
+      "description": "Spec §6.3: Q0 first when the parent is synthetic, then Q1–Q7 with Q6's values filled."
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verdict",
+        "insufficient",
+        "not_promotable",
+        "familywise_false_pass_bound"
+      ],
+      "properties": {
+        "verdict": {
+          "enum": [
+            "PROMOTABLE",
+            "NOT_PROMOTABLE",
+            "INSUFFICIENT_EVIDENCE"
+          ]
+        },
+        "insufficient": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "budget_below_plan",
+              "plan_incomplete",
+              "training_unidentifiable",
+              "calibration_too_small",
+              "test_too_small",
+              "gradient_check_incomplete"
+            ]
+          }
+        },
+        "not_promotable": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "band_not_finite",
+              "width_limit_exceeded",
+              "coverage_bound_below_minimum",
+              "gradient_limit_exceeded",
+              "inadmissible_prediction",
+              "parent_extrapolated"
+            ]
+          }
+        },
+        "familywise_false_pass_bound": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "evidence_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "$defs": {
+    "surrogate_study_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parent",
+        "plan_id",
+        "budget"
+      ],
+      "properties": {
+        "parent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model_id",
+            "variant_id",
+            "variant_sha256"
+          ],
+          "properties": {
+            "model_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "variant_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "variant_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "description": "The parent: a registered variant, by id and SHA-256 (ADR 0035 D1)."
+        },
+        "plan_id": {
+          "type": "string",
+          "pattern": "^it[1-9][0-9]*(-prefix)?$",
+          "description": "Spec §5.5, §9.3: `it<i>`, or `it1-prefix` (synthetic parents only)."
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "max_cold_experiments"
+          ],
+          "properties": {
+            "max_cold_experiments": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "description": "Spec §5.4: the approved number of cold experiments (cache misses). More misses than this refuse the study before anything runs (INSUFFICIENT_EVIDENCE, `budget_below_plan`)."
+        }
+      },
+      "description": "M04 spec §10.3 (ADR 0037 D6, ADR 0019 Amendment 5): the `surrogate_study` job's body."
+    },
+    "surrogate_study_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verdict",
+        "insufficient",
+        "not_promotable",
+        "surrogate_id",
+        "manifest_sha256",
+        "evidence_sha256",
+        "cold_experiments",
+        "cache_hits",
+        "cache_misses"
+      ],
+      "properties": {
+        "verdict": {
+          "enum": [
+            "PROMOTABLE",
+            "NOT_PROMOTABLE",
+            "INSUFFICIENT_EVIDENCE"
+          ]
+        },
+        "insufficient": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "budget_below_plan",
+              "plan_incomplete",
+              "training_unidentifiable",
+              "calibration_too_small",
+              "test_too_small",
+              "gradient_check_incomplete"
+            ]
+          }
+        },
+        "not_promotable": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "band_not_finite",
+              "width_limit_exceeded",
+              "coverage_bound_below_minimum",
+              "gradient_limit_exceeded",
+              "inadmissible_prediction",
+              "parent_extrapolated"
+            ]
+          }
+        },
+        "surrogate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "manifest_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cold_experiments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cache_hits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cache_misses": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "M04 spec §10.3: a `surrogate_study` job's answer — the verdict and both reason lists (spec §7.3), the surrogate id, the SHA-256s of the manifest and evidence artifacts it wrote (`null` for a budget refusal, which writes neither), the plan experiments it executed or found cached, and the cache misses counted at study start."
+    }
+  }
+}
