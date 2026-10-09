@@ -4,12 +4,91 @@
 # policies (`K04-numerical-policy-v1`, `T08-numerical-policy-v2`) and M02's addendum keep their ids
 # and their contents (M04 build-lane decision, reported to the design lane).
 #
-# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names).
+# The classes of M04's floats and the conditional R0 rule of its decisions are ADR 0036
+# Amendment 1 D8 and M04 spec §18 A1.3 (R-291): no new class. A value computed from the experiment
+# records is R1/R2 under ADR 0007 D1, *given the same records* (a record from another environment
+# has another key, so a study on it is another study, never compared with this one); its floor is
+# the spec §11 tolerance that checks it. The id stays `M04-numerical-policy-surrogate-v1`: it was
+# never merged or recorded before this, its complete content. No comparator reads this table yet
+# (R-253: a replay comparison of study records goes through `run/compare` and ADR 0025).
+#
+# Read by `tests/test_m04_numerical_policy.py` (A32's rule over M04's emitted fixtures, M04.A37)
+# and by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names).
 numerical_policy_surrogate:
   id: M04-numerical-policy-surrogate-v1
   schemas:
   - model-evidence.schema.json
   - surrogate-manifest.schema.json
+  classes:
+    exact: registered constants and verbatim copies; compared exactly
+    r1_r2: computed from the experiment records through a rounding or a factorization (LAPACK's
+      QR); relative 1e-9 (ADR 0007 D2.1) with the rule's absolute floor (D2.2)
+    r0_conditional: a ratio of counts; R0 only when no decision it depends on is near threshold
+  # Paths: the dotted path of a float inside one fixture document (`[i]` for an array index), as a
+  # full-match regular expression; the first matching rule classifies. A float no rule matches is
+  # unclassified and the test fails naming it (D2.3: the build lane never defaults a class).
+  # `floor` is absolute in the unit of `floor_unit`; `source` is the §11 tolerance it comes from.
+  rules:
+    surrogate_manifest:
+    - {path: '\.input_map\.coordinates\[\d+\]\.(lo|hi|centre|half_width)', class: exact}
+    - {path: '\.output_map\.admissible\.(X|dT_K)\[\d+\]', class: exact}
+    - {path: '\.score\.scales\.(X|dT_K)', class: exact}
+    - {path: '\.evaluation\.(c_min|delta)', class: exact}
+    - {path: '\.gradient\.(step_z|rho_g)', class: exact}
+    - {path: '\.parent\.boundary\..*', class: exact}
+    - {path: '\.domain\.hard\..*', class: exact}
+    - {path: '\.promotion\.familywise_false_pass_bound', class: exact}
+    - {path: '\.predictor\.coefficients\.(X|dT_K)\[\d+\]', class: r1_r2, floor: 1.0e-10,
+      floor_unit: 'max_i |beta_o,i| of the same output', source: M04.A10}
+    - {path: '\.predictor\.fit\.singular_value_ratio', class: r1_r2, floor: 1.0e-8,
+      floor_unit: '1 (tau_id, the threshold it is judged by)', source: ADR 0007 D2.2}
+    - {path: '\.predictor\.fit\.training_rms\.(X|dT_K)', class: r1_r2, floor: 1.0e-10,
+      floor_unit: w_o, source: M04.A17}
+    - {path: '\.evaluation\.errors\.(X|dT_K)\.(max|rms|p95)', class: r1_r2, floor: 1.0e-10,
+      floor_unit: w_o, source: M04.A17}
+    - {path: '\.calibration\.(scores\[\d+\]|q_hat)', class: r1_r2, floor: 1.0e-10,
+      floor_unit: score, source: M04.A17}
+    - {path: '\.evaluation\.scores\[\d+\]', class: r1_r2, floor: 1.0e-10, floor_unit: score,
+      source: M04.A17}
+    - {path: '\.evaluation\.lower_bound', class: r1_r2, floor: 1.0e-9, floor_unit: '1',
+      source: M04.A06}
+    - {path: '\.gradient\.centres\[\d+\]\.errors\.(X|dT_K)', class: r1_r2, floor: 1.0e-8,
+      floor_unit: '1', source: M04.A17}
+    - {path: '\.domain\.admissibility_margin', class: r1_r2, floor: 1.0e-10, floor_unit: w_o,
+      source: M04 spec §18 A1.3}
+    - {path: '\.evaluation\.fraction_within_width', class: r0_conditional}
+    model_evidence:
+    - {path: '\.numerical\.parent_accuracy\..*', class: exact}
+    - {path: '\.uncertainty\.(nominal|minimum)', class: exact}
+    - {path: '\.numerical\.fit\.singular_value_ratio', class: r1_r2, floor: 1.0e-8,
+      floor_unit: '1 (tau_id, the threshold it is judged by)', source: ADR 0007 D2.2}
+    - {path: '\.uncertainty\.lower_bound', class: r1_r2, floor: 1.0e-9, floor_unit: '1',
+      source: M04.A06}
+    # The job's body and answer carry integers, strings and digests only.
+    surrogate_study_body: []
+    surrogate_study_result: []
+  # Every integer, index, list, status, verdict, reason, key and key-list digest of both schemas
+  # is R0 conditionally (ADR 0036 Amendment 1 D8): promised identical across registered platforms,
+  # given the same records, only when no decision below is near threshold; otherwise a difference
+  # is a recorded observation, not a mismatch. A decision comparing two recorded floats (or a
+  # recorded float with a registered constant) is near when its gap is below `gap` in the
+  # decision's own units; D2.4's ratio band stays for the registered threshold tau_id. Every gap
+  # is computable from stored members of the manifest.
+  conditional_r0:
+    gap: 1.0e-8
+    decisions:
+    - {id: test_score_vs_q_hat, gap_of: '|evaluation.scores[i] - calibration.q_hat|', unit: score}
+    - {id: calibration_order_at_k, gap_of: '|s_(k) - s_(k-1)| and |s_(k+1) - s_(k)| of the sorted
+        finite calibration scores', unit: score}
+    - {id: q_hat_vs_width, gap_of: '|calibration.q_hat - 1|', unit: score}
+    - {id: test_score_vs_width, gap_of: '|evaluation.scores[i] - 1| (fraction_within_width)',
+      unit: score}
+    - {id: gradient_error_vs_rho_g, gap_of: '|gradient.centres[j].errors.o - gradient.rho_g|',
+      unit: '1'}
+    - {id: admissibility, gap_of: domain.admissibility_margin, unit: w_o}
+    registered_thresholds:
+    - {id: identifiability, quantity: predictor.fit.singular_value_ratio, threshold: 1.0e-8,
+      rule: 'ADR 0007 D2.4: near when q/tau is in [1/10, 10]'}
   # The `sha256`-bearing names M04's schemas add, all exact digests of documents or key lists
   # (none is a float digest, ADR 0007 D1 row 3). The names M04 reuses keep their classes:
   # `manifest_sha256` (T08 v2's), `variant_sha256` (M02's addendum's). `evidence_sha256` left the
