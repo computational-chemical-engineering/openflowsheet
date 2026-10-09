@@ -1,6 +1,7 @@
-"""M05 WO-4: the truth adapters, the finite-difference policy `M05-fd-v1`, the gradient-quality
-check, §16.4's `meta` contract and the runner under concurrent distinct keys (design note §6.3-§6.5,
-§16.4; ADR 0038 D5; R-262, R-265).
+"""M05 WO-4, WO-4a: the truth adapters, the finite-difference policy `M05-fd-v2` and its
+gradient-quality check (§17.2's acceptance (i)-(iv)), §16.4's `meta` contract, R-300 E2's guard and
+the runner under concurrent distinct keys (design note §6.3-§6.5, §16.4, §17.2, §17.5; ADR 0038
+D5; R-262, R-265, R-297, R-300).
 
 Default gate: no Pyomo, no reactor environment. The parent truth runs M02's `ExperimentRunner` on
 the shipped stand-in (`standin-x025-v1`) and on the test-only smooth truth
@@ -195,7 +196,7 @@ def test_the_ledger_records_the_truths_meta_per_request(tmp_path: Path) -> None:
     )
 
 
-# == M05-fd-v1 (§6.5) ===========================================================================
+# == M05-fd-v2 (§6.5) ===========================================================================
 
 
 def test_the_steps_floors_sides_and_exact_differences(tmp_path: Path) -> None:
@@ -266,23 +267,6 @@ def test_a_budget_cap_inside_an_fd_batch_admits_exactly_the_cap(tmp_path: Path) 
     assert len(stored) == 5
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "WO-4 acceptance 'analytic against FD <= 1e-6 relative at eta' is not met by forward "
-        "differences at eta = 2^-14: measured worst relative error 4.1e-2 (dX/dT; truncation, "
-        "h_T = eta*T = 0.041 K against the truth's curvature in T), 1e-4 (dDT/dT), <= 6.6e-5 "
-        "elsewhere. Escalated to the design lane (M05 WO-4 report)."
-    ),
-)
-def test_the_fd_gradient_matches_the_analytic_one_within_1e_6_relative(tmp_path: Path) -> None:
-    holder = holder_of(interior_truth(tmp_path))
-    fd = holder.request_jacobian(INLET)
-    exact = synthetic.interior_gradient(INLET, N_TUBES)
-    worst = max(abs(fd[k][j] - exact[k][j]) / abs(exact[k][j]) for k in range(2) for j in range(7))
-    assert worst <= 1e-6
-
-
 def test_the_analytic_gradient_is_the_closed_form_of_the_values(tmp_path: Path) -> None:
     """The synthetic truth's closed form against its own values: (X, ΔT) through the runner equal
     the closed form at the process z within 4 ulps, and its gradient against central differences
@@ -308,15 +292,16 @@ def test_the_analytic_gradient_is_the_closed_form_of_the_values(tmp_path: Path) 
 
 
 def test_the_gradient_check_passes_on_an_exact_map_and_reuses_its_points(tmp_path: Path) -> None:
-    """The stand-in's map is constant: G(η) = G(η/4) = 0, the check passes at η and keeps it, and
-    the basis gradient at the same w₀ (`basis_fd_point`) is served from the memo: seven entries,
-    no cold request."""
+    """The stand-in's map is constant: G(η/4) = G(η) = G(4η) = 0, so τ̂ = ν̂ = 0 and the check
+    passes at η, `clean`; the basis gradient at the same w₀ (`basis_fd_point`) is served from the
+    memo: seven entries, no cold request."""
     holder = holder_of(standin_truth(tmp_path))
     check = gradient_check(holder, INLET)
-    assert check.status == "pass" and check.eta == ETA and len(check.comparisons) == 1
-    assert check.comparisons[0]["difference_inf"] <= 1e-9
+    assert check.status == "pass" and check.eta == ETA and len(check.candidates) == 1
+    assert check.selected_class == "clean" and check.stopped == "passed"
+    assert check.candidates[0]["truncation"] <= 1e-9 and check.candidates[0]["noise"] <= 1e-9
     checked = [entry for entry in holder.ledger if entry.purpose == FDCHECK_POINT]
-    assert len(checked) == 1 + 14
+    assert len(checked) == 1 + 7 * 3
     before = len(holder.ledger)
     jacobian = holder.request_jacobian(INLET, purpose=BASIS_FD_POINT)
     basis = [entry for entry in holder.ledger[before:] if entry.purpose == BASIS_FD_POINT]
@@ -324,20 +309,212 @@ def test_the_gradient_check_passes_on_an_exact_map_and_reuses_its_points(tmp_pat
     assert jacobian == check.gradient
 
 
-def test_the_gradient_check_escalates_at_most_twice(tmp_path: Path) -> None:
-    """On the curved synthetic truth the check fails at η and at 4η and 16η (forward-difference
-    truncation dominates, so a larger η is worse): the study proceeds at η = 2⁻¹⁰ with A3
-    `fd_unstable`, after 1 + 7·4 points. The numbers are regression values of this truth at
-    INLET, recorded in the WO-4 report as the escalation's evidence."""
-    holder = holder_of(interior_truth(tmp_path))
+# == M05-fd-v2's gradient check (§17.2, R-297) ===================================================
+
+
+def scaled_exact(inlet: Sequence[float]) -> list[list[float]]:
+    """The synthetic truth's exact gradient in the check's scaling, G_kj = g_kj·m_j/s_k."""
+    policy = ForwardDifference(lambda point: True, workers=1)
+    scale = [max(abs(v), f) for v, f in zip(inlet, policy.floors(inlet), strict=True)]
+    exact = synthetic.interior_gradient(inlet, N_TUBES)
+    return [[exact[k][j] * scale[j] / SCALES[k] for j in range(7)] for k in range(2)]
+
+
+def inf_norm(matrix: Sequence[Sequence[float]]) -> float:
+    return max(abs(value) for row in matrix for value in row)
+
+
+def difference(a: Sequence[Sequence[float]], b: Sequence[Sequence[float]]) -> float:
+    return inf_norm(
+        [[x - y for x, y in zip(ra, rb, strict=True)] for ra, rb in zip(a, b, strict=True)]
+    )
+
+
+@pytest.fixture(scope="module")
+def interior_check(tmp_path_factory: pytest.TempPathFactory) -> Any:
+    holder = holder_of(interior_truth(tmp_path_factory.mktemp("fd-v2")))
+    return holder, gradient_check(holder, INLET)
+
+
+def test_fd_v2_i_richardson_recovers_the_exact_gradient(
+    interior_check: Any, record_property: Any
+) -> None:
+    """§17.2 (i): ‖(4·G(η/4) − G(η))/3 − G_exact‖_∞ ≤ 1e-5·max(1, ‖G_exact‖_∞) at TR-E2's start
+    inlet (predicted ≈ 5e-7)."""
+    _, check = interior_check
+    exact = scaled_exact(INLET)
+    fine, mid = check.scaled[ETA / 4.0], check.scaled[ETA]
+    richardson = [
+        [(4.0 * f - m) / 3.0 for f, m in zip(rf, rm, strict=True)]
+        for rf, rm in zip(fine, mid, strict=True)
+    ]
+    error = difference(richardson, exact)
+    record_property("M05.fd_v2.richardson_error", error)
+    assert error <= 1e-5 * max(1.0, inf_norm(exact))
+
+
+def test_fd_v2_ii_the_truncation_estimate_bounds_the_error(
+    interior_check: Any, record_property: Any
+) -> None:
+    """§17.2 (ii): ‖G(η) − G_exact‖_∞ ≤ 2τ̂ + 1e-6·max(1, ‖G_exact‖_∞) (predicted 0.044 against
+    about 0.10)."""
+    _, check = interior_check
+    exact = scaled_exact(INLET)
+    error = difference(check.scaled[ETA], exact)
+    truncation = check.candidates[0]["truncation"]
+    record_property("M05.fd_v2.error_at_eta", error)
+    record_property("M05.fd_v2.truncation_estimate", truncation)
+    assert error <= 2.0 * truncation + 1e-6 * max(1.0, inf_norm(exact))
+
+
+def test_fd_v2_iii_the_check_passes_at_eta_truncation_dominated(
+    interior_check: Any, record_property: Any
+) -> None:
+    """§17.2 (iii): no escalation, class `truncation_dominated` (predicted ν̂ ≈ 4e-6 against
+    2.27e-3); 1 + 21 check requests; the basis gradient at w₀ is the check's G(η), its seven
+    points memo hits."""
+    holder, check = interior_check
+    (candidate,) = check.candidates
+    record_property("M05.fd_v2.noise_estimate", candidate["noise"])
+    record_property("M05.fd_v2.allowance", candidate["allowance"])
+    assert (check.status, check.eta, check.stopped) == ("pass", ETA, "passed")
+    assert check.selected_class == candidate["class"] == "truncation_dominated"
+    assert candidate["noise"] <= candidate["allowance"] < candidate["truncation"]
+    assert sum(1 for entry in holder.ledger if entry.purpose == FDCHECK_POINT) == 1 + 7 * 3
+    before = len(holder.ledger)
+    assert holder.request_jacobian(INLET, purpose=BASIS_FD_POINT) == check.gradient
+    basis = [entry for entry in holder.ledger[before:] if entry.purpose == BASIS_FD_POINT]
+    assert len(basis) == 7 and all(entry.served == "memo_hit" for entry in basis)
+    document = check.as_document()
+    assert document["policy"] == "M05-fd-v2" and document["selected_eta"] == ETA
+    assert document["half_steps"]["T"] == 0.5 * ETA * INLET[5]
+    json.dumps(document)
+
+
+class NoisyInteriorTruth(ParentExperimentTruth):
+    """§17.2 (iv): the synthetic truth with deterministic pseudo-noise of relative amplitude 1e-6
+    on (X, ΔT), a function of the exact input bits (SHA-256 mapped to [−1, 1])."""
+
+    def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]:
+        import hashlib
+        import struct
+
+        conversion, rise, meta = super().evaluate(inlet)
+        digest = hashlib.sha256(struct.pack(">7d", *inlet)).digest()
+        u, v = (int.from_bytes(digest[i : i + 8], "big") / 2.0**63 - 1.0 for i in (0, 8))
+        return conversion * (1.0 + 1e-6 * u), rise * (1.0 + 1e-6 * v), meta
+
+
+def test_fd_v2_iv_noise_is_detected(tmp_path: Path, record_property: Any) -> None:
+    """§17.2 (iv): with the pseudo-noise the check is `noise_dominated` at 2⁻¹⁴ and
+    ν̂(2⁻¹²) < ν̂(2⁻¹⁴)."""
+    truth = NoisyInteriorTruth(runner(tmp_path), synthetic.synthetic_variant(), N_TUBES)
+    check = gradient_check(holder_of(truth), INLET)
+    first, second = check.candidates[0], check.candidates[1]
+    for item in check.candidates:
+        record_property(f"M05.fd_v2.noisy.{item['eta']!r}", [item["noise"], item["class"]])
+    record_property("M05.fd_v2.noisy.result", [check.status, check.eta, check.stopped])
+    assert (first["eta"], first["class"]) == (2.0**-14, "noise_dominated")
+    assert second["eta"] == 2.0**-12 and second["noise"] < first["noise"]
+
+
+class CurvedMap:
+    """An in-process map for the escalation's stops: X = 0.2·exp(k (T − T₀)/T₀) (+ pseudo-noise of
+    relative amplitude `noise`), ΔT = 350 X, through the FD policy with `admissible`."""
+
+    def __init__(self, k: float, noise: float, admissible: Any = None) -> None:
+        self.k, self.noise = k, noise
+        self.finite_difference = ForwardDifference(admissible or (lambda point: True), workers=1)
+
+    def describe(self) -> Mapping[str, Any]:
+        return {"kind": "test", "id": "curved-map", "sha256": None, "gradient": "finite_difference"}
+
+    def gradient(self, inlet: Sequence[float]) -> Sequence[Sequence[float]]:
+        raise TypeError("curved-map: the holder forms its gradient by finite differences")
+
+    def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]:
+        import hashlib
+        import struct
+
+        digest = hashlib.sha256(struct.pack(">7d", *inlet)).digest()
+        u = int.from_bytes(digest[:8], "big") / 2.0**63 - 1.0
+        conversion = 0.2 * math.exp(self.k * (inlet[5] - INLET[5]) / INLET[5])
+        conversion *= 1.0 + self.noise * u
+        return conversion, 350.0 * conversion, in_process_meta()
+
+
+def test_fd_v2_a_residual_growing_with_eta_stops_the_escalation() -> None:
+    """§17.2: escalation continues only while ν̂ falls by at least 2 per step. With strong
+    curvature (k = 5000) ν̂ fails at 2⁻¹⁴ and grows at 2⁻¹²: the check stops there
+    (`noise_not_falling`), proceeds at the smaller ν̂'s η and is `fd_unstable`."""
+    holder = EFHolder("reactor", TruthBox(CurvedMap(5000.0, 0.0)), SCALES, kind="truth")
     check = gradient_check(holder, INLET)
-    assert check.status == "fd_unstable"
-    assert [item["eta"] for item in check.comparisons] == [2.0**-14, 2.0**-12, 2.0**-10]
-    assert not any(item["passed"] for item in check.comparisons)
-    assert holder.box.finite_difference.eta == 2.0**-10  # type: ignore[attr-defined]
-    assert sum(1 for entry in holder.ledger if entry.served == "cold") == 1 + 7 * 4
-    assert check.comparisons[0]["difference_inf"] == pytest.approx(0.0373, rel=1e-2)
-    json.dumps(check.as_document())
+    assert [item["eta"] for item in check.candidates] == [2.0**-14, 2.0**-12]
+    assert check.candidates[1]["noise"] > check.candidates[0]["noise"] / 2.0
+    assert (check.status, check.stopped, check.eta) == ("fd_unstable", "noise_not_falling", ETA)
+    assert sum(1 for entry in holder.ledger if entry.purpose == FDCHECK_POINT) == 1 + 7 * 4
+
+
+def test_fd_v2_a_side_that_cannot_take_the_next_step_stops_the_escalation() -> None:
+    """§17.2: each column's side is chosen once, at 4η; when the next candidate's largest step
+    (16η) leaves the hard domain on that side, escalation stops (`side_limit`). Here T may rise by
+    8η·T₀ only, so the + side is chosen and 16η is refused."""
+    t_max = INLET[5] + 8.0 * ETA * INLET[5]
+    truth = CurvedMap(0.0, 1e-6, admissible=lambda point: point[5] <= t_max)
+    holder = EFHolder("reactor", TruthBox(truth), SCALES, kind="truth")
+    check = gradient_check(holder, INLET)
+    assert check.sides == (1,) * 7
+    assert [item["class"] for item in check.candidates] == ["noise_dominated"]
+    assert (check.status, check.stopped) == ("fd_unstable", "side_limit")
+
+
+def test_fd_v2_the_sides_hold_for_all_three_steps() -> None:
+    """§17.2: a column whose + side is admissible at η but not at 4η takes the − side for all
+    three steps."""
+    t_max = INLET[5] + 2.0 * ETA * INLET[5]
+    policy = ForwardDifference(lambda point: point[5] <= t_max, workers=1)
+    assert policy.sides(INLET, ETA)[5] == 1 and policy.sides(INLET, 4.0 * ETA)[5] == -1
+    truth = CurvedMap(0.0, 0.0, admissible=lambda point: point[5] <= t_max)
+    holder = EFHolder("reactor", TruthBox(truth), SCALES, kind="truth")
+    check = gradient_check(holder, INLET)
+    assert check.sides[5] == -1
+    for eta in (ETA / 4.0, ETA, 4.0 * ETA):
+        assert truth.finite_difference.points(INLET, eta, check.sides)[5][5] < INLET[5]
+
+
+# == R-300 E2: the coupling coordinates are M02's ================================================
+
+
+@pytest.mark.xfail(
+    strict=True,
+    raises=ModuleNotFoundError,
+    reason=(
+        "R-300 E2's guard needs M02's coupled-route residual (orchestrator/coupling.py "
+        "_unit_terms, application/coupled_run.py answer_of), which is on wp/M02 and not yet on "
+        "wp/M05; it runs, and must pass, once the branches meet (M05 build log F4)"
+    ),
+)
+def test_e2_the_coupling_coordinates_are_m02s(tmp_path: Path) -> None:
+    """R-300 E2: at TR-E2's start inlet and two of its FD points, M05's (X, ΔT) equal, bitwise,
+    the coupling coordinates M02's coupled route reads from the same envelope — through M02's own
+    path: `answer_of` on the outcome, then `_unit_terms` at w = (0, 0), whose residual
+    r = F(w) − w is then F itself."""
+    from openflowsheet.application.coupled_run import answer_of
+    from openflowsheet.orchestrator.coupling import CouplingBlock, UnitInlet, _unit_terms
+
+    truth = interior_truth(tmp_path)
+    block = CouplingBlock.from_document(STANDIN.coupling)
+    points = truth.finite_difference.points(INLET)
+    for inlet in (INLET, points[1], points[5]):
+        conversion, rise, _ = truth.evaluate(inlet)
+        outcome = truth.run(inlet)
+        answer = answer_of(
+            outcome.request, outcome.result, outcome.envelope, outcome.attempts, outcome.cache_hit
+        )
+        state = truth.stream(inlet)
+        unit = UnitInlet(n=state.n, T=state.temperature, P=state.pressure, n_key=state.n[1])
+        terms = _unit_terms(unit, answer, (0.0, 0.0), block)
+        assert (terms["r_xi"], terms["r_T"]) == (conversion, rise), inlet
 
 
 # == concurrency (§6.5, R-250) ==================================================================

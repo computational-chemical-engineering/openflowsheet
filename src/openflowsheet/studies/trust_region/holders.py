@@ -54,7 +54,7 @@ Served = Literal["cold", "store_hit", "memo_hit"]
 TRF_START_VALUE: Final = "trf_start_value"
 TRF_PMP_VALUE: Final = "trf_pmp_value"
 TRF_TRIAL_VALUE: Final = "trf_trial_value"
-#: The finite-difference policy's points (`truths.py`, M05-fd-v1): a gradient TRF asked for, the
+#: The finite-difference policy's points (`truths.py`, M05-fd-v2): a gradient TRF asked for, the
 #: affine basis's gradient at w₀ (§6.6), and the once-per-study gradient-quality check (§6.5).
 TRF_FD_POINT: Final = "trf_fd_point"
 BASIS_FD_POINT: Final = "basis_fd_point"

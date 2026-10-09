@@ -122,27 +122,32 @@ def test_tr_e1_with_the_affine_basis_reaches_natives_objective() -> None:
     assert abs(final.objective - pyo.value(model.obj)) <= 1e-10 * abs(pyo.value(model.obj))
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "§16.4's acceptance 'TR-E1 with an affine basis on bb converges to native within 1e-6' "
-        "is missed by the decisions: |dz| = (1.18e-6, 1.11e-6, 5.7e-7), at TRF's step-size "
-        "termination level (the last step 6.9e-7); the objective agrees within 4e-11 relative. "
-        "Escalated to the design lane (M05 WO-4 report)."
-    ),
-)
-def test_tr_e1_with_the_affine_basis_converges_to_native_within_1e_6() -> None:
-    """Probe P5's analogue (§16.4): the basis changes the PMP only, so the converged point is
-    native's within TRF's own tolerance."""
-    import pyomo.environ as pyo
+def test_tr_e1_with_the_affine_basis_converges_to_native_within_2_sigma(
+    record_property: Any,
+) -> None:
+    """§16.4's third criterion as R-298 restates it (§17.3): both runs end `TRF_CONVERGED` with
+    θ_recheck ≤ 1e-5, and ‖z_affine − z_native‖_∞ ≤ 2σ = 2e-5, absolute — σ = 1e-5 is TR-E1's own
+    step-size and feasibility termination (Pyomo's defaults), so each final point lies within σ of
+    the limit. |ΔJ| / max(1, |J|) is recorded. Measured at WO-4: |Δz| = (1.18e-6, 1.11e-6,
+    5.7e-7). The native run is TR-E1 through `run_trf` with b ≡ 0, bitwise native's (G3)."""
+    from test_m05_trf import run
 
-    result, model = _tr_e1_affine_and_native()
-    for i in range(3):
-        assert abs(result.final.decisions[f"z{i}"] - pyo.value(model.z[i])) <= 1e-6, i
+    result, _ = _tr_e1_affine_and_native()
+    _, native_run = run()
+    for run_ in (result, native_run):
+        assert run_.outcome == "TRF_CONVERGED", run_.error
+        assert run_.theta_recheck is not None and run_.theta_recheck <= 1e-5
+    affine, native_final = result.final, native_run.final
+    assert affine is not None and native_final is not None
+    dz = max(abs(affine.decisions[f"z{i}"] - native_final.decisions[f"z{i}"]) for i in range(3))
+    dj = abs(affine.objective - native_final.objective) / max(1.0, abs(native_final.objective))
+    record_property("M05.R298.tr_e1.dz_inf", dz)
+    record_property("M05.R298.tr_e1.dJ_rel", dj)
+    assert dz <= 2e-5
 
 
 class FiniteDifferenceToy(LinkToyTruth):
-    """The link toy's map without its gradient: `M05-fd-v1` through the holder, in process."""
+    """The link toy's map without its gradient: `M05-fd-v2` through the holder, in process."""
 
     def __init__(self) -> None:
         self.finite_difference = ForwardDifference(lambda point: True, workers=1)
@@ -180,7 +185,7 @@ def test_an_fd_truths_link_basis_reuses_the_gradient_checks_points() -> None:
     (holder,) = projection.holders
     w0 = [float(projection.model.x[i].value) for i in projection.holder_inputs[0]]
     check = gradient_check(holder, w0)
-    assert sum(1 for e in holder.ledger if e.purpose == FDCHECK_POINT) == 15
+    assert sum(1 for e in holder.ledger if e.purpose == FDCHECK_POINT) == 1 + 7 * 3
     before = len(holder.ledger)
     affine_link_basis(projection)
     after = holder.ledger[before:]

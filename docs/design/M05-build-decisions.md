@@ -69,3 +69,33 @@ W5 §17.4's acceptance test moves one of TRF's holder variables (`trf_data.ef_ou
    (P14 (b)'s converging toy): "Optimal" with an agreeing log, θ_recheck 1e-3, `TRF_STALLED_INCONSISTENT`,
    `exit_claim: optimal`, `final_state_is_last_truth_point: true`. The retry itself (§7.3, once with radius × ¼) is
    WO-6's study loop, not built yet.
+
+## WO-4a — `M05-fd-v2` (§17.2, R-297), TR-E1's tolerance (§17.3, R-298), E2's guard (§17.5, R-300)
+
+F1 The check's per-column sides are pinned at w₀ in `ForwardDifference.pinned_sides` (keyed by the exact w₀ tuple):
+   `points()` takes explicit sides, else the pinned ones at that exact w, else v1's side rule at the step — so the
+   basis gradient at w₀ is the check's G(η) (seven memo hits) and every other point is unchanged. Alternative: pass
+   the sides through the holder. Reversible: `truths.ForwardDifference`.
+F2 The base value d(w₀) keeps purpose `fdcheck_point`, so the ledger shows 1 + 7·(3 + e) check requests; §17.2's
+   "7·(3 + e)" counts the FD points.
+F3 After a failed candidate: the last candidate ends the check (`exhausted`); from the second candidate on, ν̂ not
+   halved ends it (`noise_not_falling`); then the next candidate's largest step (16η·m_j for η ← 4η) is tried on the
+   chosen sides (`side_limit`); then G(4η) is added. `stopped` records which (`passed` on a pass). The candidates are
+   the policy's η times 4^k (2⁻¹⁴, 2⁻¹², 2⁻¹⁰ by default).
+F4 E2's guard: M02's coupled-route path (`application/coupled_run.answer_of`, `orchestrator/coupling._unit_terms`) is
+   on `wp/M02` only. The test calls it at w = (0, 0), where r = F(w) − w is F bitwise, at TR-E2's start inlet and
+   the n_N₂ and T FD points, and is a strict xfail with `raises=ModuleNotFoundError` on `wp/M05`: when the branches
+   meet it XPASSes (strict, so the marker must go) or fails on its assertion. Alternative: a copy of M02's arithmetic,
+   which is not "M02's own code path". Reversible: the marker.
+F5 `GradientCheck`: `comparisons` became `candidates` ({eta, g_inf, truncation, noise, allowance, class}); added
+   `sides`, `selected_class`, `stopped`, `half_steps` (½h_j at the selected η, by coordinate) and `scaled` (G at
+   every step). `as_document()` is §17.2's `fd_check` record (G11).
+F6 v1's escalation regression test (its numbers measured v1's criterion) is replaced by tests of the three stops:
+   `noise_not_falling` (curvature k = 5000: ν̂ fails at 2⁻¹⁴ and grows at 2⁻¹²; proceeds at 2⁻¹⁴, `fd_unstable`,
+   1 + 7·4 requests), `side_limit`, and one side for all three steps of a column.
+Measured (synthetic truth, TR-E2's start inlet): (i) Richardson error 1.25e-6 ≤ 1e-5·max(1, ‖G_exact‖) (predicted
+   5e-7); (ii) ‖G(η) − G_exact‖_∞ 0.04980 ≤ 2τ̂ + 1e-6 = 0.0996 (τ̂ 0.04980); (iii) ν̂ 3.67e-6 ≤ allowance 2.27e-3,
+   τ̂ above it: passes at 2⁻¹⁴, `truncation_dominated`, no escalation; (iv) with 1e-6 pseudo-noise ν̂ = 0.0221
+   (2⁻¹⁴, `noise_dominated`), 0.00511 (2⁻¹², `noise_dominated`), 0.00122 (2⁻¹⁰, `truncation_dominated`: passes
+   there). §17.3: TR-E1 affine against native ‖Δz‖_∞ 1.18e-6 ≤ 2e-5 (margin 17), |ΔJ|/max(1, |J|) 1.2e-11, both
+   `TRF_CONVERGED` with θ_recheck ≤ 1e-5.
