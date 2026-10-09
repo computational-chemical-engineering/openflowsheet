@@ -19,7 +19,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M02 | Build | M01 | W21 | WO-1…7 done (`6a46cdd`; G10 bitwise, re-recorded on variant v2); WO-8 rulings R-254…259 (`bfbad26`); WO-8 running; then WO-9…13 |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
 | M04 | Design | M02 | W23 | spec done; WO-1, 2, 3, 10 done (`7613b5e`, gate green); WO-4…9 after `wp/M02` (WO-7/8) is merged into `wp/M04`; WO-11 real run needs M02 WO-5 env (built) + Frank's N1 budget |
-| M05 | Design | M03, M04 | W24 | design done; WO-2, 3 done (`dd9e364`; G2, G3, G4 (SYN-001/TR-E1), G13); WO-1 audit PASS (merged `aef41bf`); rulings R-274…276 (`595b32b`), code amendments running; WO-4+ need M02 + M04 merged |
+| M05 | Design | M03, M04 | W24 | design done; WO-2, 3 done (`dd9e364`; G2, G3, G4 (SYN-001/TR-E1), G13); WO-1 audit PASS (merged `aef41bf`); rulings R-274…276 implemented (`6e44cac`); WO-4+ need M02 + M04 merged |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | not started |
 
@@ -93,7 +93,6 @@ Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
 | Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
 | --- | --- | --- |
 | `opus-engineer` | M02 WO-8.1…8.5 (PR units, verifier forms) | `wp/M02` (`m02`) |
-| `opus-engineer` | M05 R-274…276 amendments + pin cross-check | `wp/M05` (`m05`) |
 
 Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
 Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);

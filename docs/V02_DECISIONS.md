@@ -506,3 +506,11 @@ Grep, don't read whole. Newest at the bottom.
   recorded refusal. Gaps assigned: affine basis + TruthBox meta → WO-4; readiness halves → WO-6.
 - `wp/M05-audit` merged into `wp/M05` (`aef41bf`). `opus-engineer` M05 R-274…276 code amendments + pin cross-check
   launched.
+- M05 R-274…276 amendments done on `wp/M05` (`7697149`, `7929478`, `5ed884b`, `005db97`, `966ab1b`, `6e44cac`):
+  default 7956 passed; nlp tier 90 passed; G3/G4 identical to baseline. Omitted rows computed via
+  `eliminate_alias_rows` (facts 1–3 recorded per row; fact 4 a hook until P2); pre-flight start evaluation; pin cross-check
+  vs the WO-1 record. **For the M05 review:** `7929478` moved the certificate's pressure-shift rule into
+  `orchestrator/rank.py` (`pressure_shifted_state`) so the projection can use it — the certificate already uses rank.py's
+  alias elimination, but this widens verifier/solver sharing (R-016) and needs a design-lane look. Finding: TRF 6.10.1
+  fails its subproblem as infeasible on `y − 90z = 0` (EF output tied to decisions alone) independent of the projection —
+  probe before C1. Test-order dependence (`-k g3` alone) noted. M05 now waits for M02 + M04 merges (WO-4+).
