@@ -882,8 +882,8 @@ Frank decides (§12, N3).
 - **N6 (preference — cost vs reproducibility).** DECISION: no warm start of the reactor. Alternative: S2 from a
   neighbour's fields (cheaper loop iterations, history-dependent results). Reversible by: a new variant with a warm
   profile whose requests carry the warm source in their identity.
-- **N7 (preference: scope of the shipped reactor domain).** See §14.5. DECISION: the box that §14.5 D3's rule
-  selects from measurement.
+- **N7 (preference: scope of the shipped reactor domain).** See §14.5 and §14.6. DECISION: the first of §14.6 E3's
+  rungs V1–V3 that measurement selects; zero-inert inlets are outside the real reactor's v0.2 domain.
 - **Informed, not asked:** the additive contract changes (ADR 0019 Amendment 4 via ADR 0033–0035), as Amendments 1 and 3
   were; the ADR 0020 D3 widening (group kill).
 
@@ -1628,6 +1628,9 @@ items. Register R-303 to R-310.
 
 Not ruled here: D51–D54, D56, D57 and D62–D68 are as-built readings. They go to the package's single `reviewer` pass.
 
+*Amended by §14.6 (seventh round): D1's δ read point (E1), D3's box list (E3), D4's sample (E4), and the gates G10v3,
+G11v3-3, -4, -5 and -6. Where they differ, §14.6 governs.*
+
 **D1 (D69, mechanism 1). The element-defect refusals come from S3's stopping rule, not from a region of the inlet
 space. Profile `M01-S123-v2`: the child polishes once more when A45's defect exceeds 10⁻⁷. The boundary's limit is
 unchanged (R-303).**
@@ -2042,3 +2045,341 @@ WO-10 to WO-14. On `wp/M05`, M05's own WO-5c carries D9 (bounded) and, if B2 or 
 - That the outer iteration converges on non-contractive maps beyond affine ones. f2 and f3 are affine; Gay's bound is
   a theorem about affine maps.
 - That a stand-in → real promotion can commit. It cannot, by design (D6).
+
+### 14.6 Seventh round, 2026-10-09 (`wp/M02` @ `9142032`: WO-12a stopped at G10v3; WO-11a done; build log D73–D79)
+
+G10v3 failed, and the failure refuted §14.5 D1's premise, not its remedy (D77). The design lane's proposed ordering,
+measured in an uncommitted experiment (D78), meets G10v3 and G11v3-1 to -3, but no registered box qualifies. E1–E4
+rule the brief's four items; E5 is a finding. Register R-311 to R-314.
+
+**Authority.** This section amends §14.5 D1 (E1), D3 (E3) and D4 (E4), and the gates G10v3, G11v3-3, -4, -5 and -6.
+Where §14.5 and this section differ, this section governs. Everything else in §14.5 stands.
+
+**Facts this round rests on.** Sources: D77; D78; the experiment records in `evidence/M02/wo12a-experiment/artifacts/`
+(ignored, referenced by hash): `g11-exp.json` afa7325a…, `g10-exp.json` 65fac56b…, `child-experiment.patch` 65426a9f….
+The G11 record is one run, pool 8, loadavg 45–48.
+
+- **The certificate moves the state.** The group's `certify_convergence_1d` (pinned `reactor/paper/runner.py:548–596`)
+  marches `N_CERTIFY` = 20 pseudo-time steps and keeps the advanced state, and the outlet is extracted after it. So
+  every δ in D69, in the v1/v2 G10 and G11 records and in §14.5 D1's table is a post-certificate value. Right after
+  S3, δ = 4.03e-5…8.44e-5 at all 8 G10 runs. After the certificate it is 2.20e-8…3.84e-8.
+- **The proposed ordering works.** With δ read after the certificate and round 2 re-certified:
+  - G10v3 is met: round 2 ran nowhere, and all 8 outlets and all 8 `defect_round1` values are bitwise v2's.
+  - G11v3-1 is met: the projection defects are 1.70e-9, 1.12e-9 and 2.04e-11.
+  - G11v3-2 is met.
+- **Zero-inert inlets break two criteria.**
+  - The minimum axial flow belongs to Ar or CH₄. It is exactly 0.0, or between −1.8e-25 and −1.8e-27 mol/s, which is
+    at most 2.5e-23 relative to F_ret_in.
+  - A45's per-element relative defect is 0/0 for C and for Ar.
+- **No box qualifies.** B1 has 12 of 21 points `ok`, B2 11 of 19, B3 11 of 19. In each box all 8 zero-inert corners
+  fail:
+  - six end `nonpositive_flow`, after S1–S3, the certificate and the backflow check had all passed;
+  - the lowest-T, highest-P pair ends `S1` after 400 steps (643.15 K and 15 MPa; 653.15 K and 15 MPa; 653.15 K and
+    12.5 MPa);
+  - B1 also fails at M05's 643.15 K point: `S1` after 400 steps, at inerts 4.31 %, 10⁷ Pa, H₂/N₂ 3.000 and
+    0.811 × F_nom. That is M05's own reactor-inlet composition.
+
+  Every 0.2-inert corner, every centre (at 0.5, 1 and 2 ×) and M05's 733.15 K point end `ok`.
+- **S1 failures are real.** S1 runs before every change made in §14.5 or here, so its failures are not artifacts of
+  the acceptance criteria.
+
+**E1 (item 1, D77). δ is read from the state the outlet is extracted from, after the certificate. Round 2 runs only
+after a passed certificate, and the certificate runs again after round 2 (amends §14.5 D1; R-311).**
+
+The post-S3 sequence of profile `M01-S123-v2` becomes:
+
+1. S3 is accepted, else the stage is `S3`.
+2. certificate₁ = `certify_convergence_1d(reactor, status₃, meta)`, as under v1 and v2.
+3. δ₁ is computed from the reactor's flows with `outlet`'s formula, using E2's definition. It is recorded as
+   `stages.S3.defect_round1` whatever certificate₁'s verdict. Computing it is a read.
+4. If certificate₁ fails, the stage is `certificate`, as under v2. Round 2 does not run.
+5. If δ₁ ≤ δ_pol = 10⁻⁷, the outlet is extracted. This is v2's path with one read added.
+6. Otherwise round 2 runs on the same reactor object, with §14.5 D1's settings unchanged: target₂ = target/10,
+   `atol` = 0.1 × target₂, `rtol` 10⁻¹², `dt_init` 1, at most 400 steps.
+   - If the round does not converge, the stage is `S3`.
+   - If it converges, certificate₂ = `certify_convergence_1d(reactor, status_round2, meta)`, and its verdict decides:
+     the stage is `certificate` if it fails. Then the outlet is extracted.
+7. `diagnostics.certificate` holds the deciding certificate, which is certificate₂ when round 2 ran.
+   `stages.S3.round2` gains `certificate_round1`: certificate₁'s diagnostics, in the same shape.
+
+The trigger is written as `not (δ₁ ≤ 10⁻⁷)`, so a NaN δ₁ runs round 2. E2 defines δ₁ so that a NaN cannot depend on
+the order of evaluation.
+
+*Why.*
+- The boundary judges the defect of the state it is handed. D1's threshold argument ("every accepted evaluation
+  measured ≤ 4.7 × 10⁻⁸") was made about that state, which is now the quantity actually thresholded.
+- At every point v2 accepted, the sequence is v2's plus one read, so the result is bitwise v2's by construction. D78
+  measured that, and G10v3 and G11v3-2 assert it.
+
+*Why round 2 does not run after a failed certificate₁.* Round 2 answers D1's mechanism: S3's stopping rule at a
+certified state. Rescuing certificate failures would be a different change, and no measurement motivates it. D78's
+experiment re-certified unconditionally, but no measured point combined a failed certificate₁ with δ₁ > 10⁻⁷. The two
+`certificate` corners, both at 773.15 K and 5 MPa, had δ₁ = 5.05e-8 and 1.90e-8. So the two orderings agree on every
+measured point. The record states the number of points with a failed certificate₁ and δ₁ > 10⁻⁷ (expected 0).
+
+*Testability (required).* Steps 2–7 are a single function of three injected callables (certify, read δ, polish). The
+default gate tests that function without PyMRM (G11v3-10).
+
+*Rejected:*
+- **§14.5 D1 as written, with δ read right after S3.** Round 2 then runs at every evaluation (D77), which is the
+  alternative D1 itself rejected.
+- **Reading δ after the certificate without re-certifying after round 2.** The boundary would be handed a state the
+  certificate never judged.
+
+**E2 (item 2). Positivity is judged on the species present in the inlet, and A45's relative defect on the elements
+present in the inlet (M01 §8.7 Amendment 4; R-312).**
+
+*Definitions, in v3's child:*
+- **Present species.** Species i is present iff its *requested* inlet mole fraction, `tube_inlet.composition[i]`
+  (the child's input), is > 0, tested exactly.
+  - Presence is not tested on the model's inlet face (`retentate[0, :]`). An absent species' face value there can
+    carry roundoff of either sign, and a +10⁻²⁵ would make the species "present", with a relative defect near 1.
+  - The defect formula itself still uses the inlet face, as under v2.
+  - Inside the hard domain, H₂ and N₂ are always present (the H₂/N₂ bound), and so is NH₃ (the trace refusal, check
+    step 5). Only Ar and CH₄ can be absent.
+- **`nonpositive_flow`.** The stage is `nonpositive_flow` iff some axial flow of a present species, on any face, is
+  ≤ 0. `min_axial_flow_mol_s` keeps its name and becomes the minimum over present species.
+- **New diagnostics, recorded and not judged by the child:**
+  - `absent_species`: component ids in component order, `[]` when none is absent;
+  - `absent_species_max_abs_flow_mol_s`: the largest |flow| over absent species and all faces, `null` when none is
+    absent.
+- **Present element.** Element e is present iff E_e · y_req > 0, where y_req is the requested composition, tested
+  exactly. `element_defect_rel` holds exactly the present elements, in `ELEMENTS` order. An absent element has no
+  key.
+- **δ.** δ is the maximum over present elements of |`element_defect_rel`|, and it is NaN if any present value is NaN.
+  This reduction does not depend on order; for example: NaN if any value `isnan`, else `max`. Inside the domain H and
+  N are always present, so δ always has an operand.
+
+Positivity and the δ reduction are pure functions in `child.py`. Like `element_defects`, they take `np` as an argument,
+and they also take the requested composition.
+
+*Why this is not a relaxed check:*
+- **Absent species.** An absent species is an inert (Ar or CH₄), so the exact solution carries 0 on every face. Its
+  raw outlet value never reaches the process: the projection sets the outlet flow to its inlet value, exactly 0
+  (M01 §8.9). The boundary also judges the raw value: d_i = n_raw,i − 0 is held to 10⁻⁶ × n_tot,in, which is well
+  defined. The measured magnitude is at most 1.8e-25 mol/s.
+- **Absent elements.** An absent element's relative defect is 0/0 and carries no information. Its absolute content is
+  the absent species' flow, which the boundary judges as above.
+- **Inertness.** Where all five species are present, both definitions are v2's, bitwise. G10v3 and G11v3-2 assert
+  this.
+
+*Rejected:*
+- **Accepting axial flows ≥ −ε.** It needs an ε, and it still judges a species that carries no information.
+- **Normalizing an absent element's defect by n_tot,in.** One map would then hold values with two meanings.
+- **Writing `null` for an absent element.** `null` already means "screened non-finite" (§14.5 D2).
+- **Excluding absent species through the domain alone.** E3's floor bounds Ar + CH₄, not each species, so an Ar-only
+  inlet would still be ill-posed.
+
+*Zero-inert inlets in the shipped domain:* no. E2 makes them well-posed, and E3 excludes them on measurement.
+
+**E3 (item 3). v3's hard domain gains an inert-fraction floor. The candidate boxes become V1–V3, all with
+T_in ∈ [653.15, 693.15] K. M05's REAL box is [653.15, 693.15] K from now on, whichever rung is selected (amends
+§14.5 D3; supersedes R-304's box list and its B1 consequence; R-313).**
+
+*Facts that decide it:*
+- **B1–B3 cannot qualify after E1 and E2.** Each contains a zero-inert `S1` corner, and B1 also contains M05's 643.15 K
+  `S1` point. S1 runs before both changes.
+- **The C1 loop always carries inerts.** The makeup carries Ar and CH₄, the purge is fixed at 0.02 (M05 D10), and
+  G12's reactor inlet holds 4.31 % inerts. Neither M05 nor M07 needs a zero-inert inlet.
+- **§14.5 D3 misattributed the failures.** It attributed them to T_in alone. The box failures are attributable to
+  y_inert = 0, and at 643.15 K to the loop's own composition.
+
+*Ruling:*
+- `hard_domain` gains `inert_min`, with y_Ar + y_CH₄ ≥ `inert_min`. Below it the result is `out_of_domain`, naming
+  `inert_min`.
+  - An absent field means 0, which covers v1, v2 and the stand-in.
+  - In the schema it is an optional additive property of `model-variant.schema.json` → `hard_domain`. That schema is
+    M02's own: it is not on `main` and not in the frozen list. The change still needs ADR 0027 Amendment 3 (E5).
+- v3's `inert_min` = 0.02. That is 2.2 times below the loop's 4.31 %, which leaves room for the inert fraction to move
+  with T_in (Q-E1), and it is above 0.
+- **The family.** V1, V2 and V3 are tried in that order. v3's hard domain is the first rung whose 21 registered points
+  all end `ok` through the boundary in each of two full runs.
+
+| Rung | T_in (K) | P_in (MPa) | H₂/N₂ | y_inert | Centre (K, MPa, H₂/N₂, y_inert) | Why this rung |
+| --- | --- | --- | --- | --- | --- | --- |
+| V1 | [653.15, 693.15] | [5, 15] | [1, 4] | [0.02, 0.2] | (673.15, 10, 2.5, 0.1), B2's | B2 with the floor |
+| V2 | [653.15, 693.15] | [7.5, 12.5] | [2, 4] | [0.02, 0.2] | (673.15, 10, 3, 0.1), B3's | B3 with the floor |
+| V3 | [653.15, 693.15] | [9, 11] | [2.5, 3.5] | [0.02, 0.2] | (673.15, 10, 3, 0.1), B3's | The loop's own neighbourhood, nearest A41's measured state (653.15 K, 10⁷ Pa, 3.5 % inerts, F_nom) |
+
+All three rungs keep the flow bound [0.5, 2] × F_nom and `inert_max` 0.2. The loop's state (10⁷ Pa, H₂/N₂ 3.000,
+4.31 % inerts, 0.811 × F_nom) is interior to every rung, and so is G12's.
+
+*A rung's registered points (21):*
+- its 16 corners: T × P × H₂/N₂ × y_inert {0.02, 0.2}, built as §8.15 builds them (y_NH₃ 0.03, Ar:CH₄ 3:4, F_nom,
+  num_z 800), nudged into the rung by at most 2⁻⁴⁰;
+- its centre at 0.5, 1 and 2 × F_nom. The centre's y_inert is 0.1, not the geometric 0.11, so that B2's and B3's
+  measured centres carry over;
+- M05's two edge points: T_in 653.15 K and 693.15 K at 10⁷ Pa, with G12's reactor-inlet n (as in §14.5 D3) over 1000
+  tubes, i.e. 0.811 × F_nom per tube.
+
+V1's 0.2-inert corners are B2's, and V2's are B3's; all of them were `ok` under D78. New in each run: 24 floor corners,
+V3's 8 corners at 0.2, and M05's two points.
+
+*If no rung qualifies,* the WO stops and N7 turns on Frank: the loop's own neighbourhood would then need a new start
+strategy, which is outside M02's plan row.
+
+*Consequences:*
+- **M05 (N-F6).** M05's REAL box becomes [653.15, 693.15] K, N-F6's registered alternative. This is now unconditional:
+  M05's own composition fails S1 at 643.15 K, so no v3 box can contain the lower edge of [643.15, 733.15].
+  - It matters for M05: a bound-active real optimum at 643.15 K would sit exactly where the reactor refuses.
+  - M05's WO-5c can carry N-F6's pair now; it need not wait for WO-12b.
+  - M05's admissibility inequalities, generated from the boundary block, gain n_Ar + n_CH₄ − `inert_min` Σn ≥ 0 once
+    v3 is registered.
+- **M07 (K6).** The design space is as R-304 states, plus the floor: the reactor-inlet inert fraction must stay
+  ≥ 0.02.
+- **Refusal tests (G11v3-6, amended).**
+  - The face list gains `inert_min`. Moved outward by 10⁻⁹ relative, it gives `out_of_domain` naming `inert_min`;
+    nudged inward, it evaluates `ok`.
+  - For G11's 16 old corners the violation set is computed from the selected rung: `T_K` always, `inert_min` at the 8
+    zero-inert corners, and `P_Pa` and `H2_N2` where they lie outside.
+- **G9 (a1).** The narrower set gains `inert_min`, with the literal `hard_domain.inert_min None -> 0.02`.
+  `narrower_dimensions` treats an absent floor as 0.
+
+*Rejected:*
+- **Re-judging B1–B3 after E1 and E2.** They fail at S1, which runs before both changes.
+- **A box with P ∈ [5, 10] MPa.** It puts the loop's pressure on a face, and it is unmeasured at zero inerts.
+- **Raising T_in's lower bound, for example to 663.15 K.** M05 has not registered such a box, and it is unmeasured.
+- **`inert_min` ≥ 0.03.** It leaves too thin a margin over the loop's 4.31 % across M05's T range (Q-E1).
+- **Accepting the typed refusals at the zero-inert corners inside the domain.** It relaxes §14.5 D3's rule.
+- **A rung reaching 733.15 K.** It would help only M07, since M05 keeps [653.15, 693.15]. It can be added later as an
+  appended variant (N7).
+
+**E4 (item 4). D73–D76 are confirmed with E1's and E2's edits. §14.5 D4's timeout rule is confirmed (R-314).**
+
+- **D73** is confirmed. The provisional document is regenerated with WO-12a′'s runner hash. Its id is unchanged,
+  because it is never registered, and the default-gate difference-set test is unchanged.
+- **D74** is confirmed, as amended by E1 (the read point, the certificate rerun, `certificate_round1`) and by E2
+  (present elements, the NaN-propagating δ).
+  - The profile id stays `M01-S123-v2`. No registered variant and no shipped record binds it.
+  - WO-12a's committed G10v3 record (`1328da0`) is identified by its runner hash. WO-12a′ replaces the file and names
+    the superseded record's hash in the build log.
+- **D75** is confirmed. E2 removes the source of the zero-inert C/Ar NaN, and §14.5 D2 stays as the guard.
+- **D76** is confirmed and extended. The script builds V1–V3, runs G11v3-8's points directly, and compares S1
+  outcomes with the D78 record.
+- **The timeout** follows §14.5 D4 as written. Its sample is every completed evaluation whose inlet lies in the
+  selected rung (floor included), over both runs.
+  - For orientation, D78 gave 360–370 s at loadavg 45–48, from slowest in-box walls of 118–121 s.
+  - The load is recorded and not corrected for.
+
+**E5 (finding; not written here). ADR 0027 needs an Amendment 3 before WO-12b lands.**
+
+Three ADR 0027 statements contradict this round:
+- D6 says "every flow is positive" (E2);
+- Amendment 2 says "the first of three registered boxes" (E3);
+- D3's hard domain has no inert floor (E3).
+
+This document does not edit the ADR. The proposed text:
+- D6's positivity clause applies to the species present in the inlet. An absent species (only Ar or CH₄ can be) is
+  judged by D3's projection defect.
+- A45's relative element defect is taken over the elements present in the inlet.
+- The polish round reads δ after the KPI-drift certificate, and the certificate is repeated after the round.
+- The real variant's hard domain may carry `inert_min` (absent means 0). v3's domain is the first of V1–V3
+  (M02 §14.6 E3). Amendment 2's "three registered boxes" is superseded.
+- Acceptance evidence: G10v3, G11v3-1 to -10, and G12v3-1.
+
+WO-12a′ does not depend on the amendment. It produces evidence only (`judged: false`), on the provisional variant,
+which carries v2's boundary block. WO-12b depends on it.
+
+**Gates as amended (numbered; the manifest cites them)**
+
+- **G10v3.** As §14.5, plus: `defect_round1` equals v2's recorded `element_defect_max` bitwise at all 8 runs.
+- **G11v3-1, G11v3-2, G11v3-7.** Unchanged.
+- **G11v3-3.**
+  - None of the 16 old corners ends `error`, and each stage is recorded. No corner is expected to end `nonfinite`.
+  - The three 773.15 K zero-inert corners that ended `nonpositive_flow` under D78 must not end `nonpositive_flow`. If
+    one does, the WO stops: E2's diagnosis is refuted.
+  - The 773.15 K, 5 MPa, H₂/N₂ 1 zero-inert corner ends `certificate`.
+  - A repeat of one refused corner is a cache hit with no new attempt.
+- **G11v3-4.** The V1, V2 and V3 point sets are all measured in both runs, whichever rung is selected. The record
+  states the selection and the selected rung. If no rung qualifies, the WO stops.
+- **G11v3-5.** As §14.5, plus one clause. These points ended `S1` under D78 and are run again here:
+  - the old 573.15 K `S1` corners;
+  - B2's two zero-inert corners at 653.15 K and 15 MPa;
+  - M05's 643.15 K point.
+
+  Each must end `S1` in both runs. S1 runs before every change, so any other outcome is an unintended change, and the
+  WO stops.
+- **G11v3-6 (default gate, WO-12b).** As amended by E3.
+- **G11v3-8 (opt-in; E2).** B2's 8 zero-inert corners (B2 as registered in §14.5, nudged into B2) are evaluated
+  directly in both runs:
+  - (a) The six that ended `nonpositive_flow` under D78 end with another outcome, `ok` or a different typed stage,
+    which is recorded. If any still ends `nonpositive_flow`, the WO stops.
+  - (b) Every corner that passes S1 has `absent_species` = `["Ar", "CH4"]`, `element_defect_rel` keys exactly H and N,
+    and no `nonfinite_paths` entry under `/diagnostics/element_defect_rel`.
+  - (c) At those same corners, `absent_species_max_abs_flow_mol_s` ≤ 10⁻¹² × F_ret_in.
+  - (d) The two corners at 653.15 K and 15 MPa end `S1`, as G11v3-5 requires.
+- **G11v3-9 (default gate; E2's pure functions).**
+  - (a) With all five species present, `element_defects` returns all four elements in `ELEMENTS` order. The values
+    equal, bitwise, the formula (w·n_out − w·n_in)/(w·n_in), which the test computes independently.
+  - (b) With requested y_Ar = y_CH₄ = 0.0, the keys are exactly H and N, with the same values as (a)'s formula, and
+    no NaN. This holds even when the inlet-face Ar and CH₄ values passed in are +1e-25 rather than 0.0.
+  - (c) With requested y_Ar = 0.0 and y_CH₄ > 0, the keys are exactly H, N and C.
+  - (d) The δ reduction:
+    - every permutation of the present values gives the same δ;
+    - a NaN in any position gives NaN;
+    - δ = 10⁻⁷ does not trigger round 2, and the next float above 10⁻⁷ does.
+  - (e) Positivity on a retentate array:
+    - absent species at 0.0 and at −1e-25, with present species > 0: not refused, the minimum is the minimum over
+      present species, `absent_species` = `["Ar", "CH4"]`, and the absent maximum is 1e-25;
+    - a present species at 0.0 or −0.0 on one face: refused.
+- **G11v3-10 (default gate; E1's sequence, with stub callables).** Each case asserts the stage, how many times the
+  certificate and the polish are called, and which certificate `diagnostics.certificate` holds.
+
+  | # | Scripted inputs | Expected |
+  | --- | --- | --- |
+  | 1 | certificate₁ fails | `certificate`; no polish; δ₁ recorded |
+  | 2 | certificate₁ passes; δ₁ = 3e-8 | outlet; certificate called once; no polish |
+  | 3 | certificate₁ passes; δ₁ = 2e-7; polish converges; certificate₂ passes | outlet; certificate called twice; `diagnostics.certificate` = certificate₂; `round2.certificate_round1` = certificate₁ |
+  | 4 | as 3, but the polish fails | `S3`; certificate called once |
+  | 5 | as 3, but certificate₂ fails | `certificate` |
+  | 6 | as 3, but δ₁ is NaN | as 3 |
+  | 7 | the δ stub returns 5e-5 until the certificate has been called, and 3e-8 after | outlet; no polish |
+
+  Case 7 is D77's regression: it fails if δ is read before the certificate.
+- **G12v3-1.** Unchanged.
+
+*Tolerances.* Every clause above is exact (stages, counts, keys, bitwise equality), except G11v3-8 (c). For that
+clause:
+- the roundoff floor is the measured 2.5e-23 relative (D78);
+- the smallest error worth catching is an absent species created at a level the boundary would see, 10⁻⁶;
+- 10⁻¹² sits ten decades above the floor and six decades below that level.
+
+**Work orders (this round)**
+
+| WO | Owner | Content | Depends | Acceptance |
+| --- | --- | --- | --- | --- |
+| **WO-12a′** | Opus, **R** | E1 and E2 in v3's child, with the post-S3 function and E2's pure functions; the provisional variant regenerated; G11v3-9 and G11v3-10. Scripts: V1–V3, G11v3-8, and G11v3-5's S1 comparison with the D78 record. Runs: G10v3 once and G11v3 twice in full. Records: `g10-adapter-halves-v3.json` and `g11-coverage-v3.json` (both `judged: false`), replacing 1328da0's | — | G10v3; G11v3-1 to -5 and -7 to -10; default gate green |
+| **WO-12b** | Opus | As §14.5, plus `inert_min` in the schema (optional), `variants.py`, the boundary's hard-domain check, `reactor.py`'s domain text and `replacement.py`'s narrower set. G11v3-6 as amended; G9 (a1) with `inert_min` | WO-12a′, WO-14, ADR 0027 Amendment 3 (E5) | As §14.5 |
+| **WO-13** | bounded | Unchanged; run last | all | As §9 |
+
+On `wp/M05`, M05's WO-5c carries N-F6's pair now (REAL box [653.15, 693.15] K). It adds the `inert_min` inequality
+once v3 is registered.
+
+**Open questions (each with the default the work proceeds on)**
+
+- **Q-E1 (needs a fact).** What reactor-inlet inert fraction does M05's loop have at T_in 653.15 K and 693.15 K?
+  - It is settled by M05's loop at the two edges: the stand-in now, the real reactor after WO-12b.
+  - Default: `inert_min` = 0.02.
+  - If either value is below 0.03 (a margin of 1.5), the design lane revisits the floor before M05's real study.
+- **Q-E2 (needs a fact).** What happens to an inert present only at a trace level? Presence is exact, so such an inlet
+  can be refused `nonpositive_flow`: a typed refusal, never a silent result. Default: a stated limitation, not
+  measured in M02.
+- **Q-E3 (needs Frank's preference; part of N7).** Should v0.2 ship the real reactor without zero-inert inlets?
+  Default: yes. Reversible by: an appended variant.
+
+**Needs Frank (§12 N7, updated).** DECISION: v0.2 ships the real reactor on the first of V1–V3 that measurement
+selects. Zero-inert inlets are outside its domain. Alternative: fund a new start strategy before 0.2.0. Reversible
+by: a later variant with a wider box, appended. N7 needs Frank only if no rung qualifies.
+
+**What this round does not establish** (added to §13)
+- That the reactor evaluates everywhere inside the selected rung. S1's failure region near 643–653 K is irregular, so
+  corner sampling can miss interior failures. At 643.15 K:
+  - 5 MPa with no inerts passes S1;
+  - 10⁷ Pa with 4.31 % inerts fails;
+  - 15 MPa with 20 % inerts passes;
+  - 15 MPa with no inerts fails.
+- That inlets carrying only one of Ar and CH₄ are accepted. E2 makes them well-posed, but none was measured with the
+  real reactor.
+- That zero-inert inlets fail everywhere. Only that they fail S1 at registered corners.
+- That E1's re-certification behaves well where certificate₂ fails. No measured point exercised it.
+- That M05's loop stays above the floor across its box (Q-E1).

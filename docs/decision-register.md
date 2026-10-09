@@ -5552,3 +5552,114 @@ stand-in variant and a re-take of the stand-in loop and G8.
 **Watch for.** The stand-in module changing for any reason: correct the sentence in that same new variant.
 
 ---
+
+## R-311 — The real reactor's child reads A45's defect after the certificate; round 2 runs only after a passed certificate and is re-certified (amends R-303)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D77 and D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E1; M01 §8.7 Amendment 4 |
+| Evidence | D77: the group's certificate marches 20 pseudo-time steps and keeps the state. Right after S3, δ = 4.0e-5…8.4e-5 at every G10 run; every recorded δ was post-certificate (2.2e-8…3.8e-8). D78: the post-certificate ordering meets G10v3 (bitwise v2) and G11v3-1 (projection defects 1.7e-9, 1.1e-9, 2.0e-11) |
+| Affected packages | M02 (v3's child, profile `M01-S123-v2`), M01 (pointer), M05 (binds v3) |
+
+**Decision.**
+- δ₁ is read after certificate₁, from the state the outlet is extracted from.
+- If certificate₁ fails, the stage is `certificate`, and round 2 does not run.
+- If δ₁ ≤ 10⁻⁷, the evaluation follows v2's path.
+- Otherwise round 2 runs at target/10, then certificate₂, and certificate₂'s verdict decides.
+- The trigger is `not (δ₁ ≤ 10⁻⁷)`. The sequence is one function of injected callables, tested in the default gate.
+
+**Rejected alternatives, and why.**
+- §14.5 D1 as written, with δ read right after S3: round 2 runs at every evaluation, which tightens S3 everywhere.
+- Rescuing a failed certificate₁ with round 2: no measurement motivates it.
+- Not re-certifying after round 2: the boundary would be handed a state the certificate never judged.
+
+**Watch for.** Any change to the group's certificate, which moves the state that δ describes.
+
+---
+
+## R-312 — Positivity is judged on the species present in the inlet, and A45's relative defect on the elements present in the inlet
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E2; M01 §8.7 Amendment 4. ADR 0027 D6 needs Amendment 3 (§14.6 E5) |
+| Evidence | D78: at zero-inert inlets the minimum axial flow is Ar's or CH₄'s, exactly 0.0 or −1.8e-25…−1.8e-27 mol/s, and A45's C and Ar defects are 0/0. Python's `max` over a list holding NaN depends on the order |
+| Affected packages | M02 (v3's child), M01 (pointer), ADR 0027 (finding) |
+
+**Decision.**
+- A species is present iff its requested inlet mole fraction (`tube_inlet.composition`) is > 0. It is not tested on
+  the model's inlet face, which carries roundoff. `nonpositive_flow` judges present species only.
+- New diagnostics: `absent_species` and `absent_species_max_abs_flow_mol_s`.
+- `element_defect_rel` holds the present elements only.
+- δ is the maximum over present elements, and NaN if any present value is NaN.
+- Where all five species are present, everything is bitwise v2.
+
+**Rejected alternatives, and why.**
+- A tolerance ε on positivity: it needs an ε, and it still judges a species that carries no information.
+- Normalizing an absent element by n_tot,in: one map would hold values with two meanings.
+- `null` for an absent element: `null` already means a screened non-finite value.
+- The domain alone: the floor bounds Ar + CH₄, not each species.
+
+**Watch for.** A species that can be absent and is not inert. Today none can be: H₂/N₂ is bounded and NH₃ has its
+trace refusal.
+
+---
+
+## R-313 — v3's hard domain gains `inert_min` = 0.02; the candidate boxes become V1–V3, all at T_in ∈ [653.15, 693.15] K; M05's REAL box is [653.15, 693.15] K unconditionally (supersedes R-304's box list)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E3. ADR 0027 needs Amendment 3 (§14.6 E5) |
+| Evidence | D78: B1 12/21, B2 11/19, B3 11/19 `ok`. In each box every zero-inert corner fails, the low-T, high-P pair at `S1`. M05's 643.15 K point fails at `S1` with 4.31 % inerts. Every 0.2-inert corner, every centre and M05's 733.15 K point are `ok` |
+| Affected packages | M02 (v3, schema `hard_domain.inert_min`, boundary, G9 (a1)), M05 (N-F6 now; the floor inequality), M07 (design space) |
+
+**Decision.**
+- The family: V1 = B2's box with y_inert ∈ [0.02, 0.2], V2 = B3's box with the same floor, and V3 = 653.15–693.15 K,
+  9–11 MPa, H₂/N₂ 2.5–3.5, with the same floor.
+- Each rung has 21 registered points: 16 corners, its centre at three flows, and M05's points at 653.15 K and
+  693.15 K.
+- The first rung that is all `ok` in two runs is selected. If none is, the WO stops and N7 goes to Frank.
+- Zero-inert inlets are outside v3's domain.
+
+**Rejected alternatives, and why.**
+- Re-judging B1–B3: they fail at S1, which runs before every change.
+- A P ≤ 10 MPa box: the loop's pressure would sit on a face, and it is unmeasured.
+- Raising the T_in bound: M05 has not registered such a box.
+- A floor ≥ 0.03: too thin a margin under the loop's 4.31 %.
+- Accepting the zero-inert refusals: it relaxes the rule.
+
+**Watch for.** Q-E1: M05's loop inert fraction at 653.15 K and 693.15 K. Below 0.03, the design lane revisits the
+floor.
+
+---
+
+## R-314 — D73–D76 confirmed; the timeout rule of R-304 is confirmed on the selected rung
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E4 |
+| Evidence | D73–D76 as built. D78: the timeout rule gives 360–370 s at loadavg 45–48 |
+| Affected packages | M02 |
+
+**Decision.**
+- D73 (child in place, provisional variant): confirmed.
+- D74: confirmed, as amended by R-311 and R-312. The profile id stays `M01-S123-v2`, since no registered variant binds
+  it.
+- D75: confirmed.
+- D76: confirmed, and extended to V1–V3 and G11v3-8.
+- The timeout is max(120, 3 × the slowest wall over every completed in-rung evaluation, over both runs), rounded up
+  to 10 s.
+
+**Rejected alternatives, and why.** Bumping the profile id: no shipped record binds it, and the runner hash already
+separates the superseded record.
+
+**Watch for.** Host load at the registration run. It is recorded, not corrected.
+
+---

@@ -2,7 +2,7 @@
 
 **Status:** design lane (`specifier`), 2026-10-08. **Draft for review**, **amended twice** (Amendment 1, 2026-10-08,
 §19: rulings on the build lane's measurements at `13bcef7`; Amendment 2, 2026-10-08, §20: the closure of the design-lane
-review's findings, `docs/reviews/M01-review.md`; Amendment 3, 2026-10-09, a pointer in §8.7, M02 R-303); the build lane implements against it, a
+review's findings, `docs/reviews/M01-review.md`; Amendment 3, 2026-10-09, a pointer in §8.7, M02 R-303; Amendment 4, 2026-10-09, a pointer in §8.7, M02 R-311, R-312); the build lane implements against it, a
 `reviewer` reviews the implementation, a `verdict` judges W22 and M01's part of W21 from the evidence.
 **Package:** M01 (plan v1.2 §4.4: *pin the selected PyMRM reactor and one required nonideal property route; derive
 process boundary mappings. Acceptance: model/source/data rights, numerical refinement evidence,
@@ -503,6 +503,16 @@ Profile `M01-S123-v2` (M02 design note §14.5 D1, D2) makes two changes:
 
 The v1 profile of this section, the probe record and A41–A48's record halves are unchanged. M02 re-measures the
 adapter halves under v2 (G10v3).
+
+**Amendment 4 (2026-10-09, M02 R-311, R-312): when δ is read, and which species and elements are judged.** The
+normative text is M02's design note §14.6 E1 and E2.
+- Profile `M01-S123-v2` reads δ after the KPI-drift certificate, which advances the state, from the state the outlet
+  is extracted from. Round 2 runs only after a passed certificate, and the certificate is repeated after the round.
+- "Every axial flow > 0" (the acceptance above) applies to the species present in the requested inlet (mole fraction > 0). An absent
+  species, which can only be Ar or CH₄, is judged by §8.9's projection defect.
+- A45's relative element defect is taken over the elements present in the inlet. An absent element (0/0) has none.
+
+Every registered M01 state carries all five species, so the record halves of A41–A48 are unchanged.
 
 ### 8.8 Pressure: the zero-pressure-drop convention
 
