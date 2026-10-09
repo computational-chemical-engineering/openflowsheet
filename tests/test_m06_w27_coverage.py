@@ -12,8 +12,10 @@ from __future__ import annotations
 
 import copy
 import json
+import re
+from dataclasses import dataclass
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any
 
 import pytest
@@ -480,6 +482,154 @@ def test_the_0_1_1_reading_refuses_a_binder_with_basis_provider() -> None:
         snapshot.reading_for(multi_basis, "0.1.1")
     with pytest.raises(snapshot.SnapshotUnsupportedError, match="route enumeration"):
         snapshot.build_snapshot(version="0.1.1", binding=multi_basis)
+
+
+# -- W27-R63 item 1, `bases-v1`, on a constructed binder ------------------------------------------
+# TEST INPUT, not a registry: M02 is not merged, so today's binder exposes neither table. The
+# module below mirrors the shape §21.8 J1 asks M02's join to expose in `revision_binding`
+# (`SELECTABLE_BASES` of `ComponentBasis`-like values, `MODEL_BASES`, `MODEL_BUILDERS`,
+# `basis_provider`), with the recommended `MODEL_BASES` (each model on its own basis, F-A2-1).
+
+
+@dataclass(frozen=True)
+class _ConstructedBasis:
+    """TEST INPUT: the two members of M02's `ComponentBasis` the reading reads."""
+
+    provider_id: str
+    components: tuple[str, ...]
+
+
+TODAY_MODEL_IDS = sorted(m["model_id"] for m in TODAY["models"])
+C1_MODEL_IDS = sorted(
+    m for m in registration.load()["units"]["model_functions"] if m.startswith("c1.")
+)
+
+
+def constructed_binder(
+    model_bases: dict[str, frozenset[str]] | None = None,
+    bases: tuple[_ConstructedBasis, ...] | None = None,
+    provider: Any = None,
+) -> ModuleType:
+    """TEST INPUT: a binder module of the shape M02's join exposes (§21.8 J1)."""
+    from openflowsheet.thermo import pr_c1  # noqa: PLC0415
+    from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: PLC0415
+
+    syn001 = _ConstructedBasis("syn001", tuple(Syn001Provider().describe().components))
+    c1 = _ConstructedBasis(pr_c1.PROVIDER_ID, pr_c1.COMPONENTS)
+    if model_bases is None:
+        model_bases = {m: frozenset({"syn001"}) for m in TODAY_MODEL_IDS}
+        model_bases |= {m: frozenset({pr_c1.PROVIDER_ID}) for m in C1_MODEL_IDS}
+
+    def basis_provider(basis: _ConstructedBasis) -> Any:
+        if provider is not None:
+            return provider
+        return pr_c1.PrC1Provider() if basis.provider_id == pr_c1.PROVIDER_ID else Syn001Provider()
+
+    module = ModuleType("constructed_revision_binding")
+    module.SELECTABLE_BASES = (syn001, c1) if bases is None else bases  # type: ignore[attr-defined]
+    module.MODEL_BASES = model_bases  # type: ignore[attr-defined]
+    module.MODEL_BUILDERS = dict.fromkeys(model_bases)  # type: ignore[attr-defined]
+    module.basis_provider = basis_provider  # type: ignore[attr-defined]
+    return module
+
+
+def _syn001_provider() -> Any:
+    from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: PLC0415
+
+    return Syn001Provider()
+
+
+def test_bases_v1_is_chosen_by_the_tables_whatever_the_version() -> None:
+    binder = constructed_binder()
+    assert snapshot.reading_for(binder, "0.1.1") == "bases-v1"
+    assert snapshot.reading_for(binder, "0.2.0") == "bases-v1"
+    only_one = constructed_binder()
+    del only_one.MODEL_BASES
+    with pytest.raises(snapshot.SnapshotUnsupportedError, match="route enumeration"):
+        snapshot.reading_for(only_one, "0.1.1")  # it has basis_provider: not 0.1.1 either
+
+
+def test_bases_v1_reads_the_hypothetical_v02_routes() -> None:
+    """§21.8 J3's expectation: with the recommended MODEL_BASES the reading gives the routes of
+    `dry_illustration.json#/snapshots/hypothetical_v02/snapshot`, route for route."""
+    routes = snapshot._routes_bases_v1(constructed_binder(), TODAY_MODEL_IDS + C1_MODEL_IDS)
+    assert routes == HYPOTHETICAL["routes"]
+    assert routes[0] == TODAY["routes"][0]  # SYN-001's route is 0.1.1's
+
+
+def test_bases_v1_with_syn001_models_on_both_bases() -> None:
+    """J3's other expectation (F-A2-1 answered "SYN-001's models bind on both")."""
+    model_bases = {m: frozenset({"syn001", "pr-c1-v1"}) for m in TODAY_MODEL_IDS}
+    model_bases |= {m: frozenset({"pr-c1-v1"}) for m in C1_MODEL_IDS}
+    routes = snapshot._routes_bases_v1(
+        constructed_binder(model_bases), TODAY_MODEL_IDS + C1_MODEL_IDS
+    )
+    assert routes[0] == HYPOTHETICAL["routes"][0]
+    assert routes[1]["model_ids"] == AMENDMENT_2["binder_2587f14"]["c1_route_model_ids"]
+    assert routes[1]["components"] == HYPOTHETICAL["routes"][1]["components"]
+
+
+def test_bases_v1_build_snapshot_on_a_constructed_binder() -> None:
+    """Through `build_snapshot`: `list_models` is this build's (today's 13 ids), so a binder whose
+    tables hold the C1 ids refuses, and one whose C1 basis carries no model reads."""
+    with pytest.raises(snapshot.SnapshotUnsupportedError, match="list_models-only"):
+        snapshot.build_snapshot(binding=constructed_binder())
+    today_only = constructed_binder({m: frozenset({"syn001"}) for m in TODAY_MODEL_IDS})
+    live = snapshot.build_snapshot(binding=today_only)
+    assert live["routes_per_revision"] == 1
+    assert live["routes"][0] == TODAY["routes"][0]
+    assert live["routes"][1] == {**HYPOTHETICAL["routes"][1], "model_ids": []}
+    coverage.check_snapshot(live, FACTS)
+
+
+@pytest.mark.parametrize(
+    ("make", "needle"),
+    [
+        (
+            lambda: constructed_binder(
+                bases=(_ConstructedBasis("pr-c1-v1", ("H2", "N2", "NH3", "Ar", "CH4")),),
+                provider=_syn001_provider(),
+            ),
+            "its provider describes 'syn001'",
+        ),
+        (
+            lambda: constructed_binder(
+                bases=(_ConstructedBasis("pr-c1-v1", ("N2", "H2", "NH3", "Ar", "CH4")),)
+            ),
+            "its provider describes 'pr-c1-v1'",
+        ),
+        (
+            lambda: constructed_binder(
+                bases=(_ConstructedBasis("x-prov", ("H2",)),),
+                provider=SimpleNamespace(
+                    describe=lambda: SimpleNamespace(
+                        provider_id="x-prov", components=("H2",), phases=("VAPOR",)
+                    )
+                ),
+            ),
+            "provider 'x-prov': no registered records",
+        ),
+        (
+            lambda: constructed_binder(
+                {**{m: frozenset({"syn001"}) for m in TODAY_MODEL_IDS}, "c1.reactor": frozenset()}
+            ),
+            "models on no selectable basis ['c1.reactor']",
+        ),
+    ],
+    ids=["provider-id", "component-order", "unregistered-provider", "model-on-no-basis"],
+)
+def test_bases_v1_refusals(make: Any, needle: str) -> None:
+    binder = make()
+    ids = sorted(binder.MODEL_BASES)
+    with pytest.raises(snapshot.SnapshotUnsupportedError, match=re.escape(needle)):
+        snapshot._routes_bases_v1(binder, ids)
+
+
+def test_bases_v1_refuses_tables_that_disagree() -> None:
+    binder = constructed_binder()
+    binder.MODEL_BUILDERS = dict.fromkeys(TODAY_MODEL_IDS)
+    with pytest.raises(snapshot.SnapshotUnsupportedError, match=re.escape("MODEL_BASES-only")):
+        snapshot._routes_bases_v1(binder, TODAY_MODEL_IDS)
 
 
 def _revision_over(components: list[str]) -> dict[str, Any]:
