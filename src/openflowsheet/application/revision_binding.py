@@ -119,6 +119,7 @@ __all__ = [
     "instance_contract",
     "pin_encodings",
     "render_encoding",
+    "resolve_surrogate",
     "specification_rows",
     "target_path_table",
 ]
@@ -1384,10 +1385,18 @@ def _c1_reactor_surrogate(
 def _resolve_surrogate(
     instance: InstanceView, surrogates: SurrogateResolver | None
 ) -> Mapping[str, Any] | None:
-    """M04 spec §8.2: the instance's SurrogateManifest, or `None` — no resolver, an unknown hash,
-    a document whose canonical SHA-256 is not `model.artifact_ref`, a `model.version` that is not
-    its `surrogate_id`, or a manifest its checker refuses (M04.A24)."""
-    reference = instance.model_artifact_ref
+    """M04 spec §8.2: the instance's SurrogateManifest, or `None` (`resolve_surrogate`)."""
+    return resolve_surrogate(instance.model_version, instance.model_artifact_ref, surrogates)
+
+
+def resolve_surrogate(
+    version: str | None, reference: str | None, surrogates: SurrogateResolver | None
+) -> Mapping[str, Any] | None:
+    """M04 spec §8.2: the SurrogateManifest a `c1.reactor_surrogate` reference names, or `None` —
+    no resolver, an unknown hash, a document whose canonical SHA-256 is not `reference`
+    (`model.artifact_ref`), a `version` (`model.version`) that is not its `surrogate_id`, or a
+    manifest its checker refuses (M04.A24). The binder's resolution and the replacement check's
+    (spec §8.3, `resolvable`)."""
     if surrogates is None or reference is None:
         return None
     manifest = surrogates(reference)
@@ -1400,7 +1409,7 @@ def _resolve_surrogate(
         return None
     if check_manifest(manifest):
         return None
-    if manifest["surrogate_id"] != instance.model_version:
+    if manifest["surrogate_id"] != version:
         return None
     return manifest
 

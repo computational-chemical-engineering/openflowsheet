@@ -46,6 +46,7 @@ from openflowsheet.studies.surrogate.conformal import (
     WIDTH_DT_K,
     WIDTH_X,
     StudyEvidence,
+    StudyVerdict,
     clopper_pearson_lower,
     conformal_band,
     coverage_hits,
@@ -78,6 +79,7 @@ __all__ = [
     "QUALIFICATIONS",
     "build_records",
     "check_manifest",
+    "derived_verdict",
     "familywise_bound",
     "qualifications",
     "schema_errors",
@@ -455,6 +457,35 @@ def _scores(values: Any) -> tuple[float | None, ...]:
     return tuple(None if v is None else float(v) for v in values)
 
 
+def derived_verdict(manifest: Mapping[str, Any]) -> StudyVerdict:
+    """The verdict of spec §7.3 re-derived from a schema-valid manifest's stored metrics — its
+    scores, fit, gradient errors, domain counts and splits — never read from `promotion`. The
+    checker compares it with the recorded verdict (M04.A24); the replacement check judges
+    promotion by it (spec §8.3, `surrogate_evidence`)."""
+    splits = manifest["splits"]
+    fit = manifest["predictor"]["fit"]
+    gradient = manifest["gradient"]["centres"]
+    errors: tuple[float, ...] | None = None
+    if gradient and all(c["status"] == "ok" and c["errors"] is not None for c in gradient):
+        errors = tuple(float(c["errors"][o]) for c in gradient for o in ("X", "dT_K"))
+    complete = not any(splits[split]["incomplete"] for split in SPLITS)
+    return study_verdict(
+        StudyEvidence(
+            budget_ok=True,
+            plan_complete=complete,
+            training_ok=int(fit["training_ok"]),
+            singular_value_ratio=None
+            if fit["singular_value_ratio"] is None
+            else float(fit["singular_value_ratio"]),
+            calibration_scores=_scores(manifest["calibration"]["scores"]),
+            test_scores=_scores(manifest["evaluation"]["scores"]),
+            gradient_errors=errors,
+            inadmissible=int(manifest["domain"]["inadmissible_predictions"]),
+            extrapolated=int(manifest["domain"]["parent_extrapolated"]),
+        )
+    )
+
+
 def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     """Every inconsistency of `manifest` that its schema cannot express (M04.A24); empty when
     none. The schema is checked first; a manifest that fails it is not read further."""
@@ -545,27 +576,7 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
         found.append(f"lower_bound {stored!r} is not L(H, m) = {lower!r}")
 
     # The verdict, re-derived from the stored metrics (spec §7.3).
-    fit = manifest["predictor"]["fit"]
-    gradient = manifest["gradient"]["centres"]
-    errors: tuple[float, ...] | None = None
-    if gradient and all(c["status"] == "ok" and c["errors"] is not None for c in gradient):
-        errors = tuple(float(c["errors"][o]) for c in gradient for o in ("X", "dT_K"))
-    complete = not any(splits[split]["incomplete"] for split in SPLITS)
-    derived = study_verdict(
-        StudyEvidence(
-            budget_ok=True,
-            plan_complete=complete,
-            training_ok=int(fit["training_ok"]),
-            singular_value_ratio=None
-            if fit["singular_value_ratio"] is None
-            else float(fit["singular_value_ratio"]),
-            calibration_scores=cal_scores,
-            test_scores=test_scores,
-            gradient_errors=errors,
-            inadmissible=int(manifest["domain"]["inadmissible_predictions"]),
-            extrapolated=int(manifest["domain"]["parent_extrapolated"]),
-        )
-    )
+    derived = derived_verdict(manifest)
     promotion = manifest["promotion"]
     recorded = (
         promotion["verdict"],
