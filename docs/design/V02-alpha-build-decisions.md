@@ -37,3 +37,32 @@ disk). (iv) s_1 replaced by the identity.
 B-WO5-7 **CI gating.** `rc_alpha` joins `rc` in the `if` of `dist`, `bundle-set`, `rc-steps`, `rc-ensemble`
 (`clean-install` and `bundle-replay` follow by `needs`); in `rc-steps` the 0.1 surface step is now `if: always() &&
 inputs.rc` and the alpha's `if: always() && inputs.rc_alpha`. The `rc` path's behaviour is unchanged.
+
+## WO-8 (the harvest of T08's manifest; commit `e808406`)
+
+The E/S/P/B classification is a design-lane read (spec §15, as T08.A21's was). The draft, item by item, in
+`benchmarks/t08/support_envelope.yaml` (T08 manifest `67c66d98…`):
+
+B-WO8-1 **Restated rows.** `limitations[12..57]` are T08's restatements "Lxx: …" of envelope rows; each is E to its own
+row (46 items). Alternative: P (they duplicate the envelope).
+
+B-WO8-2 **V14 (b).** `limitations[2]`, `checks[42]` (T08.A70) and `checks[67]` (T08.B23) are E to L01 (precedent:
+T04 `limitations[11]`). Alternative: also carry B8 (PTC-R1 qualification) as a second pointer.
+
+B-WO8-3 **E with a judgement.** `[5]` (A45 under policy v2, pivot paths not compared) E L07; `[11]` (bitwise,
+portability) E L07, L15; `[7]` (V19 feasibility) E L42, since the shipped `pr-c1-v1` row now carries the user-facing
+remainder (vapour-only light gases, no mixture VLE validation, k_ij = 0). Alternative for `[7]`: S to M01's
+`check:M01.A38`–`A40` (K_NH₃ pinned by R-152, property values chosen by M01).
+
+B-WO8-4 **P.** `[0]` evidence class (precedent T07, M06 P; T06 chose E L18), `[1]` verdicts outside the schema,
+`[3]` test provenance, `[4]` §A4.6 attestation, `[6]` B50 amended by Frank, `[8]` library-only (no envelope row or
+backlog id names it), `[9]` A34's scope at T08's RC (MR-11 widens A34 for the alpha but not to replays), `[10]` RC
+record storage. Questions: should `[8]` become an envelope row, and `[9]` a backlog id?
+
+B-WO8-5 **The v0.1 size quote.** `test_a21_every_item_is_classified_once_and_resolves` filtered manifests by first
+letter P/K/T, which now admits T08; it is scoped to exclude `evidence/T08/`, matching its comment ("18 manifests of
+P00–T07"). Alternative: move the quote to `t08_reference.py`'s `HARVEST_PACKAGES`.
+
+B-WO8-6 **Size and the matrix now.** `HARVEST_SIZE = (23, 316, 29)` is the tree's size today; WO-10 re-reads it at
+`C_α` and M07a's manifest quotes it. `docs/support-matrix.md` is re-emitted now because T08.A23 requires it to match
+the harvest; WO-10 re-emits it again after the `C_α` pin of `envelope_id` and `release` (not done here).
