@@ -42,6 +42,13 @@ on:
         description: "T08 W4.4: the release-candidate job (release spec §8.2) at this commit; includes rc_distribution"
         type: boolean
         default: false
+      # M07a WO-5 (V02 alpha release spec §8.2): `0.2.0a1`'s RC job, steps 1–10 — the same jobs as
+      # `rc`, with step 8 the alpha's surface chain and G16-b (`scripts/m07a_rc.py surface`,
+      # M07a.A37) in place of T08.A49's. Dispatched by the session at `C_α` only.
+      rc_alpha:
+        description: "M07a WO-5: the 0.2.0a1 release-candidate job, steps 1-10 (V02 alpha release spec §8.2), with the alpha's step 8; includes rc_distribution"
+        type: boolean
+        default: false
 
 jobs:
   check:
@@ -510,7 +517,7 @@ jobs:
     # SOURCE_DATE_EPOCH = its commit time and setuptools pinned, contents and Requires-Dist checked
     # and the two builds compared member by member (`scripts/t08_dist.py`). The wheel is pure
     # Python, so this one build serves both architectures' clean installs. Nothing is published.
-    if: github.event_name == 'workflow_dispatch' && (inputs.rc_distribution || inputs.rc)
+    if: github.event_name == 'workflow_dispatch' && (inputs.rc_distribution || inputs.rc || inputs.rc_alpha)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -655,7 +662,7 @@ jobs:
     # SYN-001 runs (the CLI's registered variants) and T07 G8's revision bundles (`ELIGIBLE`
     # under `default`), with an index naming each set and its count. T06 A34 is not in this set
     # (release spec Amendment R3 1): it writes no bundle, and `rc-ensemble` carries it (T08.A46).
-    if: github.event_name == 'workflow_dispatch' && (inputs.rc_distribution || inputs.rc)
+    if: github.event_name == 'workflow_dispatch' && (inputs.rc_distribution || inputs.rc || inputs.rc_alpha)
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -750,7 +757,7 @@ jobs:
     # uploaded; the session commits the small ones under benchmarks/t08/rc/ (§8.1 item 4). The
     # A30 inventory's exit status is logged, not raised: a FAIL there is a licence reading for
     # Frank (spec §4.8), recorded, not hidden — as in `a30-inventory`.
-    if: github.event_name == 'workflow_dispatch' && inputs.rc
+    if: github.event_name == 'workflow_dispatch' && (inputs.rc || inputs.rc_alpha)
     strategy:
       fail-fast: false
       matrix:
@@ -790,8 +797,12 @@ jobs:
         run: python scripts/t08_rc.py corpus --out "$OUT/corpus-${{ matrix.runner }}.json"
 
       - name: T08.A49 — the agent surface and G16-b over four transports
-        if: always()
+        if: always() && inputs.rc
         run: python scripts/t08_rc.py surface --out "$OUT/surface"
+
+      - name: M07a.A37 — the alpha's surface chain (§5.3) and G16-b over four transports
+        if: always() && inputs.rc_alpha
+        run: python scripts/m07a_rc.py surface --out "$OUT/surface"
 
       - name: T08.A30 — the [A10] inventory
         if: always()
@@ -817,7 +828,7 @@ jobs:
     # run's first starts and retained failures (Amendment R3 1); `ref-x86-64` is run locally by
     # the session (`t08_rc.py ensemble`). Run 1, run 2 and the holdout are never rewritten: the RC
     # run is a new file outside the checkout, uploaded for the session to commit.
-    if: github.event_name == 'workflow_dispatch' && inputs.rc
+    if: github.event_name == 'workflow_dispatch' && (inputs.rc || inputs.rc_alpha)
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 180
     env:
