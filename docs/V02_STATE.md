@@ -93,7 +93,7 @@ F5 education mode deferred.
 
 ## Next action
 
-**Paused 2026-10-09 at Frank's request (token budget). No agents running.** Resume in this order, at most 2 agents:
+**Resumed 2026-10-15.** Running: `opus-engineer` alpha gate (merge main + WO-6, 7, 5, 8; worktree `alpha-gate`); `opus-engineer` M04 (merge main + WO-8, WO-9 if room; worktree `m04`). Order, at most 2 agents:
 1. Merge `main` (`9f6a9be`, M02 in) into `wp/V02-alpha-gate` → alpha-gate WO-5…11 → `0.2.0a1` (Frank publishes).
 2. Merge `main` into `wp/M04` → WO-8 (needs M02 WO-11, now on main), WO-9, WO-11 real run, WO-12 manifest, `reviewer`
    (batch: E10, E12, E14 envelope wording).
