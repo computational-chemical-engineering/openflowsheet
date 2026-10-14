@@ -470,12 +470,11 @@ def text_sha256(item: str | Mapping[str, Any]) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-#: Manifests the harvest does not read: T08's own (written at T08 close, after `C`). Its
-#: limitations are drawn from this envelope's L-rows and the verdicts, so harvesting it into the
-#: envelope would be circular, and its classification could only be written into `benchmarks/`
-#: after `C`, which ADR 0021 D2.4 forbids. The harvest is P00–T07's, as spec §5.7 counts it
-#: ("today 18 manifests") and `t08_reference.py`'s `HARVEST_PACKAGES` reads it.
-HARVEST_EXCLUDED = ("evidence/T08/",)
+#: Manifests the harvest does not read. T08's own was excluded through v0.1 (written at T08 close,
+#: after `C`, so harvesting it into v0.1's envelope would have been circular); the alpha harvests
+#: it (V02 alpha release spec MR-3, T08 Amendment R8 4, FD-α7), so nothing is excluded before
+#: `C_α`. After `C_α`, M07a's own manifest is excluded the same way (`("evidence/M07a/",)`, MR-3).
+HARVEST_EXCLUDED: tuple[str, ...] = ()
 
 
 def harvest_items(
