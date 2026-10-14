@@ -37,6 +37,8 @@ from __future__ import annotations
 
 import copy
 import json
+import re
+import tempfile
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
@@ -49,6 +51,23 @@ from openflowsheet.application.binding import (
     bind_revision_or_reason,
     legacy_admission,
     refusal_code,
+)
+from openflowsheet.application.coupled_run import (
+    COUPLING_NAME,
+    CouplingUnsupportedError,
+    Experiments,
+    RecordedExperiments,
+    ReplayDivergenceError,
+    compact_differences,
+    compact_record,
+    coupling_evidence,
+    coupling_record_problem,
+    external_units,
+    final_constants,
+    iterate_differences,
+    record_differences,
+    reproducibility_class,
+    solve_coupled,
 )
 from openflowsheet.application.policies import SolvePath
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
@@ -79,6 +98,7 @@ from openflowsheet.run.compare import KNOWN_POLICY_IDS
 from openflowsheet.run.identity import r0_projection, r0_sha256
 from openflowsheet.run.manifest import RunManifest, environment, policy_sha256, started_now
 from openflowsheet.run.replay import ReplayReport, Rerun, decide_mode, replay
+from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.verify.certificate import (
     CheckPolicy,
     SolutionCertificate,
@@ -87,6 +107,7 @@ from openflowsheet.verify.certificate import (
 )
 from openflowsheet.verify.failure import (
     FailureBundle,
+    coupling_bundle,
     initializer_bundle,
     initializer_source,
     refusal_bundle,
@@ -118,8 +139,8 @@ __all__ = [
     "traced_analysis",
 ]
 
-#: R2.4: the routes a `solve-path.json` may record.
-SOLVE_PATHS: Final[tuple[SolvePath, ...]] = ("revision_eo", "legacy_eo")
+#: R2.4: the routes a `solve-path.json` may record; `revision_coupled` is M02's (ADR 0034 D2).
+SOLVE_PATHS: Final[tuple[SolvePath, ...]] = ("revision_eo", "legacy_eo", "revision_coupled")
 
 #: A stage callback (§6.4): called with a stage's name at its start, and never for a stage that
 #: is skipped. The job runner emits progress and checks for interruption there (§8.1); `None`,
@@ -197,15 +218,16 @@ def _refusal(unbound: Unbound) -> str:
 
 
 def select_route(document: Mapping[str, Any]) -> Route | NoRoute:
-    """R2.1 as amended by ruling rounds 6 and 7: `revision_eo` whenever the revision binder binds;
-    else `legacy_eo` when the legacy binder binds and `legacy_admission` admits the revision; else
-    no route. A legacy binding not admitted is reported as
+    """R2.1 as amended by ruling rounds 6 and 7: `revision_eo` whenever the revision binder binds
+    — `revision_coupled` when the binding has an external (variant-backed) unit (M02 design note
+    §4.4, ADR 0034 D2); else `legacy_eo` when the legacy binder binds and `legacy_admission`
+    admits the revision; else no route. A legacy binding not admitted is reported as
     `unsupported(legacy_route_not_admitted(<code>))`, beside the refusal `legacy_admission`
     reports. The route's reason stays the revision binder's refusal. A pure function of the
     document; each binder reads its own copy."""
     revision = bind_revision_flowsheet(copy.deepcopy(dict(document)))
     if isinstance(revision, RevisionBinding):
-        return Route("revision_eo", revision)
+        return Route(_revision_path(revision), revision)
     legacy = bind_revision_or_reason(copy.deepcopy(dict(document)))
     if isinstance(legacy, Binding):
         why = legacy_admission(document, revision, legacy)
@@ -218,13 +240,25 @@ def select_route(document: Mapping[str, Any]) -> Route | NoRoute:
     return NoRoute(revision, legacy)
 
 
+def _revision_path(binding: RevisionBinding) -> SolvePath:
+    """`revision_coupled` iff the binding has an external unit (§4.4), else `revision_eo`."""
+    return "revision_coupled" if external_units(binding) else "revision_eo"
+
+
 def bind_route(solve_path: SolvePath, document: Mapping[str, Any]) -> Route | Unbound:
     """The named route's binder only (R2.5: a rerun follows the recorded route and never
     re-routes). On `legacy_eo` the route's reason is the revision binder's refusal, as
-    `select_route` records it, or `None` when that binder binds (a route taken by request)."""
+    `select_route` records it, or `None` when that binder binds (a route taken by request). On
+    `revision_coupled` the binding must have an external unit."""
     revision = bind_revision_flowsheet(copy.deepcopy(dict(document)))
     if solve_path == "revision_eo":
         return Route("revision_eo", revision) if isinstance(revision, RevisionBinding) else revision
+    if solve_path == "revision_coupled":
+        if not isinstance(revision, RevisionBinding):
+            return revision
+        if not external_units(revision):
+            return Unbound("unsupported", "no_external_unit")
+        return Route("revision_coupled", revision)
     legacy = bind_revision_or_reason(copy.deepcopy(dict(document)))
     if not isinstance(legacy, Binding):
         return legacy
@@ -403,9 +437,19 @@ class RouteRun:
     failure: FailureBundle | None
     #: The certified state, `None` without a certificate.
     state: Mapping[str, float] | None
+    #: `revision_coupled` only (ADR 0034 D6): `external-coupling.json`. The other fields are the
+    #: last inner solve's, and `route.binding` is its binding (at the final w).
+    coupling: Mapping[str, Any] | None = None
+    #: `revision_coupled` only: the coupling's outcome when it is not the inner solve's
+    #: (`COUPLING_NOT_CONVERGED`, `EVALUATION_ERROR`; ADR 0034 D3).
+    coupled_outcome: str | None = None
+    #: `revision_coupled` only: the run's reproducibility class (§7.2), else the flowsheet's.
+    reproducibility_class: str | None = None
 
     @property
     def outcome(self) -> str:
+        if self.coupled_outcome is not None:
+            return self.coupled_outcome
         if self.run is not None:
             return str(self.run.outcome)
         assert isinstance(self.plan, PlanRefusal)
@@ -451,6 +495,8 @@ def solve_route(
     trace: Trace | None = None,
     stage: Stage | None = None,
     warm_start: WarmStartCandidate | None = None,
+    experiments: Experiments | None = None,
+    on_iteration: Callable[[int, int], None] | None = None,
 ) -> RouteRun:
     """§12.1's steps on `route` (R2.2's table), from the registered initializer (`user_start`
     unset). A `VerifierError` propagates: the verifier refused to judge, so nothing is certified
@@ -462,10 +508,28 @@ def solve_route(
     (§8.1). `stage` is called at the start of `plan`, `solve` and `verify` (§6.4).
 
     `warm_start` is the source-2 candidate the caller found (ADR 0024 D2) or recorded (D5); it is
-    read only on `revision_eo`, under a policy whose chain names the source (`execute_plan`).
+    read only on `revision_eo` and `revision_coupled` (its k = 0 inner solve), under a policy
+    whose chain names the source (`execute_plan`).
+
+    On `revision_coupled` (M02 design note §4.4) `experiments` runs the experiments — the job's
+    runner, or a replay's recorded backend — and `on_iteration(k, max_outer)` is called at each
+    outer iteration's start; a coupled run without `experiments` is
+    `unsupported(external_runner_unavailable)`.
     """
     at = stage if stage is not None else _no_stage
     binding = route.binding
+    if route.solve_path == "revision_coupled":
+        return _solve_coupled(
+            route,
+            document,
+            policy=policy,
+            check_policy=check_policy,
+            trace=trace,
+            at=at,
+            warm_start=warm_start,
+            experiments=experiments,
+            on_iteration=on_iteration,
+        )
     at("plan")
     try:
         if route.solve_path == "revision_eo":
@@ -480,13 +544,7 @@ def solve_route(
         raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
 
     if isinstance(plan, PlanRefusal):
-        # §12.3: T02's registered mapping of a refused plan; `plan_refused` where it has none
-        # (§14.6 S11, logged for the design lane).
-        try:
-            failure = refusal_bundle(plan)
-        except KeyError as error:
-            raise RunUnsupportedError(f"plan_refused({plan.outcome})") from error
-        return RouteRun(route, plan, report, None, None, None, failure, None)
+        return _refused_plan(route, plan, report)
 
     at("solve")
     run = execute_plan(
@@ -538,7 +596,27 @@ def solve_route(
         # verifier on this route.
         kinds = ",".join(step.kind for step in plan.steps)
         raise RunUnsupportedError(f"certificate_unmapped({route.solve_path},{kinds})")
+    return _failed_run(route, plan, report, run, region_plan)
 
+
+def _refused_plan(route: Route, plan: PlanRefusal, report: StructuralReport) -> RouteRun:
+    """§12.3: T02's registered mapping of a refused plan; `plan_refused` where it has none
+    (§14.6 S11, logged for the design lane)."""
+    try:
+        failure = refusal_bundle(plan)
+    except KeyError as error:
+        raise RunUnsupportedError(f"plan_refused({plan.outcome})") from error
+    return RouteRun(route, plan, report, None, None, None, failure, None)
+
+
+def _failed_run(
+    route: Route,
+    plan: ExecutionPlan,
+    report: StructuralReport,
+    run: PlanResult,
+    region_plan: SolvePlan | None,
+) -> RouteRun:
+    """§12.3's failure bundle of a plan run that did not converge, or `RunUnsupportedError`."""
     last = run.steps[-1] if run.steps else None
     if last is not None and isinstance(last.detail, RegionResult):
         failure = region_bundle(last.detail, run.trace, step_index=last.index, plan=plan)
@@ -562,6 +640,131 @@ def solve_route(
     raise RunUnsupportedError(f"failure_bundle_unmapped({run.outcome},{step_kind},{held})")
 
 
+def _inner_failure(
+    route: Route,
+    plan: ExecutionPlan,
+    report: StructuralReport,
+    run: PlanResult,
+    region_plan: SolvePlan | None,
+) -> dict[str, Any]:
+    """M02 review F5: the diagnosis of a coupled run's last failed inner solve — the outcome,
+    taxonomy and attempt tree of the failure bundle §12.3 gives that inner run on its own, or,
+    for an inner failure §12.3 maps to no bundle, its outcome with an empty tree and the reason."""
+    try:
+        failed = _failed_run(route, plan, report, run, region_plan).failure
+    except RunUnsupportedError as error:
+        return {"outcome": str(run.outcome), "attempt_tree": [], "unmapped": error.code}
+    assert failed is not None
+    return {
+        "outcome": failed.outcome,
+        "taxonomy": failed.taxonomy,
+        "attempt_tree": [dict(entry) for entry in failed.attempt_tree],
+    }
+
+
+def _solve_coupled(
+    route: Route,
+    document: Mapping[str, Any],
+    *,
+    policy: SolvePolicy,
+    check_policy: CheckPolicy,
+    trace: Trace | None,
+    at: Stage,
+    warm_start: WarmStartCandidate | None,
+    experiments: Experiments | None,
+    on_iteration: Callable[[int, int], None] | None,
+) -> RouteRun:
+    """`revision_coupled` (M02 design note §4.3–§4.4): the outer coupling, then the final inner
+    solve certified with the coupling's evidence, or a bundle. Each inner solve is planned and run
+    as `revision_eo`'s; `plan` and `solve` are called once, before the first inner solve."""
+    from openflowsheet.run.session import _reproducibility_class
+
+    if experiments is None:
+        raise RunUnsupportedError("external_runner_unavailable")
+    at("plan")
+    at("solve")
+    try:
+        solved = solve_coupled(
+            route.binding,
+            policy=policy,
+            experiments=experiments,
+            trace=trace,
+            warm_start=warm_start,
+            on_iteration=on_iteration,
+        )
+    except CouplingUnsupportedError as error:
+        raise RunUnsupportedError(error.code) from error
+    except UnsupportedRankStructureError as error:
+        raise RunUnsupportedError("plan_refused(UNSUPPORTED_RANK_STRUCTURE)") from error
+    inner, coupling = solved.inner, solved.coupling
+    final = Route("revision_coupled", inner.binding)
+    extra: dict[str, Any] = {
+        "coupling": solved.record,
+        "reproducibility_class": reproducibility_class(
+            solved.units, _reproducibility_class(inner.binding.flowsheet)
+        ),
+    }
+    if isinstance(inner.plan, PlanRefusal):  # at k = 0: the plan's own outcome, passed through
+        return replace(_refused_plan(final, inner.plan, inner.report), **extra)
+    run = inner.run
+    assert run is not None
+    plan = inner.plan
+    region_plan = plan.steps[-1].solve_plan
+    if coupling.outcome == "CONVERGED":
+        assert run.state is not None
+        at("verify")
+        certificate = _run_identity(
+            verify_revision(
+                inner.binding,
+                document,
+                run,
+                policy=check_policy,
+                solve_plan=region_plan,
+                external=coupling_evidence(solved, run.state),
+            ),
+            plan,
+        )
+        return RouteRun(
+            final,
+            plan,
+            inner.report,
+            run,
+            region_plan,
+            certificate,
+            None,
+            _judged(run, run),
+            **extra,
+        )
+    if coupling.outcome in ("COUPLING_NOT_CONVERGED", "EVALUATION_ERROR"):
+        failure = coupling_bundle(
+            coupling.outcome,
+            coupling.reason,
+            coupling=compact_record(solved.record),
+            implicated=[unit.unit_id for unit in solved.units],
+            plan=plan,
+            counters=run.counters,
+            inner_failure=(
+                _inner_failure(final, plan, inner.report, run, region_plan)
+                if coupling.reason == "inner_failed"
+                else None
+            ),
+        )
+        return RouteRun(
+            final,
+            plan,
+            inner.report,
+            run,
+            region_plan,
+            None,
+            failure,
+            None,
+            coupled_outcome=coupling.outcome,
+            **extra,
+        )
+    # §4.4: an inner failure at k = 0 passes its own outcome through, with its own bundle.
+    return replace(_failed_run(final, plan, inner.report, run, region_plan), **extra)
+
+
 def run_revision_session(
     route: Route,
     document: Mapping[str, Any],
@@ -574,13 +777,17 @@ def run_revision_session(
     trace: Trace | None = None,
     stage: Stage | None = None,
     warm_start: WarmStartCandidate | None = None,
+    experiments: Experiments | None = None,
+    on_iteration: Callable[[int, int], None] | None = None,
 ) -> RunManifest:
     """Solve, verify and write the bundle (§12.3 as amended by R2.4). Mirrors `run_session`.
 
     `document` is the stored revision's canonical document; `policy` is the resolved policy and
     `policy_requested` the id as submitted (`"default"` or a registered id). Nothing is written
-    when the run ends in a `VerifierError` or `RunUnsupportedError`. `trace`, `stage` and
-    `warm_start` are `solve_route`'s; `stage` is also called at the start of `bundle`.
+    when the run ends in a `VerifierError` or `RunUnsupportedError`. `trace`, `stage`,
+    `warm_start`, `experiments` and `on_iteration` are `solve_route`'s; `stage` is also called at
+    the start of `bundle`. A `revision_coupled` bundle is the final inner solve's, plus
+    `external-coupling.json` (ADR 0034 D6).
     `solve-path.json` gains `warm_start` (ADR 0024 D4) iff the solve consulted the source.
     """
     from openflowsheet.run.session import _numerical_policy_id, _reproducibility_class
@@ -595,8 +802,13 @@ def run_revision_session(
         trace=trace,
         stage=stage,
         warm_start=warm_start,
+        experiments=experiments,
+        on_iteration=on_iteration,
     )
     (stage if stage is not None else _no_stage)("bundle")
+    # The route the result was solved on: on `revision_coupled`, its binding is the final inner
+    # solve's (at the final w); on every other route it is `route` itself.
+    route = result.route
 
     if result.run is not None:
         trace = result.run.trace
@@ -636,6 +848,8 @@ def run_revision_session(
     else:
         assert result.failure is not None
         artifacts["failure-bundle.json"] = result.failure.as_document()
+    if result.coupling is not None:
+        artifacts[COUPLING_NAME] = dict(result.coupling)
 
     # R0 of the documents **as written**: ADR 0002 spells an integral float as an integer, and
     # `execution_plan_r0` keeps a float as its `repr` but an integer as itself, so the projection
@@ -660,7 +874,11 @@ def run_revision_session(
         verification_status=(
             result.certificate.verification_status if result.certificate is not None else None
         ),
-        reproducibility_class=_reproducibility_class(route.binding.flowsheet),
+        reproducibility_class=(
+            result.reproducibility_class
+            if result.reproducibility_class is not None
+            else _reproducibility_class(route.binding.flowsheet)
+        ),
         started_at=started,
         elapsed_seconds=time.monotonic() - clock,
     )
@@ -829,21 +1047,187 @@ def reproduce_bundle(
         return Reproduction(
             _inspected(directory, f"rerun_unsupported(route_unbound({solve_path}))")
         )
+    coupling: Mapping[str, Any] | None = None
+    coupling_found: list[str] = []
+    classified_bitwise = True
+    if route.solve_path == "revision_coupled":
+        # M02 design note §7.2 step 1: the record against its schema, and each embedded request's
+        # key against its content.
+        if COUPLING_NAME not in manifest.artifacts:
+            at("compare")
+            return Reproduction(_inspected(directory, "rerun_unsupported(no_external_coupling)"))
+        record: Mapping[str, Any] = read_artifact(directory, COUPLING_NAME)
+        coupling = record
+        problem = coupling_record_problem(record)
+        if problem is not None:
+            at("compare")
+            return Reproduction(
+                _inspected(directory, f"rerun_unsupported(external_coupling_invalid({problem}))")
+            )
+        # §14.5 D8 (R-308) item 2: the constants digest's R0 guard, by recomputation.
+        constants = final_constants(route.binding, record)
+        if constants is not None and constants[0] != constants[1]:
+            final = record["iterations"][-1]
+            coupling_found.append(
+                f"coupling_constants: {constants[1]} rebuilt at the record's final w "
+                f"{final['w']!r} (k = {final['k']}), against the recorded {constants[0]}"
+            )
     at("rerun")
-    rerun_manifest = run_revision_session(
-        route,
-        document,
-        Path(rerun_directory),
-        run_id=run_id,
-        policy=policy,
-        check_policy=check_policy,
-        policy_requested=str(recorded.get("policy_requested")),
-        # ADR 0024 D5: the recorded candidate, never a store lookup.
-        warm_start=_recorded_warm_start(recorded),
-    )
+    with tempfile.TemporaryDirectory(prefix="ofs-replay-") as scratch:
+        experiments = (
+            None
+            if coupling is None
+            else RecordedExperiments(
+                coupling,
+                provider=PrC1Provider(),
+                scratch=Path(scratch),
+                policy_id=manifest.numerical_policy_id,
+            )
+        )
+        try:
+            rerun_manifest = run_revision_session(
+                route,
+                document,
+                Path(rerun_directory),
+                run_id=run_id,
+                policy=policy,
+                check_policy=check_policy,
+                policy_requested=str(recorded.get("policy_requested")),
+                # ADR 0024 D5: the recorded candidate, never a store lookup.
+                warm_start=_recorded_warm_start(recorded),
+                experiments=experiments,
+            )
+        except ReplayDivergenceError as error:
+            at("compare")
+            report = _diverged(directory, error.difference)
+            return Reproduction(_with_differences(report, coupling_found))
     artifacts = {
         name: read_artifact(Path(rerun_directory), name) for name in rerun_manifest.artifacts
     }
+    if coupling is not None:
+        # §14.5 D8 (R-308) items 1 and 3: the inner solves' constants digests for shape, in the
+        # record and in every artifact that carries the final one (build log D94; item 2 guards
+        # it; the manifest is not compared), and the iterates under the archive's policy.
+        artifacts = {
+            name: _constants_for_shape(document, read_artifact(directory, name))
+            if name in manifest.artifacts
+            else document
+            for name, document in artifacts.items()
+        }
+        if COUPLING_NAME in artifacts:
+            fresh_record = artifacts[COUPLING_NAME]
+            coupling_found += iterate_differences(
+                fresh_record, coupling, manifest.numerical_policy_id
+            )
+            # R-317 (b): the record's floats at their registered floors; `replay` compares the
+            # rest. A float taken from the record is not a bitwise match.
+            shaped, floored = record_differences(
+                fresh_record, coupling, manifest.numerical_policy_id
+            )
+            coupling_found += floored
+            artifacts[COUPLING_NAME] = shaped
+            classified_bitwise = shaped == fresh_record
+        # Build log D130 (D124): a failure bundle's compact copy of the record by the same rules,
+        # its `record_sha256` for shape.
+        failure = artifacts.get(FAILURE_NAME)
+        if FAILURE_NAME in manifest.artifacts and isinstance(failure, dict):
+            archived = read_artifact(directory, FAILURE_NAME)
+            fresh_copy = failure.get("observations", {}).get("external_coupling")
+            archived_copy = archived.get("observations", {}).get("external_coupling")
+            if isinstance(fresh_copy, dict) and isinstance(archived_copy, dict):
+                shaped_copy, floored = compact_differences(
+                    fresh_copy,
+                    archived_copy,
+                    coupling["coupling_block"],
+                    manifest.numerical_policy_id,
+                )
+                coupling_found += floored
+                classified_bitwise = classified_bitwise and shaped_copy == fresh_copy
+                observations = {**failure["observations"], "external_coupling": shaped_copy}
+                artifacts[FAILURE_NAME] = {**failure, "observations": observations}
     at("compare")
+    # On `revision_coupled` the state is written over the final inner spec, whose columns and
+    # kinds are the route's binding's (w moves constants only).
     rerun_result = Rerun(artifacts, variable_kinds=declared_kinds(route.binding.spec))
-    return Reproduction(replay(directory, rerun_result), rerun_manifest)
+    report = replay(directory, rerun_result)
+    if not classified_bitwise and report.bitwise_floats:
+        report = replace(report, bitwise_floats=False)
+    if experiments is not None and coupling is not None:
+        report = _replayed_from_record(report, experiments, coupling)
+    return Reproduction(_with_differences(report, coupling_found), rerun_manifest)
+
+
+_HEX64: Final = re.compile(r"[0-9a-f]{64}")
+FAILURE_NAME: Final = "failure-bundle.json"
+
+
+def _constants_for_shape(fresh: Any, archived: Any) -> Any:
+    """§14.5 D8 (R-308) item 1. On `revision_coupled` every `constants_sha256` digests an inner
+    solve's X̂ and ΔT̂, which Broyden computes in floating point: by ADR 0007's criterion a digest
+    of an R1/R2 quantity, compared for shape, never for value. `fresh` with each well-formed
+    `constants_sha256` that the archive also has, well-formed, at the same place replaced by the
+    archive's; anything else is left for `replay` to compare, so a malformed digest is a
+    difference. The final digest's R0 guard is `final_constants`'s recomputation."""
+    if isinstance(fresh, dict) and isinstance(archived, dict):
+        shaped: dict[str, Any] = {}
+        for key, value in fresh.items():
+            theirs = archived.get(key)
+            if (
+                key == "constants_sha256"
+                and isinstance(value, str)
+                and isinstance(theirs, str)
+                and _HEX64.fullmatch(value)
+                and _HEX64.fullmatch(theirs)
+            ):
+                shaped[key] = theirs
+            else:
+                shaped[key] = _constants_for_shape(value, theirs) if key in archived else value
+        return shaped
+    if isinstance(fresh, list) and isinstance(archived, list):
+        return [
+            _constants_for_shape(value, archived[index]) if index < len(archived) else value
+            for index, value in enumerate(fresh)
+        ]
+    return fresh
+
+
+def _with_differences(report: ReplayReport, found: list[str]) -> ReplayReport:
+    """`report` with the coupled route's own differences (§14.5 D8) added: any one is a
+    `MISMATCH`."""
+    if not found:
+        return report
+    return replace(report, differences=(*report.differences, *found), verdict="MISMATCH")
+
+
+def _diverged(directory: Path, difference: str) -> ReplayReport:
+    """§7.2: a recomputed external request that is not the record's — `MISMATCH`, naming it."""
+    report = replay(directory, None)
+    reasons = tuple(entry for entry in report.reasons if entry != "no rerun was supplied")
+    return replace(report, verdict="MISMATCH", reasons=reasons, differences=(difference,))
+
+
+def _replayed_from_record(
+    report: ReplayReport, experiments: RecordedExperiments, coupling: Mapping[str, Any]
+) -> ReplayReport:
+    """§7.2 step 4: `reasons` gains how the external results were obtained, `recorded_environment`
+    the frozen fingerprints, and an in-process re-evaluation that differs from the record is a
+    difference (`external_result(<k>, <unit>)…`)."""
+    reasons = (
+        *report.reasons,
+        f"external_results_replayed_from_record({experiments.replayed})",
+        *(
+            (f"external_results_reevaluated({experiments.reevaluated})",)
+            if experiments.reevaluated
+            else ()
+        ),
+    )
+    environment = {**report.recorded_environment, "external_fingerprints": coupling["frozen"]}
+    found = (*report.differences, *experiments.differences)
+    verdict = report.verdict if not experiments.differences else "MISMATCH"
+    return replace(
+        report,
+        reasons=reasons,
+        recorded_environment=environment,
+        differences=found,
+        verdict=verdict,
+    )

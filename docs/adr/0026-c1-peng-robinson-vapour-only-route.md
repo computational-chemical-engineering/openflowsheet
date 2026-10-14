@@ -133,3 +133,16 @@ No closed form, registered state, expectation value or refusal code of the draft
   bounded by 10⁻¹² times the block's largest scaled entry. The generator gains PR-07, PH-GAP, BD-04, BD-05, BD-06
   and DX-01 (88 claims).
 - A1.4 (C1). The note for `docs/interfaces-frozen.md` §3 is written.
+
+## Amendment 2 (2026-10-09): M01 spec §7 rule 2's equilibrium row (M02 WO-8 rulings)
+
+**Status:** Recorded by the design lane (`architect`), M02 (`docs/design/M02-pymrm-adapter.md` §14.2 B11–B12; R-254),
+for ratification by the `specifier` (optional; the work proceeds on it).
+
+- A2.1 (C3). The normative §7 is amended by M01 spec Amendment 3. The NH₃ equilibrium row of a PR split is written
+  in R-008's pairwise form, `E = L · n_V,NH₃ · φ^V_NH₃ − V · n_L,NH₃ · φ^L_NH₃` (kind molar_flow_squared). M01's
+  `n_V,NH₃ φ^V − n_V,tot φ^L` is not zero on the VAPOR branch, and above T_c,EOS it cannot be evaluated at all, yet
+  the region drops equilibrium rows on single-phase branches and K04 evaluates every declared row. The light-gas
+  liquid flows become zero rows in the equilibrium family, pinned at `+0.0` in TWO_PHASE.
+- A2.2. On TWO_PHASE the new row is `L V (y φ^V − φ^L)`, so its root set is unchanged. No closed form, provider
+  behaviour, registered state, expectation value, refusal code or M01 assertion moves.

@@ -360,7 +360,14 @@ def test_a31_readme_states_casadi_is_lgpl() -> None:
 SHIPPED_DATA = re.compile(
     r"^(src/)?openflowsheet/(py\.typed|application/bindings/descriptions/([a-z_]+\.md|REVIEW\.json)"
     r"|_data/schemas/[a-z0-9-]+\.schema\.json|_data/benchmarks/(k04|syn001)/reference_values\.yaml"
-    r"|_data/benchmarks/t08/numerical_policy_v2\.yaml|_data/benchmarks/m01/components\.yaml)$"
+    r"|_data/benchmarks/t08/numerical_policy_v2\.yaml|_data/benchmarks/m01/components\.yaml"
+    # M02 (register R-317 (b)): the external addendum whose `compare` rules a coupled replay reads.
+    r"|_data/benchmarks/m02/numerical_policy_external\.yaml"
+    # M02 design note §3.1: the registered variants and their registry (the project's own data).
+    r"|adapters/variants/[a-z0-9.-]+\.json"
+    # M02 design note §2.4: the reactor environment's lock — the project's own pin file (names,
+    # versions and hashes of distributions it installs elsewhere; none of their content).
+    r"|adapters/pymrm/reactor-env\.lock)$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"

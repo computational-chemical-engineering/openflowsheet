@@ -14,6 +14,11 @@ is its only author. It refuses to emit unless (ADR 0025 A1):
   `schemas/*.json`, and the two are disjoint (D2.3: a closed partition, so a fourth float digest
   cannot be missed the way three were).
 
+The schemas M02 adds (`experiment`, `model-variant`, `model-replacement`) are classified beside v2,
+not in it, so v2's content does not move: `benchmarks/m02/numerical_policy_external.yaml` names
+them and lists the exact `sha256` names they introduce, and `--check` holds that table to the same
+closed-partition rule (M02 design note §3.6).
+
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/t08_numerical_policy.py --check
     PYTHONPATH=src .venv/bin/python scripts/t08_numerical_policy.py --emit
@@ -37,6 +42,8 @@ sys.path.insert(0, str(ROOT / "src"))
 
 V1: Final = ROOT / "benchmarks" / "k04" / "reference_values.yaml"
 V2: Final = ROOT / "benchmarks" / "t08" / "numerical_policy_v2.yaml"
+#: M02 design note §3.6: the addendum that classifies the M02 schemas' floats and digests.
+EXTERNAL: Final = ROOT / "benchmarks" / "m02" / "numerical_policy_external.yaml"
 SCHEMAS: Final = ROOT / "schemas"
 
 V1_ID: Final = "K04-numerical-policy-v1"
@@ -128,9 +135,17 @@ def v1_policy() -> dict[str, Any]:
     return dict(document)
 
 
-def schema_sha256_names() -> set[str]:
-    """Every property name containing `sha256` declared anywhere in `schemas/*.json`."""
+def external_policy() -> dict[str, Any]:
+    """The M02 addendum's table (`numerical_policy_external`)."""
+    document = yaml.safe_load(EXTERNAL.read_text(encoding="utf-8"))["numerical_policy_external"]
+    return dict(document)
+
+
+def schema_sha256_names(*, external: bool = False) -> set[str]:
+    """Every property name containing `sha256` declared anywhere in `schemas/*.json` — outside
+    the M02 addendum's schemas, or (`external=True`) inside them."""
     names: set[str] = set()
+    addendum = set(external_policy()["schemas"])
 
     def walk(node: Any) -> Iterator[str]:
         if isinstance(node, dict):
@@ -143,6 +158,8 @@ def schema_sha256_names() -> set[str]:
                 yield from walk(entry)
 
     for path in sorted(SCHEMAS.glob("*.json")):
+        if (path.name in addendum) != external:
+            continue
         names.update(walk(json.loads(path.read_text(encoding="utf-8"))))
     return names
 
@@ -263,6 +280,25 @@ def audit(policy: Mapping[str, Any], v1: Mapping[str, Any], declared: set[str]) 
     return problems
 
 
+def external_audit(policy: Mapping[str, Any], external: Mapping[str, Any]) -> list[str]:
+    """M02 design note §3.6: every `sha256` name of the addendum's schemas is classified — by v2's
+    lists (a name M02 reuses keeps its class) or by the addendum's `exact_sha256` — and the
+    addendum's names are new (none in v2's lists) and declared."""
+    declared = schema_sha256_names(external=True)
+    digests = set(policy["float_digests"]["names"])
+    exact = set(policy["exact_sha256"])
+    added = set(external["exact_sha256"])
+    problems: list[str] = []
+    if added & (digests | exact):
+        problems.append(f"(m02) already classified by v2: {sorted(added & (digests | exact))}")
+    unclassified = declared - digests - exact - added
+    if unclassified:
+        problems.append(f"(m02) unclassified sha256 names: {sorted(unclassified)}")
+    if added - declared:
+        problems.append(f"(m02) classified but undeclared: {sorted(added - declared)}")
+    return problems
+
+
 #: T08 review 3, N5: `exact_fields` is carried from v1 (§8) but no §5 row enforces it and neither
 #: comparator reads it. The file says so where the key is, as a comment, so the data stay v1's.
 EXACT_FIELDS_KEY: Final = "  exact_fields:\n"
@@ -296,6 +332,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if arguments.check and V2.is_file():
         committed = yaml.safe_load(V2.read_text(encoding="utf-8"))["numerical_policy"]
         problems.extend(audit(committed, v1_policy(), schema_sha256_names()))
+        problems.extend(external_audit(committed, external_policy()))
     for problem in problems:
         print(problem)
     if problems:

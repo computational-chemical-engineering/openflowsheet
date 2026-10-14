@@ -55,9 +55,11 @@ from openflowsheet.verify import (
     CheckResult,
     dormant,
     evaluated,
+    pr_c1,
     unsupported,
 )
 from openflowsheet.verify.checks import (
+    COMPONENTS,
     KIND_REFERENCE,
     VerifierError,
     _fractions,
@@ -120,9 +122,9 @@ UNRESOLVED_ENTHALPY_NOTE: Final = (
 # §4.3's flowsheet rows name their terms by model id, so the envelope is the same function
 # whether or not a model's own entry is in the table yet.
 #: Feeds are the outlet streams of these instances.
-FEED_MODELS: Final = frozenset({"syn001.feed_source"})
+FEED_MODELS: Final = frozenset({"syn001.feed_source", "c1.feed_source"})
 #: Products are the inlet streams of these instances.
-PRODUCT_MODELS: Final = frozenset({"syn001.product_sink"})
+PRODUCT_MODELS: Final = frozenset({"syn001.product_sink", "c1.product_sink"})
 #: `Q_ext`: the external duty `<U>.Q` — never the exchanger's internal `Q`.
 EXTERNAL_DUTY_MODELS: Final = (
     "syn001.tp_heater",
@@ -131,13 +133,22 @@ EXTERNAL_DUTY_MODELS: Final = (
     "syn001.conversion_reactor",
     "syn001.component_separator",
     "syn001.kinetic_cstr",
+    "c1.tp_heater",
+    "c1.tp_flash",
+    # M02 WO-9: the C1 reactor's duty `<U>.Q`, positive into the unit (design note §4.1).
+    "c1.reactor",
+    "c1.reactor_standin",
 )
 #: `W`: the shaft work `<U>.W`.
 WORK_MODELS: Final = frozenset({"syn001.liquid_pump"})
 #: `ν_c ξ` on the material envelope; ADR 0011 D2's note on the energy balances. A conversion
 #: reactor's `ξ` is its extent column; a kinetic CSTR's is its rate `r`, which it does not own and
 #: the table recomputes from the state and the revision (`_cstr_rate`, T08 build-first §A1.6).
-REACTING_MODELS: Final = frozenset({"syn001.conversion_reactor", "syn001.kinetic_cstr"})
+#: The C1 reactors' `ξ` is their extent column too, and their `ν` the verifier's own copy of the
+#: C1 reaction (`pr_c1.REACTION_NU`; M02 WO-9), which no revision states.
+REACTING_MODELS: Final = frozenset(
+    {"syn001.conversion_reactor", "syn001.kinetic_cstr", *pr_c1.REACTOR_MODELS}
+)
 KINETIC_CSTR: Final = "syn001.kinetic_cstr"
 
 
@@ -164,6 +175,9 @@ class Unit:
     #: §9.2: flowing, temperature-degenerate `vapor_liquid` streams outside any split, whose
     #: enthalpy the state does not determine; a check reading one is `unsupported`.
     unlifted: frozenset[str] = frozenset()
+    #: The order a stream's flows are read in: the revision's view's (M02 design note §14.2 B15
+    #: item 1); SYN-001's by default.
+    components: tuple[str, ...] = COMPONENTS
 
     @property
     def id(self) -> str:
@@ -252,7 +266,7 @@ class Unit:
         check reads nothing a dormant stream's label decides (`judged_at_dormancy`)."""
         identifier = f"bounds_and_domain.{self.id}.{item}"
         if not judged_at_dormancy and any(
-            stream_of(self.state, stream).is_dormant for stream in self.inlets()
+            stream_of(self.state, stream, self.components).is_dormant for stream in self.inlets()
         ):
             return dormant(id=identifier, category="bounds_and_domain", subject=self.id)
         tolerance = self.tolerances[kind]
@@ -457,6 +471,16 @@ def _flash_material(unit: Unit, components: Sequence[str]) -> list[CheckResult]:
             )
         )
     return checks
+
+
+def _c1_flash_material(unit: Unit, components: Sequence[str]) -> list[CheckResult]:
+    """`_flash_material`, then `material_balance.<U>.liquid.<i>` = `n_L,i` for each vapour-only
+    component: the verifier's own reading of R-143 (M02 design note §14.2 B15 item 6)."""
+    liquid = unit.stream("liquid")
+    return _flash_material(unit, components) + [
+        unit.check("material_balance", f"liquid.{c}", unit.n(liquid, c), "molar_flow")
+        for c in pr_c1.VAPOUR_ONLY
+    ]
 
 
 def _flash_energy(unit: Unit, components: Sequence[str]) -> list[CheckResult]:
@@ -675,6 +699,22 @@ def _reactor_material(unit: Unit, components: Sequence[str]) -> list[CheckResult
         for c in components
     ]
     return checks + _lifted_outlet_material(unit, outlet, components)
+
+
+def _c1_reactor_material(unit: Unit, components: Sequence[str]) -> list[CheckResult]:
+    """`n_in + ν ξ − n_out` per component, as `_reactor_material` with `ν` the verifier's own
+    copy of the C1 reaction (M02 WO-9); the outlet is not lifted."""
+    inlet, outlet = unit.stream("inlet"), unit.stream("outlet")
+    extent = unit.state[extent_id(unit.id)]
+    return [
+        unit.check(
+            "material_balance",
+            c,
+            unit.n(inlet, c) + pr_c1.REACTION_NU[c] * extent - unit.n(outlet, c),
+            "molar_flow",
+        )
+        for c in components
+    ]
 
 
 def _reactor_key(unit: Unit) -> str:
@@ -1004,6 +1044,44 @@ MODEL_CHECKS: Final[Mapping[str, ModelChecks]] = {
             ("cold_outlet", False),
         ),
     ),
+    # M02 design note §14.2 B15 item 6: the C1 units, each rule an existing SYN-001 function.
+    "c1.feed_source": ModelChecks(specification=_feed_specification),
+    "c1.product_sink": ModelChecks(),
+    "c1.stream_splitter": ModelChecks(
+        material=_splitter_material,
+        energy=_splitter_energy,
+        specification=_splitter_specification,
+    ),
+    "c1.adiabatic_mixer": ModelChecks(
+        material=_mixer_material,
+        energy=_mixer_energy,
+        declared_ports=(("inlet", True), ("outlet", False)),
+    ),
+    "c1.tp_heater": ModelChecks(
+        material=_pump_material,
+        energy=_heater_energy,
+        specification=_heater_specification,
+        declared_ports=(("inlet", False), ("outlet", False)),
+    ),
+    "c1.tp_flash": ModelChecks(
+        material=_c1_flash_material,
+        energy=_flash_energy,
+        specification=_flash_specification,
+        declared_ports=(("inlet", False),),
+    ),
+    # M02 WO-9 (design note §4.1; build log D47): the C1 reactor's material balance on the C1
+    # reaction and SYN-001's reactor energy balance `Ḣ(in) + Q − Ḣ(out)`; both ports declared
+    # vapour. No specification entry: X̂ and ΔT̂ are the coupled route's inputs, not the
+    # revision's, so the verifier holds no independent value of them; their rows are judged as
+    # residual rows, and on the coupled route against the experiment (§4.4).
+    **{
+        model: ModelChecks(
+            material=_c1_reactor_material,
+            energy=_reactor_energy,
+            declared_ports=(("inlet", False), ("outlet", False)),
+        )
+        for model in sorted(pr_c1.REACTOR_MODELS)
+    },
 }
 
 
@@ -1039,6 +1117,14 @@ def _extent(reactor: InstanceView, state: Mapping[str, float]) -> float:
     return state[extent_id(reactor.unit_id)]
 
 
+def _nu(reactor: InstanceView, component: str) -> float:
+    """A reacting instance's `ν_c`: the revision's `nu.<c>`, or for a C1 reactor the verifier's
+    own copy of the C1 reaction (M02 WO-9)."""
+    if reactor.model_id in pr_c1.REACTOR_MODELS:
+        return pr_c1.REACTION_NU[component]
+    return reactor.parameters[f"nu.{component}"]
+
+
 def _envelope_material(
     view: RevisionView, state: Mapping[str, float], tolerances: Mapping[str, float]
 ) -> list[CheckResult]:
@@ -1051,7 +1137,7 @@ def _envelope_material(
         for stream in feeds:
             value += state[flow_id(stream, c)]
         for reactor in reactors:
-            value += reactor.parameters[f"nu.{c}"] * _extent(reactor, state)
+            value += _nu(reactor, c) * _extent(reactor, state)
         for stream in products:
             value -= state[flow_id(stream, c)]
         checks.append(
@@ -1306,7 +1392,7 @@ def _declared_port_checks(
                     if several
                     else f"phase_admissibility.{instance.unit_id}.{port}"
                 )
-                if stream_of(state, stream).is_dormant:
+                if stream_of(state, stream, view.components).is_dormant:
                     checks.append(
                         dormant(id=identifier, category="phase_admissibility", subject=stream)
                     )
@@ -1548,12 +1634,15 @@ def revision_checks(
         convention=provider.describe().reference_convention
     )
     components = view.components
-    degenerate = degeneracy(view, splits, at, provider, context, tolerances)
+    # M02 design note §14.2 B15: a `pr-c1-v1` revision takes `verify.pr_c1`'s forms at the
+    # sites below; every other basis runs SYN-001's lines.
+    pr = view.basis.provider_id == pr_c1.PROVIDER_ID
+    degenerate = Degeneracy() if pr else degeneracy(view, splits, at, provider, context, tolerances)
 
     energy: list[CheckResult] = []
     enthalpy: dict[str, float] = {}
     for stream in view.streams:
-        carried = stream_of(at, stream)
+        carried = stream_of(at, stream, components)
         if stream in degenerate.enthalpy:
             enthalpy[stream] = degenerate.enthalpy[stream]
         elif carried.is_dormant:
@@ -1565,6 +1654,8 @@ def revision_checks(
                     subject=stream,
                 )
             )
+        elif pr:
+            enthalpy[stream] = pr_c1.enthalpy_flow(provider, carried, context, components)
         else:
             enthalpy[stream] = enthalpy_flow(provider, carried, context)
 
@@ -1582,6 +1673,7 @@ def revision_checks(
                 context=context,
                 notes=degenerate.notes,
                 unlifted=degenerate.unlifted,
+                components=tuple(components),
             ),
             MODEL_CHECKS.get(instance.model_id),
         )
@@ -1590,7 +1682,9 @@ def revision_checks(
 
     material: list[CheckResult] = []
     specification: list[CheckResult] = []
-    bounds: list[CheckResult] = bounds_checks(provider, state, streams=view.streams)
+    bounds: list[CheckResult] = bounds_checks(
+        provider, state, streams=view.streams, components=components
+    )
     for judged, entry in units:
         certified = judged if at is state else replace(judged, state=state)
         if entry is None:
@@ -1615,6 +1709,20 @@ def revision_checks(
     )
 
     admissibility: list[CheckResult] = []
+    if pr:
+        for split in splits:
+            admissibility += pr_c1.split_checks(
+                split, components, at, provider, context, tolerances, note
+            )
+        admissibility += pr_c1.declared_port_checks(
+            view,
+            at,
+            provider,
+            context,
+            note,
+            {model: entry.declared_ports for model, entry in MODEL_CHECKS.items()},
+        )
+        return [*material, *energy, *specification, *bounds, *admissibility]
     for split in splits:
         admissibility += _split_checks(
             split,
@@ -1634,12 +1742,16 @@ def revision_checks(
 
 
 def revision_phase_branch(
-    state: Mapping[str, float], streams: Sequence[str], splits: Sequence[LiftedSplit]
+    state: Mapping[str, float],
+    streams: Sequence[str],
+    splits: Sequence[LiftedSplit],
+    *,
+    components: Sequence[str] = COMPONENTS,
 ) -> dict[str, Any]:
     """§4.2: every stream's regime, and each lifted split read from the state, keyed
-    `<unit>:<stream>`."""
+    `<unit>:<stream>`; `components` the order a stream's flows are read in (the revision's)."""
     branch: dict[str, Any] = {
-        stream: "ZERO_FLOW" if stream_of(state, stream).is_dormant else "FLOWING"
+        stream: "ZERO_FLOW" if stream_of(state, stream, components).is_dormant else "FLOWING"
         for stream in streams
     }
     for split in splits:

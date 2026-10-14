@@ -376,10 +376,12 @@ SECTION_5_8 = (
     "limit_exceeded",
     "unsupported",
     "internal_error",
+    # ADR 0035 D3 (M02): appended, so every earlier code keeps its exit code.
+    "model_replacement_incompatible",
 )
 
 
-def test_the_exit_codes_are_2_to_15_in_section_5_8_order() -> None:
+def test_the_exit_codes_are_2_to_16_in_section_5_8_order() -> None:
     assert dict(API_EXIT_CODES) == {code: 2 + index for index, code in enumerate(SECTION_5_8)}
 
 

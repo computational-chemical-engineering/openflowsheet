@@ -49,6 +49,16 @@ state — after the lifted part is set — and an outlet whose item changes ther
 set to its mole balance (§7.8 (ii)); the screen checks each trial's trigger dormancy against the
 items; at closure an item that disagrees with its triggers restarts with it toggled, and every
 swapped row, lifted and non-lifted, must hold (§7.8 (iv)).
+
+**`pr-c1-v1` splits** (M02 design note §14.2 B12–B14; ADR 0012 Amendment A1–A2; register R-254,
+R-256). Where the provider is `pr-c1-v1` (`_pr_c1`, which reads the uncounted `describe`), the
+kernel's regime is M01 §7 rule 3 with τ_dew (`models.c1.phase.classify`): a TWO_PHASE flash whose
+liquid NH3 is at most τ_dew of the feed is VAPOR, opened as a VAPOR restart pins it — never with
+the flash's ulp-sized liquid, at which the TWO_PHASE Jacobian is singular. The single-phase
+admissibility reads the same classification and not `admissibility_epsilon`, and the screen's
+regime of a flagged split is the same kernel's. A split whose rule declares vapour-only components
+has a `VapourOnlyForm`: in a TWO_PHASE attempt their liquid flows are pinned at `+0.0` and their
+zero rows dropped. Every other provider runs the code above, unchanged.
 """
 
 from __future__ import annotations
@@ -67,6 +77,7 @@ from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext, PhaseSignature
 from openflowsheet.models import temperature_id
+from openflowsheet.models.c1.phase import classify
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE, FLOW_TOLERANCE, TEMPERATURE_TOLERANCE
 from openflowsheet.models.syn001.ph_kernel import ph_state
 from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
@@ -121,6 +132,8 @@ from openflowsheet.orchestrator.trace import (
 )
 from openflowsheet.orchestrator.warm_start import WARM_START_REJECTED, WARM_START_SOURCE
 from openflowsheet.thermo import FlashRequest, Phase, PropertyProvider, StreamState
+from openflowsheet.thermo.pr_c1 import LIGHT
+from openflowsheet.thermo.pr_c1 import PROVIDER_ID as PR_C1_PROVIDER_ID
 
 __all__ = [
     "ClosureType",
@@ -129,6 +142,7 @@ __all__ = [
     "RecoveryStart",
     "RegionResult",
     "Regime",
+    "VapourOnlyForm",
     "ZeroFlowForm",
     "region_ptc_problem",
     "solve_region",
@@ -231,6 +245,22 @@ class ZeroFlowForm:
     #: `(row id, T_out, T_label)` of a PH-type split's label row `T_out − T_label`; `None` for a
     #: TP-type split, whose temperature keeps its specification row.
     label: tuple[str, str, str] | None = None
+
+
+@dataclass(frozen=True)
+class VapourOnlyForm:
+    """One lifted split's vapour-only liquid flows (M02 design note §14.2 B12–B13; ADR 0012
+    Amendment A2): the components whose liquid flow is a structural zero (the C1 flash's light
+    gases), fixed by zero rows `l_i = 0` in the equilibrium family. A `TWO_PHASE` attempt pins
+    `columns` at `+0.0` and drops `rows`; VAPOR and ZERO_FLOW pin them already, and LIQUID leaves
+    them to the mole rows. Built by `splits.vapour_only_forms`, beside the descriptor as
+    `ZeroFlowForm` is, so `LiftedSplit` and its registered `repr` digest do not move."""
+
+    unit: str
+    #: The split's liquid flows of the vapour-only components, in component order.
+    columns: tuple[str, ...]
+    #: Their zero rows, in the same order.
+    rows: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -401,7 +431,14 @@ def _kernel(
         temperature=state[split.temperature if temperature is None else temperature],
         pressure=state[split.pressure],
     )
-    result = provider.flash(FlashRequest(state=stream), context)
+    if _pr_c1(provider):
+        # M02 design note §14.2 B14: M01 §7 rule 3 with τ_dew. A VAPOR answer — the provider's,
+        # or a TWO_PHASE one inside the dew band — opens as `_pin(VAPOR)` sets it.
+        band, _, result = classify(provider, context, stream.n, stream.temperature, stream.pressure)
+        if band == "VAPOR" and result.status == "ok":
+            return "VAPOR", _vapour_pinned(split, stream.n)
+    else:
+        result = provider.flash(FlashRequest(state=stream), context)
     if result.status != "ok" or result.vapor is None or result.liquid is None:
         raise _KernelRefusedError(split.stream, str(result.status), result.message)
     regime: Regime = "TWO_PHASE"
@@ -416,6 +453,21 @@ def _kernel(
         split.liquid_total: float(sum(result.liquid.n)),
     }
     return regime, values
+
+
+def _pr_c1(provider: PropertyProvider) -> bool:
+    """Whether `provider` is `pr-c1-v1` (B14's dispatch; `describe` is uncounted)."""
+    return provider.describe().provider_id == PR_C1_PROVIDER_ID
+
+
+def _vapour_pinned(split: LiftedSplit, feed: Sequence[float]) -> dict[str, float]:
+    """A VAPOR split's values as `_pin(VAPOR)` writes them: the vapour the feed bitwise, the
+    liquid `+0.0`, `V = float(sum(feed))`, `L = 0.0`."""
+    values = dict(zip(split.vapor, feed, strict=True))
+    values.update(dict.fromkeys(split.liquid, 0.0))
+    values[split.vapor_total] = float(sum(feed))
+    values[split.liquid_total] = 0.0
+    return values
 
 
 @dataclass(frozen=True)
@@ -663,6 +715,8 @@ def _admissible(
     if regime == "ZERO_FLOW":
         feed = sum(state[name] for name in split.feed)
         return all(state[name] == 0.0 for name in split.feed), feed
+    if _pr_c1(provider):
+        return _pr_admissible(provider, context, split, regime, state)
     from openflowsheet.verify.checks import k_values
 
     constants = k_values(provider, state[split.temperature], state[split.pressure], context)
@@ -677,6 +731,38 @@ def _admissible(
     else:
         value = sum(y / k for y, k in zip(fractions, constants, strict=True))
     return value <= 1.0 + epsilon, value
+
+
+def _pr_admissible(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    split: LiftedSplit,
+    regime: Branch,
+    state: Mapping[str, float],
+) -> tuple[bool, float]:
+    """B14 on a single-phase branch of a `pr-c1-v1` split, `admissibility_epsilon` unread:
+    VAPOR iff `classify` of the feed at the split's `(T, P)` is VAPOR, with its value; LIQUID iff
+    no light gas flows in the feed and `classify` is LIQUID, with value `n_light / n_tot`. A
+    provider refusal is a `VerifierError`, which the screen converts to `invalid_trial_state`.
+    A dormant feed is admissible with value `0.0`, as the K03 rule's empty side is."""
+    from openflowsheet.verify.checks import VerifierError
+
+    feed = tuple(state[name] for name in split.feed)
+    total = sum(feed)
+    if total == 0.0:
+        return True, 0.0
+    answer, value, result = classify(
+        provider, context, feed, state[split.temperature], state[split.pressure]
+    )
+    if answer is None:
+        raise VerifierError(
+            f"the kernel refused {split.unit}'s regime ({split.stream}): {result.status}: "
+            f"{result.message}"
+        )
+    if regime == "VAPOR":
+        return answer == "VAPOR", value
+    light = sum(feed[k] for k in LIGHT)
+    return all(feed[k] == 0.0 for k in LIGHT) and answer == "LIQUID", light / total
 
 
 def _branch(split: LiftedSplit, state: Mapping[str, float], v2: bool = False) -> str:
@@ -715,21 +801,32 @@ def _form(split: LiftedSplit, forms: Mapping[str, ZeroFlowForm]) -> ZeroFlowForm
 
 
 def _pinned(
-    split: LiftedSplit, regime: Regime, forms: Mapping[str, ZeroFlowForm]
+    split: LiftedSplit,
+    regime: Regime,
+    forms: Mapping[str, ZeroFlowForm],
+    vapour_only: Mapping[str, VapourOnlyForm] | None = None,
 ) -> tuple[str, ...]:
     """The columns an attempt holds at `+0.0` for one split: its `ZeroFlowForm`'s in `ZERO_FLOW`
-    (T05b spec §7.2), `LiftedSplit.pinned`'s otherwise."""
+    (T05b spec §7.2), `LiftedSplit.pinned`'s otherwise — and, in `TWO_PHASE`, its
+    `VapourOnlyForm`'s (M02 design note §14.2 B13)."""
     if regime == "ZERO_FLOW":
         return _form(split, forms).columns
+    if regime == "TWO_PHASE" and vapour_only and split.unit in vapour_only:
+        return (*split.pinned(regime), *vapour_only[split.unit].columns)
     return split.pinned(regime)
 
 
 def _dropped(
-    split: LiftedSplit, regime: Regime, forms: Mapping[str, ZeroFlowForm]
+    split: LiftedSplit,
+    regime: Regime,
+    forms: Mapping[str, ZeroFlowForm],
+    vapour_only: Mapping[str, VapourOnlyForm] | None = None,
 ) -> tuple[str, ...]:
     """The rows an attempt drops for one split, as `_pinned`."""
     if regime == "ZERO_FLOW":
         return _form(split, forms).rows
+    if regime == "TWO_PHASE" and vapour_only and split.unit in vapour_only:
+        return (*split.dropped(regime), *vapour_only[split.unit].rows)
     return split.dropped(regime)
 
 
@@ -1096,6 +1193,7 @@ class _LiftedOps:
         order: Sequence[OpeningEntry] = (),
         temperatures: Mapping[str, tuple[str, ...]] | None = None,
         memo: ClosureMemo | None = None,
+        vapour_only: Mapping[str, VapourOnlyForm] | None = None,
     ) -> None:
         self._splits = splits
         self._regimes = dict(regimes)
@@ -1112,6 +1210,8 @@ class _LiftedOps:
         #: T05b spec §7: whether `ZERO_FLOW` is a regime (v2), and each split's form.
         self._v2 = v2
         self._forms = forms or {}
+        #: M02 design note §14.2 B13: each split's vapour-only form (empty for SYN-001).
+        self._vapour_only = vapour_only or {}
         #: T05b spec §7.8: the region's dormancy forms (empty under v1) and the items the closing
         #: attempt ran.
         self._dormancy = tuple(dormancy)
@@ -1354,7 +1454,7 @@ class _LiftedOps:
         pinned = tuple(
             name
             for split in self._splits
-            for name in _pinned(split, regimes[split.unit], self._forms)
+            for name in _pinned(split, regimes[split.unit], self._forms, self._vapour_only)
         )
         held = set(pinned)
         free = tuple(name for name in self._region.variable_ids if name not in held)
@@ -1535,7 +1635,15 @@ def _build_screen(
             temperature=state[temperature],
             pressure=state[split.pressure],
         )
-        flashed = provider.flash(FlashRequest(state=stream), context)
+        band: PhaseSignature | None = None
+        if _pr_c1(provider):
+            # M02 design note §14.2 B14: the kernel's regime, so the dew band reads VAPOR here as
+            # in `_kernel` (build log D38).
+            band, _, flashed = classify(
+                provider, context, stream.n, stream.temperature, stream.pressure
+            )
+        else:
+            flashed = provider.flash(FlashRequest(state=stream), context)
         if flashed.status != "ok" or flashed.phase_signature is None:
             # The provider's own status (review N3; K03 §5.5: the unit, the status and the
             # message). Newton halves on any of them but `error`, which ends the attempt.
@@ -1546,6 +1654,8 @@ def _build_screen(
                     f"trial: {flashed.status}: {flashed.message}"
                 ),
             )
+        if band == "VAPOR":
+            return band
         if flashed.phase_signature in ("LIQUID", "VAPOR"):
             return flashed.phase_signature
         return "TWO_PHASE"
@@ -1574,6 +1684,7 @@ def solve_region(
     split_temperatures: Mapping[str, tuple[str, ...]] | None = None,
     item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer",
     warm_start: bool = False,
+    vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None,
 ) -> RegionResult:
     """§6's region solve from `state`, a full state over `spec.variable_ids` (the initializer),
     under ADR 0005's contract (T03 §4) as the policy's `phase_contract` states it.
@@ -1588,7 +1699,9 @@ def solve_region(
     signature items. `split_temperatures` (spec §6.2 step 3 as amended;
     `splits.split_temperatures`) are each split's temperature columns, which an opening from a PH
     closure sets to its `T`; a PH-type split without them under v2 is a defect (`ValueError`).
-    Under v1 none of the five is read.
+    Under v1 none of the five is read. `vapour_only_forms` (M02 design note §14.2 B13;
+    `splits.vapour_only_forms`) are the splits' vapour-only forms, read in every `TWO_PHASE`
+    attempt; SYN-001's splits have none.
 
     Under `policy.globalization.eo_core = "ptc"` (T04 §7.1) every attempt runs the PTC core on
     `mass_mapping`'s holdups, validated before anything is evaluated: a mapping that fails T04
@@ -1638,6 +1751,7 @@ def solve_region(
             split_temperatures=split_temperatures,
             item0_opening_source=item0_opening_source,
             warm_start=warm_start,
+            vapour_only_forms=vapour_only_forms,
         )
     except _KernelRefusedError as refused:
         return RegionResult(
@@ -1669,6 +1783,7 @@ def _solve_region(
     split_temperatures: Mapping[str, tuple[str, ...]] | None = None,
     item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer",
     warm_start: bool = False,
+    vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None,
 ) -> RegionResult:
     if recovery is not None and compile_level is None:
         raise ValueError("a recovery solve compiles its λ-levels, and was given no compiler")
@@ -1710,6 +1825,7 @@ def _solve_region(
         unit for unit, kind in (closure_types or {}).items() if kind == "PH" and v2
     )
     forms: Mapping[str, ZeroFlowForm] = zero_flow_forms or {}
+    vapour: Mapping[str, VapourOnlyForm] = vapour_only_forms or {}
     temperatures: Mapping[str, tuple[str, ...]] = split_temperatures or {}
     for split in active_splits:
         if split.unit in ph_units and split.unit not in temperatures:
@@ -1913,10 +2029,14 @@ def _solve_region(
         opening = (*((split.unit, regimes[split.unit]) for split in active_splits), *items)
         used.append(opening)
         pinned = {
-            name for split in active_splits for name in _pinned(split, regimes[split.unit], forms)
+            name
+            for split in active_splits
+            for name in _pinned(split, regimes[split.unit], forms, vapour)
         }
         dropped = {
-            name for split in active_splits for name in _dropped(split, regimes[split.unit], forms)
+            name
+            for split in active_splits
+            for name in _dropped(split, regimes[split.unit], forms, vapour)
         } | {form.swapped for form in running}
         labels = (*_labels(active_splits, regimes, forms), *(form.label for form in running))
         free = tuple(name for name in region.variable_ids if name not in pinned)
@@ -1935,7 +2055,7 @@ def _solve_region(
             held = tuple(
                 name
                 for split in active_splits
-                for name in _pinned(split, regimes[split.unit], forms)
+                for name in _pinned(split, regimes[split.unit], forms, vapour)
             )
             refused = check_opening(
                 OpeningState(
@@ -2148,6 +2268,7 @@ def _solve_region(
             order=order,
             temperatures=temperatures,
             memo=memo,
+            vapour_only=vapour,
         )
         try:
             decision = decide(

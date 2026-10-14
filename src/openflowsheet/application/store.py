@@ -33,6 +33,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
+from openflowsheet._files import atomic_write_bytes as atomic_write_bytes  # re-export, R-237
 from openflowsheet.application.revisions import Revision, content_hash
 from openflowsheet.application.types import (
     LOCAL_OWNER_PRINCIPAL,
@@ -130,19 +131,52 @@ def _load(blob: bytes | str | None) -> Any:
     return None if blob is None else json.loads(blob)
 
 
-def atomic_write_bytes(path: Path, data: bytes) -> None:
-    """Write a temporary file beside `path`, `fsync` it, rename it over `path`, `fsync` the dir."""
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
-    with open(temporary, "wb") as handle:
-        handle.write(data)
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temporary, path)
-    directory = os.open(path.parent, os.O_RDONLY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
+#: ADR 0035 D4 (M02 design note §6.3): each evidence-producing job operation and the prefix its
+#: jobs carry in a commit's `invalidations`. M02 registers `solve` only; M03–M05 register theirs
+#: when they add them.
+EVIDENCE_OPERATIONS: Final[Mapping[str, str]] = {"solve": "run-"}
+
+
+class ArtifactTableSink:
+    """The `artifacts` table as an experiment store's `ArtifactSink` (M02 design note §14 B4,
+    R-237): each `record` is one row, inserted in its own write transaction. The id is the owning
+    job (or `nojob`), the kind, the name and the file's stem, with `-<n>` added when a row of that
+    id exists (a cache hit or a determinism finding names the result file again)."""
+
+    def __init__(self, store: ProjectStore) -> None:
+        self.store = store
+
+    def record(
+        self,
+        *,
+        job_id: str | None,
+        kind: str,
+        name: str,
+        relpath: str,
+        sha256: str,
+        size_bytes: int,
+        parent_artifact_id: str | None,
+    ) -> str:
+        base = f"{job_id if job_id is not None else 'nojob'}:{kind}:{name}:{Path(relpath).stem}"
+        with self.store.writing() as connection:
+            artifact_id, number = base, 1
+            while connection.execute(
+                "SELECT 1 FROM artifacts WHERE artifact_id = ?", (artifact_id,)
+            ).fetchone():
+                number += 1
+                artifact_id = f"{base}-{number}"
+            row = ArtifactRow(
+                artifact_id=artifact_id,
+                job_id=job_id,
+                kind=kind,
+                name=name,
+                sha256=sha256,
+                size_bytes=size_bytes,
+                relpath=relpath,
+                parent_artifact_id=parent_artifact_id,
+            )
+            self.store.register_artifacts(connection, [row])
+        return artifact_id
 
 
 def policy_file_bytes(policy: ProjectPolicy) -> bytes:
@@ -1070,6 +1104,25 @@ class ProjectStore:
                 continue
             return str(job_id), str(revision_id), str(artifact[0])
         return None
+
+    @staticmethod
+    def evidence_for_revision(connection: sqlite3.Connection, revision_id: str) -> list[str]:
+        """ADR 0035 D4 (M02 design note §6.3): `invalidations` — every job of an operation in
+        `EVIDENCE_OPERATIONS` whose request names `revision_id`, as `<prefix><job_id>`, in
+        acceptance order. Experiment records are never in it: they describe a variant, not a
+        revision."""
+        operations = sorted(EVIDENCE_OPERATIONS)
+        marks = ", ".join("?" for _ in operations)
+        rows = connection.execute(
+            f"SELECT job_id, operation, request FROM jobs WHERE operation IN ({marks})"
+            " ORDER BY ordinal",
+            operations,
+        ).fetchall()
+        return [
+            f"{EVIDENCE_OPERATIONS[str(operation)]}{job_id}"
+            for job_id, operation, request in rows
+            if _load(request).get("body", {}).get("revision_id") == revision_id
+        ]
 
     @staticmethod
     def solve_jobs_for_revision(connection: sqlite3.Connection, revision_id: str) -> list[str]:

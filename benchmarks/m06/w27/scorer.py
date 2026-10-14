@@ -19,6 +19,10 @@ score, and ratified since as W27-R59…R61 (registration §20, Amendment 1; M06 
 - A unit, component or package the classification records as *available* is named, for W27-R41,
   by what `coverage.json` holds for it: a unit group by its key's class, its names and their last
   segments; a component by its name or a CAS alias; a package by its name, last segment and key.
+  As amended (registration §21.6, Amendment 2): an item that matches a recorded reason (W27-R40)
+  is not contradicted — an alias the record itself uses for an unavailable group (`Mixer` in
+  `ngcc_gas_turbine_subflowsheet`, W27-S19) cannot also be the error of calling an available
+  one unavailable.
 - A reference quantity with rows at more than one time point is unjudged (`multiple_time_points`):
   a steady `CANDIDATE` has one, and choosing one of several would be a rule nobody registered.
 - A judged reference component the agent's product stream does not carry is compared as 0 mol/s.
@@ -535,7 +539,7 @@ def judge_limitation(limitation: Any, row: Mapping[str, Any]) -> dict[str, Any]:
             record["matched"] = any(
                 r["subject"] is not None and _component_matches(subject, r["subject"]) for r in same
             )
-            record["contradicted"] = any(
+            record["contradicted"] = not record["matched"] and any(
                 c["available"] and _component_matches(subject, c["name"]) for c in row["components"]
             )
             record["names_nothing"] = not any(
@@ -545,7 +549,7 @@ def judge_limitation(limitation: Any, row: Mapping[str, Any]) -> dict[str, Any]:
             record["matched"] = any(norm(subject) in {norm(a) for a in r["aliases"]} for r in same)
             pool = available["unit" if reason_kind == "UNIT_UNAVAILABLE" else "package"]
             everything = all_units if reason_kind == "UNIT_UNAVAILABLE" else all_packages
-            record["contradicted"] = norm(subject) in pool
+            record["contradicted"] = not record["matched"] and norm(subject) in pool
             record["names_nothing"] = norm(subject) not in everything
     counts = {
         "items": len(items),

@@ -1,0 +1,36 @@
+{
+  "expect_error": "'schema_version' is a required property",
+  "document": {
+    "model": {
+      "id": "c1.reactor_standin",
+      "version": "standin-x025-v1",
+      "artifact_ref": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1"
+    },
+    "boundary": {
+      "provider_id": "pr-c1-v1",
+      "provider_identity_sha256": "2d5de2ac4607146ec0eee0650e3bdec04ee14d1a93d1d05437f965623129f59e",
+      "n_tubes": 1000.0,
+      "sweep_ratio": 1.0
+    },
+    "inputs": {
+      "components": [
+        "H2",
+        "N2",
+        "NH3",
+        "Ar",
+        "CH4"
+      ],
+      "n": [
+        4.985005506263217,
+        1.6616685020877393,
+        0.21440883897906313,
+        0.12251933655946465,
+        0.16335911541261952
+      ],
+      "T": 673.15,
+      "P": 10000000.0
+    },
+    "environment_fingerprint_sha256": "f2fba3b89d6d4abae5222f3d60cb286ed68efaaf3e0e2a7bfdb6bcb485b74e45",
+    "experiment_key": "7b26ebb95d60db3459d133c67d81432a3522ba4c935c28e27fb0f5d53b027300"
+  }
+}

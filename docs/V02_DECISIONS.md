@@ -362,3 +362,389 @@ Grep, don't read whole. Newest at the bottom.
   R-238; envelope + matrix regenerated, 51 limitations, 278 harvest rows; changelog test takes R-216's form and drops
   M01's `ADDED_AFTER_V0_1_0`, R-217 merge note; package data both kinds) — gate on that tree: 7717 passed, 52 skipped,
   Node 92/92, browser 34/34, matrix --check 0. `47baa4d` brings main's two state-file commits (docs only). Pushed.
+- `specifier` v0.2 alpha release gate launched on `wp/V02-alpha-gate` (ADR 0028, R-238/239): what `0.2.0a1` claims,
+  carried and moved v0.1 records (digest, envelope, CHANGELOG notes, review table, A49), W21/W22 verdict criteria,
+  gate script work orders. Against M02's N3 default (v0.1 gate unchanged + W21, W22 met).
+- M04 specification done on `wp/M04` (`35ace09`, `408a960`, `6e48ffb`): `docs/derivations/M04-spec.md` (A01–A35),
+  ADR 0036 (surrogate evidence + Default split-conformal), ADR 0037 (surrogate unit, promotion, rollback; amends
+  ADR 0035 additively and ADR 0019 as Amendment 5), R-240…R-249, generator `m04_reference.py` (5269 claims),
+  `plan-it1.json`. Native unit `c1.reactor_surrogate` (frozen quadratic in 7 scaled inputs → (X, ΔT)) on
+  `revision_eo`; reference distribution uniform on a box inside the data domain; one joint score scaled by width
+  limits (0.0025 in X, 1.5 K); failures score +∞ and stay in denominators; promotion decided in integers (H ≥ h_min);
+  new facet `surrogate_evidence`. Plan it.1: 144 train / 118 cal (k=114) / 300 test + 5×14 gradient stencil = 632
+  cold experiments ≈ 95 min; power 0.9035 with no parent failures. WO-1, 2, 3, 10 need nothing from M02.
+- M04 Needs Frank (defaults proceed): N1 experiment budget 632 (≈95 min) for it.1 + up to two more (≈4 h total); N2
+  width limits 0.0025 / 1.5 K; N3 gradient limit 0.25; N6 M04 `tested` whatever the real verdict, M05 proceeds on the
+  parent model if not promotable. N4 (reference box vs the real loop inlet) and N5 (runner concurrency) are facts
+  for M02's measurements.
+- `opus-engineer` M04 WO-1, 2, 3, 10 launched on `wp/M04`.
+- M02 WO-1b, rulings, WO-5, WO-6 done on `wp/M02` (`100fd12`, `3f37c2e`, `d0eb848`, `2e63211`; check.sh 7236
+  passed, 2 pymrm deselected). Reactor env built from pins (fresh clone, 20.6 s): lock `032a050c…` (85 dists), variant
+  `pymrm-6089593-g2-nz800-s123-v1` = `2302cddf…`, fingerprint `238123dc…`. **G10 all pass**: A41 3/3; A42
+  1.559285305616933e-08 (= probe); A43/A44 bitwise; A45 3.84e-8 ≤ 1e-7; A46 5.06e-5 ≤ 1e-3; **A47(a) bitwise**; A47(b)
+  1.43e-8 ≤ 1e-6; A48 3/3. G5 15 tests over 4 transports. Real experiment job: 31.7 s; cache hit 1.88 s.
+- **Finding (D22): one real evaluation costs 25–45 s, not ~9 s** — the probe's wall_s omitted the group's KPI
+  certificate (12–35 s). 120 s timeout keeps 2.7×. Consequence: M04's iteration 1 (632 experiments) ≈ 4.4–7.9 h, not
+  95 min; three iterations ≈ 12–20 h. Frank's M04 N1 restated. Open for the design lane: D22 (timing, R-224/§5.2/G12),
+  D24 (`job_result.experiment` null before any attempt), D23 (every experiment job records through
+  ArtifactTableSink), D18 (model exception → crashed), D14 (frozen handshake failure recorded per experiment).
+- `opus-engineer` M02 merge-main + WO-7, WO-8 (+WO-9) launched on `wp/M02`.
+- M03 review fixes + WO-10 done on `wp/M03` (`ca3d833`…`71b3c37`): F1 policy comparison (`tests/m03_fixture_compare.py`;
+  8 perturbed regenerations compare clean; a 3e-9 χ² change is caught; 8 permanent must-catch mutations); F2
+  `solver.environment` (thread vars, libomp max_threads, ASL path/sha); A40 per run (Amendment 2); F4
+  `NLP_LICENCES_ACCEPTED` (`bf753ae` gate, `2b6e350` set True pending N1 — revert with `91537b0` to decline); F5
+  twin bitwise at moved inputs. check.sh 7066 passed; nlp gate 18 passed. Manifest
+  `evidence/M03/fd16834…/manifest.json` **implemented** (A01–A48 pass; `M03.N1` and `M03.ci_both_runners`
+  unsupported until stated). Design lane to register the test-module comparison rules (review F1). Pushed
+  `wp/M03` → CI 37846362678.
+- M02 architect asked for rulings D14, D18, D22 (timing), D23, D24 (R-250+; R-238/239 alpha gate, R-240…249 M04).
+- M02 rulings round 2 (`e4d1b82`, note §14.1 B6–B10, R-250…R-252): D22 the KPI certificate stays (part of ADR 0027 D6
+  acceptance; produces A47's bits; no cheaper equal claim); timeout 120 s until G11 re-registers it; 25–45 s per
+  evaluation, 2–6 min per coupled solve; G12 runs with wall_time_s 3600; **M04 lever: distinct-key experiments may run
+  concurrently (≤ physical cores) without changing any bit**. D24 confirmed (null iff no experiment artifact). D23
+  confirmed. D18 changed: new deterministic stage `model_exception` (cached, not retried, coupling backtracks). D14
+  confirmed. Note: `e4d1b82` also concluded the WO-7/8 engineer's in-progress merge of main (parents `2e63211`,
+  `e100b68`); engineer told to commit on top.
+- M03 reviewer asked to confirm closure and rule on registering the test-module comparison rules.
+- M03 review Closure (`a8a6dcc`): all findings closed in code; F1 final on green CI both runners; Amendment 2
+  ratified; comparison rules ratified → R-253 (session, `85965cd`) with watch-for (move into run/compare + ADR 0025
+  amendment before study/optimization records become replay-comparable, i.e. before M05/K05 bundles). ADR 0031 →
+  Accepted on green CI + manifest tested; ADR 0032 also needs N1.
+- `recon` M05 launched.
+- M05 recon done (digest inline; facts pasted into `docs/briefs/M05-design.md`, `1ecf576`): Pyomo 6.10.1
+  `contrib.trustregion` present in the audited env (TrustRegionSolver; ExternalFunction → holder variables; default
+  subproblem solver = the ASL `ipopt` executable, which is in the env but NOT in the [A10] inventory); Python-callback
+  ExternalFunction needs no ASL library; no M05 code/ADR anywhere; C1 decisions per ADR 0022 D6 = reactor inlet T
+  (alternative purge fraction); no registered objective.
+- `architect` M05 launched on `wp/M05` (ADR 0038+, R-260+), with a throwaway TRF probe allowed in the audited env.
+- M04 WO-1, 2, 3, 10 done on `wp/M04` (`c757f13`, `cebe3f6`, `af4801a`, `7613b5e`; check.sh 7243 passed):
+  `studies/surrogate/{plan,conformal,quadratic}.py` (the `studies` layer created byte-identically to wp/M03's).
+  A01–A15 + A34 pass (closest: A12 R_T 8.1e-17 vs 1e-15, 12×). Choices isolated per commit (input map in plan.py;
+  injected domain guard; `plan_not_registered` for it≥2; None is the only +∞ score). For the M04 amendment round:
+  A11's "rank-deficient by two columns" is eight columns; whether it≥2 training lists earlier draws as requests.
+  WO-4+ need M02's runner/unit → merge `wp/M02` into `wp/M04` after M02's WO-7/8 gate is green.
+- M03 CI 37846362678: check green on both architectures; default-install failed on the G6 isolation walk importing
+  bindings.http (uvicorn absent). Fixed (`8996973`: only a server-extra ModuleNotFoundError is tolerated); re-run
+  37848933412.
+- `docs/progress.md` "Start here" rows brought up to date.
+- v0.2 alpha gate specified on `wp/V02-alpha-gate` (`e3703bb`): `docs/derivations/V02-alpha-release-spec.md` (12 gate
+  rows, A00–A64), ADR 0028 (v0.2 pre-release policy), R-238/239, generator `v02a_reference.py` (64 claims), evidence
+  id M07a. Claims at `C_α`: V11–V20 re-judged by T08 §4 unchanged + W21 + W22; W23–W27 "not claimed"; web shell ships
+  unclaimed. Moved records MR-1…12 each with a counterpart at least as strict (surface digest chain R-234→R-192→R-133→
+  v17-c2; V17 BLOCKED unless carried; alpha envelope pinned with T08's 58 limitations harvested; CHANGELOG `## v0.2.0a1`
+  names L42, L-WEB-1…4). Findings: release.yml and changelog_section.py reject every pre-release today; B50's content
+  test will break at M02's merge.
+- `opus-engineer` alpha gate WO-1, 2, 3, 4, 7 launched on `wp/V02-alpha-gate` (no dispatch/tag/publish).
+- M05 design done on `wp/M05` (`d7d6dbf`, `43651ce`): `docs/design/M05-trust-region.md`, ADR 0038 (TRF adapter: Pyomo
+  6.10.1 contrib.trustregion unmodified, pinned by version + module hashes), 0039 (C1 study: one decision, reactor
+  inlet T ∈ [643.15, 733.15] K, purge 0.02, maximize liquid NH₃), 0040 (fallback, inactive; triggers T1 N1 denied, T2
+  structural failure, T3 audit + shim both fail), R-260…R-273. Probe (scratchpad): TRF composes (Pyomo example 1
+  bitwise via a property-block wrapper); every ExternalFunction needs a gradient; TRF clones the model (identity hook
+  needed for the ledger); exceptions abort TRF, NaN is silently "optimal" (callbacks raise typed refusals); subproblems
+  need the `ipopt` executable (+ `libipoptamplinterface`, `libgomp` — not in M03's inventory). Glass box = canonical
+  row builders over a Pyomo algebra + property outputs as Python-callback ExternalFunctions; reactor in full space
+  ((X̂, ΔT̂) linked to an EF of 7 inlet vars, FD step 2⁻¹⁴, 7 concurrent workers); eligible example TR-E2 = C1 loop with
+  a test-only smooth synthetic reactor; real reactor "qualified" only. Budgets 400 cold / 4 h per study.
+- M05 Needs Frank (defaults proceed): N-F1 objective = liquid NH₃ product (alt: economic with his prices); N-F2 decision
+  tolerance 0.5 K; N-F3 real-reactor budget 400 experiments / 4 h; N-F4 proceed in the audited env, merge with `nlp`
+  undeclared if N1 is pending; N-F5 surrogate only if promoted; N-F6 decision box [643.15, 733.15] K; N-F7 no job op.
+- `opus-engineer` merging main into `wp/M03` (merge-ready; base for M05 WO-1…3).
+- Alpha gate WO-1, 2, 3, 4, 7 done on `wp/V02-alpha-gate` (`332e9d7`…`c35c50b`): `scripts/v0_2_gate.py` (104 tests;
+  11 deliberate rule breaks each caught), release.yml + changelog_section.py accept PEP 440 pre-releases (dry-run
+  default kept), v0.1.0 notes test reads PUBLIC_ROOT, v0.1.1 bundle fixture. check.sh 7861 passed. v0.1 gate and
+  t08_rc.py empty diff. A dry `t08_dist.py` at `0.2.0a1` passes T08.A43; clean pip install reports 0.2.0a1. Open: A42
+  (plain `replay` gives NOT_RUN; test judges `replay --rerun`). WO-5…11 need M02.
+- `reviewer` alpha gate (WO-2 + the rest) launched.
+- M03 CI 37851614039 on `2ed3f22`: **all green** (check both architectures, default-install, identity). `M03.ci_both_runners` can be stated green; the manifest's `tested` status still waits for N1. (The main-merge onto wp/M03 will need its own CI run.)
+- `main` merged into `wp/M03` (`8d4069c` + `086bf2b` inventory skip of the `web` binding; check.sh 7904 passed, nlp gate
+  18 passed, G1–G6 PASS). Pushed. Register now holds every entry (224 headings on wp/M05). M03 manifest must be
+  regenerated (audit doc + inventory hashes moved) when N1 arrives.
+- `wp/M03` merged into `wp/M05` (`d124e2c`; register = M03's + M05's appended R-260…273).
+- M02 WO-7 done (`3c5df9f`: ComponentBasis by `record_source`; 50 corpus revisions bind byte-identically before/after,
+  sha `d7ff979b…`), R-252 tests (`11d3882`), n_tubes check (`a19fdfd`), R-251 `model_exception` → new variant
+  `pymrm-6089593-g2-nz800-s123-v2` (v1 superseded; G10 re-recorded bitwise equal, `6a46cdd`). check.sh 7902 passed.
+  **WO-8 blocked before code** (D30): F1 liquid light-gas flows are variables in frozen `assemble`; F2 `check_agreement`
+  expects SYN-001's split rows; F3 region admissibility is lnK/3-wide; F4 the verifier's revision path is SYN-001-only
+  (PR checks = certificate policy); F5 no solve-time phase screen for non-lifted vapour outlets; F6 PR enthalpy-flow
+  Jacobian undefined at exact dormancy. Plus D27 (API wording), D33 (env manifest variant id).
+- Alpha gate review (`c8fd848`): sound, no must-fix; should-fix F1 T4 acceptance-cell rule too loose; F2 Frank's answers
+  need the date rule per release; F3 `differences=None` skips the tree check; F4 six refusals untested; A42 `--rerun`
+  confirmed. All six build choices accepted.
+- Launched: fresh `architect` M02 WO-8 rulings (R-254+); `opus-engineer` M05 WO-2, WO-3 (`wp/M05`); `sonnet-implementer`
+  M05 WO-1 ipopt-executable audit (`wp/M05-audit`); `opus-engineer` alpha gate review fixes.
+- Alpha gate review fixes done (`4d6891b`…`178a070`): F1 acceptance-cell regex + calendar check (3 new "no" rows); F2
+  Frank's answers dated ≥ `Judged` (new Table T6; `0.2.0a2` refused on `0.2.0a1`'s answers); F3 `differences=None`
+  refuses "tree check not run"; F4 six refusal tests (each removal fails only its own tests); A42 line; RELEASING.md
+  clause. check.sh 7889 passed; generator 67 claims. Session aligned ADR 0028's cell rule + answers intro and appended an
+  R-238 amendment note (`c97da19`). Left: F6 (close 0.1-line pre-releases? Frank's call), F7 for M07, F8 aarch64
+  `--rerun` MATCH to confirm in CI before `C_α`, WO-5 must check the V17-carry row names every surface link.
+- M02 WO-8 rulings (`bfbad26`, note §14.2 B11–B19, R-254…R-259; amendments on ADR 0012, ADR 0013 (A3), ADR 0026 (A2),
+  M01 spec §7 (A3), R-046, R-060, R-230): B11 M01's equilibrium row restated in R-008's form E = L·v·φ^V − V·l·φ^L
+  (molar_flow_squared; same two-phase roots, no M01 value moves) — as written it was nonzero on VAPOR and unevaluable
+  above NH₃'s T_c; B12 light-gas liquid rows l_i = 0 + `VapourOnlyForm` pinning +0.0; B13 `SplitRule.vapour_only`,
+  SYN-001 code unedited; B14 region dispatch by provider id with τ_dew band; B15 PR verifier check forms from existing
+  tolerances only (check_policy_sha256 unchanged; rejected |y−y*| ≤ 1e-10 as 500–16000× too tight); B16 evaluate refuses
+  `vapour_phase_inadmissible`; B17 zero-flow ideal-gas limit; B18 D27 confirmed; B19 D33 confirmed. No specifier blocks
+  (optional ratification of M01 §7 A3). Risks: G7(a) 1e-9 may need `newton_refined`; near-dew singularity → limitation.
+- `opus-engineer` M02 WO-8.1…8.5 launched on `wp/M02`.
+- M05 WO-2, WO-3 done on `wp/M05` (`0a93225` projection compiler, `aaa2452` omitted_rows DECISION, `545a385` G4 in K03
+  scales DECISION, `dd9e364` TRF runner): default 7951 passed, nlp 67 passed. G2 pin refuses; G3 TR-E1 matches native to
+  4.4e-16 in 5 iterations (6 cold points, 4 gradients); G4 SYN-001 ≤ 5.9e-4/7.1e-7/2.3e-3 of tolerance; G13 holds.
+  Finding: Pyomo's EFReplacement.exitNode swallows start-value exceptions (bare except → 0); holder now records them.
+  Open for the M05 architect: omitted pressure-alias rows (PROJECTION_DOF otherwise); G4/Ipopt scaling in K03's scales;
+  unassigned affine basis (§6.6), readiness halves, TruthBox meta. Architect asked.
+- M05 WO-1 done on `wp/M05-audit` (`a28d6a8`): the `ipopt` executable passes G1–G8 (audit §11 in
+  `docs/m03-ipopt-audit.md`; record `benchmarks/m05/trsp-inventory-x86_64.json`). New objects only `bin/ipopt` and
+  `libipoptamplinterface.so.3.14.20` (conda-forge ipopt-3.14.20, EPL-2.0 read / EPL-1.0 declared, as libipopt). The
+  `libgomp.so.1` loaded is a symlink to LLVM libomp 23.1.3 (already inventoried) — ADR 0006 Amendment 1 not engaged.
+  Method: `LD_DEBUG=files` in the workload's children, union equals `ldd` closure. No licence class added for N1
+  (Ipopt now also runs as a separate process, noted). G7 narrower (no second-prefix rebuild). check.sh 7908 passed.
+  To merge into `wp/M05` after the M05 architect's rulings commit; then a test that WO-3's pin hashes equal WO-1's record.
+- M05 rulings (`595b32b`, note §16 + P13, R-274…R-276): R-274 omitted rows computed by `eliminate_alias_rows` (caller set
+  only if equal; four certifying facts; C1 the same, escalate if elimination refuses); R-275 K03 `Scaling.from_spec`
+  everywhere (unit_no_kinds for TR-E1; partial kinds refused); R-276 pre-flight start evaluation + no candidate after any
+  recorded refusal. Gaps assigned: affine basis + TruthBox meta → WO-4; readiness halves → WO-6.
+- `wp/M05-audit` merged into `wp/M05` (`aef41bf`). `opus-engineer` M05 R-274…276 code amendments + pin cross-check
+  launched.
+- M05 R-274…276 amendments done on `wp/M05` (`7697149`, `7929478`, `5ed884b`, `005db97`, `966ab1b`, `6e44cac`):
+  default 7956 passed; nlp tier 90 passed; G3/G4 identical to baseline. Omitted rows computed via
+  `eliminate_alias_rows` (facts 1–3 recorded per row; fact 4 a hook until P2); pre-flight start evaluation; pin cross-check
+  vs the WO-1 record. **For the M05 review:** `7929478` moved the certificate's pressure-shift rule into
+  `orchestrator/rank.py` (`pressure_shifted_state`) so the projection can use it — the certificate already uses rank.py's
+  alias elimination, but this widens verifier/solver sharing (R-016) and needs a design-lane look. Finding: TRF 6.10.1
+  fails its subproblem as infeasible on `y − 90z = 0` (EF output tied to decisions alone) independent of the projection —
+  probe before C1. Test-order dependence (`-k g3` alone) noted. M05 now waits for M02 + M04 merges (WO-4+).
+- DECISION: M04 continues on M02's completed base — `opus-engineer` merges the fixed commit `bfbad26` (M02 WO-1…7, gate
+  green at `6a46cdd`) into `wp/M04` and builds WO-4, 5, 6. Alternative: wait for M02 to merge to main. Reversible by:
+  reverting that merge; M02's later commits merge cumulatively.
+- `opus-engineer` diagnosis probe of the TRF infeasible-subproblem shape (`y − 90z`), with C1 formulation implications
+  (scratchpad only, no src commits).
+- TRF shape probe (scratchpad `m05-probe2`): the `y − 90z` "infeasible subproblem" is TRF's default basis b ≡ 0 (already
+  rejected by ADR 0038) failing the iteration-0 PMP; with b(w₀) = d(w₀) it converges. C1-shaped toy converges with the
+  registered bases (6 starts within 4e-3 of the grid optimum). Two TRF defects found: "Optimal" with zero TRSPs when
+  θ_PMP = 0; stall test compares θ with itself ("Feasible solution found" at θ = 1.80). Safe = forward shape (C1's link
+  is); unsafe = EF output pinned by decisions alone. Proposed rules: refuse `basis_rule=None`; projection refusal
+  `PROJECTION_IMPLICIT_EF_INPUT` (Dulmage–Mendelsohn); Taylor basis for the reactor EF without a promoted surrogate + no
+  TRF_CONVERGED without an accepted TRSP; re-check θ on stalled exits. ADR 0040 T2 not fired. Sent to the M05 architect.
+- M05 P14 rulings (`4c80ae4`; ADR 0038 Amendment 1; R-277…R-279; ADR 0040 T2 does not fire): R-277 mandatory basis
+  (explicit test-only `zero_basis` for TR-E1; reactor gets the affine Taylor basis without a promoted surrogate, WO-4);
+  R-278 `PROJECTION_IMPLICIT_EF_INPUT` = structural perfect matching with decisions + link EF outputs fixed (property
+  relations stay functions), WO-2a; R-279 θ re-check after every exit, `TRF_CONVERGED` needs an accepted step, new
+  `TRF_EXIT_WITHOUT_STEP` and `TRF_STALLED_INCONSISTENT`, WO-3a (+WO-6 handling).
+- `opus-engineer` M05 WO-2a, WO-3a launched.
+- M05 WO-2a, WO-3a done (`2f9022c`, `2dc50d9`): default 7962 passed; M05 opt-in 94 passed; G3 bitwise unchanged
+  (one extra trailing memo-hit `f` from the θ re-check). P14 (a) basis refusal, (b) `TRF_EXIT_WITHOUT_STEP`, (c)
+  `TRF_STALLED_INCONSISTENT` at θ = 1.8006 — all tested; WO-2a refuses `y − 90z`, passes SYN-001 (74/74 matched).
+  Open for the design lane before WO-6: "Optimal" exit with θ_recheck > 1e-5 → engineer chose `TRF_ERROR(exit_mismatch)`
+  (alternative `TRF_STALLED_INCONSISTENT`; matters for the retry policy). Other engineer choices (refusal raises
+  `TrfConfigurationRefusedError`; zero_basis only for exempt_oracle; refusal names undetermined variables; `EFBasis`)
+  for the M05 review.
+- M02 WO-8 built on `wp/M02` (`df7a568`…`9f94727`, head `8734905`; check.sh 8081 passed, 1 xfailed): C1 PR blocks,
+  `classify`, six C1 units, `vapour_only`/`VapourOnlyForm`, region PR dispatch, `verify/pr_c1.py`. G2: 50 T07 revisions
+  byte-identical (44 certificates, `659748576adb9730…`). G7(a) β 1.3e-16; (b) VERIFIED; (c) F4 UNVERIFIED rank-deficient
+  (rcond 5.9e-19; still UNVERIFIED at δ = 1e-5, rcond 4.2e-9) — strict xfail; (d) VERIFIED; (e)–(k) pass. Open for the
+  design lane: D36 C1 builders kept in a separate `C1_MODEL_BUILDERS` (joining breaks 13 registry/list_models/W27 tests);
+  D40 certificate witness excludes exactly-zero PR columns (`d9c7cd4`, ratify); D41 G7(c) VERIFIED unreachable at the
+  dew point (structural singularity, as SYN-001's DEW_POINT_LIMITATION); D39 three SYN-001 assumptions fixed on the
+  revision path. Sent to the WO-8 rulings architect.
+- M02 follow-up rulings (`2587f14`, note §14.3, R-280…R-282, ADR 0013 A3 items 7–8): R-280 the separate C1 registry is
+  interim until WO-9 ends; WO-9's last commit joins all eight C1 entries into MODEL_BUILDERS with registered C1 corpus
+  revisions, re-taken fixtures (stripping `c1.` restores pre-M02), envelope rows, and M06's W27 snapshot re-pinned under
+  a design-lane mapping amendment — no merge/tested manifest while the separate registry exists; R-281 witness skip
+  ratified but narrowed to exactly-zero `<S>.n.<c>` columns for pr-c1-v1, recorded as a qualification + limitation
+  `derivative_witness_partial`; R-282 near-dew window (rcond ≈ 7e-3·L/n_tot; verifies from L/n_tot ≈ 1.4e-6; the loop
+  sits ~4 decades clear); G7(c) asserts UNVERIFIED at F4, VERIFIED at δ = 1e-3; D39's three fixes confirmed.
+- Launched: `opus-engineer` M02 WO-9 + R-281/R-282 (no join yet); `specifier` W27 registration Amendment 2 (C1 map
+  rows, v0.2 READINGS, §20 ratification) on `wp/M06-w27-c1map` (R-283+).
+- M04 WO-4, 5, 6 done on `wp/M04` (`cadef83` merge of M02 `bfbad26`; `a16c3fa`, `2a4370a`, `846820c`, `b975a5d`,
+  `d5736ac`): check.sh 8062 passed. A17 q̂ 1.8e-15 from reference, H 283/300, PROMOTABLE (632 experiments in 1.15 s);
+  A18 NOT_PROMOTABLE; A19 PROMOTABLE; A16 stand-in through the job; A20 budget refusal + bitwise cached rerun; A21–A24.
+  Added `ExperimentRunner.request()` in M02's runner (M02 tests unchanged); `surrogate_study` job op; schemas
+  surrogate-manifest, model-evidence; served surface moved (SNAPSHOT_M04, stripping restores M02's). Open → M04
+  Amendment 1 (sent to the M04 specifier, R-290+): A11 text; it≥2 plans; float classification for fit values (ADR 0007
+  D2.3 / ADR 0025); manifest–evidence hash cycle; outputs/refusals/new schema members; WO-11 concurrency (R-250); surface
+  move register entry.
+- W27 registration Amendment 2 (`0bb7a15` on `wp/M06-w27-c1map`, §21, R-283…R-286; registration.json `14ff19d9…`):
+  six C1 units map to their SYN-001 namesakes' functions (no token; state limits not expressible case-side, checked
+  GC-A2-5); `c1.reactor` → no function (`fixed_design_reactor`); stand-in → no function (`synthetic_stand_in`);
+  `pr-c1-v1` → `cubic_pr`; components by CAS. New R62 (units judged on the serving route's models), R24 (d)/(e), R63
+  `bases-v1` READINGS (`SELECTABLE_BASES`/`MODEL_BASES`). Dry v0.2 coverage: still 0 CANDIDATE of 450 and of 82. §20
+  ratified; W27-R59 amended (S19/S20). Finding F-A2-1 for M02: should SYN-001 builders refuse the C1 basis (recommended
+  yes). M02 join steps J1–J6 recorded in §21.8.
+- `opus-engineer` M06 WO-16h (R62, R24 d/e, R59, S19/S20, bases-v1, 0.1.1 guard) launched on `wp/M06-w27-c1map`.
+- M04 Amendment 1 (`3c4f8c2`, spec §18, ADR 0036/0037 A1, R-290…R-295; generator 8634 claims; gate 8062): A11 text
+  corrected (eight columns at roundoff, ratio 9.1e-32); it≥2 training lists earlier draws as requests, `plan-it2/it3.json`
+  committed, `iteration_not_permitted` unless earlier failures were coverage-only; no new float class (R1/R2 under ADR
+  0007 given the same records; R0 only with decision gaps ≥ 1e-8; `domain.admissibility_margin`); manifest–evidence
+  pointer reversed (evidence → manifest); outputs/refusals confirmed (+`cache_misses`); concurrency only as a pre-warm of
+  632 `experiment` jobs at max_workers 16 (≈16–30 min), study then fully cached, recorded only in the package manifest;
+  surface move R-295. Work items WO-13…17.
+- `opus-engineer` M04 WO-13…17 launched on `wp/M04`.
+- M06 WO-16h done (`b8d3211`…`552555b`): R62 + R24 (d)/(e) in coverage.py (A16–A19), amended R59 + S19/S20 in scorer.py
+  (closes M06 review F5), 0.1.1 guard + `bases-v1` reading in snapshot.py; coverage.json re-taken (rows unchanged, 0
+  candidates); preflight P1–P8 pass (P6/P7 by stub canaries); G15 20/20. **Merged into main** (`e88fb96`). M02's join:
+  J1 must expose SELECTABLE_BASES, MODEL_BASES, MODEL_BUILDERS, basis_provider; J5 updates three snapshot tests.
+- M02 WO-9 + R-281/R-282 built on `wp/M02` (`fd1427b`…`33bf150`; gate 8106 passed; G2 byte-identical): witness skip
+  narrowed and recorded; G7(a) vapour feed VERIFIED; G7(c) F4 UNVERIFIED asserted; `C1Reactor` + stand-in in the
+  interim registry; `C1-LOOP-M02-v1` registered (`benchmarks/m02/c1-loop-standin.json`), converges in 4 iterations,
+  VERIFIED; G7(f) at w* rcond 1.42e-4, flash L/n 0.128, reactor inlet inside both domains (P, H₂/N₂ at the data
+  domain's upper edges), per-tube flow 0.576 F_nom. Escalated: D44 the near-dew window is narrower than R-282 stated
+  (VAPOR side from |δ| 2.48e-4, TWO_PHASE from L/n 3.37e-5; δ=1e-4 UNVERIFIED by the absolute screen limit and the
+  witness stencil); D46 optional `coupling_initial` needs a frozen-schema amendment; F-A2-1; D45/D47 confirmations.
+  Asked the WO-8 rulings architect (§14.4). Then the join (R-280 + W27 J1–J6).
+- M02 pre-join rulings (`d5df272`, §14.4, R-287…R-289, R-282 amended): D44 measured near-dew window ratified (verifies
+  from |δ| ≈ 2.5e-4 vapour side, L/n ≈ 3.4e-5 two-phase side; §14.3 C3 withdrawn; loop flash ~3,800× clear); D46
+  `coupling_initial` stays refused (start is solver state; warm start via ADR 0024 if M05 needs it); F-A2-1 yes —
+  each model binds on its own basis, `MODEL_BASES` single source; D45/D47 confirmed. Join list accepted + no exemptions;
+  the served MCP digest must not move.
+- `opus-engineer` M02 join (merge main; R-288/J1; R-280 registry move + corpus + fixtures + envelope; W27 J2–J6; R-282
+  G7(c)) launched on `wp/M02`.
+- M04 WO-13…17 done on `wp/M04` (`ee83ea1`…`2aa86ec`; check.sh 8102 passed): evidence → manifest pointer (A38); numerical
+  addendum + conditional R0 (A37; A19's decision gaps ≥ 1.4e-3); it2/it3 + admission guard + family-wise bound (A36);
+  refusal/record tests (A39, A42); `scripts/m04_prewarm.py` (A40: 4 processes reproduce A19 bitwise, cold 0; A41
+  bypass repeats). WO-14…16 were not gated separately (each carries a reverted schema-description edit that would trip
+  R4-G3); HEAD gate covers them. Remaining: WO-7/8/9 after the M02 join; WO-11 real run (pre-warm command recorded);
+  WO-12 manifest.
+- **M02 join done** on `wp/M02` (`61defce` merge of main, `a10dac3` R-282, `4c57bce` join, `fc54944` J4/J6, `386191b` D49,
+  `f71d55e`): gate 8203 passed, 0 failed. Served MCP digest unchanged (`383b4e2c…`). J3: live snapshot = hypothetical_v02
+  (SYN-001-only branch). J4: coverage 0/450, 0/82 candidates, G14 pass. G2 byte-identical (C1 corpus kept separate,
+  `tests/m02_c1_corpus.py`). B50 fixture not re-taken (strip the 8 C1 ids, R-234 method). Fifth C1 revision
+  `C1-REACTOR-M02-v1`. Left for the design lane: envelope still lists pr-c1-v1 under `unbound_providers` (false since the
+  join); the stand-in's docstring says "Not registered" but its file hash is the pinned artifact hash.
+- Launched: `opus-engineer` M02 WO-10, WO-11 (coupled route + replay; promotion); `opus-engineer` M04 merge `f71d55e` +
+  WO-7 (surrogate unit); `opus-engineer` M05 merge `f71d55e` + WO-4, WO-5 (truth adapters, C1 formulation).
+- Frank (2026-10-09): "Token usage is too large" → approved changes 1–6 and "Make sure future sessions have the same
+  workflow". Recorded as `CLAUDE.md` "Agent budget": at most 2 agents; never resume a large-context agent (fresh agent,
+  tight brief); batch design-lane questions per package (isolated commits, one ruling round, preferably in the reviewer
+  pass); ~150k context cap per engineer; Sonnet for bounded items; 200–300-word reports, detail in the repo's
+  build-decisions logs. Unchanged: one design pass + one reviewer pass per package, full gate before every commit. Also
+  saved as project memory. The three engineers already running finish as briefed.
+
+- **M04 WO-7 done** (2026-10-09, `wp/M04` `2841cd3`): merge of M02 `f71d55e` (`4ba0e6b`, register joined in order); unit
+  `studies/surrogate/reactor.py`, binder resolution, `verify/surrogate.py`; WO-16 helper fix `d8bd39f` (A20/A39 were
+  vacuous); resolver threaded through the application. Gate 8435 passed / 31 skipped. A12–A15, A26 (revision + project
+  level) measured, see `docs/design/M04-build-decisions.md` E1–E8. Registration blocked: W27 classifier refuses
+  `c1.reactor_surrogate` (W27-R24(a)); needs a `model_functions` row + snapshot/J3 re-pin from the design lane (batched
+  into the M04 ruling round). `reproduce_bundle` gives `rerun_unsupported` for surrogate runs until bundles carry the manifest.
+
+- **M05 WO-4/5 done** (2026-10-09, `wp/M05` `6b54b8d`; merge `3e7df38`; M02 schemas added to registry, R-213). Gate 8465
+  passed; opt-in 104 passed. G4 (C1) pass (73×73 matching; alias rows omitted per R-274); T_ref 673.6434377969885 K;
+  G7 mechanics pass. STOP: TRF on TR-E2 → `TRF_TRUTH_REFUSED(property_domain_error:S1_Hdot_V)`, S1.n.NH3 = -3.448e-27
+  (exact-zero flows unbounded per ADR 0032 D4). Misses committed as strict xfails: WO-4 FD 4.1e-2 (dX/dT), gradient
+  check 0.0373 vs 2.27e-3 (truncation; η escalation worsens), §16.4 |Δz| 1.18e-6. Batched with M04 B1 into one
+  `architect` ruling round (brief `docs/briefs/v02-rulings-M05-M04.md`).
+
+- **M02 WO-10/11 done** (2026-10-09, `wp/M02` `770969d`): gate 8251 passed, 2 strict xfails; G2 dump unchanged; digest
+  unmoved. G8 (a)–(d), (g), G6 (c), R3, G9 (b)–(e) pass (G8(c) 62 vars within 3.0e-14 of the independent oracle).
+  Escalated: D50 G8(f) G=1.8 ends `no_decrease` under §4.3's reset; D61 G9(a) stand-in→real fails `validity` (stand-in
+  per-tube flow bound null). Findings D55 (all C1 runs R3 via "external" text match), D58 (exact compare of Broyden
+  iterate floats in `constants_sha256`), D64 fixed. Rulings batched into M02's reviewer pass. WO-12 launched.
+
+- **Ruling round M05/M04** (2026-10-09, `architect`): M05 §17 `5bb026e` on `wp/M05` (R-296 zero flows eliminated as
+  constants with their pinning rows, G4 → 68×68; R-297 `M05-fd-v2` three-step curvature-aware check, FD kept at 2⁻¹⁴;
+  R-298 TR-E1 ‖Δz‖ ≤ 2e-5; R-299 → `TRF_STALLED_INCONSISTENT`, retried once; R-300 E1–E7 confirmed). W27 Amendment 3
+  `14c8695` on main (R-301/302). WO-2b/3b/4a launched; WO-5b folded into M02 WO-12.
+
+- **M02 WO-12** (2026-10-09, `wp/M02` `bdb756e`): G12 PASS (real loop 3 outer iterations, ρ 319.6→0.298, VERIFIED;
+  inlet 0.81×F_nom; replay MATCH; live rerun bitwise; 142.5 s). G11: Q-F4 1/17 accepted; Q-F5 0.5× fails
+  (`element_balance_defect`), 0.25× fails, 2×/4× pass; ΔP first > ε_P at 8×; NaN/inf corners typed `external_crashed`.
+  §10.3 triggered, no mechanical narrowing → `specifier` ruling round batching D50/D55/D58/D61/D69/D70/D71/envelope.
+  D71: `with_coupling` not copied (duplicates `at_coupling`) — contradicts R-300 E7, in the round.
+
+- **M02 ruling round** (2026-10-09, `specifier`, `wp/M02` `7be4084`): §14.5 D1–D10, R-303…R-310. R-303 v3 child: extra
+  polish at 1/10 target when element defect > 1e-7 (boundary 1e-6 unchanged); NaN/inf → `reactor_not_accepted(nonfinite)`.
+  R-304 v3 domain = first of three registered boxes whose points all pass; timeout from all in-box runs. R-305 reset off
+  for the first 2n iterations (G8(f) holds). R-306 G9(a) restated (stand-in→real rejected on validity alone). R-307 D55
+  bug → registered external-provider set (empty). R-308 replay digest recomputed at recorded iterate (ADR 0007). R-309
+  M05 uses `at_coupling` (supersedes R-300 E7). R-310 `other_basis_providers`, docstring erratum. N7 to Frank (default:
+  measured box). WO-12a + WO-11a launched.
+
+- **M05 WO-2b/3b/4a done** (2026-10-09, `wp/M05` `7bc8c56`, gate 8473; opt-in 105 passed, 15 xfailed = Z2). §17.1
+  (a)–(e), §17.2 (i)–(iv), §17.3, §17.4 pass; G4 C1 68×68, worst ratios unchanged. TR-E2 TRF: `TRF_MAX_ITERATIONS` at
+  30, θ_recheck 4.01e-4, T 673.667 K. Escalated (batched): Z2 SYN-001 jointly pinned zero flows, W2. Choices Z1, Z5, W1
+  logged. M02 WO-14 launched in its own worktree (`wp/M02-wo14`) beside WO-12a.
+
+- **M02 WO-12a stopped / WO-11a done** (2026-10-09, `wp/M02` `9142032`, gate 8267). G10v3 FAIL: δ recorded after the
+  certificate (runner.py:548, +20 pseudo-time steps), so D1's round fires at every point (δ 4e-5…8.4e-5 after S3).
+  Experiment D78 (δ after certificate): G10v3, G11v3-1..3 met; no box qualifies (B1 12/21, B2 11/19, B3 11/19): every
+  zero-inert corner `nonpositive_flow`, absent-element defect 0/0, low-T/high-P zero-inert and B1 643.15 K at S1; all
+  0.2-inert corners and centres ok. Timeout rule 360–370 s. Round-7 `specifier` ruling launched.
+
+- **M02 round 7** (2026-10-09, `specifier`, `wp/M02` `2e22c29`, R-311…R-314): E1 δ read after the first certificate,
+  round 2 only if it passed, re-certified; E2 positivity and A45 defect over present species (presence from requested
+  composition), zero-inert outside shipped domain; E3 `inert_min` 0.02, boxes V1–V3 at T_in [653.15, 693.15] K → M05
+  REAL box [653.15, 693.15] K; E4 D73–D76 + timeout rule confirmed. E5: ADR 0027 D6/Am. 2 contradicted → Am. 3 (text in
+  §14.6 E5) before WO-12b. Q-E1 open fact (inert fraction at M05's edges; floor revisited if < 0.03).
+
+- **M02 WO-12a′ stopped at G11v3-4** (2026-10-09, `wp/M02` `bd446ab`/`6145b48`/`d1b8af1`, gate 8286; G2 unchanged). G10v3
+  met bitwise; G11v3-1,2,3,5,8,9,10 met. No box: V1 19/21, V2 19/21, V3 20/21; failures all 653.15 K, high-P, 2 %
+  inert, at S1. Q-E1: 4.047 % (693.15 K), 4.548 % (653.15 K, v3 child only). D85: 2 points with failed first
+  certificate and δ₁ > 1e-7. DECISION: N7 default → raise `inert_min`, keep T_in [653.15, 693.15] K; alternative: new
+  S1 start strategy (outside plan row); reversible: append-only variant. Round-8 `specifier` launched.
+
+- **M02 round 8** (2026-10-09, `specifier`, `wp/M02` `756e123`): R-315 rungs V4/V5/V6 (inert floor 0.03, 0.035, then P
+  and H₂/N₂ narrowed), first qualifying = v3's domain, all measured in both runs; G12v3-2 loop at both T edges; G11v3-11
+  full re-measure, G11v3-12 nesting/loop-inside check. R-316 round 2 whenever δ₁ > 1e-7 (reverses part of R-311).
+  ADR 0027 Am. 4. WO-12b may proceed on the selected rung before Frank answers N7. WO-12a″ launched.
+
+- **M02 WO-14 done** (2026-10-09, `wp/M02-wo14` `e8c7777`, gate 8281): D5 reset at k ≥ 2n (f1–f5 vs independent replica
+  1e-9; D50 xfail → f2), D9 `at_coupling` guard, D7 `EXTERNAL_PROVIDERS` (no re-takes needed), D8 replay digests; D94
+  shape rule extended to all final-digest copies (isolated `e8c7777`). RP-2 not met (strict xfail): rerun with moved last
+  bits still MISMATCH via certificate inlet check + exact-0 ρ/r_ξ. RP-2, D94, AC-1, f5 → M02 reviewer batch. W27 WO-16i
+  (Sonnet) launched in worktree off main.
+
+- **W27 WO-16i merged into main** (2026-10-09, `b3216dc`, Sonnet): registration Amendment 3 implemented; pre-existing
+  members byte-identical; P2 pins re-taken (registration.json `ba627342…`, .md `b5b5b3a5…`, script `57568204…`); gate
+  7748 passed; W27 tests with the archive dir linked 124 passed, 0 skipped. Interpretations to check in M04 review: optional
+  `model_functions` parameter in `check_snapshot`/`classify`; `C1_MODEL_IDS` excludes the surrogate; `hypothetical_v02_a3`
+  basis string wording.
+
+- **M02 WO-12a″ done** (2026-10-09, `wp/M02` `764cab5`/`39620d1`/`bcfd0af`, gate 8290; G2 unchanged): V4 20/21
+  (`V4-corner-T653.15-P1.1e+07-r2.5-i0.03` S1), V5 21/21, V6 21/21 in both runs → **V5 selected**; timeout 450 s
+  (slowest 149.7 s); G10v3 bitwise vs D83; G11v3-11 87×2 labels 0 differences. D100–D102, D105 to reviewer batch.
+  WO-14 merged into `wp/M02` (`ba13ce3`; build log joined in D-order).
+
+- **M02 WO-12b done** (2026-10-09, `wp/M02` `7502515`/`14906e6`/`f4e8c56`, gate 8348, 1 xfail RP-2): v3 registered
+  (sha 8b92540a…, V5, `inert_min` 0.035, timeout 450 s); G12 under v3 met (ρ 0.292, VERIFIED, replay MATCH bitwise);
+  G12v3-2 both edges met (min inert request 0.039076 = 1.116× floor; slowest experiment 108.8 s). Digest 383b4e2c…
+  unmoved. M02 `reviewer` launched with the batched rulings.
+
+- **M02 review** (2026-10-09, `reviewer`, `wp/M02` `4c3623a`, R-317/R-318): numerics sound (driver honest per §4.3/R-305;
+  v3 child per R-311→R-316, R-312). Must-fix F1 unclassified recorded floats in `external-coupling.json`; F2 replay
+  EXT-COUPLING compares the recorded request; F3 f5 end-to-end. Should-fix F4 (no w-dependent external map in default
+  gate), F5 (inner failure reason dropped). RP-2: (a) recompute request at rerun inlet, live check stays bitwise; (b)
+  floors = each quantity's own threshold, B/du reported not compared → ADR 0034 Am. 1 in WO-13. D94 kept; AC-1 = D9's
+  acceptance; D100–D115 ratified; c1-reactor.json stays v2.
+
+- **M04 W27 part done** (2026-10-09, `wp/M04` `2018dca`…`4cd23ad`, gate 8444): main merged; corpus resolver; surrogate
+  registered; J3′–J6′ vs `hypothetical_v02_a3` equal (22 models); 0/450 cases differ; G14 pass; `list_models`
+  90d9da8e…→f070fbe0…, registry snapshot 0b2f4596…→8f4bb0c8…. Flaky under load (passed on rerun): browser smoke, W27
+  S18 scorer, `t07_w5b` replay (fails alone without OMP_NUM_THREADS etc.). Open → M04 review batch (E10, E12, E14
+  envelope wording). M05 WO-6 launched.
+
+- **M05 WO-6 done** (2026-10-09, `wp/M05` `39eebba`…`c5aa61b`, gate 8522; nlp 121 passed): checks P1–P5, study loop
+  S0/A/B/C, statuses with precedence (49 fake tests), readiness 12 codes, `TrfStage` bitwise = `run_trf`; REAL box per
+  R-313. Not done: real parent adapter (needs M02 `coupled_run.py`). Choices S1–S10 (S6 isolated `c5aa61b`) → M05 review.
+  WO-7 (Sonnet) launched.
+
+- **M05 WO-7 STOP** (Sonnet, uncommitted): `test_t08_adr0025` refuses 4 unclassified sha256 names in the new schema.
+  DECISION: classify all four `exact_sha256` in an M05 addendum `benchmarks/m05/numerical_policy_external.yaml`
+  following M02's precedent (dbc9e8a) and classify the record's floats (ADR 0007 D2.3, as the M02 review's F1
+  demanded). Alternative: per-machine hashes outside identity. Reversible by: reverting the isolated commit. Five
+  spec-vs-producer choices logged for the M05 review. Opus engineer finishing WO-7.
+
+- **M02 review fixes done** (2026-10-09, `wp/M02` `88b3ab4`…`ef03f97`, gate 8358, 0 xfail; G2 unchanged): F2/RP-2(a)
+  `attributed_request`; F1/RP-2(b) per-float compare rules in the packaged addendum, RP-2 → MATCH; F3 e2e
+  COUPLING_NOT_CONVERGED; F4 nonlinear synthetic child (4 iterates = closed form); F5 `inner_failure` kept. D124: failure
+  bundle's record copy and `record_sha256` still under old rules → DECISION: apply the same rules, digest shape-only, in
+  WO-13 (isolated commit). D122/D123/D126/D127 logged. WO-13 launched.
+
+- **M05 WO-7 done** (2026-10-09, `wp/M05` `7f17a50`…`71804a6`, gate 8606): schema `trust-region-study-v1` + tests;
+  S11 M05 addendum (4 sha256 names exact; `--check` generalised over ADDENDA, v2 policy bytes unchanged); 17 float
+  rules, every float of every record classified. S16, S18 → M05 review. M07 recon launched (design prep while M02 WO-13 runs).
+
+- **M02 merged into main** (2026-10-09, `9f6a9be`; manifest `tested` at `ba90619`; WO-13 `550d2ec`…`2277d33`: D130 failure
+  bundle compare rules, ADR 0034 Am. 1, R-310, `external_execution` envelope axis, manifest generator; digest 383b4e2c…,
+  G2 659748576adb9730… unchanged). Register conflict rebuilt as the numeric union (wp/M02's amended R-46/R-60 kept).
+  Main gate PASS 8371. M07 recon digest + spec brief on `wp/M07` (`e35b16d`); specifier stopped at Frank's pause request.
+  Paused for the token budget; no agents running.

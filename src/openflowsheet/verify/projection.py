@@ -55,6 +55,7 @@ import scipy.sparse as sp
 from openflowsheet.numerics.linear import factorize
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.checks import (
+    COMPONENTS,
     VerifierError,
     is_flow_column,
     label_checks,
@@ -111,6 +112,7 @@ def project(
     streams: Sequence[str],
     domain: Mapping[str, tuple[float, float]],
     tolerances: Mapping[str, float],
+    components: Sequence[str] = COMPONENTS,
 ) -> Projection:
     """Spec §5.1 at the certified `state`.
 
@@ -119,7 +121,9 @@ def project(
     `regularity_status`, `matrix` and `scaled_residual` are the screen's, over the columns of
     `target.spec` minus those `zero_flow` removed, in that order; `streams` the flowsheet's;
     `domain` the provider's declared `T` and `P` ranges; and `tolerances` the routing
-    tolerances ρ, one per kind (`checks.routing_tolerances`), which guards 1 and 5 read."""
+    tolerances ρ, one per kind (`checks.routing_tolerances`), which guards 1 and 5 read;
+    `components` the order guard 4 reads a stream's flows in (the revision's view's, M02 design
+    note §14.2 B15 item 1; SYN-001's by default)."""
     # 1. The certified rows pass under ρ (precondition 1), re-judged from their values: a check's
     #    own `result` is judged at the policy's τ, which may be tighter (ADR 0013 A2).
     labels = {split.label[0] for split in zero_flow if split.label is not None}
@@ -173,7 +177,7 @@ def project(
     low_t, high_t = domain["T"]
     low_p, high_p = domain["P"]
     for stream in streams:
-        carried = stream_of(projected, stream)
+        carried = stream_of(projected, stream, components)
         if carried.is_dormant:
             continue
         if not (low_t <= carried.temperature <= high_t and low_p <= carried.pressure <= high_p):

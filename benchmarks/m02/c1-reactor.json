@@ -1,0 +1,250 @@
+{
+  "component_set": {
+    "components": [
+      "H2",
+      "N2",
+      "NH3",
+      "Ar",
+      "CH4"
+    ],
+    "record_source": "benchmarks/m01/components.yaml"
+  },
+  "connections": [
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "F",
+        "port": "outlet"
+      },
+      "id": "S1",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "R",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "R",
+        "port": "outlet"
+      },
+      "id": "S2",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "K",
+        "port": "inlet"
+      }
+    }
+  ],
+  "description": "WO-9: c1.reactor (the real variant, never executed by binding) between a feed at M01's nominal inlet and a sink",
+  "instances": [
+    {
+      "id": "F",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.feed_source",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "feed"
+    },
+    {
+      "id": "R",
+      "model": {
+        "artifact_ref": "04d4ef9c1ebbd8f727ec6f59709c54e19c365dec4c3ae86718c5e84270750b11",
+        "id": "c1.reactor",
+        "version": "pymrm-6089593-g2-nz800-s123-v2"
+      },
+      "parameters": {
+        "n_tubes": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "test",
+          "role": "fixed",
+          "unit": "1",
+          "value": 1000.0
+        }
+      },
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "reactor"
+    },
+    {
+      "id": "K",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "product_sink"
+    }
+  ],
+  "parent_revision": null,
+  "provenance": {
+    "actor": "M02 join (build lane)",
+    "notes": "registered C1 corpus revision (R-280 (a)); equals tests/test_m02_wo9_reactor.py reactor_revision(NOMINAL, model='c1.reactor') with this id, title, description and provenance",
+    "operation": "create",
+    "source_references": [
+      "docs/design/M02-pymrm-adapter.md §14.3 C1 (a), §14.4 D5"
+    ],
+    "timestamp": "2026-10-09T00:00:00Z"
+  },
+  "revision_id": "C1-REACTOR-M02-v1",
+  "schema_version": 1,
+  "specifications": [
+    {
+      "id": "SPEC-S1-n-H2",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "H2",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 2.79
+    },
+    {
+      "id": "SPEC-S1-n-N2",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "N2",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.93
+    },
+    {
+      "id": "SPEC-S1-n-NH3",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "NH3",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.11
+    },
+    {
+      "id": "SPEC-S1-n-Ar",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "Ar",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.1
+    },
+    {
+      "id": "SPEC-S1-n-CH4",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "CH4",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.15
+    },
+    {
+      "id": "SPEC-S1-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 673.15
+    },
+    {
+      "id": "SPEC-S1-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000000.0
+    }
+  ],
+  "title": "C1-REACTOR-M02-v1"
+}

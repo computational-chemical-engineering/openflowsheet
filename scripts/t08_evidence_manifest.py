@@ -808,7 +808,9 @@ def _m_b27(inputs: Inputs) -> Part:
     (u07,) = [row for row in envelope["unsupported"] if row["id"] == "U07"]
     limitation_ids = {row["id"] for row in envelope["limitations"]}
     facts = {
-        "models": len(models),
+        # T08's thirteen SYN-001 models. The envelope is v0.2's working one (R-193); since M02's
+        # join it also lists the eight C1 models (R-280 (c)), which are not T08's (B13's rule).
+        "models": len([model for model in models if model.startswith("syn001.")]),
         "offered_policies": policies,
         "u07_names_kinetic_cstr": "kinetic_cstr" in u07["outcome"],
         "l_cstr_rows": sorted(i for i in limitation_ids if i.startswith("L-CSTR")),

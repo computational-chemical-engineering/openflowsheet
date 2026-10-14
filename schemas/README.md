@@ -144,6 +144,16 @@ real `revision_eo` solve of SYN-001-nominal (`scripts/t07_schema_fixtures.py`):
 | --- | --- |
 | `solution-state.schema.json` | `solution-state.json`: the state a revision bundle's certificate judged — `variable_ids` in the order `state_sha256` is defined over and `variables` in unprefixed SI — written iff the certificate is; the cross-checks JSON Schema cannot state are `run/solution_state.py::inconsistencies`, which `verify_bundle` runs; `job.schema.json`'s `artifact_ref.kind` gains `solution_state` |
 
+Added by **M02** under ADR 0033 (D3–D6, D9), ADR 0034 (D6) and ADR 0035 — design-lane additions
+to the schema list (M02 design note §3.6). Their floats and new `sha256` names are classified by
+`benchmarks/m02/numerical_policy_external.yaml`, beside the registered numerical policies:
+
+| File | Describes |
+| --- | --- |
+| `experiment.schema.json` | The records of external-model evaluations: `$defs` `request` (its `experiment_key` is the request's own `document_sha256`), `result` (a deterministic outcome, written once), `attempt` (one per execution), `coupling` (the `revision_coupled` bundle member `external-coupling.json`) and `experiment_body` (the `experiment` job's body) |
+| `model-variant.schema.json` | `ModelVariant`: the frozen, append-only identity of one external model configuration — evaluation, boundary contract, accuracy, execution limits, coupling block; a revision pins its `document_sha256` |
+| `model-replacement.schema.json` | `ModelReplacementReport`: blueprint §5.3's replacement check of a promotion, facet by facet |
+
 Every member without a stated default is required, the nullable ones included; a member the note
 gives a default is optional, and `process_runtime.application.types` writes it at that default, so
 the typed documents' `as_document()` is the normalized form `request_sha256` hashes (§5.3). The

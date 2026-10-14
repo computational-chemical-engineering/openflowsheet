@@ -115,6 +115,9 @@ def test_b23_the_registry_is_the_registered_one() -> None:
             model, configuration
         )
         for model, configuration in DORMANCY_RULES
+        # M02 design note §14.2 B13: restricted to the `syn001.` keys, the reference unchanged;
+        # the full key set and the `c1.` entry are pinned by `test_m02_wo8_registries`.
+        if model.startswith("syn001.")
     }
     assert rendered == REF["dormancy_forms"]
 

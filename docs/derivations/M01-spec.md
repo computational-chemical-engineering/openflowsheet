@@ -2,7 +2,7 @@
 
 **Status:** design lane (`specifier`), 2026-10-08. **Draft for review**, **amended twice** (Amendment 1, 2026-10-08,
 §19: rulings on the build lane's measurements at `13bcef7`; Amendment 2, 2026-10-08, §20: the closure of the design-lane
-review's findings, `docs/reviews/M01-review.md`); the build lane implements against it, a
+review's findings, `docs/reviews/M01-review.md`; Amendment 3, 2026-10-09, a pointer in §8.7, M02 R-303; Amendment 4, 2026-10-09, a pointer in §8.7, M02 R-311, R-312); the build lane implements against it, a
 `reviewer` reviews the implementation, a `verdict` judges W22 and M01's part of W21 from the evidence.
 **Package:** M01 (plan v1.2 §4.4: *pin the selected PyMRM reactor and one required nonideal property route; derive
 process boundary mappings. Acceptance: model/source/data rights, numerical refinement evidence,
@@ -359,7 +359,8 @@ The units on `pr-c1-v1` (flash, heater/cooler, mixer, splitter; M02) use `T05b-p
 1. **Regimes.** A PR split's lattice is `LIQUID — TWO_PHASE — VAPOR` with `ZERO_FLOW` adjacent to each (ADR 0012 D4).
    LIQUID is admissible only when no light gas flows in the split's feed; with light gas flowing the reachable regimes
    are VAPOR and TWO_PHASE.
-2. **Rows.** TWO_PHASE: material rows n_in,i − n_V,i − n_L,i = 0 for every i; the liquid's light-gas flows are not
+2. **Rows** *(the equilibrium row and the realization of the structural zeros are amended by Amendment 3 below)*.
+   TWO_PHASE: material rows n_in,i − n_V,i − n_L,i = 0 for every i; the liquid's light-gas flows are not
    variables (structural zeros, ADR 0001 D3.3); **one equilibrium row, division-free and log-free (R-008's form):
    E = n_V,NH₃ · φ_NH₃^V(T, P, n_V) − n_V,tot · φ_NH₃^L(T, P) = 0** (mol/s; it is y φ^V = φ^L multiplied by n_V,tot),
    scaled by the registered flow scale. VAPOR: n_L,i = 0 rows, no equilibrium row. LIQUID: n_V,i = 0 rows.
@@ -379,6 +380,20 @@ The units on `pr-c1-v1` (flash, heater/cooler, mixer, splitter; M02) use `T05b-p
 M02 registers these as tests of its units; M01's provider supplies everything they read (ln φ, h, the flash). The
 equilibrium row's derivatives come from `evaluate_phase`'s ln φ derivatives (§4.6); `flash` is called without
 `derivatives`, which it refuses (§5.4 step 0, Amendment 1).
+
+**Amendment 3 (2026-10-09; design lane, M02 WO-8 rulings — `docs/design/M02-pymrm-adapter.md` §14.2 B11, B12;
+R-254; ADR 0026 Amendment 2).** Rule 2's row E is not zero on the VAPOR branch: it equals V(yφ^V − φ^L) there, and
+above T_c,EOS φ^L has no root. Yet the region drops equilibrium rows on a single-phase branch because they must
+vanish there identically, and K04's verifier evaluates every declared row at the certified state. The row is
+therefore restated in R-008's pairwise form:
+
+    E = L · n_V,NH₃ · φ^V_NH₃(T, P, n_V) − V · n_L,NH₃ · φ^L_NH₃(T, P) = 0,     kind molar_flow_squared,
+
+with V and L the products' total flows. On TWO_PHASE it is L·V·(yφ^V − φ^L), so its root set is rule 2's. It is
+exactly zero on VAPOR (L = n_L = 0) and on LIQUID (V = n_V = 0). The light-gas liquid flows are columns of the nTP-v1
+liquid stream, fixed by rows n_L,i = 0 in the equilibrium family and pinned at +0.0 in the TWO_PHASE attempt. Nothing
+else here changes: no closed form, provider behaviour, registered state, expectation value or assertion of this
+specification.
 
 ## 8. The reactor boundary (ADR 0027)
 
@@ -476,6 +491,28 @@ acceptance, two of them with less NH₃ at the outlet than at the inlet — lost
 Why S3: at the group's tolerance (absolute norm 10⁻³) two accepted, certified states from different starts differ by
 0.45 % in outlet y_NH₃ and 0.5 K in T_out at num_z = 100 (the Newton exits on `atol = 10⁻³` at its first iterate, so
 the state cannot improve); S3 makes the outlet a function of the inlet to the path-independence level of §10.3.
+
+**Amendment 3 (2026-10-09, M02 R-303): S3's target does not bound the element defect.** S3 stops on an absolute
+steady-state norm, and the boundary judges the relative element defect (§8.9). G11 measured, through M02's adapter,
+states with S1–S3 accepted whose δ (A45's quantity) ranged from 10⁻⁹ to 7.6 × 10⁻⁵, depending on where S3's last
+Newton step landed.
+
+Profile `M01-S123-v2` (M02 design note §14.5 D1, D2) makes two changes:
+- one conditional polish round at target/10 when δ > 10⁻⁷;
+- a non-finite result is typed as the stage `nonfinite`.
+
+The v1 profile of this section, the probe record and A41–A48's record halves are unchanged. M02 re-measures the
+adapter halves under v2 (G10v3).
+
+**Amendment 4 (2026-10-09, M02 R-311, R-312): when δ is read, and which species and elements are judged.** The
+normative text is M02's design note §14.6 E1 and E2.
+- Profile `M01-S123-v2` reads δ after the KPI-drift certificate, which advances the state, from the state the outlet
+  is extracted from. Round 2 runs only after a passed certificate, and the certificate is repeated after the round.
+- "Every axial flow > 0" (the acceptance above) applies to the species present in the requested inlet (mole fraction > 0). An absent
+  species, which can only be Ar or CH₄, is judged by §8.9's projection defect.
+- A45's relative element defect is taken over the elements present in the inlet. An absent element (0/0) has none.
+
+Every registered M01 state carries all five species, so the record halves of A41–A48 are unchanged.
 
 ### 8.8 Pressure: the zero-pressure-drop convention
 

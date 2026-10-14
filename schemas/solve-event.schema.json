@@ -223,7 +223,8 @@
         "CHECKPOINT_INCOMPATIBLE",
         "HOMOTOPY_STALLED",
         "PTC_STALLED",
-        "PTC_MAPPING_INVALID"
+        "PTC_MAPPING_INVALID",
+        "COUPLING_NOT_CONVERGED"
       ]
     },
     "message": {

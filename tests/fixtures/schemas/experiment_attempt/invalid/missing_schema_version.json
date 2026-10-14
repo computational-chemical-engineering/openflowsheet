@@ -1,0 +1,61 @@
+{
+  "expect_error": "'schema_version' is a required property",
+  "document": {
+    "experiment_key": "7b26ebb95d60db3459d133c67d81432a3522ba4c935c28e27fb0f5d53b027300",
+    "attempt": 1,
+    "job_id": null,
+    "execution": {
+      "kind": "in_process",
+      "status": "completed",
+      "exit_code": null,
+      "signal": null,
+      "message": "",
+      "tube_inlet": {
+        "flow": 0.007146961299302104,
+        "composition": [
+          0.6974999999999999,
+          0.2325,
+          0.03,
+          0.017142857142857144,
+          0.022857142857142857
+        ],
+        "temperature": 673.15,
+        "outlet_pressure": 10000000.0,
+        "coolant_flow": 0.007146961299302104,
+        "coolant_composition": [
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coolant_temperature": 673.15,
+        "coolant_outlet_pressure": 100000.0
+      },
+      "tube_outlet": {
+        "flows": [
+          0.0037387541296974125,
+          0.0012462513765658044,
+          0.0010452430900229326,
+          0.00012251933655946465,
+          0.00016335911541261953
+        ],
+        "temperature": 673.15,
+        "pressure_drop": 0.0,
+        "coolant_heat": null,
+        "inlet_face_heat_loss": null
+      },
+      "stage": null,
+      "diagnostics": null,
+      "fingerprint": null,
+      "logs": null,
+      "timing": {
+        "wall_s": 0.00021008600015193224,
+        "startup_s": null,
+        "solve_s": null
+      }
+    },
+    "repeat_of": null,
+    "repeat_bitwise_equal": null
+  }
+}

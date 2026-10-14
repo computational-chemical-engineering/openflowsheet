@@ -3,6 +3,7 @@
 **Status:** Accepted 2026-09-25 — T05b's manifest `evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json` is `tested` (64 of 64: B00–B36 and X00–X26; the cross-platform items on CI run 36169942463, x86-64 and aarch64), after the design-lane review `docs/reviews/T05b-review.md` (full review, re-review of W9, reviews of W10 and W10 (6) (b); every must-fix closed) and the ruling rounds `docs/briefs/T05b-rulings.md`. Agent acceptance is numerical and procedural: `review.numerical` and `review.process_model` remain `pending`.  
 **Amended 2026-09-25 (ruling round, `docs/briefs/T05b-rulings.md` §4, Q-S1, Q-S2, Q-S5):** D2's order is the provider's decision first, D2 replacing only a two-phase answer (spec §5.2; R-060 amended); D1's guard 4 reads stream flows (K04 §4.6's predicate), not every `molar_flow`-kind column, and guard 5 counts a row that cannot be evaluated at `x̃` as not passed (spec §5.1); D6's "T05b §13's W0.9 rule" becomes spec X26 as amended — `b` recorded and never thresholded, every registered comparison's realized deviation `≤ 1/10` of its allowance, NP-GC in scope (R-063); X21's floor-ratio tolerance is `max(1e-6, 4 ulp(T)/w)` against the closed form of the reference's 20-digit fields (spec §7). No decision of D1–D5 changes; the reference file does not move.  
 **Amended 2026-09-27 (Amendment 2, below; T07 design note ruling round 5, review M1):** D1's guards 1 and 5 and D3's `τ_flow` read the *routing tolerance* ρ_k = max(τ_k(policy), τ_k(registered)), not the policy's τ. No registered result, identity or policy hash moves; only certificates under a policy that tightens change.  
+**Amended 2026-10-09 (Amendment 3, below; M02 WO-8 rulings, design note §14.2 B15; R-257):** the verifier's `pr-c1-v1` forms of D2 (the admissible reading at τ_dew), D3 (no unresolved routing: the band is half-open) and the K04 §4.7 checks; fresh provider by the revision's basis. No tolerance, kind, category or required check is added; `check_policy_sha256` and every SYN-001 certificate are unchanged.  
 **Date:** 2026-09-25  
 **Author:** design lane (`specifier`); brief `docs/briefs/T05b-F9.md` (`0ca04cc`)  
 **Directive:** Frank, 2026-09-25: *"Fold F9 into T05b"*, under his standing steers *"as little limitations as possible"* and *"robustness … if a method cannot solve a hard case and the solver then switches to another method this is also fine"*. SYN-001's identity must not move (his condition on D12 of ADR 0012, same day).  
@@ -178,3 +179,68 @@ A caller could thus remove the independent flash, the check that catches a wrong
 - G1: the K05 identity comparison is unchanged in every key.
 - The K04, T04 and T05b suites pass unchanged, including INJ-4 and B13 (NP-G unresolved at the
   registered τ).
+
+---
+
+## Amendment 3 (2026-10-09) — the verifier's `pr-c1-v1` forms
+
+**Author:** design lane (`architect`), M02 WO-8 rulings. **Normative text:** `docs/design/M02-pymrm-adapter.md`
+§14.2 B15. **Register:** R-257.
+
+### Context
+
+On the revision path the verifier was SYN-001-shaped in five ways:
+- `verify_revision` built `Syn001Provider()` whatever the revision's basis;
+- `stream_of` read three components;
+- `enthalpy_flow` and the declared-port check read per-component `h_<c>`;
+- the split checks and D2 read `lnK`;
+- D3's band is `lnK`-based.
+
+`pr-c1-v1` has a mixture `h`, ln φ, a pure-NH₃ liquid and a half-open band.
+
+### Decision
+
+1. **Fresh provider.** The verifier builds its fresh provider from the revision's basis (`view.basis.provider_id`)
+   through a table of its own; it never calls the binder's constructor. Streams are read with the view's components.
+2. **D2 for `pr-c1-v1`.** A TWO_PHASE fresh flash with liquid NH₃ ≤ τ_dew · n_tot (τ_dew = 1e-10, R-230; ADR 0001
+   D6's normalized-composition tolerance) is read as VAPOR at the stream's own state. Otherwise the stream's enthalpy
+   is the sum over the flash's phases of `sum(n) · h`.
+3. **D3 and ADR 0012 D7 for `pr-c1-v1`.** No routing. A stream that carries light gas has a half-open band (M01 §7
+   rule 4), so it is never degenerate, and with `w = ∞` the floor is 0.
+4. **K04 §4.7 for a `pr-c1-v1` split.**
+   - **VAPOR branch:** `.dew` is one-sided, with value `l_NH₃ / n_tot` from a fresh flash of the feed, against τ_dew.
+   - **TWO_PHASE:** `.closure` is `|g / g_T|` in kelvin against τ_T, where `g = ln y_NH₃ + ln φ^V_NH₃ − ln φ^L_NH₃`
+     is taken on the state's own phases. It is the first-order distance of the vapour from its dew temperature; a
+     pure liquid has no bubble point.
+   - **LIQUID branch:** `unsupported` (`pr_liquid_regime_unsupported`).
+   - **Independent split:** K04's formula.
+5. **Declared ports.** A declared vapour port is judged by the same one-sided τ_dew test on a fresh flash of the
+   stream; a declared liquid port is `unsupported`.
+6. **Liquid-side check.** The flash gains `material_balance.<U>.liquid.<i>` = `n_L,i` against τ_flow for each
+   vapour-only component.
+7. **Derivative witness** (added 2026-10-09, §14.3 C2; R-281). For a `pr-c1-v1` revision, the K04 §4.8 witness
+   does not difference stream component-flow columns that are exactly `0.0` at the witnessed state. Every other
+   column is still differenced. No two-sided derivative exists at those columns.
+   - Both witness checks name the count in their `independence_qualification`.
+   - The certificate carries the limitation `{"kind": "derivative_witness_partial", "columns": [...]}`.
+   - The witness's claim is restricted to the differentiable columns, and the certificate says so.
+8. **Near-dew window** (§14.3 C3; R-282). The equilibrium and liquid-total rows are singular at the dew point, so a
+   flash within the window certifies UNVERIFIED (`rank_limitation`). It is stated in the unit's manifest, as
+   SYN-001's `DEW_POINT_LIMITATION` is.
+
+### Alternatives rejected
+
+- A closure `|y − y*| ≤ 1e-10`: a tolerance outside the check policy, and 500 to 16 000 times tighter than the
+  equilibrium row's own tolerance allows.
+- Generalizing SYN-001's functions in place: that touches arithmetic whose bitwise pairing W1.d protects.
+- The K-distance declared-port form for `pr-c1-v1`: it cannot see condensation below `l/n ≈ 1.5e-9`.
+
+### Consequences
+
+- No tolerance, kind, category or required check changes, so `check_policy_sha256` stays `21c44e10…`.
+- SYN-001's certificates are unchanged: the 50 T07 corpus certificates are byte-identical (M02 G2).
+- The new module `verify/pr_c1.py` joins the independence test's scanned files (R-016).
+
+### Acceptance evidence
+
+M02 G2 and G7 (j), (k), as amended by the design note's §14.2.

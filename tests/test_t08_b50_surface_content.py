@@ -34,6 +34,18 @@ FIXTURE = json.loads(generator.FIXTURE.read_text(encoding="utf-8"))
 V17_C2 = REPO_ROOT / "benchmarks" / "t07" / "v17" / "runs" / "v17-c2"
 #: B50's named differences.
 NEW_MODELS = ("syn001.kinetic_cstr",)
+#: M02's join (R-280 (b); R-234's method): the eight C1 models `list_models` serves since M02,
+#: stripped before B50's clause is judged, so the clause stands as T08 registered it.
+M02_MODELS = (
+    "c1.adiabatic_mixer",
+    "c1.feed_source",
+    "c1.product_sink",
+    "c1.reactor",
+    "c1.reactor_standin",
+    "c1.stream_splitter",
+    "c1.tp_flash",
+    "c1.tp_heater",
+)
 NEW_POLICIES = ("T08-ptc-v1", "T08-warm-v1")
 #: `get_project`'s members that the server determines, whatever the project's state.
 SERVER_MEMBERS = ("default_policy_id", "server", "solve_policies")
@@ -88,7 +100,10 @@ def _taken_out(entries: list[dict[str, Any]], key: str, names: tuple[str, ...]) 
 
 
 def test_b50_list_models_differs_by_the_kinetic_cstr_only(served: dict[str, Any]) -> None:
+    """With M02's eight C1 models stripped (each exactly once; R-280 (b), the decomposition onto
+    the pre-M02 surface), `list_models` differs from `c7bbc98`'s by the kinetic CSTR only."""
     today = copy.deepcopy(served["list_models"])
+    today["models"] = _taken_out(today["models"], "model_id", M02_MODELS)
     today["models"] = _taken_out(today["models"], "model_id", NEW_MODELS)
     assert today == FIXTURE["list_models"]
 

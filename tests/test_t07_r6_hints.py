@@ -5,10 +5,11 @@ Design note `docs/design/T07-jobs-and-bindings.md`, "Ruling round 6", B2 items 1
 
 - **(i) Repair.** For every model in `MODEL_BUILDERS`, every pin and choice option, and every
   encoding `pin_encodings` gives it: a corpus revision that pins it (or the named synthetic one
-  below), its specifications that fix the encoding's pins removed, is refused
-  `specification_missing` with a hint that renders the encoding; the encoding rendered with the
-  removed value binds to the same declaration (`spec.variable_ids`, row ids, every instance's
-  pins). Every (model, pin, encoding) triple is listed as covered.
+  below; the C1 models' from M02's registered C1 corpus, R-280 (a)), its specifications that
+  fix the encoding's pins removed, is refused `specification_missing` with a hint that renders
+  the encoding; the encoding rendered with the removed value binds to the same declaration
+  (`spec.variable_ids`, row ids, every instance's pins). Every (model, pin, encoding) triple is
+  listed as covered.
 - **(ii) The T05-2 chain**, on the `v17-c1` T05-2 agent's own `rev-000002`.
 - **(iii)** The code tokens are the registered ones (`9165894`'s; the whole-corpus comparison is
   in `docs/T07_DECISIONS.md`, rf3a), and every hint is at most 512 code points.
@@ -22,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from m02_c1_corpus import C1_CORPUS
 from t07_corpus import CORPUS
 from t07_v17_c1_documents import c1_document
 
@@ -69,7 +71,10 @@ TRIPLES = [
 def test_every_model_has_a_signature_and_the_triples_are_counted() -> None:
     assert set(MODEL_SIGNATURES) == set(MODEL_BUILDERS)
     # feed 5, TP heater 2, TP flash 8, PH flash 1, valve 2, pump 2, reactor 2, exchanger 3.
-    assert len(TRIPLES) == 25
+    assert len([triple for triple in TRIPLES if triple[0].startswith("syn001.")]) == 25
+    # M02's join (R-280): the C1 feed 5, TP heater 2, TP flash 8; the C1 reactors pin nothing.
+    assert len([triple for triple in TRIPLES if triple[0].startswith("c1.")]) == 15
+    assert len(TRIPLES) == 40
 
 
 def _view(document: Document, unit: str) -> InstanceView:
@@ -87,16 +92,24 @@ def _same_declaration(before: Document, after: Document) -> None:
     assert {view.unit_id: dict(view.pins) for view in parse_revision(after).instances} == pins
 
 
-def _columns_of(view: InstanceView, signature: ModelSignature, name: str) -> tuple[str, ...]:
+def _components(document: Document) -> tuple[str, ...]:
+    """The revision's components in its basis's order (SYN-001's A, B, C; the C1 records')."""
+    return parse_revision(document).components
+
+
+def _columns_of(
+    view: InstanceView, signature: ModelSignature, name: str, components: tuple[str, ...]
+) -> tuple[str, ...]:
     """The column ids of the pin or option `name` on this instance."""
     (pin,) = [option for option in _options(signature) if option.name == name]
-    return _columns(view, pin, ("A", "B", "C"))
+    return _columns(view, pin, components)
 
 
 def _pinning(document: Document, unit: str, model_id: str, pin: PinColumn) -> bool:
     signature = MODEL_SIGNATURES[model_id]
     view = _view(document, unit)
-    return all(column in view.pins for column in _columns_of(view, signature, pin.name))
+    columns = _columns_of(view, signature, pin.name, _components(document))
+    return all(column in view.pins for column in columns)
 
 
 def _synthetic_reactor_duty() -> tuple[str, Document]:
@@ -133,6 +146,8 @@ def _bases() -> list[tuple[str, Document]]:
     # Every corpus TP flash is pinned in the instance form, which fixes both outlets; the
     # `v17-c1` T02-1 agent's revision pins each outlet's T and P on its connection.
     bases.append(("v17-c1:T02-1/rev-000002", c1_document("T02-1", "rev-000002")))
+    # M02's join (R-280 (a)): the C1 models' pins are proved on the registered C1 corpus.
+    bases += [(name, C1_CORPUS[name]()) for name in sorted(C1_CORPUS)]
     return [
         (name, document)
         for name, document in bases
@@ -154,7 +169,8 @@ def _base(model_id: str, pin: PinColumn, fixes: tuple[str, ...]) -> tuple[str, D
                 continue
             unit = instance["id"]
             view = _view(document, unit)
-            columns = {c for f in fixes for c in _columns_of(view, signature, f)}
+            components = _components(document)
+            columns = {c for f in fixes for c in _columns_of(view, signature, f, components)}
             if not columns <= set(view.pins):
                 continue
             removed = {spec for column in columns for spec in sources[column]}
@@ -180,7 +196,8 @@ def _repair(model_id: str, name: str, index: int) -> str:
     encoding: Encoding = pin_encodings(signature, pin)[index]
     base_name, document, unit = _base(model_id, pin, encoding.fixes)
     view = _view(document, unit)
-    columns = [c for f in encoding.fixes for c in _columns_of(view, signature, f)]
+    components = _components(document)
+    columns = [c for f in encoding.fixes for c in _columns_of(view, signature, f, components)]
     sources = pin_specifications(document)
     removed_ids = {spec for column in columns for spec in sources[column]}
     template = next(e for e in document["specifications"] if e["id"] in removed_ids)
@@ -203,7 +220,9 @@ def _repair(model_id: str, name: str, index: int) -> str:
     else:
         assert column in columns, (refusal.detail, columns)
         (reported,) = [
-            signature.pin(f) for f in encoding.fixes if column in _columns_of(view, signature, f)
+            signature.pin(f)
+            for f in encoding.fixes
+            if column in _columns_of(view, signature, f, components)
         ]
         component = column.rsplit(".", 1)[1] if reported.quantity == "flow" else None
     assert refusal.hint is not None and len(refusal.hint) <= HINT_LIMIT
@@ -214,14 +233,14 @@ def _repair(model_id: str, name: str, index: int) -> str:
         if (e.object_type, e.path) == (encoding.object_type, encoding.path)
     ]
     assert set(same.fixes) == set(encoding.fixes)
-    text = render_encoding(same, view, signature, ("A", "B", "C"), component)
+    text = render_encoding(same, view, signature, components, component)
     assert text in refusal.hint, (base_name, refusal.hint)
 
     # The hint's encoding rendered, with the removed value, binds to the same declaration.
     match = _RENDERED.match(text)
     assert match is not None, text
     repaired = copy.deepcopy(removed)
-    for each in ("A", "B", "C") if encoding.component is not None else (None,):
+    for each in components if encoding.component is not None else (None,):
         pinned = [c for c in columns if each is None or c.endswith(f".{each}")]
         (value,) = {view.pins[c] for c in pinned}
         entry = copy.deepcopy(template)
@@ -274,6 +293,22 @@ COVERED = {
     "syn001.tp_heater/outlet_temperature/1": "SYN-001-T06-NET02",
     "syn001.valve/outlet_pressure/0": "SYN-001-T06-NET11",
     "syn001.valve/outlet_pressure/1": "SYN-001-T06-NET11",
+    # M02's join (R-280 (a)): the C1 models' triples, on the registered C1 corpus.
+    "c1.feed_source/flows/0": "C1-FLASH-F1-M02-v1",
+    "c1.feed_source/temperature/0": "C1-FLASH-F1-M02-v1",
+    "c1.feed_source/temperature/1": "C1-FLASH-F1-M02-v1",
+    "c1.feed_source/pressure/0": "C1-FLASH-F1-M02-v1",
+    "c1.feed_source/pressure/1": "C1-FLASH-F1-M02-v1",
+    "c1.tp_flash/temperature/0": "C1-FLASH-F1-M02-v1",
+    "c1.tp_flash/temperature/1": "C1-FLASH-F1-M02-v1",
+    "c1.tp_flash/pressure/0": "C1-FLASH-F1-M02-v1",
+    "c1.tp_flash/pressure/1": "C1-FLASH-F1-M02-v1",
+    "c1.tp_flash/liquid_temperature/0": "C1-FLASH-F1-M02-v1",
+    "c1.tp_flash/liquid_temperature/1": "C1-FLASH-F1-M02-v1",
+    "c1.tp_flash/liquid_pressure/0": "C1-FLASH-F1-M02-v1",
+    "c1.tp_flash/liquid_pressure/1": "C1-FLASH-F1-M02-v1",
+    "c1.tp_heater/outlet_temperature/0": "C1-HEATER-M02-v1",
+    "c1.tp_heater/outlet_temperature/1": "C1-HEATER-M02-v1",
 }
 
 
