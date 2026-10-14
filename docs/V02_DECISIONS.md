@@ -748,3 +748,8 @@ Grep, don't read whole. Newest at the bottom.
   G2 659748576adb9730… unchanged). Register conflict rebuilt as the numeric union (wp/M02's amended R-46/R-60 kept).
   Main gate PASS 8371. M07 recon digest + spec brief on `wp/M07` (`e35b16d`); specifier stopped at Frank's pause request.
   Paused for the token budget; no agents running.
+
+- **Alpha gate WO-5/6/8 done** (2026-10-15, `wp/V02-alpha-gate` `46176a7`…`f6a748a`, gate 8558; WO-7 already done
+  c35c50b): A51, A37 (+ controls i–iv), A50 harvest pass. Open for the design-lane read: B-WO5-1 (c_2 digest 383b4e2c…
+  pinned, needs a register entry), B-WO5-5 (R-133 hashes from REVIEW.json at v0.1.0), B-WO8-1…5 (E/S/P/B draft; [8], [9]
+  rows; 18-manifests scope). WO-9 (Sonnet) launched.
