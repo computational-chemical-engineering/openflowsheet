@@ -108,3 +108,33 @@ against 0.1 schemas would reject the new enum values (J5).
 Design note G2 (inertness), G6 (frozen identity), G7 (PR units), G8 (coupled route with the stand-in, replay, an
 independent sequential-substitution cross-check at 10⁻⁸), G9 (e) (cache reuse across a rollback), G12 (the real loop,
 replay, live rerun).
+
+## Amendment 1 (2026-10-09, M02 review) — the coupled replay's inlet check and the coupling record's floors
+
+**Status:** decided by the design lane (`reviewer`), M02 review `docs/reviews/M02-review.md` §3 rows RP-2 (a) and (b);
+register R-317. Transcribed here by WO-13; the review's table is the normative text. Amends D6 and R-308's acceptance.
+
+- **(a) The inlet check.** EXT-COUPLING's bitwise inlet check compares the certified inlet with the inputs of the
+  request the answer is attributed to: live, the request sent, bitwise (unchanged); replay, the request
+  `RecordedExperiments` recomputes at the rerun's inlet, whose agreement with the recorded one within the archive's
+  policy is the replay's guarantee. The rerun record keeps embedding the recorded (served) documents.
+- **(b) The floors.** Every float of `experiment.schema.json#/$defs/coupling`, and every envelope field a
+  re-evaluation compares, is classified under ADR 0007 D2.2 and D2.3. The floors are the registered thresholds:
+  - `rho` is floored at 1;
+  - `r_xi` at the record's `coupling_block.tau_xi_rel` (stricter than its exact threshold τ_ξ n_tot/n_N₂);
+  - `r_T` at its `tau_T_K`;
+  - the envelope's `defect_rel` at 10⁻⁶ (ADR 0027 D3);
+  - `defect` and flows at the flow kind's floor;
+  - `step.B` and `step.du` are reported, not compared (D2.2's comparability window: secant quantities); their R0
+    consequences, step kind and k, stay compared;
+  - every other new float is relative.
+
+  The floors are scoped to the coupled record, like R-308's shape rule: the frozen v2 policy file is not edited in a
+  way that moves a pinned digest or any pre-M02 comparison. A32, or an M02 twin, enumerates the schema.
+- **Rejected** (R-317): an absolute floor of 10⁻⁹ on ρ (an invented floor, which D2.2 rejects); writing the
+  recomputed request into the rerun record (it would pair a request that was never sent with a served result);
+  descoping cross-platform coupled replay (D2.3 makes the recording package own the classification).
+- **Acceptance evidence:** RP-2 passes without an xfail, and a second case runs on a w-dependent synthetic loop
+  (review F1, F2, F4; build log D120, D121, D127). The rules live in M02's addendum
+  `benchmarks/m02/numerical_policy_external.yaml` (`compare`, read at run time).
+

@@ -1,0 +1,64 @@
+{
+  "schema_version": "model-replacement-v1",
+  "instance_id": "reactor",
+  "from": {
+    "id": "c1.reactor",
+    "version": "pymrm-6089593-g2-nz800-s123-v2",
+    "artifact_ref": "04d4ef9c1ebbd8f727ec6f59709c54e19c365dec4c3ae86718c5e84270750b11",
+    "synthetic": false
+  },
+  "to": {
+    "id": "c1.reactor_standin",
+    "version": "standin-x025-v1",
+    "artifact_ref": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1",
+    "synthetic": true
+  },
+  "facets": [
+    {
+      "facet": "resolvable",
+      "result": "pass",
+      "detail": "c1.reactor_standin binds as variant standin-x025-v1"
+    },
+    {
+      "facet": "ports",
+      "result": "pass",
+      "detail": "ports ['duty', 'inlet', 'outlet'] equal"
+    },
+    {
+      "facet": "components",
+      "result": "pass",
+      "detail": "['H2', 'N2', 'NH3', 'Ar', 'CH4']"
+    },
+    {
+      "facet": "conserved_quantities",
+      "result": "pass",
+      "detail": "2 holdup balances, equal"
+    },
+    {
+      "facet": "reference_states",
+      "result": "pass",
+      "detail": "pr-c1-v1, PR-C1-ref-v1"
+    },
+    {
+      "facet": "boundary_condition",
+      "result": "pass",
+      "detail": "the variants' boundary contracts are equal"
+    },
+    {
+      "facet": "degrees_of_freedom",
+      "result": "pass",
+      "detail": "STRUCTURALLY_CLOSED; 9 rows, 2 owned variables, as before"
+    },
+    {
+      "facet": "derivatives",
+      "result": "pass",
+      "detail": "1 EO-capable declarations kept"
+    },
+    {
+      "facet": "validity",
+      "result": "pass",
+      "detail": "the new declared domain contains the old"
+    }
+  ],
+  "compatible": true
+}

@@ -53,6 +53,9 @@ TAXONOMY: Final[Mapping[str, str]] = {
     "HOMOTOPY_STALLED": "homotopy/PTC/active-set stalls",
     "PTC_STALLED": "homotopy/PTC/active-set stalls",
     "PTC_MAPPING_INVALID": "model domain/conservation/derivative defects",
+    # ADR 0034 D3 (M02 WO-10): the outer coupling's give-up, classed as its closest analogue, the
+    # recycle iteration's `RECYCLE_STAGNATION` (an outer fixed-point iteration on a loop).
+    "COUPLING_NOT_CONVERGED": "initialization and recycle failures",
 }
 
 SuggestedAction = Literal[
@@ -461,6 +464,67 @@ def refusal_bundle(refusal: Any) -> FailureBundle:
                     f"{error.unit} declares its residual derivatives {error.method!r}; a model "
                     "change outside the solve, proposed to its author"
                 ),
+            ),
+        ),
+    )
+
+
+def coupling_bundle(
+    outcome: str,
+    reason: str | None,
+    *,
+    coupling: Mapping[str, Any],
+    implicated: Sequence[str],
+    plan: Any,
+    counters: Any,
+    inner_failure: Mapping[str, Any] | None = None,
+) -> FailureBundle:
+    """M02 design note §4.4 (ADR 0034 D3): the bundle of a coupled run that ended
+    `COUPLING_NOT_CONVERGED` or `EVALUATION_ERROR` in its outer iteration. The observations are
+    the coupling's own: its reason and its record of iterates (`coupling`, the record without its
+    embedded documents, which the run bundle's `external-coupling.json` holds), and the last inner
+    solve's counters. The bundle's own attempt tree is empty: the coupling, not an inner attempt,
+    ended the run. On `inner_failed` (a trial's inner solve failed at the step and at every
+    halving) `inner_failure` is the last failed inner solve's diagnosis — its outcome and its
+    attempt tree (M02 review F5) — kept under `observations.inner_failure`. The replay identity
+    is the last inner solve's plan's."""
+    taxonomy = TAXONOMY[outcome]
+    iterations = coupling.get("iterations", [])
+    extra = {} if inner_failure is None else {"inner_failure": dict(inner_failure)}
+    return FailureBundle(
+        outcome=outcome,
+        taxonomy=taxonomy,
+        observations={
+            "message": reason,
+            "reason": reason,
+            "outer_iterations": len({item["k"] for item in iterations if item["rho"] is not None}),
+            "external_coupling": dict(coupling),
+            **extra,
+            "counters": {
+                name: getattr(counters, name, 0)
+                for name in (
+                    "property_calls",
+                    "requested_evaluations",
+                    "cache_hits",
+                    "residual_calls",
+                    "jacobian_calls",
+                    "factorizations",
+                )
+            },
+        },
+        inferred_causes=(),
+        implicated_sources=tuple(implicated),
+        attempt_tree=(),
+        replay_identity={
+            "model_version": getattr(plan, "model_version", ""),
+            "constants_sha256": getattr(plan, "constants_sha256", ""),
+            "policy_id": getattr(plan, "policy_id", ""),
+            "plan_id": getattr(plan, "plan_id", ""),
+        },
+        suggested_actions=(
+            SuggestedActionEntry(
+                action=OUTCOME_ACTIONS.get(outcome, ACTIONS[taxonomy]),
+                preconditions=f"the coupled run ended {outcome}({reason}), as recorded above",
             ),
         ),
     )

@@ -698,3 +698,53 @@ Grep, don't read whole. Newest at the bottom.
   7748 passed; W27 tests with the archive dir linked 124 passed, 0 skipped. Interpretations to check in M04 review: optional
   `model_functions` parameter in `check_snapshot`/`classify`; `C1_MODEL_IDS` excludes the surrogate; `hypothetical_v02_a3`
   basis string wording.
+
+- **M02 WO-12a″ done** (2026-10-09, `wp/M02` `764cab5`/`39620d1`/`bcfd0af`, gate 8290; G2 unchanged): V4 20/21
+  (`V4-corner-T653.15-P1.1e+07-r2.5-i0.03` S1), V5 21/21, V6 21/21 in both runs → **V5 selected**; timeout 450 s
+  (slowest 149.7 s); G10v3 bitwise vs D83; G11v3-11 87×2 labels 0 differences. D100–D102, D105 to reviewer batch.
+  WO-14 merged into `wp/M02` (`ba13ce3`; build log joined in D-order).
+
+- **M02 WO-12b done** (2026-10-09, `wp/M02` `7502515`/`14906e6`/`f4e8c56`, gate 8348, 1 xfail RP-2): v3 registered
+  (sha 8b92540a…, V5, `inert_min` 0.035, timeout 450 s); G12 under v3 met (ρ 0.292, VERIFIED, replay MATCH bitwise);
+  G12v3-2 both edges met (min inert request 0.039076 = 1.116× floor; slowest experiment 108.8 s). Digest 383b4e2c…
+  unmoved. M02 `reviewer` launched with the batched rulings.
+
+- **M02 review** (2026-10-09, `reviewer`, `wp/M02` `4c3623a`, R-317/R-318): numerics sound (driver honest per §4.3/R-305;
+  v3 child per R-311→R-316, R-312). Must-fix F1 unclassified recorded floats in `external-coupling.json`; F2 replay
+  EXT-COUPLING compares the recorded request; F3 f5 end-to-end. Should-fix F4 (no w-dependent external map in default
+  gate), F5 (inner failure reason dropped). RP-2: (a) recompute request at rerun inlet, live check stays bitwise; (b)
+  floors = each quantity's own threshold, B/du reported not compared → ADR 0034 Am. 1 in WO-13. D94 kept; AC-1 = D9's
+  acceptance; D100–D115 ratified; c1-reactor.json stays v2.
+
+- **M04 W27 part done** (2026-10-09, `wp/M04` `2018dca`…`4cd23ad`, gate 8444): main merged; corpus resolver; surrogate
+  registered; J3′–J6′ vs `hypothetical_v02_a3` equal (22 models); 0/450 cases differ; G14 pass; `list_models`
+  90d9da8e…→f070fbe0…, registry snapshot 0b2f4596…→8f4bb0c8…. Flaky under load (passed on rerun): browser smoke, W27
+  S18 scorer, `t07_w5b` replay (fails alone without OMP_NUM_THREADS etc.). Open → M04 review batch (E10, E12, E14
+  envelope wording). M05 WO-6 launched.
+
+- **M05 WO-6 done** (2026-10-09, `wp/M05` `39eebba`…`c5aa61b`, gate 8522; nlp 121 passed): checks P1–P5, study loop
+  S0/A/B/C, statuses with precedence (49 fake tests), readiness 12 codes, `TrfStage` bitwise = `run_trf`; REAL box per
+  R-313. Not done: real parent adapter (needs M02 `coupled_run.py`). Choices S1–S10 (S6 isolated `c5aa61b`) → M05 review.
+  WO-7 (Sonnet) launched.
+
+- **M05 WO-7 STOP** (Sonnet, uncommitted): `test_t08_adr0025` refuses 4 unclassified sha256 names in the new schema.
+  DECISION: classify all four `exact_sha256` in an M05 addendum `benchmarks/m05/numerical_policy_external.yaml`
+  following M02's precedent (dbc9e8a) and classify the record's floats (ADR 0007 D2.3, as the M02 review's F1
+  demanded). Alternative: per-machine hashes outside identity. Reversible by: reverting the isolated commit. Five
+  spec-vs-producer choices logged for the M05 review. Opus engineer finishing WO-7.
+
+- **M02 review fixes done** (2026-10-09, `wp/M02` `88b3ab4`…`ef03f97`, gate 8358, 0 xfail; G2 unchanged): F2/RP-2(a)
+  `attributed_request`; F1/RP-2(b) per-float compare rules in the packaged addendum, RP-2 → MATCH; F3 e2e
+  COUPLING_NOT_CONVERGED; F4 nonlinear synthetic child (4 iterates = closed form); F5 `inner_failure` kept. D124: failure
+  bundle's record copy and `record_sha256` still under old rules → DECISION: apply the same rules, digest shape-only, in
+  WO-13 (isolated commit). D122/D123/D126/D127 logged. WO-13 launched.
+
+- **M05 WO-7 done** (2026-10-09, `wp/M05` `7f17a50`…`71804a6`, gate 8606): schema `trust-region-study-v1` + tests;
+  S11 M05 addendum (4 sha256 names exact; `--check` generalised over ADDENDA, v2 policy bytes unchanged); 17 float
+  rules, every float of every record classified. S16, S18 → M05 review. M07 recon launched (design prep while M02 WO-13 runs).
+
+- **M02 merged into main** (2026-10-09, `9f6a9be`; manifest `tested` at `ba90619`; WO-13 `550d2ec`…`2277d33`: D130 failure
+  bundle compare rules, ADR 0034 Am. 1, R-310, `external_execution` envelope axis, manifest generator; digest 383b4e2c…,
+  G2 659748576adb9730… unchanged). Register conflict rebuilt as the numeric union (wp/M02's amended R-46/R-60 kept).
+  Main gate PASS 8371. M07 recon digest + spec brief on `wp/M07` (`e35b16d`); specifier stopped at Frank's pause request.
+  Paused for the token budget; no agents running.

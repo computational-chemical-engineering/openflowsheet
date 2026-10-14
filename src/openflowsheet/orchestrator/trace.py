@@ -15,7 +15,7 @@ a solve did what it says, so an event that could be rewritten or reordered is no
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
 from fractions import Fraction
@@ -52,6 +52,10 @@ SolveOutcome = Literal[
     "HOMOTOPY_STALLED",
     "PTC_STALLED",
     "PTC_MAPPING_INVALID",
+    # ADR 0034 D3 (M02 design note §4.4): the `revision_coupled` route's outer coupling ended
+    # without convergence, with a reason (`orchestrator.coupling`). A run outcome; no event of a
+    # K03 core records it.
+    "COUPLING_NOT_CONVERGED",
 ]
 
 EventKind = Literal[
@@ -814,6 +818,14 @@ class Trace:
         event = SolveEvent(sequence=len(self._events), **fields)
         self._events.append(event)
         return event
+
+    def extend(self, events: Sequence[SolveEvent]) -> None:
+        """Append events another trace recorded, re-sequenced after this one's, each otherwise
+        unchanged (M02 design note §4.4: a coupled job's trace holds every inner solve's events,
+        so that an interruption's partial trace keeps them). No interruption check and no
+        stamping: the events were checked and stamped when they were recorded."""
+        for event in events:
+            self._events.append(replace(event, sequence=len(self._events)))
 
     @property
     def events(self) -> tuple[SolveEvent, ...]:

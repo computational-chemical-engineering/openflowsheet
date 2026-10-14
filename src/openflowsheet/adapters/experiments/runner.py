@@ -241,6 +241,12 @@ class ExperimentRunner:
         )
         return build_request(variant, capabilities, n_tubes, components, inlet, environment.sha256)
 
+    def frozen_environment(self, variant: Variant) -> Environment | None:
+        """The job's frozen handshake outcome for `variant` (§6.1, R-236), or `None` before its
+        first experiment. Never handshakes."""
+        found = self._handshakes.get(variant.sha256)
+        return None if found is None else found[0]
+
     def run(
         self,
         variant: Variant,

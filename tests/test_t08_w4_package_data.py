@@ -77,7 +77,8 @@ def test_every_packaged_file_reads_the_repository_bytes() -> None:
     # M02 (ADR 0033-0035) added three: experiment, model-variant, model-replacement; M04
     # (ADR 0037 D6) two: surrogate-manifest, model-evidence.
     assert sum(1 for r in expected if r.startswith("schemas/")) == 32 + 3 + 2
-    assert sum(1 for r in expected if r in PACKAGED) == 4
+    # M02 (R-317 (b)) added the external addendum.
+    assert sum(1 for r in expected if r in PACKAGED) == 4 + 1
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
     assert sorted(
