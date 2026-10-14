@@ -75,6 +75,11 @@ MANIFEST_NARROWER: dict[str, list[str]] = {
     ],
 }
 REPORT = "model-replacement.schema.json"
+#: Every facet passing between two variant-backed models: M04's `surrogate_evidence` is
+#: `not_applicable` when neither side is a surrogate (M04 spec §8.3).
+VARIANT_PASS: dict[str, str] = {facet: "pass" for facet in FACETS} | {
+    "surrogate_evidence": "not_applicable"
+}
 
 
 def loop() -> dict[str, Any]:
@@ -153,7 +158,7 @@ def valid(result: TransactionResult) -> None:
 
 
 def test_the_report_facets_are_the_schemas_in_its_order() -> None:
-    """§6.2's nine facets; a later package's facet is added to both (M04's on its branch)."""
+    """§6.2's nine facets and M04's `surrogate_evidence` (spec §8.3), in both."""
     schema = json.loads((REPO_ROOT / "schemas" / REPORT).read_text(encoding="utf-8"))
     facet = schema["properties"]["facets"]["items"]["properties"]["facet"]
     assert list(FACETS) == facet["enum"]
@@ -194,7 +199,7 @@ def test_g9a1_standin_to_the_real_reactor_is_rejected_on_validity_alone(
     valid(result)
     assert result.status == "rejected" and result.error is not None
     assert result.error.code == "model_replacement_incompatible"
-    assert facets(result) == {facet: "pass" for facet in FACETS} | {"validity": "fail"}
+    assert facets(result) == VARIANT_PASS | {"validity": "fail"}
     (validity,) = [f for f in result.error.detail["report"]["facets"] if f["facet"] == "validity"]
     prefix = "the new domain does not contain the old: "
     assert validity["detail"].startswith(prefix)
@@ -235,7 +240,7 @@ def test_g9a_a_compatible_promotion_commits_with_its_report(
     stored = json.loads((app.files_root / row.relpath).read_bytes())
     assert schema_errors(REPORT, stored) == []
     assert stored["compatible"] is True
-    assert [facet["result"] for facet in stored["facets"]] == ["pass"] * len(FACETS)
+    assert [facet["result"] for facet in stored["facets"]] == [VARIANT_PASS[f] for f in FACETS]
     assert [facet["facet"] for facet in stored["facets"]] == list(FACETS)
     with app.store.reading() as connection:
         revision = app.store.get_revision(connection, new)
@@ -279,7 +284,7 @@ def test_g9b_an_incompatible_pressure_convention_is_rejected(
     valid(result)
     assert result.status == "rejected" and result.error is not None
     assert result.error.code == "model_replacement_incompatible"
-    assert facets(result) == {facet: "pass" for facet in FACETS} | {"boundary_condition": "fail"}
+    assert facets(result) == VARIANT_PASS | {"boundary_condition": "fail"}
     report = result.error.detail["report"]
     assert report["compatible"] is False and report["instance_id"] == "reactor"
     (boundary,) = [f for f in report["facets"] if f["facet"] == "boundary_condition"]
@@ -296,7 +301,7 @@ def test_g9c_a_narrower_temperature_domain_fails_validity(
     result = app.commit_change(change(reference(narrow)), revision_id, "narrow")
     valid(result)
     assert result.status == "rejected"
-    assert facets(result) == {facet: "pass" for facet in FACETS} | {"validity": "fail"}
+    assert facets(result) == VARIANT_PASS | {"validity": "fail"}
 
 
 def test_g9c_a_renamed_port_fails_ports(

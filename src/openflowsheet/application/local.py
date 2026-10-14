@@ -1478,10 +1478,11 @@ class LocalApplication:
         # What is validated is exactly what is stored: the canonical document, read back.
         document = json.loads(canonical_json(built))
         # ADR 0035 D2–D3 (M02 design note §6.2): a change of a variant-backed model reference is a
-        # promotion, checked before anything is validated; any failed facet rejects it with the
+        # promotion (M04 spec §8.3: or a surrogate-backed one, judged with the project's
+        # resolver), checked before anything is validated; any failed facet rejects it with the
         # report. A compatible one writes each report's SHA-256 into the provenance (outside the
         # content hash), so the preview and the commit name the same document.
-        reports = check_replacements(expected, document)
+        reports = check_replacements(expected, document, surrogates=self._surrogates())
         incompatible = [report for report in reports if not report.compatible]
         if incompatible:
             report = incompatible[0]

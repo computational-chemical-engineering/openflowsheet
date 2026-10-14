@@ -99,3 +99,40 @@ Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.
   `test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis` keeps its name. For the
   design lane: the statement is a public support claim (wording only; no claim on the surrogate's
   accuracy is added).
+
+## Merge of main (c722df0, M02 merged) and WO-8 — the replacement check's surrogate side (2026-10-15)
+
+- **E15. `surrogate_evidence`'s detail states the verdict first, then the parent relation or
+  `parent_mismatch`, always both** (`"verdict=<v>; parent_mismatch: …"`). A27's A18 surrogate is
+  NOT_PROMOTABLE *and* its parent is `m04-synthetic-rough-v1`, not the project's smooth parent, so
+  in the project spec §11 describes, A27 ("detail `verdict=NOT_PROMOTABLE`") and A28 ("detail
+  `parent_mismatch`, whatever that surrogate's verdict") can both hold only if the detail carries
+  both reasons; the tests assert each as a `"; "`-separated item. Rejected: a precedence (either
+  order breaks A27 or A28 read as equality). For the design lane: confirm, or say whether A27 meant
+  a project bound to the rough parent. Reversible by: `replacement._surrogate_evidence`'s `reasons`.
+- **E16. A surrogate side whose manifest does not resolve.** New side: `resolvable` fails
+  (`surrogate_manifest_mismatch`) and `surrogate_evidence` fails too (no verdict can be derived).
+  Old side: its parent is unknown, so a new surrogate is a `parent_mismatch` unless the old
+  reference *is* its parent, and a new non-surrogate fails `replace_via_parent`. Rejected:
+  `not_applicable`, which would let a replacement of an unresolvable surrogate pass the facet
+  unjudged. Reversible by: the two `surrogate is None` branches.
+- **E17. The derivatives exception excuses exactly the lost pairs the parent declares
+  `unavailable`**, and only when the new reference equals the old manifest's `parent` (id,
+  variant id, SHA-256). Any other loss still fails; when something is excused the detail starts
+  `restores_parent_declaration`. Rejected: passing every loss on a rollback (ADR 0037 D3 names
+  only the `unavailable` outlet-w.r.t.-inlet declaration).
+- **E18. Shared rules, extracted rather than copied** (commit `c7bdd10`, inert):
+  `revision_binding.resolve_surrogate` (the binder's §8.2 resolution at the reference level) and
+  `manifest.derived_verdict` (the verdict re-derived from the stored metrics, which
+  `check_manifest` compares and `surrogate_evidence` judges by; `promotion.verdict` is never
+  read). Proof: `check_manifest` byte-identical on every fixture and five mutations.
+- **E19. Merge: certificate limitations order.** `_finish` takes M02's `external` and M04's
+  `appended`; M02's external limitations come first, then the surrogate's. No registered
+  flowsheet binds both, so no existing certificate changes.
+- **E20. Re-taken for the tenth facet.** M02's `model_replacement` fixtures
+  (`scripts/m02_schema_fixtures.py --write`: one `not_applicable` facet appended to each) and
+  `test_m02_wo11_promotion`'s all-pass expectations (`VARIANT_PASS`: `surrogate_evidence`
+  `not_applicable` between two variants). The merge commit's single gate failure (M02's pin of
+  `FACETS` to the schema enum, which M04 had already extended) closes here.
+- **E21. A surrogate side's `synthetic`** in the report's `from`/`to` is the manifest's
+  `synthetic` (reported, not judged, as for a variant).
