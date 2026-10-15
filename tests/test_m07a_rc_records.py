@@ -200,14 +200,25 @@ def test_a43_the_records_without_a_machine_class_are_the_known_ones() -> None:
 # -- the generator's A43 measurement (`scripts/m07a_evidence_manifest.py`, R-347) --------------
 
 
-def _provenance_of(tmp_path: Path, records: dict[str, dict[str, Any]]) -> tuple[str, Any]:
+def _provenance_of(
+    tmp_path: Path,
+    records: dict[str, dict[str, Any]],
+    dist: dict[str, dict[str, Any]] | None = None,
+) -> tuple[str, Any]:
+    """A43 over constructed records: `records` in the `t08-rc-v1` form (a `provenance` block),
+    `dist` in `t08_dist.py`'s form (`t08-a43-dist-v1`, the members at top level, `machine`)."""
     commit = "c" * 40
     rc = tmp_path / commit / "rc"
     lock = _sha256(REPO_ROOT / "requirements.lock")
-    for name, members in records.items():
+    provenance = {"commit": commit, "tree_clean": True, "environment_lock_sha256": lock}
+    documents = {
+        name: {"format": "t08-rc-v1", "provenance": {**provenance, **members}}
+        for name, members in records.items()
+    }
+    for name, members in (dist or {}).items():
+        documents[name] = {"format": "t08-a43-dist-v1", **provenance, **members}
+    for name, document in documents.items():
         (rc / name).parent.mkdir(parents=True, exist_ok=True)
-        provenance = {"commit": commit, "tree_clean": True, "environment_lock_sha256": lock}
-        document = {"format": "t08-rc-v1", "provenance": {**provenance, **members}}
         (rc / name).write_text(json.dumps(document), encoding="utf-8")
     inputs = m07a_evidence_manifest.Inputs(commit=commit, tests=None, evidence=tmp_path)  # type: ignore[arg-type]
     return m07a_evidence_manifest._m_provenance(inputs)  # noqa: SLF001
@@ -244,6 +255,32 @@ def test_a43_generator_fails_a_missing_unregistered_or_disagreeing_class(tmp_pat
     assert value["unregistered_machine_class"] == ["unregistered.json"]
     assert value["machine_class_disagrees"] == ["architecture.json", "ci.json"]
     assert value["not_attributable"] == []
+
+
+def test_a43_generator_passes_a_dist_record_whose_class_agrees(tmp_path: Path) -> None:
+    # Review S1 (docs/reviews/V02-alpha-am2-read.md): the dist record's class sits at top level,
+    # beside `machine`, and the record has no `CI` flag, so only the architecture is compared.
+    result, value = _provenance_of(
+        tmp_path,
+        {},
+        dist={"ci/rc-dist/t08-a43-dist.json": {"machine": "x86_64", "machine_class": "ci-x86-64"}},
+    )
+    assert (result, value["records"]) == ("pass", 1)
+
+
+def test_a43_generator_fails_a_dist_record_whose_class_disagrees(tmp_path: Path) -> None:
+    result, value = _provenance_of(
+        tmp_path,
+        {},
+        dist={
+            "ci/rc-dist/t08-a43-dist.json": {"machine": "x86_64", "machine_class": "ci-aarch64"},
+            "none/t08-a43-dist.json": {"machine": "x86_64"},
+        },
+    )
+    assert result == "fail"
+    assert value["machine_class_disagrees"] == ["ci/rc-dist/t08-a43-dist.json"]
+    assert value["no_machine_class"] == ["none/t08-a43-dist.json"]
+    assert (value["unregistered_machine_class"], value["not_attributable"]) == ([], [])
 
 
 def test_a44_the_tree_record_is_c_alphas_byte_for_byte() -> None:
