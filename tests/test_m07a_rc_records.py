@@ -30,8 +30,9 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import m07a_evidence_manifest  # noqa: E402
 import v0_1_gate  # noqa: E402
 
-#: `C_α¹` (spec Amendment 2 §18.4, R-349); `C_α⁰` = `e0e198e`'s evidence is kept, not tested here.
-RC = "6fec82232e1c47308a5e1d67338058f352992800"
+#: `C_α²` (spec Amendment 3 §19.1, R-370); `C_α¹` = `6fec822`'s and `C_α⁰` = `e0e198e`'s
+#: evidence is kept, not tested here.
+RC = "cc73219a77f6a54579c8acb151ed6fae228c8a4c"
 RECORDS = REPO_ROOT / "evidence" / "M07a" / RC / "rc"
 ARTIFACTS = REPO_ROOT / "evidence" / "M07a" / RC / "artifacts" / "rc"
 RC_RECORD = REPO_ROOT / "docs" / "v02-alpha-rc-record.md"

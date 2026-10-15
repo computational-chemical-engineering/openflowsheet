@@ -337,3 +337,45 @@ A52 no longer runs the changelog module through the generator; that module still
 synthetic entries: all pass gives `tested`; A52 and A60–A64 unsupported gives `tested`; A14 or A53 failing gives
 `implemented`. Writing A52 and A64 with `judged_at` at the candidate (§19.4, "after step 5") is left for action 10.
 The generator is not in `C_α²`'s tree.
+
+## Amendment 3 build-lane actions 5–8 (spec §19.8; R-370, R-373, R-376)
+
+B-AM3-6 **How `C_α²` was cut (action 5).** Branch `wp/V02-alpha-rc2` from `6fec822`, carrying 6505315 (item 2 (e):
+the spec, the register, `docs/derivations/scripts/v02a_reference.py` and `benchmarks/m07a/reference_values.yaml`),
+162e13b, e892790, 967a622 and 7af0ee3, cherry-picked with `-x` in that order (the YAML first, because action 2's
+tests read T7 and T8 from it; no conflict); the last one's subject is rewritten to name the cut, its body kept, as
+B-AM2-6 did. `C_α²` = **`cc73219a77f6a54579c8acb151ed6fae228c8a4c`**. `git diff --stat 6fec822 cc73219`: 11 files,
+exactly §19.1 item 2 (a)–(e); each file equals `958af67`'s, and on `src/ tests/ scripts/ .github/ benchmarks/` the
+tree equals `958af67` except the three post-candidate files (`m07a_evidence_manifest.py`, its test, and 2055d19's
+`m02_evidence_manifest.py`). Gate at `C_α²`: PASS, 8600 passed, 33 skipped (22:41). Branch pushed; merged into
+`wp/V02-alpha-gate` with `--no-ff` (`222ffb1`; merge tree equal to `958af67`'s, so no gate re-run for it). Tree
+record `release/rc-trees/cc73219….json` by `v0_2_gate.py --write-tree-record`: against `C_α¹`'s it differs in
+`commit`, `committer_time` and the blobs of `benchmarks/m07a/reference_values.yaml` and
+`benchmarks/t08/support_envelope.yaml` only. No tag, release or publish.
+
+B-AM3-7 **Action 6 as run.** Steps 1–10 on CI: dispatch **38813135468** (`rc_alpha`, `rc_distribution`) success, every
+RC job success (check: 8533 passed / 100 skipped x86-64, 8505 / 98 aarch64); push **38813136015** success. Local
+`ref-x86-64`, one script (`evidence/M07a/<C_α²>/tools/run_local.sh`, `C_α¹`'s retargeted; scratch
+`~/.cache/of-rca-cc73219/`; RC worktree `.claude/worktrees/rc-cc73219`, clean at start, after the venv and at the
+end): 24 commands, every exit 0; steps 2, 6–12 PASS; step 10 local PASS, 77 certificates, 0 violations. The G12
+bundle certificate's `document_sha256` `faa8e4da…fdf8974` equals the record's `certificate_sha256`; the five kept
+certificates are byte-identical to `C_α¹`'s. Against `C_α¹` every check value is equal except paths, timestamps,
+hashes, the sdist sizes, the smoke run's bundle path and step 12's code-identity keys (RC record O6). Step 13 not
+run (pending the verdict at `C_α²`).
+- *Choice:* every environment (RC venv, reactor environment, cross-check venv, IDAES worktree and venv) was built
+  afresh under the new scratch rather than reused from `~/.cache/of-rca-6fec822/`: the old RC venv is an editable
+  install of `rc-6fec822`, the IDAES worktree is at `6fec822`, and the step-12 record says "built from `C_α`'s lock".
+  The builds ran beside step 6 and cost no wall time. Reversible by: nothing to reverse (evidence only).
+- *Choice:* `tools/fetch_ci.sh` (new) names each job log `<job>-<runner>.log` as `C_α¹`'s layout did.
+- **R-376 skip lines:** `evidence/M07a/<C_α²>/step1-skips/ci-x86-64.txt` (62 lines, 100 skips; sha256
+  `f2c8d42f312ecd65174edbab240724d0cc77a08fe6f93724adcabf5e61b3ea72`) and `…/ci-aarch64.txt` (64 lines, 98 skips;
+  `91dbe21a9d0d03b17f8a1961c0cb6e22dc2976ebce791b67ee4f5f0d2a465835`): each `check` job log's `SKIPPED [n] …` lines with
+  the Actions prefix (job, step, timestamp) stripped; the `[n]` sum equals pytest's skip count.
+- *Correction:* `C_α¹`'s record's O5 (the step-12 record shows no thread pins) was carried from `C_α⁰`'s and is false
+  for `C_α¹`'s records, which carry `OMP/OPENBLAS/MKL_NUM_THREADS=1`; `C_α²`'s O5 states what the records carry.
+  `C_α¹`'s record is kept unchanged apart from its R-370 line.
+
+B-AM3-8 **Action 8.** `C_α¹`'s RC record moved to `docs/v02-alpha-rc-record-6fec822.md` and its verdict document to
+`docs/reviews/V02-alpha-verdicts-6fec822.md`, each with one line saying R-370 superseded it; its records, manifest
+(`implemented`) and tree record stay where they are. The move precedes the manifest run, so the generator at `C_α²`
+cannot read `C_α¹`'s verdicts as A60–A63 inputs.

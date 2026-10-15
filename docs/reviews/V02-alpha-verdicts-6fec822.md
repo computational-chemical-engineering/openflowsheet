@@ -1,5 +1,7 @@
 # V02 alpha — verdicts on V11–V20, W21 and W22 for `0.2.0a1`
 
+*Superseded by R-370 (spec Amendment 3 §19.1): these verdicts at `C_α¹` = `6fec822` are superseded together with their candidate, not re-judged; the verdicts at the re-cut `C_α²` = `cc73219` are judged afresh by `C_α²`'s verdict (§19.1 item 4), written to `docs/reviews/V02-alpha-verdicts.md`.*
+
 **Release candidate:** `6fec82232e1c47308a5e1d67338058f352992800`   **Judged:** 2026-10-15   **By:** design lane (`verdict`)
 
 | Gate | Verdict | Failing clauses | Travelling limitations | Basis |
