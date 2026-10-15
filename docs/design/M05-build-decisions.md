@@ -306,3 +306,19 @@ S36 OPEN (schema, WO-7b). S15 rules each half-width value > 0, but √(2(e* + ma
 Measured: §18.2 (a) θ_recheck 4.01e-4, P2 values failing (objective_error 2e-3·|J*| > bound): candidate
    PARENT_LOCAL_EVIDENCE, P2 {null, false, "theta_recheck"}, limitation `trf_max_iterations`; (b) θ = 1e-5:
    PROJECTION_DISAGREES, P2 judged; (c) P5 runs after an unjudged P2, not after P3 false (half-width null).
+
+## S33 applied — the basis is formed inside the holders' run (default of S33)
+
+S37 S33's default, as an isolated commit (accounting, not numerics; for the review batch). `run_trf` takes the basis
+   as a mapping or as a builder; `TrfStage` passes its builder, which `_run` calls after `begin_run` and before the
+   pre-flight, with `RunState.forming_basis` set. The basis's requests then carry the run id and are admitted against
+   the run's budgets; while forming they get no call-order purpose, no `trf_iteration` (null: not TRF's, so S32's
+   `pmp_point_equals_start` does not see the basis Jacobian at w₀) and do not make a key the run's first (TRF's start
+   stays `trf_start_value`). A built basis is judged by `basis_refusals` when built. Consequences: per-run
+   `basis_fd_point` = n_in holds; the basis's cold requests now count in the run's `value_cold` (and so in
+   `cold_parent` or the in-process charge, §7.5) and can be refused by an exhausted budget, which before they could
+   not. Alternative: the identity reads basis requests by stage. Reversible: revert the commit.
+   Measured (FD link toy, `TrfStage`, radius factors 1 and ¼): the run document is byte-identical before/after
+   (hex dump `cmp`), and so is the TRF-phase ledger (call, key, served, iteration, purpose, status for all 35
+   entries); the summary moves `basis_fd_point` 0 → 7 and `value_cold` 8 → 16, `trf_start_value` 1,
+   `pmp_point_equals_start` false unchanged. Test: `test_the_stage_forms_the_basis_inside_the_holders_run`.

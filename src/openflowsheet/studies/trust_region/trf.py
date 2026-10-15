@@ -73,7 +73,7 @@ import io
 import logging
 import threading
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Final
 
@@ -109,6 +109,9 @@ from openflowsheet.studies.trust_region.trf_state import (
 #: TRF's message when a subproblem does not terminate optimally (`interface.solveModel`).
 _SUBPROBLEM_FAILED_PREFIX: Final = "EXIT: Model solve failed"
 _RUN_LOCK = threading.Lock()
+
+#: A basis built on the projection inside the run, before TRF starts (S33, `run_trf`).
+BasisFor = Callable[[Projection], Mapping[str, EFBasis]]
 
 
 @SolverFactory.register(TRSP_SOLVER_ALIAS, doc="M05-trsp-ipopt-v1: the audited Ipopt executable")
@@ -203,25 +206,26 @@ def run_trf(
     projection: Projection,
     config: Mapping[str, Any],
     *,
-    basis: Mapping[str, EFBasis] | None = None,
+    basis: Mapping[str, EFBasis] | BasisFor | None = None,
     budgets: Mapping[str, Sequence[ColdBudget]] | None = None,
     run_id: str = "trf-1",
 ) -> TrfRun:
     """Run TRF once on `projection` with `config` (passed to `solve()`) and `basis` (one
     `EFBasis` per `ExternalFunction`, by EF name), and read back its state.
 
+    `basis` may instead be a builder, called on `projection` once the holders serve the run and
+    before TRF starts (S33): its requests are the run's (§8.3's `basis_fd_point`) and are admitted
+    against the run's budgets, but carry no call-order purpose (`RunState.forming_basis`).
     `budgets` maps a holder's name to the caps its cold value requests are admitted against.
     Raises `TrustRegionUnsupportedError` before any run if the pin does not hold, and
-    `TrfConfigurationRefusedError` if the basis is missing, incomplete or a zero basis off TR-E1."""
+    `TrfConfigurationRefusedError` if the basis is missing, incomplete or a zero basis off TR-E1
+    (a built basis is judged when built, before TRF starts)."""
     readiness = framework_readiness()
     if readiness.status != "READY":
         raise TrustRegionUnsupportedError(readiness.reasons)
-    refused = basis_refusals(
-        projection.ef_names.values(), basis, projection.source_map["shape_check"]["status"]
-    )
-    if refused:
-        raise TrfConfigurationRefusedError(refused)
-    assert basis is not None  # basis_refusals refuses None
+    if not callable(basis):
+        _refuse_basis(projection, basis)
+        assert basis is not None  # _refuse_basis refuses None
     if not _RUN_LOCK.acquire(blocking=False):
         raise RuntimeError("one TRF run per process: stdout capture is process-global (§6.7)")
     try:
@@ -230,16 +234,24 @@ def run_trf(
         _RUN_LOCK.release()
 
 
+def _refuse_basis(projection: Projection, basis: Mapping[str, EFBasis] | None) -> None:
+    """Raise `TrfConfigurationRefusedError` if `basis` may not be used on `projection` (R-277)."""
+    refused = basis_refusals(
+        projection.ef_names.values(), basis, projection.source_map["shape_check"]["status"]
+    )
+    if refused:
+        raise TrfConfigurationRefusedError(refused)
+
+
 def _run(
     projection: Projection,
     config: Mapping[str, Any],
-    basis: Mapping[str, EFBasis],
+    basis: Mapping[str, EFBasis] | BasisFor,
     budgets: Mapping[str, Sequence[ColdBudget]],
     run_id: str,
 ) -> TrfRun:
     solver = SolverFactory("trustregion")
     effective = solver.config(dict(config))
-    kinds = {name: basis[name].kind for name in sorted(basis)}
     run = RunState(run_id)
     handler = TrfLogHandler(run)
     logger = logging.getLogger(TRF_PACKAGE)
@@ -252,12 +264,20 @@ def _run(
     refused: TruthRefused | None = None
     preflown = False
     try:
+        if callable(basis):
+            run.forming_basis = True
+            try:
+                basis = basis(projection)
+            finally:
+                run.forming_basis = False
+            _refuse_basis(projection, basis)
         refused = _preflight(projection)
         preflown = True
     finally:
         if not preflown or refused is not None:
             for holder in projection.holders:
                 holder.end_run()
+    kinds = {name: basis[name].kind for name in sorted(basis)}
     if refused is not None:
         return TrfRun(
             feasibility_termination=float(effective.feasibility_termination),

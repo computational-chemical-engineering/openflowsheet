@@ -192,3 +192,46 @@ def test_an_fd_truths_link_basis_reuses_the_gradient_checks_points() -> None:
     basis_points = [e for e in after if e.purpose == BASIS_FD_POINT]
     assert len(basis_points) == 7 and all(e.served == "memo_hit" for e in basis_points)
     assert holder.request_jacobian(w0) == check.gradient
+
+
+def test_the_stage_forms_the_basis_inside_the_holders_run() -> None:
+    """S33: `TrfStage` hands `run_trf` its basis builder, so the basis's requests belong to the
+    run: §8.3's per-run `basis_fd_point` = n_in = 7, with `trf_start_value` = 1 still TRF's own
+    start. The basis's requests carry the run id but no `trf_iteration` and no call-order purpose,
+    and TRF's run is bitwise the one on a basis built before the run (same document, same
+    TRF-phase ledger)."""
+    from openflowsheet.studies.trust_region.basis import m05_basis
+    from openflowsheet.studies.trust_region.study import IN_PROCESS_BUDGET, StudyBudget, TrfStage
+    from openflowsheet.studies.trust_region.trf import run_trf
+    from openflowsheet.studies.trust_region.trf_state import TRSP_SOLVER_ALIAS
+
+    config = {"solver": TRSP_SOLVER_ALIAS, "trust_radius": 1.0}
+    projection = link_toy_projection("forward", FiniteDifferenceToy())
+    stage = TrfStage(lambda s: projection, m05_basis, config)
+    staged = stage(None, run_id="R", radius_factor=1.0, budget=StudyBudget(IN_PROCESS_BUDGET))
+    (holder,) = projection.holders
+    summary = staged.document["ledger"]["summary"][holder.name]
+    assert summary["by_purpose"]["basis_fd_point"] == 7
+    assert summary["by_purpose"]["trf_start_value"] == 1
+    assert all(e.run_id == "R" for e in holder.ledger)
+    basis_entries = [e for e in holder.ledger if e.trf_iteration is None]
+    # w₀'s value, the FD base (a memo hit), the seven points, the Jacobian they form
+    assert [(e.call, e.purpose) for e in basis_entries] == [("value", None)] * 2 + [
+        ("value", BASIS_FD_POINT)
+    ] * 7 + [("jacobian", None)]
+
+    before = link_toy_projection("forward", FiniteDifferenceToy())
+    direct = run_trf(before, config, basis=m05_basis(before), run_id="R")
+    (direct_holder,) = before.holders
+    assert staged.outcome == direct.outcome
+    assert staged.document["iterations"] == [r.as_document() for r in direct.iterations]
+    assert staged.decisions == (direct.final.decisions if direct.final is not None else None)
+
+    def trf_phase(entries: Any) -> list[tuple[Any, ...]]:
+        return [
+            (e.call, e.inputs_sha256, e.served, e.trf_iteration, e.purpose, e.status)
+            for e in entries
+            if e.trf_iteration is not None
+        ]
+
+    assert trf_phase(holder.ledger) == trf_phase(direct_holder.ledger)

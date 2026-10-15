@@ -142,11 +142,17 @@ class RunState:
     `last_logged_iteration` is `None` until TRF logs iteration 0, and is advanced by the log
     handler as each `****** Iteration k ******` record arrives. TRF 6.10.1 evaluates nothing
     between a record's lines, so a request made after the record of iteration k belongs to
-    iteration k + 1 (design note §8.3)."""
+    iteration k + 1 (design note §8.3).
+
+    `forming_basis` is true while the run's affine basis is formed, before TRF starts (S33): those
+    requests belong to the run (and its budgets) but are not TRF's, so they carry no call-order
+    purpose and no `trf_iteration`, and they do not make a key the run's first (§8.3's
+    `trf_start_value` stays TRF's start)."""
 
     def __init__(self, run_id: str) -> None:
         self.run_id = run_id
         self.last_logged_iteration: int | None = None
+        self.forming_basis = False
 
     @property
     def current_iteration(self) -> int:
@@ -587,14 +593,14 @@ class EFHolder:
                     chosen = purpose
                     if chosen is None and first_in_run:
                         chosen = self._call_order_purpose(self._run)
-                    self._run_value_keys.add(key)
+                    self._mark_in_run(key)
                     self._values[key] = flight = _InFlight()
                     break
                 if not isinstance(held, _InFlight):
                     chosen = purpose
                     if chosen is None and first_in_run:
                         chosen = self._call_order_purpose(self._run)
-                    self._run_value_keys.add(key)
+                    self._mark_in_run(key)
                     return held, self._entry("value", key, "memo_hit", chosen, held, start)
                 pending = held
             pending.done.wait()
@@ -701,10 +707,16 @@ class EFHolder:
             raise refusal
         return inputs, encode_doubles(inputs)
 
+    def _mark_in_run(self, key: bytes) -> None:
+        """Record `key` as requested in the run, unless the run's basis is being formed (S33)."""
+        if self._run is None or not self._run.forming_basis:
+            self._run_value_keys.add(key)
+
     def _call_order_purpose(self, run: RunState | None) -> str | None:
         """Design note §8.3: before iteration 0 is logged the first key of a run is the start
-        value (`EFReplacement`) and any later one the PMP point; after it, a trial point."""
-        if run is None:
+        value (`EFReplacement`) and any later one the PMP point; after it, a trial point. The
+        basis's requests (S33) are not TRF's and get none."""
+        if run is None or run.forming_basis:
             return None
         if run.last_logged_iteration is None:
             return TRF_START_VALUE if not self._run_value_keys else TRF_PMP_VALUE
@@ -728,7 +740,9 @@ class EFHolder:
             call=call,
             inputs_sha256=hashlib.sha256(key).hexdigest(),
             served=served,
-            trf_iteration=run.current_iteration if run is not None else None,
+            trf_iteration=(
+                run.current_iteration if run is not None and not run.forming_basis else None
+            ),
             purpose=purpose,
             status=outcome.code if isinstance(outcome, TruthRefused) else "ok",
             wall_s=time.perf_counter() - start,

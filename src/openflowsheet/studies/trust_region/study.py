@@ -796,7 +796,8 @@ def run_study(
 class TrfStage:
     """The production `StageRunner`: `project_at(start)` (the projection at the start's
     certified state, so TRF's first evaluation at w₀ is a store hit), `basis_for(projection)`
-    (`M05-basis-v1`), `config` (`M05-trf-config-v1` with the study's σ), and `run_trf`.
+    (`M05-basis-v1`; `run_trf` calls it inside the holders' run, so its requests are the run's,
+    S33), `config` (`M05-trf-config-v1` with the study's σ), and `run_trf`.
 
     Budgets: the parent holders get the study's cold cap and the run's (`Budgets.run_cold`) and
     are charged live; an in-process truth's cold value requests are charged after the run (§7.5:
@@ -828,7 +829,7 @@ class TrfStage:
         trf_run = run_trf(
             projection,
             config,
-            basis=self.basis_for(projection),
+            basis=self.basis_for,
             budgets={holder.name: caps for holder in parents},
             run_id=run_id,
         )
