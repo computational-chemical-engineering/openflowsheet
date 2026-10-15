@@ -10,6 +10,8 @@ register R-240…R-249.
 and requires every file byte-identical; 8634 claims since Amendment 1).
 **Amendment 1** (2026-10-09, §18): rulings on the build lane's WO-1…6 questions; ADR 0036 and ADR 0037 Amendment 1;
 register R-290…R-295.
+**Amendment 2** (2026-10-15, §19): the real reactor's box `m04-c1-box7-v2` and plans `b2-it1…3` (closes N4); rulings
+on E15, E16, E22, E23; register R-319…R-322. ADR 0036 Amendment 2 is required before WO-11 runs (§A2.11, a finding).
 **Built on:** M01 (`main`: the boundary, ADR 0027, DX-01), M02 (`wp/M02`: ADRs 0033–0035, the records, the coupling,
 the replacement check), M03 (`wp/M03`: ADR 0031's vocabulary, R-184's seeded-data convention).
 
@@ -81,6 +83,9 @@ whitening) is applied; the transform is frozen with the predictor.
 *Why these coordinates.* They are a bijection with the inlet at fixed N_tubes, they are the coordinates of the parent's
 own hard and data domains (T, P, H₂/N₂, inerts, per-tube flow), and no direction of the inlet is silently held fixed:
 the two inerts are separate inputs because their split varies in a loop with a purge and a dissolving separator.
+
+*(Amendment 2 §A2.2: this table is `m04-c1-box7-v1`, the synthetic-verification box. Non-synthetic parents use
+`m04-c1-box7-v2`.)*
 
 ### 3.2 Outputs and the conserved-coordinate representation
 
@@ -196,7 +201,8 @@ failure `out_of_domain` / `surrogate_input_undefined(<unit>)` (it is also outsid
 ## 4. The registered reference distribution
 
 **P_ref = the uniform distribution on the box of §3.1**, a product of seven independent uniforms in the u-coordinates.
-It is registered by the id `m04-c1-box7-v1`, the bounds above, and the sampler of §5.1.
+It is registered by the id `m04-c1-box7-v1`, the bounds above, and the sampler of §5.1. *(Amendment 2 §A2.2–A2.3: for
+non-synthetic parents P_ref is `m04-c1-box7-v2`, with plans `b2-it1…3`; the v1 plans are for synthetic parents only.)*
 
 *Why this region.* It is process-relevant: it is centred on the C1 nominal reactor inlet (M01 spec §8.4) and spans
 the variations a recycle loop imposes on the inlet — ±20 K in the preheat (the dossier's design decision, §9 of the
@@ -751,12 +757,13 @@ manifest with its command, never in the default gate.
 
 - **M04.A31** — Iteration 1 on the real variant: every executed request is bitwise a request of `plan-it1.json`; the
   manifest and evidence validate and pass the checker; the verdict and every metric of §7 are recorded, whatever the
-  verdict; `parent_extrapolated` is 0 or reported as a finding.
+  verdict; `parent_extrapolated` is 0 or reported as a finding. *(Amendment 2 §A2.4: the plan is `b2-it1` on v3.)*
 - **M04.A32** — Re-running the study with every record cached reproduces the manifest bitwise (job ids and timestamps
   are not members of it) with zero cold experiments.
 - **M04.A33** — If A31 is PROMOTABLE: A25, A26 and A29 on `C1-LOOP-M02-v1` with `c1.reactor`, plus one parent
   evaluation at the surrogate-backed solution's reactor inlet recorded as `targeted_check` with |e_X|/w_X and
-  |e_ΔT|/w_ΔT — reported, not judged (blueprint L415; Q2).
+  |e_ΔT|/w_ΔT — reported, not judged (blueprint L415; Q2). *(Amendment 2 §A2.4: the loop is bound to v3, and the
+  reactor inlet's reference-domain status is recorded.)*
 
 **Generator and schemas (default gate)**
 
@@ -792,7 +799,7 @@ review before merge (it touches residuals, derivatives, promotion or the statist
 | WO-8 | Opus, R | Replacement check: the surrogate side, `surrogate_evidence`, the rollback exception, the schema enum | WO-7; M02 WO-11 | A25, A27–A30 |
 | WO-9 | Opus | The synthetic-loop end-to-end tests | WO-8; M02 WO-8/9 | A25–A30 |
 | WO-10 | bounded | A test running the generator's `--check` | — | A34 |
-| WO-11 | Opus, opt-in | Iteration 1 on the real variant (≈ 95 min), its evidence; if PROMOTABLE, A33 | WO-5, WO-8; M02 WO-5 | A31–A33 |
+| WO-11 | Opus, opt-in | Iteration 1 on the real variant (≈ 95 min), its evidence; if PROMOTABLE, A33 *(amended by §A2.13: `b2-it1` on v3)* | WO-5, WO-8; M02 WO-5 | A31–A33 |
 | WO-12 | bounded | Evidence manifest `evidence/M04/<commit>/manifest.json` with the W23 table (§15), register pointers | all | — |
 
 WO-1, WO-2, WO-3 and WO-10 need nothing from M02 and can start now.
@@ -810,7 +817,8 @@ WO-1, WO-2, WO-3 and WO-10 need nothing from M02 and can start now.
   runs (the score is frozen before calibration; changing it afterwards is tuning on the test set).
 - **N3 — the gradient criterion** *(needs Frank's preference).* DECISION: ρ_g = 0.25 at 5 centres. Alternative:
   report-only. Reversible by: an amendment before iteration 1 runs.
-- **N4 — the reference box** *(needs a fact: the C1 loop's operating region, M05/M07).* DECISION: the box of §3.1.
+- **N4 — the reference box** — *closed by Amendment 2 §A2.2: box v1 does not contain the loop's reactor inlet, so
+  `m04-c1-box7-v2` is registered for non-synthetic parents.* Original text: *(needs a fact: the C1 loop's operating region, M05/M07).* DECISION: the box of §3.1.
   The fact that settles it: the reactor inlet of M02's `C1-LOOP-M02-v1` solved with the real reactor (M02 G12) and M07's
   decision range for T_in. If the loop's inlet lies outside the box, register a new box (and a new P_ref id) by
   amendment before iteration 1. Reversible by: amendment; nothing has run.
@@ -1044,3 +1052,339 @@ scalar: a count, never a state.
 
 W23's table (§15) gains A36 and A40 under "Frozen splits/transforms", A39 under "Insufficient-data outcome", and A37,
 A38 and A42 under "Default UQ".
+
+## 19. Amendment 2 (2026-10-15): the real reactor's reference box, and rulings on E15, E16, E22, E23
+
+**Context.** `wp/M04` @ `9fbebb5` (main with M02 merged). WO-11 is blocked: it binds reactor v3 (`benchmarks/m02/c1-loop-real.json`
+names `pymrm-6089593-g2-nz800-s123-v3`), and `prepare(v3, "it1")` refuses `plan_invalid`. Brief:
+`docs/briefs/M04-box-ruling.md`; build log `docs/design/M04-build-decisions.md` E15, E16, E22, E23. Nothing was run for this
+amendment beyond reading registered records: every number below comes from the variant file, M02's G12v3 records or a
+re-derivation of the §5.1 sampler. That re-derivation reproduces `plan-it1.json` bitwise and the brief's count of 115.
+
+**No registered value, fixture or plan file moves.** `plan-it1/2/3.json`, every existing member of `reference_values.json`,
+the A19 fixture and R-302's resolver entry are unchanged. Amendment 2 adds a second reference box for non-synthetic
+parents, a plan family drawn on it, one checker rule, tests, and the rulings below. **It needs ADR 0036 Amendment 2
+before WO-11 runs (§A2.11).**
+
+### A2.1 Facts
+
+- **v3's boundary** (`src/openflowsheet/adapters/variants/pymrm-6089593-g2-nz800-s123-v3.json`, SHA-256 `35cc7de1…`):
+  hard T [653.15, 693.15] K, P [9, 11] MPa, H₂/N₂ [2.5, 3.5], y_Ar + y_CH₄ ∈ [0.035, 0.2], per-tube flow
+  [0.003573480649651052, 0.014293922598604208] mol/s; data T [643.15, 733.15] K, P [5, 10] MPa, H₂/N₂ [1.5, 3].
+- **Box v1 against v3.** 115 of `plan-it1.json`'s 632 requests have y_Ar + y_CH₄ < 0.035 (lowest 0.02255). Every other v3
+  bound holds.
+- **The loop's reactor inlet** (N4's settling fact). There are 12 states: four reactor calls at each of T_in = 653.15,
+  673.15 and 693.15 K. They come from `benchmarks/m02/g12-real-loop-v3.json` (`47dc9f08…`) and
+  `g12-real-loop-v3-edges.json` (`148ec488…`) on the registered v3, with N_tubes = 1000.
+  - P = 10⁷ Pa exactly, and T = T_in exactly.
+  - **r = 3 within 2.9 × 10⁻¹⁴, with both signs, at every state including the first iterate.** The ratio is structural.
+  - y_NH₃ lies in 0.02890–0.02965, y_Ar in 0.01563–0.01819 and y_CH₄ in 0.02345–0.02729. The inert sum lies in
+    0.0391–0.0455.
+  - The per-tube flow F lies in 0.005496–0.006398 mol/s.
+  - *Correction to the brief.* D87's "H₂/N₂ = 3.000008" is the provisional variant's flows rounded to five digits. The
+    registered records give r = 3 to roundoff.
+- **Box v1 does not contain the loop, whatever v3's floor.** At 653.15 K, F = 0.0054965 < 0.0057, which is an excess of
+  0.140. The loop's r and P are exactly box v1's upper r and P faces. On the r face, roundoff decides the empirical status
+  (excess up to 1.15 × 10⁻¹³ either side). So N4's condition, "the loop's inlet lies outside the box", is met.
+
+### A2.2 Ruling: P_ref `m04-c1-box7-v2` for non-synthetic parents (closes N4)
+
+| k | u_k | box v2 [lo, hi] | centre c_k (binary64) | half-width h_k (binary64) | vs v1 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | T (K) | [653.15, 693.15] | 673.15 | 20.0 | unchanged |
+| 2 | P (Pa) | [9.0e6, 1.0e7] | 9.5e6 | 5.0e5 | unchanged |
+| 3 | r | [2.5, 3.00001] | 2.750005 | 0.25000500000000003 | hi + 10⁻⁵ |
+| 4 | y_NH₃ | [0.02, 0.04] | 0.03 | 0.01 | unchanged |
+| 5 | y_Ar | [0.014, 0.03] | 0.022 | 0.008 | lo 0.01 → 0.014 |
+| 6 | y_CH₄ | [0.022, 0.04] | 0.031 | 0.009000000000000001 | lo 0.01 → 0.022 |
+| 7 | F (mol/s) | [0.0050, 0.0086] | 0.0068000000000000005 | 0.0018 | lo 0.0057 → 0.0050 |
+
+The bounds are decimal literals parsed to binary64. The centre and half-width follow §3.1's formulas. The input map's
+coordinate definitions, the scaling z = (u − c)/h, the basis and every rule of §3 are unchanged.
+
+*Why each bound.*
+- **The inert floor.** lo_Ar + lo_CH₄ = 0.036, which is 10⁻³ above v3's refusal floor of 0.035. The lowest inert fraction
+  over every request of `b2-it1…3` is 0.036678 (G4). The floor is split so that the loop has a similar margin in both
+  coordinates: z_Ar ≥ −0.80 and z_CH₄ ≥ −0.84 at the loop, including the first iterate. The tops are unchanged.
+- **F.** lo = 0.0050 puts the 653.15 K state at z_F = −0.724, so the loop spans z_F ∈ [−0.724, −0.224]. hi is unchanged.
+  Both lie inside v3's flow bound.
+- **r.** The loop's r is 3 to roundoff, and 3 is also the face of the data domain. With hi = 3.0, roundoff would decide
+  whether the coverage claim applies at the loop. With hi = 3 + 10⁻⁵ the loop sits at z_r = 0.99996: a margin of
+  4.0 × 10⁻⁵, 8.5 decades above the measured deviation of 1.2 × 10⁻¹³.
+  - The sliver r ∈ (3, 3.00001] has P_ref measure 2.0 × 10⁻⁵ and holds **no registered request**. The largest r over
+    `b2-it1…3` is 2.9999022, which is 9.8 × 10⁻⁵ below 3 (G4).
+  - So every registered request lies in the data domain. Criterion 8 (§7.1), the plan guard (A03) and ADR 0036 D7 are
+    unchanged.
+- **P.** The loop's P = 10⁷ is a specification, not a computed value. It lies on the box's upper face, and z_P = 1.0
+  exactly in binary64, so the excess there is exactly 0.
+- **T.** The T bounds are v3's hard bounds and M05's REAL box. The loop is at z_T ∈ {−1, 0, 1} exactly.
+- **y_NH₃.** The loop is at z ∈ [−0.110, −0.036].
+
+*Rejected.*
+- **(a) Binding v2 for iteration 1.** Box v1 fails N4 on any variant. v2's loop does not converge at 653.15 K (D87). The
+  2 %-inert, 653.15 K, high-P corners fail S1 on v2 as on v3 (D84), so the likely outcome is `plan_incomplete`.
+- **(b) The engineer's numbers** (y_Ar [0.015, 0.03], y_CH₄ [0.02, 0.04], r "slightly above 3.0"). The inert sum
+  touches the refusal face exactly, and F's lo = 0.0057 leaves the 653.15 K state outside. The direction is adopted; the
+  numbers are not.
+- **(c) r straddling 3** (e.g. [2.75, 3.25]). Half the registered draws would lie outside the data domain. Criterion 8
+  would have to be rewritten, A03's guard relaxed and a qualification added, and P stays on its face anyway.
+- **(d) A tolerance on the empirical-domain flag.** It would change ADR 0036 D7 for every surrogate to repair one face.
+  The sliver does the same with no new threshold.
+- **(e) New inert coordinates** (y_inert and the argon share) to make the floor a face. That would need a new input map
+  and a new chain rule (WO-3) for a bound that a 10⁻³ margin handles.
+- **(f) Narrowing r or P to the loop's neighbourhood.** No fact requires it, and M07's range is unregistered.
+- **(g) Fresh seeds.** Nothing of a real parent has been observed on any registered draw, so reusing seed(i, split)
+  leaks nothing. Reuse also keeps the z-design of `b2-it<i>` identical to that of `it<i>` within 2.8 × 10⁻¹⁵ (G5), so
+  every z-space claim carries over and is re-asserted rather than re-derived. Those claims are the separations
+  0.2085, 0.180 and 0.1437, distinctness, and the in-box stencils.
+
+### A2.3 Plans, admission, manifest
+
+- **The family `b2`.** `b2-it1`, `b2-it2` and `b2-it3` are §5.1, §5.5 and A1.2's construction on box v2: the inner box
+  and stencils come from box v2, with the same seeds and the same counts (632, 488 and 488 cold experiments). Training
+  origins refer to earlier iterations of the same family.
+  - The files are `benchmarks/m04/plan-b2-it1.json` … `-it3.json`, in schema `m04-plan-v2`. That schema is
+    `m04-plan-v1`'s members plus `plan_id` and `reference_distribution`, placed after `generated_by`.
+  - `plan-it1/2/3.json` stay `m04-plan-v1`, byte-identical.
+- **Two P_ref ids, each owning its plans.** `m04-c1-box7-v1` owns `it1`, `it1-prefix`, `it2` and `it3`.
+  `m04-c1-box7-v2` owns `b2-it1…3`.
+- **Admission.**
+  - **The v1 plans become synthetic-parents-only**: a non-synthetic parent gets `invalid_request` with
+    `detail.reason = plan_not_registered_for_parent`.
+  - A `b2` plan is admitted for any parent whose domains pass the guard.
+  - Reason: a real parent has exactly one registered family, so §5.5's family-wise bound counts every coverage test
+    evaluated on it. Two families on one parent would double the false-pass chance without reporting it.
+- **The iteration guard (A1.2)** reads "every `it<j>` (j < i) **of the same parent and the same family**".
+- **Manifest.**
+  - `reference_distribution.id` is the plan's P_ref id. `input_map.id` stays `c1-inlet-u7-v1`, because it names the
+    coordinate definitions. `input_map.coordinates` carries the plan's box.
+  - **The checker (A24) gains one rule:** `input_map.coordinates` and `reference_distribution.id` must be bitwise those
+    of `plan_id`'s P_ref; otherwise it reports a failure naming `input_map`.
+  - **The unit takes c and h from its manifest's `input_map`, never from a module constant (A44).**
+  - There is no schema change.
+- A v3 surrogate's hard domain is v3's, verbatim, as §3.6 already says.
+
+### A2.4 Assertions that change
+
+- **M04.A31** binds `b2-it1` on `pymrm-6089593-g2-nz800-s123-v3`: "every executed request is bitwise a request of
+  `plan-b2-it1.json`". `parent_extrapolated` is expected to be 0 (G4), and a nonzero count remains a finding.
+- **M04.A33** runs on `C1-LOOP-M02-v1` bound to v3, and it also records the reference-domain status and excess at the
+  surrogate-backed solution's reactor inlet. `outside_reference_domain` there is a finding for the design lane, not an
+  A33 failure.
+- **M04.A41** uses test requests 0–7 of `b2-it1`.
+- **M04.A27 and A28 are read as items** of E15's `"; "`-separated detail. A27: the first item is
+  `verdict=NOT_PROMOTABLE`. A28: an item begins `parent_mismatch`. A45 isolates each cause.
+- A01–A26, A29, A30, A32, A34–A40 and A42 keep their text and values. A34 covers the new claims.
+
+### A2.5 Generator (`m04_reference.py`; it refuses to emit when any claim fails)
+
+- **G1.** It emits `constants.box_v2`, in the layout of `constants.box`, with the table's literals, centres and
+  half-widths. It also emits `constants.reference_distributions = {m04-c1-box7-v1: [it1, it1-prefix, it2, it3],
+  m04-c1-box7-v2: [b2-it1, b2-it2, b2-it3]}`.
+- **G2.** It reads the v3 variant file and the two G12v3 records as JSON. It imports nothing from `openflowsheet`, and it
+  records their SHA-256 values.
+- **G3. Box v2 lies inside v3's hard domain.**
+  - T, P, r and F are checked by interval.
+  - lo_Ar + lo_CH₄ − inert_min ≥ 0.9 × 10⁻³, and hi_Ar + hi_CH₄ ≤ inert_max.
+  - T and P lie inside the data domain, and r_hi − 3 = 10⁻⁵ exactly in decimal.
+- **G4. Every request of `b2-it1`, `b2-it2` and `b2-it3` passes,** counting fresh draws and every stencil.
+  - Each lies in box v2 by the input map, and in v3's hard and data domains by the parent's own inequalities
+    (`models/c1/boundary.py`'s forms, e.g. n_H₂ ≤ 3·n_N₂ and n_Ar + n_CH₄ ≥ inert_min·n_tot), re-implemented from the
+    variant file.
+  - The minimum inert fraction is ≥ 0.0365 (measured 0.036678), and the maximum r is ≤ 3 − 9 × 10⁻⁵ (measured
+    2.9999022).
+  - The 632 requests are distinct, and no fresh request repeats an earlier `b2` request.
+- **G5. The z-design matches.** Each `b2-it<i>` draw or centre is within 10⁻¹⁴ in z of its `it<i>` twin (measured
+  2.8 × 10⁻¹⁵). The held-out-to-training separations are ≥ 0.2085, 0.180 and 0.1437 for it1, it2 and it3.
+- **G6. The loop lies inside box v2.**
+  - Each of the 12 loop states has excess e = 0 exactly.
+  - |z| ≤ 0.9 for y_NH₃, y_Ar, y_CH₄ and F.
+  - z_r ∈ [1 − 5 × 10⁻⁵, 1 − 3 × 10⁻⁵], with z_T ∈ {−1, 0, 1} and z_P = 1 exactly.
+  - Under box v1, the largest e is ≥ 0.1 (measured 0.1404): the box v1 → v2 change is needed.
+- **G7.** The pre-existing members of `reference_values.json` and `plan-it1/2/3.json` come out byte-identical. A34's
+  byte-identity keeps this true.
+
+### A2.6 Iteration 1's cost (Amendment 1 §A1.6)
+
+- **Experiments.** Iteration 1 runs 632 cold experiments, the count N1 approved, so no new approval is needed.
+- **Pre-warm.** It pre-warms with `max_workers = 16`.
+- **Timing.**
+  - At the measured v3 mean of 40.5 s per experiment (four experiments, `g12-real-loop-v3.json`: 59.6, 23.4, 58.2 and
+    20.7 s), the pre-warm takes ≈ 27 min against ≈ 7.1 h serially. That is inside A1.6's band.
+  - A41 then takes ≈ 5 min.
+  - The study itself runs from cache.
+- **Failure risk.**
+  - Box v2 ⊂ V5 (R-315), and all 21 points of V5 were `ok` in both runs. Corners can still miss interior failures,
+    because S1 has a cliff at 653.15 K.
+  - §5.3's table applies: at 1 %, 2 % and 5 % failures, the band is finite with probability 0.9931, 0.9111 and 0.2919,
+    and the study passes with probability 0.8966, 0.8146 and 0.1997.
+  - A `band_not_finite` outcome is a measured property of v3. M04 is `tested` whatever the verdict (N6).
+
+### A2.7 E15: confirmed, with an isolation test
+
+**A27 did not mean a project bound to the rough parent. It meant the verdict path.** E15's detail is confirmed: the
+verdict item first, then the parent relation or `parent_mismatch`, always both, separated by `"; "`. There is no
+precedence: one reason must never hide another.
+
+The project case alone has a weakness. There, a facet failing on `parent_mismatch` would pass A27 even if a
+NOT_PROMOTABLE verdict did not fail the facet: an accidental failure. A45 therefore completes the 2 × 2 table at facet
+level (cases 1 and 2), with no second project.
+
+### A2.8 E16: confirmed
+
+An unresolvable manifest makes `surrogate_evidence` fail, never `not_applicable`: silence must not read as a judged
+pass.
+- On the new side, both `resolvable` and `surrogate_evidence` fail with `surrogate_manifest_mismatch`.
+- On the old side, the parent is unknown. A new surrogate is a `parent_mismatch` unless the old reference is its parent,
+  and a new non-surrogate fails `replace_via_parent`.
+
+*Consequence, accepted.* A surrogate whose manifest is lost cannot be rolled back through the replacement check until the
+manifest, which is content-addressed by the SHA-256 in the revision, is restored to the resolver. Such a revision cannot
+be evaluated either. Accepting an unverifiable "rollback" would let any model replace it. A45 covers cases 3–5.
+
+### A2.9 E22: confirmed, with an isolation check
+
+- **What is test-only.** The synthetic parents enter a project only through the test-only patch of the variant registry
+  and the backend, applied in a fixture scope.
+- **What stays production.** Admission, jobs, the replacement check, the transaction, invalidation, routing and
+  certification all run the production path.
+- **No production hook.** No production code gains a hook for tests.
+- **A46.** A46 checks that the injection does not leak.
+
+### A2.10 E23: an erratum, not a re-take; the comparison becomes a closed exclusion list
+
+**What the fingerprint member records.** The A19 fixture's `parent.fingerprint_sha256s` (`08056d0c…`) records the
+environment it was taken in. A run today gives `7552e907…`, because M02 changed `models/c1/boundary.py` (inert_min).
+Experiment keys include the fingerprint (ADR 0033), so every key and key digest differs as well. Every other member is
+unchanged.
+
+**Ruling.** A fixture that carries a fingerprint is **not re-taken when only environment-identity members drift**. It is
+re-taken when any other member would change, or when it is re-emitted for another reason. In that case R-302's resolver
+entry and W27's re-taken values move in the same commit.
+
+**What this needs in place of WO-9's inclusion list.** A47 compares the fixture against a fresh run on every member
+outside a closed set E. A member outside E that differs fails the test and is reported to the design lane. It is never
+added to E silently.
+
+**This erratum.** The A19 fixture was taken at a fingerprint that no longer matches the tree. Its numbers are verified
+equal by A47.
+
+### A2.11 Required ADR amendment (finding; not written here)
+
+ADR 0036 D1 registers P_ref `m04-c1-box7-v1` alone and says that the coverage claim is marginal "over it and over nothing
+else". Amendment 2 contradicts that until ADR 0036 is amended. Per §1, the ADR wins, so **WO-11 must not run before ADR 0036
+Amendment 2 is committed.** WO-18, WO-19 and WO-20 may proceed, since they are additive and move no registered value.
+The needed amendment has three parts:
+- **D1′.** "Two registered reference distributions: `m04-c1-box7-v1` (the box above; synthetic verification; plans
+  `it1`, `it1-prefix`, `it2`, `it3`; synthetic parents only) and `m04-c1-box7-v2` (T 653.15–693.15 K, P 9–10 MPa,
+  H₂/N₂ 2.5–3.00001, y_NH₃ 0.02–0.04, y_Ar 0.014–0.03, y_CH₄ 0.022–0.04, F 0.0050–0.0086 mol/s; non-synthetic
+  parents; plans `b2-it1…3`). Every registered request lies inside its parent's data and hard domains
+  (generator-asserted). v2's r face lies 10⁻⁵ above the data domain's so that the C1 loop's structural H₂/N₂ = 3 is
+  interior. A study's coverage claim is marginal over its own P_ref and nothing else."
+- **D2′.** "Seeds are shared between the two families; the z-design is identical."
+- **Migration.** "None. No registered value, fixture or plan file moves."
+
+D7 is unchanged.
+
+### A2.12 New assertions
+
+**M04.A43 — Plans and admission** (default gate)
+- **(a) Derivation.** Production derives `b2-it1` (562 draws, 5 centres, 70 stencils), `b2-it2` and `b2-it3` bitwise
+  equal to their files, with origins expanded within `b2` (562 and 980 training requests). The keys are distinct.
+- **(b) Admission.**
+  - (v3, `b2-it1`) and (v2, `b2-it1`) are admitted.
+  - (v3, `it1`) gets `invalid_request`, with `detail.reason` `plan_not_registered_for_parent`.
+  - (smooth, `it1-prefix`) is admitted, as before.
+  - (v3, `b2-it2`) without a `b2-it1` manifest gets `iteration_not_permitted`.
+- **(c) Registry values.** The P_ref registry gives box v2's (lo, hi, centre, half_width) bitwise equal to
+  `constants.box_v2`, and v1's equal to `constants.box`.
+- **Tolerance.** Exact everywhere, because identity is exact.
+
+**M04.A44 — The `b2` path end to end on a synthetic parent** (default gate; wiring, no statistic asserted)
+- **The run.** `surrogate_study` on `m04-synthetic-smooth-v1` with `b2-it1`: 632 in-process experiments, about 1 s.
+- **(a) The manifest.** It has `reference_distribution.id` `m04-c1-box7-v2`, `plan_id` `b2-it1`, `input_map.coordinates`
+  bitwise equal to `constants.box_v2`, and `b2-it1`'s keys. It passes the checker.
+- **(b) The unit's scaling.** The unit is bound to that manifest through WO-9's resolver injection and evaluated causally
+  at state **L673**: the 673.15 K loop inlet of `g12-real-loop-v3.json`, with n as recorded, T 673.15 K, P 10⁷ Pa and
+  N_tubes = 1000.
+  - **Expectation.** X̂ = 1 − n_N₂,out/n_N₂,in and ΔT̂ = T_out − T_in must equal Σᵢ β_o,i φᵢ(z), where z is built from
+    `constants.box_v2` by the test's own basis code, within 10⁻¹² relative.
+  - **Non-vacuity.** The same expression with box v1's constants must differ from X̂ by more than 10⁻⁶, checked in the
+    test.
+- **(c) The checker rule.** The checker refuses that manifest when `input_map.coordinates` is replaced by box v1's, and
+  when `reference_distribution.id` is replaced by v1's.
+- **Why 10⁻¹².** The floor is a 36-term dot product with |β| ≲ 0.2 on |φ| ≤ 1, at most ≈ 8 × 10⁻¹⁵ relative in X̂. The
+  tolerance sits ≥ 2 decades above that and ≥ 6 decades below the non-vacuity gap; the actual box-swap gap is
+  ≈ 5 × 10⁻³ for the smooth parent. A guard refusal of `b2-it1` for the smooth parent is a finding: stop and report.
+
+**M04.A45 — `surrogate_evidence`'s decision table** (default gate; facet level)
+- **Setup.** Sides are resolved as the project path resolves them (`revision_binding.resolve_surrogate`), with WO-9's
+  resolver.
+
+| # | old side | new side | facet | detail |
+| --- | --- | --- | --- | --- |
+| 1 | rough parent | A18 surrogate (rough, NOT_PROMOTABLE) | `fail` | items [`verdict=NOT_PROMOTABLE`, an item beginning `the old model is its parent`]; no item beginning `parent_mismatch` |
+| 2 | rough parent | A19 surrogate (smooth, PROMOTABLE) | `fail` | items [`verdict=PROMOTABLE`, an item beginning `parent_mismatch`] |
+| 3 | smooth parent | a surrogate reference whose manifest does not resolve | `fail` | contains `surrogate_manifest_mismatch`; `resolvable` also `fail` |
+| 4 | a surrogate reference whose manifest does not resolve | A19 surrogate | `fail` | an item beginning `parent_mismatch` |
+| 5 | as 4 | smooth parent | `fail` | begins `replace_via_parent` |
+
+- **Coverage of the table.** With A25 and A30 (same parent and PROMOTABLE: `pass`) and A27 (both causes: both items),
+  each failure cause is shown to fail the facet on its own.
+- **Tolerance.** Exact strings.
+
+**M04.A46 — The synthetic parents do not leak into production** (default gate)
+- **(a)** The shipped `adapters/variants/registry.json` lists no `m04-synthetic-*` id.
+- **(b)** A freshly constructed production `InProcessBackend`, given a request for `m04-synthetic-smooth-v1`, returns its
+  typed unknown-variant refusal, not a result.
+
+**M04.A47 — The A19 fixtures against a fresh run** (default gate; replaces WO-9's inclusion-list comparison)
+- **The comparison.** The A19 job's manifest must equal `a19_smooth_prefix.json` member by member, except for the closed
+  set E:
+  - `parent.fingerprint_sha256s`;
+  - `splits.<s>.keys` and `splits.<s>.keys_sha256`;
+  - `splits.gradient.centres[*].stencil_keys`;
+  - `splits.<s>.incomplete[*].key`.
+- **How members compare.** Exact and R0 members compare exactly. R1/R2 members compare within A1.3's floors.
+- **The evidence fixture.** It is compared the same way, with E plus `subject.artifact_ref`.
+- **When E may differ.** Members in E may differ only when the run's fingerprint differs from the fixture's. With equal
+  fingerprints, E must be equal too.
+
+### A2.13 Work orders
+
+| WO | Lane | Content | Depends on | Acceptance |
+| --- | --- | --- | --- | --- |
+| WO-18 | Opus, R | Generator: box v2, the `b2` plan files (`m04-plan-v2`), G1–G7, `constants.box_v2`, `constants.reference_distributions`; `tests/test_m04_reference_values.py` follows. Commit message: the new claim count, and G7 checked against `9fbebb5`'s files | — | A34, A43(c) |
+| WO-19 | Opus, R | Production: the P_ref and plan registries (v1 plans synthetic-only), the plan builder on the plan's box, the iteration guard per family, the manifest's box from the plan, the checker rule, the unit's c and h from the manifest | WO-18 | A43, A44 |
+| WO-20 | Opus | The E15/E16 table, E22's isolation and E23's closed-set comparison | — | A45–A47 |
+| WO-11 (amended) | Opus, opt-in | After WO-17, WO-18, WO-19 and ADR 0036 Amendment 2: pre-warm `b2-it1` on v3 (16 workers), the study from cache, A41, then A31–A33 | as stated | A31–A33, A41 |
+
+W23's table (§15) gains:
+- under "Frozen splits/transforms": A43 and A47;
+- under "Domain": A44;
+- under "Promotion and rollback": A45 and A46.
+
+WO-12's manifest lists A43–A47.
+
+### A2.14 What Amendment 2 does not establish
+
+- **The loop on the surrogate.** Box v2 contains the C1 loop as the *parent* solved it at its registered specifications
+  for T_in ∈ {653.15, 673.15, 693.15} K. Whether a surrogate-backed loop stays inside is A33's record. Nothing is said
+  about M07's decision range (makeup ratio, P, N_tubes).
+- **The sliver.** The sliver r ∈ (3, 3.00001] is in P_ref and outside the parent's data domain. No registered request
+  lies there, so there is no evidence about either model in it. A claim there is marginal coverage only.
+- **A44.** A44 verifies wiring on a synthetic parent. It is not evidence about the real surrogate, and no statistic of
+  that run is registered.
+- **Iteration 1.** Its outcome is unknown. V5's 21 points do not bound interior failures.
+- **E23.** It covers fingerprint drift only. It does not license comparing records across environments; A1.3 stands.
+
+### A2.15 Open questions, with defaults
+
+- **Q-A2.1 (needs a fact: A33's record).** Does the surrogate-backed loop's reactor inlet lie in box v2?
+  DECISION: assume yes, since r = 3 is structural and the margin is 4 × 10⁻⁵ in z. If A33 records
+  `outside_reference_domain`, that is a finding, and a box v3 is registered by amendment. WO-11's evidence stands, because
+  its box was fixed before it ran.
+- **Q-A2.2 (needs Frank's preference).** Should a real parent still be runnable on box v1 as unregistered exploration?
+  DECISION: no. Reversible by: the registry's synthetic-only flag; no record changes.
+- **Q-A2.3 (needs a design-lane ADR pass or Frank's acceptance).** ADR 0036 Amendment 2 as worded in §A2.11.
+  DECISION: WO-18 to WO-20 proceed now; WO-11 waits for it.

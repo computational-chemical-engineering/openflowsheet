@@ -6162,3 +6162,121 @@ M05 decision variable beyond T_in, which would move the loop's inert fraction ou
 **Watch for.** A `constants_sha256` field that digests something other than an inner solve of w, added to a coupled bundle.
 
 ---
+
+## R-319 — The real reactor's surrogate gets its own reference box `m04-c1-box7-v2` and plan family `b2-it1…3`; the v1 plans become synthetic-only (closes M04 N4)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), M04 Amendment 2, on the brief `docs/briefs/M04-box-ruling.md` |
+| Normative text | `docs/derivations/M04-spec.md` §A2.1–A2.6, §A2.11–A2.13. **Needs ADR 0036 Amendment 2 (D1′, D2′; a finding, §A2.11) before WO-11 runs** |
+| Evidence | 115 of `plan-it1.json`'s 632 requests are below v3's inert floor of 0.035. In the G12v3 records, the loop's reactor inlet has F = 0.0054965 mol/s at 653.15 K, below box v1's 0.0057; its r = 3 ± 2.9e-14 sits on box v1's r face and its P = 1e7 on the P face |
+| Affected packages | M04 (generator, plan and P_ref registries, checker, unit scaling, WO-11), M05 and M07 (the surrogate's empirical domain) |
+
+**Decision.**
+- Box v2 is v1 with three bounds moved: y_Ar [0.014, 0.03], y_CH₄ [0.022, 0.04], F [0.0050, 0.0086] and r [2.5, 3.00001].
+  T, P and y_NH₃ are unchanged.
+- The inert floor 0.036 sits 10⁻³ above v3's refusal face.
+- The r face lies 10⁻⁵ above the data domain's face, so the loop's structural r = 3 is interior (z_r = 0.99996). No
+  registered request lies in the sliver (max r 2.9999022), so criterion 8, A03 and ADR 0036 D7 are unchanged.
+- The seeds and counts are unchanged, so the z-design is identical to `it<i>` within 2.8e-15. The plan files are
+  `plan-b2-it<i>.json`, in schema `m04-plan-v2`.
+- The v1 plans admit synthetic parents only. A real parent has one registered family, so the family-wise bound counts
+  every coverage test.
+- The checker binds `input_map.coordinates` and `reference_distribution.id` to `plan_id`'s P_ref, and the unit scales
+  with its manifest's box.
+
+**Rejected alternatives, and why.**
+- Binding v2: box v1 misses the loop on any variant, and v2's loop does not converge at 653.15 K.
+- The floor exactly at 0.035: it touches the refusal face.
+- r straddling 3: half the draws would fall outside the data domain, criterion 8 would have to be rewritten, and P stays
+  on its face anyway.
+- A tolerance on the empirical flag: it changes ADR 0036 D7 for every surrogate.
+- New inert coordinates: a new input map and chain rule for a 10⁻³ margin.
+- Fresh seeds: nothing is gained, and the z-space claims would have to be re-derived.
+
+**Watch for.**
+- A33's recorded reference-domain status at the surrogate-backed loop (Q-A2.1).
+- M07 decision variables beyond T_in.
+- Any later re-take of the G12v3 records. G6 reads them, and `--check` fails if the loop leaves box v2.
+
+---
+
+## R-320 — `surrogate_evidence` reports every reason, each failure cause is tested alone, and an unresolvable manifest fails closed (M04 build log E15, E16)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), M04 Amendment 2 |
+| Normative text | `docs/derivations/M04-spec.md` §A2.7, §A2.8, A45 |
+| Evidence | E15: A27's rough surrogate in the smooth project is both NOT_PROMOTABLE and a `parent_mismatch`, so in that project A27 cannot show that the verdict alone fails the facet |
+| Affected packages | M04 (`application/replacement._surrogate_evidence`, tests) |
+
+**Decision.**
+- The detail is the verdict item, then the parent relation or `parent_mismatch`, always both, separated by `"; "`.
+- A27 meant the verdict path, not a project bound to the rough parent.
+- A45 completes the 2 × 2 table at facet level: rough parent ← A18 fails on the verdict alone, and rough parent ← A19
+  fails on the parent mismatch alone.
+- An unresolvable manifest fails `surrogate_evidence` and is never `not_applicable`. The new side fails with
+  `surrogate_manifest_mismatch`. On the old side, a new surrogate fails `parent_mismatch` and a new parent fails
+  `replace_via_parent`.
+
+**Rejected alternatives, and why.**
+- A precedence between the reasons: it would hide one cause.
+- A second project bound to the rough parent: it costs a project build and adds no information over the facet-level
+  case.
+- `not_applicable` for an unresolvable side: it would let the facet pass unjudged.
+
+**Watch for.** A request to allow rollback from a surrogate whose manifest is lost. The remedy is to restore the
+content-addressed manifest; the facet is not relaxed.
+
+---
+
+## R-321 — The M04 synthetic parents enter a project only through a test-only injection, checked not to leak (M04 build log E22)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), M04 Amendment 2 |
+| Normative text | `docs/derivations/M04-spec.md` §A2.9, A46 |
+| Evidence | E22: the variant registry and `InProcessBackend` are patched in a fixture scope; everything else runs the production path |
+| Affected packages | M04 (tests) |
+
+**Decision.**
+- The injection is confirmed.
+- No production hook exists for tests.
+- A46 asserts that the shipped registry lists no `m04-synthetic-*` id, and that a fresh production backend refuses one.
+
+**Rejected alternatives, and why.**
+- A backend hook in production code: it would be a placeholder path in shipped code.
+- Shipping the synthetic parents as package data: they are not models.
+
+**Watch for.** Any synthetic id reaching `src/`.
+
+---
+
+## R-322 — A fixture whose only drift is its environment fingerprint is not re-taken; it is compared with a fresh run outside a closed environment set (M04 build log E23)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), M04 Amendment 2 |
+| Normative text | `docs/derivations/M04-spec.md` §A2.10, A47 |
+| Evidence | E23: the A19 fixture names fingerprint `08056d0c…`, and a run today gives `7552e907…`, because M02 changed `models/c1/boundary.py`. The keys follow the fingerprint (ADR 0033); every other member is equal. The fixture's SHA-256 is R-302's resolver entry and part of W27's re-taken values |
+| Affected packages | M04 (A19 fixtures, tests), M06/W27 (unchanged) |
+
+**Decision.**
+- The drift is recorded as an erratum, and the fixture is not re-taken.
+- A47 compares the fixture with a fresh run on every member outside E. E is the fingerprints, the keys, the key digests,
+  the stencil keys and the incomplete keys, plus `subject.artifact_ref` for the evidence fixture.
+- E's members may differ only when the fingerprints differ.
+- A re-take happens only when a member outside E would change, or when the fixture is re-emitted for another reason.
+  R-302's entry and W27's values then move in the same commit.
+
+**Rejected alternatives, and why.**
+- Re-taking whenever a fingerprinted module changes: it churns W27's registered hashes and carries no information.
+- WO-9's inclusion list: a new member would go uncompared by default.
+
+**Watch for.** A difference outside E: it goes to the design lane, and E is never extended silently.
+
+---
