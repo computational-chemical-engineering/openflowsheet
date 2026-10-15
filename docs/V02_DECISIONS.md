@@ -844,3 +844,7 @@ Grep, don't read whole. Newest at the bottom.
   findings), E35 unresolvable manifest rejected, A49 BLAS pin (manifest `d65bb022…` at 1 and 48 threads), A50, E27, envelope L43.
   Manifest `evidence/M04/8df0ea7…` `tested` 60/61. Merged into main `78685cc`, **main gate PASS 8670 passed, 31 skipped**.
   M05 engineer launched (rulings2 merge, WO-2c/6b/7b, then main merge).
+- **M05 rulings merge + WO-2c + WO-6b** (2026-10-16, `opus-engineer`, `75cdc3b`/`05e2dba`/`442eed1`/`dec989e`; gates 8786/8790,
+  nlp 164/1): Z2 joint-pin elimination, rcond P1 7.663e-3, P2 1.417e-2, B2 5.203e-6; matching 70 = 74 − 4; G4 worst ratios
+  residual 5.92e-4, Jacobian 7.11e-7, decision 2.30e-3; unaffected cases byte-identical dumps. Stopped at context cap before
+  WO-7b; fresh engineer on WO-7b + S33/S36 defaults + main merge. Open: S27, S33, S36.
