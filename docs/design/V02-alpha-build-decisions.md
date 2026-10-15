@@ -119,30 +119,53 @@ because the session's `PYTHONPATH` (the RC worktree's `src`) leaked into the bui
 missing deps). Rebuilt in the same throwaway worktree at `C_α` with `env -u PYTHONPATH` and a system `PATH`; no input of
 the check changed. Both attempts' logs are kept (`step11-idaes-env.log`, `step11-idaes-env-first-attempt.build.log`).
 
-## WO-10 status at handoff (2026-10-15; context cap)
+B-WO10-8 **Steps 11 and 12 get `t08-rc-v1` records from outside the tree.** M01's and M02's scripts write records
+without `commit` or `tree_clean`, and M07a.A43 needs both on every record of steps 1–12. Chosen: a script run from
+outside the tree against the RC worktree at `C_α` (`evidence/M07a/<C_α>/tools/m07a_rc_external.py.txt`, committed with
+the records) judges each step by the rules the M01 and M02 manifests already use — M01's `_idaes` comparison (only
+`inputs.*_sha256` may differ) and `scripts/m02_evidence_manifest.py`'s `g10`, `g11`, `g12`, imported, not restated —
+and writes `step11/rc-step11.json` and `step12/rc-step12.json` through `t08_rc.finish`. Alternative: an `m07a_rc.py`
+subcommand (a change to the tree after `C_α`; `scripts/` is outside D2.4, but the RC job would then not be `C_α`'s
+code). Reversible by: deleting the two records and their rows.
 
-`C_α` = `e0e198e4632224612671db5b07445639d272d6da` (pushed to `origin/wp/V02-alpha-gate`). Tree record `259af65`.
-RC worktree (clean, detached at `C_α`): `.claude/worktrees/rc-e0e198e`; venv `<scratch>/rcvenv` (requirements.lock +
-`pip install -e <rc worktree> --no-deps`, so every child imports `C_α`'s `src`). Local records under
-`rc-e0e198e/evidence/M07a/<C_α>/artifacts/rc/` (git-ignored); scripts and per-step logs in
-`<scratch>/rca-e0e198e/` (`summary.txt` has one line per step with exit code and command), where `<scratch>` =
-`/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad`.
+B-WO10-9 **M07a's manifest `requirements`** = T08's four (`D04`, `A10`, `D17`, `D20`): the alpha re-runs T08's
+acceptance at `C_α`. Alternative: add M02's `D10` (W21). Reversible by: the generator's `REQUIREMENTS`.
 
-- Steps 1–10 on CI: dispatch run **38667458248** (`rc_alpha`, `rc_distribution`) conclusion **success**, every RC job
-  success (check ×2, identity, dist, clean-install ×2, bundle-set, bundle-replay ×2, rc-steps ×2, rc-ensemble). Push
-  run 38667452347 at `C_α`. The per-record results (a30 exit status in `a30.log`, certificate audits) are not yet read;
-  `gh run download 38667458248 -D …/rc/ci` was interrupted (a full filesystem on the session's side) and must be redone,
-  plus job logs (`gh run view --log --job …`).
-- Local on `ref-x86-64`: step 2 identity PASS; step 6 ensemble PASS (`ensemble/rc-ensemble-ref-x86-64.json`); step 7
-  corpus PASS; step 8 `m07a_rc.py surface` PASS (`surface/rc-alpha-surface.json`); step 9 A30 PASS (381 objects,
-  closure 150).
-- Step 11: `external_crosscheck.py --check` exit 0 (venv freeze `step11/venv-xcheck.freeze.txt`); IDAES re-run exit 0
-  (`step11/idaes-conformance.json`), **not yet compared** with `benchmarks/m01/idaes-conformance.json` (A40: only
-  `inputs.*_sha256` may differ; `scripts/m01_evidence_manifest.py:857-882` has the comparison).
-- Step 12 (job3, still running at handoff): reactor env built from `C_α`'s `reactor-env.lock` into
-  `<scratch>/rca-e0e198e/external` and verified; G10v3 exit 0 (`step12/g10-adapter-halves-v3.json`); G11v3, G12, G12
-  edges and the `-m 'pymrm or not pymrm'` M02 tests were running. Their verdicts against M02 §10.2–§10.3 are not read.
-- Not done: step 10 locally over steps 2, 6, 7, 8 and 12's outputs (`python scripts/t08_rc.py certificates --out
-  …/rc/certificates-ref-x86-64.json …/rc`); copying records into this worktree under `evidence/M07a/<C_α>/rc/` (≤ 1 MB
-  committed, larger gzip/hash) and `rc/records.json`; `docs/v02-alpha-rc-record.md`; `scripts/m07a_evidence_manifest.py`
-  and the manifest (status `tested` only iff A00–A53 pass; A52 (a)/(c) and step 13 wait for the verdicts).
+B-WO10-10 **M07a.A43's machine class (question for the design lane).** `scripts/t08_rc.py`, which steps 1–10 run
+unchanged (§8.2), writes no `machine_class` into its steps 3, 4 and 10 records (dist, install, lock, certificates:
+13 records); they carry `architecture` and `github_actions`. T08.A16 judged only `commit`, `tree_clean` and the lock
+(campaign records). Chosen: the generator judges A43 strictly (all four fields), so A43 is `fail` with the 13
+records listed; `tests/test_m07a_rc_records.py` pins that set so a change is seen. **Question:** does A43's
+"machine class" mean T08.A16's campaign-record scope, or (architecture, CI) for the fresh-runner steps — or must
+those steps re-run with the class recorded? Reversible by: the generator's `_m_provenance`.
+
+B-WO10-11 **Second-session re-runs.** The first session's scratch (`/tmp`, a tmpfs) was lost with its venv, reactor
+environment, logs and the step-12 wrapper, while step 12 was still running. This session rebuilt the RC venv
+(`requirements.lock` as CI installs it, then `pip install --no-deps -e` the RC worktree), the reactor environment
+from `C_α`'s lock (verified), the cross-check venv (the script's five pins) and the IDAES environment (a throwaway
+worktree at `C_α`, `env -u PYTHONPATH`), all under `~/.cache/of-rca-e0e198e/` (outside every repository), and re-ran
+steps 11, 12 and local step 10 in full (`tools/run_local.sh`). The first session's step-11/12 outputs are kept
+apart under `artifacts/first-session/`, not cited. Steps 2, 6–9 (local) and the CI run were not re-run: their
+records survived in the RC worktree's ignored `artifacts/rc/`.
+
+## WO-10 status (2026-10-15, second session)
+
+`C_α` = `e0e198e4632224612671db5b07445639d272d6da`; tree record `259af65`. RC worktree `.claude/worktrees/rc-e0e198e`
+(clean, detached at `C_α`); its git-ignored `evidence/M07a/<C_α>/artifacts/rc/` holds every record; environments,
+logs and scripts under `~/.cache/of-rca-e0e198e/` (the scripts and the summary are also committed under
+`evidence/M07a/<C_α>/tools/`).
+
+- Steps 1–10 on CI: dispatch run **38667458248** (`rc_alpha`, `rc_distribution`) success, every RC job success; push
+  run **38667452347** success. Artifacts and RC job logs downloaded.
+- Local `ref-x86-64`: step 2 PASS, 6 PASS, 7 PASS, 8 PASS, 9 PASS (first session); step 11 PASS (3/3: cross-check
+  exit 0; IDAES re-run identical except `inputs.reference_values_yaml_sha256`); step 12 PASS (6/6: G10v3, G11v3 (V5),
+  G12 CONVERGED / VERIFIED, `reproduce` MATCH, live rerun bitwise, edges, 562 M02 tests with the reactor).
+- **Step 10 local FAIL (F1, spec Q5):** 77 certificates audited, 5 violations, all step 12's coupled-route
+  certificates, `a09.qualified_check_ids` — 25 qualified ids where the rule expects 21; the extra four are
+  `EXT-COUPLING:reactor:T`, `EXT-COUPLING:reactor:xi`, `derivative_witness.on_pattern`, `.off_pattern`. Q5's default:
+  V18 (b) `FAIL` at `C_α`, escalated; the rule is not narrowed. **Question for the design lane:** is the A34 rule's
+  "exactly the prefixed checks" right for coupled-route certificates (the extra qualifications look legitimate:
+  external coupling and derivative witnesses), or is the certificate wrong to qualify them?
+- Records: `docs/v02-alpha-rc-record.md`, `evidence/M07a/<C_α>/rc/` (56 records, `records.json`),
+  `tests/test_m07a_rc_records.py`, `scripts/m07a_evidence_manifest.py`; the manifest is generated after these commit.
+- Step 13 not run: it needs `docs/reviews/V02-alpha-verdicts.md` (pending, not failed).
