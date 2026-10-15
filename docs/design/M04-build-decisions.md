@@ -136,3 +136,23 @@ Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.
   `FACETS` to the schema enum, which M04 had already extended) closes here.
 - **E21. A surrogate side's `synthetic`** in the report's `from`/`to` is the manifest's
   `synthetic` (reported, not judged, as for a variant).
+
+## WO-9 — the synthetic loop end to end through a project (2026-10-15)
+
+- **E22. The synthetic parents in a project are test-only injections**: the variant registry
+  patch of M02 (`register_variants`) and `adapters.experiments.runner.InProcessBackend` replaced,
+  for the module only, by `m04_synthetic_parents.backend_for()` (the synthetic parents by id,
+  every other variant the real `InProcessBackend`), because their module is not package data.
+  Admission, the `surrogate_study` and `solve` jobs, the replacement check with the project's
+  resolver, the transaction, invalidation, routing and certification are the production path.
+  The project is built once per module and copied per test (`shutil.copytree` of the closed
+  project) so every test starts at the solved base revision. Rejected: a backend hook in
+  production code for tests.
+- **E23. Finding: the A19 fixture's environment fingerprint is stale.** The fixture names
+  `08056d0c…`; both the job and `run_study` now give `7552e907…`, because the fingerprint hashes
+  `models/c1/boundary.py`, which M02 changed (`7502515`, inert_min) after the fixture was taken.
+  Every number is unchanged (predictor, calibration, evaluation, gradient, domain, promotion,
+  qualifications equal; asserted in WO-9). The fixture still passes its checker and is not
+  re-taken here: its SHA-256 is the W27 corpus resolver's entry (R-302) and enters W27's re-taken
+  values. For the design lane: whether fixtures that carry a fingerprint are re-taken when the
+  fingerprinted modules change.
