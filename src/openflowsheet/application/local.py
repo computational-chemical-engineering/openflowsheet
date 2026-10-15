@@ -71,7 +71,11 @@ from openflowsheet.application.projection import (
     check_view_arguments,
     project,
 )
-from openflowsheet.application.replacement import ReplacementReport, check_replacements
+from openflowsheet.application.replacement import (
+    ReplacementReport,
+    check_replacements,
+    unpromoted_surrogates,
+)
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     MODEL_SIGNATURES,
@@ -1492,6 +1496,21 @@ class LocalApplication:
                 "model_replacement_incompatible",
                 f"model_replacement_incompatible({report.instance_id}: {', '.join(report.failed)})",
                 report=report.as_document(),
+            )
+        # M04 spec §20 A3.1 (R-360): a surrogate that no replacement judged — added, renamed, in
+        # the first revision — enters only with a PROMOTABLE re-derived verdict.
+        unpromoted = unpromoted_surrogates(expected, document, surrogates=self._surrogates())
+        if unpromoted:
+            instance_id, why = unpromoted[0]
+            reason = f"surrogate_not_promoted({instance_id})"
+            return self._rejected(
+                operation,
+                idempotency_key,
+                "model_replacement_incompatible",
+                f"model_replacement_incompatible({reason}: {why})",
+                reason=reason,
+                instance_id=instance_id,
+                cause=why,
             )
         if reports:
             document = json.loads(canonical_json(_with_report_hashes(document, reports)))

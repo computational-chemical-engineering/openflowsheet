@@ -42,6 +42,11 @@ side's):
   non-surrogate replacing a surrogate passes iff it is that surrogate's parent exactly (rollback),
   else fails `replace_via_parent`.
 
+**Unchecked surrogates** (M04 spec §20 A3.1, register R-360). A surrogate-backed instance of the
+new revision that no replacement judges — added, renamed, in the first revision, or carried over —
+whose manifest resolves must re-derive PROMOTABLE; otherwise `unpromoted_surrogates` names it and
+the commit is rejected (`surrogate_not_promoted(<instance>)`).
+
 `synthetic` is reported, not judged (§6.2). A facet that needs a side that does not bind is
 `not_applicable` with the binder's reason; `degrees_of_freedom` then fails, so the report is not
 `compatible`. `FACETS` is the order of the report.
@@ -80,6 +85,7 @@ __all__ = [
     "check_replacement",
     "check_replacements",
     "replacements",
+    "unpromoted_surrogates",
     "variant_backed_models",
 ]
 
@@ -718,3 +724,32 @@ def check_replacements(
         check_replacement(before, after, instance_id, surrogates=surrogates)
         for instance_id in replacements(before, after)
     )
+
+
+def unpromoted_surrogates(
+    before: Mapping[str, Any],
+    after: Mapping[str, Any],
+    *,
+    surrogates: SurrogateResolver | None = None,
+) -> tuple[tuple[str, str], ...]:
+    """M04 spec §20 A3.1 (R-360): each surrogate-backed instance of `after` that no replacement
+    judges (`replacements`) and whose manifest re-derives a verdict other than PROMOTABLE
+    (`derived_verdict`), as (instance id, detail), in instance-id order. A judged instance's
+    promotion is `surrogate_evidence`'s; an unresolved manifest is the binder's
+    (`surrogate_manifest_mismatch`)."""
+    judged = set(replacements(before, after))
+    found = []
+    for instance_id, instance in sorted(_instances(after).items()):
+        reference = _reference(instance)
+        if instance_id in judged or not _backed(reference["id"], SURROGATE_MODELS):
+            continue
+        version, artifact_ref = reference["version"], reference["artifact_ref"]
+        manifest = None
+        if isinstance(version, str) and isinstance(artifact_ref, str):
+            manifest = resolve_surrogate(version, artifact_ref, surrogates)
+        if manifest is None:
+            continue
+        verdict = derived_verdict(manifest).verdict
+        if verdict != PROMOTABLE:
+            found.append((instance_id, f"verdict={verdict}"))
+    return tuple(found)

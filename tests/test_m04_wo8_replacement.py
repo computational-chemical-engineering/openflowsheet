@@ -7,6 +7,10 @@ smooth parent, prefix plan, PROMOTABLE), and A17's, A18's and the stand-in's pre
 here in process (`run_study`, < 2 s each; `tests/test_m04_study.py` pins their numbers). The project
 and transaction level (commit, invalidation, preview, rollback reuse) is WO-9's.
 
+M04.A48 (spec §20 A3.1, register R-360): a surrogate-backed instance that no replacement judges —
+renamed, added, in the first revision, carried over — is named by `unpromoted_surrogates` when
+its manifest resolves and re-derives a verdict other than PROMOTABLE.
+
 A27's rough surrogate also has another parent (`m04-synthetic-rough-v1`), so its
 `surrogate_evidence` detail states both reasons, the verdict first (build decision E15).
 """
@@ -32,6 +36,7 @@ from openflowsheet.application.replacement import (
     ReplacementReport,
     check_replacement,
     replacements,
+    unpromoted_surrogates,
 )
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compiled import EvaluationContext
@@ -227,3 +232,64 @@ def test_the_verdict_is_rederived_from_the_stored_metrics_not_read(
     assert derived_verdict(A19).verdict == "PROMOTABLE"
     # The checker refuses the tampered manifest, so it never resolves as a surrogate (A24).
     assert any("verdict" in problem for problem in check_manifest(tampered))
+
+
+# == M04.A48 (R-360): a surrogate that no replacement judges =======================================
+
+
+def renamed(model: Mapping[str, Any], new_id: str = "reactor_b") -> dict[str, Any]:
+    """The loop with its reactor renamed to `new_id`, bound to `model`, and S3/S4 rewired: the
+    reviewer's probe (four `set` edits) as a document."""
+    document = loop(model)
+    (reactor,) = (i for i in document["instances"] if i["id"] == "reactor")
+    reactor["id"] = new_id
+    for connection in document["connections"]:
+        for end in ("from", "to"):
+            if connection[end].get("instance") == "reactor":
+                connection[end]["instance"] = new_id
+    return document
+
+
+def test_a48_a_renamed_instance_bound_to_the_rough_surrogate_is_unpromoted(
+    smooth: variants.Variant, studies: dict[str, dict[str, Any]]
+) -> None:
+    rough = studies["A18"]
+    before, after = loop(parent_of(smooth)), renamed(surrogate(rough))
+    assert replacements(before, after) == ()  # no replacement judges it: the MF1 gap
+    assert unpromoted_surrogates(before, after, surrogates=resolver(rough)) == (
+        ("reactor_b", "verdict=NOT_PROMOTABLE"),
+    )
+
+
+def test_a48_an_added_instance_and_a_first_revision_are_judged(
+    smooth: variants.Variant, studies: dict[str, dict[str, Any]]
+) -> None:
+    rough = studies["A18"]
+    added = renamed(surrogate(rough), "reactor_c")
+    added["instances"].append(loop(parent_of(smooth))["instances"][REACTOR_INDEX])
+    assert unpromoted_surrogates(loop(parent_of(smooth)), added, surrogates=resolver(rough)) == (
+        ("reactor_c", "verdict=NOT_PROMOTABLE"),
+    )
+    assert unpromoted_surrogates({}, loop(surrogate(rough)), surrogates=resolver(rough)) == (
+        ("reactor", "verdict=NOT_PROMOTABLE"),
+    )
+    # Carried over unchanged, it is still judged: no revision holds an unpromoted surrogate.
+    carried = loop(surrogate(rough))
+    assert unpromoted_surrogates(carried, carried, surrogates=resolver(rough)) == (
+        ("reactor", "verdict=NOT_PROMOTABLE"),
+    )
+
+
+def test_a48_a_promotable_surrogate_enters(
+    smooth: variants.Variant,
+) -> None:
+    assert unpromoted_surrogates({}, renamed(surrogate(A19)), surrogates=resolver(A19)) == ()
+    # Unresolved, it is the binder's `surrogate_manifest_mismatch`.
+    assert unpromoted_surrogates({}, loop(surrogate(A19)), surrogates=resolver()) == ()
+    # A judged replacement is `surrogate_evidence`'s, not named twice.
+    before, after = loop(parent_of(smooth)), loop(surrogate(A19))
+    assert replacements(before, after) == ("reactor",)
+    assert unpromoted_surrogates(before, after, surrogates=resolver()) == ()
+
+
+REACTOR_INDEX = next(i for i, item in enumerate(loop({})["instances"]) if item["id"] == "reactor")

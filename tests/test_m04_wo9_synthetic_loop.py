@@ -474,6 +474,45 @@ def test_a28_a_surrogate_of_the_standin_is_a_parent_mismatch(
     assert head(app) == world.base
 
 
+# == M04.A48 (spec §20 A3.1, register R-360) =======================================================
+
+
+def _connection(end: str) -> int:
+    return next(
+        i for i, item in enumerate(loop()["connections"]) if item[end]["instance"] == "reactor"
+    )
+
+
+def rename(model: Mapping[str, Any]) -> Change:
+    """The reviewer's MF1 probe: one change renames `reactor` to `reactor_b`, binds it to
+    `model` and rewires S3/S4 — no instance is replaced, so no replacement judges it."""
+    return Change(
+        edits=(
+            Edit("set", ("instances", REACTOR, "id"), "reactor_b"),
+            Edit("set", ("instances", REACTOR, "model"), dict(model)),
+            Edit("set", ("connections", _connection("to"), "to", "instance"), "reactor_b"),
+            Edit("set", ("connections", _connection("from"), "from", "instance"), "reactor_b"),
+        )
+    )
+
+
+def test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected(
+    app: LocalApplication, world: World
+) -> None:
+    probe = rename(surrogate(world, "A18"))
+    preview = app.preview_change(probe, world.base)
+    result = app.commit_change(probe, world.base, "rename-rough")
+    assert result.status == "rejected" and result.error is not None
+    assert result.error.code == "model_replacement_incompatible"
+    assert result.error.detail["reason"] == "surrogate_not_promoted(reactor_b)"
+    assert result.error.detail["cause"] == "verdict=NOT_PROMOTABLE"
+    assert head(app) == world.base
+    assert preview.error is not None and preview.error.detail == result.error.detail
+    # The same rename onto the PROMOTABLE A19 surrogate is committed.
+    accepted = app.commit_change(rename(surrogate(world, "A19")), world.base, "rename-a19")
+    assert accepted.status == "committed", accepted.error
+
+
 # == M04.A29, A30 ==================================================================================
 
 
