@@ -815,3 +815,8 @@ Grep, don't read whole. Newest at the bottom.
 - **Alpha Am2 design read** (2026-10-15, `reviewer`, `eb108c4`): proceed to re-cut; cut applies cleanly (14 files).
   DECISION: S2 → accept that §18.4 (b) includes B-AM2-3's two workflow steps. Alternative: re-scope R-347. Reversible by:
   a design-lane amendment. S3 (prove imports in lock-only/clean venvs) folded into the re-cut brief before the cut; S1 tests after.
+- **M04 E32 + WO-12** (2026-10-15, `opus-engineer`, `f3fd44e`/`a9566a6`/`3f99eee`, gates 8647/8653): root cause in
+  `launch()` (relative attempt dir vs child's `getcwd()`), fixed by `attempt_dir.resolve()`; absolute fingerprint unchanged
+  `dfce4150…`, relative re-run cold 0 / 632 hits / `d65bb022…`. Manifest `evidence/M04/a9566a6…` `tested`, 57/58 (A33 n/a).
+  E33: default BLAS threads → manifest `908cbe2f…` (≤1e-12 rel. fit drift) — A32 needs single-threaded BLAS. E34 class P.
+  M04 `reviewer` launched (brief `2aa71db`, register R-360…R-369).
