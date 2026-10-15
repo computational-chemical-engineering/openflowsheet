@@ -772,3 +772,8 @@ Grep, don't read whole. Newest at the bottom.
   v1 plans synthetic-only; A31/A33/A41 re-pointed, A43–A47 new; ADR 0036 Am. 2 required before WO-11. Its register
   entries collided with the alpha branch's R-319…R-321 → renumbered R-322…R-325 on wp/M04. "3.000008" was rounded
   provisional data (r = 3 to 2.9e-14). ADR + WO-18/19/20 launched.
+
+- **Agent burst** (2026-10-15, Frank: "for the next 7 minutes try to do as much as possible using many agents … after these
+  7 minutes step back to a normal pace"): 8 agents launched in separate worktrees (see V02_STATE). Previous session's two
+  agents had finished their work before it ended: alpha F1/F2/F4/F5 + C_α cut `e0e198e` + tree record `259af65`; M04
+  ADR 0036 Am. 2 + WO-18/19/20 + E24–E29 (`43d6557`). Back to ≤ 2 agents for new launches afterwards.

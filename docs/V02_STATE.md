@@ -93,13 +93,20 @@ F5 education mode deferred.
 
 ## Next action
 
-**Resumed 2026-10-15.** Alpha gate: main merged (`46176a7`), WO-5, 6, 7, 8 done (`f6a748a`, gate 8558; open B-WO5-1 c_2 digest unregistered, B-WO5-5, B-WO8-1…5 → design-lane read with WO-9); WO-9 done (`5252040`, changelog skeleton with C_α/gate-table placeholders); design-lane read done (`7152170`, `docs/reviews/V02-alpha-read.md`, R-319…R-321: chain sound, prose does not overstate; fixes F1, F2, F4, F5); running: `opus-engineer` alpha fixes + WO-10 (cut C_α, RC steps 1–12; no tag/publish); after it: verdicts (W21, W22, V11–V20 re-judged) → step 13 → WO-11 → Frank publishes `0.2.0a1`; `opus-engineer` M04 ADR 0036 Am. 2 + WO-18/19/20 (worktree `m04`). Order, at most 2 agents:
-1. Merge `main` (`9f6a9be`, M02 in) into `wp/V02-alpha-gate` → alpha-gate WO-5…11 → `0.2.0a1` (Frank publishes).
-2. Merge `main` into `wp/M04` → WO-8 (needs M02 WO-11, now on main), WO-9, WO-11 real run, WO-12 manifest, `reviewer`
-   (batch: E10, E12, E14 envelope wording).
-3. Merge `main` into `wp/M05` → WO-5c (`at_coupling`, delete `with_coupling`, R-309), real parent adapter (S3), WO-8 runs;
-   `reviewer` batch: Z2, W2, S1–S18.
-4. M07: fresh `specifier` on `wp/M07` with `docs/briefs/M07-specification.md` (decide whether to keep `m07_reference.py`).
+**2026-10-15: short burst at Frank's request ("for 7 minutes use many agents"), then back to ≤ 2.** Eight agents launched:
+| Agent | Task | Worktree / branch |
+| --- | --- | --- |
+| `opus-engineer` | alpha WO-10 resume: RC steps 1–12 at C_α = `e0e198e` (no tag/publish) | `alpha-gate` |
+| `opus-engineer` | M04 gate check + WO-11 real iteration 1 on box v2 / reactor v3 | `m04` |
+| `opus-engineer` | M05 merge main + WO-5c (`at_coupling`) + real parent adapter (S3) | `m05` |
+| `specifier` | M07 specification (register from R-330, ADR 0041) | `m07` / `wp/M07` |
+| `architect` | M05 ruling batch Z2, W2, S1–S18, REAL-box text (register from R-326) | `m05-rulings2` / `wp/M05-rulings2` |
+| `opus-engineer` | M06 WO-17 prep (binder reading, id rows, U14) — no spend | `m06-wo17` / `wp/M06-wo17` |
+| `sonnet-implementer` | test hardening: t07_w5b thread vars; load-flaky tests reported | `test-hardening` / `wp/test-hardening` |
+| `reviewer` | M02 closeout: ADR 0027 acceptance, D130–D132 (register from R-340) | `m02-closeout` / `wp/M02-closeout` |
+Register reservations: alpha R-319…321; M04 R-322…325; M05 rulings R-326…; M07 R-330…; M02 closeout R-340…
+After these: alpha verdicts (W21, W22, V11–V20) → step 13 → WO-11 → Frank publishes `0.2.0a1`; M04 WO-12 + `reviewer`;
+M05 WO-8 + `reviewer`; M07 build.
 
 In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the
 directory `.claude/worktrees/m06-w27h/evidence/M06/W27/artifacts` to `evidence/M06/W27/artifacts`, remove after.
