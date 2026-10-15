@@ -5,10 +5,12 @@ WO-9 holds the skeleton. Two things are pending until the cut and are recognised
 `scripts/v0_2_gate.py --markdown` after the verdicts. While a marker is present the clause that
 needs it is not checked, and `test_the_pending_markers_are_the_cuts` says so; once the markers are
 replaced, clause (c) is checked against the script's own output at the heading's `C_α`. The other
-clauses hold now: (a) position, (b) ADR 0021 D4's headings in order, (d) §10.1's phrases,
-(e) the limitation ids are the envelope's, in order, (f) ADR 0007 F1 verbatim, (g) the review
-table is one row per package with a manifest, with that manifest's `status` and its human
-`review` fields.
+clauses hold now: (a) position, (b) ADR 0021 D4's headings in order, (d) §10.1's phrases and its
+forbidden phrase (Amendment 3 §19.5, R-374), both read from the generator's YAML
+(`benchmarks/m07a/reference_values.yaml`, `targets.changelog_phrases` and
+`targets.changelog_forbidden`), (e) the limitation ids are the envelope's, in order, (f) ADR
+0007 F1 verbatim, (g) the review table is one row per package with a manifest, with that
+manifest's `status` and its human `review` fields.
 
 Clauses (e) and (g) read the candidate, not the working tree (R-320, ADR 0028 D3's "every package
 manifest at the candidate"; R-216's and R-217's failure for v0.1.0): once the heading names
@@ -50,28 +52,13 @@ D4_HEADINGS = (
     "**Review status of every package**",
 )
 
-#: §10.1's phrases: ADR 0021 D4's, then the alpha's.
-PHRASES = (
-    "Not empirically validated",
-    "Not a guarantee",
-    "R-017",
-    "Not general beyond the support matrix",
-    "Not a certificate of solution accuracy",
-    "ADR 0007 F3",
-    "PTC is experimental",
-    "MCP only",
-    "Not 0.2.0",
-    "W23–W27 are not claimed",
-    "the web shell is included and not claimed",
-    "not a sandbox",
-    "Linux",
-    "x86-64",
-    "R3",
-    "synthetic",
-    "pure-component",
-    "k_ij = 0",
-    "no reactor result has been compared with experimental data",
-)
+#: §10.1's phrases (ADR 0021 D4's, then the alpha's) and the phrase the section must not contain,
+#: as the generator registers them (Amendment 3 §19.5, R-374).
+TARGETS = yaml.safe_load(
+    (REPO_ROOT / "benchmarks" / "m07a" / "reference_values.yaml").read_text(encoding="utf-8")
+)["targets"]
+PHRASES: tuple[str, ...] = tuple(TARGETS["changelog_phrases"])
+FORBIDDEN: tuple[str, ...] = tuple(TARGETS["changelog_forbidden"])
 
 
 def section() -> str:
@@ -151,6 +138,13 @@ def test_d_what_it_is_not_names_every_phrase() -> None:
     part = words(between(body, "**What it is not.**", "**Known limitations"))
     for phrase in PHRASES:
         assert phrase in part, phrase
+
+
+def test_d_the_section_names_no_forbidden_phrase() -> None:
+    assert PHRASES and FORBIDDEN
+    body = words(section())
+    for phrase in FORBIDDEN:
+        assert phrase not in body, phrase
 
 
 def test_e_the_limitation_ids_are_the_envelopes_in_order() -> None:
