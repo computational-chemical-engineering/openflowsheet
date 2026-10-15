@@ -837,3 +837,6 @@ Grep, don't read whole. Newest at the bottom.
   claim aarch64 for the reactor; notes-only fix rejected as narrowing); A2 re-judgement rule (T7/T8, M07a.A14); A3 A61 names
   V13 (e); A4 `tested` iff A00–A51, A53; A5 CHANGELOG phrases (11 added); A6 deferred to 0.2.0; A7 `-rs`; A8 L47/U15; A9 450 s;
   A10 marker. B-AM2-6/9/10 confirmed. Q-A3-1 (strict date rule) put to Frank. Engineer launched on §19.8 actions 1–4.
+- **Alpha Am3 actions 1–4** (2026-10-15, `opus-engineer`, 162e13b/e892790/967a622/7af0ee3 for C_α², 2055d19/958af67 gate-branch
+  only; gates 8603→8629): envelope fixed (harvest E/S/P/B 158/42/139/6), re-judgement rule + A14, `-rs`, CHANGELOG skeleton +
+  phrase test, R-373 status rule. B-AM3-1…5 logged. Re-cut engineer launched (actions 5–8).
