@@ -123,3 +123,21 @@ recorded). No comparator is added; R-253's watch-for governs any future replay c
 *Rejected:* a new class "derived from the records". It would duplicate R1/R2 under another name, and a class needs
 its own comparison rule, which this one would not have. *Rejected:* applying D2.4's ratio band to score comparisons.
 It would flag almost every test draw.
+
+## Amendment 2 (2026-10-15): a second reference distribution for non-synthetic parents
+
+**Normative text:** `docs/derivations/M04-spec.md` §19 (Amendment 2; this text is §A2.11's, transcribed). **Register:**
+R-322.
+
+**D1′.** "Two registered reference distributions: `m04-c1-box7-v1` (the box above; synthetic verification; plans
+`it1`, `it1-prefix`, `it2`, `it3`; synthetic parents only) and `m04-c1-box7-v2` (T 653.15–693.15 K, P 9–10 MPa,
+H₂/N₂ 2.5–3.00001, y_NH₃ 0.02–0.04, y_Ar 0.014–0.03, y_CH₄ 0.022–0.04, F 0.0050–0.0086 mol/s; non-synthetic
+parents; plans `b2-it1…3`). Every registered request lies inside its parent's data and hard domains
+(generator-asserted). v2's r face lies 10⁻⁵ above the data domain's so that the C1 loop's structural H₂/N₂ = 3 is
+interior. A study's coverage claim is marginal over its own P_ref and nothing else."
+
+**D2′.** "Seeds are shared between the two families; the z-design is identical."
+
+**Migration.** "None. No registered value, fixture or plan file moves."
+
+D7 is unchanged.
