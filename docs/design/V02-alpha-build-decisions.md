@@ -199,3 +199,36 @@ scoped checks' `independence_qualification` and their entries (F1/F11/F4/V1 12�
 in the changed and the unchanged runs alike (run-time metadata and recorded code identity, not solve numerics). Q-A2-2's answer: nothing outside the two scoped
 certificate classes moves. (iv) Committed fixtures that move: none — no tracked file outside `docs/` contains either old
 note (`git grep`), and `C_α⁰`'s evidence is not regenerated.
+
+B-AM2-2 **R-347 as built in `scripts/t08_rc.py` (action 2).** `install-check`, `lock-check` and `certificates` pass
+`provenance={**provenance(), "machine_class": machine_class()}` to `finish`, the pattern steps 5, 8 and 9 already use;
+in `install-check` the call is in the `finish` arguments, after every check, so the checkout's harness is imported
+only after the clean-install checks have run. No constant, check, judgement or `format` id changes. Tests: the
+`lock-check` end-to-end test (`tests/test_t08_r3_a19_lock_lookup.py::test_the_three_states_end_to_end`) now asserts the
+member on both states (no test pinned these records' key sets, so this is the extension); new
+`tests/test_v02a_r347_machine_class.py` runs `certificates` in process and `install-check` as CI does (another
+interpreter, outside the checkout, the package copied out of the tree) and asserts the member equals
+`t08_rc.machine_class()` and, on a registered host, agrees with `architecture` and `github_actions`.
+
+B-AM2-3 **`t08_dist.py`'s CI jobs install the lock (choice; isolated commit).** §18.3 assumed the member is "computed
+by a function the same script already calls"; `t08_dist.py` is stdlib-only and runs in a bare `setup-python`
+interpreter (ci.yml `dist`, release.yml `build`), where `benchmarks.t06.ensemble` (numpy, scipy, yaml, and the
+package through `generator.py`) cannot be imported. Chosen: `t08_dist.machine_class()` appends the checkout's
+`scripts/` and `src/` to `sys.path` and returns `t08_rc.machine_class()`; both jobs gain one step,
+`python -m pip install -r requirements.lock`, before the script. The two builds run in their own venv
+(`build_environment`), so the artifacts and every A43 check are unaffected. Alternatives: a stdlib re-derivation
+of the class in `t08_dist.py` (rejected by §18.3: a second derivation rule can drift), or a fallback value when
+the import fails (a record without a computed class). Reversible by reverting that one commit (the dist record
+then has no member and A43 fails on it at `C_α¹`, as at `C_α⁰`). Not exercised end to end here: a dist build
+needs the network (`pip install setuptools`); the test pins the function only.
+
+B-AM2-4 **The M07a generator and its test (action 2, post-candidate files).** `scripts/m07a_evidence_manifest.py`'s
+`_m_provenance` now also fails a class that is not a key of `ensemble.registered()["machine_classes"]`
+(`unregistered_machine_class`) or that disagrees with the record's `architecture` (the dist record: `machine`) or
+`github_actions` where the record carries them (`machine_class_disagrees`); two tests on constructed records cover
+pass and the three failures. `tests/test_m07a_rc_records.py` still reads `C_α⁰`'s records (`RC` = `e0e198e`, kept
+untouched until action 7), so `NO_MACHINE_CLASS` keeps its 13 entries, now commented as `C_α⁰`'s: it becomes empty
+when `RC` moves to `C_α¹` in action 6. The class test also checks agreement on the 16 records that carry a class
+(all agree). Measured at `C_α⁰` with the new generator: A43 `fail`, 29 records, 13 without a class, 0 unregistered,
+0 disagreeing, 0 unattributable — the same verdict as before. These two files are not part of `C_α¹`'s tree
+(§18.4 item 1); the R-345 and R-347 commits carry no post-candidate file, so action 4 can cherry-pick them.
