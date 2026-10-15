@@ -52,7 +52,7 @@ REGISTERED_SHA256: Final[Mapping[Path, str]] = {
     registration.GENERATOR: "575682048470a95fd9c9a337b716d40abb89e74e376d5a838a1240aae153eb4b",
 }
 #: P5: the scripted reference builds of §7.
-CONFIRMATION: Final[Path] = registration.RECORDS / "confirmation"
+CONFIRMATION: Final[Path] = harness.CONFIRMATION
 
 
 class PreflightError(harness.HarnessError):
@@ -170,9 +170,10 @@ def p4(campaign: Campaign) -> Verdict:
 
 
 def p5(campaign: Campaign) -> Verdict:
-    drawn = json.loads(campaign.sample_path.read_bytes())
-    rows = {r["case_id"]: r for r in json.loads(campaign.coverage_path.read_bytes())["rows"]}
-    candidates = [c for c in drawn["cases"] if rows[c]["class"] == "CANDIDATE"]
+    candidates = harness.sampled_candidates(
+        json.loads(campaign.coverage_path.read_bytes()),
+        json.loads(campaign.sample_path.read_bytes()),
+    )
     if not candidates:
         return {"passed": True, "candidates": 0, "record": "C is empty: §7 has nothing to confirm"}
     margin = float(registration.load()["scoring"]["stream_tolerance"]["floor_margin"])

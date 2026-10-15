@@ -208,6 +208,41 @@ def test_campaign_runs_the_order_once_after_the_preflight(tmp_path: Path) -> Non
             run_one=run_one,
         )
     assert [o for _, o in calls] == [1, 2, 3]  # 1 and 2 exist and are not re-run
+    # R58: the confirmation was recorded once, after the preflight; today's C is empty.
+    recorded = json.loads(
+        (tmp_path / "runs" / "c" / "confirmation" / "confirmation.json").read_bytes()
+    )
+    assert recorded == {
+        "candidates": [],
+        "files": {},
+        "record": "C is empty: §7 has nothing to confirm",
+    }
+
+
+def test_the_confirmation_copies_each_sampled_candidates_files(tmp_path: Path) -> None:
+    campaign_dir = tmp_path / "runs" / "c"
+    campaign_dir.mkdir(parents=True)
+    (campaign_dir / "coverage.json").write_bytes(registration.dump(stubs.candidate_coverage()))
+    (campaign_dir / "sample.json").write_bytes(registration.dump({"cases": [stubs.SYNTHETIC]}))
+    confirmation = tmp_path / "confirmation"
+    confirmation.mkdir()
+    with pytest.raises(FileNotFoundError):
+        harness.record_confirmation(campaign_dir, confirmation)
+    assert not (campaign_dir / "confirmation").exists()  # nothing written when a file is missing
+    script, record = b"# scripted reference build\n", b'{"verification_status": "VERIFIED"}\n'
+    (confirmation / f"{stubs.SYNTHETIC}.py").write_bytes(script)
+    (confirmation / f"{stubs.SYNTHETIC}.json").write_bytes(record)
+    directory = harness.record_confirmation(campaign_dir, confirmation)
+    assert (directory / f"{stubs.SYNTHETIC}.py").read_bytes() == script
+    assert (directory / f"{stubs.SYNTHETIC}.json").read_bytes() == record
+    recorded = json.loads((directory / "confirmation.json").read_bytes())
+    assert recorded["candidates"] == [stubs.SYNTHETIC]
+    assert recorded["files"] == {
+        f"{stubs.SYNTHETIC}.py": registration.sha256_bytes(script),
+        f"{stubs.SYNTHETIC}.json": registration.sha256_bytes(record),
+    }
+    with pytest.raises(harness.HarnessError, match="recorded once"):
+        harness.record_confirmation(campaign_dir, confirmation)
 
 
 # =================================================================================================

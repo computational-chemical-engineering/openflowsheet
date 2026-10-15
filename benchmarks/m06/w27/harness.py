@@ -49,6 +49,11 @@ HarnessError = v17.HarnessError
 #: R58: the campaign record's place (its runs are M07's; U14 keeps them untracked until then).
 RUNS_ROOT: Final[Path] = registration.RECORDS / "runs"
 CANARY_DIR: Final[str] = "canary"
+#: R58: the campaign's copy of §7's confirmation (or the record that C was empty).
+CONFIRMATION_DIR: Final[str] = "confirmation"
+CONFIRMATION_FILE: Final[str] = "confirmation.json"
+#: §7: the committed scripted reference builds, `<case_id>.py`, and their records, `<case_id>.json`.
+CONFIRMATION: Final[Path] = registration.RECORDS / "confirmation"
 PROJECT_ID: Final[str] = "w27-run"
 #: Registration §3 F1: the campaign model is not V17's.
 NOT_THE_MODEL: Final[str] = "claude-sonnet-5"
@@ -410,6 +415,7 @@ def campaign(
     if not resume:
         preflight()
         prepare_campaign(name, coverage_path, sample_path, runs_root)
+        record_confirmation(campaign_dir)
     elif not campaign_dir.is_dir():
         raise HarnessError(f"{campaign_dir} does not exist; nothing to resume")
     coverage_path = campaign_dir / "coverage.json"
@@ -474,6 +480,43 @@ def prepare_campaign(name: str, coverage_path: Path, sample_path: Path, runs_roo
         else:
             shutil.copyfile(source, destination)
     return campaign_dir
+
+
+def sampled_candidates(coverage: Mapping[str, Any], sample: Mapping[str, Any]) -> list[str]:
+    """The sampled cases the coverage classifies `CANDIDATE` (§7's set C), in sample order."""
+    rows = {r["case_id"]: r for r in coverage["rows"]}
+    return [c for c in sample["cases"] if rows[c]["class"] == w27_scorer.CANDIDATE]
+
+
+def record_confirmation(campaign_dir: Path, confirmation: Path = CONFIRMATION) -> Path:
+    """W27-R58's `confirmation/`: a byte copy of §7's script and record for every sampled
+    `CANDIDATE`, and `confirmation.json` naming them with each copy's SHA-256 (no file when C is
+    empty, and the record says so). Written once, after the preflight (whose P5 judged those
+    files) and before the first run; a directory already there is refused."""
+    coverage = json.loads((campaign_dir / "coverage.json").read_bytes())
+    drawn = json.loads((campaign_dir / "sample.json").read_bytes())
+    candidates = sampled_candidates(coverage, drawn)
+    directory = campaign_dir / CONFIRMATION_DIR
+    if directory.exists():
+        raise HarnessError(f"{directory} exists; the confirmation is recorded once")
+    copies = {
+        name: (confirmation / name).read_bytes()
+        for case_id in candidates
+        for name in (f"{case_id}.py", f"{case_id}.json")
+    }
+    directory.mkdir()
+    for name, data in copies.items():
+        (directory / name).write_bytes(data)
+    files = {name: registration.sha256_bytes(data) for name, data in copies.items()}
+    record = {
+        "candidates": candidates,
+        "files": files,
+        "record": "§7: each sampled CANDIDATE's scripted reference build and its record"
+        if candidates
+        else "C is empty: §7 has nothing to confirm",
+    }
+    (directory / CONFIRMATION_FILE).write_bytes(registration.dump(record))
+    return directory
 
 
 #: W27-A23: the members a run record must carry, each non-empty.
