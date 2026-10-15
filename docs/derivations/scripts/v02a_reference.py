@@ -15,7 +15,8 @@ Emitted, and labelled as such in the YAML:
 * ``targets`` -- what the alpha registers: the gate set, its coverage pattern, the claimed and
   unclaimed gates, the pinned envelope id, the paths of its records, the required ADRs and Frank's
   items, the workflow and tag patterns, the RC steps.
-* ``truth_tables`` -- Tables T1-T6, each row re-derived from the stated rule.
+* ``truth_tables`` -- Tables T1-T8, each row re-derived from the stated rule (T7 and T8: Amendment 3
+  A2, R-371).
 * ``assertions`` -- the catalogue of numbered assertions, cross-checked with the specification's own
   table in both directions.
 
@@ -36,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import calendar
 import datetime
 import hashlib
 import json
@@ -174,6 +176,7 @@ CATALOGUE = {
     "M07a.A00": "generator",
     **{f"M07a.A{n:02d}": "test" for n in range(1, 13)},
     "M07a.A13": "generator, test",
+    "M07a.A14": "test",
     **{f"M07a.A{n:02d}": "test" for n in range(20, 25)},
     **{f"M07a.A{n:02d}": "ci" for n in range(30, 37)},
     "M07a.A37": "test, ci",
@@ -273,6 +276,80 @@ T6 = (
     ("accepted, 2026-10-12", "2026-11-02", False),
     ("accepted (i), 2026-10-12", "2026-10-12", False),
 )
+#: Amendment 3 A2 (R-371): the gates a re-judgement may list, each with the one answer of Frank's
+#: decisions table it waits on (V13 (e) and V17 (a) on the carry, MR-7 and F-alpha2; W21 (c) on
+#: M02 N1, F-alpha3).
+REJUDGE_DEPENDS = {"V13": "V17 carry", "V17": "V17 carry", "W21": "M02 N1"}
+#: Amendment 3 A2 (R-371): the `**Re-judged:**` line, stripped, fullmatches this.
+REJUDGED_PATTERN = (
+    r"\*\*Re-judged:\*\* (\d{4}-\d{2}-\d{2}) "
+    r"\(((?:V(?:1[1-9]|20)|W2[12])(?:, (?:V(?:1[1-9]|20)|W2[12]))*)\)"
+)
+#: Amendment 3 A2 (R-371): (item, cell, Judged, Re-judged value or None, counts).
+T7 = (
+    ("V17 carry", "accepted, 2026-10-18", "2026-10-16", "2026-10-20 (V13, V17)", True),
+    ("V17 carry", "accepted, 2026-10-20", "2026-10-16", "2026-10-20 (V13, V17)", True),
+    ("V17 carry", "accepted, 2026-10-21", "2026-10-16", "2026-10-20 (V13, V17)", False),
+    ("V17 carry", "accepted, 2026-10-15", "2026-10-16", "2026-10-20 (V13, V17)", False),
+    ("V17 carry", "accepted, 2026-10-21", "2026-10-16", "2026-10-20 (W21)", True),
+    ("M02 N1", "accepted, 2026-10-21", "2026-10-16", "2026-10-20 (W21)", False),
+    ("N3", "accepted, 2026-10-25", "2026-10-16", "2026-10-20 (V13, V17, W21)", True),
+    ("V14 (b)", "accepted, 2026-10-16", "2026-10-16", "2026-10-20 (V13, V17, W21)", True),
+    ("W21 (c)", "accepted, 2026-10-18", "2026-10-16", "2026-10-20 (W21)", False),
+    ("W21 (c)", "accepted, 2026-10-20", "2026-10-16", "2026-10-20 (W21)", True),
+    ("V17 carry", "accepted, 2026-10-18", "2026-10-16", None, True),
+    ("V17 carry", "accepted (i), 2026-10-18", "2026-10-16", "2026-10-20 (V13, V17)", False),
+)
+#: Amendment 3 A2 (R-371): (line, Judged, well-formed).
+T8 = (
+    ("**Re-judged:** 2026-10-20 (V13, V17, W21)", "2026-10-16", True),
+    ("**Re-judged:** 2026-10-16 (W21)", "2026-10-16", True),
+    ("**Re-judged:** 2026-10-15 (W21)", "2026-10-16", False),
+    ("**Re-judged:** 2026-10-20 (V14)", "2026-10-16", False),
+    ("**Re-judged:** 2026-10-20 (W21, V13)", "2026-10-16", False),
+    ("**Re-judged:** 2026-10-20 (V13, V13)", "2026-10-16", False),
+    ("**Re-judged:** 2026-10-20 ()", "2026-10-16", False),
+    ("**Re-judged:** 2026-10-20", "2026-10-16", False),
+    ("**Re-judged:** 2026-11-31 (W21)", "2026-10-16", False),
+)
+#: The sub-rules of T7 and T8 that a mutation drops (or, for `*_all`, widens); each must flip a row.
+T7_MUTATIONS = ("cell", "lower", "upper", "upper_all", "d3_rejudged", "d3_all")
+T8_MUTATIONS = ("calendar", "after_judged", "registered", "increasing")
+#: Spec §10.1 as amended (Amendment 3 A5, R-374): the phrases "What it is not" contains, in order,
+#: and the phrases the `## v0.2.0a1` section contains nowhere.
+CHANGELOG_PHRASES = (
+    "Not empirically validated",
+    "Not a guarantee",
+    "R-017",
+    "Not general beyond the support matrix",
+    "Not a certificate of solution accuracy",
+    "ADR 0007 F3",
+    "PTC is experimental",
+    "MCP only",
+    "Not 0.2.0",
+    "W23–W27 are not claimed",
+    "the web shell is included and not claimed",
+    "not a sandbox",
+    "Linux",
+    "x86-64",
+    "reproducibility class R3",
+    "synthetic",
+    "pure-component",
+    "k_ij = 0",
+    "no reactor result has been compared with experimental data",
+    "not measured on aarch64",
+    "no CI job runs the reactor",
+    "the group's published comparison is the group's evidence",
+    "the group's model at the pin, a regression",
+    "discretization bias is 1.0–1.4 % in NH₃",
+    "the reactor stand-in is synthetic",
+    "the LIQUID regime and pure-NH₃ flashes are deferred and refused typed",
+    "no warm start of the reactor",
+    "saturated-liquid volume is 11–30 % high",
+    "enthalpy of vaporization 2–5 % high",
+    "may be used and referenced",
+)
+CHANGELOG_FORBIDDEN = ("awaits Frank's statement",)
 #: ADRs whose first status line is stably Accepted, read from the repository as further T5 rows.
 T5_REAL_ACCEPTED = (
     "docs/adr/0021-v0.1-release-policy.md",
@@ -326,6 +403,94 @@ def frank_counts(cell: str, judged: str) -> bool:
     """Spec §7.2 item 3 (Amendment 1 (review) F2): Table T4's rule, dated on or after `judged`."""
     date = frank_date(cell)
     return date is not None and date >= datetime.date.fromisoformat(judged)
+
+
+def rejudged(
+    line: str, judged: str, skip: frozenset[str] = frozenset()
+) -> tuple[datetime.date, tuple[str, ...]] | None:
+    """Amendment 3 A2 (R-371): the `**Re-judged:**` line's date and gates, or `None` if malformed.
+
+    Well-formed iff the stripped line fullmatches `REJUDGED_PATTERN`, its date is a calendar date
+    on or after `judged`, and its gates are a non-empty, strictly increasing (in the Verdict table's
+    order) selection of `REJUDGE_DEPENDS`'s keys. `skip` drops named sub-rules (T8_MUTATIONS)."""
+    match = re.fullmatch(REJUDGED_PATTERN, line.strip())
+    if match is None:
+        return None
+    year, month, day = (int(part) for part in match.group(1).split("-"))
+    try:
+        date = datetime.date(year, month, day)
+    except ValueError:
+        if "calendar" not in skip or not 1 <= month <= 12:
+            return None
+        date = datetime.date(year, month, calendar.monthrange(year, month)[1])
+    if "after_judged" not in skip and date < datetime.date.fromisoformat(judged):
+        return None
+    gates = tuple(match.group(2).split(", "))
+    if "registered" not in skip and not set(gates) <= set(REJUDGE_DEPENDS):
+        return None
+    order = [CLAIMED.index(gate) for gate in gates]
+    if "increasing" not in skip and any(a >= b for a, b in zip(order, order[1:], strict=False)):
+        return None
+    return date, gates
+
+
+def answer_counts(
+    item: str,
+    cell: str,
+    judged: str,
+    rejudged_value: str | None,
+    skip: frozenset[str] = frozenset(),
+) -> bool:
+    """Amendment 3 A2 (R-371): whether Frank's answer to `item` (a decisions item or a D3 clause)
+    counts, given the verdict's `Judged` date and its `**Re-judged:**` value (`None` if absent).
+
+    Table T4's cell rule; the date on or after `Judged`; for a decisions item that a re-judged gate
+    waits on (`REJUDGE_DEPENDS`), on or before `Re-judged`; for a D3 clause of a re-judged gate, on
+    or after `Re-judged`. `skip` drops (or, for `*_all`, widens) a sub-rule (T7_MUTATIONS)."""
+    if "cell" in skip:
+        found = DATE.search(cell)
+        date = datetime.date.fromisoformat(found.group(0)) if found else None
+    else:
+        date = frank_date(cell)
+    if date is None:
+        return False
+    if "lower" not in skip and date < datetime.date.fromisoformat(judged):
+        return False
+    if rejudged_value is None:
+        return True
+    parsed = rejudged(f"**Re-judged:** {rejudged_value}", judged)
+    if parsed is None:
+        raise ValueError(f"T7 row with a malformed Re-judged value {rejudged_value!r}")
+    rejudged_on, gates = parsed
+    if item in FRANK_ITEMS:
+        waited_on = {REJUDGE_DEPENDS[gate] for gate in gates}
+        bounded = "upper_all" in skip or item in waited_on
+        return "upper" in skip or not bounded or date <= rejudged_on
+    if not CLAUSE.fullmatch(item):
+        raise ValueError(f"T7 item {item!r} is neither a decisions item nor a clause")
+    bounded = "d3_all" in skip or item.split(" ")[0] in gates
+    return "d3_rejudged" in skip or not bounded or date >= rejudged_on
+
+
+def is_a2_case(cell: str, judged: str, rejudged_value: str | None, counts: bool) -> bool:
+    """Amendment 3 A2: a counting answer dated after `Judged` and before `Re-judged`."""
+    if not counts or rejudged_value is None:
+        return False
+    date = frank_date(cell)
+    parsed = rejudged(f"**Re-judged:** {rejudged_value}", judged)
+    return (
+        date is not None
+        and parsed is not None
+        and datetime.date.fromisoformat(judged) < date < parsed[0]
+    )
+
+
+def section_bullets(text: str, heading: str) -> list[str]:
+    """The backticked bullets (`- `x``) of the section headed `heading`, up to the next `---`."""
+    lines = text.splitlines()
+    start = lines.index(heading)
+    end = next(n for n in range(start + 1, len(lines)) if lines[n].strip() == "---")
+    return [m.group(1) for line in lines[start:end] if (m := re.fullmatch(r"- `(.+)`", line))]
 
 
 def status_accepted(line: str) -> bool:
@@ -618,6 +783,74 @@ def build(claims: Claims) -> dict[str, Any]:  # noqa: PLR0915 - one claim after 
     )
     claims.check("T6.table", t6 == T6, str(t6))
     claims.check("T6.rule", all(frank_counts(cell, on) == want for cell, on, want in T6))
+    # T7, T8 -- Amendment 3 A2 (R-371): Frank's answers against a re-judgement; the Re-judged line.
+    t7 = tuple(
+        (
+            unquote(row[0]),
+            unquote(row[1]),
+            unquote(row[2]),
+            None if row[3] == "—" else unquote(row[3]),
+            yes_no(row[4]),
+        )
+        for row in table_after(spec, "**Table T7")
+    )
+    claims.check("T7.table", t7 == T7, str(t7))
+    claims.check("T7.rule", all(answer_counts(*row[:4]) == row[4] for row in T7))
+    claims.check(
+        "T7.rejudged_cells_well_formed",
+        all(rejudged(f"**Re-judged:** {r}", j) is not None for _, _, j, r, _ in T7 if r),
+    )
+    claims.check("T7.a2_case", any(is_a2_case(cell, j, r, want) for _, cell, j, r, want in T7))
+    for mutation in T7_MUTATIONS:
+        claims.check(
+            f"T7.mutation_bites.{mutation}",
+            any(
+                answer_counts(item, cell, j, r, frozenset({mutation})) != want
+                for item, cell, j, r, want in T7
+            ),
+        )
+    claims.check(
+        "T7.items_cover",
+        set(FRANK_ITEMS) <= {row[0] for row in T7} and any(row[0] not in FRANK_ITEMS for row in T7),
+    )
+    t8 = tuple(
+        (unquote(row[0]), unquote(row[1]), yes_no(row[2]))
+        for row in table_after(spec, "**Table T8")
+    )
+    claims.check("T8.table", t8 == T8, str(t8))
+    claims.check("T8.rule", all((rejudged(line, j) is not None) == want for line, j, want in T8))
+    for mutation in T8_MUTATIONS:
+        claims.check(
+            f"T8.mutation_bites.{mutation}",
+            any(
+                (rejudged(line, j, frozenset({mutation})) is not None) != want
+                for line, j, want in T8
+            ),
+        )
+    claims.check("T8.pattern_in_spec", f"`{REJUDGED_PATTERN}`" in spec)
+    claims.check(
+        "T8.depends_stated",
+        "`V13` and `V17` wait on `V17 carry`, and `W21` waits on `M02 N1`" in spec
+        and set(REJUDGE_DEPENDS) <= set(CLAIMED)
+        and set(REJUDGE_DEPENDS.values()) <= set(FRANK_ITEMS),
+    )
+    # P1 -- Amendment 3 A5 (R-374): §10.1's phrases and forbidden phrases equal the generator's.
+    bullets = section_bullets(spec, '### 10.1 The phrases of "What it is not" (M07a.A52 (d))')
+    split = bullets.index(CHANGELOG_FORBIDDEN[0]) if CHANGELOG_FORBIDDEN[0] in bullets else None
+    claims.check("P1.phrases", split is not None and tuple(bullets[:split]) == CHANGELOG_PHRASES)
+    claims.check(
+        "P1.forbidden", split is not None and tuple(bullets[split:]) == CHANGELOG_FORBIDDEN
+    )
+    claims.check(
+        "P1.no_forbidden_inside_a_phrase",
+        not any(bad in phrase for bad in CHANGELOG_FORBIDDEN for phrase in CHANGELOG_PHRASES),
+    )
+    a61 = next(
+        row
+        for row in table_with_header(spec, ("ID", "Subject and state(s)"))
+        if row[0] == "M07a.A61"
+    )
+    claims.check("A3.a61_names_v13", "V13 (e)" in a61[2] and "V17 (a)" in a61[2], a61[2])
     t5 = {unquote(row[0]): yes_no(row[1]) for row in table_after(spec, "**Table T5")}
     claims.check("T5.table", t5 == T5)
     claims.check("T5.rule", all(status_accepted(line) == want for line, want in T5.items()))
@@ -699,6 +932,10 @@ def build(claims: Claims) -> dict[str, Any]:  # noqa: PLR0915 - one claim after 
             "workflow_version_pattern": WORKFLOW_PATTERN,
             "changelog_tag_pattern": TAG_PATTERN,
             "moved_records": list(MOVED_RECORDS),
+            "rejudge_depends": REJUDGE_DEPENDS,
+            "rejudged_pattern": REJUDGED_PATTERN,
+            "changelog_phrases": list(CHANGELOG_PHRASES),
+            "changelog_forbidden": list(CHANGELOG_FORBIDDEN),
         },
         "truth_tables": {
             "T1_coverage": T1,
@@ -708,6 +945,8 @@ def build(claims: Claims) -> dict[str, Any]:  # noqa: PLR0915 - one claim after 
             "T4_frank_cell": T4,
             "T5_adr_status": T5,
             "T6_frank_dated": [list(row) for row in T6],
+            "T7_frank_rejudged": [list(row) for row in T7],
+            "T8_rejudged_line": [list(row) for row in T8],
         },
         "assertions": CATALOGUE,
     }

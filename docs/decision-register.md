@@ -6160,3 +6160,228 @@ other fields would not.
 alone.
 
 ---
+
+## R-370 — The alpha is re-cut as `C_α²` to carry the unmeasured-reactor row and the round's other tree fixes; B-AM2-6, B-AM2-9 and B-AM2-10 are confirmed
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A1) |
+| Normative text | spec §19.1, §19.7; §4 rule 4, §8.1, §13 Q1 (markers) |
+| Evidence | verdicts at `6fec822`, A1: the envelope's `platforms` axis and L15 name aarch64 for every path; the harvest files M02 `limitations[1]` as P |
+| Affected packages | M07a (envelope, harvest, RC job) |
+
+**Decision.**
+- `C_α²` descends from `C_α¹`, and its diff is exactly the following:
+  - the envelope changes (L15 and the `platforms` statement corrected, L44–L48 and U15 added, M02 `limitations[1]`,
+    `[2]`, `[3]` and `[6]` reclassified E);
+  - the gate's re-judgement rule (R-371);
+  - `-rs` in `check.sh` (R-376);
+  - the CHANGELOG skeleton (R-374);
+  - Amendment 3's documents.
+- The RC job runs steps 1–13 in full at `C_α²`, and a new verdict judges every gate there.
+- `C_α¹`'s evidence is kept. Its RC record and verdict document move off the registered paths, each marked superseded.
+- B-AM2-6's branch pattern (`wp/V02-alpha-rc2` from `6fec822`, with cherry-picks and a merge commit) is confirmed and
+  reused. B-AM2-9 and B-AM2-10 are confirmed.
+
+**Rejected alternatives, and why.**
+- A spec amendment letting the row travel in the notes and the verdict only. It weakens §4 rule 4 from row *and* notes
+  to notes alone, chosen because compliance costs a re-run, which is a narrowing on the outcome. It also leaves the
+  frozen axis asserting aarch64 for the reactor.
+- Re-running only the affected steps. M07a.A43 and §4 rule 3 require every record at the judged commit.
+
+**Watch for.** Any change beyond §19.1 item 2 entering `C_α²`. The YAML under `benchmarks/` changing after `C_α²`,
+which breaks D2.4.
+
+---
+
+## R-371 — `Judged` is the first judgement; a re-judgement adds a `**Re-judged:**` line, and Frank's answers are bounded per re-judged gate (Tables T7, T8)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A2) |
+| Normative text | spec §19.2 (Tables T7, T8), M07a.A14; §6.3, §7.2 items 2–3, Table T6, §7.3 item 11, §9.2 step 6, §14 (markers) |
+| Evidence | verdicts at `6fec822`, A2; generator claims `T7.*`, `T8.*` (90 of 90 pass) |
+| Affected packages | M07a (`scripts/v0_2_gate.py`, its tests, the verdict document's form) |
+
+**Decision.**
+- A re-judgement never changes `Judged`. It adds `**Re-judged:** YYYY-MM-DD (G, …)`, listing only V13, V17 or W21,
+  which are the gates blocked on a registered answer, in table order.
+- A decisions answer that a listed gate waits on (`V13`/`V17` on `V17 carry`, `W21` on `M02 N1`) is dated in
+  [`Judged`, `Re-judged`].
+- A D3 acceptance of a listed gate's clause is dated on or after `Re-judged`.
+- Every other answer is dated on or after `Judged` (Table T6).
+- A malformed or repeated `**Re-judged:**` line exits 2.
+
+**Rejected alternatives, and why.**
+- Rewriting `Judged` and dating answers against the RC record: the waiver argument concerns the judgement, not the
+  measurement.
+- A same-day rule: it is today's accident.
+- A procedural rule left to the `verdict` agent: unchecked, it reads as success when broken.
+
+**Watch for.** A future BLOCKED row on an input other than these two answers. The dependency map then needs an
+amendment, never an ad hoc extension in the gate.
+
+---
+
+## R-372 — M07a.A61 expects V13 (e) and V17 (a) BLOCKED unless the V17 carry is recorded
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A3) |
+| Normative text | spec §10 M07a.A61 (marker), §19.3 |
+| Evidence | MR-7; T08.B51 (B50 is part of V13 (e)); verdicts at `6fec822`, V13 |
+| Affected packages | M07a (verdict expectation) |
+
+**Decision.** A61's expectation names V13 (e) beside V17 (a), under the same carry. Generator claim
+`A3.a61_names_v13`.
+
+**Rejected alternatives, and why.** Leaving A61 as written: it contradicts MR-7, and the verdict already read MR-7.
+
+**Watch for.** —
+
+---
+
+## R-373 — M07a's `tested` condition is A00–A51 and A53; A52 is judged at the candidate after §9.2 step 5
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A4) |
+| Normative text | spec §19.4; §9.2 steps 4, 5 and 7, §10 A52, §18.5 action 6 (markers) |
+| Evidence | verdicts at `6fec822`, A4; M07a's manifest at `6fec822` (`implemented` only through A52's two pending tests) |
+| Affected packages | M07a (`scripts/m07a_evidence_manifest.py`, §9.2) |
+
+**Decision.**
+- At `C_α`, A52 is `unsupported` with a stated reason, and status reads A00–A51 and A53.
+- After step 5, A52 and A64 run at the candidate, and the manifest records them with `judged_at`. Status cannot move.
+- The gate (§9.2 step 7) runs only after both pass.
+
+**Rejected alternatives, and why.**
+- Dropping A52 (a) or (c): a narrowing.
+- Putting A52 back into the condition after the verdict: circular.
+- A new id for the late half: machinery without gain.
+
+**Watch for.** A generator that lets a post-verdict result move `status`.
+
+---
+
+## R-374 — The `## v0.2.0a1` notes state W21 (f4) in full, the reactor's measurement, M02 N2/N4/N5/N6, PR's liquid biases and Frank's 4TU statement; §10.1's phrases are amended to check each
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A5) |
+| Normative text | spec §19.5, §10.1 (amended), M07a.A52 (d); §6.1 and §14 F-α4 (markers) |
+| Evidence | `CHANGELOG.md` at `70c526e`: f4 item 4 absent; "Rights … awaits Frank's statement" stale against the dossier §8 (2026-10-02); `R3` matched only by "T08 R3 8 (b)" |
+| Affected packages | M07a (`CHANGELOG.md` skeleton, `tests/test_m07a_changelog.py`) |
+
+**Decision.**
+- The phrase `R3` becomes `reproducibility class R3`.
+- Eleven phrases are added, and the stale `awaits Frank's statement` becomes a forbidden phrase.
+- The test reads both lists from the generator's YAML.
+- The stale F-α4 sentences of §6.1 and §14 are corrected by marker.
+
+**Rejected alternatives, and why.** Fixing the prose without new phrases: A52 would still check neither defect, and the
+fix to the Rights bullet would silently remove `R3`'s only match.
+
+**Watch for.** A phrase satisfied by unrelated text. Prefer a longer, distinctive phrase.
+
+---
+
+## R-375 — G11's experiment results are not audited at the alpha; 0.2.0's RC keeps and audits them
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A6) |
+| Normative text | spec §19.6 |
+| Evidence | verdicts at `6fec822`, A6 and W21 (e) (judged on G6 and G12's coupling record) |
+| Affected packages | the 0.2.0 release gate |
+
+**Decision.** No change at the alpha. At 0.2.0, step 12 keeps G11's results, and an audit checks blueprint §9.1's six
+items in each, as R-348 did for certificates.
+
+**Rejected alternatives, and why.** Adding the audit to `C_α²`: it is not a verdict input, and it would need its own
+specification.
+
+**Watch for.** —
+
+---
+
+## R-376 — Step 1 runs pytest with `-rs`, and each architecture's skip lines are committed beside the RC records
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A7) |
+| Normative text | spec §19.6 |
+| Evidence | verdicts at `6fec822`, A7 (skips 100/98 at step 1 inferred from R-150) |
+| Affected packages | M07a (`scripts/check.sh`, build log) |
+
+**Decision.** `-rs` goes in `C_α²`. The `SKIPPED` lines go under `evidence/M07a/<C_α²>/step1-skips/`, outside `rc/`.
+They are not RC records, and no assertion judges them. The verdict brief pastes them.
+
+**Rejected alternatives, and why.** Making the lines an RC record: that needs A43's provenance members from CI, which
+is new machinery for information.
+
+**Watch for.** A parser of step 1's output that `-rs` breaks (Q-A3-4).
+
+---
+
+## R-377 — W22 (d)'s two missing gaps enter the envelope: L47 (PR's liquid volume and ΔH_vap bias) and U15 (M02 N5)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A8) |
+| Normative text | spec §19.1 item 1 |
+| Evidence | M01 spec §11; `tests/test_m02_wo8_verifier.py::test_g7j_a_liquid_branch_is_unsupported`; M02 design note N5, K17 |
+| Affected packages | M07a (envelope at `C_α²`) |
+
+**Decision.** Add L47 and U15 with the texts of §19.1. U15 cites the node that pins the pure-NH₃ refusal (Q-A3-3).
+
+**Rejected alternatives, and why.** Carrying them in the verdict and the notes only: §4 rule 4 and the harvest's E rule
+put a user-reachable limitation in the envelope.
+
+**Watch for.** —
+
+---
+
+## R-378 — V5's G11v3-4 timeout is governed by the registered 450 s, not the load-dependent 270 s
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A9) |
+| Normative text | spec §19.6 |
+| Evidence | verdicts at `6fec822`, A9; D104 |
+| Affected packages | — |
+
+**Decision.** Confirmed as the verdict reads it. The rule's load dependence (§14.5 D4) is recorded and not corrected.
+
+**Rejected alternatives, and why.** Re-registering the bound from step 12's load: that moves a bound on the outcome.
+
+**Watch for.** —
+
+---
+
+## R-379 — §6.1's W21 (b) figures are the pre-RC records; the bound is the criterion
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 3 (finding A10) |
+| Normative text | spec §6.1 (marker), §19.6 |
+| Evidence | verdicts at `6fec822`, A10: 2.98 × 10⁻⁸ (M01.A45) against 3.84 × 10⁻⁸ at step 12, both ≤ 10⁻⁷ |
+| Affected packages | — |
+
+**Decision.** A marker states that the column quotes the pre-RC records, and that the verdict quotes step 12's figure.
+
+**Rejected alternatives, and why.** Rewriting the column to `C_α¹`'s figure: it would go stale again at `C_α²`.
+
+**Watch for.** —
+
+---
