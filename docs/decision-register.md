@@ -5271,6 +5271,10 @@ does not name. Joining in WO-8: the coverage tests would need exemptions.
 forward stencil: it needs an unregistered tolerance, and at dormant columns it would test a convention against a
 derivative that does not exist. An unrecorded exclusion: that would be a hidden weakening.
 
+**Amended 2026-10-15 (R-345).** The *Record*'s qualification half is withdrawn: both witness checks carry
+`independence_qualification` `None`, because the certificate turns every such note into an [A09] provider entry. The
+`derivative_witness_partial` limitation alone records the exclusion.
+
 **Watch for.** The exclusion widened to other columns or bases. A certificate whose witness was partial but which
 carries no `derivative_witness_partial` limitation.
 
@@ -6024,5 +6028,135 @@ All of this lands before `C_α`.
 
 **Watch for.** A loop unit without exact derivatives entering `MODEL_BUILDERS`. That makes E1 reachable, R-130's
 reachability test fails, and L43 must change with it.
+
+---
+
+## R-345 — `independence_qualification` carries [A09] text only; the EXT-COUPLING and derivative-witness notes are withdrawn (V02 alpha F1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 2 |
+| Normative text | `docs/derivations/V02-alpha-release-spec.md` §18.1 (Am2.1–Am2.5); supersedes M02 design note §4.4's and §14.3 C2's note text and R-281's qualification half |
+| Evidence | RC record at `e0e198e`, Failures F1; the five step-12 certificates: 25 entries against 21, extra exactly `EXT-COUPLING:reactor:{xi,T}` (note `external model, R3`) and `derivative_witness.{on,off}_pattern` (note `not differenced: 5 …`); `verify/certificate.py:1305–1316` writes a provider entry for every non-`None` note |
+| Affected packages | M02 (`application/coupled_run.py`, `verify/checks.py`), K04 (certificate content on the revision and coupled paths), M07a |
+
+**Decision.** The certificate's four extra entries are a defect, not a rule to extend. `CheckResult.independence_qualification`
+holds only `checks.qualification(provider)` (with an optional form suffix). The EXT-COUPLING checks and both witness checks
+write `None`. Their facts are already in the `external_model` and `derivative_witness_partial` limitations. `certificate.py`
+does not change.
+
+**Rejected alternatives, and why.**
+- Filtering in `certificate.py` by prefix: A33/A34 would then compare a rule with itself.
+- Moving the notes to `reason`: that field would gain a third meaning.
+- A runtime guard: it would turn a labelling slip into a failed job.
+
+**Watch for.** A new check family that puts any other text in `independence_qualification`. Am2.1 fails on it.
+
+---
+
+## R-346 — A34/A39's expected [A09] set is not extended for coupled routes; at `e0e198e` the failure is V18 clause (c), and no verdict is written there
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 2 |
+| Normative text | spec §18.1 (ii)–(iii); Q5 (answered) |
+| Evidence | T06 A33 (A4) "falsifiable both ways"; §4 rule 2 (a counterpart fixes every quantity the old record fixed); WO-10 (`tested` iff A00–A53 pass); §6.3 |
+| Affected packages | M07a, the V18 verdict |
+
+**Decision.**
+- No counterpart rule widens the set. The evidence for one would be the measured outcome alone.
+- [A09] is clause (c), so Q5's "V18 (b)" is corrected. Clause (b)'s input ([A08]) is clean on all 77 certificates.
+- `C_α⁰` reaches no verdict, and step 10 re-runs only at the re-cut candidate (R-349).
+
+**Rejected alternatives, and why.**
+- Extending the set as a counterpart like MR-1…MR-12: nothing moved, and the certificate is wrong.
+- Frank accepting V18 (c) `FAIL` at `e0e198e`: it would ship false [A09] entries and need WO-10's rule amended. It stays
+  his option (Q-A2-1), and it is not the default.
+
+**Watch for.** A later "counterpart" introduced after a measured failure.
+
+---
+
+## R-347 — M07a.A43's machine class is a recorded, registered `machine_class` member; four record writers gain it (scoped exception to §8.2's "unchanged")
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 2, on B-WO10-10 |
+| Normative text | spec §18.3; §8.2 "How the steps run" and M07a.A43 (amended) |
+| Evidence | 13 records without the member at `e0e198e`. `rc/certificates-ref-x86-64.json` cannot exclude `unregistered(x86_64)` (no CPU model), and `rc/ci/rc-dist/t08-a43-dist.json` carries no CI flag. `benchmarks/registry.yaml` `ensemble.machine_classes` |
+| Affected packages | M07a; `scripts/t08_rc.py` (`install-check`, `lock-check`, `certificates`), `scripts/t08_dist.py` |
+
+**Decision.**
+- Every record of steps 1–12 at the candidate carries `machine_class` = `ensemble.machine_classes`'s key that
+  `machine_class()` returns at write time. It must agree with the record's architecture and CI flag.
+- The four writers add the member, and nothing else of theirs changes.
+- A43 stays `fail` at `e0e198e`.
+
+**Rejected alternatives, and why.**
+- T08.A16's campaign-record scope: a narrowing after the fail.
+- "(architecture, CI) suffices": it is false for 2 of the 13 records.
+- A second class-derivation rule in the generator: two definitions can drift.
+- An out-of-tree wrapper: CI runs these steps from the tree.
+
+**Watch for.** A registered class gaining or losing a `cpu_model`: the member stays right, while any derivation from
+other fields would not.
+
+---
+
+## R-348 — Step 12's certificates for step 10 are the wrapper-kept files, committed and bound by hash to the step-12 record
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 2, on B-WO10-6 |
+| Normative text | spec §18.2; MR-11, §8.2 step 10 and M07a.A39 (amended) |
+| Evidence | At `e0e198e` the kept bundle certificate's `document_sha256` equals the record's `certificate_sha256` (`d61a86fb…19faa4`), and `live` and `replay` hash the same; the edges record has no certificate hash; `g12_real_loop.py:441` |
+| Affected packages | M07a (generator A39, RC step 12 records) |
+
+**Decision.**
+- The wrapper that swaps only `tempfile.TemporaryDirectory` is accepted, and it is committed as a `.txt` tool with its
+  SHA-256.
+- The five certificates are committed under `rc/step12/certificates/`.
+- A39 binds the bundle certificate to the recorded hash, lists the others' hashes, re-applies the audit to the committed
+  copies, and requires 3 + `len(edges)` certificates.
+
+**Rejected alternatives, and why.**
+- Auditing hashes only: a hash has no content to audit.
+- An in-tree `--keep` option: it edits M02's evidence script.
+- Reimplementing the solve: it duplicates frozen code.
+
+**Watch for.** `g12_real_loop.py` changing how it names its temporary directory; the wrapper must then be re-checked.
+
+---
+
+## R-349 — The first alpha candidate `e0e198e` is superseded; the re-cut `C_α¹` differs from it only by R-345, R-347 and Amendment 2, and the RC job re-runs in full
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), V02 alpha Amendment 2 |
+| Normative text | spec §18.4–§18.5; §8.1 (marker) |
+| Evidence | R-345 (code defect at `e0e198e`), R-346 (no verdict reachable there), M07a.A43 (`commit` = the candidate on every record), §4 rule 3 |
+| Affected packages | M07a |
+
+**Decision.**
+- `C_α¹` descends from `e0e198e`, and its diff from it is exactly R-345's change and tests, R-347's member, and
+  Amendment 2's documents.
+- Its tree holds none of `e0e198e`'s post-candidate M07a files, so A50 and R-320 apply unchanged.
+- The design lane reads the diff before the cut.
+- Steps 1–13 re-run at `C_α¹`.
+- `e0e198e`'s evidence is kept, with its manifest left `implemented`. Its RC record moves off the registered path,
+  marked superseded. The commit stays reachable.
+
+**Rejected alternatives, and why.**
+- A linear re-cut on top of `e0e198e`'s evidence: `e0e198e`'s own M07a manifest would enter the candidate's harvest and
+  review table, against R-320.
+- Re-running only the affected steps: A43 and §4 rule 3 require every record at the judged commit.
+
+**Watch for.** Any change beyond §18.4 item 1 slipping into `C_α¹`. Then the re-run is no longer attributable to the fix
+alone.
 
 ---

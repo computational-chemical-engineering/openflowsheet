@@ -9,6 +9,7 @@ mechanics, the release-candidate (RC) job and the evidence manifest `evidence/M0
 default of N3, which Frank has not answered (§14 F-α0). A defect found in it is amended here, dated, and never worked
 around downstream.
 Amended 2026-10-09 by Amendment 1 (review), §17.
+Amended 2026-10-15 by Amendment 2 (design-lane ruling round on the first candidate's findings), §18.
 **Requirements served:** D17 (every release gate judged, none substituted) and D20 (a reproducible release candidate).
 Gates V11–V20, W21 and W22. The evidence-manifest schema carries D/A ids only, so the gates travel in
 `docs/requirements.yaml` and in the verdict document, as in T08.
@@ -208,7 +209,7 @@ V12's. They enter the envelope's `unit_models` axis (T08.A20) without changing V
 | MR-8 | ADR 0021 D3's acceptance of V14 (b) (2026-09-29) | D3 is per release | ADR 0028's D3 table: V14 (b) with Frank's acceptance dated on or after the alpha's `Judged` date | M07a.A04 |
 | MR-9 | the v0.1.0 notes' gate table, tested against the **live** ledger and `T08-verdicts.md` | the alpha writes V and W verdicts into the same ledger rows (FD-α5) | the test reads the ledger and `T08-verdicts.md` as v0.1.0 released them (`PUBLIC_ROOT`, R-216's pattern); `## v0.2.0a1`'s table is `v0_2_gate.py --markdown`'s | M07a.A53, A52 |
 | MR-10 | V11 (e): T08.A35, a real **v0.0.0**-emitted bundle | v0.1.0 was released and schemas changed after it under ADRs (ADR 0019 Amendment 3; ADR 0033–0035), so by T08 §4.1's own reasoning the clause now also applies to a v0.1.x-emitted instance | T08.A35 unchanged, **and** M07a.A42: the `SYN-001-nominal` bundle written by the CLI at tag `v0.1.1` gets a typed report from `C_α`'s `replay`, `inspect` renders it, and no exception is unhandled | M07a.A42 |
-| MR-11 | T08.A34 over "every certificate the RC job emits" (steps 4–7) | the RC job now also emits coupled-route certificates (step 12) | the same rule over steps 4–7 **and** 12 | M07a.A39 |
+| MR-11 | T08.A34 over "every certificate the RC job emits" (steps 4–7) | the RC job now also emits coupled-route certificates (step 12) | the same rule over steps 4–7 **and** 12; step 12's output is the kept directories of §18.2, bound to the step-12 record by hash *(amended 2026-10-15, Amendment 2 B-WO10-6)* | M07a.A39 |
 | MR-12 | T08.A30's scope: the default install and the `server` extra | M03 may declare an `nlp` extra (Q6) | the default install and `server` (unchanged); and every extra that `C_α` declares and `v0.1.1` did not, through its own [A10] audit and Frank's recorded licence decision (M03's: `docs/m03-ipopt-audit.md` and M03 N1). Otherwise V18 (a) is `FAIL`. | M07a.A38 |
 
 **MR-3, after the tag.** The first commit on `main` after the tag that changes a D2.4 path returns the envelope to
@@ -630,6 +631,9 @@ repository: the M01/M02 ancestry check needs it". A vanished `C_α` is a procedu
 
 ### 8.1 Definition
 
+*(Amended 2026-10-15, Amendment 2 §18.4: the first candidate `C_α⁰` = `e0e198e` is superseded; `C_α` below is the
+re-cut candidate `C_α¹`.)*
+
 `C_α` is a commit on the RC branch, cut from `main` after M02's merge, such that:
 
 1. **Tree.** The version in `pyproject.toml`, `src/openflowsheet/__init__.py` and the version-carrying test fixtures is
@@ -660,13 +664,15 @@ repository: the M01/M02 ancestry check needs it". A vanished `C_α` is a procedu
 | 7 | Adversarial, invalid-structure and reference subsets (T08.A47, A48 at `C_α`) | three hosts | M07a.A36 |
 | 8 | The surface chain (§5.3) and G16-b 40/40 (replaces T08.A49) | three hosts | M07a.A37 |
 | 9 | The [A10] inventory (T08.A30 at `C_α`; MR-12) | both architectures | M07a.A38 |
-| 10 | Certificates of steps 4–7 and 12 (T08.A34 at `C_α`; MR-11) | where they were emitted | M07a.A39 |
+| 10 | Certificates of steps 4–7 and 12 (T08.A34 at `C_α`; MR-11), step 12's as kept and committed by §18.2 *(amended 2026-10-15, Amendment 2 B-WO10-6)* | where they were emitted | M07a.A39 |
 | 11 | W22's external records: `external_crosscheck.py --check`; the IDAES conformance re-run | `ref-x86-64`, in their pinned environments | M07a.A40 |
 | 12 | W21's reactor evidence: M02 G10 (a)–(i), G11 (a)–(d), G12 at `C_α` | `ref-x86-64`, in the reactor environment built from `C_α`'s lock | M07a.A41 |
 | 13 | `scripts/v0_2_gate.py --rc C_α` | local | M07a.A12 |
 
 **How the steps run.**
-- Steps 1–10 run `scripts/t08_rc.py`'s subcommands unchanged, except step 8. Their registered constants are still
+- Steps 1–10 run `scripts/t08_rc.py`'s subcommands unchanged, except step 8, and except that the records of
+  `install-check`, `lock-check`, `certificates` and `scripts/t08_dist.py` carry `machine_class` *(amended 2026-10-15,
+  Amendment 2 B-WO10-10, §18.3)*. Their registered constants are still
   right at `C_α`: the lock, the K05 identity (M02 G2 keeps it), the trial version, the bundle sets and the ensemble.
 - Step 8 is a new `surface` step that implements §5.3 (WO-5). `scripts/t08_rc.py`'s A49 constants are not edited
   (R-192).
@@ -833,11 +839,11 @@ Tolerances:
 | M07a.A36 | Step 7 | T08.A47 and A48 at `C_α` on three hosts | registered (T06 §7–§9.4) | ci |
 | M07a.A37 | Step 8: the chain of §5.3 at `C_α`, with its negative controls in the test, and G16-b | §5.3 items 1–5 hold; G16-b clean on 40 of 40 against `t07_reference_t08.json`; records attributable | exact | test, ci |
 | M07a.A38 | Step 9 | T08.A30 at `C_α` on both architectures, with zero undispositioned objects in a required closure; MR-12's rule for every extra new since `v0.1.1` | exact | ci |
-| M07a.A39 | Step 10 | T08.A34 over steps 4–7 and 12: [A08] regularity evidence and [A09] qualification present; 0 violations | exact | ci |
+| M07a.A39 | Step 10 | T08.A34 over steps 4–7 and 12: [A08] regularity evidence and [A09] qualification present; 0 violations. The expected [A09] set is T06 A33 (A4)'s on every route, coupled ones included; step 12's certificates are the committed kept copies, the bundle's `document_sha256` equal to the step-12 record's `certificate_sha256`, their number 3 + the edges record's `len(edges)` *(amended 2026-10-15, Amendment 2 F1 and B-WO10-6, §18.1–§18.2)* | exact | ci |
 | M07a.A40 | Step 11 | `external_crosscheck.py --check` exit 0 in its pinned environment; the IDAES re-run's numbers identical to the committed record, with only `inputs.*_sha256` members differing, each listed | exact | record |
 | M07a.A41 | Step 12 | M02 G10 (a)–(i), G11 (a)–(d) and G12 as M02 §10.2–§10.3 state them, at `C_α`, in the reactor environment from `C_α`'s lock, one thread; the environment block and the CPU model recorded | registered: M01.A41–A48's and M02 G10–G12's own (10⁻⁶ path independence and boundary, 10⁻⁷ element defect, 10⁻³ ΔP, floor ratio 10) | record |
 | M07a.A42 | V11 (e)'s predecessor (MR-10): the `SYN-001-nominal` bundle written by the CLI at tag `v0.1.1` (a worktree at the tag, its own environment), committed as a fixture | `C_α`'s `replay --rerun` returns a typed report (`exact_replay` or `compatible_reproduction` `MATCH`, or `inspected_archived_results` with `NOT_RUN` and its reason, or a typed refusal naming the schema version); plain `replay`'s `compatible_reproduction` `NOT_RUN` with its reason is recorded, not judged *(Amendment 1 (review) A42)*; `inspect` renders it; no unhandled exception | exact (pattern), as T08.A35 | test |
-| M07a.A43 | Every record of steps 1–12 | carries `commit` = `C_α` (40 hex), `tree_clean: true`, the lock's SHA-256 and its machine class | exact | test |
+| M07a.A43 | Every record of steps 1–12 | carries `commit` = `C_α` (40 hex), `tree_clean: true`, the lock's SHA-256 and its machine class: a `machine_class` member naming a key of `benchmarks/registry.yaml` `ensemble.machine_classes`, agreeing with the record's architecture and CI flag where it carries them *(amended 2026-10-15, Amendment 2 B-WO10-10, §18.3)* | exact | test |
 | M07a.A44 | `release/rc-trees/<C_α>.json` | equals `tree_record(C_α)` regenerated byte for byte; `trees` equal to `TREES` | exact | test |
 | M07a.A50 | The envelope at `C_α` | `envelope_id` and `release` as MR-3; `t08_support_matrix.py --check` 0 problems (T08.A20–A24); the harvest classifies every limitation and non-pass check of every manifest at `C_α`, T08's 58 limitations and 2 non-pass checks included, with `HARVEST_EXCLUDED` empty; the size quoted in M07a's manifest equals the computed one | exact | test |
 | M07a.A51 | B50's counterpart (MR-7): (a) the content at `C_α`; (b) one unregistered model added to `MODEL_BUILDERS`; (c) one registered addition removed | (a) the differences from `c7bbc98`'s fixture, excluding `server.package_version`, are exactly B50's three entries plus the register-named v0.2 additions, each once; (b) and (c) fail, naming the entry | exact | test |
@@ -941,7 +947,7 @@ The YAML is emitted with sorted keys and is byte-reproducible.
 | Q2 | Do `t08_dist.py`, the clean install and setuptools keep `0.2.0a1` unchanged in METADATA, the dist-info name and the file names? | **needs a fact**: WO-3 runs `t08_dist.py` on a scratch tree at `0.2.0a1` | Yes (canonical PEP 440). Any `X.Y.Z` assumption found is fixed in WO-3 and reported. |
 | Q3 | Does M02's merge leave the K05 identity unchanged (step 2)? | **needs a fact**: M02 G2 at the merge; step 2 at `C_α` | Yes. If not, stop. A substitution re-registration is Frank's (R-148, R-149). |
 | Q4 | Does any package other than M06 and M02 change an MCP-visible schema before `C_α`? | **needs a fact**: the chain test | No. Otherwise §5.3's new-link rule applies. |
-| Q5 | Do coupled-route certificates carry [A08] and [A09] evidence (MR-11)? | **needs a fact**: step 10 over step 12's certificates | Yes, by M02 §4.4. If not, V18 (b) is `FAIL` at `C_α`, escalated to the design lane, and the rule is not narrowed. |
+| Q5 | Do coupled-route certificates carry [A08] and [A09] evidence (MR-11)? | **needs a fact**: step 10 over step 12's certificates | Yes, by M02 §4.4. If not, V18 (b) is `FAIL` at `C_α`, escalated to the design lane, and the rule is not narrowed. *Answered 2026-10-15 (Amendment 2 §18.1): [A08] yes on all five; [A09] present on every required check plus four entries the rule forbids — a certificate defect (R-345), V18 clause (c), not (b), the rule not narrowed (R-346).* |
 | Q6 | Is M03 merged before `C_α`? | **needs the user's preference** (schedule; M03 also waits on its N1) | No: cut `C_α` right after M02's merge. If M03 merges first, MR-12 applies, and M03 N1 is a precondition of V18 (a). |
 | Q7 | How is `main` kept equal to `C_α` on D2.4 paths until the dispatch? | **needs the user's preference** | Freeze D2.4 paths on `main` from `C_α` to the dispatch; work continues on branches. Alternative: Frank pushes `v0.2.0a1` on the candidate and dispatches from the tag (the `pypi` environment admits tags `v*`). |
 | Q8 | The evidence package id | **needs the user's preference** (bookkeeping) | `M07a` (ADR 0028 D5). Alternative: `M02a`. It is reversible by renaming one directory before the RC. |
@@ -1058,3 +1064,258 @@ its own state and no other.
 a rerun can give `exact_replay` or `compatible_reproduction` `MATCH`. Plain `replay` never reruns (R-131), and its
 `compatible_reproduction` `NOT_RUN` ("no rerun was supplied") is a typed report that is recorded, not judged, so it is
 not read as a `FAIL` of V11 (e). The test already reads A42 this way; the row now says so.
+
+---
+
+## 18. Amendment 2 (design-lane ruling round), 2026-10-15
+
+**Author:** design lane (`specifier`), on `wp/V02-alpha-gate` @ `b8a769a`. **Brief:**
+`docs/briefs/V02-alpha-amendment2-brief.md`. **Inputs:** the RC record of the first candidate (`docs/v02-alpha-rc-record.md`,
+Failures F1); build decisions B-WO10-6 and B-WO10-10 (`docs/design/V02-alpha-build-decisions.md`); M07a's manifest at
+`e0e198e` (`implemented`: 35 pass, 2 fail (A39, A43), 6 unsupported). **Register:** R-345…R-349. The body markers
+*(amended 2026-10-15, Amendment 2 …)* point here.
+
+**Notation.** `C_α⁰` is `e0e198e`, the first candidate, which this amendment supersedes (§18.4). `C_α¹` is the re-cut
+candidate. Elsewhere in this specification `C_α` means the candidate being judged, which from now on is `C_α¹`.
+
+**What does not change.**
+- No tolerance, band, classification rule or expected set moves: T08.A34's rule, T06 A33 (A4)'s set and A39's
+  "0 violations" are unchanged.
+- ADR 0028 is not touched.
+- No claim of §11 moves: `v02a_reference.py --check` passes on this text (67 of 67 claims, YAML byte-identical).
+
+### 18.1 F1: the extra [A09] entries in step 12's certificates (M07a.A39; Q5). R-345, R-346
+
+**Measured at `C_α⁰`**, and re-measured by the design lane on the kept files on 2026-10-15. There are five coupled-route
+certificates: `g12-bundles/m02-g12-0/{bundle,live,replay}` and `g12-edges-bundles/m02-g12v3-2-{0,1}/bundle`. Each one:
+- has 25 `check_id`s in `independence_qualifications`, against 21 in T06 A33 (A4)'s set, with none missing;
+- has exactly four extra entries: `EXT-COUPLING:reactor:xi` and `:T`, whose check note is `external model, R3`, and
+  `derivative_witness.on_pattern` and `.off_pattern`, whose check note is `not differenced: 5 exactly-zero pr-c1-v1
+  stream-flow columns (design note §14.3 C2)`;
+- carries `derivative_witness_partial` (5 columns), one `external_model` limitation (`reproducibility: R3`) and the
+  [A08] evidence.
+
+The other 72 certificates audited are clean.
+
+**(i) Ruling: the four entries are a certificate defect, and the audit is right.**
+1. *What an entry says.* `verify/certificate.py:1305–1316` writes one `independence_qualifications` entry for every
+   check whose `independence_qualification` is not `None`. The entry carries the binding provider's `provider_id`,
+   `implementation_sha256`, `data_sha256` and `reference_convention`. It asserts [A09]: the check shares the property
+   provider with the solver, so it is process bookkeeping and not thermodynamic validation (`checks.qualification`'s
+   docstring). T06 §8.4 (A4) states the rule as "the certificate qualifies a check iff the check consulted the
+   provider".
+2. *What the four checks are.*
+   - **`EXT-COUPLING:<unit>:xi|T`** (`application/coupled_run.py:744–811`) are the coupling's fixed-point residuals:
+     category `residual`, ADR 0034 D3.
+     - Their arithmetic reads the final iterate's ξ_E and T_E, the inlet from the certified state (`inlet_of`, which
+       makes no provider call) and w.
+     - Their note names the external model and its reproducibility class, not the provider.
+     - The experiment that produced ξ_E and T_E calls a provider at its boundary (ADR 0033 D4). So does every
+       residual row of the inner problem, and no `residual` check has an entry.
+   - **`derivative_witness.*`** (`verify/checks.py:857–960`) difference the compiled function.
+     - They consult the provider in the same way on SYN-001 and on a `pr-c1-v1` state with no zero flow column, where
+       they have no entry, as on a state with skipped columns, where they have one.
+     - So the entry tracks the skip count, not any dependence on the provider. The note is about coverage.
+3. *Precedent.* T06 A33 (A4) is "falsifiable both ways": an entry on a check that consulted no provider in [A09]'s sense
+   fails, because "an entry for it would say it did". Amendment 4 found the certificate right there because the field
+   had one meaning. Here it has three.
+
+*Origin.* The defect is the design lane's.
+- M02 design note §4.4 gives the EXT checks `independence_qualification: "external model, R3"`.
+- §14.3 C2 (R-281) gives the witness its coverage note.
+- Both put non-[A09] text in the field that K04's certificate turns into a provider entry. The build lane implemented
+  them as written; no build-lane deviation is involved.
+
+**Remedy (R-345).** `CheckResult.independence_qualification` carries [A09] text only: `checks.qualification(provider)`,
+optionally followed by a form suffix as `verify/pr_c1.py`'s `_form` writes it (M02 design note §14 item 7). The two
+EXT-COUPLING checks of each unit and both witness checks write `None`. Nothing recorded is lost:
+- the external model, its variant and its reproducibility class stay in the `external_model` limitation (`unit`,
+  `variant_id`, `synthetic`, `reproducibility`);
+- the witness's exclusion stays in `derivative_witness_partial` (`columns`, `reason`). R-281's rejection of "an
+  unrecorded exclusion" still holds: the exclusion is recorded once, in the list of what the certificate does not
+  establish.
+
+This supersedes the `independence_qualification` text of M02 design note §4.4 and §14.3 C2, and the "qualification"
+half of R-281's *Record*.
+
+Code changes are limited to `coupled_run.py:766` and the witness's `note` in `checks.py`, with its docstring.
+`certificate.py` is not changed.
+
+*Rejected.*
+- **Filtering in `certificate.py`**, writing an entry only for prefixed ids. The certificate would then compute its
+  entries by the audit's own rule, and A33/A34 would compare a rule with itself. Amendment 4's evidence was that two
+  independent rules agreed: "entry iff note" and "prefix and `pass` or `fail`". That evidence would be lost.
+- **Moving the notes to `reason`.** `reason` says why a check has its result. A coverage note on a `pass` would give
+  that second field a third meaning.
+- **A runtime guard in `certificate.py`** that raises on a non-[A09] note. It would turn a labelling slip into a failed
+  job; Am2.1 catches the slip in the tests.
+- **Keeping the entries and extending the expected set.** See (ii).
+
+**(ii) Ruling: A34's and A39's expected set is not extended (R-346).** After (i) this is moot, but Q5 asked it.
+- A counterpart (§4 rule 2) must fix every quantity the old record fixed. T06 A33 (A4) fixes "no entry on a check that
+  did not consult the provider", and an extended set would release that for two families of checks.
+- The only evidence for the extension is the measured outcome. Each of MR-1…MR-12 was registered before measurement,
+  for a stated move of a v0.1 record. Nothing moved here: the certificate is wrong.
+
+**(iii) V18 at `C_α⁰`, and step 10 (R-346).**
+- *The clause is (c), not (b).* The failing evidence is [A09], which is V18 **clause (c)**, qualified energy checks
+  (T08 §4.8). Clause (b), regularity ([A08]), has a clean A34 input: all 77 certificates carry [A08]. Q5 said
+  "V18 (b)" loosely; its row now says (c).
+- *The input at `C_α⁰`.* Judged clause by clause (§4), the A39 failure is a V18 (c) `FAIL` input at `C_α⁰`.
+- *No verdict is written at `C_α⁰`.* WO-10 makes M07a's manifest `tested` only if A00–A53 pass, and §6.3 runs the
+  `verdict` agent only on a `tested` manifest. No rule of this specification dispositions a `fail` of A00–A53, and this
+  amendment adds none.
+- *Step 10 is not re-run at `C_α⁰`.* The code there is fixed, so a re-run would measure the same five violations. Step
+  10 runs at `C_α¹`, over steps 4–7 and 12 as `C_α¹` emits them (§18.4).
+- *Frank's alternative, not recommended.* He could accept V18 (c) `FAIL` for `0.2.0a1` under ADR 0028 D3. That would
+  also need WO-10's `tested` rule amended, and the release would ship every coupled-route certificate with false [A09]
+  entries. The default does not wait for him (§18.6 Q-A2-1).
+
+**Assertions of the fix.** These are tests in `check.sh`, carried to `C_α¹` by M07a.A30, and cited as Am2.n in the build
+log and the manifest. Each state has a precondition that the test asserts, so a fixture that stops meeting it fails
+instead of passing vacuously.
+- **S1, SYN-001 nominal (K05).** Precondition: no `derivative_witness_partial` and no `external_model` limitation. It is
+  in the list because the defect never showed there. It shows that the fix moves nothing there, and it catches a fix
+  that drops prefixed entries.
+- **S2, a `pr-c1-v1` revision on `revision_eo` whose witness skips at least one column.** For example, M02 D43's
+  reactor-less loop (k = 4; `tests/test_m02_wo8_region.py`). Precondition: `derivative_witness_partial` lists at least
+  one column, and there is no external unit. It isolates the witness defect.
+- **S3, a `revision_coupled` run on the in-process stand-in `standin-x025-v1`, `CONVERGED` with a certificate.** For
+  example, `tests/test_m02_wo10_coupled.py`'s. Precondition: one `external_model` limitation per external unit. It
+  carries the EXT defect, and the witness defect too where it skips columns.
+
+| # | Assertion | Expected | Tolerance |
+| --- | --- | --- | --- |
+| Am2.1 | S1–S3: every check whose `independence_qualification` is not `None` | the note starts with `checks.qualification(provider)` for the certificate's binding provider | exact (string prefix) |
+| Am2.2 | S1–S3: the `check_id`s of `independence_qualifications` | equal to T06 A33 (A4)'s set: ids with prefix `energy_balance.`, `phase_admissibility.` or `independent_split.` and `result` `pass` or `fail`. Each entry's four provider members equal `describe()`'s | exact (set equality) |
+| Am2.3 | S2: both witness checks. S3: both EXT checks of every unit | `independence_qualification` is `None`. S2's `derivative_witness_partial` lists exactly `checks.witness_skipped_columns`'s columns | exact |
+| Am2.4 | Negative controls: (a) the old EXT note restored at S3 (monkeypatched producer); (b) the old witness note restored at S2 | Am2.1 and Am2.2 fail, naming the restored check ids; S1 still passes | exact |
+| Am2.5 | Inertness | G2 (ii)'s 50-revision dump is byte-identical (sha256 `659748576adb9730…`, M02 D39/D43). Step 2's K05 identity at `C_α¹` gives the R-149 values (M07a.A31). Every certificate that changes is either a coupled-route certificate or a `pr-c1-v1` certificate with at least one skipped column. Every committed fixture that moves is listed in the build log with its old and new SHA-256 | exact |
+
+*Tolerances.* Every comparison here is of strings, sets or hashes. There is no floating-point floor to measure, and no
+tolerance to defend.
+
+### 18.2 B-WO10-6: step 12's certificates for step 10 (MR-11). R-348
+
+**Ruling: the directories the out-of-tree wrapper keeps are step 12's output for MR-11 and M07a.A39, on four
+conditions.**
+1. **The wrapper.**
+   - It replaces only `tempfile.TemporaryDirectory`, as `benchmarks/m02/g12_real_loop.py` sees it, with a context
+     manager that yields a kept directory.
+   - It changes no argument, environment variable or module of the solve.
+   - It is committed beside the records as `evidence/M07a/<C>/tools/g12keep.py.txt` (B-WO10-8's pattern), and its
+     SHA-256 is in the step-12 record or the RC record.
+2. **The files.** The audited `solution-certificate.json` files of step 12 (about 75 kB each) are committed under
+   `evidence/M07a/<C>/rc/step12/certificates/`, named by their kept path. The generator then re-derives A39 from
+   committed files.
+3. **The binding.**
+   - The M07a generator asserts that `openflowsheet.canonical.document_sha256` of the committed `m02-g12-0/bundle`
+     certificate equals the step-12 G12 record's `certificate_sha256`, and fails A39 otherwise. This is the function
+     `g12_real_loop.py:441` uses.
+   - The other certificates have no recorded hash. Their `document_sha256` values are listed in the manifest: recorded,
+     not judged.
+   - *Measured at `C_α⁰`:* the bundle certificate's `document_sha256` is `d61a86fbe76d12b7…19faa4`, equal to the
+     record's. `live` and `replay` hash to the same value. The two edges hash to `8761fe12161419d5…` and
+     `748cf6d2556acd7b…`.
+4. **The count.** The generator re-applies T08.A34's rule (`t08_rc.audit_certificate`, imported) to the committed
+   copies. It requires 0 violations, and a number of certificates equal to 3 + `len(edges)` of the step-12 edges record
+   (5 at `C_α⁰`), so that a dropped certificate is seen.
+
+*Rejected.*
+- **Auditing only the hashes the record carries.** A34 is a content rule, and a hash carries no [A08] or [A09]
+  content. The record holds one hash for five certificates, so MR-11's counterpart would audit nothing.
+- **An in-tree `--keep` option in `g12_real_loop.py`.** It edits M02's G12 evidence script, for a purpose the wrapper
+  serves without changing anything the script computes.
+- **A subcommand that reimplements the solve.** It duplicates frozen code (B-WO10-6's own rejection).
+
+### 18.3 B-WO10-10: M07a.A43's machine class. R-347
+
+**Ruling: the class is recorded.** At `C_α¹` every record of steps 1–12 carries a `machine_class` member, as follows.
+- It names a registered class: a key of `benchmarks/registry.yaml` `ensemble.machine_classes`, T08.A16's "the
+  registered machine class".
+- It agrees with the record's `architecture` (or `machine`) and `github_actions` where the record carries them.
+- It is computed at write time by `benchmarks.t06.ensemble.machine_class()`, the function that T06 §7.5 (A5) defines
+  and `t08_rc.machine_class()` wraps. It is never written as a literal.
+
+**A scoped exception to §8.2's "unchanged".**
+- `scripts/t08_rc.py`'s `install-check`, `lock-check` and `certificates` subcommands add the member to `provenance`.
+  `scripts/t08_dist.py` adds it at the top level, beside `machine`.
+- Their registered constants, checks, judgements and `format` ids do not change. A test that pins these records' key
+  sets is extended, and listed in the build log.
+- *Why this is not a weakening.* §8.2's "unchanged" protects constants and judging logic: its stated reason is "their
+  registered constants are still right at `C_α`", and R-192 says the same of A49. A43, in the same specification,
+  requires a member these four writers do not write, so the two rows contradicted each other for 13 records. A member
+  computed by a function the same script already calls for its campaign steps changes no constant and no verdict.
+
+**At `C_α⁰`, A43 is `fail` and stays so,** with the 13 records listed. Read by the records' own members, 11 of the 13
+would determine a CI class, but two cannot:
+- `rc/certificates-ref-x86-64.json` (`github_actions: false`, `x86_64`): `ref-x86-64` registers a CPU model that the
+  record does not carry, so the record cannot exclude `unregistered(x86_64)`;
+- `rc/ci/rc-dist/t08-a43-dist.json` carries no CI flag.
+
+*Rejected.*
+- **T08.A16's scope (campaign records only).** A43 deliberately widens T08.A16 to every record of steps 1–12, and
+  B-WO10-8 met it for steps 11 and 12. Narrowing it after the `fail` has no evidence independent of the outcome.
+- **"(architecture, CI) suffices".** It is false for 2 of the 13 records on its own terms. For the other 11 it is true
+  only because today's CI classes register no CPU model.
+- **A second class-derivation rule in the generator**, beside `machine_class()`. Two definitions can drift apart.
+- **An out-of-tree provenance wrapper.** Steps 3, 4 and 10 run on CI from the tree, so a wrapper would need a workflow
+  change anyway. The in-tree member is one change, and it is reviewed.
+
+### 18.4 The re-cut `C_α¹`. R-349
+
+`C_α⁰` cannot reach a verdict (§18.1 (iii)), and its code carries the R-345 defect. The RC job runs again, at a new
+candidate.
+1. **The tree.**
+   - `C_α¹` descends from `C_α⁰`, and its diff from `C_α⁰` is exactly:
+     - (a) R-345's change, the tests of Am2.1–Am2.4, the M02 tests that pin the old notes
+       (`tests/test_m02_wo8_verifier.py:339`, `tests/test_m02_wo10_coupled.py:517`), and the fixtures that Am2.5
+       lists;
+     - (b) R-347's member and the tests it extends;
+     - (c) this amendment's documents.
+   - `C_α¹`'s tree holds none of `C_α⁰`'s post-candidate files: its records, its manifest, its tree record, its RC
+     record, and the M07a generator with its test. A50's harvest and R-320 therefore apply unchanged: `HARVEST_EXCLUDED`
+     is empty, and the candidate contains no M07a manifest.
+   - The generator and its test are re-added after `C_α¹`, as they were after `C_α⁰`.
+   - The version stays `0.2.0a1`: nothing was released.
+2. **Review.** Before `C_α¹` is cut, the design lane reads the diff of (a) and (b) against Am2.1–Am2.5 and §18.3, as
+   CLAUDE.md requires for certificates. It is a narrow read, not a package review.
+3. **The RC job.** Steps 1–13 run in full at `C_α¹`: M07a.A43 needs `commit` = `C_α¹` on every record, and §4 rule 3
+   admits no evidence about `C_α⁰`. Step 12 runs through §18.2's wrapper, and step 10 audits its output.
+4. **`C_α⁰`'s evidence is kept, not deleted.**
+   - Its records, manifest (status `implemented`, never `tested`), tree record and RC record stay in the repository.
+   - Its RC record leaves the registered path `docs/v02-alpha-rc-record.md`, which `C_α¹`'s RC record takes, and gains
+     one line saying R-349 superseded it.
+   - `C_α⁰` stays reachable (§7.4).
+   - The branch mechanics are the build lane's, within these constraints.
+
+### 18.5 Build-lane actions, in order
+
+| # | Action | Acceptance |
+| --- | --- | --- |
+| 1 | R-345: `coupled_run.py:766` and the witness `note` in `checks.py`, with its docstring. A new `tests/test_a09_qualification_field.py` for Am2.1–Am2.4. Update the two M02 tests of §18.4 item 1 (a). Regenerate and list the fixtures that move. Run the Am2.5 proof. A build-log entry | Am2.1–Am2.5; `scripts/gate.sh` green |
+| 2 | R-347: the `machine_class` member in `t08_rc.py`'s three subcommands and in `t08_dist.py`. Extend the key-set tests. `tests/test_m07a_rc_records.py`'s `NO_MACHINE_CLASS` is empty at `C_α¹`, and `_m_provenance` also checks "registered" and agreement | test |
+| 3 | The design-lane read of 1 and 2 (§18.4 item 2) | the ruling recorded |
+| 4 | Cut `C_α¹` as §18.4 item 1 describes, for example a branch from `e0e198e` carrying 1, 2 and this amendment's commit | §8.1 items 1–6 at `C_α¹` |
+| 5 | The RC job, steps 1–13, at `C_α¹`. Step 12 through the wrapper; commit step 12's certificates (§18.2 item 2) | M07a.A30–A44 |
+| 6 | Generator: A39 as §18.2 items 2–4, A43 as §18.3. Regenerate M07a's manifest at `C_α¹` | `tested` iff A00–A53 pass |
+| 7 | Keep `C_α⁰`'s evidence (§18.4 item 4). Update `docs/progress.md` and `docs/V02_STATE.md` | — |
+
+### 18.6 Open questions, with defaults
+
+| # | Question | Label | Recommended default |
+| --- | --- | --- | --- |
+| Q-A2-1 | Release `C_α⁰` with V18 (c) `FAIL` accepted under ADR 0028 D3, instead of re-cutting? | **needs the user's preference** | No: re-cut (§18.4). It proceeds without waiting, because nothing outward happens before Frank's dispatch, and his later answer can only make the re-run unnecessary. |
+| Q-A2-2 | Does the fix move anything outside coupled-route and partial-witness `pr-c1-v1` certificates? | **needs a fact**: Am2.5 in action 1 | No. If anything else moves, stop: the fix is not the one this amendment describes, and it comes back to the design lane. |
+| Q-A2-3 | Does the bundle certificate kept at `C_α¹` bind to its record (§18.2 item 3)? | **needs a fact**: action 6 | Yes, as at `C_α⁰`. If it does not, A39 fails and the cause comes to the design lane. |
+
+### 18.7 What this amendment does not establish
+
+- It does not establish that V18 passes at `C_α¹`. That is the verdict's call, on `C_α¹`'s evidence.
+- It does not audit the certificates re-emitted by step 5's replays (T08 B13).
+- It does not rule on M02 D55, the stand-in's R1/R3 disagreement. Am2.3 asserts that the `external_model` limitation is
+  present, not which class it states.
+- It does not establish that the wrapper leaves step 12's other floating-point results unchanged. It binds one recorded
+  hash (§18.2 item 3), and G12's own judgement covers the rest.
+- It does not review every producer of `independence_qualification`. Am2.1 covers S1–S3, and T06 A33 covers the corpus
+  and ensemble certificates.
