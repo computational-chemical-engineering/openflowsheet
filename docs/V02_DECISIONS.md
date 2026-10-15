@@ -753,3 +753,7 @@ Grep, don't read whole. Newest at the bottom.
   c35c50b): A51, A37 (+ controls i–iv), A50 harvest pass. Open for the design-lane read: B-WO5-1 (c_2 digest 383b4e2c…
   pinned, needs a register entry), B-WO5-5 (R-133 hashes from REVIEW.json at v0.1.0), B-WO8-1…5 (E/S/P/B draft; [8], [9]
   rows; 18-manifests scope). WO-9 (Sonnet) launched.
+
+- **M04 merge + WO-8/9 done** (2026-10-15, `wp/M04` `0c2fc4c`…`c8f7e5d`, gate 8624): `surrogate_evidence` facet (10th),
+  rollback exception; A25–A30 pass (A26 band within 1e-10; A29 zero new attempts). E15, E16, E22, E23 (A19 env
+  fingerprint stale after M02 `7502515`, numbers unchanged) → M04 review. WO-11 launched with a v3 domain check first.
