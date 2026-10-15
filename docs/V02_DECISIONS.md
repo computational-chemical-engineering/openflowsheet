@@ -833,3 +833,7 @@ Grep, don't read whole. Newest at the bottom.
   W21 (c) (M02 N1). W22 band ratios 1.58/1.25/1.18. 61 record hashes recomputed, match. Findings A1 (aarch64 reactor
   limitation row missing from envelope, before any tag), A2 (date rule vs re-judgement), A5 (CHANGELOG), A3/A4/A6–A10.
   Frank notified (push). `specifier` Amendment 3 launched (brief `b272cea`).
+- **Alpha Amendment 3** (2026-10-15, `specifier`, `6505315`, R-370…R-379): A1 re-cut C_α² (envelope platforms axis + L15
+  claim aarch64 for the reactor; notes-only fix rejected as narrowing); A2 re-judgement rule (T7/T8, M07a.A14); A3 A61 names
+  V13 (e); A4 `tested` iff A00–A51, A53; A5 CHANGELOG phrases (11 added); A6 deferred to 0.2.0; A7 `-rs`; A8 L47/U15; A9 450 s;
+  A10 marker. B-AM2-6/9/10 confirmed. Q-A3-1 (strict date rule) put to Frank. Engineer launched on §19.8 actions 1–4.
