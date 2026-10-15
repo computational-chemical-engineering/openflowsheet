@@ -359,3 +359,17 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   Alternative: `threadpoolctl==3.6.0` with a new lock and T08 constant (a design-lane/release
   call). Reversible by: replacing `single_blas_thread` with `threadpoolctl.threadpool_limits(1,
   "blas")` in `quadratic.py` and deleting `blas.py`.
+- **E37. R-365's class B points to T08 §6.3's B10.** R-365 files the A33/Q-A2.1 limitation and
+  the `not_applicable` A33 check as B ("close with A33's record"), but §6.3 (T08 release spec,
+  design lane's) has no M04 id, and the harvest check requires one. DECISION: `to: [B10]`, the
+  handed-on follow-ups, with the note naming R-366's closure. The real verdict is E with the new
+  envelope row L43 (R-365's text), which the `unit_models` statement now cites (E14, R-365's
+  wording). Alternative: a new §6.3 id, written by the design lane. Reversible by: changing the
+  two `B10` pointers in `scripts/m04_evidence_manifest.py` and re-running `--harvest-from`.
+- **E38. A48–A50 enter the manifest from §20's prose, in no W23 row.** §20 states them as
+  sentences, not `**M04.Ann**` lines, and names no W23 row for them. DECISION: the generator's
+  `ADDED` table reads each statement from the specification (whitespace-normalised, refused if
+  absent) and gives each its own check; `M04.W23.not_in_a_w23_row` lists them. Alternative:
+  join them to "Promotion and rollback" (A48), "Frozen splits/transforms" (A49) and
+  "Insufficient-data outcome" (A50) — a W23 placement is the design lane's. Reversible by: an
+  `AMENDMENTS` row per placement.

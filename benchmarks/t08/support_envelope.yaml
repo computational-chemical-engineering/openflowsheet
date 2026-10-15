@@ -83,7 +83,8 @@ axes:
       and since M02's join (R-280) the eight C1 models and since W27 Amendment 3 (R-301) M04's
       `c1.reactor_surrogate`, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
       synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
-      manifest and in every result's identity (R-199, R-231). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
+      manifest and in every result's identity (R-199, R-231). No promotable surrogate of the real
+      C1 reactor exists in v0.2 (L43, R-365). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
     members:
       - c1.adiabatic_mixer
       - c1.feed_source
@@ -779,6 +780,20 @@ limitations:
       - doc:docs/derivations/M01-spec.md §4.2
       - doc:docs/derivations/M01-spec.md §17
       - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
+  - id: L43
+    text: >-
+      No promotable surrogate of the real C1 reactor exists in v0.2. M04's one real iteration
+      (plan `b2-it1` on box v2, reactor variant v3) is NOT_PROMOTABLE (`band_not_finite`): 26 of
+      its 632 registered experiments, 5 of them among the 118 calibration draws, end in a
+      deterministic `reactor_not_accepted(certificate)`, more than the n − k = 4 refused draws the
+      conformal band tolerates, so q̂ is infinite. A revision binds `c1.reactor_surrogate` only
+      through a manifest that re-derives PROMOTABLE (R-360), and no further iteration on v3 is
+      admissible (R-364).
+    evidence:
+      - check:M04.A31
+      - tests/test_m04_wo9_synthetic_loop.py::test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected
+      - doc:benchmarks/m04/wo11-b2-it1-v3/record.json
+      - doc:docs/derivations/M04-spec.md §20
   - id: L-WEB-1
     text: >-
       The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits

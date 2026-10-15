@@ -1,9 +1,10 @@
 """Generate `evidence/M04/<C>/manifest.json` by measuring, not by transcribing. M04 WO-12.
 
 Specification `docs/derivations/M04-spec.md` §12 (assertions A01–A35), §13 (WO-12), §15 (the W23
-gate table), §18 (Amendment 1: A36–A42) and §19 (Amendment 2: A43–A47, the W23 rows they join,
-WO-11 on `b2-it1` and v3). The manifest carries one check per assertion, read from the
-specification itself, so that an assertion cannot be left out. Each check is decided from what
+gate table), §18 (Amendment 1: A36–A42), §19 (Amendment 2: A43–A47, the W23 rows they join,
+WO-11 on `b2-it1` and v3) and §20 (Amendment 3: A48–A50, the review's rulings R-360…R-369).
+The manifest carries one check per assertion, read from the specification itself, so that an
+assertion cannot be left out. Each check is decided from what
 this script ran or read at `C`:
 
 1. **The M04 tests**, run once here (`pytest --junitxml` over `tests/test_m04_*.py`, the default
@@ -21,9 +22,11 @@ this script ran or read at `C`:
 5. **Register pointers**: the `docs/decision-register.md` entries decided by M04, and the ADRs
    they name.
 
-`--harvest-from MANIFEST` classifies an existing manifest's limitations and non-pass checks in
-`benchmarks/t08/support_envelope.yaml#harvest` (T08.A21; class P, M02's pattern: each stays in its
-manifest) and regenerates `docs/support-matrix.md`; the manifest itself is not touched.
+`--harvest-from MANIFEST...` classifies the named manifests' limitations and non-pass checks in
+`benchmarks/t08/support_envelope.yaml#harvest` (T08.A21), replacing every `evidence/M04/` entry,
+and regenerates `docs/support-matrix.md`; the manifests are not touched. The classes are R-365's
+(spec §20 A3.5): the real verdict E (envelope row L43), A33 and Q-A2.1 B, the rest P; the
+`a9566a6` manifest's E33 limitation is S, closed by A49 (`HARVEST_BY_COMMIT`).
 
 Status is `tested` when every check is `pass` (A33 may be `not_applicable`) and every command
 exited 0; otherwise `implemented`. Per N6, M04 is `tested` whatever the real verdict. `reviewed`
@@ -33,7 +36,7 @@ Usage:
     PYTHONPATH=src .venv/bin/python scripts/m04_evidence_manifest.py --commit C \\
         --gate-log GATE_STDOUT
     PYTHONPATH=src .venv/bin/python scripts/m04_evidence_manifest.py \\
-        --harvest-from evidence/M04/C/manifest.json
+        --harvest-from evidence/M04/a9566a6…/manifest.json evidence/M04/C/manifest.json
 """
 
 from __future__ import annotations
@@ -73,6 +76,26 @@ AMENDMENTS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     ("Domain", ("A44",), 'under "Domain": A44'),
     ("Promotion and rollback", ("A45", "A46"), 'under "Promotion and rollback": A45 and A46'),
 )
+#: Amendment 3's assertions (§20), stated in prose rather than as `**M04.Ann**` lines: each id with
+#: the statement read from the specification, which must be present (whitespace-normalised).
+ADDED: tuple[tuple[str, str], ...] = (
+    (
+        "A48",
+        "a change whose new revision binds a surrogate-backed instance with no checked replacement "
+        "is rejected if that surrogate's re-derived verdict (`derived_verdict`) is not PROMOTABLE. "
+        "This covers an added instance, a renamed one, and the first revision.",
+    ),
+    (
+        "A49",
+        "The fit runs in two subprocesses with `OPENBLAS_NUM_THREADS=OMP_NUM_THREADS` at 1 and at "
+        "8, at a size where it fails without the fix. Its coefficients are bitwise equal.",
+    ),
+    (
+        "A50",
+        "A study whose training has N_ok < 36 records IE = [`training_unidentifiable`] (plus "
+        "`plan_incomplete` if it applies) and NP = [].",
+    ),
+)
 #: §15's numerical-verification condition: these `tested` in the default gate, A31–A32 recorded.
 W23_CONDITION = tuple(f"A{n:02d}" for n in (*range(1, 31), 34, 35)) + ("A31", "A32")
 
@@ -81,11 +104,10 @@ LIMITATIONS: tuple[str, ...] = (
     "it is conditional on a PROMOTABLE A31. Q-A2.1 (does the surrogate-backed loop's reactor "
     "inlet lie in box v2?) stays open without A33's record.",
     "The real-reactor records (A31, A32, A41) are opt-in: the pinned reactor environment, Linux, "
-    "one machine, read here and not re-run. A32's bitwise manifest equality holds at the thread "
-    "environment WO-11 ran under (single-threaded BLAS): with multi-threaded BLAS the "
-    "re-submitted study's manifest differs in the last bits of the fit (build decision E33), the "
-    "`promotion` block unchanged. Whether the study pins its BLAS threads or records them is "
-    "open for the design lane.",
+    "one machine, read here and not re-run. A32's bitwise manifest equality holds on that "
+    "platform at any thread setting: the fit runs under one BLAS thread (R-362, A49; build "
+    "decision E36), and WO-11's study re-submitted from cache gave `d65bb022…` at one and at 48 "
+    "threads; across platforms §18 A1.3's classes govern.",
     "The W23 rows here are numerical verification of §15's items; W23's verdict is the `verdict` "
     "lane's, not this manifest's. Self-generated outputs (the A19 fixtures, the WO-11 record) are "
     "regression evidence; the correctness assertions rest on the specification's closed forms and "
@@ -93,7 +115,8 @@ LIMITATIONS: tuple[str, ...] = (
 )
 
 ARTIFACTS: tuple[tuple[str, str], ...] = (
-    ("docs/derivations/M04-spec.md", "The specification (assertions, W23 table, amendments 1-2)."),
+    ("docs/derivations/M04-spec.md", "The specification (assertions, W23 table, amendments 1-3)."),
+    ("docs/reviews/M04-review.md", "The design-lane review (MF1, MF2, SF1, SF2; rulings)."),
     ("docs/design/M04-build-decisions.md", "The build log (E-entries with the measured values)."),
     ("benchmarks/m04/reference_values.json", "The generator's reference values (A34)."),
     ("benchmarks/m04/numerical_policy_surrogate.yaml", "M04's numerical-policy addendum."),
@@ -125,6 +148,11 @@ def catalogue() -> dict[str, str]:
     pattern = r"^(?:- )?\*\*M04\.(A\d\d)\*?\*? *(?:\*\([^)]*\)\* )?(?:—|\*\* —)? *(.*)$"
     for match in re.finditer(pattern, text, re.MULTILINE):
         found.setdefault(match[1], match[2].replace("**", "").strip(" *—"))
+    flat = " ".join(text.split())
+    for aid, statement in ADDED:
+        if " ".join(statement.split()) not in flat:
+            raise SystemExit(f"{aid}'s statement is not in {SPEC.name}: {statement!r}")
+        found.setdefault(aid, statement)
     numbers = sorted(int(a[1:]) for a in found)
     if numbers != list(range(1, numbers[-1] + 1)):
         raise SystemExit(f"assertion numbers are not contiguous: {numbers}")
@@ -475,15 +503,35 @@ def status(checks_: Sequence[Mapping[str, Any]], commands: Sequence[Mapping[str,
 
 # ----------------------------------------------------------------------------- harvest
 
-#: The harvest note of each limitation, in the manifest's order (the first is the real verdict).
-NOTES: tuple[str, ...] = (
-    "real surrogate NOT_PROMOTABLE (band_not_finite) on v3; M04 tested by N6",
-    "A33 not run (A31 not PROMOTABLE); Q-A2.1 open",
-    "real-reactor records opt-in, one machine; A32 bitwise at single-threaded BLAS (E33)",
-    "W23 verdict is the verdict lane's; self-generated records are regression fixtures",
+#: A harvest classification: (class, pointers, note) (T08 spec §5.7).
+Classified = tuple[str, tuple[str, ...], str]
+
+#: Each limitation's classification, in the manifest's order (the first is the real verdict), by
+#: R-365 (spec §20 A3.5). B points to T08 §6.3's B10, the handed-on follow-ups (build decision
+#: E37: §6.3 has no M04 id).
+NOTES: tuple[Classified, ...] = (
+    ("E", ("L43",), "real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L43 (R-365)"),
+    ("B", ("B10",), "A33 not run (A31 not PROMOTABLE); Q-A2.1 open until A33's record (R-366)"),
+    ("P", (), "real-reactor records opt-in, one machine; A32 bitwise per platform (R-362)"),
+    ("P", (), "W23 verdict is the verdict lane's; self-generated records are regression fixtures"),
 )
-CHECK_NOTES: Mapping[str, str] = {
-    "M04.A33": "A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run",
+CHECK_NOTES: Mapping[str, Classified] = {
+    "M04.A33": (
+        "B",
+        ("B10",),
+        "A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run (R-365)",
+    ),
+}
+#: A manifest written before a limitation's text changed keeps its own classification: the
+#: `a9566a6` manifest's E33 limitation is closed by R-362's pin, A49 (R-365: B, then S).
+HARVEST_BY_COMMIT: Mapping[str, Mapping[int, Classified]] = {
+    "a9566a6b3805938e8d4d386cc1820a551530f771": {
+        2: (
+            "S",
+            ("check:M04.A49",),
+            "E33 closed: the fit runs under one BLAS thread (R-362, A49; build decision E36)",
+        ),
+    },
 }
 
 
@@ -493,31 +541,35 @@ def harvest_entries(path: str, manifest: Mapping[str, Any]) -> list[dict[str, An
 
     if len(manifest["limitations"]) != len(NOTES):
         raise SystemExit("the manifest's limitations and NOTES differ in number")
-    entries: list[dict[str, Any]] = [
-        {
-            "manifest": path,
-            "item": f"limitations[{index}]",
-            "sha256": text_sha256(text),
-            "class": "P",
-            "to": [],
-            "note": NOTES[index],
-        }
-        for index, text in enumerate(manifest["limitations"])
-    ]
+    own = HARVEST_BY_COMMIT.get(manifest["commit"], {})
+    entries: list[dict[str, Any]] = []
+    for index, text in enumerate(manifest["limitations"]):
+        kind, pointers, note = own.get(index, NOTES[index])
+        entries.append(
+            {
+                "manifest": path,
+                "item": f"limitations[{index}]",
+                "sha256": text_sha256(text),
+                "class": kind,
+                "to": list(pointers),
+                "note": note,
+            }
+        )
     for index, check in enumerate(manifest["checks"]):
         if check["result"] == "pass":
             continue
         if check["id"] not in CHECK_NOTES or check["result"] != "not_applicable":
             raise SystemExit(f"{check['id']} is {check['result']}: not classified; fix it first")
+        kind, pointers, note = CHECK_NOTES[check["id"]]
         entries.append(
             {
                 "manifest": path,
                 "item": f"checks[{index}]",
                 "check_id": check["id"],
                 "sha256": text_sha256(check),
-                "class": "P",
-                "to": [],
-                "note": CHECK_NOTES[check["id"]],
+                "class": kind,
+                "to": list(pointers),
+                "note": note,
             }
         )
     return entries
@@ -527,7 +579,8 @@ def _yaml_entry(entry: Mapping[str, Any]) -> str:
     lines = [f"- manifest: {entry['manifest']}", f"  item: {entry['item']}"]
     if "check_id" in entry:
         lines.append(f"  check_id: {entry['check_id']}")
-    lines += [f"  sha256: {entry['sha256']}", f"  class: {entry['class']}", "  to: []"]
+    lines += [f"  sha256: {entry['sha256']}", f"  class: {entry['class']}"]
+    lines += [f"  to:{'' if entry['to'] else ' []'}", *(f"  - {p}" for p in entry["to"])]
     lines.append(f"  note: {entry['note']}")
     return "\n".join(lines) + "\n"
 
@@ -552,15 +605,17 @@ def write_harvest(entries: Sequence[Mapping[str, Any]]) -> None:
         raise SystemExit("support_envelope.yaml: the harvest entries did not round-trip")
 
 
-def harvest(manifest_path: Path) -> int:
-    path = manifest_path.resolve().relative_to(ROOT).as_posix()
-    manifest = json.loads((ROOT / path).read_text(encoding="utf-8"))
-    entries = harvest_entries(path, manifest)
+def harvest(manifest_paths: Sequence[Path]) -> int:
+    entries: list[dict[str, Any]] = []
+    for manifest_path in manifest_paths:
+        path = manifest_path.resolve().relative_to(ROOT).as_posix()
+        manifest = json.loads((ROOT / path).read_text(encoding="utf-8"))
+        entries += harvest_entries(path, manifest)
     write_harvest(entries)
     subprocess.run(
         [sys.executable, "scripts/t08_support_matrix.py", "--emit"], cwd=ROOT, check=True
     )
-    print(f"harvest: {len(entries)} entries for {path}")
+    print(f"harvest: {len(entries)} entries for {len(manifest_paths)} manifests")
     return 0
 
 
@@ -569,7 +624,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--commit")
     parser.add_argument("--gate-log", type=Path)
     parser.add_argument("--out", type=Path)
-    parser.add_argument("--harvest-from", type=Path)
+    parser.add_argument("--harvest-from", type=Path, nargs="+")
     args = parser.parse_args(argv)
     if args.harvest_from is not None:
         return harvest(args.harvest_from)
