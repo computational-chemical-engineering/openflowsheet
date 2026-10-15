@@ -168,6 +168,77 @@
     "m04-synthetic-smooth-v1": "1.0",
     "m04-synthetic-rough-v1": "4.0"
    }
+  },
+  "box_v2": [
+   {
+    "coordinate": "T",
+    "unit": "K",
+    "lo": 653.15,
+    "hi": 693.15,
+    "centre": 673.15,
+    "half_width": 20.0
+   },
+   {
+    "coordinate": "P",
+    "unit": "Pa",
+    "lo": 9000000.0,
+    "hi": 10000000.0,
+    "centre": 9500000.0,
+    "half_width": 500000.0
+   },
+   {
+    "coordinate": "r_H2_N2",
+    "unit": "1",
+    "lo": 2.5,
+    "hi": 3.00001,
+    "centre": 2.750005,
+    "half_width": 0.25000500000000003
+   },
+   {
+    "coordinate": "y_NH3",
+    "unit": "1",
+    "lo": 0.02,
+    "hi": 0.04,
+    "centre": 0.03,
+    "half_width": 0.01
+   },
+   {
+    "coordinate": "y_Ar",
+    "unit": "1",
+    "lo": 0.014,
+    "hi": 0.03,
+    "centre": 0.022,
+    "half_width": 0.008
+   },
+   {
+    "coordinate": "y_CH4",
+    "unit": "1",
+    "lo": 0.022,
+    "hi": 0.04,
+    "centre": 0.031,
+    "half_width": 0.009000000000000001
+   },
+   {
+    "coordinate": "F_tube",
+    "unit": "mol/s",
+    "lo": 0.005,
+    "hi": 0.0086,
+    "centre": 0.0068000000000000005,
+    "half_width": 0.0018
+   }
+  ],
+  "reference_distributions": {
+   "m04-c1-box7-v1": [
+    "it1",
+    "it1-prefix",
+    "it2",
+    "it3"
+   ],
+   "m04-c1-box7-v2": [
+    "b2-it1",
+    "b2-it2",
+    "b2-it3"
+   ]
   }
  },
  "splitmix64_first_words": {
@@ -3489,7 +3560,7 @@
   }
  },
  "claims": {
-  "count": 8634,
+  "count": 11943,
   "distinct_statements": [
    "A11: the singular-value ratio is far below tau_id = 1e-8",
    "A11: z_F is roundoff-small but not exactly zero",
@@ -3528,12 +3599,62 @@
    "V15 budget refusal",
    "V16 extrapolated",
    "all registered experiment requests are distinct",
+   "b2-it1: 632 distinct requests",
+   "b2-it1: each draw and centre within 1e-14 in z of its it1 twin",
+   "b2-it1: every held-out draw >= 0.2084 from training",
+   "b2-it1: every request lies in box v2",
+   "b2-it1: every request lies in v3's hard and data domains",
+   "b2-it1: no request repeats an earlier b2 request",
+   "b2-it1: the maximum r is <= 3 - 9e-5",
+   "b2-it1: the minimum inert fraction is >= 0.0365",
+   "b2-it1: the separation is it1's registered 0.208491 to six digits",
+   "b2-it2: 488 distinct requests",
+   "b2-it2: each draw and centre within 1e-14 in z of its it2 twin",
+   "b2-it2: every held-out draw >= 0.18 from training",
+   "b2-it2: every request lies in box v2",
+   "b2-it2: every request lies in v3's hard and data domains",
+   "b2-it2: no request repeats an earlier b2 request",
+   "b2-it2: the maximum r is <= 3 - 9e-5",
+   "b2-it2: the minimum inert fraction is >= 0.0365",
+   "b2-it2: the separation is it2's registered 0.180004 to six digits",
+   "b2-it2: training lists 562 origins",
+   "b2-it2: training origins are earlier b2 draws",
+   "b2-it3: 488 distinct requests",
+   "b2-it3: each draw and centre within 1e-14 in z of its it3 twin",
+   "b2-it3: every held-out draw >= 0.1437 from training",
+   "b2-it3: every request lies in box v2",
+   "b2-it3: every request lies in v3's hard and data domains",
+   "b2-it3: no request repeats an earlier b2 request",
+   "b2-it3: the maximum r is <= 3 - 9e-5",
+   "b2-it3: the minimum inert fraction is >= 0.0365",
+   "b2-it3: the separation is it3's registered 0.143713 to six digits",
+   "b2-it3: training lists 980 origins",
+   "b2-it3: training origins are earlier b2 draws",
+   "both loop records are on the v3 variant",
    "box corners in both domains",
+   "box v2 F_tube lies inside v3's hard interval",
+   "box v2 F_tube: centre and half-width are the table's",
+   "box v2 P lies inside v3's data interval",
+   "box v2 P lies inside v3's hard interval",
+   "box v2 P: centre and half-width are the table's",
+   "box v2 T lies inside v3's data interval",
+   "box v2 T lies inside v3's hard interval",
+   "box v2 T: centre and half-width are the table's",
+   "box v2 r_H2_N2 lies inside v3's hard interval",
+   "box v2 r_H2_N2: centre and half-width are the table's",
+   "box v2 y_Ar: centre and half-width are the table's",
+   "box v2 y_CH4: centre and half-width are the table's",
+   "box v2 y_NH3: centre and half-width are the table's",
+   "box v2: hi_Ar + hi_CH4 <= inert_max",
+   "box v2: lo_Ar + lo_CH4 - inert_min >= 0.9e-3",
+   "box v2: r_hi - 3 = 1e-5 exactly in decimal",
    "calibration[i] in hard and data domain",
    "calibration[i] lies in the reference box",
    "calibration[i].u[i] is the affine sample to within 2 ulp",
    "every held-out draw is >= 0.05 (inf-norm, scaled) from every training draw",
+   "every loop state has excess 0 exactly under box v2",
    "fewer than 30 of the 300 test draws lie in the training draws' convex hull",
+   "four loop states at each of 653.15, 673.15 and 693.15 K",
    "gradient[i] stencil inside the box",
    "h_min is the exact Clopper-Pearson decision boundary at m = 300",
    "h_min(300) = 279",
@@ -3557,6 +3678,9 @@
    "it3: stencil inside the box",
    "it3: training lists 980 origins",
    "it3: training origins are earlier draws",
+   "loop: z_T in {-1, 0, 1} and z_P = 1 exactly",
+   "loop: z_r in [1 - 5e-5, 1 - 3e-5]",
+   "loop: |z| <= 0.9 for y and F",
    "m04-synthetic-rough-v1/prefix: FD truncation < 1e-3",
    "m04-synthetic-rough-v1/prefix: no score within 1e-8 of q_hat (integer outcomes are exact)",
    "m04-synthetic-rough-v1/prefix: q_hat not within 1e-6 of 1",
@@ -3586,6 +3710,7 @@
    "test[i] in hard and data domain",
    "test[i] lies in the reference box",
    "test[i].u[i] is the affine sample to within 2 ulp",
+   "the C1 loop on v3 has 12 reactor-inlet states",
    "the decision boundary is not knife-edge",
    "the failure-aware power reduces to the beta-binomial power at f = 0",
    "the full quadratic in 7 inputs has 36 terms",
@@ -3594,6 +3719,7 @@
    "training[i] in hard and data domain",
    "training[i] lies in the reference box",
    "training[i].u[i] is the affine sample to within 2 ulp",
+   "under box v1 the loop's largest excess is >= 0.1",
    "w_T lies inside DX-01's T_out range 1.24-1.67 K",
    "w_X / X_nom lies inside DX-01's xi range 1.44-1.94 %"
   ]
@@ -3611,5 +3737,80 @@
    "fresh_experiments": 488,
    "min_inf_distance_training_to_heldout": "0.143713"
   }
- ]
+ ],
+ "amendment2": {
+  "sources": {
+   "src/openflowsheet/adapters/variants/pymrm-6089593-g2-nz800-s123-v3.json": "35cc7de1adf275f98646d3e3d1e82b83991e863364958083d98bd498dfe7a4bf",
+   "benchmarks/m02/g12-real-loop-v3.json": "47dc9f089b715fd417b9befac2f2f4974fd7bc087b2989addcd52523428a9075",
+   "benchmarks/m02/g12-real-loop-v3-edges.json": "148ec48830965e68a240528ab386f54305fba8a0c01d651ed166a59b83cce7f1"
+  },
+  "box_v2": {
+   "inert_floor_margin": "0.001"
+  },
+  "plans_b2": [
+   {
+    "plan_id": "b2-it1",
+    "fresh_experiments": 632,
+    "training_origins": 0,
+    "min_inert_fraction": "0.037709305",
+    "max_r": "2.999902214",
+    "max_z_deviation_from_v1_twin": "2.63e-15",
+    "min_inf_distance_training_to_heldout": "0.208491"
+   },
+   {
+    "plan_id": "b2-it2",
+    "fresh_experiments": 488,
+    "training_origins": 562,
+    "min_inert_fraction": "0.036677579",
+    "max_r": "2.999412227",
+    "max_z_deviation_from_v1_twin": "2.59e-15",
+    "min_inf_distance_training_to_heldout": "0.180004"
+   },
+   {
+    "plan_id": "b2-it3",
+    "fresh_experiments": 488,
+    "training_origins": 980,
+    "min_inert_fraction": "0.038084104",
+    "max_r": "2.999709996",
+    "max_z_deviation_from_v1_twin": "2.76e-15",
+    "min_inf_distance_training_to_heldout": "0.143713"
+   }
+  ],
+  "loop": {
+   "states": 12,
+   "n_tubes": 1000.0,
+   "max_excess_box_v2": "0.0",
+   "max_excess_box_v1": "0.140362",
+   "z_range_box_v2": [
+    [
+     "-1.0",
+     "1.0"
+    ],
+    [
+     "1.0",
+     "1.0"
+    ],
+    [
+     "0.99996",
+     "0.99996"
+    ],
+    [
+     "-0.109705",
+     "-0.0354601"
+    ],
+    [
+     "-0.796187",
+     "-0.475815"
+    ],
+    [
+     "-0.839361",
+     "-0.412198"
+    ],
+    [
+     "-0.72418",
+     "-0.223474"
+    ]
+   ]
+  }
+ }
 }

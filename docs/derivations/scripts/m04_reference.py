@@ -28,13 +28,15 @@ runs the same claims and writes the files only when all of them hold.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import re
 import sys
 from collections.abc import Mapping, Sequence
+from decimal import Decimal
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 from mpmath import mp, mpf
 
@@ -68,6 +70,30 @@ HI = tuple(float(b[3]) for b in BOX)
 #: Centre and half-width, binary64, in this operation order (spec §3.1).
 CENTRE = tuple((lo + hi) * 0.5 for lo, hi in zip(LO, HI, strict=True))
 HALF = tuple((hi - lo) * 0.5 for lo, hi in zip(LO, HI, strict=True))
+
+
+class RefBox(NamedTuple):
+    """A registered reference box: its P_ref id, literal rows and binary64 bounds, centre, half."""
+
+    id: str
+    rows: tuple[tuple[str, str, str, str], ...]
+    lo: tuple[float, ...]
+    hi: tuple[float, ...]
+    centre: tuple[float, ...]
+    half: tuple[float, ...]
+
+
+def ref_box(box_id: str, rows: tuple[tuple[str, str, str, str], ...]) -> RefBox:
+    """Bounds parsed from decimal literals; centre and half-width as spec §3.1 orders them."""
+    lo = tuple(float(b[2]) for b in rows)
+    hi = tuple(float(b[3]) for b in rows)
+    centre = tuple((a + b) * 0.5 for a, b in zip(lo, hi, strict=True))
+    half = tuple((b - a) * 0.5 for a, b in zip(lo, hi, strict=True))
+    return RefBox(box_id, rows, lo, hi, centre, half)
+
+
+#: P_ref `m04-c1-box7-v1` (spec §4.1): synthetic parents, plans it1, it1-prefix, it2, it3.
+V1: Final = ref_box("m04-c1-box7-v1", BOX)
 
 #: The parent's hard domain and data domain (M01 spec §8.12, ADR 0027; ADR 0034 D10 for the flow).
 F0 = 0.007146961299302104
@@ -171,14 +197,14 @@ def unit_uniform(word: int) -> float:
     return float(word >> 11) * 2.0**-53
 
 
-def inner_box() -> tuple[tuple[float, ...], tuple[float, ...]]:
-    lo = tuple(c - GRAD_INNER * h for c, h in zip(CENTRE, HALF, strict=True))
-    hi = tuple(c + GRAD_INNER * h for c, h in zip(CENTRE, HALF, strict=True))
+def inner_box(box: RefBox = V1) -> tuple[tuple[float, ...], tuple[float, ...]]:
+    lo = tuple(c - GRAD_INNER * h for c, h in zip(box.centre, box.half, strict=True))
+    hi = tuple(c + GRAD_INNER * h for c, h in zip(box.centre, box.half, strict=True))
     return lo, hi
 
 
-def draws(iteration: int, split: str, count: int) -> list[tuple[float, ...]]:
-    lo, hi = (LO, HI) if split != "gradient" else inner_box()
+def draws(iteration: int, split: str, count: int, box: RefBox = V1) -> list[tuple[float, ...]]:
+    lo, hi = (box.lo, box.hi) if split != "gradient" else inner_box(box)
     words = splitmix64(seed_of(iteration, split), D * count)
     out = []
     for j in range(count):
@@ -196,8 +222,8 @@ def request_of(u: Sequence[float]) -> dict[str, Any]:
     return {"n": n, "T": t, "P": p}
 
 
-def stencil(u: Sequence[float], k: int, sign: int) -> tuple[float, ...]:
-    step = GRAD_STEP * HALF[k]
+def stencil(u: Sequence[float], k: int, sign: int, box: RefBox = V1) -> tuple[float, ...]:
+    step = GRAD_STEP * box.half[k]
     v = list(u)
     v[k] = u[k] + step if sign > 0 else u[k] - step
     return tuple(v)
@@ -220,12 +246,12 @@ def u_of_request(n: Sequence[Any], t: Any, p: Any, n_tubes: Any = 1) -> list[Any
     ]
 
 
-def z_of_u(u: Sequence[Any]) -> list[Any]:
-    return [(mpf(u[k]) - mpf(CENTRE[k])) / mpf(HALF[k]) for k in range(D)]
+def z_of_u(u: Sequence[Any], box: RefBox = V1) -> list[Any]:
+    return [(mpf(u[k]) - mpf(box.centre[k])) / mpf(box.half[k]) for k in range(D)]
 
 
-def z_of_request(req: Mapping[str, Any], n_tubes: Any = 1) -> list[Any]:
-    return z_of_u(u_of_request(req["n"], req["T"], req["P"], n_tubes))
+def z_of_request(req: Mapping[str, Any], n_tubes: Any = 1, box: RefBox = V1) -> list[Any]:
+    return z_of_u(u_of_request(req["n"], req["T"], req["P"], n_tubes), box)
 
 
 PAIRS = [(i, j) for i in range(D) for j in range(i, D)]
@@ -732,24 +758,29 @@ def in_data(u: Sequence[Any]) -> bool:
     )
 
 
-def build_plan() -> dict[str, Any]:
-    plan: dict[str, Any] = {}
-    for split in ("training", "calibration", "test"):
-        rows = []
-        for j, u in enumerate(draws(1, split, COUNTS[split])):
-            rows.append({"index": j, "u": list(u), "request": request_of(u)})
-        plan[split] = rows
+def gradient_centres(iteration: int, box: RefBox = V1) -> list[dict[str, Any]]:
+    """The gradient split: centres on the inner box, each with its 2 x 7 stencil (spec §5.1)."""
     centres = []
-    for j, u in enumerate(draws(1, "gradient", COUNTS["gradient"])):
+    for j, u in enumerate(draws(iteration, "gradient", COUNTS["gradient"], box)):
         sten = []
         for k in range(D):
             for sign in (+1, -1):
-                v = stencil(u, k, sign)
+                v = stencil(u, k, sign, box)
                 sten.append(
                     {"coordinate": BOX[k][0], "sign": sign, "u": list(v), "request": request_of(v)}
                 )
         centres.append({"index": j, "u": list(u), "request": request_of(u), "stencil": sten})
-    plan["gradient"] = centres
+    return centres
+
+
+def build_plan(box: RefBox = V1) -> dict[str, Any]:
+    plan: dict[str, Any] = {}
+    for split in ("training", "calibration", "test"):
+        rows = []
+        for j, u in enumerate(draws(1, split, COUNTS[split], box)):
+            rows.append({"index": j, "u": list(u), "request": request_of(u)})
+        plan[split] = rows
+    plan["gradient"] = gradient_centres(1, box)
     return plan
 
 
@@ -840,7 +871,7 @@ def fresh_splits(iteration: int) -> tuple[str, ...]:
     return ("training", "calibration", "test") if iteration == 1 else ("calibration", "test")
 
 
-def build_plan_iteration(iteration: int) -> dict[str, Any]:
+def build_plan_iteration(iteration: int, box: RefBox = V1) -> dict[str, Any]:
     """Iteration i >= 2: training is every P_ref draw of iterations < i, listed by origin, in
     iteration order and then split and index order; calibration, test and gradient are fresh."""
     assert iteration >= 2
@@ -854,19 +885,9 @@ def build_plan_iteration(iteration: int) -> dict[str, Any]:
     for split in ("calibration", "test"):
         plan[split] = [
             {"index": j, "u": list(u), "request": request_of(u)}
-            for j, u in enumerate(draws(iteration, split, COUNTS[split]))
+            for j, u in enumerate(draws(iteration, split, COUNTS[split], box))
         ]
-    centres = []
-    for j, u in enumerate(draws(iteration, "gradient", COUNTS["gradient"])):
-        sten = []
-        for k in range(D):
-            for sign in (+1, -1):
-                v = stencil(u, k, sign)
-                sten.append(
-                    {"coordinate": BOX[k][0], "sign": sign, "u": list(v), "request": request_of(v)}
-                )
-        centres.append({"index": j, "u": list(u), "request": request_of(u), "stencil": sten})
-    plan["gradient"] = centres
+    plan["gradient"] = gradient_centres(iteration, box)
     return plan
 
 
@@ -928,6 +949,268 @@ def iteration_claims(plans: Mapping[int, Mapping[str, Any]], iteration: int) -> 
         + COUNTS["gradient"] * 2 * D,
         "min_inf_distance_training_to_heldout": s(dmin, 6),
     }
+
+
+# -- Amendment 2: box v2 for non-synthetic parents and the plan family b2 (spec §19) -------------
+
+#: P_ref `m04-c1-box7-v2` (spec §A2.2): decimal literals parsed to binary64.
+BOX_V2: tuple[tuple[str, str, str, str], ...] = (
+    ("T", "K", "653.15", "693.15"),
+    ("P", "Pa", "9.0e6", "1.0e7"),
+    ("r_H2_N2", "1", "2.5", "3.00001"),
+    ("y_NH3", "1", "0.02", "0.04"),
+    ("y_Ar", "1", "0.014", "0.03"),
+    ("y_CH4", "1", "0.022", "0.04"),
+    ("F_tube", "mol/s", "0.0050", "0.0086"),
+)
+V2: Final = ref_box("m04-c1-box7-v2", BOX_V2)
+#: §A2.2's table: the centre and half-width of box v2 as binary64 reprs.
+V2_TABLE: Final = (
+    (673.15, 20.0),
+    (9.5e6, 5.0e5),
+    (2.750005, 0.25000500000000003),
+    (0.03, 0.01),
+    (0.022, 0.008),
+    (0.031, 0.009000000000000001),
+    (0.0068000000000000005, 0.0018),
+)
+#: Each P_ref id owns its plans (spec §A2.3).
+REFERENCE_DISTRIBUTIONS: Final = {
+    V1.id: ["it1", "it1-prefix", "it2", "it3"],
+    V2.id: ["b2-it1", "b2-it2", "b2-it3"],
+}
+#: The registered real parent and the C1 loop's records on it (spec §A2.1), read as JSON (G2).
+V3_VARIANT = Path("src/openflowsheet/adapters/variants/pymrm-6089593-g2-nz800-s123-v3.json")
+LOOP_RECORD = Path("benchmarks/m02/g12-real-loop-v3.json")
+LOOP_EDGES = Path("benchmarks/m02/g12-real-loop-v3-edges.json")
+LOOP_N_TUBES = 1000.0
+#: G5's separations, held-out to training, for it1, it2, it3 (spec §A2.5). it1's is 0.2084, not
+#: the spec's 0.2085: that is it1's registered 0.208491 rounded half up, which the shared z-design
+#: cannot reach; the carry-over is asserted instead to it1's six digits (build log E24).
+B2_SEPARATION = {1: mpf("0.2084"), 2: mpf("0.180"), 3: mpf("0.1437")}
+
+
+def read_json(path: Path) -> tuple[dict[str, Any], str]:
+    raw = path.read_bytes()
+    return json.loads(raw), hashlib.sha256(raw).hexdigest()
+
+
+def v3_violations(req: Mapping[str, Any], n_tubes: float, boundary: Mapping[str, Any]) -> list[str]:
+    """The parent's own inequalities (`models/c1/boundary.py`), from the variant file's numbers.
+
+    binary64 throughout, in boundary.py's forms: n_tot = sum(n) left to right; H2/N2 division-free
+    (lo n_N2 <= n_H2 <= hi n_N2); the inert bounds against inert * n_tot; F = n_tot / N_tubes.
+    """
+    hard, data = boundary["hard_domain"], boundary["data_domain"]
+    n, t, p = req["n"], req["T"], req["P"]
+    tot = sum(n)
+
+    def within(x: float, b: Sequence[float]) -> bool:
+        return b[0] <= x <= b[1]
+
+    def ratio(b: Sequence[float]) -> bool:
+        return n[1] > 0.0 and b[0] * n[1] <= n[0] <= b[1] * n[1]
+
+    bad = []
+    if not within(t, hard["T_K"]):
+        bad.append("hard T")
+    if not within(p, hard["P_Pa"]):
+        bad.append("hard P")
+    if not ratio(hard["H2_N2"]):
+        bad.append("hard H2/N2")
+    if not (n[3] + n[4]) <= hard["inert_max"] * tot:
+        bad.append("inert max")
+    if not (n[3] + n[4]) >= hard["inert_min"] * tot:
+        bad.append("inert min")
+    if not within(tot / n_tubes, hard["tube_flow_mol_s"]):
+        bad.append("tube flow")
+    if not within(t, data["T_K"]):
+        bad.append("data T")
+    if not within(p, data["P_Pa"]):
+        bad.append("data P")
+    if not ratio(data["H2_N2"]):
+        bad.append("data H2/N2")
+    return bad
+
+
+def box_v2_claims(boundary: Mapping[str, Any]) -> dict[str, Any]:
+    """G1 (the table) and G3 (box v2 inside v3's hard domain; T, P, r faces against the data)."""
+    for k in range(D):
+        claim(
+            (V2.centre[k], V2.half[k]) == V2_TABLE[k],
+            f"box v2 {BOX_V2[k][0]}: centre and half-width are the table's",
+        )
+    hard, data = boundary["hard_domain"], boundary["data_domain"]
+    for k, key in ((0, "T_K"), (1, "P_Pa"), (2, "H2_N2"), (6, "tube_flow_mol_s")):
+        claim(
+            hard[key][0] <= V2.lo[k] and V2.hi[k] <= hard[key][1],
+            f"box v2 {BOX_V2[k][0]} lies inside v3's hard interval",
+        )
+    floor_margin = mpf(V2.lo[4]) + mpf(V2.lo[5]) - mpf(hard["inert_min"])
+    claim(floor_margin >= mpf("0.9e-3"), "box v2: lo_Ar + lo_CH4 - inert_min >= 0.9e-3")
+    claim(
+        mpf(V2.hi[4]) + mpf(V2.hi[5]) <= mpf(hard["inert_max"]),
+        "box v2: hi_Ar + hi_CH4 <= inert_max",
+    )
+    for k, key in ((0, "T_K"), (1, "P_Pa")):
+        claim(
+            data[key][0] <= V2.lo[k] and V2.hi[k] <= data[key][1],
+            f"box v2 {BOX_V2[k][0]} lies inside v3's data interval",
+        )
+    claim(
+        Decimal(BOX_V2[2][3]) - Decimal(3) == Decimal("1e-5"),
+        "box v2: r_hi - 3 = 1e-5 exactly in decimal",
+    )
+    return {"inert_floor_margin": s(floor_margin, 6)}
+
+
+def b2_claims(
+    plans_b2: Mapping[int, Mapping[str, Any]],
+    plans_v1: Mapping[int, Mapping[str, Any]],
+    boundary: Mapping[str, Any],
+    v1_separations: Mapping[int, str],
+) -> list[dict[str, Any]]:
+    """G4 (every b2 request in box v2 and in v3's domains; distinct) and G5 (the z-design)."""
+    out = []
+    for i in (1, *ITERATIONS):
+        plan, twin = plans_b2[i], plans_v1[i]
+        tag = f"b2-it{i}"
+        expected = sum(COUNTS[sp] for j in range(1, i) for sp in fresh_splits(j))
+        if i > 1:
+            claim(len(plan["training"]) == expected, f"{tag}: training lists {expected} origins")
+            claim(
+                all(r["origin"]["iteration"] < i for r in plan["training"]),
+                f"{tag}: training origins are earlier b2 draws",
+            )
+        requests = [
+            r["request"]
+            for sp in ("training", "calibration", "test")
+            for r in plan[sp]
+            if "request" in r
+        ] + [st["request"] for c in plan["gradient"] for st in c["stencil"]]
+        inert_min = r_max = None
+        for req in requests:
+            z = z_of_request(req, 1, V2)
+            claim(all(-1 <= x <= 1 for x in z), f"{tag}: every request lies in box v2")
+            claim(
+                not v3_violations(req, N_TUBES_PLAN, boundary),
+                f"{tag}: every request lies in v3's hard and data domains",
+            )
+            n = [mpf(x) for x in req["n"]]
+            inert = (n[3] + n[4]) / mp.fsum(n)
+            ratio = n[0] / n[1]
+            inert_min = inert if inert_min is None else min(inert_min, inert)
+            r_max = ratio if r_max is None else max(r_max, ratio)
+        claim(inert_min >= mpf("0.0365"), f"{tag}: the minimum inert fraction is >= 0.0365")
+        claim(r_max <= 3 - mpf("9e-5"), f"{tag}: the maximum r is <= 3 - 9e-5")
+        own = plan_requests(plans_b2, i)
+        n_fresh = sum(COUNTS[sp] for sp in fresh_splits(i)) + COUNTS["gradient"] * 2 * D
+        claim(
+            len(own) == n_fresh and len(set(own)) == n_fresh, f"{tag}: {n_fresh} distinct requests"
+        )
+        earlier: set[str] = set()
+        for j in range(1, i):
+            earlier |= set(plan_requests(plans_b2, j))
+        claim(not (set(own) & earlier), f"{tag}: no request repeats an earlier b2 request")
+        # G5: draw for draw and centre for centre, z under box v2 against the it<i> twin under v1
+        dev = mpf(0)
+        pairs = [(a, b) for sp in fresh_splits(i) for a, b in zip(plan[sp], twin[sp], strict=True)]
+        pairs += list(zip(plan["gradient"], twin["gradient"], strict=True))
+        for a, b in pairs:
+            za, zb = z_of_u(a["u"], V2), z_of_u(b["u"], V1)
+            dev = max(dev, *(abs(x - y) for x, y in zip(za, zb, strict=True)))
+        claim(
+            dev <= mpf("1e-14"), f"{tag}: each draw and centre within 1e-14 in z of its it{i} twin"
+        )
+
+        def zr(row: Mapping[str, Any]) -> list[Any]:
+            return z_of_request(row["request"], 1, V2)
+
+        if i == 1:
+            train = [zr(r) for r in plan["training"]]
+        else:
+            train = [
+                zr(plans_b2[r["origin"]["iteration"]][r["origin"]["split"]][r["origin"]["index"]])
+                for r in plan["training"]
+            ]
+        held = [zr(r) for r in plan["calibration"]] + [zr(r) for r in plan["test"]]
+        dmin = min(
+            max(abs(a - b) for a, b in zip(zt, zh, strict=True)) for zt in train for zh in held
+        )
+        claim(
+            dmin >= B2_SEPARATION[i],
+            f"{tag}: every held-out draw >= {B2_SEPARATION[i]} from training",
+        )
+        claim(
+            s(dmin, 6) == v1_separations[i],
+            f"{tag}: the separation is it{i}'s registered {v1_separations[i]} to six digits",
+        )
+        out.append(
+            {
+                "plan_id": tag,
+                "fresh_experiments": n_fresh,
+                "training_origins": expected,
+                "min_inert_fraction": s(inert_min, 8),
+                "max_r": s(r_max, 10),
+                "max_z_deviation_from_v1_twin": s(dev, 3),
+                "min_inf_distance_training_to_heldout": s(dmin, 6),
+            }
+        )
+    return out
+
+
+def loop_states(record: Mapping[str, Any], edges: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """The 12 reactor calls of the C1 loop on v3: four at each T_in (spec §A2.1)."""
+    calls = list(record["calls"]) + [c for e in edges["edges"] for c in e["calls"]]
+    return [c["inlet"] for c in calls]
+
+
+def loop_claims(record: Mapping[str, Any], edges: Mapping[str, Any]) -> dict[str, Any]:
+    """G6: the loop's 12 inlet states lie inside box v2 (e = 0 exactly) and box v1 misses them."""
+    states = loop_states(record, edges)
+    claim(len(states) == 12, "the C1 loop on v3 has 12 reactor-inlet states")
+    claim(
+        sorted({x["T_K"] for x in states}) == [653.15, 673.15, 693.15]
+        and all(sum(1 for x in states if x["T_K"] == t) == 4 for t in (653.15, 673.15, 693.15)),
+        "four loop states at each of 653.15, 673.15 and 693.15 K",
+    )
+    e_v1 = mpf(0)
+    z_lo = [mpf(9)] * D
+    z_hi = [mpf(-9)] * D
+    for x in states:
+        u = u_of_request(x["n_mol_s"], x["T_K"], x["P_Pa"], LOOP_N_TUBES)
+        z = z_of_u(u, V2)
+        e = max(mpf(0), max(abs(c) for c in z) - 1)
+        claim(e == 0, "every loop state has excess 0 exactly under box v2")
+        claim(all(abs(z[k]) <= mpf("0.9") for k in (3, 4, 5, 6)), "loop: |z| <= 0.9 for y and F")
+        claim(1 - mpf("5e-5") <= z[2] <= 1 - mpf("3e-5"), "loop: z_r in [1 - 5e-5, 1 - 3e-5]")
+        claim(z[0] in (-1, 0, 1) and z[1] == 1, "loop: z_T in {-1, 0, 1} and z_P = 1 exactly")
+        z1 = z_of_u(u, V1)
+        e_v1 = max(e_v1, max(abs(c) for c in z1) - 1)
+        z_lo = [min(a, b) for a, b in zip(z_lo, z, strict=True)]
+        z_hi = [max(a, b) for a, b in zip(z_hi, z, strict=True)]
+    claim(e_v1 >= mpf("0.1"), "under box v1 the loop's largest excess is >= 0.1")
+    return {
+        "states": len(states),
+        "n_tubes": LOOP_N_TUBES,
+        "max_excess_box_v2": "0.0",
+        "max_excess_box_v1": s(e_v1, 6),
+        "z_range_box_v2": [[s(a, 6), s(b, 6)] for a, b in zip(z_lo, z_hi, strict=True)],
+    }
+
+
+def box_v2_rows() -> list[dict[str, Any]]:
+    return [
+        {
+            "coordinate": b[0],
+            "unit": b[1],
+            "lo": V2.lo[i],
+            "hi": V2.hi[i],
+            "centre": V2.centre[i],
+            "half_width": V2.half[i],
+        }
+        for i, b in enumerate(BOX_V2)
+    ]
 
 
 def a11_fixture() -> dict[str, Any]:
@@ -1275,7 +1558,7 @@ def jacobian_states(beta: Mapping[str, Sequence[Any]]) -> list[dict[str, Any]]:
 # -- assembly -------------------------------------------------------------------------------------
 
 
-def build() -> tuple[dict[str, Any], dict[int, Any]]:
+def build() -> tuple[dict[str, Any], dict[str, Any]]:
     plan = build_plan()
     plan_summary = plan_claims(plan)
     claim(P_TERMS == 36 and len(PAIRS) == 28, "the full quadratic in 7 inputs has 36 terms")
@@ -1464,16 +1747,59 @@ def build() -> tuple[dict[str, Any], dict[int, Any]]:
         plans[i] = build_plan_iteration(i)
     later = [iteration_claims(plans, i) for i in ITERATIONS]
     values["later_iterations"] = later
+    # Amendment 2 (spec §19): box v2, the b2 family on it, the loop inside it. Additive: every
+    # member above is unchanged; constants gains box_v2 and reference_distributions at its end.
+    variant, sha_variant = read_json(V3_VARIANT)
+    record, sha_record = read_json(LOOP_RECORD)
+    edges, sha_edges = read_json(LOOP_EDGES)
+    claim(
+        record["variant"]["variant_id"] == edges["variant"]["variant_id"] == V3_VARIANT.stem,
+        "both loop records are on the v3 variant",
+    )
+    box_summary = box_v2_claims(variant["boundary"])
+    plans_b2: dict[int, Any] = {1: build_plan(V2)}
+    for i in ITERATIONS:
+        plans_b2[i] = build_plan_iteration(i, V2)
+    v1_separations = {1: plan_summary["min_inf_distance_training_to_heldout"]}
+    v1_separations |= {x["iteration"]: x["min_inf_distance_training_to_heldout"] for x in later}
+    b2_summary = b2_claims(plans_b2, plans, variant["boundary"], v1_separations)
+    loop_summary = loop_claims(record, edges)
+    values["constants"]["box_v2"] = box_v2_rows()
+    values["constants"]["reference_distributions"] = REFERENCE_DISTRIBUTIONS
+    values["amendment2"] = {
+        "sources": {
+            str(V3_VARIANT): sha_variant,
+            str(LOOP_RECORD): sha_record,
+            str(LOOP_EDGES): sha_edges,
+        },
+        "box_v2": box_summary,
+        "plans_b2": b2_summary,
+        "loop": loop_summary,
+    }
     values["claims"] = {
         "count": len(CLAIMS),
         "distinct_statements": sorted({re.sub(r"\[\d+\]", "[i]", c) for c in CLAIMS}),
     }
-    docs = {}
+    docs: dict[str, Any] = {}
     for i, body in plans.items():
         counts = dict(COUNTS) if i == 1 else {**COUNTS, "training": len(body["training"])}
-        docs[i] = {
+        docs[f"it{i}"] = {
             "schema_version": "m04-plan-v1",
             "generated_by": GENERATOR,
+            "iteration": i,
+            "n_tubes": N_TUBES_PLAN,
+            "components": list(COMPONENTS),
+            "seeds": {sp: seed_of(i, sp) for sp in SPLITS},
+            "counts": counts,
+            **body,
+        }
+    for i, body in plans_b2.items():
+        counts = dict(COUNTS) if i == 1 else {**COUNTS, "training": len(body["training"])}
+        docs[f"b2-it{i}"] = {
+            "schema_version": "m04-plan-v2",
+            "generated_by": GENERATOR,
+            "plan_id": f"b2-it{i}",
+            "reference_distribution": V2.id,
             "iteration": i,
             "n_tubes": N_TUBES_PLAN,
             "components": list(COMPONENTS),
@@ -1501,8 +1827,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error("choose --check and/or --emit")
     values, plans = build()
     payloads = {OUT_VALUES: encode(values)}
-    for i, doc in plans.items():
-        payloads[OUT_PLAN.with_name(f"plan-it{i}.json")] = encode(doc)
+    for plan_id, doc in plans.items():
+        payloads[OUT_PLAN.with_name(f"plan-{plan_id}.json")] = encode(doc)
     status = 0
     if args.check:
         print(f"{len(CLAIMS)} claims passed")

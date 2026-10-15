@@ -156,3 +156,21 @@ Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.
   re-taken here: its SHA-256 is the W27 corpus resolver's entry (R-302) and enters W27's re-taken
   values. For the design lane: whether fixtures that carry a fingerprint are re-taken when the
   fingerprinted modules change.
+
+## Amendment 2: WO-18 — the generator's box v2 and the b2 plans (2026-10-15)
+
+- **E24. G5's it1 separation is asserted at 0.2084, not 0.2085.** b2-it1's held-out-to-training
+  separation is 0.208490882 (b2-it2 0.180004412, b2-it3 0.143712880), it1's to 10⁻¹⁴ as the shared
+  z-design makes it; §A2.5's 0.2085 is it1's registered 0.208491 rounded half up, which no b2-it1
+  can reach (0.180 and 0.1437 happen to round down and are kept). The generator asserts
+  B2_SEPARATION = (0.2084, 0.180, 0.1437) **and** that each b2 separation equals its it<i> twin's
+  registered `min_inf_distance_training_to_heldout` to six digits (the carry-over the spec names).
+  For the design lane: confirm, or restate G5's bound. Reversible by: one constant
+  (`B2_SEPARATION`, `m04_reference.py`).
+- **E25. Where the generator records Amendment 2.** `constants.box_v2` and
+  `constants.reference_distributions` are appended at the end of `constants`; the G2 SHA-256 values
+  and the measured G3–G6 numbers go to a new top-level member `amendment2` (`sources`, `box_v2`,
+  `plans_b2`, `loop`), appended after `later_iterations`. Every pre-existing member is
+  byte-identical to `9fbebb5`'s except `claims` (count 8634 → 11943 and the statement list), which
+  describes the generator rather than registering a value, as at Amendment 1.
+  `plan-it1/2/3.json` are byte-identical to `9fbebb5`'s.
