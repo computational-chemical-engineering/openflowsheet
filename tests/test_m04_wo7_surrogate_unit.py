@@ -671,6 +671,6 @@ def test_a26_a13_the_rows_hold_and_elements_are_conserved_at_the_solution() -> N
     inlet = StreamState(n=n_in, temperature=state["S3.T"], pressure=state["S3.P"])
     u = spl.coordinates(inlet, 1000.0)
     assert u is not None
-    x, dt = unit.surrogate.predict(spl.scaled(u))
+    x, dt = unit.surrogate.predict(spl.scaled(u, unit.surrogate.scaling))
     assert abs(state["reactor.xi"] - x * n_in[1]) <= 1e-9 * sum(n_in)
     assert abs(state["S4.T"] - state["S3.T"] - dt) <= 1e-6

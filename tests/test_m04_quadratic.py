@@ -38,6 +38,7 @@ SYN_B = tuple(float(b) for b in CONSTANTS["synthetic"]["b"])
 FIXTURE = qd.QuadraticSurrogate(
     coefficients_x=tuple(REFERENCE["fixture_coefficients"]["X"]),
     coefficients_dt=tuple(REFERENCE["fixture_coefficients"]["dT"]),
+    scaling=sp.SCALING,
 )
 STATES = {state["id"]: state for state in REFERENCE["jacobian_states"]}
 
@@ -45,7 +46,7 @@ STATES = {state["id"]: state for state in REFERENCE["jacobian_states"]}
 def _z(request: StreamState) -> tuple[float, ...]:
     u = sp.coordinates(request, sp.PLAN_N_TUBES)
     assert u is not None
-    return sp.scaled(u)
+    return sp.scaled(u, sp.SCALING)
 
 
 def synthetic(z: Sequence[float], amplitude: float | None) -> tuple[float, float] | None:
@@ -74,7 +75,7 @@ def fit_case(
         zs.append(z)
         xs.append(truth[0])
         dts.append(truth[1])
-    return qd.fit_quadratic(zs, xs, dts), failed
+    return qd.fit_quadratic(zs, xs, dts, sp.SCALING), failed
 
 
 def _inlet(state: Mapping[str, Any]) -> StreamState:
@@ -212,7 +213,7 @@ def test_a11_too_few_training_results_are_refused_before_the_fit() -> None:
     fit, _ = fit_case(1.0, 36)  # 36 draws, none failed: identifiable
     assert fit.refusal is None and fit.training_ok == 36
     zs = [_z(row.request) for row in FULL.training[:35]]
-    fit = qd.fit_quadratic(zs, [0.1] * 35, [10.0] * 35)
+    fit = qd.fit_quadratic(zs, [0.1] * 35, [10.0] * 35, sp.SCALING)
     assert (fit.refusal, fit.singular_value_ratio, fit.training_ok) == (
         "training_unidentifiable",
         None,
@@ -351,7 +352,7 @@ def test_a14_j6_a_dormant_inlet() -> None:
 
 
 def _constant(x: float = 0.0, dt: float = 0.0) -> qd.QuadraticSurrogate:
-    return qd.QuadraticSurrogate((x,) + (0.0,) * 35, (dt,) + (0.0,) * 35)
+    return qd.QuadraticSurrogate((x,) + (0.0,) * 35, (dt,) + (0.0,) * 35, sp.SCALING)
 
 
 @pytest.mark.parametrize(
@@ -380,9 +381,9 @@ def test_a15_admissibility(
 
 def test_the_predictor_refuses_malformed_coefficients() -> None:
     with pytest.raises(ValueError, match="35 entries"):
-        qd.QuadraticSurrogate((0.0,) * 35, (0.0,) * 36)
+        qd.QuadraticSurrogate((0.0,) * 35, (0.0,) * 36, sp.SCALING)
     with pytest.raises(ValueError, match="non-finite"):
-        qd.QuadraticSurrogate((math.nan,) + (0.0,) * 35, (0.0,) * 36)
+        qd.QuadraticSurrogate((math.nan,) + (0.0,) * 35, (0.0,) * 36, sp.SCALING)
 
 
 # -- A49: the fit does not depend on the BLAS thread count (spec §20 A3.3, R-362) -----------------
@@ -393,13 +394,14 @@ _A49_CHILD = """
 import contextlib, json, sys
 import numpy as np
 from openflowsheet.studies.surrogate import quadratic as q
+from openflowsheet.studies.surrogate.plan import SCALING
 if sys.argv[1] == "unpinned":
     q.single_blas_thread = contextlib.nullcontext
 rng = np.random.default_rng(20261015)
 z = rng.uniform(-1.0, 1.0, (141, 7))
 x = 0.2 + 0.05 * np.sin(z @ np.arange(1, 8)) + 0.01 * z[:, 0] * z[:, 3]
 dt = 100.0 + 30.0 * np.cos(z @ np.linspace(0.3, 1.1, 7)) + 5.0 * z[:, 2] ** 2
-fit = q.fit_quadratic(z.tolist(), x.tolist(), dt.tolist(), q.SCALING)
+fit = q.fit_quadratic(z.tolist(), x.tolist(), dt.tolist(), SCALING)
 s = fit.surrogate
 print(json.dumps([c.hex() for c in s.coefficients_x + s.coefficients_dt]))
 """

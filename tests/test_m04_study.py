@@ -402,10 +402,10 @@ def test_a23_split_integrity_and_a_bitwise_refit(smooth_full: Study) -> None:
         state = StreamState(n=tuple(n), temperature=float(inputs["T"]), pressure=float(inputs["P"]))
         u = sp.coordinates(state, 1.0)
         assert u is not None
-        z.append(sp.scaled(u))
+        z.append(sp.scaled(u, sp.SCALING))
         x.append(float(result["envelope"]["xi"]) / n[1])
         dt.append(float(result["envelope"]["outlet"]["T"]) - float(inputs["T"]))
-    refit = fit_quadratic(z, x, dt)
+    refit = fit_quadratic(z, x, dt, sp.SCALING)
     assert refit.surrogate is not None
     assert list(refit.surrogate.coefficients_x) == manifest["predictor"]["coefficients"]["X"]
     assert list(refit.surrogate.coefficients_dt) == manifest["predictor"]["coefficients"]["dT_K"]

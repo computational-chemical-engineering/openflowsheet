@@ -284,11 +284,12 @@ def coordinates(state: StreamState, n_tubes: float) -> tuple[float, ...] | None:
     )
 
 
-#: Box v1's scaling: the default of `scaled` (box v1's tests and fixtures).
+#: Box v1's scaling, which box v1's tests and fixtures pass explicitly; no signature defaults to
+#: it (register R-369).
 SCALING: Final = Scaling.of_box(BOX)
 
 
-def scaled(u: Sequence[float], scaling: Scaling = SCALING) -> tuple[float, ...]:
+def scaled(u: Sequence[float], scaling: Scaling) -> tuple[float, ...]:
     """z_k = (u_k − c_k)/h_k: the box is [−1, 1]⁷ (spec §3.1). Production passes the plan's or
     the manifest's `scaling` explicitly."""
     return tuple(

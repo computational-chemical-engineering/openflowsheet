@@ -37,7 +37,6 @@ from openflowsheet.studies.surrogate.conformal import TAU_ID, TERMS
 from openflowsheet.studies.surrogate.plan import (
     BOX,
     DIMENSION,
-    SCALING,
     Scaling,
     coordinates,
     scaled,
@@ -116,11 +115,11 @@ def _finite(values: Sequence[float], what: str) -> tuple[float, ...]:
 class QuadraticSurrogate:
     """The frozen predictor: 36 coefficients per output, in basis order (spec §3.4), and the
     scaling z = (u − c)/h it is a function of: the study's plan box, or the manifest's
-    `input_map` for a unit (spec §19 A2.3). Box v1's by default (its tests and fixtures)."""
+    `input_map` for a unit (spec §19 A2.3); never defaulted (register R-369)."""
 
     coefficients_x: tuple[float, ...]
     coefficients_dt: tuple[float, ...]
-    scaling: Scaling = SCALING
+    scaling: Scaling
 
     def __post_init__(self) -> None:
         for name in ("coefficients_x", "coefficients_dt"):
@@ -171,7 +170,7 @@ def fit_quadratic(
     z_rows: Sequence[Sequence[float]],
     x: Sequence[float],
     dt: Sequence[float],
-    scaling: Scaling = SCALING,
+    scaling: Scaling,
 ) -> QuadraticFit:
     """β minimizing ‖Φβ − y‖₂ by Householder QR (`numpy.linalg.qr`, reduced, then a triangular
     solve), X and ΔT sharing Φ; refused when N_ok < 36 or σ_min/σ_max < τ_id = 1e-8 (spec §3.4).

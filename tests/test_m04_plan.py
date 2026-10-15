@@ -145,7 +145,7 @@ def test_a02_the_input_map_inverts_the_request_map_on_the_plan() -> None:
     for _, request in FULL.requests():
         u = sp.coordinates(request, sp.PLAN_N_TUBES)
         assert u is not None
-        z = sp.scaled(u)
+        z = sp.scaled(u, FULL.scaling)
         worst = max(worst, max(abs(x) for x in z))
     # Every request is inside the box with a registered margin (generator: at least 1.6e-6).
     assert worst <= 1.0 - 1.0e-6
