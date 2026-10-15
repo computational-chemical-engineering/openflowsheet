@@ -6163,7 +6163,7 @@ M05 decision variable beyond T_in, which would move the loop's inert fraction ou
 
 ---
 
-## R-319 — The real reactor's surrogate gets its own reference box `m04-c1-box7-v2` and plan family `b2-it1…3`; the v1 plans become synthetic-only (closes M04 N4)
+## R-322 — The real reactor's surrogate gets its own reference box `m04-c1-box7-v2` and plan family `b2-it1…3`; the v1 plans become synthetic-only (closes M04 N4)
 
 | | |
 | --- | --- |
@@ -6202,7 +6202,7 @@ M05 decision variable beyond T_in, which would move the loop's inert fraction ou
 
 ---
 
-## R-320 — `surrogate_evidence` reports every reason, each failure cause is tested alone, and an unresolvable manifest fails closed (M04 build log E15, E16)
+## R-323 — `surrogate_evidence` reports every reason, each failure cause is tested alone, and an unresolvable manifest fails closed (M04 build log E15, E16)
 
 | | |
 | --- | --- |
@@ -6232,7 +6232,7 @@ content-addressed manifest; the facet is not relaxed.
 
 ---
 
-## R-321 — The M04 synthetic parents enter a project only through a test-only injection, checked not to leak (M04 build log E22)
+## R-324 — The M04 synthetic parents enter a project only through a test-only injection, checked not to leak (M04 build log E22)
 
 | | |
 | --- | --- |
@@ -6255,7 +6255,7 @@ content-addressed manifest; the facet is not relaxed.
 
 ---
 
-## R-322 — A fixture whose only drift is its environment fingerprint is not re-taken; it is compared with a fresh run outside a closed environment set (M04 build log E23)
+## R-325 — A fixture whose only drift is its environment fingerprint is not re-taken; it is compared with a fresh run outside a closed environment set (M04 build log E23)
 
 | | |
 | --- | --- |

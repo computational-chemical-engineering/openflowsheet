@@ -11,7 +11,7 @@ and requires every file byte-identical; 8634 claims since Amendment 1).
 **Amendment 1** (2026-10-09, §18): rulings on the build lane's WO-1…6 questions; ADR 0036 and ADR 0037 Amendment 1;
 register R-290…R-295.
 **Amendment 2** (2026-10-15, §19): the real reactor's box `m04-c1-box7-v2` and plans `b2-it1…3` (closes N4); rulings
-on E15, E16, E22, E23; register R-319…R-322. ADR 0036 Amendment 2 is required before WO-11 runs (§A2.11, a finding).
+on E15, E16, E22, E23; register R-322…R-325. ADR 0036 Amendment 2 is required before WO-11 runs (§A2.11, a finding).
 **Built on:** M01 (`main`: the boundary, ADR 0027, DX-01), M02 (`wp/M02`: ADRs 0033–0035, the records, the coupling,
 the replacement check), M03 (`wp/M03`: ADR 0031's vocabulary, R-184's seeded-data convention).
 
