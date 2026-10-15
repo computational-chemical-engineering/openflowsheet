@@ -100,6 +100,17 @@ def test_each_projection_refusal_is_a_readiness_reason(code: str) -> None:
     assert found.reasons[0][1].startswith(f"{code}(")
 
 
+@pytest.mark.parametrize("reason", sorted(zero_flow.JOINT_REFUSALS))
+def test_each_joint_zero_flow_refusal_is_a_readiness_reason(reason: str) -> None:
+    """§18.1 (f): readiness reports each of R-326's three reasons."""
+    found = trust_region_readiness(
+        start=start,
+        project=lambda solve: zero_flow.joint_projection(*zero_flow.JOINT_REFUSALS[reason]),
+    )
+    assert (found.status, found.codes) == ("UNSUPPORTED", ("PROJECTION_ZERO_FLOW",))
+    assert found.reasons[0][1].startswith(f"PROJECTION_ZERO_FLOW(z1:{reason}):")
+
+
 @pytest.mark.parametrize(
     ("code", "overrides"),
     [

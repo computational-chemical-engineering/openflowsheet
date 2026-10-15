@@ -242,3 +242,41 @@ S26 A solve's limitations: `synthetic` for a synthetic variant (the stand-in is)
    Real reactor v3 (`c1-loop-real.json`, opt-in `pymrm`) at 673.15 K: CONVERGED/VERIFIED in 164 s, 4 executions,
    J = 0.449325948913493 mol/s, w = (0.168388, 78.670 K), (ΔX, ΔT) = (4.40e-6, 2.92e-3 K), the same regime labels as
    the stand-in, P3 passes, no `extrapolated` (the final experiment's `domain_status` is not `extrapolated`).
+
+## WO-2c — `M05-zero-flow-v2`: joint zero-flow pins (§18.1, R-326)
+
+S27 N_e for a `y` (block output) or `w` (link output) column: §18.1 step 1 computes N_e "from the same total
+   x-Jacobian", which has no `y`/`w` column, yet a row's structural incidence holds them (SYN-001's equilibrium rows
+   read `lnK` as a block output). A `y`/`w` column is in N_e iff the row's own partial in it (Pyomo reverse mode at
+   x₀) is ≠ 0.0; such a column is never a zero flow, so the row is then no candidate. `x` columns use the total
+   x-Jacobian as ruled. Ignoring `y`/`w` instead would let a row whose block output carries a nonzero dependence
+   through block inputs outside its incidence pass as a candidate. Reversible: `_joint_blocks`.
+S28 (c)'s perturbation coordinates: ξ = `default_rng(20261009).uniform(-1, 1, n_x + n_y + n_w + n_d)`, drawn over
+   x (variable order, so its first n_x values are G4's draw), y, w, then d. A decision moves in its model
+   coordinate d (center + half_width·d when bounded) with s_k = 1, the column scale `_certify` uses for d; y and w
+   use their output scales. Reversible: `_persistence_rows`.
+S29 §17.1 (e)'s `unpinned` toy (n0's pin decision-dependent, `copy` = n1 − n0) now refuses
+   `PROJECTION_ZERO_FLOW(n0:joint_not_square)`: `copy` is a joint candidate on {n0, n1}, a 1 × 2 block, and §18.1
+   step 3 (a) refuses it. The test keeps that fixture under the new reason; `unpinned` is pinned by the same toy with
+   `copy` also reading m (∂/∂m = 1), so no row is a candidate. Readiness's PROJECTION_ZERO_FLOW fixture (code only)
+   is unchanged. Reversible: the two tests.
+S30 Blocks are numbered 0, 1, … in certification order across passes (`block`); within a pass blocks are certified
+   in order and the first failing one refuses at once (the components are disjoint, so a later certification cannot
+   change it). Reversible: `_eliminate_zero_flows`.
+S31 G4's `equivalence` checks each joint block against CasADi: rows' residuals at x₀ == 0.0 == recorded, no entry
+   outside the block among the projected columns (§18.1's LICQ structure), and the scaled block's rcond within 1e-8
+   relative of the recorded one (`joint` ratio). A joint entry is skipped by the single-pin check.
+Measured (WO-2c acceptance):
+   (a) P1/P2: one block, S3.vap.{A,B,C}, S3.V × U-HEAT:HEAT-equilibrium:{A,B,C}, U-HEAT:Vdef; B2: S4.n.{A,B,C},
+   S4.N × U-FLASH:FLASH-equilibrium:{A,B,C}, U-FLASH:Ndef:vapor. rcond (F-12) P1 7.663e-3, P2 1.417e-2,
+   B2 5.203e-6; residuals_x0 all 0.0, persistence_max_abs 0.0. No other block or refusal.
+   (b) DOF 5 at all three; R-278 matching 70 × 70 = P3's 74 − 4. 49 rows − 2 alias − 4 pins = 43 projected.
+   (c) the 15 strict xfails pass unmarked; `test_r326_…_one_certified_block` replaces the refusal test.
+   (d) G4 worst ratios P1 / P2 / B2: residual 7.40e-5 / 5.92e-4 / 7.40e-5; Jacobian 5.42e-10 / 4.32e-9 / 7.11e-7;
+   decision 2.30e-3 (all three); joint 0.0 (CasADi's rcond bitwise equal).
+   (e) Inertness, Z6's dumps (source map less `zero_blocks`, every constraint's expression and value at x₀ in hex,
+   variables with bounds/values, suffixes, component list) before (75cdc3b) and after: byte-identical for C1 TR-E2
+   S0 and perturbed S0, TR-E1, the link toy, AT, SYN-001 P3, B1, B3; reproducible run to run.
+   (f) toys: `joint_not_square` (z1 − z2), `joint_singular` (z1 + z2, 2z1 + 2z2; rcond 4.97e-17),
+   `joint_not_persistent` (z1 − z2, z1 + z2 + (y − y₀)²; max |r| 6.75e-6), each through readiness; a certified
+   2 × 2 toy block whose row reads y with partial 0.0 at x₀ passes DOF, matching 3 × 3 and G4.

@@ -42,22 +42,24 @@ JACOBIAN_TOLERANCE = 1e-10
 DECISION_TOLERANCE = 1e-7
 FD_STEP = 1e-6
 
-#: R-296 (§17.1 (f)): the SYN-001 registered states holding flows exactly 0.0 at x₀ that rule
-#: `M05-zero-flow-v1` cannot pair — the heater-flash's vapor flows S3.vap.{A,B,C} and S3.V at P1
-#: and P2, and B2's flash vapor S4.n.{A,B,C} and S4.N — are pinned only jointly (each sits in an
-#: equilibrium row and a total-flow row, never alone in a row), so the projection refuses them
-#: `PROJECTION_ZERO_FLOW(<id>:unpinned)`. The ruling expected (a)-(c) to apply; escalated to the
-#: design lane (M05 build log Z2). The tests at these states are strict xfails until it rules.
-SYN001_UNPINNED: Mapping[str, str] = {"P1": "S3.vap.A", "P2": "S3.vap.A", "B2": "S4.n.A"}
-SYN001_UNPINNED_REASON = (
-    "R-296: SYN-001's exact-zero flows at P1, P2, B2 have no single-incidence pin, so the "
-    "projection is refused PROJECTION_ZERO_FLOW(<id>:unpinned); escalated (M05 build log Z2)"
-)
-_UNPINNED_XFAIL = pytest.mark.xfail(strict=True, reason=SYN001_UNPINNED_REASON)
-SYN001_STATES = [
-    pytest.param(state, marks=_UNPINNED_XFAIL) if state in SYN001_UNPINNED else state
-    for state in ("P1", "P2", "P3", "B1", "B2", "B3")
-]
+#: R-326 (§18.1 (a)): the SYN-001 registered states whose exact-zero flows are pinned jointly — the
+#: heater-flash's vapor flows S3.vap.{A,B,C} and S3.V at P1 and P2 by S3's three equilibrium rows
+#: and its Vdef row, and B2's flash vapor S4.n.{A,B,C} and S4.N by the flash's three equilibrium
+#: rows and its vapor total-flow row — each as one certified 4 × 4 block.
+SYN001_JOINT: Mapping[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
+    state: (
+        tuple(f"{prefix}{c}" for c in "ABC") + (total,),
+        tuple(f"{unit}-equilibrium:{c}" for c in "ABC") + (total_row,),
+    )
+    for state, prefix, total, unit, total_row in (
+        ("P1", "S3.vap.", "S3.V", "U-HEAT:HEAT", "U-HEAT:Vdef"),
+        ("P2", "S3.vap.", "S3.V", "U-HEAT:HEAT", "U-HEAT:Vdef"),
+        ("B2", "S4.n.", "S4.N", "U-FLASH:FLASH", "U-FLASH:Ndef:vapor"),
+    )
+}
+SYN001_STATES = ["P1", "P2", "P3", "B1", "B2", "B3"]
+#: R-326 (b): a joint block's rcond against CasADi's, relative.
+JOINT_RCOND_TOLERANCE = 1e-8
 
 
 def dense(matrix: TwinMatrix) -> npt.NDArray[np.float64]:
@@ -194,6 +196,8 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
     # R-296's criteria (i) and (ii) against CasADi: each pin's residual at x₀ and its pivot.
     pin_errors = [0.0]
     for entry in source["zero_eliminated"]:
+        if entry["row_id"] is None:  # pinned jointly (R-326): judged with its block below
+            continue
         e = spec.equation_ids.index(entry["row_id"])
         j = spec.variable_ids.index(entry["variable_id"])
         assert residual[e] == entry["residual_x0"] == 0.0, entry
@@ -202,8 +206,27 @@ def equivalence(projection: Any, x0: Mapping[str, float]) -> dict[str, float]:
         assert pin_errors[-1] <= 1.0, entry
         assert entry["dr_dx"] != 0.0
 
+    # R-326 against CasADi: each joint block's rows vanish at x₀, have no entry outside the block
+    # among the projected columns (§18.1's LICQ argument), and its scaled rcond is CasADi's.
+    joint_errors = [0.0]
+    for block in source.get("zero_blocks", []):
+        at = [spec.equation_ids.index(name) for name in block["rows"]]
+        within = [spec.variable_ids.index(name) for name in block["variables"]]
+        assert list(residual[at]) == block["residuals_x0"] == [0.0] * len(at), block
+        assert np.all(jacobian_x[at][:, columns] == 0.0), block
+        scaled_block = (
+            jacobian_x[at][:, within]
+            * projection.scaling.column_vector(block["variables"])[None, :]
+            / projection.scaling.row_vector(block["rows"])[:, None]
+        )
+        singular = np.linalg.svd(scaled_block, compute_uv=False)
+        rcond = singular[-1] / singular[0]
+        joint_errors.append(abs(rcond - block["rcond"]) / (JOINT_RCOND_TOLERANCE * rcond))
+        assert joint_errors[-1] <= 1.0, block
+
     return {
         "pin": float(max(pin_errors)),
+        "joint": float(max(joint_errors)),
         "residual_abs_max": float(np.max(np.abs(pyomo_rows - casadi_rows))),
         "residual": float(np.max(scaled / allowed)),
         "jacobian": float(np.max(jacobian_error / allowed_j)),
@@ -275,11 +298,12 @@ def test_the_output_scale_is_the_next_power_of_two(value: float, expected: float
 
 
 def suffix(projection: Any) -> tuple[list[float], list[float]]:
-    """The Ipopt `scaling_factor` suffix of every `x` and every projected row."""
+    """The Ipopt `scaling_factor` suffix of every `x` (the projected positions: an eliminated zero
+    flow is no `x`, R-296) and every projected row."""
     model = projection.model
     factors = model.scaling_factor
     return (
-        [factors[model.x[i]] for i in range(len(projection.spec.variable_ids))],
+        [factors[model.x[i]] for i in projection.variable_indices],
         [factors[model.row[i]] for i in range(len(projection.row_ids))],
     )
 
@@ -324,7 +348,6 @@ def test_a_spec_with_partial_kinds_is_refused() -> None:
     assert base.variable_kinds == {}  # TR-E1 itself declares none
 
 
-@_UNPINNED_XFAIL
 def test_syn001_is_projected_in_k03s_scales() -> None:
     """The suffixes and the source map carry K03's `Scaling.from_spec`, and nothing else."""
     from openflowsheet.numerics.scaling import SCALE_PROVENANCE, Scaling
@@ -342,7 +365,7 @@ def test_syn001_is_projected_in_k03s_scales() -> None:
         k03.row[name] for name in projection.row_ids
     ]
     columns, rows = suffix(projection)
-    assert columns == [1.0 / k03.column[name] for name in spec.variable_ids]
+    assert columns == [1.0 / k03.column[spec.variable_ids[i]] for i in projection.variable_indices]
     assert rows == [1.0 / k03.row[name] for name in projection.row_ids]
     assert set(columns) != {1.0} and set(rows) != {1.0}
 
@@ -529,14 +552,15 @@ def test_syn001_s_alias_rows_are_computed_not_supplied(state: str) -> None:
         tangent = row["tangent_residuals"]
         assert list(tangent) == [d.parameter_id for d in projection.decisions]
         assert all(abs(value) <= row["tau_alias"] == 1e-8 for value in tangent.values())
-    assert len(source["rows"]) == len(projection.spec.equations) - 2
+    pinned = {z["row_id"] for z in source["zero_eliminated"] if z["row_id"] is not None}
+    pinned |= {name for block in source.get("zero_blocks", []) for name in block["rows"]}
+    assert len(source["rows"]) == len(projection.spec.equations) - 2 - len(pinned)
     assert not set(SYN001_ALIAS_ROWS) & set(projection.row_ids)
     assert len(projection.source_map_sha256) == 64  # the certificate is canonical JSON
     # The fourth fact, at the start: the omitted rows hold there.
     assert projection.omitted_rows_at(projection.model).status == "pass"
 
 
-@_UNPINNED_XFAIL
 def test_syn001_a_supplied_set_equal_to_the_certified_one_is_accepted() -> None:
     computed, _ = syn001_projection("P1")
     supplied, _ = syn001_projection("P1", omitted_rows=list(reversed(SYN001_ALIAS_ROWS)))
@@ -562,7 +586,6 @@ def test_syn001_a_supplied_set_other_than_the_certified_one_is_refused(
     assert refused.value.reason == f"PROJECTION_OMITTED_ROW_UNCERTIFIED({subject})"
 
 
-@_UNPINNED_XFAIL
 def test_syn001_a_supplied_row_the_elimination_keeps_is_refused() -> None:
     from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
 
@@ -772,11 +795,28 @@ def test_r278_syn001_passes_at_the_registered_states(state: str, record_property
     assert check["matched"] == check["size"] > 0
 
 
-@pytest.mark.parametrize("state", sorted(SYN001_UNPINNED))
-def test_r296_syn001_s_unpinned_zero_flows_are_refused(state: str) -> None:
-    """§17.1 (f), measured: what the strict xfails above are waiting on."""
-    from openflowsheet.studies.trust_region.projection import ProjectionRefusedError
+@pytest.mark.parametrize("state", sorted(SYN001_JOINT))
+def test_r326_syn001_s_zero_flows_are_eliminated_by_one_certified_block(
+    state: str, record_property: Any
+) -> None:
+    """§18.1 (a): at P1, P2 and B2, `zero_eliminated` is the four vapor flows, all in one 4 × 4
+    block of the producer's three equilibrium rows and its total-flow row, with residuals 0.0 at
+    x₀, rcond ≥ 1e-10 (recorded, F-12) and persistence exactly 0.0; (b) the reduced matching is
+    the full system's minus 4."""
+    from openflowsheet.studies.trust_region.projection import JOINT_RCOND_MIN
 
-    with pytest.raises(ProjectionRefusedError) as refused:
-        syn001_projection(state)
-    assert refused.value.reason == f"PROJECTION_ZERO_FLOW({SYN001_UNPINNED[state]}:unpinned)"
+    projection, _ = syn001_projection(state)
+    source = projection.source_map
+    variables, rows = SYN001_JOINT[state]
+    assert source["zero_eliminated"] == [
+        {"variable_id": name, "row_id": None, "residual_x0": None, "dr_dx": None, "block": 0}
+        for name in variables
+    ]
+    (block,) = source["zero_blocks"]
+    assert (block["block"], block["variables"], block["rows"]) == (0, list(variables), list(rows))
+    assert block["residuals_x0"] == [0.0] * 4 and block["persistence_max_abs"] == 0.0
+    assert block["rcond"] >= JOINT_RCOND_MIN
+    record_property(f"M05.R326.syn001.{state}.rcond", block["rcond"])
+    assert not set(rows) & set(projection.row_ids)
+    full, _ = syn001_projection("P3")  # no zero flow: the full system's matching
+    assert source["shape_check"]["matched"] == full.source_map["shape_check"]["matched"] - 4
