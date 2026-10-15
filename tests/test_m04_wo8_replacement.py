@@ -8,8 +8,8 @@ here in process (`run_study`, < 2 s each; `tests/test_m04_study.py` pins their n
 and transaction level (commit, invalidation, preview, rollback reuse) is WO-9's.
 
 M04.A48 (spec §20 A3.1, register R-360): a surrogate-backed instance that no replacement judges —
-renamed, added, in the first revision, carried over — is named by `unpromoted_surrogates` when
-its manifest resolves and re-derives a verdict other than PROMOTABLE.
+renamed, added, in the first revision, carried over — is named by `unpromoted_surrogates` unless
+its manifest resolves and re-derives PROMOTABLE (an unresolved one: build decision E35).
 
 A27's rough surrogate also has another parent (`m04-synthetic-rough-v1`), so its
 `surrogate_evidence` detail states both reasons, the verdict first (build decision E15).
@@ -280,12 +280,14 @@ def test_a48_an_added_instance_and_a_first_revision_are_judged(
     )
 
 
-def test_a48_a_promotable_surrogate_enters(
+def test_a48_a_promotable_surrogate_enters_and_an_unresolved_one_does_not(
     smooth: variants.Variant,
 ) -> None:
     assert unpromoted_surrogates({}, renamed(surrogate(A19)), surrogates=resolver(A19)) == ()
-    # Unresolved, it is the binder's `surrogate_manifest_mismatch`.
-    assert unpromoted_surrogates({}, loop(surrogate(A19)), surrogates=resolver()) == ()
+    # Unresolved, it is not promoted either (build decision E35).
+    assert unpromoted_surrogates({}, loop(surrogate(A19)), surrogates=resolver()) == (
+        ("reactor", "the manifest does not resolve (surrogate_manifest_mismatch)"),
+    )
     # A judged replacement is `surrogate_evidence`'s, not named twice.
     before, after = loop(parent_of(smooth)), loop(surrogate(A19))
     assert replacements(before, after) == ("reactor",)

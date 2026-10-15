@@ -17,12 +17,13 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
-from t07_jobs_support import commit, lifecycle_violations, response_schema_violations
+from t07_jobs_support import lifecycle_violations, response_schema_violations
 from test_m04_study_job import attempts, body, read, submit
 
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import Change, Edit
+from openflowsheet.application.revisions import Revision
+from openflowsheet.application.types import LOCAL_OWNER_PRINCIPAL, Change, Edit
 from openflowsheet.canonical import document_sha256
 from openflowsheet.studies.surrogate import reactor as sr
 from openflowsheet.studies.surrogate.manifest import derived_verdict
@@ -81,18 +82,36 @@ def test_a48_a_first_revision_binding_the_standins_unpromoted_surrogate_is_rejec
         assert app.store.head(connection) is None
 
 
-def test_without_the_manifest_in_the_project_the_revision_is_unsupported(
+def test_without_the_manifest_in_the_project_the_surrogate_does_not_enter(
     app: LocalApplication, tmp_path: Path
 ) -> None:
-    """Spec §8.2: a hash the project's artifact store does not hold is
-    `surrogate_manifest_mismatch(<instance>)`: not READY, and a solve is refused at admission
-    `revision_unsupported`."""
+    """A hash the project's artifact store does not hold: the commit is rejected
+    `surrogate_not_promoted(<instance>)` (spec §20 A3.1, build decision E35). A revision that holds
+    one regardless (written before Amendment 3) is `surrogate_manifest_mismatch(<instance>)`
+    (spec §8.2): not READY, and a solve is refused at admission `revision_not_ready`."""
     other = LocalApplication.create(tmp_path / "studied")
     try:
         manifest, sha256 = studied(other)
     finally:
         other.close()
-    revision_id = commit(app, surrogate_loop(manifest["surrogate_id"], sha256))
+    document = surrogate_loop(manifest["surrogate_id"], sha256)
+    edits = tuple(Edit("set", (key,), value) for key, value in document.items())
+    result = app.commit_change(Change(edits=edits), None, "first")
+    assert result.status == "rejected" and result.error is not None
+    assert result.error.detail["reason"] == "surrogate_not_promoted(reactor)"
+    assert result.error.detail["cause"] == (
+        "the manifest does not resolve (surrogate_manifest_mismatch)"
+    )
+
+    revision_id = "rev-legacy"
+    with app.store.writing() as connection:
+        app.store.commit_revision(
+            connection,
+            Revision(revision_id=revision_id, document=document, parent_revision=None),
+            principal_id=app.principal_id,
+            capability_id=LOCAL_OWNER_PRINCIPAL,
+            policy_sha256="0" * 64,
+        )
     report = app.validate(revision_id, "simulation")
     assert report.status != "READY_FOR_SIMULATION"
     assert "surrogate_manifest_mismatch(reactor)" in json.dumps(report.as_document())

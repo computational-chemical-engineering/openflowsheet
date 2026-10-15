@@ -323,3 +323,19 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   reversible by reclassifying the harvest entry. Status `tested`: 57 of 58 checks pass, A33
   `not_applicable`; gate at `a9566a6` GATE PASS, 8647 passed, 31 skipped. Reversible by:
   reverting the WO-12 commits.
+
+## Amendment 3 — the review's build-lane actions (2026-10-15)
+
+- **E35. An unresolved surrogate does not enter a revision either.** §A3.1 rejects a surrogate
+  that no replacement judges unless its re-derived verdict is PROMOTABLE; it does not say what
+  happens when the manifest does not resolve (no verdict exists). DECISION: rejected too,
+  `surrogate_not_promoted(<instance>)`, cause `the manifest does not resolve
+  (surrogate_manifest_mismatch)`. Reason: the replacement path already rejects an unresolved new
+  surrogate (`resolvable` and `surrogate_evidence` fail), and admitting it would let the head bind
+  a NOT_PROMOTABLE manifest unchecked the day a study job stores one with that (deterministic)
+  hash. The same rule judges carried-over instances, so no revision committed after Amendment 3
+  holds an unpromoted or unresolved surrogate. Cost: §8.2's `surrogate_manifest_mismatch` is now
+  reachable at the project level only for a revision written before Amendment 3; WO-7's project
+  test keeps it by writing such a revision through the store. Alternative: leave unresolved
+  manifests to the binder (validation not READY, solve refused). Reversible by: reverting the E35
+  commit.

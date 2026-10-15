@@ -44,8 +44,8 @@ side's):
 
 **Unchecked surrogates** (M04 spec §20 A3.1, register R-360). A surrogate-backed instance of the
 new revision that no replacement judges — added, renamed, in the first revision, or carried over —
-whose manifest resolves must re-derive PROMOTABLE; otherwise `unpromoted_surrogates` names it and
-the commit is rejected (`surrogate_not_promoted(<instance>)`).
+must name a manifest that resolves and re-derives PROMOTABLE; otherwise `unpromoted_surrogates`
+names it and the commit is rejected (`surrogate_not_promoted(<instance>)`).
 
 `synthetic` is reported, not judged (§6.2). A facet that needs a side that does not bind is
 `not_applicable` with the binder's reason; `degrees_of_freedom` then fails, so the report is not
@@ -733,10 +733,11 @@ def unpromoted_surrogates(
     surrogates: SurrogateResolver | None = None,
 ) -> tuple[tuple[str, str], ...]:
     """M04 spec §20 A3.1 (R-360): each surrogate-backed instance of `after` that no replacement
-    judges (`replacements`) and whose manifest re-derives a verdict other than PROMOTABLE
-    (`derived_verdict`), as (instance id, detail), in instance-id order. A judged instance's
-    promotion is `surrogate_evidence`'s; an unresolved manifest is the binder's
-    (`surrogate_manifest_mismatch`)."""
+    judges (`replacements`) and whose manifest does not resolve or re-derives a verdict other
+    than PROMOTABLE (`derived_verdict`), as (instance id, detail), in instance-id order. A judged
+    instance's promotion is `surrogate_evidence`'s. An unresolved manifest is not promoted, as
+    `surrogate_evidence` fails it: admitted, it would bind unchecked the day a job stores a
+    manifest with that hash (build decision E35)."""
     judged = set(replacements(before, after))
     found = []
     for instance_id, instance in sorted(_instances(after).items()):
@@ -748,6 +749,9 @@ def unpromoted_surrogates(
         if isinstance(version, str) and isinstance(artifact_ref, str):
             manifest = resolve_surrogate(version, artifact_ref, surrogates)
         if manifest is None:
+            found.append(
+                (instance_id, "the manifest does not resolve (surrogate_manifest_mismatch)")
+            )
             continue
         verdict = derived_verdict(manifest).verdict
         if verdict != PROMOTABLE:
