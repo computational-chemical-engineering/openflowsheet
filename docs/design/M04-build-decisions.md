@@ -219,3 +219,36 @@ Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.
   `splits.<s>.keys_sha256` (asserted), and still demands E-equality at equal fingerprints. For the
   design lane: name `data[*].keys_sha256` in the evidence's E, or rule otherwise. Reversible by:
   reverting the E29 commit (the evidence comparison then fails as specified).
+
+## WO-11 — iteration 1 of the real reactor, `b2-it1` on v3 (2026-10-15)
+
+Run at `43d6557` (gate green: 8645 passed, 31 skipped). `prepare(v3, "b2-it1")` admits the plan:
+632 distinct requests, all inside v3's hard domain (inerts 0.03771…0.06950 ≥ 0.035; T 653.172…
+693.068 K; P 9.000154…9.994113 MPa; H₂/N₂ 2.50064…2.99990; per-tube flow 0.005003…0.008592 mol/s).
+Pre-warm (`scripts/m04_prewarm.py`, 16 workers, budget 632, retries 2): 632 misses, one round,
+0 without result, 0 retries, 0 incomplete; with the study from cache and A41's 8 serial bypass
+repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other worktrees' runs;
+§A2.6 predicted ≈ 27 + 5 min unloaded). Record: `benchmarks/m04/wo11-b2-it1-v3/` by
+`scripts/m04_wo11_record.py` (exit 0).
+
+- **Verdict NOT_PROMOTABLE**, NP = [`band_not_finite`], IE = []. 26 of 632 registered experiments
+  are deterministic `reactor_not_accepted(certificate)` ("the evaluation reached no accepted
+  state", spec §8.7): calibration 5/118, test 18/300, training 3/144, gradient stencils 0/70.
+  k = 114 of n = 118 tolerates n − k = 4 null scores, so q̂ = +∞. The failures are spread over
+  T 654.6…693.1 K, P 9.01…9.86 MPa, H₂/N₂ 2.51…2.99, inerts 0.040…0.068 — not at the S1 cliff
+  at 653.15 K. Overall 4.1 %; §A2.6's table gives P(band finite) = 0.29 at 5 %.
+- **Reported, not judged:** the 113 finite calibration scores are ≤ 0.316 and the 282 finite test
+  scores ≤ 0.292 (282/300 = 0.94 within width, h_min = 279); test max |e_X| = 7.31 × 10⁻⁴
+  (RMS 1.53 × 10⁻⁴), max |e_ΔT| = 0.323 K (RMS 0.072 K); gradient max e = 0.0360 (ρ_g = 0.25),
+  all 5 centres complete; `parent_extrapolated` 0; inadmissible predictions 0; admissibility
+  margin 47.6.
+- **A31** holds: 632 executed requests, 0 outside the plan; both schemas valid; the evidence names
+  the manifest (`d65bb022…`); the checker accepts it; the derived verdict equals the stored one.
+  **A32** holds: the re-submitted study with budget 0 gives cold 0, hits 632, the same manifest
+  SHA-256, 0 new attempts. **A41** holds: `repeat_bitwise_equal` true for test[0..7].
+  **A33** is not run (A31 is not PROMOTABLE); Q-A2.1 stays open without its record.
+- **E30. Where WO-11's record lives.** `benchmarks/m04/wo11-b2-it1-v3/{record,manifest,evidence}.json`
+  (67 KB), committed beside M02's `g12-real-loop-v3.json` pattern; the project itself stays under
+  the ignored `evidence/M04/artifacts/wo11/`. The record is produced by a committed script so its
+  checks are re-runnable on the project. Rejected: artifacts only (nothing committed would carry
+  the verdict's numbers for WO-12's manifest). Reversible by: reverting the E30 commit.

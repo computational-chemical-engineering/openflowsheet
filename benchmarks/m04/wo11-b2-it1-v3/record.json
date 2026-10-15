@@ -1,0 +1,680 @@
+{
+  "record": "m04-wo11-b2-it1-v3",
+  "specification": "docs/derivations/M04-spec.md \u00a719 A2.4, A2.6, A2.13; \u00a718 A1.6",
+  "code_commit": "43d65574a6ad42ef189bc45ce4bfa273eb097dbd",
+  "parent": {
+    "variant_id": "pymrm-6089593-g2-nz800-s123-v3",
+    "variant_sha256": "8b92540adc772a454e212b7054a98da4f7995899955a43a54d07669a70aa203c"
+  },
+  "plan_id": "b2-it1",
+  "prewarm": {
+    "script": "scripts/m04_prewarm.py",
+    "command": [
+      "scripts/m04_prewarm.py",
+      "--project",
+      "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m04/evidence/M04/artifacts/wo11/project",
+      "--variant",
+      "pymrm-6089593-g2-nz800-s123-v3",
+      "--plan",
+      "b2-it1",
+      "--budget",
+      "632",
+      "--max-workers",
+      "16",
+      "--retries",
+      "2",
+      "--report",
+      "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m04/evidence/M04/artifacts/wo11/prewarm.json",
+      "--study",
+      "--repeat-test",
+      "8"
+    ],
+    "parent": {
+      "variant_id": "pymrm-6089593-g2-nz800-s123-v3",
+      "variant_sha256": "8b92540adc772a454e212b7054a98da4f7995899955a43a54d07669a70aa203c"
+    },
+    "plan_id": "b2-it1",
+    "executor": {
+      "kind": "process",
+      "max_workers": 16
+    },
+    "requests": 632,
+    "cache_misses_before": 632,
+    "budget": {
+      "max_cold_experiments": 632
+    },
+    "refused": null,
+    "rounds": [
+      {
+        "round": 0,
+        "submitted": 632,
+        "without_result": 0
+      }
+    ],
+    "retries": [],
+    "incomplete": [],
+    "wall_time_s": 4466.617547232003
+  },
+  "study": {
+    "job_id": "job-000633",
+    "answer": {
+      "cache_hits": 632,
+      "cache_misses": 0,
+      "cold_experiments": 0,
+      "evidence_sha256": "8305c80527ec771dcc026784fbffcc68f59d5fe7d40a9b642244465ba21fc9a2",
+      "insufficient": [],
+      "manifest_sha256": "d65bb0225f36780cebe63c211b7706aa42613ef8edc4714218b1ddec58be1717",
+      "not_promotable": [
+        "band_not_finite"
+      ],
+      "surrogate_id": "m04q7-pymrm-6089593-g2-nz800-s123-v3-b2-it1",
+      "verdict": "NOT_PROMOTABLE"
+    }
+  },
+  "manifest_sha256": "d65bb0225f36780cebe63c211b7706aa42613ef8edc4714218b1ddec58be1717",
+  "evidence_sha256": "8305c80527ec771dcc026784fbffcc68f59d5fe7d40a9b642244465ba21fc9a2",
+  "a31": {
+    "plan_requests": 632,
+    "plan_requests_distinct": 632,
+    "executed_requests": 632,
+    "executed_not_in_plan": 0,
+    "plan_requests_executed": 632,
+    "manifest_schema_errors": [],
+    "evidence_schema_errors": [],
+    "evidence_names_manifest": true,
+    "checker_failures": [],
+    "derived_verdict_equal": true,
+    "promotion": {
+      "familywise_false_pass_bound": 0,
+      "insufficient": [],
+      "not_promotable": [
+        "band_not_finite"
+      ],
+      "verdict": "NOT_PROMOTABLE"
+    },
+    "n": 118,
+    "k": 114,
+    "m": 300,
+    "q_hat": null,
+    "band_halfwidth": null,
+    "width_scales": {
+      "X": 0.0025,
+      "dT_K": 1.5
+    },
+    "calibration_failed": 5,
+    "calibration_finite_max": 0.31601066606157246,
+    "test_failed": 18,
+    "test_finite_max": 0.292345450808007,
+    "test_scores_le_1": 282,
+    "hits": null,
+    "h_min": 279,
+    "lower_bound": null,
+    "fraction_within_width": 0.94,
+    "errors": {
+      "X": {
+        "max": 0.0007308636270200175,
+        "p95": 0.00030560313396207905,
+        "rms": 0.00015257708669111058
+      },
+      "dT_K": {
+        "max": 0.32343967829980613,
+        "p95": 0.1387880222724931,
+        "rms": 0.07228294603254523
+      }
+    },
+    "gradient_centres": [
+      {
+        "errors": {
+          "X": 0.014800192180720874,
+          "dT_K": 0.007561417576189877
+        },
+        "index": 0,
+        "status": "ok"
+      },
+      {
+        "errors": {
+          "X": 0.014512176623624506,
+          "dT_K": 0.006605913399321608
+        },
+        "index": 1,
+        "status": "ok"
+      },
+      {
+        "errors": {
+          "X": 0.011475120440532834,
+          "dT_K": 0.007331770351973849
+        },
+        "index": 2,
+        "status": "ok"
+      },
+      {
+        "errors": {
+          "X": 0.035969641742902354,
+          "dT_K": 0.022325496678498938
+        },
+        "index": 3,
+        "status": "ok"
+      },
+      {
+        "errors": {
+          "X": 0.02098656847887612,
+          "dT_K": 0.01550925269777757
+        },
+        "index": 4,
+        "status": "ok"
+      }
+    ],
+    "gradient_max_e": 0.035969641742902354,
+    "rho_g": 0.25,
+    "splits": {
+      "calibration": {
+        "count": 118,
+        "failed": [
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 2,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 12,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 34,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 36,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 51,
+            "status": "not_converged"
+          }
+        ],
+        "incomplete": []
+      },
+      "gradient": {
+        "count": 5,
+        "failed": [],
+        "incomplete": []
+      },
+      "test": {
+        "count": 300,
+        "failed": [
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 20,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 23,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 28,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 34,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 87,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 88,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 92,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 99,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 113,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 135,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 161,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 173,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 204,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 224,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 264,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 277,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 278,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 295,
+            "status": "not_converged"
+          }
+        ],
+        "incomplete": []
+      },
+      "training": {
+        "count": 144,
+        "failed": [
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 27,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 69,
+            "status": "not_converged"
+          },
+          {
+            "code": "reactor_not_accepted(certificate)",
+            "index": 115,
+            "status": "not_converged"
+          }
+        ],
+        "incomplete": []
+      }
+    },
+    "domain": {
+      "admissibility_margin": 47.62750851182794,
+      "empirical": "box",
+      "hard": {
+        "H2_N2": [
+          2.5,
+          3.5
+        ],
+        "P_Pa": [
+          9000000,
+          11000000
+        ],
+        "T_K": [
+          653.15,
+          693.15
+        ],
+        "inert_max": 0.2,
+        "inert_min": 0.035,
+        "tube_flow_mol_s": [
+          0.003573480649651052,
+          0.014293922598604208
+        ]
+      },
+      "inadmissible_predictions": 0,
+      "parent_extrapolated": 0
+    }
+  },
+  "a32": {
+    "job_id": "job-000644",
+    "cold_experiments": 0,
+    "cache_hits": 632,
+    "cache_misses": 0,
+    "manifest_sha256": "d65bb0225f36780cebe63c211b7706aa42613ef8edc4714218b1ddec58be1717",
+    "manifest_bitwise_equal": true,
+    "new_attempts": 0
+  },
+  "a41": [
+    {
+      "label": "test[0]",
+      "key": "e89fba56a6201d14189b2d5d9dd726fff66903bb9f62f4b1cab18469684e5f4e",
+      "job_id": "job-000634",
+      "repeat_of": 1,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "label": "test[1]",
+      "key": "5146b73ec6cfc15aa871c44f10bc8ff30aaff7b7535fec3264ee5796dfbc24ae",
+      "job_id": "job-000635",
+      "repeat_of": 1,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "label": "test[2]",
+      "key": "92c8e1602c9d8d456857071d07f1e64049d3659e5202c2df2343686f5afdbca5",
+      "job_id": "job-000636",
+      "repeat_of": 1,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "label": "test[3]",
+      "key": "d35065e48d25658029e90c1caf6f3a370c2fa82177b2e0ec3374a23d3d11643e",
+      "job_id": "job-000637",
+      "repeat_of": 1,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "label": "test[4]",
+      "key": "fa9af1e4177b19105c6407c507d4c08b472379dfa56b8954336fa0783543d847",
+      "job_id": "job-000638",
+      "repeat_of": 1,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "label": "test[5]",
+      "key": "06a1f9b869e9f0392ce3a267ce8aef0a1800ec12fa6c00d64e4ccdad2807eab7",
+      "job_id": "job-000639",
+      "repeat_of": 1,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "label": "test[6]",
+      "key": "814e77fde1e3aa1baa659cd685d446e13cbe9b22214abcf84af25d0ed8df9099",
+      "job_id": "job-000640",
+      "repeat_of": 1,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "label": "test[7]",
+      "key": "c4e6724b233fcd8fa75458623dab9cc84f0a96db75aad4540d46376d13df1ff7",
+      "job_id": "job-000641",
+      "repeat_of": 1,
+      "repeat_bitwise_equal": true
+    }
+  ],
+  "failures": [
+    {
+      "key": "d8f3b4117c25145744a7edb26c310d6a6b675b1eab72ce4a92e06006ef14650e",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 678.6291513119531,
+      "P_Pa": 9612977.431593036,
+      "H2_N2": 2.582702268552357,
+      "inert_fraction": 0.044660020068864444,
+      "tube_flow_mol_s": 0.007869205979505531
+    },
+    {
+      "key": "b1d37836d9b1d2003fa24f708f8114d0d0e2dbaccfef0b8705bb7311aa83ed70",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 663.6623466416005,
+      "P_Pa": 9860893.449798733,
+      "H2_N2": 2.557673830833292,
+      "inert_fraction": 0.06121997822469332,
+      "tube_flow_mol_s": 0.0066256740228417595
+    },
+    {
+      "key": "71b4ad762216b580900cf6869ba33e750903e58c51e6e2e973ae97ec0535eb95",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 678.1850479498543,
+      "P_Pa": 9549942.597397646,
+      "H2_N2": 2.8480042584717857,
+      "inert_fraction": 0.03995827316167844,
+      "tube_flow_mol_s": 0.007650671133282999
+    },
+    {
+      "key": "29e776d8ed0d67f050a83a747482561462a1621620e43e11a5d86ffda0943412",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 682.6299452296447,
+      "P_Pa": 9623869.19039395,
+      "H2_N2": 2.725602607771441,
+      "inert_fraction": 0.05241670991985739,
+      "tube_flow_mol_s": 0.007860802876299472
+    },
+    {
+      "key": "14bca3ebb69f0dbebae669d455dde4fc69d39e97423f28158f0b47023fbd2312",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 661.7106628876071,
+      "P_Pa": 9311605.020746678,
+      "H2_N2": 2.7998307633893535,
+      "inert_fraction": 0.05099786555998976,
+      "tube_flow_mol_s": 0.0075113022416737766
+    },
+    {
+      "key": "a3a31a8180dffcbbe2be81fb2d9dd6148c73465b36e3a8e6fc888a00385c51dd",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 693.0675929851883,
+      "P_Pa": 9270824.695642658,
+      "H2_N2": 2.8057035451258727,
+      "inert_fraction": 0.062072572029366335,
+      "tube_flow_mol_s": 0.007518639953661818
+    },
+    {
+      "key": "3976af07af67b3b34c26fbaac4bb65c1883b3738a607c181cf684c707916204f",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 689.6587003191893,
+      "P_Pa": 9214568.406103838,
+      "H2_N2": 2.729858623625039,
+      "inert_fraction": 0.04929459640309327,
+      "tube_flow_mol_s": 0.008366387290599802
+    },
+    {
+      "key": "04241b3efdccbd5d62066c4dc3eecdb1e5f3c02985c5e770730be575ee4c5ddb",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 663.1439784977504,
+      "P_Pa": 9321889.540383615,
+      "H2_N2": 2.674603690741108,
+      "inert_fraction": 0.0500270634795756,
+      "tube_flow_mol_s": 0.00747209852203082
+    },
+    {
+      "key": "b60360fb10373756db2e37357a464618fca53dad62d52330068ad9cd31fb5ad1",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 669.9944418166419,
+      "P_Pa": 9043932.346776063,
+      "H2_N2": 2.5105438222318854,
+      "inert_fraction": 0.04954882879567353,
+      "tube_flow_mol_s": 0.007091356158436165
+    },
+    {
+      "key": "d39261661e055bccd6edd4fbc39345a7ee1378bf8500b58c639418f8322248cb",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 683.80594121279,
+      "P_Pa": 9423344.724006096,
+      "H2_N2": 2.5225692542403073,
+      "inert_fraction": 0.04772448676970305,
+      "tube_flow_mol_s": 0.007759416448559873
+    },
+    {
+      "key": "91ed69cb85e919559213c7fe337071655525012ff82cf1d6e41819f23672c8f6",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 674.4005272701569,
+      "P_Pa": 9782952.805706408,
+      "H2_N2": 2.9301547556964485,
+      "inert_fraction": 0.04268712519570996,
+      "tube_flow_mol_s": 0.007920471360496683
+    },
+    {
+      "key": "d04baeef2d79958abdfd6e704877fbddab14ce9126cd8b6261486c7e7c3352a4",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 677.4647171314978,
+      "P_Pa": 9234598.363280457,
+      "H2_N2": 2.588992553409092,
+      "inert_fraction": 0.044904880071855904,
+      "tube_flow_mol_s": 0.007527132545734823
+    },
+    {
+      "key": "bfabe836dd37eb927ff8ac1248781f1cee0ad2db22719ac475b1dc0d44b7f28f",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 670.9717549431998,
+      "P_Pa": 9486048.820507761,
+      "H2_N2": 2.5438628640458028,
+      "inert_fraction": 0.044488997986875056,
+      "tube_flow_mol_s": 0.007558847877663094
+    },
+    {
+      "key": "b22669046e3cffe7a071a680a83dfce49a198605c2b153fa949b265ba3064cc9",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 669.449141660932,
+      "P_Pa": 9608593.766574541,
+      "H2_N2": 2.823026112855877,
+      "inert_fraction": 0.062409481460838814,
+      "tube_flow_mol_s": 0.007898664146580917
+    },
+    {
+      "key": "cf120a98d5805d9f017d7c8efe3262792a85810a77d15b5cb7ffd902b2468003",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 682.5668220611292,
+      "P_Pa": 9608415.980662828,
+      "H2_N2": 2.5723511024843493,
+      "inert_fraction": 0.0663882369617314,
+      "tube_flow_mol_s": 0.007860467749822658
+    },
+    {
+      "key": "6c0bb855ba351288caf8b99149d9cd45833e258a493882bb116a22bea832bcab",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 685.8630813064067,
+      "P_Pa": 9428375.273962019,
+      "H2_N2": 2.63739521150362,
+      "inert_fraction": 0.05241171485862078,
+      "tube_flow_mol_s": 0.008588196803076036
+    },
+    {
+      "key": "59f4e674ee0b8a8276a0c121e82bd82fc422d3d69cf90dafb4b000c9582bbf3c",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 682.1377845735265,
+      "P_Pa": 9754563.591861118,
+      "H2_N2": 2.697284485789727,
+      "inert_fraction": 0.06803331472159162,
+      "tube_flow_mol_s": 0.00807468049345998
+    },
+    {
+      "key": "0a546a026a452d668f3cd109e8eb36195a4cb85769d3ae672a86c3423996bebe",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 667.0394869940292,
+      "P_Pa": 9424247.573888464,
+      "H2_N2": 2.871563775071856,
+      "inert_fraction": 0.05887605505363117,
+      "tube_flow_mol_s": 0.006513464823924139
+    },
+    {
+      "key": "24546d5f619553c0ff9617bc1e8eb53273ae456ef9b634ac32f0dd31311b1e5b",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 682.1052342946948,
+      "P_Pa": 9822687.161599075,
+      "H2_N2": 2.800257262703297,
+      "inert_fraction": 0.04612601724243662,
+      "tube_flow_mol_s": 0.005539395955218635
+    },
+    {
+      "key": "abeecd9eabced19ae5231b69d633555ae9def7b571a6bfccb7a897a94c53d98f",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 674.9935343122308,
+      "P_Pa": 9008532.632370964,
+      "H2_N2": 2.9776582348371545,
+      "inert_fraction": 0.05732193471159917,
+      "tube_flow_mol_s": 0.008306068505207563
+    },
+    {
+      "key": "12c55c471128cc4691c03211a74b3c4b9ac98065506ac9eb5e26c2d62162e738",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 665.2260507821481,
+      "P_Pa": 9092437.778657533,
+      "H2_N2": 2.5771183052860276,
+      "inert_fraction": 0.0422338828435498,
+      "tube_flow_mol_s": 0.006134718513340622
+    },
+    {
+      "key": "02c167d8f703c7d889b06ab66e73f1b6737017ec401f6436fa72208ecdf424b1",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 654.5680942112558,
+      "P_Pa": 9515419.628879609,
+      "H2_N2": 2.6223587449475896,
+      "inert_fraction": 0.060782998358154545,
+      "tube_flow_mol_s": 0.00654731293381569
+    },
+    {
+      "key": "a83761139b184b184860a24bf3b0a5ca1b093ae61c26a78860ce1a31c9a07012",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 689.0513553582235,
+      "P_Pa": 9689420.628183795,
+      "H2_N2": 2.990967421191968,
+      "inert_fraction": 0.0631976849191245,
+      "tube_flow_mol_s": 0.007621976411637234
+    },
+    {
+      "key": "8523e4c4cff3b98492033ce8ae4094c7394f161cc96c0a3a40f59f7878164412",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 687.8505917463535,
+      "P_Pa": 9734087.083318666,
+      "H2_N2": 2.850854048079083,
+      "inert_fraction": 0.05633589689254356,
+      "tube_flow_mol_s": 0.007669965615536575
+    },
+    {
+      "key": "db4403089c7187cd97aa1e458da57a9cae56915100fc43dc7d08880a9ca52f26",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 677.4478714277498,
+      "P_Pa": 9667298.674952498,
+      "H2_N2": 2.8488411342874764,
+      "inert_fraction": 0.052502801677234284,
+      "tube_flow_mol_s": 0.008017331933489628
+    },
+    {
+      "key": "88ea45a29dd5c20ef9ab502a5ba0a4431351a05e20a09306f1933a0b4cb5e425",
+      "outcome_class": "deterministic",
+      "code": "reactor_not_accepted(certificate)",
+      "T_K": 691.370089912924,
+      "P_Pa": 9354351.050264122,
+      "H2_N2": 2.8482953057949767,
+      "inert_fraction": 0.04524823862890858,
+      "tube_flow_mol_s": 0.00729985008404054
+    }
+  ]
+}
