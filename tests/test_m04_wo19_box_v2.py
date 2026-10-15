@@ -290,6 +290,9 @@ def test_a44a_the_manifest_carries_box_v2_and_b2_it1s_keys(
     keys = [key for split in sp.SPLITS for key in manifest["splits"][split]["keys"]]
     assert keys == planned and len(set(keys)) == 632
     assert check_manifest(manifest) == []
+    # The claim is marginal over the study's own P_ref (ADR 0036 D1′; build log E28).
+    assert manifest["qualifications"][1] == f"marginal over P_ref {V2}; not pointwise"
+    assert manifest["assumptions"][0] == f"exchangeability from i.i.d. draws of P_ref {V2}"
 
 
 def test_a44b_the_unit_scales_by_its_manifests_box(

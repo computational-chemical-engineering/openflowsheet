@@ -80,11 +80,13 @@ __all__ = [
     "EVIDENCE_VERSION",
     "MANIFEST_VERSION",
     "QUALIFICATIONS",
+    "assumptions",
     "build_records",
     "check_manifest",
     "derived_verdict",
     "familywise_bound",
     "qualifications",
+    "required_qualifications",
     "schema_errors",
 ]
 
@@ -151,8 +153,28 @@ def _fraction(value: Fraction) -> str:
     return f"{value.numerator}/{value.denominator}"
 
 
-def qualifications(synthetic: bool, n: int, k: int, lower_bound: float | None, m: int) -> list[str]:
-    """Q0 (if synthetic) and Q1–Q7, Q6 filled: k/(n+1), L (or that there is none) and m."""
+def required_qualifications(reference_id: str = REFERENCE_DISTRIBUTION_ID) -> tuple[str, ...]:
+    """Q1–Q7 with Q1 naming the study's own P_ref (ADR 0036 D1′: a coverage claim is marginal over
+    its own P_ref and nothing else; spec §19 A2.3). Box v1's are `QUALIFICATIONS` verbatim."""
+    q1 = f"marginal over P_ref {reference_id}; not pointwise"
+    return (q1, *QUALIFICATIONS[1:])
+
+
+def assumptions(reference_id: str = REFERENCE_DISTRIBUTION_ID) -> list[str]:
+    """Spec §10.1's fixed list, the exchangeability item naming the study's own P_ref."""
+    return [f"exchangeability from i.i.d. draws of P_ref {reference_id}", *ASSUMPTIONS[1:]]
+
+
+def qualifications(
+    synthetic: bool,
+    n: int,
+    k: int,
+    lower_bound: float | None,
+    m: int,
+    reference_id: str = REFERENCE_DISTRIBUTION_ID,
+) -> list[str]:
+    """Q0 (if synthetic) and Q1–Q7, Q1 naming `reference_id`, Q6 filled: k/(n+1), L (or that there
+    is none) and m."""
     level = Fraction(k, n + 1)
     bound = "none (no finite band)" if lower_bound is None else f"{lower_bound:.{_DECIMAL}f}"
     q6 = (
@@ -160,7 +182,9 @@ def qualifications(synthetic: bool, n: int, k: int, lower_bound: float | None, m
         f"one-sided 95 % lower bound {bound} from {m} independent test draws; "
         "declared minimum 0.90"
     )
-    filled = [q6 if i == _Q6 else text for i, text in enumerate(QUALIFICATIONS)]
+    filled = [
+        q6 if i == _Q6 else text for i, text in enumerate(required_qualifications(reference_id))
+    ]
     return ([Q0] if synthetic else []) + filled
 
 
@@ -362,8 +386,8 @@ def build_records(
             "admissibility_margin": evaluation.admissibility_margin,
             "parent_extrapolated": evaluation.extrapolated,
         },
-        "assumptions": list(ASSUMPTIONS),
-        "qualifications": qualifications(synthetic, n, k, lower, m),
+        "assumptions": assumptions(plan.reference_distribution),
+        "qualifications": qualifications(synthetic, n, k, lower, m, plan.reference_distribution),
         "promotion": {
             "verdict": verdict.verdict,
             "insufficient": list(verdict.insufficient),
@@ -647,7 +671,8 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     for text in stated:
         if _UNFILLED.search(text):
             found.append(f"qualification with an unfilled field: {text!r}")
-    expected_q = ([Q0] if manifest["synthetic"] else []) + list(QUALIFICATIONS)
+    reference_q = required_qualifications(manifest["reference_distribution"]["id"])
+    expected_q = ([Q0] if manifest["synthetic"] else []) + list(reference_q)
     if len(stated) != len(expected_q):
         found.append(f"{len(stated)} qualifications; {len(expected_q)} are required")
     else:

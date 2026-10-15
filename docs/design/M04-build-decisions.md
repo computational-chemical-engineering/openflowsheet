@@ -200,3 +200,10 @@ Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.
   used `it1`/`it2`/`it3` with `synthetic_parent=False` only for the plan's structure now pass
   `True`; A08's real-parent denominators use `b2-it1` (same counts). Box v1's values are unmoved:
   A02, A36, A17–A23, A26 and WO-9's fixture comparisons pass unchanged.
+- **E28. Q1 and the exchangeability assumption name the study's own P_ref.** Spec §6.3's Q1
+  reads `marginal over P_ref m04-c1-box7-v1; not pointwise`, a literal; on a `b2` manifest that
+  would state a claim over the wrong distribution (ADR 0036 D1′: "marginal over its own P_ref and
+  nothing else"). `required_qualifications(reference_id)` and `assumptions(reference_id)` put the
+  manifest's `reference_distribution.id` there; the checker expects Q1 by that id. Box v1's
+  strings are unchanged (`QUALIFICATIONS`, `ASSUMPTIONS`), so no v1 record moves. For the design
+  lane: confirm. Reversible by: reverting the E28 commit.
