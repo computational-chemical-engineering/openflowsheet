@@ -41,9 +41,14 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
-- **Blocking `0.2.0a1` (ADR 0028 `pending` cells; verdicts `fffb0e4`):** N3 claim set (default V11–V20 + W21 + W22);
-  V17 carry (default carry; alt. new V17 campaign ≈ USD 10) → unblocks V13 (e), V17 (a); M02 N1 publish
-  `external-subprocess-v1` stated "not a sandbox" (default accept) → unblocks W21 (c); V14 (b) D3 acceptance of the FAIL.
+- **Blocking `0.2.0a1`** (ADR 0028 `pending`; verdicts `fffb0e4`; asked in plain words 2026-10-15):
+  1. What the pre-release claims (N3): default = v0.1's ten gates re-checked + PyMRM reactor adapter + Peng–Robinson route;
+     not surrogate, optimization, end-to-end refinement, web shell, agent benchmark. Alts: add web shell; adapter + PR only; no pre-release.
+  2. Carry v0.1's paid agent-interface evidence across two additive interface fields (V17 carry): default carry; alt. re-run
+     (≈ USD 10, 1 h). Unblocks the agent gate and one solver-structure clause.
+  3. Ship the reactor child process, unconfined with user privileges, labelled "not a sandbox" (M02 N1): default accept;
+     no → reactor-adapter gate not claimable.
+  4. Release again with v0.1's known failure "one PTC solver variant qualified" (V14 (b)): default accept, PTC stays experimental.
 - **M03 N1:** accept the licences of an optional, non-default `nlp` extra; the [A10] audit (PASS, `docs/m03-ipopt-audit.md`
   on `wp/M03-audit`) found exactly: EPL-2.0 (Ipopt, cyipopt), CeCILL-C (MUMPS, Scotch), public domain (PORD, SQLite),
   Apache-2.0 (METIS 5, OpenSSL), Apache-2.0 WITH LLVM-exception (libomp), BSD-3 (OpenBLAS, SPRAL, hwloc, libuuid,
