@@ -1,7 +1,7 @@
 {
   "case_facts_sha256": "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7",
   "list_models_sha256": "90d9da8e08f344814f78fc995c0596e5eaf0cb2f7e7a568d3b212c143fc9533e",
-  "registration_sha256": "14ff19d98bb031a17917019e299661d7af5839d2fe3f13bad0fd2725a0717f84",
+  "registration_sha256": "ba627342f07e913875170992bad1621a9d6911ca43f47004457749bab6d68753",
   "rows": [
     {
       "case_id": "blind_synthesized_anaerobic_digester_unit",
@@ -91723,7 +91723,7 @@
   "schema": "w27-coverage-v1",
   "snapshot": {
     "basis": "built by benchmarks.m06.w27.snapshot from the build at git_commit",
-    "git_commit": "4c57bce870919aafa18983548815c8065873bbfb",
+    "git_commit": "5882a2c83666f52c916eda77f4d674a4db228516",
     "list_models_sha256": "90d9da8e08f344814f78fc995c0596e5eaf0cb2f7e7a568d3b212c143fc9533e",
     "models": [
       {
@@ -91790,7 +91790,7 @@
         "model_id": "syn001.valve"
       }
     ],
-    "package_version": "0.1.1",
+    "package_version": "0.2.0a1",
     "routes": [
       {
         "components": [
@@ -91915,7 +91915,7 @@
     "routes_per_revision": 1,
     "schema": "w27-registry-snapshot-v1"
   },
-  "snapshot_sha256": "0b2f45969ad40841059d3b6d70f3eb97a5313905bedfd89d3e6960a8d94ecc34",
+  "snapshot_sha256": "22a1b01846872e8c1453ebed39d3f0ab3d47fbd60f5d71fd1c7a2ada0d9c2a14",
   "summary": {
     "all_450": {
       "by_family": {
