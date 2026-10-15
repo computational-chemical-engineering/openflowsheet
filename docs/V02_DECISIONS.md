@@ -794,3 +794,8 @@ Grep, don't read whole. Newest at the bottom.
   cal ≤ 0.316, test ≤ 0.292 (282/300 in width); max |e_X| 7.3e-4, |e_ΔT| 0.32 K; grad 0.036 vs 0.25. A31/A32 (manifest
   `d65bb022…`)/A41 (8/8) hold; A33 not run. Per N6 M04 still `tested`; M05 falls back to parent model. Open: E31 (relative
   path → fingerprint change), design question on the 4.1 % failure rate (batch into reviewer), Q-A2.1.
+- **Alpha WO-10** (2026-10-15, `opus-engineer`, `wp/V02-alpha-gate` `4d591c7`): second session rebuilt lost /tmp scratch
+  under `~/.cache/of-rca-e0e198e/`, re-ran steps 10–12 (B-WO10-11). CI dispatch 38667458248 / push 38667452347 green
+  (check 8498/100 x86, 8470/98 arm). Step 11 PASS 3/3; step 12 PASS 6/6 (ρ 0.29, floor ratios 65.3/13.3, bitwise rerun).
+  Step 10 FAIL F1 (5/77 certificates, 4 extra qualified ids). Manifest `implemented`: 35 pass, A39/A43 fail, 6 unsupported.
+  Ruling round: `specifier` on brief `docs/briefs/V02-alpha-amendment2-brief.md` (`b8a769a`).

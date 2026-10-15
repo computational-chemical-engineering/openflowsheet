@@ -93,15 +93,17 @@ F5 education mode deferred.
 
 ## Next action
 
-**2026-10-15: burst over; back to ≤ 2 agents (Frank).** Still running (finish as briefed): alpha WO-10 RC steps (`alpha-gate`);
+**2026-10-15: burst over; back to ≤ 2 agents (Frank).** Alpha WO-10 done (`wp/V02-alpha-gate` `4d591c7`, gate 8580): RC steps 1–9, 11, 12 PASS at `C_α`; step 10 FAIL (F1: 5 coupled-route
+certificates qualify 4 extra ids — EXT-COUPLING:T/xi, derivative_witness on/off → V18 (b) FAIL by Q5 default); M07a manifest `implemented`
+(A39, A43 fail; A43 = 13 t08_rc records lack machine_class). Running: `specifier` Amendment 2 (F1, B-WO10-10, B-WO10-6; R-345…349);
 M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
 Stopped at Frank's pace request, work saved on branches (pushed): `wp/test-hardening` `1d90625` (t07_w5b pins the
 single-threaded env itself — gate + merge pending); `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
 (spec still to write). Done in the burst: M02 closeout merged (`2497ec2`); M05 rulings §18 on `wp/M05-rulings2` (`4cc5956`).
-Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 from R-331; M02 closeout R-340…344.
+Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 from R-331 (continue R-350); M02 closeout R-340…344; alpha Am. 2 R-345…349.
 Queued M02 follow-up (after the alpha RC): C1 inert-floor exact compare (`boundary.py:390`, few-ulp slack), R-341 R0
 guard, R-343 L-rows.
-After these: alpha verdicts (W21, W22, V11–V20) → step 13 → WO-11 → Frank publishes `0.2.0a1`; M04 WO-12 + `reviewer`;
+After these: apply Amendment 2 → M07a manifest `tested` → alpha verdicts (W21, W22, V11–V20) → step 13 → WO-11 → Frank publishes `0.2.0a1`; M04 WO-12 + `reviewer`;
 M05 WO-8 + `reviewer`; M07 build.
 
 In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the
