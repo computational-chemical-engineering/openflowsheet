@@ -594,3 +594,31 @@ def test_the_store_records_through_a_list_sink_without_an_application(tmp_path: 
     for record in sink.records:
         path = tmp_path / record["relpath"]
         assert record["name"] == first.key and path.stat().st_size == record["size_bytes"]
+
+
+def test_e32_a_relative_and_an_absolute_open_give_one_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """M04 E31/E32: the child's `HOME`/`TMPDIR` are the attempt directory, which it reads back as
+    its cwd; a project opened by a relative path once left that path literal in the fingerprint,
+    so every experiment key moved. Opened either way, the handshake and the key are one."""
+    LocalApplication.create(tmp_path / "p").close()
+    environment_root = tmp_path / "env"
+    variant = synthetic_variant("ok", ["ok"])
+    monkeypatch.chdir(tmp_path)
+    found = []
+    for directory in (Path("p"), tmp_path / "p"):
+        with LocalApplication.open(directory) as application:
+            assert application.store.directory is not None
+            runner = ExperimentRunner(
+                ExperimentStore(application.store.directory, ArtifactTableSink(application.store)),
+                PROVIDER,
+                CONTEXT,
+                backend_for=synthetic_backend(environment_root),
+            )
+            request = runner.request(variant, nominal_inlet(), COMPONENTS, N_TUBES)
+            environment = runner.frozen_environment(variant)
+            assert environment is not None and environment.fingerprint is not None
+            assert environment.fingerprint["env_allowlist"]["HOME"] == "${ATTEMPT_DIR}"
+            found.append((request["environment_fingerprint_sha256"], request["experiment_key"]))
+    assert found[0] == found[1]

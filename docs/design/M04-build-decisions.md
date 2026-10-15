@@ -264,3 +264,41 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   run with an absolute one. For the build lane: resolve the project
   path in `LocalApplication.open/create` (or normalise in the child by `Path.resolve()` on both
   sides) with a test that a relative and an absolute open give one key.
+
+## E31's fix — the launcher resolves the attempt directory (2026-10-15)
+
+- **E32. The attempt directory is resolved where it is handed to the child.** `launch`
+  (`adapters/external/launcher.py`) now calls `attempt_dir.resolve()` after creating it, before
+  building the scrubbed environment. Root cause: the launcher spawns the child with
+  `cwd=attempt_dir` and sets `HOME`/`TMPDIR` to the same path; a relative path is then relative to
+  the wrong directory (it names `<attempt>/<attempt>`), and the child — which reads its attempt
+  back as `os.getcwd()`, the physical path — cannot substitute it. Resolving (not only
+  `absolute()`) also covers a symlinked project path, which `getcwd` would report resolved.
+  Rejected: resolving in `LocalApplication.open/create` (fixes one caller; `ExperimentRunner`
+  over an `ExperimentStore` on any relative root, or a direct `launch`, would still break), and
+  normalising inside the child (the child would then paper over a wrong `HOME` it was given).
+  Inert at absolute, symlink-free paths: `resolve()` is the identity there, as WO-11's 642
+  handshakes sharing one fingerprint already show.
+  Proof (v3, this host): a direct handshake from a relative and from an absolute attempt
+  directory both give `dfce4150194f…beaaf`, WO-11's fingerprint; without the fix the relative one
+  gave `b7d475a5d38e…11fb4`. The WO-11 project opened by its *relative* path, study re-submitted
+  with budget 0 (job-000650, `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=1`): cold 0, hits 632, misses
+  0, 0 new attempts, manifest `d65bb0225f36…1717` — the E30 record's. Tests:
+  `test_m02_experiments.py::test_e32_a_relative_and_an_absolute_open_give_one_key` (one key and
+  one fingerprint through `LocalApplication.open` either way, synthetic child) and
+  `test_m02_kill_chain.py::test_e32_a_relative_attempt_directory_is_the_absolute_ones_fingerprint`
+  (absolute, relative, symlinked); both fail without the fix. Reversible by: reverting the E32
+  commit.
+- **E33. Finding: the study's manifest depends on the BLAS thread count.** Re-submitting WO-11's
+  study (budget 0, all 632 hits) under this shell's default threading gives manifest
+  `908cbe2f4d94…2e47`, reproducibly (jobs 000645–000649, 000651, with or without E32, relative or
+  absolute path, also through `m04_wo11_record.py`, whose A32 then reports `manifest_bitwise_equal`
+  false); with `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=1` it gives the record's `d65bb022…`
+  (job-000650), and with 8 threads `908cbe2f…` (job-000651). The difference is last-ulp only:
+  predictor coefficients, 2 calibration and 7 test scores (≤ 10⁻¹² relative), the error RMSs
+  and gradient errors (≤ 10⁻¹⁵ relative); the `promotion` block is identical, and E30's printed
+  numbers are unchanged. So
+  WO-11 ran single-threaded, and A32's bitwise manifest equality holds at a fixed thread
+  environment only. Not fixed (replay identity is the design lane's): either the study pins its
+  BLAS threads (e.g. `threadpoolctl` around the fit) or the manifest records the thread
+  environment it was computed under. For the design lane, with WO-12's review.
