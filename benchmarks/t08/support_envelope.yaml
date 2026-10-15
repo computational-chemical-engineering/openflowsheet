@@ -121,7 +121,7 @@ axes:
     title: Topologies
     statement: >-
       Acyclic flowsheets; recycles (single, nested, high-gain) by tear with safeguarded Anderson
-      and restart, or merged to EO; EO regions; cross-unit specifications promoted to EO; exact
+      and restart (L43), or merged to EO; EO regions; cross-unit specifications promoted to EO; exact
       zero-flow streams and components (ADR 0001 D3; the `ZERO_FLOW` regime). More than one loop
       or region per plan is not exercised by a registered case (L23).
     evidence:
@@ -187,7 +187,7 @@ axes:
   - id: globalization_and_recovery
     title: Globalization and recovery
     statement: >-
-      Damped Newton, with or without the terminal refinement (ADR 0018), Anderson recycle, specification continuation via
+      Damped Newton, with or without the terminal refinement (ADR 0018), Anderson recycle (L43), specification continuation via
       edge 3, sequential restart (ADR 0015); the recovery-edge inventory of spec §5.6 (T08.A33,
       W2.4); PTC offered as `T08-ptc-v1`, experimental (V14 (b) carried as FAIL, ADR 0021 D3).
     evidence:
@@ -777,6 +777,16 @@ limitations:
       - doc:docs/derivations/M01-spec.md §4.2
       - doc:docs/derivations/M01-spec.md §17
       - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
+  - id: L43
+    text: >-
+      The Anderson recycle, its stagnation restart (recovery edge E1) and the stalled-recycle EO
+      merge (E2) are library capabilities: every shipped unit that can sit in a loop declares
+      exact derivatives, so `auto` resolves to `newton_tear`, and no application-offered policy
+      requests `anderson` (`docs/recovery-edges.yaml`, `enabled: library-only`, R-130). V13 (b)'s
+      and V14 (c)'s evidence for them is library-level.
+    evidence:
+      - tests/test_t08_w2_edge_identity.py::test_e1_e2_no_offered_policy_or_unit_reaches_a_recycle_iteration
+      - doc:docs/recovery-edges.yaml
   - id: L-WEB-1
     text: >-
       The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits
@@ -2561,7 +2571,8 @@ harvest:
   class: E
   to:
   - L01
-  note: PTC experimental; V14 (b) FAIL carried
+  - B8
+  note: PTC experimental; V14 (b) FAIL carried; the PTC-R1 qualification handed on (B8, R-321)
 - manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
   item: limitations[3]
   sha256: 9d291d14ff47d20919af2cbb5312c894c2f84f6d811ac7bc49b14a05742afeee
@@ -2593,19 +2604,21 @@ harvest:
   class: E
   to:
   - L42
-  note: V19 feasibility; the C1 route now shipped as pr-c1-v1 (vapour-only light gases, no mixture VLE validation, k_ij = 0)
+  note: V19 feasibility; the C1 route now shipped as pr-c1-v1 (vapour-only light gases, no mixture VLE validation, k_ij = 0); K_NH3 and the property values closed by R-152 and M01
 - manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
   item: limitations[8]
   sha256: a5676af0b32eccce5c0718765aa40e828f17193eafa1df72c85324cdbe79ca56
-  class: P
-  to: []
-  note: 'library-only reading (R-130): tested library capabilities, not application paths'
+  class: E
+  to:
+  - L43
+  note: 'library-only (R-130): the Anderson recycle, E1 and E2 are library capabilities (R-321)'
 - manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
   item: limitations[9]
   sha256: 29e1bcb996e503d4cdeb488254172685fa4d3175656a1a827213319787b3b97f
-  class: P
-  to: []
-  note: A34 audit scope at T08's RC (replay re-emitted certificates not separately audited)
+  class: B
+  to:
+  - B13
+  note: A34 over the certificates the replays re-emit, still open at the alpha (R-321)
 - manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
   item: limitations[10]
   sha256: 9fb69e55e37bfd8a1705f44a6be42de76f8a0d08f2a9cdc55303abccb10b5b49
@@ -2949,7 +2962,8 @@ harvest:
   class: E
   to:
   - L01
-  note: T08.A70 fail, accepted in ADR 0021 D3 (V14 (b)); PTC experimental
+  - B8
+  note: T08.A70 fail, accepted in ADR 0021 D3 (V14 (b)); PTC experimental; PTC-R1 qualification handed on (B8, R-321)
 - manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
   item: checks[67]
   check_id: T08.B23
@@ -2957,7 +2971,8 @@ harvest:
   class: E
   to:
   - L01
-  note: T08.B23 fail, accepted in ADR 0021 D3 (V14 (b)); PTC experimental
+  - B8
+  note: T08.B23 fail, accepted in ADR 0021 D3 (V14 (b)); PTC experimental; PTC-R1 qualification handed on (B8, R-321)
 - manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
   item: limitations[0]
   sha256: ee46a433f1bfe6f19f00877097a0e961d9957f6e811812f936098abe5d743036
