@@ -11,7 +11,11 @@ come from the design lane's 50-digit generator (`benchmarks/m04/reference_values
 from __future__ import annotations
 
 import dataclasses
+import json
 import math
+import os
+import subprocess
+import sys
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -379,3 +383,51 @@ def test_the_predictor_refuses_malformed_coefficients() -> None:
         qd.QuadraticSurrogate((0.0,) * 35, (0.0,) * 36)
     with pytest.raises(ValueError, match="non-finite"):
         qd.QuadraticSurrogate((math.nan,) + (0.0,) * 35, (0.0,) * 36)
+
+
+# -- A49: the fit does not depend on the BLAS thread count (spec §20 A3.3, R-362) -----------------
+
+#: The child: a synthetic fit of WO-11's size (141 training rows), pinned (the production path) or
+#: with the pin replaced by a no-op; it prints the 72 coefficients' binary64 patterns.
+_A49_CHILD = """
+import contextlib, json, sys
+import numpy as np
+from openflowsheet.studies.surrogate import quadratic as q
+if sys.argv[1] == "unpinned":
+    q.single_blas_thread = contextlib.nullcontext
+rng = np.random.default_rng(20261015)
+z = rng.uniform(-1.0, 1.0, (141, 7))
+x = 0.2 + 0.05 * np.sin(z @ np.arange(1, 8)) + 0.01 * z[:, 0] * z[:, 3]
+dt = 100.0 + 30.0 * np.cos(z @ np.linspace(0.3, 1.1, 7)) + 5.0 * z[:, 2] ** 2
+fit = q.fit_quadratic(z.tolist(), x.tolist(), dt.tolist(), q.SCALING)
+s = fit.surrogate
+print(json.dumps([c.hex() for c in s.coefficients_x + s.coefficients_dt]))
+"""
+
+
+def _a49_fit(mode: str, threads: int) -> list[str]:
+    env = dict(os.environ)
+    env.update(OMP_NUM_THREADS=str(threads), OPENBLAS_NUM_THREADS=str(threads))
+    env["PYTHONPATH"] = os.pathsep.join(
+        filter(None, (str(REPO_ROOT / "src"), env.get("PYTHONPATH")))
+    )
+    done = subprocess.run(
+        [sys.executable, "-c", _A49_CHILD, mode],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=120,
+    )
+    coefficients: list[str] = json.loads(done.stdout)
+    return coefficients
+
+
+def test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threads() -> None:
+    pinned_1, pinned_8 = _a49_fit("pinned", 1), _a49_fit("pinned", 8)
+    unpinned_1, unpinned_8 = _a49_fit("unpinned", 1), _a49_fit("unpinned", 8)
+    # Not vacuous: at this size the unpinned fit differs with the thread count (build log E33).
+    assert unpinned_1 != unpinned_8
+    assert pinned_1 == pinned_8
+    # And the pin is single-threaded OpenBLAS: the bits of a process started at one thread.
+    assert pinned_8 == unpinned_1

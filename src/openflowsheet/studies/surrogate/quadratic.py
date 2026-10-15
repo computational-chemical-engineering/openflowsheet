@@ -5,8 +5,10 @@ X̃(z) = β_Xᵀ φ(z) and ΔT̃(z) = β_Tᵀ φ(z), with z = (u(s) − c)/h the
 
 * the basis and its derivative, and the least-squares fit by Householder QR with M03's
   identifiability threshold (spec §3.4);
-* prediction and ∇_z, both summed by `math.fsum` — correctly rounded, so a prediction (and hence a
-  score) is the same binary64 value whatever the platform's BLAS;
+* prediction and ∇_z, both summed by `math.fsum` — correctly rounded, so given the coefficients a
+  prediction (and hence a score) is the same binary64 value whatever the platform's BLAS; the
+  coefficients themselves are BLAS results, fitted under one BLAS thread (spec §20 A3.3, `blas`),
+  so they are bitwise per platform at any thread setting;
 * the chain rule to the inlet and the two rows the surrogate replaces in M02's extent-fixed
   embedding, R_ξ = ξ − X̃ n_N2,in and R_T = T_out − T_in − ΔT̃, with their closed-form partials
   (spec §3.2–§3.3), and the causal outlet n_out = n_in + ν ξ, T_out = T_in + ΔT̃;
@@ -30,6 +32,7 @@ import numpy as np
 from scipy.linalg import solve_triangular
 
 from openflowsheet.models.c1 import NU
+from openflowsheet.studies.surrogate.blas import single_blas_thread
 from openflowsheet.studies.surrogate.conformal import TAU_ID, TERMS
 from openflowsheet.studies.surrogate.plan import (
     BOX,
@@ -183,13 +186,15 @@ def fit_quadratic(
         return QuadraticFit(n_ok, None, None, None, "training_unidentifiable")
     phi = np.array([basis(_finite(z, "a training input")) for z in z_rows], dtype=np.float64)
     y = np.column_stack([_finite(x, "X"), _finite(dt, "dT")])
-    singular = np.linalg.svd(phi, compute_uv=False)
-    ratio = float(singular[-1] / singular[0])
-    if not ratio >= TAU_ID:
-        return QuadraticFit(n_ok, ratio, None, None, "training_unidentifiable")
-    q, r = np.linalg.qr(phi, mode="reduced")
-    beta = solve_triangular(r, q.T @ y, lower=False)
-    residual = phi @ beta - y
+    # Spec §20 A3.3 (R-362): every BLAS/LAPACK call of the fit under one thread.
+    with single_blas_thread():
+        singular = np.linalg.svd(phi, compute_uv=False)
+        ratio = float(singular[-1] / singular[0])
+        if not ratio >= TAU_ID:
+            return QuadraticFit(n_ok, ratio, None, None, "training_unidentifiable")
+        q, r = np.linalg.qr(phi, mode="reduced")
+        beta = solve_triangular(r, q.T @ y, lower=False)
+        residual = phi @ beta - y
     rms = np.sqrt(np.mean(residual * residual, axis=0))
     surrogate = QuadraticSurrogate(
         coefficients_x=tuple(float(b) for b in beta[:, 0]),

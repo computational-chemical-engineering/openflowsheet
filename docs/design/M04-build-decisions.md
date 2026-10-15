@@ -339,3 +339,23 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   test keeps it by writing such a revision through the store. Alternative: leave unresolved
   manifests to the binder (validation not READY, solve refused). Reversible by: reverting the E35
   commit.
+- **E36. The fit's one-thread pin is in-tree, not `threadpoolctl` (SF1, R-362).** R-362 leaves the
+  mechanism to the build lane: `threadpoolctl` as a declared dependency, or an equivalent.
+  Declaring it changes `requirements.lock`, whose SHA-256 is T08's registered `LOCK_SHA256`
+  (`ead4edf1…`, `tests/test_t08_w4_rc.py`, T08.A19) and every run manifest's
+  `environment.lock_sha256` (the replay class of every earlier bundle); the lock has not moved
+  since v0.1.0. DECISION: the equivalent, `studies/surrogate/blas.py`: `single_blas_thread()`
+  finds the loaded OpenBLAS libraries in `/proc/self/maps` (`RTLD_NOLOAD`), sets each to one
+  thread through its own `*_set_num_threads*` and restores the previous count; here it drives
+  NumPy's `libscipy_openblas64_` and SciPy's `libscipy_openblas` (both found, 48 → 1 → 48).
+  Process-wide like `threadpoolctl`, which is safe because one job computes per interpreter.
+  Off Linux, or under another BLAS, it is a no-op (documented; A1.3's platform classes govern).
+  `fit_quadratic` runs its SVD, QR, triangular solve and products inside it. Proofs: A49 (child
+  processes at `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS` 1 and 8, N = 141 synthetic rows: unpinned
+  coefficients differ, pinned are bitwise equal and equal to the unpinned one-thread bits); WO-11's
+  study re-submitted from cache (`m04_wo11_record.py` to a scratch directory) gives manifest
+  `d65bb0225f36…` with cold 0 / 632 hits / 0 new attempts both at one thread (job-000652) and at
+  the shell's default 48 threads (job-000653), where E33 gave `908cbe2f…` before the pin.
+  Alternative: `threadpoolctl==3.6.0` with a new lock and T08 constant (a design-lane/release
+  call). Reversible by: replacing `single_blas_thread` with `threadpoolctl.threadpool_limits(1,
+  "blas")` in `quadratic.py` and deleting `blas.py`.
