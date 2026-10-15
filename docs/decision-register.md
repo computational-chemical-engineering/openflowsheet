@@ -6281,6 +6281,123 @@ content-addressed manifest; the facet is not relaxed.
 
 ---
 
+## R-340 — ADR 0027 is Accepted, with Amendments 1–4 (its acceptance condition is met by M01's and M02's `tested` manifests)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §1) |
+| Normative text | `docs/adr/0027-c1-reactor-boundary.md` Status line |
+| Evidence | `evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json` (`tested`; stand-in A25–A32, A49–A51; record halves A52). `evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json` (`tested`): G10v3 met (A42 1.56e-8 ≤ 1e-6, A45 3.84e-8 ≤ 1e-7, A46 5.06e-5 ≤ 1e-3, A47 (a) bitwise, A47 (b) 1.43e-8 ≤ 1e-6, A41/A43/A44/A48 true); G11v3-1 to -12 (V5 selected, two runs of 121 points equal); G12v3-1 (CONVERGED, VERIFIED) and G12v3-2 (both edges). Record hashes re-computed equal to the manifest's |
+| Affected packages | M01, M02 (closed); M04–M07 inherit the contract as accepted |
+
+**Decision.** ADR 0027 moves from Proposed to Accepted, as amended by Amendments 1–4 and pointed to by ADR 0034 D10.
+
+**What it does not establish.** The real-reactor records are `judged: false`, R3, measured on one machine. G10v3 and
+G11v3 ran on the never-registered provisional document, which differs from v3 only in `hard_domain`, `timeout_s` and
+`variant_id` (checked). No cross-architecture reproduction exists. W21's verdict belongs to the `verdict` lane. Human
+numerical and process-model sign-off is separate.
+
+**Rejected alternative, and why.** Holding the ADR Proposed until a cross-architecture run exists: its condition does not
+require one. The gap is stated as a limitation (R-343).
+
+**Watch for.** The M01 design composition sits exactly on v3's inert floor (y_Ar + y_CH₄ = 0.035), so the registered v3
+decides it by rounding (close-out §1, finding C1). Treat it as an open M02 follow-up, not as a reason to reopen this ADR.
+
+---
+
+## R-341 — A failure bundle's compact coupling-record copy is compared by R-317's rules, its `record_sha256` for shape, with an R0 guard (ratifies build log D130, constrained)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §2) |
+| Normative text | Build log D130; `coupled_run.compact_differences`; R-317 (b); R-318 |
+| Evidence | D130's measured before/after (one-ulp seam at `max_outer` 3: MISMATCH on `record_sha256` only → MATCH, `bitwise_floats` false) |
+| Affected packages | M02 (`revision_run.reproduce_bundle`), M05 (coupled replays) |
+
+**Decision.** Ratified. The copy's floats are judged at the record's own paths by `rules.coupling`, against the archived
+`coupling_block`. Its `record_sha256` is judged for shape, for R-318's reason: it digests R1/R2 floats. **Condition (R0
+guard, as R-318 has its recomputation).** On reproduce, the archived copy's `record_sha256` must equal
+`document_sha256` of the archived `external-coupling.json`, and the rerun's must equal the rerun record's digest.
+Otherwise it is a difference. Today a well-formed but wrong archived digest replaces the fresh one, even on a bitwise
+rerun, so the link between the bundle and its record is never checked.
+
+**Rejected alternatives, and why.** The generic rules: a cross-platform reproduce could never MATCH. Shape with no guard:
+an archive whose failure bundle names a different record would reproduce MATCH.
+
+**Watch for.** Another digest copied into a coupled bundle without its own recomputation guard.
+
+---
+
+## R-342 — The support matrix's provider label is "Shipped, bound on another basis:" (ratifies build log D131, first decision)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §2) |
+| Normative text | Build log D131; R-310 (§14.5 D10, `other_basis_providers`); envelope L42 |
+| Evidence | `scripts/t08_support_matrix.py`, `tests/test_t08_w2_support_envelope.py` |
+| Affected packages | M02 (closed), M07 (release matrix) |
+
+**Decision.** Ratified. The label follows R-310's rename and L42's "on their own basis". The old label became false at the join.
+
+**Rejected alternative, and why.** Keeping "bound by no model": it contradicts L42 and R-288.
+
+---
+
+## R-343 — `external-subprocess-v1` is an envelope axis **and** its "not a sandbox" limitation is an E item with an L-row; M02's user-facing limitations are E, not P (ratifies D131's axis; reverses D132 (3)'s all-P harvest)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §2); T08 release spec §5.7 gives the design-lane reviewer this check |
+| Normative text | T08 release spec §5.7 (E: user-facing, points to L-rows of §5.5 or U-rows of §5.3; "a misfiled E-as-P hides a limitation"); build log D131, D132 (3) |
+| Evidence | `benchmarks/t08/support_envelope.yaml` harvest: M02 `limitations[0..6]` all `class: P`, `to: []`; precedent M01 review F1 (M01 `limitations[3]` → E → L42), M06 (E → L-WEB-1…4) |
+| Affected packages | M02 (envelope only; the manifest and its `tested` status are unchanged), M07 (release matrix) |
+
+**Decision.**
+- The `external_execution` axis stands: the execution profile is a supported capability, with its platforms and R3.
+- "Not an L-row" is reversed. M02 `limitations[2]` (not a sandbox) is E and points to a new L-row.
+- M02 `limitations[1]` (opt-in pinned environment, Linux only, R3, one machine), `[3]` (v3's inert floor next to a
+  measured S1 failure; an in-domain S1 failure ends COUPLING_NOT_CONVERGED), `[5]` (numerical verification, not
+  empirical validation of the reactor) and `[6]` (cross-platform coupled reproduction tested by a one-ulp seam only)
+  are E and point to L-rows.
+- `[0]` and `[4]` stay P.
+- **Change (build lane):** add the L-rows at the next free ids, built from the manifest's own sentences, for example
+  one row for the profile and one for the real reactor and coupled replay. Then repoint the five harvest entries,
+  re-emit `docs/support-matrix.md` and run `scripts/t08_support_matrix.py --check` and
+  `tests/test_t08_w2_support_envelope.py`.
+
+**Rejected alternatives, and why.**
+- Axis only: the spec lets an E item point only at L-rows or U-rows, and a security limitation must appear among the
+  limitations.
+- All P: a user can reach each of the five items.
+
+**Watch for.** A later package filing a user-facing limitation as P because an axis statement mentions it.
+
+---
+
+## R-344 — `tests/test_m02_pymrm_env.py` runs v3; D114/D115's swapped record hashes are an erratum, and the manifest's are the files' (ratifies build log D132 (1) and (2))
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §2) |
+| Normative text | Build log D132 (1), (2) |
+| Evidence | sha256 re-computed on this branch: `g12-real-loop-v3.json` 47dc9f089b715fd4…, `g12-real-loop-v3-edges.json` 148ec48830965e68…, equal to the manifest's G12 entries |
+| Affected packages | M02 (closed) |
+
+**Decision.** Ratified.
+- The environment test exercises the shipped variant, whose runner is the built child. Under v2 it fails
+  `environment_mismatch` by construction.
+- D132 (2) stands as the erratum to D114/D115. The append-only log is not rewritten.
+- D132 (3)'s generator is ratified. Its harvest classification is reversed by R-343.
+
+**Rejected alternative, and why.** Resting A47 (a) on G10v3's record alone: a live bitwise run exists, so record it.
+
+---
+
 ## R-360 — Promotion covers every way a surrogate enters a revision: an added, renamed or first-revision surrogate instance needs a PROMOTABLE re-derived verdict (M04 review MF1)
 
 | | |
