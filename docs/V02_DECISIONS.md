@@ -812,3 +812,6 @@ Grep, don't read whole. Newest at the bottom.
   gates 8585/8591): Am2.5 inertness — G2 (ii) dump byte-identical (`659748576adb9730…`), K05 identity PASS, 10/10 pr-c1-v1
   solution states identical, 9 certificates differ only in scoped qualification fields. B-AM2-3: CI `dist`/`build` jobs
   install `requirements.lock` first (untested locally, needs network) — for the design read.
+- **Alpha Am2 design read** (2026-10-15, `reviewer`, `eb108c4`): proceed to re-cut; cut applies cleanly (14 files).
+  DECISION: S2 → accept that §18.4 (b) includes B-AM2-3's two workflow steps. Alternative: re-scope R-347. Reversible by:
+  a design-lane amendment. S3 (prove imports in lock-only/clean venvs) folded into the re-cut brief before the cut; S1 tests after.

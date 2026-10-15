@@ -97,7 +97,7 @@ F5 education mode deferred.
 certificates qualify 4 extra ids — EXT-COUPLING:T/xi, derivative_witness on/off → V18 (b) FAIL by Q5 default); M07a manifest `implemented`
 (A39, A43 fail; A43 = 13 t08_rc records lack machine_class). Amendment 2 ruled (`ab80ca5`, R-345…349): F1 = certificate defect (EXT-COUPLING/witness write `None`), failure is V18 (c) not (b);
 A43 needs a registered `machine_class`; wrapper output accepted. **`e0e198e` superseded → re-cut C_α¹ and re-run steps 1–13** (R-349;
-alt. Frank accepts V18 (c) FAIL, Q-A2-1, not recommended). §18.5 actions 1–2 done (`2e778d3`, gate 8591; Am2.5 inert: G2 dump byte-identical, K05 identity PASS, solution states identical). Running: `reviewer` read of the diff (action 3) and M04 E31 fix + WO-12; then design read of the diff, re-cut, re-run.;
+alt. Frank accepts V18 (c) FAIL, Q-A2-1, not recommended). §18.5 actions 1–2 done (`2e778d3`, gate 8591; Am2.5 inert: G2 dump byte-identical, K05 identity PASS, solution states identical). Design read `eb108c4`: proceed, no must-fix (S2 accepted: §18.4 (b) covers the 2 CI steps; S3 prove machine_class imports in dist/clean venvs before cut; S1 dist-record tests). Running: engineer re-cut C_α¹ + RC steps 1–12 + manifest (actions 4–7) and M04 E31 fix + WO-12; then design read of the diff, re-cut, re-run.;
 M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
 Stopped at Frank's pace request, work saved on branches (pushed): `wp/test-hardening` `1d90625` (t07_w5b pins the
 single-threaded env itself — gate + merge pending); `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
@@ -105,7 +105,7 @@ single-threaded env itself — gate + merge pending); `wp/M06-wo17` WIP commit (
 Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 from R-331 (continue R-350); M02 closeout R-340…344; alpha Am. 2 R-345…349.
 Queued M02 follow-up (after the alpha RC): C1 inert-floor exact compare (`boundary.py:390`, few-ulp slack), R-341 R0
 guard, R-343 L-rows.
-After these: Am. 2 design read → cut C_α¹ (cherry-pick 04e65be, 00acbe9, f0cfda8 + ab80ca5 onto e0e198e) → RC steps 1–13 → M07a manifest `tested` → alpha verdicts (W21, W22, V11–V20) → step 13 → WO-11 → Frank publishes `0.2.0a1`; M04 WO-12 + `reviewer`;
+After these: cut C_α¹ → RC steps 1–12 → M07a manifest `tested` → alpha verdicts (W21, W22, V11–V20) → step 13 → WO-11 → Frank publishes `0.2.0a1`; M04 WO-12 + `reviewer`;
 M05 WO-8 + `reviewer`; M07 build.
 
 In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the
