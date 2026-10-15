@@ -23,7 +23,10 @@ from typing import Any
 
 from conftest import REPO_ROOT
 
+from benchmarks.t06 import ensemble
+
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import m07a_evidence_manifest  # noqa: E402
 import v0_1_gate  # noqa: E402
 
 RC = "e0e198e4632224612671db5b07445639d272d6da"
@@ -35,7 +38,9 @@ SHA256 = re.compile(r"`([0-9a-f]{64})`")
 LOCK_SHA256 = "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
 #: The records `scripts/t08_rc.py` writes without a `machine_class` (its steps 3, 4 and 10 carry
 #: `architecture` and `github_actions` only); M07a.A43 names the machine class (build decision
-#: B-WO10-10, a question for the design lane). Pinned so that a change is seen.
+#: B-WO10-10, a question for the design lane). Pinned so that a change is seen. These are
+#: `C_α⁰`'s records (`RC` above): R-347 (spec §18.3) adds the member to the four writers, so at
+#: `C_α¹` this set is empty, and it becomes so when `RC` moves to `C_α¹` (§18.5 item 6).
 NO_MACHINE_CLASS = frozenset(
     {
         "certificates-ref-x86-64.json",
@@ -178,6 +183,67 @@ def test_a43_the_records_without_a_machine_class_are_the_known_ones() -> None:
         _machine_class(document) for path, document in records.items() if path not in missing
     }
     assert classes == {"ref-x86-64", "ci-x86-64", "ci-aarch64"}
+    # R-347: a carried class agrees with the record's own architecture and CI flag.
+    registered = ensemble.registered()["machine_classes"]
+    for path, document in records.items():
+        if path in missing:
+            continue
+        provenance = document.get("provenance") or document
+        entry = registered[_machine_class(document)]
+        architecture = provenance.get("architecture") or document.get("machine")
+        if architecture is not None:
+            assert architecture == entry["architecture"], path
+        if "github_actions" in provenance:
+            assert provenance["github_actions"] == entry["github_actions"], path
+
+
+# -- the generator's A43 measurement (`scripts/m07a_evidence_manifest.py`, R-347) --------------
+
+
+def _provenance_of(tmp_path: Path, records: dict[str, dict[str, Any]]) -> tuple[str, Any]:
+    commit = "c" * 40
+    rc = tmp_path / commit / "rc"
+    lock = _sha256(REPO_ROOT / "requirements.lock")
+    for name, members in records.items():
+        (rc / name).parent.mkdir(parents=True, exist_ok=True)
+        provenance = {"commit": commit, "tree_clean": True, "environment_lock_sha256": lock}
+        document = {"format": "t08-rc-v1", "provenance": {**provenance, **members}}
+        (rc / name).write_text(json.dumps(document), encoding="utf-8")
+    inputs = m07a_evidence_manifest.Inputs(commit=commit, tests=None, evidence=tmp_path)  # type: ignore[arg-type]
+    return m07a_evidence_manifest._m_provenance(inputs)  # noqa: SLF001
+
+
+def test_a43_generator_passes_registered_agreeing_classes(tmp_path: Path) -> None:
+    result, value = _provenance_of(
+        tmp_path,
+        {
+            "a.json": {"machine_class": "ref-x86-64", "architecture": "x86_64"},
+            "b.json": {
+                "machine_class": "ci-aarch64",
+                "architecture": "aarch64",
+                "github_actions": True,
+            },
+        },
+    )
+    assert (result, value["records"]) == ("pass", 2)
+
+
+def test_a43_generator_fails_a_missing_unregistered_or_disagreeing_class(tmp_path: Path) -> None:
+    result, value = _provenance_of(
+        tmp_path,
+        {
+            "good.json": {"machine_class": "ci-x86-64", "github_actions": True},
+            "none.json": {"architecture": "x86_64"},
+            "unregistered.json": {"machine_class": "unregistered(x86_64)"},
+            "architecture.json": {"machine_class": "ci-aarch64", "architecture": "x86_64"},
+            "ci.json": {"machine_class": "ref-x86-64", "github_actions": True},
+        },
+    )
+    assert result == "fail"
+    assert value["no_machine_class"] == ["none.json"]
+    assert value["unregistered_machine_class"] == ["unregistered.json"]
+    assert value["machine_class_disagrees"] == ["architecture.json", "ci.json"]
+    assert value["not_attributable"] == []
 
 
 def test_a44_the_tree_record_is_c_alphas_byte_for_byte() -> None:

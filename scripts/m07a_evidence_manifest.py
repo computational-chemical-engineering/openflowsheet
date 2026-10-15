@@ -314,10 +314,18 @@ def _m_mr11_step12(inputs: Inputs) -> Part:
 
 def _m_provenance(inputs: Inputs) -> Part:
     """M07a.A43: every committed `t08-rc-v1` record (and the A43 dist record) carries `commit` =
-    `C_α`, `tree_clean` true, the lock's SHA-256 and its machine class."""
+    `C_α`, `tree_clean` true, the lock's SHA-256 and its machine class. The class (spec §18.3,
+    R-347) is a key of the registry's `ensemble.machine_classes`, and agrees with the record's
+    `architecture` (or the dist record's `machine`) and `github_actions` where it carries them."""
+    sys.path.insert(0, str(ROOT))
+    from benchmarks.t06 import ensemble  # noqa: PLC0415
+
+    classes = ensemble.registered()["machine_classes"]
     lock = _sha256(ROOT / "requirements.lock")
     unattributable: list[str] = []
     no_class: list[str] = []
+    unregistered: list[str] = []
+    disagreeing: list[str] = []
     seen = 0
     for path in sorted(inputs.rc_dir.rglob("*.json")):
         document = json.loads(path.read_text(encoding="utf-8"))
@@ -335,10 +343,29 @@ def _m_provenance(inputs: Inputs) -> Part:
             provenance.get("environment_lock_sha256"),
         ) != (inputs.commit, True, lock):
             unattributable.append(shown)
-        if not (provenance.get("machine_class") or document.get("machine_class")):
+        label = provenance.get("machine_class") or document.get("machine_class")
+        if not label:
             no_class.append(shown)
-    value = {"records": seen, "not_attributable": unattributable, "no_machine_class": no_class}
-    return ("pass" if seen and not unattributable and not no_class else "fail"), value
+            continue
+        if label not in classes:
+            unregistered.append(shown)
+            continue
+        registered = classes[label]
+        architecture = provenance.get("architecture") or document.get("machine")
+        on_ci = provenance.get("github_actions")
+        if (architecture is not None and architecture != registered["architecture"]) or (
+            on_ci is not None and bool(on_ci) != bool(registered["github_actions"])
+        ):
+            disagreeing.append(shown)
+    value = {
+        "records": seen,
+        "not_attributable": unattributable,
+        "no_machine_class": no_class,
+        "unregistered_machine_class": unregistered,
+        "machine_class_disagrees": disagreeing,
+    }
+    ok = seen and not (unattributable or no_class or unregistered or disagreeing)
+    return ("pass" if ok else "fail"), value
 
 
 def _m_envelope(inputs: Inputs) -> Part:
