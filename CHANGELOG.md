@@ -51,8 +51,9 @@ is `docs/support-matrix.md`: **unlisted is unsupported**.
 never promises it, on any platform including a single machine; R0 bit-identity of structure plus
 D2 agreement for floats is the promise."
 
-**Review status of every package** (each manifest's `status`, the manifest at the latest committer
-time where there are several; human `review` fields as recorded):
+**Review status of every package** (each manifest's `status` at `C_α`, the manifest at the latest
+committer time where there are several; human `review` fields as recorded; M07a, whose manifest is
+the record of this gate and is written after `C_α`, has no row, R-320):
 
 | Package | Status | Human review (numerical / process model) |
 | --- | --- | --- |
