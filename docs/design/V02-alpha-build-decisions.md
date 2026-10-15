@@ -169,3 +169,33 @@ logs and scripts under `~/.cache/of-rca-e0e198e/` (the scripts and the summary a
 - Records: `docs/v02-alpha-rc-record.md`, `evidence/M07a/<C_α>/rc/` (56 records, `records.json`),
   `tests/test_m07a_rc_records.py`, `scripts/m07a_evidence_manifest.py`; the manifest is generated after these commit.
 - Step 13 not run: it needs `docs/reviews/V02-alpha-verdicts.md` (pending, not failed).
+
+## Amendment 2 build-lane actions (spec §18.5 items 1–2; R-345, R-347)
+
+B-AM2-1 **R-345 as built (action 1).** `application/coupled_run.py`'s `_check` writes
+`independence_qualification=None` (its `reproducibility` parameter, used only for the old note, is dropped; the class stays in
+the `external_model` limitation); `verify/checks.py`'s `derivative_witness` writes no note (the `skipped`/`note` lines go,
+the docstring and `witness_skipped_columns`'s say the exclusion lives in `derivative_witness_partial` only).
+`certificate.py` unchanged. New `tests/test_a09_qualification_field.py`: Am2.1–Am2.3 at S1 (K05's `run_session` on
+SYN-001 nominal), S2 (M02 WO-8's V1, 5 skipped columns, as D43) and S3 (`C1-LOOP-M02-v1` with `standin-x025-v1` in
+process), each precondition asserted; Am2.4 (a) monkeypatches `coupled_run._check` to restore `external model, R1` at S3,
+(b) wraps `checks.derivative_witness` to restore the old note at S2: Am2.1 and Am2.2 then return exactly the restored ids,
+and S1 still passes. On the pre-fix code the new file fails 3 of 5 (S2, S3, and (a), because S3 also carries the witness
+entries), the two M02 tests below fail, and (b) passes, as it should. M02 tests edited (§18.4 item 1 (a)):
+`test_m02_wo8_verifier.py::test_the_witness_does_not_difference_exactly_zero_pr_flow_columns` (the expected note becomes
+`None`, docstring), `test_m02_wo10_coupled.py::test_r3_an_out_of_process_coupled_run_is_r3_and_its_checks_say_so` (`{None}`,
+and R3 asserted on the `external_model` limitation instead).
+
+**Am2.5, measured at ab80ca5 + the change.** (i) G2 (ii): `scripts/m02_g2_corpus.py` — 50 revisions, 44 certificates,
+file sha256 `659748576adb97300a3b1022ddf30d504a37a8c8ed4b6d6a8506b2c40c16c16d`, text sha256 `20004c0aa707…b39e7`: byte-identical
+to D39/D43. (ii) K05 identity: `scripts/t08_rc.py identity` PASS — `a42.minus_t07_registered` (R-149's `24af004a…`),
+`a42.t07_key_substituted`, `a42.unchanged_under_trial_version`. (iii) Every `pr-c1-v1` revision the tests register (M02's
+5-revision C1 corpus and WO-8's 6 region flowsheets) solved through the application at ab80ca5 and with the change:
+`solution-state.json` bytes identical in all 10 that solve, outcomes and verdicts identical; certificates changed in 9,
+each carrying `derivative_witness_partial` (the loop also `external_model`), and in each the only difference is the
+scoped checks' `independence_qualification` and their entries (F1/F11/F4/V1 12→10, mixer 7→5, zero 4→2, WO-8 loop
+20→18, coupled loop 25→21); `C1-HEATER-M02-v1` (no skipped column) is unchanged; `C1-REACTOR-M02-v1` ends
+`EVALUATION_ERROR` without the reactor environment at both commits. The run manifests and attempt records differ
+in the changed and the unchanged runs alike (run-time metadata and recorded code identity, not solve numerics). Q-A2-2's answer: nothing outside the two scoped
+certificate classes moves. (iv) Committed fixtures that move: none — no tracked file outside `docs/` contains either old
+note (`git grep`), and `C_α⁰`'s evidence is not regenerated.
