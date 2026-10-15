@@ -379,3 +379,11 @@ B-AM3-8 **Action 8.** `C_α¹`'s RC record moved to `docs/v02-alpha-rc-record-6f
 `docs/reviews/V02-alpha-verdicts-6fec822.md`, each with one line saying R-370 superseded it; its records, manifest
 (`implemented`) and tree record stay where they are. The move precedes the manifest run, so the generator at `C_α²`
 cannot read `C_α¹`'s verdicts as A60–A63 inputs.
+
+B-AM3-9 **Action 7 as run.** `scripts/m07a_evidence_manifest.py --commit cc73219… --ci-run 38813135468 --ci-run
+38813136015` on `wp/V02-alpha-gate` at `d6836bc` (tree clean outside `evidence/`; distribution trees equal to `C_α²`'s):
+tests run there, pytest exit 0, 282 nodes. `evidence/M07a/<C_α²>/manifest.json`: **`tested`** — 44 checks, 38 pass, 0
+fail, 6 unsupported: A52 (`pending`, "judged at the candidate after §9.2 step 5 (Amendment 3 §19.4)") and A60–A64
+(verdicts at `C_α²`, ledger). A14 pass (25 nodes); A39 pass (77 audited, 5 of 5 step-12 certificates, 0 violations,
+bound to `faa8e4da…`); A43 pass (29 records; none unattributable, without class, unregistered or disagreeing).
+`reviewed` not set. Nothing failed; no rule was narrowed.
