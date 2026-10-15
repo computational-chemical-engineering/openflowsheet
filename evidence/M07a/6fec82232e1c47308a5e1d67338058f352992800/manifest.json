@@ -1,0 +1,1005 @@
+{
+ "work_package": "M07a",
+ "commit": "6fec82232e1c47308a5e1d67338058f352992800",
+ "requirements": [
+  "D04",
+  "A10",
+  "D17",
+  "D20"
+ ],
+ "status": "implemented",
+ "inputs": {
+  "case_id": "M07a's acceptance at C_α: one check per assertion of docs/derivations/V02-alpha-release-spec.md §10 (e793323ddc984231921f29a46936c13ca9c79d16596ea882ac6d4c9297dd27af)",
+  "case_hash": "3dd4e187f63589e1607e7195d6437a355143bd85d49b1e2ddb0a6be86f16065e",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "gh run view 38772065394 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "1277dc7da80690769ff74cae38eb9049e9bb4c48be4f37d04f86ea5719cebc48"
+  },
+  {
+   "cmd": "gh run view 38772054427 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "24582592d2d76bb7092ead8c348c0364609e75d4ae2b7f0b475fbde187d550d2"
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/t08-tests.junit.xml tests/test_changelog_section.py tests/test_m07a_changelog.py tests/test_m07a_harvest.py tests/test_m07a_rc_records.py tests/test_m07a_surface_chain.py tests/test_m07a_v011_bundle.py tests/test_m07a_v0_2_gate.py tests/test_release_workflows.py tests/test_t08_b50_surface_content.py tests/test_t08_reference_generators.py tests/test_t08_w2_support_envelope.py tests/test_t08_w4_changelog.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "ccffcec6fd14a37c8438043519fd7fd93a4140ffa46412003ad6dca163de69cd"
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/m07a_evidence_manifest.py --commit 6fec82232e1c47308a5e1d67338058f352992800 --ci-run 38772065394 --ci-run 38772054427 (run at 682389bcf19968656d5c82b954dd218ac46cc7fd)",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "M07a.A00",
+   "description": "`v02a_reference.py --check`",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_reference_generators.py::test_a00_generator_check_passes[v02a_reference.py]"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A01",
+   "description": "Version coverage: the 18 versions of Table T1, each as the candidate's version with an otherwise passing fixture",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a01_*"
+     ],
+     "nodes": 18,
+     "outcomes": {
+      "passed": 18
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A02",
+   "description": "`C`'s version against the candidate's: (i) both `0.2.0a1`; (ii) `C` = the committed record of `67c66d9` (`0.1.0rc1`) with candidate `0.2.0a1`; (iii) `C` at `0.2.0a1`, candidate at `0.2.0a2`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a02_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A03",
+   "description": "The verdict document's form, with each §7.2 item 2 departure on a passing fixture: reordered or missing column; gate out of order; bold gate id; a clause or L id in `Basis`; a second Verdict table; a `W23` row; a header naming another `C`; no `Judged` date; `**Judged:**` twice *(Amendment 1 (review) F4)*; an unknown L id",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a03_*"
+     ],
+     "nodes": 21,
+     "outcomes": {
+      "passed": 21
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A04",
+   "description": "D2.1–D2.3 with ADR 0028's D3 table: (a) all PASS; (b) V14 FAIL `V14 (b)` accepted, dated on the judged date; (c) the same dated the day before; (d) the same accepted only in an ADR 0021-shaped table; (e) an unlisted FAIL; (f) a BLOCKED W21; (g) ledger PASS against document FAIL for W22; (h) each acceptance cell of Table T4; *(Amendment 1 (review) F4)* (i) an accepted row whose first cell is a clause followed by prose; (j) two D3 tables; (k) a clause listed twice; (l) an acceptance dated `2026-02-30`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a04_*"
+     ],
+     "nodes": 23,
+     "outcomes": {
+      "passed": 23
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A05",
+   "description": "Frank's decisions table: each of `N3`, `V17 carry` and `M02 N1` in turn `pending`, an alternative, missing, or accepted the day before `Judged` *(Amendment 1 (review) F2)*, with the other two accepted; two decisions tables; each item's row doubled; each answer dated `2026-02-30` *(Amendment 1 (review) F4)*",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a05_*"
+     ],
+     "nodes": 29,
+     "outcomes": {
+      "passed": 29
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A06",
+   "description": "W23–W27 with ledger verdicts null, PASS, FAIL and BLOCKED (four fixtures)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a06_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A07",
+   "description": "The tree check: T08.A50's and R-151's states (version-only change, pin edit, an edit, an addition, a removal, a mode change, a doubled version string; git against record at a scratch commit; `C` absent with and without its record)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a07_*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A08",
+   "description": "The RC record: steps 1–12 each passed; step 7 failed; step 12 missing; step 12 present only as a `—` supporting row; step 13 failed; another `C`; a \"not measured\" step-12 row",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a08_*"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A09",
+   "description": "Manifests: (a) M07a `tested` at `C`; (b) M07a missing, at another commit, or `implemented`; (c) M02's only manifest at a commit not an ancestor of `C`; (d) M01 `implemented` only; (e) `C` absent with its record present",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a09_*"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A10",
+   "description": "The envelope at the candidate: (a) `v0.2-alpha-envelope-1`, release `0.2.0a1`; (b) `v0.2-envelope-dev`, release `0.2.0.dev0`; (c) the right id with release `0.2.0a2`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a10_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A11",
+   "description": "Required ADRs: Table T5's lines as each ADR's status; one file missing",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a11_*"
+     ],
+     "nodes": 7,
+     "outcomes": {
+      "passed": 7
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A12",
+   "description": "Output and exit: on the fixtures above, the first line, the 17 gate rows in order, the last line format; `--markdown` 17 rows; `--json` keys; exit 0, 1 or 2 as §7.3",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a12_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A13",
+   "description": "`scripts/v0_1_gate.py` and `tests/test_t08_w4_v0_1_gate.py`",
+   "result": "pass",
+   "value": {
+    "judged_by": "generator, test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v0_2_gate.py::test_a13_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A20",
+   "description": "`release.yml`'s version step on Table T2's inputs, run as the existing `test_the_version_step` runs it",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_release_workflows.py::test_m07a_a20_*"
+     ],
+     "nodes": 19,
+     "outcomes": {
+      "passed": 19
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A21",
+   "description": "The gate step with a stub `scripts/v0_2_gate.py`: (a) exit 0 with the exact YES line for `0.2.0a1`; (b) exit 0 with the line for another version; (c) exit 1",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_release_workflows.py::test_m07a_a21_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A22",
+   "description": "`changelog_section.py` on Table T3",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_changelog_section.py::test_m07a_a22_*"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A23",
+   "description": "`github-release` for `0.2.0a1`, `0.2.0rc1` and `0.2.0`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_release_workflows.py::test_m07a_a23_*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A24",
+   "description": "The dispatch defaults",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_release_workflows.py::test_dispatch_only_a_dry_run_by_default_and_c_by_default"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A30",
+   "description": "Step 1",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "ci/job-logs/check-ubuntu-latest.log": "contains '=== check.sh: PASSED ===': True",
+      "ci/job-logs/check-ubuntu-24.04-arm.log": "contains '=== check.sh: PASSED ===': True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success",
+      "check (ubuntu-24.04-arm)": "success"
+     }
+    },
+    "measured": {
+     "push_runs": {
+      "38772054427": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A31",
+   "description": "Step 2",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/rc-steps-ubuntu-latest/identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/identity/rc-identity.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/job-logs/identity.log": "contains 'G05: R0 structural identity equal across 2 platforms': True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "identity": "success",
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A32",
+   "description": "Step 3",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "ci/rc-dist/t08-a43-dist.json": "passed True, checks {'pass': 8}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "dist": "success"
+     }
+    },
+    "measured": {
+     "a43.version": {
+      "__version__": "0.2.0a1",
+      "pyproject": "0.2.0a1",
+      "sdist_metadata": "0.2.0a1",
+      "wheel_metadata": "0.2.0a1"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A33",
+   "description": "Step 4",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "ci/rc-install-ubuntu-latest/install-ubuntu-latest.json": "passed True, checks {'pass': 10}, at C True",
+      "ci/rc-install-ubuntu-latest/lock-installed-ubuntu-latest.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-install-ubuntu-latest/lock-checkout-ubuntu-latest.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-install-ubuntu-24.04-arm/install-ubuntu-24.04-arm.json": "passed True, checks {'pass': 9}, at C True",
+      "ci/rc-install-ubuntu-24.04-arm/lock-installed-ubuntu-24.04-arm.json": "passed True, checks {'pass': 4}, at C True",
+      "ci/rc-install-ubuntu-24.04-arm/lock-checkout-ubuntu-24.04-arm.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "clean-install (ubuntu-latest)": "success",
+      "clean-install (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A34",
+   "description": "Step 5",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "ci/rc-bundles/index.json": "n_b 52, exits {0: 52}, at C True",
+      "ci/rc-replay-ubuntu-latest/replay-ubuntu-latest.json": "passed True, checks {'pass': 8}, at C True",
+      "ci/rc-replay-ubuntu-24.04-arm/replay-ubuntu-24.04-arm.json": "passed True, checks {'pass': 8}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "bundle-set": "success",
+      "bundle-replay (ubuntu-latest)": "success",
+      "bundle-replay (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A35",
+   "description": "Step 6",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "ensemble/rc-ensemble-ref-x86-64.json": "passed True, checks {'pass': 7}, at C True",
+      "ci/rc-ensemble-ubuntu-24.04-arm/rc-ensemble-ci-aarch64.json": "passed True, checks {'pass': 7}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "rc-ensemble": "success"
+     }
+    },
+    "measured": {
+     "reported": {
+      "ensemble/rc-ref-x86-64.report.txt": "One-sided 95 % Clopper–Pearson lower bound: on S 0.973264; on S^first 0.809395 (reported, never gated).",
+      "ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.report.txt": "One-sided 95 % Clopper–Pearson lower bound: on S 0.973264; on S^first 0.802126 (reported, never gated)."
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A36",
+   "description": "Step 7",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "corpus-ref-x86-64.json": "passed True, checks {'pass': 12}, at C True",
+      "ci/rc-steps-ubuntu-latest/corpus-ubuntu-latest.json": "passed True, checks {'pass': 12}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/corpus-ubuntu-24.04-arm.json": "passed True, checks {'pass': 12}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A37",
+   "description": "Step 8: the chain of §5.3 at `C_α`, with its negative controls in the test, and G16-b",
+   "result": "pass",
+   "value": {
+    "judged_by": "test, ci",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_surface_chain.py"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "surface/rc-alpha-surface.json": "passed True, checks {'pass': 7}, at C True",
+      "ci/rc-steps-ubuntu-latest/surface/rc-alpha-surface.json": "passed True, checks {'pass': 7}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/surface/rc-alpha-surface.json": "passed True, checks {'pass': 7}, at C True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A38",
+   "description": "Step 9",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "a30/t08-a30-x86_64.json": "verdict.pass True",
+      "ci/rc-steps-ubuntu-latest/a30/t08-a30-x86_64.json": "verdict.pass True",
+      "ci/rc-steps-ubuntu-24.04-arm/a30/t08-a30-aarch64.json": "verdict.pass True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      38772065394,
+      38772054427
+     ],
+     "jobs": {
+      "rc-steps (ubuntu-latest)": "success",
+      "rc-steps (ubuntu-24.04-arm)": "success"
+     }
+    },
+    "measured": {
+     "extras_at_c": [
+      "dev",
+      "server"
+     ],
+     "extras_at_v0_1_1": [
+      "dev",
+      "server"
+     ],
+     "new_since_v0_1_1": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A39",
+   "description": "Step 10",
+   "result": "pass",
+   "value": {
+    "judged_by": "ci",
+    "records": {
+     "rc_records": {
+      "certificates-ref-x86-64.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-steps-ubuntu-latest/certificates-ubuntu-latest.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-steps-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-install-ubuntu-latest/certificates-ubuntu-latest.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-install-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json": "passed True, checks {'pass': 2}, at C True",
+      "ci/rc-bundle-set-certificates/rc-certificates.json": "passed True, checks {'pass': 2}, at C True"
+     }
+    },
+    "measured": {
+     "step12_inputs": [
+      "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-6fec822/evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/artifacts/rc/step12"
+     ],
+     "audited": 77,
+     "step12_certificates": 5,
+     "step12_certificates_expected": 5,
+     "step12_violations": {},
+     "bundle_document_sha256": "faa8e4daa92b582e7392b3ff8f58daca7f2d48e8e6faaf4945a616791fdf8974",
+     "recorded_certificate_sha256": "faa8e4daa92b582e7392b3ff8f58daca7f2d48e8e6faaf4945a616791fdf8974",
+     "document_sha256": {
+      "g12-bundles/m02-g12-0/bundle/solution-certificate.json": "faa8e4daa92b582e7392b3ff8f58daca7f2d48e8e6faaf4945a616791fdf8974",
+      "g12-bundles/m02-g12-0/live/solution-certificate.json": "faa8e4daa92b582e7392b3ff8f58daca7f2d48e8e6faaf4945a616791fdf8974",
+      "g12-bundles/m02-g12-0/replay/solution-certificate.json": "faa8e4daa92b582e7392b3ff8f58daca7f2d48e8e6faaf4945a616791fdf8974",
+      "g12-edges-bundles/m02-g12v3-2-0/bundle/solution-certificate.json": "cc36ff13913c5687d221e6a63de9702a62ec17b717d122bc6e1fca67ea3abc31",
+      "g12-edges-bundles/m02-g12v3-2-1/bundle/solution-certificate.json": "960079a01f580ab91060f04fd99456ec8e8eff7cdfafec84bd0672e4bb272bb3"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A40",
+   "description": "Step 11",
+   "result": "pass",
+   "value": {
+    "judged_by": "record",
+    "records": {
+     "rc_records": {
+      "step11/rc-step11.json": "passed True, checks {'pass': 3}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A41",
+   "description": "Step 12",
+   "result": "pass",
+   "value": {
+    "judged_by": "record",
+    "records": {
+     "rc_records": {
+      "step12/rc-step12.json": "passed True, checks {'pass': 6}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07a.A42",
+   "description": "V11 (e)'s predecessor (MR-10): the `SYN-001-nominal` bundle written by the CLI at tag `v0.1.1` (a worktree at the tag, its own environment), committed as a fixture",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_v011_bundle.py"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A43",
+   "description": "Every record of steps 1–12",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_rc_records.py::test_a43_*"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "records": 29,
+     "not_attributable": [],
+     "no_machine_class": [],
+     "unregistered_machine_class": [],
+     "machine_class_disagrees": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A44",
+   "description": "`release/rc-trees/{C_α}.json`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_rc_records.py::test_a44_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A50",
+   "description": "The envelope at `C_α`",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_harvest.py",
+      "tests/test_t08_w2_support_envelope.py"
+     ],
+     "nodes": 31,
+     "outcomes": {
+      "passed": 31
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "measured": {
+     "envelope_id": "v0.2-alpha-envelope-1",
+     "release": "0.2.0a1"
+    }
+   }
+  },
+  {
+   "id": "M07a.A51",
+   "description": "B50's counterpart (MR-7): (a) the content at `C_α`; (b) one unregistered model added to `MODEL_BUILDERS`; (c) one registered addition removed",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_b50_surface_content.py::test_m07a_a51_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A52",
+   "description": "`CHANGELOG.md` `## v0.2.0a1`: (a) the heading is first, above `## v0.1.1`, and names `C_α`; (b) ADR 0021 D4's six headings in order; (c) the gate table equals `v0_2_gate.py --markdown` at the candidate; (d) \"what it is not\" contains each phrase of §10.1; (e) the limitation ids named are exactly the alpha envelope's, in order; (f) the reproducibility promise is ADR 0007 F1 verbatim; (g) the review table, as rows, equals MR-5's computed set",
+   "result": "unsupported",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_changelog.py"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 7,
+      "skipped": 2
+     },
+     "failed": [],
+     "skipped": [
+      "tests/test_m07a_changelog.py::test_c_the_gate_table_is_what_the_gate_script_prints",
+      "tests/test_m07a_changelog.py::test_the_pending_markers_are_the_cuts"
+     ],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A53",
+   "description": "The v0.1.0 section's gate-table test (MR-9)",
+   "result": "pass",
+   "value": {
+    "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_t08_w4_changelog.py::test_the_gate_table_is_what_the_gate_script_prints",
+      "tests/test_t08_w4_changelog.py::test_the_gate_table_does_not_read_the_live_ledger"
+     ],
+     "nodes": 2,
+     "outcomes": {
+      "passed": 2
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07a.A60",
+   "description": "`docs/reviews/V02-alpha-verdicts.md`",
+   "result": "unsupported",
+   "value": {
+    "judged_by": "verdict",
+    "measured": {
+     "state": "pending",
+     "reason": "docs/reviews/V02-alpha-verdicts.md does not exist (the verdict agent, §6.3)"
+    }
+   }
+  },
+  {
+   "id": "M07a.A61",
+   "description": "V11–V20",
+   "result": "unsupported",
+   "value": {
+    "judged_by": "verdict",
+    "measured": {
+     "state": "pending",
+     "reason": "docs/reviews/V02-alpha-verdicts.md does not exist (the verdict agent, §6.3)"
+    }
+   }
+  },
+  {
+   "id": "M07a.A62",
+   "description": "W21",
+   "result": "unsupported",
+   "value": {
+    "judged_by": "verdict",
+    "measured": {
+     "state": "pending",
+     "reason": "docs/reviews/V02-alpha-verdicts.md does not exist (the verdict agent, §6.3)"
+    }
+   }
+  },
+  {
+   "id": "M07a.A63",
+   "description": "W22",
+   "result": "unsupported",
+   "value": {
+    "judged_by": "verdict",
+    "measured": {
+     "state": "pending",
+     "reason": "docs/reviews/V02-alpha-verdicts.md does not exist (the verdict agent, §6.3)"
+    }
+   }
+  },
+  {
+   "id": "M07a.A64",
+   "description": "`docs/requirements.yaml`",
+   "result": "unsupported",
+   "value": {
+    "judged_by": "test",
+    "measured": {
+     "state": "pending",
+     "reason": "the ledger does not cite evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json (WO-11)"
+    }
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/v02-alpha-rc-record.md",
+   "sha256": "a617b5253e7081fe7efac60d7a3384eb6072599ad6c54586b49264fcdae9b7e8",
+   "description": "the RC record at C_α (§8.3)"
+  },
+  {
+   "path": "evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/rc/records.json",
+   "sha256": "3dd4e187f63589e1607e7195d6437a355143bd85d49b1e2ddb0a6be86f16065e",
+   "description": "the RC records: sha256, size and how each is kept"
+  },
+  {
+   "path": "release/rc-trees/6fec82232e1c47308a5e1d67338058f352992800.json",
+   "sha256": "11f03666f648eedbdf5678603118508a3f2f47eff924ca891098ec4d7a54949b",
+   "description": "the tree record of C_α (A44)"
+  },
+  {
+   "path": "evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/artifacts/t08-tests.junit.xml",
+   "sha256": "f17cf04c69df40f51ece76ca01973f028f47bb6a6fb48c14cb00e0ea8ec1e953",
+   "description": "the tests run here, per node (not committed)"
+  }
+ ],
+ "limitations": [
+  "Evidence class: numerical and software verification at the alpha's release candidate C_α (tests run here, the RC job's records on ref-x86-64, ci-x86-64 and ci-aarch64, CI); the design lane's verdicts (A60-A63) and the ledger (A64) are not judged here.",
+  "Step 13 (`scripts/v0_2_gate.py --rc C_α`) needs the verdicts and is not run; M07a.A12 is judged by its fixture tests only.",
+  "M07a.A52 is unsupported: see its value.",
+  "M07a.A60 is unsupported (pending): see its value.",
+  "M07a.A61 is unsupported (pending): see its value.",
+  "M07a.A62 is unsupported (pending): see its value.",
+  "M07a.A63 is unsupported (pending): see its value.",
+  "M07a.A64 is unsupported (pending): see its value."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

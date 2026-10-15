@@ -261,3 +261,35 @@ B-AM2-8 **Review S1.** `tests/test_m07a_rc_records.py` builds dist-form records 
 level, `machine`, no CI flag): one agreeing (`ci-x86-64` / `x86_64`, pass), one disagreeing (`ci-aarch64` / `x86_64`,
 `machine_class_disagrees`) beside one without a class. Mutation check: with `document.get("machine")` dropped from
 `_m_provenance`, the disagreeing test fails.
+
+B-AM2-9 **Step 12's committed certificates are named by their kept bundle path, without the bundle's `artifacts/`
+segment** (records commit). The kept files sit at `<kept dir>/<bundle>/artifacts/solution-certificate.json`, and
+`.gitignore`'s `evidence/**/artifacts/` would ignore that path under `rc/`. Chosen:
+`rc/step12/certificates/<kept dir>/<bundle>/solution-certificate.json` (e.g. `g12-bundles/m02-g12-0/bundle/…`), the
+bundle naming F1 already used; the copy is `tools/collect.sh`'s. Alternatives: `git add -f` under an ignored path
+(fragile), or an ignore exception. Reversible by: renaming the five files and `STEP12_BUNDLE`.
+
+B-AM2-10 **The RC-record hash tests compare multisets** (isolated commit `6146aa3`). At `C_α¹` the `m02-g12-0` bundle,
+live and replay certificates are byte-identical (the live rerun and the replay reproduce the bundle bitwise), so
+three listed records share one sha256 and `len(cited) == len(set(cited))` cannot hold. The test now requires the
+cited and listed hashes to be equal as multisets with unique paths, and the row test checks every path of a cited
+hash. Nothing listed can go uncited. Alternatives: commit one copy (A39's count of 3 + `len(edges)` would then fail),
+or leave the copies out of `records.json` (unbound files under `rc/`). Reversible by: reverting `6146aa3` together with
+three of the five certificate rows.
+
+B-AM2-11 **Actions 5–7 as run.** Steps 1–10 on CI: dispatch **38772065394** (`rc_alpha`, `rc_distribution`) success, every
+RC job success (check: 8507 passed / 100 skipped x86-64, 8479 / 98 aarch64); push **38772054427** success. Local
+`ref-x86-64`, one script (`evidence/M07a/<C_α¹>/tools/run_local.sh`, scratch `~/.cache/of-rca-6fec822/`, RC worktree
+`.claude/worktrees/rc-6fec822`, clean at start, after the venv and at the end): steps 2, 6, 7, 8, 9, 11, 12 PASS;
+step 10 local PASS, 77 certificates, 0 violations (F1 gone). Against `C_α⁰` every check value is equal except paths,
+timestamps, hashes and the code-identity keys; the G12 bundle certificate's `document_sha256` is `faa8e4da…fdf8974`
+(was `d61a86fb…`) and equals the record's `certificate_sha256` (Q-A2-3: yes). Generator at `C_α¹`: A39 pass (5 of 5,
+0 violations, bound), A43 pass (29 records, 0 without class, 0 unregistered, 0 disagreeing). Manifest
+`evidence/M07a/<C_α¹>/manifest.json`: **`implemented`**, 37 pass, 0 fail, 6 unsupported — A52 (two changelog tests
+skip as pending: the gate table comes from `--markdown` after the verdicts) and A60–A64 (verdicts, ledger). Step 13
+not run (needs `docs/reviews/V02-alpha-verdicts.md`). `C_α⁰`'s evidence is kept as it was (records, manifest
+`implemented`, tree record); its RC record moved to `docs/v02-alpha-rc-record-e0e198e.md` with one R-349 line.
+
+B-AM2-12 **`docs/progress.md` and `docs/V02_STATE.md` are left to the orchestrator** (§18.5 action 7 names them). Both
+are maintained on `main` by the session's `v0.2 state:` commits; this branch's copies are stale, and editing them here
+would conflict at merge. The numbers they need are in B-AM2-11.
