@@ -208,3 +208,37 @@ S20 `DecisionSpec`, `ExternalLinkSpec`, `InequalitySpec` and `ObjectiveSpec` mov
    and the parent's P3 (`c1_constraint_values`) reads the formulation in the default install. Same objects, same
    fields, as S2 did for the link bounds; the `nlp` tier is unchanged. Alternative: the parent builds its P3 rows
    without the formulation (a second copy of §7.1). Reversible: the move.
+S21 `studies/trust_region/parent.py`, `C1Parent(document, runner, box)`: the `Parent` protocol on a C1 revision.
+   The decision edits the specification the binding's `specification_pins` name for the heater's outlet T (on the
+   stand-in loop `SPEC-S3-T`); P1 is the route's outcome and certificate; the parent truth is
+   `ParentExperimentTruth` on the same runner (§6.4: one runner per study); `project_at` pins the start's revision at
+   its converged w and projects at its certified state (§7.2). REAL is `c1-loop-real.json` (reactor v3) with
+   `study.REAL_BOX`. Reversible: the module (nothing else imports it yet).
+S22 The solve goes through `revision_run.solve_route`, the solve `run_revision_session` wraps, not
+   `run_revision_session` itself (§7.4 names it): no bundle is written per check and nothing is committed. The
+   record's `coupled_runs[].sha256` is the sha256 of `external-coupling.json` as solved. Alternative: a bundle per
+   solve under the study's artifact directory (replay, G10), which WO-8 may want. Reversible: `C1Parent.solve`.
+S23 (ΔX, ΔT): the certificate's `EXT-COUPLING:<unit>:xi` value is |ξ_E − X̂ n_N₂,in| / n_tot,in (M02 §4.4); §7.4's
+   ΔX is per n_N₂,in, so the value is multiplied by n_tot,in / n_N₂,in (`coupled_run.inlet_of` at the certified
+   state). ΔT is the `:T` value as is. Test: equal to the record-recomputed |ξ_E − X̂ n_N₂| / n_N₂ within 1e-12
+   relative, ΔT bitwise.
+S24 P4's labels (design question; §7.4 says "every unit's phase regime label" without a source): each non-external
+   unit's own causal `evaluate` on its inlets read from the certified state, labelled by `phase_signature` ("none"
+   when a unit reports none; "status:<s>" when not ok); the reactor is not labelled (its regime is its experiment's).
+   On the stand-in loop: flash TWO_PHASE, mixer and preheater VAPOR, sources/sinks/splitter none. Alternatives: the
+   certificate's `phase_branch` (streams FLOWING/ZERO_FLOW and raw split values, no regime label), or the flash's
+   `phase.classify` only. Reversible: `parent.unit_regimes`.
+S25 The inner objective (§7.4's central differences) solves the inner problem from the solve's certified state
+   (`user_start`, as M02's inner solves after k = 0), and is NaN when that solve fails, so e* is NaN and P5 cannot
+   pass (the safe failure). At the solve's own w it is J within 1 ulp on the stand-in (5.6e-17), not bitwise.
+   Alternative: the route initializer at every point (M02's k = 0 start). Reversible: `C1Parent.inner_objective`.
+S26 A solve's limitations: `synthetic` for a synthetic variant (the stand-in is), `extrapolated` when the final
+   iterate's experiment envelope has `domain_status: extrapolated`. A route refusal is `unsupported(<code>)`, a
+   verifier refusal `verifier_refused(<message>)`, both returned (P1 fails), never raised.
+   Measured on the stand-in loop at 673.15 K: CONVERGED/VERIFIED, 2 executions on a fresh store, then 0 executions
+   and 2 store hits; J = 0.467059584925130 mol/s, w = (0.25 − 1 ulp, 0), (ΔX, ΔT) = (0, 0); stage B
+   `PARENT_LOCAL_EVIDENCE` (∂J/∂X̂ = 0.1517, ∂J/∂ΔT̂ = 0, e* = 0; the stand-in's J does not depend on T_in, poll
+   differences ≤ 1 ulp).
+   Real reactor v3 (`c1-loop-real.json`, opt-in `pymrm`) at 673.15 K: CONVERGED/VERIFIED in 164 s, 4 executions,
+   J = 0.449325948913493 mol/s, w = (0.168388, 78.670 K), (ΔX, ΔT) = (4.40e-6, 2.92e-3 K), the same regime labels as
+   the stand-in, P3 passes, no `extrapolated` (the final experiment's `domain_status` is not `extrapolated`).
