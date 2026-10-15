@@ -840,3 +840,7 @@ Grep, don't read whole. Newest at the bottom.
 - **Alpha Am3 actions 1–4** (2026-10-15, `opus-engineer`, 162e13b/e892790/967a622/7af0ee3 for C_α², 2055d19/958af67 gate-branch
   only; gates 8603→8629): envelope fixed (harvest E/S/P/B 158/42/139/6), re-judgement rule + A14, `-rs`, CHANGELOG skeleton +
   phrase test, R-373 status rule. B-AM3-1…5 logged. Re-cut engineer launched (actions 5–8).
+- **M04 Am. 3 fixes + merge** (2026-10-16, `opus-engineer` `6363c24`…`d81d7f1`; gates 8661–8670): MF1 A48, MF2 (probe → 23
+  findings), E35 unresolvable manifest rejected, A49 BLAS pin (manifest `d65bb022…` at 1 and 48 threads), A50, E27, envelope L43.
+  Manifest `evidence/M04/8df0ea7…` `tested` 60/61. Merged into main `78685cc`, **main gate PASS 8670 passed, 31 skipped**.
+  M05 engineer launched (rulings2 merge, WO-2c/6b/7b, then main merge).
