@@ -514,7 +514,10 @@ def test_r3_an_out_of_process_coupled_run_is_r3_and_its_checks_say_so(
     assert set(record["frozen"]) == {"reactor"}
     certificate = artifacts["solution-certificate.json"]
     checks = [c for c in certificate["checks"] if c["id"].startswith("EXT-COUPLING:")]
-    assert {c["independence_qualification"] for c in checks} == {"external model, R3"}
+    # R-345: the class is the `external_model` limitation's; the checks carry no [A09] entry.
+    assert {c["independence_qualification"] for c in checks} == {None}
+    (external,) = [item for item in certificate["limitations"] if item["kind"] == "external_model"]
+    assert external["reproducibility"] == "R3"
     unit = record["iterations"][-1]["units"]["reactor"]
     # §4.2: the floor ratios at ε_eval = 1e-6 (the note's 59 x and 13 x at the nominal point).
     assert 10.0 < unit["floor_ratio_T"] < unit["floor_ratio_xi"]

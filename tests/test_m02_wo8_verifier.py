@@ -300,8 +300,9 @@ def test_g2i_view_components_are_syn001s_at_every_t07_corpus_revision() -> None:
 def test_the_witness_does_not_difference_exactly_zero_pr_flow_columns() -> None:
     """§14.2 B17 *Consequence* as narrowed by §14.3 C2 (R-281): V1's certificate is VERIFIED with
     its witness run over every column but the exactly-zero stream component flows (`<S>.n.<c>`);
-    differencing those leaves the provider's domain. The skip is recorded: both witness checks
-    name the count, and one `derivative_witness_partial` limitation lists the columns."""
+    differencing those leaves the provider's domain. The skip is recorded once, in one
+    `derivative_witness_partial` limitation listing the columns; the witness checks carry no
+    `independence_qualification`, which holds [A09] text only (R-345, spec §18.1)."""
     from openflowsheet.compile.casadi_backend import compile_problem
     from openflowsheet.models import flow_id
     from openflowsheet.verify.certificate import BoundDeclaration
@@ -335,13 +336,9 @@ def test_the_witness_does_not_difference_exactly_zero_pr_flow_columns() -> None:
     full = derivative_witness(target, state)
     assert {c.result for c in full} == {"unsupported"}
     witnessed = derivative_witness(target, state, unstenciled=zero)
-    note = (
-        f"not differenced: {len(zero)} exactly-zero pr-c1-v1 stream-flow columns "
-        "(design note §14.3 C2)"
-    )
     assert [(c.id, c.result, c.independence_qualification) for c in witnessed] == [
-        ("derivative_witness.on_pattern", "pass", note),
-        ("derivative_witness.off_pattern", "pass", note),
+        ("derivative_witness.on_pattern", "pass", None),
+        ("derivative_witness.off_pattern", "pass", None),
     ]
     certificate = verify_revision(
         solved.binding, document, solved.run, solve_plan=solved.plan.steps[-1].solve_plan
@@ -349,7 +346,7 @@ def test_the_witness_does_not_difference_exactly_zero_pr_flow_columns() -> None:
     assert certificate.verification_status == "VERIFIED"
     assert math.isfinite(certificate.regularity.rcond_1)  # type: ignore[union-attr]
     witness = [c for c in certificate.checks if c.category == "derivative_witness"]
-    assert [c.independence_qualification for c in witness] == [note, note]
+    assert [c.independence_qualification for c in witness] == [None, None]
     partial = [
         item.as_document()
         for item in certificate.limitations
