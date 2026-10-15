@@ -766,3 +766,9 @@ Grep, don't read whole. Newest at the bottom.
   F1 (HARVEST_EXCLUDED evidence/M07a/), F2 (A52 (g)/(e) read C_α's tree), F4 (harvest: L43, B13, V14(b) → L01/B8); F5 at
   the cut (web-shell line, drop "Certificates and extras"). F3 done (c_2 digest 383b4e2c… registered; R-133 hashes
   verified at v0.1.0). Alpha fixes + WO-10 launched (CI dispatch authorised as part of push; no tag/publish).
+
+- **M04 Amendment 2** (2026-10-15, `specifier`, `wp/M04` `a7b17f9`): box `m04-c1-box7-v2` for real parents (y_Ar [0.014,
+  0.03], y_CH₄ [0.022, 0.04], F [0.0050, 0.0086], r [2.5, 3.00001]); plans `b2-it1…3` same seeds/counts (632 cold);
+  v1 plans synthetic-only; A31/A33/A41 re-pointed, A43–A47 new; ADR 0036 Am. 2 required before WO-11. Its register
+  entries collided with the alpha branch's R-319…R-321 → renumbered R-322…R-325 on wp/M04. "3.000008" was rounded
+  provisional data (r = 3 to 2.9e-14). ADR + WO-18/19/20 launched.
