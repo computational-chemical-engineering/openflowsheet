@@ -529,7 +529,7 @@ HARVEST_BY_COMMIT: Mapping[str, Mapping[int, Classified]] = {
         2: (
             "S",
             ("check:M04.A49",),
-            "E33 closed: the fit runs under one BLAS thread (R-362, A49; build decision E36)",
+            "E33 closed by the one-thread fit (R-362, A49; build decision E36)",
         ),
     },
 }

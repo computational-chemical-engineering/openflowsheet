@@ -373,3 +373,8 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   join them to "Promotion and rollback" (A48), "Frozen splits/transforms" (A49) and
   "Insufficient-data outcome" (A50) — a W23 placement is the design lane's. Reversible by: an
   `AMENDMENTS` row per placement.
+- **Evidence after Amendment 3.** `evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json`
+  (the merge of `origin/main` at `8df0ea7`): status `tested`, 60 of 61 checks `pass`, A33
+  `not_applicable` (A31 NOT_PROMOTABLE); A48 5 nodes, A49 1, A50 2, A24 16, all passed; gate at
+  `8df0ea7` GATE PASS, 8664 passed, 31 skipped. Harvested with `a9566a6`'s manifest by
+  `--harvest-from` (10 entries; classes of R-365, E37). Not `reviewed`.
