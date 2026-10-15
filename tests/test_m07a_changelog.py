@@ -71,8 +71,6 @@ PHRASES = (
     "pure-component",
     "k_ij = 0",
     "no reactor result has been compared with experimental data",
-    "T08.A34 covers the coupled-route certificates the RC job now emits.",
-    "T08.A30 covers every extra that is new since v0.1.1, through its own audit.",
 )
 
 

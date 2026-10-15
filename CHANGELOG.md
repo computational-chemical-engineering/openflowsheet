@@ -12,8 +12,9 @@ publication are Frank's (ADR 0021 D5).*
 planner, the verifier, the certificate or the typed failure, the replay bundle) and, added since
 v0.1.1: an adapter that runs the pinned PyMRM reactor as a unit model, with its coupled route and
 its experiment artifacts (M02); the Peng–Robinson property route of the ammonia loop (M01); and a
-diagnostic web shell served by `serve-http --ui`, which edits nothing (M06). The supported envelope
-is `docs/support-matrix.md`: **unlisted is unsupported**.
+diagnostic web shell served by `serve-http --ui`, which edits nothing (Solve and Cancel are its
+only effects; M06). The supported envelope is `docs/support-matrix.md`: **unlisted is
+unsupported**.
 
 **Gates (V11–V20, W21, W22), as `scripts/v0_2_gate.py` prints them.** A FAIL is printed FAIL.
 
@@ -41,8 +42,6 @@ is `docs/support-matrix.md`: **unlisted is unsupported**.
 - **The property route is narrow.** Validation covers pure-component behaviour within R-160's bands
   against the reference equations of state; `k_ij = 0`; there is no mixture VLE validation.
 - **Rights.** The use of the 4TU dataset awaits Frank's statement (T08 R3 8 (b)).
-- **Certificates and extras.** T08.A34 covers the coupled-route certificates the RC job now emits.
-  T08.A30 covers every extra that is new since v0.1.1, through its own audit.
 
 **Known limitations, by support-matrix id** (the text of each is in `docs/support-matrix.md`):
 `L01`, `L02`, `L03`, `L04`, `L05`, `L06`, `L07`, `L08`, `L09`, `L10`, `L11`, `L12`, `L13`, `L14`, `L15`, `L16`, `L17`, `L-CSTR-1`, `L-CSTR-2`, `L-CSTR-3`, `L-WS-1`, `L-WS-2`, `L18`, `L19`, `L20`, `L21`, `L22`, `L36`, `L37`, `L38`, `L39`, `L23`, `L24`, `L25`, `L26`, `L27`, `L28`, `L29`, `L30`, `L31`, `L32`, `L33`, `L34`, `L35`, `L40`, `L41`, `L42`, `L43`, `L-WEB-1`, `L-WEB-2`, `L-WEB-3`, `L-WEB-4`.
