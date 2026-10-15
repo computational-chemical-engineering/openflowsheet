@@ -66,3 +66,41 @@ P00–T07"). Alternative: move the quote to `t08_reference.py`'s `HARVEST_PACKAG
 B-WO8-6 **Size and the matrix now.** `HARVEST_SIZE = (23, 316, 29)` is the tree's size today; WO-10 re-reads it at
 `C_α` and M07a's manifest quotes it. `docs/support-matrix.md` is re-emitted now because T08.A23 requires it to match
 the harvest; WO-10 re-emits it again after the `C_α` pin of `envelope_id` and `release` (not done here).
+
+## After the design-lane read (F1, F2, F4; R-320, R-321) and WO-10
+
+B-F1-1 **How the A50 test finds `C_α`** (`a5b37a3`). The commits named as `C_α` are the `## v0.2.0a1` heading's (once
+its marker is gone) and the directory name of every `evidence/M07a/<sha>/manifest.json`; for each, `git ls-tree -r
+<sha> -- evidence/M07a/` must be empty. With none named, no M07a manifest may exist. Reason: the heading keeps its
+marker until the verdicts (it is pasted with the gate table), while M07a's manifest is written right after `C_α`.
+Alternative: the heading alone (the test would be red from the manifest commit to the verdicts).
+
+B-F2-1 **M07a is never a review-table row, in both modes** (`5882a2c`). R-320 says (g) reads `C_α`'s tree once the
+heading names it; until then it reads the working tree, which from WO-10's manifest commit holds M07a's manifest.
+`NOT_A_ROW = ("M07a",)` applies in both modes (at `C_α` it excludes nothing). The third column is derived from
+`review`: `pending`, or `signed <first ISO date> (R-017)`. Alternative: exclude only in working-tree mode.
+
+B-WO10-1 **M07a.A10's fixture (b) at the cut** (cut commit). `test_a10_the_envelope_must_be_pinned_to_the_alpha` used
+the real working envelope as "today's file" (dev id). At `C_α` the file is pinned, so the test undoes the pin on the
+real file's text (two line replacements) and asserts the dev id before using it. Alternative: `git show` of a pre-cut
+commit (fails on a shallow CI checkout).
+
+B-WO10-2 **`t08_support_matrix.ENVELOPE_ID` follows the pin** (cut commit). The script holds the file's id
+(`v0.2-envelope-dev`, R-193), so MR-3's "T08.A20–A24 at `C_α`" needs it set to `v0.2-alpha-envelope-1` in the cut;
+the first D2.4 change after the tag returns both. Alternative: accept either id (weakens A20–A24).
+
+B-WO10-3 **W27's `coverage.json` re-taken at the cut build** (cut commit). `test_committed_coverage_json_is_g14_…`
+compares the live registry snapshot with the committed one except `git_commit`; the version bump changes
+`package_version`. Re-taken with `python -m benchmarks.m06.w27.coverage` (precedent `fc54944`, the M02 join), and
+`docs/m06-w27-coverage.md` regenerated (`report --check` OK). Rows and summary unchanged; `registration_sha256` also
+moves (`14ff19d9…` → `ba627342…`), because registration Amendment 3 (`b3216dc`) landed after the last re-take; G14
+PASS. `dry_illustration.json` not re-emitted (precedent). Alternative: drop `package_version` from the comparison.
+
+B-WO10-4 **Version-carrying files at the cut.** `pyproject.toml`, `src/openflowsheet/__init__.py`, the two
+`project_summary` fixtures (as the 0.1.1 bump `752864f`), and `tests/test_m06_w27_coverage.py`'s live
+`package_version` assertion. `tests/fixtures/schemas/experiment_coupling/*` (`openflowsheet_version: 0.1.1`, a
+recorded run's provenance) and `tests/web/frame.test.mjs` (a stub server's `0.2.0.dev0`) are not version carriers.
+
+B-WO10-5 **Gating in a snapshot worktree.** Each gate runs `scripts/gate.sh` in a detached scratch worktree at
+`HEAD` + the named paths' working content (`git commit-tree` on a temporary index), and the commit is made from
+exactly the gated tree (`git read-tree <tree>`), so the next change can be prepared while a 23–32 min gate runs.
