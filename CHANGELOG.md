@@ -26,8 +26,9 @@ unsupported**.
   claimed.
 - **Not empirically validated.** SYN-001 is synthetic, and every result is numerical verification
   against the same equations. Also, no reactor result has been compared with experimental data by
-  this project: the group's published comparison is the group's evidence, and the numbers are the
-  group's model at the pin, a regression.
+  this project: the group's published comparison is the group's evidence, and every real-reactor
+  number is the group's model at the pin, a regression, whose discretization bias is 1.0–1.4 % in
+  NH₃ (M02 design note §13).
 - **Not a guarantee.** A human sign-off records that someone with the relevant expertise examined
   the evidence and raised no objection, not that the content is correct (R-017).
 - **Not general beyond the support matrix.** What `docs/support-matrix.md` does not list is
@@ -37,11 +38,22 @@ unsupported**.
   (ADR 0007 F3).
 - **PTC is experimental.** No PTC family is qualified: V14 (b) is judged FAIL at `C_α`.
 - **The agent evidence is narrow.** One pinned model and configuration, MCP only.
+- **The reactor is opt-in and measured on one machine.** Real-reactor runs are opt-in (they need
+  the separately built, pinned reactor environment) and of reproducibility class R3 (ADR 0034 D6).
+  The reactor has been run on Linux x86-64 on one machine (`ref-x86-64`): it is not measured on
+  aarch64, and no CI job runs the reactor. What CI runs in its place is a stand-in, and the reactor
+  stand-in is synthetic; it certifies nothing about the reactor. There is no warm start of the
+  reactor (L44).
 - **The reactor execution profile is not a sandbox.** The group's pinned code runs with the user's
-  privileges, unconfined; Linux on x86-64 is the registered platform.
+  privileges, unconfined (L45). The profile is registered on Linux; macOS is best effort, and
+  Windows is refused before spawn (ADR 0033 D2).
 - **The property route is narrow.** Validation covers pure-component behaviour within R-160's bands
-  against the reference equations of state; `k_ij = 0`; there is no mixture VLE validation.
-- **Rights.** The use of the 4TU dataset awaits Frank's statement (T08 R3 8 (b)).
+  against the reference equations of state; `k_ij = 0`; there is no mixture VLE validation. Of
+  `pr-c1-v1`'s liquid side: the LIQUID regime and pure-NH₃ flashes are deferred and refused typed
+  (U15), and against the reference equations of state its saturated-liquid volume is 11–30 % high
+  and its enthalpy of vaporization 2–5 % high (L47); no v0.2 loop decision uses either.
+- **Rights.** The group's 4TU dataset may be used and referenced (Frank, 2026-10-02; the real
+  chemistry dossier §8, row 8); no result of this release is compared with it.
 
 **Known limitations, by support-matrix id** (the text of each is in `docs/support-matrix.md`):
 `L01`, `L02`, `L03`, `L04`, `L05`, `L06`, `L07`, `L08`, `L09`, `L10`, `L11`, `L12`, `L13`, `L14`, `L15`, `L16`, `L17`, `L-CSTR-1`, `L-CSTR-2`, `L-CSTR-3`, `L-WS-1`, `L-WS-2`, `L18`, `L19`, `L20`, `L21`, `L22`, `L36`, `L37`, `L38`, `L39`, `L23`, `L24`, `L25`, `L26`, `L27`, `L28`, `L29`, `L30`, `L31`, `L32`, `L33`, `L34`, `L35`, `L40`, `L41`, `L42`, `L43`, `L-WEB-1`, `L-WEB-2`, `L-WEB-3`, `L-WEB-4`, `L44`, `L45`, `L46`, `L47`, `L48`.
