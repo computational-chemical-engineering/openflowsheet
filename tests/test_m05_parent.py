@@ -257,7 +257,7 @@ def test_the_loop_runs_on_the_adapter(tmp_path: Path) -> None:
         start: ParentSolve, *, run_id: str, radius_factor: float, budget: StudyBudget
     ) -> StageRun:
         assert start.state is not None and start.objective is not None
-        point = TrfPoint(start.objective, start.state, dict.fromkeys(start.state, 1.0))
+        point = TrfPoint(start.objective, start.state, dict.fromkeys(start.state, 1.0), 0.0, 1e-5)
         return StageRun(run_id, TRF_CONVERGED, dict(start.decisions), point, 0, {})
 
     budget = StudyBudget(IN_PROCESS_BUDGET)

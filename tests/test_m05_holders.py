@@ -320,6 +320,33 @@ def test_the_first_request_at_each_key_gets_its_call_order_purpose() -> None:
     ]
     assert {e.run_id for e in h.ledger} == {"trf-1"}
     assert [e.seq for e in h.ledger] == list(range(7))
+    summary = h.summary("trf-1")  # S16: counts by purpose; the PMP point added a key
+    assert summary["by_purpose"] == {
+        "trf_start_value": 1,
+        "trf_pmp_value": 1,
+        "trf_trial_value": 1,
+        "trf_fd_point": 1,
+        "fdcheck_point": 0,
+        "basis_fd_point": 0,
+    }
+    assert summary["pmp_point_equals_start"] is False
+
+
+def test_a_pmp_point_equal_to_the_start_is_flagged() -> None:
+    """S16, §8.3: TRF's PMP gradient at the start's key — the PMP point added no key, so the run
+    has no `trf_pmp_value` request and says why."""
+    h = holder()
+    run = RunState("trf-1")
+    h.begin_run(run)
+    h.request_values((2.0, 1.0))  # the start value
+    h.request_values((2.0, 1.0))  # the PMP point, equal to the start: a memo hit
+    h.request_jacobian((2.0, 1.0))
+    run.last_logged_iteration = 0
+    h.request_values((1.4, 1.0))
+    summary = h.summary("trf-1")
+    assert summary["by_purpose"]["trf_pmp_value"] == 0
+    assert summary["by_purpose"]["trf_start_value"] == 1
+    assert summary["pmp_point_equals_start"] is True
 
 
 def test_a_holder_serves_one_run_at_a_time() -> None:

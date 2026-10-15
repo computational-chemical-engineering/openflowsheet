@@ -280,3 +280,29 @@ Measured (WO-2c acceptance):
    (f) toys: `joint_not_square` (z1 − z2), `joint_singular` (z1 + z2, 2z1 + 2z2; rcond 4.97e-17),
    `joint_not_persistent` (z1 − z2, z1 + z2 + (y − y₀)²; max |r| 6.75e-6), each through readiness; a certified
    2 × 2 toy block whose row reads y with partial 0.0 at x₀ passes DOF, matching 3 × 3 and G4.
+
+## WO-6b — §18.2 (R-327), S15, S16 (holder), S18 (R-329)
+
+S32 `pmp_point_equals_start` (S16) is evidence, not the complement of the count: true iff the run's ledger holds a
+   Jacobian request at `trf_iteration` 0 (before iteration 0 is logged: only TRF's PMP gradient, §8.3 step 3; the
+   pre-flight requests values only) at the `trf_start_value` request's key. `by_purpose` counts every request whose
+   purpose is one of §8.1's five or `basis_fd_point`, zeros included. Reversible: `EFHolder.summary`.
+S33 OPEN (for the review batch; affects G6/G12's identity, not numerics). The affine basis is formed by
+   `TrfStageRunner` before `run_trf` begins the holders' run, so its requests (value and `basis_fd_point` FD points
+   at w₀) carry `run_id` null and no run's `by_purpose` counts them: §8.3's `basis_fd_point` = n_in cannot hold per
+   run as built. Default: attribute them to the run (begin the holders' run before forming the basis) in WO-8's
+   preparation, with the identity test catching it; alternative: the identity reads the basis requests by stage.
+   Not changed here.
+S34 `TrfPoint` gains the required fields `theta_recheck` and `feasibility_termination` (after `column_scales`); the
+   study reads the latter from the configuration the run was given (`config["feasibility_termination"]`, W3's 1e-5;
+   a configuration without it is a KeyError, not a default). P2 is judged iff θ_recheck ≤ feasibility_termination
+   (a NaN θ is not judged). Unjudged P2 records `pass: null` with every value computed plus both thresholds.
+S35 P2's document is `{pass, judged, reason, values}`; only P2 carries `judged`/`reason` (`CheckResult`). The two
+   fields and the top-level `fd_check` (the caller's §17.2 document or null, `as_document(fd_check=…)`) are
+   declared in the schema in this commit, because its closed objects reject them; the rest of S12–S16 is WO-7b.
+S36 OPEN (schema, WO-7b). S15 rules each half-width value > 0, but √(2(e* + max e_j)/|c|) is exactly 0.0 for a
+   parent with no noise (e* = e_j = 0: the stand-in loop, the fakes). The producer is unchanged; default for WO-7b:
+   the schema's half-width values are ≥ 0 (or null), alternative: > 0 with a zero-noise parent writing null.
+Measured: §18.2 (a) θ_recheck 4.01e-4, P2 values failing (objective_error 2e-3·|J*| > bound): candidate
+   PARENT_LOCAL_EVIDENCE, P2 {null, false, "theta_recheck"}, limitation `trf_max_iterations`; (b) θ = 1e-5:
+   PROJECTION_DISAGREES, P2 judged; (c) P5 runs after an unjudged P2, not after P3 false (half-width null).

@@ -134,13 +134,24 @@ def budget(
     )
 
 
+#: W3: the runs' `feasibility_termination`, below which P2 is judged (R-327).
+FEASIBILITY_TERMINATION = 1e-5
+
+
 def point(
-    t: float, *, objective_shift: float = 0.0, state_shift: float = 0.0, **final: bool
+    t: float,
+    *,
+    objective_shift: float = 0.0,
+    state_shift: float = 0.0,
+    theta_recheck: float = 0.0,
+    **final: bool,
 ) -> TrfPoint:
     return TrfPoint(
         objective(t) + objective_shift,
         {"x": t / 100.0 + state_shift, "y": 2.0},
         {"x": 1.0, "y": 1.0},
+        theta_recheck,
+        FEASIBILITY_TERMINATION,
         final,
     )
 
@@ -240,7 +251,7 @@ def test_p3_tolerance_is_1e_9_of_the_scale_without_margin() -> None:
         (point(673.0, objective_shift=1.1e-3 * 0.5), "objective"),
         (point(673.0, state_shift=1.1e-3), "state"),
         (point(673.0, omitted_rows=False), "final_state_checks"),
-        (TrfPoint(0.5, {"z": 1.0}, {"z": 1.0}), "no_mapped_variable"),
+        (TrfPoint(0.5, {"z": 1.0}, {"z": 1.0}, 0.0, 1e-5), "no_mapped_variable"),
     ],
 )
 def test_projection_disagrees_on_each_p2_criterion(trf: TrfPoint, failed_on: str) -> None:
@@ -254,8 +265,63 @@ def test_p2_passes_within_its_tolerances_and_is_not_applicable_without_a_trf_poi
     assert check(FakeParent(), 673.0, trf_point=near).checks["P2"].passed is True
     assert check(FakeParent(), 673.0).checks["P2"].as_document() == {
         "pass": None,
+        "judged": False,
+        "reason": "no_trf_point",
         "values": {"applicable": False},
     }
+    judged = check(FakeParent(), 673.0, trf_point=near).checks["P2"].as_document()
+    assert (judged["judged"], judged["reason"]) == (True, None)
+
+
+# -- R-327: a max-iterations exit (§18.2, WO-6b) ---------------------------------------------------
+
+#: §18.2 (a): TR-E2's measured max-iterations exit (Z8).
+THETA_MAX_ITERATIONS = 4.01e-4
+
+
+def disagreeing(theta_recheck: float) -> TrfPoint:
+    """A TRF point whose P2 values fail: |J_TRF − J*| = 2e-3 · |J*| at T = 673."""
+    return point(673.0, objective_shift=2e-3 * abs(objective(673.0)), theta_recheck=theta_recheck)
+
+
+def test_r327_a_max_iterations_candidate_is_kept_and_p2_is_not_judged() -> None:
+    """§18.2 (a): P1, P4, P3 and P5 pass; P2's values would fail but are recorded unjudged, and
+    the candidate is PARENT_LOCAL_EVIDENCE with the limitation `trf_max_iterations`."""
+    found = study(
+        FakeParent(),
+        FakeStage([(TRF_MAX_ITERATIONS, 673.0, disagreeing(THETA_MAX_ITERATIONS))]),
+    )
+    (candidate,) = found.candidates
+    assert candidate.status == PARENT_LOCAL_EVIDENCE
+    p2 = candidate.checks["P2"].as_document()
+    assert (p2["pass"], p2["judged"], p2["reason"]) == (None, False, "theta_recheck")
+    values = p2["values"]
+    assert values["objective_error"] > values["objective_bound"]  # computed, would fail
+    assert values["theta_recheck"] == THETA_MAX_ITERATIONS
+    assert values["feasibility_termination"] == FEASIBILITY_TERMINATION
+    assert {"P5", "P2"} <= set(candidate.checks)
+    assert "trf_max_iterations" in candidate.limitations
+    assert found.status == DECISION_STABLE
+
+
+def test_r327_p2_is_judged_at_theta_recheck_equal_to_the_termination() -> None:
+    """§18.2 (b): θ_recheck = 1e-5 exactly: P2 is judged and fails."""
+    found = check(FakeParent(), 673.0, trf_point=disagreeing(FEASIBILITY_TERMINATION))
+    assert found.status == PROJECTION_DISAGREES
+    p2 = found.checks["P2"].as_document()
+    assert (p2["pass"], p2["judged"], p2["reason"]) == (False, True, None)
+    assert "P5" not in found.checks
+
+
+def test_r327_p5_runs_after_an_unjudged_p2_unless_an_earlier_check_failed() -> None:
+    """§18.2 (c): P2 null with P1, P4, P3 passing runs P5; with P3 false it does not."""
+    unjudged = disagreeing(THETA_MAX_ITERATIONS)
+    found = check(FakeParent(), 673.0, trf_point=unjudged)
+    assert found.checks["P2"].passed is None and "P5" in found.checks
+    assert found.indifference_halfwidth is not None
+    violated = check(FakeParent(violated=lambda t: True), 673.0, trf_point=unjudged)
+    assert violated.status == PARENT_CONSTRAINT_VIOLATED and "P5" not in violated.checks
+    assert violated.as_document()["indifference_halfwidth"] is None  # S15: P5 did not run
 
 
 def test_p2_reads_the_supplied_reference_for_stage_a() -> None:
@@ -320,23 +386,23 @@ def test_p5_is_vacuous_without_a_feasible_poll_point() -> None:
 
 @dataclass
 class FakeStage:
-    """A scripted stage runner: each call pops (outcome, T or None, objective shift)."""
+    """A scripted stage runner: each call pops (outcome, T or None[, the run's TrfPoint])."""
 
-    script: list[tuple[str, float | None]]
+    script: list[tuple[Any, ...]]
     cold: int = 3
     calls: list[tuple[str, float, str]] = field(default_factory=list)
 
     def __call__(
         self, start: ParentSolve, *, run_id: str, radius_factor: float, budget: StudyBudget
     ) -> StageRun:
-        outcome, t = self.script.pop(0)
+        outcome, t, *given = self.script.pop(0)
         self.calls.append((run_id, radius_factor, start.solve_id))
         budget.charge(self.cold)
         return StageRun(
             run_id=run_id,
             outcome=outcome,
             decisions=None if t is None else {T: t},
-            point=None if t is None else point(t),
+            point=None if t is None else given[0] if given else point(t),
             cold=self.cold,
             document={"iterations": [], "outcome_note": outcome},
         )

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/trust-region-study.schema.json",
   "title": "TrustRegionStudy",
-  "description": "M05 design note \u00a79.1, ADRs 0038 and 0039: the record of one trust-region study (`trust-region-study-v1`). Built from `studies.trust_region.study.StudyResult.as_document`. The top level is closed; the nested run, candidate and spec objects require \u00a79.1's fields and tolerate the loop's additional detail (the configuration, the exit lines, a candidate's solves). `readiness`, `start`, `stage_a` and `best` are the record's own additions to \u00a79.1's list. A study that ends before a run (UNSUPPORTED, start not certified, budget exhausted) has empty `runs` and `candidates`.",
+  "description": "M05 design note §9.1, ADRs 0038 and 0039: the record of one trust-region study (`trust-region-study-v1`). Built from `studies.trust_region.study.StudyResult.as_document`. The top level is closed; the nested run, candidate and spec objects require §9.1's fields and tolerate the loop's additional detail (the configuration, the exit lines, a candidate's solves). `readiness`, `start`, `stage_a` and `best` are the record's own additions to §9.1's list. A study that ends before a run (UNSUPPORTED, start not certified, budget exhausted) has empty `runs` and `candidates`.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -16,6 +16,7 @@
     "status",
     "claims",
     "limitations",
+    "fd_check",
     "artifacts"
   ],
   "properties": {
@@ -452,7 +453,7 @@
                 "minimum": 0
               }
             },
-            "description": "\u00a79.1 lists {sha256, summary}; the producer writes {summary, cold_parent}. `sha256` is therefore not required (open point reported by WO-7)."
+            "description": "§9.1 lists {sha256, summary}; the producer writes {summary, cold_parent}. `sha256` is therefore not required (open point reported by WO-7)."
           },
           "assumptions": {
             "type": "array",
@@ -565,6 +566,8 @@
                 "additionalProperties": false,
                 "required": [
                   "pass",
+                  "judged",
+                  "reason",
                   "values"
                 ],
                 "properties": {
@@ -572,6 +575,16 @@
                     "type": [
                       "boolean",
                       "null"
+                    ]
+                  },
+                  "judged": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "enum": [
+                      null,
+                      "no_trf_point",
+                      "theta_recheck"
                     ]
                   },
                   "values": {
@@ -980,6 +993,12 @@
       "items": {
         "type": "string"
       }
+    },
+    "fd_check": {
+      "type": [
+        "object",
+        "null"
+      ]
     },
     "artifacts": {
       "type": "object",

@@ -10,7 +10,8 @@ canonicalized and solved through the route the document selects, uncommitted, la
 - **P1**, targeted check: outcome `CONVERGED` and certificate `VERIFIED`;
 - **P2**, gross agreement of TRF's state with the re-solve (a defect detector):
   |J_TRF − J*| ≤ 1e-3 · max(|J*|, 1e-12), max over the mapped variables of
-  |x_TRF − x*| / column_scale ≤ 1e-3, and the run's own final-state checks (R-274 fact 4, R-296);
+  |x_TRF − x*| / column_scale ≤ 1e-3, and the run's own final-state checks (R-274 fact 4, R-296),
+  judged only when the run's θ_recheck ≤ its `feasibility_termination` (R-327);
 - **P3**, constraints on the certified state: every §7.1 inequality and bound within 1e-9 × its
   scale (no margin);
 - **P4**, regimes: every unit's phase-regime label equals S0's;
@@ -19,9 +20,13 @@ canonicalized and solved through the route the document selects, uncommitted, la
 **Order and status.** P1, P4, P3, P2 and P5 are evaluated in that order and the status is the
 first failure (§7.4's table). A failed P1 leaves no certified state, so nothing after it is
 evaluated. P4, P3 and P2 cost no solve and are always evaluated together on a certified state;
-P5 (two coupled solves and four inner solves) only when they all pass — its only consumer is a
-candidate that passed them (`NOT_STATIONARY_AT_DELTA` hands the study its best poll point). P2
-does not apply to a candidate no TRF run produced (S0); it is then recorded with `pass: null`.
+P5 (two coupled solves and four inner solves) only when none of them is `false` (`null` is not a
+failure) — its only consumer is a candidate that passed them (`NOT_STATIONARY_AT_DELTA` hands the
+study its best poll point). P2's entry always says whether it was `judged` and, if not, why
+(`reason`): it does not apply to a candidate no TRF run produced (S0, `no_trf_point`), and it is
+computed and recorded but not judged on a run whose θ_recheck exceeds its
+`feasibility_termination` (`theta_recheck`: a `TRF_MAX_ITERATIONS` exit, R-327, design note
+§18.2); both are `pass: null` and never `PROJECTION_DISAGREES`.
 
 **The poll.** u* ± δ_j for each decision j. A decision within 1e-6 (scaled by its half-width)
 of a bound is at the bound and only the inward point is polled; a point that would leave the box
@@ -88,6 +93,9 @@ CERTIFIED: Final = "VERIFIED"
 #: P2's relative tolerances and the objective's floor.
 P2_TOLERANCE: Final = 1e-3
 P2_OBJECTIVE_FLOOR: Final = 1e-12
+#: R-327 (§18.2): why P2 was not judged.
+P2_NO_TRF_POINT: Final = "no_trf_point"
+P2_THETA_RECHECK: Final = "theta_recheck"
 #: P3: a constraint holds within this fraction of its scale (no margin).
 P3_TOLERANCE: Final = 1e-9
 #: The poll: a decision this close to a bound, scaled by its half-width, is at the bound.
@@ -250,12 +258,15 @@ class BudgetGate(Protocol):
 class TrfPoint:
     """What P2 compares: a TRF run's returned objective (in the problem's units and sense) and
     state (every spec variable, `Projection.state_of`), the projection's column scales (R-275),
-    and the run's own final-state checks by name (R-274 fact 4 `omitted_rows`, R-296
-    `zero_pins`), `True` for pass."""
+    the run's θ_recheck and `feasibility_termination` (R-327: P2 is judged only when the first is
+    at most the second), and the run's own final-state checks by name (R-274 fact 4
+    `omitted_rows`, R-296 `zero_pins`), `True` for pass."""
 
     objective: float
     state: Mapping[str, float]
     column_scales: Mapping[str, float]
+    theta_recheck: float
+    feasibility_termination: float
     final_state_checks: Mapping[str, bool] = field(default_factory=dict)
 
 
@@ -271,12 +282,21 @@ class P2Reference:
 
 @dataclass(frozen=True)
 class CheckResult:
+    """One check's verdict. P2's also says whether it was `judged` and, when not, the `reason`
+    (R-327); the other checks carry neither."""
+
     check: str
     passed: bool | None
     values: Mapping[str, Any]
+    judged: bool | None = None
+    reason: str | None = None
 
     def as_document(self) -> dict[str, Any]:
-        return {"pass": self.passed, "values": dict(self.values)}
+        document: dict[str, Any] = {"pass": self.passed}
+        if self.check == "P2":
+            document.update(judged=self.judged, reason=self.reason)
+        document["values"] = dict(self.values)
+        return document
 
 
 @dataclass(frozen=True)
@@ -344,7 +364,8 @@ class CandidateCheck:
     poll: tuple[PollPoint, ...] = ()
     noise_floor: NoiseFloor | None = None
     curvature: Mapping[str, float | None] = field(default_factory=dict)
-    indifference_halfwidth: Mapping[str, float | None] = field(default_factory=dict)
+    #: Per decision, when P5 ran; `None` when it did not (S15).
+    indifference_halfwidth: Mapping[str, float | None] | None = None
     limitations: tuple[str, ...] = ()
     #: Why the check stopped early: the budget that ran out (`NOT_CHECKED`), else `None`.
     stopped_by: str | None = None
@@ -373,7 +394,9 @@ class CandidateCheck:
             "poll": [point.as_document() for point in self.poll],
             "noise_floor": None if self.noise_floor is None else self.noise_floor.as_document(),
             "curvature": dict(self.curvature),
-            "indifference_halfwidth": dict(self.indifference_halfwidth),
+            "indifference_halfwidth": None
+            if self.indifference_halfwidth is None
+            else dict(self.indifference_halfwidth),
             "status": self.status,
             "stopped_by": self.stopped_by,
             "limitations": list(self.limitations),
@@ -429,7 +452,9 @@ def constraint_check(solve: ParentSolve) -> CheckResult:
 
 def gross_agreement(point: TrfPoint, reference: P2Reference) -> CheckResult:
     """P2: TRF's returned objective and state against the reference re-solve, over the variables
-    both hold, plus the run's own final-state checks. No variable in common is a failure."""
+    both hold, plus the run's own final-state checks. No variable in common is a failure. The
+    values are always computed; the verdict is `None`, not judged (`theta_recheck`), when the
+    run's θ_recheck exceeds its `feasibility_termination` (R-327)."""
     objective_error = abs(point.objective - reference.objective)
     objective_bound = P2_TOLERANCE * max(abs(reference.objective), P2_OBJECTIVE_FLOOR)
     mapped = sorted(set(point.state) & set(reference.state) & set(point.column_scales))
@@ -446,9 +471,10 @@ def gross_agreement(point: TrfPoint, reference: P2Reference) -> CheckResult:
         and worst <= P2_TOLERANCE
         and not failed_final
     )
+    judged = point.theta_recheck <= point.feasibility_termination
     return CheckResult(
         "P2",
-        passed,
+        passed if judged else None,
         {
             "reference": reference.source,
             "objective_trf": point.objective,
@@ -459,7 +485,11 @@ def gross_agreement(point: TrfPoint, reference: P2Reference) -> CheckResult:
             "worst_state": worst,
             "worst_state_variable": worst_name,
             "final_state_checks_failed": failed_final,
+            "theta_recheck": point.theta_recheck,
+            "feasibility_termination": point.feasibility_termination,
         },
+        judged=judged,
+        reason=None if judged else P2_THETA_RECHECK,
     )
 
 
@@ -605,7 +635,7 @@ def check_candidate(
             poll=tuple(poll),
             noise_floor=floor,
             curvature=dict(curvature or {}),
-            indifference_halfwidth=dict(halfwidth or {}),
+            indifference_halfwidth=None if halfwidth is None else dict(halfwidth),
             limitations=tuple(sorted(stated | set(limitations))),
             stopped_by=stopped_by,
         )
@@ -627,7 +657,9 @@ def check_candidate(
     checks["P4"] = regime_check(targeted, reference_regimes)
     checks["P3"] = constraint_check(targeted)
     if trf_point is None:
-        checks["P2"] = CheckResult("P2", None, {"applicable": False})
+        checks["P2"] = CheckResult(
+            "P2", None, {"applicable": False}, judged=False, reason=P2_NO_TRF_POINT
+        )
     else:
         assert targeted.state is not None and targeted.objective is not None
         reference = (

@@ -59,6 +59,15 @@ TRF_TRIAL_VALUE: Final = "trf_trial_value"
 TRF_FD_POINT: Final = "trf_fd_point"
 BASIS_FD_POINT: Final = "basis_fd_point"
 FDCHECK_POINT: Final = "fdcheck_point"
+#: S16: the purposes a run's summary counts (§8.1's five, and the affine basis's).
+SUMMARY_PURPOSES: Final = (
+    TRF_START_VALUE,
+    TRF_PMP_VALUE,
+    TRF_TRIAL_VALUE,
+    TRF_FD_POINT,
+    FDCHECK_POINT,
+    BASIS_FD_POINT,
+)
 
 #: §6.1 step 3 / ADR 0038 D3: an external unit's coupling coordinates and their admissible ranges
 #: (M04 spec §3.2's A(s) bounds on X̂ and ΔT̂, in K). Here, not in `projection`, so the Pyomo-free
@@ -650,9 +659,12 @@ class EFHolder:
         with self._lock:
             return tuple(self._refusals)
 
-    def summary(self, run_id: str | None = None) -> dict[str, int]:
+    def summary(self, run_id: str | None = None) -> dict[str, Any]:
         """Counts by call and service, over one run or every request (property blocks are
-        recorded in aggregate, design note §8.1)."""
+        recorded in aggregate, design note §8.1); `by_purpose`, the requests carrying each of
+        `SUMMARY_PURPOSES` (S16); and `pmp_point_equals_start` (§8.3): TRF asked for the PMP
+        point's gradient — the one gradient before iteration 0 is logged — at the start value's
+        key, so the PMP point added no key and no `trf_pmp_value` request."""
         entries = [entry for entry in self.ledger if run_id is None or entry.run_id == run_id]
         counts = {
             f"{call}_{served}": 0
@@ -663,7 +675,18 @@ class EFHolder:
             counts[f"{entry.call}_{entry.served}"] += 1
         counts["requests"] = len(entries)
         counts["refused"] = sum(1 for entry in entries if entry.status != "ok")
-        return counts
+        by_purpose = {purpose: 0 for purpose in SUMMARY_PURPOSES}
+        for entry in entries:
+            if entry.purpose in by_purpose:
+                by_purpose[entry.purpose] += 1
+        starts = {e.inputs_sha256 for e in entries if e.purpose == TRF_START_VALUE}
+        summary: dict[str, Any] = dict(counts)
+        summary["by_purpose"] = by_purpose
+        summary["pmp_point_equals_start"] = any(
+            entry.call == "jacobian" and entry.trf_iteration == 0 and entry.inputs_sha256 in starts
+            for entry in entries
+        )
+        return summary
 
     # -- internals ------------------------------------------------------------------------------
 

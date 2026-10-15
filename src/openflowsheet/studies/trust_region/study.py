@@ -69,6 +69,7 @@ from openflowsheet.studies.trust_region.holders import (
 )
 from openflowsheet.studies.trust_region.trf_state import (
     RETURNS_MODEL,
+    TRF_MAX_ITERATIONS,
     FrameworkReadiness,
     framework_readiness,
     truth_refused,
@@ -574,10 +575,13 @@ class StudyResult:
         trf_theory: str,
         limitations: Sequence[str] = (),
         artifacts: Mapping[str, Any] | None = None,
+        fd_check: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """§9.1's `trust-region-study-v1` record. `spec`, `environment`, the TRF-theory claim and
-        the artifacts are the caller's; everything else is the loop's, in the order it happened
-        (never completion order, R-300 E6)."""
+        """§9.1's `trust-region-study-v1` record. `spec`, `environment`, the TRF-theory claim,
+        the artifacts and `fd_check` (§17.2's document, `None` without an FD truth, S14) are the
+        caller's; everything else is the loop's, in the order it happened (never completion
+        order, R-300 E6). `artifacts.coupled_runs` lists the solves that have a coupling record
+        (S18)."""
         stated = set(limitations) | {
             item for candidate in self.candidates for item in candidate.limitations
         }
@@ -612,11 +616,13 @@ class StudyResult:
                 else "not_claimed",
             },
             "limitations": sorted(stated),
+            "fd_check": None if fd_check is None else dict(fd_check),
             "artifacts": {
                 **dict(artifacts or {}),
                 "coupled_runs": [
                     {"check_id": solve.solve_id, "sha256": solve.coupling_record_sha256}
                     for solve in coupled
+                    if solve.coupling_record_sha256 is not None
                 ],
             },
         }
@@ -724,7 +730,10 @@ def run_study(
             run_id=staged.run_id,
             trf_point=staged.point,
             p2_reference=reference,
-            limitations=limitations,
+            # R-327: a max-iterations exit keeps its candidate, and says so.
+            limitations=[*limitations, "trf_max_iterations"]
+            if staged.outcome == TRF_MAX_ITERATIONS
+            else limitations,
         )
         result.candidates.append(checked)
         return checked
@@ -847,10 +856,13 @@ class TrfStage:
                 )
                 if found is not None
             }
+            assert trf_run.theta_recheck is not None
             point = TrfPoint(
                 trf_run.final.objective,
                 trf_run.final_state,
                 projection.scaling.column,
+                trf_run.theta_recheck,
+                float(config["feasibility_termination"]),
                 checks,
             )
         source_map = projection.source_map
