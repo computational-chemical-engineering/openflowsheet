@@ -93,7 +93,7 @@ F5 education mode deferred.
 
 ## Next action
 
-**Resumed 2026-10-15.** Alpha gate: main merged (`46176a7`), WO-5, 6, 7, 8 done (`f6a748a`, gate 8558; open B-WO5-1 c_2 digest unregistered, B-WO5-5, B-WO8-1…5 → design-lane read with WO-9); running: `sonnet-implementer` alpha WO-9 (changelog skeleton); `opus-engineer` M04 (merge main + WO-8, WO-9 if room; worktree `m04`). Order, at most 2 agents:
+**Resumed 2026-10-15.** Alpha gate: main merged (`46176a7`), WO-5, 6, 7, 8 done (`f6a748a`, gate 8558; open B-WO5-1 c_2 digest unregistered, B-WO5-5, B-WO8-1…5 → design-lane read with WO-9); WO-9 done (`5252040`, changelog skeleton with C_α/gate-table placeholders); running: `reviewer` alpha read of WO-5/8/9 (`docs/briefs/V02-alpha-read.md` on the branch); `opus-engineer` M04 (merge main + WO-8, WO-9 if room; worktree `m04`). Order, at most 2 agents:
 1. Merge `main` (`9f6a9be`, M02 in) into `wp/V02-alpha-gate` → alpha-gate WO-5…11 → `0.2.0a1` (Frank publishes).
 2. Merge `main` into `wp/M04` → WO-8 (needs M02 WO-11, now on main), WO-9, WO-11 real run, WO-12 manifest, `reviewer`
    (batch: E10, E12, E14 envelope wording).
