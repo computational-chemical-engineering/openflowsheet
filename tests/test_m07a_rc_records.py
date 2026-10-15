@@ -8,7 +8,8 @@ lists every cited record with its sha256, size and whether it is committed as is
 `tests/test_t08_rc_records.py` checks T08's: the per-step table's hashes are exactly the listed
 ones, each listed record sits on the row that cites it, every committed file hashes to its entry
 (a compressed one after decompression), and the size rule holds both ways. Then A43 over every
-committed `t08-rc-v1` record, and A44 over `release/rc-trees/<C_α>.json`.
+committed `t08-rc-v1` record, A39's step-12 certificates (R-348), and A44 over
+`release/rc-trees/<C_α>.json`.
 """
 
 from __future__ import annotations
@@ -29,35 +30,18 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import m07a_evidence_manifest  # noqa: E402
 import v0_1_gate  # noqa: E402
 
-RC = "e0e198e4632224612671db5b07445639d272d6da"
+#: `C_α¹` (spec Amendment 2 §18.4, R-349); `C_α⁰` = `e0e198e`'s evidence is kept, not tested here.
+RC = "6fec82232e1c47308a5e1d67338058f352992800"
 RECORDS = REPO_ROOT / "evidence" / "M07a" / RC / "rc"
 ARTIFACTS = REPO_ROOT / "evidence" / "M07a" / RC / "artifacts" / "rc"
 RC_RECORD = REPO_ROOT / "docs" / "v02-alpha-rc-record.md"
 SHA256 = re.compile(r"`([0-9a-f]{64})`")
 #: `requirements.lock` at `C_α` (T08.A40's value, unchanged).
 LOCK_SHA256 = "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
-#: The records `scripts/t08_rc.py` writes without a `machine_class` (its steps 3, 4 and 10 carry
-#: `architecture` and `github_actions` only); M07a.A43 names the machine class (build decision
-#: B-WO10-10, a question for the design lane). Pinned so that a change is seen. These are
-#: `C_α⁰`'s records (`RC` above): R-347 (spec §18.3) adds the member to the four writers, so at
-#: `C_α¹` this set is empty, and it becomes so when `RC` moves to `C_α¹` (§18.5 item 6).
-NO_MACHINE_CLASS = frozenset(
-    {
-        "certificates-ref-x86-64.json",
-        "ci/rc-bundle-set-certificates/rc-certificates.json",
-        "ci/rc-dist/t08-a43-dist.json",
-        "ci/rc-install-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json",
-        "ci/rc-install-ubuntu-24.04-arm/install-ubuntu-24.04-arm.json",
-        "ci/rc-install-ubuntu-24.04-arm/lock-checkout-ubuntu-24.04-arm.json",
-        "ci/rc-install-ubuntu-24.04-arm/lock-installed-ubuntu-24.04-arm.json",
-        "ci/rc-install-ubuntu-latest/certificates-ubuntu-latest.json",
-        "ci/rc-install-ubuntu-latest/install-ubuntu-latest.json",
-        "ci/rc-install-ubuntu-latest/lock-checkout-ubuntu-latest.json",
-        "ci/rc-install-ubuntu-latest/lock-installed-ubuntu-latest.json",
-        "ci/rc-steps-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json",
-        "ci/rc-steps-ubuntu-latest/certificates-ubuntu-latest.json",
-    }
-)
+#: The records without a `machine_class`. At `C_α⁰` these were the 13 records of `t08_rc.py`'s
+#: `install-check`, `lock-check`, `certificates` and `t08_dist.py` (build decision B-WO10-10); R-347
+#: (spec §18.3) adds the member to those four writers, so at `C_α¹` the set is empty (§18.5 item 2).
+NO_MACHINE_CLASS: frozenset[str] = frozenset()
 
 
 def _index() -> dict[str, Any]:
@@ -202,6 +186,76 @@ def test_a43_the_records_without_a_machine_class_are_the_known_ones() -> None:
             assert provenance["github_actions"] == entry["github_actions"], path
 
 
+# -- A39: step 12's kept certificates (spec §18.2, R-348) ------------------------------------
+
+
+def _mr11(evidence: Path) -> tuple[str, Any]:
+    inputs = m07a_evidence_manifest.Inputs(commit=RC, tests=None, evidence=evidence)  # type: ignore[arg-type]
+    return m07a_evidence_manifest._m_mr11_step12(inputs)  # noqa: SLF001
+
+
+def test_a39_step12_certificates_are_committed_audited_counted_and_bound() -> None:
+    result, value = _mr11(REPO_ROOT / "evidence" / "M07a")
+    edges = json.loads((RECORDS / "step12" / "g12-real-loop-v3-edges.json").read_text("utf-8"))
+    assert value["step12_certificates"] == value["step12_certificates_expected"]
+    assert value["step12_certificates"] == 3 + len(edges["edges"]) == 5
+    assert value["step12_violations"] == {}
+    assert value["bundle_document_sha256"] == value["recorded_certificate_sha256"]
+    assert result == "pass"
+
+
+def _copy_for_a39(tmp_path: Path) -> Path:
+    rc = tmp_path / RC / "rc"
+    for path in [
+        "certificates-ref-x86-64.json",
+        "step12/g12-real-loop-v3.json",
+        "step12/g12-real-loop-v3-edges.json",
+        *(
+            p.relative_to(RECORDS).as_posix()
+            for p in (RECORDS / "step12" / "certificates").rglob("*.json")
+        ),
+    ]:
+        (rc / path).parent.mkdir(parents=True, exist_ok=True)
+        (rc / path).write_bytes((RECORDS / path).read_bytes())
+    return rc / "step12" / "certificates"
+
+
+def test_a39_fails_a_dropped_certificate(tmp_path: Path) -> None:
+    kept = _copy_for_a39(tmp_path)
+    (kept / "g12-bundles/m02-g12-0/live/solution-certificate.json").unlink()
+    result, value = _mr11(tmp_path)
+    assert (result, value["step12_certificates"], value["step12_certificates_expected"]) == (
+        "fail",
+        4,
+        5,
+    )
+
+
+def test_a39_fails_a_bundle_certificate_that_does_not_bind(tmp_path: Path) -> None:
+    kept = _copy_for_a39(tmp_path)
+    bundle = kept / m07a_evidence_manifest.STEP12_BUNDLE
+    document = json.loads(bundle.read_text("utf-8"))
+    document["statements"] = [*document.get("statements", []), "edited after the run"]
+    bundle.write_text(json.dumps(document), "utf-8")
+    result, value = _mr11(tmp_path)
+    assert result == "fail"
+    assert value["bundle_document_sha256"] != value["recorded_certificate_sha256"]
+    assert value["step12_violations"] == {}
+
+
+def test_a39_fails_a_certificate_that_breaks_a34(tmp_path: Path) -> None:
+    kept = _copy_for_a39(tmp_path)
+    edge = kept / "g12-edges-bundles/m02-g12v3-2-0/bundle/solution-certificate.json"
+    document = json.loads(edge.read_text("utf-8"))
+    document["independence_qualifications"] = document["independence_qualifications"][1:]
+    edge.write_text(json.dumps(document), "utf-8")
+    result, value = _mr11(tmp_path)
+    assert result == "fail"
+    assert list(value["step12_violations"]) == [
+        "g12-edges-bundles/m02-g12v3-2-0/bundle/solution-certificate.json"
+    ]
+
+
 # -- the generator's A43 measurement (`scripts/m07a_evidence_manifest.py`, R-347) --------------
 
 
@@ -216,7 +270,7 @@ def _provenance_of(
     rc = tmp_path / commit / "rc"
     lock = _sha256(REPO_ROOT / "requirements.lock")
     provenance = {"commit": commit, "tree_clean": True, "environment_lock_sha256": lock}
-    documents = {
+    documents: dict[str, dict[str, Any]] = {
         name: {"format": "t08-rc-v1", "provenance": {**provenance, **members}}
         for name, members in records.items()
     }
