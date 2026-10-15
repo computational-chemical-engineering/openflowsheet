@@ -472,9 +472,10 @@ def text_sha256(item: str | Mapping[str, Any]) -> str:
 
 #: Manifests the harvest does not read. T08's own was excluded through v0.1 (written at T08 close,
 #: after `C`, so harvesting it into v0.1's envelope would have been circular); the alpha harvests
-#: it (V02 alpha release spec MR-3, T08 Amendment R8 4, FD-α7), so nothing is excluded before
-#: `C_α`. After `C_α`, M07a's own manifest is excluded the same way (`("evidence/M07a/",)`, MR-3).
-HARVEST_EXCLUDED: tuple[str, ...] = ()
+#: it (V02 alpha release spec MR-3, T08 Amendment R8 4, FD-α7). M07a's own manifest is written
+#: after `C_α` and belongs to the next harvest (R-320, T08 Amendment R8 2's precedent): the
+#: exclusion excludes no manifest at `C_α`, and M07 removes it and harvests M07a's manifest.
+HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/M07a/",)
 
 
 def harvest_items(
