@@ -848,3 +848,6 @@ Grep, don't read whole. Newest at the bottom.
   nlp 164/1): Z2 joint-pin elimination, rcond P1 7.663e-3, P2 1.417e-2, B2 5.203e-6; matching 70 = 74 − 4; G4 worst ratios
   residual 5.92e-4, Jacobian 7.11e-7, decision 2.30e-3; unaffected cases byte-identical dumps. Stopped at context cap before
   WO-7b; fresh engineer on WO-7b + S33/S36 defaults + main merge. Open: S27, S33, S36.
+- **Alpha re-cut C_α²** (2026-10-16, `opus-engineer`): C_α² = `cc73219` (6fec822 + 6505315, 162e13b, e892790, 967a622, 7af0ee3;
+  gate 8600). CI 38813135468/38813136015 green (8533/100 x86, 8505/98 arm); local 2, 6–12 PASS; step 10 0/77; G12 cert bound.
+  Manifest `tested` 38/0/6. B-AM3-6…9 (fresh envs, `tools/fetch_ci.sh`, O5 corrected). `verdict` at C_α² launched.
