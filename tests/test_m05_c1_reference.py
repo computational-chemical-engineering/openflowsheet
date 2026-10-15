@@ -1,8 +1,8 @@
-"""M05 WO-5: M02's inner solve at pinned w (the additive accessor
-`revision_binding.with_coupling`) and TR-E2's independent reference T_ref (design note §5.2,
-§12 WO-5; ADR 0039 D2).
+"""M05 WO-5: M02's inner solve at pinned w (`study.pinned_at`, which calls M02's
+`coupled_run.at_coupling` since WO-5c, R-309) and TR-E2's independent reference T_ref (design note
+§5.2, §12 WO-5; ADR 0039 D2).
 
-The accessor is proved inert: it builds the binding M02's own WO-9 test support builds
+The swap is proved inert: `pinned_at` builds the binding M02's own WO-9 test support builds
 (`test_m02_wo9_reactor.at_coupling`), the same spec and a bitwise-equal inner solve, and at the
 document's own w the spec the binder built. The reference is test support
 (`tests/support/m05_reference.py`): Newton on w to 1e-12 scaled, golden section to 0.05 K.
@@ -23,11 +23,11 @@ from test_m02_wo9_reactor import LOOP_PATH, W_STAR, at_coupling
 from openflowsheet.application.revision_binding import (
     RevisionBinding,
     bind_revision_flowsheet,
-    with_coupling,
 )
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
+from openflowsheet.studies.trust_region.study import pinned_at
 
 sys.path.insert(0, str(REPO_ROOT / "tests" / "support"))
 import m05_reference as reference  # noqa: E402
@@ -68,7 +68,7 @@ def _bits(state: dict[str, float]) -> dict[str, str]:
 
 def test_the_accessor_is_m02s_rebinding_at_pinned_w() -> None:
     binding = bound()
-    ours = with_coupling(binding, "reactor", *W_STAR)
+    ours = pinned_at(binding, "reactor", W_STAR)
     theirs = at_coupling(binding, "reactor", W_STAR)
     assert identity(ours) == identity(theirs)
     assert ours.spec.parameters == theirs.spec.parameters
@@ -79,14 +79,9 @@ def test_the_accessor_is_m02s_rebinding_at_pinned_w() -> None:
 
 def test_the_accessor_at_the_documents_own_w_rebuilds_the_bound_spec() -> None:
     binding = bound()
-    same = with_coupling(binding, "reactor", 0.15, 80.0)
+    same = pinned_at(binding, "reactor", (0.15, 80.0))
     assert identity(same) == identity(binding)
     assert _bits(solved_state(same)) == _bits(solved_state(binding))
-
-
-def test_the_accessor_refuses_a_unit_that_is_not_a_c1_reactor() -> None:
-    with pytest.raises(ValueError, match="not an embedded C1 reactor"):
-        with_coupling(bound(), "preheater", 0.25, 0.0)
 
 
 # == the reference ================================================================================

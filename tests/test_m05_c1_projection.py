@@ -36,11 +36,8 @@ from test_m05_projection import equivalence, structure
 
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore
-from openflowsheet.application.revision_binding import (
-    RevisionBinding,
-    bind_revision_flowsheet,
-    with_coupling,
-)
+from openflowsheet.application.coupled_run import at_coupling
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 
@@ -74,7 +71,7 @@ def s0() -> tuple[RevisionBinding, dict[str, float], Any]:
     point = reference.coupled(loop(), NOMINAL)
     binding = bind_revision_flowsheet(document)
     assert isinstance(binding, RevisionBinding), binding
-    pinned = with_coupling(binding, "reactor", *point.w)
+    pinned = at_coupling(binding, {"reactor": point.w})
     plan, _ = plan_revision(pinned, reference.POLICY)
     run = execute_plan(
         plan=plan, flowsheet=pinned.flowsheet, spec=pinned.spec, policy=reference.POLICY

@@ -4,7 +4,7 @@ at fixed reactor-inlet temperature with a tightly coupled reference, then golden
 Test support, not TRF and not Pyomo:
 
 - the inner EO problem is solved at pinned w = (X̂, ΔT̂) through M02's accessor
-  `revision_binding.with_coupling` and the revision route (`plan_revision`, `execute_plan`);
+  `coupled_run.at_coupling` and the revision route (`plan_revision`, `execute_plan`);
 - the synthetic truth `m05-synthetic-interior-v1` is evaluated at the solved reactor inlet in
   closed form (`m05_synthetic.interior`);
 - Newton on F(w) = w − (X_E, ΔT_E) uses a 2 × 2 forward-difference Jacobian (h = 1e-7 scaled;
@@ -26,12 +26,9 @@ from typing import Any, Final
 
 import m05_synthetic as synthetic
 
+from openflowsheet.application.coupled_run import at_coupling
 from openflowsheet.application.policies import APPLICATION_POLICIES
-from openflowsheet.application.revision_binding import (
-    RevisionBinding,
-    bind_revision_flowsheet,
-    with_coupling,
-)
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
@@ -81,7 +78,7 @@ def with_inlet_temperature(document: Mapping[str, Any], temperature: float) -> d
 
 def inner(binding: RevisionBinding, w: tuple[float, float]) -> dict[str, float]:
     """The inner EO solve at pinned w (M02's accessor), converged, as the state by column id."""
-    pinned = with_coupling(binding, reactor_of(binding).unit_id, w[0], w[1])
+    pinned = at_coupling(binding, {reactor_of(binding).unit_id: (w[0], w[1])})
     plan, _ = plan_revision(pinned, POLICY)
     run = execute_plan(plan=plan, flowsheet=pinned.flowsheet, spec=pinned.spec, policy=POLICY)
     if run.outcome != "CONVERGED" or run.state is None:

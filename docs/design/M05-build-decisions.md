@@ -185,3 +185,18 @@ S18 Producer-vs-§9.1 gaps fixed in the schema: iteration 0 is the PMP and `TrfS
    TRF point, `checks.py`) is `pass: null`. Digests follow the schemas' `^[0-9a-f]{64}$` (the fakes now give real
    hex). Open: `artifacts.coupled_runs[].sha256` is required, but `ParentSolve.coupling_record_sha256` is None for a
    parent with no external unit; the C1 parent always has one.
+
+## WO-5c — `pinned_at` on M02's `at_coupling` (§17.5 E7 as superseded by R-309)
+
+S19 `revision_binding.with_coupling` is deleted and `revision_binding.py` is main's again (WO-5b's cherry-pick never
+   landed: M02 merged first). `study.pinned_at` calls `coupled_run.at_coupling(binding, {unit_id: (X̂, ΔT̂)})` with
+   both coerced by `float()`, as `with_coupling` did, so the units receive Python floats bit for bit. The reference
+   support and the C1 projection test call `at_coupling` directly (the reference stays independent of M05's
+   library); the accessor's refusal test is dropped (M02's AC-1 holds `at_coupling`'s, R-309). Inertness, before the
+   deletion: `with_coupling` against `at_coupling` at four w (W*, the document's own (0.15, 80), (0.2, 55.5) and one
+   ulp-scale move) gave the same compiled identity (model_version, constants_sha256), equal spec parameters and a
+   bitwise-equal inner solve (every state float's hex); `test_m05_c1_reference` keeps the proof for `pinned_at`
+   against M02's WO-9 helper. F4's strict xfail XPASSed at the merge (fae2785) and was removed there.
+   Measured: M05 `nlp` tier in a freshly built audited environment 121 passed, 15 xfailed (WO-6's counts); the
+   NLP-1 inventory `--check` fails on three objects (`libssl.so.3`, `_ssl`, `_queue`) that the project-wide import
+   walk now loads — the same imports exist at 71804a6, so the recorded M03 inventory predates them (not WO-5c's).

@@ -5,8 +5,9 @@ readiness (§6.8) and its record (§9.1). The formulation is **generated** from 
 the bound variant's boundary block and the admissibility definitions, never authored per case:
 
 - **Case.** A revision binding of the C1 loop `C1-LOOP-M02-v1` (M02 design note §8.1), at the
-  coupled route's inner problem: the embedded reactor pinned at w₀ (`with_coupling`, M02's
-  accessor), its coupling parameters promoted to the link variables (X̂, ΔT̂) (ADR 0038 D3).
+  coupled route's inner problem: the embedded reactor pinned at w₀ (`coupled_run.at_coupling`,
+  M02's accessor, R-309), its coupling parameters promoted to the link variables (X̂, ΔT̂)
+  (ADR 0038 D3).
 - **Decision.** The outlet-temperature specification of the `c1.tp_heater` that feeds the
   reactor (its `T_spec`, a pinned input, ADR 0031 D1), in a registered box: [653.15, 693.15] K for
   the REAL study (R-313: v3's T_in span, superseding ADR 0039 D1's [643.15, 733.15] K) and for
@@ -34,7 +35,8 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Final, Literal, Protocol
 
 from openflowsheet.adapters.variants import Variant, hard_domain
-from openflowsheet.application.revision_binding import RevisionBinding, with_coupling
+from openflowsheet.application.coupled_run import at_coupling
+from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.compile.reference import FloatAlgebra
 from openflowsheet.compile.spec import Expr
 from openflowsheet.models import flow_id, pressure_id, temperature_id
@@ -294,10 +296,10 @@ def pinned_at(
 ) -> RevisionBinding:
     """`binding`'s inner problem with the embedded reactor `unit_id` pinned at w = (X̂, ΔT̂).
 
-    The one call site of M02's coupling accessor in M05's library. WO-5c (R-309) replaces
-    `revision_binding.with_coupling` here with `coupled_run.at_coupling(binding, {unit_id: w})`
-    when `wp/M02` reaches this branch."""
-    return with_coupling(binding, unit_id, coupling[0], coupling[1])
+    The one call site of M02's coupling accessor in M05's library: `coupled_run.at_coupling`
+    (R-309: it refuses a `unit_id` that is not a C1 reactor of the binding). The floats are
+    passed as Python floats, bit for bit (WO-5c)."""
+    return at_coupling(binding, {unit_id: (float(coupling[0]), float(coupling[1]))})
 
 
 def c1_constraint_values(
