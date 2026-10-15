@@ -25,7 +25,7 @@ run_step "ruff format" ruff format --check .
 # No path argument: mypy uses the `files` list in pyproject.toml, which covers `src` and, since
 # P01, `benchmarks` (the SYN-001 oracle is an acceptance reference and is type-checked strictly).
 run_step "mypy" mypy
-run_step "pytest" pytest -q
+run_step "pytest" pytest -q -rs
 
 # M06 (design note §8 Layer B, ADR 0030 D6): the web shell's Node tests, on Node's built-in
 # runner (a test-time tool; no package.json, no npm). The quoted glob is expanded by Node >= 22.
