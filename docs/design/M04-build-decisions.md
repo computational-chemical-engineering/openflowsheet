@@ -302,3 +302,24 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   environment only. Not fixed (replay identity is the design lane's): either the study pins its
   BLAS threads (e.g. `threadpoolctl` around the fit) or the manifest records the thread
   environment it was computed under. For the design lane, with WO-12's review.
+
+## WO-12 — the evidence manifest (2026-10-15)
+
+- **E34. The manifest is generated, one check per assertion.** `scripts/m04_evidence_manifest.py`
+  (M02's pattern) reads A01–A47 and §15's W23 rows from the specification, adds §18's and §19
+  A2.13's rows (each amendment sentence must be present verbatim), runs `tests/test_m04_*.py` once
+  and assigns each `test_aNN…` node to M04.ANN (the other nodes are `M04.supporting`), decides
+  A31, A32 and A41 from WO-11's committed record (manifest and evidence by SHA-256), and lists the
+  register entries whose "Decided by" names M04 with the ADRs they cite. A33 is `not_applicable`
+  on a non-PROMOTABLE A31 (it would be `fail` on a PROMOTABLE one, since no A33 record exists);
+  status is `tested` only when every other check is `pass`. Per N6 the real verdict does not
+  enter the status; it is the first limitation, written from the record's numbers. Assertions in
+  no W23 row (A09, A10, A34, A35, A41) still have their checks. Rejected: a hand-written JSON
+  (nothing would stop an assertion being left out). The manifest's four limitations and its
+  `not_applicable` A33 are classified in `benchmarks/t08/support_envelope.yaml#harvest` (T08.A21)
+  as class P — they stay in the manifest, as M02's do — by `--harvest-from`, added after the
+  evidence commit `a9566a6` (it reads the manifest, never rewrites it). DECISION: class P for the
+  real verdict too, rather than an envelope row (E) — the envelope's rows are the design lane's;
+  reversible by reclassifying the harvest entry. Status `tested`: 57 of 58 checks pass, A33
+  `not_applicable`; gate at `a9566a6` GATE PASS, 8647 passed, 31 skipped. Reversible by:
+  reverting the WO-12 commits.

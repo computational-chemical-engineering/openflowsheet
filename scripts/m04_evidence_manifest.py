@@ -21,6 +21,10 @@ this script ran or read at `C`:
 5. **Register pointers**: the `docs/decision-register.md` entries decided by M04, and the ADRs
    they name.
 
+`--harvest-from MANIFEST` classifies an existing manifest's limitations and non-pass checks in
+`benchmarks/t08/support_envelope.yaml#harvest` (T08.A21; class P, M02's pattern: each stays in its
+manifest) and regenerates `docs/support-matrix.md`; the manifest itself is not touched.
+
 Status is `tested` when every check is `pass` (A33 may be `not_applicable`) and every command
 exited 0; otherwise `implemented`. Per N6, M04 is `tested` whatever the real verdict. `reviewed`
 is never set, and both review fields stay `pending`.
@@ -28,6 +32,8 @@ is never set, and both review fields stay `pending`.
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/m04_evidence_manifest.py --commit C \\
         --gate-log GATE_STDOUT
+    PYTHONPATH=src .venv/bin/python scripts/m04_evidence_manifest.py \\
+        --harvest-from evidence/M04/C/manifest.json
 """
 
 from __future__ import annotations
@@ -45,7 +51,10 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 ROOT = Path(__file__).resolve().parent.parent
+ENVELOPE = ROOT / "benchmarks" / "t08" / "support_envelope.yaml"
 SPEC = ROOT / "docs" / "derivations" / "M04-spec.md"
 REGISTER = ROOT / "docs" / "decision-register.md"
 M04 = ROOT / "benchmarks" / "m04"
@@ -464,12 +473,108 @@ def status(checks_: Sequence[Mapping[str, Any]], commands: Sequence[Mapping[str,
     return "tested" if every and all(c["exit_code"] == 0 for c in commands) else "implemented"
 
 
+# ----------------------------------------------------------------------------- harvest
+
+#: The harvest note of each limitation, in the manifest's order (the first is the real verdict).
+NOTES: tuple[str, ...] = (
+    "real surrogate NOT_PROMOTABLE (band_not_finite) on v3; M04 tested by N6",
+    "A33 not run (A31 not PROMOTABLE); Q-A2.1 open",
+    "real-reactor records opt-in, one machine; A32 bitwise at single-threaded BLAS (E33)",
+    "W23 verdict is the verdict lane's; self-generated records are regression fixtures",
+)
+CHECK_NOTES: Mapping[str, str] = {
+    "M04.A33": "A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run",
+}
+
+
+def harvest_entries(path: str, manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from t08_support_matrix import text_sha256
+
+    if len(manifest["limitations"]) != len(NOTES):
+        raise SystemExit("the manifest's limitations and NOTES differ in number")
+    entries: list[dict[str, Any]] = [
+        {
+            "manifest": path,
+            "item": f"limitations[{index}]",
+            "sha256": text_sha256(text),
+            "class": "P",
+            "to": [],
+            "note": NOTES[index],
+        }
+        for index, text in enumerate(manifest["limitations"])
+    ]
+    for index, check in enumerate(manifest["checks"]):
+        if check["result"] == "pass":
+            continue
+        if check["id"] not in CHECK_NOTES or check["result"] != "not_applicable":
+            raise SystemExit(f"{check['id']} is {check['result']}: not classified; fix it first")
+        entries.append(
+            {
+                "manifest": path,
+                "item": f"checks[{index}]",
+                "check_id": check["id"],
+                "sha256": text_sha256(check),
+                "class": "P",
+                "to": [],
+                "note": CHECK_NOTES[check["id"]],
+            }
+        )
+    return entries
+
+
+def _yaml_entry(entry: Mapping[str, Any]) -> str:
+    lines = [f"- manifest: {entry['manifest']}", f"  item: {entry['item']}"]
+    if "check_id" in entry:
+        lines.append(f"  check_id: {entry['check_id']}")
+    lines += [f"  sha256: {entry['sha256']}", f"  class: {entry['class']}", "  to: []"]
+    lines.append(f"  note: {entry['note']}")
+    return "\n".join(lines) + "\n"
+
+
+def write_harvest(entries: Sequence[Mapping[str, Any]]) -> None:
+    """Replace the envelope's `evidence/M04/` harvest entries with `entries`, at the end of the
+    list (the file's last section), leaving every other byte as it is."""
+    text = ENVELOPE.read_text(encoding="utf-8")
+    head, marker, body = text.partition("\nharvest:\n")
+    if not marker:
+        raise SystemExit("support_envelope.yaml has no harvest section")
+    blocks = re.split(r"(?m)^(?=- manifest: )", body)
+    kept = [b for b in blocks if b and not b.startswith("- manifest: evidence/M04/")]
+    if any(not b.startswith("- manifest: ") for b in kept):
+        raise SystemExit("support_envelope.yaml: unexpected text in the harvest section")
+    ENVELOPE.write_text(
+        head + marker + "".join(kept) + "".join(_yaml_entry(e) for e in entries), encoding="utf-8"
+    )
+    loaded = yaml.safe_load(ENVELOPE.read_text(encoding="utf-8"))["harvest"]
+    written = [e for e in loaded if str(e.get("manifest", "")).startswith("evidence/M04/")]
+    if written != [dict(e) for e in entries]:
+        raise SystemExit("support_envelope.yaml: the harvest entries did not round-trip")
+
+
+def harvest(manifest_path: Path) -> int:
+    path = manifest_path.resolve().relative_to(ROOT).as_posix()
+    manifest = json.loads((ROOT / path).read_text(encoding="utf-8"))
+    entries = harvest_entries(path, manifest)
+    write_harvest(entries)
+    subprocess.run(
+        [sys.executable, "scripts/t08_support_matrix.py", "--emit"], cwd=ROOT, check=True
+    )
+    print(f"harvest: {len(entries)} entries for {path}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--commit", required=True)
-    parser.add_argument("--gate-log", type=Path, required=True)
+    parser.add_argument("--commit")
+    parser.add_argument("--gate-log", type=Path)
     parser.add_argument("--out", type=Path)
+    parser.add_argument("--harvest-from", type=Path)
     args = parser.parse_args(argv)
+    if args.harvest_from is not None:
+        return harvest(args.harvest_from)
+    if args.commit is None or args.gate_log is None:
+        parser.error("--commit and --gate-log are required to generate a manifest")
     commit = _git("rev-parse", args.commit).strip()
     if _git("rev-parse", "HEAD").strip() != commit:
         raise SystemExit(f"HEAD is not {commit}: check it out first")

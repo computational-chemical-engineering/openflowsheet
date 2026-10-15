@@ -2730,3 +2730,34 @@ harvest:
   class: P
   to: []
   note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[0]
+  sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
+  class: P
+  to: []
+  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; M04 tested by N6
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[1]
+  sha256: f525c178eee67f1a6efb57626d60867f8010f9b98cff33025c681770dd74cf0e
+  class: P
+  to: []
+  note: A33 not run (A31 not PROMOTABLE); Q-A2.1 open
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[2]
+  sha256: 63b9864a3b7f31c5f8af750bc8fd2a5da16e07ebb45f5db6365ee5656e891994
+  class: P
+  to: []
+  note: real-reactor records opt-in, one machine; A32 bitwise at single-threaded BLAS (E33)
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[3]
+  sha256: b041476334873ca5259c340c13c3157eb2ae5dafafe840e1df4b708bef70bbdb
+  class: P
+  to: []
+  note: W23 verdict is the verdict lane's; self-generated records are regression fixtures
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: checks[32]
+  check_id: M04.A33
+  sha256: 221a7aa9679876bfceaff6bb168190cf73836a8ac399d5a8b6ef6443ddad4361
+  class: P
+  to: []
+  note: A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run
