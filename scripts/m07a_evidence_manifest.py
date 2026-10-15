@@ -24,7 +24,9 @@ measured it, and its `value` names that evidence:
    `pending` until `docs/reviews/V02-alpha-verdicts.md` exists and WO-11 has written the ledger;
    this script does not judge them.
 
-Status is `tested` only if every check M07a.A00–A53 is `pass` (WO-10); otherwise `implemented`.
+Status is `tested` iff every check M07a.A00–A51 and A53 is `pass` (Amendment 3 §19.4, R-373);
+otherwise `implemented`. M07a.A52 is `unsupported` at `C_α`: it is judged at the tag candidate after
+§9.2 step 5, and its skeleton tests run in step 1's `check.sh`.
 `reviewed` is never set, and both review fields stay `pending`.
 
 Usage:
@@ -59,8 +61,9 @@ LEDGER = ROOT / "docs" / "requirements.yaml"
 #: The release-gate requirements T08's manifest supplies evidence for; the alpha re-runs T08's
 #: acceptance at `C_α` (build decision B-WO10-9).
 REQUIREMENTS = ("D04", "A10", "D17", "D20")
-#: WO-10: the manifest is `tested` iff these pass (the verdicts and the ledger come after it).
-STATUS_IDS = re.compile(r"A(?:[0-4]\d|5[0-3])$")
+#: R-373 (Amendment 3 §19.4): the manifest is `tested` iff A00–A51 and A53 pass; A52 is judged at
+#: the candidate, and the verdicts and the ledger come after the manifest.
+STATUS_IDS = re.compile(r"A(?:[0-4]\d|5[013])$")
 #: The tag whose extras MR-12 compares against.
 V0_1_1 = "v0.1.1"
 CHECK_JOBS = ("check (ubuntu-latest)", "check (ubuntu-24.04-arm)")
@@ -96,7 +99,7 @@ SPECS: tuple[Spec, ...] = (
             "[v02a_reference.py]",
         ),
     ),
-    *(Spec(f"A{n:02d}", tests=(f"{_GATE}a{n:02d}_*",)) for n in range(1, 14)),
+    *(Spec(f"A{n:02d}", tests=(f"{_GATE}a{n:02d}_*",)) for n in range(1, 15)),
     Spec("A20", tests=(f"{_REL}m07a_a20_*",)),
     Spec("A21", tests=(f"{_REL}m07a_a21_*",)),
     Spec("A22", tests=("tests/test_changelog_section.py::test_m07a_a22_*",)),
@@ -195,7 +198,7 @@ SPECS: tuple[Spec, ...] = (
         measure="envelope",
     ),
     Spec("A51", tests=("tests/test_t08_b50_surface_content.py::test_m07a_a51_*",)),
-    Spec("A52", tests=("tests/test_m07a_changelog.py",)),
+    Spec("A52", measure="changelog"),
     Spec(
         "A53",
         tests=(
@@ -429,6 +432,16 @@ def _m_verdict(inputs: Inputs) -> Part:
     return "unsupported", {"state": "pending", "reason": "judged by the verdict agent, not here"}
 
 
+def _m_changelog(inputs: Inputs) -> Part:
+    """R-373: A52 (c) and (a) need the gate table and `C_α` pasted at the candidate, after the
+    verdicts; at `C_α` it is recorded `unsupported`. `tests/test_m07a_changelog.py` still runs in
+    step 1's `check.sh`."""
+    return "unsupported", {
+        "state": "pending",
+        "reason": "judged at the candidate after §9.2 step 5 (Amendment 3 §19.4)",
+    }
+
+
 def _m_ledger(inputs: Inputs) -> Part:
     wanted = f"evidence/M07a/{inputs.commit}/manifest.json"
     if wanted not in LEDGER.read_text(encoding="utf-8"):
@@ -448,6 +461,7 @@ MEASURES: dict[str, Callable[[Inputs], Part]] = {
     "provenance": _m_provenance,
     "envelope": _m_envelope,
     "verdict": _m_verdict,
+    "changelog": _m_changelog,
     "ledger": _m_ledger,
 }
 
@@ -496,7 +510,7 @@ def checks(inputs: Inputs) -> list[dict[str, Any]]:
 
 
 def status(entries: Sequence[Mapping[str, Any]]) -> str:
-    """`tested` iff every check M07a.A00–A53 passes (WO-10); never `reviewed`."""
+    """`tested` iff every check M07a.A00–A51 and A53 passes (R-373); never `reviewed`."""
     gated = [entry for entry in entries if STATUS_IDS.fullmatch(entry["id"].split(".")[1])]
     return "tested" if gated and all(e["result"] == "pass" for e in gated) else "implemented"
 

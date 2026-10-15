@@ -293,3 +293,47 @@ not run (needs `docs/reviews/V02-alpha-verdicts.md`). `C_α⁰`'s evidence is ke
 B-AM2-12 **`docs/progress.md` and `docs/V02_STATE.md` are left to the orchestrator** (§18.5 action 7 names them). Both
 are maintained on `main` by the session's `v0.2 state:` commits; this branch's copies are stale, and editing them here
 would conflict at merge. The numbers they need are in B-AM2-11.
+
+## Amendment 3 build-lane actions 1–4 and action 7's status rule (spec §19.8; R-370…R-377)
+
+Commits on `wp/V02-alpha-gate`: action 1 `162e13b`, action 2 `e892790`, then action 3, action 4, and the two
+generator commits (hashes in `git log`). Facts the amendment asked for:
+- **Q-A3-2: yes.** Every L44–L48 and U15 pointer resolves as written (`--check`: 0 problems); none was replaced.
+- **Q-A3-3: found.** `tests/test_m02_wo8_g7.py::test_g7e_a_pure_nh3_feed_is_refused_by_the_flash` pins the typed
+  refusal (`unsupported`, `pure_nh3_flash_unsupported`; the solve ends `INITIALIZATION_FAILED`). U15 cites it.
+- **Q-A3-4: no.** `-rs` adds `SKIPPED [n] …` lines before pytest's final count line. The readers of step 1's logs
+  look for `=== check.sh: PASSED ===` (`t08_evidence_manifest.py`) and for `^N passed|failed` and
+  `^(FAILED|ERROR) ` (`gate.sh`). None matches a `SKIPPED` line.
+
+B-AM3-1 **The `## v0.2.0a1` Known-limitations list was regenerated in action 1's commit, not action 4's.** M07a.A52 (e)
+(`test_e_the_limitation_ids_are_the_envelopes_in_order`) fails once the envelope gains L44–L48, so action 1's
+acceptance (`gate.sh` green) needs it. §19.5 item 6 is therefore met by `162e13b`. Alternative: hold action 1 until
+action 4. Reversible by: moving that hunk between commits at the cherry-pick.
+
+B-AM3-2 **The four reclassified M02 harvest notes gain the suffix ` (R-370, class E)`.** Notes are free text, are not
+rendered and are not hashed. The suffix marks which rows the design lane re-read. Alternative: leave the notes as they
+were. Reversible by: a sed over four lines.
+
+B-AM3-3 **The re-judgement's refusal wording, and a `rejudged` key in the JSON report.** When there is a
+re-judgement, the date refusals name `Judged date J, re-judged R (gates)`. With no re-judgement, the existing T6
+messages are byte-identical, and the A04/A05 tests that pin them are unchanged. Two new refusals:
+`Frank's answer to I: accepted D, after the re-judgement of G that read it (…; §19.2 Table T7)` and
+`G (x): accepted D, before the re-judgement of G that judged it (…; D2.3; §19.2 Table T7)`. `--markdown` is unchanged,
+because A52 (c) compares it. The gates a re-judgement may list live in `GateSet.rejudge_waits`, which the registry
+test holds to the YAML's `rejudge_depends`. The line is found anywhere in the document (A14 (d)). The `## Re-judgement`
+section is not checked, because T8 is the rule. Reversible by: reverting `e892790`.
+
+B-AM3-4 **`scripts/m02_evidence_manifest.py --harvest` now writes R-370's classes** (`HARVEST_E`). Without this, a
+re-run would silently write P back over R-370. Its output for M02's manifest is byte-identical to the committed block
+(checked). This commit is on `wp/V02-alpha-gate` only. It is not in §19.1 item 2's list, so `C_α²` does not
+cherry-pick it. Alternative: leave the generator stale. Reversible by: reverting its commit.
+
+B-AM3-5 **Action 7's status rule, now (self-contained).** In `scripts/m07a_evidence_manifest.py`:
+- `STATUS_IDS` is A00–A51 and A53;
+- A14 is catalogued, with the selector `test_m07a_v0_2_gate.py::test_a14_*`;
+- A52 is measured `unsupported` / `pending`, with §19.4's reason.
+
+A52 no longer runs the changelog module through the generator; that module still runs in `check.sh`. Checked on
+synthetic entries: all pass gives `tested`; A52 and A60–A64 unsupported gives `tested`; A14 or A53 failing gives
+`implemented`. Writing A52 and A64 with `judged_at` at the candidate (§19.4, "after step 5") is left for action 10.
+The generator is not in `C_α²`'s tree.
