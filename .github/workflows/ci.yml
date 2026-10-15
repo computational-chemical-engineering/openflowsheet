@@ -529,6 +529,11 @@ jobs:
         with:
           python-version: "3.13"
 
+      # V02 alpha spec §18.3 (R-347): the record's `machine_class` is T06's `machine_class()`,
+      # which imports the checkout's harness; the builds themselves run in their own venv.
+      - name: Install the locked environment (the record's machine class)
+        run: python -m pip install -r requirements.lock
+
       - name: T08.A43 — build twice and inspect
         run: python scripts/t08_dist.py --out "$RUNNER_TEMP/rc-dist"
 
