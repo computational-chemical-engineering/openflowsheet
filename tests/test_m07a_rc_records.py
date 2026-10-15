@@ -96,22 +96,27 @@ def test_every_step_1_to_12_has_a_row() -> None:
 
 
 def test_every_hash_of_the_per_step_table_is_listed_and_nothing_else() -> None:
+    """Each listed record is cited once. Byte-identical records share a hash (at `C_α¹`, step 12's
+    `m02-g12-0` bundle, live and replay certificates, R-348), so the comparison is of multisets:
+    a hash appears in the table as often as the index lists it (build decision B-AM2-10)."""
     cited = [digest for cells in _rows() for digest in SHA256.findall(cells[-1])]
     listed = [entry["sha256"] for entry in _index()["files"]]
-    assert len(cited) == len(set(cited)) == len(listed)
+    assert len({entry["path"] for entry in _index()["files"]}) == len(listed)
     assert sorted(listed) == sorted(cited)
 
 
 def test_each_listed_record_sits_on_the_row_that_cites_it() -> None:
     """The row's Record cell names the path, or a sibling in its directory (the record's
     shorthand: `.report.txt` after a run file, `summary` after an inventory)."""
-    by_hash = {entry["sha256"]: entry["path"] for entry in _index()["files"]}
+    by_hash: dict[str, list[str]] = {}
+    for entry in _index()["files"]:
+        by_hash.setdefault(entry["sha256"], []).append(entry["path"])
     for cells in _rows():
         for digest in SHA256.findall(cells[-1]):
-            path = by_hash[digest]
-            directory = path.rpartition("/")[0]
-            named = f"`{path}`" in cells[-2] or (directory and f"`{directory}/" in cells[-2])
-            assert named, (cells[:2], path)
+            for path in by_hash[digest]:  # a shared hash: every record that has it, on this row
+                directory = path.rpartition("/")[0]
+                named = f"`{path}`" in cells[-2] or (directory and f"`{directory}/" in cells[-2])
+                assert named, (cells[:2], path)
 
 
 def test_committed_records_hash_to_their_entries_and_the_size_rule_holds() -> None:
