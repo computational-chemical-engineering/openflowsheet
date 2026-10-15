@@ -820,3 +820,8 @@ Grep, don't read whole. Newest at the bottom.
   `dfce4150…`, relative re-run cold 0 / 632 hits / `d65bb022…`. Manifest `evidence/M04/a9566a6…` `tested`, 57/58 (A33 n/a).
   E33: default BLAS threads → manifest `908cbe2f…` (≤1e-12 rel. fit drift) — A32 needs single-threaded BLAS. E34 class P.
   M04 `reviewer` launched (brief `2aa71db`, register R-360…R-369).
+- **M04 review** (2026-10-15, `reviewer`, `9c2cb64`, spec §20 Amendment 3, R-360…R-369): conformal arithmetic and E32
+  sound. Must-fix MF1 (unchecked added/renamed surrogate instance, probe committed a NOT_PROMOTABLE surrogate; R-360 A48),
+  MF2 (manifest checker accepts null scores replaced by 0.1 → re-derives PROMOTABLE; R-361). E33 → pin BLAS 1 thread (A49).
+  4.1 % refusals: no amendment; finding to the parent's owner. E34 partly reversed (real verdict class E). Q-A2.1 open.
+  Engineer launched on the Am. 3 actions + main merge + manifest.
