@@ -788,3 +788,9 @@ Grep, don't read whole. Newest at the bottom.
   partly amended, S14 reversed (closed schema objects), purpose counts now (WO-6b/7b); REAL box text corrected (R-330).
   F-15 watch: TR-E2 hit max iterations once → G5 at risk; default report failure, not raise the limit. M07 told to start
   at R-331.
+- **M04 WO-11** (2026-10-15, `opus-engineer`, `wp/M04` `6a353b3` E30 record `benchmarks/m04/wo11-b2-it1-v3/`, `7108cc6` E31):
+  b2-it1 on v3, 632 cold runs (16 workers, 4467 s incl. pre-warm/A41, host load 80–96), verdict NOT_PROMOTABLE
+  (`band_not_finite`): 26/632 certificate refusals (cal 5, test 18, train 3, grad 0), cal tolerance n−k = 4. Finite scores
+  cal ≤ 0.316, test ≤ 0.292 (282/300 in width); max |e_X| 7.3e-4, |e_ΔT| 0.32 K; grad 0.036 vs 0.25. A31/A32 (manifest
+  `d65bb022…`)/A41 (8/8) hold; A33 not run. Per N6 M04 still `tested`; M05 falls back to parent model. Open: E31 (relative
+  path → fingerprint change), design question on the 4.1 % failure rate (batch into reviewer), Q-A2.1.

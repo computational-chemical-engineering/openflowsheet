@@ -18,7 +18,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
 | M02 | Build | M01 | W21 | **tested, reviewed by the design lane (`docs/reviews/M02-review.md`), merged into main `9f6a9be`** (manifest `evidence/M02/ba90619…/manifest.json`; main gate 8371 passed). Reactor v3 on V5. Unruled build choices D130–D132 for a later design read; G12 cross-architecture reproduce not run (stated limitation) |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
-| M04 | Design | M02 | W23 | WO-1…10, 13…17 done (`c8f7e5d`); Amendment 2 (`a7b17f9`, R-322…R-325 renumbered from R-319…R-322 to avoid the alpha branch): real-parent box `m04-c1-box7-v2` (inerts ≥ 0.036, F [0.0050, 0.0086], r ≤ 3.00001), plans `b2-it1…3`, E15/E16/E22/E23 confirmed (A45–A47); running: ADR 0036 Am. 2 + WO-18/19/20; then WO-11 real run (≈27 min pre-warm), WO-12, `reviewer` |
+| M04 | Design | M02 | W23 | WO-1…11, 13…20 done (`7108cc6`, gate 8645); Amendment 2 box `m04-c1-box7-v2`; **WO-11 real b2-it1 on v3: NOT_PROMOTABLE (`band_not_finite`)** — 26/632 deterministic `reactor_not_accepted(certificate)` (cal 5/118 > n−k=4 → q̂=∞), spread T 654.6–693.1 K; finite: test |e_X| ≤ 7.3e-4, |e_ΔT| ≤ 0.32 K, grad e 0.036; A31/A32/A41 hold, A33 not run (Q-A2.1 open); E31 relative project path changes pymrm fingerprint → all keys miss (fix in `LocalApplication`, unfixed). Next: E31 fix, WO-12 manifest (`tested` per N6), `reviewer` batching E10…E31 + "4.1 % certificate failures in box v2: amend?"; M05 uses parent model (N6) |
 | M05 | Design | M03, M04 | W24 | WO-1…7, 2b, 3b, 4a done (`71804a6`, gate 8606; M05 numerical-policy addendum S11, floats classified); REAL box [653.15, 693.15] K; next after M02/M04 merge: real parent adapter (S3), WO-5c (`at_coupling`), WO-8 runs; review batch: Z2, W2, S1–S18 |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
 | M07 | Design | M05, M06 | W25, W21–W27 | spec not started: branch `wp/M07` (`.claude/worktrees/m07`) holds `docs/briefs/M07-recon-digest.md` + `docs/briefs/M07-specification.md` (`e35b16d`); a `specifier` was launched and stopped at Frank's pause request (left an uncommitted `docs/derivations/scripts/m07_reference.py`, unreviewed) — relaunch fresh with the same brief |
@@ -94,7 +94,7 @@ F5 education mode deferred.
 ## Next action
 
 **2026-10-15: burst over; back to ≤ 2 agents (Frank).** Still running (finish as briefed): alpha WO-10 RC steps (`alpha-gate`);
-M04 WO-11 real iteration 1 (`m04`); M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
+M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
 Stopped at Frank's pace request, work saved on branches (pushed): `wp/test-hardening` `1d90625` (t07_w5b pins the
 single-threaded env itself — gate + merge pending); `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
 (spec still to write). Done in the burst: M02 closeout merged (`2497ec2`); M05 rulings §18 on `wp/M05-rulings2` (`4cc5956`).
