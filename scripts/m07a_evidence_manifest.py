@@ -16,8 +16,10 @@ measured it, and its `value` names that evidence:
    logs' `check.sh: PASSED`; the `identity` log's G05 line).
 3. **CI**, read only from the runs named on the command line (`--ci-run ID`): a run counts only if
    its head is `C_α`.
-4. **Direct measurements**: M07a.A43's provenance over every `t08-rc-v1` record, MR-11's step 12 in
-   step 10's inputs, MR-12's extras, the push run at `C_α`.
+4. **Direct measurements**: M07a.A43's provenance over every `t08-rc-v1` and dist record (the class
+   registered and agreeing, R-347), MR-11's step 12 in step 10's inputs and its committed kept
+   certificates re-audited, counted and bound to the step-12 record (R-348), MR-12's extras, the
+   push run at `C_α`.
 5. **The design lane's verdicts** (A60–A63) and the ledger (A64) are `unsupported` with the state
    `pending` until `docs/reviews/V02-alpha-verdicts.md` exists and WO-11 has written the ledger;
    this script does not judge them.
@@ -304,12 +306,52 @@ def _m_mr12_extras(inputs: Inputs) -> Part:
     return ("pass" if not new else "fail"), value
 
 
+STEP12_CERTIFICATES = "step12/certificates"
+STEP12_BUNDLE = "g12-bundles/m02-g12-0/bundle/solution-certificate.json"
+
+
 def _m_mr11_step12(inputs: Inputs) -> Part:
-    """MR-11: step 10's local audit read step 12's output among its inputs."""
+    """MR-11 and R-348 (spec §18.2 items 2–4): step 10's local audit read step 12's output among its
+    inputs; the committed kept copies of step 12's certificates (`rc/step12/certificates/<kept
+    bundle path>/solution-certificate.json`) pass T08.A34's rule again here
+    (`t08_rc.audit_certificate`, imported), their number is 3 + the edges record's `len(edges)`,
+    and the `m02-g12-0` bundle's `document_sha256` equals the step-12 G12 record's
+    `certificate_sha256`. The other certificates' hashes are listed, not judged."""
+    import t08_rc  # noqa: PLC0415
+
+    from openflowsheet.canonical import document_sha256  # noqa: PLC0415
+
     record = _json(inputs, "certificates-ref-x86-64.json")
     step12 = [path for path in record.get("inputs", []) if path.rstrip("/").endswith("/step12")]
     audited = _check(record, "a34.certificates_audited").get("certificates")
-    return ("pass" if step12 else "fail"), {"step12_inputs": step12, "audited": audited}
+    kept = inputs.rc_dir / STEP12_CERTIFICATES
+    paths = sorted(kept.rglob("solution-certificate.json")) if kept.is_dir() else []
+    validator = t08_rc._schema_validator()  # noqa: SLF001
+    violations: dict[str, list[str]] = {}
+    hashes: dict[str, str] = {}
+    for path in paths:
+        document = json.loads(path.read_text(encoding="utf-8"))
+        shown = path.relative_to(kept).as_posix()
+        hashes[shown] = document_sha256(document)
+        problems = t08_rc.audit_certificate(document, validator)
+        if problems:
+            violations[shown] = problems
+    edges = _json(inputs, "step12/g12-real-loop-v3-edges.json").get("edges", [])
+    expected = 3 + len(edges)
+    recorded = _json(inputs, "step12/g12-real-loop-v3.json").get("certificate_sha256")
+    bound = recorded is not None and hashes.get(STEP12_BUNDLE) == recorded
+    value = {
+        "step12_inputs": step12,
+        "audited": audited,
+        "step12_certificates": len(paths),
+        "step12_certificates_expected": expected,
+        "step12_violations": violations,
+        "bundle_document_sha256": hashes.get(STEP12_BUNDLE),
+        "recorded_certificate_sha256": recorded,
+        "document_sha256": hashes,
+    }
+    ok = bool(step12) and len(paths) == expected and not violations and bound
+    return ("pass" if ok else "fail"), value
 
 
 def _m_provenance(inputs: Inputs) -> Part:
