@@ -39,6 +39,7 @@ def _evidence(document: Mapping[str, Any]) -> cf.StudyEvidence:
         plan_complete=document["plan_complete"],
         training_ok=document["training_ok"],
         singular_value_ratio=float(document["singular_ratio"]),
+        predictor=True,  # spec §20 A3.4: true for V01–V16
         calibration_scores=_scores(document["calibration_scores"]),
         test_scores=_scores(document["test_scores"]),
         gradient_errors=None if gradient is None else tuple(float(e) for e in gradient),
@@ -202,6 +203,7 @@ def test_a07_reasons_are_recorded_in_the_order_of_the_table() -> None:
         plan_complete=False,
         training_ok=35,
         singular_value_ratio=0.1,
+        predictor=True,
         calibration_scores=(None,) * 19,
         test_scores=(0.05,) * 28,
         gradient_errors=None,
@@ -227,6 +229,7 @@ def test_a07_reasons_are_recorded_in_the_order_of_the_table() -> None:
             plan_complete=True,
             training_ok=144,
             singular_value_ratio=0.1,
+            predictor=True,
             calibration_scores=tuple(1.0 + j / 10 for j in range(19)),
             test_scores=(0.05,) * 28 + (5.0,),
             gradient_errors=(0.3,),
@@ -240,6 +243,28 @@ def test_a07_reasons_are_recorded_in_the_order_of_the_table() -> None:
         "coverage_bound_below_minimum",
         "gradient_limit_exceeded",
     )
+
+
+def test_a50_without_a_predictor_the_score_dependent_reasons_are_not_evaluated() -> None:
+    """Spec §20 A3.4 (R-363): A07's every-reason evidence without a predictor keeps only the
+    reasons that do not read scores, the band or gradient errors."""
+    evidence = cf.StudyEvidence(
+        budget_ok=True,
+        plan_complete=False,
+        training_ok=35,
+        singular_value_ratio=0.1,
+        predictor=False,
+        calibration_scores=(None,) * 19,
+        test_scores=(None,) * 28,
+        gradient_errors=None,
+        inadmissible=2,
+        extrapolated=1,
+    )
+    result = cf.study_verdict(evidence)
+    assert result.verdict == "INSUFFICIENT_EVIDENCE"
+    assert result.insufficient == ("plan_incomplete", "training_unidentifiable", "test_too_small")
+    assert result.not_promotable == ("parent_extrapolated",)
+    assert (result.q_hat, result.hits, result.lower_bound) == (None, None, None)
 
 
 def test_a07_a_missing_ratio_or_no_gradient_centre() -> None:

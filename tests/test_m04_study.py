@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import dataclasses
 import json
 import math
 import sys
@@ -41,13 +42,14 @@ from openflowsheet.studies.surrogate.conformal import (
 from openflowsheet.studies.surrogate.manifest import (
     Q0,
     QUALIFICATIONS,
+    build_records,
     check_manifest,
     derived_verdict,
     familywise_bound,
     schema_errors,
 )
 from openflowsheet.studies.surrogate.quadratic import fit_quadratic
-from openflowsheet.studies.surrogate.study import StudyOutcome, run_study
+from openflowsheet.studies.surrogate.study import StudyOutcome, evaluate, run_study
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 
@@ -521,6 +523,37 @@ def test_a24_the_checker_rejects_each_single_mutation(
     mutate(mutated)
     findings = check_manifest(mutated)
     assert any(reason in finding for finding in findings), (name, findings)
+
+
+def test_a50_an_unidentifiable_fit_records_only_training_unidentifiable(smooth_full: Study) -> None:
+    """Spec §20 A3.4 (R-363): the full plan's observations with all but 35 training draws
+    refused (N_ok = 35 < 36): no predictor, so IE = [training_unidentifiable], NP = [] — not the
+    false `band_not_finite` and `gradient_check_incomplete` of null scores and unevaluated
+    centres — and the records pass the checker."""
+    evaluation = smooth_full.outcome.evaluation
+    assert evaluation is not None
+    training = tuple(
+        o
+        if i < 35
+        else dataclasses.replace(
+            o, status="failed", envelope_status="not_converged", code="refused", x=None, dt=None
+        )
+        for i, o in enumerate(evaluation.observations["training"])
+    )
+    found = evaluate(evaluation.plan, {**evaluation.observations, "training": training})
+    assert found.fit.surrogate is None and found.fit.training_ok == 35
+    assert (found.verdict.verdict, found.verdict.insufficient, found.verdict.not_promotable) == (
+        "INSUFFICIENT_EVIDENCE",
+        ("training_unidentifiable",),
+        (),
+    )
+    assert all(s is None for s in (*found.calibration_scores, *found.test_scores))
+    assert {centre.status for centre in found.centres} == {"not_evaluated"}
+    variant = parents.synthetic_variant(parents.SMOOTH_ID)
+    manifest, _ = build_records(variant, "it1", smooth_full.manifest["surrogate_id"], found)
+    assert manifest["promotion"]["insufficient"] == ["training_unidentifiable"]
+    assert manifest["promotion"]["not_promotable"] == []
+    assert check_manifest(manifest) == []
 
 
 WO11_MANIFEST: Path = REPO_ROOT / "benchmarks" / "m04" / "wo11-b2-it1-v3" / "manifest.json"

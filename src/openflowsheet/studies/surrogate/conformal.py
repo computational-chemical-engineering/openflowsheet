@@ -189,6 +189,8 @@ class StudyEvidence:
     """What the verdict function reads (spec §7.1, §7.3; the generator's `verdict_vectors`).
 
     `singular_value_ratio` is σ_min(Φ)/σ_max(Φ), `None` when the fit refused before computing it.
+    `predictor` is whether the fit produced a predictor (spec §20 A3.4: without one the score-,
+    band- and gradient-dependent reasons are not evaluated; true for V01–V16).
     `gradient_errors` are the gradient centres' errors e (spec §7.2), `None` when a centre has a
     failed stencil experiment. `inadmissible` counts inadmissible calibration and test predictions;
     `extrapolated` counts registered draws the parent flagged `extrapolated`.
@@ -198,6 +200,7 @@ class StudyEvidence:
     plan_complete: bool
     training_ok: int
     singular_value_ratio: float | None
+    predictor: bool
     calibration_scores: tuple[float | None, ...]
     test_scores: tuple[float | None, ...]
     gradient_errors: tuple[float, ...] | None
@@ -225,7 +228,11 @@ def study_verdict(evidence: StudyEvidence) -> StudyVerdict:
     """The registered verdict function (spec §7.3): every reason it finds, in the order of §7.3;
     INSUFFICIENT_EVIDENCE if any IE reason, else NOT_PROMOTABLE if any NP reason, else PROMOTABLE.
 
-    A budget below the plan is refused before running: nothing else is evaluated.
+    A budget below the plan is refused before running: nothing else is evaluated. Without a
+    predictor (spec §20 A3.4, register R-363) the reasons that read scores, the band or the
+    gradient errors — `band_not_finite`, `width_limit_exceeded`, `coverage_bound_below_minimum`,
+    `inadmissible_prediction`, `gradient_check_incomplete`, `gradient_limit_exceeded` — are not
+    evaluated, as `coverage_bound_below_minimum` is not when `test_too_small` holds (§6.4).
     """
     if not evidence.budget_ok:
         return StudyVerdict(
@@ -250,7 +257,7 @@ def study_verdict(evidence: StudyEvidence) -> StudyVerdict:
     band = conformal_band(evidence.calibration_scores)
     if band.refusal == "calibration_too_small":
         insufficient.append("calibration_too_small")
-    elif band.refusal == "band_not_finite":
+    elif band.refusal == "band_not_finite" and evidence.predictor:
         not_promotable.append("band_not_finite")
     m = len(evidence.test_scores)
     minimum = h_min(m)
@@ -258,22 +265,23 @@ def study_verdict(evidence: StudyEvidence) -> StudyVerdict:
         insufficient.append("test_too_small")
     hits: int | None = None
     lower: float | None = None
-    if band.q_hat is not None:
+    if band.q_hat is not None and evidence.predictor:
         hits = coverage_hits(evidence.test_scores, band.q_hat)
         lower = clopper_pearson_lower(hits, m)
         if band.q_hat > 1.0:
             not_promotable.append("width_limit_exceeded")
         if minimum is not None and hits < minimum:
             not_promotable.append("coverage_bound_below_minimum")
-    if evidence.gradient_errors is None:
-        insufficient.append("gradient_check_incomplete")
-    else:
-        errors = [_finite_nonnegative(e, "gradient error") for e in evidence.gradient_errors]
-        if not errors:
-            raise ValueError("gradient_errors is empty: a registered plan has gradient centres")
-        if max(errors) > RHO_G:
-            not_promotable.append("gradient_limit_exceeded")
-    if evidence.inadmissible > 0:
+    if evidence.predictor:
+        if evidence.gradient_errors is None:
+            insufficient.append("gradient_check_incomplete")
+        else:
+            errors = [_finite_nonnegative(e, "gradient error") for e in evidence.gradient_errors]
+            if not errors:
+                raise ValueError("gradient_errors is empty: a registered plan has gradient centres")
+            if max(errors) > RHO_G:
+                not_promotable.append("gradient_limit_exceeded")
+    if evidence.predictor and evidence.inadmissible > 0:
         not_promotable.append("inadmissible_prediction")
     if evidence.extrapolated > 0:
         not_promotable.append("parent_extrapolated")

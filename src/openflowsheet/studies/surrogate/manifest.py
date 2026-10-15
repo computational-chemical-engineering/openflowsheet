@@ -504,6 +504,7 @@ def derived_verdict(manifest: Mapping[str, Any]) -> StudyVerdict:
             singular_value_ratio=None
             if fit["singular_value_ratio"] is None
             else float(fit["singular_value_ratio"]),
+            predictor=manifest["predictor"]["coefficients"] is not None,
             calibration_scores=_scores(manifest["calibration"]["scores"]),
             test_scores=_scores(manifest["evaluation"]["scores"]),
             gradient_errors=errors,
