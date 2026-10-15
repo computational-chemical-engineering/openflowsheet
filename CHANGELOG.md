@@ -1,5 +1,84 @@
 # Changelog
 
+## v0.2.0a1 — release candidate `C_α` = `[[PENDING: C_α]]` (`0.2.0a1`); a pre-release; tag and publication by Frank
+
+*ADR 0021 D4, reused by ADR 0028. **Skeleton: the gate table is pending.** The table below is what
+`scripts/v0_2_gate.py --rc C_α --markdown` prints for the release candidate `C_α` after the design
+lane's verdicts (`docs/reviews/V02-alpha-verdicts.md`); it is pasted at the cut, and `C_α` replaces
+the marker in the heading. Until then nothing in this section is released. The tag and every
+publication are Frank's (ADR 0021 D5).*
+
+**What it does.** Everything v0.1.0 does (the application contract, the thirteen unit models, the
+planner, the verifier, the certificate or the typed failure, the replay bundle) and, added since
+v0.1.1: an adapter that runs the pinned PyMRM reactor as a unit model, with its coupled route and
+its experiment artifacts (M02); the Peng–Robinson property route of the ammonia loop (M01); and a
+diagnostic web shell served by `serve-http --ui`, which edits nothing (M06). The supported envelope
+is `docs/support-matrix.md`: **unlisted is unsupported**.
+
+**Gates (V11–V20, W21, W22), as `scripts/v0_2_gate.py` prints them.** A FAIL is printed FAIL.
+
+[[PENDING: gate table from `scripts/v0_2_gate.py --rc C_α --markdown`, pasted after the verdicts]]
+
+**What it is not.**
+
+- **Not 0.2.0.** A pre-release: W23–W27 are not claimed, and the web shell is included and not
+  claimed.
+- **Not empirically validated.** SYN-001 is synthetic, and every result is numerical verification
+  against the same equations. Also, no reactor result has been compared with experimental data by
+  this project: the group's published comparison is the group's evidence, and the numbers are the
+  group's model at the pin, a regression.
+- **Not a guarantee.** A human sign-off records that someone with the relevant expertise examined
+  the evidence and raised no objection, not that the content is correct (R-017).
+- **Not general beyond the support matrix.** What `docs/support-matrix.md` does not list is
+  unsupported, and each unsupported capability ends typed.
+- **Not a certificate of solution accuracy.** `VERIFIED` certifies residual accuracy at the
+  registered tolerances; the solution-error bound is recorded and disclosed, never promised
+  (ADR 0007 F3).
+- **PTC is experimental.** No PTC family is qualified: V14 (b) is judged FAIL at `C_α`.
+- **The agent evidence is narrow.** One pinned model and configuration, MCP only.
+- **The reactor execution profile is not a sandbox.** The group's pinned code runs with the user's
+  privileges, unconfined; Linux on x86-64 is the registered platform.
+- **The property route is narrow.** Validation covers pure-component behaviour within R-160's bands
+  against the reference equations of state; `k_ij = 0`; there is no mixture VLE validation.
+- **Rights.** The use of the 4TU dataset awaits Frank's statement (T08 R3 8 (b)).
+- **Certificates and extras.** T08.A34 covers the coupled-route certificates the RC job now emits.
+  T08.A30 covers every extra that is new since v0.1.1, through its own audit.
+
+**Known limitations, by support-matrix id** (the text of each is in `docs/support-matrix.md`):
+`L01`, `L02`, `L03`, `L04`, `L05`, `L06`, `L07`, `L08`, `L09`, `L10`, `L11`, `L12`, `L13`, `L14`, `L15`, `L16`, `L17`, `L-CSTR-1`, `L-CSTR-2`, `L-CSTR-3`, `L-WS-1`, `L-WS-2`, `L18`, `L19`, `L20`, `L21`, `L22`, `L36`, `L37`, `L38`, `L39`, `L23`, `L24`, `L25`, `L26`, `L27`, `L28`, `L29`, `L30`, `L31`, `L32`, `L33`, `L34`, `L35`, `L40`, `L41`, `L42`, `L-WEB-1`, `L-WEB-2`, `L-WEB-3`, `L-WEB-4`.
+
+**Reproducibility.** In the words of ADR 0007 F1: "the project reports bitwise agreement and
+never promises it, on any platform including a single machine; R0 bit-identity of structure plus
+D2 agreement for floats is the promise."
+
+**Review status of every package** (each manifest's `status`, the manifest at the latest committer
+time where there are several; human `review` fields as recorded):
+
+| Package | Status | Human review (numerical / process model) |
+| --- | --- | --- |
+| K01 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K02 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K03 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K04 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K05 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K06 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| M01 | `tested` | pending / pending |
+| M02 | `tested` | pending / pending |
+| M06 | `tested` | pending / pending |
+| P00 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| P01 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| P02 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| P03 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| T01 | `tested` | pending / pending |
+| T02 | `tested` | pending / pending |
+| T03 | `tested` | pending / pending |
+| T04 | `tested` | pending / pending |
+| T05 | `tested` | pending / pending |
+| T05b | `tested` | pending / pending |
+| T06 | `tested` | pending / pending |
+| T07 | `tested` | pending / pending |
+| T08 | `tested` | pending / pending |
+
 ## v0.2.0 — unreleased
 
 *In development on `main`; nothing below is released. The section is finalised, with its gate
