@@ -44,7 +44,7 @@ unsupported**.
 - **Rights.** The use of the 4TU dataset awaits Frank's statement (T08 R3 8 (b)).
 
 **Known limitations, by support-matrix id** (the text of each is in `docs/support-matrix.md`):
-`L01`, `L02`, `L03`, `L04`, `L05`, `L06`, `L07`, `L08`, `L09`, `L10`, `L11`, `L12`, `L13`, `L14`, `L15`, `L16`, `L17`, `L-CSTR-1`, `L-CSTR-2`, `L-CSTR-3`, `L-WS-1`, `L-WS-2`, `L18`, `L19`, `L20`, `L21`, `L22`, `L36`, `L37`, `L38`, `L39`, `L23`, `L24`, `L25`, `L26`, `L27`, `L28`, `L29`, `L30`, `L31`, `L32`, `L33`, `L34`, `L35`, `L40`, `L41`, `L42`, `L43`, `L-WEB-1`, `L-WEB-2`, `L-WEB-3`, `L-WEB-4`.
+`L01`, `L02`, `L03`, `L04`, `L05`, `L06`, `L07`, `L08`, `L09`, `L10`, `L11`, `L12`, `L13`, `L14`, `L15`, `L16`, `L17`, `L-CSTR-1`, `L-CSTR-2`, `L-CSTR-3`, `L-WS-1`, `L-WS-2`, `L18`, `L19`, `L20`, `L21`, `L22`, `L36`, `L37`, `L38`, `L39`, `L23`, `L24`, `L25`, `L26`, `L27`, `L28`, `L29`, `L30`, `L31`, `L32`, `L33`, `L34`, `L35`, `L40`, `L41`, `L42`, `L43`, `L-WEB-1`, `L-WEB-2`, `L-WEB-3`, `L-WEB-4`, `L44`, `L45`, `L46`, `L47`, `L48`.
 
 **Reproducibility.** In the words of ADR 0007 F1: "the project reports bitwise agreement and
 never promises it, on any platform including a single machine; R0 bit-identity of structure plus
