@@ -104,3 +104,45 @@ recorded run's provenance) and `tests/web/frame.test.mjs` (a stub server's `0.2.
 B-WO10-5 **Gating in a snapshot worktree.** Each gate runs `scripts/gate.sh` in a detached scratch worktree at
 `HEAD` + the named paths' working content (`git commit-tree` on a temporary index), and the commit is made from
 exactly the gated tree (`git read-tree <tree>`), so the next change can be prepared while a 23–32 min gate runs.
+
+B-WO10-6 **Step 12's certificates for step 10 (F7).** `benchmarks/m02/g12_real_loop.py` solves in a
+`TemporaryDirectory` and keeps only `certificate_sha256`; no step-12 certificate file survives, and `benchmarks/` is
+frozen at `C_α`. Chosen: run the script unchanged through a wrapper outside the tree
+(`<scratch>/rca-e0e198e/g12keep.py`) that replaces only the module's `tempfile.TemporaryDirectory` with a kept
+directory (`…/rc/step12/g12-bundles`, `g12-edges-bundles`), so `t08_rc.py certificates` can audit the bundles'
+`solution-certificate.json`. G10 and G11 emit no certificates. Alternative: an `m07a_rc.py` subcommand reimplementing
+the solve (duplicates frozen code). **Question for the design lane:** is this wrapper an acceptable "step 12's output"
+for MR-11, or should step 10 audit only the hashes the record carries?
+
+B-WO10-7 **Step 11's IDAES environment, second build.** The first `build-reference-envs.sh idaes` failed `pip check`
+because the session's `PYTHONPATH` (the RC worktree's `src`) leaked into the build (openflowsheet 0.2.0a1 seen with
+missing deps). Rebuilt in the same throwaway worktree at `C_α` with `env -u PYTHONPATH` and a system `PATH`; no input of
+the check changed. Both attempts' logs are kept (`step11-idaes-env.log`, `step11-idaes-env-first-attempt.build.log`).
+
+## WO-10 status at handoff (2026-10-15; context cap)
+
+`C_α` = `e0e198e4632224612671db5b07445639d272d6da` (pushed to `origin/wp/V02-alpha-gate`). Tree record `259af65`.
+RC worktree (clean, detached at `C_α`): `.claude/worktrees/rc-e0e198e`; venv `<scratch>/rcvenv` (requirements.lock +
+`pip install -e <rc worktree> --no-deps`, so every child imports `C_α`'s `src`). Local records under
+`rc-e0e198e/evidence/M07a/<C_α>/artifacts/rc/` (git-ignored); scripts and per-step logs in
+`<scratch>/rca-e0e198e/` (`summary.txt` has one line per step with exit code and command), where `<scratch>` =
+`/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad`.
+
+- Steps 1–10 on CI: dispatch run **38667458248** (`rc_alpha`, `rc_distribution`) conclusion **success**, every RC job
+  success (check ×2, identity, dist, clean-install ×2, bundle-set, bundle-replay ×2, rc-steps ×2, rc-ensemble). Push
+  run 38667452347 at `C_α`. The per-record results (a30 exit status in `a30.log`, certificate audits) are not yet read;
+  `gh run download 38667458248 -D …/rc/ci` was interrupted (a full filesystem on the session's side) and must be redone,
+  plus job logs (`gh run view --log --job …`).
+- Local on `ref-x86-64`: step 2 identity PASS; step 6 ensemble PASS (`ensemble/rc-ensemble-ref-x86-64.json`); step 7
+  corpus PASS; step 8 `m07a_rc.py surface` PASS (`surface/rc-alpha-surface.json`); step 9 A30 PASS (381 objects,
+  closure 150).
+- Step 11: `external_crosscheck.py --check` exit 0 (venv freeze `step11/venv-xcheck.freeze.txt`); IDAES re-run exit 0
+  (`step11/idaes-conformance.json`), **not yet compared** with `benchmarks/m01/idaes-conformance.json` (A40: only
+  `inputs.*_sha256` may differ; `scripts/m01_evidence_manifest.py:857-882` has the comparison).
+- Step 12 (job3, still running at handoff): reactor env built from `C_α`'s `reactor-env.lock` into
+  `<scratch>/rca-e0e198e/external` and verified; G10v3 exit 0 (`step12/g10-adapter-halves-v3.json`); G11v3, G12, G12
+  edges and the `-m 'pymrm or not pymrm'` M02 tests were running. Their verdicts against M02 §10.2–§10.3 are not read.
+- Not done: step 10 locally over steps 2, 6, 7, 8 and 12's outputs (`python scripts/t08_rc.py certificates --out
+  …/rc/certificates-ref-x86-64.json …/rc`); copying records into this worktree under `evidence/M07a/<C_α>/rc/` (≤ 1 MB
+  committed, larger gzip/hash) and `rc/records.json`; `docs/v02-alpha-rc-record.md`; `scripts/m07a_evidence_manifest.py`
+  and the manifest (status `tested` only iff A00–A53 pass; A52 (a)/(c) and step 13 wait for the verdicts).
