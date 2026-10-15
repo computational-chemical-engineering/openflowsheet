@@ -761,3 +761,8 @@ Grep, don't read whole. Newest at the bottom.
 - **M04 WO-11 stopped at the domain check** (2026-10-15, nothing run): binds v3; 115/632 plan requests below the v3 inert
   floor 0.035 (lowest 0.02255; §3.1 y_Ar [0.01, 0.03] + y_CH₄ [0.01, 0.04]); loop inlet H₂/N₂ 3.000008 just above the
   box's 3.0. `specifier` box ruling launched (N4).
+
+- **Alpha design-lane read** (2026-10-15, `reviewer`, `wp/V02-alpha-gate` `7152170`, R-319…R-321): WO-10 may cut C_α after
+  F1 (HARVEST_EXCLUDED evidence/M07a/), F2 (A52 (g)/(e) read C_α's tree), F4 (harvest: L43, B13, V14(b) → L01/B8); F5 at
+  the cut (web-shell line, drop "Certificates and extras"). F3 done (c_2 digest 383b4e2c… registered; R-133 hashes
+  verified at v0.1.0). Alpha fixes + WO-10 launched (CI dispatch authorised as part of push; no tag/publish).
