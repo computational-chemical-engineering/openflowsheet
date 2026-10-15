@@ -43,7 +43,7 @@ for the build lane (`CLAUDE.md`, "The two lanes").
 | --- | --- |
 | `docs/blueprint-v3.1.md` | `66f574b07e86a89962236f4a48850e733f3c03379a3a55caf78ef30f7915e8aa` |
 | `docs/implementation-plan.md` | `86b652dadde6be9223105ee00ffa1afe121870278ffd60ae769427785bf4ca23` |
-| `CLAUDE.md` | `c28ede454fb32a34e33097f0fd6ebe54bf74de7c65054b0beb62e84e25e2d000` |
+| `CLAUDE.md` | `51ebd32bb74c143cf7861916e94a6d4b1414c622c68abeb6f802bcad276cfb27` |
 
 The blueprint hash matches the `**Baseline SHA-256:**` value in the implementation-plan header, so
 the plan is executing against the intended architectural authority. Plan version **1.1**.

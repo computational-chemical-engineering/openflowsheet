@@ -35,6 +35,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -59,6 +60,17 @@ CHILD = PACKAGE / "adapters" / "pymrm" / "child.py"
 REAL_ID = "pymrm-6089593-g2-nz800-s123-v2"
 #: The variant of the child before R-251 (`model_exception`): registered, loadable, superseded.
 SUPERSEDED_ID = "pymrm-6089593-g2-nz800-s123-v1"
+#: §14.5 D4: the document of this child until WO-12b registered v3 (never registered); v2, the
+#: child before D1/D2, is superseded like v1.
+#: WO-12b: v3, this child's registered variant (the provisional with V5's box and 450 s).
+CURRENT_ID = "pymrm-6089593-g2-nz800-s123-v3"
+PROVISIONAL_FILE = REPO_ROOT / "benchmarks" / "m02" / "variant-v3-provisional.json"
+
+
+def _provisional() -> variants.Variant:
+    return variants.variant_from_document(load_json(PROVISIONAL_FILE))
+
+
 PROBE: dict[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m01" / "reactor-probe.json")
 F_NOM: float = PROBE["pinned"]["F_ret_in_mol_s"]
 #: R-232, design note §3.1: [0.5, 2] x F_nom, as registered in the note.
@@ -339,30 +351,55 @@ TUBE = {
 }
 
 
-def _stub_reactor(failing: str | None, error: Exception) -> Any:
+def _stub_reactor(
+    failing: str | None,
+    error: Exception,
+    defect: float = 0.0,
+    converged: dict[str, bool] | None = None,
+    calls: list[tuple[str, dict[str, Any]]] | None = None,
+    verdicts: tuple[bool, ...] = (),
+) -> Any:
     """`Reactor` without the pinned model: every stage converges and every acceptance holds;
     the step `failing` raises `error`. `"after"` makes `outlet` answer without the diagnostics the
-    acceptance reads, so `evaluate`'s own code raises `KeyError` after the window."""
+    acceptance reads, so `evaluate`'s own code raises `KeyError` after the window.
+
+    The model's retentate flows have A45's defect `defect` (the H balance; the others are zero),
+    so S3's second round (§14.5 D1) runs when it exceeds 10^-7; `converged` overrides a solve's
+    convergence by name (`S1`, `S2`, `S3`, `round2`); `calls` collects each solve's name, its
+    options, `rtol` and `atol`, and the status the certificate received; the n-th certificate's
+    verdict is `verdicts[n]` (passed beyond them)."""
     import numpy as np
 
     def step(name: str) -> None:
         if name == failing:
             raise error
 
-    solves = iter(("S1", "S2", "S3"))
+    solves = iter(("S1", "S2", "S3", "round2"))
+    record = [] if calls is None else calls
+    verdict = iter(verdicts)
 
     class Model:
         def __init__(self, config: Any, **start: Any) -> None:
             self.cpT = np.zeros((4, 2, len(CHILD_MODULE.SPECIES) + 2))
+            self.rtol = self.atol = None
 
         def solve(self, **options: Any) -> Any:
-            step(next(solves))
+            name = next(solves)
+            step(name)
+            record.append((name, {**options, "rtol": self.rtol, "atol": self.atol}))
             return SimpleNamespace(
-                converged=True,
+                name=name,
+                converged=(converged or {}).get(name, True),
                 steady_state_norm=0.0,
                 best_steady_state_norm=None,
-                num_steps_attempted=1,
+                num_steps_attempted=7,
             )
+
+        def compute_flows(self) -> tuple[Any, None, Any, None]:
+            step("defect")
+            inlet = [1.0] * 5
+            outlet = [1.0 + 4.5 * defect, 1.0, 1.0, 1.0, 1.0]  # H: (2*4.5*defect) / 9
+            return np.array([inlet, outlet]), None, np.zeros((2, 5)), None
 
     def model_class(backflow: list[float]) -> Any:
         step("model_class")
@@ -370,14 +407,19 @@ def _stub_reactor(failing: str | None, error: Exception) -> Any:
 
     def certify(model: Any, status: Any, meta: Any) -> dict[str, Any]:
         step("certificate")
-        return {"kpi_drift_ok": True, "kpi_drift_rel": {"NH3": 0.0}, "achieved_residual": 0.0}
+        record.append(("certificate", {"status": status.name}))
+        ok = next(verdict, True)
+        return {"kpi_drift_ok": ok, "kpi_drift_rel": {"NH3": 0.0}, "achieved_residual": 0.0}
 
-    def outlet(model: Any, t_in: float, t_coolant_in: float) -> dict[str, Any]:
+    def outlet(
+        model: Any, t_in: float, t_coolant_in: float, composition: list[float]
+    ) -> dict[str, Any]:
         step("outlet")
         diagnostics = {} if failing == "after" else {"u_ret_min": 1.0, "min_axial_flow_mol_s": 1.0}
         return {"tube_outlet": {"flows": [1.0] * 5}, "diagnostics": diagnostics}
 
     reactor = object.__new__(CHILD_MODULE.Reactor)
+    reactor.np = np
     reactor.configuration = {"num_z": 100}
     reactor.settings = SimpleNamespace(DT_INIT_1D=1e-6, STEADY_STATE_ACCEPT_FACTOR=1.0)
     reactor.kpis = SimpleNamespace(solver_acceptance=lambda *arguments: {"accepted": True})
@@ -429,6 +471,381 @@ def test_r251_an_exception_after_the_window_propagates() -> None:
         _stub_reactor("after", ValueError()).evaluate(TUBE, None, [0.0] * 5)
 
 
+# -- §14.5 D1 as amended by §14.6 E1: S3's second round (profile M01-S123-v2) -------------------
+
+
+def test_e1_the_profile_is_v1s_plus_the_conditional_round_and_e2s_positivity() -> None:
+    profile = CHILD_MODULE.PROFILE
+    assert profile["id"] == "M01-S123-v2"
+    round2 = profile["S3"]["round2"]
+    assert (round2["defect_threshold"], round2["rtol"], round2["atol_factor"]) == (1e-7, 1e-12, 0.1)
+    assert (round2["dt_init"], round2["max_steps"]) == (1.0, 400)
+    v1 = variants.registered_variant(SUPERSEDED_ID).evaluation["profile"]
+    s3 = {key: value for key, value in profile["S3"].items() if key != "round2"}
+    assert v1["acceptance"][3] == "every axial flow > 0"
+    assert profile["acceptance"] == [
+        *v1["acceptance"][:3],
+        "every axial flow of a species present in the requested inlet > 0",
+    ]
+    assert {**profile, "id": v1["id"], "S3": s3, "acceptance": v1["acceptance"]} == v1
+
+
+def test_e1_below_the_threshold_the_evaluation_is_v2s_plus_one_read() -> None:
+    calls: list[tuple[str, dict[str, Any]]] = []
+    document = _stub_reactor(None, ValueError(), defect=1e-8, calls=calls).evaluate(
+        TUBE, None, [0.0] * 5
+    )
+    assert document["outcome"] == CHILD_MODULE.OUTCOME_OUTLET
+    assert [name for name, _ in calls] == ["S1", "S2", "S3", "certificate"]
+    assert calls[-1][1] == {"status": "S3"}
+    s3 = document["diagnostics"]["stages"]["S3"]
+    assert s3["round2"] is None and s3["accepted"] is True
+    assert s3["defect_round1"] == pytest.approx(1e-8, rel=1e-6)
+
+
+def test_e1_above_the_threshold_one_round_at_a_tenth_of_s3s_target_then_the_certificate_again() -> (
+    None
+):
+    calls: list[tuple[str, dict[str, Any]]] = []
+    document = _stub_reactor(None, ValueError(), defect=1e-5, calls=calls).evaluate(
+        TUBE, None, [0.0] * 5
+    )
+    assert document["outcome"] == CHILD_MODULE.OUTCOME_OUTLET
+    assert [name for name, _ in calls] == ["S1", "S2", "S3", "certificate", "round2", "certificate"]
+    assert (calls[3][1], calls[5][1]) == ({"status": "S3"}, {"status": "round2"})
+    target = CHILD_MODULE.steady_state_target(100)
+    target2 = target / 10.0
+    assert calls[2][1] == {
+        "num_timesteps": 400,
+        "dt_init": 1.0,
+        "steady_state_atol": target,
+        "return_status": True,
+        "verbose": 0,
+        "rtol": 1e-12,
+        "atol": 0.1 * target,
+    }
+    assert calls[4][1] == {
+        "num_timesteps": 400,
+        "dt_init": 1.0,
+        "steady_state_atol": target2,
+        "return_status": True,
+        "verbose": 0,
+        "rtol": 1e-12,
+        "atol": 0.1 * target2,
+    }
+    s3 = document["diagnostics"]["stages"]["S3"]
+    assert s3["defect_round1"] == pytest.approx(1e-5, rel=1e-6)
+    assert s3["steady_state_target"] == target and s3["accepted"] is True
+    round2 = s3["round2"]
+    assert set(round2) == {
+        "steps",
+        "converged",
+        "steady_state_target",
+        "wall_s",
+        "certificate_round1",
+    }
+    assert (round2["steps"], round2["converged"], round2["steady_state_target"]) == (
+        7,
+        True,
+        target2,
+    )
+    assert set(round2["certificate_round1"]) == set(document["diagnostics"]["certificate"])
+
+
+def test_e1_a_round_that_fails_is_the_stage_s3() -> None:
+    calls: list[tuple[str, dict[str, Any]]] = []
+    document = _stub_reactor(
+        None, ValueError(), defect=1e-5, converged={"round2": False}, calls=calls
+    ).evaluate(TUBE, None, [0.0] * 5)
+    assert (document["outcome"], document["stage"]) == ("not_accepted", "S3")
+    assert [name for name, _ in calls] == ["S1", "S2", "S3", "certificate", "round2"]
+    s3 = document["diagnostics"]["stages"]["S3"]
+    assert s3["accepted"] is False and s3["round2"]["converged"] is False
+    assert s3["round2"]["certificate_round1"]["kpi_drift_ok"] is True
+    assert "certificate" not in document["diagnostics"]
+
+
+def test_f2_a_failed_first_certificate_below_the_threshold_decides() -> None:
+    """§14.7 F2 step 4: δ₁ ≤ 10⁻⁷, no round 2, and a failed certificate₁ refuses."""
+    calls: list[tuple[str, dict[str, Any]]] = []
+    document = _stub_reactor(
+        None, ValueError(), defect=3e-8, calls=calls, verdicts=(False,)
+    ).evaluate(TUBE, None, [0.0] * 5)
+    assert (document["outcome"], document["stage"]) == ("not_accepted", "certificate")
+    assert [name for name, _ in calls] == ["S1", "S2", "S3", "certificate"]
+    s3 = document["diagnostics"]["stages"]["S3"]
+    assert s3["round2"] is None and s3["defect_round1"] == pytest.approx(3e-8, rel=1e-6)
+    assert document["diagnostics"]["certificate"]["kpi_drift_ok"] is False
+
+
+def test_f2_a_failed_first_certificate_above_the_threshold_runs_round_2() -> None:
+    """§14.7 F2 step 5: δ₁ > 10⁻⁷ runs round 2 whatever certificate₁'s verdict; certificate₂
+    decides (D78's two points: round 2 converged, certificate₂ passed, `ok`)."""
+    calls: list[tuple[str, dict[str, Any]]] = []
+    document = _stub_reactor(
+        None, ValueError(), defect=1e-5, calls=calls, verdicts=(False, True)
+    ).evaluate(TUBE, None, [0.0] * 5)
+    assert document["outcome"] == CHILD_MODULE.OUTCOME_OUTLET
+    assert [name for name, _ in calls] == ["S1", "S2", "S3", "certificate", "round2", "certificate"]
+    s3 = document["diagnostics"]["stages"]["S3"]
+    assert s3["accepted"] is True and s3["round2"]["certificate_round1"]["kpi_drift_ok"] is False
+    assert document["diagnostics"]["certificate"]["kpi_drift_ok"] is True
+
+
+def test_e1_a_nonfinite_defect_is_not_below_the_threshold() -> None:
+    calls: list[tuple[str, dict[str, Any]]] = []
+    document = _stub_reactor(None, ValueError(), defect=math.nan, calls=calls).evaluate(
+        TUBE, None, [0.0] * 5
+    )
+    assert [name for name, _ in calls] == ["S1", "S2", "S3", "certificate", "round2", "certificate"]
+    assert math.isnan(document["diagnostics"]["stages"]["S3"]["defect_round1"])
+
+
+def test_e1_the_defect_read_is_inside_the_window() -> None:
+    document = _stub_reactor("defect", ValueError("in the read")).evaluate(TUBE, None, [0.0] * 5)
+    assert (document["outcome"], document["stage"]) == ("not_accepted", "model_exception")
+
+
+def test_e1_an_s3_that_is_not_accepted_reads_no_defect() -> None:
+    calls: list[tuple[str, dict[str, Any]]] = []
+    document = _stub_reactor(
+        "defect", ValueError(), defect=1e-5, converged={"S3": False}, calls=calls
+    ).evaluate(TUBE, None, [0.0] * 5)
+    assert (document["outcome"], document["stage"]) == ("not_accepted", "S3")
+    assert "defect_round1" not in document["diagnostics"]["stages"]["S3"]
+
+
+# -- G11v3-10: E1's sequence over three stub callables (§14.6) -------------------------------------
+
+
+def _sequence(
+    verdicts: tuple[bool, ...], defect: Any, *, polish_converges: bool = True
+) -> tuple[str | None, Any, dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """`after_s3` with stubs: the n-th certificate (n = 1, 2) has verdict `verdicts[n - 1]` and
+    `kpi_drift_rel_max` n; `defect(certificates so far)` is δ."""
+    calls: dict[str, Any] = {"certify": [], "polish": 0}
+
+    def certify(status: str) -> dict[str, Any]:
+        calls["certify"].append(status)
+        n = len(calls["certify"])
+        return {"kpi_drift_ok": verdicts[n - 1], "kpi_drift_rel": {"NH3": float(n)}}
+
+    def polish() -> tuple[str, dict[str, Any]]:
+        calls["polish"] += 1
+        record = {"steps": 3, "converged": polish_converges, "steady_state_target": 1e-6}
+        return "round2", {**record, "wall_s": 0.0}
+
+    stage: dict[str, Any] = {"accepted": True}
+    diagnostics: dict[str, Any] = {}
+    refused, certificate = CHILD_MODULE.after_s3(
+        "S3", certify, lambda: defect(len(calls["certify"])), polish, stage, diagnostics
+    )
+    return refused, certificate, stage, diagnostics, calls
+
+
+def _which(certificate: dict[str, Any] | None) -> float | None:
+    return None if certificate is None else certificate["kpi_drift_rel_max"]
+
+
+@pytest.mark.parametrize(
+    ("case", "verdicts", "defect", "converges", "expected"),
+    [
+        (1, (False,), lambda n: 3e-8, True, ("certificate", ["S3"], 0, 1.0)),
+        (2, (True,), lambda n: 3e-8, True, (None, ["S3"], 0, 1.0)),
+        (3, (True, True), lambda n: 2e-7, True, (None, ["S3", "round2"], 1, 2.0)),
+        (4, (True,), lambda n: 2e-7, False, ("S3", ["S3"], 1, None)),
+        (5, (True, False), lambda n: 2e-7, True, ("certificate", ["S3", "round2"], 1, 2.0)),
+        (6, (True, True), lambda n: math.nan, True, (None, ["S3", "round2"], 1, 2.0)),
+        (7, (True,), lambda n: 5e-5 if n == 0 else 3e-8, True, (None, ["S3"], 0, 1.0)),
+        (8, (False, True), lambda n: 2e-7, True, (None, ["S3", "round2"], 1, 2.0)),
+        (9, (False,), lambda n: 2e-7, False, ("S3", ["S3"], 1, None)),
+        (10, (False, False), lambda n: 2e-7, True, ("certificate", ["S3", "round2"], 1, 2.0)),
+    ],
+)
+def test_g11v3_10_the_post_s3_sequence(
+    case: int, verdicts: tuple[bool, ...], defect: Any, converges: bool, expected: tuple[Any, ...]
+) -> None:
+    """§14.6 G11v3-10's table as §14.7 amends it: the stage, the certificate's and the polish's
+    calls, and which certificate `diagnostics.certificate` holds. Case 7 is D77's regression: δ
+    read before the certificate (5e-5) would run the polish. Case 8 fails under §14.6 E1 as ruled
+    (a failed certificate₁ decided); case 1 fails if round 2 runs after every failed
+    certificate₁. Cases 8–10 are F2's rescue: certificate₂ decides."""
+    refused, certificate, stage, diagnostics, calls = _sequence(
+        verdicts, defect, polish_converges=converges
+    )
+    stage_expected, certified, polished, deciding = expected
+    assert refused == stage_expected
+    assert (calls["certify"], calls["polish"]) == (certified, polished)
+    assert _which(diagnostics.get("certificate")) == deciding
+    if deciding is not None:
+        assert certificate is not None and certificate["kpi_drift_rel"]["NH3"] == deciding
+    value = stage["defect_round1"]
+    assert math.isnan(value) if case == 6 else value == defect(1)  # δ₁, recorded in every case
+    if polished:
+        assert _which(stage["round2"]["certificate_round1"]) == 1.0
+        assert stage["accepted"] is converges
+    else:
+        assert stage["round2"] is None and stage["accepted"] is True
+
+
+def test_g11v3_9d_the_threshold_is_inclusive() -> None:
+    """δ = 10⁻⁷ does not run round 2; the next float above it does."""
+    at = _sequence((True, True), lambda n: 1e-7)
+    above = _sequence((True, True), lambda n: math.nextafter(1e-7, math.inf))
+    assert (at[4]["polish"], above[4]["polish"]) == (0, 1)
+
+
+# -- G11v3-9: §14.6 E2's pure functions ----------------------------------------------------------
+
+#: Requested inlet compositions: all five present; neither inert; Ar absent, CH4 present.
+ALL_PRESENT = [0.6975, 0.2325, 0.03, 0.017142857142857144, 0.022857142857142857]
+NO_INERT = [0.7275, 0.2425, 0.03, 0.0, 0.0]
+NO_ARGON = [0.6975, 0.2325, 0.03, 0.0, 0.04]
+#: Dyadic face flows, so every w·n is exact and the formula's value is one rounding.
+N_IN = [4.03125, 1.34375, 0.171875, 0.09375, 0.125]
+N_OUT = [3.765625, 1.25, 0.34375, 0.09375, 0.1328125]
+
+
+def _formula(n_in: list[float], n_out: list[float], element: str) -> float:
+    weights = CHILD_MODULE.ELEMENTS[element]
+    total_in = sum(w * n for w, n in zip(weights, n_in, strict=True))
+    total_out = sum(w * n for w, n in zip(weights, n_out, strict=True))
+    return (total_out - total_in) / total_in
+
+
+def test_g11v3_9a_with_every_species_present_the_four_elements_are_v2s_formula() -> None:
+    import numpy as np
+
+    defects = CHILD_MODULE.element_defects(np, N_IN, N_OUT, ALL_PRESENT)
+    assert list(defects) == ["H", "N", "C", "Ar"] == list(CHILD_MODULE.ELEMENTS)
+    for element, value in defects.items():
+        assert value.hex() == _formula(N_IN, N_OUT, element).hex()
+
+
+@pytest.mark.parametrize("face", [0.0, 1e-25], ids=["zero", "roundoff"])
+def test_g11v3_9b_without_inerts_only_h_and_n_and_no_nan(face: float) -> None:
+    import numpy as np
+
+    n_in = [*N_IN[:3], face, face]
+    n_out = [*N_OUT[:3], 0.0, 0.0]
+    defects = CHILD_MODULE.element_defects(np, n_in, n_out, NO_INERT)
+    assert list(defects) == ["H", "N"]
+    for element, value in defects.items():
+        assert not math.isnan(value)
+        assert value.hex() == _formula(n_in, n_out, element).hex()
+
+
+def test_g11v3_9c_without_argon_h_n_and_c() -> None:
+    import numpy as np
+
+    n_in = [*N_IN[:3], 0.0, N_IN[4]]
+    defects = CHILD_MODULE.element_defects(np, n_in, N_OUT, NO_ARGON)
+    assert list(defects) == ["H", "N", "C"]
+
+
+def test_g11v3_9d_the_reduction_does_not_depend_on_order_and_propagates_nan() -> None:
+    import itertools
+
+    import numpy as np
+
+    values = [3e-8, -5e-8, 1e-9, 2e-8]
+    for order in itertools.permutations(values):
+        assert CHILD_MODULE.max_defect(np, dict(zip("HNCA", order, strict=True))) == 5e-8
+    for position in range(len(values)):
+        holed = [*values[:position], math.nan, *values[position + 1 :]]
+        assert math.isnan(CHILD_MODULE.max_defect(np, dict(zip("HNCA", holed, strict=True))))
+
+
+@pytest.mark.parametrize("absent", [0.0, -1e-25], ids=["zero", "negative-roundoff"])
+def test_g11v3_9e_absent_species_are_not_judged_by_positivity(absent: float) -> None:
+    import numpy as np
+
+    retentate = np.array(
+        [[4.0, 1.3, 0.17, 0.0, 0.0], [3.9, 1.25, 0.25, absent, 1e-25], [3.8, 1.2, 0.34, 0.0, 0.0]]
+    )
+    diagnostics = CHILD_MODULE.axial_flows(np, retentate, NO_INERT)
+    assert CHILD_MODULE.flows_positive(diagnostics)
+    assert diagnostics == {
+        "min_axial_flow_mol_s": 0.17,
+        "absent_species": ["Ar", "CH4"],
+        "absent_species_max_abs_flow_mol_s": 1e-25,
+    }
+
+
+@pytest.mark.parametrize("value", [0.0, -0.0], ids=["zero", "negative-zero"])
+def test_g11v3_9e_a_present_species_at_zero_on_one_face_is_refused(value: float) -> None:
+    import numpy as np
+
+    retentate = np.array([[4.0, 1.3, 0.17, 0.1, 0.1], [3.9, 1.25, value, 0.1, 0.1]])
+    diagnostics = CHILD_MODULE.axial_flows(np, retentate, ALL_PRESENT)
+    assert not CHILD_MODULE.flows_positive(diagnostics)
+    assert diagnostics["absent_species"] == []
+    assert diagnostics["absent_species_max_abs_flow_mol_s"] is None
+
+
+def test_g11v3_9e_with_every_species_present_the_minimum_is_v2s() -> None:
+    import numpy as np
+
+    retentate = np.array([[4.0, 1.3, 0.17, 0.1, 0.12], [3.9, 1.25, 0.25, 0.09, 0.11]])
+    diagnostics = CHILD_MODULE.axial_flows(np, retentate, ALL_PRESENT)
+    assert diagnostics["min_axial_flow_mol_s"] == float(np.min(retentate)) == 0.09
+
+
+# -- §14.5 D2: non-finite values -------------------------------------------------------------------
+
+
+def test_d2_nonfinite_paths_are_rfc6901_pointers_in_document_order() -> None:
+    document = {
+        "b": [1.0, math.nan, {"c/d": math.inf, "e~f": -math.inf}],
+        "a": {"x": 1, "y": None, "z": "nan", "w": True},
+        "g": math.nan,
+    }
+    assert CHILD_MODULE.nonfinite_paths(document) == ["/b/1", "/b/2/c~1d", "/b/2/e~0f", "/g"]
+    assert CHILD_MODULE.nonfinite_paths({"a": [0.0, 1e308], "b": "inf"}) == []
+
+
+def test_d2_an_outlet_with_a_nonfinite_value_is_not_accepted_at_nonfinite() -> None:
+    document = {
+        "outcome": "outlet",
+        "tube_outlet": {"flows": [1.0, 1.0, math.nan, 1.0, 1.0], "temperature": 700.0},
+        "diagnostics": {"certificate": {"residual": math.inf}, "u_ret_min": 1.0},
+    }
+    screened = CHILD_MODULE.nonfinite_screen(document)
+    assert screened["outcome"] == "not_accepted" and screened["stage"] == "nonfinite"
+    assert CHILD_MODULE.STAGE_NONFINITE == "nonfinite"
+    assert "tube_outlet" not in screened
+    assert screened["diagnostics"] == {
+        "certificate": {"residual": None},
+        "u_ret_min": 1.0,
+        "nonfinite_paths": ["/tube_outlet/flows/2", "/diagnostics/certificate/residual"],
+    }
+    json.dumps(screened, allow_nan=False)
+
+
+def test_d2_a_refusal_keeps_its_stage_and_a_finite_result_is_unchanged() -> None:
+    refusal = {"outcome": "not_accepted", "stage": "S2", "diagnostics": {"stages": [math.nan]}}
+    screened = CHILD_MODULE.nonfinite_screen(refusal)
+    assert screened == {
+        "outcome": "not_accepted",
+        "stage": "S2",
+        "diagnostics": {"stages": [None], "nonfinite_paths": ["/diagnostics/stages/0"]},
+    }
+    finite = {"outcome": "outlet", "tube_outlet": {"flows": [1.0]}, "diagnostics": {}}
+    text = json.dumps(finite)
+    assert CHILD_MODULE.nonfinite_screen(finite) is finite and json.dumps(finite) == text
+
+
+def test_d2_the_child_writes_no_nan_of_its_own() -> None:
+    reactor = _stub_reactor(None, ValueError())
+    reactor.runner = SimpleNamespace(certify_convergence_1d=lambda *_: {"kpi_drift_ok": True})
+    document = reactor.evaluate(TUBE, None, [0.0] * 5)
+    assert document["outcome"] == CHILD_MODULE.OUTCOME_OUTLET
+    certificate = document["diagnostics"]["certificate"]
+    assert (certificate["residual"], certificate["kpi_drift_rel_max"]) == (None, None)
+    source = CHILD.read_text(encoding="utf-8")
+    assert 'float("nan")' not in source and "math.nan" not in source
+
+
 # -- the superseded variant ----------------------------------------------------------------------
 
 
@@ -447,15 +864,19 @@ def _pinned_root(root: Path, variant: variants.Variant) -> None:
     (root / env.MANIFEST_FILE).write_text(json.dumps(manifest), encoding="utf-8")
 
 
+@pytest.mark.parametrize("superseded_id", [SUPERSEDED_ID, REAL_ID])
 def test_the_superseded_variant_is_refused_at_the_environment_check(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, superseded_id: str
 ) -> None:
-    """v1's runner is the child before R-251: on an environment that meets every other pin of
-    both variants, the child exits 72 on v1's request, and its `Environment` takes v2's."""
-    superseded = variants.registered_variant(SUPERSEDED_ID)
-    current = variants.registered_variant(REAL_ID)
+    """v1's runner is the child before R-251, v2's the child before §14.5 D1/D2: on an
+    environment that meets every other pin of both variants, the child exits 72 on the superseded
+    variant's request, and its `Environment` takes v3's (WO-12b), the provisional variant's
+    (§14.5 D4) registered."""
+    superseded = variants.registered_variant(superseded_id)
+    current = variants.registered_variant(CURRENT_ID)
     runner = file_sha256(CHILD)
     assert superseded.evaluation["runner_sha256"] != runner == current.evaluation["runner_sha256"]
+    assert _provisional().evaluation["runner_sha256"] == runner
     for name in ("commit", "lock_sha256"):
         assert (
             backends.OutOfProcessBackend(superseded).expected[name]
@@ -573,14 +994,20 @@ def test_the_real_variant_is_registered_from_the_files_it_names() -> None:
         "lock_sha256": lock_sha256,
         "env_id": f"pymrm-6089593-{lock_sha256[:12]}",
     }
-    assert evaluation["runner_sha256"] == file_sha256(CHILD)
+    # v2's runner is the child before §14.5 D1/D2 (superseded); this child's documents are the
+    # provisional variant and v3 (WO-12b), whose profile is this child's and otherwise v1's (D1).
+    provisional = _provisional().evaluation
+    current = variants.registered_variant(CURRENT_ID).evaluation
+    assert evaluation["runner_sha256"] != file_sha256(CHILD) == provisional["runner_sha256"]
+    assert provisional["profile"] == CHILD_MODULE.PROFILE == current["profile"]
+    assert current["runner_sha256"] == provisional["runner_sha256"]
+    assert evaluation["profile"]["id"] == "M01-S123-v1"
     reactor = evaluation["reactor"]
     assert reactor["commit"] == reactor_probe.PIN == PROBE["reactor_commit"]
     assert reactor["repository"].endswith(
         "computational-chemical-engineering/ammonia_synthesis_reactor"
     )
     assert (reactor["licence"], reactor["used_by_reference"]) == ("MIT", True)
-    assert evaluation["profile"] == CHILD_MODULE.PROFILE
     configuration = evaluation["configuration"]
     assert set(configuration) == set(CHILD_MODULE.CONFIGURATION)
     assert configuration["geometry_case"] == reactor_probe.GEOMETRY_CASE

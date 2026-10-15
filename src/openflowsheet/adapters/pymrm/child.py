@@ -28,13 +28,14 @@ the pinned `MembraneReactor1D` with the F-R1 subclass (the five-species backflow
 geometry of the configured case, every permeance pre-factor zero, the tube's inlet (F_ret_in,
 y_ret_in, T_in, p_ret_out = P_in) and coolant (pure N2 at sweep_ratio x F_ret_in, T_in, 1 bar);
 the start strategy S1 (cold at the trace inlet), S2 (warm at the true inlet from S1's fields),
-S3 (the polish of profile `M01-S123-v1`); then the evaluation's four acceptance criteria. The
-first one that fails is the answer `not_accepted` at its registered stage (`S1`, `S2`, `S3`,
-`certificate`, `backflow`, `nonpositive_flow`); otherwise the raw outlet — the retentate's axial
-face flows at z = L, the last cell's temperature, the Ergun pressure drop, the coolant's heat
-uptake and the inlet-face heat loss — with the diagnostics. The pressure convention and the
-element defect are the boundary's to judge (Amendment 1). The computation is a pure function of
-the request: every limit is a count, never a clock.
+S3 (the polish of profile `M01-S123-v2`: `M01-S123-v1`'s, plus one conditional round when A45's
+element defect exceeds 10⁻⁷ after it, design note §14.5 D1); then the evaluation's four
+acceptance criteria. The first one that fails is the answer `not_accepted` at its registered stage
+(`S1`, `S2`, `S3`, `certificate`, `backflow`, `nonpositive_flow`); otherwise the raw outlet —
+the retentate's axial face flows at z = L, the last cell's temperature, the Ergun pressure drop,
+the coolant's heat uptake and the inlet-face heat loss — with the diagnostics. The pressure
+convention and the element defect are the boundary's to judge (Amendment 1). The computation is a
+pure function of the request: every limit is a count, never a clock.
 
 **An exception inside the model** (R-251; design note §14.1 B9) is the registered stage
 `model_exception`, not a crash: purity makes it recur on every attempt. The window runs from
@@ -43,6 +44,14 @@ building the first reactor object through the outlet's extraction (S1, S2, S3, t
 and their subclasses — and what the diagnostics record (the qualified type name, the message's
 first line, the formatted traceback's SHA-256; the traceback itself goes to stderr). Everything
 else — an exception outside the window, `MemoryError`, `OSError`, a signal — stays a crash.
+
+**A non-finite value** (design note §14.5 D2) is the registered stage `nonfinite`, not a crash:
+before the result is written, `nonfinite_screen` scans it whole (`nonfinite_paths`). An `outlet`
+with any non-finite value becomes `not_accepted` at `nonfinite`, without its `tube_outlet`; a
+`not_accepted` keeps its stage (the first refusal wins). Either way every non-finite value is
+written as null and its JSON pointer listed in `diagnostics.nonfinite_paths`. The child writes no
+NaN of its own: a value the group's code does not return is null. `_write` keeps
+`allow_nan=False`, so a non-finite value that escaped the scan is still a crash.
 
 **Evidence-only switches.** `OFS_EVIDENCE_S2_DT_INIT` (S2's `dt_init`, M01.A42) and
 `OFS_EVIDENCE_BACKFLOW_ALT` (the backflow inflow `[0, 0, 0, 1, 0]`, M01.A44) are read from the
@@ -80,6 +89,8 @@ OUTCOME_NOT_ACCEPTED = "not_accepted"
 OUTCOME_HANDSHAKE = "handshake"
 #: R-251: the stage of an exception the model raised inside its window (`model_exception`).
 STAGE_MODEL_EXCEPTION = "model_exception"
+#: §14.5 D2: the stage of an evaluation whose result holds a non-finite value.
+STAGE_NONFINITE = "nonfinite"
 MODEL_EXCEPTION_MESSAGE_LIMIT = 512
 SELF_DEADLINE_MARGIN_S = 30.0
 DEADLINE_MARGIN_VARIABLE = "OFS_TEST_DEADLINE_MARGIN_S"
@@ -111,7 +122,7 @@ DESIGN_GHSV_H = 1000.0
 DESIGN_H2_N2 = 3.0
 #: The solver profile this child implements (M01 spec §8.7); the variant's `profile` must equal it.
 PROFILE: dict[str, Any] = {
-    "id": "M01-S123-v1",
+    "id": "M01-S123-v2",
     "S1": {
         "inlet": "y_NH3 := trace_NH3, renormalized",
         "trace_NH3": 1e-9,
@@ -132,12 +143,26 @@ PROFILE: dict[str, Any] = {
         "dt_init": 1.0,
         "max_steps": 400,
         "target": "1e-6*(num_z/100)^2",
+        "round2": {
+            "when": "A45's element defect read after the certificate after S3 is not <= "
+            "defect_threshold, whatever that certificate's verdict",
+            "defect": "max over the elements present in the requested inlet of "
+            "|element_defect_rel| (outlet's formula); NaN if any of them is NaN",
+            "defect_threshold": 1e-7,
+            "target": "S3's target / 10",
+            "rtol": 1e-12,
+            "atol_factor": 0.1,
+            "dt_init": 1.0,
+            "max_steps": 400,
+            "accepted": "S3 is accepted iff round 2 converged; the certificate is then repeated "
+            "on its status and decides",
+        },
     },
     "acceptance": [
         "S3 converged at its target",
         "the group's KPI-drift certificate after S3",
         "u_ret > 0 on every face",
-        "every axial flow > 0",
+        "every axial flow of a species present in the requested inlet > 0",
     ],
 }
 #: The configuration members this child implements, and their types.
@@ -208,6 +233,60 @@ def model_exception(error: Exception) -> tuple[dict[str, str], str] | None:
         "traceback_sha256": hashlib.sha256(text.encode("utf-8", "backslashreplace")).hexdigest(),
     }
     return record, text
+
+
+def nonfinite_paths(document: Any) -> list[str]:
+    """§14.5 D2: the RFC 6901 pointers of every non-finite float in `document`, in document
+    order (a mapping's own iteration order). A pure function; the synthetic child
+    (`tests/support/synthetic_child.py`) calls this same function."""
+    found: list[str] = []
+
+    def visit(value: Any, pointer: str) -> None:
+        if isinstance(value, float):
+            if not math.isfinite(value):
+                found.append(pointer)
+        elif isinstance(value, dict):
+            for key, item in value.items():
+                visit(item, f"{pointer}/{str(key).replace('~', '~0').replace('/', '~1')}")
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                visit(item, f"{pointer}/{index}")
+
+    visit(document, "")
+    return found
+
+
+def _set_null(document: Any, pointer: str) -> None:
+    *parents, last = [part.replace("~1", "/").replace("~0", "~") for part in pointer.split("/")[1:]]
+    node = document
+    for part in parents:
+        node = node[int(part)] if isinstance(node, list) else node[part]
+    if isinstance(node, list):
+        node[int(last)] = None
+    else:
+        node[last] = None
+
+
+def nonfinite_screen(document: dict[str, Any]) -> dict[str, Any]:
+    """§14.5 D2: an evaluation's result with no non-finite value, as written. When it holds
+    one, every such value becomes null and its pointer is listed in
+    `diagnostics.nonfinite_paths`; an `outlet` becomes `not_accepted` at `nonfinite`, without its
+    `tube_outlet`; a `not_accepted` keeps its stage. A result with none is returned unchanged
+    (the same object). The synthetic child calls this same function."""
+    paths = nonfinite_paths(document)
+    if not paths:
+        return document
+    for pointer in paths:
+        _set_null(document, pointer)
+    if document.get("outcome") == OUTCOME_OUTLET:
+        document["outcome"] = OUTCOME_NOT_ACCEPTED
+        document["stage"] = STAGE_NONFINITE
+        document.pop("tube_outlet", None)
+    diagnostics = document.get("diagnostics")
+    if not isinstance(diagnostics, dict):
+        diagnostics = document["diagnostics"] = {}
+    diagnostics["nonfinite_paths"] = paths
+    return document
 
 
 # -- the environment -------------------------------------------------------------------------------
@@ -397,6 +476,114 @@ def steady_state_target(num_z: int) -> float:
     return 1e-6 * (num_z / 100.0) ** 2
 
 
+def element_defects(
+    np: Any, n_in: list[float], n_out: list[float], composition: list[float]
+) -> dict[str, float]:
+    """M01.A45's relative element defects of the retentate between its inlet and outlet faces,
+    over the elements present in the requested inlet `composition` (§14.6 E2): element e is
+    present iff E_e · y_req > 0, tested exactly; an absent element has no key (its 0/0 carries
+    no information). The defect itself is taken on the faces passed in, as under v2."""
+    return {
+        element: float((np.dot(weights, n_out) - np.dot(weights, n_in)) / np.dot(weights, n_in))
+        for element, weights in ELEMENTS.items()
+        if np.dot(weights, composition) > 0
+    }
+
+
+def max_defect(np: Any, defects: dict[str, float]) -> float:
+    """§14.6 E2's δ: the largest |defect| over `defects` (the present elements), NaN if any of
+    them is NaN, whatever their order (`max` alone keeps a NaN only in the first position). The
+    NaN returned is the defect's own: the child makes none."""
+    values = [abs(value) for value in defects.values()]
+    for value in values:
+        if np.isnan(value):
+            return value
+    return max(values)
+
+
+def axial_flows(np: Any, retentate: Any, composition: list[float]) -> dict[str, Any]:
+    """§14.6 E2's positivity diagnostics of the retentate's axial flows (faces × species).
+    Species i is present iff its requested inlet mole fraction `composition[i]` is > 0, tested
+    exactly (never on the model's inlet face, whose absent entries carry roundoff of either
+    sign). `min_axial_flow_mol_s` is the minimum over present species and every face; the
+    absent species (only Ar or CH4 inside the domain) are listed in component order, with the
+    largest |flow| they carry on any face (`null` when none is absent)."""
+    flows = np.asarray(retentate)
+    present = np.array([value > 0.0 for value in composition])
+    absent = [species for species, kept in zip(SPECIES, present, strict=True) if not kept]
+    return {
+        "min_axial_flow_mol_s": float(np.min(flows[:, present])),
+        "absent_species": absent,
+        "absent_species_max_abs_flow_mol_s": (
+            float(np.max(np.abs(flows[:, ~present]))) if absent else None
+        ),
+    }
+
+
+def flows_positive(diagnostics: dict[str, Any]) -> bool:
+    """The acceptance's positivity clause: every axial flow of a present species is > 0 (a NaN
+    is not)."""
+    return bool(diagnostics["min_axial_flow_mol_s"] > 0.0)
+
+
+def certificate_diagnostics(certificate: dict[str, Any], wall_s: float) -> dict[str, Any]:
+    """The KPI-drift certificate as the result records it (`diagnostics.certificate`)."""
+    drift = certificate.get("kpi_drift_rel") or {}
+    residual = certificate.get("achieved_residual")
+    return {
+        "kpi_drift_ok": certificate.get("kpi_drift_ok"),
+        "kpi_drift_rel_max": max(drift.values()) if drift else None,
+        "residual": None if residual is None else float(residual),
+        "wall_s": wall_s,
+    }
+
+
+def certificate_passed(certificate: dict[str, Any]) -> bool:
+    return certificate.get("kpi_drift_ok") is True
+
+
+def after_s3(
+    status3: Any,
+    certify: Any,
+    read_defect: Any,
+    polish: Any,
+    stage: dict[str, Any],
+    diagnostics: dict[str, Any],
+) -> tuple[str | None, dict[str, Any] | None]:
+    """§14.6 E1 as amended by §14.7 F2: profile `M01-S123-v2`'s sequence after an accepted S3,
+    over three injected callables — `certify(status)` (the group's certificate, which marches the
+    state), `read_defect()` (δ from the model's current flows; a read) and `polish()` (round 2 on
+    the same object: `(status, record)`). Returns the stage this sequence refuses at (`S3`,
+    `certificate`) or None, and the deciding certificate (None when round 2 did not converge).
+
+    certificate₁ on S3's status; δ₁ read after it and recorded as `defect_round1` whatever its
+    verdict; δ₁ ≤ the threshold: no round 2 and certificate₁ decides (v2's path plus the read);
+    otherwise (a NaN included), whatever certificate₁'s verdict, round 2, S3's acceptance becomes
+    its convergence, and a converged round is certified again (certificate₂ decides).
+    `diagnostics.certificate` holds the deciding certificate; `stage.round2.certificate_round1`
+    holds certificate₁ when round 2 ran."""
+    policy: Any = PROFILE["S3"]["round2"]
+    started = time.perf_counter()
+    certificate = certify(status3)
+    summary = certificate_diagnostics(certificate, time.perf_counter() - started)
+    delta = read_defect()
+    stage["defect_round1"] = delta
+    stage["round2"] = None
+    if delta <= policy["defect_threshold"]:
+        diagnostics["certificate"] = summary
+        return (None if certificate_passed(certificate) else "certificate"), certificate
+    status, record = polish()
+    record["certificate_round1"] = summary
+    stage["round2"] = record
+    stage["accepted"] = bool(record["converged"])
+    if not stage["accepted"]:
+        return "S3", None
+    started = time.perf_counter()
+    certificate = certify(status)
+    diagnostics["certificate"] = certificate_diagnostics(certificate, time.perf_counter() - started)
+    return (None if certificate_passed(certificate) else "certificate"), certificate
+
+
 class Reactor:
     """The pinned model for one configuration (geometry, grid, backflow) and one database."""
 
@@ -527,11 +714,11 @@ class Reactor:
             return refused(reached)
         certificate, outlet = reached
         diagnostics.update(outlet["diagnostics"])
-        if certificate.get("kpi_drift_ok") is not True:
+        if not certificate_passed(certificate):
             return refused("certificate")
         if not diagnostics["u_ret_min"] > 0.0:
             return refused("backflow")
-        if not diagnostics["min_axial_flow_mol_s"] > 0.0:
+        if not flows_positive(diagnostics):
             return refused("nonpositive_flow")
         return {
             "outcome": OUTCOME_OUTLET,
@@ -591,17 +778,48 @@ class Reactor:
         stages["S3"]["steady_state_target"] = target
         if not stages["S3"]["accepted"]:
             return "S3"
+        refused, certificate = after_s3(
+            status3,
+            lambda status: self.runner.certify_convergence_1d(second, status, meta),
+            lambda: self._defect(second, y_in),
+            lambda: self._round2(second, target),
+            stages["S3"],
+            diagnostics,
+        )
+        if refused == "S3" or certificate is None:
+            return "S3"
+        outlet = self.outlet(
+            second, float(tube["temperature"]), float(tube["coolant_temperature"]), y_in
+        )
+        return certificate, outlet
+
+    def _defect(self, model: Any, composition: list[float]) -> float:
+        """§14.6 E2's δ of the model's current state (a read: no state changes)."""
+        retentate = model.compute_flows()[0]
+        n_in = [float(value) for value in retentate[0, :]]
+        n_out = [float(value) for value in retentate[-1, :]]
+        return max_defect(self.np, element_defects(self.np, n_in, n_out, composition))
+
+    def _round2(self, model: Any, target: float) -> tuple[Any, dict[str, Any]]:
+        """§14.5 D1's round 2 (settings unchanged by §14.6 E1): one more polish round on the same
+        object at a tenth of S3's target. Its status and its record."""
+        policy: Any = PROFILE["S3"]["round2"]
         started = time.perf_counter()
-        certificate = self.runner.certify_convergence_1d(second, status3, meta)
-        drift = certificate.get("kpi_drift_rel") or {}
-        diagnostics["certificate"] = {
-            "kpi_drift_ok": certificate.get("kpi_drift_ok"),
-            "kpi_drift_rel_max": max(drift.values()) if drift else None,
-            "residual": float(certificate.get("achieved_residual", float("nan"))),
+        target2 = target / 10.0
+        model.rtol, model.atol = policy["rtol"], policy["atol_factor"] * target2
+        status = model.solve(
+            num_timesteps=policy["max_steps"],
+            dt_init=policy["dt_init"],
+            steady_state_atol=target2,
+            return_status=True,
+            verbose=0,
+        )
+        return status, {
+            "steps": int(status.num_steps_attempted),
+            "converged": bool(status.converged),
+            "steady_state_target": target2,
             "wall_s": time.perf_counter() - started,
         }
-        outlet = self.outlet(second, float(tube["temperature"]), float(tube["coolant_temperature"]))
-        return certificate, outlet
 
     @staticmethod
     def _stage(status: Any, accepted: bool, started: float) -> dict[str, Any]:
@@ -615,16 +833,16 @@ class Reactor:
             "wall_s": time.perf_counter() - started,
         }
 
-    def outlet(self, model: Any, t_in: float, t_coolant_in: float) -> dict[str, Any]:
-        """`reactor_probe.outlet`: the raw outlet and its diagnostics."""
+    def outlet(
+        self, model: Any, t_in: float, t_coolant_in: float, composition: list[float]
+    ) -> dict[str, Any]:
+        """`reactor_probe.outlet`: the raw outlet and its diagnostics; `composition` is the
+        requested inlet's, which decides the present species and elements (§14.6 E2)."""
         np, database = self.np, self.database
         retentate, _, permeate, _ = model.compute_flows()
         n_in = [float(value) for value in retentate[0, :]]
         n_out = [float(value) for value in retentate[-1, :]]
-        defects = {
-            element: float((np.dot(weights, n_out) - np.dot(weights, n_in)) / np.dot(weights, n_in))
-            for element, weights in ELEMENTS.items()
-        }
+        defects = element_defects(np, n_in, n_out, composition)
         t_out = float(model.cpT[-1, 1, -1])
         t_coolant_out = float(model.cpT[-1, 0, -1])
         coolant_flow = float(np.sum(permeate[0, :]))
@@ -656,7 +874,7 @@ class Reactor:
                 "inlet_face_heat_loss_W": -(retentate_change + coolant_heat),
                 "element_defect_rel": defects,
                 "u_ret_min": float(np.min(model.u_ret_ax)),
-                "min_axial_flow_mol_s": float(np.min(retentate)),
+                **axial_flows(np, retentate, composition),
             },
         }
 
@@ -713,15 +931,13 @@ def main() -> None:
             "backflow_alt": backflow_alt,
         }
     timing["solve_s"] = time.monotonic() - solve_started
-    _write(
-        {
-            "protocol": PROTOCOL_VERSION,
-            "request_sha256": request["request_sha256"],
-            **document,
-            "timing": timing,
-        },
-        attempt,
-    )
+    result = {
+        "protocol": PROTOCOL_VERSION,
+        "request_sha256": request["request_sha256"],
+        **document,
+        "timing": timing,
+    }
+    _write(result if handshake else nonfinite_screen(result), attempt)
     _exit(0)
 
 

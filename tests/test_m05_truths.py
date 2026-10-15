@@ -485,15 +485,6 @@ def test_fd_v2_the_sides_hold_for_all_three_steps() -> None:
 # == R-300 E2: the coupling coordinates are M02's ================================================
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=ModuleNotFoundError,
-    reason=(
-        "R-300 E2's guard needs M02's coupled-route residual (orchestrator/coupling.py "
-        "_unit_terms, application/coupled_run.py answer_of), which is on wp/M02 and not yet on "
-        "wp/M05; it runs, and must pass, once the branches meet (M05 build log F4)"
-    ),
-)
 def test_e2_the_coupling_coordinates_are_m02s(tmp_path: Path) -> None:
     """R-300 E2: at TR-E2's start inlet and two of its FD points, M05's (X, ΔT) equal, bitwise,
     the coupling coordinates M02's coupled route reads from the same envelope — through M02's own

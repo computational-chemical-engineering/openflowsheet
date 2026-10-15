@@ -38,6 +38,14 @@
         "W27-R63"
       ],
       "section": "§21"
+    },
+    {
+      "date": "2026-10-09",
+      "number": 3,
+      "rules": [
+        "W27-R14"
+      ],
+      "section": "§22"
     }
   ],
   "classes": [
@@ -249,13 +257,18 @@
       "holds": true
     },
     {
-      "claim": "GC-MODEL-1 the model table is today's 13 ids and the 8 C1 ids; a row performs a function, or performs none for a registered reason and offers no token",
+      "claim": "GC-MODEL-1 (amended) the model table is today's 13 ids, the 8 C1 ids and the 1 M04 id (22); a row performs a function, or performs none for a registered reason and offers no token",
       "detail": "bad rows []",
       "holds": true
     },
     {
       "claim": "GC-MODEL-2 each C1 unit maps as its SYN-001 namesake; the two C1 reactors perform no function (c1.reactor fixed_design_reactor, c1.reactor_standin synthetic_stand_in)",
       "detail": "differ []; others ['c1.reactor', 'c1.reactor_standin']",
+      "holds": true
+    },
+    {
+      "claim": "GC-MODEL-3 c1.reactor_surrogate performs no function, why_none surrogate_model, offers no token",
+      "detail": "{'function': None, 'offers': [], 'why_none': 'surrogate_model'}",
       "holds": true
     },
     {
@@ -1916,6 +1929,11 @@
         "offers": [],
         "why_none": "synthetic_stand_in"
       },
+      "c1.reactor_surrogate": {
+        "function": null,
+        "offers": [],
+        "why_none": "surrogate_model"
+      },
       "c1.stream_splitter": {
         "function": "splitter",
         "offers": []
@@ -1983,6 +2001,7 @@
     },
     "model_none_reasons": {
       "fixed_design_reactor": "a reactor of one fixed design (geometry, catalyst, coolant and kinetics fixed by its pin, ADR 0027): no case's JSON can show that its reactor is that reactor, so it serves no case unit",
+      "surrogate_model": "a fitted surrogate of one registered parent model on one training box (M04, ADR 0037): its defining relation is a regression of that parent, admissible only inside the box and only under a promotion verdict. No case's JSON can show that a case unit is that parent inside that box, so it serves no case unit",
       "synthetic_stand_in": "a synthetic model whose defining relation is a closed-form stand-in (R-199): it certifies nothing about the unit it stands in for, so it serves no case unit"
     },
     "reviewed_none": {

@@ -1281,3 +1281,125 @@ now passes iff all 20 states score as registered.
 | --- | --- | --- | --- |
 | Q8 | Do SYN-001's builders bind on the C1 basis after the join (F-A2-1)? | **needs M02's design lane** | no: `MODEL_BASES` lists each `syn001.*` on SYN-001's basis only. W27 reads either answer; J3 names both expectations |
 | Q9 | The names of the binder's two tables | build lane's naming | `SELECTABLE_BASES`, `MODEL_BASES`. Another name is recorded in the join commit and W27-R63 reads it; what is registered is the property — the binder's own refusal reads the table the snapshot reads |
+
+## 22. Amendment 3: `c1.reactor_surrogate` (2026-10-09, before any W27 run)
+
+**Source and authority.** Design lane (`architect`), on `main`, in the batched ruling round
+`docs/briefs/v02-rulings-M05-M04.md` (B1). The facts were measured at `wp/M04` `2841cd3`. Registering
+`c1.reactor_surrogate` (`studies/surrogate/reactor.py`) in `MODEL_BUILDERS` and `MODEL_BASES` makes the classifier
+refuse with `RefusalError: unregistered model ids ['c1.reactor_surrogate']` (W27-R24 (a)). Four tests in
+`test_m06_w27_coverage` fail. `list_models` becomes `f070fbe0…` with 22 models, and the `pr-c1-v1` route holds 9 of
+them. The register entries are R-301 and R-302.
+
+**What changes.**
+- `registration.json#/units/model_functions` gains one row.
+- `…/model_none_reasons` gains one reason, `surrogate_model`.
+- `…/amendments` gains entry 3 (§22; rule W27-R14).
+- GC-MODEL-1 is amended; GC-MODEL-3, GC-A3-1 and GC-A3-2 are new.
+- W27-A20…A22 are new.
+- `dry_illustration.json` gains a member `amendment_3`. Its other members stay byte-identical.
+- J3–J6 of §21.8 gain the expectation of §22.2 for a build that carries the surrogate.
+
+**What does not change.**
+- Every other rule and table.
+- `case_facts.json`.
+- The 450 rows at today's snapshot.
+- `hypothetical_v02` and its SHA-256 `1a2a8a9f…5e2e`.
+- The class and the reasons of every case at the hypothetical.
+
+### 22.1 The row (W27-R14 amended)
+
+| Model id | Function | Offers | Why |
+| --- | --- | --- | --- |
+| `c1.reactor_surrogate` | **none** | — | `surrogate_model` |
+
+**`surrogate_model`.** "A fitted surrogate of one registered parent model on one training box (M04, ADR 0037): its
+defining relation is a regression of that parent, admissible only inside the box and only under a promotion verdict.
+No case's JSON can show that a case unit is that parent inside that box, so it serves no case unit." For this row the
+parent is `c1.reactor`, which itself performs no function (`fixed_design_reactor`). The row stands on its own reason,
+because a surrogate never inherits coverage from its parent. Even a parent with a function would not make its
+box-limited fit a model of an arbitrary case unit (W27-R01).
+
+**Rejected.**
+- *`fixed_design_reactor`.* It is true of the parent, not of a fitted map, and it would misdescribe a future surrogate
+  of a parent that does have a function.
+- *`synthetic_stand_in`.* The surrogate is fitted to the parent's experiments; it is not a closed-form stand-in. That
+  LOOP-S fits it to a synthetic parent is a property of the manifest, not of the model id.
+- *The parent's function.* The parent has none, and a surrogate never inherits one.
+
+The generator keeps the id in its own tuple, `M04_MODEL_IDS = ("c1.reactor_surrogate",)`. It is not added to
+`C1_MODEL_IDS`, so GC-MODEL-2's "the two C1 reactors" stays true as written.
+
+### 22.2 The snapshot expectation (J3–J6 restated for a build carrying the surrogate)
+
+**`hypothetical_v02_a3`.** This is `hypothetical_v02` with `c1.reactor_surrogate` inserted, in sorted order, into
+`models` (22 ids) and into the `pr-c1-v1` route's `model_ids` (9 ids). `MODEL_BASES["c1.reactor_surrogate"]` is
+`{pr-c1-v1}`, so W27-R63's equality `set(MODEL_BASES) = set(MODEL_BUILDERS) =` the `list_models` ids holds. The
+generator stores the following in `dry_illustration.json#/amendment_3`:
+- the snapshot and its SHA-256;
+- the summary;
+- the count of cases whose class or reasons differ from `hypothetical_v02`. It must be 0.
+
+**Re-pinned, and not re-pinned.** The registered `hypothetical_v02` is not re-pinned: it remains the registration's
+record. For a build whose `MODEL_BUILDERS` holds `c1.reactor_surrogate`, J3–J6 compare with `hypothetical_v02_a3`.
+Under F-A2-1's other answer, the comparison is with `binder_2587f14`'s `c1_route_model_ids` plus the surrogate. The
+live values are re-taken in the commit that merges the surrogate's registration (J6, G14):
+- `list_models` (`f070fbe0…` measured at `2841cd3`; the value measured at the merge commit governs);
+- the snapshot's SHA-256;
+- `coverage.json`.
+
+J4's summary must still equal the hypothetical's, with 0 candidates. Preflight P2's pins (`REGISTERED_SHA256`) are
+re-taken in the commit that records this amendment, because `registration.json` changes.
+
+### 22.3 Self-claims and assertions
+
+| Id | Claim (generator; refuses to emit when false) |
+| --- | --- |
+| GC-MODEL-1 | (amended) `model_functions` is today's 13 ids, the 8 C1 ids and the 1 M04 id (22). Each row performs a function, or performs none for a reason in `model_none_reasons` and offers no token |
+| GC-MODEL-3 | `c1.reactor_surrogate` performs no function, `why_none` = `surrogate_model`, `offers` = [] |
+| GC-A3-1 | `hypothetical_v02_a3` is not refused (W27-R24 (a)–(e)) |
+| GC-A3-2 | Classified with the registered methods, `hypothetical_v02_a3` equals `hypothetical_v02` case by case, in class and in reasons. The summary table of §21.5 is unchanged, with 0 candidates |
+
+| Id | State | Expected | Why it is in the list |
+| --- | --- | --- | --- |
+| W27-A20 | W27-A16-e and A16-f on `hypothetical_v02_a3` | exactly A16-e's and A16-f's reasons (`no_model:conversion_reactor`, `no_model:kinetic_reactor`) | the surrogate serves neither reactor function |
+| W27-A21 | `hypothetical_v02_a3` with the surrogate on no route | refusal naming `models on no route ['c1.reactor_surrogate']` | W27-R24 (e) |
+| W27-A22 | `hypothetical_v02_a3` classified with Amendment 2's `model_functions` (the row removed) | refusal naming `unregistered model ids ['c1.reactor_surrogate']` | the measured failure, kept as a registered refusal (W27-R24 (a)) |
+
+### 22.4 The C1 corpus tests: a resolver, not an exclusion
+
+The corpus tests bind an instance of every builder in `MODEL_BUILDERS`. They get a test-support `SurrogateResolver`
+(M04 build decision E5) that resolves only committed fixture manifests by SHA-256. Its one entry is
+`tests/fixtures/schemas/surrogate_manifest/valid/a19_smooth_prefix.json`, the manifest M04's WO-7 unit tests already
+bind. The instance's configuration (N_tubes, the parent variant) is the manifest's own. A builder that fails to bind
+in the corpus is a test failure, never a skip. There is no exclusion list.
+
+*Rejected:* excluding builders that need a manifest. That would leave a registered builder unexercised by the very
+tests meant to catch a builder that does not bind (CLAUDE.md: no removed cases).
+
+### 22.5 Work orders
+
+**WO-16i — build lane (bounded), on `main`, before the surrogate's registration merges.** In
+`docs/derivations/scripts/m06_w27_registration.py`:
+- add `M04_MODEL_IDS`, the row, the reason and AMENDMENTS entry 3;
+- add GC-MODEL-1 (amended), GC-MODEL-3, GC-A3-1 and GC-A3-2;
+- add `dry_illustration.json#/amendment_3`, with the adversarial states for W27-A20…A22.
+
+Then regenerate `registration.json` and `dry_illustration.json`. Every pre-existing member must be byte-identical,
+which the commit's check verifies. Re-take preflight P2's pins. Add W27-A20…A22 to `test_m06_w27_coverage`. The default
+gate must be green on `main`. A 0.1.1 build never exposes the surrogate, so no live expectation moves there.
+
+**M04 — on `wp/M04`, after merging `main` with WO-16i.**
+- J3′–J6′ per §22.2: the live snapshot equals `hypothetical_v02_a3` route for route, coverage is re-taken, G14 passes,
+  and `docs/m06-w27-coverage.md` is regenerated with the new `list_models` and snapshot SHA-256.
+- The four failing tests pass. Their only expectation edit is `hypothetical_v02` → `hypothetical_v02_a3` where they
+  compare the live binder.
+- The corpus resolver of §22.4.
+
+A difference in any class or reason from `hypothetical_v02` stops the merge and goes to the design lane.
+
+### 22.6 What this amendment does not establish
+
+- That any surrogate is valid outside its training box, or is promoted. That is M04's verdict, read at use and not by
+  W27.
+- Any coverage of v0.2. Coverage counts at M07, as in §21.9.

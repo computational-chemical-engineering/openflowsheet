@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
@@ -120,19 +120,30 @@ def _numerical_policy_id() -> str:
     return CURRENT_POLICY_ID
 
 
+#: §14.5 D7 (R-307): the ids of the property providers that evaluate outside this process. A run
+#: is R3 iff its provider is one of them. Empty today; a provider that evaluates out of process is
+#: added here in the commit that ships it.
+EXTERNAL_PROVIDERS: Final[frozenset[str]] = frozenset()
+
+
 def _reproducibility_class(flowsheet: Any) -> str:
-    """R3 the moment any provider is external; R1 otherwise. Computed, never claimed.
+    """R3 iff the run's provider is registered in `EXTERNAL_PROVIDERS`; R1 otherwise. Computed,
+    never claimed.
 
     Reads only `flowsheet.provider`, so a revision-built flowsheet's run (T07 §12.3,
-    `application.revision_run`) computes its class by this same rule.
+    `application.revision_run`) computes its class by this same rule; the coupled route adds
+    §7.2's variant rule on top (`coupled_run.reproducibility_class`).
+
+    The class comes from that registered set, never from provenance text (§14.5 D7, R-307): the
+    former test, "external" in `data_provenance`, matched `pr-c1-v1`, whose provenance names a
+    file `external-crosscheck.json` while the provider is in process (M02 build log D55).
 
     It was the dataclass default on every manifest — true today, because nothing here uses an
     external provider, and a field that is a claim rather than a measurement is exactly the
     shape of thing that stays true until it silently is not (S6).
     """
-    capabilities = flowsheet.provider.describe()
-    external = "external" in capabilities.data_provenance.lower()
-    return "R3" if external else "R1"
+    provider_id = flowsheet.provider.describe().provider_id
+    return "R3" if provider_id in EXTERNAL_PROVIDERS else "R1"
 
 
 def solve_and_bundle(flowsheet: Syn001Flowsheet, directory: Path, **kwargs: Any) -> RunManifest:

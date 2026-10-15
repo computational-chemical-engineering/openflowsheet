@@ -4,11 +4,14 @@ flow bound, and `ExecutionFailure` in the evaluation seam.
 - **G6 (b), the pin test.** Every registered variant loads, its `document_sha256` is the
   registry's, the directory holds exactly the registered documents, and no registered document
   carries a test-only member; an out-of-process variant's `overlay_sha256` and discretization
-  estimate are the overlay's and `reference_values.yaml`'s. Exactly one out-of-process variant,
+  estimate are the overlay's and `reference_values.yaml`'s. At most one out-of-process variant,
   the current one, has this child's `runner_sha256`; every other is superseded (append-only,
-  §3.1: a changed child is a new variant) — `...-v1`, the child before R-251, is the one, and the
-  child refuses it at its environment check (`test_m02_pymrm_child.py`). An edited document is
-  refused, not re-pinned.
+  §3.1: a changed child is a new variant) — `...-v1`, the child before R-251, and `...-v2`, the
+  child before §14.5 D1/D2; the child refuses a superseded one at its environment check
+  (`test_m02_pymrm_child.py`). WO-12b registered v3, the current one: the provisional evidence
+  variant (§14.5 D4; never registered, and differing from v2 exactly in its id, runner, profile
+  and timeout) with V5's box and 450 s (`test_m02_wo12b_v3.py`). An edited document is refused,
+  not re-pinned.
 - **Resolution (§6.1).** A model reference resolves only on the registered id, the exact hash and
   the variant's own model id.
 - **The stand-in variant is M01's boundary**: its boundary block holds M01's constants and its hard
@@ -58,9 +61,12 @@ from openflowsheet.thermo.pr_c1 import PrC1Provider
 
 VARIANT_DIR = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "variants"
 STANDIN_ID = "standin-x025-v1"
-#: The current real variant and the ones it supersedes (their runner is an earlier child).
-CURRENT_ID = "pymrm-6089593-g2-nz800-s123-v2"
-SUPERSEDED_IDS = ("pymrm-6089593-g2-nz800-s123-v1",)
+#: The current real variants and the ones superseded (their runner is an earlier child). v3 is
+#: current from WO-12b (§14.5 D4); the provisional evidence variant it was measured on is never
+#: registered.
+CURRENT_IDS: tuple[str, ...] = ("pymrm-6089593-g2-nz800-s123-v3",)
+SUPERSEDED_IDS = ("pymrm-6089593-g2-nz800-s123-v1", "pymrm-6089593-g2-nz800-s123-v2")
+PROVISIONAL = REPO_ROOT / "benchmarks" / "m02" / "variant-v3-provisional.json"
 PROBE: dict[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m01" / "reactor-probe.json")
 F_NOM: float = PROBE["pinned"]["F_ret_in_mol_s"]
 #: R-232: the real reactor's variant's per-tube flow bound, as registered in the note (§3.1).
@@ -110,8 +116,34 @@ def test_g6b_every_registered_variant_loads_at_its_pinned_hash() -> None:
             assert variant.evaluation["overlay_sha256"] == file_sha256(overlay)
             assert variant.accuracy["discretization_estimate"] == estimate
             assert not variant.synthetic
-    assert current == [CURRENT_ID]
+    assert current == list(CURRENT_IDS)
     assert sorted(superseded) == sorted(SUPERSEDED_IDS)
+
+
+def test_d4_the_provisional_variant_is_v2_with_v3s_child_profile_and_600_s() -> None:
+    """§14.5 D4: v3's child and profile, v2's boundary block, a 600 s timeout; never registered."""
+    document = load_json(PROVISIONAL)
+    variant = variants.variant_from_document(document)
+    v2 = load_json(VARIANT_DIR / f"{SUPERSEDED_IDS[-1]}.json")
+    child = REPO_ROOT / "src" / "openflowsheet" / "adapters" / "pymrm" / "child.py"
+    assert variant.variant_id == "pymrm-6089593-g2-nz800-s123-v3-provisional"
+    assert variant.variant_id not in variants.registry()
+    assert not (VARIANT_DIR / PROVISIONAL.name).exists()
+    assert variant.evaluation["runner_sha256"] == file_sha256(child)
+    assert variant.evaluation["profile"]["id"] == "M01-S123-v2"
+    assert variant.execution["timeout_s"] == 600
+    expected = {
+        **v2,
+        "variant_id": document["variant_id"],
+        "evaluation": {
+            **v2["evaluation"],
+            "runner_sha256": document["evaluation"]["runner_sha256"],
+            "profile": document["evaluation"]["profile"],
+        },
+        "execution": {**v2["execution"], "timeout_s": 600},
+    }
+    assert document == expected
+    assert document["boundary"] == v2["boundary"]
 
 
 @pytest.fixture
@@ -249,6 +281,44 @@ def test_qf5_m01s_boundary_has_no_flow_bound() -> None:
     assert result.status == "ok"
     refused = _evaluate(_boundary(HardDomain(tube_flow=FLOW_BOUND), 1.0), inlet)
     assert refused.status == "out_of_domain" and "F_ret_in" in refused.message
+
+
+# -- §14.6 E3: the inert floor -------------------------------------------------------------------
+
+
+def test_e3_the_floor_is_inclusive_and_one_ulp_below_it_is_refused() -> None:
+    """y_Ar + y_CH4 >= inert_min, judged as n_Ar + n_CH4 >= inert_min n_tot (exact floats here:
+    0.0625 + 0.1875 = 0.25 × 1.0; one ulp less CH4 leaves n_tot at 1.0)."""
+    domain = HardDomain(inert_fraction=0.5, inert_min=0.25)
+    on = StreamState(n=(0.5, 0.25, 0.0, 0.0625, 0.1875), temperature=673.15, pressure=1.0e7)
+    below = StreamState(
+        n=(0.5, 0.25, 0.0, 0.0625, math.nextafter(0.1875, 0.0)), temperature=673.15, pressure=1.0e7
+    )
+    assert on.total_flow == below.total_flow == 1.0
+    assert hard_domain_violations(on, domain) == []
+    assert hard_domain_violations(below, domain) == ["inert fraction below 0.25"]
+
+
+def test_e3_an_absent_floor_is_zero_and_checks_nothing() -> None:
+    """v1, v2 and the stand-in declare no floor: their domains are unchanged, and an inlet with
+    no inerts gives no violation."""
+    assert DEFAULT_HARD_DOMAIN.inert_min == 0.0
+    for variant_id in (STANDIN_ID, *SUPERSEDED_IDS):
+        variant = variants.registered_variant(variant_id)
+        assert "inert_min" not in variant.boundary["hard_domain"]
+        assert variants.hard_domain(variant).inert_min == 0.0
+    bare = StreamState(n=(0.75, 0.25, 0.0, 0.0, 0.0), temperature=673.15, pressure=1.0e7)
+    assert hard_domain_violations(bare) == []
+
+
+def test_e3_the_floor_follows_m01s_checks_and_precedes_the_flow_bound() -> None:
+    inlet = StreamState(n=(7.5, 2.5, 0.0, 0.0, 0.0), temperature=473.15, pressure=1.0e7)
+    violated = hard_domain_violations(inlet, HardDomain(tube_flow=FLOW_BOUND, inert_min=0.035), 1.0)
+    assert violated[0].startswith("T_in")
+    assert violated[-2:] == [
+        "inert fraction below 0.035",
+        f"F_ret_in 10.0 mol/s outside {list(FLOW_BOUND)}",
+    ]
 
 
 # -- ADR 0033 D10: ExecutionFailure ---------------------------------------------------------------

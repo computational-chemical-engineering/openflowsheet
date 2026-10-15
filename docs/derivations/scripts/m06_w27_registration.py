@@ -418,6 +418,10 @@ MODEL_NONE_REASONS: Final = {
     "fixed_design_reactor": "a reactor of one fixed design (geometry, catalyst, coolant and "
     "kinetics fixed by its pin, ADR 0027): no case's JSON can show that its reactor is that "
     "reactor, so it serves no case unit",
+    "surrogate_model": "a fitted surrogate of one registered parent model on one training box "
+    "(M04, ADR 0037): its defining relation is a regression of that parent, admissible only "
+    "inside the box and only under a promotion verdict. No case's JSON can show that a case unit "
+    "is that parent inside that box, so it serves no case unit",
 }
 #: The registry the registration was written against (0.1.1, `list_models` `4a60f5a3…`), and the
 #: eight C1 model ids of M02 (ADR 0034 D9; design note §14.3 C1, R-280), registered by Amendment 2.
@@ -431,6 +435,9 @@ C1_MODEL_IDS: Final = (
     "c1.adiabatic_mixer", "c1.feed_source", "c1.product_sink", "c1.reactor",
     "c1.reactor_standin", "c1.stream_splitter", "c1.tp_flash", "c1.tp_heater",
 )  # fmt: skip
+#: Amendment 3: the M04 model id (registration §22.1). It is not in C1_MODEL_IDS, so GC-MODEL-2's
+#: "the two C1 reactors" stays true as written.
+M04_MODEL_IDS: Final = ("c1.reactor_surrogate",)
 #: Amendment 2: each C1 unit whose signature reads what its SYN-001 namesake's reads (M02 WO-8.2)
 #: performs that namesake's function (GC-MODEL-2).
 C1_NAMESAKES: Final = {
@@ -449,6 +456,7 @@ MODEL_FUNCTIONS: Final[dict[str, dict[str, Any]]] = {
     "c1.product_sink": {"function": "product", "offers": []},
     "c1.reactor": {"function": None, "offers": [], "why_none": "fixed_design_reactor"},
     "c1.reactor_standin": {"function": None, "offers": [], "why_none": "synthetic_stand_in"},
+    "c1.reactor_surrogate": {"function": None, "offers": [], "why_none": "surrogate_model"},
     "c1.stream_splitter": {"function": "splitter", "offers": []},
     "c1.tp_flash": {"function": "flash", "offers": []},
     "c1.tp_heater": {"function": "heater", "offers": []},
@@ -1447,10 +1455,11 @@ def check_snapshot(
     snapshot: Mapping[str, Any],
     facts: Mapping[str, Any],
     provider_methods: Mapping[str, str] = PROVIDER_METHODS,
+    model_functions: Mapping[str, Any] = MODEL_FUNCTIONS,
 ) -> None:
     """§5.7: refuse what the registration cannot judge."""
     unknown_models = sorted(
-        m["model_id"] for m in snapshot["models"] if m["model_id"] not in MODEL_FUNCTIONS
+        m["model_id"] for m in snapshot["models"] if m["model_id"] not in model_functions
     )
     unknown_providers = sorted(
         r["provider_id"] for r in snapshot["routes"] if r["provider_id"] not in provider_methods
@@ -1752,8 +1761,9 @@ def classify(
     snapshot: Mapping[str, Any],
     provider_methods: Mapping[str, str] = PROVIDER_METHODS,
     route_scoped_units: bool = True,
+    model_functions: Mapping[str, Any] = MODEL_FUNCTIONS,
 ) -> dict[str, Any]:
-    check_snapshot(snapshot, facts, provider_methods)
+    check_snapshot(snapshot, facts, provider_methods, model_functions)
     rows = [
         classify_case(case, snapshot, provider_methods, route_scoped_units)
         for case in facts["cases"]
@@ -1973,6 +1983,12 @@ AMENDMENTS: Final = [
             "W27-R63",
         ],
     },
+    {
+        "number": 3,
+        "date": "2026-10-09",
+        "section": "§22",
+        "rules": ["W27-R14"],
+    },
 ]
 
 
@@ -2058,9 +2074,12 @@ def registration_claims(facts: Mapping[str, Any]) -> Claims:
     )
     claims.append(
         (
-            "GC-MODEL-1 the model table is today's 13 ids and the 8 C1 ids; a row performs a "
-            "function, or performs none for a registered reason and offers no token",
-            not bad_rows and sorted(MODEL_FUNCTIONS) == sorted(TODAY_MODEL_IDS + C1_MODEL_IDS),
+            "GC-MODEL-1 (amended) the model table is today's 13 ids, the 8 C1 ids and the 1 M04 id "
+            "(22); a row performs a function, or performs none for a registered reason and offers "
+            "no token",
+            not bad_rows
+            and sorted(MODEL_FUNCTIONS) == sorted(TODAY_MODEL_IDS + C1_MODEL_IDS + M04_MODEL_IDS)
+            and len(MODEL_FUNCTIONS) == 22,
             f"bad rows {bad_rows}",
         )
     )
@@ -2077,6 +2096,17 @@ def registration_claims(facts: Mapping[str, Any]) -> Claims:
             and MODEL_FUNCTIONS["c1.reactor"].get("why_none") == "fixed_design_reactor"
             and MODEL_FUNCTIONS["c1.reactor_standin"].get("why_none") == "synthetic_stand_in",
             f"differ {namesakes}; others {others}",
+        )
+    )
+    surrogate = MODEL_FUNCTIONS.get("c1.reactor_surrogate", {})
+    claims.append(
+        (
+            "GC-MODEL-3 c1.reactor_surrogate performs no function, why_none surrogate_model, "
+            "offers no token",
+            surrogate.get("function") is None
+            and surrogate.get("why_none") == "surrogate_model"
+            and surrogate.get("offers") == [],
+            f"{surrogate}",
         )
     )
     package_keys = _all_package_keys(facts)
@@ -2486,21 +2516,29 @@ def live_snapshot() -> dict[str, Any]:
     }
 
 
-def hypothetical_snapshot(today: Mapping[str, Any], syn001_on_c1: bool = False) -> dict[str, Any]:
-    """Amendment 2's hypothetical v0.2 snapshot; `syn001_on_c1` is the binder as measured."""
-    c1_models = sorted(C1_MODEL_IDS) + (sorted(TODAY_MODEL_IDS) if syn001_on_c1 else [])
+def hypothetical_snapshot(
+    today: Mapping[str, Any], syn001_on_c1: bool = False, surrogate: bool = False
+) -> dict[str, Any]:
+    """Amendment 2's hypothetical v0.2 snapshot; `syn001_on_c1` is the binder as measured.
+    `surrogate` is Amendment 3's `hypothetical_v02_a3` (§22.2): the M04 id, inserted in sorted
+    order, into the models and the pr-c1-v1 route."""
+    extra = M04_MODEL_IDS if surrogate else ()
+    c1_models = sorted((*C1_MODEL_IDS, *extra)) + (sorted(TODAY_MODEL_IDS) if syn001_on_c1 else [])
+    models = sorted(m for m in MODEL_FUNCTIONS if surrogate or m not in M04_MODEL_IDS)
     return {
         **today,
         "package_version": "v0.2 (hypothetical)",
         "list_models_sha256": None,
-        "models": [{"model_id": m} for m in sorted(MODEL_FUNCTIONS)],
+        "models": [{"model_id": m} for m in models],
         "routes": [
             *today["routes"],
             {"provider_id": V02_PROVIDER, "components": c1_route_components(),
              "model_ids": c1_models},
         ],
-        "basis": "HYPOTHETICAL (registration Amendment 2): today's SYN-001 route plus pr-c1-v1 "
-        "with the eight C1 models"
+        "basis": "HYPOTHETICAL (registration Amendment "
+        + ("3, hypothetical_v02_a3" if surrogate else "2")
+        + "): today's SYN-001 route plus pr-c1-v1 with the eight C1 models"
+        + (" and c1.reactor_surrogate" if surrogate else "")
         + ("; SYN-001's models also on pr-c1-v1 (the binder at wp/M02 2587f14)"
            if syn001_on_c1 else "; each model on its own basis (the recommended MODEL_BASES)"),
     }  # fmt: skip
@@ -3102,6 +3140,117 @@ def amendment2_claims(
     return claims, record
 
 
+def amendment3_claims(
+    facts: Mapping[str, Any], today: Mapping[str, Any]
+) -> tuple[Claims, dict[str, Any]]:
+    """Registration §22 (Amendment 3): `c1.reactor_surrogate`, W27-A20..A22, GC-A3-1, GC-A3-2."""
+    claims: Claims = []
+    hyp = hypothetical_snapshot(today)
+    a3 = hypothetical_snapshot(today, surrogate=True)
+    try:
+        check_snapshot(a3, facts)
+        refused = "not refused"
+    except RefusalError as refusal:
+        refused = str(refusal)
+    claims.append(
+        (
+            "GC-A3-1 hypothetical_v02_a3 is not refused by W27-R24 (a)-(e)",
+            refused == "not refused",
+            refused,
+        )
+    )
+    if refused != "not refused":
+        return claims, {}
+    on_a3 = classify(facts, a3)
+    on_hyp = classify(facts, hyp)
+
+    def view(row: Mapping[str, Any]) -> tuple[str, list[tuple[str, Any, str]]]:
+        return row["class"], [(x["kind"], x["subject"], x["detail"]) for x in row["reasons"]]
+
+    differ = sorted(
+        r["case_id"] for r, h in zip(on_a3["rows"], on_hyp["rows"], strict=True)
+        if view(r) != view(h)
+    )  # fmt: skip
+    claims.append(
+        (
+            "GC-A3-2 classified with the registered methods, hypothetical_v02_a3 equals "
+            "hypothetical_v02 case by case, in class and in reasons; the summary is unchanged, "
+            "with 0 candidates",
+            not differ
+            and on_a3["summary"] == on_hyp["summary"]
+            and on_a3["summary"]["all_450"]["classes"].get("CANDIDATE", 0) == 0,
+            f"{len(differ)} differ; {on_a3['summary']['all_450']['classes']}",
+        )
+    )
+    # W27-A20: A16-e and A16-f on hypothetical_v02_a3.
+    base = synthetic_case()
+    unit_reason = "UNIT_UNAVAILABLE"
+    record_states: list[dict[str, Any]] = []
+    for label, config_key, name, detail in (
+        ("A20-e A16-e on hypothetical_v02_a3", "idaes:StoichiometricReactor", "fs.rxr",
+         "no_model:conversion_reactor units=fs.rxr"),
+        ("A20-f A16-f on hypothetical_v02_a3", "idaes:CSTR", "fs.cstr",
+         "no_model:kinetic_reactor units=fs.cstr"),
+    ):  # fmt: skip
+        case = synthetic_case(units=[*base["units"], _unit(config_key, name)])
+        row = classify_case(case, a3)
+        got = [(x["kind"], x["subject"], x["detail"]) for x in row["reasons"]]
+        subject = config_key.split(":")[1]
+        want = [(unit_reason, subject, detail)]
+        claims.append(
+            (
+                f"GC-ADV {label}: exactly A16's reason {detail}",
+                row["class"] == unit_reason and got == want,
+                f"{row['class']} {got}",
+            )
+        )
+        record_states.append(
+            {
+                "state": label,
+                "case": case,
+                "snapshot": "hypothetical_v02_a3",
+                "expected_class": unit_reason,
+                "reasons": [{"kind": k, "subject": s_, "detail": d} for k, s_, d in want],
+            }
+        )
+    # W27-A21: the surrogate on no route. W27-A22: Amendment 2's model_functions.
+    route = a3["routes"][-1]
+    no_route = {
+        **a3,
+        "routes": [
+            *a3["routes"][:-1],
+            {**route, "model_ids": [m for m in route["model_ids"] if m != "c1.reactor_surrogate"]},
+        ],
+    }
+    amendment2_functions = {k: v for k, v in MODEL_FUNCTIONS.items() if k not in M04_MODEL_IDS}
+    for label, call, needle in (
+        ("A21 hypothetical_v02_a3 with the surrogate on no route",
+         lambda: check_snapshot(no_route, facts), "models on no route ['c1.reactor_surrogate']"),
+        ("A22 hypothetical_v02_a3 classified with Amendment 2's model_functions",
+         lambda: classify(facts, a3, model_functions=amendment2_functions),
+         "unregistered model ids ['c1.reactor_surrogate']"),
+    ):  # fmt: skip
+        try:
+            call()
+        except RefusalError as refusal:
+            holds, detail = needle in str(refusal), str(refusal)
+        else:
+            holds, detail = False, "no refusal"
+        claims.append((f"GC-ADV {label}: refused, naming {needle}", holds, detail))
+        record_states.append({"state": label, "expected": f"refusal naming {needle}"})
+    record = {
+        "snapshot": a3,
+        "snapshot_sha256": _sha256_bytes(dump(a3)),
+        "summary": on_a3["summary"],
+        "cases_whose_class_or_reasons_differ_from_hypothetical_v02": {
+            "count": len(differ),
+            "cases": differ,
+        },
+        "adversarial_states": record_states,
+    }
+    return claims, record
+
+
 def build_dry(facts: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str, Any]:
     out: dict[str, Any] = {
         "schema": "w27-dry-illustration-v1",
@@ -3174,6 +3323,9 @@ def build_dry(facts: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str
     amended, record2 = amendment2_claims(facts, snapshot, classify(facts, snapshot)["rows"])
     out["amendment_2"] = record2
     all_claims += amended
+    amended3, record3 = amendment3_claims(facts, snapshot)
+    out["amendment_3"] = record3
+    all_claims += amended3
     out["generator_claims"] = [{"claim": c, "holds": ok, "detail": d} for c, ok, d in all_claims]
     return out
 

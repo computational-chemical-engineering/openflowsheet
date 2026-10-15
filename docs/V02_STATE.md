@@ -8,7 +8,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | Objective | Plan v1.2 §4.4: M01–M07, the scientific reactor replacement; release gate W21–W27; release `0.2.0` |
 | Chemistry | C1, the ammonia synthesis loop (ADR 0022, R-120); `docs/v02-real-chemistry-dossier.md`; reactor `ammonia_synthesis_reactor` `main` @ `6089593` (MIT) |
 | Order | R-153: M01 design first; M06 built alongside; M03 when the critical path allows; pre-release `0.2.0a1` after M02 `tested`; `0.2.0` after M07 |
-| Concurrency | At most 4 agents at a time (Frank, 2026-10-06) |
+| Concurrency | **At most 2 agents at a time** (Frank, 2026-10-09; was 4). Agent budget rules: `CLAUDE.md` "Agent budget" |
 | Repository | Public `origin` only (R-150); pre-push guard installed; pushing to `origin` authorised (Frank, 2026-10-08) |
 
 ## Packages
@@ -16,12 +16,12 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | WO-1…7 done (`6a46cdd`; G10 bitwise, re-recorded on variant v2); WO-8 built (`8734905`, gate green, G2 byte-identical); rulings R-280…282 (`2587f14`); WO-9 done (`33bf150`; C1 loop VERIFIED with the stand-in); rulings R-287…289 (`d5df272`); join running; then (R-280 + W27 J1–J6), WO-10…13 |
+| M02 | Build | M01 | W21 | **tested, reviewed by the design lane (`docs/reviews/M02-review.md`), merged into main `9f6a9be`** (manifest `evidence/M02/ba90619…/manifest.json`; main gate 8371 passed). Reactor v3 on V5. Unruled build choices D130–D132 for a later design read; G12 cross-architecture reproduce not run (stated limitation) |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
-| M04 | Design | M02 | W23 | spec; WO-1…6, 10 done (`d5736ac`, gate green; A16–A24 pass on synthetic parents); Amendment 1 (`3c4f8c2`); WO-13…17 running; WO-7 needs M02 WO-9, WO-8 M02 WO-11; WO-11 real run needs Frank's N1 budget |
-| M05 | Design | M03, M04 | W24 | design done; WO-2, 3 done (`dd9e364`; G2, G3, G4 (SYN-001/TR-E1), G13); WO-1 audit PASS (merged `aef41bf`); rulings R-274…279 implemented (`2dc50d9`; WO-2a/3a done; one ruling pending for WO-6: Optimal-with-θ>1e-5 label); WO-4+ need M02 + M04 merged |
+| M04 | Design | M02 | W23 | WO-1…10, 13…17 done (`c8f7e5d`); Amendment 2 (`a7b17f9`, R-322…R-325 renumbered from R-319…R-322 to avoid the alpha branch): real-parent box `m04-c1-box7-v2` (inerts ≥ 0.036, F [0.0050, 0.0086], r ≤ 3.00001), plans `b2-it1…3`, E15/E16/E22/E23 confirmed (A45–A47); running: ADR 0036 Am. 2 + WO-18/19/20; then WO-11 real run (≈27 min pre-warm), WO-12, `reviewer` |
+| M05 | Design | M03, M04 | W24 | WO-1…7, 2b, 3b, 4a done (`71804a6`, gate 8606; M05 numerical-policy addendum S11, floats classified); REAL box [653.15, 693.15] K; next after M02/M04 merge: real parent adapter (S3), WO-5c (`at_coupling`), WO-8 runs; review batch: Z2, W2, S1–S18 |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
-| M07 | Design | M05, M06 | W25, W21–W27 | not started |
+| M07 | Design | M05, M06 | W25, W21–W27 | spec not started: branch `wp/M07` (`.claude/worktrees/m07`) holds `docs/briefs/M07-recon-digest.md` + `docs/briefs/M07-specification.md` (`e35b16d`); a `specifier` was launched and stopped at Frank's pause request (left an uncommitted `docs/derivations/scripts/m07_reference.py`, unreviewed) — relaunch fresh with the same brief |
 
 ## Milestone 0 (housekeeping)
 
@@ -78,6 +78,11 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
   approval, marked pre-release. Preferences on defaults: cut `C_α` before M03 merges; freeze distribution paths from
   `C_α` to dispatch.
 
+- **M02 N7 (V5 selected by measurement: inerts ≥ 3.5 %, T_in [653.15, 693.15] K, V3's P and H₂/N₂; default R-315: ship the first of V4 (inerts ≥ 3 %), V5 (≥ 3.5 %), V6 (V5 narrowed in P, H₂/N₂) that
+  qualifies, all at T_in [653.15, 693.15] K; inlets below the floor refused `out_of_domain`; the loop runs at 4.0–4.5 %):** shipped reactor domain = the box the v3 measurements select (R-304: [643.15, 733.15] K
+  if it passes, else [653.15, 693.15] K, else narrowed P and H₂/N₂). Full 573–773 K would need a new start strategy,
+  outside M02's plan row.
+
 - **M05 (defaults set):** N-F1 objective = maximize liquid NH₃ product, reactor inlet T the only decision (alt: an
   economic objective with your prices, making purge a second decision); N-F2 decision tolerance 0.5 K; N-F3 real-reactor
   budget 400 experiments / 4 h; N-F6 decision box [643.15, 733.15] K.
@@ -88,14 +93,14 @@ F5 education mode deferred.
 
 ## Next action
 
-Resumed 2026-10-08 (Frank: "start working to get to v0.2.0", at most 4 agents).
+**Resumed 2026-10-15.** Alpha gate: main merged (`46176a7`), WO-5, 6, 7, 8 done (`f6a748a`, gate 8558; open B-WO5-1 c_2 digest unregistered, B-WO5-5, B-WO8-1…5 → design-lane read with WO-9); WO-9 done (`5252040`, changelog skeleton with C_α/gate-table placeholders); design-lane read done (`7152170`, `docs/reviews/V02-alpha-read.md`, R-319…R-321: chain sound, prose does not overstate; fixes F1, F2, F4, F5); running: `opus-engineer` alpha fixes + WO-10 (cut C_α, RC steps 1–12; no tag/publish); after it: verdicts (W21, W22, V11–V20 re-judged) → step 13 → WO-11 → Frank publishes `0.2.0a1`; `opus-engineer` M04 ADR 0036 Am. 2 + WO-18/19/20 (worktree `m04`). Order, at most 2 agents:
+1. Merge `main` (`9f6a9be`, M02 in) into `wp/V02-alpha-gate` → alpha-gate WO-5…11 → `0.2.0a1` (Frank publishes).
+2. Merge `main` into `wp/M04` → WO-8 (needs M02 WO-11, now on main), WO-9, WO-11 real run, WO-12 manifest, `reviewer`
+   (batch: E10, E12, E14 envelope wording).
+3. Merge `main` into `wp/M05` → WO-5c (`at_coupling`, delete `with_coupling`, R-309), real parent adapter (S3), WO-8 runs;
+   `reviewer` batch: Z2, W2, S1–S18.
+4. M07: fresh `specifier` on `wp/M07` with `docs/briefs/M07-specification.md` (decide whether to keep `m07_reference.py`).
 
-| Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
-| --- | --- | --- |
-| `opus-engineer` | M02 join (main merge, registry move, corpus, fixtures, envelope, W27 J1–J6) | `wp/M02` (`m02`) |
-| `opus-engineer` | M04 WO-13…17 (Amendment 1 items, pre-warm) | `wp/M04` (`m04`) |
-
-Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
-Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
-M03 WO-8 after N1; M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
+In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the
+directory `.claude/worktrees/m06-w27h/evidence/M06/W27/artifacts` to `evidence/M06/W27/artifacts`, remove after.
 Push `main` at milestones (authorised).

@@ -1,0 +1,562 @@
+{
+  "expect_error": "'schema_version' is a required property",
+  "document": {
+    "coupling_block": {
+      "bounds": {
+        "X": [
+          0,
+          0.95
+        ],
+        "dT_K": [
+          -50,
+          250
+        ]
+      },
+      "initial": {
+        "X": 0.15,
+        "dT_K": 80
+      },
+      "max_outer": 15,
+      "method": "broyden_good_v1",
+      "scales": {
+        "X": 0.1,
+        "dT_K": 10
+      },
+      "tau_T_K": 0.01,
+      "tau_xi_rel": 1e-05
+    },
+    "frozen": {
+      "reactor": {
+        "fingerprint": {
+          "boundary_sha256": "352ec8cf7e83089c61990185260dd8688ce4798bfd2f4ae24bd6af6c943ca01a",
+          "kind": "in_process",
+          "module": "openflowsheet.models.c1.reactor_standin",
+          "module_sha256": "8ffbcf1d11dfc56599dc3de72ed380be9546596755a94e869a74b2a973d25f6e",
+          "openflowsheet_version": "0.1.1"
+        },
+        "fingerprint_sha256": "b3c4e5be976a3d42a7c143eda75465b08a6eada201480e6164945deb1b1c1d13",
+        "variant_sha256": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1"
+      }
+    },
+    "iterations": [
+      {
+        "inner": {
+          "constants_sha256": "58eb39a9b247f878755c168cf3cedeb33d4c91a5e403d033f381ddac39247bb2",
+          "iterations": 4,
+          "outcome": "CONVERGED",
+          "start": "route_initializer",
+          "state_sha256": "070cc6e8eb851648ffa00fc0c965a3411d6d8c343f9fb98b48f7a8487720547d"
+        },
+        "k": 0,
+        "rho": 8000,
+        "step": {
+          "B": [
+            [
+              -1,
+              0
+            ],
+            [
+              0,
+              -1
+            ]
+          ],
+          "du": [
+            0.9999999999999993,
+            -8
+          ],
+          "kind": "broyden"
+        },
+        "u": [
+          1.4999999999999998,
+          8
+        ],
+        "units": {
+          "reactor": {
+            "T_E": 673.15,
+            "attempts": [
+              {
+                "attempt": 1,
+                "execution": {
+                  "diagnostics": null,
+                  "exit_code": null,
+                  "fingerprint": null,
+                  "kind": "in_process",
+                  "logs": null,
+                  "message": "",
+                  "signal": null,
+                  "stage": null,
+                  "status": "completed",
+                  "timing": {
+                    "solve_s": null,
+                    "startup_s": null,
+                    "wall_s": 0.0001361359900329262
+                  },
+                  "tube_inlet": {
+                    "composition": [
+                      0.6984587611994003,
+                      0.23281958706646633,
+                      0.029645399432525456,
+                      0.01563050092064315,
+                      0.023445751380964722
+                    ],
+                    "coolant_composition": [
+                      0,
+                      1,
+                      0,
+                      0,
+                      0
+                    ],
+                    "coolant_flow": 0.006397747615876485,
+                    "coolant_outlet_pressure": 100000,
+                    "coolant_temperature": 673.15,
+                    "flow": 0.006397747615876485,
+                    "outlet_pressure": 10000000,
+                    "temperature": 673.15
+                  },
+                  "tube_outlet": {
+                    "coolant_heat": null,
+                    "flows": [
+                      0.0033514221556886323,
+                      0.0011171407185628745,
+                      0.0009344242625830622,
+                      9.999999999999992e-05,
+                      0.00014999999999999985
+                    ],
+                    "inlet_face_heat_loss": null,
+                    "pressure_drop": 0,
+                    "temperature": 673.15
+                  }
+                },
+                "experiment_key": "5dd070162493ce54c52b3de8f865356fafe10bbcda3216882a8febc783c2f4a7",
+                "job_id": null,
+                "repeat_bitwise_equal": null,
+                "repeat_of": null,
+                "schema_version": "experiment-attempt-v1"
+              }
+            ],
+            "cache_hit": false,
+            "floor_ratio_T": null,
+            "floor_ratio_xi": null,
+            "inlet": {
+              "P": 10000000,
+              "T": 673.15,
+              "n": [
+                4.468562874251506,
+                1.4895209580838327,
+                0.18966378354114583,
+                0.09999999999999991,
+                0.14999999999999986
+              ]
+            },
+            "n_N2_in": 1.4895209580838327,
+            "n_tot_in": 6.397747615876485,
+            "r_T": -80,
+            "r_xi": 0.09999999999999992,
+            "request": {
+              "boundary": {
+                "n_tubes": 1000,
+                "provider_id": "pr-c1-v1",
+                "provider_identity_sha256": "fba62dd1b6826c53fa6c171ea495d5bb60531192658dca76a276be8211b46cf5",
+                "sweep_ratio": 1
+              },
+              "environment_fingerprint_sha256": "b3c4e5be976a3d42a7c143eda75465b08a6eada201480e6164945deb1b1c1d13",
+              "experiment_key": "5dd070162493ce54c52b3de8f865356fafe10bbcda3216882a8febc783c2f4a7",
+              "inputs": {
+                "P": 10000000,
+                "T": 673.15,
+                "components": [
+                  "H2",
+                  "N2",
+                  "NH3",
+                  "Ar",
+                  "CH4"
+                ],
+                "n": [
+                  4.468562874251506,
+                  1.4895209580838327,
+                  0.18966378354114583,
+                  0.09999999999999991,
+                  0.14999999999999986
+                ]
+              },
+              "model": {
+                "artifact_ref": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1",
+                "id": "c1.reactor_standin",
+                "version": "standin-x025-v1"
+              },
+              "schema_version": "experiment-request-v1"
+            },
+            "result": {
+              "accuracy": {
+                "discretization_estimate": null,
+                "measured_path_independence_rel": 0,
+                "precision_floor_rel": 0
+              },
+              "determinism_findings": [],
+              "envelope": {
+                "Q": -39335.48052022459,
+                "Q_coolant": null,
+                "code": "ok",
+                "defect": [
+                  0,
+                  0,
+                  3.3306690738754696e-16,
+                  1.3877787807814457e-17,
+                  0
+                ],
+                "defect_rel": 5.2060026025568244e-17,
+                "discretization_estimate": null,
+                "domain_status": "extrapolated",
+                "extrapolated_bounds": [
+                  "H2/N2"
+                ],
+                "identity": {
+                  "configuration_sha256": "da42631ecb5f17fb1f693e77168a365857d236b4ffbe8ec3215fb7db3e14d8d0",
+                  "model_id": "c1.reactor_standin",
+                  "overlay_sha256": null,
+                  "profile": null,
+                  "pymrm_version": null,
+                  "reactor_commit": null,
+                  "synthetic": true
+                },
+                "inlet_face_heat_loss": null,
+                "message": "",
+                "outlet": {
+                  "P": 10000000,
+                  "T": 673.15,
+                  "n": [
+                    3.351422155688632,
+                    1.1171407185628746,
+                    0.9344242625830619,
+                    0.09999999999999991,
+                    0.14999999999999986
+                  ]
+                },
+                "pressure_drop_relative": 0,
+                "status": "ok",
+                "xi": 0.37238023952095806
+              },
+              "experiment_key": "5dd070162493ce54c52b3de8f865356fafe10bbcda3216882a8febc783c2f4a7",
+              "outcome_class": "deterministic",
+              "produced_by": {
+                "attempt": 1,
+                "job_id": null
+              },
+              "provenance": {
+                "fingerprint_sha256": "b3c4e5be976a3d42a7c143eda75465b08a6eada201480e6164945deb1b1c1d13",
+                "reactor": null,
+                "variant_id": "standin-x025-v1",
+                "variant_sha256": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1"
+              },
+              "provider_calls": 3,
+              "request_sha256": "427b816f2b810ac24699af4e0215cb3435bb0bdf75de70c69465d5844c4bbfd2",
+              "schema_version": "experiment-result-v1"
+            },
+            "xi_E": 0.37238023952095806
+          }
+        },
+        "w": [
+          0.15,
+          80
+        ]
+      },
+      {
+        "inner": {
+          "constants_sha256": "ac2988415d7ae15985ac55c915930bfa1be44d6ab38552b8346ee96eaedfff23",
+          "iterations": 3,
+          "outcome": "CONVERGED",
+          "start": "user_start",
+          "state_sha256": "231aa138152c6f0c3fc621fdec2d0ca685327bad17b03c30e8bfbb824c92e204"
+        },
+        "k": 1,
+        "rho": 0,
+        "step": {
+          "B": null,
+          "du": null,
+          "kind": "converged"
+        },
+        "u": [
+          2.499999999999999,
+          0
+        ],
+        "units": {
+          "reactor": {
+            "T_E": 673.15,
+            "attempts": [
+              {
+                "attempt": 1,
+                "execution": {
+                  "diagnostics": null,
+                  "exit_code": null,
+                  "fingerprint": null,
+                  "kind": "in_process",
+                  "logs": null,
+                  "message": "",
+                  "signal": null,
+                  "stage": null,
+                  "status": "completed",
+                  "timing": {
+                    "solve_s": null,
+                    "startup_s": null,
+                    "wall_s": 0.000124203012092039
+                  },
+                  "tube_inlet": {
+                    "composition": [
+                      0.684095610956187,
+                      0.22803187031872968,
+                      0.02714041255979365,
+                      0.0242928424661159,
+                      0.03643926369917385
+                    ],
+                    "coolant_composition": [
+                      0,
+                      1,
+                      0,
+                      0,
+                      0
+                    ],
+                    "coolant_flow": 0.00411643882923465,
+                    "coolant_outlet_pressure": 100000,
+                    "coolant_temperature": 673.15,
+                    "flow": 0.00411643882923465,
+                    "outlet_pressure": 10000000,
+                    "temperature": 673.15
+                  },
+                  "tube_outlet": {
+                    "coolant_heat": null,
+                    "flows": [
+                      0.0021120283018867844,
+                      0.0007040094339622643,
+                      0.0005810614707440918,
+                      9.999999999999992e-05,
+                      0.00014999999999999988
+                    ],
+                    "inlet_face_heat_loss": null,
+                    "pressure_drop": 0,
+                    "temperature": 673.15
+                  }
+                },
+                "experiment_key": "e815eec96baaf916b2e1a8f66fda885b8777eab300191a204ce46e1a13125df8",
+                "job_id": null,
+                "repeat_bitwise_equal": null,
+                "repeat_of": null,
+                "schema_version": "experiment-attempt-v1"
+              }
+            ],
+            "cache_hit": false,
+            "floor_ratio_T": null,
+            "floor_ratio_xi": null,
+            "inlet": {
+              "P": 10000000,
+              "T": 673.15,
+              "n": [
+                2.8160377358490485,
+                0.938679245283019,
+                0.11172184810258236,
+                0.09999999999999991,
+                0.14999999999999986
+              ]
+            },
+            "n_N2_in": 0.938679245283019,
+            "n_tot_in": 4.116438829234649,
+            "r_T": 0,
+            "r_xi": 0,
+            "request": {
+              "boundary": {
+                "n_tubes": 1000,
+                "provider_id": "pr-c1-v1",
+                "provider_identity_sha256": "fba62dd1b6826c53fa6c171ea495d5bb60531192658dca76a276be8211b46cf5",
+                "sweep_ratio": 1
+              },
+              "environment_fingerprint_sha256": "b3c4e5be976a3d42a7c143eda75465b08a6eada201480e6164945deb1b1c1d13",
+              "experiment_key": "e815eec96baaf916b2e1a8f66fda885b8777eab300191a204ce46e1a13125df8",
+              "inputs": {
+                "P": 10000000,
+                "T": 673.15,
+                "components": [
+                  "H2",
+                  "N2",
+                  "NH3",
+                  "Ar",
+                  "CH4"
+                ],
+                "n": [
+                  2.8160377358490485,
+                  0.938679245283019,
+                  0.11172184810258236,
+                  0.09999999999999991,
+                  0.14999999999999986
+                ]
+              },
+              "model": {
+                "artifact_ref": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1",
+                "id": "c1.reactor_standin",
+                "version": "standin-x025-v1"
+              },
+              "schema_version": "experiment-request-v1"
+            },
+            "result": {
+              "accuracy": {
+                "discretization_estimate": null,
+                "measured_path_independence_rel": 0,
+                "precision_floor_rel": 0
+              },
+              "determinism_findings": [],
+              "envelope": {
+                "Q": -24792.32546978134,
+                "Q_coolant": null,
+                "code": "ok",
+                "defect": [
+                  0,
+                  -1.1102230246251565e-16,
+                  1.1102230246251565e-16,
+                  1.3877787807814457e-17,
+                  2.7755575615628914e-17
+                ],
+                "defect_rel": 2.6970473039473665e-17,
+                "discretization_estimate": null,
+                "domain_status": "within_data_domain",
+                "extrapolated_bounds": [],
+                "identity": {
+                  "configuration_sha256": "da42631ecb5f17fb1f693e77168a365857d236b4ffbe8ec3215fb7db3e14d8d0",
+                  "model_id": "c1.reactor_standin",
+                  "overlay_sha256": null,
+                  "profile": null,
+                  "pymrm_version": null,
+                  "reactor_commit": null,
+                  "synthetic": true
+                },
+                "inlet_face_heat_loss": null,
+                "message": "",
+                "outlet": {
+                  "P": 10000000,
+                  "T": 673.15,
+                  "n": [
+                    2.1120283018867845,
+                    0.7040094339622643,
+                    0.5810614707440918,
+                    0.09999999999999991,
+                    0.14999999999999986
+                  ]
+                },
+                "pressure_drop_relative": 0,
+                "status": "ok",
+                "xi": 0.23466981132075468
+              },
+              "experiment_key": "e815eec96baaf916b2e1a8f66fda885b8777eab300191a204ce46e1a13125df8",
+              "outcome_class": "deterministic",
+              "produced_by": {
+                "attempt": 1,
+                "job_id": null
+              },
+              "provenance": {
+                "fingerprint_sha256": "b3c4e5be976a3d42a7c143eda75465b08a6eada201480e6164945deb1b1c1d13",
+                "reactor": null,
+                "variant_id": "standin-x025-v1",
+                "variant_sha256": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1"
+              },
+              "provider_calls": 3,
+              "request_sha256": "ae4b185de62ebdfea8445f9ebdd4f88ded7dd337e28efe0655d604c2ac943234",
+              "schema_version": "experiment-result-v1"
+            },
+            "xi_E": 0.23466981132075468
+          }
+        },
+        "w": [
+          0.24999999999999992,
+          0
+        ]
+      }
+    ],
+    "outcome": "CONVERGED",
+    "reason": null,
+    "route": "revision_coupled",
+    "variants": {
+      "reactor": {
+        "accuracy": {
+          "discretization_estimate": null,
+          "measured_path_independence_rel": 0,
+          "precision_floor_rel": 0
+        },
+        "boundary": {
+          "data_domain": {
+            "H2_N2": [
+              1.5,
+              3
+            ],
+            "P_Pa": [
+              5000000,
+              10000000
+            ],
+            "T_K": [
+              643.15,
+              733.15
+            ]
+          },
+          "defect_limit": 1e-06,
+          "duty": "process_side",
+          "eps_P": 0.001,
+          "hard_domain": {
+            "H2_N2": [
+              1,
+              4
+            ],
+            "P_Pa": [
+              5000000,
+              15000000
+            ],
+            "T_K": [
+              573.15,
+              773.15
+            ],
+            "inert_max": 0.2,
+            "tube_flow_mol_s": null
+          },
+          "per_tube_scaling": true,
+          "pressure_convention": "zero_drop",
+          "projection": "lsq_extent_v1",
+          "provider": "pr-c1-v1",
+          "reference_convention": "PR-C1-ref-v1"
+        },
+        "coupling": {
+          "bounds": {
+            "X": [
+              0,
+              0.95
+            ],
+            "dT_K": [
+              -50,
+              250
+            ]
+          },
+          "initial": {
+            "X": 0.15,
+            "dT_K": 80
+          },
+          "max_outer": 15,
+          "method": "broyden_good_v1",
+          "scales": {
+            "X": 0.1,
+            "dT_K": 10
+          },
+          "tau_T_K": 0.01,
+          "tau_xi_rel": 1e-05
+        },
+        "evaluation": {
+          "conversion_N2": 0.25,
+          "kind": "in_process",
+          "module": "openflowsheet.models.c1.reactor_standin"
+        },
+        "execution": {
+          "kill_grace_s": null,
+          "max_retries": 0,
+          "timeout_s": null
+        },
+        "model_id": "c1.reactor_standin",
+        "schema_version": "model-variant-v1",
+        "synthetic": true,
+        "variant_id": "standin-x025-v1"
+      }
+    }
+  }
+}

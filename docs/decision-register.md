@@ -1981,6 +1981,24 @@ release note calling V14 passed.
 > **Closed 2026-09-26 by R-075** (ADR 0015, `docs/design/T06-F4-recovery.md`; Frank approved): NET-02 is registered `VERIFIED` under `T06-revision-v1` through edge 3's sequential restart; under `T05b-v2` and `T05-W13` it stays registered `BOUND_BLOCKED` as the edge-off control. NET-02's parameters did not change.
 ---
 
+## R-075 — A revision-built region that fails its EO globalization is re-initialized once, from the traversal continued to 8 passes (edge 3's second action)
+
+| | |
+| --- | --- |
+| Date | 2026-09-26 |
+| Decided by | design lane (`architect`, T06 F4); the schema widenings approved by Frank on 2026-09-26 (`docs/T06_DECISIONS.md`) |
+| Normative text | `docs/design/T06-F4-recovery.md` §5; ADR 0015 D1–D4 (Accepted 2026-09-27) |
+| Evidence | design note §2 (*measured* probes) |
+| Affected packages | T06, T02, T04, T05; T07 through the design note's Q2 |
+
+**Decision.** ADR 0015 D1–D4: `globalization.eo_recovery = homotopy_or_sequential_restart` makes edge 3's action the specification continuation when the region has a continuation parameter, else one region solve from `traversal-G0-pass8-v1` on a revision-built flowsheet (preconditions P3–P5), else `unsupported(<reason>)`; the trigger set and the count of one are unchanged. NET-02 is `VERIFIED` under `T06-revision-v1`, and R-074 is closed.
+
+**Rejected alternatives, and why.** Those listed in ADR 0015: split-fraction or tear-connection continuation, PTC mappings for T05 units, a projected or bound-aware Newton step, a longer registered initializer, seeding from the failed opening's torn values, an adaptive pass count, a restart ladder, folding the restart into `homotopy`.
+
+**Watch for.** `RESTART_PASSES` changed without a new initializer id; the restart made the default of `GlobalizationPolicy` (it would move registered policy documents); the restart seeded from a failed state; the pass count tuned on the gate's own starts.
+
+---
+
 ## R-076 — A permuted component order is mapped onto the provider's; the label and the certificate are the unpermuted twin's
 
 | | |
@@ -2074,24 +2092,6 @@ release note calling V14 passed.
 **Watch for.** Someone "fixing" the certificate to match K04 §8.2's text; a new fresh-flash or energy check without its qualification entry.
 
 **Amended 2026-09-26 (T06 Amendment 4, ADR 0014 D11).** The qualified ids are the prefixed checks whose result is `pass` or `fail`. A `not_applicable` check (`ZERO_FLOW`, `temperature_degenerate`, `fresh_flash_unresolved`) consulted no provider and carries no entry; run 1's 137 A33 failures were all such entries. *Watch for:* qualifying `not_applicable` checks to satisfy the old wording.
-
----
-
-## R-075 — A revision-built region that fails its EO globalization is re-initialized once, from the traversal continued to 8 passes (edge 3's second action)
-
-| | |
-| --- | --- |
-| Date | 2026-09-26 |
-| Decided by | design lane (`architect`, T06 F4); the schema widenings approved by Frank on 2026-09-26 (`docs/T06_DECISIONS.md`) |
-| Normative text | `docs/design/T06-F4-recovery.md` §5; ADR 0015 D1–D4 (Accepted 2026-09-27) |
-| Evidence | design note §2 (*measured* probes) |
-| Affected packages | T06, T02, T04, T05; T07 through the design note's Q2 |
-
-**Decision.** ADR 0015 D1–D4: `globalization.eo_recovery = homotopy_or_sequential_restart` makes edge 3's action the specification continuation when the region has a continuation parameter, else one region solve from `traversal-G0-pass8-v1` on a revision-built flowsheet (preconditions P3–P5), else `unsupported(<reason>)`; the trigger set and the count of one are unchanged. NET-02 is `VERIFIED` under `T06-revision-v1`, and R-074 is closed.
-
-**Rejected alternatives, and why.** Those listed in ADR 0015: split-fraction or tear-connection continuation, PTC mappings for T05 units, a projected or bound-aware Newton step, a longer registered initializer, seeding from the failed opening's torn values, an adaptive pass count, a restart ladder, folding the restart into `homotopy`.
-
-**Watch for.** `RESTART_PASSES` changed without a new initializer id; the restart made the default of `GlobalizationPolicy` (it would move registered policy documents); the restart seeded from a failed state; the pass count tuned on the gate's own starts.
 
 ---
 
@@ -6322,5 +6322,483 @@ separate design-lane review of an inert accessor (the bit-identity test is the p
 
 **Watch for.** M02 gaining a coupling-coordinate function: M05 switches to it. An artifact id appearing in a compared
 record.
+
+---
+
+## R-301 — W27 Amendment 3: `c1.reactor_surrogate` performs no function, for a new reason `surrogate_model`; J3–J6 compare a surrogate-carrying build with `hypothetical_v02_a3`
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), batched ruling round M05/M04 (B1) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §22.1–§22.3, §22.5 |
+| Evidence | `wp/M04` `2841cd3`: `RefusalError: unregistered model ids ['c1.reactor_surrogate']` (W27-R24 (a)); 4 tests in `test_m06_w27_coverage` fail; `list_models` `f070fbe0…`, 22 models, 9 on `pr-c1-v1` |
+| Affected packages | M06 (W27), M04 |
+
+**Decision.**
+- *The row.* Function null, offers [], `why_none` = `surrogate_model`: a fitted surrogate of one parent on one box,
+  which no case JSON can identify.
+- *The generator.* It keeps the id in `M04_MODEL_IDS`, so GC-MODEL-2 is unchanged.
+- *The snapshot.* `hypothetical_v02` is not re-pinned. A build carrying the surrogate compares with
+  `hypothetical_v02_a3`: the same snapshot plus the id in `models` and in `pr-c1-v1`'s `model_ids`. That snapshot must
+  classify identically, case by case (GC-A3-2).
+- *Re-taking.* `list_models`, the snapshot SHA-256 and `coverage.json` are re-taken at the merge (G14). Preflight's pins
+  are re-taken with the registration.
+
+**Rejected alternative, and why.**
+- `fixed_design_reactor`: it describes the parent, not a fit.
+- `synthetic_stand_in`: it is not a closed-form stand-in.
+- Inheriting the parent's function: a box-limited fit is never a model of an arbitrary case unit (W27-R01).
+
+**Watch for.** A future surrogate whose parent has a function. It still maps to none, under this reason.
+
+---
+
+## R-302 — Corpus tests that bind every builder get a fixture-only `SurrogateResolver`, not an exclusion list
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), batched ruling round M05/M04 (B1) |
+| Normative text | `docs/derivations/M06-W27-registration.md` §22.4 |
+| Evidence | M04 build decision E5: the registered builder refuses without a manifest; WO-7's unit tests bind the A19 fixture manifest |
+| Affected packages | M04, M02 (corpus tests) |
+
+**Decision.** The resolver maps SHA-256 to committed fixture manifests only. Its one entry is
+`tests/fixtures/schemas/surrogate_manifest/valid/a19_smooth_prefix.json`. A builder that fails to bind is a failure,
+never a skip.
+
+**Rejected alternative, and why.** Excluding manifest-needing builders: the corpus would stop exercising a registered
+builder (no removed cases).
+
+**Watch for.** A new builder that needs external configuration. It gets a resolver entry, not an exclusion.
+## R-303 — The real reactor's child polishes once more when A45's defect exceeds 10⁻⁷, and types a non-finite result as `reactor_not_accepted(nonfinite)` (profile `M01-S123-v2`, variant v3)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D69 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D1, D2; M01 spec §8.7 (Amendment 3 pointer) |
+| Evidence | `benchmarks/m02/g11-coverage.json`. Defect refusals with S1–S3 accepted have δ 1.4e-5 to 7.6e-5 and alternate with flow at 5 MPa (0.5 × fails, 1 × passes, 2 × fails, 4 × passes); every accepted point has δ ≤ 4.7e-8. At four 773.15 K corners, NaN/inf in the result exits with code 1 and is typed `external_crashed` |
+| Affected packages | M02 (child, variant v3), M01 (profile pointer), M05 and M07 (bind v3) |
+
+**Decision.**
+- After S3 is accepted, if δ = max_e |element_defect_rel[e]| > 10⁻⁷, the child runs one more round with S3's
+  settings at target/10. S3 is accepted iff that round converges.
+- The boundary's `defect_limit` (10⁻⁶) is unchanged.
+- A result holding any non-finite value becomes `not_accepted`, stage `nonfinite`. The first refusal wins; non-finite
+  diagnostics are written as null and listed in `nonfinite_paths`. The child writes no NaN default of its own.
+- Inert wherever v2 met δ ≤ 10⁻⁷: G10v3 and G11v3-2 assert bitwise equality.
+
+**Rejected alternatives, and why.**
+- Relaxing `defect_limit`: δ of 7 × 10⁻⁵ is 7 τ_ξ, so coupling would judge iteration error.
+- Narrowing the domain around the points: they are not a region.
+- Tightening S3 for every evaluation: it moves A47's pins and G12.
+- Typing the non-finite result in the parent: the parent sees only an exit code.
+
+**Watch for.** A G11v3-1 point that still fails the boundary after round 2 refutes the diagnosis; the WO stops.
+Never answer it with a looser limit.
+
+---
+
+## R-304 — v3's hard domain is the first of three registered boxes whose registered points are all accepted; §10.3 classifies a failure before narrowing; the timeout is sampled over every completed in-box evaluation
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D69, D70 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D3, D4; ADR 0027 Amendment 2 |
+| Evidence | G11: 1 of 17 accepted. At 573.15 K S1 fails; at 773.15 K the failures are certificate, defect and non-finite. Accepted T_in: 653.15–693.15 K |
+| Affected packages | M02, M05 (N-F6), M07 (K6) |
+
+**Decision.**
+- The candidate boxes are B1 (T_in [643.15, 733.15] K; 5–15 MPa; H₂/N₂ 1–4), B2 (T_in [653.15, 693.15] K, otherwise
+  as B1) and B3 (B2 with 7.5–12.5 MPa and H₂/N₂ 2–4). All three keep inerts ≤ 0.2 and the per-tube flow bound
+  [0.5, 2] × F_nom.
+- v3 takes the first box whose 16 corners, centre, the centre's flow edges and (for B1) M05's two edge points all end
+  `ok` in two full runs. If none does, the WO stops.
+- In §10.3, D1's defect mechanism is never a reason to narrow, and an in-domain crash stops the WO. Q-F5's widening is
+  suspended for v3.
+- timeout_s = max(120, 3 × the slowest in-box completed evaluation), rounded up to 10 s.
+- If B2 or B3 is selected, M05's REAL box becomes [653.15, 693.15] K. M07's journey lies inside v3's box.
+
+**Rejected alternatives, and why.**
+- Inventing a box from G11 alone: every corner failed, so G11 bounds no region.
+- The data domain as the hard domain: it would put the loop's P and H₂/N₂ on a face.
+- Sampling only accepted points for the timeout: a timeout would then turn deterministic refusals into transient
+  failures.
+
+**Watch for.** Widening the flow bound from a centre-only measurement.
+
+---
+
+## R-305 — The coupling driver does not reset during the first 2n outer iterations (n = 2m)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D50 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D5 (§4.3 amended) |
+| Evidence | D50, plus a design-lane replica of §4.3: G = diag(1.8, 0) ends `no_decrease` under §4.3 and converges at k = 3 (ρ ≤ 3e-12) with the window. From w₀ = (0.15, 0 K) the first substitution step raises ρ, so the monotone rule fails at k = 2 |
+| Affected packages | M02 (driver), M05 (consumes coupled runs) |
+
+**Decision.** `if ρ_k > ρ_best: reset only if k ≥ 2n`. Inside the window B keeps updating and the best iterate does
+not move. Everything else in §4.3 is unchanged. G8 (f) holds as written (f1–f5). The change is inert on every
+recorded run, because ρ never rose in any of them.
+
+**Rejected alternatives, and why.**
+- Restating G8 (f) as a typed failure: K4 would stay unmitigated for gain > 1.
+- A Grippo window over the last M values: more parameters for the same effect.
+
+**Watch for.** A real loop that resets at k ≥ 2n: that is the safeguard working, not a bug.
+
+---
+
+## R-306 — `validity` stands: stand-in → real promotion is rejected on `validity` alone; G9 (a) is restated
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D61 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D6 |
+| Evidence | D61: the promotion is `rejected`, eight facets `pass`, and `validity` fails with "hard_domain.tube_flow_mol_s None -> [...]" |
+| Affected packages | M02, M07 (builds its real revision directly) |
+
+**Decision.**
+- G9 (a1): stand-in → real is `rejected`, and only `validity` fails. Its detail names exactly the narrowed
+  dimensions, computed from the two variant documents.
+- G9 (a2): the commit machinery is tested on real → stand-in and on the compatible test copy.
+- The strict xfail is removed.
+
+**Rejected alternatives, and why.**
+- Treating the flow bound as an operating-point check: it contradicts ADR 0034 D10.
+- A stand-in variant carrying the real domain: it means churn on every narrowing.
+
+**Watch for.** Any request to let a narrower real domain commit silently over a stand-in.
+
+---
+
+## R-307 — R3 comes from a registered set of external providers, never from provenance text
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D55 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D7 |
+| Evidence | `run/session.py:134` matches "external" in `pr-c1-v1`'s provenance (`external-crosscheck.json`), so in-process C1 runs are R3 |
+| Affected packages | M02, every package with C1 runs |
+
+**Decision.**
+- `EXTERNAL_PROVIDERS: frozenset[str]` is empty today, and the class is R3 iff the provider is in it.
+- §7.2's variant rule stays on top for the coupled route.
+- In-process C1 runs are R1. The records this moves are re-taken in one commit.
+
+**Rejected alternatives, and why.** A `ProviderCapabilities` field: it is a frozen interface, for a set that is empty
+today.
+
+**Watch for.** A future provider that evaluates out of process must be added to the set in the same commit.
+
+---
+
+## R-308 — On `revision_coupled`, inner-solve constants digests are compared for shape; `reproduce` recomputes the final one at the recorded iterate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D58 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D8; ADR 0007's row "digests of R1/R2 quantities" |
+| Evidence | D58: the final `constants_sha256` digests Broyden's X̂ and ΔT̂ and was compared exactly |
+| Affected packages | M02 (replay), M05 (replays coupled runs) |
+
+**Decision.**
+- The manifest's and the record's inner-solve `constants_sha256` are compared for shape.
+- `reproduce` rebuilds the final inner model at the record's final w and requires its digest to equal the recorded one
+  exactly (`coupling_constants`).
+- The iterates are compared under the archive's numerical policy (`coupling_iterate(<k>)`). Integer control flow
+  stays R0.
+
+**Rejected alternatives, and why.**
+- Keeping the exact comparison: it contradicts ADR 0007, because there is a float on its path.
+- Removing w from the constants digest: it changes compile identity for one route.
+
+**Watch for.** Any other digest whose preimage holds an iterate.
+
+---
+
+## R-309 — One coupling-parameter function: `coupled_run.at_coupling`, with a refusal of unknown units; M05 calls it (supersedes R-300 E7)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D71 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D9 |
+| Evidence | D71: `with_coupling` (wp/M05 `1ed8c6c`) duplicates `at_coupling`; `at_coupling` silently ignores an unknown unit id |
+| Affected packages | M02, M05 (its WO-5c) |
+
+**Decision.**
+- `at_coupling` raises `ValueError` naming every key that is not a `C1Reactor` unit of the binding. It does no float
+  coercion.
+- M05 deletes `with_coupling` at its first merge of `main` after M02 lands, and calls `at_coupling`.
+- The G8 records stay byte-identical.
+
+**Rejected alternatives, and why.** Landing both: two functions with one meaning, and M05's E2 guard asks for M02's
+own code path.
+
+**Watch for.** M05 reaching `main` with both functions.
+
+---
+
+## R-310 — The envelope's `unbound_providers` becomes `other_basis_providers`; the stand-in module's stale docstring is a recorded erratum
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 sixth ruling round, on build log D49 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.5 D10 |
+| Evidence | D49: `pr-c1-v1` is bound by the C1 models since the join, while the envelope and L42 still say it is not. The stand-in module's bytes are the stand-in variant's pinned artifact |
+| Affected packages | M02, T08 (envelope tests and script), M07 (finalises the envelope) |
+
+**Decision.**
+- Rename the key `unbound_providers` to `other_basis_providers` and keep the entry's shape. Correct the axis
+  statement and L42's text.
+- `reactor_standin.py` is not edited. A comment at its `MODEL_BUILDERS` entry records the erratum.
+- If the served tool-list digest moves, the WO stops.
+
+**Rejected alternatives, and why.** Editing the docstring: it changes the pinned artifact hash, so it needs a new
+stand-in variant and a re-take of the stand-in loop and G8.
+
+**Watch for.** The stand-in module changing for any reason: correct the sentence in that same new variant.
+
+---
+
+## R-311 — The real reactor's child reads A45's defect after the certificate; round 2 runs only after a passed certificate and is re-certified (amends R-303)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D77 and D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E1; M01 §8.7 Amendment 4 |
+| Evidence | D77: the group's certificate marches 20 pseudo-time steps and keeps the state. Right after S3, δ = 4.0e-5…8.4e-5 at every G10 run; every recorded δ was post-certificate (2.2e-8…3.8e-8). D78: the post-certificate ordering meets G10v3 (bitwise v2) and G11v3-1 (projection defects 1.7e-9, 1.1e-9, 2.0e-11) |
+| Affected packages | M02 (v3's child, profile `M01-S123-v2`), M01 (pointer), M05 (binds v3) |
+
+**Decision.**
+- δ₁ is read after certificate₁, from the state the outlet is extracted from.
+- If certificate₁ fails, the stage is `certificate`, and round 2 does not run.
+- If δ₁ ≤ 10⁻⁷, the evaluation follows v2's path.
+- Otherwise round 2 runs at target/10, then certificate₂, and certificate₂'s verdict decides.
+- The trigger is `not (δ₁ ≤ 10⁻⁷)`. The sequence is one function of injected callables, tested in the default gate.
+
+**Rejected alternatives, and why.**
+- §14.5 D1 as written, with δ read right after S3: round 2 runs at every evaluation, which tightens S3 everywhere.
+- Rescuing a failed certificate₁ with round 2: no measurement motivates it.
+- Not re-certifying after round 2: the boundary would be handed a state the certificate never judged.
+
+**Watch for.** Any change to the group's certificate, which moves the state that δ describes.
+
+> **Amended 2026-10-09 (M02 eighth round):** the rejection of rescuing a failed certificate₁ is **reversed by R-316**
+> (build log D85 found two such points). Round 2 now runs whenever δ₁ > 10⁻⁷, whatever certificate₁'s verdict.
+
+---
+
+## R-312 — Positivity is judged on the species present in the inlet, and A45's relative defect on the elements present in the inlet
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E2; M01 §8.7 Amendment 4. ADR 0027 D6 needs Amendment 3 (§14.6 E5) |
+| Evidence | D78: at zero-inert inlets the minimum axial flow is Ar's or CH₄'s, exactly 0.0 or −1.8e-25…−1.8e-27 mol/s, and A45's C and Ar defects are 0/0. Python's `max` over a list holding NaN depends on the order |
+| Affected packages | M02 (v3's child), M01 (pointer), ADR 0027 (finding) |
+
+**Decision.**
+- A species is present iff its requested inlet mole fraction (`tube_inlet.composition`) is > 0. It is not tested on
+  the model's inlet face, which carries roundoff. `nonpositive_flow` judges present species only.
+- New diagnostics: `absent_species` and `absent_species_max_abs_flow_mol_s`.
+- `element_defect_rel` holds the present elements only.
+- δ is the maximum over present elements, and NaN if any present value is NaN.
+- Where all five species are present, everything is bitwise v2.
+
+**Rejected alternatives, and why.**
+- A tolerance ε on positivity: it needs an ε, and it still judges a species that carries no information.
+- Normalizing an absent element by n_tot,in: one map would hold values with two meanings.
+- `null` for an absent element: `null` already means a screened non-finite value.
+- The domain alone: the floor bounds Ar + CH₄, not each species.
+
+**Watch for.** A species that can be absent and is not inert. Today none can be: H₂/N₂ is bounded and NH₃ has its
+trace refusal.
+
+---
+
+## R-313 — v3's hard domain gains `inert_min` = 0.02; the candidate boxes become V1–V3, all at T_in ∈ [653.15, 693.15] K; M05's REAL box is [653.15, 693.15] K unconditionally (supersedes R-304's box list)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round, on build log D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E3. ADR 0027 needs Amendment 3 (§14.6 E5) |
+| Evidence | D78: B1 12/21, B2 11/19, B3 11/19 `ok`. In each box every zero-inert corner fails, the low-T, high-P pair at `S1`. M05's 643.15 K point fails at `S1` with 4.31 % inerts. Every 0.2-inert corner, every centre and M05's 733.15 K point are `ok` |
+| Affected packages | M02 (v3, schema `hard_domain.inert_min`, boundary, G9 (a1)), M05 (N-F6 now; the floor inequality), M07 (design space) |
+
+**Decision.**
+- The family: V1 = B2's box with y_inert ∈ [0.02, 0.2], V2 = B3's box with the same floor, and V3 = 653.15–693.15 K,
+  9–11 MPa, H₂/N₂ 2.5–3.5, with the same floor.
+- Each rung has 21 registered points: 16 corners, its centre at three flows, and M05's points at 653.15 K and
+  693.15 K.
+- The first rung that is all `ok` in two runs is selected. If none is, the WO stops and N7 goes to Frank.
+- Zero-inert inlets are outside v3's domain.
+
+**Rejected alternatives, and why.**
+- Re-judging B1–B3: they fail at S1, which runs before every change.
+- A P ≤ 10 MPa box: the loop's pressure would sit on a face, and it is unmeasured.
+- Raising the T_in bound: M05 has not registered such a box.
+- A floor ≥ 0.03: too thin a margin under the loop's 4.31 %.
+- Accepting the zero-inert refusals: it relaxes the rule.
+
+**Watch for.** Q-E1: M05's loop inert fraction at 653.15 K and 693.15 K. Below 0.03, the design lane revisits the
+floor.
+
+> **Amended 2026-10-09 (M02 eighth round):** no rung of V1–V3 qualified (D84). The family is **replaced by V4–V6, and
+> the rejection of a floor ≥ 0.03 is reversed, by R-315** (Q-E1 measured the loop at 4.05–4.55 % inerts, D87).
+
+---
+
+## R-314 — D73–D76 confirmed; the timeout rule of R-304 is confirmed on the selected rung
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 seventh ruling round |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.6 E4 |
+| Evidence | D73–D76 as built. D78: the timeout rule gives 360–370 s at loadavg 45–48 |
+| Affected packages | M02 |
+
+**Decision.**
+- D73 (child in place, provisional variant): confirmed.
+- D74: confirmed, as amended by R-311 and R-312. The profile id stays `M01-S123-v2`, since no registered variant binds
+  it.
+- D75: confirmed.
+- D76: confirmed, and extended to V1–V3 and G11v3-8.
+- The timeout is max(120, 3 × the slowest wall over every completed in-rung evaluation, over both runs), rounded up
+  to 10 s.
+
+**Rejected alternatives, and why.** Bumping the profile id: no shipped record binds it, and the runner hash already
+separates the superseded record.
+
+**Watch for.** Host load at the registration run. It is recorded, not corrected.
+
+---
+
+## R-315 — The candidate rungs become V4–V6 (V3 with the floor at 0.03, then 0.035, then narrowed about the loop's state); all are measured and the first that qualifies is v3's domain (supersedes R-313's family and its floor)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 eighth ruling round, on build log D84 and D87 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.7 F1; ADR 0027 Amendment 4 |
+| Evidence | D84: V1 19/21, V2 19/21, V3 20/21 `ok` in both runs. All five failures are 653.15 K corners at y_inert 0.02 and high P that exhaust S1's 400 steps, and all five 0.2-inert twins are `ok`. M05's two points and every centre are `ok`. D87: the loop's reactor-inlet inert fraction is 0.045484 at 653.15 K and 0.040468 at 693.15 K |
+| Affected packages | M02 (v3's box and `inert_min`, G11v3-4, -6, -11, -12, G12v3-2, G9 (a1)), M05 (the floor inequality), M07 (design space) |
+
+**Decision.**
+- V4 = V3 with y_inert ∈ [0.03, 0.2]; V5 = V3 with y_inert ∈ [0.035, 0.2]; V6 = V5 with P ∈ [9.5, 10.5] MPa and
+  H₂/N₂ ∈ [2.75, 3.25]. All keep T_in [653.15, 693.15] K, the flow bound and B3's centre. V6 ⊆ V5 ⊆ V4 ⊆ V3.
+- 21 registered points per rung, as R-313. All three rungs are measured in both full runs, and the first that is all
+  `ok` in both is selected. If none is, the WO stops and N7 goes to Frank; no further narrowing without him.
+- Everything is re-measured, because R-316 changes the child. The old points are R-316's inertness proof.
+- The script refuses to write a record unless the rungs nest and the loop's measured states (M05's points, D87's two
+  edges) lie inside every rung.
+- G12v3-2: the loop at 653.15 K and 693.15 K on the registered v3 converges and verified, with no `out_of_domain`
+  refusal. It replaces Q-E1's 1.5-margin revisit rule.
+
+**Rejected alternatives, and why.**
+- A floor ≥ 0.04: the loop sits at 0.040468 at 693.15 K.
+- A T_in-dependent floor: the domain would stop being a box with one linear inequality, and it is unmeasured.
+- Narrowing P first with the floor at 0.02: unmeasured, costs M07's design space, and P does not separate the
+  failures.
+- Raising T_in's lower bound: M05's REAL box edge would leave the domain.
+- Re-measuring only the 32 new inlets: valid only for an unchanged child.
+
+**Watch for.** S1's cliff at 653.15 K (31–47 steps or 400, nothing between): corners can miss interior failures. Any
+M05 decision variable beyond T_in, which would move the loop's inert fraction outside what D87 measured.
+
+---
+
+## R-316 — Round 2 runs whenever δ₁ > 10⁻⁷, whatever certificate₁'s verdict; certificate₂ decides when it runs (amends R-311)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M02 eighth ruling round, on build log D85 and D78 |
+| Normative text | `docs/design/M02-pymrm-adapter.md` §14.7 F2; ADR 0027 Amendment 4 |
+| Evidence | D85: two points have a failed certificate₁ with δ₁ = 1.88e-5 and 2.28e-4; under D78's ordering both ran round 2, passed certificate₂ and ended `ok`. At all 8 G10 runs and every rung point certificate₁ passes with δ₁ ≤ 10⁻⁷ |
+| Affected packages | M02 (v3's child `after_s3`, profile `M01-S123-v2` `round2.when`, G10v3, G11v3-3, -10, -11) |
+
+**Decision.**
+- If δ₁ ≤ 10⁻⁷, round 2 does not run, and certificate₁ decides.
+- Otherwise round 2 runs whatever certificate₁'s verdict. If it does not converge, the stage is `S3`; if it does,
+  certificate₂ decides.
+- G10v3 is unchanged by construction and re-asserted bitwise against D83's record. G11v3-11 asserts every other old
+  point's stage, step counts and outlet bitwise.
+
+**Rejected alternatives, and why.**
+- Keeping R-311's rule: its stated reason ("no measured point") is refuted, and it refuses evaluations round 2 brings
+  to a certified state.
+- Round 2 after every failed certificate₁, whatever δ₁: an element-balanced state gives the round nothing to fix.
+
+**Watch for.** A point where certificate₂ fails; none has been measured.
+
+---
+
+## R-317 — A coupled replay checks the inlet against the request the answer is attributed to, and the coupling record's floats are floored at their registered thresholds (resolves RP-2; amends R-308's acceptance)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`reviewer`), M02 review (`docs/reviews/M02-review.md` F1, F2, §3) |
+| Normative text | `docs/reviews/M02-review.md` §3 rows RP-2 (a) and (b); to be carried into ADR 0034 as Amendment 1 by WO-13 |
+| Evidence | Build log D93 (RP-2's seam: EXT-COUPLING checks fail on the recorded request; ρ 0 → 2.0e-12 and r_ξ 0 → −8.3e-17 compared relative-only). Review F1: on G12's real loop, r_ξ ≈ 1.5e-5 is a cancellation of terms ≈ 0.2, so an inner-state difference of 1e-13 relative moves it 1.3e-9 relative, so (b) is not limited to the stand-in |
+| Affected packages | M02 (replay, certificate evidence, A32 coverage), M05 (binds coupled replays) |
+
+**Decision.**
+- **(a)** EXT-COUPLING's bitwise inlet check compares the certified inlet with the inputs of the request the answer is attributed to:
+  - live: the request sent (unchanged);
+  - replay: the request `RecordedExperiments` recomputes at the rerun's inlet, whose agreement with the recorded one within the archive's policy is the replay's guarantee.
+
+  The rerun record keeps embedding the recorded documents.
+- **(b)** Every float of `experiment.schema.json#/$defs/coupling`, and every envelope field a re-evaluation compares, is classified under ADR 0007 D2.2 and D2.3:
+  - `rho` is floored at 1;
+  - `r_xi` at the record's `tau_xi_rel`;
+  - `r_T` at its `tau_T_K`;
+  - `defect_rel` at 1e-6;
+  - `defect` and flows at the flow kind's floor;
+  - `step.B` and `step.du` are reported, not compared (comparability window), while step kinds and k stay R0;
+  - the rest is relative.
+
+  The floors are scoped to the coupled record, and no pre-M02 comparison or pinned digest moves. A32, or an M02 twin, enumerates the schema.
+- RP-2 then passes without an xfail. A second case runs on a w-dependent synthetic loop.
+
+**Rejected alternatives, and why.**
+- An absolute floor of 1e-9 on ρ: an invented floor, which ADR 0007 D2.2 rejects.
+- Writing the recomputed request into the rerun record: it would pair a request that was never sent with a served result.
+- Descoping cross-platform coupled replay: D2.3 makes the recording package own the classification.
+
+**Watch for.** A new float in the coupling record without a row; a live path that stops being bitwise.
+
+---
+
+## R-318 — On `revision_coupled`, every `constants_sha256` in the bundle is compared for shape (ratifies build log D94)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`reviewer`), M02 review §3 |
+| Normative text | `docs/reviews/M02-review.md` §3 row D94; build log D94; R-308 item 1 |
+| Evidence | D94: the final digest is copied into five artifacts (8 places), so a last-bit rerun could never be MATCH under item 1 read literally |
+| Affected packages | M02 (`revision_run._constants_for_shape`) |
+
+**Decision.** The shape rule applies to every `constants_sha256` in every artifact of a coupled bundle. The R0 guard is R-308 item 2's recomputation of the final digest at the recorded w, with the current build, which also catches a build that changed the constants.
+
+**Rejected alternatives, and why.** Item 1 read literally, covering the manifest and `iterations[].inner` only. The copies stay exact, and RP-2 becomes unreachable.
+
+**Watch for.** A `constants_sha256` field that digests something other than an inner solve of w, added to a coupled bundle.
 
 ---

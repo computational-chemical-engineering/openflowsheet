@@ -1,0 +1,438 @@
+{
+  "work_package": "M02",
+  "commit": "ba90619c62329165a21731fdff01ebc9c7203287",
+  "requirements": [
+    "D10"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "C1-LOOP-M02-v1 (stand-in and real reactor v3), the registered variants, the T07 corpus (G2), M01's registered states (G7), the opt-in records G10-G12",
+    "case_hash": "51152d15dd55600fa603d4ad5f39cd5eed647b1ccd183324bbf3f456287aae71",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "3cbf9c638d6285f87db08eb2136deae4fa67fa203793063229c9cebbded659d3"
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -m 'pymrm or not pymrm' --junitxml=ARTIFACTS/m02-tests.junit.xml tests/test_m02_*.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "57f40a722ad133e9b71a267c91b1fbd85797db02ea395a7b53d42427abfbea73"
+    },
+    {
+      "cmd": "PYTHONPATH=src:tests .venv/bin/python scripts/m02_g2_corpus.py > ARTIFACTS/m02-g2-corpus.json",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "659748576adb97300a3b1022ddf30d504a37a8c8ed4b6d6a8506b2c40c16c16d"
+    }
+  ],
+  "checks": [
+    {
+      "id": "M02.G1",
+      "description": "M02 design note §10, G1 (Schemas), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_schemas.py::*"
+          ],
+          "passed": 23,
+          "failed": 0,
+          "skipped": 0
+        },
+        "mcp_tool_list": {
+          "served_sha256": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+          "harness_tool_descriptions_sha256": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+          "without_m02_sha256": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+          "registered_base": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+          "decomposes_onto_base": true,
+          "tools": 17,
+          "note": "M02's own served digest is registered at the merge commit on the combined tree (R-234); this value is evidence, not a pin."
+        }
+      }
+    },
+    {
+      "id": "M02.G2",
+      "description": "M02 design note §10, G2 (Inertness), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_join.py::*",
+            "tests/test_m02_wo7_binding.py::*",
+            "tests/test_m02_wo8_registries.py::*",
+            "tests/test_m02_wo8_verifier.py::test_g2i_*"
+          ],
+          "passed": 40,
+          "failed": 0,
+          "skipped": 0
+        },
+        "g2_corpus_dump": {
+          "sha256": "659748576adb97300a3b1022ddf30d504a37a8c8ed4b6d6a8506b2c40c16c16d",
+          "expected_prefix": "659748576adb9730",
+          "byte_identical": true
+        },
+        "gate": {
+          "passed": true,
+          "pytest": "8360 passed, 31 skipped, 2 deselected, 1 warning",
+          "stdout_sha256": "3cbf9c638d6285f87db08eb2136deae4fa67fa203793063229c9cebbded659d3"
+        }
+      }
+    },
+    {
+      "id": "M02.G3",
+      "description": "M02 design note §10, G3 (Kill chain), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_kill_chain.py::*"
+          ],
+          "passed": 13,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M02.G4",
+      "description": "M02 design note §10, G4 (Records and cache), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_experiments.py::*",
+            "tests/test_m02_experiment_job.py::test_g4i_*"
+          ],
+          "passed": 28,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M02.G5",
+      "description": "M02 design note §10, G5 (Experiment job), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_experiment_job.py::*",
+            "tests/test_m02_experiment_body_isolation.py::*"
+          ],
+          "passed": 21,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M02.G6",
+      "description": "M02 design note §10, G6 (Frozen identity), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_variants.py::*",
+            "tests/test_m02_wo7_binding.py::test_g6a_*",
+            "tests/test_m02_wo10_coupled.py::test_g6c_*"
+          ],
+          "passed": 37,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M02.G7",
+      "description": "M02 design note §10, G7 (PR units), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_wo8_g7.py::*",
+            "tests/test_m02_wo8_blocks.py::*",
+            "tests/test_m02_wo8_region.py::*",
+            "tests/test_m02_wo8_units.py::*",
+            "tests/test_m02_wo8_verifier.py::*",
+            "tests/test_m02_wo9_reactor.py::test_g7f_*"
+          ],
+          "passed": 188,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M02.G8",
+      "description": "M02 design note §10, G8 (Coupled route with the stand-in), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_wo9_reactor.py::*",
+            "tests/test_m02_wo10_driver.py::*",
+            "tests/test_m02_wo10_coupled.py::*",
+            "tests/test_m02_wo14.py::*"
+          ],
+          "passed": 68,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M02.G9",
+      "description": "M02 design note §10, G9 (Promotion), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_wo11_promotion.py::*"
+          ],
+          "passed": 17,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M02.G10",
+      "description": "M02 design note §10, G10 (Adapter halves of M01.A41–A48), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_g10_record.py::*",
+            "tests/test_m02_pymrm_child.py::*",
+            "tests/test_m02_pymrm_env.py::*"
+          ],
+          "passed": 99,
+          "failed": 0,
+          "skipped": 0
+        },
+        "measured": {
+          "record": {
+            "path": "benchmarks/m02/g10-adapter-halves-v3.json",
+            "sha256": "8f6048b9351dd39debbda42c2e92d85454122bb677f79b05b9faca5d4cec5de8",
+            "judged": false,
+            "variant": "pymrm-6089593-g2-nz800-s123-v3-provisional"
+          },
+          "G10v3_met": true,
+          "round2_ran": [],
+          "A41_accepted": [
+            true,
+            true,
+            true
+          ],
+          "A42_max_rel_diff": 1.559285305616933e-08,
+          "A42_bound": 1e-06,
+          "A43_repeat_bitwise_equal": [
+            true,
+            true
+          ],
+          "A44_bitwise_identical": true,
+          "A45_element_defect_max": 3.8383264652952895e-08,
+          "A45_bound": 1e-07,
+          "A46_dP_over_P_max": 5.0592748045548796e-05,
+          "A46_bound": 0.001,
+          "A47_a_environment_block_equal": true,
+          "A47_a_bitwise": true,
+          "A47_b_max_rel_diff": 1.4289545806002592e-08,
+          "A47_b_bound": 1e-06,
+          "A48_estimates_equal_reference": [
+            true,
+            true,
+            true
+          ]
+        }
+      }
+    },
+    {
+      "id": "M02.G11",
+      "description": "M02 design note §10, G11 (Coverage and timing), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_wo12b_v3.py::*",
+            "tests/test_m02_experiments.py::test_g11v3_*"
+          ],
+          "passed": 43,
+          "failed": 0,
+          "skipped": 0
+        },
+        "measured": {
+          "record": {
+            "path": "benchmarks/m02/g11-coverage-v3.json",
+            "sha256": "140791db5dc3feca3ba7f8f5569ea90ac1fe7d30e7743f2884f7147faf195fee",
+            "judged": false,
+            "variant": "pymrm-6089593-g2-nz800-s123-v3-provisional"
+          },
+          "superseded_record": {
+            "path": "benchmarks/m02/g11-coverage.json",
+            "sha256": "22df74c4d02a25674564b27250a8a641d689d8b66f581e61115d239d8dbb6a4a",
+            "judged": false,
+            "variant": "pymrm-6089593-g2-nz800-s123-v2"
+          },
+          "met": {
+            "G11v3-1": true,
+            "G11v3-2": true,
+            "G11v3-3": true,
+            "G11v3-8": true,
+            "G11v3-11": true,
+            "G11v3-12": true
+          },
+          "G11v3-4_selected": "V5",
+          "G11v3-5_runs": 2,
+          "G11v3-5_points_per_run": 121,
+          "G11v3-5_all_equal": true,
+          "variant_timeout_s": 600
+        }
+      }
+    },
+    {
+      "id": "M02.G12",
+      "description": "M02 design note §10, G12 (Real loop), as amended by §14.2–§14.7.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "selectors": [
+            "tests/test_m02_wo14.py::test_rp1_*"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        "measured": {
+          "record": {
+            "path": "benchmarks/m02/g12-real-loop-v3.json",
+            "sha256": "47dc9f089b715fd417b9befac2f2f4974fd7bc087b2989addcd52523428a9075",
+            "judged": false,
+            "variant": "pymrm-6089593-g2-nz800-s123-v3"
+          },
+          "edges_record": {
+            "path": "benchmarks/m02/g12-real-loop-v3-edges.json",
+            "sha256": "148ec48830965e68a240528ab386f54305fba8a0c01d651ed166a59b83cce7f1",
+            "judged": false,
+            "variant": "pymrm-6089593-g2-nz800-s123-v3"
+          },
+          "outcome": "CONVERGED",
+          "verification_status": "VERIFIED",
+          "reproducibility_class": "R3",
+          "outer_iterations": 4,
+          "final_k": 3,
+          "rho_final": 0.29179569104087477,
+          "floor_ratio_xi_final": 65.32035659939199,
+          "floor_ratio_T_final": 13.301000546006525,
+          "experiments": 4,
+          "reactor_inlet_hard_domain_violations": [],
+          "reactor_inlet_per_tube_multiple_of_F_nom": 0.811103582825666,
+          "rp1_constants_equal": true,
+          "reproduce": {
+            "verdict": "MATCH",
+            "bitwise_floats": true,
+            "reasons": [
+              "external_results_replayed_from_record(4)"
+            ]
+          },
+          "live_rerun_repeat_bitwise_equal": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "solve_wall_s": 165.2,
+          "edges": {
+            "a_converged_verified": true,
+            "b_no_out_of_domain": true,
+            "c_y_inert": {
+              "653.15": [
+                0.04548369262982363,
+                0.039076252301607876
+              ],
+              "693.15": [
+                0.040467661354128166,
+                0.039076252301607876
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/design/M02-pymrm-adapter.md",
+      "sha256": "aad081a2c92a6f6bfdb9682a37ad743261194fc7093cebc792f4b858efe9ba86",
+      "description": "The design note (gates §10, amendments §14.2–§14.7)."
+    },
+    {
+      "path": "docs/reviews/M02-review.md",
+      "sha256": "e5a901e0640567cb0fafdd2915a96405bdaca1ea5e95e515ce123d57f41ade8e",
+      "description": "The design-lane review (F1–F10, rulings R-317, R-318)."
+    },
+    {
+      "path": "docs/design/M02-build-decisions.md",
+      "sha256": "813825e064c2f566d98c07c9a0616cd2eb8e1c6b136d32b6f6231873d524dc39",
+      "description": "The build log (D-entries with the measured values)."
+    },
+    {
+      "path": "benchmarks/m02/numerical_policy_external.yaml",
+      "sha256": "8bf3e1cd73016e9b0245dff315178c11193a8f8ded23a6e403735a2db52e0d80",
+      "description": "M02's numerical-policy addendum (R-317)."
+    },
+    {
+      "path": "benchmarks/m02/g10-adapter-halves-v3.json",
+      "sha256": "8f6048b9351dd39debbda42c2e92d85454122bb677f79b05b9faca5d4cec5de8",
+      "description": "G10v3: adapter halves of M01.A41-A48."
+    },
+    {
+      "path": "benchmarks/m02/g11-coverage-v3.json",
+      "sha256": "140791db5dc3feca3ba7f8f5569ea90ac1fe7d30e7743f2884f7147faf195fee",
+      "description": "G11v3: coverage, box selection, timing."
+    },
+    {
+      "path": "benchmarks/m02/g11-coverage.json",
+      "sha256": "22df74c4d02a25674564b27250a8a641d689d8b66f581e61115d239d8dbb6a4a",
+      "description": "G11 under v2 (superseded by v3, §14.5)."
+    },
+    {
+      "path": "benchmarks/m02/g12-real-loop-v3.json",
+      "sha256": "47dc9f089b715fd417b9befac2f2f4974fd7bc087b2989addcd52523428a9075",
+      "description": "G12 under v3: the real loop, replay, live rerun."
+    },
+    {
+      "path": "benchmarks/m02/g12-real-loop-v3-edges.json",
+      "sha256": "148ec48830965e68a240528ab386f54305fba8a0c01d651ed166a59b83cce7f1",
+      "description": "G12v3-2: the loop at the T edges."
+    },
+    {
+      "path": "benchmarks/m02/c1-loop-standin.json",
+      "sha256": "51152d15dd55600fa603d4ad5f39cd5eed647b1ccd183324bbf3f456287aae71",
+      "description": "C1-LOOP-M02-v1 with the stand-in (G8)."
+    },
+    {
+      "path": "benchmarks/m02/c1-loop-real.json",
+      "sha256": "cb907173780e988aad12a44e6cf85a37a10641b8e0aa73769d3e1c8505695174",
+      "description": "C1-LOOP-M02-v1 with the real reactor, v3 (G12)."
+    }
+  ],
+  "limitations": [
+    "W21 ('PyMRM boundary/accuracy/execution and provenance') and W22 are v0.2 requirement ids the manifest schema's `requirements` pattern ([DA]nn) cannot carry. This evidence bears on W21 (design note §10.4 lists which gates bear on which part); its verdict is the `verdict` lane's, not this manifest's.",
+    "The real-reactor evidence (G10–G12) is opt-in: it needs the separately built, pinned reactor environment (design note §2.4), runs on Linux only (macOS best effort, Windows refused before spawn; ADR 0033 D2) and is R3. Its records were measured on one machine (the records name the CPU model and the environment fingerprint) and are read here, not re-run (only the two `pymrm` environment tests, A47 (a) bitwise among them, run here); they carry `judged: false`. No second registered architecture was available, so G12's cross-architecture `compatible_reproduction` was not run.",
+    "`external-subprocess-v1` is not a sandbox: no filesystem confinement, network isolation, memory or CPU quota, or syscall filtering; trust rests on provenance (ADR 0033 D2; design note §12 N1, accepted for v0.2 local use as the default pending Frank).",
+    "v3's inert floor y_inert >= 0.035 sits just above a measured S1 failure (0.03 at 653.15 K, 11 MPa, H2/N2 2.5; build log D105). G11 samples only the corners and the centre of the hard domain; the real loop's smallest request is 1.116 x the floor (D115). An in-domain S1 failure ends in a refusal and then an honest COUPLING_NOT_CONVERGED, never a false success (M02 review F10).",
+    "G8 (c)'s sequential-substitution oracle is independent of the EO machinery in flowsheet structure, not in thermodynamics: it shares `thermo.pr_c1` with the code under test, which M01's evidence covers (M02 review F10).",
+    "Self-generated outputs are regression fixtures, not validation: the G10/G11 records are judged against M01's bounds and the probe record; G8 (f) against the design lane's table through an independent replica; G12 by its certificate, with its record a regression fixture. This is numerical verification, not empirical validation of the reactor model.",
+    "Cross-platform reproduction of a coupled run rests on the per-float rules of R-317 (the coupling record) and build log D130 (a failure bundle's compact copy, a session decision not yet ruled by the design lane), tested by perturbing the last bits on one machine (RP-2, RP-2b, D130), not by a run on a second architecture."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

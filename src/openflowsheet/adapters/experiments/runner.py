@@ -219,6 +219,12 @@ class ExperimentRunner:
     def check(self) -> Callable[[], None] | None:
         return self._check if self._check is not None else INTERRUPT_CHECK.get()
 
+    def frozen_environment(self, variant: Variant) -> Environment | None:
+        """The job's frozen handshake outcome for `variant` (§6.1, R-236), or `None` before its
+        first experiment. Never handshakes."""
+        found = self._handshakes.get(variant.sha256)
+        return None if found is None else found[0]
+
     def run(
         self,
         variant: Variant,
