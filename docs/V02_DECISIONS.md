@@ -825,3 +825,7 @@ Grep, don't read whole. Newest at the bottom.
   MF2 (manifest checker accepts null scores replaced by 0.1 → re-derives PROMOTABLE; R-361). E33 → pin BLAS 1 thread (A49).
   4.1 % refusals: no amendment; finding to the parent's owner. E34 partly reversed (real verdict class E). Q-A2.1 open.
   Engineer launched on the Am. 3 actions + main merge + manifest.
+- **Alpha re-cut** (2026-10-15, `opus-engineer`): S3 dispatch 38768575677 green (machine_class OK). C_α¹ = `6fec822` on
+  `wp/V02-alpha-rc1` (cherry-picks -x, gate 8574), merged --no-ff into `wp/V02-alpha-gate` (`896d014`). CI 38772065394 /
+  38772054427 green (8507/100 x86, 8479/98 arm); local 2, 6–12 PASS; step 10 0/77 violations. Manifest `implemented`
+  37/0/6. Build choices for later design read: B-AM2-6, -9, -10 (multiset hash tests, 6146aa3). `verdict` launched.
