@@ -1,4 +1,4 @@
-"""M07a.A01–A13: `scripts/v0_2_gate.py` decides whether a 0.2 pre-release tag may be proposed.
+"""M07a.A01–A14: `scripts/v0_2_gate.py` decides whether a 0.2 pre-release tag may be proposed.
 
 V02 alpha release spec §7 and §10; ADR 0028. The gate set `v0.2-alpha-gate-v1` covers exactly the
 versions of Table T1's `yes` rows, claims V11–V20, W21 and W22, reads every input at the candidate
@@ -9,9 +9,9 @@ fails its own test.
 The inputs are of two kinds, and each says which it is:
 
 - **real records**: ADR 0028, ADR 0021 and ADR 0022 as committed, today's support envelope, the
-  committed record of the v0.1 candidate `67c66d9` (R-151), the spec's truth tables T1, T4, T5
-  and T6 as `benchmarks/m07a/reference_values.yaml` registers them (M07a.A00 re-derives them), and
-  the v0.1 gate's file hashes there (M07a.A13);
+  committed record of the v0.1 candidate `67c66d9` (R-151), the spec's truth tables T1, T4, T5,
+  T6, T7 and T8 as `benchmarks/m07a/reference_values.yaml` registers them (M07a.A00 re-derives
+  them), and the v0.1 gate's file hashes there (M07a.A13);
 - **constructed test inputs**: minimal ledgers, verdict documents, ADR tables, RC records,
   manifests and envelopes, each carrying the marker `MARK` so that none can be mistaken for a
   record. The end-to-end tests run `main` on a scratch git repository built the same way.
@@ -19,6 +19,7 @@ The inputs are of two kinds, and each says which it is:
 
 from __future__ import annotations
 
+import datetime
 import hashlib
 import json
 import re
@@ -81,9 +82,11 @@ def document(
     judged: str | None = JUDGED,
     basis: Callable[[str], str] = lambda gate: f"§{gate}; evidence at C",
     after: str = "",
+    rejudged: str | None = None,
 ) -> str:
     """A verdict document in §6.3's form; each row is `(verdict, failing, travelling)`, written
-    in the mapping's order."""
+    in the mapping's order. `rejudged` is a `**Re-judged:**` line, placed directly below the
+    header (§19.2 item 2)."""
     judged_part = f"   **Judged:** {judged}" if judged else ""
     lines = [
         "# V02 alpha — verdicts",
@@ -91,6 +94,7 @@ def document(
         f"<!-- {MARK} -->",
         "",
         f"**Release candidate:** `{rc}`{judged_part}   **By:** design lane (`verdict`)",
+        *([rejudged] if rejudged is not None else []),
         "",
         header,
         "| --- | --- | --- | --- | --- |",
@@ -105,7 +109,11 @@ ACCEPTED = f"accepted, {JUDGED}"
 
 
 def adr_0028(
-    *, d3: str = "pending", answers: dict[str, str | None] | None = None, extra: str = ""
+    *,
+    d3: str = "pending",
+    answers: dict[str, str | None] | None = None,
+    extra: str = "",
+    clause: str = "V14 (b)",
 ) -> str:
     """ADR 0028's two tables, as the gate reads them; an answer `None` leaves out its row."""
     answers = {item: ACCEPTED for item in ALPHA.frank_items} | (answers or {})
@@ -130,7 +138,7 @@ def adr_0028(
         "",
         "| Clause | Evidence | Frank's acceptance | Owner after 0.2.0a1 |",
         "| --- | --- | --- | --- |",
-        f"| V14 (b) | the alpha verdict | {d3} | later |",
+        f"| {clause} | the alpha verdict | {d3} | later |",
         "",
     ]
     return "\n".join(lines) + extra
@@ -264,6 +272,8 @@ def test_the_registry_is_the_specification_s() -> None:
     assert ALPHA.envelope_id == TARGETS["envelope_id"]
     assert list(ALPHA.required_adrs) == TARGETS["required_adrs"]
     assert list(ALPHA.frank_items) == TARGETS["frank_items"]
+    assert dict(ALPHA.rejudge_waits) == TARGETS["rejudge_depends"]
+    assert v0_2_gate.REJUDGED_VALUE.pattern == TARGETS["rejudged_pattern"]
     assert v0_2_gate.ACCEPTANCE.pattern == TARGETS["frank_cell_pattern"]
     assert list(ALPHA.rc_steps) == TARGETS["rc_steps_required"]
     assert ALPHA.rc_last_step == max(int(step) for step in TARGETS["rc_steps"])
@@ -652,6 +662,100 @@ def test_a05_the_real_adr_0028_is_pending_on_all_three() -> None:
     assert not result["tag_may_be_proposed"]
 
 
+# -- M07a.A14: the re-judgement (§19.2, R-371; Tables T7 and T8) -------------------------------
+
+
+@pytest.mark.parametrize(
+    ("item", "cell", "judged", "rejudged", "counts"), TRUTH["T7_frank_rejudged"]
+)
+def test_a14_a_table_t7_bounds_what_a_re_judgement_read(
+    item: str, cell: str, judged: str, rejudged: str | None, counts: bool
+) -> None:
+    """Each row of Table T7 as an ADR 0028 fixture beside a verdict document with the row's
+    `Judged` and `**Re-judged:**` line; every other answer accepted on `Judged`, which counts
+    under T7; where the item is a clause, the row's gate `FAIL` on it."""
+    answers = dict.fromkeys(ALPHA.frank_items, f"accepted, {judged}")
+    if item in ALPHA.frank_items:
+        rows, clause, d3 = ALL_PASS, "V14 (b)", "pending"
+        answers[item] = cell
+    else:
+        gate = item.split(" ", 1)[0]
+        rows, clause, d3 = {**ALL_PASS, gate: ("FAIL", item, "L01")}, item, cell
+    words = {gate: word for gate, (word, _, _) in rows.items()}
+    line = None if rejudged is None else f"**Re-judged:** {rejudged}"
+    result = report(
+        files(
+            ledger=ledger(words),
+            verdicts=document(rows, judged=judged, rejudged=line),
+            adr_0028=adr_0028(d3=d3, answers=answers, clause=clause),
+        )
+    )
+    assert result["tag_may_be_proposed"] is counts, result["reasons"]
+    if counts:
+        return
+    (reason,) = result["reasons"]
+    named = f"Frank's answer to {item}" if item in ALPHA.frank_items else f"{gate}: {item}: "
+    assert reason.startswith(named), reason
+    date = v0_2_gate.acceptance_date(cell)
+    if date is not None:  # a refusal on a date names it and both verdict dates
+        assert date.isoformat() in reason and f"Judged date {judged}" in reason, reason
+        assert rejudged is None or f"re-judged {rejudged}" in reason, reason
+
+
+@pytest.mark.parametrize(("line", "judged", "well_formed"), TRUTH["T8_rejudged_line"])
+def test_a14_b_table_t8_is_the_re_judged_line_s_rule(
+    line: str, judged: str, well_formed: bool
+) -> None:
+    text = document(ALL_PASS, judged=judged, rejudged=line)
+    if not well_formed:
+        with pytest.raises(ValueError, match="Re-judged"):
+            v0_2_gate.verdict_document(text, ALPHA, RC)
+        with pytest.raises(ValueError, match="Re-judged"):
+            report(files(verdicts=text))
+        return
+    read = v0_2_gate.verdict_document(text, ALPHA, RC)
+    found = v0_2_gate.REJUDGED_VALUE.fullmatch(line)
+    assert found and read.rejudged is not None and read.judged.isoformat() == judged
+    assert read.rejudged.date.isoformat() == found.group(1)
+    assert read.rejudged.gates == tuple(found.group(2).split(", "))
+    answers = dict.fromkeys(ALPHA.frank_items, f"accepted, {judged}")
+    result = report(files(verdicts=text, adr_0028=adr_0028(answers=answers)))
+    assert result["tag_may_be_proposed"], result["reasons"]
+    assert result["judged"] == judged
+    assert result["rejudged"] == {"date": found.group(1), "gates": list(read.rejudged.gates)}
+
+
+def test_a14_c_two_re_judged_lines_are_an_error() -> None:
+    first, second = "**Re-judged:** 2026-10-20 (W21)", "**Re-judged:** 2026-10-21 (V13)"
+    text = document(ALL_PASS, rejudged=first, after=f"\n{second}\n")
+    with pytest.raises(ValueError, match="2 `\\*\\*Re-judged:\\*\\*` lines"):
+        v0_2_gate.verdict_document(text, ALPHA, RC)
+    with pytest.raises(ValueError):
+        report(files(verdicts=text))
+
+
+def test_a14_c_a_second_line_that_is_itself_malformed_is_an_error() -> None:
+    text = document(ALL_PASS, rejudged="**Re-judged:** 2026-10-20 (W21)", after="**Re-judged:**\n")
+    with pytest.raises(ValueError, match="Re-judged"):
+        v0_2_gate.verdict_document(text, ALPHA, RC)
+
+
+def test_a14_d_a_well_formed_line_anywhere_in_the_document_parses() -> None:
+    line = "**Re-judged:** 2026-10-20 (V13, V17, W21)"
+    text = document(ALL_PASS, after=f"\n## Re-judgement\n\n  {line}\n\nprose\n")
+    read = v0_2_gate.verdict_document(text, ALPHA, RC)
+    assert read.rejudged == v0_2_gate.Rejudgement(
+        date=datetime.date(2026, 10, 20), gates=("V13", "V17", "W21")
+    )
+    assert report(files(verdicts=text))["tag_may_be_proposed"]
+
+
+def test_a14_no_re_judgement_is_table_t6() -> None:
+    read = v0_2_gate.verdict_document(document(ALL_PASS), ALPHA, RC)
+    assert read.rejudged is None
+    assert report()["rejudged"] is None
+
+
 # -- M07a.A06: W23–W27 are not claimed ---------------------------------------------------------
 
 
@@ -1019,6 +1123,7 @@ def test_a12_markdown_and_json() -> None:
         "version",
         "rc_version",
         "judged",
+        "rejudged",
         "gates",
         "tree_differences",
         "rc_record_problems",

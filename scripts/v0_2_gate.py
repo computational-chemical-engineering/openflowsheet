@@ -25,7 +25,10 @@ working tree (§7.2):
   then a calendar date, which is the acceptance date (Table T4, Amendment 1 (review) F1). A D3
   row and each of the three answers count only if that date is on or after the verdicts' `Judged`
   date (Table T6, Amendment 1 (review) F2), so an answer given for one release is not read for a
-  later one.
+  later one. A re-judgement of gates `BLOCKED` on a registered answer keeps `Judged` and adds one
+  line `**Re-judged:** YYYY-MM-DD (G, …)` (§19.2, R-371; Table T8, else exit 2); an answer some
+  listed gate waits on then counts only up to that date, and a D3 row of a listed gate only from
+  it (Table T7).
 - `docs/v02-alpha-rc-record.md`, by `v0_1_gate.py`'s RC-record grammar (T08 review 3, Ruling 3)
   with this set's steps: 1–12 must each have a row that passed and none that failed or is not
   stated as passed; step 13 is this script and is not required.
@@ -43,7 +46,8 @@ candidate's (2); every claimed gate has a verdict in the ledger and the same in 
 document (D2.1, 3), none `BLOCKED` (D2.2, 4), and every `FAIL` names its clauses, each accepted in
 ADR 0028's D3 table (D2.3, 5); the candidate's D2.4 paths equal `C`'s (`v0_1_gate.py`'s rule and
 code, 6); the RC record shows the set's steps passed (7); the manifests hold (8, 9); the envelope is
-pinned (10); Frank's three answers are acceptances dated on or after `Judged` (11); and every
+pinned (10); Frank's three answers are acceptances dated on or after `Judged`, and within a
+re-judgement's bound where one applies (11; Table T7); and every
 required ADR is Accepted (12). Unclaimed gates are printed `not claimed (<set>)` and never checked.
 A `FAIL` is printed `FAIL`, accepted or not. Exit 0 iff a tag may be proposed, 1 if it may not, 2
 if the verdict document is malformed or `C` cannot be found.
@@ -109,6 +113,12 @@ RELEASE_CANDIDATE: Final = "**Release candidate:**"
 RELEASE_CANDIDATE_VALUE: Final = re.compile(r"\*\*Release candidate:\*\* `([0-9a-f]{40})`")
 JUDGED: Final = "**Judged:**"
 JUDGED_VALUE: Final = re.compile(r"\*\*Judged:\*\* (\d{4}-\d{2}-\d{2})(?![0-9])")
+#: §19.2 item 3 (Table T8): the re-judgement line, stripped, fullmatches `REJUDGED_VALUE`.
+REJUDGED: Final = "**Re-judged:**"
+REJUDGED_VALUE: Final = re.compile(
+    r"\*\*Re-judged:\*\* (\d{4}-\d{2}-\d{2}) "
+    r"\(((?:V(?:1[1-9]|20)|W2[12])(?:, (?:V(?:1[1-9]|20)|W2[12]))*)\)"
+)
 
 
 @dataclass(frozen=True)
@@ -132,6 +142,8 @@ class GateSet:
     required_adrs: tuple[str, ...]
     #: The rows of the policy ADR's decisions table, each Frank's acceptance of a default.
     frank_items: tuple[str, ...]
+    #: The gates a re-judgement may list, each with the answer it waits on (§19.2 item 2).
+    rejudge_waits: tuple[tuple[str, str], ...]
 
     @property
     def gates(self) -> tuple[str, ...]:
@@ -155,6 +167,8 @@ GATE_SETS: Final = (
         envelope_id="v0.2-alpha-envelope-1",
         required_adrs=("0022", "0026", "0027", "0028", "0033", "0034", "0035"),
         frank_items=("N3", "V17 carry", "M02 N1"),
+        # MR-7, F-α2, F-α3: V13 and V17 wait on `V17 carry`, W21 on `M02 N1`.
+        rejudge_waits=(("V13", "V17 carry"), ("V17", "V17 carry"), ("W21", "M02 N1")),
     ),
 )
 
@@ -183,10 +197,19 @@ class VerdictRow:
 
 
 @dataclass(frozen=True)
+class Rejudgement:
+    """A `**Re-judged:**` line (§19.2): its date, and the gates it lists, in table order."""
+
+    date: datetime.date
+    gates: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class VerdictDocument:
     rc: str
     judged: datetime.date
     rows: dict[str, VerdictRow]
+    rejudged: Rejudgement | None = None
 
 
 def _ids_outside_their_column(cell: str) -> list[str]:
@@ -254,11 +277,52 @@ def _header(where: str, text: str, rc: str) -> datetime.date:
         raise ValueError(f"{where}: Judged {judged[0]!r} is not a date") from None
 
 
+def _rejudgement(
+    where: str, text: str, judged: datetime.date, gate_set: GateSet
+) -> Rejudgement | None:
+    """§19.2 item 3 (Table T8): at most one line starting `**Re-judged:**`, anywhere; stripped,
+    it fullmatches `REJUDGED_VALUE`, its date is a calendar date on or after `judged`, and its
+    gates are a non-empty selection of the gates a re-judgement may list, in strictly increasing
+    table order. Anything else is a `ValueError`."""
+    lines = [line.strip() for line in text.splitlines() if line.strip().startswith(REJUDGED)]
+    if not lines:
+        return None
+    if len(lines) > 1:
+        raise ValueError(f"{where} has {len(lines)} `{REJUDGED}` lines, not at most 1")
+    (line,) = lines
+    found = REJUDGED_VALUE.fullmatch(line)
+    if found is None:
+        raise ValueError(f"{where}: {line!r} is not `{REJUDGED} YYYY-MM-DD (G, …)`")
+    try:
+        date = datetime.date.fromisoformat(found.group(1))
+    except ValueError:
+        raise ValueError(f"{where}: Re-judged {found.group(1)!r} is not a date") from None
+    if date < judged:
+        raise ValueError(
+            f"{where}: Re-judged {date.isoformat()} is before Judged {judged.isoformat()}"
+        )
+    gates = tuple(found.group(2).split(", "))
+    listable = [gate for gate, _ in gate_set.rejudge_waits]
+    strays = [gate for gate in gates if gate not in listable]
+    if strays:
+        raise ValueError(
+            f"{where}: Re-judged lists {strays}, not blocked on a registered answer "
+            f"({', '.join(listable)})"
+        )
+    order = [gate_set.claimed.index(gate) for gate in gates]
+    if any(later <= earlier for earlier, later in zip(order, order[1:], strict=False)):
+        raise ValueError(
+            f"{where}: Re-judged lists {list(gates)}, not in strictly increasing order"
+        )
+    return Rejudgement(date=date, gates=gates)
+
+
 def verdict_document(text: str, gate_set: GateSet, rc: str) -> VerdictDocument:
     """The verdict document read by column (§6.3, §7.2 item 2). Anything off the form is a
     `ValueError` rather than a guess."""
     where = gate_set.verdict_document
     judged = _header(where, text, rc)
+    rejudged = _rejudgement(where, text, judged, gate_set)
     tables = list(_tables(text))
     verdict_tables = [
         (header, rows)
@@ -307,7 +371,7 @@ def verdict_document(text: str, gate_set: GateSet, rc: str) -> VerdictDocument:
             limitations=_travelling(where, gate, travelling),
             blocked=blocked,
         )
-    return VerdictDocument(rc=rc, judged=judged, rows=found)
+    return VerdictDocument(rc=rc, judged=judged, rows=found, rejudged=rejudged)
 
 
 # -- reading the policy ADR (Frank's tables) ---------------------------------------------------
@@ -352,10 +416,24 @@ class Policy:
     frank: list[str]
 
 
-def policy(text: str | None, gate_set: GateSet, judged: datetime.date | None) -> Policy:
+def _verdict_dates(judged: datetime.date | None, rejudged: Rejudgement | None) -> str:
+    """The verdict's dates as a refusal names them: `Judged`, and the re-judgement if any."""
+    named = f"Judged date {judged.isoformat() if judged else '(none)'}"
+    if rejudged is not None:
+        named += f", re-judged {rejudged.date.isoformat()} ({', '.join(rejudged.gates)})"
+    return named
+
+
+def policy(
+    text: str | None,
+    gate_set: GateSet,
+    judged: datetime.date | None,
+    rejudged: Rejudgement | None = None,
+) -> Policy:
     """ADR 0028's two tables (§7.2 item 3): the D3 acceptances, and Frank's answers, each of
-    which must be dated on or after the verdict's `judged` date (Table T6); the D3 dates are
-    compared in `judge_gate`, clause by clause."""
+    which must be dated on or after the verdict's `judged` date (Table T6) and, where a gate the
+    re-judgement lists waits on it, on or before the re-judgement's date (Table T7); the D3 dates
+    are compared in `judge_gate`, clause by clause."""
     where = gate_set.policy_adr
     if text is None:
         missing = f"{where} does not exist at the candidate"
@@ -392,8 +470,20 @@ def policy(text: str | None, gate_set: GateSet, judged: datetime.date | None) ->
             elif judged is None or date < judged:
                 frank.append(
                     f"Frank's answer to {item}: accepted {date.isoformat()}, before the verdict's "
-                    f"Judged date {judged.isoformat() if judged else '(none)'} (§7.3 item 11)"
+                    f"{_verdict_dates(judged, rejudged)} (§7.3 item 11)"
                 )
+            elif rejudged is not None and date > rejudged.date:
+                waiting = [
+                    gate
+                    for gate, waits_on in gate_set.rejudge_waits
+                    if waits_on == item and gate in rejudged.gates
+                ]
+                if waiting:
+                    frank.append(
+                        f"Frank's answer to {item}: accepted {date.isoformat()}, after the "
+                        f"re-judgement of {', '.join(waiting)} that read it "
+                        f"({_verdict_dates(judged, rejudged)}; §19.2 Table T7)"
+                    )
     return Policy(accepted, problems, frank)
 
 
@@ -581,6 +671,7 @@ def judge_gate(
     judged: datetime.date | None,
     known_limitations: set[str],
     gate_set: GateSet,
+    rejudged: Rejudgement | None = None,
 ) -> GateLine:
     line = GateLine(
         gate=gate,
@@ -616,8 +707,13 @@ def judge_gate(
                 unaccepted.append(clause)
             elif judged is None or date < judged:
                 line.problems.append(
-                    f"{clause}: accepted {date.isoformat()}, before the verdict's Judged date "
-                    f"{judged.isoformat() if judged else '(none)'} (D2.3; ADR 0028 D2)"
+                    f"{clause}: accepted {date.isoformat()}, before the verdict's "
+                    f"{_verdict_dates(judged, rejudged)} (D2.3; ADR 0028 D2)"
+                )
+            elif rejudged is not None and gate in rejudged.gates and date < rejudged.date:
+                line.problems.append(
+                    f"{clause}: accepted {date.isoformat()}, before the re-judgement of {gate} "
+                    f"that judged it ({_verdict_dates(judged, rejudged)}; D2.3; §19.2 Table T7)"
                 )
             else:
                 line.accepted[clause] = cell
@@ -664,7 +760,13 @@ def build(
     verdict_text = files.get(gate_set.verdict_document)
     document = None if verdict_text is None else verdict_document(verdict_text, gate_set, rc)
     rows = document.rows if document else {}
-    found = policy(files.get(gate_set.policy_adr), gate_set, document.judged if document else None)
+    rejudged = document.rejudged if document else None
+    found = policy(
+        files.get(gate_set.policy_adr),
+        gate_set,
+        document.judged if document else None,
+        rejudged,
+    )
     envelope_text = files.get(ENVELOPE)
     known = {str(item["id"]) for item in envelope_document(envelope_text).get("limitations", [])}
     lines = [
@@ -676,6 +778,7 @@ def build(
             document.judged if document else None,
             known,
             gate_set,
+            rejudged,
         )
         for gate in gate_set.claimed
     ]
@@ -717,6 +820,9 @@ def build(
         "version": version,
         "rc_version": rc_version,
         "judged": document.judged.isoformat() if document else None,
+        "rejudged": (
+            {"date": rejudged.date.isoformat(), "gates": list(rejudged.gates)} if rejudged else None
+        ),
         "gates": [
             {
                 "gate": line.gate,
