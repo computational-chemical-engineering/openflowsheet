@@ -808,3 +808,7 @@ Grep, don't read whole. Newest at the bottom.
   register union R-296…R-318; WO-5c `at_coupling` proved inert (4 w values, identity + bitwise inner solve); S20 input-spec
   classes moved to `holders` (P3 without Pyomo); S3 `C1Parent`, real v3 673.15 K in 164 s, ΔX 4.40e-6, ΔT 2.92e-3 K. Open
   for review: S22, S23–S26. NLP-1 inventory stale (3 objects). Next M04 slot: E31 fix + WO-12 (launched).
+- **Alpha Am2 actions 1–2** (2026-10-15, `opus-engineer`, 04e65be R-345, 00acbe9/f0cfda8/46b2095 R-347, logs f77262e/2e778d3;
+  gates 8585/8591): Am2.5 inertness — G2 (ii) dump byte-identical (`659748576adb9730…`), K05 identity PASS, 10/10 pr-c1-v1
+  solution states identical, 9 certificates differ only in scoped qualification fields. B-AM2-3: CI `dist`/`build` jobs
+  install `requirements.lock` first (untested locally, needs network) — for the design read.
