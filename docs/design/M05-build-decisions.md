@@ -200,3 +200,11 @@ S19 `revision_binding.with_coupling` is deleted and `revision_binding.py` is mai
    Measured: M05 `nlp` tier in a freshly built audited environment 121 passed, 15 xfailed (WO-6's counts); the
    NLP-1 inventory `--check` fails on three objects (`libssl.so.3`, `_ssl`, `_queue`) that the project-wide import
    walk now loads — the same imports exist at 71804a6, so the recorded M03 inventory predates them (not WO-5c's).
+
+## S3 — the real C1 parent adapter (§7.4, §7.2, §6.4)
+
+S20 `DecisionSpec`, `ExternalLinkSpec`, `InequalitySpec` and `ObjectiveSpec` move from `projection` to `holders`
+   (Pyomo-free) and `projection` imports them: `c1_formulation` imported them from `projection`, so it needed Pyomo,
+   and the parent's P3 (`c1_constraint_values`) reads the formulation in the default install. Same objects, same
+   fields, as S2 did for the link bounds; the `nlp` tier is unchanged. Alternative: the parent builds its P3 rows
+   without the formulation (a second copy of §7.1). Reversible: the move.

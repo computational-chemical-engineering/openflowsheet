@@ -44,7 +44,7 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Final, Literal, Protocol
 
 from openflowsheet.canonical import encode_doubles
-from openflowsheet.compile.spec import DomainError, PropertyBlock
+from openflowsheet.compile.spec import DomainError, PropertyBlock, RowBuilder
 
 HolderKind = Literal["property_block", "truth"]
 CallKind = Literal["value", "jacobian"]
@@ -263,6 +263,74 @@ class TruthModel(Protocol):
     def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]: ...
 
     def gradient(self, inlet: Sequence[float]) -> Sequence[Sequence[float]]: ...
+
+
+# -- the projection's input specs (§6.1) --------------------------------------------------------
+# Here, not in `projection`, so that the C1 formulation (`study.c1_formulation`) builds them in the
+# default install, without Pyomo (M05 build decision S20; S2 moved the link bounds the same way).
+
+
+@dataclass(frozen=True)
+class DecisionSpec:
+    """A pinned input promoted to a decision. Bounded: the scaled variable d ∈ [−1, 1] with the
+    symbol c + h·d. `lower = upper = None`: unbounded, the variable is the parameter itself."""
+
+    parameter_id: str
+    lower: float | None
+    upper: float | None
+
+    @property
+    def bounded(self) -> bool:
+        return self.lower is not None and self.upper is not None
+
+    def center_half_width(self) -> tuple[float, float]:
+        """(c, h) in binary64: c = (lo + hi)·0.5, h = (hi − lo)·0.5; (0, 1) when unbounded."""
+        if self.lower is None and self.upper is None:
+            return 0.0, 1.0
+        if self.lower is None or self.upper is None or not self.lower < self.upper:
+            raise ValueError(
+                f"decision {self.parameter_id!r}: a box needs finite lower < upper, or neither "
+                f"(got [{self.lower!r}, {self.upper!r}])"
+            )
+        return (self.lower + self.upper) * 0.5, (self.upper - self.lower) * 0.5
+
+
+@dataclass(frozen=True)
+class ExternalLinkSpec:
+    """An external unit whose pinned coupling coordinates (X̂, ΔT̂) become variables linked to its
+    truth's two outputs on its seven inlet variables (ADR 0038 D3)."""
+
+    unit_id: str
+    x_param_id: str
+    dt_param_id: str
+    inlet_variable_ids: tuple[str, ...]
+    truth: TruthModel
+
+
+@dataclass(frozen=True)
+class InequalitySpec:
+    """`build ≤ bound` (`sense "<="`) or `build ≥ bound` (`">="`), tightened inward by
+    `margin_rel · |bound|`. `build` is a `RowBuilder` over the projection's symbols."""
+
+    inequality_id: str
+    build: RowBuilder
+    bound: float
+    source: str
+    margin_rel: float
+    sense: Literal["<=", ">="] = "<="
+
+    def tightened(self) -> float:
+        if self.sense == "<=":
+            return self.bound - self.margin_rel * abs(self.bound)
+        return self.bound + self.margin_rel * abs(self.bound)
+
+
+@dataclass(frozen=True)
+class ObjectiveSpec:
+    objective_id: str
+    sense: Literal["minimize", "maximize"]
+    build: RowBuilder
+    scale: float
 
 
 class TruthBox:

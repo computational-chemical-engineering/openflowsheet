@@ -60,6 +60,10 @@ from openflowsheet.studies.trust_region.checks import (
 from openflowsheet.studies.trust_region.holders import (
     LINK_BOUNDS,
     ColdBudget,
+    DecisionSpec,
+    ExternalLinkSpec,
+    InequalitySpec,
+    ObjectiveSpec,
     TruthBox,
     TruthModel,
 )
@@ -72,13 +76,7 @@ from openflowsheet.studies.trust_region.trf_state import (
 from openflowsheet.thermo.pr_c1 import COMPONENTS
 
 if TYPE_CHECKING:
-    from openflowsheet.studies.trust_region.projection import (
-        DecisionSpec,
-        ExternalLinkSpec,
-        InequalitySpec,
-        ObjectiveSpec,
-        Projection,
-    )
+    from openflowsheet.studies.trust_region.projection import Projection
     from openflowsheet.studies.trust_region.trf_state import EFBasis
 
 __all__ = [
@@ -167,15 +165,8 @@ def c1_formulation(
     problem) for the reactor bound to `variant` and evaluated by `truth`, with the decision box
     `box` (module docstring). Raises `ValueError` for a revision that is not C1-shaped.
 
-    The projection's specs are imported here, not at module level: this module imports in the
-    default install, without Pyomo (M03's G6; WO-6's readiness answers there)."""
-    from openflowsheet.studies.trust_region.projection import (
-        DecisionSpec,
-        ExternalLinkSpec,
-        InequalitySpec,
-        ObjectiveSpec,
-    )
-
+    Pyomo-free: the projection's input specs live in `holders` (build decision S20), so the
+    formulation builds in the default install (M03's G6; the parent's P3 reads it there)."""
     flowsheet = binding.flowsheet
     reactor: C1Reactor = _only(
         [unit for unit in flowsheet.instances if isinstance(unit, C1Reactor)], "C1 reactor"
