@@ -804,3 +804,7 @@ Grep, don't read whole. Newest at the bottom.
   extended. Failure is V18 (c), Q5 corrected. A43 → registered `machine_class` (scoped exception to "unchanged" for
   `t08_rc.py`/`t08_dist.py`). Wrapper output accepted; bundle cert = recorded sha `d61a86fb…`. `e0e198e` superseded; re-cut
   C_α¹ (R-349). Frank alternative Q-A2-1 (accept V18 (c) FAIL) not recommended; re-cut proceeds.
+- **M05 merge + WO-5c + S3** (2026-10-15, `opus-engineer`, `wp/M05` `fae2785`/`8edf34d`/`84295ba`/`40acf09`, gates 8775/8774/8774/8786):
+  register union R-296…R-318; WO-5c `at_coupling` proved inert (4 w values, identity + bitwise inner solve); S20 input-spec
+  classes moved to `holders` (P3 without Pyomo); S3 `C1Parent`, real v3 673.15 K in 164 s, ΔX 4.40e-6, ΔT 2.92e-3 K. Open
+  for review: S22, S23–S26. NLP-1 inventory stale (3 objects). Next M04 slot: E31 fix + WO-12 (launched).
