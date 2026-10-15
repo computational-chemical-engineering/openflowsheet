@@ -6280,3 +6280,163 @@ content-addressed manifest; the facet is not relaxed.
 **Watch for.** A difference outside E: it goes to the design lane, and E is never extended silently.
 
 ---
+
+## R-360 — Promotion covers every way a surrogate enters a revision: an added, renamed or first-revision surrogate instance needs a PROMOTABLE re-derived verdict (M04 review MF1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.1, A48; `docs/reviews/M04-review.md` |
+| Evidence | A scratch probe on WO-9's world committed A18's NOT_PROMOTABLE surrogate by renaming `reactor` (four `set` edits): `replacements()` judges only `set(old) & set(new)` (`replacement.py:240`). |
+| Affected packages | M04 |
+
+**Decision.** A change whose new revision binds a surrogate-backed instance with no checked replacement is rejected `model_replacement_incompatible`, reason `surrogate_not_promoted(<instance>)`, unless its `derived_verdict` is PROMOTABLE.
+
+**Rejected alternatives, and why.** Refusing non-PROMOTABLE manifests in the binder: it would fail `resolvable` before `surrogate_evidence` states the verdict (R-323's report order). A separate promote operation: rejected by ADR 0037.
+
+**Watch for.** A new path that writes revision content (import, copy, template) must apply the same rule.
+
+## R-361 — The manifest checker ties `failed`/`incomplete` lists to null scores, centre statuses and `training_ok` (M04 review MF2)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.2, A24; `docs/reviews/M04-review.md` |
+| Evidence | WO-11's manifest with its 23 null scores set to 0.1 and q̂, H, L and the promotion block made consistent re-derives PROMOTABLE and passes `check_manifest`. |
+| Affected packages | M04 |
+
+**Decision.** Three checker rules (§A3.2); A24 gains three mutations.
+
+**Rejected alternatives, and why.** Relying on the job alone writing manifests: ADR 0037's stated property is that a hand-edited manifest cannot be promoted.
+
+**Watch for.** Any member that duplicates a fact stated elsewhere in the manifest needs a consistency rule.
+
+## R-362 — The study's fit runs under one BLAS thread; the manifest does not record the thread setting; A32 is bitwise per platform at any thread setting (M04 build log E33)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.3, A32, A49; `docs/reviews/M04-review.md` |
+| Evidence | E33: default threading gives `908cbe2f…`, one thread `d65bb022…` (WO-11's); last-ulp differences, promotion block identical. |
+| Affected packages | M04 |
+
+**Decision.** Pin, proved inert against `d65bb022…`; A49 checks coefficients at 1 and 8 threads.
+
+**Rejected alternatives, and why.** Recording the thread environment in the manifest: the manifest is the surrogate's identity (`model.artifact_ref`), and an environment value in it makes identity host-dependent (the K05 lesson in `run/manifest.py`; F4: unknown is never exact).
+
+**Watch for.** Any other float computed in the study process through BLAS.
+
+## R-363 — With no predictor the score-, band- and gradient-dependent reasons are not evaluated (M04 review SF2)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.4, A50; `docs/reviews/M04-review.md` |
+| Evidence | `study.py:277-331`: an unidentifiable fit nulls every score, so the record says `band_not_finite` and `gradient_check_incomplete`, both false causes. |
+| Affected packages | M04 |
+
+**Decision.** The verdict function takes the predictor's presence as an input (true for V01–V16, unchanged); without it the six reasons of §A3.4 are not evaluated.
+
+**Rejected alternatives, and why.** Keeping the mapping and documenting it: a recorded reason must be a true cause.
+
+**Watch for.** —
+
+## R-364 — WO-11's NOT_PROMOTABLE (`band_not_finite`) is M04's real outcome; no box, plan or counting amendment; b2-it2/3 are not admissible
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.5; `docs/reviews/M04-review.md` |
+| Evidence | 26/632 deterministic `reactor_not_accepted(certificate)` refusals across the box interior; calibration 5/118 > n − k = 4. |
+| Affected packages | M04 |
+
+**Decision.** No amendment on the outcome. §5.3 registered the rule and its cost before the run; §5.5 rule 2 and A1.2's guard forbid b2-it2 after `band_not_finite`. The refusals go to the parent's owner as a finding, to diagnose from cache.
+
+**Rejected alternatives, and why.** Re-boxing to avoid the refused points (selected on the outcome); counting refusals outside n (narrows a denominator); running b2-it2 (refused by the guard).
+
+**Watch for.** A new parent variant (e.g. v4) is a new study under a new amendment, never a re-judgment of b2-it1.
+
+## R-365 — M04's harvest: the real verdict is class E with a new L-row; A33/Q-A2.1 are B; the E33 limitation is B until R-362 lands (reverses E34 in part)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.5; T08 §5.7; `docs/reviews/M04-review.md` |
+| Evidence | E34 filed all four limitations and A33 as P. |
+| Affected packages | M04 |
+
+**Decision.** limitations[0] → E (L-row: no promotable surrogate of the real C1 reactor exists in v0.2; the study is NOT_PROMOTABLE, `band_not_finite`); the `unit_models` statement says so. limitations[1] and checks[A33] → B (backlog: close with A33's record). limitations[2] → B, then S when R-362 lands. limitations[3] → P.
+
+**Rejected alternatives, and why.** P for the real verdict: a user reading the support matrix would take `c1.reactor_surrogate` as usable on the real reactor (T08 §5.7: a misfiled E-as-P hides a limitation).
+
+**Watch for.** —
+
+## R-366 — Q-A2.1 stays open and closes only with A33's record on a PROMOTABLE real surrogate
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.5; §A2.15; `docs/reviews/M04-review.md` |
+| Evidence | No PROMOTABLE real surrogate exists (R-364). |
+| Affected packages | M04 |
+
+**Decision.** Closure: the surrogate-backed `C1-LOOP-M02-v1` solve's certificate carries no `surrogate_outside_reference_domain` limitation, and the H₂/N₂ coordinate's margin to box v2's face is stated in binary64.
+
+**Rejected alternatives, and why.** Closing from the parent-backed loop's inlet: it is not the surrogate-backed loop's.
+
+**Watch for.** —
+
+## R-367 — Errata: G5's b2-it1 bound is 0.2084 (E24); §A2.3's 'no schema change' is withdrawn (E26); A47's evidence E names `data[*].keys_sha256` (E29)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.6; `docs/reviews/M04-review.md` |
+| Evidence | E24: 0.208490882 < 0.2085; E26: the schema pinned `it…` and `box7-v1`; E29: the evidence's key digests differ with the fingerprint. |
+| Affected packages | M04 |
+
+**Decision.** Confirmed as errata; a registered lower bound rounds down.
+
+**Rejected alternatives, and why.** Restating G5's measured value: the bound is a claim, not a measurement.
+
+**Watch for.** —
+
+## R-368 — Build choices E10, E12, E14, E25, E28, E30, E32 confirmed
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.6; `docs/reviews/M04-review.md` |
+| Evidence | Build log E10–E32; review N4 (E32's three callers). |
+| Affected packages | M04 |
+
+**Decision.** Confirmed; E14 with R-365's statement wording.
+
+**Rejected alternatives, and why.** —
+
+**Watch for.** —
+
+## R-369 — E27 confirmed; production signatures take the box's `Scaling` without a box-v1 default
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.6; review N1; `docs/reviews/M04-review.md` |
+| Evidence | `quadratic.fit_quadratic(..., scaling=SCALING)`. |
+| Affected packages | M04 |
+
+**Decision.** The default is removed from production signatures; box v1 tests pass `SCALING` explicitly.
+
+**Rejected alternatives, and why.** Keeping the default: a forgotten argument fits silently in v1's z.
+
+**Watch for.** —

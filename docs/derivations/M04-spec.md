@@ -1388,3 +1388,63 @@ WO-12's manifest lists A43–A47.
   DECISION: no. Reversible by: the registry's synthetic-only flag; no record changes.
 - **Q-A2.3 (needs a design-lane ADR pass or Frank's acceptance).** ADR 0036 Amendment 2 as worded in §A2.11.
   DECISION: WO-18 to WO-20 proceed now; WO-11 waits for it.
+
+## 20. Amendment 3 (2026-10-15): the review's rulings (`docs/reviews/M04-review.md`; R-360…R-369)
+
+### A3.1 Promotion covers every way a surrogate enters a revision (R-360; review MF1)
+
+§8.3/§8.4 judged only an instance present on both sides of a change. From here on, a change whose new revision binds
+a surrogate-backed instance with no checked replacement is rejected if that surrogate's re-derived verdict
+(`derived_verdict`) is not PROMOTABLE. This covers an added instance, a renamed one, and the first revision. The
+rejection is `model_replacement_incompatible`, reason `surrogate_not_promoted(<instance>)`, and the head stays
+unchanged. Rollback and §8.3's facets are unchanged.
+
+### A3.2 The checker ties the failure lists to the scores (R-361; review MF2)
+
+`check_manifest` adds three rules:
+
+- For calibration and test, `scores[i]` is null **iff** i ∈ `failed ∪ incomplete` or there is no predictor.
+- A gradient centre is `ok` with errors **iff** none of its stencil indices is in `splits.gradient.failed ∪
+  incomplete` and there is a predictor.
+- `predictor.fit.training_ok` = `splits.training.count` − |failed| − |incomplete|.
+
+A24 gains the three single mutations: a finite score on a failed draw; an `ok` centre with a failed stencil; a
+`training_ok` off by one.
+
+### A3.3 The fit does not depend on the thread count (R-362; review SF1, build log E33)
+
+- **The rule.** The study's SVD, QR, triangular solve and products run under one BLAS thread, whatever the
+  process's setting. The mechanism is the build lane's: `threadpoolctl` as a declared dependency, or an equivalent.
+  The fix is proved inert: WO-11's study re-submitted with budget 0 and default threading gives `d65bb022…`.
+- **A32's text** becomes: "Re-running the study with every record cached reproduces the manifest bitwise on one
+  platform, whatever the thread setting of the study's process. Across platforms, A1.3's classes govern."
+- **A49 (new; default gate).** The fit runs in two subprocesses with `OPENBLAS_NUM_THREADS=OMP_NUM_THREADS` at 1 and
+  at 8, at a size where it fails without the fix. Its coefficients are bitwise equal. If no synthetic size reproduces
+  the difference, the opt-in real record is used.
+
+### A3.4 No predictor, no score-dependent reasons (R-363; review SF2)
+
+When the fit is unidentifiable, the score-dependent reasons are not evaluated: `band_not_finite`,
+`width_limit_exceeded`, `coverage_bound_below_minimum`, `inadmissible_prediction`, `gradient_check_incomplete` and
+`gradient_limit_exceeded`. This is §6.4's rule for `test_too_small`. Scores stay null and the centres stay
+`not_evaluated`. The verdict function takes the predictor's presence as an input, true for V01–V16, which are
+unchanged. **A50 (new).** A study whose training has N_ok < 36 records IE = [`training_unidentifiable`] (plus
+`plan_incomplete` if it applies) and NP = [].
+
+### A3.5 The real iteration's outcome (R-364, R-365, R-366)
+
+- **The outcome.** WO-11's NOT_PROMOTABLE (`band_not_finite`) stands as M04's real result. No box, plan or counting
+  rule moves.
+- **No further iterations.** b2-it2 and b2-it3 are not admissible: §5.5 rule 2 and the A1.2 guard apply.
+- **A finding for the parent.** v3's 26 interior `reactor_not_accepted(certificate)` refusals are reported to the
+  parent's owner, to diagnose from the cache.
+- **The harvest.** Classes follow R-365.
+- **Q-A2.1 stays open.** It closes only as stated in R-366.
+
+### A3.6 Errata and confirmations
+
+- **G5 (E24).** G5's b2-it1 bound is 0.2084.
+- **The schema (E26).** §A2.3's "no schema change" is withdrawn: the schema change E26 made stands.
+- **A47's evidence E (E29).** It names `data[*].keys_sha256`, each equal to the run manifest's
+  `splits.<s>.keys_sha256`.
+- **Confirmed:** E10, E12, E14 (with R-365's wording), E25, E27, E28, E30, E32.
