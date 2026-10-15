@@ -538,6 +538,58 @@ def _same_box(coordinates: Sequence[Mapping[str, Any]], box: Sequence[BoxCoordin
     return True
 
 
+def _refused(block: Mapping[str, Any]) -> set[int]:
+    """The indices of a split's draws that did not return: its `failed ∪ incomplete`."""
+    return {int(entry["index"]) for entry in (*block["failed"], *block["incomplete"])}
+
+
+def _failure_consistency(manifest: Mapping[str, Any]) -> list[str]:
+    """Spec §20 A3.2's three rules (R-361): a calibration or test score is null iff its draw
+    is failed or incomplete or there is no predictor; a gradient centre is `ok` with errors iff
+    no index of its stencil is failed or incomplete and there is a predictor; `training_ok` is
+    the training count less its failed and incomplete draws."""
+    found: list[str] = []
+    splits = manifest["splits"]
+    predictor = manifest["predictor"]["coefficients"] is not None
+    for split, scores in (
+        ("calibration", manifest["calibration"]["scores"]),
+        ("test", manifest["evaluation"]["scores"]),
+    ):
+        refused = _refused(splits[split])
+        for i, value in enumerate(scores):
+            if (value is None) != (i in refused or not predictor):
+                state = "null" if value is None else "finite"
+                found.append(
+                    f"{split}: score {i} is {state}, but the draw is "
+                    f"{'refused' if i in refused else 'returned'} and there is "
+                    f"{'a' if predictor else 'no'} predictor"
+                )
+    refused = _refused(splits["gradient"])
+    start = 0
+    for centre, judged in zip(
+        splits["gradient"]["centres"], manifest["gradient"]["centres"], strict=False
+    ):
+        stencil = range(start, start + len(centre["stencil_keys"]))
+        start = stencil.stop
+        clean = not refused.intersection(stencil)
+        evaluated = judged["status"] == "ok" and judged["errors"] is not None
+        if evaluated != (clean and predictor):
+            found.append(
+                f"gradient: centre {judged['index']} is {judged['status']!r}"
+                f"{' with' if judged['errors'] is not None else ' without'} errors, but its "
+                f"stencil is {'clean' if clean else 'refused in part'} and there is "
+                f"{'a' if predictor else 'no'} predictor"
+            )
+    training = splits["training"]
+    expected = training["count"] - len(training["failed"]) - len(training["incomplete"])
+    if manifest["predictor"]["fit"]["training_ok"] != expected:
+        found.append(
+            f"training_ok {manifest['predictor']['fit']['training_ok']!r} is not the training "
+            f"count less its failed and incomplete draws ({expected})"
+        )
+    return found
+
+
 def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     """Every inconsistency of `manifest` that its schema cannot express (M04.A24); empty when
     none. The schema is checked first; a manifest that fails it is not read further."""
@@ -665,6 +717,10 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
         manifest["domain"]["admissibility_margin"] is None
     ):
         found.append("admissibility_margin is present iff there is a predictor")
+
+    # Spec §20 A3.2 (R-361): the failure lists, the null scores, the centres and `training_ok`
+    # state one fact each; a hand-edited score, centre or count must not outlive its list.
+    found.extend(_failure_consistency(manifest))
 
     # The qualifications: Q0 first iff synthetic, then Q1–Q7, Q6 filled.
     stated = list(manifest["qualifications"])

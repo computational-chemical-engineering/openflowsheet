@@ -33,10 +33,17 @@ from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.studies.surrogate import plan as sp
+from openflowsheet.studies.surrogate.conformal import (
+    clopper_pearson_lower,
+    conformal_band,
+    coverage_hits,
+)
 from openflowsheet.studies.surrogate.manifest import (
     Q0,
     QUALIFICATIONS,
     check_manifest,
+    derived_verdict,
+    familywise_bound,
     schema_errors,
 )
 from openflowsheet.studies.surrogate.quadratic import fit_quadratic
@@ -471,7 +478,22 @@ def _mutations() -> Iterator[tuple[str, Any, str]]:
     def not_a_number(m: dict[str, Any]) -> None:
         m["gradient"]["centres"][0]["errors"]["X"] = math.nan
 
+    # Spec §20 A3.2 (R-361): a list and the facts it implies cannot disagree.
+    def score_on_failed_draw(m: dict[str, Any]) -> None:
+        failed = {"code": "reactor_not_accepted(certificate)", "index": 0, "status": "error"}
+        m["splits"]["calibration"]["failed"].append(failed)
+
+    def centre_on_failed_stencil(m: dict[str, Any]) -> None:
+        failed = {"code": "reactor_not_accepted(certificate)", "index": 0, "status": "error"}
+        m["splits"]["gradient"]["failed"].append(failed)
+
+    def training_ok(m: dict[str, Any]) -> None:
+        m["predictor"]["fit"]["training_ok"] -= 1
+
     yield from (
+        ("score_on_failed_draw", score_on_failed_draw, "calibration: score 0 is finite"),
+        ("centre_on_failed_stencil", centre_on_failed_stencil, "gradient: centre 0 is 'ok'"),
+        ("training_ok", training_ok, "is not the training count less its failed"),
         ("q_hat", q_hat, "is not the k-th smallest stored score"),
         ("hits", hits, "is not #{score <= q_hat}"),
         ("verdict", verdict, "is inconsistent with the stored metrics"),
@@ -499,6 +521,38 @@ def test_a24_the_checker_rejects_each_single_mutation(
     mutate(mutated)
     findings = check_manifest(mutated)
     assert any(reason in finding for finding in findings), (name, findings)
+
+
+WO11_MANIFEST: Path = REPO_ROOT / "benchmarks" / "m04" / "wo11-b2-it1-v3" / "manifest.json"
+
+
+def test_a24_the_reviewers_probe_on_wo11s_manifest_is_refused() -> None:
+    """Review MF2 (spec §20 A3.2, R-361): WO-11's NOT_PROMOTABLE manifest with its 5 + 18 null
+    scores set to 0.1 and q̂, H, L, the promotion block and the bound recomputed consistently
+    re-derives PROMOTABLE; the checker refuses it because the failure lists still name the draws."""
+    manifest = json.loads(WO11_MANIFEST.read_text(encoding="utf-8"))
+    assert check_manifest(manifest) == []
+    calibration, evaluation = manifest["calibration"], manifest["evaluation"]
+    nulls = [i for i, v in enumerate(calibration["scores"]) if v is None]
+    assert (len(nulls), sum(v is None for v in evaluation["scores"])) == (5, 18)
+    for block in (calibration, evaluation):
+        block["scores"] = [0.1 if v is None else v for v in block["scores"]]
+    band = conformal_band(tuple(calibration["scores"]))
+    assert band.q_hat is not None
+    calibration["q_hat"] = band.q_hat
+    evaluation["hits"] = coverage_hits(tuple(evaluation["scores"]), band.q_hat)
+    evaluation["lower_bound"] = clopper_pearson_lower(evaluation["hits"], evaluation["m"])
+    derived = derived_verdict(manifest)
+    assert derived.verdict == "PROMOTABLE"  # the probe's premise: the edit would promote
+    manifest["promotion"].update(
+        verdict=derived.verdict,
+        insufficient=list(derived.insufficient),
+        not_promotable=list(derived.not_promotable),
+        familywise_false_pass_bound=familywise_bound(len(manifest["predecessors"]), True),
+    )
+    findings = check_manifest(manifest)
+    assert findings and all("is finite, but the draw is refused" in f for f in findings), findings
+    assert len(findings) == 23
 
 
 # -- the runner's request and the layering ---------------------------------------------------------
