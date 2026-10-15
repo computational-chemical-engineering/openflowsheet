@@ -252,3 +252,15 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   the ignored `evidence/M04/artifacts/wo11/`. The record is produced by a committed script so its
   checks are re-runnable on the project. Rejected: artifacts only (nothing committed would carry
   the verdict's numbers for WO-12's manifest). Reversible by: reverting the E30 commit.
+- **E31. Finding: a project opened by a relative path keys experiments differently.** The pymrm
+  child's fingerprint replaces the attempt directory in `env_allowlist` by `${ATTEMPT_DIR}`
+  (`adapters/pymrm/child.py:422`, `value.replace(str(attempt), …)`), but a project opened as
+  `evidence/M04/…` (relative) passes a relative `HOME`, which the child's absolute `attempt` does
+  not match. The literal path stays in the fingerprint, so its SHA-256 — and every experiment key —
+  changes per attempt directory: a study run that way saw 632 misses on a fully warmed cache and
+  refused (`budget_below_plan`, nothing written; job-000642 in the WO-11 project). With absolute
+  paths all 642 handshakes of the run share one fingerprint (`dfce4150…`). Not fixed here (WO-11 is a
+  run, not a change): `m04_wo11_record.py` resolves its path; `m04_prewarm.py` does not and was
+  run with an absolute one. For the build lane: resolve the project
+  path in `LocalApplication.open/create` (or normalise in the child by `Path.resolve()` on both
+  sides) with a test that a relative and an absolute open give one key.
