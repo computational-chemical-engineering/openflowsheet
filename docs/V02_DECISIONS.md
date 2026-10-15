@@ -757,3 +757,7 @@ Grep, don't read whole. Newest at the bottom.
 - **M04 merge + WO-8/9 done** (2026-10-15, `wp/M04` `0c2fc4c`…`c8f7e5d`, gate 8624): `surrogate_evidence` facet (10th),
   rollback exception; A25–A30 pass (A26 band within 1e-10; A29 zero new attempts). E15, E16, E22, E23 (A19 env
   fingerprint stale after M02 `7502515`, numbers unchanged) → M04 review. WO-11 launched with a v3 domain check first.
+
+- **M04 WO-11 stopped at the domain check** (2026-10-15, nothing run): binds v3; 115/632 plan requests below the v3 inert
+  floor 0.035 (lowest 0.02255; §3.1 y_Ar [0.01, 0.03] + y_CH₄ [0.01, 0.04]); loop inlet H₂/N₂ 3.000008 just above the
+  box's 3.0. `specifier` box ruling launched (N4).
