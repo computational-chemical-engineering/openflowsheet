@@ -17,7 +17,8 @@ is its only author. It refuses to emit unless (ADR 0025 A1):
 The schemas M02 adds (`experiment`, `model-variant`, `model-replacement`) are classified beside v2,
 not in it, so v2's content does not move: `benchmarks/m02/numerical_policy_external.yaml` names
 them and lists the exact `sha256` names they introduce, and `--check` holds that table to the same
-closed-partition rule (M02 design note §3.6).
+closed-partition rule (M02 design note §3.6). The schemas M04 adds (`surrogate-manifest`,
+`model-evidence`) are classified the same way, in `benchmarks/m04/numerical_policy_surrogate.yaml`.
 
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/t08_numerical_policy.py --check
@@ -44,6 +45,8 @@ V1: Final = ROOT / "benchmarks" / "k04" / "reference_values.yaml"
 V2: Final = ROOT / "benchmarks" / "t08" / "numerical_policy_v2.yaml"
 #: M02 design note §3.6: the addendum that classifies the M02 schemas' floats and digests.
 EXTERNAL: Final = ROOT / "benchmarks" / "m02" / "numerical_policy_external.yaml"
+#: M04: the addendum that classifies the M04 schemas' digests, beside M02's.
+SURROGATE: Final = ROOT / "benchmarks" / "m04" / "numerical_policy_surrogate.yaml"
 SCHEMAS: Final = ROOT / "schemas"
 
 V1_ID: Final = "K04-numerical-policy-v1"
@@ -141,11 +144,19 @@ def external_policy() -> dict[str, Any]:
     return dict(document)
 
 
-def schema_sha256_names(*, external: bool = False) -> set[str]:
+def surrogate_policy() -> dict[str, Any]:
+    """The M04 addendum's table (`numerical_policy_surrogate`)."""
+    document = yaml.safe_load(SURROGATE.read_text(encoding="utf-8"))["numerical_policy_surrogate"]
+    return dict(document)
+
+
+def schema_sha256_names(*, external: bool = False, surrogate: bool = False) -> set[str]:
     """Every property name containing `sha256` declared anywhere in `schemas/*.json` — outside
-    the M02 addendum's schemas, or (`external=True`) inside them."""
+    both addenda's schemas, or inside M02's (`external=True`), or inside M04's
+    (`surrogate=True`)."""
     names: set[str] = set()
-    addendum = set(external_policy()["schemas"])
+    m02 = set(external_policy()["schemas"])
+    m04 = set(surrogate_policy()["schemas"])
 
     def walk(node: Any) -> Iterator[str]:
         if isinstance(node, dict):
@@ -158,7 +169,13 @@ def schema_sha256_names(*, external: bool = False) -> set[str]:
                 yield from walk(entry)
 
     for path in sorted(SCHEMAS.glob("*.json")):
-        if (path.name in addendum) != external:
+        if surrogate:
+            if path.name not in m04:
+                continue
+        elif external:
+            if path.name not in m02:
+                continue
+        elif path.name in m02 | m04:
             continue
         names.update(walk(json.loads(path.read_text(encoding="utf-8"))))
     return names
@@ -299,6 +316,30 @@ def external_audit(policy: Mapping[str, Any], external: Mapping[str, Any]) -> li
     return problems
 
 
+def surrogate_audit(
+    policy: Mapping[str, Any], external: Mapping[str, Any], surrogate: Mapping[str, Any]
+) -> list[str]:
+    """M04: every `sha256` name of M04's schemas is classified — by v2's lists or M02's addendum
+    (a reused name keeps its class) or by M04's `exact_sha256` — and M04's names are new and
+    declared."""
+    declared = schema_sha256_names(surrogate=True)
+    earlier = (
+        set(policy["float_digests"]["names"])
+        | set(policy["exact_sha256"])
+        | set(external["exact_sha256"])
+    )
+    added = set(surrogate["exact_sha256"])
+    problems: list[str] = []
+    if added & earlier:
+        problems.append(f"(m04) already classified: {sorted(added & earlier)}")
+    unclassified = declared - earlier - added
+    if unclassified:
+        problems.append(f"(m04) unclassified sha256 names: {sorted(unclassified)}")
+    if added - declared:
+        problems.append(f"(m04) classified but undeclared: {sorted(added - declared)}")
+    return problems
+
+
 #: T08 review 3, N5: `exact_fields` is carried from v1 (§8) but no §5 row enforces it and neither
 #: comparator reads it. The file says so where the key is, as a comment, so the data stay v1's.
 EXACT_FIELDS_KEY: Final = "  exact_fields:\n"
@@ -333,6 +374,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         committed = yaml.safe_load(V2.read_text(encoding="utf-8"))["numerical_policy"]
         problems.extend(audit(committed, v1_policy(), schema_sha256_names()))
         problems.extend(external_audit(committed, external_policy()))
+        problems.extend(surrogate_audit(committed, external_policy(), surrogate_policy()))
     for problem in problems:
         print(problem)
     if problems:

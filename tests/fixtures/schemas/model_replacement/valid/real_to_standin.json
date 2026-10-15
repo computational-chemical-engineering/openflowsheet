@@ -58,6 +58,11 @@
       "facet": "validity",
       "result": "pass",
       "detail": "the new declared domain contains the old"
+    },
+    {
+      "facet": "surrogate_evidence",
+      "result": "not_applicable",
+      "detail": "neither side is a surrogate"
     }
   ],
   "compatible": true

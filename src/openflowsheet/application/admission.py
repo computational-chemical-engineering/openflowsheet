@@ -30,6 +30,12 @@ An `experiment` (ADR 0033 D9, M02 design note §3.5) by `admit_experiment`: its 
 resolves to a registered variant whose SHA-256 is `artifact_ref` (`invalid_request` at
 `/body/model/artifact_ref`), its components are the variant's boundary's, in order, with one flow
 each (`invalid_request` at `/body/inlet/components` or `/body/inlet/n`), then steps 7–8.
+A `surrogate_study` (ADR 0037 D6, M04 spec §10.3) by `admit_surrogate_study`: its parent resolves
+to a registered variant (`invalid_request` at `/body/parent/variant_sha256`) and its plan is
+registered for that parent with every request inside the box, the hard domain and the data domain
+(`invalid_request` at `/body/plan_id`, detail `reason` the plan guard's code); an `it<i>`,
+i ≥ 2, is admitted only when the project's manifests of `it1` … `it<i−1>` of the same parent each
+failed on the coverage test alone (`iteration_not_permitted`, spec §18 A1.2); then steps 7–8.
 
 **Only tightening is admitted** (I3). The effective check policy keeps `REGISTERED_POLICY_ID`, so
 tightening factor 1 is the registered policy byte for byte (R5); the effective solve policy is the
@@ -39,8 +45,10 @@ hashed and stored (ADR 0020 D3).
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+import json
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import Any, Final
 
 from openflowsheet.adapters import variants
@@ -51,7 +59,9 @@ from openflowsheet.application.policies import (
     SolvePath,
     resolve_policy,
 )
+from openflowsheet.application.revision_binding import SurrogateResolver
 from openflowsheet.application.revision_run import Route, select_route
+from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.types import (
     ApiError,
     Budgets,
@@ -59,10 +69,16 @@ from openflowsheet.application.types import (
     Limits,
     ReproduceBody,
     SolveBody,
+    SurrogateStudyBody,
 )
 from openflowsheet.application.validation import validate
+from openflowsheet.canonical import file_sha256
 from openflowsheet.models.c1 import COMPONENTS as C1_COMPONENTS
 from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.studies.surrogate.iterations import StoredManifest
+from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
+from openflowsheet.studies.surrogate.plan import PlanRefusedError
+from openflowsheet.studies.surrogate.study import prepare
 from openflowsheet.verify.certificate import REGISTERED_POLICY_ID, CheckPolicy
 from openflowsheet.verify.checks import KIND_TOLERANCE
 
@@ -71,6 +87,9 @@ __all__ = [
     "SolveAdmission",
     "admit_budgets",
     "admit_experiment",
+    "admit_surrogate_study",
+    "stored_surrogate_manifests",
+    "surrogate_resolver",
     "admit_reproduce",
     "admit_solve",
     "resolve_policies",
@@ -110,16 +129,18 @@ def admit_solve(
     budgets: Budgets,
     limits: Limits,
     active_jobs: int,
+    surrogates: SurrogateResolver | None = None,
 ) -> SolveAdmission | ApiError:
     """§5.3's semantic admission of `body` for the stored revision `document` (`None` when the
     store has no revision `revision_id`). `limits` are the caller's capability's; `active_jobs`
-    counts the caller's queued and running jobs."""
+    counts the caller's queued and running jobs; `surrogates` resolves the project's
+    SurrogateManifests for the binder (M04 spec §8.2, `surrogate_resolver`)."""
     # 1. The revision exists.
     if document is None:
         return _error("not_found", f"no revision {revision_id!r}", revision_id=revision_id)
 
     # 2. It is ready for simulation.
-    report = validate(document, "simulation")
+    report = validate(document, "simulation", surrogates=surrogates)
     if report.status != "READY_FOR_SIMULATION":
         return _error(
             "revision_not_ready",
@@ -128,7 +149,7 @@ def admit_solve(
         )
 
     # 3. A route exists (R2.6).
-    route = select_route(document)
+    route = select_route(document, surrogates=surrogates)
     if not isinstance(route, Route):
         return _error(
             "revision_unsupported",
@@ -333,3 +354,66 @@ def admit_experiment(
     if isinstance(wall_time_s, ApiError):
         return wall_time_s
     return variant, wall_time_s
+
+
+def stored_surrogate_manifests(store: ProjectStore, root: Path) -> list[StoredManifest]:
+    """Every SurrogateManifest artifact of the project whose file is intact (its bytes hash to
+    the row's SHA-256), with that SHA-256 — what an iteration's admission judges (spec §18
+    A1.2). A file that no longer matches its row is not that manifest and is not read."""
+    found = []
+    for row in store.artifacts_of_kind("surrogate_manifest"):
+        path = root / row.relpath
+        if path.is_file() and file_sha256(path) == row.sha256:
+            found.append(StoredManifest(row.sha256, json.loads(path.read_bytes())))
+    return found
+
+
+def surrogate_resolver(store: ProjectStore, root: Path) -> SurrogateResolver:
+    """The binder's SurrogateManifest resolver over the project's artifact store (M04 spec §8.2;
+    ADR 0037 D2; R-237's injection): the intact `surrogate_manifest` artifact whose SHA-256 is
+    asked for, else `None`. The store is read only when a revision binds a surrogate."""
+
+    def resolve(sha256: str) -> Mapping[str, Any] | None:
+        for stored in stored_surrogate_manifests(store, root):
+            if stored.sha256 == sha256:
+                return stored.document
+        return None
+
+    return resolve
+
+
+def admit_surrogate_study(
+    body: SurrogateStudyBody,
+    *,
+    budgets: Budgets,
+    limits: Limits,
+    active_jobs: int,
+    manifests: Callable[[], Sequence[StoredManifest]] = list,
+) -> float | None | ApiError:
+    """M04 spec §10.3's admission of a `surrogate_study`: the parent is a registered variant, the
+    plan is registered for it and every request lies in the box, the hard domain and the data
+    domain (spec §5.1, M04.A03); an `it<i>`, i ≥ 2, only when the earlier iterations' manifests
+    permit it (`manifests`, read only then; spec §18 A1.2, `iteration_not_permitted`); then steps
+    7–8. The job's wall-time budget, or the first refusal, with the guard's code in
+    `detail.reason`. The budget of cold experiments is judged by the study against the cache."""
+    parent = body.parent
+    variant = variants.resolve(parent.model_id, parent.variant_id, parent.variant_sha256)
+    if variant is None:
+        return _error(
+            "invalid_request",
+            f"model {parent.model_id!r} @ {parent.variant_id!r} with SHA-256 "
+            f"{parent.variant_sha256!r} is not a registered variant at that SHA-256",
+            pointer="/body/parent/variant_sha256",
+        )
+    try:
+        plan = prepare(variant, body.plan_id)
+        if plan.iteration > 1:
+            iteration_predecessors(variant, body.plan_id, manifests())
+    except PlanRefusedError as refused:
+        return _error(
+            "invalid_request",
+            str(refused),
+            pointer="/body/plan_id",
+            reason=refused.code,
+        )
+    return admit_budgets(budgets, limits, active_jobs)

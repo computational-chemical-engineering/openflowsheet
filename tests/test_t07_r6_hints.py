@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from m02_c1_corpus import C1_CORPUS
+from m02_c1_corpus import C1_CORPUS, surrogates
 from t07_corpus import CORPUS
 from t07_v17_c1_documents import c1_document
 
@@ -83,7 +83,8 @@ def _view(document: Document, unit: str) -> InstanceView:
 
 
 def _same_declaration(before: Document, after: Document) -> None:
-    first, second = bind_revision_flowsheet(before), bind_revision_flowsheet(after)
+    first = bind_revision_flowsheet(before, surrogates=surrogates)
+    second = bind_revision_flowsheet(after, surrogates=surrogates)
     assert isinstance(first, RevisionBinding), first
     assert isinstance(second, RevisionBinding), second
     assert second.spec.variable_ids == first.spec.variable_ids
@@ -151,7 +152,9 @@ def _bases() -> list[tuple[str, Document]]:
     return [
         (name, document)
         for name, document in bases
-        if isinstance(bind_revision_flowsheet(copy.deepcopy(document)), RevisionBinding)
+        if isinstance(
+            bind_revision_flowsheet(copy.deepcopy(document), surrogates=surrogates), RevisionBinding
+        )
     ]
 
 
@@ -207,7 +210,7 @@ def _repair(model_id: str, name: str, index: int) -> str:
     removed["specifications"] = [
         entry for entry in removed["specifications"] if entry["id"] not in removed_ids
     ]
-    refusal = bind_revision_flowsheet(copy.deepcopy(removed))
+    refusal = bind_revision_flowsheet(copy.deepcopy(removed), surrogates=surrogates)
     assert isinstance(refusal, Unbound), base_name
     assert refusal.kind == "incomplete", refusal
     column = refusal.detail.removeprefix("specification_missing(").removesuffix(")")

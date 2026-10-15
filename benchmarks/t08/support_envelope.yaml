@@ -78,17 +78,20 @@ axes:
   - id: unit_models
     title: Unit models
     statement: >-
-      The twenty-one models of `MODEL_BUILDERS`, each with its registered limitations (L02,
-      L27–L31, L-CSTR-1..3): SYN-001's thirteen, on SYN-001's basis only, and since M02's join
-      (R-280) the eight C1 models, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
+      The twenty-two models of `MODEL_BUILDERS`, each with its registered limitations (L02,
+      L27–L31, L-CSTR-1..3; the surrogate's Q0–Q7): SYN-001's thirteen, on SYN-001's basis only,
+      and since M02's join (R-280) the eight C1 models and since W27 Amendment 3 (R-301) M04's
+      `c1.reactor_surrogate`, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
       synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
-      manifest and in every result's identity (R-199, R-231). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
+      manifest and in every result's identity (R-199, R-231). No promotable surrogate of the real
+      C1 reactor exists in v0.2 (L43, R-365). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
     members:
       - c1.adiabatic_mixer
       - c1.feed_source
       - c1.product_sink
       - c1.reactor
       - c1.reactor_standin
+      - c1.reactor_surrogate
       - c1.stream_splitter
       - c1.tp_flash
       - c1.tp_heater
@@ -777,6 +780,20 @@ limitations:
       - doc:docs/derivations/M01-spec.md §4.2
       - doc:docs/derivations/M01-spec.md §17
       - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
+  - id: L43
+    text: >-
+      No promotable surrogate of the real C1 reactor exists in v0.2. M04's one real iteration
+      (plan `b2-it1` on box v2, reactor variant v3) is NOT_PROMOTABLE (`band_not_finite`): 26 of
+      its 632 registered experiments, 5 of them among the 118 calibration draws, end in a
+      deterministic `reactor_not_accepted(certificate)`, more than the n − k = 4 refused draws the
+      conformal band tolerates, so q̂ is infinite. A revision binds `c1.reactor_surrogate` only
+      through a manifest that re-derives PROMOTABLE (R-360), and no further iteration on v3 is
+      admissible (R-364).
+    evidence:
+      - check:M04.A31
+      - tests/test_m04_wo9_synthetic_loop.py::test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected
+      - doc:benchmarks/m04/wo11-b2-it1-v3/record.json
+      - doc:docs/derivations/M04-spec.md §20
   - id: L-WEB-1
     text: >-
       The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits
@@ -2728,3 +2745,72 @@ harvest:
   class: P
   to: []
   note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[0]
+  sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
+  class: E
+  to:
+  - L43
+  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L43 (R-365)
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[1]
+  sha256: f525c178eee67f1a6efb57626d60867f8010f9b98cff33025c681770dd74cf0e
+  class: B
+  to:
+  - B10
+  note: A33 not run (A31 not PROMOTABLE); Q-A2.1 open until A33's record (R-366)
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[2]
+  sha256: 63b9864a3b7f31c5f8af750bc8fd2a5da16e07ebb45f5db6365ee5656e891994
+  class: S
+  to:
+  - check:M04.A49
+  note: E33 closed by the one-thread fit (R-362, A49; build decision E36)
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[3]
+  sha256: b041476334873ca5259c340c13c3157eb2ae5dafafe840e1df4b708bef70bbdb
+  class: P
+  to: []
+  note: W23 verdict is the verdict lane's; self-generated records are regression fixtures
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: checks[32]
+  check_id: M04.A33
+  sha256: 221a7aa9679876bfceaff6bb168190cf73836a8ac399d5a8b6ef6443ddad4361
+  class: B
+  to:
+  - B10
+  note: A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run (R-365)
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: limitations[0]
+  sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
+  class: E
+  to:
+  - L43
+  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L43 (R-365)
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: limitations[1]
+  sha256: f525c178eee67f1a6efb57626d60867f8010f9b98cff33025c681770dd74cf0e
+  class: B
+  to:
+  - B10
+  note: A33 not run (A31 not PROMOTABLE); Q-A2.1 open until A33's record (R-366)
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: limitations[2]
+  sha256: 83dd54d489d09d3abbe3e49b869135d622e9a92af446dd14ad52269a8cb6a212
+  class: P
+  to: []
+  note: real-reactor records opt-in, one machine; A32 bitwise per platform (R-362)
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: limitations[3]
+  sha256: b041476334873ca5259c340c13c3157eb2ae5dafafe840e1df4b708bef70bbdb
+  class: P
+  to: []
+  note: W23 verdict is the verdict lane's; self-generated records are regression fixtures
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: checks[32]
+  check_id: M04.A33
+  sha256: 221a7aa9679876bfceaff6bb168190cf73836a8ac399d5a8b6ef6443ddad4361
+  class: B
+  to:
+  - B10
+  note: A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run (R-365)
