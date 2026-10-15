@@ -777,3 +777,14 @@ Grep, don't read whole. Newest at the bottom.
   7 minutes step back to a normal pace"): 8 agents launched in separate worktrees (see V02_STATE). Previous session's two
   agents had finished their work before it ended: alpha F1/F2/F4/F5 + C_α cut `e0e198e` + tree record `259af65`; M04
   ADR 0036 Am. 2 + WO-18/19/20 + E24–E29 (`43d6557`). Back to ≤ 2 agents for new launches afterwards.
+
+- **M02 closeout** (2026-10-15, `reviewer`, merged `2497ec2`, R-340…R-344): ADR 0027 Accepted; D130 ratified with an R0
+  guard (archived `record_sha256` checked against the archived record); D131 label ratified; R-343: `external-subprocess-v1`
+  "not a sandbox" + M02 limitations [1][2][3][5][6] are E items needing L-rows (build work). Finding C1 (should-fix): v3's
+  inert floor check `boundary.py:390` is exact float compare; ADR's design composition at 0.035 refused in ~45 % of flow
+  scalings (−4.4e-16); proposal a few-ulp slack. Queued as an M02 follow-up after the alpha RC (C_α already cut).
+- **M05 ruling batch** (2026-10-15, `architect`, `wp/M05-rulings2` `4cc5956`, R-326…R-330, §18): Z2 → joint-pin elimination
+  `M05-zero-flow-v2` (WO-2c); W2 keep candidate + `trf_max_iterations` limitation (WO-6b); S1–S10 confirmed; S11–S18
+  partly amended, S14 reversed (closed schema objects), purpose counts now (WO-6b/7b); REAL box text corrected (R-330).
+  F-15 watch: TR-E2 hit max iterations once → G5 at risk; default report failure, not raise the limit. M07 told to start
+  at R-331.

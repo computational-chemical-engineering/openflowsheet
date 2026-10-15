@@ -93,18 +93,14 @@ F5 education mode deferred.
 
 ## Next action
 
-**2026-10-15: short burst at Frank's request ("for 7 minutes use many agents"), then back to ≤ 2.** Eight agents launched:
-| Agent | Task | Worktree / branch |
-| --- | --- | --- |
-| `opus-engineer` | alpha WO-10 resume: RC steps 1–12 at C_α = `e0e198e` (no tag/publish) | `alpha-gate` |
-| `opus-engineer` | M04 gate check + WO-11 real iteration 1 on box v2 / reactor v3 | `m04` |
-| `opus-engineer` | M05 merge main + WO-5c (`at_coupling`) + real parent adapter (S3) | `m05` |
-| `specifier` | M07 specification (register from R-330, ADR 0041) | `m07` / `wp/M07` |
-| `architect` | M05 ruling batch Z2, W2, S1–S18, REAL-box text (register from R-326) | `m05-rulings2` / `wp/M05-rulings2` |
-| `opus-engineer` | M06 WO-17 prep (binder reading, id rows, U14) — no spend | `m06-wo17` / `wp/M06-wo17` |
-| `sonnet-implementer` | test hardening: t07_w5b thread vars; load-flaky tests reported | `test-hardening` / `wp/test-hardening` |
-| `reviewer` | M02 closeout: ADR 0027 acceptance, D130–D132 (register from R-340) | `m02-closeout` / `wp/M02-closeout` |
-Register reservations: alpha R-319…321; M04 R-322…325; M05 rulings R-326…; M07 R-330…; M02 closeout R-340…
+**2026-10-15: burst over; back to ≤ 2 agents (Frank).** Still running (finish as briefed): alpha WO-10 RC steps (`alpha-gate`);
+M04 WO-11 real iteration 1 (`m04`); M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
+Stopped at Frank's pace request, work saved on branches (pushed): `wp/test-hardening` `1d90625` (t07_w5b pins the
+single-threaded env itself — gate + merge pending); `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
+(spec still to write). Done in the burst: M02 closeout merged (`2497ec2`); M05 rulings §18 on `wp/M05-rulings2` (`4cc5956`).
+Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 from R-331; M02 closeout R-340…344.
+Queued M02 follow-up (after the alpha RC): C1 inert-floor exact compare (`boundary.py:390`, few-ulp slack), R-341 R0
+guard, R-343 L-rows.
 After these: alpha verdicts (W21, W22, V11–V20) → step 13 → WO-11 → Frank publishes `0.2.0a1`; M04 WO-12 + `reviewer`;
 M05 WO-8 + `reviewer`; M07 build.
 
