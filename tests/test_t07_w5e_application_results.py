@@ -180,15 +180,17 @@ SNAPSHOT_M02: dict[str, str | None] = {
 #: `job.schema.json`, which gains the `surrogate_study` operation, its body branch, two artifact
 #: kinds and `job_result`'s `surrogate_study` member. Re-taken; with M04's additions removed
 #: (`tests/m04_schema_support.py`) every one is its `SNAPSHOT_M02` value again
-#: (`tests/test_m04_study_job.py`).
+#: (`tests/test_m04_study_job.py`). Re-taken at M04 Amendment 2 (build log E26): the body's
+#: `plan_id` pattern admits `b2-it<i>`; `solve`, `list_job_events` and `get_job_result` do not
+#: embed the body and stand.
 SNAPSHOT_M04: dict[str, str | None] = {
     "solve": "5b57cd405a07bb31faa5dbd975099aaef6acff63369a80679b2fc38d18be245a",
-    "submit_job": "b1cc344756b6e93007eeec9099033aac5c1b069a6fb7c7793a41c1a2b1d79697",
-    "get_job": "fb3477d20571a998f921365456287157943cdd6fe2f631fa307f348966e13096",
-    "cancel_job": "fb3477d20571a998f921365456287157943cdd6fe2f631fa307f348966e13096",
-    "list_jobs": "43d2f174cf68136f53f72773c507586e237e265c601d0269a69444f6c51d0ebc",
+    "submit_job": "122685ba5d8a10abda155f2c780ca4cbd153f30a020ccff24bec8ef3a7df49f2",
+    "get_job": "495b5e39670d2e50f1afcc65f74d62d72df39cf3684caa01ba398cc074a50688",
+    "cancel_job": "495b5e39670d2e50f1afcc65f74d62d72df39cf3684caa01ba398cc074a50688",
+    "list_jobs": "073d671f237aa768695a443de80abd50dfafb6ec180896a0db0ee2ddb92f1aea",
     "list_job_events": "fea66b274012462bf3b573a88ade48356e41c93cbbea288f480db93e5bdbbcbf",
-    "wait_job": "4e126df59e7f29700e78527ad9e76494f66dd7149d29205cb0bf50195e753588",
+    "wait_job": "5fc1ef1fa2774bece09c8d401cbb986b008a33b46a628964edb83c405f2dd030",
     "get_job_result": "a4ae235fb61b8566dbc660f1f864a7c7f8ab122e4000fee0825b5f414bfa988a",
 }
 

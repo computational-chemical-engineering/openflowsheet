@@ -174,3 +174,16 @@ Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.
   byte-identical to `9fbebb5`'s except `claims` (count 8634 → 11943 and the statement list), which
   describes the generator rather than registering a value, as at Amendment 1.
   `plan-it1/2/3.json` are byte-identical to `9fbebb5`'s.
+
+## Amendment 2: WO-19 — box v2 in production (2026-10-15)
+
+- **E26. Finding: §A2.3's "no schema change" does not hold; the manifest schema is widened.**
+  `surrogate-manifest.schema.json` pinned `plan_id` to `^it[1-9][0-9]*(-prefix)?$` (the manifest
+  and the `surrogate_study` body) and `reference_distribution.id` to `const m04-c1-box7-v1`, so a
+  `b2-it1` request or manifest was schema-invalid. Now `^(b2-)?it[1-9][0-9]*(-prefix)?$` and
+  `enum [m04-c1-box7-v1, m04-c1-box7-v2]`; the registry still refuses an unregistered id
+  (`plan_not_registered`). The schema is M04's own (not on `main`). Served-schema snapshots
+  re-taken for the five operations that embed the body (`SNAPSHOT_M04`: `submit_job`, `get_job`,
+  `cancel_job`, `list_jobs`, `wait_job`); every other digest stands. For the design lane: confirm,
+  or name another encoding of the family. Reversible by: reverting the E26 commit (and with it
+  the b2 path).

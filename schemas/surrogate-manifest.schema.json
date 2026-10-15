@@ -50,8 +50,8 @@
     },
     "plan_id": {
       "type": "string",
-      "pattern": "^it[1-9][0-9]*(-prefix)?$",
-      "description": "Spec §5.5, §9.3: `it<i>`, or `it1-prefix` (synthetic parents only)."
+      "pattern": "^(b2-)?it[1-9][0-9]*(-prefix)?$",
+      "description": "Spec §5.5, §9.3, §19 A2.3: `it<i>` or `it1-prefix` (box v1, synthetic parents only), or `b2-it<i>` (box v2)."
     },
     "predecessors": {
       "type": "array",
@@ -342,7 +342,10 @@
       ],
       "properties": {
         "id": {
-          "const": "m04-c1-box7-v1"
+          "enum": [
+            "m04-c1-box7-v1",
+            "m04-c1-box7-v2"
+          ]
         },
         "kind": {
           "const": "uniform_box"
@@ -1245,8 +1248,8 @@
         },
         "plan_id": {
           "type": "string",
-          "pattern": "^it[1-9][0-9]*(-prefix)?$",
-          "description": "Spec §5.5, §9.3: `it<i>`, or `it1-prefix` (synthetic parents only)."
+          "pattern": "^(b2-)?it[1-9][0-9]*(-prefix)?$",
+          "description": "Spec §5.5, §9.3, §19 A2.3: `it<i>` or `it1-prefix` (box v1, synthetic parents only), or `b2-it<i>` (box v2)."
         },
         "budget": {
           "type": "object",
