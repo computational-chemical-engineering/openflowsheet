@@ -255,7 +255,7 @@ def test_a07_a_missing_ratio_or_no_gradient_centre() -> None:
 
 @pytest.mark.parametrize(
     ("plan_id", "synthetic", "expected"),
-    [("it1", False, (118, 114, 300, 279)), ("it1-prefix", True, (39, 38, 60, 59))],
+    [("b2-it1", False, (118, 114, 300, 279)), ("it1-prefix", True, (39, 38, 60, 59))],
 )
 def test_a08_the_plans_denominators(
     plan_id: str, synthetic: bool, expected: tuple[int, int, int, int]

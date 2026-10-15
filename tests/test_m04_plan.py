@@ -86,7 +86,7 @@ def test_a01_the_sampler_is_a_pure_function_of_its_seed() -> None:
 
 # -- A02 ------------------------------------------------------------------------------------------
 
-FULL = sp.registered_plan("it1", synthetic_parent=False)
+FULL = sp.registered_plan("it1", synthetic_parent=True)
 
 
 @pytest.mark.parametrize("split", ["training", "calibration", "test"])
@@ -219,7 +219,7 @@ PLAN_FILES: Mapping[int, Mapping[str, Any]] = {1: PLAN_IT1, **LATER}
 def test_a36_later_iterations_are_derived_bitwise(iteration: int, origins: int) -> None:
     """M04.A36: `it2`/`it3` from registered constants equal the committed files bitwise; each
     training origin expands to the earlier plan's request bitwise (spec §18 A1.2)."""
-    plan = sp.registered_plan(f"it{iteration}", synthetic_parent=False)
+    plan = sp.registered_plan(f"it{iteration}", synthetic_parent=True)
     document = PLAN_FILES[iteration]
     assert (plan.iteration, document["iteration"]) == (iteration, iteration)
     assert plan.counts == document["counts"] == dict(sp.iteration_counts(iteration))
@@ -260,8 +260,8 @@ def test_a36_later_iterations_are_derived_bitwise(iteration: int, origins: int) 
 
 def test_a36_a_later_iteration_inherits_the_earlier_draws_not_copies_of_them() -> None:
     """The inherited rows are the earlier plans' own draws: the cache serves them (A1.2)."""
-    it2 = sp.registered_plan("it2", synthetic_parent=False)
-    it3 = sp.registered_plan("it3", synthetic_parent=False)
+    it2 = sp.registered_plan("it2", synthetic_parent=True)
+    it3 = sp.registered_plan("it3", synthetic_parent=True)
     earlier = (*FULL.training, *FULL.calibration, *FULL.test)
     assert [(r.u, r.request) for r in it2.training] == [(r.u, r.request) for r in earlier]
     assert [(r.u, r.request) for r in it3.training[:562]] == [

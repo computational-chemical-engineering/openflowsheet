@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import struct
 from collections.abc import Mapping, Sequence
 from fractions import Fraction
 from functools import cache
@@ -59,9 +60,11 @@ from openflowsheet.studies.surrogate.plan import (
     GRADIENT_STEP_Z,
     INPUT_MAP_ID,
     REFERENCE_DISTRIBUTION_ID,
+    REFERENCE_DISTRIBUTIONS,
     REGISTERED_PLANS,
     SAMPLER_ID,
     SPLITS,
+    BoxCoordinate,
 )
 from openflowsheet.studies.surrogate.quadratic import (
     ADMISSIBLE_DT_K,
@@ -285,7 +288,7 @@ def build_records(
                     "centre": b.centre,
                     "half_width": b.half_width,
                 }
-                for b in BOX
+                for b in plan.box
             ],
         },
         "output_map": {
@@ -314,7 +317,7 @@ def build_records(
         },
         "score": {"id": SCORE_ID, "scales": {"X": WIDTH_X, "dT_K": WIDTH_DT_K}},
         "reference_distribution": {
-            "id": REFERENCE_DISTRIBUTION_ID,
+            "id": plan.reference_distribution,
             "kind": "uniform_box",
             "sampler": SAMPLER_ID,
             "seeds": dict(plan.seeds),
@@ -486,6 +489,31 @@ def derived_verdict(manifest: Mapping[str, Any]) -> StudyVerdict:
     )
 
 
+def _bits(value: Any) -> bytes | None:
+    """The binary64 pattern of a JSON number (`None` for anything else): bitwise comparison."""
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    return struct.pack("<d", float(value))
+
+
+def _same_box(coordinates: Sequence[Mapping[str, Any]], box: Sequence[BoxCoordinate]) -> bool:
+    """`input_map.coordinates` equal `box` bitwise: names, units, lo, hi, centre, half-width."""
+    if len(coordinates) != len(box):
+        return False
+    for c, b in zip(coordinates, box, strict=True):
+        if (c["name"], c["unit"]) != (b.name, b.unit):
+            return False
+        for key, value in (
+            ("lo", b.lo),
+            ("hi", b.hi),
+            ("centre", b.centre),
+            ("half_width", b.half_width),
+        ):
+            if _bits(c[key]) != struct.pack("<d", value):
+                return False
+    return True
+
+
 def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     """Every inconsistency of `manifest` that its schema cannot express (M04.A24); empty when
     none. The schema is checked first; a manifest that fails it is not read further."""
@@ -504,7 +532,8 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     registered = REGISTERED_PLANS.get(plan_id)
     if registered is None:
         return [f"plan {plan_id!r} is not registered"]
-    iteration, counts, synthetic_only = registered
+    iteration, counts, synthetic_only, reference_id = registered
+    reference = REFERENCE_DISTRIBUTIONS[reference_id]
     if manifest["iteration"] != iteration:
         found.append(f"iteration {manifest['iteration']} is not plan {plan_id!r}'s {iteration}")
     if len(manifest["predecessors"]) != iteration - 1:
@@ -512,8 +541,16 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
             f"{len(manifest['predecessors'])} predecessors; iteration {iteration} has "
             f"{iteration - 1}"
         )
-    if synthetic_only and not manifest["synthetic"]:
+    if (synthetic_only or reference.synthetic_only) and not manifest["synthetic"]:
         found.append(f"plan {plan_id!r} is registered for synthetic parents only")
+    # Spec §19 A2.3: the box and the P_ref id are bitwise those of the plan's P_ref.
+    if manifest["reference_distribution"]["id"] != reference_id or not _same_box(
+        manifest["input_map"]["coordinates"], reference.box
+    ):
+        found.append(
+            f"input_map: coordinates and reference_distribution.id are not those of plan "
+            f"{plan_id!r}'s P_ref {reference_id}"
+        )
 
     # Splits: the plan's counts, keys hashed as recorded, pairwise disjoint and without repeats.
     splits = manifest["splits"]

@@ -25,7 +25,7 @@ from typing import Any, Final
 
 from openflowsheet.adapters.variants import Variant
 from openflowsheet.studies.surrogate.manifest import check_manifest
-from openflowsheet.studies.surrogate.plan import REGISTERED_PLANS, PlanRefusedError
+from openflowsheet.studies.surrogate.plan import REGISTERED_PLANS, PlanRefusedError, plan_reference
 
 __all__ = ["CODE", "StoredManifest", "coverage_only_failure", "predecessors"]
 
@@ -65,21 +65,24 @@ def predecessors(
 ) -> tuple[str, ...]:
     """The SHA-256s of the manifests of iterations 1 … i−1 that permit `plan_id` = `it<i>`, in
     iteration order; `()` for an iteration-1 plan. `PlanRefusedError` with `CODE` otherwise.
+    The earlier iterations are those of the same parent and the same family, the plans of
+    `plan_id`'s P_ref (`it<j>` for `it<i>`, `b2-it<j>` for `b2-it<i>`; spec §19 A2.3).
     `plan_id` must be registered (`plan.registered_plan` refuses an unregistered one first)."""
-    iteration = REGISTERED_PLANS[plan_id][0]
+    iteration = REGISTERED_PLANS[plan_id].iteration
     if iteration == 1:
         return ()
+    family = plan_reference(plan_id)
     found: dict[int, dict[str, Mapping[str, Any]]] = {j: {} for j in range(1, iteration)}
     for stored in manifests:
         document = stored.document
         earlier = document.get("plan_id")
         for j in found:
-            if earlier == f"it{j}" and _same_parent(document, variant):
+            if earlier == family.plan_id(j) and _same_parent(document, variant):
                 found[j][stored.sha256] = document
     chain: list[str] = []
     for j in range(1, iteration):
         candidates = found[j]
-        where = f"{plan_id} of {variant.variant_id}: it{j}"
+        where = f"{plan_id} of {variant.variant_id}: {family.plan_id(j)}"
         if not candidates:
             raise PlanRefusedError(CODE, f"{where} has no manifest")
         if len(candidates) > 1:

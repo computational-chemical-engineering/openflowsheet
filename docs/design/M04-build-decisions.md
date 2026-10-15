@@ -187,3 +187,16 @@ Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.
   `cancel_job`, `list_jobs`, `wait_job`); every other digest stands. For the design lane: confirm,
   or name another encoding of the family. Reversible by: reverting the E26 commit (and with it
   the b2 path).
+- **E27. How production carries the box.** `plan.REFERENCE_DISTRIBUTIONS` (id → box, plan prefix,
+  `synthetic_only`) and `REGISTERED_PLANS` (`RegisteredPlan`: iteration, counts, the plan's own
+  synthetic-only flag, its P_ref) are the registries; a `SamplePlan` carries its P_ref id and box;
+  the sampler functions take the box. The scaling z = (u − c)/h is a `Scaling` (c, h): the study
+  fits and predicts with its plan's, `QuadraticSurrogate` carries the one it was fitted in, and
+  `reactor.surrogate_of` reads c and h from the manifest's `input_map` (A44). `Scaling` defaults to
+  box v1's only where box v1's tests and fixtures construct a surrogate or call `scaled` directly;
+  every production call passes it. The checker's existing synthetic-only rule now also reads the
+  P_ref's flag (a non-synthetic manifest on a v1 plan is a finding); the new rule compares
+  `input_map.coordinates` by binary64 bit pattern and its finding begins `input_map`. Tests that
+  used `it1`/`it2`/`it3` with `synthetic_parent=False` only for the plan's structure now pass
+  `True`; A08's real-parent denominators use `b2-it1` (same counts). Box v1's values are unmoved:
+  A02, A36, A17–A23, A26 and WO-9's fixture comparisons pass unchanged.

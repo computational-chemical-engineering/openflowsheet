@@ -93,7 +93,7 @@ from openflowsheet.models.c1.units import (
 )
 from openflowsheet.models.rows import balance_row, energy_row, reaction_balance_row
 from openflowsheet.models.syn001.conversion_reactor import extent_id
-from openflowsheet.studies.surrogate.plan import coordinates, scaled
+from openflowsheet.studies.surrogate.plan import Scaling, coordinates, scaled
 from openflowsheet.studies.surrogate.quadratic import (
     QuadraticSurrogate,
     causal_outlet,
@@ -194,11 +194,17 @@ def _artifact_hash() -> str:
 
 
 def surrogate_of(manifest: Mapping[str, Any]) -> QuadraticSurrogate:
-    """The frozen predictor of a SurrogateManifest (`predictor.coefficients`, basis order)."""
+    """The frozen predictor of a SurrogateManifest (`predictor.coefficients`, basis order), scaled
+    by the manifest's `input_map` c and h, never a module constant (spec §19 A2.3, M04.A44)."""
     coefficients = manifest["predictor"]["coefficients"]
+    coordinates_ = manifest["input_map"]["coordinates"]
     return QuadraticSurrogate(
         coefficients_x=tuple(float(b) for b in coefficients["X"]),
         coefficients_dt=tuple(float(b) for b in coefficients["dT_K"]),
+        scaling=Scaling(
+            centre=tuple(float(c["centre"]) for c in coordinates_),
+            half_width=tuple(float(c["half_width"]) for c in coordinates_),
+        ),
     )
 
 
@@ -281,7 +287,7 @@ class SurrogateBlock:
         u = coordinates(state, self._n_tubes)
         if u is None:
             raise self._undefined()
-        x, dt = self._surrogate.predict(scaled(u))
+        x, dt = self._surrogate.predict(scaled(u, self._surrogate.scaling))
         return [x, dt]
 
     def jacobian(self, inputs: Sequence[float]) -> Sequence[tuple[int, int, float]]:

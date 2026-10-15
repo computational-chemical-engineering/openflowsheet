@@ -1,9 +1,12 @@
 """The registered reference distribution and sample plan of a surrogate study (M04 spec §3–§5).
 
-P_ref `m04-c1-box7-v1` is the uniform distribution on a box in the seven inlet coordinates
-u = (T, P, r = n_H2/n_N2, y_NH3, y_Ar, y_CH4, F = n_tot/N_tubes) (spec §3.1, ADR 0036 D1). A plan
-is derived here from registered constants alone; `benchmarks/m04/plan-it1.json` is the bitwise
-expectation of the tests (M04.A02) and is never read by this package (T08's no-walk-up rule).
+A P_ref is the uniform distribution on a box in the seven inlet coordinates
+u = (T, P, r = n_H2/n_N2, y_NH3, y_Ar, y_CH4, F = n_tot/N_tubes) (spec §3.1, ADR 0036 D1′). Two are
+registered, each owning its plans (spec §19 A2.3): `m04-c1-box7-v1` (synthetic parents only; plans
+`it1`, `it1-prefix`, `it2`, `it3`) and `m04-c1-box7-v2` (plans `b2-it1` … `b2-it3`, drawn on box v2
+with the same seeds and counts). A plan is derived here from registered constants alone;
+`benchmarks/m04/plan-it1.json` (and its siblings) are the bitwise expectations of the tests
+(M04.A02, A43) and are never read by this package (T08's no-walk-up rule).
 
 Experiment identity is exact (ADR 0033): one ulp is a new experiment. Every floating-point
 operation below is therefore in the registered order and nothing is rearranged for speed:
@@ -34,12 +37,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Final, Literal
+from typing import Final, Literal, NamedTuple
 
 from openflowsheet.thermo import StreamState
 
-#: The registered reference distribution (spec §4, ADR 0036 D1).
+#: The first registered reference distribution, box v1 (spec §4, ADR 0036 D1′): synthetic parents.
 REFERENCE_DISTRIBUTION_ID: Final = "m04-c1-box7-v1"
+#: The second, box v2 (spec §19 A2.2, ADR 0036 D1′): non-synthetic parents.
+REFERENCE_DISTRIBUTION_ID_V2: Final = "m04-c1-box7-v2"
 #: The sampler (spec §5.1): SplitMix64 words, U = (w >> 11)·2⁻⁵³.
 SAMPLER_ID: Final = "splitmix64-u53-v1"
 #: The input map u(s) and its affine scaling to [−1, 1]⁷ (spec §3.1).
@@ -106,15 +111,66 @@ BOX: Final[tuple[BoxCoordinate, ...]] = (
     BoxCoordinate("y_CH4", "1", 0.01, 0.04),
     BoxCoordinate("F_tube", "mol/s", 0.0057, 0.0086),
 )
+#: Box v2 in coordinate order (spec §19 A2.2; `reference_values.json` → `constants.box_v2`).
+BOX_V2: Final[tuple[BoxCoordinate, ...]] = (
+    BoxCoordinate("T", "K", 653.15, 693.15),
+    BoxCoordinate("P", "Pa", 9.0e6, 1.0e7),
+    BoxCoordinate("r_H2_N2", "1", 2.5, 3.00001),
+    BoxCoordinate("y_NH3", "1", 0.02, 0.04),
+    BoxCoordinate("y_Ar", "1", 0.014, 0.03),
+    BoxCoordinate("y_CH4", "1", 0.022, 0.04),
+    BoxCoordinate("F_tube", "mol/s", 0.0050, 0.0086),
+)
 DIMENSION: Final = len(BOX)
+
+
+@dataclass(frozen=True)
+class Scaling:
+    """z = (u − c)/h (spec §3.1): the centre c and half-width h of a reference box, per coordinate.
+
+    A study scales by its plan's box; a surrogate unit by its manifest's `input_map` (spec §19
+    A2.3), never by a module constant.
+    """
+
+    centre: tuple[float, ...]
+    half_width: tuple[float, ...]
+
+    @classmethod
+    def of_box(cls, box: Sequence[BoxCoordinate]) -> Scaling:
+        return cls(tuple(b.centre for b in box), tuple(b.half_width for b in box))
+
+
+@dataclass(frozen=True)
+class ReferenceDistribution:
+    """A registered P_ref (ADR 0036 D1′): the uniform distribution on `box`. It owns the plans
+    `<plan_prefix><i>`, one family; `synthetic_only` admits them for synthetic parents only."""
+
+    reference_id: str
+    box: tuple[BoxCoordinate, ...]
+    plan_prefix: str
+    synthetic_only: bool
+
+    def plan_id(self, iteration: int) -> str:
+        """The family's full plan of `iteration` (`it2`, `b2-it2`)."""
+        return f"{self.plan_prefix}{iteration}"
+
+
+#: The P_ref registry (spec §19 A2.3, ADR 0036 D1′; `constants.reference_distributions`).
+REFERENCE_DISTRIBUTIONS: Final[Mapping[str, ReferenceDistribution]] = {
+    REFERENCE_DISTRIBUTION_ID: ReferenceDistribution(REFERENCE_DISTRIBUTION_ID, BOX, "it", True),
+    REFERENCE_DISTRIBUTION_ID_V2: ReferenceDistribution(
+        REFERENCE_DISTRIBUTION_ID_V2, BOX_V2, "b2-it", False
+    ),
+}
 
 
 class PlanRefusedError(ValueError):
     """A plan refused at study start, before any experiment (spec §5.4, M04.A03).
 
     `code` is `plan_invalid` (a request outside the box, the parent's hard domain or its data
-    domain, or a repeated request), `plan_not_registered_for_parent` (`it1-prefix` for a parent
-    that is not synthetic), `plan_not_registered` (an id without a committed plan, spec §5.5) or
+    domain, or a repeated request), `plan_not_registered_for_parent` (`it1-prefix`, or any plan of
+    the synthetic-only P_ref `m04-c1-box7-v1`, for a parent that is not synthetic; spec §19 A2.3),
+    `plan_not_registered` (an id without a committed plan, spec §5.5) or
     `iteration_not_permitted` (an `it<i>` whose earlier iterations do not permit it, spec §18
     A1.2; `studies.surrogate.iterations`).
     """
@@ -153,24 +209,26 @@ def unit_uniform(word: int) -> float:
     return float(word >> 11) * 2.0**-53
 
 
-def inner_box() -> tuple[tuple[float, ...], tuple[float, ...]]:
+def inner_box(box: Sequence[BoxCoordinate]) -> tuple[tuple[float, ...], tuple[float, ...]]:
     """The gradient centres' box, lo′ = c − 0.95 h and hi′ = c + 0.95 h (binary64, that order)."""
-    lo = tuple(b.centre - GRADIENT_INNER * b.half_width for b in BOX)
-    hi = tuple(b.centre + GRADIENT_INNER * b.half_width for b in BOX)
+    lo = tuple(b.centre - GRADIENT_INNER * b.half_width for b in box)
+    hi = tuple(b.centre + GRADIENT_INNER * b.half_width for b in box)
     return lo, hi
 
 
-def draws(iteration: int, split: Split, count: int) -> tuple[tuple[float, ...], ...]:
-    """The first `count` draws u of `split` in iteration `iteration` (spec §5.1).
+def draws(
+    iteration: int, split: Split, count: int, box: Sequence[BoxCoordinate]
+) -> tuple[tuple[float, ...], ...]:
+    """The first `count` draws u of `split` in iteration `iteration` on `box` (spec §5.1).
 
     Draw j consumes words 7j … 7j+6, so the first c draws of a longer request are the c draws of
     a shorter one: a prefix of an i.i.d. sequence is i.i.d. (spec §9.3).
     """
     if split == "gradient":
-        lo, hi = inner_box()
+        lo, hi = inner_box(box)
     else:
-        lo = tuple(b.lo for b in BOX)
-        hi = tuple(b.hi for b in BOX)
+        lo = tuple(b.lo for b in box)
+        hi = tuple(b.hi for b in box)
     words = splitmix64(seed(iteration, split), DIMENSION * count)
     return tuple(
         tuple(
@@ -191,9 +249,11 @@ def request_of(u: Sequence[float]) -> StreamState:
     )
 
 
-def stencil_point(u: Sequence[float], k: int, sign: Literal[1, -1]) -> tuple[float, ...]:
-    """u ± (0.05 h_k) e_k (spec §5.1)."""
-    step = GRADIENT_STEP_Z * BOX[k].half_width
+def stencil_point(
+    u: Sequence[float], k: int, sign: Literal[1, -1], box: Sequence[BoxCoordinate]
+) -> tuple[float, ...]:
+    """u ± (0.05 h_k) e_k (spec §5.1), h_k of `box`."""
+    step = GRADIENT_STEP_Z * box[k].half_width
     v = list(u)
     v[k] = u[k] + step if sign > 0 else u[k] - step
     return tuple(v)
@@ -224,9 +284,17 @@ def coordinates(state: StreamState, n_tubes: float) -> tuple[float, ...] | None:
     )
 
 
-def scaled(u: Sequence[float]) -> tuple[float, ...]:
-    """z_k = (u_k − c_k)/h_k: the box is [−1, 1]⁷ (spec §3.1)."""
-    return tuple((u[k] - b.centre) / b.half_width for k, b in enumerate(BOX))
+#: Box v1's scaling: the default of `scaled` (box v1's tests and fixtures).
+SCALING: Final = Scaling.of_box(BOX)
+
+
+def scaled(u: Sequence[float], scaling: Scaling = SCALING) -> tuple[float, ...]:
+    """z_k = (u_k − c_k)/h_k: the box is [−1, 1]⁷ (spec §3.1). Production passes the plan's or
+    the manifest's `scaling` explicitly."""
+    return tuple(
+        (u[k] - c) / h
+        for k, (c, h) in enumerate(zip(scaling.centre, scaling.half_width, strict=True))
+    )
 
 
 # -- the plan (spec §5) ---------------------------------------------------------------------------
@@ -283,6 +351,13 @@ class SamplePlan:
     calibration: tuple[Draw, ...]
     test: tuple[Draw, ...]
     gradient: tuple[GradientCentre, ...]
+    #: The P_ref the plan is drawn on, and its box (spec §19 A2.3).
+    reference_distribution: str
+    box: tuple[BoxCoordinate, ...]
+
+    @property
+    def scaling(self) -> Scaling:
+        return Scaling.of_box(self.box)
 
     @property
     def counts(self) -> dict[Split, int]:
@@ -320,46 +395,52 @@ def fresh_splits(iteration: int) -> tuple[Split, ...]:
     return ("training", "calibration", "test") if iteration == 1 else ("calibration", "test")
 
 
-def _fresh(iteration: int, split: Split, count: int) -> tuple[Draw, ...]:
+def _fresh(
+    iteration: int, split: Split, count: int, box: Sequence[BoxCoordinate]
+) -> tuple[Draw, ...]:
     return tuple(
         Draw(index=j, u=u, request=request_of(u))
-        for j, u in enumerate(draws(iteration, split, count))
+        for j, u in enumerate(draws(iteration, split, count, box))
     )
 
 
-def inherited_training(iteration: int) -> tuple[Draw, ...]:
-    """Iteration ≥ 2's training split: every P_ref draw of iterations 1 … i−1, by origin, in
-    iteration order, then `fresh_splits` order, then index order (spec §18 A1.2). Each draw is
-    the earlier plan's own (`_fresh` with the earlier seed and the full counts), so its request is
-    bitwise that experiment's."""
+def inherited_training(iteration: int, box: Sequence[BoxCoordinate]) -> tuple[Draw, ...]:
+    """Iteration ≥ 2's training split: every P_ref draw of iterations 1 … i−1 of the same family
+    (the same `box`), by origin, in iteration order, then `fresh_splits` order, then index order
+    (spec §18 A1.2, §19 A2.3). Each draw is the earlier plan's own (`_fresh` with the earlier seed
+    and the full counts), so its request is bitwise that experiment's."""
     out: list[Draw] = []
     for j in range(1, iteration):
         for split in fresh_splits(j):
-            for row in _fresh(j, split, COUNTS[split]):
+            for row in _fresh(j, split, COUNTS[split], box):
                 out.append(Draw(len(out), row.u, row.request, Origin(j, split, row.index)))
     return tuple(out)
 
 
-def build_plan(plan_id: str, iteration: int, counts: Mapping[Split, int]) -> SamplePlan:
-    """The plan of `iteration` with the first `counts[split]` draws of every split (spec §5.1);
-    for iteration ≥ 2 the training split is `inherited_training`, whose length is the count."""
+def build_plan(
+    plan_id: str, iteration: int, counts: Mapping[Split, int], reference: ReferenceDistribution
+) -> SamplePlan:
+    """The plan of `iteration` on `reference`'s box with the first `counts[split]` draws of every
+    split (spec §5.1, §19 A2.3); for iteration ≥ 2 the training split is `inherited_training`,
+    whose length is the count."""
+    box = reference.box
 
     def rows(split: Split) -> tuple[Draw, ...]:
         if split == "training" and iteration >= 2:
-            inherited = inherited_training(iteration)
+            inherited = inherited_training(iteration, box)
             if len(inherited) != counts[split]:
                 raise ValueError(
                     f"{plan_id}: {len(inherited)} inherited training draws, not {counts[split]}"
                 )
             return inherited
-        return _fresh(iteration, split, counts[split])
+        return _fresh(iteration, split, counts[split], box)
 
     centres = []
-    for j, u in enumerate(draws(iteration, "gradient", counts["gradient"])):
+    for j, u in enumerate(draws(iteration, "gradient", counts["gradient"], box)):
         stencil = []
-        for k, coordinate in enumerate(BOX):
+        for k, coordinate in enumerate(box):
             for sign in (1, -1):
-                v = stencil_point(u, k, sign)
+                v = stencil_point(u, k, sign, box)
                 stencil.append(StencilPoint(coordinate.name, sign, v, request_of(v)))
         centres.append(GradientCentre(j, u, request_of(u), tuple(stencil)))
     return SamplePlan(
@@ -370,6 +451,8 @@ def build_plan(plan_id: str, iteration: int, counts: Mapping[Split, int]) -> Sam
         calibration=rows("calibration"),
         test=rows("test"),
         gradient=tuple(centres),
+        reference_distribution=reference.reference_id,
+        box=box,
     )
 
 
@@ -383,35 +466,64 @@ def iteration_counts(iteration: int) -> Mapping[Split, int]:
     return {**COUNTS, "training": inherited}
 
 
-#: The registered plans (spec §5.2, §5.5, §9.3, §18 A1.2). `it<i>` for i ≥ 2 is registered because
-#: its plan file is emitted by the generator and committed (`plan-it2.json`, `plan-it3.json`); at
-#: most three iterations under this specification.
-REGISTERED_PLANS: Final[Mapping[str, tuple[int, Mapping[Split, int], bool]]] = {
-    # plan id: (iteration, counts, synthetic parents only)
-    "it1": (1, COUNTS, False),
-    "it1-prefix": (1, PREFIX_COUNTS, True),
-    **{f"it{i}": (i, iteration_counts(i), False) for i in range(2, MAX_ITERATION + 1)},
+class RegisteredPlan(NamedTuple):
+    """A registered plan: its iteration, counts, whether the plan itself is for synthetic parents
+    only (`it1-prefix`), and the P_ref that owns it (spec §19 A2.3)."""
+
+    iteration: int
+    counts: Mapping[Split, int]
+    synthetic_only: bool
+    reference_distribution: str
+
+
+def _family(reference_id: str, prefix: bool) -> dict[str, RegisteredPlan]:
+    """The plans `reference_id` owns, in registered order: `<p>1`, its prefix if any, `<p>2`, …"""
+    reference = REFERENCE_DISTRIBUTIONS[reference_id]
+    plans = {reference.plan_id(1): RegisteredPlan(1, COUNTS, False, reference_id)}
+    if prefix:
+        plans[f"{reference.plan_id(1)}-prefix"] = RegisteredPlan(
+            1, PREFIX_COUNTS, True, reference_id
+        )
+    for i in range(2, MAX_ITERATION + 1):
+        plans[reference.plan_id(i)] = RegisteredPlan(i, iteration_counts(i), False, reference_id)
+    return plans
+
+
+#: The registered plans (spec §5.2, §5.5, §9.3, §18 A1.2, §19 A2.3). `it<i>` and `b2-it<i>` are
+#: registered because their plan files are emitted by the generator and committed
+#: (`plan-it1.json` … `plan-b2-it3.json`); at most three iterations per family.
+REGISTERED_PLANS: Final[Mapping[str, RegisteredPlan]] = {
+    **_family(REFERENCE_DISTRIBUTION_ID, prefix=True),
+    **_family(REFERENCE_DISTRIBUTION_ID_V2, prefix=False),
 }
+
+
+def plan_reference(plan_id: str) -> ReferenceDistribution:
+    """The P_ref that owns the registered plan `plan_id`."""
+    return REFERENCE_DISTRIBUTIONS[REGISTERED_PLANS[plan_id].reference_distribution]
 
 
 def registered_plan(plan_id: str, *, synthetic_parent: bool) -> SamplePlan:
     """The registered plan `plan_id` for a parent, or `PlanRefusedError` (spec §10.3, M04.A03).
 
     `it1-prefix` (spec §9.3) exists to keep the default gate cheap and is accepted only for a
-    synthetic parent: its power is not the registered plan's.
+    synthetic parent: its power is not the registered plan's. Every plan of a synthetic-only P_ref
+    (box v1) is too: a real parent has exactly one registered family, so §5.5's family-wise bound
+    counts every coverage test evaluated on it (spec §19 A2.3).
     """
     if plan_id not in REGISTERED_PLANS:
         raise PlanRefusedError(
             "plan_not_registered",
             f"plan {plan_id!r} is not registered (registered: {sorted(REGISTERED_PLANS)})",
         )
-    iteration, counts, synthetic_only = REGISTERED_PLANS[plan_id]
-    if synthetic_only and not synthetic_parent:
+    registered = REGISTERED_PLANS[plan_id]
+    reference = plan_reference(plan_id)
+    if (registered.synthetic_only or reference.synthetic_only) and not synthetic_parent:
         raise PlanRefusedError(
             "plan_not_registered_for_parent",
             f"plan {plan_id!r} is registered for synthetic parents only",
         )
-    return build_plan(plan_id, iteration, counts)
+    return build_plan(plan_id, registered.iteration, registered.counts, reference)
 
 
 # -- the plan guard (spec §5.1, §5.4) -------------------------------------------------------------
@@ -430,12 +542,15 @@ def plan_violations(
     """
     found: list[str] = []
     seen: dict[tuple[float, ...], str] = {}
+    scaling = plan.scaling
     for label, request in plan.requests():
         u = coordinates(request, PLAN_N_TUBES)
         if u is None:
             found.append(f"{label}: the input map is undefined")
             continue
-        outside = [BOX[k].name for k, z in enumerate(scaled(u)) if not -1.0 <= z <= 1.0]
+        outside = [
+            plan.box[k].name for k, z in enumerate(scaled(u, scaling)) if not -1.0 <= z <= 1.0
+        ]
         if outside:
             found.append(f"{label}: outside the reference box in {outside}")
         found.extend(f"{label}: {reason}" for reason in domain_violations(request))

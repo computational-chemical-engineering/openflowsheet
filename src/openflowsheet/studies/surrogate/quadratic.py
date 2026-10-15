@@ -31,7 +31,14 @@ from scipy.linalg import solve_triangular
 
 from openflowsheet.models.c1 import NU
 from openflowsheet.studies.surrogate.conformal import TAU_ID, TERMS
-from openflowsheet.studies.surrogate.plan import BOX, DIMENSION, coordinates, scaled
+from openflowsheet.studies.surrogate.plan import (
+    BOX,
+    DIMENSION,
+    SCALING,
+    Scaling,
+    coordinates,
+    scaled,
+)
 from openflowsheet.thermo import StreamState
 
 #: The basis (spec §3.4) and the fit method (spec §10.1).
@@ -104,10 +111,13 @@ def _finite(values: Sequence[float], what: str) -> tuple[float, ...]:
 
 @dataclass(frozen=True)
 class QuadraticSurrogate:
-    """The frozen predictor: 36 coefficients per output, in basis order (spec §3.4)."""
+    """The frozen predictor: 36 coefficients per output, in basis order (spec §3.4), and the
+    scaling z = (u − c)/h it is a function of: the study's plan box, or the manifest's
+    `input_map` for a unit (spec §19 A2.3). Box v1's by default (its tests and fixtures)."""
 
     coefficients_x: tuple[float, ...]
     coefficients_dt: tuple[float, ...]
+    scaling: Scaling = SCALING
 
     def __post_init__(self) -> None:
         for name in ("coefficients_x", "coefficients_dt"):
@@ -155,12 +165,16 @@ class QuadraticFit:
 
 
 def fit_quadratic(
-    z_rows: Sequence[Sequence[float]], x: Sequence[float], dt: Sequence[float]
+    z_rows: Sequence[Sequence[float]],
+    x: Sequence[float],
+    dt: Sequence[float],
+    scaling: Scaling = SCALING,
 ) -> QuadraticFit:
     """β minimizing ‖Φβ − y‖₂ by Householder QR (`numpy.linalg.qr`, reduced, then a triangular
     solve), X and ΔT sharing Φ; refused when N_ok < 36 or σ_min/σ_max < τ_id = 1e-8 (spec §3.4).
 
-    The rows are the training draws whose experiments returned `ok`, in plan order.
+    The rows are the training draws whose experiments returned `ok`, in plan order, scaled by
+    `scaling`, which the surrogate carries.
     """
     n_ok = len(z_rows)
     if not len(x) == len(dt) == n_ok:
@@ -180,6 +194,7 @@ def fit_quadratic(
     surrogate = QuadraticSurrogate(
         coefficients_x=tuple(float(b) for b in beta[:, 0]),
         coefficients_dt=tuple(float(b) for b in beta[:, 1]),
+        scaling=scaling,
     )
     return QuadraticFit(n_ok, ratio, surrogate, (float(rms[0]), float(rms[1])), None)
 
@@ -224,15 +239,15 @@ def inlet_sensitivity(
     u = coordinates(inlet, n_tubes)
     if u is None:
         return None
-    z = scaled(u)
+    z = scaled(u, surrogate.scaling)
     x, dt = surrogate.predict(z)
     g_x, g_dt = surrogate.gradient(z)
     du = input_jacobian(inlet.n, n_tubes)
+    half_width = surrogate.scaling.half_width
 
     def chain(g: tuple[float, ...]) -> tuple[float, ...]:
         return tuple(
-            math.fsum(g[k] / BOX[k].half_width * du[k][c] for k in range(DIMENSION))
-            for c in range(7)
+            math.fsum(g[k] / half_width[k] * du[k][c] for k in range(DIMENSION)) for c in range(7)
         )
 
     return InletSensitivity(z=z, x=x, dt=dt, dx_ds=chain(g_x), ddt_ds=chain(g_dt))
@@ -350,7 +365,7 @@ def causal_outlet(
     u = coordinates(inlet, n_tubes)
     if u is None:
         return SurrogateOutlet("input_undefined", None, None, None, None, None, (), None)
-    z = scaled(u)
+    z = scaled(u, surrogate.scaling)
     x, dt = surrogate.predict(z)
     xi = x * inlet.n[_N2]
     n_out = tuple(n + nu * xi if nu else n for n, nu in zip(inlet.n, NU, strict=True))

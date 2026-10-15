@@ -52,6 +52,7 @@ from openflowsheet.studies.surrogate.conformal import (
 from openflowsheet.studies.surrogate.plan import (
     PLAN_N_TUBES,
     SamplePlan,
+    Scaling,
     Split,
     check_plan,
     coordinates,
@@ -119,11 +120,11 @@ class Observation:
     extrapolated: bool
     fingerprint_sha256: str | None
 
-    @property
-    def z(self) -> tuple[float, ...]:
+    def z(self, scaling: Scaling) -> tuple[float, ...]:
+        """The request's scaled inlet under `scaling` (the plan's box, spec §19 A2.3)."""
         u = coordinates(self.request, PLAN_N_TUBES)
         assert u is not None  # every plan request has a defined input map (the plan guard)
-        return scaled(u)
+        return scaled(u, scaling)
 
 
 def observe(label: str, request: StreamState, outcome: ExperimentOutcome) -> Observation:
@@ -223,7 +224,8 @@ def _gradient_errors(
             f_plus = plus.x if o == 0 else plus.dt
             f_minus = minus.x if o == 0 else minus.dt
             assert f_plus is not None and f_minus is not None
-            difference.append((f_plus - f_minus) / (plus.z[k] - minus.z[k]))
+            z_plus, z_minus = plus.z(surrogate.scaling), minus.z(surrogate.scaling)
+            difference.append((f_plus - f_minus) / (z_plus[k] - z_minus[k]))
         misfit = math.sqrt(
             math.fsum((g - d) ** 2 for g, d in zip(gradient, difference, strict=True))
         )
@@ -263,9 +265,10 @@ def evaluate(
 
     training = [o for o in rows["training"] if o.status == "ok"]
     fit = fit_quadratic(
-        [o.z for o in training],
+        [o.z(plan.scaling) for o in training],
         [o.x for o in training if o.x is not None],
         [o.dt for o in training if o.dt is not None],
+        plan.scaling,
     )
     surrogate = fit.surrogate
 
@@ -280,7 +283,7 @@ def evaluate(
                 continue
             u = coordinates(o.request, PLAN_N_TUBES)
             assert u is not None
-            x_hat, dt_hat = surrogate.predict(scaled(u))
+            x_hat, dt_hat = surrogate.predict(scaled(u, surrogate.scaling))
             # Every calibration and test prediction is judged, whatever the parent returned
             # (spec §7.1 item 6): an inadmissible prediction in the box is the predictor's defect.
             inadmissible += bool(inadmissible_outputs(x_hat, dt_hat, u[2]))
@@ -299,7 +302,7 @@ def evaluate(
             (abs(o.x - x_hat), abs(o.dt - dt_hat))
             for o in rows["test"]
             if o.status == "ok" and o.x is not None and o.dt is not None
-            for x_hat, dt_hat in (surrogate.predict(o.z),)
+            for x_hat, dt_hat in (surrogate.predict(o.z(surrogate.scaling)),)
         )
 
     centres = []
@@ -318,7 +321,7 @@ def evaluate(
             status = "ok"
             u = coordinates(centre.request, PLAN_N_TUBES)
             assert u is not None
-            errors = _gradient_errors(surrogate, scaled(u), stencil)
+            errors = _gradient_errors(surrogate, scaled(u, surrogate.scaling), stencil)
         centres.append(CentreEvidence(centre.index, status, tuple(stencil), errors))
 
     extrapolated = sum(1 for found in rows.values() for o in found if o.extrapolated)

@@ -34,9 +34,9 @@ In order:
 The report (`--report`) records the parent, the plan, `max_workers`, the command, the misses
 before, each round's submissions, every retry and what remains incomplete, and the wall time.
 
-Usage (WO-11, the real reactor; never in the default gate):
+Usage (WO-11, the real reactor on box v2's `b2-it1`, spec §19 A2.13; never in the default gate):
     PYTHONPATH=src .venv/bin/python scripts/m04_prewarm.py --project <dir> \\
-        --variant pymrm-6089593-g2-nz800-s123-v2 --plan it1 --budget <approved> \\
+        --variant pymrm-6089593-g2-nz800-s123-v3 --plan b2-it1 --budget <approved> \\
         --max-workers 16 --retries 2 --report <evidence>/prewarm.json --study --repeat-test 8
 """
 
@@ -341,7 +341,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--project", type=Path, required=True)
     parser.add_argument("--variant", required=True, help="a registered variant id")
-    parser.add_argument("--plan", required=True, help="it1, it1-prefix (synthetic only), it2, it3")
+    parser.add_argument(
+        "--plan",
+        required=True,
+        help="b2-it1, b2-it2, b2-it3; it1, it1-prefix, it2, it3 (synthetic only)",
+    )
     parser.add_argument("--budget", type=int, required=True, help="approved cold experiments")
     parser.add_argument("--max-workers", type=int, default=16)
     parser.add_argument("--retries", type=int, default=2)

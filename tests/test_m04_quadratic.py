@@ -28,7 +28,7 @@ from openflowsheet.thermo import StreamState
 REFERENCE: Mapping[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m04" / "reference_values.json")
 CONSTANTS = REFERENCE["constants"]
 PIPELINE = REFERENCE["pipeline"]
-FULL = sp.registered_plan("it1", synthetic_parent=False)
+FULL = sp.registered_plan("it1", synthetic_parent=True)
 SYN_A = tuple(float(a) for a in CONSTANTS["synthetic"]["a"])
 SYN_B = tuple(float(b) for b in CONSTANTS["synthetic"]["b"])
 FIXTURE = qd.QuadraticSurrogate(
