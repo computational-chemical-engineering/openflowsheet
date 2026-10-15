@@ -97,15 +97,15 @@ F5 education mode deferred.
 certificates qualify 4 extra ids — EXT-COUPLING:T/xi, derivative_witness on/off → V18 (b) FAIL by Q5 default); M07a manifest `implemented`
 (A39, A43 fail; A43 = 13 t08_rc records lack machine_class). Amendment 2 ruled (`ab80ca5`, R-345…349): F1 = certificate defect (EXT-COUPLING/witness write `None`), failure is V18 (c) not (b);
 A43 needs a registered `machine_class`; wrapper output accepted. **`e0e198e` superseded → re-cut C_α¹ and re-run steps 1–13** (R-349;
-alt. Frank accepts V18 (c) FAIL, Q-A2-1, not recommended). §18.5 actions 1–2 done (`2e778d3`, gate 8591; Am2.5 inert: G2 dump byte-identical, K05 identity PASS, solution states identical). **C_α¹ = `6fec822`** (branch `wp/V02-alpha-rc1`; e0e198e + Am. 2 fixes). RC steps 1–12 PASS (CI 38772065394/38772054427; step 10: 77 certificates, 0 violations; step 12 cert bound `faa8e4da…`). M07a manifest `implemented` 37/0/6 (A52 + A60–A64 wait on verdicts by design). C_α⁰ record → `docs/v02-alpha-rc-record-e0e198e.md`. Running: `verdict` at C_α¹ (brief `70c526e`) and M04 Am. 3 fixes; then design read of the diff, re-cut, re-run.;
+alt. Frank accepts V18 (c) FAIL, Q-A2-1, not recommended). §18.5 actions 1–2 done (`2e778d3`, gate 8591; Am2.5 inert: G2 dump byte-identical, K05 identity PASS, solution states identical). **C_α¹ = `6fec822`** (branch `wp/V02-alpha-rc1`; e0e198e + Am. 2 fixes). RC steps 1–12 PASS (CI 38772065394/38772054427; step 10: 77 certificates, 0 violations; step 12 cert bound `faa8e4da…`). M07a manifest `implemented` 37/0/6 (A52 + A60–A64 wait on verdicts by design). C_α⁰ record → `docs/v02-alpha-rc-record-e0e198e.md`. **Verdicts `fffb0e4`: 8 PASS (V11, V12, V15, V16, V18, V19, V20, W22); V14 FAIL (b); BLOCKED V13 (e), V17 (a), W21 (c) — on Frank's ADR 0028 answers.** Running: `specifier` Amendment 3 on verdict findings A1–A10 (A1 aarch64 limitation row missing → re-cut?; A2 date rule; A5 CHANGELOG) R-370…379, and M04 Am. 3 fixes; then design read of the diff, re-cut, re-run.;
 M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
 Stopped at Frank's pace request, work saved on branches (pushed): `wp/test-hardening` `1d90625` (t07_w5b pins the
 single-threaded env itself — gate + merge pending); `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
 (spec still to write). Done in the burst: M02 closeout merged (`2497ec2`); M05 rulings §18 on `wp/M05-rulings2` (`4cc5956`).
-Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 from R-331 (continue R-350); M02 closeout R-340…344; alpha Am. 2 R-345…349; M04 review R-360…369.
+Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 from R-331 (continue R-350); M02 closeout R-340…344; alpha Am. 2 R-345…349; M04 review R-360…369; alpha Am. 3 R-370…379.
 Queued M02 follow-up (after the alpha RC): C1 inert-floor exact compare (`boundary.py:390`, few-ulp slack), R-341 R0
 guard, R-343 L-rows.
-After these: alpha verdicts (W21, W22, V11–V20) → gate table pasted, A52 → M07a manifest `tested` → step 13 → WO-11 → Frank publishes `0.2.0a1`; M04 merge after review;
+After these: Frank's 4 answers + Amendment 3 (maybe C_α²) → re-judge V13/V17/W21 → gate table pasted, A52 → M07a manifest `tested` → step 13 → WO-11 → Frank publishes `0.2.0a1`; M04 merge after review;
 M05 WO-8 + `reviewer`; M07 build.
 
 In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the

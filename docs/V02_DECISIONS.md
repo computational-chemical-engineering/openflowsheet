@@ -829,3 +829,7 @@ Grep, don't read whole. Newest at the bottom.
   `wp/V02-alpha-rc1` (cherry-picks -x, gate 8574), merged --no-ff into `wp/V02-alpha-gate` (`896d014`). CI 38772065394 /
   38772054427 green (8507/100 x86, 8479/98 arm); local 2, 6–12 PASS; step 10 0/77 violations. Manifest `implemented`
   37/0/6. Build choices for later design read: B-AM2-6, -9, -10 (multiset hash tests, 6146aa3). `verdict` launched.
+- **Alpha verdicts at C_α¹** (2026-10-15, `verdict`, `fffb0e4`): 8 PASS, V14 FAIL (b), BLOCKED V13 (e) / V17 (a) (V17 carry),
+  W21 (c) (M02 N1). W22 band ratios 1.58/1.25/1.18. 61 record hashes recomputed, match. Findings A1 (aarch64 reactor
+  limitation row missing from envelope, before any tag), A2 (date rule vs re-judgement), A5 (CHANGELOG), A3/A4/A6–A10.
+  Frank notified (push). `specifier` Amendment 3 launched (brief `b272cea`).
