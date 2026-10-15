@@ -342,6 +342,27 @@ def test_a47_the_jobs_a19_manifest_is_the_fixture_outside_the_environment(world:
         assert in_e == []
 
 
+#: Finding E29 (build log): the evidence's `data[*].keys_sha256` are its copies of the manifest's
+#: per-split key digests, which E names on the manifest side only. They are allowed here only as
+#: exactly those four members and only where each equals the run manifest's own digest; the design
+#: lane rules whether E names them (spec §A2.10). Any other difference fails.
+E29_COPIES: tuple[str, ...] = tuple(f".data[{i}].keys_sha256" for i in range(4))
+
+
+def test_a47_the_jobs_a19_evidence_is_the_fixture_outside_the_environment(world: World) -> None:
+    manifest, sha256 = world.manifests["A19"]
+    evidence = world.a19_evidence
+    assert evidence["subject"]["artifact_ref"] == sha256
+    outside, in_e = a47_differences(
+        evidence, A19_EVIDENCE_FIXTURE, POLICY["rules"]["model_evidence"], E_EVIDENCE
+    )
+    assert [d.split(":")[0] for d in outside] in ([], list(E29_COPIES)), outside
+    for block in evidence["data"]:
+        assert block["keys_sha256"] == manifest["splits"][block["split"]]["keys_sha256"]
+    if _fingerprints_equal(world):
+        assert (outside, in_e) == ([], [])
+
+
 def test_a47_the_comparison_is_not_vacuous() -> None:
     """A moved coefficient beyond its floor, a moved count and a moved E member are each caught
     where they belong."""

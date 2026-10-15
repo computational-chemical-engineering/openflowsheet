@@ -207,3 +207,15 @@ Normative text: `docs/derivations/M06-W27-registration.md` §22.2, §22.4, §22.
   manifest's `reference_distribution.id` there; the checker expects Q1 by that id. Box v1's
   strings are unchanged (`QUALIFICATIONS`, `ASSUMPTIONS`), so no v1 record moves. For the design
   lane: confirm. Reversible by: reverting the E28 commit.
+
+## Amendment 2: WO-20 (2026-10-15)
+
+- **E29. Finding: A47's evidence comparison differs outside E in four members.** The A19 job's
+  ModelEvidence differs from `model_evidence/valid/a19_smooth_prefix.json` at `data[0..3].keys_sha256`
+  only (everything else, R1/R2 floats included, is equal within the policy floors). These are the
+  evidence's copies of the per-split key-list digests: §A2.12 puts `splits.<s>.keys_sha256` in E
+  for the manifest and names only `subject.artifact_ref` in addition for the evidence. Not added
+  to E: the test allows exactly these four members, only where each equals the run manifest's own
+  `splits.<s>.keys_sha256` (asserted), and still demands E-equality at equal fingerprints. For the
+  design lane: name `data[*].keys_sha256` in the evidence's E, or rule otherwise. Reversible by:
+  reverting the E29 commit (the evidence comparison then fails as specified).
