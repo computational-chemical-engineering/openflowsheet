@@ -6,6 +6,7 @@ The member is computed at write time by `t08_rc.machine_class()`, which wraps T0
 `benchmarks.t06.ensemble.machine_class()`; it is never a literal. `install-check` writes it in
 `provenance` beside `architecture` and `github_actions`, and must agree with both. `lock-check`'s
 end-to-end test (`tests/test_t08_r3_a19_lock_lookup.py`) asserts the member on both states.
+`t08_dist.py`'s builds cannot run offline; its record's member is the same function's value.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from conftest import REPO_ROOT
 from benchmarks.t06 import ensemble
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import t08_dist  # noqa: E402
 import t08_rc  # noqa: E402
 
 CLASSES = ensemble.registered()["machine_classes"]
@@ -91,3 +93,7 @@ def test_the_install_check_record_carries_the_machine_class(tmp_path: Path) -> N
     assert document["step"] == "install-check"
     _registered_and_agreeing(document)
     assert document["machine"] == document["provenance"]["architecture"]
+
+
+def test_the_dist_record_class_is_the_same_function() -> None:
+    assert t08_dist.machine_class() == t08_rc.machine_class()
