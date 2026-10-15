@@ -98,7 +98,7 @@ key, a tolerance or a registered result.
 5. `C_α` and a 13-step RC job: T08 §8.2's steps 1–10 at `C_α` with step 8 replaced, two W steps, and the gate (§8).
 6. The changes to `release.yml`, `changelog_section.py` and `RELEASING.md` that a PEP 440 pre-release needs, and the
    procedure up to Frank's dispatch (§9).
-7. 43 numbered assertions (§10). Every float comparison among them reuses a tolerance already registered, with its
+7. 44 numbered assertions (§10) *(amended 2026-10-15, Amendment 3 A2: M07a.A14 added, §19.2)*. Every float comparison among them reuses a tolerance already registered, with its
    argument, by M01, M02, K04/ADR 0007, T02 §6.4, T06 or ADR 0025. **This specification registers no tolerance.**
 
 ---
@@ -165,7 +165,9 @@ Four additions:
    T08's records alike (ADR 0021 D1).
 4. **Unmeasured is stated, never omitted.** An aspect the RC does not measure is a limitation row of the alpha
    envelope and is named in the notes. The aarch64 reactor run is the known one (Q1). The RC record cannot carry it:
-   T08 Ruling 3's grammar fails any row that reads "not measured" (FD-α8).
+   T08 Ruling 3's grammar fails any row that reads "not measured" (FD-α8). *(amended 2026-10-15, Amendment 3 A1, R-370: at `C_α¹`
+   the envelope had no such row and its `platforms` axis and L15 named aarch64 without excepting the reactor; the
+   re-cut `C_α²` carries L44, §19.1)*
 
 ---
 
@@ -297,6 +299,10 @@ The variant's own figures hold at step 12:
 | G10 (f), \|ΔP\|/P_in | ≤ 10⁻³ | 4.90–5.06 × 10⁻⁵ |
 | G12, the real loop's floor ratios | ≥ 10 | — |
 
+*(amended 2026-10-15, Amendment 3 A10, R-379: the `Recorded` column quotes the records written before the RC. At `C_α¹` step 12's adapter
+figure for G10 (e) is 3.84 × 10⁻⁸. The bound is the criterion, and the verdict quotes step 12's figure at the
+candidate it judges.)*
+
 M01 §10's grid study (M01.A48's record half) holds.
 
 **W21 (c) — Out-of-process execution policy.** The profile is `external-subprocess-v1` (ADR 0033 D1–D2).
@@ -343,8 +349,11 @@ is met iff all four hold:
 
 *The stronger reading, rejected as the default (F-α4).* "Parent-model validation" would mean that this project
 compares reactor results with experimental data. That is validation of the reactor's physics. Blueprint §9.1 keeps
-high-fidelity model discrepancy as separate evidence, and M07's "truth checks" own it. The 4TU dataset's use also
-awaits Frank's rights statement (T08 R3 8 (b)). Under that reading W21 (f) would be `BLOCKED` on the statement.
+high-fidelity model discrepancy as separate evidence, and M07's "truth checks" own it. *(amended 2026-10-15, Amendment 3 A5, R-374: the
+two sentences that stood here said that the 4TU dataset's use awaited Frank's rights statement, so that this reading
+would make W21 (f) `BLOCKED`. His statement of 2026-10-02 (dossier §8, row 8) is that the dataset may be used and
+referenced. The stronger reading is therefore not blocked on rights. It stays rejected as the default for the reason
+above, and it would need a comparison this project has not made.)*
 
 **W21 does not establish:**
 - that the reactor is right: every real-reactor number is the group's model at the pin, a regression, with F-R2, F-R3
@@ -424,6 +433,8 @@ judges V11–V20, W21 and W22 together, at `C_α`. It does not judge W23–W27.
 - There is exactly one table with a `Verdict` header: `Gate | Verdict | Failing clauses | Travelling limitations |
   Basis`, with twelve rows, `V11` … `V20`, `W21`, `W22`, in that order.
 - Clauses are written `Gnn (x)` with §4's, §5.4's and §6's labels. Limitation ids come from the alpha envelope.
+- A re-judgement after Frank's answers keeps the header line, and its `**Judged:**` date, unchanged. It adds one
+  `**Re-judged:**` line directly below the header and a `## Re-judgement` section (§19.2). *(amended 2026-10-15, Amendment 3 A2, R-371)*
 
 Below the table there is one section per gate. Each section judges every clause met, not met or blocked, gives its
 evidence at `C_α`, and states what the verdict does not establish. For W21 and W22 that is at least the lists of
@@ -484,6 +495,8 @@ commit is unambiguous.
 2. **The verdict document.** `docs/reviews/V02-alpha-verdicts.md`, read by column under §6.3's form.
    - The header names `C` once, as `` **Release candidate:** `<40 hex>` ``, and that commit must equal `--rc`.
    - `**Judged:** YYYY-MM-DD` is read as the judged date.
+   - At most one line starting `**Re-judged:**` is read as the re-judgement, under Table T8's rule. A malformed line,
+     or a second one, is malformed, exit 2 (§19.2). *(amended 2026-10-15, Amendment 3 A2, R-371)*
    - These are malformed, exit 2:
      - a clause outside its column;
      - a gate out of order;
@@ -500,7 +513,8 @@ commit is unambiguous.
    - **The decisions table** has a header column `Frank's answer`, and its rows are `N3`, `V17 carry` and `M02 N1`.
      Each of the three must pass the cell rule **and** its date must be on or after the judged date, so an answer
      given for one release is not read for a later one. Table T6 fixes the date rule for both tables. *(amended
-     2026-10-09, Amendment 1 (review) F2)*
+     2026-10-09, Amendment 1 (review) F2)* When the verdict document has a `**Re-judged:**` line, Table T7 fixes it
+     instead (§19.2). *(amended 2026-10-15, Amendment 3 A2, R-371)*
    - **The cell rule.** Remove `*` and backticks from the cell and strip it. Lower-cased, it must match
      `^accepted[\s,;:]*(\d{4}-\d{2}-\d{2})(?![0-9])` at its start, so the date comes right after the word, and that
      date must be a calendar date. It is the acceptance date. Table T4 fixes the rule. *(amended 2026-10-09,
@@ -552,7 +566,8 @@ commit is unambiguous.
 **Table T6 — Frank's answers against the verdict's `Judged` date** *(added 2026-10-09, Amendment 1 (review) F2)*
 
 A D3 row and each decisions row count iff the cell passes Table T4's rule and its acceptance date is on or after
-`Judged`.
+`Judged`. *(amended 2026-10-15, Amendment 3 A2, R-371: this is the rule without a re-judgement. With a `**Re-judged:**` line, Table T7
+of §19.2 governs, and T6's rows are its cases with no such line.)*
 
 | Cell (as written) | Judged | Counts |
 | --- | --- | --- |
@@ -583,7 +598,9 @@ A tag `v<version>` may be **proposed** to Frank iff every item below holds. The 
 11. **Frank's answers.** `N3`, `V17 carry` and `M02 N1` each pass the cell rule. An answer that does not, including a
     chosen alternative, refuses with "Frank's answer to <item> is not an acceptance of the default; amend the alpha
     specification for it". Each is also dated on or after the verdict's `Judged` date (Table T6); an answer dated
-    before it refuses, naming the item and both dates. *(amended 2026-10-09, Amendment 1 (review) F2)*
+    before it refuses, naming the item and both dates. *(amended 2026-10-09, Amendment 1 (review) F2)* With a
+    re-judgement, each answer and each D3 row also meets Table T7's bound, and a refusal names the item, its date, and
+    the `Judged` and `Re-judged` dates. *(amended 2026-10-15, Amendment 3 A2, R-371)*
 12. **The ADRs.** Every required ADR is Accepted.
 
 **Exit codes.** Exit 0 iff a tag may be proposed. Exit 1 if it may not. Exit 2 if the verdict document is malformed or
@@ -632,7 +649,8 @@ repository: the M01/M02 ancestry check needs it". A vanished `C_α` is a procedu
 ### 8.1 Definition
 
 *(Amended 2026-10-15, Amendment 2 §18.4: the first candidate `C_α⁰` = `e0e198e` is superseded; `C_α` below is the
-re-cut candidate `C_α¹`.)*
+re-cut candidate `C_α¹`.)* *(amended 2026-10-15, Amendment 3 A1, R-370: `C_α¹` is superseded in turn; once cut, `C_α` is `C_α²`,
+§19.1.)*
 
 `C_α` is a commit on the RC branch, cut from `main` after M02's merge, such that:
 
@@ -767,13 +785,18 @@ The tags `v0.2.0a0`, `v0.2.0.dev0` and `0.2.0a1` are refused as malformed (exit 
    Work continues on branches.
 3. **The RC job** runs at `C_α` (§8.2). Its records and the RC record are committed on `wp/M07a` after `C_α`, outside
    the D2.4 paths.
-4. **The manifest** `evidence/M07a/<C_α>/manifest.json` is written with `status: tested` iff M07a.A00–A53 pass at
-   `C_α`.
+4. **The manifest** `evidence/M07a/<C_α>/manifest.json` is written with `status: tested` iff M07a.A00–A51 and A53
+   pass at `C_α`. *(amended 2026-10-15, Amendment 3 A4, R-373: A52 left the condition; it is judged at the candidate after step 5,
+   §19.4)*
 5. **The verdicts.** The `verdict` agent writes the verdict document (§6.3). The build lane writes the ledger
-   (M07a.A64) and the `## v0.2.0a1` section (M07a.A52), then runs `v0_2_gate.py --markdown`.
+   (M07a.A64) and the `## v0.2.0a1` section (M07a.A52), then runs `v0_2_gate.py --markdown`. *(amended 2026-10-15, Amendment 3 A4: A52
+   and A64 are then judged at the candidate, §19.4)*
 6. **Frank's answers.** Frank records them in ADR 0028's two tables. Each of the four, V14 (b) and the three
    decisions, is dated on or after `Judged`. *(amended 2026-10-09, Amendment 1 (review) F2)* ADR 0028 is marked Accepted.
-7. **The local gate.** `PYTHONPATH=src .venv/bin/python scripts/v0_2_gate.py --rc <C_α>` ends
+   Rows `BLOCKED` on Frank's answers are then re-judged (§19.2), and Table T7 bounds the dates. *(amended 2026-10-15, Amendment 3 A2,
+   R-371)*
+7. **The local gate.** First, M07a.A52 and A64 pass at the candidate (§19.4) *(amended 2026-10-15, Amendment 3 A4)*. Then
+   `PYTHONPATH=src .venv/bin/python scripts/v0_2_gate.py --rc <C_α>` ends
    `v0.2.0a1 tag may be proposed: YES`. Then `wp/M07a` is merged into `main` with a merge commit. The candidate is
    `main`'s head, whose D2.4 paths equal `C_α`'s.
 8. **Frank's release.** Frank opens Actions → **release** → Run workflow, from `main`, with `version` `0.2.0a1`, `rc`
@@ -811,7 +834,7 @@ Tolerances:
 
 | ID | Subject and state(s) | Expected | Tolerance and why | Judged by |
 | --- | --- | --- | --- | --- |
-| M07a.A00 | `v02a_reference.py --check` | every claim of §11 passes; the committed YAML equals the regenerated bytes; this table's ids equal the generator's catalogue, unique and sorted; the RC step table and Tables T1–T6 equal the generator's | exact | generator |
+| M07a.A00 | `v02a_reference.py --check` | every claim of §11 passes; the committed YAML equals the regenerated bytes; this table's ids equal the generator's catalogue, unique and sorted; the RC step table and Tables T1–T8 equal the generator's *(amended 2026-10-15, Amendment 3 A2)* | exact | generator |
 | M07a.A01 | Version coverage: the 18 versions of Table T1, each as the candidate's version with an otherwise passing fixture | each `yes` row proposable; each `no` row exit 1 with "not covered by a registered v0.2 gate set" and no gate rows | exact. The boundary rows `a0`, `a01` and `a10` catch an off-by-one pattern; the `.dev` and `.post` rows catch a prefix match | test |
 | M07a.A02 | `C`'s version against the candidate's: (i) both `0.2.0a1`; (ii) `C` = the committed record of `67c66d9` (`0.1.0rc1`) with candidate `0.2.0a1`; (iii) `C` at `0.2.0a1`, candidate at `0.2.0a2` | (i) passes this item; (ii) and (iii) refused, naming both versions | exact. (ii) is the forgotten-`rc` dispatch; (iii) is D2.4's version allowance, which the alpha does not use | test |
 | M07a.A03 | The verdict document's form, with each §7.2 item 2 departure on a passing fixture: reordered or missing column; gate out of order; bold gate id; a clause or L id in `Basis`; a second Verdict table; a `W23` row; a header naming another `C`; no `Judged` date; `**Judged:**` twice *(Amendment 1 (review) F4)*; an unknown L id | the passing fixture parses; every departure is exit 2, except the unknown L id, which is exit 1 (a gate problem, as in v0.1) | exact. One state per rule, so a dropped rule fails its own state | test |
@@ -825,6 +848,7 @@ Tolerances:
 | M07a.A11 | Required ADRs: Table T5's lines as each ADR's status; one file missing | as Table T5; missing refused | exact | test |
 | M07a.A12 | Output and exit: on the fixtures above, the first line, the 17 gate rows in order, the last line format; `--markdown` 17 rows; `--json` keys; exit 0, 1 or 2 as §7.3 | as §7.5 | exact | test |
 | M07a.A13 | `scripts/v0_1_gate.py` and `tests/test_t08_w4_v0_1_gate.py` | byte-identical to `main` @ `3eca9c8` (SHA-256 in the generator's YAML); the v0.1 gate's suite green | exact. Any edit to the v0.1 gate needs its own register entry | generator, test |
+| M07a.A14 | The re-judgement (§19.2): (a) each row of Table T7 as an ADR 0028 fixture beside a verdict document whose `Judged` and `**Re-judged:**` line are the row's, every other answer accepted on a date that counts under T7, and the row's gate `FAIL` on its clause where the item is a clause; (b) each line of Table T8 under its row's `Judged`; (c) two `**Re-judged:**` lines; (d) a well-formed line placed anywhere in the document; T7 and T8 read from the generator's YAML *(added 2026-10-15, Amendment 3 A2, R-371)* | (a) the item counts iff the row says `yes`, a refusal naming the item, its date and both verdict dates; (b) `yes` rows parse, `no` rows exit 2; (c) exit 2; (d) parses | exact. Every sub-rule of T7 and T8 is the only reason for at least one `no` row (generator claims `T7.mutation_bites.*`, `T8.mutation_bites.*`), so a gate that drops one fails its own row | test |
 | M07a.A20 | `release.yml`'s version step on Table T2's inputs, run as the existing `test_the_version_step` runs it | as Table T2; refusals print "not of the form" | exact | test |
 | M07a.A21 | The gate step with a stub `scripts/v0_2_gate.py`: (a) exit 0 with the exact YES line for `0.2.0a1`; (b) exit 0 with the line for another version; (c) exit 1 | (a) passes; (b) and (c) refused | exact | test |
 | M07a.A22 | `changelog_section.py` on Table T3 | as Table T3; malformed tags exit 2 | exact. The `a10` row catches a prefix match | test |
@@ -847,10 +871,10 @@ Tolerances:
 | M07a.A44 | `release/rc-trees/<C_α>.json` | equals `tree_record(C_α)` regenerated byte for byte; `trees` equal to `TREES` | exact | test |
 | M07a.A50 | The envelope at `C_α` | `envelope_id` and `release` as MR-3; `t08_support_matrix.py --check` 0 problems (T08.A20–A24); the harvest classifies every limitation and non-pass check of every manifest at `C_α`, T08's 58 limitations and 2 non-pass checks included, with `HARVEST_EXCLUDED` empty; the size quoted in M07a's manifest equals the computed one | exact | test |
 | M07a.A51 | B50's counterpart (MR-7): (a) the content at `C_α`; (b) one unregistered model added to `MODEL_BUILDERS`; (c) one registered addition removed | (a) the differences from `c7bbc98`'s fixture, excluding `server.package_version`, are exactly B50's three entries plus the register-named v0.2 additions, each once; (b) and (c) fail, naming the entry | exact | test |
-| M07a.A52 | `CHANGELOG.md` `## v0.2.0a1`: (a) the heading is first, above `## v0.1.1`, and names `C_α`; (b) ADR 0021 D4's six headings in order; (c) the gate table equals `v0_2_gate.py --markdown` at the candidate; (d) "what it is not" contains each phrase of §10.1; (e) the limitation ids named are exactly the alpha envelope's, in order; (f) the reproducibility promise is ADR 0007 F1 verbatim; (g) the review table, as rows, equals MR-5's computed set | all seven hold | exact | test |
+| M07a.A52 | `CHANGELOG.md` `## v0.2.0a1`: (a) the heading is first, above `## v0.1.1`, and names `C_α`; (b) ADR 0021 D4's six headings in order; (c) the gate table equals `v0_2_gate.py --markdown` at the candidate; (d) "what it is not" contains each phrase of §10.1; (e) the limitation ids named are exactly the alpha envelope's, in order; (f) the reproducibility promise is ADR 0007 F1 verbatim; (g) the review table, as rows, equals MR-5's computed set. Judged at the candidate after §9.2 step 5, not at `C_α`, and outside the `tested` condition; (d) also requires that the section contain none of §10.1's forbidden phrases; the phrase lists are read from the generator's YAML *(amended 2026-10-15, Amendment 3 A4 and A5, R-373, R-374)* | all seven hold | exact | test |
 | M07a.A53 | The v0.1.0 section's gate-table test (MR-9) | builds the v0.1 report from the ledger and `T08-verdicts.md` at `PUBLIC_ROOT`; its table is in the `## v0.1.0` section; green with the live ledger's W21 and W22 set | exact | test |
-| M07a.A60 | `docs/reviews/V02-alpha-verdicts.md` | §6.3's form; judged at `C_α`; each gate's section judges every clause and states what it does not establish | exact (presence and pattern) | verdict |
-| M07a.A61 | V11–V20 | judged by T08 §4 at `C_α`, with §5.2's counterparts; V14 (b) expected `FAIL`; V17 `BLOCKED` unless Frank's carry is recorded | exact (criterion) | verdict |
+| M07a.A60 | `docs/reviews/V02-alpha-verdicts.md` | §6.3's form, with at most one `**Re-judged:**` line as §19.2 *(Amendment 3 A2)*; judged at `C_α`; each gate's section judges every clause and states what it does not establish | exact (presence and pattern) | verdict |
+| M07a.A61 | V11–V20 | judged by T08 §4 at `C_α`, with §5.2's counterparts; V14 (b) expected `FAIL`; V13 (e) and V17 (a) `BLOCKED` unless Frank's `V17 carry` is recorded (MR-7) *(amended 2026-10-15, Amendment 3 A3, R-372)* | exact (criterion) | verdict |
 | M07a.A62 | W21 | judged by §6.1, clauses (a)–(f) | exact (criterion) | verdict |
 | M07a.A63 | W22 | judged by §6.2, clauses (a)–(d) | exact (criterion) | verdict |
 | M07a.A64 | `docs/requirements.yaml` | for the 12 claimed gates the verdict equals the document's; each claimed gate's `evidence` includes `evidence/M07a/<C_α>/manifest.json`; W21's includes an M01 and an M02 manifest, W22's an M01 manifest; W23–W27 untouched | exact | test |
@@ -874,11 +898,29 @@ The alpha adds:
 - `not a sandbox`
 - `Linux`
 - `x86-64`
-- `R3`
+- `reproducibility class R3`
 - `synthetic`
 - `pure-component`
 - `k_ij = 0`
 - `no reactor result has been compared with experimental data`
+
+*(amended 2026-10-15, Amendment 3 A5, R-374: `R3` became `reproducibility class R3`, because at `C_α¹` the only match of `R3` was the stale
+"T08 R3 8 (b)". The phrases below carry the statements §6.1 (f4), §13 Q1, §14's last paragraph, W22 (d)'s gaps and
+Frank's rights statement require; the forbidden phrase is the stale rights text.)* Amendment 3 adds:
+- `not measured on aarch64`
+- `no CI job runs the reactor`
+- `the group's published comparison is the group's evidence`
+- `the group's model at the pin, a regression`
+- `discretization bias is 1.0–1.4 % in NH₃`
+- `the reactor stand-in is synthetic`
+- `the LIQUID regime and pure-NH₃ flashes are deferred and refused typed`
+- `no warm start of the reactor`
+- `saturated-liquid volume is 11–30 % high`
+- `enthalpy of vaporization 2–5 % high`
+- `may be used and referenced`
+
+The section contains none of:
+- `awaits Frank's statement`
 
 ---
 
@@ -917,6 +959,11 @@ refuses to pass when any of them stops being true:
 - **C3. The moved records.** §5.2's MR ids are MR-1 … MR-12, contiguous.
 - **R1. The register.** It holds `## R-238` and `## R-239`, and ADR 0028 holds its two tables with the rows §7.2 item
   3 names.
+- **T7, T8, P1, A3** *(amended 2026-10-15, Amendment 3 A2, A3 and A5)*. §19.2's Tables T7 and T8 equal the generator's, the rules
+  reproduce every row, every sub-rule is the only reason for some `no` row, the stated pattern and dependency map are
+  the generator's, and one T7 row is A2's case (an answer after `Judged` and before `Re-judged`, counting). §10.1's
+  phrases and forbidden phrases equal the generator's, and no forbidden phrase sits inside a required one. A61's
+  expectation names V13 (e) and V17 (a).
 
 The YAML is emitted with sorted keys and is byte-reproducible.
 
@@ -943,7 +990,7 @@ The YAML is emitted with sorted keys and is byte-reproducible.
 
 | # | Question | Label | Recommended default |
 | --- | --- | --- | --- |
-| Q1 | Does the reactor environment build and run on aarch64? | **needs a fact**: build it on `ubuntu-24.04-arm` once (M02 N2's alternative) | Not measured. W21's evidence is `ref-x86-64` only. The envelope and the notes say so, with "x86-64" in "what it is not". |
+| Q1 | Does the reactor environment build and run on aarch64? | **needs a fact**: build it on `ubuntu-24.04-arm` once (M02 N2's alternative) | Not measured. W21's evidence is `ref-x86-64` only. The envelope and the notes say so, with "x86-64" in "what it is not". *Amendment 3 A1 (R-370): the envelope says so from `C_α²` as L44; the notes as §10.1's `not measured on aarch64`.* |
 | Q2 | Do `t08_dist.py`, the clean install and setuptools keep `0.2.0a1` unchanged in METADATA, the dist-info name and the file names? | **needs a fact**: WO-3 runs `t08_dist.py` on a scratch tree at `0.2.0a1` | Yes (canonical PEP 440). Any `X.Y.Z` assumption found is fixed in WO-3 and reported. |
 | Q3 | Does M02's merge leave the K05 identity unchanged (step 2)? | **needs a fact**: M02 G2 at the merge; step 2 at `C_α` | Yes. If not, stop. A substitution re-registration is Frank's (R-148, R-149). |
 | Q4 | Does any package other than M06 and M02 change an MCP-visible schema before `C_α`? | **needs a fact**: the chain test | No. Otherwise §5.3's new-link rule applies. |
@@ -957,7 +1004,8 @@ The YAML is emitted with sorted keys and is byte-reproducible.
 ## 14. Needs Frank
 
 Items F-α0 to F-α3 are **gate preconditions**: the gate checks that each is recorded in ADR 0028, dated on or after the
-alpha verdict's `Judged` date *(amended 2026-10-09, Amendment 1 (review) F2)*. Items F-α4 and F-α5
+alpha verdict's `Judged` date *(amended 2026-10-09, Amendment 1 (review) F2)*, and within Table T7's bounds when the
+verdict records a re-judgement *(amended 2026-10-15, Amendment 3 A2, §19.2)*. Items F-α4 and F-α5
 proceed on their defaults until Frank answers.
 
 - **F-α0 — N3: what `0.2.0a1` claims.** Default: `v0.2-alpha-gate-v1` (§3). Alternatives: (i) also W26; (ii) W21 and
@@ -975,7 +1023,8 @@ proceed on their defaults until Frank answers.
   notes.
 - **F-α4 — W21 (f)'s reading.** Default: the parent model's validation is cited, its regression suite reproduced, and
   its adapter conformance and numerical error carried (§6.1). Alternative: this project compares reactor results with
-  experimental data inside W21, which would be `BLOCKED` on the 4TU data-use statement.
+  experimental data inside W21. *(amended 2026-10-15, Amendment 3 A5, R-374: the clause that stood here, "which would be `BLOCKED` on
+  the 4TU data-use statement", is stale: Frank's statement of 2026-10-02 permits the dataset's use and reference.)*
 - **F-α5 — Publication.** Default: through `release.yml`, with Frank's `pypi` approval, and a GitHub release marked
   pre-release (`pip` installs it only with `--pre` or the exact version).
 
@@ -1077,6 +1126,7 @@ Failures F1); build decisions B-WO10-6 and B-WO10-10 (`docs/design/V02-alpha-bui
 
 **Notation.** `C_α⁰` is `e0e198e`, the first candidate, which this amendment supersedes (§18.4). `C_α¹` is the re-cut
 candidate. Elsewhere in this specification `C_α` means the candidate being judged, which from now on is `C_α¹`.
+*(amended 2026-10-15, Amendment 3 A1: from the cut of `C_α²`, §19.1, it is `C_α²`.)*
 
 **What does not change.**
 - No tolerance, band, classification rule or expected set moves: T08.A34's rule, T06 A33 (A4)'s set and A39's
@@ -1298,7 +1348,7 @@ candidate.
 | 3 | The design-lane read of 1 and 2 (§18.4 item 2) | the ruling recorded |
 | 4 | Cut `C_α¹` as §18.4 item 1 describes, for example a branch from `e0e198e` carrying 1, 2 and this amendment's commit | §8.1 items 1–6 at `C_α¹` |
 | 5 | The RC job, steps 1–13, at `C_α¹`. Step 12 through the wrapper; commit step 12's certificates (§18.2 item 2) | M07a.A30–A44 |
-| 6 | Generator: A39 as §18.2 items 2–4, A43 as §18.3. Regenerate M07a's manifest at `C_α¹` | `tested` iff A00–A53 pass |
+| 6 | Generator: A39 as §18.2 items 2–4, A43 as §18.3. Regenerate M07a's manifest at `C_α¹` | `tested` iff A00–A53 pass *(Amendment 3 A4: A00–A51 and A53)* |
 | 7 | Keep `C_α⁰`'s evidence (§18.4 item 4). Update `docs/progress.md` and `docs/V02_STATE.md` | — |
 
 ### 18.6 Open questions, with defaults
@@ -1319,3 +1369,316 @@ candidate.
   hash (§18.2 item 3), and G12's own judgement covers the rest.
 - It does not review every producer of `independence_qualification`. Am2.1 covers S1–S3, and T06 A33 covers the corpus
   and ensemble certificates.
+
+---
+
+## 19. Amendment 3 (design-lane ruling round), 2026-10-15
+
+**Author:** design lane (`specifier`), on `wp/V02-alpha-gate` @ `b272cea`. **Brief:**
+`docs/briefs/V02-alpha-amendment3-brief.md`. **Inputs:** the verdicts at `C_α¹` = `6fec822`
+(`docs/reviews/V02-alpha-verdicts.md` @ `fffb0e4`: 8 PASS, V14 FAIL (b), V13 (e), V17 (a) and W21 (c) `BLOCKED`) and
+its findings A1–A10; build decisions B-AM2-6, B-AM2-9 and B-AM2-10; M07a's manifest at `6fec822` (`implemented`: 37
+pass, 0 fail, 6 unsupported). **Register:** R-370…R-379, one per finding (R-370 also confirms the three build
+decisions). The body markers *(amended 2026-10-15, Amendment 3 …)* point here.
+
+**Notation.** `C_α²` is the re-cut candidate of §19.1. From its cut, `C_α` elsewhere in this specification means `C_α²`.
+
+**What does not change.**
+- No tolerance, band, classification rule or expected set moves. The E/S/P/B rule is applied, not changed (§19.1).
+- §4's four rules stand. Rule 1's purpose, that no acceptance precedes the judgement of what it accepts, is kept and
+  applied per gate (§19.2).
+- ADR 0028, `scripts/v0_1_gate.py` and every registered constant of `scripts/t08_rc.py` are untouched.
+- No verdict at `C_α¹` is re-judged or overturned. Those verdicts are superseded together with their candidate.
+- The generator's 67 earlier claims are unchanged. The amendment adds claims (§11, last bullet), and the YAML gains
+  Tables T7 and T8, the dependency map, the pattern and the phrase lists. The YAML lives under `benchmarks/`, a D2.4
+  path, so it enters `C_α²` (§19.1 item 2 (e)).
+
+### 19.1 A1: the unmeasured reactor platform, and the re-cut `C_α²`. R-370 (A8's rows: R-377)
+
+**Ruling: re-cut.** At `C_α¹` the frozen envelope does more than omit a row. Its `platforms` axis and L15 state "Linux
+x86-64 and aarch64" for every path, the reactor's included, and the support matrix is emitted from that file. Three
+things follow:
+- A spec amendment cannot make a statement in a frozen distribution source true.
+- Letting the row travel in the notes and the verdict only would weaken §4 rule 4 (row *and* notes) to notes alone. The
+  only reason to do so would be the cost of complying at a frozen commit. That is a narrowing chosen on the outcome,
+  and it is rejected.
+- A8's two gaps and the harvest's misfiled M02 rows need the same file.
+
+So the re-cut carries every fix of this round that touches the tree.
+
+**1. The envelope at `C_α²`** (`benchmarks/t08/support_envelope.yaml`). The texts below are normative. The build lane
+may re-wrap them but may not reword them.
+- `axes[platforms].statement`: `Linux x86-64 and aarch64, Python 3.13, the one lock (L15). The C1 reactor's runs are
+  measured on x86-64 only (L44).`
+- `L15.text`: `Linux x86-64 and aarch64 only; Python 3.13; the one lock. The C1 reactor (c1.reactor) is measured on
+  x86-64 only (L44).`, with `c1.reactor` in backticks as the file writes model ids.
+- New limitation rows, appended after the last row in this order:
+
+| Id | Finding | Text | Evidence |
+| --- | --- | --- | --- |
+| L44 | A1, Q1; M02 limitations[1], [6] | The C1 reactor (`c1.reactor`) is measured on Linux x86-64 only, on one machine (`ref-x86-64`). Its runs are opt-in: they need the separately built, pinned reactor environment, which no CI job builds (M02 N2). They are reproducibility class R3 (ADR 0034 D6). A run on aarch64 is not measured, nor is the reproduction of a coupled run across architectures. macOS is best effort, and Windows is refused before spawn (ADR 0033 D2). | `doc:docs/design/M02-pymrm-adapter.md §2.4`; `doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2`; `doc:docs/adr/0034-external-models-in-a-flowsheet-solve.md §D6`; `doc:docs/derivations/V02-alpha-release-spec.md §13` |
+| L45 | verdict l.386; M02 limitations[2] | `external-subprocess-v1` runs the group's pinned code with the user's privileges and is not a sandbox: there is no filesystem confinement, network isolation, memory or CPU quota, or syscall filtering, and trust rests on provenance (ADR 0033 D2; M02 N1). | `doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2`; `doc:docs/design/M02-pymrm-adapter.md §12` |
+| L46 | W21 (f4) | No reactor result has been compared with experimental data by this project. The group's published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the group's evidence. Every real-reactor number is the group's model at the pin, a regression, and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13). | `doc:docs/design/M02-pymrm-adapter.md §13`; `doc:docs/derivations/V02-alpha-release-spec.md §6.1` |
+| L47 | A8 | `pr-c1-v1`'s saturated-liquid NH₃ volume is 11–30 % high (240–400 K) and its enthalpy of vaporization 2–5 % high (−7 % at 400 K), against the reference equations of state. No v0.2 loop decision uses either. | `doc:docs/derivations/M01-spec.md §11` |
+| L48 | M02 limitations[3] | The C1 loop's convergence is evidenced at the corners and the centre of its registered hard domain only (M02 G11). The inert-fraction floor y_inert ≥ 0.035 sits just above a measured stage-1 failure (0.03 at 653.15 K, 11 MPa, H₂/N₂ 2.5). A failure inside the domain ends in a typed refusal and then `COUPLING_NOT_CONVERGED`, never in a false success. | `check:M02.G11`; `doc:docs/design/M02-pymrm-adapter.md §13` |
+
+- A new unsupported row, appended after U14:
+
+| Id | Finding | Capability | Outcome | Evidence |
+| --- | --- | --- | --- | --- |
+| U15 | A8; M02 N5 | `pr-c1-v1`'s LIQUID regime and pure-NH₃ saturation flashes | The verifier's phase-admissibility check ends `unsupported` with reason `pr_liquid_regime_unsupported`, and the solve is not `VERIFIED`. A pure-NH₃ flash is refused typed. | `tests/test_m02_wo8_verifier.py::test_g7j_a_liquid_branch_is_unsupported`; the node that pins the pure-NH₃ refusal (Q-A3-3) |
+
+- **The harvest.** This is the design-lane read of M02's seven rows, which §15 left unread. A defect handed on is never
+  P, and a user-reachable limitation is E (T08 §5.7).
+
+| M02 manifest item | Class at `C_α¹` | Class at `C_α²` | `to` |
+| --- | --- | --- | --- |
+| `limitations[0]` (W21 outside the requirements pattern) | P | P | — |
+| `limitations[1]` (opt-in, Linux, R3, one machine) | P | **E** | `[L44]` |
+| `limitations[2]` (not a sandbox) | P | **E** | `[L45]` |
+| `limitations[3]` (the inert floor; G11's corners and centre) | P | **E** | `[L48]` |
+| `limitations[4]` (G8 (c)'s oracle shares `pr_c1`) | P | P | — |
+| `limitations[5]` (self-generated records are regression fixtures) | P | P | — |
+| `limitations[6]` (coupled cross-platform replay; D130) | P | **E** | `[L44]` |
+
+  Text hashes do not move. The harvest's size (manifests, limitations, non-pass checks) does not move.
+- `docs/support-matrix.md` is re-emitted, and `t08_support_matrix.py --check` reports 0 problems (M07a.A50).
+
+**2. The tree.** `C_α²` descends from `C_α¹`. Its diff from `C_α¹` is exactly:
+- (a) item 1's envelope changes, the re-emitted support matrix, and the tests whose row counts or pinned rows move;
+- (b) §19.2's re-judgement rule in `scripts/v0_2_gate.py`, with M07a.A14's tests in `tests/test_m07a_v0_2_gate.py`;
+- (c) `-rs` on step 1's pytest invocation in `scripts/check.sh` (§19.6, A7);
+- (d) the `## v0.2.0a1` skeleton as §19.5 requires, with `tests/test_m07a_changelog.py` reading its phrase lists from
+  the YAML;
+- (e) this amendment's documents: this specification, the register, the generator and
+  `benchmarks/m07a/reference_values.yaml`.
+
+As at `C_α¹` (§18.4 item 1), `C_α²`'s tree holds none of `C_α¹`'s post-candidate files: no records, no manifest, no
+tree record, no RC record, no verdict document, and neither the M07a generator nor its test. The version stays
+`0.2.0a1`.
+
+**3. The RC job.** Steps 1–13 run in full at `C_α²`, because M07a.A43 requires `commit` = `C_α²` on every record and
+§4 rule 3 admits no evidence about `C_α¹`. Step 12 runs through §18.2's wrapper.
+
+**4. The verdict.** One `verdict` agent judges V11–V20, W21 and W22 at `C_α²` under §6.3. Its brief also pastes, for
+context only, `C_α¹`'s verdict document and `git diff --stat 6fec822 <C_α²>`. Every clause is judged on `C_α²`'s
+records.
+
+**5. `C_α¹`'s evidence is kept, as `C_α⁰`'s was (§18.4 item 4).**
+- Its records, its manifest (`implemented`) and its tree record stay where they are.
+- Its RC record moves to `docs/v02-alpha-rc-record-6fec822.md`, and its verdict document to
+  `docs/reviews/V02-alpha-verdicts-6fec822.md`. Each gains one line saying R-370 superseded it.
+- `C_α¹` stays reachable.
+
+### 19.2 A2: the date rule with a re-judgement. R-371
+
+**The defect.** BLOCKED rows need a re-judgement after Frank answers (D2.2). Table T6 requires each answer to be dated
+on or after `Judged`. If the re-judgement rewrote `Judged`, its date would be no earlier than the answers it read, so
+both rules could hold only on one calendar day.
+
+**Ruling.**
+1. **`Judged` is the first judgement.** It is the date the verdict at `C_α` was first recorded. A re-judgement never
+   changes it.
+2. **The `**Re-judged:**` line.** A re-judgement adds one line directly below the header:
+   `**Re-judged:** YYYY-MM-DD (G, …)`. It lists the gates it re-judged and changes only their rows, in place in the one
+   `Verdict` table. It also adds a `## Re-judgement` section that gives, for each listed gate, the clauses judged
+   again, the answers read (item and date) and the evidence at `C_α`.
+   - A re-judgement may list only gates that were `BLOCKED` on a registered answer:
+     `V13` and `V17` wait on `V17 carry`, and `W21` waits on `M02 N1` (MR-7, F-α2, F-α3).
+   - A change to any other row is a new judgement. It takes a new `Judged` date, and every answer must then be dated on
+     or after it.
+3. **The line's rule (Table T8).** The line, stripped, must fullmatch
+   `\*\*Re-judged:\*\* (\d{4}-\d{2}-\d{2}) \(((?:V(?:1[1-9]|20)|W2[12])(?:, (?:V(?:1[1-9]|20)|W2[12]))*)\)`. Its date
+   must be a calendar date on or after `Judged`. Its gates must be a non-empty selection of {V13, V17, W21} in strictly
+   increasing table order. A line starting `**Re-judged:**` that breaks this rule is malformed, exit 2, and so is a
+   second such line.
+4. **The counting rule (Table T7).** Let J be `Judged`. If there is a re-judgement, let R be its date and S its gates.
+   - A decisions answer (`N3`, `V17 carry`, `M02 N1`) counts iff:
+     - its cell passes Table T4;
+     - its date is ≥ J;
+     - where some gate in S waits on it, its date is ≤ R, because the re-judgement read it.
+   - A D3 row for clause `G (x)` counts iff:
+     - its cell passes Table T4;
+     - its date is ≥ J;
+     - where G is in S, its date is ≥ R, because a `FAIL` first judged in the re-judgement cannot be accepted before
+       it.
+   - With no re-judgement, this is Table T6.
+
+**Table T7 — Frank's answers against a re-judgement**
+
+| Item | Cell | Judged | Re-judged | Counts |
+| --- | --- | --- | --- | --- |
+| `V17 carry` | `accepted, 2026-10-18` | `2026-10-16` | `2026-10-20 (V13, V17)` | yes |
+| `V17 carry` | `accepted, 2026-10-20` | `2026-10-16` | `2026-10-20 (V13, V17)` | yes |
+| `V17 carry` | `accepted, 2026-10-21` | `2026-10-16` | `2026-10-20 (V13, V17)` | no |
+| `V17 carry` | `accepted, 2026-10-15` | `2026-10-16` | `2026-10-20 (V13, V17)` | no |
+| `V17 carry` | `accepted, 2026-10-21` | `2026-10-16` | `2026-10-20 (W21)` | yes |
+| `M02 N1` | `accepted, 2026-10-21` | `2026-10-16` | `2026-10-20 (W21)` | no |
+| `N3` | `accepted, 2026-10-25` | `2026-10-16` | `2026-10-20 (V13, V17, W21)` | yes |
+| `V14 (b)` | `accepted, 2026-10-16` | `2026-10-16` | `2026-10-20 (V13, V17, W21)` | yes |
+| `W21 (c)` | `accepted, 2026-10-18` | `2026-10-16` | `2026-10-20 (W21)` | no |
+| `W21 (c)` | `accepted, 2026-10-20` | `2026-10-16` | `2026-10-20 (W21)` | yes |
+| `V17 carry` | `accepted, 2026-10-18` | `2026-10-16` | — | yes |
+| `V17 carry` | `accepted (i), 2026-10-18` | `2026-10-16` | `2026-10-20 (V13, V17)` | no |
+
+Row 1 is A2's case: an answer after `Judged` and before the re-judgement, which counts. Each `no` row has one reason:
+- row 3: the answer came after the re-judgement that waited on it;
+- row 4: before `Judged`;
+- row 6: as row 3, through W21;
+- row 9: a `FAIL` from the re-judgement, accepted before it;
+- row 12: Table T4.
+
+Rows 5, 7 and 8 count because the bounds reach only what the re-judgement listed. A rule that bounds every answer
+fails them.
+
+**Table T8 — the `**Re-judged:**` line** (well-formed means it parses; otherwise exit 2)
+
+| Line (as written) | Judged | Well-formed |
+| --- | --- | --- |
+| `**Re-judged:** 2026-10-20 (V13, V17, W21)` | `2026-10-16` | yes |
+| `**Re-judged:** 2026-10-16 (W21)` | `2026-10-16` | yes |
+| `**Re-judged:** 2026-10-15 (W21)` | `2026-10-16` | no |
+| `**Re-judged:** 2026-10-20 (V14)` | `2026-10-16` | no |
+| `**Re-judged:** 2026-10-20 (W21, V13)` | `2026-10-16` | no |
+| `**Re-judged:** 2026-10-20 (V13, V13)` | `2026-10-16` | no |
+| `**Re-judged:** 2026-10-20 ()` | `2026-10-16` | no |
+| `**Re-judged:** 2026-10-20` | `2026-10-16` | no |
+| `**Re-judged:** 2026-11-31 (W21)` | `2026-10-16` | no |
+
+The `no` rows are, in order:
+- before `Judged`;
+- a gate not blocked on a registered answer;
+- out of order;
+- repeated;
+- empty;
+- no list;
+- not a calendar date.
+
+The generator checks that each sub-rule is the only reason for some `no` row (`T7.mutation_bites.*`,
+`T8.mutation_bites.*`, §11). M07a.A14 runs both tables against the gate, read from the YAML.
+
+**Rejected alternatives.**
+- *Rewrite `Judged` at the re-judgement and compare answers with the RC record's date.* The waiver argument concerns the
+  judgement, not the measurement. An acceptance of V14 (b) dated before any verdict stated that FAIL would pass.
+- *Allow a same-day re-judgement only.* This is today's accidental rule. It makes Frank's calendar part of the gate.
+- *Leave the bounds to the `verdict` agent's procedure.* An unchecked rule reads as success when it is broken (rule
+  5 of the authoring rules). The gate carries it.
+
+### 19.3 A3: M07a.A61's expectation. R-372
+
+A61 now expects V13 (e) and V17 (a) `BLOCKED` unless `V17 carry` is recorded (§10, marker). MR-7 places B50's surface,
+part of V13 (e) by T08.B51, under the same carry. The verdict at `C_α¹` judged V13 so, and nothing it said changes. The
+generator checks the row (`A3.a61_names_v13`).
+
+### 19.4 A4: `tested` and M07a.A52. R-373
+
+A52 (c) compares the section's gate table with `v0_2_gate.py --markdown` at the candidate, and (a) names `C_α`. Neither
+can hold at `C_α`, and neither can hold before the verdict, while §6.3 runs the verdict only on a `tested` manifest.
+Ruling:
+- **The condition.** M07a's manifest at `C_α` is `tested` iff A00–A51 and A53 pass. The status rule of
+  `scripts/m07a_evidence_manifest.py` reads exactly that set.
+- **At `C_α`.** A52 is recorded `unsupported`, with the reason "judged at the candidate after §9.2 step 5
+  (Amendment 3 §19.4)". Its skeleton tests still run in step 1's `check.sh`.
+- **After step 5.** At the candidate, `tests/test_m07a_changelog.py` runs with no skip, and A64's test runs. The
+  generator is re-run, and it writes A52's and A64's results with `judged_at` = the candidate commit. `status` is
+  still computed from A00–A51 and A53, so it cannot change.
+- **The gate's precondition.** §9.2 step 7 runs the gate only after A52 and A64 pass at the candidate.
+
+*Rejected:*
+- dropping (c) or (a) from A52, which is a narrowing;
+- regenerating the manifest after the verdict with A52 inside the condition, which is circular;
+- a new id for A52's late half, which adds machinery for nothing the split above lacks.
+
+### 19.5 A5: the `## v0.2.0a1` section. R-374
+
+The build lane edits the skeleton in `C_α²`. §10.1's phrases are the checkable floor, case-sensitive and verbatim. A
+phrase that begins in lower case therefore sits mid-sentence or after a colon. The surrounding text is the build
+lane's. The section must state the following:
+1. **W21 (f4), in "Not empirically validated":**
+   - `no reactor result has been compared with experimental data` (by this project);
+   - `the group's published comparison is the group's evidence`;
+   - the numbers are `the group's model at the pin, a regression`;
+   - their `discretization bias is 1.0–1.4 % in NH₃`. This item was missing at `70c526e`.
+2. **The reactor, as a bullet of its own** (Q1, M02 N2, N4, N6). Real-reactor runs are opt-in and of
+   `reproducibility class R3`. The reactor has been run on Linux x86-64 on one machine and is `not measured on aarch64`,
+   and `no CI job runs the reactor`. `the reactor stand-in is synthetic`, and there is `no warm start of the reactor`.
+3. **The sandbox bullet** keeps `not a sandbox`. It must not say that "Linux on x86-64 is the registered platform". The
+   profile is registered on Linux (macOS best effort, Windows refused before spawn), and the x86-64 restriction is the
+   reactor's measurement (item 2).
+4. **The property route bullet** adds the following:
+   - `the LIQUID regime and pure-NH₃ flashes are deferred and refused typed` (M02 N5);
+   - the `saturated-liquid volume is 11–30 % high`, and the `enthalpy of vaporization 2–5 % high` (M01 §11), with no
+     v0.2 loop decision using either.
+5. **Rights.** The group's 4TU dataset `may be used and referenced` (Frank, 2026-10-02; dossier §8, row 8), and no
+   result of this release is compared with it. The section contains nowhere the phrase `awaits Frank's statement`.
+6. **Known limitations** is regenerated from the envelope, so L44–L48 appear (A52 (e)).
+
+**Why the phrase list grew.** At `C_α¹`, A52 (d)'s `R3` passed only on the stale "T08 R3 8 (b)". Correcting the Rights
+bullet would have failed it, and leaving it would have satisfied it by accident. Every statement that §6.1 (f4), Q1,
+§14's last paragraph, W22 (d) and the rights row require of the notes is now a phrase, and the stale rights text is a
+forbidden phrase. §6.1's and §14's F-α4 sentences are corrected by marker. The re-judgement reads the merged section
+for W21 (f4)'s notes half, as the verdict asked (verdict l.268).
+
+### 19.6 A6, A7, A9, A10. R-375, R-376, R-378, R-379
+
+- **A6 (R-375). Recorded for 0.2.0's RC, not acted on here.**
+  - W21 (e) was judged on G6 and G12's coupling record. G11's experiment results are not a verdict input at the alpha.
+  - At 0.2.0, step 12 keeps G11's results under `rc/step12/experiments/`, as R-348 did for certificates. An audit then
+    checks blueprint §9.1's six items in each result against `experiment.schema.json`.
+- **A7 (R-376). In `C_α²`.**
+  - `scripts/check.sh` runs `pytest -q -rs`.
+  - The build lane commits each CI architecture's `SKIPPED` summary lines from step 1 to
+    `evidence/M07a/<C_α²>/step1-skips/<machine class>.txt`, cited by path and SHA-256 in the build log. These files sit
+    outside `rc/` and are not RC records, so M07a.A43 does not apply to them. No assertion judges them.
+  - The verdict brief pastes them, so the skip set is a record and not an inference.
+- **A9 (R-378). Confirmed as the verdict reads it.** The registered 450 s (D104) governs V5's timeout. The 270 s that
+  the G11v3-4 rule gave under step 12's load is not a bound. The rule's dependence on host load is §14.5 D4's, recorded
+  and not corrected here.
+- **A10 (R-379).** §6.1's table quotes the records written before the RC, and a marker now says so. The bound of 10⁻⁷
+  is the criterion. The verdict quotes step 12's figure at its candidate (3.84 × 10⁻⁸ at `C_α¹`).
+
+### 19.7 Build-lane choices (in R-370)
+
+- **B-AM2-6: confirmed**, and reused. `C_α²` is cut on a new branch `wp/V02-alpha-rc2` from `6fec822`. The fix commits
+  are cherry-picked with `-x`, the branch is pushed for the dispatch, and it is merged into `wp/V02-alpha-gate` with a
+  merge commit.
+- **B-AM2-9: confirmed.** Naming the certificates without the ignored `artifacts/` segment changes no content. A39
+  binds by hash.
+- **B-AM2-10: confirmed.** The bundle, live and replay certificates are byte-identical because the replay reproduces
+  the bundle bitwise. Multiset equality with unique paths keeps every listed file cited. Requiring distinct hashes
+  would refuse a correct reproduction.
+
+### 19.8 Build-lane actions, in order
+
+| # | Action | Acceptance |
+| --- | --- | --- |
+| 1 | §19.1 item 1: the envelope texts, L44–L48, U15 and the harvest classes; re-emit the support matrix; update the tests whose counts or pinned rows move | `t08_support_matrix.py --check` 0 problems; M07a.A50; `scripts/gate.sh` green |
+| 2 | §19.2 in `scripts/v0_2_gate.py`; M07a.A14 in `tests/test_m07a_v0_2_gate.py`, reading T7 and T8 from the YAML | A14; A03–A05 still green |
+| 3 | `-rs` in `scripts/check.sh` (A7) | `scripts/gate.sh` green; step 1's parsers unchanged (Q-A3-4) |
+| 4 | §19.5 in `CHANGELOG.md`'s skeleton; `tests/test_m07a_changelog.py` reads `changelog_phrases` and `changelog_forbidden` from the YAML | A52 (b), (d)–(g) on the skeleton |
+| 5 | Cut `C_α²` (§19.1 item 2; §19.7) | §8.1 items 1–3 at `C_α²` |
+| 6 | The RC job, steps 1–13, at `C_α²`; save step 1's skip lines (A7) | M07a.A30–A44 |
+| 7 | Generator: status from A00–A51 and A53; A14 catalogued; A52 pending as §19.4. Manifest at `C_α²` | `tested` iff A00–A51 and A53 pass |
+| 8 | Keep `C_α¹`'s evidence (§19.1 item 5) | — |
+| 9 | Design lane: the verdict at `C_α²` (§19.1 item 4) | M07a.A60–A63 |
+| 10 | After Frank's answers (Q-A3-1): the re-judgement (§19.2); §9.2 step 5; A52 and A64 at the candidate; manifest re-run (§19.4); §9.2 step 7 | the gate's YES line |
+
+### 19.9 Open questions, with defaults
+
+| # | Question | Label | Recommended default |
+| --- | --- | --- | --- |
+| Q-A3-1 | Should Frank's answers dated before `C_α²`'s verdict count? | **needs the user's preference** | No (§4 rule 1, unchanged). Ask Frank to answer after `C_α²`'s verdict. An answer recorded earlier stays in ADR 0028 but must be re-dated to count. |
+| Q-A3-2 | Do T08.A20–A24 and `t08_support_matrix.py --check` accept L44–L48 and U15 with these pointers (`§D6` and the like)? | **needs a fact**: action 1 | Yes. A pointer that does not resolve is replaced by the nearest resolving pointer to the same source, and logged. If a check refuses a row's *text*, stop: the text is normative, so the question returns to the design lane. |
+| Q-A3-3 | Does a test node pin the typed refusal of a pure-NH₃ flash? | **needs a fact**: action 1 | Find it and cite it. If there is none, write one against the existing typed outcome. If the behaviour is not a typed refusal, stop: it is a defect for the design lane. |
+| Q-A3-4 | Does `-rs` change anything that step 1's record parsers read? | **needs a fact**: action 3 | No: it adds lines before pytest's final summary. If a parser breaks, pass `-rs` only in CI's step-1 invocation, and log it. |
+
+### 19.10 What this amendment does not establish
+
+- No verdict at `C_α²`. That is the `verdict` agent's call, on `C_α²`'s records.
+- That the reactor runs on aarch64. Q1 stays unmeasured, and L44 now says so.
+- A classification read of any manifest's harvest rows beyond M02's seven.
+- A ruling on M02 D130 or D55.
+- That the notes' prose is right beyond §10.1's phrases and A52's structure. The re-judgement reads the merged section
+  for W21 (f4).
+- That any later amendment leaves the YAML unchanged. The YAML is under `benchmarks/`, so a change after `C_α²` breaks
+  D2.4 and needs another re-cut.

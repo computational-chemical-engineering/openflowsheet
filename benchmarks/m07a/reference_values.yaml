@@ -16,6 +16,7 @@ assertions:
   M07a.A11: test
   M07a.A12: test
   M07a.A13: generator, test
+  M07a.A14: test
   M07a.A20: test
   M07a.A21: test
   M07a.A22: test
@@ -113,6 +114,39 @@ registered:
     tests/test_t08_w4_v0_1_gate.py: 4caa7d865ae86133897edc2c0ca9235a2107b9dcc3e2ede0ab91a18ef186de55
   v0_1_line: 0\.1\.(?:0|[1-9]\d*)(?![0-9.])
 targets:
+  changelog_forbidden:
+  - awaits Frank's statement
+  changelog_phrases:
+  - Not empirically validated
+  - Not a guarantee
+  - R-017
+  - Not general beyond the support matrix
+  - Not a certificate of solution accuracy
+  - ADR 0007 F3
+  - PTC is experimental
+  - MCP only
+  - Not 0.2.0
+  - W23–W27 are not claimed
+  - the web shell is included and not claimed
+  - not a sandbox
+  - Linux
+  - x86-64
+  - reproducibility class R3
+  - synthetic
+  - pure-component
+  - k_ij = 0
+  - no reactor result has been compared with experimental data
+  - not measured on aarch64
+  - no CI job runs the reactor
+  - the group's published comparison is the group's evidence
+  - the group's model at the pin, a regression
+  - discretization bias is 1.0–1.4 % in NH₃
+  - the reactor stand-in is synthetic
+  - the LIQUID regime and pure-NH₃ flashes are deferred and refused typed
+  - no warm start of the reactor
+  - saturated-liquid volume is 11–30 % high
+  - enthalpy of vaporization 2–5 % high
+  - may be used and referenced
   changelog_tag_pattern: v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:(?:a|b|rc)[1-9]\d*)?
   claimed:
   - V11
@@ -191,6 +225,11 @@ targets:
   - 10
   - 11
   - 12
+  rejudge_depends:
+    V13: V17 carry
+    V17: V17 carry
+    W21: M02 N1
+  rejudged_pattern: \*\*Re-judged:\*\* (\d{4}-\d{2}-\d{2}) \(((?:V(?:1[1-9]|20)|W2[12])(?:, (?:V(?:1[1-9]|20)|W2[12]))*)\)
   required_adrs:
   - '0022'
   - '0026'
@@ -298,4 +337,93 @@ truth_tables:
     - false
   - - accepted (i), 2026-10-12
     - '2026-10-12'
+    - false
+  T7_frank_rejudged:
+  - - V17 carry
+    - accepted, 2026-10-18
+    - '2026-10-16'
+    - 2026-10-20 (V13, V17)
+    - true
+  - - V17 carry
+    - accepted, 2026-10-20
+    - '2026-10-16'
+    - 2026-10-20 (V13, V17)
+    - true
+  - - V17 carry
+    - accepted, 2026-10-21
+    - '2026-10-16'
+    - 2026-10-20 (V13, V17)
+    - false
+  - - V17 carry
+    - accepted, 2026-10-15
+    - '2026-10-16'
+    - 2026-10-20 (V13, V17)
+    - false
+  - - V17 carry
+    - accepted, 2026-10-21
+    - '2026-10-16'
+    - 2026-10-20 (W21)
+    - true
+  - - M02 N1
+    - accepted, 2026-10-21
+    - '2026-10-16'
+    - 2026-10-20 (W21)
+    - false
+  - - N3
+    - accepted, 2026-10-25
+    - '2026-10-16'
+    - 2026-10-20 (V13, V17, W21)
+    - true
+  - - V14 (b)
+    - accepted, 2026-10-16
+    - '2026-10-16'
+    - 2026-10-20 (V13, V17, W21)
+    - true
+  - - W21 (c)
+    - accepted, 2026-10-18
+    - '2026-10-16'
+    - 2026-10-20 (W21)
+    - false
+  - - W21 (c)
+    - accepted, 2026-10-20
+    - '2026-10-16'
+    - 2026-10-20 (W21)
+    - true
+  - - V17 carry
+    - accepted, 2026-10-18
+    - '2026-10-16'
+    - null
+    - true
+  - - V17 carry
+    - accepted (i), 2026-10-18
+    - '2026-10-16'
+    - 2026-10-20 (V13, V17)
+    - false
+  T8_rejudged_line:
+  - - '**Re-judged:** 2026-10-20 (V13, V17, W21)'
+    - '2026-10-16'
+    - true
+  - - '**Re-judged:** 2026-10-16 (W21)'
+    - '2026-10-16'
+    - true
+  - - '**Re-judged:** 2026-10-15 (W21)'
+    - '2026-10-16'
+    - false
+  - - '**Re-judged:** 2026-10-20 (V14)'
+    - '2026-10-16'
+    - false
+  - - '**Re-judged:** 2026-10-20 (W21, V13)'
+    - '2026-10-16'
+    - false
+  - - '**Re-judged:** 2026-10-20 (V13, V13)'
+    - '2026-10-16'
+    - false
+  - - '**Re-judged:** 2026-10-20 ()'
+    - '2026-10-16'
+    - false
+  - - '**Re-judged:** 2026-10-20'
+    - '2026-10-16'
+    - false
+  - - '**Re-judged:** 2026-11-31 (W21)'
+    - '2026-10-16'
     - false
