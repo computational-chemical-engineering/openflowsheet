@@ -294,8 +294,8 @@ S33 OPEN (for the review batch; affects G6/G12's identity, not numerics). The af
    preparation, with the identity test catching it; alternative: the identity reads the basis requests by stage.
    Not changed here.
 S34 `TrfPoint` gains the required fields `theta_recheck` and `feasibility_termination` (after `column_scales`); the
-   study reads the latter from the configuration the run was given (`config["feasibility_termination"]`, W3's 1e-5;
-   a configuration without it is a KeyError, not a default). P2 is judged iff θ_recheck ≤ feasibility_termination
+   study reads the latter from `TrfRun.feasibility_termination`, the value of TRF's effective configuration the run
+   used (W3's 1e-5; a stage configuration may omit it and take TRF's default). P2 is judged iff θ_recheck ≤ feasibility_termination
    (a NaN θ is not judged). Unjudged P2 records `pass: null` with every value computed plus both thresholds.
 S35 P2's document is `{pass, judged, reason, values}`; only P2 carries `judged`/`reason` (`CheckResult`). The two
    fields and the top-level `fd_check` (the caller's §17.2 document or null, `as_document(fd_check=…)`) are

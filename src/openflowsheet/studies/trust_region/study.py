@@ -857,12 +857,13 @@ class TrfStage:
                 if found is not None
             }
             assert trf_run.theta_recheck is not None
+            assert trf_run.feasibility_termination is not None
             point = TrfPoint(
                 trf_run.final.objective,
                 trf_run.final_state,
                 projection.scaling.column,
                 trf_run.theta_recheck,
-                float(config["feasibility_termination"]),
+                trf_run.feasibility_termination,
                 checks,
             )
         source_map = projection.source_map

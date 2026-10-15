@@ -178,6 +178,9 @@ class TrfRun:
     omitted_rows_final: OmittedRowsCheck | None = None
     #: R-296: the zero-flow pins at the returned state, for the outcomes in `RETURNS_MODEL` only.
     zero_pins_final: OmittedRowsCheck | None = None
+    #: R-327: the `feasibility_termination` TRF ran with (its effective configuration), against
+    #: which P2 judges θ_recheck.
+    feasibility_termination: float | None = None
     #: The returned state through the projection's inverse map (`Projection.state_of`: +0.0 for
     #: every eliminated zero flow, R-296), for the outcomes in `RETURNS_MODEL` only.
     final_state: Mapping[str, float] | None = None
@@ -257,6 +260,7 @@ def _run(
                 holder.end_run()
     if refused is not None:
         return TrfRun(
+            feasibility_termination=float(effective.feasibility_termination),
             run_id=run_id,
             outcome=truth_refused(f"start:{refused.code}"),
             iterations=(),
@@ -380,6 +384,7 @@ def _run(
     zero_pins_final = projection.zero_pins_at(model) if model is not None else None
     final_state = projection.state_of(model) if model is not None else None
     return TrfRun(
+        feasibility_termination=float(effective.feasibility_termination),
         run_id=run_id,
         outcome=outcome,
         iterations=iterations,
