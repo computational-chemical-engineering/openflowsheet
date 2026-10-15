@@ -5693,6 +5693,9 @@ call). `extrapolated` as a constraint (infeasible). Box7 as a constraint (not a 
 
 **Watch for.** A bound-active real optimum: report it as such.
 
+> **Amended 2026-10-15 (R-330):** the box is [653.15, 693.15] K for every configuration, v3's hard-domain T_in span
+> (R-313, R-315); N-F6 is closed. The inert floor `hard_domain.inert_min` is generated from the variant.
+
 ---
 
 ## R-268 — The refinement loop is S0 → A (promoted surrogate only) → B → C (parent through the EF) → B, at most 3 study iterations, stopping only on parent evidence; M05 does not retrain the surrogate
@@ -6800,5 +6803,141 @@ M05 decision variable beyond T_in, which would move the loop's inert fraction ou
 **Rejected alternatives, and why.** Item 1 read literally, covering the manifest and `iterations[].inner` only. The copies stay exact, and RP-2 becomes unreachable.
 
 **Watch for.** A `constants_sha256` field that digests something other than an inner solve of w, added to a coupled bundle.
+
+---
+
+## R-326 — SYN-001's jointly pinned zero flows are eliminated by a certified square block (rule `M05-zero-flow-v2`); they are neither refused nor exempted
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round, on build log Z2 |
+| Normative text | Design note §18.1 (extends §17.1, R-296) |
+| Evidence | Z2: P1, P2 (S3.vap.{A,B,C}, S3.V) and B2 (S4.n.{A,B,C}, S4.N) refused `unpinned`; 15 strict xfails. The rows are v_i L − K_i l_i V (`models/rows.py:133`) and V − Σv_i. At z = 0 their partials outside the zero set vanish, and det J_B = ±L³(1 − Σ K_i x_i) ≠ 0 in the liquid regime |
+| Affected packages | M05 (M03's watch-for F-11 is unchanged) |
+
+**Decision.** After the single-pin fixpoint, rows with r(x₀) = 0, a zero decision and link tangent, and a nonzero
+numerical incidence inside the remaining zero flows form bipartite components. A component is eliminated iff it is
+square, its scaled σ_min/σ_max ≥ 1e-10, and its rows evaluate to exactly 0.0 at two ±1e-3 perturbed states with the
+zero flows held at +0.0. The two stages repeat to a fixpoint. The new refusal reasons are `joint_not_square`,
+`joint_singular` and `joint_not_persistent`. `zero_blocks` is written only when a block exists, so the existing
+configurations stay byte-identical.
+
+**Rejected alternatives, and why.**
+- Refusing SYN-001 at P1, P2 and B2: it halves G4's SYN-001 denominator, with a false reason.
+- Exempting SYN-001: a case-id hack.
+- Eliminating only EF arguments: it reopens R-296 and moves C1's 68 × 68.
+- A symbolic identity test: CasADi's simplification is incomplete.
+
+**Watch for.** A joint block in a TRF case (there is none yet: F-14). An rcond near 1e-10, which means a state near its
+bubble point.
+
+---
+
+## R-327 — A `TRF_MAX_ITERATIONS` exit keeps its candidate whatever θ_recheck; P2 is judged only when θ_recheck ≤ `feasibility_termination`
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round, on build log W2 |
+| Normative text | Design note §18.2; §6.7's outcome table and §7.4's P2 row as amended |
+| Evidence | Z8: TR-E2 after WO-2b ended `TRF_MAX_ITERATIONS` with θ_recheck 4.01e-4 |
+| Affected packages | M05 |
+
+**Decision.** No abort. Above the tolerance, P2 is recorded with `pass: null, judged: false, reason: "theta_recheck"`
+and never yields `PROJECTION_DISAGREES`. The candidate carries `trf_max_iterations`. P5 runs unless P4, P3 or P2 is
+`false`.
+
+**Rejected alternatives, and why.**
+- `TRF_STALLED_INCONSISTENT` with a retry: no claim is contradicted. A ¼ radius from the same start cures a
+  trajectory, not slowness, so the likely result is a second abort and the loss of a decision the parent could have
+  checked.
+- A P2 tolerance widened by θ: no bound justifies one.
+
+**Watch for.** TR-E2 failing G5 for the same reason (F-15). That is a G5 failure, not a reason to raise the iteration
+limit.
+
+---
+
+## R-328 — M05's WO-6 build choices S1–S10 ratified; G8 also requires stage A to return a model
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round |
+| Normative text | Design note §18.3 |
+| Evidence | Build log S1–S10; the isolated commit `c5aa61b` (S6) |
+| Affected packages | M05 |
+
+**Decision.** All ten are confirmed as built:
+- S1: σ_REAL = 0.0125.
+- S3: the real `Parent` adapter is WO-5c, after the M02 merge.
+- S4: P5's gating is restated by R-327.
+- S5: P3's scales stand, and the inert floor is checked at scale F.
+- S6: after two stage-A aborts, stage C runs from S0. G8 therefore also requires `stage_a.outcome` ∈ `RETURNS_MODEL`.
+- S7: a run-cap refusal is an abort with one retry. The cap is a backstop, since a 30-iteration run issues at most 248
+  cold requests.
+
+**Rejected alternatives, and why.**
+- Stopping `FAILED(trf_aborted)` on stage A: stage A only accelerates, and stage C is the evidence path.
+- Polling after an earlier failure: it cannot change the status, and it costs six solves.
+
+**Watch for.** A REAL run reaching the 250-request cap (F-13).
+
+---
+
+## R-329 — M05's study record schema: closed objects with every producer field declared, the ruling fields required, a per-run ledger without a digest, purpose counts now, and `coupled_runs` only for solves with a coupling record
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round, on build log S11–S18 |
+| Normative text | Design note §18.4; §9.1 as amended |
+| Evidence | Build log S11–S18; `c6c229e` (S11) |
+| Affected packages | M05; T08's numerical policy tooling (S11's addendum audit) |
+
+**Decision.**
+- S11: the per-package addendum `M05-numerical-policy-external-v1` classifies the four sha256 names `exact_sha256`.
+  `--check` audits every addendum, and v2 is unmoved.
+- S12: `runs[].ledger` is `{summary, cold_parent}`, and `artifacts.ledger` is the study ledger's sha256.
+- S13: `readiness`, `start`, `stage_a` and `best` are required, each an object or null.
+- S14: every fixed-field object is closed, and the §17.4 run fields and the top-level `fd_check` are required.
+- S15: `indifference_halfwidth` is null iff there was no poll.
+- S16: holders count requests by purpose, and §8.3's identity is tested in G12 and G6.
+- S17: confirmed.
+- S18: `coupled_runs` lists only solves that have a coupling record.
+
+**Rejected alternatives, and why.**
+- Tolerated extras: a record could then omit a ruling's fields, or misspell one, and still validate.
+- An optional per-run digest: a dead field that invites an inconsistent one.
+- Deferring the request identity to WO-8: G12 must be able to check it on committed records.
+- A null `coupled_runs[].sha256`: a reference to nothing.
+
+**Watch for.** A producer field added without a schema change, which fails G12 by design.
+
+---
+
+## R-330 — M05's design note restated to the REAL box [653.15, 693.15] K (R-313, R-315): σ = 0.0125 everywhere, N-F6 closed, the inert floor generated from the variant
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round, following R-313 and R-315 (M02's seventh and eighth rounds) |
+| Normative text | Design note §18.5; D10, §6.7, §7.1, §11, §14 and §15 edited in place |
+| Evidence | R-313: M05's 643.15 K point fails v3's S1. D87: the loop's inerts are 0.045484 at 653.15 K and 0.040468 at 693.15 K |
+| Affected packages | M05 (ADR 0039 D1 gets an amendment note in WO-10) |
+
+**Decision.**
+- The box is [653.15, 693.15] K for every configuration.
+- σ = 0.5 · 0.5 / 20 = 0.0125.
+- N-F6 is closed: widening the box needs an M02 domain amendment first.
+- §7.1 generates y_min Σn − (n_Ar + n_CH₄) ≤ 0 whenever the bound variant sets `hard_domain.inert_min`. M05 holds no
+  y_min constant.
+
+**Rejected alternatives, and why.**
+- Keeping [643.15, 733.15] K: it is outside v3's domain.
+- Authoring the floor per case: §7.1 generates constraints from the variant.
+
+**Watch for.** A bound-active REAL optimum at 653.15 K or 693.15 K: report it as such (R-267).
 
 ---

@@ -82,7 +82,7 @@ M05 builds two things.
 | D7 | Basis b(w): property EFs get the affine Taylor model at w₀; the reactor EF gets the promoted M04 quadratic, or else the constant d(w₀) | TRF's default b = 0 (the first subproblem would see zero enthalpies and fugacities); an unpromoted surrogate (promotion is the project's permission to use) | R-264 |
 | D8 | A derivative-free truth gets forward differences in the 7 inlet coordinates, η = 2⁻¹⁴, exact differences, inward at hard bounds, 7 concurrent workers and a gradient-quality check (amended by §17.2, R-297: `M05-fd-v2`, three steps, escalation for noise only) | Central differences (twice the cost, while the measured precision floor makes forward accurate); a finite-difference Hessian (not needed: TRF's model is first order) | R-265 |
 | D9 | The eligible example is TR-E2: the C1 formulation with the reactor EF bound to the test-only C^∞ truth `m05-synthetic-interior-v1`, with an analytic gradient. TR-E1, Eason–Biegler example 1 as a `ProblemSpec`, is the framework-equivalence oracle | The real reactor (its gradient is FD and its smoothness is unproven, so it is qualified rather than eligible); Pyomo's example alone (no flowsheet composition) | R-266 |
-| D10 | The C1 decision is the reactor inlet temperature T_in ∈ [643.15, 733.15] K, with φ fixed at 0.02. The objective maximizes the liquid NH₃ product. Hard domains are constraints; `extrapolated` is a stated limit | (T_in, φ) jointly (under this objective φ runs to its bound); an economic objective (needs prices: Needs Frank N-F1); `extrapolated` as a constraint (infeasible: every registered state is extrapolated, R-169) | R-267 |
+| D10 | The C1 decision is the reactor inlet temperature T_in ∈ [653.15, 693.15] K, v3's hard-domain span (R-313, R-315; §18.5), with φ fixed at 0.02. The objective maximizes the liquid NH₃ product. Hard domains are constraints; `extrapolated` is a stated limit | (T_in, φ) jointly (under this objective φ runs to its bound); an economic objective (needs prices: Needs Frank N-F1); `extrapolated` as a constraint (infeasible: every registered state is extrapolated, R-169) | R-267, R-330 |
 | D11 | The refinement loop: stage A (TRF on the promoted surrogate) → B (parent checks) → C (TRF on the parent, basis = promoted surrogate or constant) → B, at most 3 study iterations, stopping on parent evidence. M05 does no retraining | Surrogate-based optimization with retraining between iterations (blueprint L437: retraining breaks the convergence theory; M04 owns its iterations) | R-268 |
 | D12 | Parent checks P1–P5, as in §7.4: the targeted check, gross agreement, constraints, regimes, and a poll at the decision tolerance against a noise floor computed from the coupling residuals | M03's V5 (adjoint sensitivities, refused on this path by ADR 0031 C3); a finite-difference KKT test as the verdict (no decidable tolerance without J‴) | R-269 |
 | D13 | A truth ledger per request, plus coupled-check summaries. Cold, store hit and memo hit are counted per stage, iteration and candidate. Budgets: study 400 cold / 4 h; TRF run 250 cold / 30 iterations | Counting from the experiment store alone (it cannot attribute a call to a purpose or an iteration) | R-270 |
@@ -414,7 +414,7 @@ scaled their variables"). The scaled decisions d ∈ [−1, 1] of §6.1 make tha
 | maximum_radius | 1.0 (set explicitly: Pyomo's default is 100 × the default radius) | radius_update_param_gamma_e | 2.5 |
 | maximum_iterations | 30 | ratio_test_param_eta_1 / eta_2 | 0.05 / 0.2 |
 | feasibility_termination | 1e-5 | globalization_strategy | filter |
-| step_size_termination | σ = 0.5 · min_j(δ_j / h_j), from the study's decision tolerances: 0.005556 for C1 REAL; 0.0125 for TR-E2 and the loops | maximum_feasibility | 50.0 |
+| step_size_termination | σ = 0.5 · min_j(δ_j / h_j), from the study's decision tolerances: 0.0125 for every configuration (0.5 · 0.5 K / 20 K, with 20 K the half-width of [653.15, 693.15] K; §18.5) | maximum_feasibility | 50.0 |
 | | | param_filter_gamma_theta / gamma_f | 0.01 / 0.01 |
 
 TR-E1 uses Pyomo's defaults except `solver`, to reproduce the native example.
@@ -439,7 +439,7 @@ TR-E1 uses Pyomo's defaults except `solver`, to reproduce the native example.
 | `TRF_EXIT_WITHOUT_STEP` | "EXIT: Optimal solution found." with no accepted TRSP step (probe P14 b). It is not a convergence claim; the study treats the returned point as a candidate for stage B |
 | `TRF_FEASIBLE_STALLED` | "EXIT: Feasible solution found." **and** θ re-checked ≤ 1e-5 (probe P14 c) |
 | `TRF_STALLED_INCONSISTENT` | "EXIT: Feasible solution found." or (§17.4, R-299) "EXIT: Optimal solution found." with θ re-checked > 1e-5, which takes precedence over the rows below; `exit_claim` recorded. No candidate; the study treats it as an abort (retry once) |
-| `TRF_MAX_ITERATIONS` | the maximum-iterations warning |
+| `TRF_MAX_ITERATIONS` | the maximum-iterations warning. A candidate whatever θ_recheck; its P2 is judged only if θ_recheck ≤ `feasibility_termination` (§18.2, R-327) |
 | `TRF_SUBPROBLEM_FAILED` | `ArithmeticError` from `solveModel` (the TRSP is not optimal) |
 | `TRF_TRUTH_REFUSED(<status>:<reason>)` | `TruthRefused` |
 | `TRF_ERROR(<exception class>)` | anything else, including the `ValueError` of TRF's DOF check |
@@ -477,8 +477,9 @@ M03 D5's pattern.
 - **Case.** `C1-LOOP-M02-v1` (M02 design note §8.1): makeup 1.0 mol/s at 300 K and 10⁷ Pa; mixer → `c1.tp_heater`
   → reactor (N_tubes = 1000) → `c1.tp_flash` at 253.15 K; purge 0.02; zero ΔP.
 - **Decision.** The heater outlet temperature specification (the pinned input of `c1.tp_heater`; ADR 0031 D1). The
-  box is [643.15, 733.15] K, the inlet span of the kinetics' data domain (R-169), for the REAL study, and
-  [653.15, 693.15] K for TR-E2 and the loops. The purge fraction is fixed at 0.02.
+  box is [653.15, 693.15] K for every configuration. For REAL it is v3's hard-domain T_in span (R-313, R-315;
+  §18.5), which supersedes the kinetics' inlet span [643.15, 733.15] K (R-169) that M05 first registered. The purge
+  fraction is fixed at 0.02.
 - **Objective `c1-obj-nh3-liquid-v1`.** Maximize the NH₃ molar flow of `c1.tp_flash`'s liquid outlet, in mol/s, with
   scale 1 mol/s.
   - *Why:* it is price-free and physical; at fixed makeup and purge it increases monotonically with the reactor's
@@ -492,6 +493,8 @@ M03 D5's pattern.
     - T_in and P_in: bounds on the reactor-inlet variables;
     - H₂/N₂ ∈ [1, 4] as n_H₂ − 4n_N₂ ≤ 0 and n_N₂ − n_H₂ ≤ 0;
     - inerts ≤ 0.2 as n_Ar + n_CH₄ − 0.2 Σn ≤ 0;
+    - inerts ≥ y_min as y_min Σn − (n_Ar + n_CH₄) ≤ 0, when the variant's `hard_domain.inert_min` = y_min is set
+      (v3: R-313, R-315; §18.5);
     - per-tube flow ∈ [0.5, 2] F₀ as bounds on Σn/N_tubes, for the real variant only (ADR 0034 D10).
   - **Admissibility A(s)** (M04 spec §3.2): X̂ ∈ [0, 0.95] and ΔT̂ ∈ [−50, 250] K (variable bounds);
     3X̂ n_N₂ − n_H₂ ≤ 0 (X̂ ≤ r/3).
@@ -550,7 +553,7 @@ canonicalizes the document, records its sha256, and solves through the route the
 | | Check | Pass iff |
 | --- | --- | --- |
 | P1 | Targeted check | `revision_coupled` outcome `CONVERGED` and certificate `VERIFIED` |
-| P2 | Gross agreement, TRF state against re-solve (a defect detector, not precision) | \|J_TRF − J*\| ≤ 1e-3 · max(\|J*\|, 1e-12), and max over mapped variables of \|x_TRF − x*\| / column_scale ≤ 1e-3 |
+| P2 | Gross agreement, TRF state against re-solve (a defect detector, not precision) | \|J_TRF − J*\| ≤ 1e-3 · max(\|J*\|, 1e-12), and max over mapped variables of \|x_TRF − x*\| / column_scale ≤ 1e-3. Judged only when the candidate's run has θ_recheck ≤ `feasibility_termination`; otherwise `pass: null` with its values recorded (§18.2) |
 | P3 | Constraints on the certified state | every §7.1 inequality and bound holds within 1e-9 × its scale (no margin) |
 | P4 | Regimes | every unit's phase regime label equals the S0 state's (fixed topology and fixed regimes) |
 | P5 | Poll at the decision tolerance | for every feasible poll point j: J_j − J* ≤ e* + e_j |
@@ -702,6 +705,9 @@ Top-level fields:
 
 No existing schema changes. M04's surrogate manifest is read by hash; M02's records are referenced by run id and hash.
 
+*Amended by §18.4 (R-329):* closed objects, four more top-level fields, `fd_check`, the per-run ledger, and the
+holder's purpose counts.
+
 ### 9.2 Reproducibility class
 
 - An **in-process truth** (synthetic, surrogate) is re-evaluated on replay.
@@ -791,7 +797,7 @@ experiments. That cost is why it is the fallback.
 
 **What M05 does not establish:**
 - a decision for C1's purge fraction, or for any economic objective;
-- that the real C1 optimum lies inside [643.15, 733.15] K: a bound-active result is reported as such;
+- that the real C1 optimum lies inside [653.15, 693.15] K: a bound-active result is reported as such;
 - KKT on curved active constraints;
 - cross-architecture bitwise identity;
 - any property of the reactor outside its hard domain;
@@ -818,7 +824,9 @@ merge and M02's case JSON `C1-LOOP-M02-v1` exists: rebase `wp/M05` onto that mer
 | WO-F | Opus, **only if ADR 0040 is activated** | `studies/trust_region/fallback.py` per §10, sharing checks, accounting and records | ADR 0040's gates F1–F3 |
 
 Added by §17.6 (2026-10-09): WO-2b (zero-flow elimination), WO-3b (exit precedence), WO-4a (`M05-fd-v2`, the TR-E1
-tolerance, E2's guard test) and WO-5b (`with_coupling` on `wp/M02`).
+tolerance, E2's guard test) and WO-5b (`with_coupling` on `wp/M02`). Added by §18.6 (2026-10-15): WO-2c (joint
+zero-flow pins), WO-5c (the real parent adapter and the inert floor), WO-6b (P2's applicability, the holder's purpose
+counts, `coupled_runs`) and WO-7b (the schema rulings).
 
 ## 13. Gates (each decidable from a recorded number)
 
@@ -848,7 +856,7 @@ tolerance, E2's guard test) and WO-5b (`with_coupling` on `wp/M02`).
 | A flat objective at the coupling noise floor makes P5 pass over a wide interval | Likely on the real case / weak decision | The indifference half-width is reported; the decision is stated "at resolution". Not hidden |
 | Pinned Pyomo internals (log text, EXIT prints) | Certain on upgrade / adapter breaks | Version and hash pin; G2 fails loudly; an upgrade is a new ADR |
 | `redirect_stdout` is process-global | Certain if misused | One TRF run per process (§6.7), asserted by a test running two studies in two processes |
-| The real optimum lies outside [643.15, 733.15] K | Unknown | Bound-active result reported; the box is N-F6 |
+| The real optimum lies outside [653.15, 693.15] K | Unknown | Bound-active result reported; the box is v3's domain (R-313, R-315), and widening it needs an M02 domain amendment first |
 | `ExperimentRunner` not thread-safe for concurrent distinct keys | Unknown | The WO-4 test; additive `run_batch` |
 | Pyomo's `.sol` precision differs across architectures | Certain at ulp level | Bitwise only on the same machine; cross-architecture under the policy (G10) |
 | M02's C1 case JSON or M04's build late | Schedule | WO-1–WO-3 proceed; WO-4 onward wait |
@@ -876,7 +884,9 @@ tolerance, E2's guard test) and WO-5b (`with_coupling` on `wp/M02`).
   DECISION: the surrogate is used only if promoted (as a stage-A truth and as a basis). Alternative: use any fitted
   manifest as a TRF basis; the theory does not need its accuracy. Reversible by: the basis-policy flag
   `promoted_only | any_fitted`.
-- **N-F6 — the REAL decision box.**
+- **N-F6 — the REAL decision box. Closed by R-313 and R-315 (§18.5):** [653.15, 693.15] K, v3's hard-domain T_in
+  span. M05's 643.15 K point fails v3's S1 (R-313's evidence), so the original default below is no longer available.
+  It is no longer a preference: widening the box needs an M02 domain amendment first. *Original text:*
   DECISION: [643.15, 733.15] K, the kinetics' inlet data span. Alternative: M04's box [653.15, 693.15] K, inside the
   surrogate's reference domain. Reversible by: one registered pair.
 - **N-F7 — a job operation.**
@@ -889,7 +899,7 @@ tolerance, E2's guard test) and WO-5b (`with_coupling` on `wp/M02`).
 - **Whether `ExperimentRunner.run` is safe for concurrent distinct keys.** Settled by WO-4's test. Default: the
   additive `run_batch` if it is not.
 - **Whether M02 exposes an inner solve at pinned w.** Settled by WO-5. Default: an additive accessor.
-- **Whether the real loop's optimum is interior in [643.15, 733.15] K.** Settled by WO-9. Default: report whatever
+- **Whether the real loop's optimum is interior in [653.15, 693.15] K.** Settled by WO-9. Default: report whatever
   structure is found.
 - **Whether M03 audited aarch64.** Default: the TRSP extension, like M03's, covers x86_64 only, and the `nlp` tier runs
   there.
@@ -1035,6 +1045,9 @@ These rulings answer the build lane's escalations at `wp/M05` `6b54b8d` (brief `
 Part A). They are register entries R-296 to R-300.
 
 ### 17.1 Exact-zero flows at x₀ (R-296): eliminated as constants together with their pinning rows
+
+> *Extended by §18.1 (R-326):* a flow pinned only jointly is eliminated by a certified square block; the rule
+> becomes `M05-zero-flow-v2`. Steps 1–5 below stand as the single-pin stage.
 
 **Measured.** TRF on C1 TR-E2 stops before iteration 1 with `TRF_TRUTH_REFUSED(property_domain_error:S1_Hdot_V)`. At
 the PMP point `S1.n.NH3 = −3.448e-27`, and `pr-c1-v1` refuses n < 0. The flows that are exactly zero at x₀ are
@@ -1304,7 +1317,273 @@ each other. WO-6 continues meanwhile, and WO-8 needs all four.
 | # | Question | Kind | Default |
 | --- | --- | --- | --- |
 | F-9 | What is the real reactor's FD noise floor? | Fact: WO-9's `fd_check` | `M05-fd-v2` as ruled. If REAL is `noise_dominated` even at 2⁻¹⁰, the study runs `fd_unstable` and G11 reports it. The policy changes only by a new ruling |
-| F-10 | Do SYN-001's K05 states hold exact-zero flows? | Fact: WO-2b (f) | The rule applies uniformly, and G4's SYN-001 part is re-run |
+| F-10 | Do SYN-001's K05 states hold exact-zero flows? | Fact: WO-2b (f) | **Resolved (§18.1, R-326):** yes, at P1, P2 and B2, pinned jointly; the rule gains joint pins |
 | F-11 | Is M03's full-space path exposed to §17.1's roundoff? | Fact: an M03 run on C1 | No change to M03. A hit opens an ADR 0032 amendment that adopts §17.1 |
+
+None of these needs Frank.
+
+## 18. Rulings on the batched build items (2026-10-15)
+
+These rule on every item `docs/design/M05-build-decisions.md` (at `71804a6`) leaves to the design lane: Z2, W2 and
+S1–S18. They also restate the REAL box per R-313 and R-315. Each item gets a ruling, its changed acceptance with
+numbers, and the work order that implements it.
+
+**Ratified as built, with no acceptance change:**
+- Z1: the pin tolerance 0.0. §18.1's persistence makes it exact for joint pins too.
+- Z3–Z7.
+- W1 and W3–W5.
+
+F1–F6 implement §17.2, and the `reviewer` judges them as implementation.
+
+### 18.1 Joint zero-flow pins (Z2, R-326): rule `M05-zero-flow-v2`
+
+**Measured (Z2).**
+- P1 and P2: S3.vap.{A,B,C} and S3.V are exactly 0.0.
+- B2: S4.n.{A,B,C} and S4.N are exactly 0.0.
+
+§17.1's single-pin stage pairs none of them. The projection refuses `PROJECTION_ZERO_FLOW(S3.vap.A:unpinned)` and
+`(S4.n.A:unpinned)`, and 15 tests are strict xfails.
+
+**Diagnosis: the flows are pinned, and the refusal's reason is false.** Each flow sits in rows its producer writes
+(`models/syn001/tp_state.py:410–451`):
+- the equilibrium rows r_i = v_i L − K_i l_i V, with K_i = exp(lnK_i) (`models/rows.py:133`);
+- the total row V − Σ v_i.
+
+At v = 0 and V = 0, every partial of r_i in a column outside the zero set is exactly zero:
+- ∂r_i/∂L = v_i = 0;
+- ∂r_i/∂l_i = −K_i V = 0;
+- ∂r_i/∂lnK_i = −K_i l_i V = 0.
+
+On the four zero columns the block is
+
+  J_B = [[L·I₃, −(K∘l)], [−1ᵀ, 1]],  det J_B = ±L³ (1 − Σ_i K_i x_i),  x_i = l_i / L.
+
+The determinant is nonzero off the bubble point, so everywhere in the liquid regime (Σ K_i x_i < 1). The rows vanish
+identically at z = 0. By the implicit-function theorem, z = 0 is then their locally unique solution for every nearby
+value of the other variables. Eliminating the block is therefore exact, as eliminating a single pin is.
+`equilibrium_row`'s docstring warns that the trivial split V = 0 satisfies these rows; that is the same fact seen from
+the two-phase side. Here V = 0 is the physical solution, and P4's fixed regimes keep it.
+
+**Ruling.** Once §17.1's step 2 reaches its fixpoint, a joint stage runs if Z₀ \ E ≠ ∅.
+
+1. **Numerical incidence.** Take each kept row e that is not in P and not omitted by R-274. Its numerical incidence
+   is N_e = {k ∈ incidence(e) \ E : ∂r_e/∂x_k(x₀) ≠ 0.0}, computed from the same total x-Jacobian as criterion (ii)
+   (Z3).
+2. **Candidates.** R_J holds the rows e with r_e(x₀) == 0.0, a decision and link tangent of exactly 0.0 (Z4), and
+   ∅ ≠ N_e ⊆ Z₀ \ E. Z_J is the union of their N_e.
+3. **Blocks.** A block is a connected component of the bipartite graph (R_J, Z_J, edges N_e). Blocks are ordered by
+   their smallest variable position; inside a block, rows are in spec order and variables in variable order. A block
+   (R_B, Z_B) is certified iff all three of these hold:
+   - (a) |R_B| = |Z_B|;
+   - (b) the scaled block J̃_B = D_r J_B D_c, with R-275's row and column scales, has σ_min/σ_max ≥ 1e-10 (by
+     `numpy.linalg.svd`; the blocks are small);
+   - (c) persistence: r_e == 0.0 exactly for every e ∈ R_B at two states (−0.0 counts as zero). Both states hold every
+     column in E ∪ Z_B at +0.0. Every other unknown and every decision k moves by
+     δ_k = ±1e-3 · ξ_k · max(|x₀_k|, s_k), where ξ is G4's seeded draw (|ξ_k| ≤ 1) and s_k the column scale. One
+     state takes the + sign and the other the −. Only R_B's row expressions are evaluated, with EF output variables
+     treated as plain variables, and no EF is called.
+
+   A certified block adds Z_B to E and R_B to P.
+4. **Repeat.** If a block was certified, rerun §17.1's step 2 to its fixpoint, then this stage. Stop when neither adds
+   anything.
+5. **Refusals.** §17.1's three reasons stand. Three are added, each naming the block's first variable:
+   - `PROJECTION_ZERO_FLOW(<id>:joint_not_square)`, when (a) fails;
+   - `PROJECTION_ZERO_FLOW(<id>:joint_singular)`, when (b) fails;
+   - `PROJECTION_ZERO_FLOW(<id>:joint_not_persistent)`, when (c) fails.
+
+   A j ∈ Z₀ still outside E after the last pass is `unpinned`. A jointly eliminated j among a link EF's inlets is
+   `link_input`.
+6. **Substitution and the final-state check** follow §17.1's steps 4 and 5:
+   - the eliminated flows become +0.0 constants;
+   - the rows in P are not built;
+   - the inverse map writes +0.0;
+   - every row in P, joint rows included, is evaluated at every final state against Z1's tolerance 0.0, and fails P2
+     otherwise. A joint row's zero follows from (c)'s structure.
+7. **Record.** `zero_eliminated` lists every eliminated variable in variable order.
+   - A single pin's entry is unchanged.
+   - A joint entry is `{variable_id, row_id: null, residual_x0: null, dr_dx: null, block}`.
+   - A new source-map key, `zero_blocks: [{block, variables[], rows[], residuals_x0[], rcond, persistence_max_abs}]`,
+     is written **only when a block exists**. A source map without one keeps its bytes.
+
+The rule id becomes `M05-zero-flow-v2` (`projection.ZERO_FLOW_RULE`). At `71804a6` the id is in no artifact, so no
+recorded byte moves.
+
+**Effects.**
+- *DOF.* |Z_B| variables and |R_B| rows leave together.
+- *LICQ.* Since N_e ⊆ Z_B and the tangent is zero, a block's rows have zero Jacobian entries outside Z_B at x₀. So
+  J = [[J_B, 0], [A_zB, A]] and rank J = |Z_B| + rank A, exactly as for a single pin.
+- *R-278's matching.* If the full Jacobian at x₀ is nonsingular, so is A, and the reduced matching stays perfect. The
+  check runs on the reduced system; it is not assumed.
+- *Property blocks.* A block whose outputs feed only eliminated rows (probably S3's lnK block) stays in the
+  projection. Its outputs are matched to its own relations, at the cost of a cheap evaluation (F-14).
+
+**Rejected.**
+- *Refusing SYN-001 at P1, P2 and B2.* It narrows G4's SYN-001 denominator from six registered states to three, with a
+  false reason, and in the most ordinary case in process simulation, a single-phase flash.
+- *Exempting SYN-001.* That is a case-id exception, and the rule's reason does not depend on the case: a free zero flow
+  at Ipopt's roundoff meets a truth's domain wherever it occurs.
+- *Eliminating only EF arguments.* It reopens R-296 and moves C1's measured 68 × 68.
+- *Dulmage–Mendelsohn blocks.* Finer blocks would only sharpen the name in a refusal. Connected components suffice and
+  are simpler.
+- *A symbolic test for (c).* CasADi's simplification is not complete. Two exact evaluations at independent perturbed
+  states are sufficient evidence for the analytic rows a spec can hold, and (b) with the implicit-function theorem
+  does the rest.
+
+**Acceptance (WO-2c).**
+- (a) Blocks. Each block has rcond ≥ 1e-10 (recorded), `residuals_x0` all 0.0 and `persistence_max_abs` = 0.0.
+  - P1 and P2: `zero_eliminated` is S3.vap.{A,B,C} and S3.V, in one 4 × 4 block made of S3's producer's three
+    equilibrium rows and its Vdef row.
+  - B2: `zero_eliminated` is S4.n.{A,B,C} and S4.N, in one 4 × 4 block made of the flash's three equilibrium rows and
+    its total-flow row.
+
+  Any other block, block size or refusal stops the work order and is reported. The rule is not adjusted to fit.
+- (b) At P1, P2 and B2, the DOF equals the full spec's. R-278's matching is perfect, and its size is the full
+  system's minus 4.
+- (c) The 15 strict xfails pass with their markers removed. A test of (a) replaces
+  `test_r296_syn001_s_unpinned_zero_flows_are_refused`.
+- (d) G4 (a)–(e) pass at P1, P2 and B2 over the projected rows and columns, at the other states' tolerances, and their
+  worst ratios are recorded.
+- (e) Inertness. Z6's dumps are byte-identical before and after for C1 TR-E2 (S0 and the perturbed S0), TR-E1, the
+  link toy, AT, and SYN-001 P3, B1 and B3. The joint stage runs on none of them.
+- (f) Toy fixtures produce each new reason, and readiness reports each one:
+  - `joint_not_square`: one row z₁ − z₂ on two zero flows;
+  - `joint_singular`: the rows z₁ + z₂ and 2z₁ + 2z₂;
+  - `joint_not_persistent`: the rows z₁ − z₂ and z₁ + z₂ + (y − y₀)², with y₀ = x₀[y]. Every criterion except (c)
+    holds at x₀.
+
+### 18.2 A max-iterations exit with θ_recheck > 1e-5 (W2, R-327): the candidate is kept, and P2 is not judged
+
+**Ruling.** `TRF_MAX_ITERATIONS` keeps its candidate whatever θ_recheck is, which is the current behaviour.
+- P2 is judged only on a candidate whose run has θ_recheck ≤ the run's `feasibility_termination` (W3: 1e-5).
+- Otherwise P2 is still computed and recorded, as `pass: null`, `judged: false`, `reason: "theta_recheck"`, and it
+  never yields `PROJECTION_DISAGREES`.
+- P2's entry always carries `judged` and `reason`. `reason` is null when P2 is judged, and `"no_trf_point"` for S0's
+  candidate (S18).
+- The candidate carries the limitation `trf_max_iterations`.
+- P5 runs iff P1 passes and none of P4, P3 and P2 is `false`; `null` is not a failure. This restates S4.
+- Stage A's P2_A follows the same rule.
+
+Within `RETURNS_MODEL`, only `TRF_MAX_ITERATIONS` can have θ_recheck > 1e-5: any EXIT claim above it is already
+`TRF_STALLED_INCONSISTENT` (R-299).
+
+**Why.**
+- §17.4's ground for an abort is a claim that the model contradicts. A max-iterations exit claims nothing.
+- The retry, radius × ¼ from the same start, cures a bad trajectory, not slowness. A smaller radius from the same
+  start needs more iterations. The likely result is a second max-iterations exit, then `FAILED(trf_aborted:…)`, and a
+  decision the parent could have checked is lost.
+- Stage B's verdict rests on parent evidence at the candidate's decision (P1, P3, P4 and P5), not on TRF's θ. A poor
+  candidate fails P5, and the loop restarts from a better poll point.
+- P2 detects projection defects, and its 1e-3 tolerance presumes a TRF state consistent with the truth. At θ_recheck
+  > 1e-5 the state is off by θ. A P2 failure there would reach the design lane as a projection defect when the cause
+  is an unfinished TRF. Judging P2 only on consistent states keeps its meaning, and the converged runs still exercise
+  it (G5, G6).
+
+**Rejected.**
+- *`TRF_STALLED_INCONSISTENT`, an abort with a retry*, for the reasons above.
+- *Judging P2 against a tolerance widened by θ_recheck.* No bound links θ to the state disagreement, so the widened
+  tolerance would be invented.
+
+**Acceptance (WO-6b, on fakes).**
+- (a) A `TRF_MAX_ITERATIONS` run with θ_recheck = 4.01e-4 (TR-E2's measured exit, Z8). Its fake P2 values would fail
+  (|J_TRF − J*| = 2e-3 · |J*|), and P1, P4, P3 and P5 pass. The candidate is `PARENT_LOCAL_EVIDENCE`, P2 is
+  `{pass: null, judged: false, reason: "theta_recheck"}` with both values recorded, and the candidate's limitations
+  include `trf_max_iterations`.
+- (b) The same run at θ_recheck = 1e-5 exactly: P2 is judged, it fails, and the candidate is `PROJECTION_DISAGREES`.
+- (c) With P2 null and P1, P4 and P3 passing, P5 runs. With P3 false, P5 does not run.
+
+G5 is unchanged: TR-E2 must end `TRF_CONVERGED` (F-15).
+
+### 18.3 WO-6's choices S1–S10 (R-328)
+
+| # | Ruling | Changed acceptance (numbers) | WO |
+| --- | --- | --- | --- |
+| S1 | **Confirmed.** The REAL box is [653.15, 693.15] K, and σ_REAL = 0.0125 (§18.5) | §18.5 (a) | done (WO-6) |
+| S2 | **Confirmed.** `LINK_BOUNDS` and `LINK_COORDINATES` live in `holders`, which is Pyomo-free; the object is the same | The default gate imports them without Pyomo | done |
+| S3 | **Confirmed.** `checks.py` reads the parent through the `Parent` protocol. The real adapter (`pinned_at` through R-309's `at_coupling`, and `c1_constraint_values`) is WO-5c, after the M02 merge | At C1 S0, through the real adapter: P1 passes (`CONVERGED`, `VERIFIED`), and every `ParentSolve` field the protocol does not mark optional is populated. `with_coupling` has exactly one call site | WO-5c |
+| S4 | **Confirmed**, as restated by §18.2. A failed P1 stops. P4, P3 and P2 are always evaluated together. P5 runs iff none of them is `false` | §18.2 (c) | WO-6b |
+| S5 | **Confirmed.** An expression row's scale is max(\|bound\|, F), with Σn/N_tubes for the per-tube rows. A bound's scale is max(\|bound\|, 1), in the variable's unit. A parent with no evaluated constraint fails P3. §18.5's inert floor is checked at scale F | T_in's lower bound is checked at 1e-9 · 653.15 = 6.5315e-7 K; a flow ≥ 0 at 1e-9 mol/s | done; the floor in WO-5c |
+| S6 | **Confirmed** (`c5aa61b` stays). Stage A is retried once. A second abort is recorded in `stage_a.outcome`, and C starts from S0. `TRF_ERROR` and the study budget still stop the study. A study can therefore reach `DECISION_STABLE` with stage A aborted, so **G8 also requires `stage_a.outcome` ∈ `RETURNS_MODEL`** | G8 tightened (§18.6) | WO-8 |
+| S7 | **Confirmed.** Every `RETURNS_MODEL` outcome gives a candidate (§18.2). `TRF_ERROR(*)` is `FAILED(trf_aborted:…)` at once, never retried. A run-cap refusal is an abort with one retry; the study cap gives `BUDGET_EXHAUSTED`. *Note:* by §8.3's identity a run of K ≤ 30 iterations issues at most 1 + 30 + 7 + 210 = 248 cold requests (the PMP, the trials, the basis FD and TRF's FD). The 250 cap is therefore a backstop | F-13 | done |
+| S8 | **Confirmed** (one study `ColdBudget`, checks before every call, and the accounting) | — | done |
+| S9 | **Confirmed.** S0 enters stage A's argmax unconditionally; P4 is trivially true at S0. C restarts from the best poll point that passes P1 and P3, as §7.3 says. A restart point whose regimes differ from S0's stops the study at the next candidate's P4 (`REGIME_CHANGED`), which is a safe stop | — | done |
+| S10 | **Confirmed.** §18.1 adds three `PROJECTION_ZERO_FLOW` reasons, and a readiness fixture produces each | §18.1 (f) | WO-2c |
+
+### 18.4 WO-7's choices S11–S18 (R-329)
+
+| # | Ruling | Changed acceptance (numbers) | WO |
+| --- | --- | --- | --- |
+| S11 | **Confirmed.** The addendum `benchmarks/m05/numerical_policy_external.yaml` (`M05-numerical-policy-external-v1`) classifies `revision_sha256`, `source_map_sha256`, `trf_module_sha256` and `trsp_executable_sha256` as `exact_sha256`. `--check` audits every addendum, a name keeps its first class, and no schema is claimed twice | v2's regenerated sha256 is unchanged (6b449911…707c). M02's `build` bytes, name sets and `--check` output are identical. `--check` reports 0 unclassified names | done |
+| S12 | **Amended.** `runs[].ledger` is `{summary, cold_parent}`, both required. `sha256` is removed from it, because a run's sequence is the study ledger filtered by `trf_run`. `artifacts.ledger` is the study ledger file's sha256: required, `^[0-9a-f]{64}$` | A record with `runs[].ledger.sha256`, or without `artifacts.ledger`, fails | WO-7b |
+| S13 | **Amended.** §9.1 gains the top-level fields `readiness`, `start`, `stage_a` and `best`. Each is required, as an object or null | A record missing any of them fails | WO-7b |
+| S14 | **Reversed.** Every fixed-field object is closed (`additionalProperties: false`) and declares every field the producer writes at WO-7b's head. Id-keyed maps (decision ids, holder names, module names) constrain only their values. Required beyond §9.1's fields: on every run, `exit_claim`, `theta_logged`, `theta_recheck` and `final_state_is_last_truth_point`, each null when TRF raised (W4); at the top level, `fd_check` (§17.2's document, or null without an FD truth); and §18.2's P2 fields | An undeclared field at any level fails. Every record generated at WO-7b's head validates | WO-7b |
+| S15 | **Amended.** `indifference_halfwidth` is null iff P5 did not run. Otherwise it is an object keyed by exactly the decision ids, each value > 0, or null iff that decision's c ≥ 0. `{}` is invalid | Without a poll the producer writes null, not `{}` | WO-6b, WO-7b |
+| S16 | **Amended, not deferred.** Each holder's per-run summary gains `by_purpose`, counting requests by purpose over §8.1's five purposes and `basis_fd_point`, and `pmp_point_equals_start`. For runs with an FD truth, §8.3's identity is checked as integer equalities: on the committed records by a default-gate test (G12), and on WO-8's live runs in the `nlp` tier (G6) | The identity holds exactly. A record that breaks it fails G12 | WO-6b (holder), WO-7b (test) |
+| S17 | **Confirmed.** The classes are `exact`, `excluded` (`wall_s`) and `r1_r2_existing_floors`. There is no `r3` rule, because the record holds no external output; those live in M02's coupling records | Every float has a rule, and every rule has a float | done |
+| S18 | **Confirmed.** Iteration 0 has `type: null`; P2 is `pass: null` where it does not apply (§18.2 adds the θ_recheck case); digests match `^[0-9a-f]{64}$`. **The open item:** `coupled_runs` lists only solves that have a coupling record, and `sha256` stays required and non-null. A C1 solve that lost its record surfaces in G7's store bijection | A fake parent without an external unit gives no entry. WO-8's C1 runs give one entry per S0 or B coupled solve | WO-6b, WO-7b |
+
+### 18.5 The REAL box (R-330): [653.15, 693.15] K, restated in place
+
+R-313 (M02's seventh round) made M05's REAL box [653.15, 693.15] K unconditionally. R-315 kept that T_in span for
+every rung V4–V6. The note now agrees, with these edits made in place:
+- D10 (§3);
+- §6.7's `step_size_termination` row;
+- §7.1's box and hard-domain list;
+- §11;
+- §14;
+- N-F6 (§15.1), now closed;
+- §15.2.
+
+Their consequences:
+- **σ.** σ = 0.5 · δ_T / h_T = 0.5 · 0.5 K / 20 K = 0.0125 for every configuration, where h_T = 20 K is the box's
+  half-width. §6.7's 0.005556 came from the old box's 45 K half-width.
+- **N-F6 is closed, and no longer a preference.** 643.15 K fails v3's S1 (R-313's evidence), so widening the box
+  needs an M02 domain amendment first. R-313 supersedes ADR 0039 D1's box. WO-10 adds an amendment note to ADR 0039
+  citing R-313, R-315 and R-330.
+- **The inert floor.** R-313 and R-315 name M05 for it. When the bound variant sets `hard_domain.inert_min` = y_min,
+  §7.1's generator emits y_min Σn − (n_Ar + n_CH₄) ≤ 0 at the reactor inlet, with the 1e-6 relative margin, and P3
+  checks it at scale F (S5).
+  - M05 holds no constant for y_min.
+  - At D87's loop states the reactor-inlet inerts are 0.045484 at 653.15 K and 0.040468 at 693.15 K. The floor is
+    inactive there under either candidate y_min (0.03 or 0.035).
+
+**Acceptance.**
+- (a) `REAL_BOX == (653.15, 693.15)`, and REAL's `step_size_termination` equals 0.5 * 0.5 / 20 in binary64. This was
+  done in WO-6 (S1).
+- (b) WO-5c: on a variant fixture with `inert_min = 0.035`, the inequality list holds the floor row with its margin,
+  and P3 reports it. On a variant without `inert_min`, the generated list is byte-identical to before.
+- (c) On the merged `wp/M05`, the C1 REAL formulation reads the selected rung's y_min, and P3 passes the floor at S0
+  (673.15 K).
+
+### 18.6 Work orders and gates changed
+
+| WO | Lane | Deliverable | Acceptance |
+| --- | --- | --- | --- |
+| WO-2c | Opus | §18.1 in `projection.py`: the joint stage, the three reasons, `zero_blocks`, and `M05-zero-flow-v2` | §18.1 (a)–(f) |
+| WO-6b | Opus | In `checks.py` and `study.py`: §18.2, S15's null, and S18's `coupled_runs`. In `holders.py`: S16's `by_purpose` and `pmp_point_equals_start` | §18.2 (a)–(c); S15, S16, S18 |
+| WO-7b | bounded | §18.4's schema rulings S12–S16 and S18, and S16's default-gate identity test | §18.4's acceptance column; G12 |
+| WO-5c | Opus | After M02 merges into `wp/M05`: the real `Parent` adapter (S3) and the inert floor (§18.5) | S3; §18.5 (b), (c) |
+| WO-10 | bounded | Also: ADR 0039's amendment note on the box (§18.5) | The note cites R-313, R-315 and R-330 |
+
+**Order.**
+- WO-2c and WO-6b are independent of each other.
+- WO-7b follows WO-6b, whose fields it declares.
+- WO-5c follows the M02 merge.
+- WO-8 needs all four.
+
+**Gates.**
+- G4: the SYN-001 part runs at all six K05 states. (f) reads "certified single or joint pins (§17.1, §18.1)".
+- G8 also requires `stage_a.outcome` ∈ `RETURNS_MODEL` (S6).
+- G12 also requires the closed schema (S14) and §8.3's identity on every committed record's FD-truth runs (S16).
+- G5 and G6 are unchanged.
+
+### 18.7 Open questions, each with a default
+
+| # | Question | Kind | Default |
+| --- | --- | --- | --- |
+| F-12 | What are the rconds of SYN-001's joint blocks? | Fact: WO-2c | The threshold is 1e-10. A block below it is `joint_singular` and is reported; the threshold is not moved |
+| F-13 | Does a REAL run reach the 250-request cap? | Fact: WO-9 | S7 as ruled. A cap hit is reported as a finding, with the run's ledger summary |
+| F-14 | Does TRF mishandle an EF whose outputs feed only eliminated rows, or whose arguments are all constants? | Fact: the first TRF case with such a block (none is registered, and SYN-001 is not a TRF case) | Kept as built. A TRF error from it is escalated |
+| F-15 | TR-E2 ended `TRF_MAX_ITERATIONS` in Z8's single check (30 iterations, θ_recheck 4.01e-4, T_spec 673.667 K), and G5 needs `TRF_CONVERGED` | Fact: WO-8 | Run WO-8 as specified. A reproduction is a G5 failure: report it with the iteration log and escalate. Do not raise `maximum_iterations` or the terminations to pass |
+| F-16 | Which y_min does the selected rung carry? | Fact: M02's registration (R-315) | Read it from the bound variant; M05 holds no constant |
 
 None of these needs Frank.
