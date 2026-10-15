@@ -799,3 +799,8 @@ Grep, don't read whole. Newest at the bottom.
   (check 8498/100 x86, 8470/98 arm). Step 11 PASS 3/3; step 12 PASS 6/6 (ρ 0.29, floor ratios 65.3/13.3, bitwise rerun).
   Step 10 FAIL F1 (5/77 certificates, 4 extra qualified ids). Manifest `implemented`: 35 pass, A39/A43 fail, 6 unsupported.
   Ruling round: `specifier` on brief `docs/briefs/V02-alpha-amendment2-brief.md` (`b8a769a`).
+- **Alpha Amendment 2** (2026-10-15, `specifier`, `ab80ca5`, R-345…R-349): F1 is a certificate defect (M02 §4.4/C2 put
+  non-[A09] notes in `independence_qualification`; `certificate.py:1305–1316`); remedy writes `None`; expected set not
+  extended. Failure is V18 (c), Q5 corrected. A43 → registered `machine_class` (scoped exception to "unchanged" for
+  `t08_rc.py`/`t08_dist.py`). Wrapper output accepted; bundle cert = recorded sha `d61a86fb…`. `e0e198e` superseded; re-cut
+  C_α¹ (R-349). Frank alternative Q-A2-1 (accept V18 (c) FAIL) not recommended; re-cut proceeds.
