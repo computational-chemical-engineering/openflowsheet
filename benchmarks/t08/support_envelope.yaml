@@ -268,7 +268,9 @@ axes:
 
   - id: platforms
     title: Platforms
-    statement: Linux x86-64 and aarch64, Python 3.13, the one lock (L15).
+    statement: >-
+      Linux x86-64 and aarch64, Python 3.13, the one lock (L15). The C1 reactor's runs are
+      measured on x86-64 only (L44).
     architectures: [aarch64, x86-64]
     python: "3.13"
     lock_sha256: ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4
@@ -441,6 +443,17 @@ unsupported:
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered
 
+  # U15: V02 alpha release spec §19.1 (Amendment 3, R-377; finding A8, M02 N5).
+  - id: U15
+    capability: "`pr-c1-v1`'s LIQUID regime and pure-NH₃ saturation flashes"
+    outcome: >-
+      The verifier's phase-admissibility check ends `unsupported` with reason
+      `pr_liquid_regime_unsupported`, and the solve is not `VERIFIED`. A pure-NH₃ flash is refused
+      typed.
+    evidence:
+      - tests/test_m02_wo8_verifier.py::test_g7j_a_liquid_branch_is_unsupported
+      - tests/test_m02_wo8_g7.py::test_g7e_a_pure_nh3_feed_is_refused_by_the_flash
+
 limitations:
   - id: L01
     text: >-
@@ -540,7 +553,9 @@ limitations:
       - doc:docs/derivations/T02-recycle-spec.md §7.1
       - tests/test_t07_r7_admission.py::test_a_route_bound_without_admission_ends_typed_at_plan_time
   - id: L15
-    text: Linux x86-64 and aarch64 only; Python 3.13; the one lock.
+    text: >-
+      Linux x86-64 and aarch64 only; Python 3.13; the one lock. The C1 reactor (`c1.reactor`) is
+      measured on x86-64 only (L44).
     evidence:
       - doc:.github/workflows/ci.yml
       - check:K05.G05.two_platform_structural_equality
@@ -824,6 +839,52 @@ limitations:
     evidence:
       - doc:docs/web-shell.md
       - doc:docs/design/M06-web-shell.md §12
+  # L44–L48: V02 alpha release spec §19.1 (Amendment 3, R-370; L47: R-377). Normative texts.
+  - id: L44
+    text: >-
+      The C1 reactor (`c1.reactor`) is measured on Linux x86-64 only, on one machine
+      (`ref-x86-64`). Its runs are opt-in: they need the separately built, pinned reactor
+      environment, which no CI job builds (M02 N2). They are reproducibility class R3 (ADR 0034
+      D6). A run on aarch64 is not measured, nor is the reproduction of a coupled run across
+      architectures. macOS is best effort, and Windows is refused before spawn (ADR 0033 D2).
+    evidence:
+      - doc:docs/design/M02-pymrm-adapter.md §2.4
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/adr/0034-external-models-in-a-flowsheet-solve.md §D6
+      - doc:docs/derivations/V02-alpha-release-spec.md §13
+  - id: L45
+    text: >-
+      `external-subprocess-v1` runs the group's pinned code with the user's privileges and is not
+      a sandbox: there is no filesystem confinement, network isolation, memory or CPU quota, or
+      syscall filtering, and trust rests on provenance (ADR 0033 D2; M02 N1).
+    evidence:
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/design/M02-pymrm-adapter.md §12
+  - id: L46
+    text: >-
+      No reactor result has been compared with experimental data by this project. The group's
+      published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the
+      group's evidence. Every real-reactor number is the group's model at the pin, a regression,
+      and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13).
+    evidence:
+      - doc:docs/design/M02-pymrm-adapter.md §13
+      - doc:docs/derivations/V02-alpha-release-spec.md §6.1
+  - id: L47
+    text: >-
+      `pr-c1-v1`'s saturated-liquid NH₃ volume is 11–30 % high (240–400 K) and its enthalpy of
+      vaporization 2–5 % high (−7 % at 400 K), against the reference equations of state. No v0.2
+      loop decision uses either.
+    evidence:
+      - doc:docs/derivations/M01-spec.md §11
+  - id: L48
+    text: >-
+      The C1 loop's convergence is evidenced at the corners and the centre of its registered hard
+      domain only (M02 G11). The inert-fraction floor y_inert ≥ 0.035 sits just above a measured
+      stage-1 failure (0.03 at 653.15 K, 11 MPa, H₂/N₂ 2.5). A failure inside the domain ends in a
+      typed refusal and then `COUPLING_NOT_CONVERGED`, never in a false success.
+    evidence:
+      - check:M02.G11
+      - doc:docs/design/M02-pymrm-adapter.md §13
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -3127,21 +3188,24 @@ harvest:
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[1]
   sha256: dfd8ca7840569a3f97f92f6b90b8036a97ad876adb24439d3c0c24bfcd8bdb6b
-  class: P
-  to: []
-  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run
+  class: E
+  to:
+  - L44
+  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run (R-370, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[2]
   sha256: 28b3606f19c531f178ddbaf9a38af13559d1cec586dbe744c30d50a4c4e670e7
-  class: P
-  to: []
-  note: isolation profile not a sandbox (stated in the envelope's external_execution axis)
+  class: E
+  to:
+  - L45
+  note: isolation profile not a sandbox (stated in the envelope's external_execution axis) (R-370, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[3]
   sha256: 5266e33ca1cc2b8fdffd15c7726369a905a1559b897d91f8cd3a8d6a166dba4c
-  class: P
-  to: []
-  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10)
+  class: E
+  to:
+  - L48
+  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10) (R-370, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[4]
   sha256: 314efcaecdb681cc1bcbc3b78d4908bb0057435bcf0815128701ea2edcdd7e9f
@@ -3157,6 +3221,7 @@ harvest:
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[6]
   sha256: 326d3a4be0be30a8f73651217aaf41b9b8cbcef12ab1517c1019ae7fdf100476
-  class: P
-  to: []
-  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled
+  class: E
+  to:
+  - L44
+  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled (R-370, class E)
