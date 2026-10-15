@@ -16,25 +16,29 @@ project's resolver, the transaction, invalidation, the routes and the certificat
 The project is built once per module and copied per test (`shutil.copytree` of the closed
 project), so each test starts at the solved base revision.
 
-The job's A19 manifest equals the committed A19 fixture in every number; only the experiment
-environment's fingerprint (and so the request keys) differs: the fingerprint hashes
-`models/c1/boundary.py`, which the M02 merge changed after the fixture was taken, and the library
-path (`run_study`) now gives the job's fingerprint too (build decision E23). The band of A26 is
-checked against `pipeline.smooth_prefix.band`, the registered value, not against the fixture.
+M04.A47 (spec §19 A2.10, register R-325): the job's A19 manifest and evidence equal the committed
+fixtures member by member outside a closed set E of environment-identity members (the
+fingerprint, the request keys and their digests, and the evidence's subject hash); exact and R0
+members exactly, R1/R2 floats within the numerical policy's floors (ADR 0007 D2.1, spec §18 A1.3).
+E may differ only when the run's fingerprint differs from the fixture's: the fingerprint hashes
+`models/c1/boundary.py`, which the M02 merge changed after the fixture was taken (build decision
+E23). A member outside E that differs fails, for the design lane; it is never added to E. The
+band of A26 is checked against `pipeline.smooth_prefix.band`, the registered value.
 """
 
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import sys
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import REPO_ROOT, load_yaml
 from m02_variant_support import register_variants
 from t07_jobs_support import commit, lifecycle_violations, response_schema_violations
 from test_m04_study_job import attempts, body, read, submit
@@ -91,6 +95,8 @@ class World:
     base: str
     solve_job: str
     manifests: Mapping[str, tuple[dict[str, Any], str]]
+    #: The A19 job's ModelEvidence (its second output).
+    a19_evidence: Mapping[str, Any]
 
 
 def reference(variant: variants.Variant) -> dict[str, Any]:
@@ -182,6 +188,7 @@ def world(patched: None, tmp_path_factory: pytest.TempPathFactory) -> World:
         job = solve(application, "base", base)
         assert job["status"] == "completed", job["error"]
         manifests = {}
+        evidence: dict[str, Any] = {}
         for name, (variant, plan_id) in STUDIES.items():
             study = submit(application, f"study-{name}", body(variant, plan_id=plan_id))["job"]
             assert study["status"] == "completed", study["error"]
@@ -190,9 +197,12 @@ def world(patched: None, tmp_path_factory: pytest.TempPathFactory) -> World:
             manifest = read(application, output["artifact_id"])
             assert document_sha256(manifest) == output["sha256"]
             manifests[name] = (manifest, str(output["sha256"]))
+            if name == "A19":
+                (record,) = [o for o in study["outputs"] if o["kind"] == "model_evidence"]
+                evidence = read(application, record["artifact_id"])
     finally:
         application.close()
-    return World(directory, base, str(job["job_id"]), manifests)
+    return World(directory, base, str(job["job_id"]), manifests, evidence)
 
 
 @pytest.fixture
@@ -220,13 +230,136 @@ def test_the_base_revision_solved_once_on_the_coupled_route(
     assert len(attempts(app)) > 0
 
 
-def test_the_jobs_a19_manifest_is_the_fixtures_but_for_the_environment(world: World) -> None:
+# == M04.A47 ======================================================================================
+
+#: The numerical policy's rules (spec §18 A1.3): a float's class and floor by its path.
+POLICY: Mapping[str, Any] = load_yaml(
+    REPO_ROOT / "benchmarks" / "m04" / "numerical_policy_surrogate.yaml"
+)["numerical_policy_surrogate"]
+A19_EVIDENCE_FIXTURE: Mapping[str, Any] = json.loads(
+    (
+        REPO_ROOT
+        / "tests"
+        / "fixtures"
+        / "schemas"
+        / "model_evidence"
+        / "valid"
+        / "a19_smooth_prefix.json"
+    ).read_text(encoding="utf-8")
+)
+#: The closed set E (spec §A2.12, M04.A47): environment-identity members. Never extended to make
+#: a comparison pass; a difference outside E is a finding for the design lane.
+E_MANIFEST: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\.parent\.fingerprint_sha256s(\[\d+\])?"),
+    re.compile(r"\.splits\.\w+\.keys(\[\d+\])?"),
+    re.compile(r"\.splits\.\w+\.keys_sha256"),
+    re.compile(r"\.splits\.gradient\.centres\[\d+\]\.stencil_keys(\[\d+\])?"),
+    re.compile(r"\.splits\.\w+\.incomplete\[\d+\]\.key"),
+)
+E_EVIDENCE: tuple[re.Pattern[str], ...] = (*E_MANIFEST, re.compile(r"\.subject\.artifact_ref"))
+#: w_o, the scale of a floor given in units of w_o (spec §6.1).
+WIDTH = {"X": 0.0025, "dT_K": 1.5}
+
+
+def _leaves(node: Any, path: str = "") -> dict[str, Any]:
+    if isinstance(node, dict):
+        out: dict[str, Any] = {f"{path}{{}}": sorted(node)}  # the member set is compared too
+        for key, value in node.items():
+            out.update(_leaves(value, f"{path}.{key}"))
+        return out
+    if isinstance(node, list):
+        out = {f"{path}[]": len(node)}
+        for index, value in enumerate(node):
+            out.update(_leaves(value, f"{path}[{index}]"))
+        return out
+    return {path: node}
+
+
+def _floor(rule: Mapping[str, Any], path: str, reference: Mapping[str, Any]) -> float:
+    """floor(path) in the member's own units (ADR 0007 D2.2; the policy's `floor_unit`)."""
+    unit = str(rule["floor_unit"])
+    output = re.search(r"\.(X|dT_K)\b", path)
+    if unit.startswith("max_i |beta_o,i|"):
+        assert output is not None
+        coefficients = reference["predictor"]["coefficients"][output.group(1)]
+        return float(rule["floor"]) * max(abs(b) for b in coefficients)
+    if unit == "w_o" and output is not None:
+        return float(rule["floor"]) * WIDTH[output.group(1)]
+    # "1", "score", or w_o for a member already stored over w_o (`domain.admissibility_margin`).
+    return float(rule["floor"])
+
+
+def a47_differences(
+    run: Mapping[str, Any],
+    fixture: Mapping[str, Any],
+    rules: Sequence[Mapping[str, Any]],
+    environment: Sequence[re.Pattern[str]],
+) -> tuple[list[str], list[str]]:
+    """(differences outside E, members of E that differ), member by member."""
+    compiled = [(re.compile(rule["path"]), rule) for rule in rules]
+    ran, expected = _leaves(run), _leaves(fixture)
+    outside: list[str] = []
+    in_e: list[str] = []
+    for path in sorted(set(ran) | set(expected)):
+        if path not in ran or path not in expected:
+            outside.append(f"{path}: present on one side only")
+            continue
+        a, b = ran[path], expected[path]
+        member = path.removesuffix("[]").removesuffix("{}")
+        if any(pattern.fullmatch(member) for pattern in environment):
+            if a != b:
+                in_e.append(member)
+            continue
+        if isinstance(a, float) or isinstance(b, float):
+            matched = [rule for pattern, rule in compiled if pattern.fullmatch(path)]
+            if not matched:
+                outside.append(f"{path}: an unclassified float (ADR 0007 D2.3)")
+            elif matched[0]["class"] == "r1_r2":
+                floor = _floor(matched[0], path, fixture)
+                if not abs(a - b) <= max(1e-9 * max(abs(a), abs(b)), floor):
+                    outside.append(f"{path}: {a!r} vs {b!r} (floor {floor!r})")
+            elif float(a).hex() != float(b).hex():
+                outside.append(f"{path}: {a!r} vs {b!r} (exact)")
+        elif a != b or type(a) is not type(b):
+            outside.append(f"{path}: {a!r} vs {b!r}")
+    return outside, in_e
+
+
+def _fingerprints_equal(world: World) -> bool:
     manifest, _ = world.manifests["A19"]
-    assert manifest["promotion"] == A19_FIXTURE["promotion"]
-    for member in ("predictor", "calibration", "evaluation", "gradient", "domain"):
-        assert manifest[member] == A19_FIXTURE[member], member
-    assert manifest["qualifications"] == A19_FIXTURE["qualifications"]
-    assert manifest["parent"]["boundary"] == A19_FIXTURE["parent"]["boundary"]
+    return bool(
+        manifest["parent"]["fingerprint_sha256s"] == A19_FIXTURE["parent"]["fingerprint_sha256s"]
+    )
+
+
+def test_a47_the_jobs_a19_manifest_is_the_fixture_outside_the_environment(world: World) -> None:
+    manifest, _ = world.manifests["A19"]
+    outside, in_e = a47_differences(
+        manifest, A19_FIXTURE, POLICY["rules"]["surrogate_manifest"], E_MANIFEST
+    )
+    assert outside == []
+    if _fingerprints_equal(world):
+        assert in_e == []
+
+
+def test_a47_the_comparison_is_not_vacuous() -> None:
+    """A moved coefficient beyond its floor, a moved count and a moved E member are each caught
+    where they belong."""
+    rules = POLICY["rules"]["surrogate_manifest"]
+    moved = json.loads(json.dumps(A19_FIXTURE))
+    beta = moved["predictor"]["coefficients"]["X"]
+    beta[3] += 1e-6 * max(abs(b) for b in beta)
+    moved["calibration"]["k"] += 1
+    moved["parent"]["fingerprint_sha256s"] = ["f" * 64]
+    outside, in_e = a47_differences(moved, A19_FIXTURE, rules, E_MANIFEST)
+    assert [d.split(":")[0] for d in outside] == [
+        ".calibration.k",
+        ".predictor.coefficients.X[3]",
+    ]
+    assert in_e == [".parent.fingerprint_sha256s[0]"]
+    within = json.loads(json.dumps(A19_FIXTURE))
+    within["predictor"]["coefficients"]["X"][3] *= 1 + 1e-12
+    assert a47_differences(within, A19_FIXTURE, rules, E_MANIFEST) == ([], [])
 
 
 # == M04.A25, A26 ==================================================================================
