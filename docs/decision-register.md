@@ -5943,3 +5943,86 @@ M05 decision variable beyond T_in, which would move the loop's inert fraction ou
 **Watch for.** A `constants_sha256` field that digests something other than an inner solve of w, added to a coupled bundle.
 
 ---
+
+## R-319 — The surface chain's link c_2 is registered: `D_2` = `383b4e2c…`; item 4's "R-133's files" are `REVIEW.json`'s hashes at v0.1.0 (completes R-234)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), V02 alpha read F3, on build decisions B-WO5-1 and B-WO5-5 |
+| Normative text | `docs/reviews/V02-alpha-read.md` F3; V02 alpha release spec §5.3 (link table, item 4); R-234 |
+| Evidence | M02 manifest `ba90619` `checks[0].value.mcp_tool_list`: `served_sha256` = `383b4e2c…`, `without_m02_sha256` = `6c4375b4…` (`D_1`); A37 item 1 passes on `wp/V02-alpha-gate` @ `360eef3` (main merged at `46176a7`); `sha256sum` of `git show v0.1.0:…/descriptions/{commit_change,validate}.md` = `fd7ff7a8…`, `1025385a…` |
+| Affected packages | M07a (`scripts/m07a_rc.py` `LINKS[1]`, `R133_FILE_SHA256`), M04 (its link is c_3) |
+
+**Decision.** `D_2` = `383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403`, the served MCP digest after
+M02 (R-234's link c_2, strip `tests/m02_schema_support.py::without_m02`). §5.3 item 4's R-133 file hashes are
+`commit_change` = `fd7ff7a808c6f0dbd3af2a45eb5b62c83c7e104a1ef433fc96a6fbbc6a05dd32` and `validate` =
+`1025385ae14e0fb4dde1b65f79c71e1bff19eb87559e7fa740d3b3357e754d7e`, as `REVIEW.json` at `PUBLIC_ROOT` records them.
+
+**Rejected alternatives, and why.**
+- Leaving the M02 manifest's value as the only source: the manifest calls it "evidence, not a pin", and R-234 promised
+  a registration.
+- Re-measuring at `C_α` and pinning that: it is circular, because the chain exists to show that `C_α` serves a
+  registered value.
+
+**Watch for.** Any MCP-visible change before `C_α` (M04's `without_m04`, M03) is link c_3. It needs its own entry, strip,
+digest and carry, or A37 fails and V17 is `BLOCKED`.
+
+---
+
+## R-320 — M07a's own manifest, written after `C_α`, is neither harvested nor a review-table row; the `## v0.2.0a1` tests read the candidate, not the working tree
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), V02 alpha read F1, F2 |
+| Normative text | `docs/reviews/V02-alpha-read.md` F1, F2; ADR 0028 D3 ("every package manifest at the candidate"); T08 Amendment R8 2 (precedent) |
+| Evidence | `HARVEST_EXCLUDED = ()` with `test_m07a_a50_nothing_is_excluded_from_the_harvest` asserting it; `test_m07a_changelog.py` (e), (g) read the working tree; `benchmarks/` is in `TREES` (`v0_1_gate.py:108`) |
+| Affected packages | M07a (WO-8's script and test, WO-9's test, WO-10), M07 (removes the exclusion and harvests M07a's manifest) |
+
+**Decision.** `HARVEST_EXCLUDED = ("evidence/M07a/",)`, which excludes no manifest at `C_α`, and the A50 test asserts
+exactly that. M07a.A50's "with `HARVEST_EXCLUDED` empty" reads "excluding no manifest at `C_α`". Once the
+`## v0.2.0a1` heading names `C_α`, M07a.A52 (g) computes MR-5's set from `C_α`'s tree and committer times, and (e)
+reads the envelope at `C_α`. M07a has no review-table row. (g) also checks the human-review column against each
+manifest's `review` fields.
+
+**Rejected alternatives, and why.**
+- Classifying M07a's limitations in the envelope: that is impossible after `C_α` (D2.4).
+- Keeping the exclusion empty and editing the script and the test at the manifest commit: `check.sh` is red from that
+  commit until the edit lands, and the record would contradict the test.
+- Working-tree reads in (e) and (g): they break with every later merge, which is R-216's and R-217's failure.
+
+**Watch for.** A test of a released changelog section that reads live files. A package's own manifest harvested into
+the envelope of its own candidate.
+
+---
+
+## R-321 — T08's harvest at the alpha: the E/S/P/B draft is confirmed except `[8]` (E to new L43), `[9]` (B to new B13), and V14 (b)'s items (E to L01 and B8)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), V02 alpha read F4, on build decisions B-WO8-1…6 |
+| Normative text | `docs/reviews/V02-alpha-read.md` F4; T08 spec §5.7 (the order E, B, S, P; "a defect handed on is never P"), §6.3 |
+| Evidence | `docs/recovery-edges.yaml` E1, E2 `enabled: library-only` ("no application policy requests `anderson`"); envelope `topologies` and `globalization_and_recovery` statements; spec §8.2 MR-11 (A34 over steps 4–7 and 12, not step 5's replays) |
+| Affected packages | M07a (WO-8: `benchmarks/t08/support_envelope.yaml`, the matrix, the section's limitation list), T08 spec §6.3 (B13 by amendment) |
+
+**Decision.**
+- T08 `limitations[8]` is E to a new row L43, which states that the Anderson recycle, E1 and E2 are library-only (text in
+  the review, F4).
+- `limitations[9]` is B to a new backlog id B13: A34 over the certificates the replays re-emit. B13 is appended to T08
+  §6.3 with an amendment marker.
+- `limitations[2]`, `checks[42]` and `checks[67]` are E to L01 and B8.
+- Every other item of the draft stands as classified.
+
+All of this lands before `C_α`.
+
+**Rejected alternatives, and why.**
+- P for `[8]`: the matrix lists the Anderson recycle, and "unlisted is unsupported" makes listed read as supported.
+- P for `[9]`: an open follow-up is never P.
+- L01 alone for V14 (b): the item has a handed-on part, and B8 names it.
+
+**Watch for.** A loop unit without exact derivatives entering `MODEL_BUILDERS`. That makes E1 reachable, R-130's
+reachability test fails, and L43 must change with it.
+
+---
