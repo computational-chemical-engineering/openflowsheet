@@ -232,3 +232,32 @@ when `RC` moves to `C_α¹` in action 6. The class test also checks agreement on
 (all agree). Measured at `C_α⁰` with the new generator: A43 `fail`, 29 records, 13 without a class, 0 unregistered,
 0 disagreeing, 0 unattributable — the same verdict as before. These two files are not part of `C_α¹`'s tree
 (§18.4 item 1); the R-345 and R-347 commits carry no post-candidate file, so action 4 can cherry-pick them.
+
+## Amendment 2 build-lane actions 4–7 (spec §18.5; R-348, R-349) and the action-3 read's items
+
+B-AM2-5 **Review S3 checked before the cut.** ci.yml dispatched with `rc_distribution` at the action-3 tip `eb108c4`
+(run **38768575677**): `dist`, both `clean-install` jobs, `bundle-set` and both `bundle-replay` jobs success. Their
+records carry the class: `t08-a43-dist.json` `machine_class` `ci-x86-64` beside `machine` `x86_64` (lock-only
+interpreter, step 3); `install-*`, `lock-checkout-*`, `lock-installed-*` and `certificates-*` carry `ci-x86-64` /
+`ci-aarch64` agreeing with `architecture` and `github_actions: true` (wheel-only clean venv, step 4). No fix needed.
+
+B-AM2-6 **How `C_α¹` was cut (action 4).** A new branch `wp/V02-alpha-rc1` from `e0e198e`, carrying ab80ca5, 04e65be,
+00acbe9 and f0cfda8 cherry-picked with `-x` (no conflict); the last one's subject is rewritten to name the cut, its body
+kept. `C_α¹` = its tip **`6fec82232e1c47308a5e1d67338058f352992800`**. `git diff --stat e0e198e 6fec822`: 14 files, as
+the read's simulation; on `src/ tests/ scripts/ .github/` the tree equals `2e778d3` except the two post-candidate files.
+Gate at `C_α¹`: PASS, 8574 passed, 33 skipped (22:40). Why a branch: a dispatch needs a branch ref whose tip is `C_α¹`,
+and `wp/V02-alpha-gate` already holds post-candidate commits (C_α⁰ was dispatched when that branch's tip was it). The
+branch is pushed (dispatch and push CI at `C_α¹`), and merged into `wp/V02-alpha-gate` with a merge commit so that
+`C_α¹` stays reachable from the RC branch (§7.4). Alternatives: one squashed cut commit (loses the per-change
+provenance the read reviewed); a tag (outward, Frank's). Reversible by: deleting the branch before the merge.
+
+B-AM2-7 **Review S2 accepted.** §18.4 (b) (R-347's member and the tests it extends) includes B-AM2-3's two workflow
+steps, `python -m pip install -r requirements.lock` in ci.yml `dist` and release.yml `build`: §18.3's "a function the
+same script already calls" is false for `t08_dist.py`, and the alternatives (a second derivation, a fallback value) are
+the ones §18.3 rejects. The release `build` job's import of the lock's runtime dependencies is accepted as marginal
+(the read, (4) S2).
+
+B-AM2-8 **Review S1.** `tests/test_m07a_rc_records.py` builds dist-form records (`t08-a43-dist-v1`, members at top
+level, `machine`, no CI flag): one agreeing (`ci-x86-64` / `x86_64`, pass), one disagreeing (`ci-aarch64` / `x86_64`,
+`machine_class_disagrees`) beside one without a class. Mutation check: with `document.get("machine")` dropped from
+`_m_provenance`, the disagreeing test fails.
