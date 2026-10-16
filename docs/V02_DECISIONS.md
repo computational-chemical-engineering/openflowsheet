@@ -903,3 +903,10 @@ Grep, don't read whole. Newest at the bottom.
   attempts); G9 PASS (|d*−d_lb| 5.29e-8 scaled vs 1e-6); G10 PASS (0 diffs, one env). Drift cause: OpenMP OpenBLAS thread count, not a
   venv rebuild; script now requires OMP_NUM_THREADS=1 and writes `<stem>.environment.json` (S59, S60, S61). Open for review: S53, S56–S61.
   Note: `m03_nlp_check.sh` inventory diff (conda_packages, gates, objects) not touched by M05; pre-existing staleness, unverified.
+- **M07 ruling round 1** (2026-10-16, `specifier`, `9ef4543` on wp/M07, docs only): spec §18 Amendment 1, R-420…R-427; ADR 0041 D6
+  gains refusal reason `surrogate_loop_unavailable`. J3 confirmed (missing noise floor → FE_NOT_DETERMINED/TC1_NOT_APPLICABLE, never 0;
+  fixtures tc1-08/09, A06 7→9); J4 confirmed (check recomputes budget stop); J5 W25 (a) not met under PROMOTABLE without surrogate loop;
+  J6 experiments split {cold, store_hit, in_process}; J7 changed: `extrapolated` counts last coupling iteration only, closed-form R0
+  checks (X_pass tol 2.5e-13); J8 replaced: M05 record named by five content conditions, not a path (defects: R3 wall always 0.0,
+  carried_from defaults "rerun"); J9 re-solve T* with M05 C1Parent, J bitwise; J11 changed: grid-only decision = R1's own rung decision.
+  AQ1–AQ3 are facts for the build lane. Finding FD-3 for M05: study record lacks run commit and spent wall (put in WO-9 brief).
