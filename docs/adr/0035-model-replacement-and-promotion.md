@@ -1,7 +1,10 @@
 # ADR 0035 — Model replacement and promotion: a checked commit, pinned variants, and invalidation by the existing rule
 
-**Status:** Proposed, 2026-10-08. Accepted when M02's evidence manifest is `tested` (design note gates G6, G9) and the
-design-lane review of WO-11 is recorded.
+**Status:** **Accepted, 2026-10-16** (design lane, V02 alpha verdicts finding B6; register R-381). Proposed 2026-10-08.
+The condition it was accepted on: M02's evidence manifest is `tested` (design note gates G6, G9) and the design-lane
+review of WO-11 is recorded. Met by `evidence/M02/ba90619…/manifest.json` (`tested`; M02.G6, G9 `pass`) and by the
+design lane's §14.5 D6 (D61, WO-11's `validity`) and §14.6 (WO-11a) in `docs/design/M02-pymrm-adapter.md`, with
+`docs/reviews/M02-review.md`, which read `replacement._validity`.
 **Author:** design lane (`architect`), M02.
 **Normative text:** `docs/design/M02-pymrm-adapter.md` §6. Register R-226, R-228.
 **Amends:** ADR 0019 (Amendment 4, part 3: the `api-error` code `model_replacement_incompatible`; the

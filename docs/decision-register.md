@@ -6557,3 +6557,36 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 **Rejected alternatives, and why.** Keeping the default: a forgotten argument fits silently in v1's z.
 
 **Watch for.** —
+
+---
+
+## R-381 — ADRs 0033, 0034 (with Amendment 1) and 0035 are Accepted; their conditions are met by M02's `tested` manifest and the design lane's recorded reviews
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), V02 alpha verdicts finding B6 |
+| Normative text | each ADR's Status line |
+| Evidence | `evidence/M02/ba90619c…/manifest.json`: `tested`, M02.G1–G12 `pass`. Reviews: 0033 WO-3/WO-4, note §14 (as built, `02403d1`); 0034 WO-7 §14.2 B18, WO-8 §14.3, WO-9 §14.4, WO-10 §14.5 and `docs/reviews/M02-review.md`, with F1–F3 closed by `080d197`, `88b3ab4` and `908d9a3`; 0035 WO-11 §14.5 D6, §14.6 (WO-11a) and the review. Every cited commit is an ancestor of `C_α²` = `cc73219` (checked with `git merge-base --is-ancestor`) |
+| Affected packages | M02 (closed); M07a (§7.3 item 12) |
+
+**Decision.** Each ADR moves from Proposed to Accepted. Its own condition, in its Status line, is met:
+
+| ADR | Gates in its condition | Review in its condition |
+| --- | --- | --- |
+| 0033 | G1–G6, G10, G11 `pass` | WO-3/WO-4 |
+| 0034 | G2, G6–G9, G12 `pass` | WO-7–WO-10 |
+| 0035 | G6, G9 `pass` | WO-11 |
+
+Flipping the lines after the cut is legitimate. `scripts/v0_2_gate.py` reads the ADRs at the candidate, not at `C`
+(§7.2 item 7; `files_at`). `docs/adr/` is not a D2.4 path, and R-151's tree record covers only those paths. §8.1
+item 2 held in substance at `C_α²`: every piece of acceptance evidence is an ancestor of it. Only the record lagged.
+
+**What it does not establish.** WO-7's record is B18, which confirms D27 (G6 (a)). D28 and D29 were not ruled one by
+one. The real-reactor evidence is `judged: false`, R3, from one machine. The manifest's `review.numerical` and
+`review.process_model` are `pending`. Human sign-off is separate.
+
+**Rejected alternatives, and why.** Leaving the three Proposed until a fresh review: none of the three conditions asks
+for one.
+
+**Watch for.** `main` still reads Proposed for the three ADRs until this branch merges.
