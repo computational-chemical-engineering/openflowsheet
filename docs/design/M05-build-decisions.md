@@ -423,3 +423,50 @@ S44 S43 → option (a), the session's decision (2026-10-16): M04's `test_studies
    the records' other fields are in the dump and identical).
    Open for WO-8: R-003's test forbids any module outside `studies/trust_region/` importing it, so an `application`
    job that runs the trust-region study (as `surrogate_study` runs M04's) cannot exist under that test as written.
+
+## WO-8 — runs on known truths, §19's build items (R-383..R-389)
+
+S45 Committed records live under `benchmarks/m05/records/` (§9.5), each `<stem>.json` beside `<stem>.ledger.json`
+   and `<stem>.coupling/`; `COMMITTED_RECORDS` reads that directory too (only single-suffix `.json`), as well as
+   WO-7's `evidence/M05/*/records/`. Reversible: the glob.
+S46 `C1Parent` gains `truth_class: type[ParentExperimentTruth] = ParentExperimentTruth` (default: nothing changes),
+   so TR-E2's analytic `SyntheticTruth` (§6.4) is the parent's link truth. Alternative: replace `parent.truth` and
+   `parent.formulation` from the script. Reversible: one keyword.
+S47 Assumption blocks: TR-E2 = §5.2's column as A1/A2/A3/A5 `holds_by_construction`, A4/A6/A7 `limitation`
+   (A7 "the budget"); FD truths (TR-E2-FD, LOOP-R) the same with A3 `qualified(fd_gradient)`, `trf_theory`
+   `qualified(A3)`, study limitation `fd_gradient`. For the review batch (G5 compares the block).
+S48 The ledger file (`artifacts.ledger` = its sha256) holds every holder request of every stage-C projection in
+   order, without `wall_s`, so the digest is exact and G10 compares it byte for byte. Reversible: the script.
+S49 LOOP-R's stage C uses `m05_basis` (affine Taylor link basis, R-277): G9's "constant basis" predates §16.5,
+   which made the no-surrogate basis affine (a constant basis exits without a step, P14 b). For the review batch.
+S50 OPEN (accounting). The FD truths' `M05-fd-v2` check runs (script, `project_at` wrapper) on the first stage-C
+   projection's holder before `run_trf` begins the run: its 1 + 21 requests carry `run_id` null, so they are in
+   no run's `by_purpose` (`fdcheck_point` 0) and are charged to no budget (TR-E2-FD `cold_used` 257 = 241 + 16;
+   the 21 cold check evaluations are outside it). Default: leave; alternative: attribute the check to run C1.
+S51 OPEN (accounting, blocks committing TR-E2's record). A parent holder charges its budgets at admission, before
+   the runner says cold or store hit, so a store-hit value request is charged: TR-E2's `cold_used` 48 =
+   31 trf_cold + 16 parent executions + 1 (the `trf_start_value` store hit), and
+   `accounting_violations` fails "budgets.cold_used is not trf_cold + parent_executions". TR-E2-FD and LOOP-R
+   pass only because their start-value store hit happened in the (unbudgeted) FD check. Options: refund the
+   charge on a store hit in `holders.py` (G7: cold ≤ cap, a store hit is not cold), or restate the checker.
+   The TR-E2 record is parked in `evidence/M05/wo8/artifacts/` (ignored), not committed.
+S52 LOOP-S not run: stage A needs `SurrogateTruth` (§6.4), the promoted-surrogate link basis (§6.6) and stage A's
+   P2 reference (the surrogate-backed `revision_eo` re-solve, §7.3), none of which exists on this branch (WO-4's
+   `SurrogateTruth` was never built). A work order of its own.
+Measured (`scripts/m05_wo8_runs.py`, `.venv-nlp`, fresh store each, 3-4 s per run):
+   TR-E2: `TRF_MAX_ITERATIONS` (k 0..30), θ_recheck 4.01e-4, T* 673.6673361700024 K (T_ref 673.6434377969885,
+     |ΔT| 0.024 K), cand `PARENT_LOCAL_EVIDENCE` (P2 unjudged, `trf_max_iterations`), study `DECISION_STABLE`.
+     θ is a sawtooth: minima 1.62e-5, 1.62e-5, 1.33e-5, 1.65e-5, 1.03e-5 (k 6, 11, 16, 23, 28), each followed by a
+     radius expansion and θ up to 1e-4..4e-3; never ≤ 1e-5 (F-15 reproduced: G5 FAILS).
+   TR-E2-FD: `TRF_MAX_ITERATIONS`, θ_recheck 4.37e-4, T* 673.6673250702911 K (|T*_FD − T*_E2| 1.1e-5 K),
+     fd_check `truncation_dominated` at 2⁻¹⁴, pass, 1 candidate (τ̂ 0.0531, ν̂ 3.91e-6, allowance 2.34e-3):
+     G6 FAILS on `TRF_CONVERGED` only.
+   LOOP-R (m04-synthetic-rough-v1): stage A skipped `surrogate_not_promoted`; C1 `TRF_CONVERGED` in 3 iterations,
+     θ_recheck 1.14e-7, cand `PARENT_LOCAL_EVIDENCE`, `DECISION_STABLE`, T* 653.1500010668794 K:
+     |T* − 653.15| = 1.067e-6 K > 1e-6 K (5.3e-8 scaled: Ipopt's interior distance to the bound). G9 FAILS by
+     that margin. A CasADi callback printed `DomainError S2_Hdot_V: 142.2 K outside [200, 1000] K` inside a TRSP
+     (recovered by Ipopt; the run converged).
+   G10 (same machine): TR-E2, TR-E2-FD, LOOP-R `--replay` 0 differences each (record by shape/bitwise, ledger
+     bytes, coupling files integrity + content). G7 (per run summary): cold + store + memo = requests (559, 311,
+     ~77), refused 0, every ledger status `ok`; the store bijection is not evaluated. F-19: coupling records
+     80 KB per study (committed).
