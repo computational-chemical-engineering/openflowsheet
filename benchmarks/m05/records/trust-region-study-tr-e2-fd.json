@@ -92,7 +92,7 @@
    "purge": "none",
    "splitter": "none"
   },
-  "coupling_record_sha256": "c720f463e1dc89da7563bfdaa4aa1c584283def1f0dc99b850709675c246e563",
+  "coupling_record_sha256": "f933132cde8ae11a9cdfe954ca877ca04dd85b337f5de11bca7db6f548ad17d6",
   "experiments": {
    "executions": 4,
    "store_hits": 0
@@ -100,7 +100,7 @@
   "limitations": [
    "synthetic"
   ],
-  "wall_s": 0.3374106960109202
+  "wall_s": 0.3371909869965748
  },
  "stage_a": {
   "executed": false,
@@ -180,8 +180,8 @@
       "status": "ok",
       "reason": null,
       "noise_ratio": [
-       0.06525807096879538,
-       0.028078866561011412
+       7.041080399961575e-07,
+       0.00015511528869783874
       ]
      }
     }
@@ -497,7 +497,7 @@
       "purge": "none",
       "splitter": "none"
      },
-     "coupling_record_sha256": "9cb9f8be8380697c769b8dc477940a5b9b833b85f371e130f0da176b905473d5",
+     "coupling_record_sha256": "0b3f6a6945b3cc8a24362bb0a751523882fb33cf421dca7a8c763f15174b1911",
      "experiments": {
       "executions": 4,
       "store_hits": 0
@@ -505,7 +505,7 @@
      "limitations": [
       "synthetic"
      ],
-     "wall_s": 0.3342100519948872
+     "wall_s": 0.33397599799354794
     },
     {
      "check_id": "cand-C1-poll-preheater.T_spec-minus",
@@ -534,7 +534,7 @@
       "purge": "none",
       "splitter": "none"
      },
-     "coupling_record_sha256": "9dd79b603c90e95c2371657ba4f64efe01586e467771af82036210c62c6b8ff9",
+     "coupling_record_sha256": "24653137dbf49118c9efd129ec7079f3a028fd431b30eb9e0a27fcaf1fb61510",
      "experiments": {
       "executions": 4,
       "store_hits": 0
@@ -542,7 +542,7 @@
      "limitations": [
       "synthetic"
      ],
-     "wall_s": 0.3354560159932589
+     "wall_s": 0.3338898270012578
     },
     {
      "check_id": "cand-C1-poll-preheater.T_spec-plus",
@@ -571,7 +571,7 @@
       "purge": "none",
       "splitter": "none"
      },
-     "coupling_record_sha256": "9927c9e5e301a4e0af83ca198fe250541a311e87e769144faf16e601ff1baebf",
+     "coupling_record_sha256": "1a01695f2c01b936dc23569f9a8980fe251c82bdb8d234504db3cbea6a7b9b41",
      "experiments": {
       "executions": 4,
       "store_hits": 0
@@ -579,7 +579,7 @@
      "limitations": [
       "synthetic"
      ],
-     "wall_s": 0.3328745489998255
+     "wall_s": 0.3308707370015327
     }
    ]
   }
@@ -708,20 +708,25 @@
   "coupled_runs": [
    {
     "check_id": "S0",
-    "sha256": "c720f463e1dc89da7563bfdaa4aa1c584283def1f0dc99b850709675c246e563"
+    "sha256": "f933132cde8ae11a9cdfe954ca877ca04dd85b337f5de11bca7db6f548ad17d6"
    },
    {
     "check_id": "cand-C1-P1",
-    "sha256": "9cb9f8be8380697c769b8dc477940a5b9b833b85f371e130f0da176b905473d5"
+    "sha256": "0b3f6a6945b3cc8a24362bb0a751523882fb33cf421dca7a8c763f15174b1911"
    },
    {
     "check_id": "cand-C1-poll-preheater.T_spec-minus",
-    "sha256": "9dd79b603c90e95c2371657ba4f64efe01586e467771af82036210c62c6b8ff9"
+    "sha256": "24653137dbf49118c9efd129ec7079f3a028fd431b30eb9e0a27fcaf1fb61510"
    },
    {
     "check_id": "cand-C1-poll-preheater.T_spec-plus",
-    "sha256": "9927c9e5e301a4e0af83ca198fe250541a311e87e769144faf16e601ff1baebf"
+    "sha256": "1a01695f2c01b936dc23569f9a8980fe251c82bdb8d234504db3cbea6a7b9b41"
    }
   ]
+ },
+ "provenance": {
+  "run_commit": "cdacc322ee36df25dce0a29f2c0b0eb9338ee4a3",
+  "tree_clean": true,
+  "wall_s": 2.0493768300002557
  }
 }

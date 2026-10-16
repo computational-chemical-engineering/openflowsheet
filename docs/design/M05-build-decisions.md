@@ -679,3 +679,32 @@ S69 REAL (WO-9), `scripts/m05_wo9_real.py` at 20e398e (clean tree; `.venv-nlp`, 
    AQ2: no. The REAL check reads `benchmarks/m02/c1-loop-real.json` and never writes it (`C1Parent` deep-copies the
    document; the script asserts the file's bytes equal before and after the run, and `git status` shows it
    unchanged). `experiments.json` is 480 kB, so it is committed (below F-19's 5 MB).
+
+## WO-10a (the review's fixes; §21, R-430..R-435)
+
+S70 MF1 / R-432 (cdacc32): `noise_ratio_k = 4σ̂_k/(t²|c_k|)`, σ̂_k = ν̂·η_sel·s_k/√2. `_basis_block` takes the link
+   outputs' scales from the source map (`output_scale`, X then ΔT, the order of the basis record's `c`); unit test
+   `test_m05_basis.py::test_r432_...` on REAL's committed numbers (0.038752, 0.029926). Re-takes at cdacc32, clean
+   tree, `.venv-nlp`, `OMP_NUM_THREADS=1`, written beside the records (`retake.py` driver: `run_case`/`run_real` then
+   `write_files` to a scratch stem, so `provenance.tree_clean` is true) and copied over them:
+   - LOOP-R noise_ratio (0.14106, 1.9002e-4) → (6.0878e-6, 2.0995e-6) (s = 1, 256);
+   - TR-E2-FD (0.065258, 0.028079) → (7.0411e-7, 1.5512e-4) (s = 0.25, 128);
+   - REAL (3591.63, 5.4172) → (0.038752, 0.029926) (s = 0.25, 128), as §21.3 predicts. REAL wall 1454 s, 48 cold.
+   new/old = η·s_k/√2 exactly in each (η = 2⁻¹⁴).
+   **Proof** (`scripts/m05_retake_diff.py`, committed side from `git archive f0693d8`): `RETAKE-DIFF PASS`,
+   0 differences for all three. "Bitwise with `noise_ratio` and `provenance` masked" cannot hold literally for a
+   fresh run, because the files carry wall-clock timings; the diff therefore also masks exactly the timings and
+   the digests over them, and nothing else:
+   - record: G10's comparator (`replay_differences`, every other leaf by `float.hex`); raw differing leaves
+     LOOP-R 3 solve `wall_s` + 6 coupling digests, TR-E2-FD 4 + 8, REAL 4 + 8 + `artifacts.experiment_store`;
+   - coupling records: content equal after M02's `excluded` attempt timings and the reactor's
+     `execution.diagnostics.**.wall_s` (REAL: 84 such leaves, nothing else);
+   - REAL's experiments archive: 144 files, every request/result file bytewise equal, 48 attempt files differing
+     only in `execution.timing.{wall_s,startup_s,solve_s}` and `execution.diagnostics.**.wall_s` (392 leaves),
+     hence the new `artifacts.experiment_store` digest;
+   - ledger, store index and environment sidecars bytewise equal (unchanged in git).
+   Choice (for the design lane, reversible by re-running the diff with a narrower mask): the timing mask above is
+   the only extension of §21.3's mask; the reactor's diagnostic `wall_s` are timings that M02's `excluded` list does
+   not name (a store-served replay returns them unchanged, so G10's REAL replay never meets them).
+   After the re-takes: `scripts/m05_wo9_real.py --replay` on the new REAL record `REPLAY PASS REAL differences=0`;
+   pymrm `test_m05_parent.py` 1 passed (126 s); gate 9287 passed, 31 skipped, 1 xfailed; nlp 181 passed, 1 skipped.
