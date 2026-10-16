@@ -886,3 +886,6 @@ Grep, don't read whole. Newest at the bottom.
   M03 inventory): §19 items done. G10 PASS; G5 FAIL (F-15, θ min 1.03e-5 vs 1e-5, θ_recheck 4.01e-4); G6 FAIL (TRF_CONVERGED clause);
   G9 FAIL (1.067e-6 K vs 1e-6 K); G7 partial; G8 not run (S52). No limit raised. Open S47, S49, S50, S51, S52. Diagnosis engineer
   launched (doc only) before an architect ruling.
+- **M05 F-15 diagnosis** (2026-10-16, `opus-engineer`, `04454d7`, doc only): mechanism = linear model drops the truth's curvature,
+  start at box corner, full-radius steps θ = C·Δ² (C 0.27→0.775), radius band 1e-4 vs termination 1e-5; refuted criticality /
+  scaling / floor / FD noise. 150-iteration scratch: θ 9.72e-6 at k = 35. `architect` ruling launched (R-400…R-409).
