@@ -6701,3 +6701,131 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 **Rejected alternatives, and why.** Keeping the default: a forgotten argument fits silently in v1's z.
 
 **Watch for.** —
+
+## R-420 — A missing noise floor is a value not determined: the pair is FE_NOT_DETERMINED, TC-1 is TC1_NOT_APPLICABLE (B never replaced), and no floor is read as 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.1 (J3); §4.4.3, §4.4.5 |
+| Evidence | GC-TC1-NULL: tc1-08 gives NOT_APPLICABLE/663 vs CONTRADICTED (e_B = 0) and HOLDS/653 (B skipped); tc1-09 gives NOT_APPLICABLE vs HOLDS (e* = 0) |
+| Affected packages | M07 |
+
+**Decision.** Interim confirmed. TC-1 is evaluated on R3's candidate values, not on P13's nulled `t_after`. `tc1.missing` names what is absent. M05's `noise_floor` returning None gives a null e_k.
+
+**Rejected alternatives, and why.** A separate label `TC1_NOT_DETERMINED`: `missing` already says what is absent, and a null floor fails W25 (e) whatever the label. Reading null as 0, or skipping B for a lesser point with a floor: each invents an answer.
+
+**Watch for.** `m05_parent_extras`' `e = 0.0 if floor is None` (defect, unreachable today).
+
+## R-421 — The budget's "would exceed" uses the largest per-evaluation cost seen in the rung (R1's cold prior: G12's 4 per loop); grid order; `check` re-derives the stop
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.2 (J4); §4.5 |
+| Evidence | Build log J4; G12 `experiments_per_loop` = 4 |
+| Affected packages | M07 |
+
+**Decision.** Interim confirmed. A point's `wall_s` includes its parent extras. `check` re-derives the NOT_EVALUATED(budget) points, the spent totals and the outcome from the recorded costs.
+
+**Rejected alternatives, and why.** A fixed worst-case estimate (G12's 361.5 s), which ties the stop to another machine's clock. Stopping only once over the cap, which permits an overrun by design.
+
+**Watch for.** Wall summation order (left to right, binary64) must match between the journey and `check`.
+
+## R-422 — `UNSUPPORTED(surrogate_loop_unavailable)` is registered: R2 under a PROMOTABLE verdict with no surrogate loop is a written, checkable refusal; W25 (a) is then not met (FAIL, not BLOCKED)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.3 (J5); §4.6; ADR 0041 D6 (Amendment 1) |
+| Evidence | R-364: today's verdict is NOT_PROMOTABLE, so the path is dormant |
+| Affected packages | M07 |
+
+**Decision.** Third unsupported reason; exit 3; `check` accepts the record; the journey's decision is unaffected.
+
+**Rejected alternatives, and why.** An error with no record (silence). BLOCKED (reserved for evidence outside both lanes).
+
+**Watch for.** —
+
+## R-423 — Only out-of-process executions are cold reactor experiments; each grid point records `experiments` {cold, store_hit, in_process}, and Σ cold = the rung's spent cold
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.4 (J6); §6.1 |
+| Evidence | R0 live: 2 stand-in executions per point recorded as `cold` against a budget of 0 under the interim |
+| Affected packages | M07 |
+
+**Decision.** Charging rule confirmed; record replaced. Identities: cold + in_process = coupling executions (M05's `coupling_counts` split by unit kind); Σ cold = `budget.spent.cold`.
+
+**Rejected alternatives, and why.** Charging every execution and raising R0's budget: bills the synthetic rung and blurs W25 (g)'s reactor count.
+
+**Watch for.** —
+
+## R-424 — §6.1's state mapping confirmed; `extrapolated` counts the last coupling iteration only; A08 gains closed-form checks of X_pass, flows and duties
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.5 (J7); §6.1; A08; GC-R0-4 |
+| Evidence | R0 live (wp/M07 94819ea): X_pass − 0.25 = −2⁻⁵⁴; flow spreads 0.0; Q steps ≥ 640.4/616.5 W; iteration 0 extrapolated, final within domain |
+| Affected packages | M07 |
+
+**Decision.** |X_pass − 0.25| ≤ 2.5e-13 (4.5e3 above the floor); n_recycle, n_purge_NH3 spread ≤ 1e-12 rel; Q_preheater > 0 increasing, Q_flash < 0 decreasing in T.
+
+**Rejected alternatives, and why.** Counting all iterations: it reports the initial-guess excursion as an extrapolated result of a certified state that rests on none.
+
+**Watch for.** AQ1: confirm that the last iteration is the accepted one.
+
+## R-425 — R3's input is named by content (schema, study id, REAL budget, T* revision = c1-loop-real.json edited at T*, tracked), not by path; carry anchor; accounting copied, never defaulted
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.6 (J8); §4.6; A21; FD-3 |
+| Evidence | M05 LOOP-R record (wp/M05 5961915): no `budgets.wall_s`, no commit, `cold_used` = 63 = 40 + 23 |
+| Affected packages | M07 |
+
+**Decision.** A failed condition gives UNSUPPORTED(m05_study_unavailable) plus a limitation. Anchor: the record's commit, else M05's tested manifest listing its sha256, else re-run. Cold = `cold_used`; wall = M05's recorded wall or the journey's measurement, else null.
+
+**Rejected alternatives, and why.** Auto-discovery under `benchmarks/m05/` (ambiguous). Reconstructing wall from per-solve walls (undercounts).
+
+**Watch for.** The interim's two silent defaults (wall 0.0 from a missing key; `carried_from` = `"rerun"` for every carried record). AQ2, AQ3.
+
+## R-426 — P3 values at R3's decision come from a journey re-solve of T* with M05's `C1Parent.solve`, required to reproduce J* bitwise; every decision's constraints carry `margin`; OMP_NUM_THREADS=1 recorded and required
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.7 (J9); W25 (c); A23, A24 |
+| Evidence | M05's P3 record holds only {n, violated, worst_scaled_violation}; M05 runs need one OpenMP thread (digits change with the thread count) |
+| Affected packages | M07 |
+
+**Decision.** `t_star_resolve` cost is counted in the journey totals and not gated. A J* mismatch nulls the values with a limitation. `replay` refuses on a thread-setting mismatch.
+
+**Rejected alternatives, and why.** Changing M05's record schema (not M07's authority). Accepting M05's summary for R3 only (W25 (c) asks for values and margins).
+
+**Watch for.** —
+
+## R-427 — The journey's grid-only decision is R1's rung decision; the fallback reason is TC-1's outcome when R3's status is PARENT_LOCAL_EVIDENCE
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.8 (J11); §4.4.7 |
+| Evidence | An INDIFFERENT R1 with exact ties: the literal rule picks 653.15 K (bound-active) while R1 decided 673.15 K |
+| Affected packages | M07 |
+
+**Decision.** Differs from "best verified point" only when R1 is INDIFFERENT. INSUFFICIENT_EVIDENCE iff R1's decision is null.
+
+**Rejected alternatives, and why.** The literal "best verified grid point": it reports a bound-active decision from differences the parent cannot resolve.
+
+**Watch for.** —

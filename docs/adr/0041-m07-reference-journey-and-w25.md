@@ -5,7 +5,7 @@ review of the journey's work orders (WO-1, WO-4) is recorded.
 **Author:** design lane (`specifier`), M07; brief `docs/briefs/M07-specification.md` with the 2026-10-16 updates.
 **Normative text:** `docs/derivations/M07-spec.md` §3–§6, §11; reference `benchmarks/m07/registration.json`
 (`docs/derivations/scripts/m07_reference.py`, `--check`).
-**Register:** R-331…R-337.
+**Register:** R-331…R-337; Amendment 1: R-420…R-427.
 
 ## Context
 
@@ -30,6 +30,8 @@ parent without it (M05 §7.6). No equilibrium reactor exists in the repository. 
 - **D5 — No new job operation**; one script `scripts/m07_journey.py`. Reactor-dependent evidence carries between
   commits only by byte-identity of the registered determining files, else it is re-run.
 - **D6 — Refusal is a result**: `UNSUPPORTED(reactor_environment_unavailable)`, `UNSUPPORTED(m05_study_unavailable)`.
+  *Amendment 1 (2026-10-16, spec §18 A1.3, R-422):* and `UNSUPPORTED(surrogate_loop_unavailable)`, R2's refusal under a
+  `PROMOTABLE` verdict without a surrogate-backed loop. W25 (a) is then not met.
 
 ## Alternatives rejected
 
