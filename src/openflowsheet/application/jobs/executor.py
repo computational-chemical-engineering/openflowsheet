@@ -23,8 +23,11 @@ supervisor, the owner, writes the one `ended` event after it has joined the work
 worker's non-empty `worker.log` as the last output first (§5.4, §6.2). It polls its workers every
 0.1 s and acts once cancellation has been requested (by this instance, or recorded in the store by
 another), the wall-time deadline has passed, or a shutdown has begun (§8.2): it signals the cancel
-event, waits `executor.grace_s`, then `Process.kill()`s the worker, and the job ends `cancelled`
-or `timed_out` with `interruption = "forced"` — unless the worker wrote its own result first. A
+event, waits `executor.grace_s`, then kills the worker, and the job ends `cancelled` or
+`timed_out` with `interruption = "forced"` — unless the worker wrote its own result first. The kill
+reaches the worker's **process group** (`_kill_tree`; ADR 0033 D2 widens ADR 0020 D3's "kill"): the
+worker makes itself a group leader as its first statement, so a child it runs (an external model's
+attempt, M02) dies with it rather than outliving it. A
 worker that exits with no `worker_result` ends the job `failed(worker_lost)` with
 `detail.exitcode`. The Q27 hazard is excluded here by construction, not locked around (§9.4): two
 verifications never share an interpreter.
@@ -40,6 +43,8 @@ from __future__ import annotations
 
 import logging
 import multiprocessing
+import os
+import signal
 import sqlite3
 import threading
 import time
@@ -87,6 +92,21 @@ SUPERVISOR_POLL_S: Final[float] = 0.1
 #: given up. The jobs it could not end stay as recorded, and the next open ends them
 #: `failed(owner_lost)`. Before `shutdown` a store error is retried without bound (T07 review S1).
 SHUTDOWN_STORE_ATTEMPTS: Final[int] = 6
+
+
+def _kill_tree(process: BaseProcess) -> None:
+    """ADR 0033 D2 (amending ADR 0020 D3): SIGKILL the worker's process group — the worker and
+    every child it spawned — falling back to `Process.kill()` where there are no process groups,
+    or no group led by the worker (it died before `setpgid`, or is gone). The worker's pid cannot
+    be reused while it is unreaped, so the group id names the worker's group only."""
+    pid = process.pid
+    if pid is not None and hasattr(os, "killpg") and process.is_alive():
+        try:
+            os.killpg(pid, signal.SIGKILL)
+            return
+        except (ProcessLookupError, PermissionError):
+            pass
+    process.kill()
 
 
 def _shutdown_backoff_s(failures: int) -> float:
@@ -357,7 +377,7 @@ class ProcessExecutor:
                     self._queue.clear()
                     for slot in abandoned:  # no worker outlives the shutdown
                         if slot.launched and slot.process.is_alive():
-                            slot.process.kill()
+                            _kill_tree(slot.process)
                     return
                 admitted: list[str] = []
                 while self._queue and len(self._slots) + len(admitted) < self.settings.max_workers:
@@ -509,7 +529,7 @@ class ProcessExecutor:
                 and not slot.killed
                 and now >= slot.stopping_since + self.settings.grace_s
             ):
-                slot.process.kill()
+                _kill_tree(slot.process)
                 slot.killed = True
         return ended
 

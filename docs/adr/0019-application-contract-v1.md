@@ -214,3 +214,18 @@ Amendment 1, a design-lane ADR is what the change rule of `docs/interfaces-froze
 with `elements`, is `171dd768…` without it (`tests/test_t08_w2_surface_digest.py`, R-192). Fixtures: one valid per new or changed `$def` from a real
   response, one invalid each (`scripts/t07_schema_fixtures.py`). `docs/interfaces-frozen.md` §1–§2 list the
   method, the result name and the `$defs`.
+
+## Amendment 4 (2026-10-09, M02) — pointer to ADRs 0033, 0034 and 0035
+
+Amendment 4 is decided in M02's three ADRs; this paragraph points at its parts (M02 design note §9, WO-13).
+
+- **Part 1 — ADR 0033 D9.** `job_request.operation` gains `experiment` (`$defs/experiment_body`), right `execute`; the
+  job's outputs gain the `artifact_ref` kinds `experiment_request`, `experiment_result` and `experiment_attempt`;
+  `get_job_result` widens by a `oneOf`. Idempotency is D3's.
+- **Part 2 — ADR 0034 D7.** `run-result.solve_path` gains `revision_coupled`; `solve-event.outcome` gains
+  `COUPLING_NOT_CONVERGED`; `job` `artifact_ref.kind` gains `external_coupling`.
+- **Part 3 — ADR 0035 D4.** The `api-error` code `model_replacement_incompatible`; the
+  `transaction-result.invalidations` description, generalized to every job operation in `EVIDENCE_OPERATIONS`.
+- **Not unchanged:** the served MCP tool list, widened additively (R-234); with M02's additions removed it is
+  Amendment 3's `6c4375b4…` (`tests/test_t08_w2_surface_digest.py`). The measured served digest is in M02's
+  evidence manifest.

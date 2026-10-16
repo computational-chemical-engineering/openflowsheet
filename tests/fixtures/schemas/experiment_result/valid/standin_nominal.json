@@ -1,0 +1,64 @@
+{
+  "schema_version": "experiment-result-v1",
+  "experiment_key": "7b26ebb95d60db3459d133c67d81432a3522ba4c935c28e27fb0f5d53b027300",
+  "request_sha256": "233724df73023d8c077bf430a245e572728810a44a78c6b0c6994c2672d2a936",
+  "outcome_class": "deterministic",
+  "envelope": {
+    "status": "ok",
+    "code": "ok",
+    "message": "",
+    "outlet": {
+      "n": [
+        3.738754129697413,
+        1.2462513765658045,
+        1.0452430900229328,
+        0.12251933655946465,
+        0.16335911541261952
+      ],
+      "T": 673.15,
+      "P": 10000000.0
+    },
+    "xi": 0.4154171255219348,
+    "Q": -43882.11596217909,
+    "defect": [
+      -4.440892098500626e-16,
+      0.0,
+      -2.220446049250313e-16,
+      0.0,
+      0.0
+    ],
+    "defect_rel": 6.213678670590082e-17,
+    "pressure_drop_relative": 0.0,
+    "Q_coolant": null,
+    "inlet_face_heat_loss": null,
+    "discretization_estimate": null,
+    "domain_status": "within_data_domain",
+    "extrapolated_bounds": [],
+    "identity": {
+      "model_id": "c1.reactor_standin",
+      "synthetic": true,
+      "reactor_commit": null,
+      "pymrm_version": null,
+      "overlay_sha256": null,
+      "configuration_sha256": "da42631ecb5f17fb1f693e77168a365857d236b4ffbe8ec3215fb7db3e14d8d0",
+      "profile": null
+    }
+  },
+  "accuracy": {
+    "precision_floor_rel": 0.0,
+    "measured_path_independence_rel": 0.0,
+    "discretization_estimate": null
+  },
+  "produced_by": {
+    "job_id": null,
+    "attempt": 1
+  },
+  "provenance": {
+    "variant_id": "standin-x025-v1",
+    "variant_sha256": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1",
+    "reactor": null,
+    "fingerprint_sha256": "f2fba3b89d6d4abae5222f3d60cb286ed68efaaf3e0e2a7bfdb6bcb485b74e45"
+  },
+  "provider_calls": 3,
+  "determinism_findings": []
+}

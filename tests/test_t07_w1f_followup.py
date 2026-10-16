@@ -92,7 +92,13 @@ def _run_result(**overrides: Any) -> RunResult:
 
 
 def test_run_result_solve_path_is_either_route() -> None:
-    assert _run_result_properties()["solve_path"]["enum"] == ["revision_eo", "legacy_eo"]
+    # M02 (ADR 0034 D2) adds `revision_coupled` to the schema; its producer and `SolvePath` are
+    # WO-10's, so the two Python routes below are still every route a run takes today.
+    assert _run_result_properties()["solve_path"]["enum"] == [
+        "revision_eo",
+        "legacy_eo",
+        "revision_coupled",
+    ]
     assert list(get_args(SolvePath)) == list(get_args(policies.SolvePath))
     for route in ("revision_eo", "legacy_eo"):
         result = _run_result(solve_path=route)

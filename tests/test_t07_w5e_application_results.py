@@ -33,6 +33,8 @@ from urllib.parse import urldefrag, urljoin
 import pytest
 from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
+from m02_schema_support import without_m02
+from m04_schema_support import without_m04
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.application.types import SCHEMA_BASE, schema_errors
@@ -155,6 +157,44 @@ SNAPSHOT_AMENDMENT_3: dict[str, str | None] = {
 }
 
 
+#: M02 (ADR 0033-0035, design note §3.6): the operations whose resolved response embeds a schema
+#: M02 widened additively (`job`, `run-result`, `solve-event`, `api-error`, `transaction-result`).
+#: Re-taken; with M02's additions removed every one is its earlier snapshot again (G1 (c),
+#: `tests/test_m02_schemas.py`). The `job.schema.json`-embedding ones re-taken again at WO-6,
+#: where `job_result`'s `experiment` member admits null for a job ended before any attempt.
+SNAPSHOT_M02: dict[str, str | None] = {
+    "commit_change": "c44597cdfdff995b96c491f8b4de0e71d17c79d442519e4b8e5cbeee81a28207",
+    "preview_change": "c44597cdfdff995b96c491f8b4de0e71d17c79d442519e4b8e5cbeee81a28207",
+    "solve": "892799e0e9385badcd353ae38e1ec483b6510abb04983647a922d87f6a929505",
+    "submit_job": "e9abdbeb0d5cdfcabb497a0961bf1472852954c148f520f51ec93d9630a704da",
+    "get_job": "1d3c46e2e941994d4f946f1b8de9cd31a256b0d9306c18d298a2af70f25325c4",
+    "cancel_job": "1d3c46e2e941994d4f946f1b8de9cd31a256b0d9306c18d298a2af70f25325c4",
+    "list_jobs": "0ae6014c2dba7c1801b3ae33b8ce87125ecaa0005e1671214537c1dbe60d1a81",
+    "list_job_events": "9e7f7152392798eec6d79c2be32ca7c90287dcce754cfb4c9d2cb5c3dab561fa",
+    "wait_job": "1b119ce8f27d361d598aef22268d9c5046daa73814670687909c6f4719142ccb",
+    "get_job_result": "e76fcd6c22749c16c55c2246e2542ede607bca861661c7be2ebc7d10425a07f4",
+}
+
+
+#: M04 (ADR 0037 D6, ADR 0019 Amendment 5): the operations whose resolved response embeds
+#: `job.schema.json`, which gains the `surrogate_study` operation, its body branch, two artifact
+#: kinds and `job_result`'s `surrogate_study` member. Re-taken; with M04's additions removed
+#: (`tests/m04_schema_support.py`) every one is its `SNAPSHOT_M02` value again
+#: (`tests/test_m04_study_job.py`). Re-taken at M04 Amendment 2 (build log E26): the body's
+#: `plan_id` pattern admits `b2-it<i>`; `solve`, `list_job_events` and `get_job_result` do not
+#: embed the body and stand.
+SNAPSHOT_M04: dict[str, str | None] = {
+    "solve": "5b57cd405a07bb31faa5dbd975099aaef6acff63369a80679b2fc38d18be245a",
+    "submit_job": "122685ba5d8a10abda155f2c780ca4cbd153f30a020ccff24bec8ef3a7df49f2",
+    "get_job": "495b5e39670d2e50f1afcc65f74d62d72df39cf3684caa01ba398cc074a50688",
+    "cancel_job": "495b5e39670d2e50f1afcc65f74d62d72df39cf3684caa01ba398cc074a50688",
+    "list_jobs": "073d671f237aa768695a443de80abd50dfafb6ec180896a0db0ee2ddb92f1aea",
+    "list_job_events": "fea66b274012462bf3b573a88ade48356e41c93cbbea288f480db93e5bdbbcbf",
+    "wait_job": "5fc1ef1fa2774bece09c8d401cbb986b008a33b46a628964edb83c405f2dd030",
+    "get_job_result": "a4ae235fb61b8566dbc660f1f864a7c7f8ab122e4000fee0825b5f414bfa988a",
+}
+
+
 def _without_specifications(schema: Any) -> Any:
     """`schema` with Amendment 2's member taken out of every pin and option: its property and its
     entry in `required`."""
@@ -173,7 +213,13 @@ def _without_specifications(schema: Any) -> Any:
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
     assert len(measured) == 21
-    assert measured == {**SNAPSHOT_AT_B13D556, **SNAPSHOT_AMENDMENT_2, **SNAPSHOT_AMENDMENT_3}
+    assert measured == {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+    }
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
 
@@ -185,10 +231,12 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     resolved = resolved_response(OPERATIONS["list_models"])
     assert _digest(resolved) != SNAPSHOT_AT_B13D556["list_models"]
     assert _digest(_without_specifications(resolved)) == SNAPSHOT_AT_B13D556["list_models"]
+    # M02's additive members are taken out first (G1 (c)); they are M02's, not Amendment 2's.
     moved = [
         name
         for name in SNAPSHOT_AT_B13D556
-        if _digest(resolved_response(OPERATIONS[name])) != SNAPSHOT_AT_B13D556[name]
+        if _digest(without_m02(without_m04(resolved_response(OPERATIONS[name]))))
+        != SNAPSHOT_AT_B13D556[name]
     ]
     assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == ["list_audit"]
     # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.
@@ -221,7 +269,7 @@ def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:
         with LocalApplication.create(Path(scratch) / "p", project_id="g-r6-6") as application:
             view = application.list_models().as_document()
     assert schema_errors(f"{SCHEMA}#/$defs/model_registry_view", view) == []
-    checked = 0
+    checked = {"syn001.": 0, "c1.": 0}
     for model in view["models"]:
         signature = MODEL_SIGNATURES[model["model_id"]]
         options = [o for c in signature.choices for o in c.options]
@@ -230,8 +278,9 @@ def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:
             assert entry["name"] == pin.name
             expected = [e.as_document() for e in pin_encodings(signature, pin)]
             assert entry["specifications"] == expected
-            checked += 1
-    assert checked == 16
+            checked[model["model_id"].split(".", 1)[0] + "."] += 1
+    # SYN-001's 16 as before; M02's join (R-280) adds the C1 feed's 3, heater's 1, flash's 4.
+    assert checked == {"syn001.": 16, "c1.": 8}
 
 
 def test_the_schema_is_draft_2020_12_with_an_id_and_a_description() -> None:

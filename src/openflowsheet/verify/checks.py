@@ -118,9 +118,13 @@ def qualification(provider: PropertyProvider) -> str:
     )
 
 
-def stream_of(state: Mapping[str, float], stream: str) -> StreamState:
+def stream_of(
+    state: Mapping[str, float], stream: str, components: Sequence[str] = COMPONENTS
+) -> StreamState:
+    """`stream`'s `(n, T, P)` read from `state`, its flows in `components` order — SYN-001's by
+    default, a revision's view's on the revision path (M02 design note §14.2 B15 item 1)."""
     return StreamState(
-        n=tuple(state[flow_id(stream, component)] for component in COMPONENTS),
+        n=tuple(state[flow_id(stream, component)] for component in components),
         temperature=state[temperature_id(stream)],
         pressure=state[pressure_id(stream)],
     )
@@ -561,12 +565,15 @@ def bounds_checks(
     provider: PropertyProvider,
     state: Mapping[str, float],
     streams: Sequence[str] = STREAMS,
+    *,
+    components: Sequence[str] = COMPONENTS,
 ) -> list[CheckResult]:
     """§4.6: nonnegative flows exactly, and a flowing stream inside the declared domain.
 
     A dormant stream's `T` and `P` are labels, not a state (ADR 0001 D3.1), so they are not
     checked; the check is recorded `not_applicable` rather than skipped. `streams` is the
-    flowsheet's allocation order: SYN-001's by default, a revision's for `verify_revision`.
+    flowsheet's allocation order: SYN-001's by default, a revision's for `verify_revision`, and
+    `components` the order its flows are read in (M02 design note §14.2 B15 item 1).
     """
     domain = provider.describe().domain
     low_t, high_t = domain["T"]
@@ -590,7 +597,7 @@ def bounds_checks(
             )
 
     for stream in streams:
-        carried = stream_of(state, stream)
+        carried = stream_of(state, stream, components)
         if carried.is_dormant:
             checks.append(
                 dormant(
@@ -847,7 +854,9 @@ FD_RELATIVE_STEP: Final = 1e-5
 DERIVATIVE_TOLERANCE: Final = 1e-7
 
 
-def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckResult]:
+def derivative_witness(
+    tear: object, state: Mapping[str, float], *, unstenciled: frozenset[str] = frozenset()
+) -> list[CheckResult]:
     """§4.8: central differences of the **compiled 49-row function** against its AD Jacobian.
 
     Of the compiled function, not of the traversal: plan §4.2 demotes a finite-difference tear
@@ -862,6 +871,15 @@ def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckRe
     evaluate — a pressure within one step of the provider's domain edge — makes both witness
     checks `unsupported`, naming the column and the status, and never raises (T06 spec §8.2;
     ADR 0014 D5).
+
+    `unstenciled` (M02 design note §14.2 B17 *Consequence*, §14.3 C2; R-281) names columns the
+    witness does not difference: a `pr-c1-v1` revision's stream component-flow columns
+    (`<S>.n.<c>`) that are exactly `0.0` at `state`, where no two-sided derivative exists (the
+    backward point is a negative flow, the forward one light gas in the pure-NH3 liquid or B17's
+    dormancy convention). Every other column, totals and duties among them, keeps the stencil.
+    When a column is skipped, both checks say how many in their `independence_qualification`;
+    the certificate lists them in a `derivative_witness_partial` limitation. Empty for every
+    other revision, which runs the stencil as before and writes neither.
     """
     from openflowsheet.compile.reference import state_vector
 
@@ -882,6 +900,8 @@ def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckRe
 
     worst_on, worst_off = 0.0, 0.0
     for column, name in enumerate(jacobian.col_ids):
+        if name in unstenciled:
+            continue
         step = FD_RELATIVE_STEP * scaling.column[name]
         forward, backward = base.copy(), base.copy()
         forward[column] += step
@@ -910,6 +930,13 @@ def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckRe
                 scaled_exact = entry * scaling.column[name] / scaling.row[row_id]
                 worst_on = max(worst_on, abs(scaled_exact - scaled))
 
+    skipped = witness_skipped_columns(jacobian.col_ids, unstenciled)
+    note = (
+        f"not differenced: {len(skipped)} exactly-zero pr-c1-v1 stream-flow columns "
+        "(design note §14.3 C2)"
+        if skipped
+        else None
+    )
     return [
         evaluated(
             id="derivative_witness.on_pattern",
@@ -918,6 +945,7 @@ def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckRe
             value=worst_on,
             tolerance=DERIVATIVE_TOLERANCE,
             reference=1.0,
+            independence_qualification=note,
         ),
         evaluated(
             id="derivative_witness.off_pattern",
@@ -926,5 +954,12 @@ def derivative_witness(tear: object, state: Mapping[str, float]) -> list[CheckRe
             value=worst_off,
             tolerance=DERIVATIVE_TOLERANCE,
             reference=1.0,
+            independence_qualification=note,
         ),
     ]
+
+
+def witness_skipped_columns(columns: Sequence[str], unstenciled: frozenset[str]) -> list[str]:
+    """The columns of `columns` the witness does not difference, sorted (design note §14.3 C2):
+    what the checks' qualification counts and the `derivative_witness_partial` limitation lists."""
+    return sorted(name for name in columns if name in unstenciled)

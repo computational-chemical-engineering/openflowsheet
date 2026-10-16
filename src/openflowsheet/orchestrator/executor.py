@@ -57,6 +57,7 @@ from openflowsheet.orchestrator.region import (
     LiftedSplit,
     RecoveryStart,
     RegionResult,
+    VapourOnlyForm,
     ZeroFlowForm,
     solve_region,
     syn001_lifted_splits,
@@ -66,6 +67,7 @@ from openflowsheet.orchestrator.splits import (
     dormancy_forms,
     lifted_splits,
     split_temperatures,
+    vapour_only_forms,
     zero_flow_forms,
 )
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
@@ -411,6 +413,15 @@ def _zero_flow_forms(flowsheet: Flowsheet) -> dict[str, ZeroFlowForm]:
     return zero_flow_forms(
         instances, _splits(flowsheet), _closure_types(flowsheet), flowsheet.components
     )
+
+
+def _vapour_only_forms(flowsheet: Flowsheet) -> dict[str, VapourOnlyForm]:
+    """M02 design note §14.2 B13, as `_zero_flow_forms`: each split's vapour-only form, from the
+    registry; SYN-001's own flowsheet has none (its rules declare no vapour-only component)."""
+    if isinstance(flowsheet, Syn001Flowsheet):
+        return {}
+    instances = revision.instances_of(flowsheet)
+    return vapour_only_forms(instances, _splits(flowsheet), flowsheet.components)
 
 
 def _split_temperatures(flowsheet: Flowsheet) -> dict[str, tuple[str, ...]]:
@@ -1071,6 +1082,8 @@ def _region(
             split_temperatures=_split_temperatures(flowsheet),
             item0_opening_source=item0_opening_source,
             warm_start=warm_start,
+            # M02 design note §14.2 B13: read in every TWO_PHASE attempt; none for SYN-001.
+            vapour_only_forms=_vapour_only_forms(flowsheet),
         )
     except BudgetExhaustedError:
         result = RegionResult(

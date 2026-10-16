@@ -6,6 +6,7 @@ structure only; none of these modules has behavior yet.
 
 from __future__ import annotations
 
+import ast
 import importlib
 import tomllib
 from pathlib import Path
@@ -27,6 +28,9 @@ LAYERS = [
     # K05's runs, manifests and replay. Above both, because a run is a solve *and* its
     # verification and must not be a subpackage of either.
     "run",
+    # M02's external-model adapters and experiment records (blueprint §15): below `application`,
+    # which runs them, and above `models`, whose boundary they evaluate.
+    "adapters",
     "application",
     # M03's studies (blueprint §15's `src/studies/`): sensitivities, sweeps and estimation over a
     # compiled problem's pinned inputs. Above the verifier, because a sensitivity is issued only at
@@ -70,3 +74,57 @@ def test_no_unexpected_layers() -> None:
         if entry.is_dir() and (entry / "__init__.py").is_file()
     )
     assert present == sorted(LAYERS)
+
+
+def _imported_modules(source: str, package: str) -> set[str]:
+    """Every module `source` (a module of `package`) imports, anywhere — module level, function
+    bodies (lazy imports) and `TYPE_CHECKING` blocks alike — with relative imports resolved."""
+    found: set[str] = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Import):
+            found.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                parts = package.split(".")
+                stem = ".".join(parts[: len(parts) - node.level + 1])
+                base = f"{stem}.{node.module}" if node.module else stem
+            else:
+                base = node.module or ""
+            found.add(base)
+            found.update(f"{base}.{alias.name}" for alias in node.names)
+    return found
+
+
+def _upward(names: set[str]) -> list[str]:
+    application = "openflowsheet.application"
+    return sorted(n for n in names if n == application or n.startswith(f"{application}."))
+
+
+def test_adapters_never_import_application() -> None:
+    """R-237 (M02 design note §14 B4): `adapters` sits below `application`; no module of it
+    imports `openflowsheet.application`, lazily or not."""
+    root = package_dir()
+    offending = {}
+    for path in sorted((root / "adapters").rglob("*.py")):
+        package = ".".join(("openflowsheet", *path.relative_to(root).parts[:-1]))
+        found = _upward(_imported_modules(path.read_text(encoding="utf-8"), package))
+        if found:
+            offending[str(path.relative_to(root))] = found
+    assert offending == {}
+
+
+def test_the_import_scan_sees_lazy_relative_and_type_checking_imports() -> None:
+    source = (
+        "from typing import TYPE_CHECKING\n"
+        "if TYPE_CHECKING:\n    from openflowsheet.application.store import ProjectStore\n"
+        "def f():\n    from ...application import store\n    import openflowsheet.application.cli\n"
+        "from .. import variants\n"
+    )
+    found = _imported_modules(source, "openflowsheet.adapters.experiments")
+    assert _upward(found) == [
+        "openflowsheet.application",
+        "openflowsheet.application.cli",
+        "openflowsheet.application.store",
+        "openflowsheet.application.store.ProjectStore",
+    ]
+    assert "openflowsheet.adapters.variants" in found

@@ -28,14 +28,13 @@ axes:
     statement: >-
       SYN-001 for every revision, unit model and operation: ideal vapour, incompressible ideal
       liquid, VLE; reference convention SYN-001-ref-v1 (a formation datum, ADR 0011 D2); no
-      critical region, no extra phase. Since M01 the package also carries `pr-c1-v1`
-      (Peng–Robinson for the five C1 components, the light gases vapour-only, reference convention
-      PR-C1-ref-v1; ADR 0026), a provider no model of `MODEL_BUILDERS` binds yet (M02 adds its
-      units).
+      critical region, no extra phase. Since M02 the C1 models (`c1.*`) bind `pr-c1-v1` on their
+      own basis (R-288).
     providers: [pr-c1-v1, syn001]
-    #: Shipped providers no model binds: each has its own surface and a limitation row (M01
-    #: review F1); the components and domain axes below are the bound provider's.
-    unbound_providers:
+    #: Shipped providers that bind on a basis other than syn001's (R-288's `MODEL_BASES`); each
+    #: has its own components, domain and limitation row; the components and domain axes below
+    #: are syn001's.
+    other_basis_providers:
       - id: pr-c1-v1
         limitation: L42
         caveat: >-
@@ -79,9 +78,23 @@ axes:
   - id: unit_models
     title: Unit models
     statement: >-
-      The thirteen models of `MODEL_BUILDERS`, each with its registered limitations (L02, L27–L31,
-      L-CSTR-1..3). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
+      The twenty-two models of `MODEL_BUILDERS`, each with its registered limitations (L02,
+      L27–L31, L-CSTR-1..3; the surrogate's Q0–Q7): SYN-001's thirteen, on SYN-001's basis only,
+      and since M02's join (R-280) the eight C1 models and since W27 Amendment 3 (R-301) M04's
+      `c1.reactor_surrogate`, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
+      synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
+      manifest and in every result's identity (R-199, R-231). No promotable surrogate of the real
+      C1 reactor exists in v0.2 (L43, R-365). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
     members:
+      - c1.adiabatic_mixer
+      - c1.feed_source
+      - c1.product_sink
+      - c1.reactor
+      - c1.reactor_standin
+      - c1.reactor_surrogate
+      - c1.stream_splitter
+      - c1.tp_flash
+      - c1.tp_heater
       - syn001.adiabatic_mixer
       - syn001.component_separator
       - syn001.conversion_reactor
@@ -95,9 +108,13 @@ axes:
       - syn001.tp_flash
       - syn001.tp_heater
       - syn001.valve
+    #: Listed, and synthetic only (R-280 (c)): checked against the variant registry (T08.A20).
+    synthetic_members: [c1.reactor_standin]
     evidence:
       - tests/test_t05_w1b_revision.py::test_builders_hold_the_thirteen_models_of_the_table
       - tests/test_t08_kinetic_cstr.py::test_b10_the_model_is_the_thirteenth_builder_with_its_signature
+      - tests/test_m02_join.py::test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis
+      - tests/test_m02_wo9_reactor.py::test_g8e_the_stand_in_binds_and_says_synthetic_everywhere
       - check:T05.A17
       - check:T05.A18
       - check:T05.A19
@@ -260,6 +277,30 @@ axes:
       - check:K05.G05.two_platform_structural_equality
       - doc:.github/workflows/ci.yml
       - doc:requirements.lock
+
+  - id: external_execution
+    title: External model execution
+    statement: >-
+      Since M02, a variant-backed model (`c1.reactor`) runs out of process under the isolation
+      profile `external-subprocess-v1` (ADR 0033 D2): a separate interpreter and dependencies, a
+      separate address space, an environment allowlist, a private working directory, one thread, a
+      wall-clock limit, termination on cancel, forced kill and parent death, output from one
+      validated file, and verified code identity. It is **not a sandbox**: no filesystem
+      confinement, network isolation, memory or CPU quota, or syscall filtering; trust rests on
+      provenance. Linux is registered; macOS best effort; Windows is refused before spawn. The
+      reactor needs the separately built, pinned reactor environment, and a run that used it is
+      R3 (ADR 0034 D6).
+    evidence:
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/design/M02-pymrm-adapter.md §2.3
+      - tests/test_m02_kill_chain.py::test_refusals_before_any_spawn
+      - tests/test_m02_kill_chain.py::test_g3a_a_cooperative_cancel_reaps_the_child_and_propagates
+      - tests/test_m02_kill_chain.py::test_g3b_a_timeout_ends_the_attempt_timed_out
+      - tests/test_m02_kill_chain.py::test_g3c_a_child_ignoring_sigterm_is_killed_after_the_grace
+      - tests/test_m02_kill_chain.py::test_g3d_the_executors_forced_kill_takes_the_worker_and_its_child
+      - tests/test_m02_kill_chain.py::test_g3e_a_worker_killed_alone_leaves_its_child_to_its_lifeline
+      - tests/test_m02_kill_chain.py::test_g3f_the_self_deadline_exits_71
+      - tests/test_m02_kill_chain.py::test_g3g_an_abort_is_a_crash_with_its_signal
 
 unsupported:
   - id: U01
@@ -724,7 +765,7 @@ limitations:
   - id: L42
     text: >-
       `pr-c1-v1` (Peng–Robinson with the light gases vapour-only, ADR 0026), shipped since M01, is
-      bound by no model of `MODEL_BUILDERS` yet (M02 adds its units) and does not share the axes'
+      bound by the C1 models (`c1.*`) on their own basis (R-288) and does not share the axes'
       components and domain: it takes the five real components H2, N2, NH3, Ar, CH4 (the only
       liquid is pure NH3) over 200–1000 K and 10⁴–3 × 10⁷ Pa. It is validated for pure-component
       behaviour only, within M01 spec §11's bands (NH3 saturation pressure within 2 %, liquid NH3
@@ -739,6 +780,20 @@ limitations:
       - doc:docs/derivations/M01-spec.md §4.2
       - doc:docs/derivations/M01-spec.md §17
       - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
+  - id: L43
+    text: >-
+      No promotable surrogate of the real C1 reactor exists in v0.2. M04's one real iteration
+      (plan `b2-it1` on box v2, reactor variant v3) is NOT_PROMOTABLE (`band_not_finite`): 26 of
+      its 632 registered experiments, 5 of them among the 118 calibration draws, end in a
+      deterministic `reactor_not_accepted(certificate)`, more than the n − k = 4 refused draws the
+      conformal band tolerates, so q̂ is infinite. A revision binds `c1.reactor_surrogate` only
+      through a manifest that re-derives PROMOTABLE (R-360), and no further iteration on v3 is
+      admissible (R-364).
+    evidence:
+      - check:M04.A31
+      - tests/test_m04_wo9_synthetic_loop.py::test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected
+      - doc:benchmarks/m04/wo11-b2-it1-v3/record.json
+      - doc:docs/derivations/M04-spec.md §20
   - id: L-WEB-1
     text: >-
       The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits
@@ -774,6 +829,44 @@ limitations:
     evidence:
       - doc:docs/web-shell.md
       - doc:docs/design/M06-web-shell.md §12
+  # L44–L46, L48: R-343 (M02 close-out), M02's user-facing limitations as E. Ids and texts are
+  # V02 alpha release spec §19.1's (R-370), so that the two branches converge; L47 is the alpha's.
+  - id: L44
+    text: >-
+      The C1 reactor (`c1.reactor`) is measured on Linux x86-64 only, on one machine
+      (`ref-x86-64`). Its runs are opt-in: they need the separately built, pinned reactor
+      environment, which no CI job builds (M02 N2). They are reproducibility class R3 (ADR 0034
+      D6). A run on aarch64 is not measured, nor is the reproduction of a coupled run across
+      architectures. macOS is best effort, and Windows is refused before spawn (ADR 0033 D2).
+    evidence:
+      - doc:docs/design/M02-pymrm-adapter.md §2.4
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/adr/0034-external-models-in-a-flowsheet-solve.md §D6
+  - id: L45
+    text: >-
+      `external-subprocess-v1` runs the group's pinned code with the user's privileges and is not
+      a sandbox: there is no filesystem confinement, network isolation, memory or CPU quota, or
+      syscall filtering, and trust rests on provenance (ADR 0033 D2; M02 N1).
+    evidence:
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/design/M02-pymrm-adapter.md §12
+  - id: L46
+    text: >-
+      No reactor result has been compared with experimental data by this project. The group's
+      published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the
+      group's evidence. Every real-reactor number is the group's model at the pin, a regression,
+      and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13).
+    evidence:
+      - doc:docs/design/M02-pymrm-adapter.md §13
+  - id: L48
+    text: >-
+      The C1 loop's convergence is evidenced at the corners and the centre of its registered hard
+      domain only (M02 G11). The inert-fraction floor y_inert ≥ 0.035 sits just above a measured
+      stage-1 failure (0.03 at 653.15 K, 11 MPa, H₂/N₂ 2.5). A failure inside the domain ends in a
+      typed refusal and then `COUPLING_NOT_CONVERGED`, never in a false success.
+    evidence:
+      - check:M02.G11
+      - doc:docs/design/M02-pymrm-adapter.md §13
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -2717,3 +2810,143 @@ harvest:
   class: P
   to: []
   note: both CI runners not yet observed (review F1); passes when stated
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[0]
+  sha256: b24a4c8006bd8fb9d37d3eef51ef54911404e6305f33edfa78cbe142ddcba456
+  class: P
+  to: []
+  note: W21 outside the requirements pattern; its verdict is the verdict lane's
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[1]
+  sha256: dfd8ca7840569a3f97f92f6b90b8036a97ad876adb24439d3c0c24bfcd8bdb6b
+  class: E
+  to:
+  - L44
+  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run (R-343, class E)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[2]
+  sha256: 28b3606f19c531f178ddbaf9a38af13559d1cec586dbe744c30d50a4c4e670e7
+  class: E
+  to:
+  - L45
+  note: isolation profile not a sandbox (stated in the envelope's external_execution axis) (R-343, class E)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[3]
+  sha256: 5266e33ca1cc2b8fdffd15c7726369a905a1559b897d91f8cd3a8d6a166dba4c
+  class: E
+  to:
+  - L48
+  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10) (R-343, class E)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[4]
+  sha256: 314efcaecdb681cc1bcbc3b78d4908bb0057435bcf0815128701ea2edcdd7e9f
+  class: P
+  to: []
+  note: G8 (c) oracle shares pr_c1 (review F10)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[5]
+  sha256: d5b5618ed4f463dbd9b8b1b981b3de6414227e7be25eb69400f82d27a78699a7
+  class: E
+  to:
+  - L46
+  note: self-generated records are regression fixtures (review F10) (R-343, class E)
+- manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+  item: limitations[6]
+  sha256: 326d3a4be0be30a8f73651217aaf41b9b8cbcef12ab1517c1019ae7fdf100476
+  class: E
+  to:
+  - L44
+  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled (R-343, class E)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[0]
+  sha256: 6f416725a7145a7c3e25042a368e6520de953e97be9239c13c2da592b32122e9
+  class: P
+  to: []
+  note: follow-up outside the requirements pattern; extends M02 (D10)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[1]
+  sha256: ddd5c9b486877e4f10ecfb18fbe09e9ba45eb54afad0951bf805cb00e20ab448
+  class: P
+  to: []
+  note: hashes inherited from the M02 manifest (no new case or environment)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[2]
+  sha256: e567419bc3932c58bdec2ff051aa393cdde05835abed77954e2ef19836513e8f
+  class: P
+  to: []
+  note: gate summary-line hash; process note
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[3]
+  sha256: 50208afc494e1e9455f4178014cb0aeb34f1cd9079ef859fd1471a3d76925556
+  class: P
+  to: []
+  note: tested, not reviewed (merge verdict only)
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[0]
+  sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
+  class: E
+  to:
+  - L43
+  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L43 (R-365)
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[1]
+  sha256: f525c178eee67f1a6efb57626d60867f8010f9b98cff33025c681770dd74cf0e
+  class: B
+  to:
+  - B10
+  note: A33 not run (A31 not PROMOTABLE); Q-A2.1 open until A33's record (R-366)
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[2]
+  sha256: 63b9864a3b7f31c5f8af750bc8fd2a5da16e07ebb45f5db6365ee5656e891994
+  class: S
+  to:
+  - check:M04.A49
+  note: E33 closed by the one-thread fit (R-362, A49; build decision E36)
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: limitations[3]
+  sha256: b041476334873ca5259c340c13c3157eb2ae5dafafe840e1df4b708bef70bbdb
+  class: P
+  to: []
+  note: W23 verdict is the verdict lane's; self-generated records are regression fixtures
+- manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
+  item: checks[32]
+  check_id: M04.A33
+  sha256: 221a7aa9679876bfceaff6bb168190cf73836a8ac399d5a8b6ef6443ddad4361
+  class: B
+  to:
+  - B10
+  note: A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run (R-365)
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: limitations[0]
+  sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
+  class: E
+  to:
+  - L43
+  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L43 (R-365)
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: limitations[1]
+  sha256: f525c178eee67f1a6efb57626d60867f8010f9b98cff33025c681770dd74cf0e
+  class: B
+  to:
+  - B10
+  note: A33 not run (A31 not PROMOTABLE); Q-A2.1 open until A33's record (R-366)
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: limitations[2]
+  sha256: 83dd54d489d09d3abbe3e49b869135d622e9a92af446dd14ad52269a8cb6a212
+  class: P
+  to: []
+  note: real-reactor records opt-in, one machine; A32 bitwise per platform (R-362)
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: limitations[3]
+  sha256: b041476334873ca5259c340c13c3157eb2ae5dafafe840e1df4b708bef70bbdb
+  class: P
+  to: []
+  note: W23 verdict is the verdict lane's; self-generated records are regression fixtures
+- manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
+  item: checks[32]
+  check_id: M04.A33
+  sha256: 221a7aa9679876bfceaff6bb168190cf73836a8ac399d5a8b6ef6443ddad4361
+  class: B
+  to:
+  - B10
+  note: A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run (R-365)

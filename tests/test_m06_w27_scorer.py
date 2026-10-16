@@ -1,4 +1,4 @@
-"""M06 WO-16f: the W27 scorer — W27-A30…A34, A40 and the eighteen states W27-S01…S18 (G15).
+"""M06 WO-16f/h: the W27 scorer — W27-A30…A34, A40 and the twenty states W27-S01…S20 (G15).
 
 Registration §11 (per-run scoring), §12 (bounds) and §14.2–§14.3. The tolerance boundaries are the
 registered ones (A30–A32); the states are built by `benchmarks.m06.w27.stubs` — stub sessions
@@ -171,16 +171,39 @@ def test_limitation_items_are_judged_by_alias(hx_row: dict[str, Any]) -> None:
     assert unjudged["counts"]["unjudged"] == 1 and unjudged["counts"]["malformed"] == 1
 
 
+def test_r59_amended_a_matched_item_is_not_contradicted() -> None:
+    """GC-SCORE-2 (registration §21.6): on `ngcc_gas_turbine_subflowsheet`, `Mixer` names both the
+    available `fs.mx1`–`fs.mx3` and the reason for `fs.inject1`; it is matched and, as amended,
+    not contradicted. `fs.mx1` matches no reason and is still contradicted."""
+    coverage = json.loads(registration.COVERAGE_JSON.read_bytes())
+    row = scorer.coverage_row(coverage, stubs.AMBIGUOUS_ALIAS_CASE)
+    stored = json.loads(registration.DRY_JSON.read_bytes())["amendment_2"]["scorer_states_s19_s20"]
+    assert stored["case_id"] == stubs.AMBIGUOUS_ALIAS_CASE
+    for subject, expected in stored["items"].items():
+        judged = scorer.judge_limitation(
+            {"reasons": [{"kind": "unit_unavailable", "subject": subject}]}, row
+        )
+        (item,) = judged["items"]
+        assert (item["matched"], item["contradicted"]) == (
+            expected["matched"],
+            expected["contradicted"],
+        ), subject
+        assert not item["names_nothing"]
+    # The rule as built would have contradicted both: the alias is in the available pool.
+    available = {u for unit in row["units"] if unit["available"] for u in unit["names"]}
+    assert {"fs.mx1", "fs.mx2", "fs.mx3"} <= available
+
+
 # =================================================================================================
-# W27-S01…S18
+# W27-S01…S20
 # =================================================================================================
 
 CANDIDATE_STATES = ["W27-S11", "W27-S12", "W27-S13", "W27-S14", "W27-S15", "W27-S16"]
 HARNESS_STATES = [s.state_id for s in stubs.states() if s.state_id not in CANDIDATE_STATES]
 
 
-def test_the_eighteen_states_are_registered() -> None:
-    assert [s.state_id for s in stubs.states()] == [f"W27-S{k:02d}" for k in range(1, 19)]
+def test_the_twenty_states_are_registered() -> None:
+    assert [s.state_id for s in stubs.states()] == [f"W27-S{k:02d}" for k in range(1, 21)]
     outcomes = set(registration.load()["outcomes"])
     assert {s.expected for s in stubs.states()} <= outcomes
 

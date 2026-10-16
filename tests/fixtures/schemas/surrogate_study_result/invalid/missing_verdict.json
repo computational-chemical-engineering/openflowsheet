@@ -1,0 +1,15 @@
+{
+  "expect_error": "'verdict' is a required property",
+  "document": {
+    "cache_hits": 0,
+    "cache_misses": 199,
+    "cold_experiments": 199,
+    "evidence_sha256": "550d7669734e5935abafa83c64bec444728fce32760d937d247afc60e9297f8b",
+    "insufficient": [],
+    "manifest_sha256": "3d30dc1106c545dba76c846aceb52acae59d815897880a4c8ea9eba095c5d6a0",
+    "not_promotable": [
+      "coverage_bound_below_minimum"
+    ],
+    "surrogate_id": "m04q7-standin-x025-v1-it1-prefix"
+  }
+}

@@ -10,11 +10,15 @@
   "evaluation-result.schema.json",
   "evidence-manifest.schema.json",
   "execution-plan.schema.json",
+  "experiment.schema.json",
   "failure-bundle.schema.json",
   "jacobian-result.schema.json",
   "job-event.schema.json",
   "job.schema.json",
+  "model-evidence.schema.json",
   "model-manifest.schema.json",
+  "model-replacement.schema.json",
+  "model-variant.schema.json",
   "optimization-report.schema.json",
   "process-revision.schema.json",
   "project-policy.schema.json",
@@ -31,6 +35,7 @@
   "solve-policy.schema.json",
   "specification.schema.json",
   "study.schema.json",
+  "surrogate-manifest.schema.json",
   "transaction-result.schema.json",
   "validation-report.schema.json"
 ]

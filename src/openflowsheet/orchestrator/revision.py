@@ -55,6 +55,7 @@ from openflowsheet.orchestrator.splits import (
     closure_types,
     dormancy_forms,
     lifted_splits,
+    vapour_only_forms,
     zero_flow_forms,
 )
 from openflowsheet.orchestrator.trace import SolvePolicy, Trace
@@ -387,6 +388,8 @@ def plan_revision(
         zero_flow_forms(instances, splits, closure_types(flowsheet.units()), flowsheet.components),
         # T05b spec §7.6: the dormancy forms of the units without a lifted split, likewise.
         dormancy_forms(instances, flowsheet.units(), flowsheet.components),
+        # M02 design note §14.2 B13 (h): the vapour-only forms, likewise.
+        vapour_only_forms(instances, splits, flowsheet.components),
     )
 
     authors = set(binding.row_units.values())

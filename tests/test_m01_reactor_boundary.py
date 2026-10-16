@@ -17,11 +17,8 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT, load_yaml
-from t07_corpus import CORPUS
 from test_schemas_p01 import validator_for
 
-from openflowsheet.application.binding import Unbound
-from openflowsheet.application.revision_binding import MODEL_BUILDERS, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.c1 import COMPONENTS, ELEMENT_MATRIX, NU
@@ -337,14 +334,10 @@ def test_a49_every_ok_result_is_labelled_synthetic(inlet: StreamState) -> None:
     assert result.as_document()["identity"]["synthetic"] is True
 
 
-def test_a49_the_standin_is_not_bound_and_a_revision_naming_it_is_model_unsupported() -> None:
-    assert MODEL_ID not in MODEL_BUILDERS
-    document = CORPUS["SYN-001-nominal"]()
-    (heater,) = (i for i in document["instances"] if i["id"] == "heater")  # T08 U02/U04's path
-    heater["model"]["id"] = MODEL_ID
-    refused = bind_revision_flowsheet(document)
-    assert isinstance(refused, Unbound)
-    assert (refused.kind, refused.detail) == ("unsupported", f"model_unsupported({MODEL_ID})")
+# A49's binder clause ("`MODEL_BUILDERS` has no key `c1.reactor_standin`") is superseded by ADR 0034
+# D9 and replaced by M02's G8 (e) (design note §10.1 G2, G8 (e); register R-231):
+# tests/test_m02_wo9_reactor.py::test_g8e_the_stand_in_binds_and_says_synthetic_everywhere. Its
+# label clauses stand, above.
 
 
 # -- A51: boundary paths beyond A30 (Amendment 1, §8.12) -------------------------------------------

@@ -1,0 +1,9 @@
+{
+  "expect_error": "'parent' is a required property",
+  "document": {
+    "plan_id": "it1-prefix",
+    "budget": {
+      "max_cold_experiments": 199
+    }
+  }
+}

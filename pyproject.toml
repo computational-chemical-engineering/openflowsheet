@@ -73,6 +73,8 @@ openflowsheet = [
     "_data/benchmarks/syn001/reference_values.yaml",
     "_data/benchmarks/t08/numerical_policy_v2.yaml",
     "_data/benchmarks/m01/components.yaml",
+    # M02 (register R-317 (b)): the external addendum, whose `compare` rules a coupled replay reads.
+    "_data/benchmarks/m02/numerical_policy_external.yaml",
     # M06 (ADR 0030 D2): the diagnostic web shell, `_data/web` → `apps/web/`, one glob per
     # directory (`serve-http --ui`).
     "_data/web/*.html",
@@ -84,6 +86,9 @@ openflowsheet = [
 ]
 # The MCP tool descriptions and their review record are served text (T07 W6c, gate G15).
 "openflowsheet.application.bindings" = ["descriptions/*.md", "descriptions/REVIEW.json"]
+# M02 design note §3.1, §2.4: the registered variants and their registry (append-only package
+# data), and the reactor environment's hash-pinned lock.
+"openflowsheet.adapters" = ["variants/*.json", "pymrm/reactor-env.lock"]
 
 [tool.ruff]
 line-length = 100
@@ -132,10 +137,14 @@ testpaths = ["tests"]
 # The repository root on sys.path so `benchmarks.syn001.oracle` imports without installing it;
 # the oracle is deliberately not part of the `openflowsheet` distribution.
 pythonpath = ["."]
-# M03 WO-8 (ADR 0032 C2): tests marked `nlp` need the audited NLP environment and are deselected
-# (not skipped) here; scripts/m03_nlp_check.sh runs them there with `-m nlp`, which overrides this.
-addopts = "-m 'not nlp'"
+# Tests needing an opt-in environment are deselected (not skipped) here; a `-m` on the command
+# line overrides this. M03 WO-8 (ADR 0032 C2): `nlp` needs the audited NLP environment, and
+# scripts/m03_nlp_check.sh runs them there with `-m nlp`. M02 WO-5 (design note §10.2): `pymrm`
+# needs the pinned reactor environment (`python -m openflowsheet.adapters.pymrm.env build`), and
+# `pytest -m pymrm` runs them there.
+addopts = "-m 'not nlp and not pymrm'"
 markers = [
     "nlp: needs the audited Ipopt environment of docs/m03-ipopt-audit.md (scripts/m03_nlp_check.sh)",
+    "pymrm: needs the pinned reactor environment of M02 design note §2.4 (opt-in evidence)",
     "browser: drives a headless Chromium (M06 design note §8 A6); skipped without one, failed without one when OPENFLOWSHEET_REQUIRE_BROWSER=1",
 ]

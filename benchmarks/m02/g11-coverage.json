@@ -1,0 +1,1812 @@
+{
+ "record": "m02-g11-coverage",
+ "version": 1,
+ "status": "measured",
+ "judged": false,
+ "specification": "docs/design/M02-pymrm-adapter.md §10.2 G11, §5.2, §10.3; docs/derivations/M01-spec.md §8.15, Q-F4, Q-F5",
+ "variant": {
+  "variant_id": "pymrm-6089593-g2-nz800-s123-v2",
+  "sha256": "04d4ef9c1ebbd8f727ec6f59709c54e19c365dec4c3ae86718c5e84270750b11"
+ },
+ "environment": {
+  "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+  "machine": "x86_64",
+  "python": "3.13.5",
+  "fingerprint_sha256": "6f8a29558bcd0e08830569f92886bf62a5df0f0c26f4c55f615bae587f1b704b",
+  "runner_sha256": "4846cc799f8900eb8ff2b33ef0d4bbd17b02fed980e4b91130765d049c3193b0",
+  "env_id": "pymrm-6089593-032a050c6cf3"
+ },
+ "concurrency": {
+  "pool_workers": 6,
+  "cpu_count": 48,
+  "loadavg_before": [
+   67.19580078125,
+   56.55419921875,
+   53.01025390625
+  ],
+  "loadavg_after": [
+   37.14794921875,
+   48.80224609375,
+   52.90087890625
+  ]
+ },
+ "summary": {
+  "a_Q-F4": {
+   "points": 17,
+   "accepted": 1,
+   "not_accepted": [
+    {
+     "label": "corner-T573.15-P5e+06-r1-i0",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(S1)",
+     "stage": "S1"
+    },
+    {
+     "label": "corner-T573.15-P5e+06-r1-i0.2",
+     "status": "not_converged",
+     "code": "element_balance_defect",
+     "stage": null
+    },
+    {
+     "label": "corner-T573.15-P5e+06-r4-i0",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(S1)",
+     "stage": "S1"
+    },
+    {
+     "label": "corner-T573.15-P5e+06-r4-i0.2",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(S1)",
+     "stage": "S1"
+    },
+    {
+     "label": "corner-T573.15-P1.5e+07-r1-i0",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(S1)",
+     "stage": "S1"
+    },
+    {
+     "label": "corner-T573.15-P1.5e+07-r1-i0.2",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(S1)",
+     "stage": "S1"
+    },
+    {
+     "label": "corner-T573.15-P1.5e+07-r4-i0",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(S1)",
+     "stage": "S1"
+    },
+    {
+     "label": "corner-T573.15-P1.5e+07-r4-i0.2",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(S1)",
+     "stage": "S1"
+    },
+    {
+     "label": "corner-T773.15-P5e+06-r1-i0",
+     "status": "error",
+     "code": "external_crashed",
+     "stage": null
+    },
+    {
+     "label": "corner-T773.15-P5e+06-r1-i0.2",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(certificate)",
+     "stage": "certificate"
+    },
+    {
+     "label": "corner-T773.15-P5e+06-r4-i0",
+     "status": "error",
+     "code": "external_crashed",
+     "stage": null
+    },
+    {
+     "label": "corner-T773.15-P5e+06-r4-i0.2",
+     "status": "not_converged",
+     "code": "reactor_not_accepted(certificate)",
+     "stage": "certificate"
+    },
+    {
+     "label": "corner-T773.15-P1.5e+07-r1-i0",
+     "status": "error",
+     "code": "external_crashed",
+     "stage": null
+    },
+    {
+     "label": "corner-T773.15-P1.5e+07-r1-i0.2",
+     "status": "not_converged",
+     "code": "element_balance_defect",
+     "stage": null
+    },
+    {
+     "label": "corner-T773.15-P1.5e+07-r4-i0",
+     "status": "error",
+     "code": "external_crashed",
+     "stage": null
+    },
+    {
+     "label": "corner-T773.15-P1.5e+07-r4-i0.2",
+     "status": "not_converged",
+     "code": "element_balance_defect",
+     "stage": null
+    }
+   ],
+   "element_defect_max": 8.230613331839246e-09,
+   "dP_over_P_max": 5.3047700727917255e-05,
+   "wall_s_max": 90.08648880699184
+  },
+  "b_Q-F5": {
+   "0.25": {
+    "path": "direct",
+    "accepted": false
+   },
+   "0.5": {
+    "path": "boundary",
+    "accepted": false
+   },
+   "2.0": {
+    "path": "boundary",
+    "accepted": true
+   },
+   "4.0": {
+    "path": "direct",
+    "accepted": true
+   }
+  },
+  "b_widen_rule": false,
+  "c_dP_ramp": {
+   "dP_over_P": {
+    "0.5": 9.206922234017402e-05,
+    "1.0": 0.00019034426933843643,
+    "2.0": 0.00038778811928778887,
+    "4.0": 0.0007853274867201224,
+    "8.0": 0.0015995236489688978,
+    "16.0": 0.003307342228526063
+   },
+   "accepted": {
+    "0.5": false,
+    "1.0": true,
+    "2.0": false,
+    "4.0": true,
+    "8.0": false,
+    "16.0": false
+   },
+   "eps_P": 0.001,
+   "first_multiple_above_eps_P": 8.0
+  },
+  "d_timing": {
+   "wall_s": [
+    30.38033256099152,
+    30.48043209699972,
+    40.287416563005536,
+    43.74643214500975,
+    35.61990566999884
+   ],
+   "startup_s": [
+    1.820673035006621,
+    1.7902206809958443,
+    1.8502503429917851,
+    2.552251178000006,
+    2.348738325992599
+   ],
+   "solve_s": [
+    28.490448999000364,
+    28.612041034997674,
+    38.36099145800108,
+    41.078304185997695,
+    33.157061311008874
+   ],
+   "startup_share_mean": 0.05777397733986871,
+   "repeats_bitwise_equal": true
+  },
+  "timeout_rule": {
+   "slowest_accepted_wall_s": 59.59230978898995,
+   "current_timeout_s": 120,
+   "rule_timeout_s": 180
+  }
+ },
+ "points": [
+  {
+   "group": "Q-F4",
+   "label": "corner-T573.15-P5e+06-r1-i0",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 573.15,
+   "P_in_Pa": 5000000.0,
+   "H2_N2": 1.0,
+   "y_inert": 0.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0034662762301615204,
+    0.0034662762301615204,
+    0.00021440883897906311,
+    0.0,
+    0.0
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(S1)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "S1",
+   "stages_accepted": {
+    "S1": false
+   },
+   "stage_steps": {
+    "S1": 400
+   },
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 90.08648880699184,
+   "certificate_wall_s": null,
+   "startup_s": 3.0446825480030384,
+   "solve_s": 86.95204611799272,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T573.15-P5e+06-r1-i0.2",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 573.15,
+   "P_in_Pa": 5000000.0,
+   "H2_N2": 1.0,
+   "y_inert": 0.2,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0027515801002313102,
+    0.0027515801002313102,
+    0.00021440883897906311,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "element_balance_defect",
+   "accepted": false,
+   "attempts": 1,
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 31,
+    "S2": 32,
+    "S3": 1
+   },
+   "tube_outlet": {
+    "flows": [
+     0.0021324696151622346,
+     0.002545094317539501,
+     0.0006269803776929095,
+     0.000612558071706064,
+     0.000816744092972444
+    ],
+    "temperature": 656.2588810273114,
+    "pressure_drop": 1010.6328738741577,
+    "coolant_heat": 2.464893073670792,
+    "inlet_face_heat_loss": -0.0024307555369387224
+   },
+   "element_defect_max": 7.566634475053058e-05,
+   "dP_over_P": 0.00020212657477483153,
+   "u_ret_min": 0.002476646126524429,
+   "min_axial_flow_mol_s": 0.00021440883897906311,
+   "wall_s": 80.28012890501122,
+   "certificate_wall_s": 62.505365548000555,
+   "startup_s": 3.0512273240019567,
+   "solve_s": 77.10786794600426,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T573.15-P5e+06-r4-i0",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 573.15,
+   "P_in_Pa": 5000000.0,
+   "H2_N2": 4.0,
+   "y_inert": 0.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.005546041968258433,
+    0.0013865104920646083,
+    0.00021440883897906311,
+    0.0,
+    0.0
+   ],
+   "F_ret_in_mol_s": 0.007146961299302105,
+   "data_domain_violations": [
+    "T_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(S1)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "S1",
+   "stages_accepted": {
+    "S1": false
+   },
+   "stage_steps": {
+    "S1": 400
+   },
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 85.3315688570001,
+   "certificate_wall_s": null,
+   "startup_s": 3.0985104910068912,
+   "solve_s": 82.14196334200096,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T573.15-P5e+06-r4-i0.2",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 573.15,
+   "P_in_Pa": 5000000.0,
+   "H2_N2": 4.0,
+   "y_inert": 0.2,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.004402528160370096,
+    0.001100632040092524,
+    0.00021440883897906311,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(S1)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "S1",
+   "stages_accepted": {
+    "S1": false
+   },
+   "stage_steps": {
+    "S1": 400
+   },
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 89.17345987999579,
+   "certificate_wall_s": null,
+   "startup_s": 3.005380522008636,
+   "solve_s": 86.07930712899542,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T573.15-P1.5e+07-r1-i0",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 573.15,
+   "P_in_Pa": 15000000.0,
+   "H2_N2": 1.0,
+   "y_inert": 0.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0034662762301615204,
+    0.0034662762301615204,
+    0.00021440883897906311,
+    0.0,
+    0.0
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "P_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(S1)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "S1",
+   "stages_accepted": {
+    "S1": false
+   },
+   "stage_steps": {
+    "S1": 400
+   },
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 61.148909251001896,
+   "certificate_wall_s": null,
+   "startup_s": 3.1264143400039757,
+   "solve_s": 57.89964080500067,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T573.15-P1.5e+07-r1-i0.2",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 573.15,
+   "P_in_Pa": 15000000.0,
+   "H2_N2": 1.0,
+   "y_inert": 0.2,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0027515801002313102,
+    0.0027515801002313102,
+    0.00021440883897906311,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "P_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(S1)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "S1",
+   "stages_accepted": {
+    "S1": false
+   },
+   "stage_steps": {
+    "S1": 400
+   },
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 64.44478159000573,
+   "certificate_wall_s": null,
+   "startup_s": 3.509626407001633,
+   "solve_s": 60.834999072001665,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T573.15-P1.5e+07-r4-i0",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 573.15,
+   "P_in_Pa": 15000000.0,
+   "H2_N2": 4.0,
+   "y_inert": 0.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.005546041968258433,
+    0.0013865104920646083,
+    0.00021440883897906311,
+    0.0,
+    0.0
+   ],
+   "F_ret_in_mol_s": 0.007146961299302105,
+   "data_domain_violations": [
+    "T_in",
+    "P_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(S1)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "S1",
+   "stages_accepted": {
+    "S1": false
+   },
+   "stage_steps": {
+    "S1": 400
+   },
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 62.08971889599343,
+   "certificate_wall_s": null,
+   "startup_s": 3.114651034993585,
+   "solve_s": 58.877840166009264,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T573.15-P1.5e+07-r4-i0.2",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 573.15,
+   "P_in_Pa": 15000000.0,
+   "H2_N2": 4.0,
+   "y_inert": 0.2,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.004402528160370096,
+    0.001100632040092524,
+    0.00021440883897906311,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "P_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(S1)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "S1",
+   "stages_accepted": {
+    "S1": false
+   },
+   "stage_steps": {
+    "S1": 400
+   },
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 61.20410396800435,
+   "certificate_wall_s": null,
+   "startup_s": 3.1018961950030643,
+   "solve_s": 58.018040387003566,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T773.15-P5e+06-r1-i0",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 773.15,
+   "P_in_Pa": 5000000.0,
+   "H2_N2": 1.0,
+   "y_inert": 0.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0034662762301615204,
+    0.0034662762301615204,
+    0.00021440883897906311,
+    0.0,
+    0.0
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "H2/N2"
+   ],
+   "envelope_status": "error",
+   "envelope_code": "external_crashed",
+   "accepted": false,
+   "attempts": 2,
+   "stage": null,
+   "stages_accepted": {},
+   "stage_steps": {},
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 70.90260719700018,
+   "certificate_wall_s": null,
+   "startup_s": null,
+   "solve_s": null,
+   "execution_status": "crashed",
+   "exit_code": 1,
+   "signal": null,
+   "message": "crashed: exit code 1",
+   "log_tails": {
+    "stdout": "",
+    "stderr": "OpenFlowsheet/.claude/worktrees/m02/src/openflowsheet/adapters/pymrm/child.py\", line 187, in _write\n    handle.write(json.dumps(document, allow_nan=False))\n                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/usr/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/usr/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\nValueError: Out of range float values are not JSON compliant: nan\n"
+   }
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T773.15-P5e+06-r1-i0.2",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 773.15,
+   "P_in_Pa": 5000000.0,
+   "H2_N2": 1.0,
+   "y_inert": 0.2,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0027515801002313102,
+    0.0027515801002313102,
+    0.00021440883897906311,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(certificate)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "certificate",
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 26,
+    "S2": 35,
+    "S3": 9
+   },
+   "tube_outlet": null,
+   "element_defect_max": 1.9046121440544055e-08,
+   "dP_over_P": 0.0002812852578110993,
+   "u_ret_min": 0.0033433955159125617,
+   "min_axial_flow_mol_s": 0.00020464876405628909,
+   "wall_s": 64.73430785199162,
+   "certificate_wall_s": 47.2791317920055,
+   "startup_s": 3.1161730280000484,
+   "solve_s": 61.52172443999734,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T773.15-P5e+06-r4-i0",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 773.15,
+   "P_in_Pa": 5000000.0,
+   "H2_N2": 4.0,
+   "y_inert": 0.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.005546041968258433,
+    0.0013865104920646083,
+    0.00021440883897906311,
+    0.0,
+    0.0
+   ],
+   "F_ret_in_mol_s": 0.007146961299302105,
+   "data_domain_violations": [
+    "T_in",
+    "H2/N2"
+   ],
+   "envelope_status": "error",
+   "envelope_code": "external_crashed",
+   "accepted": false,
+   "attempts": 2,
+   "stage": null,
+   "stages_accepted": {},
+   "stage_steps": {},
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 49.19393401900015,
+   "certificate_wall_s": null,
+   "startup_s": null,
+   "solve_s": null,
+   "execution_status": "crashed",
+   "exit_code": 1,
+   "signal": null,
+   "message": "crashed: exit code 1",
+   "log_tails": {
+    "stdout": "",
+    "stderr": "OpenFlowsheet/.claude/worktrees/m02/src/openflowsheet/adapters/pymrm/child.py\", line 187, in _write\n    handle.write(json.dumps(document, allow_nan=False))\n                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/usr/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/usr/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\nValueError: Out of range float values are not JSON compliant: nan\n"
+   }
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T773.15-P5e+06-r4-i0.2",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 773.15,
+   "P_in_Pa": 5000000.0,
+   "H2_N2": 4.0,
+   "y_inert": 0.2,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.004402528160370096,
+    0.001100632040092524,
+    0.00021440883897906311,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "reactor_not_accepted(certificate)",
+   "accepted": false,
+   "attempts": 1,
+   "stage": "certificate",
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 29,
+    "S2": 32,
+    "S3": 8
+   },
+   "tube_outlet": null,
+   "element_defect_max": 1.8837110242353565e-05,
+   "dP_over_P": 0.00023157452916223556,
+   "u_ret_min": 0.0033277472721238155,
+   "min_axial_flow_mol_s": 0.00021440883897906311,
+   "wall_s": 77.20285264399718,
+   "certificate_wall_s": 58.646471561994986,
+   "startup_s": 3.1135785819933517,
+   "solve_s": 73.95484888899955,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T773.15-P1.5e+07-r1-i0",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 773.15,
+   "P_in_Pa": 15000000.0,
+   "H2_N2": 1.0,
+   "y_inert": 0.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0034662762301615204,
+    0.0034662762301615204,
+    0.00021440883897906311,
+    0.0,
+    0.0
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "P_in",
+    "H2/N2"
+   ],
+   "envelope_status": "error",
+   "envelope_code": "external_crashed",
+   "accepted": false,
+   "attempts": 2,
+   "stage": null,
+   "stages_accepted": {},
+   "stage_steps": {},
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 79.51117508400057,
+   "certificate_wall_s": null,
+   "startup_s": null,
+   "solve_s": null,
+   "execution_status": "crashed",
+   "exit_code": 1,
+   "signal": null,
+   "message": "crashed: exit code 1",
+   "log_tails": {
+    "stdout": "",
+    "stderr": "OpenFlowsheet/.claude/worktrees/m02/src/openflowsheet/adapters/pymrm/child.py\", line 187, in _write\n    handle.write(json.dumps(document, allow_nan=False))\n                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/usr/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/usr/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\nValueError: Out of range float values are not JSON compliant: inf\n"
+   }
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T773.15-P1.5e+07-r1-i0.2",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 773.15,
+   "P_in_Pa": 15000000.0,
+   "H2_N2": 1.0,
+   "y_inert": 0.2,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0027515801002313102,
+    0.0027515801002313102,
+    0.00021440883897906311,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "P_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "element_balance_defect",
+   "accepted": false,
+   "attempts": 1,
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 36,
+    "S2": 37,
+    "S3": 10
+   },
+   "tube_outlet": {
+    "flows": [
+     0.0023926039215700157,
+     0.0026318868492220845,
+     0.0004536818361443552,
+     0.0006125851879532605,
+     0.0008167802474983509
+    ],
+    "temperature": 788.5618031556821,
+    "pressure_drop": 478.8976295515895,
+    "coolant_heat": 0.6211267334208042,
+    "inlet_face_heat_loss": 8.49957602926891
+   },
+   "element_defect_max": 2.06812193302309e-05,
+   "dP_over_P": 3.192650863677263e-05,
+   "u_ret_min": 0.0010770628032332752,
+   "min_axial_flow_mol_s": 0.00021440883897906311,
+   "wall_s": 79.01045645399427,
+   "certificate_wall_s": 59.60933023800317,
+   "startup_s": 2.7425311030092416,
+   "solve_s": 76.1659623549931,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T773.15-P1.5e+07-r4-i0",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 773.15,
+   "P_in_Pa": 15000000.0,
+   "H2_N2": 4.0,
+   "y_inert": 0.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.005546041968258433,
+    0.0013865104920646083,
+    0.00021440883897906311,
+    0.0,
+    0.0
+   ],
+   "F_ret_in_mol_s": 0.007146961299302105,
+   "data_domain_violations": [
+    "T_in",
+    "P_in",
+    "H2/N2"
+   ],
+   "envelope_status": "error",
+   "envelope_code": "external_crashed",
+   "accepted": false,
+   "attempts": 2,
+   "stage": null,
+   "stages_accepted": {},
+   "stage_steps": {},
+   "tube_outlet": null,
+   "element_defect_max": null,
+   "dP_over_P": null,
+   "u_ret_min": null,
+   "min_axial_flow_mol_s": null,
+   "wall_s": 42.34046640800079,
+   "certificate_wall_s": null,
+   "startup_s": null,
+   "solve_s": null,
+   "execution_status": "crashed",
+   "exit_code": 1,
+   "signal": null,
+   "message": "crashed: exit code 1",
+   "log_tails": {
+    "stdout": "",
+    "stderr": "OpenFlowsheet/.claude/worktrees/m02/src/openflowsheet/adapters/pymrm/child.py\", line 187, in _write\n    handle.write(json.dumps(document, allow_nan=False))\n                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/usr/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/usr/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\nValueError: Out of range float values are not JSON compliant: inf\n"
+   }
+  },
+  {
+   "group": "Q-F4",
+   "label": "corner-T773.15-P1.5e+07-r4-i0.2",
+   "path": "boundary",
+   "construction": "sweep",
+   "T_in_K": 773.15,
+   "P_in_Pa": 15000000.0,
+   "H2_N2": 4.0,
+   "y_inert": 0.2,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.004402528160370096,
+    0.001100632040092524,
+    0.00021440883897906311,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.007146961299302104,
+   "data_domain_violations": [
+    "T_in",
+    "P_in",
+    "H2/N2"
+   ],
+   "envelope_status": "not_converged",
+   "envelope_code": "element_balance_defect",
+   "accepted": false,
+   "attempts": 1,
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 36,
+    "S2": 34,
+    "S3": 9
+   },
+   "tube_outlet": {
+    "flows": [
+     0.003918472865435989,
+     0.0009392920105261466,
+     0.0005369882429318051,
+     0.0006125774465130359,
+     0.0008167699198804353
+    ],
+    "temperature": 795.0131442432389,
+    "pressure_drop": 394.63909600675106,
+    "coolant_heat": 0.8778941944298129,
+    "inlet_face_heat_loss": 11.234163735954857
+   },
+   "element_defect_max": 4.1667553257904035e-05,
+   "dP_over_P": 2.6309273067116738e-05,
+   "u_ret_min": 0.001066925353370607,
+   "min_axial_flow_mol_s": 0.00021440883897906311,
+   "wall_s": 79.68542419500591,
+   "certificate_wall_s": 59.671893783000996,
+   "startup_s": 3.302577295995434,
+   "solve_s": 76.28331624799466,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F4",
+   "label": "centre",
+   "path": "boundary",
+   "T_in_K": 673.15,
+   "P_in_Pa": 10000000.0,
+   "H2_N2": 2.5,
+   "y_inert": 0.1,
+   "construction": "sweep",
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.004441325950280592,
+    0.0017765303801122374,
+    0.00021440883897906311,
+    0.00030629834139866166,
+    0.0004083977885315488
+   ],
+   "F_ret_in_mol_s": 0.007146961299302103,
+   "data_domain_violations": [],
+   "envelope_status": "ok",
+   "envelope_code": "ok",
+   "accepted": true,
+   "attempts": 1,
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 37,
+    "S2": 31,
+    "S3": 10
+   },
+   "tube_outlet": {
+    "flows": [
+     0.0037188343276314036,
+     0.0015356998416646193,
+     0.0006960699466545709,
+     0.00030629834391968487,
+     0.00040839779189280335
+    ],
+    "temperature": 749.5925377441799,
+    "pressure_drop": 530.4770072791725,
+    "coolant_heat": 3.0157925254311437,
+    "inlet_face_heat_loss": 5.3797280587410725
+   },
+   "element_defect_max": 8.230613331839246e-09,
+   "dP_over_P": 5.3047700727917255e-05,
+   "u_ret_min": 0.0014122885913820937,
+   "min_axial_flow_mol_s": 0.00021440883897906311,
+   "wall_s": 51.79525123500207,
+   "certificate_wall_s": 31.790790165003273,
+   "startup_s": 3.123376994000864,
+   "solve_s": 48.57604074499977,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": "",
+   "discretization_estimate": {
+    "NH3_out_high_rel": [
+     0.0102,
+     0.01376
+    ],
+    "T_out_low_K": [
+     1.244,
+     1.673
+    ],
+    "inputs": "grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect 2.2e-6, still moving)",
+    "meaning": "spec section 10.1's discretization estimate at the design grid (Richardson, two orders, two differences); an estimate, not a bound; what every reactor result reports (section 8.12, M01.A48)",
+    "num_z": 800,
+    "order_p": [
+     0.6192,
+     0.783
+    ],
+    "xi_high_rel": [
+     0.01438,
+     0.01943
+    ]
+   }
+  },
+  {
+   "group": "Q-F5",
+   "label": "centre-x0.25",
+   "path": "direct",
+   "T_in_K": 673.15,
+   "P_in_Pa": 10000000.0,
+   "H2_N2": 2.5,
+   "y_inert": 0.1,
+   "construction": "sweep",
+   "multiple": 0.25,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.001110331487570148,
+    0.00044413259502805935,
+    5.360220974476578e-05,
+    7.657458534966542e-05,
+    0.0001020994471328872
+   ],
+   "F_ret_in_mol_s": 0.0017867403248255258,
+   "data_domain_violations": [],
+   "stage": "certificate",
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 38,
+    "S2": 32,
+    "S3": 14
+   },
+   "tube_outlet": null,
+   "element_defect_max": 0.00022771298839225712,
+   "dP_over_P": 1.2102147291600705e-05,
+   "u_ret_min": 0.0003228045934520196,
+   "min_axial_flow_mol_s": 5.360220974476578e-05,
+   "wall_s": 82.64515643799677,
+   "certificate_wall_s": 60.89785530998779,
+   "startup_s": 3.351750511996215,
+   "solve_s": 79.1885056970059,
+   "execution_status": "completed",
+   "child_accepted": false,
+   "accepted": false
+  },
+  {
+   "group": "Q-F5",
+   "label": "centre-x0.5",
+   "path": "boundary",
+   "T_in_K": 673.15,
+   "P_in_Pa": 10000000.0,
+   "H2_N2": 2.5,
+   "y_inert": 0.1,
+   "construction": "sweep",
+   "multiple": 0.5,
+   "nudged": {
+    "F_ret_in_factor": 0.5000000000004547
+   },
+   "inlet_n_mol_s": [
+    0.002220662975142316,
+    0.0008882651900569265,
+    0.00010720441948962905,
+    0.00015314917069947012,
+    0.00020419889426596014
+   ],
+   "F_ret_in_mol_s": 0.0035734806496543017,
+   "data_domain_violations": [],
+   "envelope_status": "not_converged",
+   "envelope_code": "element_balance_defect",
+   "accepted": false,
+   "attempts": 1,
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 30,
+    "S2": 32,
+    "S3": 11
+   },
+   "tube_outlet": {
+    "flows": [
+     0.0017876162448678843,
+     0.0007439095675995935,
+     0.00039578318793002503,
+     0.00015314219821688544,
+     0.00020418959726628414
+    ],
+    "temperature": 733.7519431789151,
+    "pressure_drop": 253.84832970425487,
+    "coolant_heat": 2.087643706969912,
+    "inlet_face_heat_loss": 6.418042841228559
+   },
+   "element_defect_max": 7.06741882033778e-05,
+   "dP_over_P": 2.5384832970425487e-05,
+   "u_ret_min": 0.0006786526755604427,
+   "min_axial_flow_mol_s": 0.00010720441948962904,
+   "wall_s": 75.84488444399904,
+   "certificate_wall_s": 57.30994545000431,
+   "startup_s": 3.150326877992484,
+   "solve_s": 72.58336487499764,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": ""
+  },
+  {
+   "group": "Q-F5",
+   "label": "centre-x2",
+   "path": "boundary",
+   "T_in_K": 673.15,
+   "P_in_Pa": 10000000.0,
+   "H2_N2": 2.5,
+   "y_inert": 0.1,
+   "construction": "sweep",
+   "multiple": 2.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.008882651900561185,
+    0.0035530607602244748,
+    0.00042881767795812623,
+    0.0006125966827973233,
+    0.0008167955770630977
+   ],
+   "F_ret_in_mol_s": 0.014293922598604207,
+   "data_domain_violations": [],
+   "envelope_status": "ok",
+   "envelope_code": "ok",
+   "accepted": true,
+   "attempts": 1,
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 36,
+    "S2": 32,
+    "S3": 7
+   },
+   "tube_outlet": {
+    "flows": [
+     0.007595793183561092,
+     0.0031241078739493405,
+     0.0012867236971546624,
+     0.0006125967028575829,
+     0.0008167956038100907
+    ],
+    "temperature": 759.1953503760006,
+    "pressure_drop": 1091.7907216399908,
+    "coolant_heat": 4.489154690281501,
+    "inlet_face_heat_loss": 2.372119285058189
+   },
+   "element_defect_max": 3.2746275183809543e-08,
+   "dP_over_P": 0.00010917907216399908,
+   "u_ret_min": 0.002888459923269693,
+   "min_axial_flow_mol_s": 0.00042881767795812623,
+   "wall_s": 38.2276688790007,
+   "certificate_wall_s": 18.5578841589886,
+   "startup_s": 3.129341674997704,
+   "solve_s": 34.99385285700555,
+   "execution_status": "completed",
+   "exit_code": 0,
+   "signal": null,
+   "message": "",
+   "discretization_estimate": {
+    "NH3_out_high_rel": [
+     0.0102,
+     0.01376
+    ],
+    "T_out_low_K": [
+     1.244,
+     1.673
+    ],
+    "inputs": "grid 200, 400, 800 (accepted); 1600 fine_polish[-1] (not accepted: element defect 2.2e-6, still moving)",
+    "meaning": "spec section 10.1's discretization estimate at the design grid (Richardson, two orders, two differences); an estimate, not a bound; what every reactor result reports (section 8.12, M01.A48)",
+    "num_z": 800,
+    "order_p": [
+     0.6192,
+     0.783
+    ],
+    "xi_high_rel": [
+     0.01438,
+     0.01943
+    ]
+   }
+  },
+  {
+   "group": "Q-F5",
+   "label": "centre-x4",
+   "path": "direct",
+   "T_in_K": 673.15,
+   "P_in_Pa": 10000000.0,
+   "H2_N2": 2.5,
+   "y_inert": 0.1,
+   "construction": "sweep",
+   "multiple": 4.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.01776530380112237,
+    0.0071061215204489495,
+    0.0008576353559162525,
+    0.0012251933655946466,
+    0.0016335911541261953
+   ],
+   "F_ret_in_mol_s": 0.028587845197208413,
+   "data_domain_violations": [],
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 33,
+    "S2": 34,
+    "S3": 7
+   },
+   "tube_outlet": {
+    "flows": [
+     0.015256747487164622,
+     0.006269936083944421,
+     0.002530006247701487,
+     0.0012251933671271343,
+     0.0016335911561694888
+    ],
+    "temperature": 761.2493805298435,
+    "pressure_drop": 2215.6495295409113,
+    "coolant_heat": 8.480045125051522,
+    "inlet_face_heat_loss": 1.0751124462648107
+   },
+   "element_defect_max": 1.2508129095852255e-09,
+   "dP_over_P": 0.00022156495295409112,
+   "u_ret_min": 0.005808222507766914,
+   "min_axial_flow_mol_s": 0.0008576353559162525,
+   "wall_s": 21.013126513003954,
+   "certificate_wall_s": 1.6079349229985382,
+   "startup_s": 3.119257452999591,
+   "solve_s": 17.784943680992,
+   "execution_status": "completed",
+   "boundary_dP_over_P": 0.00022156495295409112,
+   "projection_defect_rel": 4.025107418654831e-10,
+   "child_accepted": true,
+   "accepted": true
+  },
+  {
+   "group": "dP-ramp",
+   "label": "ramp-x0.5",
+   "path": "direct",
+   "construction": "nominal",
+   "T_in_K": 673.15,
+   "P_in_Pa": 5000000.0,
+   "multiple": 0.5,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0025014364547557362,
+    0.0008397679526679972,
+    0.00010720441948953156,
+    5.360220974476578e-05,
+    7.146961299302104e-05
+   ],
+   "F_ret_in_mol_s": 0.0035734806496510517,
+   "data_domain_violations": [],
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 28,
+    "S2": 31,
+    "S3": 10
+   },
+   "tube_outlet": {
+    "flows": [
+     0.00220042821149721,
+     0.0007394318426340317,
+     0.0003078516492726851,
+     5.360161029420194e-05,
+     7.146881359510104e-05
+    ],
+    "temperature": 717.6000244755554,
+    "pressure_drop": 460.3461117008701,
+    "coolant_heat": 1.5340069257389217,
+    "inlet_face_heat_loss": 4.226935045223426
+   },
+   "element_defect_max": 1.3986523072255483e-05,
+   "dP_over_P": 9.206922234017402e-05,
+   "u_ret_min": 0.0013953599464002764,
+   "min_axial_flow_mol_s": 5.2885525613919115e-05,
+   "wall_s": 73.05556349700782,
+   "certificate_wall_s": 54.47091351800191,
+   "startup_s": 3.479660814991803,
+   "solve_s": 69.50388367399864,
+   "execution_status": "completed",
+   "boundary_dP_over_P": 9.206922234017402e-05,
+   "projection_defect_rel": 4.984771591537684e-06,
+   "child_accepted": true,
+   "accepted": false
+  },
+  {
+   "group": "dP-ramp",
+   "label": "ramp-x1",
+   "path": "direct",
+   "construction": "nominal",
+   "T_in_K": 673.15,
+   "P_in_Pa": 5000000.0,
+   "multiple": 1.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.0050028729095114724,
+    0.0016795359053359943,
+    0.00021440883897906311,
+    0.00010720441948953156,
+    0.00014293922598604208
+   ],
+   "F_ret_in_mol_s": 0.007146961299302103,
+   "data_domain_violations": [],
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 31,
+    "S2": 31,
+    "S3": 9
+   },
+   "tube_outlet": {
+    "flows": [
+     0.004498057372438315,
+     0.0015112640602033287,
+     0.0005509526958798147,
+     0.00010720442449200307,
+     0.00014293923265599304
+    ],
+    "temperature": 729.2249380552009,
+    "pressure_drop": 951.7213466921821,
+    "coolant_heat": 2.2112161245255972,
+    "inlet_face_heat_loss": 3.3556319875514857
+   },
+   "element_defect_max": 4.6662922457495744e-08,
+   "dP_over_P": 0.00019034426933843643,
+   "u_ret_min": 0.0028604617655219045,
+   "min_axial_flow_mol_s": 0.00010662332993708088,
+   "wall_s": 56.4931791130075,
+   "certificate_wall_s": 37.910992073011585,
+   "startup_s": 3.3390610789938364,
+   "solve_s": 53.02950636300375,
+   "execution_status": "completed",
+   "boundary_dP_over_P": 0.00019034426933843643,
+   "projection_defect_rel": 1.6553521050323094e-08,
+   "child_accepted": true,
+   "accepted": true
+  },
+  {
+   "group": "dP-ramp",
+   "label": "ramp-x2",
+   "path": "direct",
+   "construction": "nominal",
+   "T_in_K": 673.15,
+   "P_in_Pa": 5000000.0,
+   "multiple": 2.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.010005745819022945,
+    0.0033590718106719887,
+    0.00042881767795812623,
+    0.00021440883897906311,
+    0.00028587845197208415
+   ],
+   "F_ret_in_mol_s": 0.014293922598604207,
+   "data_domain_violations": [],
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 31,
+    "S2": 33,
+    "S3": 6
+   },
+   "tube_outlet": {
+    "flows": [
+     0.009075879105359286,
+     0.0030491158755933064,
+     0.0010485830058046992,
+     0.00021440495425588236,
+     0.00028587327212544725
+    ],
+    "temperature": 734.393613301242,
+    "pressure_drop": 1938.9405964389443,
+    "coolant_heat": 4.353668282813312,
+    "inlet_face_heat_loss": 1.7017510070945487
+   },
+   "element_defect_max": 2.0504142201742334e-05,
+   "dP_over_P": 0.00038778811928778887,
+   "u_ret_min": 0.0057908902472263435,
+   "min_axial_flow_mol_s": 0.00021405704468620344,
+   "wall_s": 70.27004264500283,
+   "certificate_wall_s": 49.96317704899411,
+   "startup_s": 3.450583904996165,
+   "solve_s": 66.73637726000743,
+   "execution_status": "completed",
+   "boundary_dP_over_P": 0.00038778811928778887,
+   "projection_defect_rel": 7.290179562703585e-06,
+   "child_accepted": true,
+   "accepted": false
+  },
+  {
+   "group": "dP-ramp",
+   "label": "ramp-x4",
+   "path": "direct",
+   "construction": "nominal",
+   "T_in_K": 673.15,
+   "P_in_Pa": 5000000.0,
+   "multiple": 4.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.02001149163804589,
+    0.006718143621343977,
+    0.0008576353559162525,
+    0.00042881767795812623,
+    0.0005717569039441683
+   ],
+   "F_ret_in_mol_s": 0.028587845197208413,
+   "data_domain_violations": [],
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 28,
+    "S2": 33,
+    "S3": 6
+   },
+   "tube_outlet": {
+    "flows": [
+     0.018199217020498565,
+     0.006114052084353932,
+     0.0020658190875131382,
+     0.0004288176976872628,
+     0.0005717569302496833
+    ],
+    "temperature": 735.9348722361632,
+    "pressure_drop": 3926.637433600612,
+    "coolant_heat": 8.195870935647665,
+    "inlet_face_heat_loss": 0.8983304951036146
+   },
+   "element_defect_max": 4.600821649520285e-08,
+   "dP_over_P": 0.0007853274867201224,
+   "u_ret_min": 0.011616549760219641,
+   "min_axial_flow_mol_s": 0.0004286374265343864,
+   "wall_s": 59.59230978898995,
+   "certificate_wall_s": 41.512460554004065,
+   "startup_s": 3.1090848370076856,
+   "solve_s": 56.38391294699977,
+   "execution_status": "completed",
+   "boundary_dP_over_P": 0.0007853274867201224,
+   "projection_defect_rel": 1.6332377743448188e-08,
+   "child_accepted": true,
+   "accepted": true
+  },
+  {
+   "group": "dP-ramp",
+   "label": "ramp-x8",
+   "path": "direct",
+   "construction": "nominal",
+   "T_in_K": 673.15,
+   "P_in_Pa": 5000000.0,
+   "multiple": 8.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.04002298327609178,
+    0.013436287242687955,
+    0.001715270711832505,
+    0.0008576353559162525,
+    0.0011435138078883366
+   ],
+   "F_ret_in_mol_s": 0.05717569039441683,
+   "data_domain_violations": [],
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 25,
+    "S2": 29,
+    "S3": 6
+   },
+   "tube_outlet": {
+    "flows": [
+     0.036442814600788236,
+     0.012242897685355069,
+     0.004102050156981859,
+     0.000857635365830788,
+     0.001143513821107715
+    ],
+    "temperature": 736.6199276557029,
+    "pressure_drop": 7997.618244844489,
+    "coolant_heat": 14.936397926933243,
+    "inlet_face_heat_loss": 0.48406734431609344
+   },
+   "element_defect_max": 1.1560315799713376e-08,
+   "dP_over_P": 0.0015995236489688978,
+   "u_ret_min": 0.02323608326696558,
+   "min_axial_flow_mol_s": 0.0008575427955585834,
+   "wall_s": 18.57286478599417,
+   "certificate_wall_s": 3.9308778650010936,
+   "startup_s": 2.756679099999019,
+   "solve_s": 15.673408575996291,
+   "execution_status": "completed",
+   "boundary_dP_over_P": 0.0015995236489688978,
+   "projection_defect_rel": 4.103900110602297e-09,
+   "child_accepted": true,
+   "accepted": false
+  },
+  {
+   "group": "dP-ramp",
+   "label": "ramp-x16",
+   "path": "direct",
+   "construction": "nominal",
+   "T_in_K": 673.15,
+   "P_in_Pa": 5000000.0,
+   "multiple": 16.0,
+   "nudged": {},
+   "inlet_n_mol_s": [
+    0.08004596655218356,
+    0.02687257448537591,
+    0.00343054142366501,
+    0.001715270711832505,
+    0.002287027615776673
+   ],
+   "F_ret_in_mol_s": 0.11435138078883365,
+   "data_domain_violations": [],
+   "stage": null,
+   "stages_accepted": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "stage_steps": {
+    "S1": 24,
+    "S2": 28,
+    "S3": 1
+   },
+   "tube_outlet": {
+    "flows": [
+     0.07295962965776705,
+     0.024510462189906764,
+     0.00815476681545444,
+     0.0017152707358581273,
+     0.0022870276478108445
+    ],
+    "temperature": 737.1298804451342,
+    "pressure_drop": 16536.711142630316,
+    "coolant_heat": 26.200294758062103,
+    "inlet_face_heat_loss": 0.23775657763443192
+   },
+   "element_defect_max": 1.4006901841299829e-08,
+   "dP_over_P": 0.003307342228526063,
+   "u_ret_min": 0.046406008157646284,
+   "min_axial_flow_mol_s": 0.0017152258352192246,
+   "wall_s": 33.05644176299393,
+   "certificate_wall_s": 20.08528535500227,
+   "startup_s": 2.44491991000541,
+   "solve_s": 30.513931438996224,
+   "execution_status": "completed",
+   "boundary_dP_over_P": 0.003307342228526063,
+   "projection_defect_rel": 4.9724285305602794e-09,
+   "child_accepted": true,
+   "accepted": false
+  }
+ ],
+ "timing": [
+  {
+   "repeat": 1,
+   "wall_s": 30.38033256099152,
+   "startup_s": 1.820673035006621,
+   "solve_s": 28.490448999000364,
+   "startup_share": 0.05992933195683227,
+   "tube_outlet": {
+    "flows": [
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
+    ],
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
+   }
+  },
+  {
+   "repeat": 2,
+   "wall_s": 30.48043209699972,
+   "startup_s": 1.7902206809958443,
+   "solve_s": 28.612041034997674,
+   "startup_share": 0.05873344168149312,
+   "tube_outlet": {
+    "flows": [
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
+    ],
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
+   }
+  },
+  {
+   "repeat": 3,
+   "wall_s": 40.287416563005536,
+   "startup_s": 1.8502503429917851,
+   "solve_s": 38.36099145800108,
+   "startup_share": 0.04592625938419696,
+   "tube_outlet": {
+    "flows": [
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
+    ],
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
+   }
+  },
+  {
+   "repeat": 4,
+   "wall_s": 43.74643214500975,
+   "startup_s": 2.552251178000006,
+   "solve_s": 41.078304185997695,
+   "startup_share": 0.05834192762371701,
+   "tube_outlet": {
+    "flows": [
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
+    ],
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
+   }
+  },
+  {
+   "repeat": 5,
+   "wall_s": 35.61990566999884,
+   "startup_s": 2.348738325992599,
+   "solve_s": 33.157061311008874,
+   "startup_share": 0.06593892605310415,
+   "tube_outlet": {
+    "flows": [
+     0.0042067228108085535,
+     0.0014141525395605435,
+     0.0007451757072997628,
+     0.00010720442360438716,
+     0.00014293923147249774
+    ],
+    "temperature": 757.3353131138998,
+    "pressure_drop": 499.78984724357724,
+    "coolant_heat": 3.3200499583003986,
+    "inlet_face_heat_loss": 6.5064995855818815
+   }
+  }
+ ],
+ "pool_s": 359.1,
+ "elapsed_s": 541.5
+}

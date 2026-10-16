@@ -27,6 +27,7 @@ from __future__ import annotations
 import base64
 import binascii
 import copy
+import hashlib
 import json
 import math
 import os
@@ -43,9 +44,13 @@ from typing import Any, Final, Literal, NoReturn, Self, get_args
 from openflowsheet.application import validation
 from openflowsheet.application.admission import (
     active_jobs_refusal,
+    admit_experiment,
     admit_reproduce,
     admit_solve,
+    admit_surrogate_study,
     resolve_policies,
+    stored_surrogate_manifests,
+    surrogate_resolver,
 )
 from openflowsheet.application.authz import (
     LOCAL_OWNER,
@@ -66,11 +71,17 @@ from openflowsheet.application.projection import (
     check_view_arguments,
     project,
 )
+from openflowsheet.application.replacement import (
+    ReplacementReport,
+    check_replacements,
+    unpromoted_surrogates,
+)
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     MODEL_SIGNATURES,
     ModelSignature,
     PinColumn,
+    SurrogateResolver,
     pin_encodings,
 )
 from openflowsheet.application.revision_run import Route, route_structure, select_route
@@ -84,6 +95,7 @@ from openflowsheet.application.store import (
     IdempotencyKeyReusedError,
     LedgerRow,
     ProjectStore,
+    atomic_write_bytes,
 )
 from openflowsheet.application.transactions import (
     EditPathError,
@@ -101,6 +113,7 @@ from openflowsheet.application.types import (
     DocumentSchemaError,
     EffectiveBudgets,
     ExecutorSettings,
+    ExperimentBody,
     Job,
     JobEvent,
     JobRequest,
@@ -117,6 +130,7 @@ from openflowsheet.application.types import (
     ServerInfo,
     SolveBody,
     SubmitResult,
+    SurrogateStudyBody,
     TransactionResult,
     _replay_report_build,
     validate_document,
@@ -300,6 +314,15 @@ class LocalApplication:
             self._scratch = tempfile.TemporaryDirectory(prefix="openflowsheet-")
         return Path(self._scratch.name)
 
+    def _surrogates(self) -> SurrogateResolver:
+        """The binder's SurrogateManifest resolver over this project's artifacts (M04 spec §8.2).
+        Lazy: the store and `files_root` are read only when a revision binds a surrogate."""
+
+        def resolve(sha256: str) -> Mapping[str, Any] | None:
+            return surrogate_resolver(self._store, self.files_root)(sha256)
+
+        return resolve
+
     def _context(self) -> RunContext:
         return RunContext(
             store=self._store, root=self.files_root, owner_instance=self.owner_instance
@@ -397,7 +420,7 @@ class LocalApplication:
             self._refuse(
                 "not_found", "no such revision", operation="validate", revision_id=revision_id
             )
-        return validation.validate(revision.as_document(), task)
+        return validation.validate(revision.as_document(), task, surrogates=self._surrogates())
 
     def commit_change(
         self, change: Change, expected_revision: str | None, idempotency_key: str
@@ -447,11 +470,10 @@ class LocalApplication:
                     capability_id=caller.capability_id,
                     policy_sha256=self._policy.current().policy_sha256,
                 )
+                # ADR 0035 D3: a promotion's reports, stored and registered with the revision.
+                self._store_replacements(connection, revision.revision_id, prepared.replacements)
                 invalidations = (
-                    tuple(
-                        f"run-{job_id}"
-                        for job_id in store.solve_jobs_for_revision(connection, expected_revision)
-                    )
+                    tuple(store.evidence_for_revision(connection, expected_revision))
                     if expected_revision is not None
                     else ()
                 )
@@ -735,6 +757,7 @@ class LocalApplication:
                 budgets=request.budgets,
                 limits=caller.limits,
                 active_jobs=active,
+                surrogates=self._surrogates(),
             )
             if isinstance(admission, ApiError):
                 self._refuse_error(admission, operation, request_sha256)
@@ -742,6 +765,26 @@ class LocalApplication:
                 wall_time_s=admission.wall_time_s,
                 max_property_calls=admission.policy.max_property_calls,
             )
+        if isinstance(body, ExperimentBody):
+            admitted = admit_experiment(
+                body, budgets=request.budgets, limits=caller.limits, active_jobs=active
+            )
+            if isinstance(admitted, ApiError):
+                self._refuse_error(admitted, operation, request_sha256)
+            # R-233: an experiment's property calls are its own, never a solve's budget.
+            return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
+        if isinstance(body, SurrogateStudyBody):
+            study = admit_surrogate_study(
+                body,
+                budgets=request.budgets,
+                limits=caller.limits,
+                active_jobs=active,
+                manifests=lambda: stored_surrogate_manifests(store, self.files_root),
+            )
+            if isinstance(study, ApiError):
+                self._refuse_error(study, operation, request_sha256)
+            # R-233 again: a study's experiments are experiments; their calls are their own.
+            return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
         archive = store.artifact(body.bundle_artifact_id)
         wall_time_s = admit_reproduce(
             archive.kind if archive is not None else None,
@@ -799,6 +842,24 @@ class LocalApplication:
                 replay_report=None,
                 error=job.error,
             )
+        if job.operation == "experiment":
+            return JobResult(
+                operation="experiment",
+                run_result=None,
+                replay_report=None,
+                error=job.error,
+                experiment=self._experiment_answer(job),
+            )
+        if job.operation == "surrogate_study":
+            worker = self._store.worker_result(job.job_id)
+            study = worker.get("study") if isinstance(worker, Mapping) else None
+            return JobResult(
+                operation="surrogate_study",
+                run_result=None,
+                replay_report=None,
+                error=job.error,
+                surrogate_study=study,
+            )
         report = None
         for output in job.outputs:
             if output.kind == "replay_report":
@@ -806,6 +867,17 @@ class LocalApplication:
         return JobResult(
             operation="reproduce", run_result=None, replay_report=report, error=job.error
         )
+
+    def _experiment_answer(self, job: Job) -> dict[str, Any] | None:
+        """ADR 0033 D9: the experiment's `result` when the job output one (its own, a cache hit's
+        row or the producing row), else its last `attempt`; `None` when it output neither."""
+        results = [output for output in job.outputs if output.kind == "experiment_result"]
+        attempts = [output for output in job.outputs if output.kind == "experiment_attempt"]
+        chosen = results[-1] if results else (attempts[-1] if attempts else None)
+        if chosen is None:
+            return None
+        answer: dict[str, Any] = json.loads(self._artifact_path(chosen).read_bytes())
+        return answer
 
     def _run_result(self, job: Job) -> RunResult:
         """§5.7, read from what the job produced: the resolution and run facts its runner
@@ -841,7 +913,7 @@ class LocalApplication:
     def _resolution(self, revision: Revision, body: SolveBody) -> dict[str, Any]:
         from openflowsheet.run.manifest import policy_sha256
 
-        route = select_route(revision.as_document())
+        route = select_route(revision.as_document(), surrogates=self._surrogates())
         resolved = resolve_policies(route, body) if isinstance(route, Route) else None
         if not isinstance(route, Route) or not isinstance(resolved, tuple):
             raise api_error(
@@ -1097,7 +1169,7 @@ class LocalApplication:
         self._authorize(operation)
         self._check_view(operation, pointer, depth, cursor, limit)
         revision = self._revision(revision_id, operation)
-        document = route_structure(revision.as_document())
+        document = route_structure(revision.as_document(), surrogates=self._surrogates())
         return self._project(
             operation,
             document,
@@ -1409,14 +1481,78 @@ class LocalApplication:
             )
         # What is validated is exactly what is stored: the canonical document, read back.
         document = json.loads(canonical_json(built))
+        # ADR 0035 D2–D3 (M02 design note §6.2): a change of a variant-backed model reference is a
+        # promotion (M04 spec §8.3: or a surrogate-backed one, judged with the project's
+        # resolver), checked before anything is validated; any failed facet rejects it with the
+        # report. A compatible one writes each report's SHA-256 into the provenance (outside the
+        # content hash), so the preview and the commit name the same document.
+        reports = check_replacements(expected, document, surrogates=self._surrogates())
+        incompatible = [report for report in reports if not report.compatible]
+        if incompatible:
+            report = incompatible[0]
+            return self._rejected(
+                operation,
+                idempotency_key,
+                "model_replacement_incompatible",
+                f"model_replacement_incompatible({report.instance_id}: {', '.join(report.failed)})",
+                report=report.as_document(),
+            )
+        # M04 spec §20 A3.1 (R-360): a surrogate that no replacement judged — added, renamed, in
+        # the first revision — enters only with a PROMOTABLE re-derived verdict.
+        unpromoted = unpromoted_surrogates(expected, document, surrogates=self._surrogates())
+        if unpromoted:
+            instance_id, why = unpromoted[0]
+            reason = f"surrogate_not_promoted({instance_id})"
+            return self._rejected(
+                operation,
+                idempotency_key,
+                "model_replacement_incompatible",
+                f"model_replacement_incompatible({reason}: {why})",
+                reason=reason,
+                instance_id=instance_id,
+                cause=why,
+            )
+        if reports:
+            document = json.loads(canonical_json(_with_report_hashes(document, reports)))
         revision = Revision(
             revision_id=revision_id, document=document, parent_revision=expected_revision
         )
         return _Prepared(
             revision=revision,
-            report=validation.validate(revision.as_document(), change.task),
+            report=validation.validate(
+                revision.as_document(), change.task, surrogates=self._surrogates()
+            ),
             diff=semantic_diff(expected, document),
+            replacements=reports,
         )
+
+    def _store_replacements(
+        self,
+        connection: sqlite3.Connection,
+        revision_id: str,
+        reports: tuple[ReplacementReport, ...],
+    ) -> None:
+        """ADR 0035 D3: each report as an artifact (kind `model_replacement_report`, no job),
+        its bytes the canonical document whose SHA-256 the revision's provenance names."""
+        for report in reports:
+            data = canonical_json(report.as_document())
+            relpath = f"{REPLACEMENTS_DIR}/{revision_id}/{report.instance_id}.json"
+            (self.files_root / relpath).parent.mkdir(parents=True, exist_ok=True)
+            atomic_write_bytes(self.files_root / relpath, data)
+            self._store.register_artifacts(
+                connection,
+                [
+                    ArtifactRow(
+                        artifact_id=f"{revision_id}:model_replacement:{report.instance_id}",
+                        job_id=None,
+                        kind="model_replacement_report",
+                        name=f"model-replacement-{report.instance_id}.json",
+                        sha256=hashlib.sha256(data).hexdigest(),
+                        size_bytes=len(data),
+                        relpath=relpath,
+                    )
+                ],
+            )
 
     def _replayed(
         self, prior: LedgerRow, request_sha256: str, idempotency_key: str
@@ -1458,6 +1594,27 @@ class _Prepared:
     revision: Revision
     report: ValidationReport
     diff: SemanticDiff
+    #: ADR 0035: the compatible promotions this change makes (empty for any other change).
+    replacements: tuple[ReplacementReport, ...] = ()
+
+
+#: ADR 0035 D3: where a promotion's reports live under the files root.
+REPLACEMENTS_DIR: Final = "replacements"
+
+
+def _with_report_hashes(
+    document: Mapping[str, Any], reports: tuple[ReplacementReport, ...]
+) -> dict[str, Any]:
+    """`document` with `provenance.artifact_hashes["model_replacement:<instance>"]` = each
+    report's SHA-256 (ADR 0035 D3; outside the content hash, ADR 0002 D4). A document without a
+    provenance object is returned as it is: its validation reports the missing member."""
+    provenance = document.get("provenance")
+    if not isinstance(provenance, Mapping):
+        return dict(document)
+    hashes = dict(provenance.get("artifact_hashes") or {})
+    for report in reports:
+        hashes[f"model_replacement:{report.instance_id}"] = document_sha256(report.as_document())
+    return {**document, "provenance": {**provenance, "artifact_hashes": hashes}}
 
 
 def _unproduced(job: Job) -> ApiError:

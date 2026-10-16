@@ -176,7 +176,7 @@ def _patched(
         monkeypatch.setattr(binding_module, "bind_revision_or_reason", lambda document: legacy)
     if revision is not None:
         monkeypatch.setattr(
-            revision_binding_module, "bind_revision_flowsheet", lambda document: revision
+            revision_binding_module, "bind_revision_flowsheet", lambda document, **_: revision
         )
     return validate(CORPUS["SYN-001-T06-NET03"](), now=lambda: AT)
 

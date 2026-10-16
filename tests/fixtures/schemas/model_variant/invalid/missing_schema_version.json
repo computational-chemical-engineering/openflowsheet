@@ -1,0 +1,87 @@
+{
+  "expect_error": "'schema_version' is a required property",
+  "document": {
+    "model_id": "c1.reactor_standin",
+    "variant_id": "standin-x025-v1",
+    "synthetic": true,
+    "evaluation": {
+      "kind": "in_process",
+      "module": "openflowsheet.models.c1.reactor_standin",
+      "conversion_N2": 0.25
+    },
+    "boundary": {
+      "provider": "pr-c1-v1",
+      "reference_convention": "PR-C1-ref-v1",
+      "pressure_convention": "zero_drop",
+      "eps_P": 0.001,
+      "projection": "lsq_extent_v1",
+      "defect_limit": 1e-06,
+      "duty": "process_side",
+      "per_tube_scaling": true,
+      "hard_domain": {
+        "T_K": [
+          573.15,
+          773.15
+        ],
+        "P_Pa": [
+          5000000.0,
+          15000000.0
+        ],
+        "H2_N2": [
+          1.0,
+          4.0
+        ],
+        "inert_max": 0.2,
+        "tube_flow_mol_s": null
+      },
+      "data_domain": {
+        "T_K": [
+          643.15,
+          733.15
+        ],
+        "P_Pa": [
+          5000000.0,
+          10000000.0
+        ],
+        "H2_N2": [
+          1.5,
+          3.0
+        ]
+      }
+    },
+    "accuracy": {
+      "precision_floor_rel": 0.0,
+      "measured_path_independence_rel": 0.0,
+      "discretization_estimate": null
+    },
+    "execution": {
+      "timeout_s": null,
+      "max_retries": 0,
+      "kill_grace_s": null
+    },
+    "coupling": {
+      "tau_xi_rel": 1e-05,
+      "tau_T_K": 0.01,
+      "max_outer": 15,
+      "method": "broyden_good_v1",
+      "scales": {
+        "X": 0.1,
+        "dT_K": 10.0
+      },
+      "initial": {
+        "X": 0.15,
+        "dT_K": 80.0
+      },
+      "bounds": {
+        "X": [
+          0.0,
+          0.95
+        ],
+        "dT_K": [
+          -50.0,
+          250.0
+        ]
+      }
+    }
+  }
+}

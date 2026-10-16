@@ -36,6 +36,7 @@ if str(TESTS) not in sys.path:  # the `__main__` generator runs outside pytest's
 import t05b_support as t05b  # noqa: E402
 import t08_cstr_support as t08  # noqa: E402
 from conftest import REPO_ROOT, load_yaml  # noqa: E402
+from m02_c1_corpus import C1_CORPUS, surrogates  # noqa: E402
 
 from openflowsheet.application.revision_binding import (  # noqa: E402
     MODEL_BUILDERS,
@@ -71,6 +72,8 @@ BUILT: dict[str, Callable[[], Document]] = {
     "T08:PTC-R1-realization": t08.ptc_r1_revision,
     "T08:liquid-variant": t08.liquid_variant_revision,
     "T08:dormant": t08.dormant_revision,
+    # M02's join (R-280 (a)): the registered C1 corpus, so every C1 builder has a bound instance.
+    **{f"M02:{name}": build for name, build in C1_CORPUS.items()},
 }
 
 
@@ -120,7 +123,7 @@ def _structure(binding: RevisionBinding) -> dict[str, Any]:
 
 def outcome(document: Document) -> str:
     """`binds <sha256 of the structure>`, or the `Unbound`'s kind and detail verbatim."""
-    result = bind_revision_flowsheet(document)
+    result = bind_revision_flowsheet(document, surrogates=surrogates)
     if isinstance(result, RevisionBinding):
         text = json.dumps(_structure(result), sort_keys=True, separators=(",", ":"))
         return f"binds {hashlib.sha256(text.encode('utf-8')).hexdigest()}"
@@ -313,6 +316,28 @@ EXPECTED: dict[str, str] = {
         "binds 45a818fc10fe380e4f9566ea5d99d9c9da787626a237c84ddb676f5771a4c918"
     ),
     "T08:dormant": ("binds e3e4c930948d53b37cedb4ae1256de489d247ab0f08668504c9dd2918a7d93f8"),
+    # M02's join (R-280 (a)): the C1 corpus's rows, generated at the join; the rows above are
+    # unchanged by it.
+    "M02:C1-LOOP-M02-v1": (
+        "binds fd646a2ddede5d18dde2ae445bf6b9e2e807c3fba3721cada6d7699e46ccac1e"
+    ),
+    "M02:C1-FLASH-F1-M02-v1": (
+        "binds 048236ad9eff05e455314474db6fb80df015249ba56e525489c4919a8649271f"
+    ),
+    "M02:C1-HEATER-M02-v1": (
+        "binds 480a8ed1bb998f323c96faa98b3759296724ad3423593c6ce15bfa18764f6bdb"
+    ),
+    "M02:C1-MIXER-M02-v1": (
+        "binds 8d122ddb37ae3b8b3fc448a831bc024ce178df8a51cfa27fa64a6e04db0c9b86"
+    ),
+    "M02:C1-REACTOR-M02-v1": (
+        "binds 68f5821bd967758a371284eda807ee90bcc2b9429c1bf601b6ca48c4f8ae6e66"
+    ),
+    # W27 Amendment 3 §22.4 (R-302): M04's surrogate revision, bound through the corpus's fixture
+    # resolver; generated at its registration. The rows above are unchanged by it.
+    "M02:C1-SURROGATE-M04-v1": (
+        "binds 291932ea44010ce04fd47b8ddb916da1aa962428d4705b06da6de9f3ef7469b0"
+    ),
 }
 
 
@@ -325,7 +350,7 @@ def _bound() -> tuple[tuple[Document, RevisionBinding], ...]:
     out = []
     for name in revision_names():
         document = _document(name)
-        binding = bind_revision_flowsheet(document)
+        binding = bind_revision_flowsheet(document, surrogates=surrogates)
         if isinstance(binding, RevisionBinding):
             out.append((document, binding))
     return tuple(out)

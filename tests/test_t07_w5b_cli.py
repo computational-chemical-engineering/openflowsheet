@@ -211,6 +211,7 @@ def test_r148_with_v1_recorded_the_commands_print_the_v1_pins(
         assert now == then, " ".join(then["argv"][:2])
 
 
+@pytest.mark.usefixtures("single_threaded")
 def test_the_existing_commands_are_unchanged_byte_for_byte(tmp_path: Path) -> None:
     pinned = json.loads(PINS.read_text(encoding="utf-8"))
     record = capture_existing(tmp_path / "run")
@@ -376,10 +377,12 @@ SECTION_5_8 = (
     "limit_exceeded",
     "unsupported",
     "internal_error",
+    # ADR 0035 D3 (M02): appended, so every earlier code keeps its exit code.
+    "model_replacement_incompatible",
 )
 
 
-def test_the_exit_codes_are_2_to_15_in_section_5_8_order() -> None:
+def test_the_exit_codes_are_2_to_16_in_section_5_8_order() -> None:
     assert dict(API_EXIT_CODES) == {code: 2 + index for index, code in enumerate(SECTION_5_8)}
 
 

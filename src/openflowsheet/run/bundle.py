@@ -217,6 +217,7 @@ def _cross_check_solve_path(
     from dataclasses import replace  # noqa: PLC0415
 
     from openflowsheet.application.policies import (  # noqa: PLC0415
+        INNER_ROUTE,
         ROUTE_DEFAULT_POLICY,
         resolve_policy,
     )
@@ -232,7 +233,8 @@ def _cross_check_solve_path(
         return
     route = recorded.get("solve_path") if isinstance(recorded, Mapping) else None
     requested = recorded.get("policy_requested") if isinstance(recorded, Mapping) else None
-    known = [path for path in ROUTE_DEFAULT_POLICY if path == route]
+    # M02 design note §4.4: `revision_coupled` resolves its default through its inner route.
+    known = [path for path in (*ROUTE_DEFAULT_POLICY, *INNER_ROUTE) if path == route]
     resolved = resolve_policy(requested, known[0]) if known and isinstance(requested, str) else None
     if resolved is None:
         tampered.append(SOLVE_PATH_NAME)

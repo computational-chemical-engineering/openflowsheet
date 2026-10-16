@@ -121,8 +121,12 @@ def test_the_registry_names_each_models_zero_flow_ids() -> None:
     """Spec §6.1, §7.2: split rows `split:<c>` (heater style) or `<EQ>-mole:<c>` (products
     style); an energy row for exactly the models that can be PH-type (the reactor by its
     configuration)."""
+    # M02 design note §14.2 B13: restricted to the `syn001.` keys, the literal unchanged; the full
+    # key set and the `c1.` entries are pinned by `test_m02_wo8_registries`.
     assert {
-        model: (rule.closure, rule.split_rows, rule.energy) for model, rule in SPLIT_RULES.items()
+        model: (rule.closure, rule.split_rows, rule.energy)
+        for model, rule in SPLIT_RULES.items()
+        if model.startswith("syn001.")
     } == {
         "syn001.tp_heater": ("TP", "split", None),
         "syn001.tp_flash": ("TP", "FLASH-mole", None),

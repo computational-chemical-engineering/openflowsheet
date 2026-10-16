@@ -81,6 +81,8 @@ ApiErrorCode = Literal[
     "limit_exceeded",
     "unsupported",
     "internal_error",
+    # ADR 0035 D3 (M02 design note §6.2): a promotion whose replacement check failed.
+    "model_replacement_incompatible",
 ]
 #: §5.8's HTTP status of each code.
 API_ERROR_HTTP_STATUS: Final[Mapping[str, int]] = {
@@ -98,6 +100,7 @@ API_ERROR_HTTP_STATUS: Final[Mapping[str, int]] = {
     "limit_exceeded": 429,
     "unsupported": 501,
     "internal_error": 500,
+    "model_replacement_incompatible": 422,
 }
 #: Blueprint §11.3's six rights (ADR 0019 D4).
 Right = Literal["read", "draft", "execute", "install", "policy", "publish"]
@@ -110,7 +113,7 @@ TransactionStatus = Literal["committed", "replayed", "conflict", "rejected", "pr
 #: The certificate's own verdicts (ruling round 1 R5): copied into `RunResult`, never mapped.
 VerificationStatus = Literal["VERIFIED", "RELAXED", "UNVERIFIED", "FAILED"]
 #: `policies.SolvePath` (ruling round 1 R2.4), restated so this module imports no solver code.
-SolvePath = Literal["revision_eo", "legacy_eo"]
+SolvePath = Literal["revision_eo", "legacy_eo", "revision_coupled"]
 
 EVENT_COMMON_MEMBERS: Final[tuple[str, ...]] = (
     "job_id",
@@ -633,10 +636,134 @@ class ReproduceBody:
         )
 
 
+@dataclass(frozen=True)
+class ExperimentModel:
+    """`experiment.schema.json#/$defs/model_ref`: a variant-backed model (M02 design note §6.1)."""
+
+    id: str
+    version: str
+    artifact_ref: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {"id": self.id, "version": self.version, "artifact_ref": self.artifact_ref}
+
+
+@dataclass(frozen=True)
+class ExperimentInlet:
+    """`experiment.schema.json#/$defs/inputs`: a process inlet in SI units (mol/s, K, Pa), copied
+    exactly — no Quantity, no conversion (M02 design note §3.5)."""
+
+    components: tuple[str, ...]
+    n: tuple[float, ...]
+    temperature: float  # `T`, K
+    pressure: float  # `P`, Pa
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "components": list(self.components),
+            "n": list(self.n),
+            "T": self.temperature,
+            "P": self.pressure,
+        }
+
+
+@dataclass(frozen=True)
+class ExperimentBody:
+    """`experiment.schema.json#/$defs/experiment_body` (ADR 0033 D9; M02 design note §3.5): one
+    experiment per job. The inlet is the experiment's definition, a model input — never a solver
+    state (R-235)."""
+
+    model: ExperimentModel
+    inlet: ExperimentInlet
+    n_tubes: float
+    cache: Literal["use", "bypass"] = "use"
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "model": self.model.as_document(),
+            "inlet": self.inlet.as_document(),
+            "n_tubes": self.n_tubes,
+            "cache": self.cache,
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        model, inlet = document["model"], document["inlet"]
+        return cls(
+            model=ExperimentModel(
+                id=model["id"], version=model["version"], artifact_ref=model["artifact_ref"]
+            ),
+            inlet=ExperimentInlet(
+                components=tuple(inlet["components"]),
+                n=tuple(inlet["n"]),
+                temperature=inlet["T"],
+                pressure=inlet["P"],
+            ),
+            n_tubes=document["n_tubes"],
+            cache=document.get("cache", "use"),
+        )
+
+
+@dataclass(frozen=True)
+class SurrogateStudyParent:
+    """`surrogate-manifest.schema.json#/$defs/surrogate_study_body/parent`: a registered variant by
+    id and SHA-256."""
+
+    model_id: str
+    variant_id: str
+    variant_sha256: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "model_id": self.model_id,
+            "variant_id": self.variant_id,
+            "variant_sha256": self.variant_sha256,
+        }
+
+
+@dataclass(frozen=True)
+class SurrogateStudyBody:
+    """`surrogate-manifest.schema.json#/$defs/surrogate_study_body` (ADR 0037 D6; M04 spec §10.3):
+    one registered plan of one parent, within a budget of cold experiments."""
+
+    parent: SurrogateStudyParent
+    plan_id: str
+    max_cold_experiments: int
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "parent": self.parent.as_document(),
+            "plan_id": self.plan_id,
+            "budget": {"max_cold_experiments": self.max_cold_experiments},
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        parent = document["parent"]
+        return cls(
+            parent=SurrogateStudyParent(
+                model_id=parent["model_id"],
+                variant_id=parent["variant_id"],
+                variant_sha256=parent["variant_sha256"],
+            ),
+            plan_id=document["plan_id"],
+            max_cold_experiments=document["budget"]["max_cold_experiments"],
+        )
+
+
+JobBody = SolveBody | ReproduceBody | ExperimentBody | SurrogateStudyBody
+
 #: J3: one body type per operation, as one `oneOf` branch per enum value in the schema.
-_BODY_TYPES: Final[Mapping[str, type[SolveBody] | type[ReproduceBody]]] = {
+_BODY_TYPES: Final[
+    Mapping[
+        str,
+        type[SolveBody] | type[ReproduceBody] | type[ExperimentBody] | type[SurrogateStudyBody],
+    ]
+] = {
     "solve": SolveBody,
     "reproduce": ReproduceBody,
+    "experiment": ExperimentBody,
+    "surrogate_study": SurrogateStudyBody,
 }
 
 
@@ -646,7 +773,7 @@ class JobRequest:
 
     operation: JobOperation
     idempotency_key: str
-    body: SolveBody | ReproduceBody
+    body: JobBody
     budgets: Budgets = field(default_factory=Budgets)
 
     def __post_init__(self) -> None:
@@ -682,6 +809,10 @@ class JobRequest:
     @classmethod
     def _build(cls, document: Mapping[str, Any]) -> Self:
         operation = document["operation"]
+        if operation not in _BODY_TYPES:
+            # A schema-valid operation this build cannot run: refused here, typed, never routed
+            # to another operation's body.
+            raise ValueError(f"operation {operation!r} is not executable by this build")
         return cls(
             operation=operation,
             idempotency_key=document["idempotency_key"],
@@ -1087,21 +1218,31 @@ class JobResult:
 
     `run_result` is present iff the operation is `solve` (a failed or cancelled solve has one
     too); `replay_report` only for a `reproduce` whose report was produced; `error` is the job's.
+    `experiment` (ADR 0033 D9) is an `experiment` job's answer and only its: the deterministic
+    `result`, or the last `attempt` of a transient outcome, or `None` for a job that ended before
+    any attempt was recorded (cancelled while queued). `surrogate_study` (ADR 0037 D6) is a
+    `surrogate_study` job's answer and only its, `None` when the job ended before its study did.
     """
 
     operation: JobOperation
     run_result: RunResult | None
     replay_report: ReplayReport | None
     error: ApiError | None
+    experiment: Mapping[str, Any] | None = None
+    surrogate_study: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if (self.run_result is not None) != (self.operation == "solve"):
             raise ValueError("a job result carries a run result iff its operation is 'solve'")
         if self.replay_report is not None and self.operation != "reproduce":
             raise ValueError("only a 'reproduce' job result carries a replay report")
+        if self.experiment is not None and self.operation != "experiment":
+            raise ValueError("only an 'experiment' job result carries an experiment record")
+        if self.surrogate_study is not None and self.operation != "surrogate_study":
+            raise ValueError("only a 'surrogate_study' job result carries a study answer")
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document: dict[str, Any] = {
             "operation": self.operation,
             "run_result": self.run_result.as_document() if self.run_result is not None else None,
             "replay_report": (
@@ -1109,6 +1250,17 @@ class JobResult:
             ),
             "error": _error_document(self.error),
         }
+        if self.operation == "experiment":
+            document["experiment"] = (
+                copy.deepcopy(dict(self.experiment)) if self.experiment is not None else None
+            )
+        if self.operation == "surrogate_study":
+            document["surrogate_study"] = (
+                copy.deepcopy(dict(self.surrogate_study))
+                if self.surrogate_study is not None
+                else None
+            )
+        return document
 
     @classmethod
     def from_document(cls, document: Mapping[str, Any], *, lenient: bool = False) -> Self:
@@ -1129,6 +1281,8 @@ class JobResult:
                     else None
                 ),
                 error=_error_build(d["error"]),
+                experiment=d.get("experiment"),
+                surrogate_study=d.get("surrogate_study"),
             ),
             document,
         )

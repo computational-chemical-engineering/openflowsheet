@@ -1,4 +1,5 @@
-"""The operation bodies of a job: `solve` and `reproduce` (T07 design note §5.4, §6.2–§6.4, §8).
+"""The operation bodies of a job: `solve`, `reproduce`, `experiment` and `surrogate_study` (T07
+design note §5.4, §6.2–§6.4, §8; M02 design note §3.5; M04 spec §10.3).
 
 `execute(context, job, check=…, cancel=…)` runs one job's operation and returns its
 `WorkerResult` — the termination the owner turns into the one `ended` event (§6.2: a body never
@@ -12,7 +13,26 @@ nothing. `solve`: `resolve` (the request against the stored revision: the route,
 solve and check policies), `bind` (the route's binder, afresh for this run), `plan`, `solve`,
 `verify`, `bundle` — the last four called back from `revision_run.run_revision_session`, the same
 function a direct caller uses, so a job's bundle *is* that function's bundle (gate G6).
-`reproduce`: `integrity`, `rerun` (only when `rerun`), `compare`.
+`reproduce`: `integrity`, `rerun` (only when `rerun`), `compare`. `experiment`: `resolve` (the
+variant and the inlet), `evaluate` (`adapters.experiments`' runner: key, lock, cache, attempts,
+records), `record` (the outputs). `surrogate_study`: `resolve` (the variant), `study`
+(`studies.surrogate.study.run_study`: the plan, the budget, the experiments one by one, the
+evidence), `record` (the manifest and the evidence).
+
+**Experiments (ADR 0033 D9, M02 design note §3.5).** An `experiment` job evaluates one request and
+ends `completed` whatever the experiment's outcome — a refusal or a transient failure is a result,
+recorded; `failed` is kept for a defect. Its outputs are the records it wrote, as the store's sink
+registered them — the request, the attempts, the result, or a cache hit's row whose parent is the
+producing result — and, for a deterministic outcome it did not write (a bypassed repeat), the
+producing result's row. The body is read here and by the runner only: nothing in it reaches a
+solve (R-235). Its property calls are its own and unmetered (R-233).
+
+**Surrogate studies (ADR 0037 D6, M04 spec §10.3).** A `surrogate_study` ends `completed`
+whatever its verdict, with its answer (`job_result.surrogate_study`) in `worker_result.study`. Its
+outputs are the manifest and then the evidence that names it (none for a budget refusal; spec §18
+A1.4); its experiment records are artifacts of the job, not outputs. A cancellation recorded by
+another caller is honoured between experiments. A cancelled study keeps its records; a new job
+re-reads them through the cache.
 
 **Interruption (§8.1).** `check` raises `JobInterrupted` once cancellation is requested or the
 wall-time deadline has passed; it runs at every `Trace.record` (installed by the executor) and at
@@ -48,7 +68,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final, Self
 
-from openflowsheet.application.admission import resolve_policies
+from openflowsheet.adapters import variants
+from openflowsheet.adapters.experiments.runner import ExperimentRunner
+from openflowsheet.adapters.experiments.store import ArtifactSink, ExperimentStore
+from openflowsheet.application.admission import (
+    resolve_policies,
+    stored_surrogate_manifests,
+    surrogate_resolver,
+)
+from openflowsheet.application.coupled_run import LiveExperiments
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -65,27 +93,37 @@ from openflowsheet.application.revision_run import (
     run_revision_session,
     select_route,
 )
-from openflowsheet.application.store import JOBS_DIR, ArtifactRow, ProjectStore
+from openflowsheet.application.store import JOBS_DIR, ArtifactRow, ArtifactTableSink, ProjectStore
 from openflowsheet.application.types import (
     ApiError,
     ApiErrorCode,
     ArtifactRef,
+    ExperimentBody,
     Job,
     JobEnding,
     Progress,
     ReproduceBody,
     SolveBody,
+    SurrogateStudyBody,
 )
 from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
+from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.orchestrator.warm_start import WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
+from openflowsheet.studies.surrogate.plan import REGISTERED_PLANS, PlanRefusedError
+from openflowsheet.studies.surrogate.study import run_study
+from openflowsheet.thermo import StreamState
+from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.verify.checks import VerifierError
 
 __all__ = [
+    "EXPERIMENT_STAGES",
     "REPRODUCE_STAGES",
     "SOLVE_STAGES",
+    "SURROGATE_STUDY_STAGES",
     "RunContext",
     "WorkerResult",
     "bundle_rows",
@@ -94,9 +132,14 @@ __all__ = [
 
 _LOG = logging.getLogger(__name__)
 
+#: The evaluation context of a coupled job's experiments (the provider reads none of it).
+COUPLING_CONTEXT: Final[str] = "revision_coupled-experiments"
+
 #: §6.4.
 SOLVE_STAGES: Final[tuple[str, ...]] = ("resolve", "bind", "plan", "solve", "verify", "bundle")
 REPRODUCE_STAGES: Final[tuple[str, ...]] = ("integrity", "rerun", "compare")
+EXPERIMENT_STAGES: Final[tuple[str, ...]] = ("resolve", "evaluate", "record")
+SURROGATE_STUDY_STAGES: Final[tuple[str, ...]] = ("resolve", "study", "record")
 #: §5.4: the producer kind of each fixed file name.
 KIND_OF_FILE: Final[Mapping[str, str]] = {
     name: kind for kind, name in ARTIFACT_FILE_NAMES.items() if name is not None
@@ -105,6 +148,8 @@ PARTIAL_TRACE: Final[str] = ARTIFACT_FILE_NAMES["partial_solve_trace"] or ""
 REPLAY_REPORT: Final[str] = ARTIFACT_FILE_NAMES["replay_report"] or ""
 CERTIFICATE: Final[str] = ARTIFACT_FILE_NAMES["solution_certificate"] or ""
 FAILURE: Final[str] = ARTIFACT_FILE_NAMES["failure_bundle"] or ""
+MANIFEST_FILE: Final[str] = ARTIFACT_FILE_NAMES["surrogate_manifest"] or ""
+EVIDENCE_FILE: Final[str] = ARTIFACT_FILE_NAMES["model_evidence"] or ""
 
 
 @dataclass(frozen=True)
@@ -129,19 +174,25 @@ class WorkerResult:
     interruption: Interruption | None
     error: ApiError | None
     run: Mapping[str, Any] | None = None
+    #: A `surrogate_study` job's answer (M04 spec §10.3), written only when the study ended; the
+    #: member is absent from the document otherwise, so the other operations' are unchanged.
+    study: Mapping[str, Any] | None = None
 
     @property
     def ending(self) -> JobEnding:
         return JobEnding(status=self.status, reason=self.reason, interruption=self.interruption)
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document = {
             "status": self.status,
             "reason": self.reason,
             "interruption": self.interruption,
             "error": self.error.as_document() if self.error is not None else None,
             "run": dict(self.run) if self.run is not None else None,
         }
+        if self.study is not None:
+            document["study"] = dict(self.study)
+        return document
 
     @classmethod
     def from_document(cls, document: Mapping[str, Any]) -> Self:
@@ -152,6 +203,7 @@ class WorkerResult:
             interruption=document["interruption"],
             error=ApiError._build(error) if error is not None else None,
             run=document["run"],
+            study=document.get("study"),
         )
 
 
@@ -176,6 +228,38 @@ def warm_start_candidate(
     except (OSError, ValueError):
         document = None
     return WarmStartCandidate(document, source_job_id, source_revision_id)
+
+
+class _RecordingSink:
+    """An `ArtifactSink` that forwards to the project's and keeps a reference to each record it
+    made, in order: an experiment job's outputs (R-237)."""
+
+    def __init__(self, inner: ArtifactSink) -> None:
+        self.inner = inner
+        self.refs: list[ArtifactRef] = []
+
+    def record(
+        self,
+        *,
+        job_id: str | None,
+        kind: str,
+        name: str,
+        relpath: str,
+        sha256: str,
+        size_bytes: int,
+        parent_artifact_id: str | None,
+    ) -> str:
+        artifact_id = self.inner.record(
+            job_id=job_id,
+            kind=kind,
+            name=name,
+            relpath=relpath,
+            sha256=sha256,
+            size_bytes=size_bytes,
+            parent_artifact_id=parent_artifact_id,
+        )
+        self.refs.append(ArtifactRef(kind, artifact_id, sha256, size_bytes, name))
+        return artifact_id
 
 
 class _FenceLost(Exception):  # noqa: N818 - a signal inside this module, not an error type
@@ -369,6 +453,17 @@ class _Body:
         run: dict[str, Any] | None = None
         #: The route the solve runs on, once selected (and re-bound): named by a typed end.
         selected: Route | None = None
+        #: `revision_coupled`'s experiment records, emitted as outputs as they are written (M02
+        #: design note §4.4).
+        sink = _RecordingSink(ArtifactTableSink(store))
+        emitted = 0
+
+        def emit_records() -> None:
+            nonlocal emitted
+            for ref in sink.refs[emitted:]:
+                self._emit(output=ref)
+            emitted = len(sink.refs)
+
         try:
             self.at("resolve")
             with store.reading() as connection:
@@ -376,7 +471,9 @@ class _Body:
             if revision is None:
                 return _failed(_error("not_found", "no such revision"), run)
             document = revision.as_document()
-            route = select_route(document)
+            # M04 spec §8.2: a surrogate's manifest resolves from this project's artifacts.
+            surrogates = surrogate_resolver(store, self.context.root)
+            route = select_route(document, surrogates=surrogates)
             if not isinstance(route, Route):
                 return _failed(
                     _error(
@@ -415,7 +512,7 @@ class _Body:
                 )
 
             self.at("bind")
-            bound = bind_route(route.solve_path, document)
+            bound = bind_route(route.solve_path, document, surrogates=surrogates)
             if not isinstance(bound, Route):
                 return _failed(
                     _error(
@@ -429,8 +526,14 @@ class _Body:
             # ADR 0024 D2: the lookup is here, where the store is, and only when the policy opts
             # in on the route that reads it; the orchestrator never reads the store.
             warm_start = None
-            if bound.solve_path == "revision_eo" and WARM_START_SOURCE in policy.initializer_chain:
+            if (
+                bound.solve_path in ("revision_eo", "revision_coupled")
+                and WARM_START_SOURCE in policy.initializer_chain
+            ):
                 warm_start = warm_start_candidate(self.context, self.job.job_id, body.revision_id)
+            experiments = None
+            if bound.solve_path == "revision_coupled":
+                experiments = self._experiments(sink, emit_records)
             directory = self.directory / "bundle"
             manifest = run_revision_session(
                 bound,
@@ -443,8 +546,16 @@ class _Body:
                 trace=trace,
                 stage=self.at,
                 warm_start=warm_start,
+                experiments=experiments,
+                on_iteration=self._outer_iteration,
             )
         except JobInterrupted as interrupted:
+            # M02 design note §4.4: an interrupted coupled job keeps the experiment records it
+            # wrote (retained facts, not solve artifacts) beside the partial trace.
+            try:
+                emit_records()
+            except _FenceLost:
+                return _failed(_error("internal_error", "fence_lost"), run, "owner_lost")
             self.partial_trace(trace)
             return _interrupted(interrupted, run)
         except KeyboardInterrupt:
@@ -481,6 +592,33 @@ class _Body:
             interruption=None,
             error=None,
             run=run,
+        )
+
+    def _experiments(self, sink: ArtifactSink, emit: Callable[[], None]) -> LiveExperiments:
+        """The coupled route's experiments (M02 design note §4.3, §6.1): one runner for the job —
+        one handshake per variant, frozen — recording into the project's experiment store through
+        the job's sink, its records emitted as outputs after each experiment. The provider is a
+        fresh, unmetered one: an experiment's property calls are its own (R-233)."""
+        runner = ExperimentRunner(
+            ExperimentStore(self.context.root, sink),
+            PrC1Provider(),
+            EvaluationContext(model_version=COUPLING_CONTEXT, constants_sha256="0" * 64),
+            job_id=self.job.job_id,
+            check=self.check,
+        )
+        return LiveExperiments(runner, on_evaluated=emit)
+
+    def _outer_iteration(self, k: int, max_outer: int) -> None:
+        """M02 design note §4.4: one progress event per outer iteration. Its counts are the
+        `solve` stage's — a job's progress total is fixed and its count never goes back (§6.3
+        rule 7) — and the iteration is named in `stage` (build log D54)."""
+        self._honour_interruption()
+        self._emit(
+            progress=Progress(
+                completed=self.stages.index("solve"),
+                total=len(self.stages),
+                stage=f"solve:outer {k + 1}/{max_outer}",
+            )
         )
 
     # -- reproduce ----------------------------------------------------------------------------
@@ -542,6 +680,142 @@ class _Body:
             status="completed", reason="operation_completed", interruption=None, error=None
         )
 
+    # -- experiment ---------------------------------------------------------------------------
+
+    def experiment(self) -> WorkerResult:
+        body = self.job.request.body
+        assert isinstance(body, ExperimentBody)
+        self.stages = EXPERIMENT_STAGES
+        sink = _RecordingSink(ArtifactTableSink(self.context.store))
+        records = ExperimentStore(self.context.root, sink)
+        emitted = 0
+
+        def emit_records() -> None:
+            nonlocal emitted
+            for ref in sink.refs[emitted:]:
+                self._emit(output=ref)
+            emitted = len(sink.refs)
+
+        try:
+            self.at("resolve")
+            model = body.model
+            variant = variants.resolve(model.id, model.version, model.artifact_ref)
+            if variant is None:  # admitted, and registered variants are package data: a defect
+                return _failed(_error("internal_error", "variant_unresolved"), None)
+            runner = ExperimentRunner(
+                records,
+                PrC1Provider(),
+                EvaluationContext(
+                    model_version=variant.variant_id, constants_sha256=variant.sha256
+                ),
+                job_id=self.job.job_id,
+                check=self.check,
+            )
+            inlet = StreamState(
+                n=body.inlet.n,
+                temperature=body.inlet.temperature,
+                pressure=body.inlet.pressure,
+            )
+            self.at("evaluate")
+            outcome = runner.run(
+                variant, inlet, body.inlet.components, body.n_tubes, cache=body.cache
+            )
+            self.at("record")
+            emit_records()
+            if outcome.result is not None and not any(
+                ref.kind == "experiment_result" for ref in sink.refs
+            ):
+                producing = records.producing_artifact_id(outcome.key)
+                row = self.context.store.artifact(producing) if producing is not None else None
+                if row is not None:
+                    self._emit(output=row.as_ref())
+        except JobInterrupted as interrupted:
+            try:
+                emit_records()  # the attempts written before the interruption (§3.3)
+            except _FenceLost:
+                return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+            return _interrupted(interrupted, None)
+        except _FenceLost:
+            return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+        return WorkerResult(
+            status="completed", reason="operation_completed", interruption=None, error=None
+        )
+
+    # -- surrogate study ----------------------------------------------------------------------
+
+    def surrogate_study(self) -> WorkerResult:
+        """M04 spec §10.3: the registered plan through the experiment runner, cache first, then
+        the evidence; the manifest and then the evidence that names it by SHA-256 are the job's
+        two outputs (spec §18 A1.4). The experiment records are registered as artifacts of the
+        job (R-237's sink) but are not outputs: a study writes hundreds. A budget refusal writes
+        nothing. The job ends `completed` whatever the verdict; the answer is `study`."""
+        body = self.job.request.body
+        assert isinstance(body, SurrogateStudyBody)
+        self.stages = SURROGATE_STUDY_STAGES
+        records = ExperimentStore(self.context.root, ArtifactTableSink(self.context.store))
+        try:
+            self.at("resolve")
+            parent = body.parent
+            variant = variants.resolve(parent.model_id, parent.variant_id, parent.variant_sha256)
+            if variant is None:  # admitted, and registered variants are package data: a defect
+                return _failed(_error("internal_error", "variant_unresolved"), None)
+            runner = ExperimentRunner(
+                records,
+                PrC1Provider(),
+                EvaluationContext(
+                    model_version=variant.variant_id, constants_sha256=variant.sha256
+                ),
+                job_id=self.job.job_id,
+                check=self.check,
+            )
+            # Spec §18 A1.2: admission judged the earlier iterations; their manifests are the
+            # predecessors (an `it<i>` refused here was permitted at admission: a defect).
+            predecessors = iteration_predecessors(
+                variant,
+                body.plan_id,
+                stored_surrogate_manifests(self.context.store, self.context.root)
+                if REGISTERED_PLANS[body.plan_id][0] > 1
+                else (),
+            )
+            self.at("study")
+            outcome = run_study(
+                runner,
+                variant,
+                body.plan_id,
+                body.max_cold_experiments,
+                predecessors=predecessors,
+                between=self._honour_interruption,
+            )
+            self.at("record")
+            manifest_sha256 = evidence_sha256 = None
+            if outcome.manifest is not None and outcome.evidence is not None:
+                manifest_sha256 = self._file_output(MANIFEST_FILE, outcome.manifest).sha256
+                evidence_sha256 = self._file_output(EVIDENCE_FILE, outcome.evidence).sha256
+        except PlanRefusedError as refused:  # admission checked the plan: a defect if reached
+            return _failed(_error("internal_error", f"plan_refused({refused.code})"), None)
+        except JobInterrupted as interrupted:
+            return _interrupted(interrupted, None)
+        except _FenceLost:
+            return _failed(_error("internal_error", "fence_lost"), None, "owner_lost")
+        answer = {
+            "verdict": outcome.verdict,
+            "insufficient": list(outcome.insufficient),
+            "not_promotable": list(outcome.not_promotable),
+            "surrogate_id": outcome.surrogate_id,
+            "manifest_sha256": manifest_sha256,
+            "evidence_sha256": evidence_sha256,
+            "cold_experiments": outcome.cold_experiments,
+            "cache_hits": outcome.cache_hits,
+            "cache_misses": outcome.cache_misses,
+        }
+        return WorkerResult(
+            status="completed",
+            reason="operation_completed",
+            interruption=None,
+            error=None,
+            study=answer,
+        )
+
 
 def execute(
     context: RunContext,
@@ -563,4 +837,8 @@ def execute(
     body = _Body(context, job, check, cancel, on_stage)
     if job.operation == "solve":
         return body.solve()
+    if job.operation == "experiment":
+        return body.experiment()
+    if job.operation == "surrogate_study":
+        return body.surrogate_study()
     return body.reproduce()

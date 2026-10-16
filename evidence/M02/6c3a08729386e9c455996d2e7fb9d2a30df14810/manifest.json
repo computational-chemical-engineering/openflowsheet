@@ -1,0 +1,83 @@
+{
+  "work_package": "M02",
+  "commit": "6c3a08729386e9c455996d2e7fb9d2a30df14810",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "C1-LOOP-M02-v1 (the M02 close-out follow-up: D133-D135 and the D134 wording)",
+    "case_hash": "51152d15dd55600fa603d4ad5f39cd5eed647b1ccd183324bbf3f456287aae71",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=$PWD/src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "1c2482383abe5f75a845fa32fb7df50d9c2a5cc7dd93a6ba3c89697180b398cf"
+    }
+  ],
+  "checks": [
+    {
+      "id": "M02-followup.D133",
+      "description": "R-341 as built (D133): the R0 guard on a failure bundle's compact record digest; negative control and unit test.",
+      "result": "pass",
+      "value": {
+        "commit": "39e6b0c",
+        "tests": [
+          "tests/test_m02_wo10_coupled.py::test_r341_a_copy_that_does_not_digest_its_record_is_a_difference",
+          "tests/test_m02_wo10_coupled.py::test_r341_a_failure_bundle_naming_another_record_is_refused"
+        ]
+      }
+    },
+    {
+      "id": "M02-followup.D134",
+      "description": "R-390 as built (D134): 4-ulp relative slack on v3's inert floor; reworded rationale (review S1, S2) is comment and build-log text only.",
+      "result": "pass",
+      "value": {
+        "commit": "768690f",
+        "tests": [
+          "tests/test_m02_wo12b_v3.py::test_c1_the_slack_is_four_ulp_of_one",
+          "tests/test_m02_wo12b_v3.py::test_c1_the_design_composition_on_the_floor_is_accepted_at_every_flow_scaling",
+          "tests/test_m02_wo12b_v3.py::test_c1_a_composition_1e_12_below_the_floor_is_still_refused",
+          "tests/test_m02_variants.py::test_e3_the_floor_is_inclusive_within_its_slack_and_refuses_below_it"
+        ]
+      }
+    },
+    {
+      "id": "M02-followup.D135",
+      "description": "R-343 as built (D135): envelope L-rows L44, L45, L46, L48 and the M02 limitations harvest.",
+      "result": "pass",
+      "value": {
+        "commit": "b6f51d8",
+        "tests": [
+          "tests/test_t08_w2_support_envelope.py",
+          "tests/test_t08_w2_unsupported.py",
+          "tests/test_t08_w4_changelog.py"
+        ],
+        "note": "51 passed per D135; t08_support_matrix.py --check reported 0 problems"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/reviews/M02-followup-review.md",
+      "sha256": "addc6280056d861ffda392b4f5925deca6921f13b615cb1d4dc7b9a5af5a4aa0",
+      "description": "The design-lane review of the follow-up (verdict merge; S1, S2 applied by this commit)."
+    },
+    {
+      "path": "docs/design/M02-build-decisions.md",
+      "sha256": "582bc76ed491ea7b9e60d85fe78cc28f820ab310985a22f4e5b473ed9c1370cd",
+      "description": "The build log (D133-D135)."
+    }
+  ],
+  "limitations": [
+    "R-341, R-343 and R-390 are v0.2 requirement ids the manifest schema's requirements pattern ([DA]nn) cannot carry, so requirements is empty; this package maps to no D/A requirement of its own (it extends M02, whose manifest carries D10).",
+    "Case hash and environment lock hash are those of the M02 manifest (ba90619c): this follow-up adds no case and no environment.",
+    "The gate command's stdout_sha256 is the hash of its one summary line, 'GATE PASS 54b7baa: 8675 passed, 31 skipped, 2 deselected, 1 warning in 1532.47s', run on the tree before the manifest was added; the gate has a first run that failed ruff E501 on the comment's line length, fixed by rewrapping before this commit.",
+    "Tested, not reviewed: the design-lane review (docs/reviews/M02-followup-review.md) is a merge verdict on the code; it is not a numerical or process-model sign-off."
+  ],
+  "review": {
+    "numerical": "pending (design-lane review: merge, docs/reviews/M02-followup-review.md)",
+    "process_model": "pending"
+  }
+}
