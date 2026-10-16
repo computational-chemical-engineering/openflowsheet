@@ -76,7 +76,7 @@ from openflowsheet.application.revision_binding import (
     bind_revision_flowsheet,
 )
 from openflowsheet.application.structure_index import structure_index
-from openflowsheet.canonical import canonical_json
+from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.graph.analysis import analyse, analyse_declaration
 from openflowsheet.graph.process import ProcessGraph
@@ -1119,6 +1119,11 @@ def reproduce_bundle(
         name: read_artifact(Path(rerun_directory), name) for name in rerun_manifest.artifacts
     }
     if coupling is not None:
+        # R-341's R0 guard digests the rerun record as written, before any digest in it is
+        # replaced for shape.
+        fresh_record_sha256 = (
+            document_sha256(artifacts[COUPLING_NAME]) if COUPLING_NAME in artifacts else None
+        )
         # §14.5 D8 (R-308) items 1 and 3: the inner solves' constants digests for shape, in the
         # record and in every artifact that carries the final one (build log D94; item 2 guards
         # it; the manifest is not compared), and the iterates under the archive's policy.
@@ -1142,7 +1147,7 @@ def reproduce_bundle(
             artifacts[COUPLING_NAME] = shaped
             classified_bitwise = shaped == fresh_record
         # Build log D130 (D124): a failure bundle's compact copy of the record by the same rules,
-        # its `record_sha256` for shape.
+        # its `record_sha256` for shape, each side's guarded by its own record's digest (R-341).
         failure = artifacts.get(FAILURE_NAME)
         if FAILURE_NAME in manifest.artifacts and isinstance(failure, dict):
             archived = read_artifact(directory, FAILURE_NAME)
@@ -1154,6 +1159,8 @@ def reproduce_bundle(
                     archived_copy,
                     coupling["coupling_block"],
                     manifest.numerical_policy_id,
+                    fresh_record_sha256=fresh_record_sha256,
+                    recorded_record_sha256=document_sha256(coupling),
                 )
                 coupling_found += floored
                 classified_bitwise = classified_bitwise and shaped_copy == fresh_copy

@@ -675,16 +675,91 @@ def test_d130_a_failure_bundle_copy_outside_its_floor_is_a_difference() -> None:
     near["record_sha256"] = "b" * 64
     near["iterations"][0]["rho"] = 8000.5
     near["iterations"][0]["units"]["reactor"]["r_xi"] = 1e-7
-    shaped, found = coupled_run.compact_differences(near, recorded, block, CURRENT_POLICY_ID)
+    digests = {"fresh_record_sha256": "b" * 64, "recorded_record_sha256": "a" * 64}
+    shaped, found = coupled_run.compact_differences(
+        near, recorded, block, CURRENT_POLICY_ID, **digests
+    )
     assert (shaped, found) == (recorded, [])
     far = copy.deepcopy(near)
     far["record_sha256"] = "not a digest"
     far["iterations"][0]["rho"] = 8002.0
-    shaped, found = coupled_run.compact_differences(far, recorded, block, CURRENT_POLICY_ID)
+    shaped, found = coupled_run.compact_differences(
+        far,
+        recorded,
+        block,
+        CURRENT_POLICY_ID,
+        fresh_record_sha256="not a digest",
+        recorded_record_sha256="a" * 64,
+    )
     assert shaped["record_sha256"] == "not a digest"
     assert len(found) == 1 and found[0].startswith(
         "failure-bundle.json<root>.observations.external_coupling.iterations[0].rho"
     )
+
+
+def test_r341_a_copy_that_does_not_digest_its_record_is_a_difference() -> None:
+    """R-341's R0 guard, on each side: a well-formed archived digest that is not the archived
+    record's, or a rerun digest that is not the rerun record's, is named and not replaced."""
+    recorded = {"record_sha256": "a" * 64, "iterations": []}
+    fresh = {"record_sha256": "b" * 64, "iterations": []}
+    block = {"tau_xi_rel": 1e-5, "tau_T_K": 1e-2}
+    prefix = "failure-bundle.json<root>.observations.external_coupling.record_sha256: "
+    for fresh_digest, recorded_digest, side in (
+        ("b" * 64, "c" * 64, "the archived copy's"),
+        ("c" * 64, "a" * 64, "the rerun copy's"),
+    ):
+        shaped, found = coupled_run.compact_differences(
+            fresh,
+            recorded,
+            block,
+            CURRENT_POLICY_ID,
+            fresh_record_sha256=fresh_digest,
+            recorded_record_sha256=recorded_digest,
+        )
+        assert shaped == fresh
+        assert len(found) == 1 and found[0].startswith(prefix + side), found
+
+
+def test_r341_a_failure_bundle_naming_another_record_is_refused(
+    tmp_path: Path, register: Any
+) -> None:
+    """R-341's negative control on a real bundle. F4's loop at `max_outer` 3: a bitwise rerun of
+    the untouched bundle is a bitwise `MATCH` (each copy digests its own record). The same bundle
+    with its failure bundle's `record_sha256` replaced by another well-formed digest, written
+    again by the project's own writer (so it verifies), is a `MISMATCH` naming the guard; before
+    R-341 the wrong digest replaced the rerun's and the reproduction was a `MATCH`."""
+    from openflowsheet.canonical import document_sha256
+    from openflowsheet.run.bundle import write_bundle
+
+    base = out_of_process("r341-max-outer-3", ["nonlinear"]).document
+    document = {**base, "coupling": {**base["coupling"], "max_outer": 3}}
+    variant = register(variants.variant_from_document(document))
+    runner = runner_in(tmp_path / "records", backend_for=synthetic_backend(tmp_path / "env"))
+    manifest, artifacts = solve(
+        pinned(loop(), variant), tmp_path / "bundle", LiveExperiments(runner)
+    )
+    assert manifest.outcome == "COUPLING_NOT_CONVERGED"
+    intact = reproduce_bundle(
+        tmp_path / "bundle", rerun=True, rerun_directory=tmp_path / "rerun", run_id="run-rerun"
+    ).report
+    assert (intact.verdict, intact.differences, intact.bitwise_floats) == ("MATCH", (), True)
+    stored, _ = read_manifest(tmp_path / "bundle")
+    archived = {name: read_artifact(tmp_path / "bundle", name) for name in stored.artifacts}
+    copy_ = archived["failure-bundle.json"]["observations"]["external_coupling"]
+    assert copy_["record_sha256"] == document_sha256(archived["external-coupling.json"])
+    copy_["record_sha256"] = "0" * 64
+    write_bundle(tmp_path / "tampered", stored, archived)
+    report = reproduce_bundle(
+        tmp_path / "tampered", rerun=True, rerun_directory=tmp_path / "rerun2", run_id="run-2"
+    ).report
+    assert report.verdict == "MISMATCH"
+    assert any(
+        line.startswith(
+            "failure-bundle.json<root>.observations.external_coupling.record_sha256: "
+            "the archived copy's '" + "0" * 64
+        )
+        for line in report.differences
+    ), report.differences
 
 
 def test_r3_a_request_that_is_not_the_records_is_a_mismatch_naming_it(
