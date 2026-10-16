@@ -1,7 +1,12 @@
 # ADR 0036 — M04: a registered uniform reference box, a plan registered before the parent runs, joint split-conformal with width limits as scales, and promotion decided by an integer coverage test
 
-**Status:** Proposed, 2026-10-08. Accepted when M04's evidence manifest is `tested` for M04.A01–A24 and A34 of the
-specification and the design-lane review of WO-2, WO-3 and WO-5 has closed its must-fix items.
+**Status:** **Accepted, 2026-10-16**, with Amendments 1 and 2 (design lane; register R-410). Proposed 2026-10-08.
+The condition it was accepted on: M04's evidence manifest is `tested` for M04.A01–A24 and A34 of the specification and
+the design-lane review of WO-2, WO-3 and WO-5 has closed its must-fix items. Met by
+`evidence/M04/8df0ea7…/manifest.json` (`tested`, 60/61; M04.A01–A24 and A34 `pass`) and by `docs/reviews/M04-review.md`
+(one pass over `37ae0adc..3f99eee`, WO-1–WO-20), whose must-fix MF1 and MF2 are closed by `6363c24` (R-360, A48) and
+`8ad0ec7` (R-361, A24's added mutations), both ancestors of `8df0ea7`, merged as `78685cc`. No part of the condition
+depends on the real surrogate, whose verdict is NOT_PROMOTABLE (R-364).
 **Author:** design lane (`specifier`), M04; brief `docs/briefs/M04-specification.md`.
 **Normative text:** `docs/derivations/M04-spec.md` §3.4, §3.6, §4–§7, §11; expectations
 `benchmarks/m04/reference_values.json` and the registered plan `benchmarks/m04/plan-it1.json` from

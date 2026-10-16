@@ -1,8 +1,12 @@
 # ADR 0037 — M04: the surrogate is a native extent-fixed unit pinned by its manifest's hash, promoted and rolled back through ADR 0035's checked commit with one new facet
 
-**Status:** Proposed, 2026-10-08. Accepted when M04's evidence manifest is `tested` for M04.A12–A15, A25–A30 and A35,
-the design-lane review of WO-7 and WO-8 is recorded, and ADR 0035 is Accepted (this ADR amends it and is void if it is
-withdrawn).
+**Status:** **Accepted, 2026-10-16**, with Amendment 1 (design lane; register R-411). Proposed 2026-10-08. The
+condition it was accepted on: M04's evidence manifest is `tested` for M04.A12–A15, A25–A30 and A35, the design-lane
+review of WO-7 and WO-8 is recorded, and ADR 0035 is Accepted (this ADR amends it and is void if it is withdrawn). Met
+by `evidence/M04/8df0ea7…/manifest.json` (`tested`; M04.A12–A15, A25–A30 and A35 `pass`, A25–A30 on the synthetic
+parent), by `docs/reviews/M04-review.md` (one pass over `37ae0adc..3f99eee`, WO-7 and WO-8 included; MF1 closed by
+`6363c24`, R-360, A48) and by ADR 0035's acceptance (R-381). A33, the real surrogate in the C1 loop, is conditional on
+a PROMOTABLE real verdict; the verdict is NOT_PROMOTABLE (R-364) and A33 is `not_applicable`, outside the condition.
 **Author:** design lane (`specifier`), M04; brief `docs/briefs/M04-specification.md`.
 **Normative text:** `docs/derivations/M04-spec.md` §3.2–§3.3, §3.5–§3.7, §8, §10.
 **Amends:** ADR 0035 D2 (the replacement check also applies when a side is surrogate-backed; a new facet
