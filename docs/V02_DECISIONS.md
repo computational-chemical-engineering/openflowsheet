@@ -879,3 +879,6 @@ Grep, don't read whole. Newest at the bottom.
   (negative control MATCH→MISMATCH); D134 C1 slack 4·2⁻⁵² (exact compare refused 46.2 % of 2×10⁵ scalings, max shortfall 1.59·2⁻⁵²;
   pin rewritten 1 ulp accepted/16 refused); D135 L44/L45/L46/L48, harvest [1]→L44 [2]→L45 [3]→L48 [5]→L46 [6]→L44. `reviewer` launched
   (R-390 if it rules D134).
+- **M02 follow-up review** (2026-10-16, `reviewer`, `54b7baa`, R-390): merge; D134 4·2⁻⁵² confirmed (correct worst case just under
+  8 rounding units vs slack 8; adversarial 10⁵ states refused 0, exact 11.1 %); should-fix S1/S2 wording only. R-390 taken →
+  M07 continues at R-391. Sonnet on S1/S2 + manifest `evidence/M02-followup/…`.
