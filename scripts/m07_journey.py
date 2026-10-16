@@ -195,17 +195,34 @@ def tc1(
     e_after: float | None,
     grid: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    """§4.4.5: the refined decision against the best verified parent grid point. A candidate
-    without a verified parent value or a noise floor is `TC1_NOT_APPLICABLE` (build decision J3)."""
+    """§4.4.5 on R3's candidate values (T*, J* if verified, e*) against the best verified parent
+    grid point B (Amendment 1 A1.1, R-420): `TC1_NOT_APPLICABLE` when T*, J* or e* is null, then
+    `TC1_NO_GRID`, then `TC1_NOT_APPLICABLE` at B's T when B has no noise floor — B is never
+    replaced by a lesser point that has one — and otherwise the inequality."""
     if t_after is None or j_after is None or e_after is None:
         return {"outcome": "TC1_NOT_APPLICABLE", "best_grid_T": None}
     best = best_point(grid)
     if best is None:
         return {"outcome": "TC1_NO_GRID", "best_grid_T": None}
-    if best["e"] is None:  # no noise floor at B: not judged (build decision J3)
+    if best["e"] is None:
         return {"outcome": "TC1_NOT_APPLICABLE", "best_grid_T": best["T"]}
     holds = j_after >= best["J"] - (e_after + best["e"])
     return {"outcome": "TC1_HOLDS" if holds else "TC1_CONTRADICTED", "best_grid_T": best["T"]}
+
+
+def tc1_missing(
+    t_after: float | None,
+    j_after: float | None,
+    e_after: float | None,
+    grid: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    """The `tc1` member's `missing` (A1.1): empty, or the first absent of `t_after`, `j_after`,
+    `e_after` and B's floor `e_B`."""
+    for name, value in (("t_after", t_after), ("j_after", j_after), ("e_after", e_after)):
+        if value is None:
+            return [name]
+    best = best_point(grid)
+    return ["e_B"] if best is not None and best["e"] is None else []
 
 
 def bound_activity(t: float | None) -> str | None:
@@ -246,7 +263,8 @@ def pair(
 ) -> dict[str, Any]:
     """§4.4.3. `t_before` is a parent grid point; `after` is (t, j, e, verified) of the parent
     value at the after-decision. A missing value nulls t_after and says which (FE_NOT_DETERMINED);
-    an unavailable noise floor counts as missing (build decision J3)."""
+    a null noise floor is missing, never 0 (Amendment 1 A1.1, R-420). At most one field per side,
+    in the order t_before, j_before, e_before, t_after, j_after, e_after."""
     t_after, j_after, e_after, after_verified = after
     before = _grid_point(grid, t_before)
     missing: list[str] = []
@@ -513,7 +531,7 @@ def m05_parent_extras(document: Mapping[str, Any], runner: Any) -> ParentExtras 
         if not solve.certified or solve.objective != entry["J"]:
             return None, None
         floor = noise_floor(parent, solve)
-        e = 0.0 if floor is None else floor.e_star
+        e = None if floor is None else floor.e_star  # never read as 0 (Amendment 1 A1.1)
         return e, [item.as_document() for item in solve.constraints]
 
     return extras
@@ -985,7 +1003,8 @@ def derive(record: dict[str, Any]) -> dict[str, Any]:
         "P13": pair("P13", r1["decision"], r3_after(r3), grid),
     }
     t_after, j_after, e_after, verified = r3_after(r3)
-    record["tc1"] = tc1(t_after, j_after if verified else None, e_after, grid)
+    candidate = (t_after, j_after if verified else None, e_after)
+    record["tc1"] = {**tc1(*candidate, grid), "missing": tc1_missing(*candidate, grid)}
     record["decision"] = journey_decision(r1, r3, record["tc1"])
     record["parent_checks"] = parent_checks(record)
     record["accounting"] = accounting(rungs)
@@ -1176,7 +1195,8 @@ def render(record: Mapping[str, Any]) -> str:
     truth = sections[6]
     truth.append(
         f"TC-1: `{record['tc1']['outcome']}`; best verified parent grid point "
-        f"{_n(record['tc1']['best_grid_T'])} K."
+        f"{_n(record['tc1']['best_grid_T'])} K"
+        + (f"; missing {', '.join(record['tc1']['missing'])}." if record["tc1"]["missing"] else ".")
     )
     for who, check in record["parent_checks"].items():
         if check is None:

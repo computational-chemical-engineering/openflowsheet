@@ -11,6 +11,7 @@ a synthetic noise floor) is a fixture for `check` and `render` only and never W2
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 import subprocess
 import sys
@@ -193,6 +194,32 @@ def test_a05_the_fe_fixtures_cover_the_five_classes() -> None:
     }
 
 
+def reference() -> Any:
+    """The reference generator as a module (its rules, independent of the journey's)."""
+    if "m07_reference" not in sys.modules:
+        spec = importlib.util.spec_from_file_location("m07_reference", GENERATOR)
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules["m07_reference"] = module
+        spec.loader.exec_module(module)
+    return sys.modules["m07_reference"]
+
+
+@pytest.mark.parametrize("side", ["e_before", "e_after"])
+def test_a05_a_null_noise_floor_makes_the_pair_not_determined(side: str) -> None:
+    """Amendment 1 A1.1 (R-420) on fe-01's numbers: a null floor on either side nulls t_after and
+    names the field; read as 0 the same pair would be FE_CHANGED."""
+    floors: dict[str, float | None] = {"e_before": SYNTHETIC_E, "e_after": SYNTHETIC_E, side: None}
+    grid = [{"T": 673.0, "J": 0.5, "e": floors["e_before"], "verified": True}]
+    made = m07.pair("P13", 673.0, (653.0, 0.5 + 2.0**-19, floors["e_after"], True), grid)
+    assert made["t_after"] is None
+    assert made["missing"] == [side]
+    assert made["fe_class"] == "FE_NOT_DETERMINED"
+    as_zero = {"t_before": 673.0, "t_after": 653.0, "j_before": 0.5, "j_after": 0.5 + 2.0**-19}
+    as_zero.update({**floors, side: 0.0})
+    assert reference().fe_class(as_zero) == m07.fe_class(as_zero) == "FE_CHANGED"
+
+
 @pytest.mark.parametrize("fixture", FIXTURES["tc1"], ids=lambda f: f["id"])
 def test_a06_truth_check(fixture: Mapping[str, Any]) -> None:
     assert (
@@ -209,6 +236,31 @@ def test_a06_the_tc1_fixtures_cover_the_four_outcomes() -> None:
         "TC1_NO_GRID",
         "TC1_NOT_APPLICABLE",
     }
+
+
+def test_a06_tc1_names_what_is_missing_and_reads_r3s_candidate(dry: Mapping[str, Any]) -> None:
+    """A1.1: `tc1.missing` names the absent value; TC-1 is judged on R3's candidate, not on P13's
+    t_after, which a missing floor at R1's decision nulls."""
+    by_id = {f["id"]: f for f in FIXTURES["tc1"]}
+    args = ("t_after", "j_after", "e_after", "grid")
+    assert m07.tc1_missing(*(by_id["tc1-08-no-floor-at-best"][a] for a in args)) == ["e_B"]
+    assert m07.tc1_missing(*(by_id["tc1-09-no-floor-after"][a] for a in args)) == ["e_after"]
+    assert m07.tc1_missing(*(by_id["tc1-01-dominates"][a] for a in args)) == []
+
+    def floorless_decision(rungs: dict[str, Any]) -> None:
+        j = rungs["R1"]["grid"][0]["J"]
+        for point in rungs["R1"]["grid"]:
+            point["J"] = j
+        rungs["R1"]["grid"][4]["e"] = None  # R1 decides 673.15 (INDIFFERENT); B is 653.15
+        rungs["R1"].update(outcome="INDIFFERENT", decision=673.15, bound_activity="INTERIOR")
+        rungs["R3"] = r3_study("DECISION_STABLE", candidate(670.0, j + 1e-9))
+
+    record = rederived(dry, floorless_decision)
+    assert record["pairs"]["P13"]["missing"] == ["e_before"]
+    assert record["pairs"]["P13"]["t_after"] is None
+    assert record["tc1"] == {"outcome": "TC1_HOLDS", "best_grid_T": 653.15, "missing": []}
+    assert record["decision"]["label"] == "refined"
+    assert accepted(record) == []
 
 
 @pytest.mark.parametrize("fixture", FIXTURES["bound"], ids=lambda f: f["id"])
