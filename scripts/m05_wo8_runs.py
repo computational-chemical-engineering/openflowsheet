@@ -8,27 +8,37 @@ in-process variant (registered for this process only, as M02's and M04's tests d
 `ExperimentRunner` over a fresh, empty experiment store (F-18):
 
 - `TR-E2`: `m05-synthetic-interior-v1` with its closed-form gradient (§5.2);
+- `TR-E2-FAR`: TR-E2 from the test-only start 663.15 K, d₀ = −0.5 (G5b, §20.2, R-403);
 - `TR-E2-FD`: the same variant through `ParentExperimentTruth`, FD gradients and the once-per-study
   `M05-fd-v2` check at the start inlet (§5.3, §17.2);
 - `LOOP-R`: M04's `m04-synthetic-rough-v1` (not promotable): stage A skipped, stage C with FD
   gradients and the no-surrogate basis.
 
-Every case: start 673.15 K, `IN_PROCESS_BUDGET`, `M05-trf-config-v1` with σ = 0.0125, and the
-no-surrogate basis `M05-basis-v2` (`m05_basis_v2`, R-400: v1's affine Taylor basis plus the truth's
-curvature along the decision path, from M02's pinned inner solve at d₀ ± t); `run_case` takes
-`basis_policy="M05-basis-v1"` for the v1 runs of 6a9d29d (F-15's evidence). The FD truths'
-`M05-fd-v2` check runs inside the first stage-C run (R-406).
+Every case but TR-E2-FAR: start 673.15 K. Every case: `IN_PROCESS_BUDGET`, `M05-trf-config-v1`
+with σ = 0.0125, and the no-surrogate basis `M05-basis-v2` (`m05_basis_v2`, R-400: v1's affine
+Taylor basis plus the truth's curvature along the decision path, from M02's pinned inner solve at
+d₀ ± t); `run_case` takes `basis_policy="M05-basis-v1"` for the v1 runs of 6a9d29d (F-15's
+evidence). The FD truths' `M05-fd-v2` check runs inside the first stage-C run (R-406).
 `LOOP-S` needs stage A on M04's promoted surrogate (`SurrogateTruth`, §6.4), which this branch does
 not carry; it is not a case here (WO-8 build log).
 
 Writes, beside `<record>.json`: `<record>.coupling/<solve_id>.json`, the canonical bytes of every
 M02 coupling record a solve digested (R-385), and `<record>.ledger.json`, every holder request in
-order without its `wall_s` (its sha256 is `artifacts.ledger`). `--replay` re-runs the case from a
-fresh store and compares with the committed files (G10, §19.4): the record by
-`m05_replay.replay_differences`, the ledger exactly, and every persisted coupling record by
-integrity and content. Prints one summary line; exit 0 iff the run (or the replay) is clean.
+order without its `wall_s` (its sha256 is `artifacts.ledger`), `<record>.store.json`, every
+attempt record the study's experiment store holds at its end (`{experiment_key, attempt}`, sorted),
+against which `m05_replay.store_bijection_violations` evaluates §8.3's store bijection (G7), and
+`<record>.environment.json`, the environment the run was made in (`environment_fingerprint`; build
+log S59). `--replay` re-runs the case from a fresh store and compares with the committed files
+(G10, §19.4): the environment exactly (G10 is a same-machine, same-environment criterion), the
+record by `m05_replay.replay_differences`, the ledger and the store index exactly, and every
+persisted coupling record by integrity and content. Prints one summary line; exit 0 iff the run
+(or the replay) is clean and the store bijection holds.
 
-    .venv-nlp/bin/python scripts/m05_wo8_runs.py TR-E2 [--replay]
+The numbers depend on the OpenMP thread count (`.venv-nlp`'s OpenBLAS is its OpenMP build: TR-E2-FD
+iteration 0's θ differs in the 16th digit between 1, 2 and 48 threads; S59), so a run needs
+`OMP_NUM_THREADS=1`, as `scripts/m03_nlp_measurements.py` does:
+
+    OMP_NUM_THREADS=1 .venv-nlp/bin/python scripts/m05_wo8_runs.py TR-E2 [--replay]
 """
 
 from __future__ import annotations
@@ -36,7 +46,9 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import importlib.metadata
 import json
+import os
 import platform
 import sys
 import tempfile
@@ -95,6 +107,8 @@ INVENTORY_PATH: Final = REPO_ROOT / "benchmarks" / "m05" / "trsp-inventory-x86_6
 RECORDS: Final = REPO_ROOT / "benchmarks" / "m05" / "records"
 #: §7.2: S0's nominal decision, K.
 START_K: Final = 673.15
+#: §20.2 (R-403): G5b's test-only start, a quarter of the box below S0 (d₀ = −0.5), K.
+FAR_START_K: Final = 663.15
 
 HOLDS: Final = "holds_by_construction"
 #: §5.2's TR-E2 column of A1-A7 (A3 holds: the gradient is analytic).
@@ -120,6 +134,7 @@ class Case:
     variant: Callable[[], variants.Variant]
     backend_for: Callable[[variants.Variant], Any]
     truth_class: type[ParentExperimentTruth]
+    start_k: float = START_K
 
     @property
     def finite_difference(self) -> bool:
@@ -134,6 +149,13 @@ CASES: Final = {
     case.name: case
     for case in (
         Case("TR-E2", synthetic.synthetic_variant, synthetic.backend_for, synthetic.SyntheticTruth),
+        Case(
+            "TR-E2-FAR",
+            synthetic.synthetic_variant,
+            synthetic.backend_for,
+            synthetic.SyntheticTruth,
+            start_k=FAR_START_K,
+        ),
         Case("TR-E2-FD", synthetic.synthetic_variant, synthetic.backend_for, ParentExperimentTruth),
         Case(
             "LOOP-R",
@@ -194,12 +216,59 @@ def environment() -> dict[str, Any]:
     }
 
 
+def _cpu_model() -> str | None:
+    try:
+        lines = Path("/proc/cpuinfo").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    models = (line.split(":", 1)[1].strip() for line in lines if line.startswith("model name"))
+    return next(models, None)
+
+
+def environment_fingerprint() -> dict[str, Any]:
+    """The environment a run was made in, beside the record (build log S59): G10 compares two runs
+    only when these are equal. The interpreter's packages (every distribution on `sys.path`, name
+    and version) and, for a conda environment, its package builds (`conda-meta`, which names the
+    native libraries such as OpenBLAS's threading build) are digests; the environment's path is not
+    part of it, so the same environment in another worktree compares equal."""
+    distributions = sorted(
+        {f"{d.metadata['Name']}=={d.version}" for d in importlib.metadata.distributions()}
+    )
+    conda_meta = Path(sys.prefix) / "conda-meta"
+    builds = sorted(path.name for path in conda_meta.glob("*.json")) if conda_meta.is_dir() else []
+    return {
+        "omp_num_threads": os.environ.get("OMP_NUM_THREADS"),
+        "python": sys.version,
+        "distributions": len(distributions),
+        "distributions_sha256": hashlib.sha256("\n".join(distributions).encode()).hexdigest(),
+        "conda_builds": len(builds),
+        "conda_builds_sha256": hashlib.sha256("\n".join(builds).encode()).hexdigest(),
+        "machine": platform.node(),
+        "cpu": _cpu_model(),
+        "cpu_count": os.cpu_count(),
+    }
+
+
+def store_index(root: Path) -> list[dict[str, Any]]:
+    """Every attempt record of the experiment store under `root` (`attempts/<n>.json`), sorted."""
+    base = ExperimentStore(root).base
+    return sorted(
+        (
+            {"experiment_key": path.parent.parent.name, "attempt": int(path.stem)}
+            for path in base.glob("*/*/attempts/*.json")
+        ),
+        key=lambda item: (item["experiment_key"], item["attempt"]),
+    )
+
+
 @dataclass
 class Run:
     record: dict[str, Any]
     couplings: dict[str, bytes]
     ledger: bytes
     check: GradientCheck | None
+    store: bytes
+    bijection: list[str]
 
 
 def c1_parent(
@@ -267,7 +336,7 @@ def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run
     result = run_study(
         parent,
         decisions=parent.decisions,
-        start={decision.name: START_K},
+        start={decision.name: case.start_k},
         stage_c=stage,
         budget=StudyBudget(IN_PROCESS_BUDGET),
         projection_check=parent.project_at,
@@ -316,7 +385,13 @@ def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run
         fd_check=None if check is None else check.as_document(),
     )
     assert PYOMO_VERSION == record["environment"]["pyomo_version"]
-    return Run(record, couplings, ledger, check)
+    index = store_index(root)
+    bijection = replay.store_bijection_violations(
+        index,
+        json.loads(ledger),
+        {solve_id: json.loads(data) for solve_id, data in couplings.items()},
+    )
+    return Run(record, couplings, ledger, check, canonical_json(index), bijection)
 
 
 def write(case: Case, run: Run) -> None:
@@ -329,6 +404,10 @@ def write(case: Case, run: Run) -> None:
     for solve_id, data in run.couplings.items():
         (coupling / f"{solve_id}.json").write_bytes(data)
     stem.with_suffix(".ledger.json").write_bytes(run.ledger)
+    stem.with_suffix(".store.json").write_bytes(run.store)
+    stem.with_suffix(".environment.json").write_text(
+        json.dumps(environment_fingerprint(), indent=1) + "\n", encoding="utf-8"
+    )
     stem.with_suffix(".json").write_text(
         json.dumps(run.record, indent=1, sort_keys=False) + "\n", encoding="utf-8"
     )
@@ -337,10 +416,21 @@ def write(case: Case, run: Run) -> None:
 def compare(case: Case, run: Run) -> list[str]:
     """G10 (§19.4): the fresh run against the committed files."""
     stem = case.stem
+    found = [
+        f"environment {key}: {value!r} recorded, {now.get(key)!r} now"
+        for environment in (
+            json.loads(stem.with_suffix(".environment.json").read_text(encoding="utf-8")),
+        )
+        for now in (environment_fingerprint(),)
+        for key, value in environment.items()
+        if now.get(key) != value
+    ]
     recorded = json.loads(stem.with_suffix(".json").read_text(encoding="utf-8"))
-    found = replay.replay_differences(recorded, run.record)
+    found += replay.replay_differences(recorded, run.record)
     if stem.with_suffix(".ledger.json").read_bytes() != run.ledger:
         found.append("ledger: the request sequence differs")
+    if stem.with_suffix(".store.json").read_bytes() != run.store:
+        found.append("store: the attempt records differ")
     directory = stem.with_suffix(".coupling")
     found += replay.persisted_violations(recorded, directory)
     for solve_id, data in run.couplings.items():
@@ -373,7 +463,8 @@ def summary(case: Case, run: Run) -> str:
         f"{case.name} status={record['status']} runs={outcomes} iterations={iterations} "
         f"theta_recheck={theta} candidates={statuses} T*={decision!r} "
         f"cold={record['accounting']['totals']['trf_cold']} "
-        f"couplings={len(run.couplings)}{fd}"
+        f"couplings={len(run.couplings)}{fd} "
+        f"store_attempts={len(json.loads(run.store))} bijection_violations={len(run.bijection)}"
     )
 
 
@@ -383,17 +474,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--replay", action="store_true", help="compare with the committed run")
     args = parser.parse_args(argv)
     case = CASES[args.case]
+    if os.environ.get("OMP_NUM_THREADS") != "1":
+        raise SystemExit("the runs need OMP_NUM_THREADS=1 (module docstring, build log S59)")
     with tempfile.TemporaryDirectory(prefix=f"m05-wo8-{case.name}-") as root:
         run = run_case(case, Path(root))
+    for line in run.bijection[:40]:
+        print(f"  bijection: {line}")
     if args.replay:
         found = compare(case, run)
         print(f"REPLAY {'PASS' if not found else 'FAIL'} {case.name} differences={len(found)}")
         for line in found[:40]:
             print(f"  {line}")
-        return 0 if not found else 1
+        return 0 if not found and not run.bijection else 1
     write(case, run)
     print(summary(case, run))
-    return 0
+    return 0 if not run.bijection else 1
 
 
 if __name__ == "__main__":

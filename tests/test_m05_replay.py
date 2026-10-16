@@ -2,7 +2,8 @@
 §9.3, §19.1, §19.4; register R-384, R-385), on hand-built records: the coupling digests compared
 for shape and their check ids exactly, every other float bitwise, `wall_s` excluded and positive;
 the persisted coupling records' integrity (one file per coupled run, its sha256 the recorded
-digest) and content (M02's `excluded` paths removed, floats by `float.hex`).
+digest) and content (M02's `excluded` paths removed, floats by `float.hex`); §8.3's store
+bijection (G7) of a store's attempts against a ledger and coupling records, and what it finds.
 
 Default gate: no Pyomo, nothing runs.
 """
@@ -145,3 +146,61 @@ def test_the_content_check_compares_every_other_float_bitwise() -> None:
     fresh = copy.deepcopy(COUPLING)
     fresh["iterations"][0]["w"][1] = math.nextafter(12.5, 13.0)
     assert len(replay.content_differences(COUPLING, fresh)) == 1
+
+
+# -- §8.3's store bijection (G7) ---------------------------------------------------------------
+
+KEY_A, KEY_B = "a" * 64, "b" * 64
+
+
+def _attempted(key: str, number: int) -> dict[str, Any]:
+    return {"experiment_key": key, "attempt": number}
+
+
+def _bijection_case() -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    """A store with A's attempt 1 from a coupled solve, A's attempt 2 and B's attempts 1-2 from
+    the ledger (one of them a store hit with no executions)."""
+    store = [_attempted(KEY_A, 1), _attempted(KEY_A, 2), _attempted(KEY_B, 1), _attempted(KEY_B, 2)]
+    coupling = {"iterations": [{"units": {"reactor": {"attempts": [_attempted(KEY_A, 1)]}}}]}
+    requests = [
+        {"seq": 0, "experiment_key": KEY_A, "executions": 1},
+        {"seq": 1, "experiment_key": KEY_B, "executions": 2},
+        {"seq": 2, "experiment_key": KEY_B, "executions": 0},
+    ]
+    return store, [{"holder": "link:reactor", "requests": requests}], {"S0": coupling}
+
+
+def test_the_store_bijection_holds() -> None:
+    assert replay.store_bijection_violations(*_bijection_case()) == []
+
+
+def _unattributed(store: list[Any], ledger: list[Any], couplings: dict[str, Any]) -> None:
+    store.append(_attempted(KEY_B, 3))
+
+
+def _claimed_twice(store: list[Any], ledger: list[Any], couplings: dict[str, Any]) -> None:
+    couplings["B1"] = copy.deepcopy(couplings["S0"])
+
+
+def _not_stored(store: list[Any], ledger: list[Any], couplings: dict[str, Any]) -> None:
+    store.remove(_attempted(KEY_A, 1))
+    ledger[0]["requests"][0]["executions"] = 0
+
+
+def _ledger_beyond_store(store: list[Any], ledger: list[Any], couplings: dict[str, Any]) -> None:
+    ledger[0]["requests"][2]["executions"] = 1
+
+
+def _without_key(store: list[Any], ledger: list[Any], couplings: dict[str, Any]) -> None:
+    ledger[0]["requests"][0]["experiment_key"] = None
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [_unattributed, _claimed_twice, _not_stored, _ledger_beyond_store, _without_key],
+    ids=["unattributed", "claimed_twice", "not_stored", "ledger_beyond_store", "without_key"],
+)
+def test_the_store_bijection_finds(mutate: Any) -> None:
+    store, ledger, couplings = _bijection_case()
+    mutate(store, ledger, couplings)
+    assert replay.store_bijection_violations(store, ledger, couplings) != []

@@ -12,6 +12,8 @@ M05 adds no product-level replay or compare (R-253, R-271).
 - `persisted_violations(record, directory)`: *integrity* — `directory` holds exactly one file
   `<check_id>.json` per `artifacts.coupled_runs` entry and nothing else, and each file's sha256
   is its recorded digest (R-385).
+- `store_bijection_violations(store, ledger, couplings)`: §8.3's store bijection (G7) of a run's
+  experiment-store attempts against its ledger and coupling records.
 - `content_differences(persisted, fresh)`: *content* — a fresh coupling record against the
   persisted one with every path M02's `rules.coupling` classifies `excluded` removed (read from
   `benchmarks/m02/numerical_policy_external.yaml`, never restated here), floats by `float.hex`.
@@ -156,3 +158,62 @@ def content_differences(persisted: Mapping[str, Any], fresh: Mapping[str, Any]) 
     a = _without_excluded(persisted, "", excluded)
     b = _without_excluded(fresh, "", excluded)
     return [f"{path}: {x!r} vs {y!r}" for path, x, y in _walk_pair(a, b, "") if x != y]
+
+
+def _coupling_attempts(record: Mapping[str, Any]) -> Iterator[tuple[str, int]]:
+    """(experiment_key, attempt) of every attempt a coupling record embeds (ADR 0034 D6), the
+    pairs `parent.coupling_counts` counts as executions."""
+    for iteration in record.get("iterations") or ():
+        for entry in (iteration.get("units") or {}).values():
+            for attempt in entry.get("attempts") or ():
+                yield attempt["experiment_key"], attempt["attempt"]
+
+
+def store_bijection_violations(
+    store: list[Mapping[str, Any]],
+    ledger: list[Mapping[str, Any]],
+    couplings: Mapping[str, Mapping[str, Any]],
+) -> list[str]:
+    """§8.3's store bijection (G7): every attempt record in the study's experiment store
+    (`store`, one `{experiment_key, attempt}` per `attempts/<n>.json`) is attributed to exactly
+    one ledger entry or coupled solve. A coupling record names its attempts as (key, attempt)
+    pairs; a holder ledger entry names its key and the attempts it wrote (`executions`), not their
+    numbers, so a key's attempts that no coupling record names must be exactly as many as the
+    ledger's executions at that key."""
+    found: list[str] = []
+    stored = [(item["experiment_key"], item["attempt"]) for item in store]
+    stored_set = set(stored)
+    if len(stored_set) != len(stored):
+        found.append("store: an attempt is listed twice")
+    remaining: dict[str, int] = {}
+    for key, _ in stored:
+        remaining[key] = remaining.get(key, 0) + 1
+    claimed: dict[tuple[str, int], str] = {}
+    for solve_id, record in couplings.items():
+        for pair in _coupling_attempts(record):
+            if pair in claimed:
+                found.append(f"attempt {pair}: claimed by {claimed[pair]} and coupling {solve_id}")
+                continue
+            claimed[pair] = f"coupling {solve_id}"
+            if pair not in stored_set:
+                found.append(f"attempt {pair}: coupling {solve_id} names an attempt not stored")
+                continue
+            remaining[pair[0]] -= 1
+    executions: dict[str, int] = {}
+    for block in ledger:
+        for entry in block["requests"]:
+            count = entry["executions"]
+            if not count:
+                continue
+            key = entry["experiment_key"]
+            if key is None:
+                found.append(f"{block['holder']} seq {entry['seq']}: executions without a key")
+                continue
+            executions[key] = executions.get(key, 0) + count
+    for key in sorted(set(remaining) | set(executions)):
+        if remaining.get(key, 0) != executions.get(key, 0):
+            found.append(
+                f"key {key[:12]}: {remaining.get(key, 0)} attempts no coupling names, "
+                f"{executions.get(key, 0)} ledger executions"
+            )
+    return found
