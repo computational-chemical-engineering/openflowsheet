@@ -943,3 +943,7 @@ Grep, don't read whole. Newest at the bottom.
   default at next touch: apply stage A's eligibility; N3/N4 noted in the manifest.
   DECISION: M05 merges into main only after M03 (M05 contains M03's nlp code; M03 merges when Frank answers its licence question N1).
   Alternative: merge M05 with M03 now. Reversible by: merging once Frank answers. M07 WO-4 may build on wp/M05 meanwhile.
+- **Frank, 2026-10-16: "I accept the licenses."** M03 N1 answered: the optional, non-default `nlp` extra ships with the licences the
+  [A10] audit lists. M03 closeout launched (`opus-engineer`): register R-450, main merged into wp/M03, the stale inventory check
+  explained (stop if anything outside the audited set appears), CI on both runners at the final commit, manifest → tested. Then the
+  session merges M03, then M05, into main. The four 0.2.0a1 questions remain open.
