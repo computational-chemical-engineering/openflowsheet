@@ -290,7 +290,10 @@ def test_a08_r0_spends_no_reactor_experiment_within_its_wall_budget(r0: Mapping[
     spent = r0["budget"]["spent"]
     assert spent["cold"] == 0
     assert spent["wall_s"] <= REG["journey"]["budget"]["R0"]["wall_s"]
-    assert all(p["experiments"]["cold"] > 0 for p in r0["grid"])  # the stand-in's own executions
+    # A1.4 (R-423): the stand-in is in-process by registration, so no point spends a cold reactor
+    # experiment; its own executions are `in_process`.
+    assert all(p["experiments"]["cold"] == 0 for p in r0["grid"])
+    assert all(p["experiments"]["in_process"] > 0 for p in r0["grid"])
     assert all(p["X_pass"] == pytest.approx(0.25, rel=1e-12) for p in r0["grid"])
 
 
@@ -318,6 +321,13 @@ def test_a10_each_mutation_is_rejected(dry: Mapping[str, Any]) -> None:
     heading = "## 12. Provenance and replay\n"
     added = report.replace(heading, heading + "\nAn optimal decision.\n")
     assert "forbidden words in the report: ['optimal']" in m07.check(dry, added)
+
+
+def test_a10_a_rungs_spent_cold_is_its_points_sum(dry: Mapping[str, Any]) -> None:
+    """A1.4: Σₖ experiments.cold = the rung's budget.spent.cold."""
+    changed = copy.deepcopy(dict(dry))
+    changed["rungs"]["R0"]["grid"][0]["experiments"]["cold"] = 1
+    assert "R0 spent cold 0 is not its points' sum 1" in m07.check(changed, None)
 
 
 def test_a11_render_is_deterministic_with_the_registered_sections(dry: Mapping[str, Any]) -> None:
@@ -417,7 +427,7 @@ class CountingEvaluator:
             certificate="VERIFIED",
             J=0.5,
             run_sha256="5" * 64,
-            reactor_cold=self.cold,
+            experiments={"cold": self.cold, "store_hit": 0, "in_process": 0},
             wall_s=self.wall_s,
         )
         return entry

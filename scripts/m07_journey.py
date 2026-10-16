@@ -305,7 +305,7 @@ class RungBudget:
     An evaluation would exceed the budget when the spent total plus the estimate of the next
     evaluation passes the cap; the estimate is the largest cost seen so far in the rung, and before
     the first evaluation `first_estimate` cold experiments and 0 s (build decision J4). Only
-    out-of-process reactor executions are cold reactor experiments (build decision J6)."""
+    out-of-process unit executions are cold reactor experiments (Amendment 1 A1.4, R-423)."""
 
     cold_cap: int
     wall_cap: float
@@ -353,7 +353,7 @@ def budget_for(rung: str) -> RungBudget:
 
 class Evaluator(Protocol):
     """One coupled loop solve at a grid temperature; returns a grid entry (§6.1) without `e` and
-    `constraints`, plus `reactor_cold` (the cold reactor executions the budget is charged)."""
+    `constraints`. Its `experiments.cold` is what the budget is charged (A1.4)."""
 
     def __call__(self, t: float, literal: str) -> dict[str, Any]: ...
 
@@ -372,11 +372,16 @@ def document_at(document: Mapping[str, Any], t: float) -> dict[str, Any]:
     return edited
 
 
-def coupling_attribution(record: Mapping[str, Any] | None) -> tuple[int, int, int, int]:
-    """(executions, store hits, reactor executions, extrapolated) of every experiment the
-    coupling record embeds (ADR 0034 D6; M05's `coupling_counts`). Reactor executions are those of
-    an out-of-process unit; extrapolated counts the experiments flagged `extrapolated` (R-169)."""
-    executions = hits = reactor = extrapolated = 0
+def coupling_attribution(record: Mapping[str, Any] | None) -> tuple[dict[str, int], int]:
+    """A grid point's `experiments` and `extrapolated` from its coupling record (ADR 0034 D6;
+    M05's `coupling_counts` convention split by unit kind, Amendment 1 A1.4, R-423).
+
+    `cold` counts the attempts of out-of-process units' entries — the cold reactor experiments
+    charged to M07-budget-v1 — and `in_process` those of in-process units' entries (a unit whose
+    `frozen.<unit>.fingerprint.kind` is `in_process`), so `cold + in_process` is the record's
+    executions; `store_hit` counts entries with `cache_hit` true. `extrapolated` counts the
+    experiments flagged `extrapolated` (R-169)."""
+    cold = hits = in_process = extrapolated = 0
     kinds = {
         unit: ((frozen.get("fingerprint") or {}).get("kind"))
         for unit, frozen in ((record or {}).get("frozen") or {}).items()
@@ -384,13 +389,14 @@ def coupling_attribution(record: Mapping[str, Any] | None) -> tuple[int, int, in
     for iteration in (record or {}).get("iterations", ()):
         for unit, entry in (iteration.get("units") or {}).items():
             attempts = len(entry.get("attempts") or ())
-            executions += attempts
             hits += bool(entry.get("cache_hit"))
-            if kinds.get(unit) != "in_process":
-                reactor += attempts
+            if kinds.get(unit) == "in_process":
+                in_process += attempts
+            else:
+                cold += attempts
             envelope = (entry.get("result") or {}).get("envelope") or {}
             extrapolated += envelope.get("domain_status") == "extrapolated"
-    return executions, hits, reactor, extrapolated
+    return {"cold": cold, "store_hit": hits, "in_process": in_process}, extrapolated
 
 
 @dataclass
@@ -452,14 +458,13 @@ class LoopEvaluator:
             if "external-coupling.json" in manifest.artifacts
             else None
         )
-        executions, hits, reactor, extrapolated = coupling_attribution(coupling)
+        experiments, extrapolated = coupling_attribution(coupling)
         entry.update(
             outcome=manifest.outcome,
             certificate=manifest.verification_status,
             verified=manifest.outcome == "CONVERGED" and manifest.verification_status == "VERIFIED",
             extrapolated=extrapolated,
-            experiments={"cold": executions, "store_hit": hits},
-            reactor_cold=reactor,
+            experiments=experiments,
             wall_s=wall,
             run_sha256=manifest.artifact_r0_sha256,
             revision_sha256=document_sha256(document),
@@ -488,7 +493,7 @@ def empty_entry(t: float, literal: str) -> dict[str, Any]:
         "n_recycle_mol_s": None,
         "n_purge_NH3_mol_s": None,
         "extrapolated": 0,
-        "experiments": {"cold": 0, "store_hit": 0},
+        "experiments": {"cold": 0, "store_hit": 0, "in_process": 0},
         "wall_s": 0.0,
         "run_sha256": None,
         "constraints": None,
@@ -558,7 +563,7 @@ def run_grid(
             entries.append(entry)
             continue
         entry = evaluate(t, literal)
-        budget.charge(int(entry.pop("reactor_cold", 0)), float(entry["wall_s"]))
+        budget.charge(int(entry["experiments"]["cold"]), float(entry["wall_s"]))
         if extras is not None and entry["verified"]:
             entry["e"], entry["constraints"] = extras(t, entry)
         entries.append(entry)
@@ -867,8 +872,8 @@ def parent_checks(record: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def accounting(rungs: Mapping[str, Any]) -> dict[str, Any]:
-    """W25 (g): per rung cold experiments, store hits and wall against M07-budget-v1; the totals
-    are the sums of the grid entries' store attributions."""
+    """W25 (g): per rung cold reactor experiments, in-process executions, store hits and wall
+    against M07-budget-v1; the totals are the sums of the grid entries' attributions (A1.4)."""
     per: dict[str, Any] = {}
     for name in RUNGS:
         rung = rungs[name]
@@ -878,6 +883,7 @@ def accounting(rungs: Mapping[str, Any]) -> dict[str, Any]:
             "experiments": {
                 "cold": sum(int(e["experiments"]["cold"]) for e in grid),
                 "store_hit": sum(int(e["experiments"]["store_hit"]) for e in grid),
+                "in_process": sum(int(e["experiments"]["in_process"]) for e in grid),
             },
             "reactor_cold": spent["cold"],
             "wall_s": spent["wall_s"],
@@ -1221,7 +1227,7 @@ def render(record: Mapping[str, Any]) -> str:
     cost = sections[8]
     cost.append(
         "| rung | cold reactor experiments | budget | wall (s) | budget (s) "
-        "| experiments (cold / store hit) | exhausted |"
+        "| experiments (cold / in-process / store hit) | exhausted |"
     )
     cost.append("| --- " * 7 + "|")
     acct = record["accounting"]
@@ -1230,7 +1236,8 @@ def render(record: Mapping[str, Any]) -> str:
         cost.append(
             f"| {name} | {a['reactor_cold']} | {a['budget']['cold']} | {_n(a['wall_s'])} "
             f"| {_n(a['budget']['wall_s'])} | {a['experiments']['cold']} / "
-            f"{a['experiments']['store_hit']} | {_n(a['exhausted'])} |"
+            f"{a['experiments']['in_process']} / {a['experiments']['store_hit']} "
+            f"| {_n(a['exhausted'])} |"
         )
     total = acct["journey"]
     cost.append(
@@ -1415,6 +1422,12 @@ def _check_budget(name: str, rung: Mapping[str, Any]) -> list[str]:
     problems = []
     if budget["cold"] != registered["cold_experiments"] or budget["wall_s"] != registered["wall_s"]:
         problems.append(f"{name} budget is not M07-budget-v1's")
+    grid = rung.get("grid") or []
+    cold = sum(int(entry["experiments"]["cold"]) for entry in grid)
+    if grid and budget["spent"]["cold"] != cold:
+        problems.append(
+            f"{name} spent cold {budget['spent']['cold']} is not its points' sum {cold}"
+        )
     over = budget["spent"]["cold"] > budget["cold"] or budget["spent"]["wall_s"] > budget["wall_s"]
     if over and rung["outcome"] != "BUDGET_EXHAUSTED":
         problems.append(f"{name} overran its budget without stating BUDGET_EXHAUSTED")
