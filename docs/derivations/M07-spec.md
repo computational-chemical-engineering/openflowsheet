@@ -173,7 +173,7 @@ exhausting it is a result to report, not to retry.
   calls (`run_revision_session`, the experiment store, M05's study entry point). **No job operation is added** (M05
   N-F7 deferred it to M07; DECISION in R-336): an operation would extend a frozen interface for one script's benefit.
 - **Carry by identity.** R3 consumes M05's committed REAL study record when the *determining files* (registration
-  `carry.journey_files`: `src/openflowsheet/**`, `benchmarks/m02/**`, `benchmarks/m05/**` case and study registration,
+  `carry.journey_files`: `src/openflowsheet/**`, `benchmarks/m02/**`, `benchmarks/m04/**` (R2's verdict), `benchmarks/m05/**`,
   `requirements.lock`, the reactor environment lock) are byte-equal between M05's run commit and the journey commit J;
   otherwise it re-runs M05's study at J. The same rule carries the journey from J to the RC commit C (RC step 15).
 - **Refusal is a result.** Without the reactor environment, R1 and R3 report `UNSUPPORTED(reactor_environment_unavailable)`
@@ -269,6 +269,7 @@ candidate C (alpha spec §4 additions 1–4 apply unchanged, with ADR 0042 in pl
 | frank_items | `Claim set`, `V17 carry`, `M02 N1`, `M03 N1` |
 | rejudge_waits | (V13, V17 carry), (V17, V17 carry), (W21, M02 N1), (W24, M03 N1) |
 
+The registration's `gate.gate_sets` holds the exact strings (`\|` above is the table's escape of `|`).
 The **only structural change** to the alpha script is the per-set `clause` field: every use of the module `CLAUSE`
 reads the gate set's. The alpha entry's behaviour is byte-identical (its tests pass unchanged; A31). The decision
 items are the alpha's §7.3 items 1–12 with this entry's values; items 7–9 read "steps 1–17", "M07's manifest", and the
@@ -380,7 +381,8 @@ Tolerances: "exact" means equality of binary64 values or bytes; the fixtures are
 GC-GRID-1…5 (grid), GC-LOOP-1…4 (twins and pins), GC-R0-1…3 (tolerance placement ≥ 10³ × floor and ≤ 10⁻⁸; guard and
 N bound; regression tolerance), GC-RUNG-1…3, GC-IS-1 and -EXACT, GC-FE-1, -2 and -EXACT, GC-TC1-1, -2 and -EXACT,
 GC-BOUND-1, -2, GC-G12-1…4 (F3 re-read from M02's records), GC-COST-1 (R1 budget ≥ 1.5 × measured worst case),
-GC-BUDGET-1, GC-M04-1 (F1 re-read from M04's committed verdict), GC-VER-1…3 (Table T-V), GC-SET-1, GC-CLAUSE-1…4,
+GC-BUDGET-1, GC-M04-1 (F1 re-read from M04's committed verdict), GC-VER-1…3 (Table T-V, 29 rows), GC-SET-1, GC-SET-2 (every re-judgement waits on a claimed gate and a Frank item),
+GC-CLAUSE-1…4,
 GC-RC-1, GC-PHRASE-1…4, GC-CAT-1, -2 (this table's ids equal the generator's catalogue). The rule functions in the
 generator are the reference the build lane's tests compare against (A03–A07, A22, A23); they are independent of
 `scripts/m07_journey.py`.

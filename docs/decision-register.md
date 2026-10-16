@@ -6281,6 +6281,150 @@ content-addressed manifest; the facet is not relaxed.
 
 ---
 
+## R-331 — M07's journey: one decision (SPEC-S3-T), four rungs — stand-in, PyMRM v3, M04 surrogate only if PROMOTABLE, M05's REAL study
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.1–§4.3; ADR 0041 D1 |
+| Evidence | R-364 (M04 NOT_PROMOTABLE); M05 §7.6; no equilibrium reactor in the repository |
+| Affected packages | M07 |
+
+**Decision.** R0 = `c1.reactor_standin` and R1 = `c1.reactor` v3 on the nine-point grid 653.15 + 5k K; R2 records `SURROGATE_NOT_PROMOTABLE` with zero evaluations today; R3 = M05 `c1-trf-study-v1` REAL (stage A skipped).
+
+**Rejected alternatives, and why.** A dense grid (cost); a journey without M05 (the plan names refinement); an equilibrium rung (no model; spec §15 N3).
+
+**Watch for.** —
+
+## R-332 — Before/after decisions are compared by the parent's objective at both decisions against the sum of M05 noise floors (five FE classes, TC-1, bound activity)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.4; ADR 0041 D2 |
+| Evidence | registration `fixtures` (dyadic, boundaries exact) |
+| Affected packages | M07 |
+
+**Decision.** FE precedence NOT_DETERMINED, WORSE, UNCHANGED (|Δt| ≤ 0.5 K), CHANGED, WITHIN_RESOLUTION; TC-1 against the best verified R1 grid point; the journey's decision is R3's T* only if PARENT_LOCAL_EVIDENCE and TC1_HOLDS, else the grid best.
+
+**Rejected alternatives, and why.** Each rung judged by its own objective (the stand-in's is flat by construction); a decision from R0 or R2.
+
+**Watch for.** —
+
+## R-333 — R0's rung tolerance is 1e-12 relative, 8e3 above the measured 1.19e-16 spread; R0's J 0.46705958492513017 mol/s is a regression fixture
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §3 F2, §4.4.1; M07.A08 |
+| Evidence | measured at `wp/M07` e35b16d; GC-R0-1…3 |
+| Affected packages | M07 |
+
+**Decision.** INDIFFERENT is the closed-form expectation (ξ = 0.25 n_N2, T_out = T_in, fixed TP flash); the value is regression only; guard 0.40 < J ≤ 0.4975 (N balance).
+
+**Rejected alternatives, and why.** Treating the measured J as a reference value.
+
+**Watch for.** —
+
+## R-334 — W25 is met by eight reporting clauses (a)–(h); a changed decision, a converged study, an interior decision and a promotable surrogate are not required; TC1_CONTRADICTED is a limitation and a finding, not a FAIL
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §5; ADR 0041 D3 |
+| Evidence | blueprint §14.4 bullet 5 |
+| Affected packages | M07 |
+
+**Decision.** PASS iff all clauses hold; FAIL is missing or wrong evidence (replay mismatch, label disagreeing with the reference function, decision from R0/R2, unreported overrun, missing §11).
+
+**Rejected alternatives, and why.** Judging W25 on the outcome (the blueprint names the honest negatives).
+
+**Watch for.** —
+
+## R-335 — Budget `M07-budget-v1`: R0 0/600 s, R1 60/5400 s, R2 0/1200 s, R3 400/14400 s (M05's REAL); checked before each evaluation; exhaustion reported
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.5; ADR 0041 D4 |
+| Evidence | G12 walls 361.5/165.2/95.8 s, 4 experiments each; GC-COST-1, GC-BUDGET-1 |
+| Affected packages | M07 |
+
+**Decision.** R1's budget is at least 1.5 × the measured worst case for nine points.
+
+**Rejected alternatives, and why.** Unbounded R1; retrying after exhaustion.
+
+**Watch for.** —
+
+## R-336 — No job operation for the journey (closes M05 N-F7); one script `scripts/m07_journey.py`
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.6; ADR 0041 D5 |
+| Evidence | plan §2.1 frozen |
+| Affected packages | M07 |
+
+**Decision.** The journey composes existing application calls.
+
+**Rejected alternatives, and why.** An additive job operation (extends a frozen interface for one script).
+
+**Watch for.** —
+
+## R-337 — Reactor-dependent journey evidence carries between commits only by byte-identity of the registered determining files, else it is re-run; W27's campaign carries from C_W to C only if the served tool list, `list_models` and coverage rows are equal
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.6, §9; RC steps 15, 17 |
+| Evidence | G12 live re-run bitwise |
+| Affected packages | M07 |
+
+**Decision.** `carry.journey_files`, `carry.w27`; a differing W27 surface stops for Frank (money).
+
+**Rejected alternatives, and why.** Unconditional re-run at C (up to 5 h); carrying without an identity check.
+
+**Watch for.** —
+
+## R-338 — `v0.2-gate-v1` claims V11–V20 and W21–W27 for 0.2.0, 0.2.0bN, 0.2.0rcN; W24 BLOCKED on M03 N1 blocks the tag
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §7; ADR 0042 D1, D2 |
+| Evidence | registration `gate`; Table T-V 29 rows |
+| Affected packages | M07 |
+
+**Decision.** Frank items: Claim set, V17 carry, M02 N1, M03 N1; rejudge_waits adds (W24, M03 N1).
+
+**Rejected alternatives, and why.** Leaving W24 unclaimed (kept as Frank's alternative); carrying alpha acceptances.
+
+**Watch for.** —
+
+## R-339 — The gate script's clause grammar becomes a per-gate-set field; the alpha entry's value is its current CLAUSE, so its behaviour is byte-identical
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §7.2; ADR 0042 D4; M07.A31, A33 |
+| Evidence | alpha `scripts/v0_2_gate.py` @ 758a902 l.105 |
+| Affected packages | M07 |
+
+**Decision.** W23–W27 labels parse only under v0.2's grammar.
+
+**Rejected alternatives, and why.** Widening the module grammar (changes how the alpha reads stray W23–W27 tokens).
+
+**Watch for.** —
+
 ## R-340 — ADR 0027 is Accepted, with Amendments 1–4 (its acceptance condition is met by M01's and M02's `tested` manifests)
 
 | | |

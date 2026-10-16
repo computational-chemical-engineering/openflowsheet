@@ -3,6 +3,7 @@
     "journey_files": [
       "src/openflowsheet/**",
       "benchmarks/m02/**",
+      "benchmarks/m04/**",
       "benchmarks/m05/**",
       "requirements.lock",
       "the reactor environment lock (M02)"
@@ -922,7 +923,7 @@
       {
         "assertion": "M07.A61",
         "step": 15,
-        "what": "W25: the full journey at C (R0-R3); check and replay at C; comparison with the journey at J"
+        "what": "W25: the journey carried to C by identity (spec §4.6) or re-run at C; check and replay at C"
       },
       {
         "assertion": "M07.A60",
@@ -932,7 +933,7 @@
       {
         "assertion": "M07.A53",
         "step": 17,
-        "what": "W27: coverage at C, the campaign's carry from C_W to C, campaign.json recomputed, U14 counterpart"
+        "what": "W27: coverage at C; the campaign's carry from C_W to C (spec §9); campaign.json recomputed"
       },
       {
         "assertion": "M07.A36",
