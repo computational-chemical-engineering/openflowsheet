@@ -310,7 +310,7 @@ M01 §10's grid study (M01.A48's record half) holds.
 - G4 (a)–(i) and G5 at step 1.
 - The support matrix states the profile, "not a sandbox", Linux as the registered platform, and Windows refused.
 - M02 N1 accepted by Frank in ADR 0028's decisions table. This is a precondition, not a default, because the alpha
-  publishes the profile.
+  publishes the profile. *(2026-10-16: if Frank declines N1, Amendment 4, §20, applies; it is void otherwise)*
 
 **W21 (d) — Timeout.**
 - G3 (b) at step 1: `timed_out` is recorded within 3.5 s of spawn under `timeout_s = 1`, and there is no retry.
@@ -1682,3 +1682,62 @@ for W21 (f4)'s notes half, as the verdict asked (verdict l.268).
   for W21 (f4).
 - That any later amendment leaves the YAML unchanged. The YAML is under `benchmarks/`, so a change after `C_α²` breaks
   D2.4 and needs another re-cut.
+
+---
+
+## 20. Amendment 4 (contingent: applies only if Frank declines M02 N1), 2026-10-16
+
+**Author:** design lane (`specifier`), on `wp/V02-alpha-gate` @ `f14f02e`. **Input:** the verdicts at `C_α²` =
+`cc73219`, finding B5. **Register:** R-382.
+
+**When it applies.** Only if ADR 0028's `M02 N1` cell records a decline, or N1's alternative (an isolation profile,
+M02 note §12). Either way `0.2.0a1` does not publish `external-subprocess-v1`. While the cell is `pending` or an
+acceptance, this section is void: nothing in it is built, and §1–§19 govern unchanged. It takes effect on the date of
+Frank's answer.
+
+**Why an amendment, not D3 (B5).** A declined N1 leaves W21 (c) not met (§6.1). §7.3 item 11 refuses every decisions
+answer that is not an acceptance, whatever D3 records. A D3 row would also accept a FAIL while the declined profile
+still shipped.
+
+### 20.1 What `0.2.0a1` ships
+
+- No public operation starts a child under `external-subprocess-v1`. The binder, `solve`, the `experiment` job and
+  `replay --rerun` each refuse, before spawn, with a typed result and an existing error code. For the binder that is
+  `model_unsupported`, as for any model id not shipped. If no existing code fits an operation, the build lane stops and
+  the design lane rules; a new code is a frozen-interface change and is outside this amendment.
+- The envelope's `unit_models` drops `c1.reactor`. `c1.reactor_standin` stays: in-process and listed synthetic (M02 N4).
+- The support matrix and the notes state that the profile and `c1.reactor` are not published in this release. That
+  row replaces L44 and L45.
+- The launcher's code stays, unreached from the application. G3's library-level tests still run in step 1. A record
+  made under the profile replays from the record without spawning (ADR 0034).
+- ADR 0033 is unchanged and the profile stays registered. A later release that publishes it asks N1 again. When this
+  section takes effect, the design lane records the release-scoped refusal as an ADR 0028 amendment.
+
+### 20.2 The claim set `v0.2-alpha-gate-v3`
+
+`-v2` is the name §3.3 (i) reserves.
+
+| Gate | Judged at the candidate by |
+| --- | --- |
+| V11–V20 | as §3.1 |
+| W22 | §6.2 |
+
+W21 is not claimed. It is printed `not claimed (v0.2-alpha-gate-v3)` beside W23–W27 (§3.2). The adapter's shipped code
+enters the envelope and the limitations, not the claims.
+
+### 20.3 What follows
+
+1. `scripts/v0_2_gate.py` registers `v0.2-alpha-gate-v3` for `0.2.0a1` in place of `-v1`, which is left as written.
+   It claims V11–V20 and W22. It reads eleven verdict rows, `V11` … `V20`, `W22`, in order. It reads Frank's rows `N3`
+   and `V17 carry`; N1's row keeps his answer and is not read. It requires RC steps 1–11. Step 12 is not run, and
+   step 10 covers the certificates of steps 4–7. M07a.A41 is reported `unsupported` with the reason "W21 not claimed
+   (§20)", and leaves M07a's `tested` condition.
+2. §20.1 changes `src/` and `benchmarks/` (D2.4). A new candidate `C_α³` is cut, and every row is re-judged on its RC
+   job. Nothing judged at `C_α²` carries.
+3. N3 counts for `-v3` only if dated on or after Frank's N1 answer. It then accepts this claim set, not §3's.
+4. Acceptance evidence: one passing fixture for `-v3`, and one refusal per changed rule (a `W21` row present, N1's row
+   read, step 12 required), as M07a.A03 does for `-v1`. Also one test per operation of §20.1 asserting the typed
+   refusal and that no child was spawned.
+
+**Not established here.** Whether W21 holds or fails at any candidate. That declining N1 is advised: F-α3's default,
+acceptance, stands. Any isolation profile.

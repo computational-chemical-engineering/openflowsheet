@@ -6385,3 +6385,80 @@ put a user-reachable limitation in the envelope.
 **Watch for.** —
 
 ---
+
+## R-380 — ADR 0027's Accepted status text is brought from `main` (R-340), unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane, V02 alpha verdicts finding B6 (transcription, no new decision) |
+| Normative text | `docs/adr/0027-c1-reactor-boundary.md` Status line, byte-identical to `main` @ `dd3e7d5` |
+| Evidence | R-340 on `main` (M02 close-out §1): `evidence/M01/6c81683…/manifest.json` and `evidence/M02/ba90619…/manifest.json`, both `tested` and ancestors of `C_α²` = `cc73219` |
+| Affected packages | M07a (§7.3 item 12) |
+
+**Decision.** The file is taken from `main` as it stands, so the two branches do not diverge. R-340 is the decision.
+This entry exists because R-340 is not yet on this branch.
+
+**Rejected alternatives, and why.** Re-deciding ADR 0027 here: that would create a second record of one decision.
+
+**Watch for.** At merge, the register keeps both R-340 and R-380.
+
+---
+
+## R-381 — ADRs 0033, 0034 (with Amendment 1) and 0035 are Accepted; their conditions are met by M02's `tested` manifest and the design lane's recorded reviews
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), V02 alpha verdicts finding B6 |
+| Normative text | each ADR's Status line |
+| Evidence | `evidence/M02/ba90619c…/manifest.json`: `tested`, M02.G1–G12 `pass`. Reviews: 0033 WO-3/WO-4, note §14 (as built, `02403d1`); 0034 WO-7 §14.2 B18, WO-8 §14.3, WO-9 §14.4, WO-10 §14.5 and `docs/reviews/M02-review.md`, with F1–F3 closed by `080d197`, `88b3ab4` and `908d9a3`; 0035 WO-11 §14.5 D6, §14.6 (WO-11a) and the review. Every cited commit is an ancestor of `C_α²` = `cc73219` (checked with `git merge-base --is-ancestor`) |
+| Affected packages | M02 (closed); M07a (§7.3 item 12) |
+
+**Decision.** Each ADR moves from Proposed to Accepted. Its own condition, in its Status line, is met:
+
+| ADR | Gates in its condition | Review in its condition |
+| --- | --- | --- |
+| 0033 | G1–G6, G10, G11 `pass` | WO-3/WO-4 |
+| 0034 | G2, G6–G9, G12 `pass` | WO-7–WO-10 |
+| 0035 | G6, G9 `pass` | WO-11 |
+
+Flipping the lines after the cut is legitimate. `scripts/v0_2_gate.py` reads the ADRs at the candidate, not at `C`
+(§7.2 item 7; `files_at`). `docs/adr/` is not a D2.4 path, and R-151's tree record covers only those paths. §8.1
+item 2 held in substance at `C_α²`: every piece of acceptance evidence is an ancestor of it. Only the record lagged.
+
+**What it does not establish.** WO-7's record is B18, which confirms D27 (G6 (a)). D28 and D29 were not ruled one by
+one. The real-reactor evidence is `judged: false`, R3, from one machine. The manifest's `review.numerical` and
+`review.process_model` are `pending`. Human sign-off is separate.
+
+**Rejected alternatives, and why.** Leaving the three Proposed until a fresh review: none of the three conditions asks
+for one.
+
+**Watch for.** `main` still reads Proposed for the three ADRs until this branch merges.
+
+---
+
+## R-382 — A declined M02 N1 is handled by spec Amendment 4 (contingent): W21 leaves the claim set, the profile is refused, `C_α³` is cut
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), V02 alpha verdicts finding B5 |
+| Normative text | spec §20; marker at §6.1 W21 (c) |
+| Evidence | verdicts at `cc73219`, B5; §7.3 item 11 |
+| Affected packages | M07a (only if Frank declines N1) |
+
+**Decision.** The amendment is void unless ADR 0028's `M02 N1` cell records a decline or N1's alternative. If it does:
+- no public operation spawns under `external-subprocess-v1`, each refusing with an existing typed code;
+- the claim set becomes `v0.2-alpha-gate-v3`, which claims V11–V20 and W22 and does not claim W21;
+- the gate reads only `N3` and `V17 carry`, and requires RC steps 1–11;
+- a new candidate `C_α³` is cut, and every row is re-judged.
+
+**Rejected alternatives, and why.**
+- A D3 acceptance of W21 (c): §7.3 item 11 refuses it. It would also ship the profile Frank declined.
+- Dropping W21 while the profile stays reachable: publishing it is exactly what N1 asks about.
+
+**Watch for.** If no existing error code fits an operation of §20.1, the build lane stops. A new code is a
+frozen-interface change.
+
+---
