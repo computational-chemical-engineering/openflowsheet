@@ -380,3 +380,17 @@ Measured (WO-7b head): `tests/test_m05_study_record.py tests/test_m05_study_loop
    holder/truth suites (`test_adr_0002_canonicalization`, `test_k0{3,4,5}_schemas`, `test_m0{2,3}_schemas`,
    `test_requirements_ledger`, `test_t02_executor`, `test_m05_truths`, `test_m05_holders`) 247 passed;
    `t08_numerical_policy.py --check` exit 0.
+
+## Merge of origin/main (M04) — d65a9a4
+
+S43 OPEN (design lane; blocks a green gate on wp/M05). M04's `tests/test_m04_study.py::
+   test_studies_never_import_the_application_layer` holds "no module of `studies` imports `openflowsheet.application`,
+   lazily or not" (R-237's `adapters` rule extended to `studies` by M04's test; no register entry of its own). M05's
+   `studies/trust_region/parent.py` (S3, the real C1 parent adapter: `coupled_run`, `revision_binding`,
+   `revision_run`, `policies`; 18 uses) and `study.py` (`at_coupling`, `RevisionBinding`; 9 uses) import it by design,
+   so the merged gate fails that one test (1 failed, 9186 passed, 31 skipped). Not changed: exempting `trust_region`
+   relaxes a check (CLAUDE.md), and moving the adapter is a layering decision. Options: (a) invert, as M04 did — the
+   C1 parent adapter and `at_coupling` use move to `application` (e.g. a `trust_region_study` job wiring), `studies`
+   receives them as injected callables; (b) a registered exemption for `trust_region` with its reason; (c) narrow the
+   rule to `studies/surrogate`. Build-lane default if asked to proceed: (a), as a structure-only change proved by the
+   S33/WO-2c-style byte-identical dumps.

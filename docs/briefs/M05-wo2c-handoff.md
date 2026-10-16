@@ -1,4 +1,4 @@
-# M05 handoff after WO-2c and WO-6b (2026-10-16)
+# M05 handoff after WO-2c, WO-6b, S33, WO-7b and the M04 merge (2026-10-16)
 
 Worktree `/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05`, branch `wp/M05`. Stopped at the ~150k context cap.
 
@@ -13,7 +13,21 @@ Worktree `/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05`, branch `wp/M0
 - Gate: at the WO-2c tree, 8786 passed / 31 skipped (one mypy error, fixed before the commit); nlp tier 164 passed,
   1 skipped. The gate at the pushed head is in the caller's report.
 
+## Done since (second engineer)
+- `899cc2b` S33 (build log S37): the basis is formed inside the holders' run; per-run `basis_fd_point` = n_in; run
+  document and TRF-phase ledger byte-identical on the FD link toy. Gate 8790 passed / 31 skipped.
+- `ce86c03` S36 (S38): half-width `minimum: 0`. `733cf8a` WO-7b (S39–S42): closed schema, S12, S13, S15, S18, the
+  G12 checker. Gate at 733cf8a: 8889 passed / 31 skipped.
+- `d65a9a4` merge origin/main (32ceea5, contains M04 78685cc). Gate: 1 failed (S43, OPEN), 9186 passed, 31 skipped;
+  nlp tier 167 passed, 1 skipped.
+
 ## Next actions, in order
+1. **S43** (design lane): M04's no-`application`-imports rule for `studies` vs the trust-region parent adapter. Until
+   it is ruled, the full gate on wp/M05 has that one failure.
+2. Review batch: S27–S30, S32–S43 (S40 classifies `coupling_record_sha256` exact_sha256: replay identity).
+3. WO-5c, then WO-8 (real runs). WO-8 gap (S-log WO-7b): `fd_check`'s floats have no float rule yet.
+
+## Superseded next actions (kept for the record)
 1. **WO-7b** (bounded): brief at `docs/briefs/M05-wo7b-brief.md` (closed schema S14, S12, S13, S15, S16 identity
    checker for G12, S18, mutation tests). The minimal schema declarations for WO-6b's fields are already in.
 2. **Merge `origin/main` into wp/M05**: `78685cc` (M04) is now an ancestor of origin/main (`4662ff8`). Merge, gate
