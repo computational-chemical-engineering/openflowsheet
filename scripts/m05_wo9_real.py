@@ -35,16 +35,18 @@ request is served from the record, and a request the record cannot serve is a di
 the comparison (`m05_replay.real_replay_differences`, build log S68) is:
 
 - the record: `m05_replay.replay_differences` with the counts that a store hit changes by design
-  removed (`STORE_SERVED_COUNTS`), and with the fresh study's cold counts all zero;
-- the ledger: entry by entry, exact except that a recorded `cold` request is a `store_hit` with no
-  execution in the replay;
+  removed (`STORE_SERVED_COUNTS`), the ledger file's digest compared for shape, and the fresh
+  study's cold counts all zero;
+- the ledger: entry by entry, exact except that a recorded `cold` request with an experiment key
+  is a `store_hit` with no execution in the replay;
 - the store: no attempt added;
 - each coupling record: M02's `iterate_differences` and `record_differences` (R-317 (b), under
   `T08-numerical-policy-v2`), then content equality of the rest without the unit entries'
   `attempts` and `cache_hit` (a store hit's), M02's `excluded` paths removed.
 
-Prints one summary line; exit 0 iff the run (or the replay) is clean and the store bijection
-holds. Runs need `OMP_NUM_THREADS=1` (build log S59):
+Prints one summary line; exit 0 iff the run's store bijection holds (G7, judged on the run: a
+replay executes nothing), or the replay has no difference. Runs need `OMP_NUM_THREADS=1` (build
+log S59):
 
     OMP_NUM_THREADS=1 PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 \\
         PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools \\
@@ -392,14 +394,16 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"{STEM}.json exists: a committed run is never overwritten in place")
     with tempfile.TemporaryDirectory(prefix="m05-wo9-real-") as root:
         real = run_real(Path(root), archive=archive)
-    for line in real.run.bijection[:40]:
-        print(f"  bijection: {line}")
     if args.replay:
+        # G7's store bijection is the record's (its ledger's executions); a replay executes
+        # nothing, so its own store has attempts no replayed request claims, by design.
         found = compare(real)
         print(f"REPLAY {'PASS' if not found else 'FAIL'} {CASE} differences={len(found)}")
         for line in found[:40]:
             print(f"  {line}")
-        return 0 if not found and not real.run.bijection else 1
+        return 0 if not found else 1
+    for line in real.run.bijection[:40]:
+        print(f"  bijection: {line}")
     write(real)
     print(summary(real))
     return 0 if not real.run.bijection else 1

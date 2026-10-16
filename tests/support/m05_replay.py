@@ -25,10 +25,13 @@ restored experiment store, so every reactor request is served from the record an
 store hit changes differ by design.
 
 - `real_replay_differences(recorded, fresh)`: `replay_differences` without `provenance` and
-  without the paths of `STORE_SERVED_COUNTS`; the fresh study executed nothing (its cold counts
-  are 0) and served as many requests from the store as the record served cold or from the store.
+  without the paths of `STORE_SERVED_COUNTS`, and `artifacts.ledger` (the ledger file's digest,
+  whose entries differ by design) compared for shape; the fresh study executed nothing (its cold
+  counts are 0) and served as many requests cold or from the store as the record did.
 - `served_ledger_differences(recorded, fresh)`: the ledgers entry by entry, exact except that a
-  recorded `cold` request is a `store_hit` without executions in the replay.
+  recorded `cold` request with an experiment key (one an experiment served) is a `store_hit`
+  without executions in the replay; a request without a key (a property block's, or a Jacobian
+  assembled from values) is computed again and stays `cold`.
 - `served_coupling_differences(persisted, fresh)`: M02's `iterate_differences` and
   `record_differences` (R-317 (b)) under `T08-numerical-policy-v2`, then `content_differences`
   without the unit entries' `attempts` and `cache_hit`; every fresh reactor answer is a store hit.
@@ -247,6 +250,8 @@ STORE_SERVED_COUNTS: Final = (
     re.compile(r"\.runs\[\d+\]\.(cold|ledger\.cold_parent)"),
     re.compile(r"\.runs\[\d+\]\.ledger\.summary\.[^.]+\.(value|jacobian)_(cold|store_hit)"),
 )
+#: The ledger file's digest: its `served` and `executions` differ by design; compared for shape.
+LEDGER_DIGEST: Final = re.compile(r"\.artifacts\.ledger")
 #: M02's registered policy, under which REAL's coupling records are compared (G10, F-20).
 REAL_POLICY_ID: Final = "T08-numerical-policy-v2"
 
@@ -269,9 +274,11 @@ def real_replay_differences(recorded: Mapping[str, Any], fresh: Mapping[str, Any
     """REAL's record against its replay from the record (module docstring)."""
     a = {key: value for key, value in recorded.items() if key != "provenance"}
     b = {key: value for key, value in fresh.items() if key != "provenance"}
-    found = replay_differences(
-        _dropped(a, "", STORE_SERVED_COUNTS), _dropped(b, "", STORE_SERVED_COUNTS)
-    )
+    by_design = (*STORE_SERVED_COUNTS, LEDGER_DIGEST)
+    found = replay_differences(_dropped(a, "", by_design), _dropped(b, "", by_design))
+    digests = (recorded["artifacts"]["ledger"], fresh["artifacts"]["ledger"])
+    if not all(isinstance(v, str) and HEX64.fullmatch(v) for v in digests):
+        found.append(f".artifacts.ledger: digest shape {digests[0]!r} vs {digests[1]!r}")
     totals = fresh["accounting"]["totals"]
     executed = {
         "trf_cold": totals["trf_cold"],
@@ -311,7 +318,7 @@ def served_ledger_differences(
             continue
         for a, b in zip(theirs["requests"], mine["requests"], strict=True):
             expected = dict(a)
-            if a["served"] == "cold":
+            if a["served"] == "cold" and a["experiment_key"] is not None:
                 expected.update(served="store_hit", executions=0)
             if dict(b) != expected:
                 keys = sorted(k for k in set(expected) | set(b) if expected.get(k) != b.get(k))

@@ -240,7 +240,7 @@ def _served_ledger(ledger: list[dict[str, Any]]) -> list[dict[str, Any]]:
     fresh = copy.deepcopy(ledger)
     for block in fresh:
         for entry in block["requests"]:
-            if entry["served"] == "cold":
+            if entry["served"] == "cold" and entry["experiment_key"] is not None:
                 entry.update(served="store_hit", executions=0)
     return fresh
 
@@ -258,7 +258,9 @@ def test_a_replay_from_the_record_differs_only_by_design() -> None:
     record = _committed(".json")
     record["provenance"] = {"run_commit": "a" * 40, "tree_clean": True, "wall_s": 9.0}
     assert record["accounting"]["totals"]["trf_cold"] > 0  # the shift is not vacuous
-    assert replay.real_replay_differences(record, _served_record(record)) == []
+    served = _served_record(record)
+    served["artifacts"]["ledger"] = "e" * 64  # the replay's ledger file differs by design
+    assert replay.real_replay_differences(record, served) == []
 
 
 def test_the_real_comparator_finds_a_moved_decision_and_an_execution() -> None:
@@ -285,10 +287,19 @@ def test_the_served_ledger_maps_cold_to_store_hits_only() -> None:
         (b, i)
         for b, block in enumerate(ledger)
         for i, e in enumerate(block["requests"])
-        if e["served"] == "cold"
+        if e["served"] == "cold" and e["experiment_key"] is not None
     )
     kept[cold[0]]["requests"][cold[1]]["served"] = "cold"
     assert len(replay.served_ledger_differences(ledger, kept)) == 1
+    computed = next(  # a request without a key is computed again: it stays cold
+        (b, i)
+        for b, block in enumerate(ledger)
+        for i, e in enumerate(block["requests"])
+        if e["served"] == "cold" and e["experiment_key"] is None
+    )
+    stored = _served_ledger(ledger)
+    stored[computed[0]]["requests"][computed[1]]["served"] = "store_hit"
+    assert len(replay.served_ledger_differences(ledger, stored)) == 1
     keyed = _served_ledger(ledger)
     keyed[cold[0]]["requests"][cold[1]]["experiment_key"] = "f" * 64
     assert len(replay.served_ledger_differences(ledger, keyed)) == 1
