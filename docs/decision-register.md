@@ -7667,3 +7667,129 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 **Rejected alternatives, and why.** Keeping the default: a forgotten argument fits silently in v1's z.
 
 **Watch for.** —
+
+---
+
+## R-383 — `coupling_record_sha256` is `exact_sha256` in ADR 0025 D2.3's partition; no third class (S40)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.1 item 1; `benchmarks/m05/numerical_policy_external.yaml` |
+| Evidence | build log S40; `parent.py:297` digests the coupling record's canonical JSON bytes |
+| Affected packages | M05 |
+
+**Decision.** It is a digest of a document's bytes, not of a state vector, so it is exact. The addendum and `--check` are unchanged.
+
+**Rejected alternatives, and why.** A float digest, or a new identity-excluded class: either is an ADR 0025 amendment that moves v2's content for one field, and the replay rule (R-384) already covers what such a class would add.
+
+**Watch for.** Any other digest of an artifact that carries timings: it gets R-384's shape rule, not a new class.
+
+---
+
+## R-384 — Coupling-record digests are compared for shape between runs; exact within a record
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.1 item 2; R-318 (the precedent) |
+| Evidence | S44: two runs of one tree differ in 6 + 1 coupling digests only, because of `execution.timing` |
+| Affected packages | M05 (G10), M07 (R3 carry and compare) |
+
+**Decision.** `start.`/`solves[].coupling_record_sha256` and `artifacts.coupled_runs[].sha256`: both null or both 64-hex across runs; inside one record, each solve's digest equals its `coupled_runs` copy. A study record's file sha256 is never compared between runs.
+
+**Rejected alternatives, and why.** Exact comparison fails G10 by construction. A digest of a timing-free projection would define a second coupling-record identity beside M02's `rules.coupling`, and as a float digest the addenda cannot declare it.
+
+**Watch for.** A digest whose referent is not kept: it certifies nothing (R-385).
+
+---
+
+## R-385 — WO-8 persists every digested coupling record; G10 checks its integrity and its content
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.1 item 3, §19.4 |
+| Evidence | — |
+| Affected packages | M05 |
+
+**Decision.** `C1Parent(coupling_sink=None)` is an optional sink. The script writes `canonical_json(record)` to `<record stem>.coupling/<solve_id>.json`. G10 checks two things: (a) the sha256 of each file equals its digest; (b) on the same machine, the fresh coupling record equals the persisted one after M02's `excluded` paths are removed, read from M02's addendum.
+
+**Rejected alternatives, and why.** An unpersisted digest certifies nothing. Embedding the coupling records in the study record changes the schema and duplicates M02's format.
+
+**Watch for.** F-18 (the store's state at replay) and F-20 (REAL replay uses M02's `reproduce`).
+
+---
+
+## R-386 — `fd_check`'s floats: η exact; w₀, ½h_j and the FD statistics `r1_r2_existing_floors`
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.2; `benchmarks/m05/numerical_policy_external.yaml` |
+| Evidence | build log S42; `truths.py` `GradientCheck.as_document`, `candidate_statistics` |
+| Affected packages | M05 |
+
+**Decision.** `selected_eta` and `candidates[].eta` are `exact`: η ∈ {2⁻¹⁴, 2⁻¹², 2⁻¹⁰}, built by ×4 and ÷4. `candidates[].{g_inf, truncation, noise, allowance}`, `w0[]` and `half_steps.*` are `r1_r2_existing_floors`. One generated record carries an `fd_check` with at least two candidates, so that no rule is dead.
+
+**Rejected alternatives, and why.** `exact` for w₀ and ½h_j: they are computed from the parent's solve. `excluded` for τ̂ and ν̂: they decide `class` and `result`, which are identity.
+
+**Watch for.** F-17: τ̂ and ν̂ are cancellation-dominated across architectures.
+
+---
+
+## R-387 — WO-8 needs no job entry: its evidence script is the composition root
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.3; §9.5; R-273 |
+| Evidence | `tests/test_m05_isolation.py` scans `src/` only; M04's `studies` rule scans `studies` only |
+| Affected packages | M05 |
+
+**Decision.** `scripts/m05_*.py` imports `studies.trust_region` and `application.trust_region_parent`, and wires `C1_PARENT_SERVICES` into `C1Parent`. R-273 stands.
+
+**Rejected alternatives, and why.** An application job now: R-273 rejected it, and no WO-8 deliverable needs one.
+
+**Watch for.** —
+
+---
+
+## R-388 — M07 needs no job entry either; it compares M05 records under R-384
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.3; `docs/derivations/M07-spec.md` §4.6 (on `wp/M07`, R-336) |
+| Evidence | M07 spec §4.6: "one script, no new operation" |
+| Affected packages | M07 |
+
+**Decision.** `scripts/m07_journey.py` is M07's composition root. Carrying or comparing an M05 record uses R-384's shape rule for coupling digests. R-271's precondition holds if M07 exposes study replay.
+
+**Rejected alternatives, and why.** A job operation: it extends a frozen interface for one script (R-336).
+
+**Watch for.** —
+
+---
+
+## R-389 — A future trust-region job operation needs an ADR and a narrowed R-003 test; never indirection
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.3 |
+| Evidence | S44: the R-003 test and M04's `studies` rule together forbid an in-`src` composition root |
+| Affected packages | the first package that wants one (not M05, not M07) |
+
+**Decision.** Not authorized now. If one is wanted, it takes three things: an ADR amending R-273, R-336 and ADR 0019; an explicit, reasoned allow-list of exactly one application module in the R-003 test; and `run`, `compile`, `orchestrator` and route selection kept importable with Pyomo blocked.
+
+**Rejected alternatives, and why.** `importlib` or an entry-point string to evade the AST test: it hides a dependency the test exists to show. Moving the wiring into `studies`: it breaks M04's rule.
+
+**Watch for.** —

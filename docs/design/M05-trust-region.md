@@ -1587,3 +1587,136 @@ Their consequences:
 | F-16 | Which y_min does the selected rung carry? | Fact: M02's registration (R-315) | Read it from the bound variant; M05 holds no constant |
 
 None of these needs Frank.
+
+## 19. Rulings before WO-8: S40, `fd_check`'s floats, R-003 against jobs (2026-10-16)
+
+These rule on the three items the build log (`docs/design/M05-build-decisions.md` S40, S42, S44 at `930e5f3`) leaves
+open and that decide whether WO-8's committed records pass the float-classification and replay tests. Register
+R-383 to R-389.
+
+### 19.1 `coupling_record_sha256` (S40; R-383, R-384, R-385)
+
+**Fact (S44).** Two runs of the same tree give identical study records except for 6 + 1 coupling-record digests: the
+M02 coupling record (`external-coupling-v1`, digested whole by `document_sha256` at `parent.py:297`) carries the
+attempts' `execution.timing`. The record is therefore not byte-reproducible, and neither is the study record, which
+also carries `wall_s`.
+
+**Ruling.** Two questions were conflated in S40; they get separate answers.
+
+1. *Partition class (ADR 0025 D2.3; R-383).* **`exact_sha256`, confirmed.** The partition is binary: a float digest
+   (ADR 0007 D1 row 3: a digest of a state vector, the `state_sha256` family) or an exact digest of bytes. This is a
+   digest of a JSON document's canonical bytes, so it is exact. No third class (identity-excluded) is added: that
+   would be an ADR 0025 amendment that moves v2's content for one field, and the class would say nothing the replay
+   rule below does not. The addendum and `--check` are unchanged.
+2. *Replay identity (R-384).* **Compared for shape**, R-318's rule for M02's `constants_sha256`. In any comparison of
+   two M05 records (G10, and any later cross-run comparison):
+   - At `start.coupling_record_sha256`, at `candidates[i].solves[j].coupling_record_sha256` and at
+     `artifacts.coupled_runs[k].sha256`: both sides null, or both match `^[0-9a-f]{64}$`. The value is not compared.
+     `artifacts.coupled_runs[].check_id` stays exact (the same ids in the same order).
+   - Inside one record, the digests stay exact: each solve's digest equals its `coupled_runs` copy (the existing
+     `test_m05_study_record.py` check, about l.306–311).
+   - The coupled solve's identity is carried by what is reproducible: the solve summary's floats under §9.3's classes
+     (`objective`, `coupling[]`, `coupling_residuals[]`, `decisions`), its exact fields (`outcome`, `certificate`,
+     `executions`, `store_hits`), the ledger sequence, and the referent check of item 3.
+   - The record's own file sha256 is a provenance digest of a committed file. It is never compared between runs
+     (it digests `wall_s` and these digests).
+3. *The referent (R-385).* A digest of a document nobody keeps certifies nothing, so **WO-8 persists every coupling
+   record** it digests:
+   - `C1Parent` gains an optional keyword `coupling_sink: Callable[[str, Mapping[str, Any]], None] | None = None`. It
+     is called once per solve that has a coupling record, with `(solve_id, record)`, where the digest is computed.
+     With `None` (the default) nothing changes.
+   - WO-8's evidence script writes `canonical_json(record)` (the bytes `document_sha256` hashes) to
+     `<record stem>.coupling/<solve_id>.json`, beside the committed record `<record stem>.json`. It refuses a
+     duplicate `solve_id`. The schema is unchanged; the location is the convention.
+   - G10's referent check (test support only; R-253 and R-271 stand) has two parts. *Integrity:* sha256 of each file
+     equals its recorded digest. *Content:* on the same-machine replay, each fresh coupling record equals the
+     persisted one after the paths that M02's `rules.coupling` classifies `excluded` are removed, with floats compared
+     by `float.hex`. The `excluded` paths are read from `benchmarks/m02/numerical_policy_external.yaml`, never
+     restated in M05. Across architectures (no M05 gate), the content check is M02's `record_differences` under the
+     record's policy, with zero differences.
+
+**Rejected.**
+- *Exact comparison.* It fails G10 by construction: S44 measured 7 differing values on two runs of the same tree,
+  and every difference is a timing that §9.3 puts outside every identity.
+- *A digest of a timing-free projection of the coupling record.* It would define the coupling record's identity a
+  second time, beside M02's `rules.coupling`, and the two definitions could drift. It still digests r1/r2 floats,
+  so it would be a float digest, which `--check`'s addenda cannot declare (an ADR 0025 amendment). And it still
+  needs the referent to be verifiable.
+- *Embedding the coupling records in the study record.* That is a schema change, it duplicates M02's record format,
+  and it multiplies the record's size.
+
+### 19.2 `fd_check`'s floats (S42; R-386)
+
+The M05 addendum (`benchmarks/m05/numerical_policy_external.yaml`, S11/S17's classes) gains three rules, appended to
+`rules.trust_region_study`. They are disjoint from the existing rules, so the order does not matter:
+
+| Path (full match) | Class | Why |
+| --- | --- | --- |
+| `\.fd_check\.(selected_eta\|candidates\[\d+\]\.eta)` | `exact` | η ∈ {2⁻¹⁴, 2⁻¹², 2⁻¹⁰}, registered by `M05-fd-v2`; the ladder is built by ×4 and ÷4, which are exact in binary64 |
+| `\.fd_check\.candidates\[\d+\]\.(g_inf\|truncation\|noise\|allowance)` | `r1_r2_existing_floors` | ‖G(η)‖_∞, τ̂, ν̂ and 10⁻³·max(1, ‖G‖_∞) are derived from truth outputs at w₀ |
+| `\.fd_check\.(w0\[\d+\]\|half_steps\..+)` | `r1_r2_existing_floors` | w₀ is the reactor inlet at the parent's certified start (computed, not copied); ½h_j = ½·η·max(\|w₀_j\|, f_j) derives from it |
+
+(In the YAML, `\|` is a plain `|`.)
+
+- `sides` (integers ±1), `class`, `result`, `stopped` and `policy` are not floats. They are exact as JSON values, and
+  they carry the check's decisions.
+- The `exact` class's description gains "the FD check's registered steps η". `r1_r2_existing_floors` already reads
+  "every quantity derived from them".
+- **No dead rule.** One record in `GENERATED` (`tests/test_m05_study_record.py`) must carry a non-null `fd_check`
+  with at least two candidates, so that `test_every_float_rule_classifies_a_float_of_the_generated_records` sees every
+  new rule. Take it from `GradientCheck.as_document()` on the in-process synthetic FD truth. A hand-built
+  `GradientCheck` is acceptable only if the synthetic truth passes at the first η.
+
+**Rejected.**
+- *`exact` for w₀ and ½h_j.* They are computed from the parent's solve, so their cross-architecture bits are not
+  guaranteed.
+- *`excluded` for τ̂ and ν̂*, which are cancellation-dominated. They decide `class` and `result`, which are identity,
+  so they stay inside the comparison (risk F-17).
+
+### 19.3 R-003 against application jobs (S44; R-387, R-388, R-389)
+
+**Ruling: neither WO-8 nor M07 needs a job entry.** R-273 and §9.5 stand ("no job operation"). M07 has already
+ruled the same for its journey: `docs/derivations/M07-spec.md` §4.6 (on `wp/M07`, R-336) says "one script, no new
+operation", and the script composes M05's study entry point.
+
+- *WO-8 (R-387).* The composition root is the evidence script `scripts/m05_*.py`, outside `src/`. It imports
+  `openflowsheet.studies.trust_region` (`run_study`, `C1Parent`) and
+  `openflowsheet.application.trust_region_parent` (`C1_PARENT_SERVICES`), and wires the services into `C1Parent`.
+  `test_no_route_or_compile_path_reaches_the_projection` scans `src/` only, and M04's
+  `test_studies_never_import_the_application_layer` scans `studies` only, so both hold unchanged.
+- *M07 (R-388).* `scripts/m07_journey.py` is its composition root, in the same way.
+  - When M07 compares or carries an M05 record, it applies R-384: coupling digests by shape, never the record
+    file's sha256 between a rerun and the committed record.
+  - If M07 exposes study replay as a product, R-271's precondition stands: the comparison rules move into
+    `run/compare` (an ADR 0025 amendment) first.
+- *If a job operation is ever wanted (R-389, not authorized now).* It needs an ADR that amends R-273/R-336 and
+  ADR 0019's operation list. R-003's intent is "no route, compile or backend path reaches a second model", not "no
+  caller", so:
+  - the test is narrowed by an explicit, reasoned allow-list of exactly one application module (the job's wiring);
+  - `test_the_pyomo_free_modules_import_with_pyomo_blocked` is extended so that `run`, `compile`, `orchestrator`
+    and the route selection still import with Pyomo blocked.
+
+  Forbidden in every case: reaching the package by `importlib` or an entry-point string, to stay invisible to the
+  AST test.
+
+### 19.4 Work orders and gates changed
+
+| WO | Lane | Deliverable | Acceptance |
+| --- | --- | --- | --- |
+| WO-8 (added) | Opus | §19.2's three rules and the `exact` description; the `fd_check` record in `GENERATED`; §19.1's `coupling_sink` and the script's writer; G10's shape rule and referent check in test support | `t08_numerical_policy.py --check` exits 0 with v2's sha256 6b449911…707c unchanged; both float tests pass with the new record; existing M05 tests pass unchanged with `coupling_sink=None` (counts grow only by the new record's parametrizations); every WO-8 record's `fd_check` floats are classified |
+
+- **G10, amended.** Same machine: every float that is not `excluded` is bitwise equal. The coupling digests are
+  compared by shape (§19.1 item 2). Every persisted coupling record passes integrity and content (item 3): 0
+  mismatches, and the number of files equals `len(artifacts.coupled_runs)`.
+- **G12, amended.** Every committed record's `fd_check`, when present, is classified, with 0 unclassified paths.
+
+### 19.5 Open questions, each with a default
+
+| # | Question | Kind | Default |
+| --- | --- | --- | --- |
+| F-17 | Are τ̂ and ν̂ reproducible under R1/R2 floors across architectures? Both are cancellation-dominated. | Fact: the first cross-architecture comparison (no M05 gate) | Keep `r1_r2_existing_floors`. A difference there is reported, not floored away; a flipped `class` is a real difference |
+| F-18 | Do WO-8's recorded runs start from an empty experiment store? The content check's `cache_hit` and `attempts` depend on it. | Fact: WO-8 | Record runs and G10 replays both start from an empty store. If a run cannot, escalate before relaxing the content check |
+| F-19 | How large are the persisted coupling records? | Fact: WO-8 | Commit them. Above 5 MB per study, write them under `evidence/M05/<commit>/artifacts/` (ignored), reference them by hash in the manifest, and log the choice |
+| F-20 | REAL (WO-9) replay serves the truth from the record, so `cache_hit`/`attempts` differ by design | Fact: WO-9 | WO-9's content check is M02's `reproduce`/`record_differences`, not §19.1's same-machine equality |
+
+None of these needs Frank.
