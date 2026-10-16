@@ -875,3 +875,7 @@ Grep, don't read whole. Newest at the bottom.
 - **M05 pre-WO-8 ruling** (2026-10-16, `architect`, `4c83d15`, §19, R-383…R-389): `coupling_record_sha256` exact_sha256; between runs
   shape-only (as R-318); coupling records saved via `coupling_sink` and file-checked in G10; fd_check floats classed (eta exact,
   rest r1_r2_existing_floors); R-003 stands, no job entry for WO-8/M07. WO-8 engineer launched.
+- **M02 follow-up** (2026-10-16, `opus-engineer`, `wp/M02-followup` 39e6b0c/768690f/b6f51d8; gates 8672/8675/8675): D133 R-341 guard
+  (negative control MATCH→MISMATCH); D134 C1 slack 4·2⁻⁵² (exact compare refused 46.2 % of 2×10⁵ scalings, max shortfall 1.59·2⁻⁵²;
+  pin rewritten 1 ulp accepted/16 refused); D135 L44/L45/L46/L48, harvest [1]→L44 [2]→L45 [3]→L48 [5]→L46 [6]→L44. `reviewer` launched
+  (R-390 if it rules D134).
