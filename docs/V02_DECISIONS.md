@@ -872,3 +872,6 @@ Grep, don't read whole. Newest at the bottom.
   (`application/trust_region_parent.py`); moving `parent.py` would break R-003's isolation test. Bitwise dumps identical (6393 +
   3668 lines; coupling-record sha masked — wall times, S40). Found: R-003 means no application job can run the study.
   `architect` pre-WO-8 ruling launched (S40, fd_check floats, R-003 vs jobs; R-383…R-389).
+- **M05 pre-WO-8 ruling** (2026-10-16, `architect`, `4c83d15`, §19, R-383…R-389): `coupling_record_sha256` exact_sha256; between runs
+  shape-only (as R-318); coupling records saved via `coupling_sink` and file-checked in G10; fd_check floats classed (eta exact,
+  rest r1_r2_existing_floors); R-003 stands, no job entry for WO-8/M07. WO-8 engineer launched.
