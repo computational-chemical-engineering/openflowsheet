@@ -101,7 +101,8 @@ def test_an_excluded_timing_is_not_compared() -> None:
 
 def test_the_excluded_paths_are_read_from_the_addenda() -> None:
     assert [p.pattern for p in replay.m05_excluded()] == [
-        r"\.(start|candidates\[\d+\]\.solves\[\d+\])\.wall_s"
+        r"\.(start|candidates\[\d+\]\.solves\[\d+\])\.wall_s",
+        r"\.provenance\.wall_s",
     ]
     (timing,) = replay.m02_coupling_excluded()
     assert timing.fullmatch(".iterations[0].units.reactor.attempts[0].execution.timing.wall_s")
@@ -204,3 +205,4 @@ def test_the_store_bijection_finds(mutate: Any) -> None:
     store, ledger, couplings = _bijection_case()
     mutate(store, ledger, couplings)
     assert replay.store_bijection_violations(store, ledger, couplings) != []
+

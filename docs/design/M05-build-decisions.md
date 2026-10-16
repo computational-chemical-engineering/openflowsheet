@@ -620,3 +620,12 @@ S64 LOOP-S (`scripts/m05_wo8_runs.py LOOP-S`, `OMP_NUM_THREADS=1`, `.venv-nlp`, 
    comparison, LOOP-R's interior-point offset is 5.29e-8 scaled, at about the same objective slope (its plus poll
    −8.37e-5).
    G10: `--replay` 0 differences on TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R (after this change) and LOOP-S.
+S65 FD-3 (M07 spec §4.6, A1.6): records written from WO-9 on carry an optional top-level `provenance` block
+   `{run_commit, tree_clean, wall_s}` (schema additive, not required): the commit the study was run at, whether
+   `git status --porcelain` was empty when it started (the REAL run refuses a dirty tree), and the study's spent
+   wall time from its own budget clock (`StudyBudget.wall_s` after `run_study`). Written by the evidence scripts
+   (`m05_wo8_runs.git_state`/`provenance`), never by the loop, so the five WO-8 records are not re-taken and their
+   `--replay` is unchanged (TR-E2, LOOP-R: 0 differences after the change). `provenance.wall_s` is classified
+   `excluded` in the M05 addendum; `provenance` is never compared between a run and its replay. Alternatives: the
+   fields inside `environment` or `accounting` (both compared by the WO-8 replays). Reversible: the block and its
+   addendum rule.

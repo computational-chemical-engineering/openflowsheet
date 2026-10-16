@@ -33,9 +33,11 @@ order without its `wall_s` (its sha256 is `artifacts.ledger`), `<record>.store.j
 attempt record the study's experiment store holds at its end (`{experiment_key, attempt}`, sorted),
 against which `m05_replay.store_bijection_violations` evaluates §8.3's store bijection (G7), and
 `<record>.environment.json`, the environment the run was made in (`environment_fingerprint`; build
-log S59). `--replay` re-runs the case from a fresh store and compares with the committed files
-(G10, §19.4): the environment exactly (G10 is a same-machine, same-environment criterion), the
-record by `m05_replay.replay_differences`, the ledger and the store index exactly, and every
+log S59). The record carries `provenance` (build log S65, M07's FD-3): the commit the run was made
+at, whether the tree was clean, and the study's spent wall time; it is never compared (the WO-8
+records predate it). `--replay` re-runs the case from a fresh store and compares with the committed
+files (G10, §19.4): the environment exactly (G10 is a same-machine, same-environment criterion),
+the record by `m05_replay.replay_differences`, the ledger and the store index exactly, and every
 persisted coupling record by integrity and content. Prints one summary line; exit 0 iff the run
 (or the replay) is clean and the store bijection holds.
 
@@ -56,6 +58,7 @@ import importlib.metadata
 import json
 import os
 import platform
+import subprocess
 import sys
 import tempfile
 from collections.abc import Callable, Mapping
@@ -269,6 +272,24 @@ def environment_fingerprint() -> dict[str, Any]:
     }
 
 
+def git_state() -> tuple[str, bool]:
+    """The checkout's `HEAD` commit and whether its tree is clean (no tracked or untracked change),
+    read before a run starts (build log S65)."""
+
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=REPO_ROOT, capture_output=True, text=True, check=True
+        ).stdout
+
+    return git("rev-parse", "HEAD").strip(), git("status", "--porcelain") == ""
+
+
+def provenance(state: tuple[str, bool], wall_s: float) -> dict[str, Any]:
+    """The record's `provenance` block (build log S65): `state` is `git_state()` at the start."""
+    commit, clean = state
+    return {"run_commit": commit, "tree_clean": clean, "wall_s": wall_s}
+
+
 def store_index(root: Path) -> list[dict[str, Any]]:
     """Every attempt record of the experiment store under `root` (`attempts/<n>.json`), sorted."""
     base = ExperimentStore(root).base
@@ -289,6 +310,7 @@ class Run:
     check: GradientCheck | None
     store: bytes
     bijection: list[str]
+    provenance: dict[str, Any]
 
 
 def c1_parent(
@@ -316,6 +338,7 @@ def c1_parent(
 
 
 def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run:
+    state = git_state()
     couplings: dict[str, bytes] = {}
 
     def sink(solve_id: str, record: Mapping[str, Any]) -> None:
@@ -377,12 +400,13 @@ def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run
         path_for=path_for,
     )
     limitations = ("fd_gradient",) if case.finite_difference else ()
+    budget = StudyBudget(IN_PROCESS_BUDGET)
     result = run_study(
         parent,
         decisions=parent.decisions,
         start={decision.name: case.start_k},
         stage_c=stage,
-        budget=StudyBudget(IN_PROCESS_BUDGET),
+        budget=budget,
         stage_a=stage_a,
         stage_a_reference=stage_a_reference,
         projection_check=parent.project_at,
@@ -437,11 +461,23 @@ def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run
         json.loads(ledger),
         {solve_id: json.loads(data) for solve_id, data in couplings.items()},
     )
-    return Run(record, couplings, ledger, check, canonical_json(index), bijection)
+    return Run(
+        record,
+        couplings,
+        ledger,
+        check,
+        canonical_json(index),
+        bijection,
+        provenance(state, budget.wall_s),
+    )
 
 
 def write(case: Case, run: Run) -> None:
-    stem = case.stem
+    write_files(case.stem, run)
+
+
+def write_files(stem: Path, run: Run) -> None:
+    """The record and its sidecars at `stem` (module docstring); never over a committed run."""
     stem.parent.mkdir(parents=True, exist_ok=True)
     coupling = stem.with_suffix(".coupling")
     if coupling.exists():
@@ -455,7 +491,8 @@ def write(case: Case, run: Run) -> None:
         json.dumps(environment_fingerprint(), indent=1) + "\n", encoding="utf-8"
     )
     stem.with_suffix(".json").write_text(
-        json.dumps(run.record, indent=1, sort_keys=False) + "\n", encoding="utf-8"
+        json.dumps({**run.record, "provenance": run.provenance}, indent=1, sort_keys=False) + "\n",
+        encoding="utf-8",
     )
 
 
@@ -472,6 +509,7 @@ def compare(case: Case, run: Run) -> list[str]:
         if now.get(key) != value
     ]
     recorded = json.loads(stem.with_suffix(".json").read_text(encoding="utf-8"))
+    recorded.pop("provenance", None)  # S65: provenance, never compared
     found += replay.replay_differences(recorded, run.record)
     if stem.with_suffix(".ledger.json").read_bytes() != run.ledger:
         found.append("ledger: the request sequence differs")

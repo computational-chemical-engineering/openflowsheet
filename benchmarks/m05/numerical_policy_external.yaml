@@ -32,6 +32,8 @@ numerical_policy_external:
     trust_region_study:
     - {path: '\.spec\..*', class: exact}
     - {path: '\.(start|candidates\[\d+\]\.solves\[\d+\])\.wall_s', class: excluded}
+    # Build log S65 (FD-3): the study's spent wall time, beside the run commit (`provenance`).
+    - {path: '\.provenance\.wall_s', class: excluded}
     - {path: '\.start\.decisions\..+', class: exact}
     - {path: '\.(start|candidates\[\d+\]\.solves\[\d+\])\.(objective|coupling\[\d+\]|coupling_residuals\[\d+\])', class: r1_r2_existing_floors}
     - {path: '\.candidates\[\d+\]\.solves\[\d+\]\.decisions\..+', class: r1_r2_existing_floors}

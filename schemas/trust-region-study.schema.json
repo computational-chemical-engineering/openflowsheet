@@ -1591,6 +1591,32 @@
           "description": "S18: the solves (S0, then every candidate's in order) that have a coupling record; a parent without an external unit gives no entry."
         }
       }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_commit",
+        "tree_clean",
+        "wall_s"
+      ],
+      "properties": {
+        "run_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "The commit the study was run at."
+        },
+        "tree_clean": {
+          "type": "boolean",
+          "description": "Whether the working tree was clean (no tracked or untracked change) when the run started."
+        },
+        "wall_s": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "The study's spent wall time, s (its budget clock from start to end)."
+        }
+      },
+      "description": "Build log S65 (M07 spec A1.6, FD-3): the run's anchor, written by the evidence script for records made from WO-9 on. Optional: the WO-8 records predate it and are not re-taken. Provenance, never compared between a run and its replay."
     }
   },
   "$defs": {

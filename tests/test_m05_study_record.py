@@ -352,6 +352,18 @@ def _stable_with_basis_v2() -> dict[str, Any]:
     return record
 
 
+def _stable_with_provenance() -> dict[str, Any]:
+    """Build log S65 (FD-3): the evidence script's `provenance` block, added after
+    `as_document` (the run commit, a clean tree, the study's spent wall time)."""
+    record = _stable()
+    record["provenance"] = {
+        "run_commit": "0123456789abcdef" * 2 + "01234567",
+        "tree_clean": True,
+        "wall_s": 12.5,
+    }
+    return record
+
+
 GENERATED: dict[str, Callable[[], dict[str, Any]]] = {
     "decision_stable_with_a_retry": _stable,
     "candidate_failure": _failed_candidate,
@@ -361,6 +373,7 @@ GENERATED: dict[str, Callable[[], dict[str, Any]]] = {
     "iteration_limit": _iteration_limit,
     "decision_stable_with_an_fd_check": _stable_with_an_fd_check,
     "decision_stable_with_basis_v2": _stable_with_basis_v2,
+    "decision_stable_with_provenance": _stable_with_provenance,
 }
 
 
@@ -578,6 +591,7 @@ def test_the_generated_records_cover_the_statuses() -> None:
         "iteration_limit": "ITERATION_LIMIT",
         "decision_stable_with_an_fd_check": "DECISION_STABLE",
         "decision_stable_with_basis_v2": "DECISION_STABLE",
+        "decision_stable_with_provenance": "DECISION_STABLE",
     }
 
 
