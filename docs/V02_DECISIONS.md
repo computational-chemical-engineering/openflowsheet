@@ -889,3 +889,7 @@ Grep, don't read whole. Newest at the bottom.
 - **M05 F-15 diagnosis** (2026-10-16, `opus-engineer`, `04454d7`, doc only): mechanism = linear model drops the truth's curvature,
   start at box corner, full-radius steps θ = C·Δ² (C 0.27→0.775), radius band 1e-4 vs termination 1e-5; refuted criticality /
   scaling / floor / FD noise. 150-iteration scratch: θ 9.72e-6 at k = 35. `architect` ruling launched (R-400…R-409).
+- **M05 post-WO-8 ruling** (2026-10-16, `architect`, `a9d05d3`, §20, R-400…R-409, ADR 0038 Am. 2): see state. WO-8a/8c/8d engineer launched.
+- **M02 follow-up merged** (626fb26) — first main gate FAIL (2): manifest under `M02-followup/` but work_package M02; its limitations
+  unharvested. Fixed `95053be` (moved to `evidence/M02/6c3a087…`, 4 P harvest entries, matrix re-emitted). **wp/adr-acceptance merged**
+  (`61cc785`, ADRs 0033–0037 Accepted, R-381 copied, R-410/R-411; register union 284). **Main gate PASS 8681 passed, 31 skipped.**
