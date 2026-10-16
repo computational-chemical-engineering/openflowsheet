@@ -466,9 +466,30 @@ TRF_FEASIBLE_STALLED: Final = "TRF_FEASIBLE_STALLED"
 TRF_STALLED_INCONSISTENT: Final = "TRF_STALLED_INCONSISTENT"
 TRF_MAX_ITERATIONS: Final = "TRF_MAX_ITERATIONS"
 TRF_SUBPROBLEM_FAILED: Final = "TRF_SUBPROBLEM_FAILED"
+#: R-401: an "Optimal" exit, θ within the termination, ≥ 1 accepted step, whose final step does not
+#: show a stationary model — `TRF_EXIT_UNVERIFIED(<reason>)`. It keeps TRF's clone and its candidate
+#: (limitation `trf_exit_unverified`), goes to stage B like `TRF_CONVERGED` and is never retried.
+TRF_EXIT_UNVERIFIED: Final = "TRF_EXIT_UNVERIFIED"
+FINAL_STEP_REJECTED: Final = "final_step_rejected"
+RADIUS_LIMITED: Final = "radius_limited"
+#: R-401's ρ_s: a final step of at least (1 − ρ_s)·Δ_K is radius-limited (§20.1 "Why ρ_s = 10⁻²").
+RADIUS_LIMITED_MARGIN: Final = 1e-2
+
+
+def exit_unverified(reason: str) -> Outcome:
+    return f"{TRF_EXIT_UNVERIFIED}({reason})"
+
+
 #: The outcomes after which the run keeps TRF's clone and a candidate exists.
 RETURNS_MODEL: Final = frozenset(
-    {TRF_CONVERGED, TRF_EXIT_WITHOUT_STEP, TRF_FEASIBLE_STALLED, TRF_MAX_ITERATIONS}
+    {
+        TRF_CONVERGED,
+        TRF_EXIT_WITHOUT_STEP,
+        exit_unverified(FINAL_STEP_REJECTED),
+        exit_unverified(RADIUS_LIMITED),
+        TRF_FEASIBLE_STALLED,
+        TRF_MAX_ITERATIONS,
+    }
 )
 
 
@@ -491,6 +512,72 @@ def accepted_steps(iterations: Sequence[IterationRecord]) -> int:
     return sum(1 for record in iterations if record.step_type in ("f", "theta"))
 
 
+def radius_in_force(
+    iterations: Sequence[IterationRecord],
+    k: int,
+    *,
+    trust_radius: float,
+    minimum_radius: float,
+    gamma_c: float,
+) -> float:
+    """R-401's Δ_k, the radius TRSP k (≥ 1) was solved with: `trust_radius` for k = 1; k − 1's
+    logged, updated radius when k − 1 was accepted; and when k − 1 was rejected, `TRF.py`'s
+    rejection rule `max(minimum_radius, step_norm_{k−1} * gamma_c)`, in binary64 and in its
+    operand order (a rejected record logs the radius it *used*, not the one it left)."""
+    if k < 1 or k >= len(iterations):
+        raise ValueError(f"no TRSP {k} among {len(iterations)} logged iterations")
+    if k == 1:
+        return trust_radius
+    previous = iterations[k - 1]
+    if previous.step_type == "rejected":
+        return max(minimum_radius, previous.step_norm * gamma_c)
+    return previous.radius
+
+
+def final_step_ratio(
+    iterations: Sequence[IterationRecord],
+    *,
+    trust_radius: float,
+    minimum_radius: float,
+    gamma_c: float,
+) -> float | None:
+    """R-401's recorded s_K/Δ_K for the final logged iteration K; `None` with no logged TRSP."""
+    if len(iterations) < 2:
+        return None
+    k = len(iterations) - 1
+    delta = radius_in_force(
+        iterations, k, trust_radius=trust_radius, minimum_radius=minimum_radius, gamma_c=gamma_c
+    )
+    return iterations[k].step_norm / delta
+
+
+def unverified_reason(
+    iterations: Sequence[IterationRecord],
+    *,
+    trust_radius: float,
+    minimum_radius: float,
+    gamma_c: float,
+    box_bound_exempt: bool,
+) -> str | None:
+    """R-401: why the final logged step K (≥ 1) does not show a stationary model, or `None`.
+
+    `final_step_rejected` if K is a rejected step; `radius_limited` if s_K ≥ (1 − ρ_s)·Δ_K, unless
+    `box_bound_exempt` (n_d = 1 with the returned decision within 1e-6 scaled of a box bound,
+    §7.4's at-bound rule) — the caller decides that from the returned model."""
+    if len(iterations) < 2:
+        raise ValueError("R-401 applies only after a logged TRSP")
+    k = len(iterations) - 1
+    last = iterations[k]
+    if last.step_type == "rejected":
+        return FINAL_STEP_REJECTED
+    delta = radius_in_force(
+        iterations, k, trust_radius=trust_radius, minimum_radius=minimum_radius, gamma_c=gamma_c
+    )
+    if last.step_norm >= (1 - RADIUS_LIMITED_MARGIN) * delta and not box_bound_exempt:
+        return RADIUS_LIMITED
+    return None
+
+
 def classify_exit(
     *,
     exit_lines: Sequence[str],
@@ -500,6 +587,10 @@ def classify_exit(
     feasibility_termination: float,
     step_size_termination: float,
     maximum_iterations: int,
+    trust_radius: float,
+    minimum_radius: float,
+    gamma_c: float,
+    box_bound_exempt: bool,
 ) -> Outcome:
     """The outcome of a run that returned, from its `EXIT:` lines checked against its log and
     against `theta_recheck`, θ recomputed from the model TRF returned (R-279: probe P14 shows that
@@ -509,8 +600,10 @@ def classify_exit(
       values `TRF.py`'s termination test read — within the configured terminations; otherwise the
       line disagrees with TRF's own log (`TRF_ERROR(exit_mismatch)`, a defect). With
       `theta_recheck` above the feasibility termination it is `TRF_STALLED_INCONSISTENT` (R-299:
-      the model, not the line, is believed); within it, `TRF_CONVERGED` after at least one
-      accepted TRSP step and `TRF_EXIT_WITHOUT_STEP` after none.
+      the model, not the line, is believed); within it, `TRF_EXIT_WITHOUT_STEP` after no
+      accepted TRSP step, and after at least one `TRF_EXIT_UNVERIFIED(<reason>)` when the final
+      step was rejected or radius-limited (R-401, `unverified_reason`; `trust_radius`,
+      `minimum_radius`, `gamma_c` and `box_bound_exempt` serve it), else `TRF_CONVERGED`.
     - `EXIT: Feasible solution found.` needs TRF's `Insufficient progress` warning. Then it is
       `TRF_FEASIBLE_STALLED` with `theta_recheck` within the feasibility termination, and
       `TRF_STALLED_INCONSISTENT` above it (`TRF.py`'s stall test compares θ with itself after an
@@ -529,7 +622,16 @@ def classify_exit(
             return trf_error("exit_mismatch")
         if not feasible:
             return TRF_STALLED_INCONSISTENT
-        return TRF_CONVERGED if accepted_steps(iterations) else TRF_EXIT_WITHOUT_STEP
+        if not accepted_steps(iterations):
+            return TRF_EXIT_WITHOUT_STEP
+        reason = unverified_reason(
+            iterations,
+            trust_radius=trust_radius,
+            minimum_radius=minimum_radius,
+            gamma_c=gamma_c,
+            box_bound_exempt=box_bound_exempt,
+        )
+        return TRF_CONVERGED if reason is None else exit_unverified(reason)
     if list(exit_lines) == [EXIT_FEASIBLE]:
         if WARNING_INSUFFICIENT_PROGRESS in warnings:
             return TRF_FEASIBLE_STALLED if feasible else TRF_STALLED_INCONSISTENT

@@ -30,8 +30,10 @@ from openflowsheet.studies.trust_region.trf_state import (
     TrfLogHandler,
     basis_refusals,
     classify_exit,
+    final_step_ratio,
     framework_readiness,
     last_accepted,
+    radius_in_force,
     reconstruct_filter,
     step_size_termination,
     trf_config_v1,
@@ -195,9 +197,11 @@ def classify(
     iterations: tuple[IterationRecord, ...],
     maximum: int = 50,
     theta_recheck: float | None = None,
+    box_bound_exempt: bool = False,
 ) -> str:
-    """`classify_exit` at TR-E1's terminations; θ re-checked equal to the last accepted logged θ
-    unless given (what a model left at that iterate gives, bitwise)."""
+    """`classify_exit` at TR-E1's terminations and radius rule (its log's initial radius 1.0,
+    `M05-trf-config-v1`'s minimum radius and γ_c); θ re-checked equal to the last accepted logged
+    θ unless given (what a model left at that iterate gives, bitwise)."""
     accepted = last_accepted(iterations)
     if theta_recheck is None:
         theta_recheck = accepted.theta if accepted is not None else 0.0
@@ -209,6 +213,10 @@ def classify(
         feasibility_termination=1e-5,
         step_size_termination=1e-5,
         maximum_iterations=maximum,
+        trust_radius=1.0,
+        minimum_radius=TRF_CONFIG_V1["minimum_radius"],
+        gamma_c=TRF_CONFIG_V1["radius_update_param_gamma_c"],
+        box_bound_exempt=box_bound_exempt,
     )
 
 
@@ -333,10 +341,141 @@ def test_r279_which_outcomes_keep_the_model() -> None:
     assert RETURNS_MODEL == {
         "TRF_CONVERGED",
         "TRF_EXIT_WITHOUT_STEP",
+        "TRF_EXIT_UNVERIFIED(final_step_rejected)",
+        "TRF_EXIT_UNVERIFIED(radius_limited)",
         "TRF_FEASIBLE_STALLED",
         "TRF_MAX_ITERATIONS",
     }
     assert "TRF_STALLED_INCONSISTENT" not in RETURNS_MODEL
+
+
+# -- R-401: an "Optimal" exit whose final step does not show a stationary model -----------------
+
+#: F-15's TR-E2 run (v1 basis, WO-8; the parked record's iterations 27 and 28, verbatim): k = 27
+#: is a θ-type step whose updated radius is Δ_28, and k = 28 an f-type step on that radius.
+F15_K27 = IterationRecord(
+    27, 4.098217793735426e-05, -0.45583707628232506, 0.0036370503649489384,
+    0.007274100729897877, "theta",
+)  # fmt: skip
+F15_K28_STEP = 0.0036364873109182225
+#: TR-E2's terminations (`M05-trf-config-v1`, σ = 0.5 · 0.5 K / 20 K) and radius rule.
+TR_E2_RULE = {
+    "trust_radius": TRF_CONFIG_V1["trust_radius"],
+    "minimum_radius": TRF_CONFIG_V1["minimum_radius"],
+    "gamma_c": TRF_CONFIG_V1["radius_update_param_gamma_c"],
+}
+
+
+def trajectory(*tail: IterationRecord) -> tuple[IterationRecord, ...]:
+    """Iteration 0 and accepted θ-type fillers up to the first record of `tail`, then `tail`."""
+    first = tail[0].k
+    filler = tuple(IterationRecord(k, 1e-3, -0.4, 0.5, 0.25, "theta") for k in range(1, first))
+    return (IterationRecord(0, 0.5, -0.45, 0.25, 0.0, None), *filler, *tail)
+
+
+def classify_tr_e2(iterations: tuple[IterationRecord, ...], *, exempt: bool = False) -> str:
+    return classify_exit(
+        exit_lines=[EXIT_OPTIMAL],
+        warnings=[],
+        iterations=iterations,
+        theta_recheck=iterations[-1].theta,
+        feasibility_termination=1e-5,
+        step_size_termination=step_size_termination([0.5], [20.0]),
+        maximum_iterations=30,
+        **TR_E2_RULE,
+        box_bound_exempt=exempt,
+    )
+
+
+def test_r401_f15s_k28_with_theta_below_the_termination_is_unverified() -> None:
+    """§20.7 WO-8a (i): F-15's k = 27/28 with an `Optimal` exit at θ 9.9e-6 (it missed by 2.6 %)
+    is radius-limited: s_28/Δ_28 = 0.99985 ≥ 0.99."""
+    k28 = IterationRecord(28, 9.9e-6, -0.45585003274150676, 0.009, F15_K28_STEP, "f")
+    iterations = trajectory(F15_K27, k28)
+    assert classify_tr_e2(iterations) == "TRF_EXIT_UNVERIFIED(radius_limited)"
+    ratio = final_step_ratio(iterations, **TR_E2_RULE)
+    assert ratio == F15_K28_STEP / 0.0036370503649489384
+    assert 0.99 < ratio < 1.0
+    # The exception: n_d = 1 with the returned decision at a box bound.
+    assert classify_tr_e2(iterations, exempt=True) == "TRF_CONVERGED"
+
+
+def test_r401_a_rejected_final_step_is_unverified() -> None:
+    """§20.7 WO-8a (i): an `Optimal` exit after a rejected final step, however small."""
+    rejected = IterationRecord(28, 9.9e-6, -0.4, 1e-3, 1e-6, "rejected")
+    assert classify_tr_e2(trajectory(F15_K27, rejected)) == (
+        "TRF_EXIT_UNVERIFIED(final_step_rejected)"
+    )
+    assert classify_tr_e2(trajectory(F15_K27, rejected), exempt=True) == (
+        "TRF_EXIT_UNVERIFIED(final_step_rejected)"
+    )
+
+
+def test_r401_a_full_step_at_a_box_bound_is_converged() -> None:
+    """§20.7 WO-8a (i): s_K = Δ_K with the returned decision at a box bound (n_d = 1)."""
+    full = IterationRecord(28, 9.9e-6, -0.4, 0.009, 0.0036370503649489384, "f")
+    iterations = trajectory(F15_K27, full)
+    assert final_step_ratio(iterations, **TR_E2_RULE) == 1.0
+    assert classify_tr_e2(iterations, exempt=True) == "TRF_CONVERGED"
+    assert classify_tr_e2(iterations) == "TRF_EXIT_UNVERIFIED(radius_limited)"
+
+
+def test_r401_the_margin_is_one_percent_of_the_radius() -> None:
+    radius = F15_K27.radius
+    below = IterationRecord(28, 9.9e-6, -0.4, 0.009, 0.98 * radius, "f")
+    at = IterationRecord(28, 9.9e-6, -0.4, 0.009, (1 - 1e-2) * radius, "f")
+    assert classify_tr_e2(trajectory(F15_K27, below)) == "TRF_CONVERGED"
+    assert classify_tr_e2(trajectory(F15_K27, at)) == "TRF_EXIT_UNVERIFIED(radius_limited)"
+
+
+@pytest.mark.parametrize("step_norm", [0.0036364873109182225, 1.5e-4, 1e-9])
+def test_r401_the_radius_after_a_rejected_step_is_trf_s_rejection_rule(step_norm: float) -> None:
+    """§20.7 WO-8a (i): Δ_K after a rejected K − 1 is `TRF.py`'s `max(config.minimum_radius,
+    step_norm_k * config.radius_update_param_gamma_c)`, bitwise — the rejected record's own
+    logged radius is the one it used, not this one. The minimum binds for the last step."""
+    rejected = IterationRecord(27, 2e-5, -0.4, 0.0072, step_norm, "rejected")
+    after = IterationRecord(28, 9.9e-6, -0.4, 0.0072, 1e-6, "f")
+    iterations = trajectory(rejected, after)
+    expected = max(
+        TRF_CONFIG_V1["minimum_radius"], step_norm * TRF_CONFIG_V1["radius_update_param_gamma_c"]
+    )
+    assert radius_in_force(iterations, 28, **TR_E2_RULE) == expected
+    assert radius_in_force(iterations, 28, **TR_E2_RULE) != rejected.radius
+    assert final_step_ratio(iterations, **TR_E2_RULE) == 1e-6 / expected
+
+
+def test_r401_the_first_trsp_uses_the_configured_radius_and_tr_e1_stays_converged() -> None:
+    """Δ_1 is `trust_radius`; §20.7 WO-8a (ii): TR-E1's final step is 1.16e-3 of its radius."""
+    _, iterations = parsed()
+    assert radius_in_force(iterations, 1, trust_radius=0.3, minimum_radius=1e-4, gamma_c=0.5) == 0.3
+    ratio = final_step_ratio(iterations, trust_radius=1.0, minimum_radius=1e-4, gamma_c=0.5)
+    assert ratio is not None and round(ratio, 5) == 0.00116
+    assert classify([EXIT_OPTIMAL], [], iterations) == "TRF_CONVERGED"
+    assert final_step_ratio(iterations[:1], **TR_E2_RULE) is None
+    with pytest.raises(ValueError):
+        radius_in_force(iterations, 0, **TR_E2_RULE)
+
+
+def test_r401_precedence_stalled_and_exit_without_step_come_first() -> None:
+    """R-401's precedence: `TRF_STALLED_INCONSISTENT` > `TRF_EXIT_WITHOUT_STEP` >
+    `TRF_EXIT_UNVERIFIED` > `TRF_CONVERGED`."""
+    k28 = IterationRecord(28, 9.9e-6, -0.4, 0.009, F15_K28_STEP, "f")
+    iterations = trajectory(F15_K27, k28)
+    stalled = classify_exit(
+        exit_lines=[EXIT_OPTIMAL],
+        warnings=[],
+        iterations=iterations,
+        theta_recheck=2e-5,
+        feasibility_termination=1e-5,
+        step_size_termination=0.0125,
+        maximum_iterations=30,
+        **TR_E2_RULE,
+        box_bound_exempt=False,
+    )
+    assert stalled == "TRF_STALLED_INCONSISTENT"
+    pmp = IterationRecord(0, 1e-6, -0.4, 0.25, 0.0, None)
+    only_rejected = (pmp, IterationRecord(1, 1e-6, -0.4, 0.25, 1e-6, "rejected"))
+    assert classify_tr_e2(only_rejected) == "TRF_EXIT_WITHOUT_STEP"
 
 
 # -- the basis (R-277) ----------------------------------------------------------------------------

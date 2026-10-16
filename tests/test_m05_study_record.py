@@ -183,6 +183,9 @@ class FullStage(FakeStage):
             "exit_claim": None,
             "theta_logged": None if decisions is None else 0.0,
             "final_state_is_last_truth_point": None if decisions is None else True,
+            # R-401 (WO-8a): the final step's s_K/Δ_K and the returned decision at a box bound.
+            "final_step_ratio": 0.25,
+            "final_step_at_box_bound": None if decisions is None else False,
             "error": None,
             "ledger": {"summary": {"reactor": fd_summary(iterations)}, "cold_parent": 0},
             "assumptions": [{"id": f"A{i}", "status": "assumed"} for i in range(1, 8)],
@@ -589,6 +592,10 @@ _DELETE = object()
         (("runs", 0, "truth", 0, "gradient"), "numeric"),
         (("runs", 0, "basis", "reactor"), "taylor"),
         (("runs", 0, "exit_claim"), "converged"),
+        # R-401: a ratio is a non-negative number, the bound flag a boolean.
+        (("runs", 0, "final_step_ratio"), -0.5),
+        (("runs", 0, "final_step_ratio"), "0.99"),
+        (("runs", 0, "final_step_at_box_bound"), "yes"),
     ],
 )
 def test_the_schema_rejects(path: Sequence[Any], value: Any) -> None:
@@ -609,6 +616,12 @@ def test_the_schema_rejects(path: Sequence[Any], value: Any) -> None:
         (("best",), None),
         (("fd_check",), _fd_check_document()),
         (("runs", 0, "ledger", "summary", "reactor", "by_purpose", "trf_pmp_value"), 0),
+        # R-401: nulls without a logged TRSP; the outcome is a free string; v1 records lack both.
+        (("runs", 0, "final_step_ratio"), None),
+        (("runs", 0, "final_step_at_box_bound"), True),
+        (("runs", 0, "outcome"), "TRF_EXIT_UNVERIFIED(radius_limited)"),
+        (("runs", 0, "final_step_ratio"), _DELETE),
+        (("runs", 0, "final_step_at_box_bound"), _DELETE),
     ],
 )
 def test_the_schema_accepts(path: Sequence[Any], value: Any) -> None:

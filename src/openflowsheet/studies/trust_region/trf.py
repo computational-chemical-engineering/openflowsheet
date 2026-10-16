@@ -33,20 +33,26 @@ TRF's `ext_fcn_surrogate_map_rule` — the configuration goes to `solve()`, neve
   check, and `TRF_ERROR(exit_mismatch | log | theta_recheck | trf_map)` when what TRF returned does
   not read back;
 - otherwise `trf_state.classify_exit`, from the `EXIT:` lines, the log and **θ re-checked from
-  the returned model** (R-279): `TRF_CONVERGED` (≥ 1 accepted TRSP step), `TRF_EXIT_WITHOUT_STEP`,
-  `TRF_FEASIBLE_STALLED`, `TRF_STALLED_INCONSISTENT` or `TRF_MAX_ITERATIONS`. All but
-  `TRF_STALLED_INCONSISTENT` keep TRF's clone.
+  the returned model** (R-279): `TRF_CONVERGED` (≥ 1 accepted TRSP step, the final one neither
+  rejected nor radius-limited), `TRF_EXIT_UNVERIFIED(<reason>)` (R-401: an "Optimal" exit whose
+  final step was rejected or radius-limited), `TRF_EXIT_WITHOUT_STEP`, `TRF_FEASIBLE_STALLED`,
+  `TRF_STALLED_INCONSISTENT` or `TRF_MAX_ITERATIONS`. All but `TRF_STALLED_INCONSISTENT` keep
+  TRF's clone.
 
 The precedence (R-299, design note §17.4): `TRF_TRUTH_REFUSED` (the backstop); then θ_recheck
 above the feasibility termination is `TRF_STALLED_INCONSISTENT` whatever the `EXIT:` line claims
 (an "Optimal" line whose own logged θ and step agree with it included); then
-`TRF_EXIT_WITHOUT_STEP`; then `TRF_CONVERGED` or `TRF_FEASIBLE_STALLED`. `TRF_ERROR(exit_mismatch)`
+`TRF_EXIT_WITHOUT_STEP`; then `TRF_EXIT_UNVERIFIED`; then `TRF_CONVERGED` or
+`TRF_FEASIBLE_STALLED`. `TRF_ERROR(exit_mismatch)`
 stays a line that disagrees with TRF's own log — a defect, never retried. Every run TRF returned
 from records `exit_claim` (`optimal`, `feasible` or `None`), `theta_logged` (the last logged
 iteration's θ, which TRF's termination read) beside `theta_recheck`, and
 `final_state_is_last_truth_point`: whether, for every holder, the inputs the returned model holds
 are, bitwise (zeros normalized, as the memo keys them), those of the holder's last request before
 the re-check — `False` points at a TRF that terminated on a state other than the one it returned.
+Every run with a logged TRSP records R-401's `final_step_ratio` s_K/Δ_K and
+`final_step_at_box_bound` (a bounded decision of the returned model within 1e-6 scaled of its box
+bound; `None` when TRF returned no model).
 
 The re-check is `TRF.py`'s own feasibility measure, Σᵢ |yᵢ − dᵢ(w)| over its holder variables,
 evaluated on the returned clone while the holders still serve the run: every truth value it needs
@@ -82,6 +88,7 @@ from pyomo.opt import SolverFactory
 from pyomo.solvers.plugins.solvers.IPOPT import IPOPT
 
 from openflowsheet.canonical import document_sha256, encode_doubles
+from openflowsheet.studies.trust_region.checks import AT_BOUND_SCALED
 from openflowsheet.studies.trust_region.holders import ColdBudget, RunState, TruthRefused
 from openflowsheet.studies.trust_region.projection import OmittedRowsCheck, Projection
 from openflowsheet.studies.trust_region.trf_state import (
@@ -98,6 +105,7 @@ from openflowsheet.studies.trust_region.trf_state import (
     basis_refusals,
     classify_exit,
     exit_claim,
+    final_step_ratio,
     framework_readiness,
     last_accepted,
     reconstruct_filter,
@@ -193,6 +201,11 @@ class TrfRun:
     exit_claim: str | None = None
     theta_logged: float | None = None
     final_state_is_last_truth_point: bool | None = None
+    #: R-401, for every run with a logged TRSP: s_K/Δ_K of the final logged iteration K, and
+    #: whether a bounded decision of the returned model is within 1e-6 (scaled) of its box bound
+    #: (`None` when TRF returned no model).
+    final_step_ratio: float | None = None
+    final_step_at_box_bound: bool | None = None
 
     def source_map(self, projection: Projection) -> dict[str, Any]:
         """The projection's source map with this run's `trf` part filled."""
@@ -351,6 +364,17 @@ def _run(
         iterations = ()
         log_error = str(error)
 
+    # R-401: the final step against the radius it was solved with, and the returned decision.
+    radius_rule = {
+        "trust_radius": float(effective.trust_radius),
+        "minimum_radius": float(effective.minimum_radius),
+        "gamma_c": float(effective.radius_update_param_gamma_c),
+    }
+    step_ratio = final_step_ratio(iterations, **radius_rule)
+    at_box_bound = None
+    if returned is not None and step_ratio is not None:
+        at_box_bound = _at_box_bound(projection, returned)
+
     outcome: str
     refusal = refusals[0] if refusals else None
     error_text = None if raised is None else f"{type(raised).__name__}: {raised}"
@@ -376,6 +400,8 @@ def _run(
             feasibility_termination=float(effective.feasibility_termination),
             step_size_termination=float(effective.step_size_termination),
             maximum_iterations=int(effective.maximum_iterations),
+            **radius_rule,
+            box_bound_exempt=len(projection.decisions) == 1 and bool(at_box_bound),
         )
 
     model = returned if outcome in RETURNS_MODEL else None
@@ -431,7 +457,21 @@ def _run(
         exit_claim=claim,
         theta_logged=theta_logged,
         final_state_is_last_truth_point=same_point,
+        final_step_ratio=step_ratio,
+        final_step_at_box_bound=at_box_bound,
     )
+
+
+def _at_box_bound(projection: Projection, model: Any) -> bool:
+    """R-401's exception: a bounded decision of `model` within 1e-6 (scaled) of a box bound, the
+    poll's at-bound rule (§7.4, `checks.AT_BOUND_SCALED`; R-404)."""
+    for j, decision in enumerate(projection.decisions):
+        if not decision.bounded:
+            continue
+        scaled = float(pyo.value(model.d[j]))
+        if min(abs(scaled + 1.0), abs(scaled - 1.0)) <= AT_BOUND_SCALED:
+            return True
+    return False
 
 
 def _preflight(projection: Projection) -> TruthRefused | None:

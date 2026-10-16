@@ -154,6 +154,9 @@ def test_g3_tr_e1_reproduces_the_native_example(record_property: Any) -> None:
     projection, result = run()
 
     assert result.outcome == "TRF_CONVERGED", result.error
+    # R-401 (§20.7 WO-8a (ii)): TR-E1's final step is interior, 1.16e-3 of its radius.
+    assert result.final_step_ratio is not None and round(result.final_step_ratio, 5) == 0.00116
+    record_property("M05.G3.final_step_ratio", result.final_step_ratio)
     assert result.exit_lines == (EXIT_OPTIMAL,) and native_exits == [EXIT_OPTIMAL]
     assert len(result.iterations) == len(native_iterations) == 5
     assert [r.step_type for r in result.iterations] == [r.step_type for r in native_iterations]

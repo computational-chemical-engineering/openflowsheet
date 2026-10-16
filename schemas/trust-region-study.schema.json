@@ -602,6 +602,21 @@
               "null"
             ]
           },
+          "final_step_ratio": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "R-401: s_K/Δ_K of the final logged iteration K (TRF's ∞-norm step in scaled decisions over the radius TRSP K was solved with); null with no logged TRSP or when the log did not parse."
+          },
+          "final_step_at_box_bound": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "R-401: whether a bounded decision of the returned model is within 1e-6 (scaled) of a box bound (§7.4's at-bound rule); null with no logged TRSP or no returned model."
+          },
           "error": {
             "type": [
               "string",
@@ -609,7 +624,7 @@
             ]
           }
         },
-        "description": "One TRF run: `TrfStageRunner`'s document and the loop's keys. `exit_claim`, `theta_logged`, `theta_recheck` and `final_state_is_last_truth_point` are null when TRF raised (W4)."
+        "description": "One TRF run: `TrfStageRunner`'s document and the loop's keys. `exit_claim`, `theta_logged`, `theta_recheck` and `final_state_is_last_truth_point` are null when TRF raised (W4). `final_step_ratio` and `final_step_at_box_bound` (R-401) are additive: absent from records written before WO-8a."
       }
     },
     "candidates": {

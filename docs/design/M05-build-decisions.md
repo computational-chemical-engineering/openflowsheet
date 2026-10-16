@@ -470,3 +470,13 @@ Measured (`scripts/m05_wo8_runs.py`, `.venv-nlp`, fresh store each, 3-4 s per ru
      bytes, coupling files integrity + content). G7 (per run summary): cold + store + memo = requests (559, 311,
      ~77), refused 0, every ledger status `ok`; the store bijection is not evaluated. F-19: coupling records
      80 KB per study (committed).
+
+## WO-8a, WO-8c, WO-8d — §20's build items (R-400, R-401, R-405, R-406)
+
+S53 WO-8a: `final_step_at_box_bound` records whether *any* bounded decision of the returned model is within
+   1e-6 (scaled, `checks.AT_BOUND_SCALED`) of a box bound, for every run TRF returned a model from after a logged
+   TRSP (null otherwise); R-401's exception uses it only with n_d = 1 (`box_bound_exempt`). The scaled value is
+   TRF's `d[j]` itself, so |d ∓ 1| is the poll's |u − bound|/h without the round trip. Alternative: record it
+   only for n_d = 1. Reversible: `trf._at_box_bound`.
+   F-23 (does a `TRF_CONVERGED` assertion flip under R-401?): none — the nlp tier passes unchanged
+   (167 passed, 1 skipped); TR-E1 (G3) ratio 1.16e-3.

@@ -68,6 +68,7 @@ from openflowsheet.studies.trust_region.holders import (
 )
 from openflowsheet.studies.trust_region.trf_state import (
     RETURNS_MODEL,
+    TRF_EXIT_UNVERIFIED,
     TRF_MAX_ITERATIONS,
     FrameworkReadiness,
     framework_readiness,
@@ -481,11 +482,22 @@ class StageRunner(Protocol):
 Disposition = Literal["candidate", "abort", "defect", "budget"]
 
 
+def _outcome_limitations(outcome: str) -> tuple[str, ...]:
+    """The limitation a candidate's run outcome adds: `trf_max_iterations` (R-327) and
+    `trf_exit_unverified` (R-401)."""
+    if outcome == TRF_MAX_ITERATIONS:
+        return ("trf_max_iterations",)
+    if outcome.startswith(f"{TRF_EXIT_UNVERIFIED}("):
+        return ("trf_exit_unverified",)
+    return ()
+
+
 def disposition(outcome: str, budget: StudyBudget) -> Disposition:
     """What the loop does with a run's outcome (§6.7, §7.3, §16.5, §17.4):
 
     - the outcomes that keep TRF's clone give a candidate (`TRF_MAX_ITERATIONS` included,
-      whatever its θ_recheck: build log W2);
+      whatever its θ_recheck: build log W2; `TRF_EXIT_UNVERIFIED(<reason>)` too, never retried,
+      R-401);
     - `TRF_ERROR(...)` is a defect, never retried;
     - a budget refusal with the study's cap reached is the study's budget; with only the run's
       cap reached it is an abort;
@@ -738,10 +750,9 @@ def run_study(
             run_id=staged.run_id,
             trf_point=staged.point,
             p2_reference=reference,
-            # R-327: a max-iterations exit keeps its candidate, and says so.
-            limitations=[*limitations, "trf_max_iterations"]
-            if staged.outcome == TRF_MAX_ITERATIONS
-            else limitations,
+            # R-327: a max-iterations exit keeps its candidate, and says so; so does an
+            # unverified "Optimal" exit (R-401).
+            limitations=[*limitations, *_outcome_limitations(staged.outcome)],
         )
         result.candidates.append(checked)
         return checked
@@ -900,6 +911,8 @@ class TrfStage:
             "exit_claim": trf_run.exit_claim,
             "theta_logged": trf_run.theta_logged,
             "final_state_is_last_truth_point": trf_run.final_state_is_last_truth_point,
+            "final_step_ratio": trf_run.final_step_ratio,
+            "final_step_at_box_bound": trf_run.final_step_at_box_bound,
             "error": trf_run.error,
             "ledger": {"summary": ledgers, "cold_parent": cold_parent},
             "assumptions": [dict(item) for item in self.assumptions],

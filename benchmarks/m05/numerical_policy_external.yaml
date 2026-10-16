@@ -39,7 +39,7 @@ numerical_policy_external:
     - {path: '\.runs\[\d+\]\.iterations\[\d+\]\.(theta|objective|radius|step_norm)', class: r1_r2_existing_floors}
     - {path: '\.runs\[\d+\]\.filter\[\d+\]\.(f|theta)', class: r1_r2_existing_floors}
     - {path: '\.runs\[\d+\]\.final\.(decisions\..+|objective|theta)', class: r1_r2_existing_floors}
-    - {path: '\.runs\[\d+\]\.(theta_recheck|theta_logged)', class: r1_r2_existing_floors}
+    - {path: '\.runs\[\d+\]\.(theta_recheck|theta_logged|final_step_ratio)', class: r1_r2_existing_floors}
     - {path: '\.candidates\[\d+\]\.noise_floor\.(h_X|h_T)', class: exact}
     - {path: '\.candidates\[\d+\]\.noise_floor\.(dJ_dX|dJ_dT|e_star|inner\[\d+\]\.(w\[\d+\]|J))', class: r1_r2_existing_floors}
     - {path: '\.candidates\[\d+\]\.(decisions\..+|checks\.P[1-5]\.values\..*)', class: r1_r2_existing_floors}

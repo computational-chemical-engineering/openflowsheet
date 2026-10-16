@@ -50,6 +50,7 @@ from openflowsheet.studies.trust_region.study import (
 )
 from openflowsheet.studies.trust_region.trf_state import (
     TRF_CONVERGED,
+    TRF_EXIT_UNVERIFIED,
     TRF_EXIT_WITHOUT_STEP,
     TRF_FEASIBLE_STALLED,
     TRF_MAX_ITERATIONS,
@@ -440,6 +441,27 @@ def test_decision_stable_from_stage_c_with_stage_a_recorded_skipped() -> None:
 def test_every_outcome_with_a_model_goes_to_stage_b(outcome: str) -> None:
     """R-279: an exit without a step is a candidate; build log W2: so is max-iterations."""
     assert study(FakeParent(), FakeStage([(outcome, 673.0)])).status == DECISION_STABLE
+
+
+@pytest.mark.parametrize("reason", ["radius_limited", "final_step_rejected"])
+def test_r401_an_unverified_exit_goes_to_stage_b_with_its_limitation(reason: str) -> None:
+    """§20.7 WO-8a (iv): `TRF_EXIT_UNVERIFIED(<reason>)` keeps its candidate, P2 is judged (θ
+    within the termination), the candidate records `trf_exit_unverified`, and it is not retried."""
+    outcome = f"{TRF_EXIT_UNVERIFIED}({reason})"
+    stage = FakeStage([(outcome, 673.0, point(673.0, theta_recheck=9.9e-6))])
+    found = study(FakeParent(), stage)
+    assert stage.calls == [("C1", 1.0, "S0")]
+    (candidate,) = found.candidates
+    assert candidate.status == PARENT_LOCAL_EVIDENCE
+    p2 = candidate.checks["P2"].as_document()
+    assert (p2["pass"], p2["judged"], p2["reason"]) == (True, True, None)
+    assert "trf_exit_unverified" in candidate.limitations
+    assert "trf_max_iterations" not in candidate.limitations
+    assert found.status == DECISION_STABLE
+    # A failing P2 is judged too: the label withholds convergence, stage B still decides.
+    failing = FakeStage([(outcome, 673.0, disagreeing(9.9e-6))])
+    assert study(FakeParent(), failing).status == f"FAILED({PROJECTION_DISAGREES})"
+    assert len(failing.calls) == 1
 
 
 def test_not_stationary_restarts_from_the_best_feasible_poll_point_until_the_limit() -> None:
