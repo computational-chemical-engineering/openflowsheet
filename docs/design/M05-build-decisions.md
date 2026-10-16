@@ -629,3 +629,22 @@ S65 FD-3 (M07 spec §4.6, A1.6): records written from WO-9 on carry an optional 
    `excluded` in the M05 addendum; `provenance` is never compared between a run and its replay. Alternatives: the
    fields inside `environment` or `accounting` (both compared by the WO-8 replays). Reversible: the block and its
    addendum rule.
+S66 REAL's assumptions block is §5.2's real-reactor column read literally: A1, A5 `holds_by_construction`, A2
+   `assumed`, A3 `qualified(fd_gradient)`, A4, A6, A7 `limitation`; `claims.trf_theory` = `qualified(A2,A3)` (§6.9:
+   the qualified assumption ids). Study limitation `fd_gradient`; `extrapolated` arrives with the candidates'
+   solves (S26). For the review batch.
+S67 REAL's experiment store is kept as `<stem>.experiments.json` (the exact text of every `request.json`,
+   `result.json` and `attempts/<n>.json`, by path under the store; no attempt working directories, no locks), its
+   sha256 in the record as `artifacts.experiment_store` (schema additive). It is what the replay from the record
+   serves the reactor from (F-20). Alternatives: the store under `evidence/M05/<commit>/artifacts/` (ignored) by
+   hash, per F-19's 5 MB rule. Reversible: the sidecar.
+S68 REAL's replay content check (G10 REAL part, F-20), `scripts/m05_wo9_real.py --replay`: the study is re-run over
+   the restored store with a backend that handshakes like the real one and refuses to execute (a miss is `replay
+   diverged`). Compared: the record by `replay_differences` without `provenance` and without the counts a store hit
+   changes by design (`m05_replay.STORE_SERVED_COUNTS`: cold, executions, store hits, `cold_used`), plus the fresh
+   study's cold counts all 0 and each run's cold + store-hit requests preserved; the ledger entry by entry with
+   recorded `cold` = replayed `store_hit`, 0 executions; the store index unchanged; each coupling record by M02's
+   `iterate_differences` and `record_differences` under `T08-numerical-policy-v2`, then content equality without
+   the unit entries' `attempts`/`cache_hit`, every replayed answer a store hit. Alternatives: M02's
+   `RecordedExperiments` per coupled solve (needs a per-solve experiments hook in `C1Parent`; the holder truths
+   would still need the store). For the review batch.

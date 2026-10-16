@@ -1570,6 +1570,10 @@
           "$ref": "#/$defs/sha256",
           "description": "S12: the study ledger file's sha256; a run's sequence is this ledger filtered by its run id."
         },
+        "experiment_store": {
+          "$ref": "#/$defs/sha256",
+          "description": "Build log S67 (WO-9, REAL): the sha256 of `<stem>.experiments.json`, the study's experiment-store records (requests, results, attempts) that its replay from the record serves the reactor from (F-20). Absent for the in-process records."
+        },
         "coupled_runs": {
           "type": "array",
           "items": {

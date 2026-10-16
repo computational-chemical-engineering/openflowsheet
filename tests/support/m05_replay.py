@@ -19,6 +19,19 @@ M05 adds no product-level replay or compare (R-253, R-271).
   `benchmarks/m02/numerical_policy_external.yaml`, never restated here), floats by `float.hex`.
 
 The record file's own sha256 is a provenance digest; it is never compared between runs.
+
+**REAL's replay from the record** (WO-9, F-20, build log S68): the study is re-run over its
+restored experiment store, so every reactor request is served from the record and the counts a
+store hit changes differ by design.
+
+- `real_replay_differences(recorded, fresh)`: `replay_differences` without `provenance` and
+  without the paths of `STORE_SERVED_COUNTS`; the fresh study executed nothing (its cold counts
+  are 0) and served as many requests from the store as the record served cold or from the store.
+- `served_ledger_differences(recorded, fresh)`: the ledgers entry by entry, exact except that a
+  recorded `cold` request is a `store_hit` without executions in the replay.
+- `served_coupling_differences(persisted, fresh)`: M02's `iterate_differences` and
+  `record_differences` (R-317 (b)) under `T08-numerical-policy-v2`, then `content_differences`
+  without the unit entries' `attempts` and `cache_hit`; every fresh reactor answer is a store hit.
 """
 
 from __future__ import annotations
@@ -216,4 +229,126 @@ def store_bijection_violations(
                 f"key {key[:12]}: {remaining.get(key, 0)} attempts no coupling names, "
                 f"{executions.get(key, 0)} ledger executions"
             )
+    return found
+
+
+# -- REAL: the replay from the record (WO-9, F-20, build log S68) ---------------------------------
+
+#: The record paths whose counts a store hit changes by design: cold requests and parent
+#: executions become store hits when the reactor is served from the record.
+STORE_SERVED_COUNTS: Final = (
+    re.compile(r"\.accounting\.budgets\.cold_used"),
+    re.compile(r"\.accounting\.by_candidate\.[^.]+\.(check_parent_executions|produce_trf_cold)"),
+    re.compile(
+        r"\.accounting\.(by_iteration\.[^.]+|by_stage\.[^.]+|totals)\."
+        r"(parent_executions|store_hits|trf_cold)"
+    ),
+    re.compile(r"\.(start|candidates\[\d+\]\.solves\[\d+\])\.experiments\.(executions|store_hits)"),
+    re.compile(r"\.runs\[\d+\]\.(cold|ledger\.cold_parent)"),
+    re.compile(r"\.runs\[\d+\]\.ledger\.summary\.[^.]+\.(value|jacobian)_(cold|store_hit)"),
+)
+#: M02's registered policy, under which REAL's coupling records are compared (G10, F-20).
+REAL_POLICY_ID: Final = "T08-numerical-policy-v2"
+
+
+def _dropped(node: Any, path: str, patterns: tuple[re.Pattern[str], ...]) -> Any:
+    """`node` without the leaves whose path a pattern matches (floats kept as floats)."""
+    if isinstance(node, dict):
+        return {
+            key: _dropped(value, f"{path}.{key}", patterns)
+            for key, value in node.items()
+            if isinstance(value, dict | list)
+            or not any(p.fullmatch(f"{path}.{key}") for p in patterns)
+        }
+    if isinstance(node, list):
+        return [_dropped(value, f"{path}[{i}]", patterns) for i, value in enumerate(node)]
+    return node
+
+
+def real_replay_differences(recorded: Mapping[str, Any], fresh: Mapping[str, Any]) -> list[str]:
+    """REAL's record against its replay from the record (module docstring)."""
+    a = {key: value for key, value in recorded.items() if key != "provenance"}
+    b = {key: value for key, value in fresh.items() if key != "provenance"}
+    found = replay_differences(
+        _dropped(a, "", STORE_SERVED_COUNTS), _dropped(b, "", STORE_SERVED_COUNTS)
+    )
+    totals = fresh["accounting"]["totals"]
+    executed = {
+        "trf_cold": totals["trf_cold"],
+        "parent_executions": totals["parent_executions"],
+        "cold_used": fresh["accounting"]["budgets"]["cold_used"],
+    }
+    found += [f"replay executed: {name} = {count}" for name, count in executed.items() if count]
+    for mine, theirs in zip(fresh["runs"], recorded["runs"], strict=False):
+        for holder, summary in theirs["ledger"]["summary"].items():
+            replayed = mine["ledger"]["summary"].get(holder, {})
+            for call in ("value", "jacobian"):
+                served = (f"{call}_cold", f"{call}_store_hit")
+                want = sum(summary[name] for name in served)
+                got = sum(replayed.get(name, 0) for name in served)
+                if got != want:
+                    found.append(
+                        f".runs[{theirs['run_id']}].ledger.summary.{holder}: {got} {call} "
+                        f"requests served cold or from the store, {want} recorded"
+                    )
+    return found
+
+
+def served_ledger_differences(
+    recorded: list[Mapping[str, Any]], fresh: list[Mapping[str, Any]]
+) -> list[str]:
+    """REAL's ledger against its replay's (module docstring)."""
+    if len(recorded) != len(fresh):
+        return [f"ledger: {len(fresh)} holder blocks, {len(recorded)} recorded"]
+    found: list[str] = []
+    for theirs, mine in zip(recorded, fresh, strict=True):
+        where = f"ledger {theirs['holder']} (projection {theirs['projection']})"
+        if (theirs["holder"], theirs["projection"]) != (mine["holder"], mine["projection"]):
+            found.append(f"{where}: block is {mine['holder']} (projection {mine['projection']})")
+            continue
+        if len(theirs["requests"]) != len(mine["requests"]):
+            found.append(f"{where}: {len(mine['requests'])} requests, {len(theirs['requests'])}")
+            continue
+        for a, b in zip(theirs["requests"], mine["requests"], strict=True):
+            expected = dict(a)
+            if a["served"] == "cold":
+                expected.update(served="store_hit", executions=0)
+            if dict(b) != expected:
+                keys = sorted(k for k in set(expected) | set(b) if expected.get(k) != b.get(k))
+                found.append(f"{where} seq {a['seq']}: differs in {keys}")
+    return found
+
+
+def _unserved(record: Mapping[str, Any]) -> dict[str, Any]:
+    """A coupling record without its unit entries' `attempts` and `cache_hit`."""
+    shaped = dict(record)
+    shaped["iterations"] = [
+        {
+            **item,
+            "units": {
+                unit: {k: v for k, v in entry.items() if k not in ("attempts", "cache_hit")}
+                for unit, entry in (item.get("units") or {}).items()
+            },
+        }
+        for item in record.get("iterations") or ()
+    ]
+    return shaped
+
+
+def served_coupling_differences(
+    persisted: Mapping[str, Any], fresh: Mapping[str, Any]
+) -> list[str]:
+    """A REAL coupling record against its replay's (module docstring)."""
+    from openflowsheet.application.coupled_run import iterate_differences, record_differences
+
+    found = iterate_differences(fresh, persisted, REAL_POLICY_ID)
+    shaped, floored = record_differences(fresh, persisted, REAL_POLICY_ID)
+    found += floored
+    found += content_differences(_unserved(persisted), _unserved(shaped))
+    for item in fresh.get("iterations") or ():
+        for unit, entry in (item.get("units") or {}).items():
+            if entry.get("request") is not None and not (
+                entry["cache_hit"] is True and entry["attempts"] == []
+            ):
+                found.append(f".iterations[k={item['k']}].units.{unit}: not served from the store")
     return found

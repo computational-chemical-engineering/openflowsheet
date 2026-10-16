@@ -11,6 +11,7 @@ Default gate: no Pyomo, nothing runs.
 from __future__ import annotations
 
 import copy
+import json
 import math
 import sys
 from pathlib import Path
@@ -206,3 +207,101 @@ def test_the_store_bijection_finds(mutate: Any) -> None:
     mutate(store, ledger, couplings)
     assert replay.store_bijection_violations(store, ledger, couplings) != []
 
+
+# -- REAL: the replay from the record (WO-9, F-20, build log S68) ---------------------------------
+
+RECORDS = REPO_ROOT / "benchmarks" / "m05" / "records"
+LOOP_R = RECORDS / "trust-region-study-loop-r"
+
+
+def _committed(suffix: str) -> Any:
+    return json.loads(LOOP_R.with_suffix(suffix).read_text(encoding="utf-8"))
+
+
+def _served_record(record: dict[str, Any]) -> dict[str, Any]:
+    """`record` as a replay from the record writes it: every cold request a store hit."""
+    fresh = copy.deepcopy(record)
+    for run in fresh["runs"]:
+        run["cold"] = run["ledger"]["cold_parent"] = 0
+        for summary in run["ledger"]["summary"].values():
+            for call in ("value", "jacobian"):
+                summary[f"{call}_store_hit"] += summary[f"{call}_cold"]
+                summary[f"{call}_cold"] = 0
+    accounting = fresh["accounting"]
+    accounting["totals"]["trf_cold"] = accounting["totals"]["parent_executions"] = 0
+    accounting["budgets"]["cold_used"] = 0
+    for solve in [fresh["start"], *(s for c in fresh["candidates"] for s in c["solves"])]:
+        solve["experiments"]["store_hits"] += solve["experiments"]["executions"]
+        solve["experiments"]["executions"] = 0
+    return fresh
+
+
+def _served_ledger(ledger: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    fresh = copy.deepcopy(ledger)
+    for block in fresh:
+        for entry in block["requests"]:
+            if entry["served"] == "cold":
+                entry.update(served="store_hit", executions=0)
+    return fresh
+
+
+def _served_coupling(record: dict[str, Any]) -> dict[str, Any]:
+    fresh = copy.deepcopy(record)
+    for item in fresh["iterations"]:
+        for entry in item["units"].values():
+            if entry["request"] is not None:
+                entry.update(cache_hit=True, attempts=[])
+    return fresh
+
+
+def test_a_replay_from_the_record_differs_only_by_design() -> None:
+    record = _committed(".json")
+    record["provenance"] = {"run_commit": "a" * 40, "tree_clean": True, "wall_s": 9.0}
+    assert record["accounting"]["totals"]["trf_cold"] > 0  # the shift is not vacuous
+    assert replay.real_replay_differences(record, _served_record(record)) == []
+
+
+def test_the_real_comparator_finds_a_moved_decision_and_an_execution() -> None:
+    record = _committed(".json")
+    moved = _served_record(record)
+    (name,) = moved["best"]["decisions"]
+    moved["best"]["decisions"][name] = math.nextafter(moved["best"]["decisions"][name], 1e3)
+    assert len(replay.real_replay_differences(record, moved)) == 1
+    executed = _served_record(record)
+    executed["accounting"]["totals"]["trf_cold"] = 3
+    assert replay.real_replay_differences(record, executed) == ["replay executed: trf_cold = 3"]
+    lost = _served_record(record)
+    summary = next(iter(lost["runs"][0]["ledger"]["summary"].values()))
+    summary["value_store_hit"] -= 1
+    assert len(replay.real_replay_differences(record, lost)) == 1
+
+
+def test_the_served_ledger_maps_cold_to_store_hits_only() -> None:
+    ledger = _committed(".ledger.json")
+    assert any(e["served"] == "cold" for b in ledger for e in b["requests"])
+    assert replay.served_ledger_differences(ledger, _served_ledger(ledger)) == []
+    kept = _served_ledger(ledger)
+    cold = next(
+        (b, i)
+        for b, block in enumerate(ledger)
+        for i, e in enumerate(block["requests"])
+        if e["served"] == "cold"
+    )
+    kept[cold[0]]["requests"][cold[1]]["served"] = "cold"
+    assert len(replay.served_ledger_differences(ledger, kept)) == 1
+    keyed = _served_ledger(ledger)
+    keyed[cold[0]]["requests"][cold[1]]["experiment_key"] = "f" * 64
+    assert len(replay.served_ledger_differences(ledger, keyed)) == 1
+
+
+def test_a_served_coupling_record_matches_and_a_change_is_found() -> None:
+    (path, *_) = sorted(LOOP_R.with_suffix(".coupling").glob("*.json"))
+    record = json.loads(path.read_text(encoding="utf-8"))
+    assert replay.served_coupling_differences(record, _served_coupling(record)) == []
+    executed = _served_coupling(record)
+    first = next(e for e in executed["iterations"][0]["units"].values() if e["request"])
+    first["cache_hit"] = False
+    assert len(replay.served_coupling_differences(record, executed)) == 1
+    moved = _served_coupling(record)
+    moved["iterations"][-1]["w"][0] *= 1.5
+    assert replay.served_coupling_differences(record, moved)
