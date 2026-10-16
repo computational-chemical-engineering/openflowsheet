@@ -897,3 +897,9 @@ Grep, don't read whole. Newest at the bottom.
   (F-15 k=27/28 ratio 0.99985 → radius_limited); store-hit refund (TR-E2 cold_used 47 = 31 + 16); basis v2 matches §20.1 (TR-E2 θ 2.998e-6,
   0.00734 K; c_X −9.5883e-4 /K²); v1 bitwise vs a9d05d3. Finding: v1 records don't replay across environments (~1e-15). Open S53, S54,
   S56, S57, S58. WO-8e launched.
+- **M05 WO-8e** (2026-10-16, `opus-engineer`, 4da50ad/546b14a/5961915; gate 9257, nlp 177/1): v1 records replaced by four v2
+  records (TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R). G5 PASS (TRF_EXIT_WITHOUT_STEP k=0, θ 2.998e-6, 0.00734 K); G5b PASS (C1 radius_limited
+  k=7, C2 converged k=1, |ΔT| 0.0107 K); G6 PASS (converged k=1, |T*_FD−T*_E2| 0.0213 K); G7 PASS (store bijection 0 violations, 19/42/48/63
+  attempts); G9 PASS (|d*−d_lb| 5.29e-8 scaled vs 1e-6); G10 PASS (0 diffs, one env). Drift cause: OpenMP OpenBLAS thread count, not a
+  venv rebuild; script now requires OMP_NUM_THREADS=1 and writes `<stem>.environment.json` (S59, S60, S61). Open for review: S53, S56–S61.
+  Note: `m03_nlp_check.sh` inventory diff (conda_packages, gates, objects) not touched by M05; pre-existing staleness, unverified.
