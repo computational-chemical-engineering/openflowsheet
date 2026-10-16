@@ -523,6 +523,19 @@ def loop_quantities(state: Mapping[str, float]) -> dict[str, float]:
     }
 
 
+def with_margin(constraint: Mapping[str, Any]) -> dict[str, Any]:
+    """An M05 `ConstraintValue` document plus `margin` (Amendment 1 A1.7, R-426): bound − value
+    for `<=`, value − bound for `>=`, in binary64 as written; positive when satisfied."""
+    value, bound, sense = constraint["value"], constraint["bound"], constraint["sense"]
+    if sense == "<=":
+        margin = bound - value
+    elif sense == ">=":
+        margin = value - bound
+    else:
+        raise ValueError(f"constraint {constraint.get('constraint_id')!r}: sense {sense!r}")
+    return {**constraint, "margin": margin}
+
+
 def m05_parent_extras(document: Mapping[str, Any], runner: Any) -> ParentExtras | None:
     """M05's noise floor (§7.4 there: `checks.noise_floor`) and P3's constraint values at a parent
     grid point, by M05's own `C1Parent.solve` at the same decision (store hits only; it must give
@@ -546,7 +559,7 @@ def m05_parent_extras(document: Mapping[str, Any], runner: Any) -> ParentExtras 
             return None, None
         floor = noise_floor(parent, solve)
         e = None if floor is None else floor.e_star  # never read as 0 (Amendment 1 A1.1)
-        return e, [item.as_document() for item in solve.constraints]
+        return e, [with_margin(item.as_document()) for item in solve.constraints]
 
     return extras
 
@@ -1360,6 +1373,10 @@ def _check_grid_rung(name: str, rung: Mapping[str, Any]) -> list[str]:
             problems.append(f"{name} {entry['T_literal']}: verified without a finite J")
         if verified and entry["run_sha256"] is None:
             problems.append(f"{name} {entry['T_literal']}: verified without a run sha256")
+        for item in entry["constraints"] or ():
+            if "margin" not in item or item != with_margin(item):
+                problems.append(f"{name} {entry['T_literal']}: a constraint's margin is not A1.7's")
+                break
     if problems:
         return problems
     problems.extend(_check_stop(name, rung))

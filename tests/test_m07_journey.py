@@ -475,6 +475,23 @@ def test_a12_the_grid_only_decision_is_r1s_rung_decision(dry: Mapping[str, Any])
     assert accepted(record) == []
 
 
+def test_a12_a_constraints_margin_is_positive_when_it_holds(dry: Mapping[str, Any]) -> None:
+    """A1.7 (R-426): margin = bound - value for `<=`, value - bound for `>=`; check rejects a
+    constraint whose margin is not that."""
+    upper = {"constraint_id": "u", "value": 1.0, "bound": 1.5, "sense": "<=", "scale": 1.0}
+    lower = {"constraint_id": "l", "value": 1.0, "bound": 1.5, "sense": ">=", "scale": 1.0}
+    assert m07.with_margin(upper)["margin"] == 0.5
+    assert m07.with_margin(lower)["margin"] == -0.5
+    assert m07.with_margin({**lower, "value": 2.0})["margin"] == 0.5
+    with pytest.raises(ValueError):
+        m07.with_margin({**upper, "sense": "=="})
+    changed = copy.deepcopy(dict(dry))
+    changed["rungs"]["R1"]["grid"][0]["constraints"] = [{**m07.with_margin(upper), "margin": -0.5}]
+    assert "R1 653.15: a constraint's margin is not A1.7's" in m07.check(changed, None)
+    changed["rungs"]["R1"]["grid"][0]["constraints"] = [m07.with_margin(upper)]
+    assert not [p for p in m07.check(changed, None) if "margin" in p]
+
+
 # -- A13: the budget is checked before each evaluation ---------------------------------------------
 
 
