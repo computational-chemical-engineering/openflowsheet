@@ -13,8 +13,8 @@ numerical_policy_external:
   - trust-region-study.schema.json
   classes:
     exact: copied or registered values, compared exactly (the study specification, the TRF
-      configuration and the retry's radius factor, the noise floor's registered steps, the start
-      decisions, the budget's wall-clock cap)
+      configuration and the retry's radius factor, the noise floor's registered steps, the FD
+      check's registered steps η, the start decisions, the budget's wall-clock cap)
     r3_recorded_external: outputs of an external model; compared exactly against the record on a
       replay from record, within the variant's precision_floor_rel on a live rerun (ADR 0034 D6).
       The record carries none (the truth's outputs live in the ledger artifact and in M02's
@@ -47,6 +47,11 @@ numerical_policy_external:
     - {path: '\.candidates\[\d+\]\.(curvature|indifference_halfwidth)\..+', class: r1_r2_existing_floors}
     - {path: '\.best\.(decisions\..+|objective)', class: r1_r2_existing_floors}
     - {path: '\.accounting\.budgets\.study_wall_s', class: exact}
+    # §19.2 (R-386): `fd_check`'s floats. η is registered by `M05-fd-v2` (2⁻¹⁴, ×4 and ÷4 exact
+    # in binary64); ‖G(η)‖_∞, τ̂, ν̂, the allowance, w₀ and ½h_j derive from truth outputs at w₀.
+    - {path: '\.fd_check\.(selected_eta|candidates\[\d+\]\.eta)', class: exact}
+    - {path: '\.fd_check\.candidates\[\d+\]\.(g_inf|truncation|noise|allowance)', class: r1_r2_existing_floors}
+    - {path: '\.fd_check\.(w0\[\d+\]|half_steps\..+)', class: r1_r2_existing_floors}
   # The `sha256`-bearing property names M05's schema adds, all exact digests (none is a float
   # digest, ADR 0007 D1 row 3): a parent solve's M02 coupling record (§8.2, declared with the
   # closed `start`/`solves[]` of WO-7b, build log S40), the bound revision, the projection's source

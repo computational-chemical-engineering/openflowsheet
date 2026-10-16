@@ -37,7 +37,11 @@ from openflowsheet.studies.trust_region.trf_state import (
     FrameworkReadiness,
     ReadinessReason,
 )
-from openflowsheet.studies.trust_region.truths import GradientCheck, candidate_statistics
+from openflowsheet.studies.trust_region.truths import (
+    COORDINATES,
+    GradientCheck,
+    candidate_statistics,
+)
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import t08_numerical_policy  # noqa: E402
@@ -187,13 +191,14 @@ class FullStage(FakeStage):
         )
 
 
-def _document(found: Any) -> dict[str, Any]:
+def _document(found: Any, fd_check: Mapping[str, Any] | None = None) -> dict[str, Any]:
     document: dict[str, Any] = found.as_document(
         spec=SPEC,
         environment=ENVIRONMENT,
         trf_theory="assumptions_hold",
         limitations=("synthetic",),
         artifacts={"ledger": LEDGER_SHA256},
+        fd_check=fd_check,
     )
     return document
 
@@ -238,6 +243,46 @@ def _unsupported() -> dict[str, Any]:
     )
 
 
+def _escalated_fd_check() -> dict[str, Any]:
+    """An `fd_check` that escalates once (§19.2, R-386: one generated record carries an `fd_check`
+    with at least two candidates, so that every float rule of the addendum sees a float).
+
+    Hand-built from `candidate_statistics`, as §19.2 allows: the in-process synthetic FD truth
+    passes at the first η (`test_fd_v2_iii_the_check_passes_at_eta_truncation_dominated`, one
+    candidate). G(η) is the same matrix at every step except a 0.1 spike at η/4 = 2⁻¹⁶: the first
+    candidate (2⁻¹⁴) is `noise_dominated` (ν̂ = 0.4/14), the second (2⁻¹²) `clean`."""
+    g = tuple(tuple(0.25 * (k + 1) * (j + 1) for j in range(N_IN)) for k in range(2))
+    spiked = ((g[0][0] + 0.1, *g[0][1:]), g[1])
+    eta = 2.0**-14
+    candidates = (
+        candidate_statistics(spiked, g, g, eta),
+        candidate_statistics(g, g, g, 4.0 * eta),
+    )
+    assert [item["class"] for item in candidates] == ["noise_dominated", "clean"]
+    selected = 4.0 * eta
+    w0 = (2.0, 0.7, 0.05, 0.02, 0.03, 673.15, 2.0e7)
+    floors = (1e-3 * sum(w0[:5]),) * 5 + (1.0, 1e5)
+    return GradientCheck(
+        w0=w0,
+        candidates=candidates,
+        eta=selected,
+        status="pass",
+        gradient=g,
+        sides=(1, 1, 1, -1, 1, -1, 1),
+        selected_class="clean",
+        stopped="passed",
+        half_steps={
+            name: 0.5 * selected * max(abs(value), floor)
+            for name, value, floor in zip(COORDINATES, w0, floors, strict=True)
+        },
+    ).as_document()
+
+
+def _stable_with_an_fd_check() -> dict[str, Any]:
+    stage = FullStage([(TRF_CONVERGED, 673.0)])
+    return _document(study(FakeParent(), stage), fd_check=_escalated_fd_check())
+
+
 def _iteration_limit() -> dict[str, Any]:
     script: list[tuple[str, float | None]] = [(TRF_CONVERGED, 660.0)] * 12
     return _document(study(FakeParent(), FullStage(script)))
@@ -250,6 +295,7 @@ GENERATED: dict[str, Callable[[], dict[str, Any]]] = {
     "budget_exhausted": _budget_exhausted,
     "unsupported": _unsupported,
     "iteration_limit": _iteration_limit,
+    "decision_stable_with_an_fd_check": _stable_with_an_fd_check,
 }
 
 
@@ -437,6 +483,7 @@ def test_the_generated_records_cover_the_statuses() -> None:
         "budget_exhausted": "BUDGET_EXHAUSTED",
         "unsupported": "UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNPINNED)",
         "iteration_limit": "ITERATION_LIMIT",
+        "decision_stable_with_an_fd_check": "DECISION_STABLE",
     }
 
 
