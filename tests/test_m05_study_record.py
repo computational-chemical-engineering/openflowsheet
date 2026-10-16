@@ -396,6 +396,7 @@ _DELETE = object()
         (("candidates", 0, "checks", "P1", "pass"), "yes"),
         (("spec", "configs", "trf"), 3),
         (("unknown_field",), 1),
+        (("candidates", 1, "indifference_halfwidth", T), -1e-12),
     ],
 )
 def test_the_schema_rejects(path: Sequence[Any], value: Any) -> None:
@@ -410,11 +411,13 @@ def test_the_schema_rejects(path: Sequence[Any], value: Any) -> None:
         (("runs", 0, "assumptions", 1, "status"), "checked(1.2e-06)"),
         (("claims", "trf_theory"), "qualified(A2,A3)"),
         (("candidates", 0, "indifference_halfwidth"), None),
+        (("candidates", 1, "indifference_halfwidth", T), 0.0),
     ],
 )
 def test_the_schema_accepts(path: Sequence[Any], value: Any) -> None:
     """What the producer writes beyond the fakes: P2 not applicable (`checks.py`), §9.1's
-    parametrised assumption statuses and the qualified claim (§6.9)."""
+    parametrised assumption statuses, the qualified claim (§6.9), and a zero half-width (a parent
+    with no noise, build log S36)."""
     assert sorted(VALIDATOR.iter_errors(_mutated(path, value)), key=str) == []
 
 

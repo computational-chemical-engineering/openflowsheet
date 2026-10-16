@@ -733,16 +733,22 @@
               {
                 "type": "object",
                 "additionalProperties": {
-                  "type": [
-                    "number",
-                    "null"
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
                   ]
                 }
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "S15/S36: per decision id, √(2(e* + max e_j)/|c|) ≥ 0, or null where it is undefined; the whole field is null iff P5 did not run. The bound is ≥ 0, not > 0: a parent with no noise (e* = e_j = 0) gives exactly 0.0 (build log S36)."
           },
           "status": {
             "type": "string"

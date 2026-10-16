@@ -322,3 +322,11 @@ S37 S33's default, as an isolated commit (accounting, not numerics; for the revi
    (hex dump `cmp`), and so is the TRF-phase ledger (call, key, served, iteration, purpose, status for all 35
    entries); the summary moves `basis_fd_point` 0 → 7 and `value_cold` 8 → 16, `trf_start_value` 1,
    `pmp_point_equals_start` false unchanged. Test: `test_the_stage_forms_the_basis_inside_the_holders_run`.
+
+## WO-7b — the record schema rulings S12–S16, S18 (§18.4, R-329)
+
+S38 S36's default, as its own commit (schema only, for the review batch): `indifference_halfwidth`'s values are
+   `number` with `minimum: 0`, or null, not S15's `> 0`: √(2(e* + max e_j)/|c|) is exactly 0.0 for a parent with no
+   noise (e* = e_j = 0: the stand-in loop, the fakes). The producer is unchanged. Alternative: `exclusiveMinimum: 0`
+   with a zero-noise parent writing null (a producer change). Reversible: revert the commit. Tests: a value −1e-12
+   fails, 0.0 validates (`test_the_schema_rejects` / `_accepts`); targeted 138 passed.
