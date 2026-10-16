@@ -910,3 +910,12 @@ Grep, don't read whole. Newest at the bottom.
   checks (X_pass tol 2.5e-13); J8 replaced: M05 record named by five content conditions, not a path (defects: R3 wall always 0.0,
   carried_from defaults "rerun"); J9 re-solve T* with M05 C1Parent, J bitwise; J11 changed: grid-only decision = R1's own rung decision.
   AQ1–AQ3 are facts for the build lane. Finding FD-3 for M05: study record lacks run commit and spent wall (put in WO-9 brief).
+- **M07 WO-2b** (2026-10-16, `opus-engineer`, 140e262…6e2640d on wp/M07, each commit gated in a detached worktree; final tree re-gated
+  after the workstation reboot): Amendment 1 applied, one commit per ruling (J14–J20). R0 re-taken: VERIFIED ×9, INDIFFERENT at 673.15,
+  J unchanged within the registered one-ulp spread; moved as ruled: experiments {cold 0, store_hit 0, in_process 2}, `extrapolated` 1 → 0.
+  AQ1 answered yes. J15 (build choice): A1.4's first identity holds by construction, checkable only at replay (WO-4).
+- **M05 WO-8b** (2026-10-16, `opus-engineer`; interrupted by the reboot before commit, work complete in the tree): F-22 yes (M04.A19's
+  PROMOTABLE manifest on wp/M05). SurrogateTruth, promoted basis, P2_A, LOOP-S record (S62–S64). **G8 FAIL** on its at-bound rows:
+  stage A TRF_CONVERGED k=1, P2_A passed, DECISION_STABLE, but |d*−d_lb| 1.0965e-6 scaled vs 1e-6 (LOOP-R 5.29e-8), so P5 polled both
+  sides; held as strict xfail. Premise off: R-408 expected TRF_EXIT_WITHOUT_STEP θ≈1e-14; measured θ 6.55e-3 (affine property EFs not
+  exact). For the M05 design ruling/review batch.
