@@ -76,7 +76,8 @@ GRID_RUNGS: Final = ("R0", "R1")
 UNSUPPORTED_REASONS: Final[tuple[str, ...]] = tuple(JOURNEY["unsupported_reasons"])
 REACTOR_UNAVAILABLE: Final = "reactor_environment_unavailable"
 M05_UNAVAILABLE: Final = "m05_study_unavailable"
-#: R2 under a PROMOTABLE verdict with no surrogate-backed loop to evaluate (build decision J5).
+#: R2 under a PROMOTABLE verdict with no surrogate-backed loop to evaluate (registered: spec
+#: Amendment 1 A1.3, R-422; ADR 0041 D6).
 SURROGATE_LOOP_UNAVAILABLE: Final = "surrogate_loop_unavailable"
 PARENT_LOCAL_EVIDENCE: Final = "PARENT_LOCAL_EVIDENCE"
 #: The flash liquid NH3 flow is the objective `c1-obj-nh3-liquid-v1` (M05 §7.1).
@@ -612,7 +613,7 @@ def r2_rung(
     """R2 from M04's committed verdict for the bound parent. Not `PROMOTABLE`: zero evaluations.
     `PROMOTABLE`: nine surrogate-backed loop evaluations through `evaluate`, each compared with the
     parent grid point (surrogate - parent; band containment counted, not a coverage estimate);
-    without an evaluator, `UNSUPPORTED(surrogate_loop_unavailable)` (build decision J5)."""
+    without an evaluator, `UNSUPPORTED(surrogate_loop_unavailable)` with zero evaluations (A1.3)."""
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     promotion = manifest["promotion"]
     real = JOURNEY["variants"]["real"]["variant_id"]
@@ -1377,6 +1378,12 @@ def _check_r2(r2: Mapping[str, Any]) -> list[str]:
             problems.append("R2 evaluated a surrogate that is not promotable")
     elif r2["outcome"] == "SURROGATE_NOT_PROMOTABLE":
         problems.append("R2 says SURROGATE_NOT_PROMOTABLE under a PROMOTABLE verdict")
+    elif str(r2["outcome"]).startswith("UNSUPPORTED("):
+        refusal = unsupported(SURROGATE_LOOP_UNAVAILABLE)
+        if r2["outcome"] != refusal or SURROGATE_LOOP_UNAVAILABLE not in UNSUPPORTED_REASONS:
+            problems.append(f"R2 {r2['outcome']} is not the registered refusal {refusal}")
+        if r2["evaluations"] != 0 or r2.get("decision") is not None:
+            problems.append(f"R2 is {r2['outcome']} but evaluated or decided")
     elif r2["outcome"] in ("INDIFFERENT", "DECIDED", "INCOMPLETE") and r2["evaluations"] != len(
         GRID_LITERALS
     ):

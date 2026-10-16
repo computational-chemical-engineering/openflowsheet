@@ -524,3 +524,32 @@ def test_a15_a_promotable_verdict_requires_nine_surrogate_evaluations(promotable
     refused = m07.r2_rung(promotable)
     assert refused["outcome"] == m07.unsupported(m07.SURROGATE_LOOP_UNAVAILABLE)
     assert refused["evaluations"] == 0
+
+
+def test_a15_a_promotable_verdict_without_a_loop_is_a_registered_refusal(
+    dry: Mapping[str, Any], promotable: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Amendment 1 A1.3 (R-422): PROMOTABLE with no surrogate-backed loop is
+    `UNSUPPORTED(surrogate_loop_unavailable)`, zero evaluations; the record is accepted, the
+    journey exits 3 (`main` returns 3 iff a rung is UNSUPPORTED) and the report states it."""
+    assert m07.SURROGATE_LOOP_UNAVAILABLE in REG["journey"]["unsupported_reasons"]
+    monkeypatch.setitem(m07.JOURNEY["m04_facts"], "record", str(promotable))
+    refused = m07.r2_rung(promotable)
+    assert (refused["outcome"], refused["evaluations"]) == (
+        m07.unsupported(m07.SURROGATE_LOOP_UNAVAILABLE),
+        0,
+    )
+    assert m07._check_r2(refused) == []
+    assert m07._check_r2({**refused, "evaluations": 1}) != []
+
+    def edit(rungs: dict[str, Any]) -> None:
+        rungs["R2"] = refused
+        rungs["R3"] = r3_study("DECISION_STABLE", None)
+
+    record = rederived(dry, edit)
+    assert m07.any_unsupported(record)
+    assert [
+        r for r in m07.RUNGS if str(record["rungs"][r]["outcome"]).startswith("UNSUPPORTED")
+    ] == ["R2"]
+    assert accepted(record) == []
+    assert "R2 is UNSUPPORTED(surrogate_loop_unavailable)" in m07.render(record)
