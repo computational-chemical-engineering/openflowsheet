@@ -32,6 +32,7 @@ LOOP_REAL: Final = ROOT / "benchmarks" / "m02" / "c1-loop-real.json"
 LOOP_STANDIN: Final = ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 G12_CENTRE: Final = ROOT / "benchmarks" / "m02" / "g12-real-loop-v3.json"
 G12_EDGES: Final = ROOT / "benchmarks" / "m02" / "g12-real-loop-v3-edges.json"
+M04_MANIFEST: Final = ROOT / "benchmarks" / "m04" / "wo11-b2-it1-v3" / "manifest.json"
 
 # -- the journey (spec §4) ---------------------------------------------------------------------------
 BOX: Final = ("653.15", "693.15")  # K; R-313/R-315 (v3 = rung V5); M05 REAL box; M04 box v2 k = 1
@@ -71,7 +72,14 @@ RUNG_OUTCOMES: Final = ("INDIFFERENT", "DECIDED", "INCOMPLETE")
 FE_CLASSES: Final = ("FE_WORSE", "FE_UNCHANGED", "FE_CHANGED", "FE_WITHIN_RESOLUTION", "FE_NOT_DETERMINED")
 TC1_OUTCOMES: Final = ("TC1_HOLDS", "TC1_CONTRADICTED", "TC1_NO_GRID", "TC1_NOT_APPLICABLE")
 BOUNDS: Final = ("BOUND_LOWER", "BOUND_UPPER", "INTERIOR")
-STUDY_HONEST: Final = ("DECISION_STABLE", "ITERATION_LIMIT", "BUDGET_EXHAUSTED")  # M05 §7.4, W25 (c)
+STUDY_HONEST: Final = ("DECISION_STABLE", "ITERATION_LIMIT", "BUDGET_EXHAUSTED")  # M05 §7.4
+R2_OUTCOMES: Final = ("SURROGATE_NOT_PROMOTABLE", "INDIFFERENT", "DECIDED", "INCOMPLETE")  # spec §4.2
+JOURNEY_DECISION_LABELS: Final = ("refined", "grid_only", "INSUFFICIENT_EVIDENCE")  # spec §4.4.7
+UNSUPPORTED_REASONS: Final = ("reactor_environment_unavailable", "m05_study_unavailable")  # spec §4.6
+CARRY_JOURNEY: Final = (  # spec §4.6: byte-equal between M05's run commit and J, and between J and C
+    "src/openflowsheet/**", "benchmarks/m02/**", "benchmarks/m05/**", "requirements.lock",
+    "the reactor environment lock (M02)",
+)
 
 
 def _best(points: list[dict[str, Any]]) -> dict[str, Any]:
@@ -204,10 +212,10 @@ def _rung_fixtures() -> list[dict[str, Any]]:
 
 # -- the 0.2 gate sets (spec §7, §8) ------------------------------------------------------------------
 GATES17: Final = tuple(f"V{n}" for n in range(11, 21)) + tuple(f"W{n}" for n in range(21, 28))
-ALPHA_CLAUSE: Final = r"\b(?:V(?:1[1-9]|20)|W2[12]) \([a-z0-9]+\)"  # scripts/v0_2_gate.py CLAUSE @ d0a802c
+ALPHA_CLAUSE: Final = r"\b(?:V(?:1[1-9]|20)|W2[12]) \([a-z0-9]+\)"  # scripts/v0_2_gate.py CLAUSE @ 758a902
 V02_CLAUSE: Final = r"\b(?:V(?:1[1-9]|20)|W2[1-7]) \([a-z0-9]+\)"
 GATE_SETS: Final = {
-    "v0.2-alpha-gate-v1": {  # restated from wp/V02-alpha-gate scripts/v0_2_gate.py @ d0a802c; unchanged
+    "v0.2-alpha-gate-v1": {  # restated from wp/V02-alpha-gate scripts/v0_2_gate.py @ 758a902; unchanged
         "covers": r"0\.2\.0a[1-9][0-9]*",
         "claimed": list(GATES17[:12]),
         "not_claimed": list(GATES17[12:]),
@@ -222,6 +230,7 @@ GATE_SETS: Final = {
         "envelope_id": "v0.2-alpha-envelope-1",
         "required_adrs": ["0022", "0026", "0027", "0028", "0033", "0034", "0035"],
         "frank_items": ["N3", "V17 carry", "M02 N1"],
+        "rejudge_waits": [["V13", "V17 carry"], ["V17", "V17 carry"], ["W21", "M02 N1"]],
     },
     "v0.2-gate-v1": {
         "covers": r"0\.2\.0(?:(?:b|rc)[1-9][0-9]*)?",
@@ -238,7 +247,8 @@ GATE_SETS: Final = {
         "envelope_id": "v0.2-envelope-1",
         "required_adrs": ["0022", "0026", "0027", "0030", "0031", "0032", "0033", "0034", "0035", "0036",
                           "0037", "0038", "0039", "0041", "0042"],
-        "frank_items": ["Claim set", "V17 carry", "M02 N1", "M03 N1", "M01 Q-N4"],
+        "frank_items": ["Claim set", "V17 carry", "M02 N1", "M03 N1"],
+        "rejudge_waits": [["V13", "V17 carry"], ["V17", "V17 carry"], ["W21", "M02 N1"], ["W24", "M03 N1"]],
     },
 }
 # Table T-V (spec §8.2): the expectation is written by hand; GC-VER-1 compares it with the patterns.
@@ -322,11 +332,9 @@ WHAT_IT_IS_NOT: Final = (  # spec §7.5: CHANGELOG ## v0.2.0, "What it is not"
     "no equilibrium-stage subsystem",
 )
 CARRY_W27: Final = ("served_tool_list_sha256", "list_models", "coverage_rows")  # spec §10.3
-CATALOGUE: Final = (
-    [f"M07.A{n:02d}" for n in range(0, 21)]
-    + [f"M07.A{n:02d}" for n in range(30, 44)]
-    + [f"M07.A{n:02d}" for n in range(50, 56)]
-    + [f"M07.A{n:02d}" for n in range(60, 63)]
+CATALOGUE: Final = (  # spec §11; GC-CAT-2 compares it with the spec's table
+    [f"M07.A{n:02d}" for n in (*range(0, 9), *range(10, 16), *range(20, 27), *range(30, 39), *range(40, 44))]
+    + [f"M07.A{n:02d}" for n in (50, 51, 60, 61, 62)]
 )
 
 
@@ -391,6 +399,21 @@ def _g12_facts() -> dict[str, Any]:
         "experiments_per_loop": 4,
         "live_rerun_bitwise_at_nominal": True,
     }
+
+
+def _m04_facts() -> dict[str, Any]:
+    """Spec §3 F1, re-read from M04's committed real iteration (GC-M04-1)."""
+    m = _json(M04_MANIFEST)
+    p = m["promotion"]
+    claim(p["verdict"] == "NOT_PROMOTABLE" and p["not_promotable"] == ["band_not_finite"] and not p["insufficient"],
+          "GC-M04-1", f"M04 verdict {p}")
+    claim(m["parent"]["boundary"]["hard_domain"]["T_K"] == [float(BOX[0]), float(BOX[1])], "GC-M04-1",
+          "the surrogate's parent hard domain is not the journey's box")
+    claim(VARIANTS["real"]["variant_id"] in m["surrogate_id"] and m["model_id"] == "c1.reactor_surrogate",
+          "GC-M04-1", f"surrogate {m['model_id']} {m['surrogate_id']} is not of the bound parent")
+    return {"record": str(M04_MANIFEST.relative_to(ROOT)), "sha256": _sha256(M04_MANIFEST),
+            "surrogate_id": m["surrogate_id"], "verdict": p["verdict"], "reasons": p["not_promotable"],
+            "expected_r2_outcome": "SURROGATE_NOT_PROMOTABLE", "expected_r2_evaluations": 0}
 
 
 def build() -> dict[str, Any]:
@@ -458,6 +481,7 @@ def build() -> dict[str, Any]:
     claim({b["expected"] for b in bounds} == set(BOUNDS), "GC-BOUND-2", "labels covered")
     # GC-G12-* and GC-COST-1: the measured real-loop facts, and R1's budget against them.
     g12 = _g12_facts()
+    m04 = _m04_facts()
     worst_wall = max(g12["solve_wall_s"].values())
     r1 = BUDGET["R1"]
     claim(r1["wall_s"] >= BUDGET_MARGIN * len(GRID) * worst_wall
@@ -471,7 +495,11 @@ def build() -> dict[str, Any]:
         claim(len(hits) <= 1, "GC-VER-2", f"{v} covered by {hits}")
         claim((hits[0] if hits else None) == want, "GC-VER-1", f"{v}: {hits} != {want}")
         rows.append({"version": v, "gate_set": want})
-    claim({r["gate_set"] for r in rows} == {None, *GATE_SETS}, "GC-VER-3", "every set and none reached")
+    claim({r["gate_set"] for r in rows} == {None, *GATE_SETS} and len(rows) == 29, "GC-VER-3",
+          "every set and none reached; 29 rows (spec §7.2)")
+    claim(all(dict(map(tuple, s["rejudge_waits"])).keys() <= set(s["claimed"])
+              and {w for _, w in s["rejudge_waits"]} <= set(s["frank_items"]) for s in GATE_SETS.values()),
+          "GC-SET-2", "a re-judgement waits on a gate not claimed or an answer not among the Frank items")
     g = GATE_SETS["v0.2-gate-v1"]
     claim(tuple(g["claimed"]) == GATES17 and not g["not_claimed"], "GC-SET-1", "v0.2-gate-v1 claims 17")
     alpha = GATE_SETS["v0.2-alpha-gate-v1"]
@@ -519,6 +547,10 @@ def build() -> dict[str, Any]:
                    "J_max_n_balance": j_max_n_balance, "expected_outcome": "INDIFFERENT",
                    "provenance": "regression value measured at wp/M07 e35b16d; not a validation value"},
             "study_honest_statuses": list(STUDY_HONEST),
+            "r2_outcomes": list(R2_OUTCOMES),
+            "decision_labels": list(JOURNEY_DECISION_LABELS),
+            "unsupported_reasons": list(UNSUPPORTED_REASONS),
+            "m04_facts": m04,
             "budget": BUDGET,
             "g12_facts": g12,
         },
@@ -528,6 +560,7 @@ def build() -> dict[str, Any]:
         "gate": {"gate_sets": GATE_SETS, "versions": rows, "w_clauses": {k: list(v) for k, v in W_CLAUSES.items()},
                  "rc_steps": [{"step": s, "what": w, "assertion": x} for s, w, x in RC_STEPS],
                  "changelog_what_it_is_not": list(WHAT_IT_IS_NOT), "w27_carry": list(CARRY_W27)},
+        "carry": {"journey_files": list(CARRY_JOURNEY), "w27": list(CARRY_W27)},
         "catalogue": CATALOGUE,
     }
 

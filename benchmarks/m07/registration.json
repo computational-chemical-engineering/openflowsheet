@@ -1,0 +1,1291 @@
+{
+  "carry": {
+    "journey_files": [
+      "src/openflowsheet/**",
+      "benchmarks/m02/**",
+      "benchmarks/m05/**",
+      "requirements.lock",
+      "the reactor environment lock (M02)"
+    ],
+    "w27": [
+      "served_tool_list_sha256",
+      "list_models",
+      "coverage_rows"
+    ]
+  },
+  "catalogue": [
+    "M07.A00",
+    "M07.A01",
+    "M07.A02",
+    "M07.A03",
+    "M07.A04",
+    "M07.A05",
+    "M07.A06",
+    "M07.A07",
+    "M07.A08",
+    "M07.A10",
+    "M07.A11",
+    "M07.A12",
+    "M07.A13",
+    "M07.A14",
+    "M07.A15",
+    "M07.A20",
+    "M07.A21",
+    "M07.A22",
+    "M07.A23",
+    "M07.A24",
+    "M07.A25",
+    "M07.A26",
+    "M07.A30",
+    "M07.A31",
+    "M07.A32",
+    "M07.A33",
+    "M07.A34",
+    "M07.A35",
+    "M07.A36",
+    "M07.A37",
+    "M07.A38",
+    "M07.A40",
+    "M07.A41",
+    "M07.A42",
+    "M07.A43",
+    "M07.A50",
+    "M07.A51",
+    "M07.A60",
+    "M07.A61",
+    "M07.A62"
+  ],
+  "fixtures": {
+    "bound": [
+      {
+        "T": 653.15,
+        "expected": "BOUND_LOWER",
+        "id": "b-01"
+      },
+      {
+        "T": 653.1500189999999,
+        "expected": "BOUND_LOWER",
+        "id": "b-02"
+      },
+      {
+        "T": 653.1500209999999,
+        "expected": "INTERIOR",
+        "id": "b-03"
+      },
+      {
+        "T": 693.15,
+        "expected": "BOUND_UPPER",
+        "id": "b-04"
+      },
+      {
+        "T": 693.149981,
+        "expected": "BOUND_UPPER",
+        "id": "b-05"
+      },
+      {
+        "T": 693.149979,
+        "expected": "INTERIOR",
+        "id": "b-06"
+      },
+      {
+        "T": 673.15,
+        "expected": "INTERIOR",
+        "id": "b-07"
+      }
+    ],
+    "fe": [
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_CHANGED",
+        "id": "fe-01-moved-gain",
+        "j_after": 0.5000019073486328,
+        "j_before": 0.5,
+        "t_after": 653.0,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_WITHIN_RESOLUTION",
+        "id": "fe-02-moved-gain-eq-eps",
+        "j_after": 0.5000009536743164,
+        "j_before": 0.5,
+        "t_after": 653.0,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_WITHIN_RESOLUTION",
+        "id": "fe-03-moved-no-gain",
+        "j_after": 0.5,
+        "j_before": 0.5,
+        "t_after": 653.0,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_WITHIN_RESOLUTION",
+        "id": "fe-04-moved-loss-eq-eps",
+        "j_after": 0.4999990463256836,
+        "j_before": 0.5,
+        "t_after": 653.0,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_WORSE",
+        "id": "fe-05-moved-loss",
+        "j_after": 0.4999980926513672,
+        "j_before": 0.5,
+        "t_after": 653.0,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_UNCHANGED",
+        "id": "fe-06-dt-eq-delta-gain",
+        "j_after": 0.5000019073486328,
+        "j_before": 0.5,
+        "t_after": 673.5,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_CHANGED",
+        "id": "fe-07-dt-above-delta-gain",
+        "j_after": 0.5000019073486328,
+        "j_before": 0.5,
+        "t_after": 673.5000009536743,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_WORSE",
+        "id": "fe-08-dt-eq-delta-loss",
+        "j_after": 0.4999980926513672,
+        "j_before": 0.5,
+        "t_after": 672.5,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_UNCHANGED",
+        "id": "fe-09-same-point",
+        "j_after": 0.5,
+        "j_before": 0.5,
+        "t_after": 673.0,
+        "t_before": 673.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "e_before": 4.76837158203125e-07,
+        "expected": "FE_NOT_DETERMINED",
+        "id": "fe-10-no-after",
+        "j_after": null,
+        "j_before": 0.5,
+        "t_after": null,
+        "t_before": 673.0
+      }
+    ],
+    "indifference": [
+      {
+        "expected": [
+          673.0
+        ],
+        "id": "is-01-single",
+        "points": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000038146972656,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          }
+        ]
+      },
+      {
+        "expected": [
+          663.0,
+          673.0
+        ],
+        "id": "is-02-on-boundary",
+        "points": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000066757202148,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          }
+        ]
+      },
+      {
+        "expected": [
+          653.0,
+          673.0
+        ],
+        "id": "is-03-unverified-ignored",
+        "points": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000152587890625,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          },
+          {
+            "J": 0.5000004768371582,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          }
+        ]
+      },
+      {
+        "expected": [
+          653.0,
+          663.0
+        ],
+        "id": "is-04-unequal-floors",
+        "points": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 7.62939453125e-06,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          }
+        ]
+      }
+    ],
+    "rung": [
+      {
+        "expected": {
+          "decision": 673.15,
+          "outcome": "INDIFFERENT"
+        },
+        "id": "r-01-flat",
+        "points": [
+          {
+            "J": 0.46705958492513017,
+            "T": 653.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 658.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 663.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 668.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 673.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 678.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 683.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 688.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 693.15,
+            "verified": true
+          }
+        ]
+      },
+      {
+        "expected": {
+          "decision": 693.15,
+          "outcome": "DECIDED"
+        },
+        "id": "r-02-tilted",
+        "points": [
+          {
+            "J": 0.46705958492513017,
+            "T": 653.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492980076,
+            "T": 658.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958493447136,
+            "T": 663.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958493914196,
+            "T": 668.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958494381256,
+            "T": 673.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958494848315,
+            "T": 678.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958495315375,
+            "T": 683.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958495782435,
+            "T": 688.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958496249494,
+            "T": 693.15,
+            "verified": true
+          }
+        ]
+      },
+      {
+        "expected": {
+          "decision": 653.15,
+          "outcome": "INCOMPLETE"
+        },
+        "id": "r-03-one-unverified",
+        "points": [
+          {
+            "J": 0.46705958492513017,
+            "T": 653.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 658.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 663.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 668.15,
+            "verified": false
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 673.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 678.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 683.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 688.15,
+            "verified": true
+          },
+          {
+            "J": 0.46705958492513017,
+            "T": 693.15,
+            "verified": true
+          }
+        ]
+      }
+    ],
+    "tc1": [
+      {
+        "e_after": 4.76837158203125e-07,
+        "expected": {
+          "best_grid_T": 663.0,
+          "outcome": "TC1_HOLDS"
+        },
+        "grid": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000038146972656,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          }
+        ],
+        "id": "tc1-01-dominates",
+        "j_after": 0.5000076293945312,
+        "t_after": 660.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "expected": {
+          "best_grid_T": 663.0,
+          "outcome": "TC1_HOLDS"
+        },
+        "grid": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000038146972656,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          }
+        ],
+        "id": "tc1-02-on-boundary",
+        "j_after": 0.5000028610229492,
+        "t_after": 660.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "expected": {
+          "best_grid_T": 663.0,
+          "outcome": "TC1_CONTRADICTED"
+        },
+        "grid": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000038146972656,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          }
+        ],
+        "id": "tc1-03-beaten",
+        "j_after": 0.5000019073486328,
+        "t_after": 660.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "expected": {
+          "best_grid_T": 663.0,
+          "outcome": "TC1_HOLDS"
+        },
+        "grid": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000038146972656,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          }
+        ],
+        "id": "tc1-04-at-grid-point",
+        "j_after": 0.5000038146972656,
+        "t_after": 663.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "expected": {
+          "best_grid_T": 653.0,
+          "outcome": "TC1_HOLDS"
+        },
+        "grid": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5,
+            "T": 693.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          }
+        ],
+        "id": "tc1-05-tie-lowest-T",
+        "j_after": 0.5,
+        "t_after": 660.0
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "expected": {
+          "best_grid_T": null,
+          "outcome": "TC1_NO_GRID"
+        },
+        "grid": [
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          }
+        ],
+        "id": "tc1-06-no-verified-grid",
+        "j_after": 0.5,
+        "t_after": 660.0
+      },
+      {
+        "e_after": null,
+        "expected": {
+          "best_grid_T": null,
+          "outcome": "TC1_NOT_APPLICABLE"
+        },
+        "grid": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000038146972656,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          }
+        ],
+        "id": "tc1-07-no-after",
+        "j_after": null,
+        "t_after": null
+      }
+    ]
+  },
+  "gate": {
+    "changelog_what_it_is_not": [
+      "not a sandbox",
+      "Linux only",
+      "reactor results reproduce from records (R3)",
+      "T_in 653.15-693.15 K, P 9-11 MPa, H2/N2 2.5-3.5, inerts 0.035-0.2, per-tube flow 0.5-2 x nominal",
+      "no empirical validation of the C1 loop",
+      "no global optimality",
+      "the optimization routes need the optional nlp extra",
+      "the stand-in reactor is synthetic",
+      "no external benchmark score",
+      "no CFD or Peclet refinement",
+      "no equilibrium-stage subsystem"
+    ],
+    "gate_sets": {
+      "v0.2-alpha-gate-v1": {
+        "claimed": [
+          "V11",
+          "V12",
+          "V13",
+          "V14",
+          "V15",
+          "V16",
+          "V17",
+          "V18",
+          "V19",
+          "V20",
+          "W21",
+          "W22"
+        ],
+        "clause": "\\b(?:V(?:1[1-9]|20)|W2[12]) \\([a-z0-9]+\\)",
+        "covers": "0\\.2\\.0a[1-9][0-9]*",
+        "envelope_id": "v0.2-alpha-envelope-1",
+        "evidence_package": "M07a",
+        "frank_items": [
+          "N3",
+          "V17 carry",
+          "M02 N1"
+        ],
+        "not_claimed": [
+          "W23",
+          "W24",
+          "W25",
+          "W26",
+          "W27"
+        ],
+        "packages": [
+          "M01",
+          "M02"
+        ],
+        "policy_adr": "docs/adr/0028-v0.2-pre-release-policy.md",
+        "rc_last_step": 13,
+        "rc_record": "docs/v02-alpha-rc-record.md",
+        "rc_steps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "rejudge_waits": [
+          [
+            "V13",
+            "V17 carry"
+          ],
+          [
+            "V17",
+            "V17 carry"
+          ],
+          [
+            "W21",
+            "M02 N1"
+          ]
+        ],
+        "required_adrs": [
+          "0022",
+          "0026",
+          "0027",
+          "0028",
+          "0033",
+          "0034",
+          "0035"
+        ],
+        "verdict_document": "docs/reviews/V02-alpha-verdicts.md"
+      },
+      "v0.2-gate-v1": {
+        "claimed": [
+          "V11",
+          "V12",
+          "V13",
+          "V14",
+          "V15",
+          "V16",
+          "V17",
+          "V18",
+          "V19",
+          "V20",
+          "W21",
+          "W22",
+          "W23",
+          "W24",
+          "W25",
+          "W26",
+          "W27"
+        ],
+        "clause": "\\b(?:V(?:1[1-9]|20)|W2[1-7]) \\([a-z0-9]+\\)",
+        "covers": "0\\.2\\.0(?:(?:b|rc)[1-9][0-9]*)?",
+        "envelope_id": "v0.2-envelope-1",
+        "evidence_package": "M07",
+        "frank_items": [
+          "Claim set",
+          "V17 carry",
+          "M02 N1",
+          "M03 N1"
+        ],
+        "not_claimed": [],
+        "packages": [
+          "M01",
+          "M02",
+          "M03",
+          "M04",
+          "M05",
+          "M06"
+        ],
+        "policy_adr": "docs/adr/0042-v0.2.0-release-policy.md",
+        "rc_last_step": 18,
+        "rc_record": "docs/v02-rc-record.md",
+        "rc_steps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "rejudge_waits": [
+          [
+            "V13",
+            "V17 carry"
+          ],
+          [
+            "V17",
+            "V17 carry"
+          ],
+          [
+            "W21",
+            "M02 N1"
+          ],
+          [
+            "W24",
+            "M03 N1"
+          ]
+        ],
+        "required_adrs": [
+          "0022",
+          "0026",
+          "0027",
+          "0030",
+          "0031",
+          "0032",
+          "0033",
+          "0034",
+          "0035",
+          "0036",
+          "0037",
+          "0038",
+          "0039",
+          "0041",
+          "0042"
+        ],
+        "verdict_document": "docs/reviews/V02-verdicts.md"
+      }
+    },
+    "rc_steps": [
+      {
+        "assertion": "M07a.A30",
+        "step": 1,
+        "what": "V02 alpha spec §8.2 step 1, at C"
+      },
+      {
+        "assertion": "M07a.A31",
+        "step": 2,
+        "what": "V02 alpha spec §8.2 step 2, at C"
+      },
+      {
+        "assertion": "M07a.A32",
+        "step": 3,
+        "what": "V02 alpha spec §8.2 step 3, at C"
+      },
+      {
+        "assertion": "M07a.A33",
+        "step": 4,
+        "what": "V02 alpha spec §8.2 step 4, at C"
+      },
+      {
+        "assertion": "M07a.A34",
+        "step": 5,
+        "what": "V02 alpha spec §8.2 step 5, at C"
+      },
+      {
+        "assertion": "M07a.A35",
+        "step": 6,
+        "what": "V02 alpha spec §8.2 step 6, at C"
+      },
+      {
+        "assertion": "M07a.A36",
+        "step": 7,
+        "what": "V02 alpha spec §8.2 step 7, at C"
+      },
+      {
+        "assertion": "M07a.A37",
+        "step": 8,
+        "what": "V02 alpha spec §8.2 step 8, at C"
+      },
+      {
+        "assertion": "M07a.A38",
+        "step": 9,
+        "what": "V02 alpha spec §8.2 step 9, at C"
+      },
+      {
+        "assertion": "M07a.A39",
+        "step": 10,
+        "what": "V02 alpha spec §8.2 step 10, at C"
+      },
+      {
+        "assertion": "M07a.A40",
+        "step": 11,
+        "what": "V02 alpha spec §8.2 step 11, at C"
+      },
+      {
+        "assertion": "M07a.A41",
+        "step": 12,
+        "what": "V02 alpha spec §8.2 step 12, at C"
+      },
+      {
+        "assertion": "M07.A60",
+        "step": 13,
+        "what": "W23: M04's committed records re-checked at C (generator --check, manifest and evidence validation)"
+      },
+      {
+        "assertion": "M07.A60",
+        "step": 14,
+        "what": "W24: M03 nlp-tier A35-A42 and M05 G1-G10, G12, G13 at C in the audited environment"
+      },
+      {
+        "assertion": "M07.A61",
+        "step": 15,
+        "what": "W25: the full journey at C (R0-R3); check and replay at C; comparison with the journey at J"
+      },
+      {
+        "assertion": "M07.A60",
+        "step": 16,
+        "what": "W26: M06 design note G1-G15 at C; the browser test on CI x86-64"
+      },
+      {
+        "assertion": "M07.A53",
+        "step": 17,
+        "what": "W27: coverage at C, the campaign's carry from C_W to C, campaign.json recomputed, U14 counterpart"
+      },
+      {
+        "assertion": "M07.A36",
+        "step": 18,
+        "what": "scripts/v0_2_gate.py --rc C (not required in the record)"
+      }
+    ],
+    "versions": [
+      {
+        "gate_set": "v0.2-gate-v1",
+        "version": "0.2.0"
+      },
+      {
+        "gate_set": "v0.2-gate-v1",
+        "version": "0.2.0b1"
+      },
+      {
+        "gate_set": "v0.2-gate-v1",
+        "version": "0.2.0b2"
+      },
+      {
+        "gate_set": "v0.2-gate-v1",
+        "version": "0.2.0b10"
+      },
+      {
+        "gate_set": "v0.2-gate-v1",
+        "version": "0.2.0rc1"
+      },
+      {
+        "gate_set": "v0.2-gate-v1",
+        "version": "0.2.0rc12"
+      },
+      {
+        "gate_set": "v0.2-alpha-gate-v1",
+        "version": "0.2.0a1"
+      },
+      {
+        "gate_set": "v0.2-alpha-gate-v1",
+        "version": "0.2.0a10"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0b0"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0rc0"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0b01"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0rc01"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0c1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0RC1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0-rc1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0.rc1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0pre1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0rc1.dev1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0rc1.post1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0b1.dev0"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0.post1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0.dev0"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.1rc1"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0.0"
+      },
+      {
+        "gate_set": null,
+        "version": "0.2.0a0"
+      },
+      {
+        "gate_set": null,
+        "version": "0.1.1"
+      },
+      {
+        "gate_set": null,
+        "version": "1.2.0"
+      }
+    ],
+    "w27_carry": [
+      "served_tool_list_sha256",
+      "list_models",
+      "coverage_rows"
+    ],
+    "w_clauses": {
+      "W23": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g"
+      ],
+      "W24": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g"
+      ],
+      "W25": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h"
+      ],
+      "W26": [
+        "a",
+        "b"
+      ],
+      "W27": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h"
+      ]
+    }
+  },
+  "journey": {
+    "budget": {
+      "R0": {
+        "cold_experiments": 0,
+        "wall_s": 600
+      },
+      "R1": {
+        "cold_experiments": 60,
+        "wall_s": 5400
+      },
+      "R2": {
+        "cold_experiments": 0,
+        "wall_s": 1200
+      },
+      "R3": {
+        "cold_experiments": 400,
+        "source": "M05-budget-v1 REAL",
+        "wall_s": 14400
+      },
+      "id": "M07-budget-v1"
+    },
+    "case": "C1-LOOP-M02-v1",
+    "decision": {
+      "bound_tol_scaled": 1e-06,
+      "box_K": [
+        653.15,
+        693.15
+      ],
+      "delta_T_K": 0.5,
+      "grid_K": [
+        653.15,
+        658.15,
+        663.15,
+        668.15,
+        673.15,
+        678.15,
+        683.15,
+        688.15,
+        693.15
+      ],
+      "grid_literals": [
+        "653.15",
+        "658.15",
+        "663.15",
+        "668.15",
+        "673.15",
+        "678.15",
+        "683.15",
+        "688.15",
+        "693.15"
+      ],
+      "half_width_K": 20.0,
+      "spec_id": "SPEC-S3-T",
+      "t_nominal_K": 673.15
+    },
+    "decision_labels": [
+      "refined",
+      "grid_only",
+      "INSUFFICIENT_EVIDENCE"
+    ],
+    "g12_facts": {
+      "experiments_per_loop": 4,
+      "live_rerun_bitwise_at_nominal": true,
+      "reactor_inlet_total_mol_s": {
+        "653.15": 5.496475451865026,
+        "673.15": 5.796925916180314,
+        "693.15": 6.177772365254236
+      },
+      "records": {
+        "g12-real-loop-v3-edges.json": "148ec48830965e68a240528ab386f54305fba8a0c01d651ed166a59b83cce7f1",
+        "g12-real-loop-v3.json": "47dc9f089b715fd417b9befac2f2f4974fd7bc087b2989addcd52523428a9075"
+      },
+      "solve_wall_s": {
+        "653.15": 361.5,
+        "673.15": 165.2,
+        "693.15": 95.8
+      },
+      "y_inert": {
+        "653.15": 0.04548369262982363,
+        "673.15": 0.04312630584120501,
+        "693.15": 0.040467661354128166
+      }
+    },
+    "loops": {
+      "real": "benchmarks/m02/c1-loop-real.json",
+      "standin": "benchmarks/m02/c1-loop-standin.json"
+    },
+    "m04_facts": {
+      "expected_r2_evaluations": 0,
+      "expected_r2_outcome": "SURROGATE_NOT_PROMOTABLE",
+      "reasons": [
+        "band_not_finite"
+      ],
+      "record": "benchmarks/m04/wo11-b2-it1-v3/manifest.json",
+      "sha256": "d65bb0225f36780cebe63c211b7706aa42613ef8edc4714218b1ddec58be1717",
+      "surrogate_id": "m04q7-pymrm-6089593-g2-nz800-s123-v3-b2-it1",
+      "verdict": "NOT_PROMOTABLE"
+    },
+    "objective": "c1-obj-nh3-liquid-v1",
+    "r0": {
+      "J_guard_lo": 0.4,
+      "J_max_n_balance": 0.4975,
+      "J_mol_s": 0.46705958492513017,
+      "expected_outcome": "INDIFFERENT",
+      "provenance": "regression value measured at wp/M07 e35b16d; not a validation value",
+      "regression_tol_rel": 1e-12,
+      "spread_rel_measured": 1.1885239704513566e-16
+    },
+    "r2_outcomes": [
+      "SURROGATE_NOT_PROMOTABLE",
+      "INDIFFERENT",
+      "DECIDED",
+      "INCOMPLETE"
+    ],
+    "rung_flatness_tol_rel": 1e-12,
+    "study": "c1-trf-study-v1",
+    "study_honest_statuses": [
+      "DECISION_STABLE",
+      "ITERATION_LIMIT",
+      "BUDGET_EXHAUSTED"
+    ],
+    "unsupported_reasons": [
+      "reactor_environment_unavailable",
+      "m05_study_unavailable"
+    ],
+    "variants": {
+      "real": {
+        "model_id": "c1.reactor",
+        "sha256": "8b92540adc772a454e212b7054a98da4f7995899955a43a54d07669a70aa203c",
+        "variant_id": "pymrm-6089593-g2-nz800-s123-v3"
+      },
+      "standin": {
+        "model_id": "c1.reactor_standin",
+        "sha256": "f993dfc924794c72563164e28560b12224eddf5781f43fad21b80c52625f01c1",
+        "variant_id": "standin-x025-v1"
+      }
+    }
+  },
+  "report": {
+    "bound_phrase": "The decision lies at the {side} bound of the reactor model's registered domain ({value} K, R-315). The objective may improve beyond it; no model in this journey is registered there, and nothing is claimed about it.",
+    "forbidden_tokens": [
+      "optimal",
+      "optimum",
+      "validated",
+      "guarantee",
+      "guaranteed",
+      "proves"
+    ],
+    "not_established": [
+      "No empirical validation: no number in this journey is compared with plant or experimental data.",
+      "Not a plant design: C1-LOOP-M02-v1 is a registered test configuration.",
+      "No global optimality.",
+      "Nothing is claimed for reactor inlet temperatures outside 653.15-693.15 K, the reactor model's registered domain.",
+      "Relative to the parent at its design grid (num_z = 800), whose NH3 output is estimated 1.0-1.4 % high (M01 §10.5); an estimate, not a bound.",
+      "The simple rung is synthetic (fixed per-pass N2 conversion 0.25, no temperature rise) and certifies nothing about the reactor.",
+      "Reactor results flagged extrapolated (R-169) are counted, not excluded.",
+      "No surrogate coverage claim at any operating point; the band-containment counts are not a coverage estimate.",
+      "The K_NH3 enthalpy term rests on Frank's decision (R-152); its check against Rossetti et al. 2006 was not made.",
+      "No reproduction of the reactor results on another architecture.",
+      "No pressure-drop or selectivity comparison: zero pressure drop by convention (ADR 0022 D2), one reaction.",
+      "No equilibrium-reactor rung: this journey does not show what an equilibrium model would decide.",
+      "No sensitivities of the decision: the coupled route refuses them (ADR 0031 C3); the poll's curvature is reported only."
+    ],
+    "sections": [
+      "1. Summary",
+      "2. Case and decision",
+      "3. Rungs and their decisions",
+      "4. The grid comparison",
+      "5. Surrogate discrepancy",
+      "6. Refinement",
+      "7. Truth checks",
+      "8. Uncertainty",
+      "9. Compute cost",
+      "10. Verification, validation and optimality, kept apart",
+      "11. What this journey does not establish",
+      "12. Provenance and replay"
+    ]
+  },
+  "schema": "m07-registration-v1",
+  "specification": "docs/derivations/M07-spec.md"
+}
