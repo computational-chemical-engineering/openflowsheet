@@ -893,3 +893,7 @@ Grep, don't read whole. Newest at the bottom.
 - **M02 follow-up merged** (626fb26) — first main gate FAIL (2): manifest under `M02-followup/` but work_package M02; its limitations
   unharvested. Fixed `95053be` (moved to `evidence/M02/6c3a087…`, 4 P harvest entries, matrix re-emitted). **wp/adr-acceptance merged**
   (`61cc785`, ADRs 0033–0037 Accepted, R-381 copied, R-410/R-411; register union 284). **Main gate PASS 8681 passed, 31 skipped.**
+- **M05 WO-8a/8c/8d** (2026-10-16, `opus-engineer`, 4c9a083/55674aa/d56b42d/f72a875; gates 9231/9235/9238, nlp 177/1): TRF_EXIT_UNVERIFIED
+  (F-15 k=27/28 ratio 0.99985 → radius_limited); store-hit refund (TR-E2 cold_used 47 = 31 + 16); basis v2 matches §20.1 (TR-E2 θ 2.998e-6,
+  0.00734 K; c_X −9.5883e-4 /K²); v1 bitwise vs a9d05d3. Finding: v1 records don't replay across environments (~1e-15). Open S53, S54,
+  S56, S57, S58. WO-8e launched.
