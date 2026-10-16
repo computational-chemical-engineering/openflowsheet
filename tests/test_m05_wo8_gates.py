@@ -1,5 +1,6 @@
 """M05 WO-8e and WO-8b: gates G5, G5b, G6, G7, G8 and G9 judged on the committed `M05-basis-v2`
-records (design note §20.7 as restated by R-403 and R-404; §13 for G7; build log S59-S63).
+records (design note §20.7 as restated by R-403 and R-404, G8 and G9 as restated by R-430 and
+R-435 in §21.6; §13 for G7; build log S59-S63).
 
 Each record under `benchmarks/m05/records/` was written by `scripts/m05_wo8_runs.py <CASE>` at
 `OMP_NUM_THREADS=1` in the environment its `<stem>.environment.json` names; G10 is that script's
@@ -14,7 +15,7 @@ from __future__ import annotations
 import json
 import math
 import sys
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any
 
 import pytest
@@ -32,8 +33,11 @@ LINK = "link:reactor"
 T_REF = 673.6434377969885
 #: §7.2's box [653.15, 693.15] K: lower bound and the scale h of d = (T − 673.15 K)/h, K.
 T_LB, H = 653.15, 20.0
-#: §20.3 (R-404): "at the bound" is within 1e-6 scaled.
+#: §7.4 (R-404, kept by R-430): "at the bound" is within 1e-6 scaled; reported by G8 and G9,
+#: never gated (§21.1: the offset is Ipopt's, μ_k/z_L, not a property of the problem).
 AT_BOUND_SCALED = 1e-6
+#: §21.6 (R-435): G8's and G9's |T* − T_lb| ≤ δ_T, K.
+DELTA_T = 0.5
 #: §7.5: the study's iteration limit.
 K_MAX = 3
 #: §5.2's TR-E2 column of A1-A7 as build log S47 encodes it (G5 (e)).
@@ -207,20 +211,40 @@ def test_g7_accounting(case: str) -> None:
 # -- G9: LOOP-R --------------------------------------------------------------------------------
 
 
-def test_g9_loop_r() -> None:
-    """G9 (§20.7, R-404): stage A skipped with `surrogate_not_promoted`; stage C with
-    `M05-basis-v2`; `DECISION_STABLE`; |d* − d_lb| ≤ 1e-6 scaled; P5 polled inward only."""
+def _at_the_bound(
+    document: Mapping[str, Any], record_property: Callable[[str, object], None]
+) -> None:
+    """§21.6's two rows of G8 and G9 (R-430, R-435): |T* − 653.15 K| ≤ δ_T (0.5 K); and P5's
+    evidence contains the bound — no minus point (§7.4 read the candidate at the bound, so P5
+    polled inward only), or the minus point clipped to exactly 653.15 K, feasible and passed.
+    |d* − d_lb| and §7.4's reading are reported (`record_property`), not judged."""
+    t = t_star(document)
+    assert math.isfinite(t) and abs(t - T_LB) <= DELTA_T
+    distance = abs(t - T_LB) / H
+    at_bound = distance <= AT_BOUND_SCALED
+    record_property("d_star_minus_d_lb_scaled", distance)
+    record_property("section_7_4_at_the_bound", at_bound)
+    candidate = candidate_of(document, document["runs"][-1]["run_id"])
+    p5 = {point["check_id"]: point for point in candidate["checks"]["P5"]["values"]["points"]}
+    minus = [point for point in candidate["poll"] if point["direction"] == -1]
+    if not minus:
+        assert at_bound  # §7.4's inward-only rule is the only way to have no minus point
+        return
+    (point,) = minus
+    assert point["clipped"] is True and point["decisions"] == {T: T_LB}
+    assert point["feasible"] is True
+    assert p5[point["check_id"]]["pass"] is True
+
+
+def test_g9_loop_r(record_property: Callable[[str, object], None]) -> None:
+    """G9 (§21.6, R-435): stage A skipped with `surrogate_not_promoted`; stage C with
+    `M05-basis-v2`; `DECISION_STABLE`; then G8's two rows (`_at_the_bound`). As committed: T*
+    1.06e-6 K above the bound (5.3e-8 scaled, §7.4 at the bound), no minus point."""
     document = record("LOOP-R")
     assert document["stage_a"] == {"executed": False, "reason": "surrogate_not_promoted"}
     assert all(run["basis"]["policy"] == "M05-basis-v2" for run in stage_c(document))
     assert document["status"] == "DECISION_STABLE"
-    distance = abs(t_star(document) - T_LB) / H
-    assert math.isfinite(distance) and distance <= AT_BOUND_SCALED
-    candidate = candidate_of(document, document["runs"][-1]["run_id"])
-    assert [point["direction"] for point in candidate["poll"]] == [1]
-    assert [point["check_id"] for point in candidate["checks"]["P5"]["values"]["points"]] == [
-        f"{candidate['candidate_id']}-poll-{T}-plus"
-    ]
+    _at_the_bound(document, record_property)
 
 
 # -- G8: LOOP-S --------------------------------------------------------------------------------
@@ -261,17 +285,9 @@ def test_g8_loop_s_stage_a_and_p2_a() -> None:
     assert document["status"] == "DECISION_STABLE"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="G8 fails as measured (build log S63): T* 653.150021930406 K is 1.0965e-6 scaled "
-    "(2.193e-5 K) from d_lb, above R-404's 1e-6 (2e-5 K), so P5 polled both sides; for the "
-    "design lane, the criterion is not moved here",
-)
-def test_g8_loop_s_at_the_bound_and_polled_inward() -> None:
-    """G8 (§20.7, R-404), last rows: |d* − d_lb| ≤ 1e-6 scaled, and P5 polled the inward point
-    only."""
-    document = record("LOOP-S")
-    distance = abs(t_star(document) - T_LB) / H
-    assert math.isfinite(distance) and distance <= AT_BOUND_SCALED
-    candidate = candidate_of(document, document["runs"][-1]["run_id"])
-    assert [point["direction"] for point in candidate["poll"]] == [1]
+def test_g8_loop_s_at_the_bound(record_property: Callable[[str, object], None]) -> None:
+    """G8 (§21.6, R-430, R-435), last rows: `_at_the_bound` on LOOP-S, replacing R-404's
+    |d* − d_lb| ≤ 1e-6 scaled and inward-only rows (build log S63, S64). As committed: T*
+    653.150021930406 K, 2.193e-5 K above the bound (1.0965e-6 scaled, §7.4 interior), so P5 polled
+    both sides and the minus point is clipped to 653.15 K, feasible and passed."""
+    _at_the_bound(record("LOOP-S"), record_property)

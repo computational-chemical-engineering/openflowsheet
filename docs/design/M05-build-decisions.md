@@ -708,3 +708,13 @@ S70 MF1 / R-432 (cdacc32): `noise_ratio_k = 4σ̂_k/(t²|c_k|)`, σ̂_k = ν̂·
    not name (a store-served replay returns them unchanged, so G10's REAL replay never meets them).
    After the re-takes: `scripts/m05_wo9_real.py --replay` on the new REAL record `REPLAY PASS REAL differences=0`;
    pymrm `test_m05_parent.py` 1 passed (126 s); gate 9287 passed, 31 skipped, 1 xfailed; nlp 181 passed, 1 skipped.
+S71 SF2 / R-430, R-435: G8's and G9's at-bound rows restated per §21.6 in `tests/test_m05_wo8_gates.py`
+   (`_at_the_bound`): |T* − 653.15 K| ≤ 0.5 K; P5's evidence contains the bound — no minus point (then §7.4 must read
+   the candidate at the bound), or the minus point `clipped`, at exactly {T: 653.15}, `feasible` and its P5 point
+   passed. |d* − d_lb| and §7.4's reading are reported through `record_property`, not judged: LOOP-S 1.0965e-6
+   scaled, interior (minus point clipped, feasible, passed); LOOP-R 5.29e-8, at the bound (no minus point). The
+   strict xfail is removed (`test_g8_loop_s_at_the_bound` passes); G9's 1e-6 and inward-only rows are replaced.
+   Mutations caught (in memory): minus point at 653.1500001 K, infeasible, its P5 point failed, T* 0.55 K off the
+   bound, no minus point at an interior reading. The inward-only unit test stays
+   (`test_m05_study_loop.py::test_the_poll_polls_only_inward_at_a_bound_and_clips_at_the_box`). Gate 9288 passed,
+   31 skipped (the xfail gone); nlp 181 passed, 1 skipped.
