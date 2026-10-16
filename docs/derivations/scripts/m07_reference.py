@@ -43,6 +43,11 @@ DELTA_T: Final = 0.5  # K; M05 N-F2 decision tolerance
 HALF_WIDTH: Final = 20.0  # K; (hi - lo) / 2, M04/M05 scaling of T_in
 BOUND_TOL_SCALED: Final = 1e-6  # M05 §7.4: within 1e-6 (scaled) of a bound is at the bound
 R0_TOL: Final = 1e-12  # relative flatness tolerance of a rung's J over the grid (spec §4.4.1)
+# Amendment 1 A1.5: X_pass = 0.25 exactly for the stand-in (xi = 0.25 n_N2,in); measured on
+# wp/M07 94819ea, all nine points: X_pass - 0.25 = -2**-54 (one ulp of 0.25).
+R0_X_PASS: Final = 0.25
+R0_X_PASS_TOL_ABS: Final = 2.5e-13
+R0_X_PASS_DEV_MEASURED: Final = 2.0**-54
 # Spec §3 F2: measured on wp/M07 e35b16d, all nine grid points, inner solve at w* = (0.25, 0 K).
 R0_J_MEASURED: Final = 0.46705958492513017  # mol/s; a regression value, not a validation value
 R0_SPREAD_MEASURED: Final = 1.1885239704513566e-16  # (max - min) / max over the nine points
@@ -92,6 +97,7 @@ JOURNEY_DECISION_LABELS: Final = ("refined", "grid_only", "INSUFFICIENT_EVIDENCE
 UNSUPPORTED_REASONS: Final = (
     "reactor_environment_unavailable",
     "m05_study_unavailable",
+    "surrogate_loop_unavailable",  # spec §4.6, Amendment 1 A1.3
 )  # spec §4.6
 # spec §4.6: byte-equal between M05's run commit and J, and between J and C
 CARRY_JOURNEY: Final = (
@@ -146,12 +152,14 @@ def fe_class(f: dict[str, Any]) -> str:
 
 def tc1(f: dict[str, Any]) -> dict[str, Any]:
     """Spec §4.4.5: the after-decision against the verified parent grid."""
-    if f["t_after"] is None:
+    if f["t_after"] is None or f["j_after"] is None or f["e_after"] is None:
         return {"outcome": "TC1_NOT_APPLICABLE", "best_grid_T": None}
     grid = [p for p in f["grid"] if p["verified"]]
     if not grid:
         return {"outcome": "TC1_NO_GRID", "best_grid_T": None}
     best = _best(grid)
+    if best["e"] is None:  # Amendment 1 A1.1: B's floor is missing; B is never replaced
+        return {"outcome": "TC1_NOT_APPLICABLE", "best_grid_T": best["T"]}
     holds = f["j_after"] >= best["J"] - (f["e_after"] + best["e"])
     return {"outcome": "TC1_HOLDS" if holds else "TC1_CONTRADICTED", "best_grid_T": best["T"]}
 
@@ -219,6 +227,24 @@ _TC1_FIXTURES: Final = (
     ),
     ("tc1-06-no-verified-grid", 660.0, 0.5, _E, [dict(_GRID_FIX[2])], "TC1_NO_GRID", None),
     ("tc1-07-no-after", None, None, None, list(_GRID_FIX), "TC1_NOT_APPLICABLE", None),
+    (
+        "tc1-08-no-floor-at-best",
+        660.0,
+        0.5 + 2.0**-18 - 2.0**-19,
+        _E,
+        [dict(_GRID_FIX[0]), {**_GRID_FIX[1], "e": None}, dict(_GRID_FIX[2])],
+        "TC1_NOT_APPLICABLE",
+        663.0,
+    ),
+    (
+        "tc1-09-no-floor-after",
+        660.0,
+        0.5 + 2.0**-17,
+        None,
+        list(_GRID_FIX),
+        "TC1_NOT_APPLICABLE",
+        None,
+    ),
 )
 _IS_FIXTURES: Final = (
     # id, points (T, J, e, verified), expected set
@@ -684,6 +710,11 @@ def build() -> dict[str, Any]:
         "GC-R0-3",
         "regression tolerance above the floor",
     )
+    claim(
+        R0_X_PASS_TOL_ABS >= 1e3 * R0_X_PASS_DEV_MEASURED and R0_X_PASS_TOL_ABS <= 1e-8 * R0_X_PASS,
+        "GC-R0-4",
+        "R0 X_pass tolerance placement",
+    )
     rungs = _rung_fixtures()
     for fx in rungs:
         got = rung_decision(fx["points"], float(T_NOMINAL), len(GRID))
@@ -744,6 +775,19 @@ def build() -> dict[str, Any]:
         (0.5 + 2.0**-18 - 2.0**-20) == (0.5 + 2.0**-18) - 2 * _E,
         "GC-TC1-EXACT",
         "tc1-02 boundary inexact",
+    )
+    f8 = {"t_after": 660.0, "j_after": 0.5 + 2.0**-18 - 2.0**-19, "e_after": _E}
+    claim(
+        tc1({**f8, "grid": [dict(_GRID_FIX[0]), {**_GRID_FIX[1], "e": 0.0}]})["outcome"]
+        == "TC1_CONTRADICTED"
+        and tc1({**f8, "grid": [dict(_GRID_FIX[0])]})
+        == {"outcome": "TC1_HOLDS", "best_grid_T": 653.0}
+        and tc1(
+            {"t_after": 660.0, "j_after": 0.5 + 2.0**-17, "e_after": 0.0, "grid": list(_GRID_FIX)}
+        )["outcome"]
+        == "TC1_HOLDS",
+        "GC-TC1-NULL",
+        "tc1-08/09 would not catch a missing floor read as 0 or a skipped B",
     )
     bounds = []
     for bid, base, offset, want in _BOUND_FIXTURES:
@@ -889,6 +933,9 @@ def build() -> dict[str, Any]:
                 "J_guard_lo": R0_J_GUARD_LO,
                 "J_max_n_balance": j_max_n_balance,
                 "expected_outcome": "INDIFFERENT",
+                "X_pass": R0_X_PASS,
+                "X_pass_tol_abs": R0_X_PASS_TOL_ABS,
+                "X_pass_dev_measured": R0_X_PASS_DEV_MEASURED,
                 "provenance": "regression value measured at wp/M07 e35b16d; not a validation value",
             },
             "study_honest_statuses": list(STUDY_HONEST),

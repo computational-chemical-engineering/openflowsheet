@@ -655,6 +655,66 @@
         "id": "tc1-07-no-after",
         "j_after": null,
         "t_after": null
+      },
+      {
+        "e_after": 4.76837158203125e-07,
+        "expected": {
+          "best_grid_T": 663.0,
+          "outcome": "TC1_NOT_APPLICABLE"
+        },
+        "grid": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000038146972656,
+            "T": 663.0,
+            "e": null,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          }
+        ],
+        "id": "tc1-08-no-floor-at-best",
+        "j_after": 0.5000019073486328,
+        "t_after": 660.0
+      },
+      {
+        "e_after": null,
+        "expected": {
+          "best_grid_T": null,
+          "outcome": "TC1_NOT_APPLICABLE"
+        },
+        "grid": [
+          {
+            "J": 0.5,
+            "T": 653.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000038146972656,
+            "T": 663.0,
+            "e": 4.76837158203125e-07,
+            "verified": true
+          },
+          {
+            "J": 0.5000076293945312,
+            "T": 673.0,
+            "e": 4.76837158203125e-07,
+            "verified": false
+          }
+        ],
+        "id": "tc1-09-no-floor-after",
+        "j_after": 0.5000076293945312,
+        "t_after": 660.0
       }
     ]
   },
@@ -1212,6 +1272,9 @@
       "J_guard_lo": 0.4,
       "J_max_n_balance": 0.4975,
       "J_mol_s": 0.46705958492513017,
+      "X_pass": 0.25,
+      "X_pass_dev_measured": 5.551115123125783e-17,
+      "X_pass_tol_abs": 2.5e-13,
       "expected_outcome": "INDIFFERENT",
       "provenance": "regression value measured at wp/M07 e35b16d; not a validation value",
       "regression_tol_rel": 1e-12,
@@ -1232,7 +1295,8 @@
     ],
     "unsupported_reasons": [
       "reactor_environment_unavailable",
-      "m05_study_unavailable"
+      "m05_study_unavailable",
+      "surrogate_loop_unavailable"
     ],
     "variants": {
       "real": {

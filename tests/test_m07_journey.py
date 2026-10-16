@@ -202,7 +202,7 @@ def test_a06_truth_check(fixture: Mapping[str, Any]) -> None:
 
 
 def test_a06_the_tc1_fixtures_cover_the_four_outcomes() -> None:
-    assert len(FIXTURES["tc1"]) == 7
+    assert len(FIXTURES["tc1"]) == 9
     assert {f["expected"]["outcome"] for f in FIXTURES["tc1"]} == {
         "TC1_HOLDS",
         "TC1_CONTRADICTED",
