@@ -1,0 +1,1450 @@
+# M04 specification — the C1 reactor surrogate, Default split-conformal reporting, the registered sample plan, promotion and rollback
+
+**Status:** design-lane authority for package M04 (plan v1.2 §4.4; gate W23; requirements A07, D12).
+**Date:** 2026-10-08. **Author:** design lane (`specifier`). **Brief:** `docs/briefs/M04-specification.md`.
+**Decisions:** ADR 0036 (statistical semantics), ADR 0037 (the surrogate in a flowsheet; amends ADRs 0019, 0035);
+register R-240…R-249.
+**Machine-readable expectations:** `benchmarks/m04/reference_values.json` and the registered plans
+`benchmarks/m04/plan-it1.json` (and, since Amendment 1, `plan-it2.json`, `plan-it3.json`), all from
+`docs/derivations/scripts/m04_reference.py` (`--check` re-derives every claim this document makes about its own numbers
+and requires every file byte-identical; 8634 claims since Amendment 1).
+**Amendment 1** (2026-10-09, §18): rulings on the build lane's WO-1…6 questions; ADR 0036 and ADR 0037 Amendment 1;
+register R-290…R-295.
+**Amendment 2** (2026-10-15, §19): the real reactor's box `m04-c1-box7-v2` and plans `b2-it1…3` (closes N4); rulings
+on E15, E16, E22, E23; register R-322…R-325. ADR 0036 Amendment 2 is required before WO-11 runs (§A2.11, a finding).
+**Built on:** M01 (`main`: the boundary, ADR 0027, DX-01), M02 (`wp/M02`: ADRs 0033–0035, the records, the coupling,
+the replacement check), M03 (`wp/M03`: ADR 0031's vocabulary, R-184's seeded-data convention).
+
+## 1. Authority and scope
+
+This document fixes, for the C1 reactor and for every later consumer of its surrogate (M05, M07):
+
+- the surrogate's inputs, outputs, representation, derivative and fit (§3);
+- the hard and empirical domain tests (§3.6);
+- the registered reference distribution (§4) and the registered sample plan of iteration 1 — seeds, sampler, counts,
+  cost — fixed **before** the parent model runs (§5);
+- Default split-conformal reporting: the score, the finite-sample rule, the coverage test and their qualifications
+  (§6);
+- the promotion criteria and the three verdicts (§7);
+- how a surrogate enters a flowsheet, is promoted and is rolled back through M02's replacement machinery (§8);
+- the end-to-end verification on synthetic parents with exactly known answers (§9);
+- the `SurrogateManifest` and `ModelEvidence` records and the `surrogate_study` job operation (§10);
+- the numbered assertions (§11), the build lane's work orders (§13) and the open questions with defaults (§14).
+
+Where this document and an ADR it cites disagree, the ADR wins and this document is amended. M02's ADRs 0033–0035
+are Proposed on an unmerged branch; ADR 0037 amends 0035 additively and is void if 0035 is withdrawn.
+
+## 2. What M04 establishes (summary)
+
+1. **A native surrogate unit.** `c1.reactor_surrogate` is M02's extent-fixed embedding (ADR 0034 D1) with the pinned
+   coupling parameters (X̂, ΔT̂) replaced by a frozen quadratic f̃ of the scaled inlet: the same nine rows, analytic
+   derivatives, solved on the plain `revision_eo` route without experiments. Element conservation is exact by
+   construction; species nonnegativity is a hard admissibility test, never a projection.
+2. **One registered reference distribution** P_ref: uniform on a 7-coordinate box around the C1 nominal inlet, inside
+   both the parent's hard domain and its data domain.
+3. **One registered plan per iteration.** Iteration 1: 144 training, 118 calibration and 300 test draws i.i.d. from
+   P_ref by SplitMix64, and 5 gradient centres with 14 stencil experiments each — **632 cold experiments, about 95 min
+   of one thread at 9 s each**. The probability that a correctly working pipeline passes the coverage test is 0.9035
+   (distribution-free).
+4. **Default split-conformal, joint over (X, ΔT).** Score s = max(|e_X|/w_X, |e_ΔT|/w_ΔT) with predeclared
+   scales equal to the width limits w_X = 0.0025 and w_ΔT = 1.5 K; q̂ = the k-th smallest of n calibration scores,
+   k = ⌈(n+1)(1 − α)⌉ in integer arithmetic; a failed draw scores +∞.
+5. **Promotion is a test, not a reading.** PROMOTABLE iff the band is finite and q̂ ≤ 1 (the band lies within the width
+   limits), the one-sided 95 % Clopper–Pearson lower bound on the frozen band's coverage from the 300 independent
+   test draws is ≥ 0.90 (equivalently ≥ 279 hits), every prediction in the reference box is admissible, and the
+   surrogate's gradient agrees with the parent's central difference within 25 % at all five gradient centres. Too
+   little evidence is INSUFFICIENT_EVIDENCE, never a pass.
+6. **Promotion and rollback are checked commits** (ADR 0035) with one new facet, `surrogate_evidence`, and one narrow
+   exception in `derivatives` for a rollback to the surrogate's own parent.
+
+## 3. The surrogate (derivation)
+
+### 3.1 Inputs and scaling
+
+The parent's map (M01 spec §8.3) is homogeneous of degree one in (n_in, N_tubes), so the conversion and the
+temperature rise depend on the intensive inlet and the per-tube flow only. The surrogate's inputs are the seven
+coordinates
+
+| k | u_k | definition from the inlet (n₁…n₅ = H₂, N₂, NH₃, Ar, CH₄; T; P; N_tubes) | box [lo, hi] | centre c_k | half-width h_k |
+| --- | --- | --- | --- | --- | --- |
+| 1 | T (K) | T_in | [653.15, 693.15] | 673.15 | 20 |
+| 2 | P (Pa) | P_in | [9.0e6, 1.0e7] | 9.5e6 | 5.0e5 |
+| 3 | r | n_H₂ / n_N₂ | [2.5, 3.0] | 2.75 | 0.25 |
+| 4 | y_NH₃ | n_NH₃ / n_tot | [0.02, 0.04] | 0.03 | 0.01 |
+| 5 | y_Ar | n_Ar / n_tot | [0.01, 0.03] | 0.02 | 0.01 (binary64 0.009999999999999998) |
+| 6 | y_CH₄ | n_CH₄ / n_tot | [0.01, 0.04] | 0.025 | 0.015 |
+| 7 | F (mol/s) | n_tot / N_tubes | [0.0057, 0.0086] | 0.00715 | 0.00145 |
+
+n_tot = (((n₁ + n₂) + n₃) + n₄) + n₅. The box bounds are the decimal literals shown, parsed to binary64; the centre and
+half-width are the binary64 results of `(lo + hi) * 0.5` and `(hi - lo) * 0.5` (`reference_values.json` →
+`constants.box`). The scaled input is z_k = (u_k − c_k)/h_k, so the box is [−1, 1]⁷. No other transform (no log, no
+whitening) is applied; the transform is frozen with the predictor.
+
+*Why these coordinates.* They are a bijection with the inlet at fixed N_tubes, they are the coordinates of the parent's
+own hard and data domains (T, P, H₂/N₂, inerts, per-tube flow), and no direction of the inlet is silently held fixed:
+the two inerts are separate inputs because their split varies in a loop with a purge and a dissolving separator.
+
+*(Amendment 2 §A2.2: this table is `m04-c1-box7-v1`, the synthetic-verification box. Non-synthetic parents use
+`m04-c1-box7-v2`.)*
+
+### 3.2 Outputs and the conserved-coordinate representation
+
+The outputs are M02's coupling coordinates (ADR 0034 D1–D2): the N₂ conversion X = ξ / n_N₂,in and the temperature
+rise ΔT = T_out − T_in. With β_X, β_T ∈ ℝ³⁶ the frozen coefficients and φ the basis of §3.4,
+
+  X̃(z) = β_Xᵀ φ(z),  ΔT̃(z) = β_Tᵀ φ(z).
+
+The unit's rows are M02's embedded rows (design note §4.1) with the pinned parameters replaced:
+
+- `C1RX-mole.<i>` (5): n_in,i + ν_i ξ − n_out,i = 0, ν = (−3, −1, 2, 0, 0);
+- `C1RX-extent`: R_ξ = ξ − X̃(z(s)) n_N₂,in = 0 (kind `molar_flow`);
+- `C1RX-temperature`: R_T = T_out − T_in − ΔT̃(z(s)) = 0 (kind `temperature`);
+- `C1RX-pressure`: P_in − P_out = 0; `C1RX-duty`: Q + Ḣ_in − Ḣ_out = 0 by `pr-c1-v1`.
+
+**Conservation is exact by construction.** n_out − n_in = ν ξ for every value of X̃, and the element matrix E
+(rows Ar, C, H, N) satisfies E ν = 0 (M01 spec §8.9, claim RX-01); inerts pass unchanged. No fitted quantity can break
+an element balance; the surrogate can only be wrong about *how far* the reaction goes and how hot the outlet is.
+
+**Admissibility (hard, refused, never projected).** n_out ≥ 0 componentwise iff X̃ ∈ [−y_NH₃/(2 y_N₂), min(1, r/3)];
+with M02's coupling bounds (ADR 0034 D2) the admissible output set is
+
+  A(s) = { X̃ ∈ [0, min(0.95, r/3)] } × { ΔT̃ ∈ [−50, 250] K }.
+
+These are exactly the values the parent-backed coupling could realise (its w is bounded to the same box), and r/3 is
+the H₂ limit (r ∈ [1, 4] in the hard domain, so r/3 can be as low as 1/3 < 0.95 — a test that checks only [0, 0.95]
+is wrong). A prediction outside A(s) is refused, not clipped: clipping would be a fabricated output with a kink in its
+derivative, and a smooth saturation would change the representation for a limitation nobody has measured (plan L273:
+complexity only for a measured limitation).
+
+### 3.3 Derivatives (closed form)
+
+The rows are polynomials in z composed with the input map, so residual and Jacobian describe the same function at
+every state where the input map is defined (n_N₂ > 0, n_tot > 0). With g^X = ∇_z X̃ and g^T = ∇_z ΔT̃,
+
+  ∂φ_m/∂z_k: 1 for the linear term z_k; z_j δ_ik + z_i δ_jk for the term z_i z_j (2 z_k when i = j = k);
+
+  ∂u/∂s (rows u₁…u₇, columns n₁…n₅, T, P):
+  ∂T/∂T = 1; ∂P/∂P = 1; ∂r/∂n_H₂ = 1/n_N₂; ∂r/∂n_N₂ = −n_H₂/n_N₂²;
+  ∂y_j/∂n_i = (δ_ij − y_j)/n_tot for j ∈ {NH₃, Ar, CH₄}; ∂F/∂n_i = 1/N_tubes;
+
+  ∂X̃/∂s_c = Σ_k (g^X_k / h_k) ∂u_k/∂s_c, likewise ∂ΔT̃/∂s_c;
+
+  ∂R_ξ/∂s_c = −n_N₂ ∂X̃/∂s_c − X̃ δ_{c,N₂};  ∂R_ξ/∂ξ = 1;  ∂R_ξ/∂T_out = 0;
+  ∂R_T/∂s_c = −∂ΔT̃/∂s_c − δ_{c,T};  ∂R_T/∂T_out = 1;  ∂R_T/∂ξ = 0.
+
+The other seven rows are M02's and unchanged. The generator checks this chain rule against mpmath differentiation of
+the composed rows at 50 digits (agreement 2 × 10⁻⁵¹ at J1–J3).
+
+### 3.4 Basis and fit
+
+φ(z) = [1, z₁, …, z₇, z₁², z₁z₂, …, z₁z₇, z₂², z₂z₃, …, z₇²]: the constant, the linear terms in coordinate order, then
+z_i z_j for i ≤ j in lexicographic order — 36 terms (`constants.basis_order`). The predictor class is the full
+quadratic, unregularized, fixed in advance; nothing about it is selected from data.
+
+The fit uses the training draws whose experiments returned `ok`, in plan order. Φ is the N_ok × 36 matrix of φ(z)
+rows, y the vector of X (or ΔT) values; β minimizes ‖Φβ − y‖₂ by Householder QR (`numpy.linalg.qr`, mode `reduced`,
+then a triangular solve); X and ΔT share Φ. **Identifiability** (M03's τ_id, ADR 0031 D6): the fit is refused as
+`training_unidentifiable` when N_ok < 36 or σ_min(Φ)/σ_max(Φ) < τ_id = 10⁻⁸. On the registered synthetic training set
+the ratio is 0.12305 (κ = 8.1), so roundoff in the coefficients is at the 10⁻¹⁵ level.
+
+### 3.5 Registered Jacobian states
+
+The fixture surrogate of these states has the smooth synthetic case's coefficients (§9) rounded once to binary64
+(`reference_values.json` → `fixture_coefficients`); the inlets are binary64 values (`jacobian_states[*].inlet`).
+
+| State | Inlet | Why it is in the list |
+| --- | --- | --- |
+| J1 | nominal per tube (F₀ × y_nom, 673.15 K, 10⁷ Pa), N_tubes = 1 | The nominal point. z_T vanishes there to roundoff (the box is centred on 673.15 K), so every term carrying z_T is invisible at J1 — J2 exists for that reason. z_P = 1 exactly (the box's upper P bound). |
+| J2 | u = (661.7, 9.37e6, 2.61, 0.0273, 0.0188, 0.0321, 0.00653) per tube, scaled to N_tubes = 1000 | Every z_k non-zero and pairwise distinct, so a permuted coordinate, a dropped cross term or a missing 1/N_tubes changes the Jacobian; all 14 inlet entries non-zero. |
+| J3 | u = (703.15, 9.5e6, 2.75, 0.03, 0.02, 0.025, 0.00715), N_tubes = 1 | Outside the reference box in T only (z_T = 1.5): the residual still evaluates, the domain status is `outside_reference_domain` with scaled excess 0.5, and the hard domain admits it. |
+| J4 | J1 with T_in = 780 K | Outside the parent's hard domain: refused at the causal evaluation and at the certificate check (§3.6). |
+| J5 | J1 with n_N₂ = 0 | Input map undefined (r = n_H₂/0): `surrogate_input_undefined`. |
+| J6 | all flows zero | Dormant inlet: ξ = 0 and T_out = T_in exactly (§3.7). |
+
+No inlet Jacobian entry at J1–J3 cancels by more than a factor 4.45 (Σ|terms|/|entry|, generator), so binary64
+evaluation is accurate to about 10⁻¹³ relative per entry.
+
+### 3.6 Domain: hard and empirical
+
+**Hard (refused).** The surrogate inherits its parent's hard domain verbatim (the variant's `boundary.hard_domain`:
+T 573.15–773.15 K, P 5–15 MPa, H₂/N₂ ∈ [1, 4], inerts ≤ 0.2, and for the real variant the per-tube flow
+[0.5, 2] × F₀). Outside it, and wherever the prediction leaves A(s) (§3.2), the unit refuses with the same status
+class the parent uses (`out_of_domain`) and the reasons `surrogate_outside_hard_domain(<unit>:<bound>)` or
+`surrogate_output_inadmissible(<unit>:<X|dT>)`. The refusal happens where hard domains are judged for a native unit:
+the causal evaluation (traversal, initializer) and the certificate's `bounds_and_domain` check
+`SURROGATE-DOMAIN:<unit>` at the converged state. The residual and Jacobian themselves stay defined (polynomials) so
+that Newton may pass through an inadmissible iterate on its way to an admissible root, exactly as a pinned-parameter
+row may; what is never issued is a certified solution at an inadmissible state.
+
+**Empirical (flagged, not refused).** The empirical domain is the support of P_ref: z ∈ [−1, 1]⁷. Its scaled distance
+is the excess e(z) = max(0, ‖z‖_∞ − 1). Inside (e = 0) the coverage evidence of §6 applies marginally; outside
+(e > 0) **no coverage claim applies** and the run carries the limitation `surrogate_outside_reference_domain` with the
+excess and the offending coordinates. The criterion is documented, scaled and cheap, and it is exactly the region the
+statistical evidence was drawn from.
+
+*Rejected criteria.* Convex-hull membership of the training draws (blueprint §9.2: it does not establish accuracy in a
+sparse high-dimensional interior; here, with 144 points in 7 dimensions, most of the box lies outside the hull, so
+the hull would disagree with the support of the very distribution the coverage is marginal over: fewer than 30 of
+the 300 registered test draws lie in the hull of the 144 training draws — generator-asserted; 22 at this commit).
+Nearest-neighbour density (a global quadratic's accuracy is not governed by local sample density; the i.i.d. test
+draws measure accuracy over the whole interior directly). Leverage φᵀ(ΦᵀΦ)⁻¹φ (it measures how a least-squares
+prediction amplifies *noise* in the data; the parent is deterministic, so the surrogate's error is model-form bias,
+which leverage does not measure, and a pointwise flag would compete with the marginal claim without adding one).
+
+### 3.7 Zero flow and undefined inputs
+
+A dormant inlet (all flows zero; ADR 0001's zero-flow semantics, the dormancy form of T05b §7.6 as M02's embedded unit
+uses it) gives ξ = 0 and T_out = T_in exactly — M02's ZERO_FLOW convention F = (X̂, 0) with the surrogate not
+evaluated. An inlet with n_tot > 0 and n_N₂ = 0 has no defined r; the residual evaluation returns the unit's typed
+failure `out_of_domain` / `surrogate_input_undefined(<unit>)` (it is also outside the hard domain, H₂/N₂ ∈ [1, 4]).
+
+## 4. The registered reference distribution
+
+**P_ref = the uniform distribution on the box of §3.1**, a product of seven independent uniforms in the u-coordinates.
+It is registered by the id `m04-c1-box7-v1`, the bounds above, and the sampler of §5.1. *(Amendment 2 §A2.2–A2.3: for
+non-synthetic parents P_ref is `m04-c1-box7-v2`, with plans `b2-it1…3`; the v1 plans are for synthetic parents only.)*
+
+*Why this region.* It is process-relevant: it is centred on the C1 nominal reactor inlet (M01 spec §8.4) and spans
+the variations a recycle loop imposes on the inlet — ±20 K in the preheat (the dossier's design decision, §9 of the
+dossier), ±20 % in per-tube flow, the loop pressure, the makeup ratio and the NH₃ and inert levels a separator and
+purge leave. It lies inside the parent's **data domain** (T 643.15–733.15 K, P ≤ 10 MPa, H₂/N₂ ≤ 3; asserted for every
+draw), so the parent never flags a registered draw `extrapolated`, and inside the real variant's hard domain
+including its flow bound. T_in ∈ [653.15, 693.15] K is exactly the interval over which M01 measured the start strategy
+accepted at the design grid (M01.A41: 653.15, 673.15, 693.15 K). The box deliberately does **not** reach the
+inlet temperatures below 653 K where M01 §10.4 places a possible interior optimum: that region lies partly outside the
+kinetics' data domain, and claims there are M05's parent-model checks, not this surrogate's coverage.
+
+*Alternatives rejected.* The whole hard domain (most of it is outside the data domain, and a quadratic over 200 K of
+an equilibrium-limited reactor is unlikely to meet any width limit worth stating); the whole data domain (still 90 K
+and P down to 5 MPa: the same objection, at roughly twice the misfit risk); a Latin hypercube or a grid as the
+"reference" (blueprint §9.2: not i.i.d.; they are allowed for training only, and training here is i.i.d. too, which is
+simpler and lets a failed iteration's calibration and test draws join the next training set, §5.5).
+
+## 5. The registered sample plan (iteration 1)
+
+### 5.1 Sampler and requests
+
+- Seeds: seed(i, split) = 20261008·1000 + 10·i + j with j = 1 training, 2 calibration, 3 test, 4 gradient; for
+  iteration 1: 20261008011, …012, …013, …014.
+- Words: SplitMix64 (R-184's generator; constants as `m03_reference.py`). Draw j of a split consumes words 7j … 7j+6
+  in coordinate order.
+- Uniform: U = (w >> 11) · 2⁻⁵³ ∈ [0, 1) — exact in binary64 (unlike R-184's (w >> 11) + ½, which needs 54 bits).
+- Draw: u_k = lo_k + (hi_k − lo_k) · U in binary64, in that operation order.
+- Gradient centres: the same formula on the inner box lo′ = c − 0.95 h, hi′ = c + 0.95 h (binary64, that order);
+  stencil u ± (0.05 · h_k) e_k, plus before minus, coordinates in order.
+- Request (N_tubes = 1): y_N₂ = (1 − y_NH₃ − y_Ar − y_CH₄)/(1 + r) (left to right), y_H₂ = r · y_N₂,
+  n = (F·y_H₂, F·y_N₂, F·y_NH₃, F·y_Ar, F·y_CH₄), T = u₁, P = u₂.
+
+Production code derives the plan from these constants; `benchmarks/m04/plan-it1.json` is the bitwise expectation
+(M04.A02) and is never read by installed code (T08's no-walk-up rule). Experiment identity is exact (ADR 0033): one ulp
+is a new experiment, which is why the arithmetic order is registered.
+
+Generator-asserted plan invariants: every draw and every stencil point lies in the box, the hard domain (with the real
+variant's flow bound) and the data domain; all 632 requests are distinct; every calibration or test draw is at least
+0.2085 (∞-norm, scaled) from every training draw — no near-duplicate leakage (blueprint §9.1).
+
+### 5.2 Counts, and why
+
+| Split | Count | Experiments | Purpose |
+| --- | --- | --- | --- |
+| training | 144 (= 4p) | 144 | the fit; i.i.d. from P_ref, used for nothing else |
+| calibration | 118 | 118 | q̂ (§6.2) |
+| test | 300 | 300 | the coverage test and error metrics (§6.4) |
+| gradient | 5 centres | 70 (5 × 2 × 7) | the gradient metric (§7.2) |
+| **total** | | **632 cold experiments** | ≈ 5690 s ≈ **95 min** on one thread at M01's 9.0 s |
+
+- **n = 118** gives k = ⌈0.95 × 119⌉ = 114 and k/(n+1) = 0.95798: the ceiling correction leaves the expected
+  coverage slightly above nominal, which buys power. P(conditional coverage C < 0.90) = 0.00652 under
+  exchangeability (C ~ Beta(114, 5) for continuous scores).
+- **m = 300**: the coverage test passes iff H ≥ h_min(300) = 279 hits; P(pass) for any exchangeable pipeline is
+  **0.9035** (beta-binomial, no failures). The false-pass probability at a true coverage of exactly 0.90 is
+  0.0458 ≤ 0.05.
+- **N = 144 = 4p**: the out-of-sample error inflation of least squares is about √(1 + p/N) = 1.12 against 1.15 at
+  3p; the extra 36 experiments cost 5.4 min.
+- Alternatives computed (`finite_sample.alternatives`): (99, 300) power 0.819; (118, 200) 0.824; (149, 400) 0.901 at
+  131 more experiments; (199, 400) 0.890; (299, 400) 0.914 at 281 more. (118, 300) is the cheapest plan found with
+  power above 0.90.
+
+### 5.3 Failed experiments in each split
+
+Every registered draw stays in its split with its label; none gets a fabricated output (blueprint §9.1).
+
+| Outcome of a registered draw | Training | Calibration / test | Gradient stencil |
+| --- | --- | --- | --- |
+| `ok` | fitted | scored | used |
+| deterministic failure (refused, not converged, not accepted; a result record exists) | excluded from Φ, listed with its label | **score +∞: counted in n or m, never covered** | the centre is `parent_failed` |
+| no deterministic result (transient failures beyond M02's retries, a cancelled job) | — | — | — |
+
+The last row makes the plan **incomplete**: the verdict is INSUFFICIENT_EVIDENCE (`plan_incomplete`) until a resumed
+job completes it from the cache. A split is never shrunk to the draws that succeeded — that would narrow a denominator
+(CLAUDE.md) and turn the coverage claim into one conditional on an event the reader cannot see.
+
+*Why +∞ keeps the guarantee.* With an atom of mass f at +∞, U_(k) of the probability-integral transform still has the
+Beta(k, n+1−k) law; q̂ is finite iff U_(k) < 1 − f, and then the band's coverage of the event "the parent returned a
+result and it lies in the band" is C = U_(k). Failures therefore widen the band instead of eroding the claim, and
+when they exceed n − k = 4 calibration draws there is no finite band (`band_not_finite`).
+
+*What failures cost* (`finite_sample.registered_plan_with_failures`, exact under the same law): at a parent failure
+rate of 1 % in the box the band is finite with probability 0.9931 and the plan passes the coverage test with
+probability 0.8966; at 2 %, 0.9111 and 0.8146; at 5 %, 0.2919 and 0.1997. A parent that fails on more than a few
+percent of the reference box cannot support a 95 % band there — a measured property of the parent, reported as
+`band_not_finite`, not a defect of the plan.
+
+### 5.4 Budget and the refusal before running
+
+The approved budget is a number of **cold** experiments (cache hits cost nothing; ADR 0033's exact cache). At study
+start the job computes every request key of the plan, counts the cache misses, and refuses with
+INSUFFICIENT_EVIDENCE (`budget_below_plan`) — writing no experiment — when the misses exceed the budget. A plan is
+never truncated to fit a budget, and a running plan is never stopped early on the strength of interim results.
+
+### 5.5 Iterations
+
+Iteration i ≥ 2 uses seeds seed(i, ·), draws fresh calibration (118), test (300) and gradient (5) sets, and trains on
+every `ok` P_ref record of iterations < i (their training, calibration and test draws: i.i.d. from the same P_ref, so
+the next training set is still a sample of it). Its plan file `plan-it<i>.json` is emitted by the generator and
+committed before it runs. *(Amendment 1 §A1.2: `plan-it2.json` and `plan-it3.json` are committed; the training split
+lists the earlier draws by origin and they run as requests like any other; admission enforces the first rule below.)*
+Rules:
+
+- an iteration may follow automatically only when the previous verdict's only reason is
+  `coverage_bound_below_minimum` (which happens by chance with probability ≈ 0.10 for a correct pipeline);
+- any other NOT_PROMOTABLE reason is a measured limitation: the next iteration needs a design-lane amendment
+  (a richer predictor class or another box — plan L273) and is not automatic;
+- at most three iterations under this specification; every iteration's manifest is retained, and the promoted
+  manifest lists its predecessors and reports the family-wise false-pass bound 0.05 × (number of iterations whose
+  coverage test was evaluated).
+
+## 6. Default split-conformal reporting
+
+### 6.1 The score
+
+  s(x) = max( |X(x) − X̃(x)| / w_X , |ΔT(x) − ΔT̃(x)| / w_ΔT ),  w_X = 0.0025, w_ΔT = 1.5 K;  s = +∞ for a failed draw.
+
+The scales are the **declared width limits**, fixed before any data (blueprint L415: predictor, transforms and score
+frozen before calibration). One joint score gives one q̂ and a rectangular band [X̃ ± q̂ w_X] × [ΔT̃ ± q̂ w_ΔT] whose
+coverage is **joint** over the two outputs at one query; the width criterion is the single inequality q̂ ≤ 1.
+
+*Why these limits.* They sit inside the parent's own registered discretization bias at the design grid (DX-01):
+w_X / X_nom = 1.58 % against ξ's 1.44–1.94 % (X_nom = 0.158010 from M01's registered ξ), and 1.5 K against T_out's
+1.24–1.67 K (both asserted by the generator). A surrogate band no wider than the error already accepted by using the
+design grid at most doubles the model-form uncertainty a decision carries; a band wider than that would dominate it.
+
+*Rejected:* per-output scalar scores (two marginal claims, which blueprint L417 requires to be labelled marginal, and
+the flowsheet consumes both outputs together); scales from the training residuals (data-dependent, though legal, and
+they decouple the score from the stated width limits); a Bonferroni pair (a joint claim from two scores at α/2 each,
+strictly wider than the max-score rectangle for the same coverage).
+
+### 6.2 The finite-sample rule
+
+For n calibration scores (+∞ for failures) and α = 1/20 (a rational; nominal 1 − α = 0.95):
+
+  k = ⌈(n + 1)(1 − α)⌉, computed in integers as k = −(−(n+1)·19 // 20);
+  if k > n: **no band**, INSUFFICIENT_EVIDENCE (`calibration_too_small`) — this is n < n_min = 19;
+  else q̂ = the k-th smallest score (an order statistic: one of the inputs, never interpolated);
+  if q̂ = +∞: **no band**, NOT_PROMOTABLE (`band_not_finite`).
+
+Guarantee (exchangeable scores, which i.i.d. draws from P_ref and a frozen predictor give): P(s_{n+1} ≤ q̂) ≥ k/(n+1)
+≥ 1 − α, with equality for continuous scores; the deterministic parent gives ties with probability zero. Registered
+values: k(18) = 19 > 18; k(19) = 19; k(39) = 38; k(99) = 95; **k(118) = 114** (the uncorrected ⌈0.95 n⌉ = 113 is
+wrong); k(119) = 114; k(149) = 143; k(199) = 190.
+
+### 6.3 What the band claims, and the qualifications that travel with it
+
+The claim: **"with probability at least 0.95 over the calibration draws and a fresh draw x ~ P_ref, the parent
+returns a result at x and both its outputs lie in the band at x."** The coverage test of §6.4 adds: "and this frozen
+band's coverage of P_ref is at least L with 95 % confidence."
+
+The mandatory qualifications (strings in every manifest and every surrogate-backed run's limitation, ADR 0036 D6):
+
+- Q1 `marginal over P_ref m04-c1-box7-v1; not pointwise`;
+- Q2 `not at optimizer-selected or adaptively chosen points` (a solved loop's reactor inlet is one);
+- Q3 `no claim outside the reference box or under distribution shift`;
+- Q4 `relative to the parent at its design grid; excludes the parent's discretization bias DX-01 and says nothing
+  about the physical reactor`;
+- Q5 `joint over (X, dT) at one query; no simultaneous claim over several queries or several surrogate units`;
+- Q6 `nominal 0.95 (finite-sample k/(n+1) = <value>); one-sided 95 % lower bound <L> from <m> independent test draws;
+  declared minimum 0.90`;
+- Q7 `no empirical validation (no plant or literature data)`;
+- Q0, first when the parent is synthetic: `SYNTHETIC: certifies nothing about the reactor` (R-199).
+
+### 6.4 The coverage test on the independent test set
+
+Given the frozen band, the m test scores give H = #{j : s_j ≤ q̂} (a failed draw is a miss). Conditional on training
+and calibration, H ~ Binomial(m, C) with C the band's coverage of P_ref, so the one-sided 95 % Clopper–Pearson lower
+bound
+
+  L(H, m) = B⁻¹(0.05; H, m − H + 1) (L(0, m) = 0)
+
+is a 95 % lower confidence bound on C. **The decision is made in integers:** pass iff H ≥ h_min(m), the smallest h
+with P(Binomial(m, 0.90) ≥ h) ≤ 0.05 — equivalent to L ≥ 0.90 and immune to the last digits of a beta quantile.
+h_min(300) = 279 (L(279, 300) = 0.900761, L(278, 300) = 0.896939). A test set smaller than m_min = 29 cannot pass even
+with no misses (L(29, 29) = 0.901855, L(28, 28) = 0.898534): INSUFFICIENT_EVIDENCE (`test_too_small`).
+
+An observed coverage below 0.95 is not evidence that the guarantee failed (blueprint L419); the test is against the
+declared minimum 0.90, and its power for a correct pipeline is 0.9035 at the registered plan.
+
+## 7. Promotion criteria and verdicts
+
+### 7.1 Criteria
+
+A study is **PROMOTABLE** iff all of:
+
+1. the plan is complete and was within budget;
+2. the fit is identifiable (§3.4);
+3. n ≥ 19 and m ≥ 29;
+4. the band is finite and **q̂ ≤ 1** (width limits);
+5. **H ≥ h_min(m)** (coverage bound ≥ 0.90);
+6. every calibration and test prediction is admissible (§3.2) — an inadmissible prediction inside the reference box is
+   a defect of the predictor, not an extrapolation;
+7. every gradient centre is complete and **max e ≤ ρ_g = 0.25** (§7.2);
+8. no registered draw was flagged `extrapolated` by the parent (the box is inside the data domain, so a flag means
+   the variant's data domain differs from the one registered here — a finding, and an amendment).
+
+Error metrics are reported, not judged: per output the test set's max |e|, RMS |e| and empirical 95th percentile of
+|e|, the training RMS, and the fraction of test draws with s ≤ 1.
+
+### 7.2 The gradient metric
+
+At each gradient centre and for each output o, D_o,k = (f_o(s⁺_k) − f_o(s⁻_k)) / (z_k(s⁺_k) − z_k(s⁻_k)) is the
+parent's central difference in scaled coordinates (z recomputed from the stencil requests by the input map), and
+
+  e_o = ‖∇_z f̃_o(z_c) − D_o‖₂ / max(‖D_o‖₂, w_o).
+
+*Step and floors.* h_z = 0.05 (a stencil spans 5 % of a half-width). The parent's iteration noise is ≤ 1.6 × 10⁻⁸
+relative (M01.A42), so the difference carries ≈ 1.6 × 10⁻⁸ |f| / (0.1) ≈ 2.6 × 10⁻⁸ in ∂X/∂z against gradients of
+order 10⁻², i.e. ≈ 3 × 10⁻⁶ relative; the truncation error h²|f‴|/6 is unknown for the reactor and is 3.5 × 10⁻⁶
+relative on the smooth synthetic parent (asserted < 10⁻³). Both are four orders below ρ_g.
+*Why 0.25.* When ‖D‖ ≥ w_o, e ≤ 0.25 bounds the angle between the surrogate's and the parent's gradients by
+asin 0.25 = 14.5° and their magnitudes within ±25 %: the surrogate's descent directions are the parent's. Below w_o
+per unit z a gradient is under the band's resolution and is judged absolutely (this also keeps the stand-in's
+constant map, D = 0, well defined).
+
+The gradient centres are drawn i.i.d. from the inner box and are labelled **gradient-check evidence at 5 random
+points**; they carry no probability statement.
+
+### 7.3 Verdicts and their precedence
+
+The verdict function (`reference_values.json` → `verdict_vectors`, V01–V16) evaluates, in this order, and records
+**every** reason it finds:
+
+| Reason | List | Condition |
+| --- | --- | --- |
+| `budget_below_plan` | IE | cold experiments needed > approved (refused before running; nothing else evaluated) |
+| `plan_incomplete` | IE | a registered draw without a deterministic result |
+| `training_unidentifiable` | IE | N_ok < 36 or σ_min/σ_max < 10⁻⁸ |
+| `calibration_too_small` | IE | k > n |
+| `band_not_finite` | NP | q̂ = +∞ |
+| `test_too_small` | IE | m < 29 |
+| `width_limit_exceeded` | NP | q̂ > 1 |
+| `coverage_bound_below_minimum` | NP | H < h_min(m) (not evaluated when `test_too_small`) |
+| `gradient_check_incomplete` | IE | a centre with a failed stencil experiment |
+| `gradient_limit_exceeded` | NP | max e > 0.25 |
+| `inadmissible_prediction` | NP | an inadmissible calibration or test prediction |
+| `parent_extrapolated` | NP | a registered draw flagged `extrapolated` |
+
+Verdict: **INSUFFICIENT_EVIDENCE** if the IE list is non-empty; else **NOT_PROMOTABLE** if the NP list is non-empty;
+else **PROMOTABLE**. Both lists are recorded whatever the verdict (V13), and every metric that can be computed is
+computed — a failed study is still a complete record.
+
+### 7.4 What a promoted surrogate may claim, and what it may not
+
+May: the band and its coverage statement of §6.3 with Q1–Q7, the error metrics on the test set, the gradient agreement
+at five random points, exact element conservation, and the hard-domain and admissibility guards.
+May not: coverage at a flowsheet's solved operating point or an optimizer's candidate (Q2 — that needs a parent
+evaluation, labelled `targeted_check`, M05/M07); coverage outside the box; anything about the physical reactor or
+plant data; simultaneous coverage over several units or queries; sensitivities of the flowsheet as the *reactor's*
+sensitivities (they are the surrogate-backed flowsheet's; M03 C3 currently refuses EO-path sensitivities anyway).
+
+## 8. The surrogate in a flowsheet; promotion and rollback (ADR 0037)
+
+### 8.1 A native unit, not an experiment provider
+
+`c1.reactor_surrogate` enters `MODEL_BUILDERS` with the rows of §3.2 and the instance configuration N_tubes (as
+M02's embedded unit; the surrogate's input F = n_tot/N_tubes). Its ModelManifest: `execution_class`
+`explicit_reduced`; `evaluation_cost_class` `cheap`; ports, components and accumulation declarations identical to
+M02's embedded unit; `derivatives` = residuals w.r.t. free variables `analytic` and **outlet.state w.r.t.
+inlet.state `analytic`**, with the note "derivative of the surrogate; agreement with the parent is the gradient
+metric of its manifest"; validity = the parent's hard domain; limitations = Q0 (if synthetic) and Q1–Q7. A revision
+bound to it solves on the existing `revision_eo` route: no outer coupling, no experiment, the surrogate frozen for the
+solve because its coefficients are compile-time constants of an instance pinned by hash.
+
+**Rejected: the surrogate as the experiment inside M02's coupling loop.** The coupled route refuses every sensitivity
+(ADR 0034 D4), so the surrogate's one structural advantage — an analytic derivative — would be thrown away; an outer
+Broyden iteration around an analytic map solves by fixed point what Newton solves directly; and the loop exists to
+call the parent, which is what a truth check (M05/M07) does, not what a promoted surrogate is for.
+
+### 8.2 Identity and resolution
+
+For a surrogate instance, `model.id` = `c1.reactor_surrogate`, `model.version` = the surrogate id
+(`m04q7-<parent variant id>-<plan id>`, e.g. `m04q7-standin-x025-v1-it1-prefix`), `model.artifact_ref` = the SHA-256
+of the canonical SurrogateManifest. The binder resolves the manifest by hash from the project's artifact store (kind
+`surrogate_manifest`, written by a completed `surrogate_study` job) through an injected resolver (R-237's pattern) and
+refuses an unknown id, a mismatched hash or a manifest that fails its checker (A24) as `revision_unsupported`,
+`surrogate_manifest_mismatch(<instance>)`.
+
+### 8.3 The replacement check for a surrogate side (amends ADR 0035 D2)
+
+The check runs when either side is variant-backed **or surrogate-backed**. For a surrogate side, the facets read the
+manifest; `parent` is the manifest's `parent` block (model id, variant id, variant SHA-256, and a verbatim copy of the
+variant's `boundary` block):
+
+| Facet | For a surrogate side |
+| --- | --- |
+| `resolvable` | in `MODEL_BUILDERS`, manifest resolves by hash and passes its checker |
+| `ports`, `components`, `conserved_quantities`, `degrees_of_freedom`, `reference_states` | as ADR 0035 (the declarations equal M02's embedded unit's) |
+| `boundary_condition` | the manifest's `parent.boundary` is the side's variant boundary block; compared as ADR 0035 |
+| `derivatives` | as ADR 0035, **except** old = surrogate S and new = S's parent exactly (id, variant id, SHA-256): the parent's `unavailable` outlet-w.r.t.-inlet derivative is not a loss; `pass`, detail `restores_parent_declaration` |
+| `validity` | the manifest's hard domain (= the parent's) |
+| **`surrogate_evidence`** (new) | `not_applicable` when neither side is a surrogate. New = surrogate S: `pass` iff S's verdict is PROMOTABLE (re-derived by the checker from the stored scores, not read from a field) **and** old is S's parent exactly or a surrogate with the same parent; details `verdict=<v>`, `parent_mismatch`. New = non-surrogate and old = surrogate S: `pass` iff new is S's parent exactly (rollback), else `fail` (`replace_via_parent`). |
+
+`model-replacement.schema.json`'s facet enum gains `surrogate_evidence` (additive). `synthetic` stays reported, not
+judged.
+
+### 8.4 Failed promotion, rollback, invalidation
+
+- **Failed promotion** (NOT_PROMOTABLE or INSUFFICIENT_EVIDENCE, or any failed facet): the transaction is `rejected`
+  (`model_replacement_incompatible`), the head revision is unchanged, and the study's manifest, evidence and
+  experiment records remain as immutable artifacts.
+- **Rollback** is a checked commit back to the parent (the derivatives exception above) or to an earlier surrogate of
+  the same parent. Experiment records are never invalidated (ADR 0035 D4), so a coupled solve after a rollback reuses
+  every experiment the same revision content ran before.
+- **Invalidation** is ADR 0035 D4's rule unchanged: promotion and rollback commits invalidate the `run-` jobs of the
+  expected revision. A `surrogate_study` job is scoped to a variant, not a revision, and is **not** registered in
+  `EVIDENCE_OPERATIONS`: its evidence is about the parent's map and survives every revision change.
+
+### 8.5 The seam: what M04 delivers and what M05 does
+
+M04 delivers the surrogate unit, its evidence, promotion and rollback, and the run limitations. M05 decides whether
+and how its trust region uses it (as the reduced model, as a warm start for the coupling's w, or not at all), owns
+every parent-model check at a candidate (`targeted_check`, labelled separately from the coverage evidence), and owns
+refinement loops beyond §5.5's iterations.
+
+### 8.6 What a surrogate-backed run reports (no schema change)
+
+The certificate gains, per surrogate unit: the check `SURROGATE-DOMAIN:<unit>` (category `bounds_and_domain`, value =
+the scaled excess e(z), tolerance null, `pass` iff hard-domain and admissible); the limitation
+`{kind: "surrogate_model", unit, surrogate_id, manifest_sha256, band: {X: q̂ w_X, dT_K: q̂ w_ΔT}, coverage: {nominal,
+finite_sample, lower_bound, minimum, test_draws}, qualifications: [Q0…Q7]}`; and, when e(z) > 0,
+`{kind: "surrogate_outside_reference_domain", unit, scaled_excess, coordinates}`. The band is a constant offset for
+split conformal with fixed scales, so it needs no per-point field. Limitations are open objects keyed by `kind`
+(`solution-certificate.schema.json`), so nothing in a frozen schema changes.
+
+## 9. Verification on synthetic parents
+
+### 9.1 The parents
+
+- **The stand-in** `standin-x025-v1` (M01 spec §8.13, shipped, synthetic): X ≡ 0.25, ΔT ≡ 0. Registered *because* its
+  residuals vanish: the fit is exact (β_X = 0.25 e₀, β_T = 0), q̂ is at roundoff, and no statistical outcome is
+  asserted (the order statistic of roundoff-level scores is not a closed form).
+- **Two test-only in-process variants** (in `tests/support`, never shipped, `synthetic: true`, boundary block equal to
+  the stand-in's), evaluating per tube with z from the tube's (F, y, T, P):
+
+  X = 0.16 · exp(A · a·z), ΔT = 80 K · exp(A · b·z),
+  a = (−0.06, 0.04, 0.03, −0.05, −0.01, −0.015, −0.08), b = (−0.10, 0.03, 0.02, −0.04, −0.01, −0.01, −0.04),
+
+  returning raw outlet flows n_raw = n_tube + ν X n_N₂,tube and T_out = T + ΔT, and `NotAccepted("synthetic_failure_region")`
+  iff z_T + z_F > 1.6. `m04-synthetic-smooth-v1` has A = 1, `m04-synthetic-rough-v1` A = 4. The failure threshold was
+  chosen, before any score was computed, so that the full plan has failures in every split; no registered request lies
+  within 0.0167 of it.
+
+The smooth parent is not a quadratic, so residuals are non-zero (training RMS 1.20 × 10⁻⁵ in X, 4.40 × 10⁻³ K in ΔT)
+and every statistic is non-trivial; it is exactly computable, so every statistic has a closed-form expectation.
+
+### 9.2 Registered expectations (`reference_values.json` → `pipeline`)
+
+| Case | Failures (train / cal / test) | N_ok | q̂ | H / m | L | Verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| smooth, full plan | 2 / 3 / 13 | 142 | 0.0224401743 | 283 / 300 | 0.916211 | **PROMOTABLE** |
+| smooth, prefix plan | 1 / 1 / 0 | 71 | 0.0249160653 | 59 / 60 | 0.923360 | **PROMOTABLE** |
+| rough, prefix plan | 1 / 1 / 0 | 71 | 1.6139880778 | 59 / 60 | 0.923360 | **NOT_PROMOTABLE** [`width_limit_exceeded`] |
+| stand-in, prefix plan | 0 / 0 / 0 | 72 | 0 (roundoff) | — | — | not asserted |
+
+Max gradient error: smooth full 0.00403, smooth prefix 0.00340, rough prefix 0.0721 (all below 0.25). Margins that
+make the integer outcomes exact in binary64: smooth full — nearest test score to q̂ 6.85 × 10⁻⁴, neighbouring order
+statistics 3.52 × 10⁻³ apart, q̂ 0.978 from the width limit; rough — 0.136, 0.093 and 0.614.
+
+### 9.3 The prefix plan
+
+The first 72 training, 39 calibration (k = 38) and 60 test draws and the first 2 gradient centres of iteration 1
+(28 stencil experiments; 199 experiments in all) — an i.i.d. prefix is i.i.d. It keeps the default gate cheap for the
+cases that do not need the full plan's power.
+
+## 10. Records and the job operation
+
+### 10.1 `SurrogateManifest` (`schemas/surrogate-manifest.schema.json`, `surrogate-manifest-v1`)
+
+Blueprint App. A: "parent model, input/output mapping, splits, transforms, error/gradient metrics, domain, calibration
+assumptions, promotion result". Members (all required; `additionalProperties: false` throughout):
+
+- `schema_version`, `surrogate_id`, `model_id` (`c1.reactor_surrogate`), `synthetic` (= the parent's), `iteration`,
+  `plan_id`, `predecessors` (manifest SHA-256s of earlier iterations, in order);
+- `parent`: `{model_id, variant_id, variant_sha256, fingerprint_sha256s, boundary}` — `boundary` the variant's block
+  verbatim; `fingerprint_sha256s` the distinct environment fingerprints of the records used;
+- `input_map`: `{id: "c1-inlet-u7-v1", coordinates: [{name, unit, lo, hi, centre, half_width}] ×7}`;
+- `output_map`: `{id: "extent-fixed-xdt-v1", outputs: ["X", "dT_K"], admissible: {X: [0, 0.95], X_le_r_over_3: true,
+  dT_K: [-50, 250]}}`;
+- `predictor`: `{basis: "full-quadratic-v1", terms: 36, coefficients: {X: [36], dT_K: [36]}, fit: {method:
+  "householder-qr-v1", training_ok, singular_value_ratio, training_rms: {X, dT_K}}}`;
+- `score`: `{id: "joint-max-scaled-abs-v1", scales: {X: 0.0025, dT_K: 1.5}}`;
+- `reference_distribution`: `{id: "m04-c1-box7-v1", kind: "uniform_box", sampler: "splitmix64-u53-v1", seeds}`;
+- `splits`: per split `{count, keys: [experiment_key] in plan order, keys_sha256, failed: [{index, status, code}]}`;
+  the gradient split also `{centres: [{index, status, stencil_keys}]}`;
+- `calibration`: `{alpha: "1/20", n, k, scores: [number | null], q_hat: number | null}`;
+- `evaluation`: `{m, scores: [number | null], hits, lower_bound: number | null, h_min, c_min: 0.9, delta: 0.05,
+  errors: {X: {max, rms, p95}, dT_K: {...}}, fraction_within_width}`;
+- `gradient`: `{step_z: 0.05, rho_g: 0.25, centres: [{index, status, errors: {X, dT_K} | null}]}`;
+- `domain`: `{empirical: "box", hard: <parent hard domain>, inadmissible_predictions, parent_extrapolated}`;
+- `assumptions`: the fixed list — exchangeability from i.i.d. draws of P_ref, predictor/transform/score frozen before
+  calibration, failures scored +∞, deterministic parent within one fingerprint;
+- `qualifications`: Q0 (if synthetic) and Q1–Q7, with Q6's values filled;
+- `promotion`: `{verdict, insufficient: [..], not_promotable: [..], familywise_false_pass_bound}`.
+- *(Amendment 1 §A1.4: the member `evidence_sha256` is withdrawn — the evidence names the manifest, not the reverse.
+  §A1.5: each split also has `incomplete: [{index, key}]`, and a gradient centre's status is one of `ok`,
+  `parent_failed`, `incomplete`, `not_evaluated`.)*
+
+No non-finite number is serialized: a failed draw's score and an infinite q̂ are `null`, the reason in `failed` or in
+`promotion`. Rules a JSON Schema cannot express are a checker (A24) that the replacement check also runs.
+
+### 10.2 `ModelEvidence` (`schemas/model-evidence.schema.json`, `model-evidence-v1`)
+
+Blueprint App. A: "parent/data hashes, numerical convergence, experimental/reference comparisons, uncertainty and
+validation scope". A scope record that points into the manifest rather than repeating it:
+
+- `schema_version`, `subject` `{model_id, version, artifact_ref}` (the surrogate; `artifact_ref` is the manifest's
+  SHA-256, required and non-null — Amendment 1 §A1.4), `parent` `{model_id, variant_id, variant_sha256, synthetic}`;
+- `data`: `[{split, count, keys_sha256}]` — equal to the manifest's (A23);
+- `numerical`: `{parent_accuracy: <the variant's accuracy block: precision floor, path independence, discretization
+  estimate>, fit: {training_ok, singular_value_ratio}}`;
+- `comparisons`: `[{reference: "parent_model", quantity: "surrogate approximation error", split: "test", pointer:
+  "/evaluation"}]`;
+- `experimental_comparisons`: `[]` with the required `experimental_comparisons_reason`: "none: no plant or literature
+  data (M04 scope)";
+- `uncertainty`: `{method: "split-conformal-default-v1", claim: "joint, marginal over P_ref", nominal: 0.95,
+  lower_bound, minimum: 0.9}`;
+- `scope`: `{evidence_class: "synthetic_verification" | "model_approximation", establishes: [..], does_not_establish:
+  [..]}` — the two lists are §7.4's.
+
+### 10.3 The `surrogate_study` job operation (ADR 0019 Amendment 5, in ADR 0037)
+
+Right `execute`. Request `{parent: {model_id, variant_id, variant_sha256}, plan_id: "it1" | "it1-prefix" | "it<i>",
+budget: {max_cold_experiments}}`. `it1-prefix` (§9.3) is accepted only for a synthetic parent. For `it<i>`, i ≥ 2, the
+training set is every `ok` P_ref record of `it1` … `it<i−1>` of the same parent (§5.5). It runs the plan's experiments through M02's runner one by one (cache first; M02 D12
+left batch sampling to M04), then fits, calibrates, tests, checks gradients, writes the manifest and the evidence as
+artifacts (kinds `surrogate_manifest`, `model_evidence`), and returns `{verdict, surrogate_id, manifest_sha256,
+evidence_sha256, cold_experiments, cache_hits}`. *(Amendment 1 §A1.5: the outputs are the manifest and then the
+evidence; the answer also carries `insufficient`, `not_promotable` and `cache_misses`.)* A cancelled job keeps its experiment artifacts; resuming re-reads them
+through the cache. Determinism: with every record cached, the manifest is bitwise reproducible (A32).
+
+## 11. Assertions
+
+Tolerances state their floor and why they sit above it and below the smallest error worth catching. "Registered" means
+`reference_values.json` or `plan-it1.json`. Default gate = `./scripts/check.sh`; opt-in = recorded in the evidence
+manifest with its command, never in the default gate.
+
+**Plan and sampler (default gate)**
+
+- **M04.A01** — SplitMix64's first three words for each iteration-1 seed equal `splitmix64_first_words` exactly
+  (integers).
+- **M04.A02** — The production sampler and request builder reproduce every `u` and every request (n, T, P) of
+  `plan-it1.json` **bitwise** (562 draws, 5 centres, 70 stencils), and the 632 experiment keys are distinct. Exact:
+  identity is exact (ADR 0033), so any difference is a different experiment.
+- **M04.A03** — A plan any of whose requests leaves the box, the hard domain or the data domain is refused
+  (`plan_invalid`, nothing executed): checked with a copy of the plan with one T set to 700.0 K. The plan
+  `it1-prefix` requested for a non-synthetic parent is refused (`plan_not_registered_for_parent`). *(Amendment 1
+  §A1.5: these refusals happen at admission, as `invalid_request` with the guard's code in `detail.reason`; an
+  unregistered plan id is `plan_not_registered`, and a later iteration that §5.5 does not permit is
+  `iteration_not_permitted`.)*
+
+**Finite-sample rule and verdicts (default gate, pure functions)**
+
+- **M04.A04** — k(n) equals `finite_sample.k` for every registered n, computed in integers; n_min = 19.
+- **M04.A05** — q̂ on each verdict vector equals the registered value **exactly** (it is an element of the input), with
+  `null` as +∞; a band is absent exactly where registered (V02, V04).
+- **M04.A06** — L(h, m) matches `finite_sample.clopper_pearson` within 10⁻⁹ absolute (floor: `scipy.stats.beta.ppf`
+  agrees with the 50-digit values to ≤ 10⁻¹⁵ on the registered table, measured; ceiling: no registered L lies within
+  7 × 10⁻⁴ of 0.90, generator-asserted, and one hit moves L by ≥ 3 × 10⁻³); `finite_sample.h_min` (29 → 29, 60 → 59,
+  300 → 279) and m_min = 29 exactly; the pass decision is H ≥ h_min(m).
+- **M04.A07** — Every vector V01–V16 yields exactly the registered verdict and both registered reason lists in the
+  registered order (all three verdicts and every reason of §7.3 are reached).
+- **M04.A08** — A manifest's `calibration.k`, `evaluation.h_min`, n and m equal the plan's registered values (118,
+  114, 300, 279 for `it1`; 39, 38, 60, 59 for `it1-prefix`) — no denominator is narrowed.
+
+**The surrogate function (default gate)**
+
+- **M04.A09** — φ(z*) at the registered z* equals `basis_at_zstar.phi` within 10⁻¹⁴ relative per entry (floor: two
+  roundings of decimal z* ≈ 2 × 10⁻¹⁶; a permuted order changes entries by O(1)).
+- **M04.A10** — On the smooth full training set the coefficients equal `pipeline.smooth_full.coefficients` within
+  10⁻¹⁰ × ‖β_ref‖∞ per output, and the singular-value ratio within 10⁻⁸ relative. Floor: κ = 8.1 times binary64
+  roundoff of the records (ΔT's ulp 1.1 × 10⁻¹³ K at 750 K) ≈ 10⁻¹⁴ relative. Ceiling: the smallest coefficient is
+  1.3 × 10⁻⁶ of the largest and all coefficients differ pairwise by more than 10⁻⁸ of it (generator), so a dropped or
+  permuted term fails by four orders.
+- **M04.A11** — The prefix training set with every F set to the box centre is refused `training_unidentifiable`
+  (σ ratio < 10⁻⁸). *(Amendment 1 §A1.1: z_F is not exactly 0 after the request round trip but |z_F| ≤ 9.4 × 10⁻¹⁶,
+  and **eight** columns — z₇, z₁z₇ … z₆z₇, z₇² — are at roundoff; the exact ratio is 9.1 × 10⁻³², `a11_fixture`; in
+  binary64 the ratio is at the roundoff level, far below τ_id either way.)*
+- **M04.A12** — At J1–J3 with the fixture coefficients: the 14 inlet entries of R_ξ and R_T equal `jacobian_states`
+  within 10⁻¹⁰ relative per entry; the ξ and T_out columns are exactly (1, 0) and (0, 1); the rows vanish at the
+  registered causal outlet within 10⁻¹⁵ relative to (n_tot, T). Floor: cancellation ≤ 4.45 × ~250 terms × 1.1 × 10⁻¹⁶
+  ≈ 10⁻¹³.
+- **M04.A13** — Conservation: at J1–J3 and at every surrogate-backed solution of A26, |E(n_out − n_in)| ≤
+  10⁻¹⁴ n_tot,in per element and the inert flows are bitwise equal in and out.
+- **M04.A14** — Domain: J1, J2 `within_reference_domain` (excess 0); J3 `outside_reference_domain`, excess 0.5 within
+  10⁻¹², offending coordinate `T`; J4 refused `surrogate_outside_hard_domain(<unit>:T)`; J5 refused
+  `surrogate_input_undefined`; J6 ξ = 0 and T_out = T_in exactly.
+- **M04.A15** — Admissibility (fixture manifests with constant predictors, every other coefficient 0): β_X[0] = −0.01
+  refused `surrogate_output_inadmissible(<unit>:X)` at J1; β_X[0] = 0.96 likewise; β_X[0] = 0.5 at J1's flows with
+  n_H₂ replaced by 1.2 n_N₂ (H₂/N₂ = 1.2 inside the hard domain, r/3 = 0.4 < 0.5) likewise — the H₂ bound, which a
+  [0, 0.95]-only check misses — while β_X[0] = 0.5 at J1 itself is admitted; β_T[0] = 260 refused
+  `(<unit>:dT)`.
+
+**The study end to end (default gate, in-process parents)**
+
+- **M04.A16** — Stand-in, prefix plan: no failures; β_X[0] = 0.25 within 10⁻¹⁴ and every other β_X within 10⁻¹⁴;
+  β_T = 0 within 10⁻¹² K; q̂ ≤ 10⁻¹⁰; the manifest carries Q0 first and `evidence_class: synthetic_verification`.
+  Floor 2.2 × 10⁻¹⁴ (one ulp of 0.25 over w_X); the smooth case's q̂ = 0.0224 shows the same quantity non-vanishing.
+- **M04.A17** — Smooth, full plan: failed indices per split exactly as registered; N_ok = 142; coefficients per A10;
+  q̂ within 10⁻¹⁰ absolute of 0.022440174316072; **H = 283 exactly**; L within 10⁻⁹ of 0.916211187; every gradient
+  error within 10⁻⁸ absolute of its registered value; verdict PROMOTABLE with both reason lists empty. Floors: scores
+  ≈ 10⁻¹³ (A10's record roundoff over w); gradient errors ≈ 10⁻¹²; the integer H is exact because no test score lies
+  within 6.85 × 10⁻⁴ of q̂.
+- **M04.A18** — Rough, prefix plan: q̂ within 10⁻⁹ relative of 1.6139880778; H = 59; verdict NOT_PROMOTABLE with
+  `not_promotable == ["width_limit_exceeded"]`.
+- **M04.A19** — Smooth, prefix plan: q̂ within 10⁻¹⁰ of 0.024916065269; H = 59 (= h_min(60): one miss allowed, one
+  taken — the integer count is exact, the nearest test score being 3.2 × 10⁻³ from q̂); verdict PROMOTABLE. (This manifest is
+  the promoted surrogate of A25–A29 and the source of the schema fixtures.)
+- **M04.A20** — Budget: on a store without records, the smooth prefix study with `max_cold_experiments` = 198 (one
+  below its 199 cache misses) ends INSUFFICIENT_EVIDENCE `["budget_below_plan"]` with zero attempts written, no
+  manifest and no evidence, and a job answer carrying `cache_misses` = 199 (Amendment 1 §A1.5); on A19's
+  store (all 199 records cached), `max_cold_experiments` = 0 reproduces A19's manifest bitwise (A32's rule) with zero
+  new attempts.
+- **M04.A21** — Plan incomplete: a variant of the smooth test-only parent that returns `ExecutionFailure` (transient,
+  M02 design note §5.1) for one designated stencil request, on every attempt, ends the prefix study
+  INSUFFICIENT_EVIDENCE with `plan_incomplete` in the IE list and that request named; no run of an incomplete plan is
+  ever PROMOTABLE.
+- **M04.A22** — Every registered failure of A17 is in its split's `failed` list with status `not_converged` and code
+  `reactor_not_accepted(synthetic_failure_region)`, a `null` score, and no outlet values in its experiment result; the
+  manifest's n = 118 and m = 300.
+- **M04.A23** — Split integrity: the key lists are pairwise disjoint, equal the plan's request keys in plan order, and
+  their SHA-256s equal ModelEvidence's `data`; refitting from the listed training records reproduces the coefficients
+  bitwise. *(Amendment 1 §A1.4: and the evidence's `subject.artifact_ref` is the manifest's SHA-256.)*
+- **M04.A24** — The manifest checker accepts A17's manifest and rejects each single mutation: q̂ not the k-th
+  smallest stored score; H ≠ #{score ≤ q̂}; a verdict inconsistent with the stored metrics; a missing qualification;
+  a qualification with an unfilled `<…>` field; overlapping splits; n or m different from the plan's counts; a
+  non-finite number.
+
+**Promotion and rollback (default gate, the synthetic loop)** — a project whose C1 loop revision binds the reactor to
+`m04-synthetic-smooth-v1` (as M02 G8 binds its test-only variant), solved once on the coupled route.
+
+- **M04.A25** — Committing the A19 surrogate in place of its parent: `committed`; every facet `pass`, including
+  `surrogate_evidence` and `derivatives`; `invalidations == ["run-<that job>"]`; the report's SHA-256 in the new
+  revision's provenance.
+- **M04.A26** — The surrogate-backed revision solves on `revision_eo` (not `revision_coupled`) with zero experiment
+  attempts and a certificate; at the solution the rows of §3.2 hold to the solve's registered tolerance and A13 holds;
+  the certificate carries `SURROGATE-DOMAIN:<unit>` and the `surrogate_model` limitation with band
+  (q̂ w_X, q̂ w_ΔT) = (6.22902 × 10⁻⁵, 0.0373741 K) within 10⁻¹⁰ relative (`pipeline.smooth_prefix.band`) and Q0–Q7.
+- **M04.A27** — Committing the A18 (rough) surrogate instead: `rejected`, `model_replacement_incompatible`,
+  `surrogate_evidence` `fail` with detail `verdict=NOT_PROMOTABLE`; the head revision unchanged; `preview_change`
+  returns the same report and commits nothing.
+- **M04.A28** — Committing a surrogate of the stand-in in place of the synthetic parent: `surrogate_evidence` `fail`,
+  detail `parent_mismatch` (whatever that surrogate's verdict).
+- **M04.A29** — Rollback: committing the parent in place of the A25 surrogate: `committed`; `derivatives` `pass` with
+  detail `restores_parent_declaration`; a coupled solve of the rolled-back revision writes **zero** new attempts (every
+  experiment a cache hit).
+- **M04.A30** — Committing the A17 (full-plan) surrogate in place of the A19 one: `committed`; `surrogate_evidence`
+  `pass` (same parent).
+
+**The real reactor (opt-in, after M02 WO-5; recorded, never in the default gate)**
+
+- **M04.A31** — Iteration 1 on the real variant: every executed request is bitwise a request of `plan-it1.json`; the
+  manifest and evidence validate and pass the checker; the verdict and every metric of §7 are recorded, whatever the
+  verdict; `parent_extrapolated` is 0 or reported as a finding. *(Amendment 2 §A2.4: the plan is `b2-it1` on v3.)*
+- **M04.A32** — Re-running the study with every record cached reproduces the manifest bitwise (job ids and timestamps
+  are not members of it) with zero cold experiments.
+- **M04.A33** — If A31 is PROMOTABLE: A25, A26 and A29 on `C1-LOOP-M02-v1` with `c1.reactor`, plus one parent
+  evaluation at the surrogate-backed solution's reactor inlet recorded as `targeted_check` with |e_X|/w_X and
+  |e_ΔT|/w_ΔT — reported, not judged (blueprint L415; Q2). *(Amendment 2 §A2.4: the loop is bound to v3, and the
+  reactor inlet's reference-domain status is recorded.)*
+
+**Generator and schemas (default gate)**
+
+- **M04.A34** — `python docs/derivations/scripts/m04_reference.py --check` exits 0 with every claim passing and both
+  files byte-identical.
+- **M04.A35** — `surrogate-manifest` and `model-evidence` are in `schemas/registry.json`; one valid fixture each,
+  emitted from A19's run, and one invalid each (a required member removed); `model-replacement`'s facet enum contains
+  `surrogate_evidence`.
+
+## 12. Reference generator and files
+
+`docs/derivations/scripts/m04_reference.py` imports nothing from `openflowsheet`; mpmath at 50 digits; the
+least-squares expectations by normal equations at 50 digits (κ² ≈ 66, so ~48 correct digits); the Clopper–Pearson
+bound by bisection on the regularized incomplete beta; the power by the beta-binomial sum. It emits
+`benchmarks/m04/reference_values.json` (constants, sampler words, finite-sample numbers, verdict vectors, basis, fixture
+coefficients, Jacobian states, the four pipeline cases, the claim list) and `benchmarks/m04/plan-it1.json`. It refuses
+to emit when any claim fails. Runtime ≈ 26 s.
+
+## 13. Work orders (build lane, in dependency order)
+
+"Opus" = `opus-engineer`; "bounded" = a `sonnet-implementer` may take it from this document alone; **R** = design-lane
+review before merge (it touches residuals, derivatives, promotion or the statistical semantics).
+
+| WO | Lane | Content | Depends on | Acceptance |
+| --- | --- | --- | --- | --- |
+| WO-1 | bounded | `studies/surrogate/plan.py`: seeds, SplitMix64, U, the box and inner box, stencils, requests; the plan-invariant guard | — | A01–A03 |
+| WO-2 | Opus, R | `studies/surrogate/conformal.py`: integer k, the order-statistic q̂ with +∞, h_min / m_min, Clopper–Pearson (SciPy), the verdict function and reason order | — | A04–A08 |
+| WO-3 | Opus, R | `studies/surrogate/quadratic.py`: input map, basis, QR fit, identifiability, prediction, ∇_z, the chain rule to the inlet, admissibility, domain status | — | A09–A11 |
+| WO-4 | Opus | Test-only parents in `tests/support` (smooth, rough) as in-process variants | M02 WO-4, WO-6 merged | used by A16–A23 |
+| WO-5 | Opus, R | The `surrogate_study` job operation: plan keys, cache-miss budget refusal, sequential experiments through M02's runner, fit/calibrate/test/gradient, manifest + evidence + checker; ADR 0019 Amendment 5 surface | WO-1–WO-4 | A16–A24 |
+| WO-6 | Opus | Schemas, registry, fixtures emitted from A19's run | WO-5 | A35 |
+| WO-7 | Opus, R | The unit `c1.reactor_surrogate`: rows, analytic Jacobian, causal evaluate, dormancy, refusals, certificate check and limitations; binder resolution by hash (injected resolver) | WO-3, WO-5; M02 WO-7 (embedded unit) | A12–A15, A26 |
+| WO-8 | Opus, R | Replacement check: the surrogate side, `surrogate_evidence`, the rollback exception, the schema enum | WO-7; M02 WO-11 | A25, A27–A30 |
+| WO-9 | Opus | The synthetic-loop end-to-end tests | WO-8; M02 WO-8/9 | A25–A30 |
+| WO-10 | bounded | A test running the generator's `--check` | — | A34 |
+| WO-11 | Opus, opt-in | Iteration 1 on the real variant (≈ 95 min), its evidence; if PROMOTABLE, A33 *(amended by §A2.13: `b2-it1` on v3)* | WO-5, WO-8; M02 WO-5 | A31–A33 |
+| WO-12 | bounded | Evidence manifest `evidence/M04/<commit>/manifest.json` with the W23 table (§15), register pointers | all | — |
+
+WO-1, WO-2, WO-3 and WO-10 need nothing from M02 and can start now.
+
+## 14. Open questions, with defaults
+
+- **N1 — the experiment budget** *(needs Frank: local machine time).* DECISION: approve 632 cold experiments
+  (≈ 95 min on one thread) for iteration 1, and up to two further iterations of 488 each (≈ 73 min) under §5.5's
+  rules — at most ≈ 4 h in all. Alternative: iteration 1 only, any further iteration by a new approval. Reversible by:
+  lowering `max_cold_experiments` in the job request; a refused budget yields INSUFFICIENT_EVIDENCE, never a partial
+  study.
+- **N2 — the width limits** *(needs Frank's preference: what error is worth catching).* DECISION: w_X = 0.0025,
+  w_ΔT = 1.5 K (inside DX-01's ranges). Alternative: tighter (1 %, 1 K) at a higher risk of `width_limit_exceeded`,
+  or looser (3 %, 3 K) for a band that dominates the parent's bias. Reversible by: an amendment *before* iteration 1
+  runs (the score is frozen before calibration; changing it afterwards is tuning on the test set).
+- **N3 — the gradient criterion** *(needs Frank's preference).* DECISION: ρ_g = 0.25 at 5 centres. Alternative:
+  report-only. Reversible by: an amendment before iteration 1 runs.
+- **N4 — the reference box** — *closed by Amendment 2 §A2.2: box v1 does not contain the loop's reactor inlet, so
+  `m04-c1-box7-v2` is registered for non-synthetic parents.* Original text: *(needs a fact: the C1 loop's operating region, M05/M07).* DECISION: the box of §3.1.
+  The fact that settles it: the reactor inlet of M02's `C1-LOOP-M02-v1` solved with the real reactor (M02 G12) and M07's
+  decision range for T_in. If the loop's inlet lies outside the box, register a new box (and a new P_ref id) by
+  amendment before iteration 1. Reversible by: amendment; nothing has run.
+- **N5 — sequential versus concurrent experiments** — *closed by Amendment 1 §A1.6 (R-250 supplied the fact; the
+  study stays sequential and WO-11 pre-warms the cache concurrently).* Original text: DECISION: sequential (95 min). Alternative: k workers, ≈ 95/k min; results are unaffected (exact
+  identity, deterministic parent). Reversible by: a runner option; no record changes.
+- **N6 — the real verdict and the critical path** *(needs a fact: iteration 1's outcome).* DECISION: M04 is `tested`
+  when A01–A35 hold, whatever A31's verdict; a NOT_PROMOTABLE real surrogate is recorded as a measured limitation and
+  M05 proceeds with the parent (its trust region composes the reactor itself, ADR 0034). Alternative: hold M05 until a
+  real surrogate is promoted. Reversible by: Frank's ruling.
+
+## 15. The W23 gate table (for the `verdict` agent)
+
+| W23 item | Evidence | Assertions |
+| --- | --- | --- |
+| Conservation | exact by construction; checked at fixtures and at surrogate-backed solutions | A13, A26 |
+| Domain (hard, empirical, admissibility) | refusals and flags at registered states; per-draw domain records | A03, A14, A15, A31 |
+| Derivative | the unit's Jacobian against closed forms; the gradient metric against the parent | A12, A17, A31 |
+| Default UQ | the finite-sample rule, the verdict function, the full synthetic pipeline with closed-form expectations; the real iteration recorded | A04–A08, A16–A24, A31, A32 |
+| Insufficient-data outcome | budget, incomplete plan, small n/m, unidentifiable fit | A07, A11, A20, A21 |
+| Frozen splits/transforms | the registered plan reproduced bitwise; split integrity; determinism | A01, A02, A23, A32 |
+| Promotion and rollback | checked commits with the new facet; rejection; lineage; rollback with cache reuse | A25–A30, A33 |
+
+W23 is **met** on numerical verification when A01–A30, A34, A35 are `tested` in the default gate and A31–A32 are
+recorded for the real variant; what the real surrogate may claim is then whatever its recorded verdict says. A
+PROMOTABLE real verdict is not part of W23 (N6).
+
+## 16. Decisions taken in this specification
+
+- DECISION: surrogate as a native EO unit → `c1.reactor_surrogate`. Alternative: the experiment inside M02's coupling.
+  Reversible by: ADR 0037 D1 superseded (R-240).
+- DECISION: inputs → seven coordinates (T, P, r, y_NH₃, y_Ar, y_CH₄, F), affine scaling to the box. Alternative: five
+  (one lumped inert, fixed P). Reversible by: a new input-map id (R-241).
+- DECISION: outputs → (X, ΔT), M02's coupling coordinates; admissibility refused, never projected. Alternative: ξ in
+  mol/s; clipping. Reversible by: a new output-map id (R-241).
+- DECISION: P_ref → uniform on the box of §3.1. Alternative: the data domain. Reversible by: amendment before
+  iteration 1 (R-242).
+- DECISION: score → joint max with scales = width limits. Alternative: two scalar scores labelled marginal.
+  Reversible by: amendment before iteration 1 (R-243).
+- DECISION: failed draws → +∞ in calibration and test, excluded from training; no result → plan incomplete.
+  Alternative: exclude failures and condition the claim on success. Reversible by: ADR (R-244).
+- DECISION: plan → (144, 118, 300, 5 × 14), power 0.9035. Alternative: (149, 400), power 0.901 at +86 experiments.
+  Reversible by: amendment before iteration 1 (R-245).
+- DECISION: promotion → integer coverage test H ≥ h_min, q̂ ≤ 1, admissibility, gradient ≤ 0.25; verdict precedence
+  IE > NP. Alternative: observed coverage ≥ 0.95. Reversible by: ADR (R-246).
+- DECISION: empirical domain → the box, flagged with its scaled excess. Alternative: convex hull, NN density,
+  leverage. Reversible by: a new criterion id (R-247).
+- DECISION: replacement check → new facet `surrogate_evidence`, rollback exception in `derivatives`. Alternative: a
+  separate `promote_surrogate` operation. Reversible by: ADR 0037 superseded (R-248).
+- DECISION: iterations → fresh calibration/test, previous P_ref records join training, automatic only after a
+  coverage-only failure, at most 3, family-wise bound reported. Alternative: re-test the same predictor on a new test
+  set. Reversible by: ADR (R-249).
+
+## 17. What M04 does not establish
+
+- **Nothing about the physical reactor.** Every number is relative to the parent at num_z = 800, whose own bias
+  (DX-01) is estimated, not bounded, and excluded from the band (Q4).
+- **No pointwise or conditional accuracy.** The band covers 95 % of P_ref marginally; at a particular inlet — in
+  particular a solved loop's or an optimizer's — it may not (Q1, Q2). Truth there is a parent evaluation.
+- **No claim outside the box or under shift** (Q3); a loop driven outside it gets a limitation, not a band.
+- **No simultaneous claim** over several surrogate units, several solves, or both outputs at several points (Q5).
+- **No empirical validation** (Q7) and no optimality evidence.
+- **The synthetic cases verify the pipeline, not the reactor surrogate.** A16–A30 are numerical verification on
+  parents whose answers are exact; their PROMOTABLE verdicts say nothing about whether the real surrogate will be. They
+  are never cited as validation of `c1.reactor_surrogate` on `c1.reactor`.
+- **The gradient metric is five random points**, not a bound on the derivative error anywhere.
+- **The power figure 0.9035** is the probability that a correct pipeline passes the coverage test; it is not the
+  probability that the real surrogate is promoted (that also needs q̂ ≤ 1, which depends on the reactor).
+- **No sensitivity of the flowsheet** is established by the surrogate's analytic derivative (M03 C3 refuses EO-path
+  sensitivities; M05 decides their use).
+- **Iteration 1 has not run.** The plan is registered; its outcome is unknown at this commit.
+
+## 18. Amendment 1 (2026-10-09): rulings on the build lane's questions after WO-1…6
+
+**Context.** `wp/M04` @ `d5736ac`, gate green (8062 passed). On the in-process synthetic parents the build lane
+measured: A17 q̂ 1.8 × 10⁻¹⁵ from the 50-digit value, H = 283 and L exact, failures 2/3/13, PROMOTABLE (632 experiments
+in 1.15 s); A18 and A19 as registered; A16 β_X[0] − 0.25 = 2.8 × 10⁻¹⁶; A20, A21–A24 and A08 pass. **No measurement
+contradicts a registered value or tolerance, and no tolerance changes.** The generator gains the plans of iterations 2
+and 3 and the A11 fixture (8634 claims); `tests/test_m04_reference_values.py` follows in the same commit.
+
+### A1.1 A11's text (item 1)
+
+Corrected in place (§11). With every F at the box centre, the request round trip leaves |z_F| ≤ 9.44 × 10⁻¹⁶, not 0,
+and eight columns (z₇, z₁z₇ … z₆z₇, z₇²) are at roundoff; the exact singular-value ratio is 9.13 × 10⁻³² (generator,
+150 digits, `a11_fixture`). The outcome is unchanged: refused `training_unidentifiable`.
+
+### A1.2 The plans of iterations 2 and 3 (item 2)
+
+**Ruled: yes — an iteration's training split lists the earlier iterations' draws as requests.** They pass through the
+runner like every other request: a cached record costs nothing against the budget; an earlier deterministic failure is
+again a cached failure and is excluded from the fit; an earlier draw with no result is retried and counts as a cache
+miss. Order: earlier iterations ascending; within each, the draws it made itself (iteration 1: training, calibration,
+test; later ones: calibration, test); index order. `plan-it2.json` (562 training origins; 118 / 300 / 5 fresh, 488 cold
+experiments) and `plan-it3.json` (980 origins; 488 fresh) are committed now. The file lists a training row by
+`origin: {iteration, split, index}`, resolved bitwise to that earlier plan's request. Generator claims: fresh draws in the
+box and both domains, no request repeating an earlier iteration's, every held-out draw ≥ 0.180 (it2) and ≥ 0.1437 (it3)
+from every training draw. **§5.5's first rule becomes an admission guard:** `it<i>` is admitted only when every
+`it<j>` (j < i) of the same parent has a manifest with verdict NOT_PROMOTABLE, `not_promotable ==
+["coverage_bound_below_minimum"]` and no IE reason; otherwise `invalid_request`, reason `iteration_not_permitted`. The
+`it<i>` manifest lists those manifests as `predecessors` and records the family-wise bound 0.05 × i.
+
+### A1.3 Classifying the M04 records' floats (item 3)
+
+**Ruled: no new class.** "Derived from the records" is ADR 0007 D1's R1/R2 rule as written — a float on a path through
+a rounding or a factorization — **given the same experiment records**. The records cannot differ in a comparison of one
+study: a record from another environment has another fingerprint and so another key (ADR 0033), and a study on other
+keys is another study, never compared with this one. Within that scope, the last bits of LAPACK's QR are exactly
+what D2.1's relative 1e-9 and D2.2's floors exist for.
+
+| Members (both schemas) | Class | Floor (provenance) |
+| --- | --- | --- |
+| registered constants and verbatim copies: `input_map` box values, `output_map.admissible`, `score.scales`, `evaluation.c_min`, `evaluation.delta`, `gradient.step_z`, `gradient.rho_g`, `parent.boundary`, `domain.hard`, `numerical.parent_accuracy`, `uncertainty.nominal`, `uncertainty.minimum`, `promotion.familywise_false_pass_bound` | exact | — |
+| `predictor.coefficients.*` | R1/R2 | 10⁻¹⁰ × max_i \|β_o,i\| (A10) |
+| `predictor.fit.singular_value_ratio`, `numerical.fit.singular_value_ratio` | R1/R2 | τ_id = 10⁻⁸, the threshold it is judged by (D2.2) |
+| `predictor.fit.training_rms.*`, `evaluation.errors.*.*` | R1/R2 | 10⁻¹⁰ × w_o (A17's score tolerance in physical units) |
+| `calibration.scores`, `calibration.q_hat`, `evaluation.scores` | R1/R2 | 10⁻¹⁰ in score units (A17) |
+| `evaluation.lower_bound`, `uncertainty.lower_bound` | R1/R2 | 10⁻⁹ (A06) |
+| `gradient.centres[*].errors.*` | R1/R2 | 10⁻⁸ (A17) |
+| `domain.admissibility_margin` (new, A1.4) | R1/R2 | 10⁻¹⁰ (in units of w_o) |
+| `evaluation.fraction_within_width` | R0, conditional (a ratio of counts) | — |
+| every integer, index, list, status, verdict, reason, key and key-list digest | R0, conditional | — |
+
+A float member that does not fit a row is classified by the same principle (a copied or registered constant is exact;
+a value computed from the records is R1/R2 with the floor of the §11 tolerance that checks it), and if none applies the
+build lane stops and asks — it never defaults (D2.3).
+
+**The conditional R0 promise (ADR 0036 Amendment 1, D8).** D2.4's near-threshold band q/τ ∈ [1/10, 10] is defined
+against a registered threshold. M04's decisions compare two recorded floats (s ≤ q̂, the order of the calibration
+scores at k, q̂ ≤ 1, e ≤ ρ_g, a prediction against an admissible bound), where a ratio within [1/10, 10] is the normal
+case. For these, **near threshold means a gap below 10⁻⁸ in the decision's own units** (score units; units of e; for
+admissibility, distance to the bound over w_o). H, k's index, the verdict and both reason lists are promised identical
+across registered platforms, given the same records, only when no decision they depend on is near threshold;
+otherwise a difference is a recorded observation, not a mismatch. 10⁻⁸ sits ≥ 6.7 decades above the measured binary64
+deviation (q̂, 1.8 × 10⁻¹⁵) and is what the generator asserts for every registered synthetic case (smallest gap 6.85 × 10⁻⁴).
+Every near status is computable from stored members once `domain.admissibility_margin` (the smallest distance of a
+calibration or test prediction to an admissible bound, over w_o) is added.
+
+**The policy id.** The addendum keeps `M04-numerical-policy-surrogate-v1`: it has never been merged or recorded in an
+artifact (the id occurs only in its own file at `d5736ac`), so the first merged content is the complete table.
+`K04-numerical-policy-v1`, `T08-numerical-policy-v2` and `M02-numerical-policy-external-v1` are untouched.
+**R-253's watch-for stands.** No comparator is added: a study has no `reproduce`, and A32 is a determinism test on one
+platform. If K05 bundles or M05 make surrogate records replay-comparable, these rows move into `run/compare` and the
+policy data through an amendment of ADR 0025.
+
+### A1.4 The manifest–evidence cycle (item 4)
+
+**Ruled: reverse the pointer.** The manifest — the surrogate's identity, `model.artifact_ref` — does not hash its
+evidence: `evidence_sha256` is withdrawn from the manifest. ModelEvidence's `subject.artifact_ref` is the manifest's
+SHA-256, required and non-null. Evidence is *about* a model and accumulates (M05's and M07's targeted checks, later
+validation) without changing the model's identity. Promotion rests on the manifest alone: its checker re-derives the
+verdict, and the qualifications are in the manifest. **Rejected:** the build lane's `null` artifact reference. An
+evidence document that cannot name its subject by hash cannot be shown to belong to it, and every later evidence
+document would change the surrogate's identity. The job writes the manifest first, then the evidence. The job answer
+keeps `evidence_sha256`, so the `sha256` partition keeps the name as long as a schema carries it.
+
+### A1.5 Outputs and refusals (item 5): confirmed, with one requirement
+
+- The outputs are the manifest and then the evidence (A1.4's order). Experiment records are artifacts of the job
+  (R-237's sink), not outputs. **Confirmed.**
+- A budget refusal writes no experiment, no manifest and no evidence. **Confirmed, on the condition that** the job
+  answer carries `verdict`, `insufficient: ["budget_below_plan"]` and `cache_misses`, so the refusal can be checked
+  against the request's `max_cold_experiments`.
+- Plan and parent refusals happen at admission, as `invalid_request` with the guard's code in `detail.reason`
+  (`plan_invalid`, `plan_not_registered`, `plan_not_registered_for_parent`, and A1.2's `iteration_not_permitted`).
+  **Confirmed**: a request that cannot be run is not evidence.
+- `incomplete: [{index, key}]` on each split; centre statuses `ok | parent_failed | incomplete | not_evaluated`. A
+  draw with no deterministic result has a `null` score and makes the verdict INSUFFICIENT_EVIDENCE (`plan_incomplete`).
+  Any centre that is not `ok` gives `gradient_check_incomplete`; the status says why, and `not_evaluated` occurs only
+  without a fit, which is IE already. **Confirmed.**
+
+### A1.6 Concurrency for WO-11 (item 6; closes N5)
+
+**Ruled: the study job stays sequential, and WO-11 pre-warms the cache concurrently.** No request member is added to
+`surrogate_study`. An evidence script submits the plan's 632 requests as M02 `experiment` jobs under the process
+executor with `executor.max_workers = 16`. The host has 24 physical cores (48 threads, 503 GB); R-250 caps workers at
+the physical cores, and the rest is left for the system and memory bandwidth. A timeout at 120 s needs a 2.7×
+slowdown of a 45 s evaluation. Before submitting anything, the script refuses with the study's own rule when the cache
+misses exceed the approved budget. Then the `surrogate_study` job runs with every record cached: cold 0, hits 632.
+Wall time is ≈ 16–30 min instead of 4.4–7.9 h. A `timed_out` under load is transient, so it is retried, and if the
+retries run out the plan is incomplete until it is resumed. It never changes a bit.
+
+**No bit changes, by construction:** each record is a deterministic function of its exact key (M01.A43, R-250), and the
+study reads records in plan order whatever order they were written in. Concurrency is telemetry (ADR 0007 D1, excluded
+from identity). It is never a member of the SurrogateManifest or ModelEvidence. The package evidence manifest records
+`max_workers`, the script, its command and the transient retries. It is checked by A40 (default gate) and A41 (opt-in).
+
+**Rejected:** in-study concurrency (a new request member and in-job process management for one opt-in run;
+reversible by a later amendment).
+
+### A1.7 The served surface (item 7)
+
+Registered (R-295): M04's additions to the served surface are additive and checked R-234's way. Stripping them gives
+M02's surface exactly (`tests/m04_schema_support.py`, `SNAPSHOT_M04`). `max_cold_experiments` is a Q26 pinned
+scalar: a count, never a state.
+
+### A1.8 New assertions
+
+- **M04.A36** — Production derives `plan-it2.json` and `plan-it3.json` bitwise, with training origins expanded to the
+  earlier plans' requests bitwise (562 and 980 requests). The iteration predicate of A1.2 is unit-tested on (verdict,
+  reason lists) cases: permitted; earlier PROMOTABLE; earlier width failure; earlier IE; earlier manifest missing.
+  `it2` for the smooth parent after A17's PROMOTABLE `it1` is `invalid_request` / `iteration_not_permitted`.
+- **M04.A37** — Every float in the emitted fixtures of both schemas is matched by a rule of
+  `M04-numerical-policy-surrogate-v1` (M02's `test_m02_schemas` pattern); `scripts/t08_numerical_policy.py --check`
+  passes with the `sha256` partition following the schemas.
+- **M04.A38** — The evidence's `subject.artifact_ref` equals the SHA-256 of the manifest written by the same job; the
+  manifest has no `evidence_sha256`; the outputs are [manifest, evidence] in that order; the checker reads no
+  evidence.
+- **M04.A39** — The refusals and records of A1.5. A budget refusal has no outputs and its answer carries
+  `cache_misses` = 199 (A20). There is one admission case per guard code, with `detail.reason`. A21's incomplete
+  draw is in its split's `incomplete` list with a `null` score, and its centre is `incomplete` with
+  `gradient_check_incomplete` reported.
+- **M04.A40** — The 199 requests of the smooth prefix plan are submitted as `experiment` jobs under the process
+  executor with `max_workers = 4`. The study then runs with `max_cold_experiments = 0` and gives cache hits 199,
+  cold 0, and a manifest and evidence bitwise equal to A19's sequential ones; every experiment result record is
+  bitwise equal to the sequential run's.
+- **M04.A41** *(opt-in, real)* — After WO-11's concurrent pre-warm, test requests 0–7 are re-run serially with
+  `cache: "bypass"`. `repeat_bitwise_equal` is true for all 8 (≈ 5 min), and the evidence manifest records
+  `max_workers`, the script and the retries.
+- **M04.A42** — Stripping M04's additions from the served surface gives M02's surface exactly, and
+  `max_cold_experiments` is in Q26's pinned scalar list.
+
+### A1.9 Work orders
+
+| WO | Lane | Content | Depends on | Acceptance |
+| --- | --- | --- | --- | --- |
+| WO-13 | Opus | A1.4: the manifest drops `evidence_sha256` and gains `domain.admissibility_margin`; the evidence's `subject.artifact_ref` is required; outputs reordered; checker; fixtures re-emitted; the `sha256` partition updated | — | A38, A23 |
+| WO-14 | Opus | A1.3: the addendum's classes and path rules; the A32-rule test over M04's fixtures | WO-13 | A37 |
+| WO-15 | Opus | A1.2: derive `it2`/`it3`, register them, the admission guard, predecessors and family-wise bound | — | A36 |
+| WO-16 | bounded | A1.5's refusal and record tests; A1.7's assertion if not already present | WO-13 | A39, A42 |
+| WO-17 | Opus | A1.6: the pre-warm script and A40; WO-11 then uses it | WO-13 | A40, A41 |
+
+W23's table (§15) gains A36 and A40 under "Frozen splits/transforms", A39 under "Insufficient-data outcome", and A37,
+A38 and A42 under "Default UQ".
+
+## 19. Amendment 2 (2026-10-15): the real reactor's reference box, and rulings on E15, E16, E22, E23
+
+**Context.** `wp/M04` @ `9fbebb5` (main with M02 merged). WO-11 is blocked: it binds reactor v3 (`benchmarks/m02/c1-loop-real.json`
+names `pymrm-6089593-g2-nz800-s123-v3`), and `prepare(v3, "it1")` refuses `plan_invalid`. Brief:
+`docs/briefs/M04-box-ruling.md`; build log `docs/design/M04-build-decisions.md` E15, E16, E22, E23. Nothing was run for this
+amendment beyond reading registered records: every number below comes from the variant file, M02's G12v3 records or a
+re-derivation of the §5.1 sampler. That re-derivation reproduces `plan-it1.json` bitwise and the brief's count of 115.
+
+**No registered value, fixture or plan file moves.** `plan-it1/2/3.json`, every existing member of `reference_values.json`,
+the A19 fixture and R-302's resolver entry are unchanged. Amendment 2 adds a second reference box for non-synthetic
+parents, a plan family drawn on it, one checker rule, tests, and the rulings below. **It needs ADR 0036 Amendment 2
+before WO-11 runs (§A2.11).**
+
+### A2.1 Facts
+
+- **v3's boundary** (`src/openflowsheet/adapters/variants/pymrm-6089593-g2-nz800-s123-v3.json`, SHA-256 `35cc7de1…`):
+  hard T [653.15, 693.15] K, P [9, 11] MPa, H₂/N₂ [2.5, 3.5], y_Ar + y_CH₄ ∈ [0.035, 0.2], per-tube flow
+  [0.003573480649651052, 0.014293922598604208] mol/s; data T [643.15, 733.15] K, P [5, 10] MPa, H₂/N₂ [1.5, 3].
+- **Box v1 against v3.** 115 of `plan-it1.json`'s 632 requests have y_Ar + y_CH₄ < 0.035 (lowest 0.02255). Every other v3
+  bound holds.
+- **The loop's reactor inlet** (N4's settling fact). There are 12 states: four reactor calls at each of T_in = 653.15,
+  673.15 and 693.15 K. They come from `benchmarks/m02/g12-real-loop-v3.json` (`47dc9f08…`) and
+  `g12-real-loop-v3-edges.json` (`148ec488…`) on the registered v3, with N_tubes = 1000.
+  - P = 10⁷ Pa exactly, and T = T_in exactly.
+  - **r = 3 within 2.9 × 10⁻¹⁴, with both signs, at every state including the first iterate.** The ratio is structural.
+  - y_NH₃ lies in 0.02890–0.02965, y_Ar in 0.01563–0.01819 and y_CH₄ in 0.02345–0.02729. The inert sum lies in
+    0.0391–0.0455.
+  - The per-tube flow F lies in 0.005496–0.006398 mol/s.
+  - *Correction to the brief.* D87's "H₂/N₂ = 3.000008" is the provisional variant's flows rounded to five digits. The
+    registered records give r = 3 to roundoff.
+- **Box v1 does not contain the loop, whatever v3's floor.** At 653.15 K, F = 0.0054965 < 0.0057, which is an excess of
+  0.140. The loop's r and P are exactly box v1's upper r and P faces. On the r face, roundoff decides the empirical status
+  (excess up to 1.15 × 10⁻¹³ either side). So N4's condition, "the loop's inlet lies outside the box", is met.
+
+### A2.2 Ruling: P_ref `m04-c1-box7-v2` for non-synthetic parents (closes N4)
+
+| k | u_k | box v2 [lo, hi] | centre c_k (binary64) | half-width h_k (binary64) | vs v1 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | T (K) | [653.15, 693.15] | 673.15 | 20.0 | unchanged |
+| 2 | P (Pa) | [9.0e6, 1.0e7] | 9.5e6 | 5.0e5 | unchanged |
+| 3 | r | [2.5, 3.00001] | 2.750005 | 0.25000500000000003 | hi + 10⁻⁵ |
+| 4 | y_NH₃ | [0.02, 0.04] | 0.03 | 0.01 | unchanged |
+| 5 | y_Ar | [0.014, 0.03] | 0.022 | 0.008 | lo 0.01 → 0.014 |
+| 6 | y_CH₄ | [0.022, 0.04] | 0.031 | 0.009000000000000001 | lo 0.01 → 0.022 |
+| 7 | F (mol/s) | [0.0050, 0.0086] | 0.0068000000000000005 | 0.0018 | lo 0.0057 → 0.0050 |
+
+The bounds are decimal literals parsed to binary64. The centre and half-width follow §3.1's formulas. The input map's
+coordinate definitions, the scaling z = (u − c)/h, the basis and every rule of §3 are unchanged.
+
+*Why each bound.*
+- **The inert floor.** lo_Ar + lo_CH₄ = 0.036, which is 10⁻³ above v3's refusal floor of 0.035. The lowest inert fraction
+  over every request of `b2-it1…3` is 0.036678 (G4). The floor is split so that the loop has a similar margin in both
+  coordinates: z_Ar ≥ −0.80 and z_CH₄ ≥ −0.84 at the loop, including the first iterate. The tops are unchanged.
+- **F.** lo = 0.0050 puts the 653.15 K state at z_F = −0.724, so the loop spans z_F ∈ [−0.724, −0.224]. hi is unchanged.
+  Both lie inside v3's flow bound.
+- **r.** The loop's r is 3 to roundoff, and 3 is also the face of the data domain. With hi = 3.0, roundoff would decide
+  whether the coverage claim applies at the loop. With hi = 3 + 10⁻⁵ the loop sits at z_r = 0.99996: a margin of
+  4.0 × 10⁻⁵, 8.5 decades above the measured deviation of 1.2 × 10⁻¹³.
+  - The sliver r ∈ (3, 3.00001] has P_ref measure 2.0 × 10⁻⁵ and holds **no registered request**. The largest r over
+    `b2-it1…3` is 2.9999022, which is 9.8 × 10⁻⁵ below 3 (G4).
+  - So every registered request lies in the data domain. Criterion 8 (§7.1), the plan guard (A03) and ADR 0036 D7 are
+    unchanged.
+- **P.** The loop's P = 10⁷ is a specification, not a computed value. It lies on the box's upper face, and z_P = 1.0
+  exactly in binary64, so the excess there is exactly 0.
+- **T.** The T bounds are v3's hard bounds and M05's REAL box. The loop is at z_T ∈ {−1, 0, 1} exactly.
+- **y_NH₃.** The loop is at z ∈ [−0.110, −0.036].
+
+*Rejected.*
+- **(a) Binding v2 for iteration 1.** Box v1 fails N4 on any variant. v2's loop does not converge at 653.15 K (D87). The
+  2 %-inert, 653.15 K, high-P corners fail S1 on v2 as on v3 (D84), so the likely outcome is `plan_incomplete`.
+- **(b) The engineer's numbers** (y_Ar [0.015, 0.03], y_CH₄ [0.02, 0.04], r "slightly above 3.0"). The inert sum
+  touches the refusal face exactly, and F's lo = 0.0057 leaves the 653.15 K state outside. The direction is adopted; the
+  numbers are not.
+- **(c) r straddling 3** (e.g. [2.75, 3.25]). Half the registered draws would lie outside the data domain. Criterion 8
+  would have to be rewritten, A03's guard relaxed and a qualification added, and P stays on its face anyway.
+- **(d) A tolerance on the empirical-domain flag.** It would change ADR 0036 D7 for every surrogate to repair one face.
+  The sliver does the same with no new threshold.
+- **(e) New inert coordinates** (y_inert and the argon share) to make the floor a face. That would need a new input map
+  and a new chain rule (WO-3) for a bound that a 10⁻³ margin handles.
+- **(f) Narrowing r or P to the loop's neighbourhood.** No fact requires it, and M07's range is unregistered.
+- **(g) Fresh seeds.** Nothing of a real parent has been observed on any registered draw, so reusing seed(i, split)
+  leaks nothing. Reuse also keeps the z-design of `b2-it<i>` identical to that of `it<i>` within 2.8 × 10⁻¹⁵ (G5), so
+  every z-space claim carries over and is re-asserted rather than re-derived. Those claims are the separations
+  0.2085, 0.180 and 0.1437, distinctness, and the in-box stencils.
+
+### A2.3 Plans, admission, manifest
+
+- **The family `b2`.** `b2-it1`, `b2-it2` and `b2-it3` are §5.1, §5.5 and A1.2's construction on box v2: the inner box
+  and stencils come from box v2, with the same seeds and the same counts (632, 488 and 488 cold experiments). Training
+  origins refer to earlier iterations of the same family.
+  - The files are `benchmarks/m04/plan-b2-it1.json` … `-it3.json`, in schema `m04-plan-v2`. That schema is
+    `m04-plan-v1`'s members plus `plan_id` and `reference_distribution`, placed after `generated_by`.
+  - `plan-it1/2/3.json` stay `m04-plan-v1`, byte-identical.
+- **Two P_ref ids, each owning its plans.** `m04-c1-box7-v1` owns `it1`, `it1-prefix`, `it2` and `it3`.
+  `m04-c1-box7-v2` owns `b2-it1…3`.
+- **Admission.**
+  - **The v1 plans become synthetic-parents-only**: a non-synthetic parent gets `invalid_request` with
+    `detail.reason = plan_not_registered_for_parent`.
+  - A `b2` plan is admitted for any parent whose domains pass the guard.
+  - Reason: a real parent has exactly one registered family, so §5.5's family-wise bound counts every coverage test
+    evaluated on it. Two families on one parent would double the false-pass chance without reporting it.
+- **The iteration guard (A1.2)** reads "every `it<j>` (j < i) **of the same parent and the same family**".
+- **Manifest.**
+  - `reference_distribution.id` is the plan's P_ref id. `input_map.id` stays `c1-inlet-u7-v1`, because it names the
+    coordinate definitions. `input_map.coordinates` carries the plan's box.
+  - **The checker (A24) gains one rule:** `input_map.coordinates` and `reference_distribution.id` must be bitwise those
+    of `plan_id`'s P_ref; otherwise it reports a failure naming `input_map`.
+  - **The unit takes c and h from its manifest's `input_map`, never from a module constant (A44).**
+  - There is no schema change.
+- A v3 surrogate's hard domain is v3's, verbatim, as §3.6 already says.
+
+### A2.4 Assertions that change
+
+- **M04.A31** binds `b2-it1` on `pymrm-6089593-g2-nz800-s123-v3`: "every executed request is bitwise a request of
+  `plan-b2-it1.json`". `parent_extrapolated` is expected to be 0 (G4), and a nonzero count remains a finding.
+- **M04.A33** runs on `C1-LOOP-M02-v1` bound to v3, and it also records the reference-domain status and excess at the
+  surrogate-backed solution's reactor inlet. `outside_reference_domain` there is a finding for the design lane, not an
+  A33 failure.
+- **M04.A41** uses test requests 0–7 of `b2-it1`.
+- **M04.A27 and A28 are read as items** of E15's `"; "`-separated detail. A27: the first item is
+  `verdict=NOT_PROMOTABLE`. A28: an item begins `parent_mismatch`. A45 isolates each cause.
+- A01–A26, A29, A30, A32, A34–A40 and A42 keep their text and values. A34 covers the new claims.
+
+### A2.5 Generator (`m04_reference.py`; it refuses to emit when any claim fails)
+
+- **G1.** It emits `constants.box_v2`, in the layout of `constants.box`, with the table's literals, centres and
+  half-widths. It also emits `constants.reference_distributions = {m04-c1-box7-v1: [it1, it1-prefix, it2, it3],
+  m04-c1-box7-v2: [b2-it1, b2-it2, b2-it3]}`.
+- **G2.** It reads the v3 variant file and the two G12v3 records as JSON. It imports nothing from `openflowsheet`, and it
+  records their SHA-256 values.
+- **G3. Box v2 lies inside v3's hard domain.**
+  - T, P, r and F are checked by interval.
+  - lo_Ar + lo_CH₄ − inert_min ≥ 0.9 × 10⁻³, and hi_Ar + hi_CH₄ ≤ inert_max.
+  - T and P lie inside the data domain, and r_hi − 3 = 10⁻⁵ exactly in decimal.
+- **G4. Every request of `b2-it1`, `b2-it2` and `b2-it3` passes,** counting fresh draws and every stencil.
+  - Each lies in box v2 by the input map, and in v3's hard and data domains by the parent's own inequalities
+    (`models/c1/boundary.py`'s forms, e.g. n_H₂ ≤ 3·n_N₂ and n_Ar + n_CH₄ ≥ inert_min·n_tot), re-implemented from the
+    variant file.
+  - The minimum inert fraction is ≥ 0.0365 (measured 0.036678), and the maximum r is ≤ 3 − 9 × 10⁻⁵ (measured
+    2.9999022).
+  - The 632 requests are distinct, and no fresh request repeats an earlier `b2` request.
+- **G5. The z-design matches.** Each `b2-it<i>` draw or centre is within 10⁻¹⁴ in z of its `it<i>` twin (measured
+  2.8 × 10⁻¹⁵). The held-out-to-training separations are ≥ 0.2085, 0.180 and 0.1437 for it1, it2 and it3.
+- **G6. The loop lies inside box v2.**
+  - Each of the 12 loop states has excess e = 0 exactly.
+  - |z| ≤ 0.9 for y_NH₃, y_Ar, y_CH₄ and F.
+  - z_r ∈ [1 − 5 × 10⁻⁵, 1 − 3 × 10⁻⁵], with z_T ∈ {−1, 0, 1} and z_P = 1 exactly.
+  - Under box v1, the largest e is ≥ 0.1 (measured 0.1404): the box v1 → v2 change is needed.
+- **G7.** The pre-existing members of `reference_values.json` and `plan-it1/2/3.json` come out byte-identical. A34's
+  byte-identity keeps this true.
+
+### A2.6 Iteration 1's cost (Amendment 1 §A1.6)
+
+- **Experiments.** Iteration 1 runs 632 cold experiments, the count N1 approved, so no new approval is needed.
+- **Pre-warm.** It pre-warms with `max_workers = 16`.
+- **Timing.**
+  - At the measured v3 mean of 40.5 s per experiment (four experiments, `g12-real-loop-v3.json`: 59.6, 23.4, 58.2 and
+    20.7 s), the pre-warm takes ≈ 27 min against ≈ 7.1 h serially. That is inside A1.6's band.
+  - A41 then takes ≈ 5 min.
+  - The study itself runs from cache.
+- **Failure risk.**
+  - Box v2 ⊂ V5 (R-315), and all 21 points of V5 were `ok` in both runs. Corners can still miss interior failures,
+    because S1 has a cliff at 653.15 K.
+  - §5.3's table applies: at 1 %, 2 % and 5 % failures, the band is finite with probability 0.9931, 0.9111 and 0.2919,
+    and the study passes with probability 0.8966, 0.8146 and 0.1997.
+  - A `band_not_finite` outcome is a measured property of v3. M04 is `tested` whatever the verdict (N6).
+
+### A2.7 E15: confirmed, with an isolation test
+
+**A27 did not mean a project bound to the rough parent. It meant the verdict path.** E15's detail is confirmed: the
+verdict item first, then the parent relation or `parent_mismatch`, always both, separated by `"; "`. There is no
+precedence: one reason must never hide another.
+
+The project case alone has a weakness. There, a facet failing on `parent_mismatch` would pass A27 even if a
+NOT_PROMOTABLE verdict did not fail the facet: an accidental failure. A45 therefore completes the 2 × 2 table at facet
+level (cases 1 and 2), with no second project.
+
+### A2.8 E16: confirmed
+
+An unresolvable manifest makes `surrogate_evidence` fail, never `not_applicable`: silence must not read as a judged
+pass.
+- On the new side, both `resolvable` and `surrogate_evidence` fail with `surrogate_manifest_mismatch`.
+- On the old side, the parent is unknown. A new surrogate is a `parent_mismatch` unless the old reference is its parent,
+  and a new non-surrogate fails `replace_via_parent`.
+
+*Consequence, accepted.* A surrogate whose manifest is lost cannot be rolled back through the replacement check until the
+manifest, which is content-addressed by the SHA-256 in the revision, is restored to the resolver. Such a revision cannot
+be evaluated either. Accepting an unverifiable "rollback" would let any model replace it. A45 covers cases 3–5.
+
+### A2.9 E22: confirmed, with an isolation check
+
+- **What is test-only.** The synthetic parents enter a project only through the test-only patch of the variant registry
+  and the backend, applied in a fixture scope.
+- **What stays production.** Admission, jobs, the replacement check, the transaction, invalidation, routing and
+  certification all run the production path.
+- **No production hook.** No production code gains a hook for tests.
+- **A46.** A46 checks that the injection does not leak.
+
+### A2.10 E23: an erratum, not a re-take; the comparison becomes a closed exclusion list
+
+**What the fingerprint member records.** The A19 fixture's `parent.fingerprint_sha256s` (`08056d0c…`) records the
+environment it was taken in. A run today gives `7552e907…`, because M02 changed `models/c1/boundary.py` (inert_min).
+Experiment keys include the fingerprint (ADR 0033), so every key and key digest differs as well. Every other member is
+unchanged.
+
+**Ruling.** A fixture that carries a fingerprint is **not re-taken when only environment-identity members drift**. It is
+re-taken when any other member would change, or when it is re-emitted for another reason. In that case R-302's resolver
+entry and W27's re-taken values move in the same commit.
+
+**What this needs in place of WO-9's inclusion list.** A47 compares the fixture against a fresh run on every member
+outside a closed set E. A member outside E that differs fails the test and is reported to the design lane. It is never
+added to E silently.
+
+**This erratum.** The A19 fixture was taken at a fingerprint that no longer matches the tree. Its numbers are verified
+equal by A47.
+
+### A2.11 Required ADR amendment (finding; not written here)
+
+ADR 0036 D1 registers P_ref `m04-c1-box7-v1` alone and says that the coverage claim is marginal "over it and over nothing
+else". Amendment 2 contradicts that until ADR 0036 is amended. Per §1, the ADR wins, so **WO-11 must not run before ADR 0036
+Amendment 2 is committed.** WO-18, WO-19 and WO-20 may proceed, since they are additive and move no registered value.
+The needed amendment has three parts:
+- **D1′.** "Two registered reference distributions: `m04-c1-box7-v1` (the box above; synthetic verification; plans
+  `it1`, `it1-prefix`, `it2`, `it3`; synthetic parents only) and `m04-c1-box7-v2` (T 653.15–693.15 K, P 9–10 MPa,
+  H₂/N₂ 2.5–3.00001, y_NH₃ 0.02–0.04, y_Ar 0.014–0.03, y_CH₄ 0.022–0.04, F 0.0050–0.0086 mol/s; non-synthetic
+  parents; plans `b2-it1…3`). Every registered request lies inside its parent's data and hard domains
+  (generator-asserted). v2's r face lies 10⁻⁵ above the data domain's so that the C1 loop's structural H₂/N₂ = 3 is
+  interior. A study's coverage claim is marginal over its own P_ref and nothing else."
+- **D2′.** "Seeds are shared between the two families; the z-design is identical."
+- **Migration.** "None. No registered value, fixture or plan file moves."
+
+D7 is unchanged.
+
+### A2.12 New assertions
+
+**M04.A43 — Plans and admission** (default gate)
+- **(a) Derivation.** Production derives `b2-it1` (562 draws, 5 centres, 70 stencils), `b2-it2` and `b2-it3` bitwise
+  equal to their files, with origins expanded within `b2` (562 and 980 training requests). The keys are distinct.
+- **(b) Admission.**
+  - (v3, `b2-it1`) and (v2, `b2-it1`) are admitted.
+  - (v3, `it1`) gets `invalid_request`, with `detail.reason` `plan_not_registered_for_parent`.
+  - (smooth, `it1-prefix`) is admitted, as before.
+  - (v3, `b2-it2`) without a `b2-it1` manifest gets `iteration_not_permitted`.
+- **(c) Registry values.** The P_ref registry gives box v2's (lo, hi, centre, half_width) bitwise equal to
+  `constants.box_v2`, and v1's equal to `constants.box`.
+- **Tolerance.** Exact everywhere, because identity is exact.
+
+**M04.A44 — The `b2` path end to end on a synthetic parent** (default gate; wiring, no statistic asserted)
+- **The run.** `surrogate_study` on `m04-synthetic-smooth-v1` with `b2-it1`: 632 in-process experiments, about 1 s.
+- **(a) The manifest.** It has `reference_distribution.id` `m04-c1-box7-v2`, `plan_id` `b2-it1`, `input_map.coordinates`
+  bitwise equal to `constants.box_v2`, and `b2-it1`'s keys. It passes the checker.
+- **(b) The unit's scaling.** The unit is bound to that manifest through WO-9's resolver injection and evaluated causally
+  at state **L673**: the 673.15 K loop inlet of `g12-real-loop-v3.json`, with n as recorded, T 673.15 K, P 10⁷ Pa and
+  N_tubes = 1000.
+  - **Expectation.** X̂ = 1 − n_N₂,out/n_N₂,in and ΔT̂ = T_out − T_in must equal Σᵢ β_o,i φᵢ(z), where z is built from
+    `constants.box_v2` by the test's own basis code, within 10⁻¹² relative.
+  - **Non-vacuity.** The same expression with box v1's constants must differ from X̂ by more than 10⁻⁶, checked in the
+    test.
+- **(c) The checker rule.** The checker refuses that manifest when `input_map.coordinates` is replaced by box v1's, and
+  when `reference_distribution.id` is replaced by v1's.
+- **Why 10⁻¹².** The floor is a 36-term dot product with |β| ≲ 0.2 on |φ| ≤ 1, at most ≈ 8 × 10⁻¹⁵ relative in X̂. The
+  tolerance sits ≥ 2 decades above that and ≥ 6 decades below the non-vacuity gap; the actual box-swap gap is
+  ≈ 5 × 10⁻³ for the smooth parent. A guard refusal of `b2-it1` for the smooth parent is a finding: stop and report.
+
+**M04.A45 — `surrogate_evidence`'s decision table** (default gate; facet level)
+- **Setup.** Sides are resolved as the project path resolves them (`revision_binding.resolve_surrogate`), with WO-9's
+  resolver.
+
+| # | old side | new side | facet | detail |
+| --- | --- | --- | --- | --- |
+| 1 | rough parent | A18 surrogate (rough, NOT_PROMOTABLE) | `fail` | items [`verdict=NOT_PROMOTABLE`, an item beginning `the old model is its parent`]; no item beginning `parent_mismatch` |
+| 2 | rough parent | A19 surrogate (smooth, PROMOTABLE) | `fail` | items [`verdict=PROMOTABLE`, an item beginning `parent_mismatch`] |
+| 3 | smooth parent | a surrogate reference whose manifest does not resolve | `fail` | contains `surrogate_manifest_mismatch`; `resolvable` also `fail` |
+| 4 | a surrogate reference whose manifest does not resolve | A19 surrogate | `fail` | an item beginning `parent_mismatch` |
+| 5 | as 4 | smooth parent | `fail` | begins `replace_via_parent` |
+
+- **Coverage of the table.** With A25 and A30 (same parent and PROMOTABLE: `pass`) and A27 (both causes: both items),
+  each failure cause is shown to fail the facet on its own.
+- **Tolerance.** Exact strings.
+
+**M04.A46 — The synthetic parents do not leak into production** (default gate)
+- **(a)** The shipped `adapters/variants/registry.json` lists no `m04-synthetic-*` id.
+- **(b)** A freshly constructed production `InProcessBackend`, given a request for `m04-synthetic-smooth-v1`, returns its
+  typed unknown-variant refusal, not a result.
+
+**M04.A47 — The A19 fixtures against a fresh run** (default gate; replaces WO-9's inclusion-list comparison)
+- **The comparison.** The A19 job's manifest must equal `a19_smooth_prefix.json` member by member, except for the closed
+  set E:
+  - `parent.fingerprint_sha256s`;
+  - `splits.<s>.keys` and `splits.<s>.keys_sha256`;
+  - `splits.gradient.centres[*].stencil_keys`;
+  - `splits.<s>.incomplete[*].key`.
+- **How members compare.** Exact and R0 members compare exactly. R1/R2 members compare within A1.3's floors.
+- **The evidence fixture.** It is compared the same way, with E plus `subject.artifact_ref`.
+- **When E may differ.** Members in E may differ only when the run's fingerprint differs from the fixture's. With equal
+  fingerprints, E must be equal too.
+
+### A2.13 Work orders
+
+| WO | Lane | Content | Depends on | Acceptance |
+| --- | --- | --- | --- | --- |
+| WO-18 | Opus, R | Generator: box v2, the `b2` plan files (`m04-plan-v2`), G1–G7, `constants.box_v2`, `constants.reference_distributions`; `tests/test_m04_reference_values.py` follows. Commit message: the new claim count, and G7 checked against `9fbebb5`'s files | — | A34, A43(c) |
+| WO-19 | Opus, R | Production: the P_ref and plan registries (v1 plans synthetic-only), the plan builder on the plan's box, the iteration guard per family, the manifest's box from the plan, the checker rule, the unit's c and h from the manifest | WO-18 | A43, A44 |
+| WO-20 | Opus | The E15/E16 table, E22's isolation and E23's closed-set comparison | — | A45–A47 |
+| WO-11 (amended) | Opus, opt-in | After WO-17, WO-18, WO-19 and ADR 0036 Amendment 2: pre-warm `b2-it1` on v3 (16 workers), the study from cache, A41, then A31–A33 | as stated | A31–A33, A41 |
+
+W23's table (§15) gains:
+- under "Frozen splits/transforms": A43 and A47;
+- under "Domain": A44;
+- under "Promotion and rollback": A45 and A46.
+
+WO-12's manifest lists A43–A47.
+
+### A2.14 What Amendment 2 does not establish
+
+- **The loop on the surrogate.** Box v2 contains the C1 loop as the *parent* solved it at its registered specifications
+  for T_in ∈ {653.15, 673.15, 693.15} K. Whether a surrogate-backed loop stays inside is A33's record. Nothing is said
+  about M07's decision range (makeup ratio, P, N_tubes).
+- **The sliver.** The sliver r ∈ (3, 3.00001] is in P_ref and outside the parent's data domain. No registered request
+  lies there, so there is no evidence about either model in it. A claim there is marginal coverage only.
+- **A44.** A44 verifies wiring on a synthetic parent. It is not evidence about the real surrogate, and no statistic of
+  that run is registered.
+- **Iteration 1.** Its outcome is unknown. V5's 21 points do not bound interior failures.
+- **E23.** It covers fingerprint drift only. It does not license comparing records across environments; A1.3 stands.
+
+### A2.15 Open questions, with defaults
+
+- **Q-A2.1 (needs a fact: A33's record).** Does the surrogate-backed loop's reactor inlet lie in box v2?
+  DECISION: assume yes, since r = 3 is structural and the margin is 4 × 10⁻⁵ in z. If A33 records
+  `outside_reference_domain`, that is a finding, and a box v3 is registered by amendment. WO-11's evidence stands, because
+  its box was fixed before it ran.
+- **Q-A2.2 (needs Frank's preference).** Should a real parent still be runnable on box v1 as unregistered exploration?
+  DECISION: no. Reversible by: the registry's synthetic-only flag; no record changes.
+- **Q-A2.3 (needs a design-lane ADR pass or Frank's acceptance).** ADR 0036 Amendment 2 as worded in §A2.11.
+  DECISION: WO-18 to WO-20 proceed now; WO-11 waits for it.
+
+## 20. Amendment 3 (2026-10-15): the review's rulings (`docs/reviews/M04-review.md`; R-360…R-369)
+
+### A3.1 Promotion covers every way a surrogate enters a revision (R-360; review MF1)
+
+§8.3/§8.4 judged only an instance present on both sides of a change. From here on, a change whose new revision binds
+a surrogate-backed instance with no checked replacement is rejected if that surrogate's re-derived verdict
+(`derived_verdict`) is not PROMOTABLE. This covers an added instance, a renamed one, and the first revision. The
+rejection is `model_replacement_incompatible`, reason `surrogate_not_promoted(<instance>)`, and the head stays
+unchanged. Rollback and §8.3's facets are unchanged.
+
+### A3.2 The checker ties the failure lists to the scores (R-361; review MF2)
+
+`check_manifest` adds three rules:
+
+- For calibration and test, `scores[i]` is null **iff** i ∈ `failed ∪ incomplete` or there is no predictor.
+- A gradient centre is `ok` with errors **iff** none of its stencil indices is in `splits.gradient.failed ∪
+  incomplete` and there is a predictor.
+- `predictor.fit.training_ok` = `splits.training.count` − |failed| − |incomplete|.
+
+A24 gains the three single mutations: a finite score on a failed draw; an `ok` centre with a failed stencil; a
+`training_ok` off by one.
+
+### A3.3 The fit does not depend on the thread count (R-362; review SF1, build log E33)
+
+- **The rule.** The study's SVD, QR, triangular solve and products run under one BLAS thread, whatever the
+  process's setting. The mechanism is the build lane's: `threadpoolctl` as a declared dependency, or an equivalent.
+  The fix is proved inert: WO-11's study re-submitted with budget 0 and default threading gives `d65bb022…`.
+- **A32's text** becomes: "Re-running the study with every record cached reproduces the manifest bitwise on one
+  platform, whatever the thread setting of the study's process. Across platforms, A1.3's classes govern."
+- **A49 (new; default gate).** The fit runs in two subprocesses with `OPENBLAS_NUM_THREADS=OMP_NUM_THREADS` at 1 and
+  at 8, at a size where it fails without the fix. Its coefficients are bitwise equal. If no synthetic size reproduces
+  the difference, the opt-in real record is used.
+
+### A3.4 No predictor, no score-dependent reasons (R-363; review SF2)
+
+When the fit is unidentifiable, the score-dependent reasons are not evaluated: `band_not_finite`,
+`width_limit_exceeded`, `coverage_bound_below_minimum`, `inadmissible_prediction`, `gradient_check_incomplete` and
+`gradient_limit_exceeded`. This is §6.4's rule for `test_too_small`. Scores stay null and the centres stay
+`not_evaluated`. The verdict function takes the predictor's presence as an input, true for V01–V16, which are
+unchanged. **A50 (new).** A study whose training has N_ok < 36 records IE = [`training_unidentifiable`] (plus
+`plan_incomplete` if it applies) and NP = [].
+
+### A3.5 The real iteration's outcome (R-364, R-365, R-366)
+
+- **The outcome.** WO-11's NOT_PROMOTABLE (`band_not_finite`) stands as M04's real result. No box, plan or counting
+  rule moves.
+- **No further iterations.** b2-it2 and b2-it3 are not admissible: §5.5 rule 2 and the A1.2 guard apply.
+- **A finding for the parent.** v3's 26 interior `reactor_not_accepted(certificate)` refusals are reported to the
+  parent's owner, to diagnose from the cache.
+- **The harvest.** Classes follow R-365.
+- **Q-A2.1 stays open.** It closes only as stated in R-366.
+
+### A3.6 Errata and confirmations
+
+- **G5 (E24).** G5's b2-it1 bound is 0.2084.
+- **The schema (E26).** §A2.3's "no schema change" is withdrawn: the schema change E26 made stands.
+- **A47's evidence E (E29).** It names `data[*].keys_sha256`, each equal to the run manifest's
+  `splits.<s>.keys_sha256`.
+- **Confirmed:** E10, E12, E14 (with R-365's wording), E25, E27, E28, E30, E32.

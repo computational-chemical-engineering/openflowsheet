@@ -1,8 +1,11 @@
 # ADR 0027 — The C1 reactor boundary: the group's 1D reactor behind a zero-pressure-drop, extent-projected, process-side-duty contract
 
-**Status:** Proposed, 2026-10-08; amended before acceptance by Amendment 1 (2026-10-08, below), and still Proposed.
-Accepted when M01's evidence manifest is `tested` (WO-6 and WO-8, the stand-in) and M02's
-adapter reproduces the probe's design-grid regression values (M01.A41–A48 through the adapter).
+**Status:** **Accepted, 2026-10-15**, with Amendments 1–4 (design lane, M02 close-out; register R-340; evidence read in
+`docs/reviews/M02-closeout.md` §1). Proposed 2026-10-08. The condition it was accepted on: M01's evidence manifest is
+`tested` (WO-6 and WO-8, the stand-in) and M02's adapter reproduces the probe's design-grid regression values (M01.A41–A48
+through the adapter), with Amendment 4's acceptance evidence. Met by `evidence/M01/6c81683…/manifest.json` (`tested`)
+and `evidence/M02/ba90619…/manifest.json` (`tested`; M02.G10–G12: G10v3, G11v3-1 to -12, G12v3-1, G12v3-2). The
+amendments' "still Proposed" lines below are historical.
 **Date:** 2026-10-08
 **Author:** design lane (`specifier`), M01.
 **Normative text:** `docs/derivations/M01-spec.md` §8 (the boundary), §10 (refinement evidence), §12 (known invalid

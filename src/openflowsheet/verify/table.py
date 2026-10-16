@@ -138,6 +138,8 @@ EXTERNAL_DUTY_MODELS: Final = (
     # M02 WO-9: the C1 reactor's duty `<U>.Q`, positive into the unit (design note §4.1).
     "c1.reactor",
     "c1.reactor_standin",
+    # M04 WO-7: the surrogate's duty `<U>.Q`, M02's row (spec §3.2).
+    "c1.reactor_surrogate",
 )
 #: `W`: the shaft work `<U>.W`.
 WORK_MODELS: Final = frozenset({"syn001.liquid_pump"})
@@ -1073,7 +1075,9 @@ MODEL_CHECKS: Final[Mapping[str, ModelChecks]] = {
     # reaction and SYN-001's reactor energy balance `Ḣ(in) + Q − Ḣ(out)`; both ports declared
     # vapour. No specification entry: X̂ and ΔT̂ are the coupled route's inputs, not the
     # revision's, so the verifier holds no independent value of them; their rows are judged as
-    # residual rows, and on the coupled route against the experiment (§4.4).
+    # residual rows, and on the coupled route against the experiment (§4.4). M04's surrogate
+    # takes the same entry (spec §8.1): its rows are M02's with (X̂, ΔT̂) its prediction, and its
+    # domain is judged by the certificate's `SURROGATE-DOMAIN:<unit>` check (`verify.surrogate`).
     **{
         model: ModelChecks(
             material=_c1_reactor_material,

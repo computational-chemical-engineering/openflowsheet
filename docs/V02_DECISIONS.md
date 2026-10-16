@@ -772,3 +772,91 @@ Grep, don't read whole. Newest at the bottom.
   v1 plans synthetic-only; A31/A33/A41 re-pointed, A43–A47 new; ADR 0036 Am. 2 required before WO-11. Its register
   entries collided with the alpha branch's R-319…R-321 → renumbered R-322…R-325 on wp/M04. "3.000008" was rounded
   provisional data (r = 3 to 2.9e-14). ADR + WO-18/19/20 launched.
+
+- **Agent burst** (2026-10-15, Frank: "for the next 7 minutes try to do as much as possible using many agents … after these
+  7 minutes step back to a normal pace"): 8 agents launched in separate worktrees (see V02_STATE). Previous session's two
+  agents had finished their work before it ended: alpha F1/F2/F4/F5 + C_α cut `e0e198e` + tree record `259af65`; M04
+  ADR 0036 Am. 2 + WO-18/19/20 + E24–E29 (`43d6557`). Back to ≤ 2 agents for new launches afterwards.
+
+- **M02 closeout** (2026-10-15, `reviewer`, merged `2497ec2`, R-340…R-344): ADR 0027 Accepted; D130 ratified with an R0
+  guard (archived `record_sha256` checked against the archived record); D131 label ratified; R-343: `external-subprocess-v1`
+  "not a sandbox" + M02 limitations [1][2][3][5][6] are E items needing L-rows (build work). Finding C1 (should-fix): v3's
+  inert floor check `boundary.py:390` is exact float compare; ADR's design composition at 0.035 refused in ~45 % of flow
+  scalings (−4.4e-16); proposal a few-ulp slack. Queued as an M02 follow-up after the alpha RC (C_α already cut).
+- **M05 ruling batch** (2026-10-15, `architect`, `wp/M05-rulings2` `4cc5956`, R-326…R-330, §18): Z2 → joint-pin elimination
+  `M05-zero-flow-v2` (WO-2c); W2 keep candidate + `trf_max_iterations` limitation (WO-6b); S1–S10 confirmed; S11–S18
+  partly amended, S14 reversed (closed schema objects), purpose counts now (WO-6b/7b); REAL box text corrected (R-330).
+  F-15 watch: TR-E2 hit max iterations once → G5 at risk; default report failure, not raise the limit. M07 told to start
+  at R-331.
+- **M04 WO-11** (2026-10-15, `opus-engineer`, `wp/M04` `6a353b3` E30 record `benchmarks/m04/wo11-b2-it1-v3/`, `7108cc6` E31):
+  b2-it1 on v3, 632 cold runs (16 workers, 4467 s incl. pre-warm/A41, host load 80–96), verdict NOT_PROMOTABLE
+  (`band_not_finite`): 26/632 certificate refusals (cal 5, test 18, train 3, grad 0), cal tolerance n−k = 4. Finite scores
+  cal ≤ 0.316, test ≤ 0.292 (282/300 in width); max |e_X| 7.3e-4, |e_ΔT| 0.32 K; grad 0.036 vs 0.25. A31/A32 (manifest
+  `d65bb022…`)/A41 (8/8) hold; A33 not run. Per N6 M04 still `tested`; M05 falls back to parent model. Open: E31 (relative
+  path → fingerprint change), design question on the 4.1 % failure rate (batch into reviewer), Q-A2.1.
+- **Alpha WO-10** (2026-10-15, `opus-engineer`, `wp/V02-alpha-gate` `4d591c7`): second session rebuilt lost /tmp scratch
+  under `~/.cache/of-rca-e0e198e/`, re-ran steps 10–12 (B-WO10-11). CI dispatch 38667458248 / push 38667452347 green
+  (check 8498/100 x86, 8470/98 arm). Step 11 PASS 3/3; step 12 PASS 6/6 (ρ 0.29, floor ratios 65.3/13.3, bitwise rerun).
+  Step 10 FAIL F1 (5/77 certificates, 4 extra qualified ids). Manifest `implemented`: 35 pass, A39/A43 fail, 6 unsupported.
+  Ruling round: `specifier` on brief `docs/briefs/V02-alpha-amendment2-brief.md` (`b8a769a`).
+- **Alpha Amendment 2** (2026-10-15, `specifier`, `ab80ca5`, R-345…R-349): F1 is a certificate defect (M02 §4.4/C2 put
+  non-[A09] notes in `independence_qualification`; `certificate.py:1305–1316`); remedy writes `None`; expected set not
+  extended. Failure is V18 (c), Q5 corrected. A43 → registered `machine_class` (scoped exception to "unchanged" for
+  `t08_rc.py`/`t08_dist.py`). Wrapper output accepted; bundle cert = recorded sha `d61a86fb…`. `e0e198e` superseded; re-cut
+  C_α¹ (R-349). Frank alternative Q-A2-1 (accept V18 (c) FAIL) not recommended; re-cut proceeds.
+- **M05 merge + WO-5c + S3** (2026-10-15, `opus-engineer`, `wp/M05` `fae2785`/`8edf34d`/`84295ba`/`40acf09`, gates 8775/8774/8774/8786):
+  register union R-296…R-318; WO-5c `at_coupling` proved inert (4 w values, identity + bitwise inner solve); S20 input-spec
+  classes moved to `holders` (P3 without Pyomo); S3 `C1Parent`, real v3 673.15 K in 164 s, ΔX 4.40e-6, ΔT 2.92e-3 K. Open
+  for review: S22, S23–S26. NLP-1 inventory stale (3 objects). Next M04 slot: E31 fix + WO-12 (launched).
+- **Alpha Am2 actions 1–2** (2026-10-15, `opus-engineer`, 04e65be R-345, 00acbe9/f0cfda8/46b2095 R-347, logs f77262e/2e778d3;
+  gates 8585/8591): Am2.5 inertness — G2 (ii) dump byte-identical (`659748576adb9730…`), K05 identity PASS, 10/10 pr-c1-v1
+  solution states identical, 9 certificates differ only in scoped qualification fields. B-AM2-3: CI `dist`/`build` jobs
+  install `requirements.lock` first (untested locally, needs network) — for the design read.
+- **Alpha Am2 design read** (2026-10-15, `reviewer`, `eb108c4`): proceed to re-cut; cut applies cleanly (14 files).
+  DECISION: S2 → accept that §18.4 (b) includes B-AM2-3's two workflow steps. Alternative: re-scope R-347. Reversible by:
+  a design-lane amendment. S3 (prove imports in lock-only/clean venvs) folded into the re-cut brief before the cut; S1 tests after.
+- **M04 E32 + WO-12** (2026-10-15, `opus-engineer`, `f3fd44e`/`a9566a6`/`3f99eee`, gates 8647/8653): root cause in
+  `launch()` (relative attempt dir vs child's `getcwd()`), fixed by `attempt_dir.resolve()`; absolute fingerprint unchanged
+  `dfce4150…`, relative re-run cold 0 / 632 hits / `d65bb022…`. Manifest `evidence/M04/a9566a6…` `tested`, 57/58 (A33 n/a).
+  E33: default BLAS threads → manifest `908cbe2f…` (≤1e-12 rel. fit drift) — A32 needs single-threaded BLAS. E34 class P.
+  M04 `reviewer` launched (brief `2aa71db`, register R-360…R-369).
+- **M04 review** (2026-10-15, `reviewer`, `9c2cb64`, spec §20 Amendment 3, R-360…R-369): conformal arithmetic and E32
+  sound. Must-fix MF1 (unchecked added/renamed surrogate instance, probe committed a NOT_PROMOTABLE surrogate; R-360 A48),
+  MF2 (manifest checker accepts null scores replaced by 0.1 → re-derives PROMOTABLE; R-361). E33 → pin BLAS 1 thread (A49).
+  4.1 % refusals: no amendment; finding to the parent's owner. E34 partly reversed (real verdict class E). Q-A2.1 open.
+  Engineer launched on the Am. 3 actions + main merge + manifest.
+- **Alpha re-cut** (2026-10-15, `opus-engineer`): S3 dispatch 38768575677 green (machine_class OK). C_α¹ = `6fec822` on
+  `wp/V02-alpha-rc1` (cherry-picks -x, gate 8574), merged --no-ff into `wp/V02-alpha-gate` (`896d014`). CI 38772065394 /
+  38772054427 green (8507/100 x86, 8479/98 arm); local 2, 6–12 PASS; step 10 0/77 violations. Manifest `implemented`
+  37/0/6. Build choices for later design read: B-AM2-6, -9, -10 (multiset hash tests, 6146aa3). `verdict` launched.
+- **Alpha verdicts at C_α¹** (2026-10-15, `verdict`, `fffb0e4`): 8 PASS, V14 FAIL (b), BLOCKED V13 (e) / V17 (a) (V17 carry),
+  W21 (c) (M02 N1). W22 band ratios 1.58/1.25/1.18. 61 record hashes recomputed, match. Findings A1 (aarch64 reactor
+  limitation row missing from envelope, before any tag), A2 (date rule vs re-judgement), A5 (CHANGELOG), A3/A4/A6–A10.
+  Frank notified (push). `specifier` Amendment 3 launched (brief `b272cea`).
+- **Alpha Amendment 3** (2026-10-15, `specifier`, `6505315`, R-370…R-379): A1 re-cut C_α² (envelope platforms axis + L15
+  claim aarch64 for the reactor; notes-only fix rejected as narrowing); A2 re-judgement rule (T7/T8, M07a.A14); A3 A61 names
+  V13 (e); A4 `tested` iff A00–A51, A53; A5 CHANGELOG phrases (11 added); A6 deferred to 0.2.0; A7 `-rs`; A8 L47/U15; A9 450 s;
+  A10 marker. B-AM2-6/9/10 confirmed. Q-A3-1 (strict date rule) put to Frank. Engineer launched on §19.8 actions 1–4.
+- **Alpha Am3 actions 1–4** (2026-10-15, `opus-engineer`, 162e13b/e892790/967a622/7af0ee3 for C_α², 2055d19/958af67 gate-branch
+  only; gates 8603→8629): envelope fixed (harvest E/S/P/B 158/42/139/6), re-judgement rule + A14, `-rs`, CHANGELOG skeleton +
+  phrase test, R-373 status rule. B-AM3-1…5 logged. Re-cut engineer launched (actions 5–8).
+- **M04 Am. 3 fixes + merge** (2026-10-16, `opus-engineer` `6363c24`…`d81d7f1`; gates 8661–8670): MF1 A48, MF2 (probe → 23
+  findings), E35 unresolvable manifest rejected, A49 BLAS pin (manifest `d65bb022…` at 1 and 48 threads), A50, E27, envelope L43.
+  Manifest `evidence/M04/8df0ea7…` `tested` 60/61. Merged into main `78685cc`, **main gate PASS 8670 passed, 31 skipped**.
+  M05 engineer launched (rulings2 merge, WO-2c/6b/7b, then main merge).
+- **M05 rulings merge + WO-2c + WO-6b** (2026-10-16, `opus-engineer`, `75cdc3b`/`05e2dba`/`442eed1`/`dec989e`; gates 8786/8790,
+  nlp 164/1): Z2 joint-pin elimination, rcond P1 7.663e-3, P2 1.417e-2, B2 5.203e-6; matching 70 = 74 − 4; G4 worst ratios
+  residual 5.92e-4, Jacobian 7.11e-7, decision 2.30e-3; unaffected cases byte-identical dumps. Stopped at context cap before
+  WO-7b; fresh engineer on WO-7b + S33/S36 defaults + main merge. Open: S27, S33, S36.
+- **Alpha re-cut C_α²** (2026-10-16, `opus-engineer`): C_α² = `cc73219` (6fec822 + 6505315, 162e13b, e892790, 967a622, 7af0ee3;
+  gate 8600). CI 38813135468/38813136015 green (8533/100 x86, 8505/98 arm); local 2, 6–12 PASS; step 10 0/77; G12 cert bound.
+  Manifest `tested` 38/0/6. B-AM3-6…9 (fresh envs, `tools/fetch_ci.sh`, O5 corrected). `verdict` at C_α² launched.
+- **Alpha verdicts at C_α²** (2026-10-16, `verdict`, committed by session `f14f02e`): identical words to C_α¹; W21 carries L44–L46,
+  L48, W22 L47; 61/61 hashes, 30 RC records' provenance hold. Gate dry run: 16 expected refusals. Findings B1–B6; B6 (ADRs
+  Proposed) and B5 (declined N1 needs amendment) → `specifier` launched. Frank asked for the four answers in plain words.
+- **Alpha B6/B5** (2026-10-16, `specifier`, `758a902`, R-380…R-382): ADR status flips legitimate (gate reads ADRs at the decision
+  commit; `docs/adr/` outside D2.4 trees). 0027 copied from main; 0033/0034/0035 Accepted (M02 `ba90619` tested, G1–G12 pass;
+  thin spot: D28/D29 never ruled individually). §20 Am. 4 contingent on Frank declining M02 N1. Dry run: only ADR 0028 + Frank.
+- **M07 spec** (2026-10-16, `specifier`, `wp/M07` `48d4112`): ADR 0041/0042 Proposed, R-331…R-339, 40 assertions, journey R0–R3,
+  W25 8 clauses (honest reporting), 0.2.0 gate `v0.2-gate-v1` + RC steps 13–18. Needs Frank (0.2.0, defaults) listed in state.
+  Engineer launched on WO-1/WO-2 with a build-lane coverage read.

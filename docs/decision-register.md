@@ -5232,6 +5232,210 @@ store cannot be tested without an application.
 
 ---
 
+## R-240 — The reactor surrogate is a native extent-fixed unit solved on `revision_eo`, not the experiment inside M02's coupling
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | `docs/adr/0037-m04-surrogate-unit-promotion-and-rollback.md` D1, D7; `docs/derivations/M04-spec.md` §8.1, §8.5 |
+| Evidence | ADR 0034 D4 (the coupled route refuses every sensitivity) |
+| Affected packages | M04, M05, M07 |
+
+**Decision.** `c1.reactor_surrogate` is M02's embedded unit with (X̂, ΔT̂) replaced by the frozen quadratic of the
+scaled inlet; analytic derivatives; `explicit_reduced`; solved without experiments.
+
+**Rejected alternative, and why.** The surrogate as the coupling's experiment: its analytic derivative would be thrown
+away by ADR 0034 D4, and an outer fixed point around an analytic map is what Newton does directly. A surrogate as a
+model variant: variants are shipped run-descriptions and would route it to the coupled path.
+
+**Watch for.** M05 may still choose to warm-start the coupling from the surrogate; that is M05's, not a reversal.
+
+---
+
+## R-241 — Surrogate inputs: seven affine-scaled inlet coordinates; outputs: M02's (X, ΔT); inadmissible predictions refused, never projected
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | `docs/derivations/M04-spec.md` §3.1–§3.4; ADR 0036 |
+| Evidence | M01 spec §8.3 (homogeneity in (n_in, N_tubes)); `benchmarks/m04/reference_values.json` → `jacobian_states` |
+| Affected packages | M04, M05 |
+
+**Decision.** u = (T, P, H₂/N₂, y_NH₃, y_Ar, y_CH₄, per-tube F), z = (u − c)/h on the reference box; full quadratic
+(36 terms) fitted by Householder QR; outputs X = ξ/n_N₂,in and ΔT; admissible set X ∈ [0, min(0.95, r/3)],
+ΔT ∈ [−50, 250] K, refused outside.
+
+**Rejected alternative, and why.** Five inputs (lumped inerts, fixed P): a direction of the inlet silently held fixed.
+ξ in mol/s as output: scales with the flow. Clipping or smooth saturation: a fabricated output or an unmeasured
+representation change.
+
+**Watch for.** A test that checks only X ∈ [0, 0.95] misses the H₂ limit r/3 (M04.A15).
+
+---
+
+## R-242 — The reference distribution is uniform on a registered box inside the data domain (`m04-c1-box7-v1`)
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D1; `docs/derivations/M04-spec.md` §4 |
+| Evidence | M01.A41 (start strategy accepted at 653.15–693.15 K); generator claims (every draw in hard and data domain) |
+| Affected packages | M04, M05, M07 |
+
+**Decision.** P_ref = uniform on T 653.15–693.15 K, P 9–10 MPa, H₂/N₂ 2.5–3.0, y_NH₃ 0.02–0.04, y_Ar 0.01–0.03,
+y_CH₄ 0.01–0.04, F 0.0057–0.0086 mol/s.
+
+**Rejected alternative, and why.** The data domain or the hard domain: a quadratic over 90–200 K of an
+equilibrium-limited reactor, and pressures the loop does not visit.
+
+**Watch for.** Needs a fact (spec N4): if the real loop's reactor inlet or M07's T_in range lies outside the box,
+register a new box by amendment **before** iteration 1 runs.
+
+---
+
+## R-243 — One joint conformal score whose scales are the declared width limits
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D4; `docs/derivations/M04-spec.md` §6.1–§6.2 |
+| Evidence | DX-01 (M01 spec §10.1): w_X/X_nom = 1.58 % in ξ's 1.44–1.94 %, w_ΔT = 1.5 K in T_out's 1.24–1.67 K (generator claims) |
+| Affected packages | M04, M05, M07 |
+
+**Decision.** s = max(|e_X|/0.0025, |e_ΔT|/1.5 K); k = ⌈(n+1)·19/20⌉ in integers; q̂ the k-th smallest; width
+criterion q̂ ≤ 1.
+
+**Rejected alternative, and why.** Two scalar scores (two marginal claims); training-residual scales (decoupled from
+the width limits); the uncorrected index ⌈0.95 n⌉ (wrong: 113 instead of 114 at n = 118).
+
+**Watch for.** The scales are frozen with the predictor: changing them after calibration is tuning on the test set.
+
+---
+
+## R-244 — A failed draw scores +∞ and stays in n or m; a draw without a deterministic result makes the plan incomplete
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D3; `docs/derivations/M04-spec.md` §5.3 |
+| Evidence | the Beta(k, n+1−k) law of the band's coverage with an atom at +∞ (spec §5.3) |
+| Affected packages | M04, every later surrogate |
+
+**Decision.** Deterministic failures: excluded from the fit, +∞ in calibration and test. No result (transient beyond
+retries, cancelled): INSUFFICIENT_EVIDENCE `plan_incomplete` until resumed.
+
+**Rejected alternative, and why.** Dropping failures and conditioning the claim on success: a narrowed denominator
+with a hidden conditioning event.
+
+**Watch for.** More than n − k (= 4 at n = 118) calibration failures leave no finite band.
+
+---
+
+## R-245 — The iteration-1 plan: 144 / 118 / 300 draws and 5 gradient centres, registered by seed before the parent runs
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04; the budget is Frank's (spec N1, default 632 cold experiments) |
+| Normative text | ADR 0036 D2; `docs/derivations/M04-spec.md` §5 |
+| Evidence | `benchmarks/m04/plan-it1.json`; `reference_values.json` → `finite_sample.registered_plan` (power 0.9035) |
+| Affected packages | M04 |
+
+**Decision.** Seeds 20261008011–014, SplitMix64, U = (w >> 11)·2⁻⁵³, binary64 order registered; 632 cold experiments
+(≈ 95 min); refused before running when the cache misses exceed the approved budget; never truncated or stopped
+early.
+
+**Rejected alternative, and why.** (149, 400): power 0.901 for 131 more experiments. (99, 300): power 0.819.
+
+**Watch for.** The plan file is an expectation, not package data: production derives the plan from the constants.
+
+---
+
+## R-246 — Promotion: an integer coverage test against 0.90, q̂ ≤ 1, admissibility and a 25 % gradient limit; IE > NP > PROMOTABLE
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D5–D6; `docs/derivations/M04-spec.md` §6.4, §7 |
+| Evidence | `reference_values.json` → `verdict_vectors` V01–V16, `finite_sample` (h_min(300) = 279, m_min = 29) |
+| Affected packages | M04, M05, M07 |
+
+**Decision.** Pass the coverage test iff H ≥ h_min(m) (Clopper–Pearson one-sided 95 % ≥ 0.90). Every reason is
+recorded; the verdict follows the precedence.
+
+**Rejected alternative, and why.** Observed coverage ≥ 0.95 (blueprint L419); a floating-point beta quantile as the
+decision (the integer rule is exact and equivalent).
+
+**Watch for.** A correct pipeline fails the coverage test with probability ≈ 0.10 at the registered plan; that is not
+evidence of a broken guarantee.
+
+---
+
+## R-247 — The empirical domain is the reference box, flagged with its scaled excess; the hard domain is the parent's
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D7; `docs/derivations/M04-spec.md` §3.6 |
+| Evidence | generator claim: fewer than 30 of 300 registered test draws lie in the training draws' convex hull |
+| Affected packages | M04, M05 |
+
+**Decision.** Outside the box: limitation `surrogate_outside_reference_domain` with max(0, ‖z‖∞ − 1), no coverage
+claim. Outside the parent's hard domain or the admissible output set: refused.
+
+**Rejected alternative, and why.** Convex hull (blueprint §9.2; disagrees with P_ref's support), nearest-neighbour
+density, leverage (they measure local sampling or noise amplification, not a deterministic parent's model-form bias).
+
+**Watch for.** A distance criterion is not an accuracy claim at a point (spec §7.4).
+
+---
+
+## R-248 — Surrogate promotion and rollback are ADR 0035's checked commit plus the facet `surrogate_evidence` and one `derivatives` exception
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | `docs/adr/0037-m04-surrogate-unit-promotion-and-rollback.md` D2–D4; `docs/derivations/M04-spec.md` §8.2–§8.4 |
+| Evidence | ADR 0035 D2's `derivatives` facet would refuse surrogate → parent |
+| Affected packages | M02 (replacement module, schema enum), M04, M05 |
+
+**Decision.** A new surrogate needs a PROMOTABLE verdict re-derived by the manifest checker and the replaced model as
+its parent (or a surrogate of the same parent); replacing a surrogate is allowed only by its parent (rollback), and
+then the parent's `unavailable` outlet derivative is not a loss.
+
+**Rejected alternative, and why.** A separate promotion operation (bypassable through `commit_change`); trusting the
+manifest's verdict field (a hand-edited manifest could be promoted).
+
+**Watch for.** Void if ADR 0035 is withdrawn.
+
+---
+
+## R-249 — A further iteration redraws calibration and test, trains on all earlier reference draws, and is automatic only after a coverage-only failure
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M04 |
+| Normative text | ADR 0036 D2; `docs/derivations/M04-spec.md` §5.5 |
+| Evidence | — |
+| Affected packages | M04, M05 |
+
+**Decision.** Iteration i ≥ 2: fresh seeds, fresh calibration (118), test (300) and gradient (5); training = every
+`ok` P_ref record of earlier iterations; at most three; family-wise false-pass bound 0.05 × iterations tested.
+
+**Rejected alternative, and why.** Re-testing the same predictor on a new test set: repeated selection on test sets.
+Automatic iteration after a width failure: more data cannot fix a model-form limitation; that needs an amendment.
+
+**Watch for.** Each iteration's plan file is committed before it runs.
+
 ## R-250 — A design-grid evaluation costs 25–45 s, of which the group's KPI-drift certificate is 12–35 s; the certificate stays, because no cheaper check makes an equal claim
 
 | | |
@@ -6195,6 +6399,130 @@ A specification check that reads the compiled constants (not independent).
 
 ---
 
+## R-290 — A later surrogate iteration lists the earlier reference draws as requests; `it2` and `it3` are committed; admission enforces when one may run
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1, on the build lane's question |
+| Normative text | `docs/derivations/M04-spec.md` §18 A1.2; ADR 0036 Amendment 1 (D2) |
+| Evidence | `benchmarks/m04/plan-it2.json`, `plan-it3.json` (generator claims: fresh draws in the box and both domains, no repeated request, held-out ≥ 0.1437 from training) |
+| Affected packages | M04 |
+
+**Decision.** The training split of `it<i>` lists every P_ref draw of earlier iterations by origin and runs them as
+requests: cache hits cost nothing, and failures and incomplete draws are treated as in iteration 1. `it<i>` is admitted
+only after earlier iterations failed solely on the coverage test (`iteration_not_permitted` otherwise).
+
+**Rejected alternative, and why.** Reading earlier records outside the runner: two paths for cache and budget
+accounting. Leaving the iteration rule to prose: an unattended run could start an iteration that needs an amendment.
+
+**Watch for.** A design-lane amendment (new predictor or box) gets new plan ids, not `it2`.
+
+---
+
+## R-291 — M04's floats need no new class: R1/R2 given the same records, conditional R0 decisions with a 10⁻⁸ gap rule
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1 |
+| Normative text | ADR 0036 Amendment 1 (D8); `docs/derivations/M04-spec.md` §18 A1.3 |
+| Evidence | A17: q̂ in binary64 is 1.8 × 10⁻¹⁵ from its 50-digit value; generator: every registered decision gap > 10⁻⁸ (smallest 6.85 × 10⁻⁴) |
+| Affected packages | M04; whoever makes study records replay-comparable (R-253) |
+
+**Decision.** Values computed from the records are R1/R2 (relative 1e-9; floors from spec §11's tolerances).
+Integers, statuses and the verdict are R0 only when no decision comparing two recorded floats has a gap below 10⁻⁸.
+The addendum id stays `M04-numerical-policy-surrogate-v1`; the registered policies are untouched.
+
+**Rejected alternative, and why.** A class "derived from the records": R1/R2 under another name, with no comparison
+rule of its own. D2.4's ratio band for score comparisons: it marks the normal case as near.
+
+**Watch for.** No comparator exists. R-253: replay comparison of study records goes through `run/compare` and an ADR 0025
+amendment.
+
+---
+
+## R-292 — ModelEvidence names its manifest by hash; the manifest does not hash its evidence
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1, on the build lane's `null` workaround |
+| Normative text | ADR 0037 Amendment 1 (D6); `docs/derivations/M04-spec.md` §18 A1.4 |
+| Evidence | the cycle `manifest.evidence_sha256` ↔ `evidence.subject.artifact_ref` at `d5736ac` |
+| Affected packages | M04, M05, M07 (later evidence about a promoted surrogate) |
+
+**Decision.** `subject.artifact_ref` is the manifest's SHA-256, required; `evidence_sha256` leaves the manifest.
+
+**Rejected alternative, and why.** `artifact_ref: null`: the evidence cannot be shown to belong to its subject, and
+evidence added later would change the surrogate's identity.
+
+**Watch for.** Promotion must never require an evidence document; it rests on the manifest's checker.
+
+---
+
+## R-293 — The surrogate study's outputs and refusals: manifest then evidence; a budget refusal writes nothing; plan refusals at admission
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1, confirming the build lane's WO-5 choices |
+| Normative text | ADR 0037 Amendment 1 (D6); `docs/derivations/M04-spec.md` §18 A1.5 |
+| Evidence | `wp/M04` @ `d5736ac` (`application/jobs/runner.py` `surrogate_study`; `studies/surrogate/study.py`) |
+| Affected packages | M04 |
+
+**Decision.** As in the title. The budget refusal's answer must carry `cache_misses`. The `incomplete` lists and the
+centre statuses `incomplete` and `not_evaluated` are part of the record.
+
+**Rejected alternative, and why.** A manifest for a refused budget: a record with no evaluation behind it. Plan
+refusals as job outcomes: a request that cannot run is not evidence.
+
+**Watch for.** A refusal whose answer cannot be checked against the request.
+
+---
+
+## R-294 — Concurrency for surrogate studies is a cache pre-warm with `experiment` jobs, at most the physical cores; the study stays sequential
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1 (closes spec N5) |
+| Normative text | ADR 0037 Amendment 1 (D8); `docs/derivations/M04-spec.md` §18 A1.6 |
+| Evidence | R-250 (distinct-key concurrency changes no bit; above the physical cores load turns into `timed_out`); host 24 cores / 48 threads |
+| Affected packages | M04 (WO-11), M05, M07 |
+
+**Decision.** WO-11 runs the 632 requests as `experiment` jobs with `executor.max_workers = 16`, which takes
+≈ 16–30 min instead of 4.4–7.9 h. Then it runs the study fully cached. Concurrency is telemetry and is checked by A40
+(synthetic, bitwise) and A41 (8 real bypass repeats).
+
+**Rejected alternative, and why.** A `max_workers` member on `surrogate_study`: new in-job process management for one
+opt-in run.
+
+**Watch for.** `timed_out` under load: transient, retried, resumable. If it is frequent, lower `max_workers`; never
+raise the timeout ad hoc.
+
+---
+
+## R-295 — M04's served-surface additions are checked by stripping (R-234's pattern); `max_cold_experiments` is a Q26 pinned scalar
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`specifier`), M04 Amendment 1, registering the build lane's WO-5 change |
+| Normative text | ADR 0037 Amendment 1 (D9) |
+| Evidence | `tests/m04_schema_support.py` (`SNAPSHOT_M04`), `tests/test_t07_q26.py` |
+| Affected packages | M04, every later package that moves the served surface |
+
+**Decision.** Stripping M04's additions from the served surface gives M02's surface exactly.
+`max_cold_experiments` (a count, not a state) joins Q26's pinned scalars.
+
+**Rejected alternative, and why.** Re-snapshotting the surface without the strip check: an accidental change to M02's
+members would pass.
+
+**Watch for.** Each package's strip function must remove only its own additions.
+
+---
+
 ## R-296 — An exactly-zero flow at x₀ is eliminated from the trust-region projection as the constant +0.0, together with its certified pinning row; it is neither bounded nor left free
 
 | | |
@@ -6375,6 +6703,9 @@ never a skip.
 builder (no removed cases).
 
 **Watch for.** A new builder that needs external configuration. It gets a resolver entry, not an exclusion.
+
+---
+
 ## R-303 — The real reactor's child polishes once more when A45's defect exceeds 10⁻⁷, and types a non-finite result as `reactor_not_accepted(nonfinite)` (profile `M01-S123-v2`, variant v3)
 
 | | |
@@ -6806,6 +7137,124 @@ M05 decision variable beyond T_in, which would move the loop's inert fraction ou
 
 ---
 
+## R-322 — The real reactor's surrogate gets its own reference box `m04-c1-box7-v2` and plan family `b2-it1…3`; the v1 plans become synthetic-only (closes M04 N4)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), M04 Amendment 2, on the brief `docs/briefs/M04-box-ruling.md` |
+| Normative text | `docs/derivations/M04-spec.md` §A2.1–A2.6, §A2.11–A2.13. **Needs ADR 0036 Amendment 2 (D1′, D2′; a finding, §A2.11) before WO-11 runs** |
+| Evidence | 115 of `plan-it1.json`'s 632 requests are below v3's inert floor of 0.035. In the G12v3 records, the loop's reactor inlet has F = 0.0054965 mol/s at 653.15 K, below box v1's 0.0057; its r = 3 ± 2.9e-14 sits on box v1's r face and its P = 1e7 on the P face |
+| Affected packages | M04 (generator, plan and P_ref registries, checker, unit scaling, WO-11), M05 and M07 (the surrogate's empirical domain) |
+
+**Decision.**
+- Box v2 is v1 with three bounds moved: y_Ar [0.014, 0.03], y_CH₄ [0.022, 0.04], F [0.0050, 0.0086] and r [2.5, 3.00001].
+  T, P and y_NH₃ are unchanged.
+- The inert floor 0.036 sits 10⁻³ above v3's refusal face.
+- The r face lies 10⁻⁵ above the data domain's face, so the loop's structural r = 3 is interior (z_r = 0.99996). No
+  registered request lies in the sliver (max r 2.9999022), so criterion 8, A03 and ADR 0036 D7 are unchanged.
+- The seeds and counts are unchanged, so the z-design is identical to `it<i>` within 2.8e-15. The plan files are
+  `plan-b2-it<i>.json`, in schema `m04-plan-v2`.
+- The v1 plans admit synthetic parents only. A real parent has one registered family, so the family-wise bound counts
+  every coverage test.
+- The checker binds `input_map.coordinates` and `reference_distribution.id` to `plan_id`'s P_ref, and the unit scales
+  with its manifest's box.
+
+**Rejected alternatives, and why.**
+- Binding v2: box v1 misses the loop on any variant, and v2's loop does not converge at 653.15 K.
+- The floor exactly at 0.035: it touches the refusal face.
+- r straddling 3: half the draws would fall outside the data domain, criterion 8 would have to be rewritten, and P stays
+  on its face anyway.
+- A tolerance on the empirical flag: it changes ADR 0036 D7 for every surrogate.
+- New inert coordinates: a new input map and chain rule for a 10⁻³ margin.
+- Fresh seeds: nothing is gained, and the z-space claims would have to be re-derived.
+
+**Watch for.**
+- A33's recorded reference-domain status at the surrogate-backed loop (Q-A2.1).
+- M07 decision variables beyond T_in.
+- Any later re-take of the G12v3 records. G6 reads them, and `--check` fails if the loop leaves box v2.
+
+---
+
+## R-323 — `surrogate_evidence` reports every reason, each failure cause is tested alone, and an unresolvable manifest fails closed (M04 build log E15, E16)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), M04 Amendment 2 |
+| Normative text | `docs/derivations/M04-spec.md` §A2.7, §A2.8, A45 |
+| Evidence | E15: A27's rough surrogate in the smooth project is both NOT_PROMOTABLE and a `parent_mismatch`, so in that project A27 cannot show that the verdict alone fails the facet |
+| Affected packages | M04 (`application/replacement._surrogate_evidence`, tests) |
+
+**Decision.**
+- The detail is the verdict item, then the parent relation or `parent_mismatch`, always both, separated by `"; "`.
+- A27 meant the verdict path, not a project bound to the rough parent.
+- A45 completes the 2 × 2 table at facet level: rough parent ← A18 fails on the verdict alone, and rough parent ← A19
+  fails on the parent mismatch alone.
+- An unresolvable manifest fails `surrogate_evidence` and is never `not_applicable`. The new side fails with
+  `surrogate_manifest_mismatch`. On the old side, a new surrogate fails `parent_mismatch` and a new parent fails
+  `replace_via_parent`.
+
+**Rejected alternatives, and why.**
+- A precedence between the reasons: it would hide one cause.
+- A second project bound to the rough parent: it costs a project build and adds no information over the facet-level
+  case.
+- `not_applicable` for an unresolvable side: it would let the facet pass unjudged.
+
+**Watch for.** A request to allow rollback from a surrogate whose manifest is lost. The remedy is to restore the
+content-addressed manifest; the facet is not relaxed.
+
+---
+
+## R-324 — The M04 synthetic parents enter a project only through a test-only injection, checked not to leak (M04 build log E22)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), M04 Amendment 2 |
+| Normative text | `docs/derivations/M04-spec.md` §A2.9, A46 |
+| Evidence | E22: the variant registry and `InProcessBackend` are patched in a fixture scope; everything else runs the production path |
+| Affected packages | M04 (tests) |
+
+**Decision.**
+- The injection is confirmed.
+- No production hook exists for tests.
+- A46 asserts that the shipped registry lists no `m04-synthetic-*` id, and that a fresh production backend refuses one.
+
+**Rejected alternatives, and why.**
+- A backend hook in production code: it would be a placeholder path in shipped code.
+- Shipping the synthetic parents as package data: they are not models.
+
+**Watch for.** Any synthetic id reaching `src/`.
+
+---
+
+## R-325 — A fixture whose only drift is its environment fingerprint is not re-taken; it is compared with a fresh run outside a closed environment set (M04 build log E23)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`specifier`), M04 Amendment 2 |
+| Normative text | `docs/derivations/M04-spec.md` §A2.10, A47 |
+| Evidence | E23: the A19 fixture names fingerprint `08056d0c…`, and a run today gives `7552e907…`, because M02 changed `models/c1/boundary.py`. The keys follow the fingerprint (ADR 0033); every other member is equal. The fixture's SHA-256 is R-302's resolver entry and part of W27's re-taken values |
+| Affected packages | M04 (A19 fixtures, tests), M06/W27 (unchanged) |
+
+**Decision.**
+- The drift is recorded as an erratum, and the fixture is not re-taken.
+- A47 compares the fixture with a fresh run on every member outside E. E is the fingerprints, the keys, the key digests,
+  the stencil keys and the incomplete keys, plus `subject.artifact_ref` for the evidence fixture.
+- E's members may differ only when the fingerprints differ.
+- A re-take happens only when a member outside E would change, or when the fixture is re-emitted for another reason.
+  R-302's entry and W27's values then move in the same commit.
+
+**Rejected alternatives, and why.**
+- Re-taking whenever a fingerprinted module changes: it churns W27's registered hashes and carries no information.
+- WO-9's inclusion list: a new member would go uncompared by default.
+
+**Watch for.** A difference outside E: it goes to the design lane, and E is never extended silently.
+
+---
+
 ## R-326 — SYN-001's jointly pinned zero flows are eliminated by a certified square block (rule `M05-zero-flow-v2`); they are neither refused nor exempted
 
 | | |
@@ -6941,3 +7390,280 @@ limit.
 **Watch for.** A bound-active REAL optimum at 653.15 K or 693.15 K: report it as such (R-267).
 
 ---
+
+## R-340 — ADR 0027 is Accepted, with Amendments 1–4 (its acceptance condition is met by M01's and M02's `tested` manifests)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §1) |
+| Normative text | `docs/adr/0027-c1-reactor-boundary.md` Status line |
+| Evidence | `evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json` (`tested`; stand-in A25–A32, A49–A51; record halves A52). `evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json` (`tested`): G10v3 met (A42 1.56e-8 ≤ 1e-6, A45 3.84e-8 ≤ 1e-7, A46 5.06e-5 ≤ 1e-3, A47 (a) bitwise, A47 (b) 1.43e-8 ≤ 1e-6, A41/A43/A44/A48 true); G11v3-1 to -12 (V5 selected, two runs of 121 points equal); G12v3-1 (CONVERGED, VERIFIED) and G12v3-2 (both edges). Record hashes re-computed equal to the manifest's |
+| Affected packages | M01, M02 (closed); M04–M07 inherit the contract as accepted |
+
+**Decision.** ADR 0027 moves from Proposed to Accepted, as amended by Amendments 1–4 and pointed to by ADR 0034 D10.
+
+**What it does not establish.** The real-reactor records are `judged: false`, R3, measured on one machine. G10v3 and
+G11v3 ran on the never-registered provisional document, which differs from v3 only in `hard_domain`, `timeout_s` and
+`variant_id` (checked). No cross-architecture reproduction exists. W21's verdict belongs to the `verdict` lane. Human
+numerical and process-model sign-off is separate.
+
+**Rejected alternative, and why.** Holding the ADR Proposed until a cross-architecture run exists: its condition does not
+require one. The gap is stated as a limitation (R-343).
+
+**Watch for.** The M01 design composition sits exactly on v3's inert floor (y_Ar + y_CH₄ = 0.035), so the registered v3
+decides it by rounding (close-out §1, finding C1). Treat it as an open M02 follow-up, not as a reason to reopen this ADR.
+
+---
+
+## R-341 — A failure bundle's compact coupling-record copy is compared by R-317's rules, its `record_sha256` for shape, with an R0 guard (ratifies build log D130, constrained)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §2) |
+| Normative text | Build log D130; `coupled_run.compact_differences`; R-317 (b); R-318 |
+| Evidence | D130's measured before/after (one-ulp seam at `max_outer` 3: MISMATCH on `record_sha256` only → MATCH, `bitwise_floats` false) |
+| Affected packages | M02 (`revision_run.reproduce_bundle`), M05 (coupled replays) |
+
+**Decision.** Ratified. The copy's floats are judged at the record's own paths by `rules.coupling`, against the archived
+`coupling_block`. Its `record_sha256` is judged for shape, for R-318's reason: it digests R1/R2 floats. **Condition (R0
+guard, as R-318 has its recomputation).** On reproduce, the archived copy's `record_sha256` must equal
+`document_sha256` of the archived `external-coupling.json`, and the rerun's must equal the rerun record's digest.
+Otherwise it is a difference. Today a well-formed but wrong archived digest replaces the fresh one, even on a bitwise
+rerun, so the link between the bundle and its record is never checked.
+
+**Rejected alternatives, and why.** The generic rules: a cross-platform reproduce could never MATCH. Shape with no guard:
+an archive whose failure bundle names a different record would reproduce MATCH.
+
+**Watch for.** Another digest copied into a coupled bundle without its own recomputation guard.
+
+---
+
+## R-342 — The support matrix's provider label is "Shipped, bound on another basis:" (ratifies build log D131, first decision)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §2) |
+| Normative text | Build log D131; R-310 (§14.5 D10, `other_basis_providers`); envelope L42 |
+| Evidence | `scripts/t08_support_matrix.py`, `tests/test_t08_w2_support_envelope.py` |
+| Affected packages | M02 (closed), M07 (release matrix) |
+
+**Decision.** Ratified. The label follows R-310's rename and L42's "on their own basis". The old label became false at the join.
+
+**Rejected alternative, and why.** Keeping "bound by no model": it contradicts L42 and R-288.
+
+---
+
+## R-343 — `external-subprocess-v1` is an envelope axis **and** its "not a sandbox" limitation is an E item with an L-row; M02's user-facing limitations are E, not P (ratifies D131's axis; reverses D132 (3)'s all-P harvest)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §2); T08 release spec §5.7 gives the design-lane reviewer this check |
+| Normative text | T08 release spec §5.7 (E: user-facing, points to L-rows of §5.5 or U-rows of §5.3; "a misfiled E-as-P hides a limitation"); build log D131, D132 (3) |
+| Evidence | `benchmarks/t08/support_envelope.yaml` harvest: M02 `limitations[0..6]` all `class: P`, `to: []`; precedent M01 review F1 (M01 `limitations[3]` → E → L42), M06 (E → L-WEB-1…4) |
+| Affected packages | M02 (envelope only; the manifest and its `tested` status are unchanged), M07 (release matrix) |
+
+**Decision.**
+- The `external_execution` axis stands: the execution profile is a supported capability, with its platforms and R3.
+- "Not an L-row" is reversed. M02 `limitations[2]` (not a sandbox) is E and points to a new L-row.
+- M02 `limitations[1]` (opt-in pinned environment, Linux only, R3, one machine), `[3]` (v3's inert floor next to a
+  measured S1 failure; an in-domain S1 failure ends COUPLING_NOT_CONVERGED), `[5]` (numerical verification, not
+  empirical validation of the reactor) and `[6]` (cross-platform coupled reproduction tested by a one-ulp seam only)
+  are E and point to L-rows.
+- `[0]` and `[4]` stay P.
+- **Change (build lane):** add the L-rows at the next free ids, built from the manifest's own sentences, for example
+  one row for the profile and one for the real reactor and coupled replay. Then repoint the five harvest entries,
+  re-emit `docs/support-matrix.md` and run `scripts/t08_support_matrix.py --check` and
+  `tests/test_t08_w2_support_envelope.py`.
+
+**Rejected alternatives, and why.**
+- Axis only: the spec lets an E item point only at L-rows or U-rows, and a security limitation must appear among the
+  limitations.
+- All P: a user can reach each of the five items.
+
+**Watch for.** A later package filing a user-facing limitation as P because an axis statement mentions it.
+
+---
+
+## R-344 — `tests/test_m02_pymrm_env.py` runs v3; D114/D115's swapped record hashes are an erratum, and the manifest's are the files' (ratifies build log D132 (1) and (2))
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane, M02 close-out (`docs/reviews/M02-closeout.md` §2) |
+| Normative text | Build log D132 (1), (2) |
+| Evidence | sha256 re-computed on this branch: `g12-real-loop-v3.json` 47dc9f089b715fd4…, `g12-real-loop-v3-edges.json` 148ec48830965e68…, equal to the manifest's G12 entries |
+| Affected packages | M02 (closed) |
+
+**Decision.** Ratified.
+- The environment test exercises the shipped variant, whose runner is the built child. Under v2 it fails
+  `environment_mismatch` by construction.
+- D132 (2) stands as the erratum to D114/D115. The append-only log is not rewritten.
+- D132 (3)'s generator is ratified. Its harvest classification is reversed by R-343.
+
+**Rejected alternative, and why.** Resting A47 (a) on G10v3's record alone: a live bitwise run exists, so record it.
+
+---
+
+## R-360 — Promotion covers every way a surrogate enters a revision: an added, renamed or first-revision surrogate instance needs a PROMOTABLE re-derived verdict (M04 review MF1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.1, A48; `docs/reviews/M04-review.md` |
+| Evidence | A scratch probe on WO-9's world committed A18's NOT_PROMOTABLE surrogate by renaming `reactor` (four `set` edits): `replacements()` judges only `set(old) & set(new)` (`replacement.py:240`). |
+| Affected packages | M04 |
+
+**Decision.** A change whose new revision binds a surrogate-backed instance with no checked replacement is rejected `model_replacement_incompatible`, reason `surrogate_not_promoted(<instance>)`, unless its `derived_verdict` is PROMOTABLE.
+
+**Rejected alternatives, and why.** Refusing non-PROMOTABLE manifests in the binder: it would fail `resolvable` before `surrogate_evidence` states the verdict (R-323's report order). A separate promote operation: rejected by ADR 0037.
+
+**Watch for.** A new path that writes revision content (import, copy, template) must apply the same rule.
+
+## R-361 — The manifest checker ties `failed`/`incomplete` lists to null scores, centre statuses and `training_ok` (M04 review MF2)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.2, A24; `docs/reviews/M04-review.md` |
+| Evidence | WO-11's manifest with its 23 null scores set to 0.1 and q̂, H, L and the promotion block made consistent re-derives PROMOTABLE and passes `check_manifest`. |
+| Affected packages | M04 |
+
+**Decision.** Three checker rules (§A3.2); A24 gains three mutations.
+
+**Rejected alternatives, and why.** Relying on the job alone writing manifests: ADR 0037's stated property is that a hand-edited manifest cannot be promoted.
+
+**Watch for.** Any member that duplicates a fact stated elsewhere in the manifest needs a consistency rule.
+
+## R-362 — The study's fit runs under one BLAS thread; the manifest does not record the thread setting; A32 is bitwise per platform at any thread setting (M04 build log E33)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.3, A32, A49; `docs/reviews/M04-review.md` |
+| Evidence | E33: default threading gives `908cbe2f…`, one thread `d65bb022…` (WO-11's); last-ulp differences, promotion block identical. |
+| Affected packages | M04 |
+
+**Decision.** Pin, proved inert against `d65bb022…`; A49 checks coefficients at 1 and 8 threads.
+
+**Rejected alternatives, and why.** Recording the thread environment in the manifest: the manifest is the surrogate's identity (`model.artifact_ref`), and an environment value in it makes identity host-dependent (the K05 lesson in `run/manifest.py`; F4: unknown is never exact).
+
+**Watch for.** Any other float computed in the study process through BLAS.
+
+## R-363 — With no predictor the score-, band- and gradient-dependent reasons are not evaluated (M04 review SF2)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.4, A50; `docs/reviews/M04-review.md` |
+| Evidence | `study.py:277-331`: an unidentifiable fit nulls every score, so the record says `band_not_finite` and `gradient_check_incomplete`, both false causes. |
+| Affected packages | M04 |
+
+**Decision.** The verdict function takes the predictor's presence as an input (true for V01–V16, unchanged); without it the six reasons of §A3.4 are not evaluated.
+
+**Rejected alternatives, and why.** Keeping the mapping and documenting it: a recorded reason must be a true cause.
+
+**Watch for.** —
+
+## R-364 — WO-11's NOT_PROMOTABLE (`band_not_finite`) is M04's real outcome; no box, plan or counting amendment; b2-it2/3 are not admissible
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.5; `docs/reviews/M04-review.md` |
+| Evidence | 26/632 deterministic `reactor_not_accepted(certificate)` refusals across the box interior; calibration 5/118 > n − k = 4. |
+| Affected packages | M04 |
+
+**Decision.** No amendment on the outcome. §5.3 registered the rule and its cost before the run; §5.5 rule 2 and A1.2's guard forbid b2-it2 after `band_not_finite`. The refusals go to the parent's owner as a finding, to diagnose from cache.
+
+**Rejected alternatives, and why.** Re-boxing to avoid the refused points (selected on the outcome); counting refusals outside n (narrows a denominator); running b2-it2 (refused by the guard).
+
+**Watch for.** A new parent variant (e.g. v4) is a new study under a new amendment, never a re-judgment of b2-it1.
+
+## R-365 — M04's harvest: the real verdict is class E with a new L-row; A33/Q-A2.1 are B; the E33 limitation is B until R-362 lands (reverses E34 in part)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.5; T08 §5.7; `docs/reviews/M04-review.md` |
+| Evidence | E34 filed all four limitations and A33 as P. |
+| Affected packages | M04 |
+
+**Decision.** limitations[0] → E (L-row: no promotable surrogate of the real C1 reactor exists in v0.2; the study is NOT_PROMOTABLE, `band_not_finite`); the `unit_models` statement says so. limitations[1] and checks[A33] → B (backlog: close with A33's record). limitations[2] → B, then S when R-362 lands. limitations[3] → P.
+
+**Rejected alternatives, and why.** P for the real verdict: a user reading the support matrix would take `c1.reactor_surrogate` as usable on the real reactor (T08 §5.7: a misfiled E-as-P hides a limitation).
+
+**Watch for.** —
+
+## R-366 — Q-A2.1 stays open and closes only with A33's record on a PROMOTABLE real surrogate
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.5; §A2.15; `docs/reviews/M04-review.md` |
+| Evidence | No PROMOTABLE real surrogate exists (R-364). |
+| Affected packages | M04 |
+
+**Decision.** Closure: the surrogate-backed `C1-LOOP-M02-v1` solve's certificate carries no `surrogate_outside_reference_domain` limitation, and the H₂/N₂ coordinate's margin to box v2's face is stated in binary64.
+
+**Rejected alternatives, and why.** Closing from the parent-backed loop's inlet: it is not the surrogate-backed loop's.
+
+**Watch for.** —
+
+## R-367 — Errata: G5's b2-it1 bound is 0.2084 (E24); §A2.3's 'no schema change' is withdrawn (E26); A47's evidence E names `data[*].keys_sha256` (E29)
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.6; `docs/reviews/M04-review.md` |
+| Evidence | E24: 0.208490882 < 0.2085; E26: the schema pinned `it…` and `box7-v1`; E29: the evidence's key digests differ with the fingerprint. |
+| Affected packages | M04 |
+
+**Decision.** Confirmed as errata; a registered lower bound rounds down.
+
+**Rejected alternatives, and why.** Restating G5's measured value: the bound is a claim, not a measurement.
+
+**Watch for.** —
+
+## R-368 — Build choices E10, E12, E14, E25, E28, E30, E32 confirmed
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.6; `docs/reviews/M04-review.md` |
+| Evidence | Build log E10–E32; review N4 (E32's three callers). |
+| Affected packages | M04 |
+
+**Decision.** Confirmed; E14 with R-365's statement wording.
+
+**Rejected alternatives, and why.** —
+
+**Watch for.** —
+
+## R-369 — E27 confirmed; production signatures take the box's `Scaling` without a box-v1 default
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`reviewer`), M04 Amendment 3 |
+| Normative text | `docs/derivations/M04-spec.md` §20 A3.6; review N1; `docs/reviews/M04-review.md` |
+| Evidence | `quadratic.fit_quadratic(..., scaling=SCALING)`. |
+| Affected packages | M04 |
+
+**Decision.** The default is removed from production signatures; box v1 tests pass `SCALING` explicitly.
+
+**Rejected alternatives, and why.** Keeping the default: a forgotten argument fits silently in v1's z.
+
+**Watch for.** —

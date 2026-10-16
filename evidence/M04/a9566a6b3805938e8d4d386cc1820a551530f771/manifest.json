@@ -1,0 +1,1160 @@
+{
+  "work_package": "M04",
+  "commit": "a9566a6b3805938e8d4d386cc1820a551530f771",
+  "requirements": [
+    "A07",
+    "D12"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "plan b2-it1 on pymrm-6089593-g2-nz800-s123-v3 (WO-11, opt-in record); the synthetic parents, the stand-in and the v1 plans (default gate)",
+    "case_hash": "8025ba5b53c6e1af4fd6d31826904fcec627cccc82376efcb2d9abe0eadc4962",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "14e5fc1c5a266f3cbc3ae8bc27bb6a2b88b9b0a9c6d8f02f79baec7b1dfd21f1"
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/m04-tests.junit.xml tests/test_m04_*.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2a957f35364ada78f55a726561590cdc7d59cfb42557078259666a30118759e1"
+    }
+  ],
+  "checks": [
+    {
+      "id": "M04.A01",
+      "description": "M04 spec, A01: SplitMix64's first three words for each iteration-1 seed equal `splitmix64_first_words` exactly",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_plan.py"
+          ],
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A02",
+      "description": "M04 spec, A02: The production sampler and request builder reproduce every `u` and every request (n, T, P) of",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_plan.py"
+          ],
+          "passed": 7,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A03",
+      "description": "M04 spec, A03: A plan any of whose requests leaves the box, the hard domain or the data domain is refused",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_plan.py"
+          ],
+          "passed": 6,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A04",
+      "description": "M04 spec, A04: k(n) equals `finite_sample.k` for every registered n, computed in integers; n_min = 19.",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_conformal.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A05",
+      "description": "M04 spec, A05: q̂ on each verdict vector equals the registered value exactly (it is an element of the input), with",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_conformal.py"
+          ],
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A06",
+      "description": "M04 spec, A06: L(h, m) matches `finite_sample.clopper_pearson` within 10⁻⁹ absolute (floor: `scipy.stats.beta.ppf`",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_conformal.py"
+          ],
+          "passed": 7,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A07",
+      "description": "M04 spec, A07: Every vector V01–V16 yields exactly the registered verdict and both registered reason lists in the",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_conformal.py"
+          ],
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A08",
+      "description": "M04 spec, A08: A manifest's `calibration.k`, `evaluation.h_min`, n and m equal the plan's registered values (118,",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_conformal.py",
+            "tests/test_m04_study.py"
+          ],
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A09",
+      "description": "M04 spec, A09: φ(z*) at the registered z* equals `basis_at_zstar.phi` within 10⁻¹⁴ relative per entry (floor: two",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_quadratic.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A10",
+      "description": "M04 spec, A10: On the smooth full training set the coefficients equal `pipeline.smooth_full.coefficients` within",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_quadratic.py"
+          ],
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A11",
+      "description": "M04 spec, A11: The prefix training set with every F set to the box centre is refused `training_unidentifiable`",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_quadratic.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A12",
+      "description": "M04 spec, A12: At J1–J3 with the fixture coefficients: the 14 inlet entries of R_ξ and R_T equal `jacobian_states`",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_quadratic.py",
+            "tests/test_m04_wo7_surrogate_unit.py"
+          ],
+          "passed": 11,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A13",
+      "description": "M04 spec, A13: Conservation: at J1–J3 and at every surrogate-backed solution of A26, |E(n_out − n_in)| ≤",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_quadratic.py",
+            "tests/test_m04_wo7_surrogate_unit.py"
+          ],
+          "passed": 6,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A14",
+      "description": "M04 spec, A14: Domain: J1, J2 `within_reference_domain` (excess 0); J3 `outside_reference_domain`, excess 0.5 within",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_quadratic.py",
+            "tests/test_m04_wo7_surrogate_unit.py"
+          ],
+          "passed": 10,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A15",
+      "description": "M04 spec, A15: Admissibility (fixture manifests with constant predictors, every other coefficient 0): β_X[0] = −0.01",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_quadratic.py",
+            "tests/test_m04_wo7_surrogate_unit.py"
+          ],
+          "passed": 12,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A16",
+      "description": "M04 spec, A16: Stand-in, prefix plan: no failures; β_X[0] = 0.25 within 10⁻¹⁴ and every other β_X within 10⁻¹⁴;",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study_job.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A17",
+      "description": "M04 spec, A17: Smooth, full plan: failed indices per split exactly as registered; N_ok = 142; coefficients per A10;",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A18",
+      "description": "M04 spec, A18: Rough, prefix plan: q̂ within 10⁻⁹ relative of 1.6139880778; H = 59; verdict NOT_PROMOTABLE with",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A19",
+      "description": "M04 spec, A19: Smooth, prefix plan: q̂ within 10⁻¹⁰ of 0.024916065269; H = 59 (= h_min(60): one miss allowed, one",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A20",
+      "description": "M04 spec, A20: Budget: on a store without records, the smooth prefix study with `max_cold_experiments` = 198 (one",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A21",
+      "description": "M04 spec, A21: Plan incomplete: a variant of the smooth test-only parent that returns `ExecutionFailure` (transient,",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A22",
+      "description": "M04 spec, A22: Every registered failure of A17 is in its split's `failed` list with status `not_converged` and code",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A23",
+      "description": "M04 spec, A23: Split integrity: the key lists are pairwise disjoint, equal the plan's request keys in plan order, and",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A24",
+      "description": "M04 spec, A24: The manifest checker accepts A17's manifest and rejects each single mutation: q̂ not the k-th",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py"
+          ],
+          "passed": 12,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A25",
+      "description": "M04 spec, A25: Committing the A19 surrogate in place of its parent: `committed`; every facet `pass`, including",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo8_replacement.py",
+            "tests/test_m04_wo9_synthetic_loop.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A26",
+      "description": "M04 spec, A26: The surrogate-backed revision solves on `revision_eo` (not `revision_coupled`) with zero experiment",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo7_surrogate_unit.py",
+            "tests/test_m04_wo9_synthetic_loop.py"
+          ],
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A27",
+      "description": "M04 spec, A27: Committing the A18 (rough) surrogate instead: `rejected`, `model_replacement_incompatible`,",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo8_replacement.py",
+            "tests/test_m04_wo9_synthetic_loop.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A28",
+      "description": "M04 spec, A28: Committing a surrogate of the stand-in in place of the synthetic parent: `surrogate_evidence` `fail`,",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo8_replacement.py",
+            "tests/test_m04_wo9_synthetic_loop.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A29",
+      "description": "M04 spec, A29: Rollback: committing the parent in place of the A25 surrogate: `committed`; `derivatives` `pass` with",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo8_replacement.py",
+            "tests/test_m04_wo9_synthetic_loop.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A30",
+      "description": "M04 spec, A30: Committing the A17 (full-plan) surrogate in place of the A19 one: `committed`; `surrogate_evidence`",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo8_replacement.py",
+            "tests/test_m04_wo9_synthetic_loop.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A31",
+      "description": "M04 spec, A31: Iteration 1 on the real variant: every executed request is bitwise a request of `plan-it1.json`; the",
+      "result": "pass",
+      "value": {
+        "record": "benchmarks/m04/wo11-b2-it1-v3/record.json",
+        "record_sha256": "ef97d20a2dd885fd5952557c72b303b18dacf6a0e104a4efae3e51aef2ec1f2e",
+        "code_commit": "43d65574a6ad42ef189bc45ce4bfa273eb097dbd",
+        "judged": false,
+        "plan_id": "b2-it1",
+        "parent": {
+          "variant_id": "pymrm-6089593-g2-nz800-s123-v3",
+          "variant_sha256": "8b92540adc772a454e212b7054a98da4f7995899955a43a54d07669a70aa203c"
+        },
+        "manifest_sha256": "d65bb0225f36780cebe63c211b7706aa42613ef8edc4714218b1ddec58be1717",
+        "evidence_sha256": "8305c80527ec771dcc026784fbffcc68f59d5fe7d40a9b642244465ba21fc9a2",
+        "plan_requests": 632,
+        "executed_requests": 632,
+        "executed_not_in_plan": 0,
+        "schemas_valid": true,
+        "evidence_names_manifest": true,
+        "checker_failures": [],
+        "derived_verdict_equal": true,
+        "verdict": "NOT_PROMOTABLE",
+        "not_promotable": [
+          "band_not_finite"
+        ],
+        "insufficient": [],
+        "certificate_refusals": 26,
+        "failure_codes": [
+          "reactor_not_accepted(certificate)"
+        ],
+        "splits": {
+          "calibration": {
+            "count": 118,
+            "failed": 5
+          },
+          "gradient": {
+            "count": 5,
+            "failed": 0
+          },
+          "test": {
+            "count": 300,
+            "failed": 18
+          },
+          "training": {
+            "count": 144,
+            "failed": 3
+          }
+        },
+        "n": 118,
+        "k": 114,
+        "m": 300,
+        "q_hat": null,
+        "h_min": 279,
+        "test_scores_le_1": 282,
+        "fraction_within_width": 0.94,
+        "errors_max": {
+          "X": 0.0007308636270200175,
+          "dT_K": 0.32343967829980613
+        },
+        "gradient_max_e": 0.035969641742902354,
+        "rho_g": 0.25,
+        "parent_extrapolated": 0,
+        "inadmissible_predictions": 0,
+        "note": "Recorded, not judged: the verdict is copied whatever it is (N6)."
+      }
+    },
+    {
+      "id": "M04.A32",
+      "description": "M04 spec, A32: Re-running the study with every record cached reproduces the manifest bitwise (job ids and timestamps",
+      "result": "pass",
+      "value": {
+        "record": "benchmarks/m04/wo11-b2-it1-v3/record.json",
+        "record_sha256": "ef97d20a2dd885fd5952557c72b303b18dacf6a0e104a4efae3e51aef2ec1f2e",
+        "code_commit": "43d65574a6ad42ef189bc45ce4bfa273eb097dbd",
+        "judged": false,
+        "job_id": "job-000644",
+        "cold_experiments": 0,
+        "cache_hits": 632,
+        "cache_misses": 0,
+        "manifest_sha256": "d65bb0225f36780cebe63c211b7706aa42613ef8edc4714218b1ddec58be1717",
+        "manifest_bitwise_equal": true,
+        "new_attempts": 0,
+        "note": "Bitwise at WO-11's thread environment (single-threaded BLAS); multi-threaded BLAS moves the fit's last bits (build decision E33)."
+      }
+    },
+    {
+      "id": "M04.A33",
+      "description": "M04 spec, A33: If A31 is PROMOTABLE: A25, A26 and A29 on `C1-LOOP-M02-v1` with `c1.reactor`, plus one parent",
+      "result": "not_applicable",
+      "value": {
+        "run": false,
+        "condition": "A31 PROMOTABLE (§12 A33, §19 A2.13)",
+        "a31_verdict": "NOT_PROMOTABLE",
+        "open_question": "Q-A2.1 stays open without A33's record (§19 A2.15)."
+      }
+    },
+    {
+      "id": "M04.A34",
+      "description": "M04 spec, A34: `python docs/derivations/scripts/m04_reference.py --check` exits 0 with every claim passing and both",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_reference_values.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A35",
+      "description": "M04 spec, A35: `surrogate-manifest` and `model-evidence` are in `schemas/registry.json`; one valid fixture each,",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_schemas.py"
+          ],
+          "passed": 9,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A36",
+      "description": "M04 spec, A36: Production derives `plan-it2.json` and `plan-it3.json` bitwise, with training origins expanded to the",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_iterations.py",
+            "tests/test_m04_plan.py"
+          ],
+          "passed": 20,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A37",
+      "description": "M04 spec, A37: Every float in the emitted fixtures of both schemas is matched by a rule of",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_numerical_policy.py"
+          ],
+          "passed": 8,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A38",
+      "description": "M04 spec, A38: The evidence's `subject.artifact_ref` equals the SHA-256 of the manifest written by the same job; the",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study_job.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A39",
+      "description": "M04 spec, A39: The refusals and records of A1.5. A budget refusal has no outputs and its answer carries",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study.py",
+            "tests/test_m04_study_job.py"
+          ],
+          "passed": 7,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A40",
+      "description": "M04 spec, A40: The 199 requests of the smooth prefix plan are submitted as `experiment` jobs under the process",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_prewarm.py"
+          ],
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A41",
+      "description": "M04 spec, A41: After WO-11's concurrent pre-warm, test requests 0–7 are re-run serially with",
+      "result": "pass",
+      "value": {
+        "record": "benchmarks/m04/wo11-b2-it1-v3/record.json",
+        "record_sha256": "ef97d20a2dd885fd5952557c72b303b18dacf6a0e104a4efae3e51aef2ec1f2e",
+        "code_commit": "43d65574a6ad42ef189bc45ce4bfa273eb097dbd",
+        "judged": false,
+        "repeats": 8,
+        "repeat_bitwise_equal": 8
+      }
+    },
+    {
+      "id": "M04.A42",
+      "description": "M04 spec, A42: Stripping M04's additions from the served surface gives M02's surface exactly, and",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_study_job.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A43",
+      "description": "M04 spec, A43: Plans and admission (default gate)",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo19_box_v2.py"
+          ],
+          "passed": 9,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A44",
+      "description": "M04 spec, A44: The `b2` path end to end on a synthetic parent (default gate; wiring, no statistic asserted)",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo19_box_v2.py"
+          ],
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A45",
+      "description": "M04 spec, A45: `surrogate_evidence`'s decision table (default gate; facet level)",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo20_isolation.py"
+          ],
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A46",
+      "description": "M04 spec, A46: The synthetic parents do not leak into production (default gate)",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo20_isolation.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.A47",
+      "description": "M04 spec, A47: The A19 fixtures against a fresh run (default gate; replaces WO-9's inclusion-list comparison)",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_wo9_synthetic_loop.py"
+          ],
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.supporting",
+      "description": "The M04 tests that name no assertion (wiring, refusals, regressions).",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m04_conformal.py",
+            "tests/test_m04_iterations.py",
+            "tests/test_m04_numerical_policy.py",
+            "tests/test_m04_plan.py",
+            "tests/test_m04_quadratic.py",
+            "tests/test_m04_schemas.py",
+            "tests/test_m04_study.py",
+            "tests/test_m04_study_job.py",
+            "tests/test_m04_synthetic_parents.py",
+            "tests/test_m04_wo7_surrogate_project.py",
+            "tests/test_m04_wo7_surrogate_unit.py",
+            "tests/test_m04_wo8_replacement.py",
+            "tests/test_m04_wo9_synthetic_loop.py"
+          ],
+          "passed": 44,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "id": "M04.gate",
+      "description": "The default gate (`scripts/gate.sh`) at the evidence commit.",
+      "result": "pass",
+      "value": {
+        "passed": true,
+        "summary": "GATE PASS a9566a6: 8647 passed, 31 skipped, 2 deselected, 1 warning in 1523.23s (0:25:23)",
+        "stdout_sha256": "14e5fc1c5a266f3cbc3ae8bc27bb6a2b88b9b0a9c6d8f02f79baec7b1dfd21f1"
+      }
+    },
+    {
+      "id": "M04.W23.conservation",
+      "description": "W23 (spec §15, as amended by §18 and §19 A2.13): Conservation.",
+      "result": "pass",
+      "value": {
+        "assertions": {
+          "A13": "pass",
+          "A26": "pass"
+        }
+      }
+    },
+    {
+      "id": "M04.W23.domain",
+      "description": "W23 (spec §15, as amended by §18 and §19 A2.13): Domain.",
+      "result": "pass",
+      "value": {
+        "assertions": {
+          "A03": "pass",
+          "A14": "pass",
+          "A15": "pass",
+          "A31": "pass",
+          "A44": "pass"
+        }
+      }
+    },
+    {
+      "id": "M04.W23.derivative",
+      "description": "W23 (spec §15, as amended by §18 and §19 A2.13): Derivative.",
+      "result": "pass",
+      "value": {
+        "assertions": {
+          "A12": "pass",
+          "A17": "pass",
+          "A31": "pass"
+        }
+      }
+    },
+    {
+      "id": "M04.W23.default_uq",
+      "description": "W23 (spec §15, as amended by §18 and §19 A2.13): Default UQ.",
+      "result": "pass",
+      "value": {
+        "assertions": {
+          "A04": "pass",
+          "A05": "pass",
+          "A06": "pass",
+          "A07": "pass",
+          "A08": "pass",
+          "A16": "pass",
+          "A17": "pass",
+          "A18": "pass",
+          "A19": "pass",
+          "A20": "pass",
+          "A21": "pass",
+          "A22": "pass",
+          "A23": "pass",
+          "A24": "pass",
+          "A31": "pass",
+          "A32": "pass",
+          "A37": "pass",
+          "A38": "pass",
+          "A42": "pass"
+        }
+      }
+    },
+    {
+      "id": "M04.W23.insufficient_data_outcome",
+      "description": "W23 (spec §15, as amended by §18 and §19 A2.13): Insufficient-data outcome.",
+      "result": "pass",
+      "value": {
+        "assertions": {
+          "A07": "pass",
+          "A11": "pass",
+          "A20": "pass",
+          "A21": "pass",
+          "A39": "pass"
+        }
+      }
+    },
+    {
+      "id": "M04.W23.frozen_splits_transforms",
+      "description": "W23 (spec §15, as amended by §18 and §19 A2.13): Frozen splits/transforms.",
+      "result": "pass",
+      "value": {
+        "assertions": {
+          "A01": "pass",
+          "A02": "pass",
+          "A23": "pass",
+          "A32": "pass",
+          "A36": "pass",
+          "A40": "pass",
+          "A43": "pass",
+          "A47": "pass"
+        }
+      }
+    },
+    {
+      "id": "M04.W23.promotion_and_rollback",
+      "description": "W23 (spec §15, as amended by §18 and §19 A2.13): Promotion and rollback.",
+      "result": "pass",
+      "value": {
+        "assertions": {
+          "A25": "pass",
+          "A26": "pass",
+          "A27": "pass",
+          "A28": "pass",
+          "A29": "pass",
+          "A30": "pass",
+          "A33": "not_applicable",
+          "A45": "pass",
+          "A46": "pass"
+        }
+      }
+    },
+    {
+      "id": "M04.W23",
+      "description": "§15's numerical-verification condition: A01–A30, A34, A35 tested in the default gate, A31–A32 recorded for the real variant. W23's verdict is the verdict lane's.",
+      "result": "pass",
+      "value": {
+        "condition": {
+          "A01": "pass",
+          "A02": "pass",
+          "A03": "pass",
+          "A04": "pass",
+          "A05": "pass",
+          "A06": "pass",
+          "A07": "pass",
+          "A08": "pass",
+          "A09": "pass",
+          "A10": "pass",
+          "A11": "pass",
+          "A12": "pass",
+          "A13": "pass",
+          "A14": "pass",
+          "A15": "pass",
+          "A16": "pass",
+          "A17": "pass",
+          "A18": "pass",
+          "A19": "pass",
+          "A20": "pass",
+          "A21": "pass",
+          "A22": "pass",
+          "A23": "pass",
+          "A24": "pass",
+          "A25": "pass",
+          "A26": "pass",
+          "A27": "pass",
+          "A28": "pass",
+          "A29": "pass",
+          "A30": "pass",
+          "A34": "pass",
+          "A35": "pass",
+          "A31": "pass",
+          "A32": "pass"
+        },
+        "not_in_a_w23_row": [
+          "A09",
+          "A10",
+          "A34",
+          "A35",
+          "A41"
+        ],
+        "real_verdict": "NOT_PROMOTABLE"
+      }
+    },
+    {
+      "id": "M04.register",
+      "description": "Register entries decided by M04, and the ADRs they name (all present).",
+      "result": "pass",
+      "value": {
+        "register": "docs/decision-register.md",
+        "entries": [
+          {
+            "id": "R-240",
+            "title": "The reactor surrogate is a native extent-fixed unit solved on `revision_eo`, not the experiment inside M02's coupling"
+          },
+          {
+            "id": "R-241",
+            "title": "Surrogate inputs: seven affine-scaled inlet coordinates; outputs: M02's (X, ΔT); inadmissible predictions refused, never projected"
+          },
+          {
+            "id": "R-242",
+            "title": "The reference distribution is uniform on a registered box inside the data domain (`m04-c1-box7-v1`)"
+          },
+          {
+            "id": "R-243",
+            "title": "One joint conformal score whose scales are the declared width limits"
+          },
+          {
+            "id": "R-244",
+            "title": "A failed draw scores +∞ and stays in n or m; a draw without a deterministic result makes the plan incomplete"
+          },
+          {
+            "id": "R-245",
+            "title": "The iteration-1 plan: 144 / 118 / 300 draws and 5 gradient centres, registered by seed before the parent runs"
+          },
+          {
+            "id": "R-246",
+            "title": "Promotion: an integer coverage test against 0.90, q̂ ≤ 1, admissibility and a 25 % gradient limit; IE > NP > PROMOTABLE"
+          },
+          {
+            "id": "R-247",
+            "title": "The empirical domain is the reference box, flagged with its scaled excess; the hard domain is the parent's"
+          },
+          {
+            "id": "R-248",
+            "title": "Surrogate promotion and rollback are ADR 0035's checked commit plus the facet `surrogate_evidence` and one `derivatives` exception"
+          },
+          {
+            "id": "R-249",
+            "title": "A further iteration redraws calibration and test, trains on all earlier reference draws, and is automatic only after a coverage-only failure"
+          },
+          {
+            "id": "R-290",
+            "title": "A later surrogate iteration lists the earlier reference draws as requests; `it2` and `it3` are committed; admission enforces when one may run"
+          },
+          {
+            "id": "R-291",
+            "title": "M04's floats need no new class: R1/R2 given the same records, conditional R0 decisions with a 10⁻⁸ gap rule"
+          },
+          {
+            "id": "R-292",
+            "title": "ModelEvidence names its manifest by hash; the manifest does not hash its evidence"
+          },
+          {
+            "id": "R-293",
+            "title": "The surrogate study's outputs and refusals: manifest then evidence; a budget refusal writes nothing; plan refusals at admission"
+          },
+          {
+            "id": "R-294",
+            "title": "Concurrency for surrogate studies is a cache pre-warm with `experiment` jobs, at most the physical cores; the study stays sequential"
+          },
+          {
+            "id": "R-295",
+            "title": "M04's served-surface additions are checked by stripping (R-234's pattern); `max_cold_experiments` is a Q26 pinned scalar"
+          },
+          {
+            "id": "R-301",
+            "title": "W27 Amendment 3: `c1.reactor_surrogate` performs no function, for a new reason `surrogate_model`; J3–J6 compare a surrogate-carrying build with `hypothetical_v02_a3`"
+          },
+          {
+            "id": "R-302",
+            "title": "Corpus tests that bind every builder get a fixture-only `SurrogateResolver`, not an exclusion list"
+          },
+          {
+            "id": "R-322",
+            "title": "The real reactor's surrogate gets its own reference box `m04-c1-box7-v2` and plan family `b2-it1…3`; the v1 plans become synthetic-only (closes M04 N4)"
+          },
+          {
+            "id": "R-323",
+            "title": "`surrogate_evidence` reports every reason, each failure cause is tested alone, and an unresolvable manifest fails closed (M04 build log E15, E16)"
+          },
+          {
+            "id": "R-324",
+            "title": "The M04 synthetic parents enter a project only through a test-only injection, checked not to leak (M04 build log E22)"
+          },
+          {
+            "id": "R-325",
+            "title": "A fixture whose only drift is its environment fingerprint is not re-taken; it is compared with a fresh run outside a closed environment set (M04 build log E23)"
+          }
+        ],
+        "adrs": [
+          "docs/adr/0025-cross-platform-replay-comparison.md",
+          "docs/adr/0033-external-model-execution-and-experiment-records.md",
+          "docs/adr/0034-external-models-in-a-flowsheet-solve.md",
+          "docs/adr/0035-model-replacement-and-promotion.md",
+          "docs/adr/0036-m04-surrogate-evidence-and-default-split-conformal.md",
+          "docs/adr/0037-m04-surrogate-unit-promotion-and-rollback.md"
+        ],
+        "adrs_missing": []
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/derivations/M04-spec.md",
+      "sha256": "b57332957aca18bb2354a7d6c76a25c0349d76d736b63d8b2eb559e08255da85",
+      "description": "The specification (assertions, W23 table, amendments 1-2)."
+    },
+    {
+      "path": "docs/design/M04-build-decisions.md",
+      "sha256": "222c5356d6a17fcf03446499011c4c5b84a9193195f3696d6764aefed4f7ac01",
+      "description": "The build log (E-entries with the measured values)."
+    },
+    {
+      "path": "benchmarks/m04/reference_values.json",
+      "sha256": "d0a23a01c1e3f8c92ab33a3565d30337a755cb8c29237044572dacb3a38286f7",
+      "description": "The generator's reference values (A34)."
+    },
+    {
+      "path": "benchmarks/m04/numerical_policy_surrogate.yaml",
+      "sha256": "534a4096fc476ef0ac4cb7377afd55002dbf13b531834b271efcba0112c7f747",
+      "description": "M04's numerical-policy addendum."
+    },
+    {
+      "path": "benchmarks/m04/plan-b2-it1.json",
+      "sha256": "8025ba5b53c6e1af4fd6d31826904fcec627cccc82376efcb2d9abe0eadc4962",
+      "description": "The registered plan WO-11 ran (box v2, iteration 1)."
+    },
+    {
+      "path": "benchmarks/m04/wo11-b2-it1-v3/record.json",
+      "sha256": "ef97d20a2dd885fd5952557c72b303b18dacf6a0e104a4efae3e51aef2ec1f2e",
+      "description": "WO-11's record: A31, A32, A41, failures."
+    },
+    {
+      "path": "benchmarks/m04/wo11-b2-it1-v3/manifest.json",
+      "sha256": "d65bb0225f36780cebe63c211b7706aa42613ef8edc4714218b1ddec58be1717",
+      "description": "WO-11's surrogate manifest (NOT_PROMOTABLE)."
+    },
+    {
+      "path": "benchmarks/m04/wo11-b2-it1-v3/evidence.json",
+      "sha256": "8305c80527ec771dcc026784fbffcc68f59d5fe7d40a9b642244465ba21fc9a2",
+      "description": "WO-11's model evidence naming the manifest."
+    }
+  ],
+  "limitations": [
+    "The real surrogate is NOT_PROMOTABLE (band_not_finite): WO-11 on `b2-it1` with reactor v3 recorded 26 of 632 registered experiments as deterministic reactor_not_accepted(certificate) (calibration 5/118, gradient 0/5, test 18/300, training 3/144), so k = 114 of n = 118 tolerates only 4 null scores and q̂ = +∞ (recorded as null). This is a measured property of v3 (§19 A2.13), not a defect of M04; per N6 M04 is `tested` whatever the real verdict, and M05 proceeds with the parent. The real surrogate claims nothing beyond its recorded verdict.",
+    "A33 (the real surrogate in `C1-LOOP-M02-v1`, rollback, one promoted commit) was not run: it is conditional on a PROMOTABLE A31. Q-A2.1 (does the surrogate-backed loop's reactor inlet lie in box v2?) stays open without A33's record.",
+    "The real-reactor records (A31, A32, A41) are opt-in: the pinned reactor environment, Linux, one machine, read here and not re-run. A32's bitwise manifest equality holds at the thread environment WO-11 ran under (single-threaded BLAS): with multi-threaded BLAS the re-submitted study's manifest differs in the last bits of the fit (build decision E33), the `promotion` block unchanged. Whether the study pins its BLAS threads or records them is open for the design lane.",
+    "The W23 rows here are numerical verification of §15's items; W23's verdict is the `verdict` lane's, not this manifest's. Self-generated outputs (the A19 fixtures, the WO-11 record) are regression evidence; the correctness assertions rest on the specification's closed forms and the generator's independent reference values (A34)."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

@@ -523,29 +523,37 @@ def test_every_subject_is_among_its_aliases(today_rows: dict[str, dict[str, Any]
 # =================================================================================================
 
 
-#: §21.8 J6: `list_models`' SHA-256 at M02's join (21 models), recorded in the coverage document.
+#: §21.8 J6: `list_models`' SHA-256 at M02's join (21 models).
 JOINED_LIST_MODELS_SHA256 = "90d9da8e08f344814f78fc995c0596e5eaf0cb2f7e7a568d3b212c143fc9533e"
+#: §22.2 J6′: `list_models`' SHA-256 with `c1.reactor_surrogate` registered (22 models), re-taken at
+#: the commit that registers it on wp/M04 and recorded in the coverage document.
+A3_LIST_MODELS_SHA256 = "f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4"
 
 
 def test_snapshot_of_this_build_is_todays_registry() -> None:
-    """§21.8 J3 (M02's join): this build's binder exposes `SELECTABLE_BASES` and `MODEL_BASES`
-    and is read `bases-v1`. Its model set, and each route matched by `provider_id`, are those of
-    `dry_illustration.json#/snapshots/hypothetical_v02` — the "SYN-001 only" branch, since R-288
-    puts each `syn001.*` model on SYN-001's basis only (F-A2-1)."""
+    """§21.8 J3 (M02's join), as §22.2 restates it for a build carrying `c1.reactor_surrogate`:
+    this build's binder exposes `SELECTABLE_BASES` and `MODEL_BASES` and is read `bases-v1`. Its
+    model set, and each route matched by `provider_id`, are those of
+    `dry_illustration.json#/amendment_3/snapshot` (`hypothetical_v02_a3`) — the "SYN-001 only"
+    branch, since R-288 puts each `syn001.*` model on SYN-001's basis only (F-A2-1)."""
     from openflowsheet.application import revision_binding  # noqa: PLC0415
 
     live = snapshot.build_snapshot()
     assert snapshot.reading_for(revision_binding, live["package_version"]) == "bases-v1"
     assert live["schema"] == "w27-registry-snapshot-v1"
     assert live["package_version"] == "0.1.1"
-    assert live["list_models_sha256"] == JOINED_LIST_MODELS_SHA256
-    assert live["list_models_sha256"] != TODAY["list_models_sha256"]
+    assert live["list_models_sha256"] == A3_LIST_MODELS_SHA256
+    assert live["list_models_sha256"] not in (
+        TODAY["list_models_sha256"],
+        JOINED_LIST_MODELS_SHA256,
+    )
     ids = {m["model_id"] for m in live["models"]}
-    assert ids == {m["model_id"] for m in HYPOTHETICAL["models"]}
+    assert ids == {m["model_id"] for m in HYPOTHETICAL_A3["models"]}
     assert {r["provider_id"]: r for r in live["routes"]} == {
-        r["provider_id"]: r for r in HYPOTHETICAL["routes"]
+        r["provider_id"]: r for r in HYPOTHETICAL_A3["routes"]
     }
-    assert live["models"] == HYPOTHETICAL["models"] and live["routes"] == HYPOTHETICAL["routes"]
+    assert live["models"] == HYPOTHETICAL_A3["models"]
+    assert live["routes"] == HYPOTHETICAL_A3["routes"]
     assert live["routes_per_revision"] == 1
     assert set(live) == {
         "schema",
@@ -609,12 +617,10 @@ class _ConstructedBasis:
 
 
 TODAY_MODEL_IDS = sorted(m["model_id"] for m in TODAY["models"])
-#: The eight C1 ids of Amendment 2. A build carrying `c1.reactor_surrogate` compares J3-J6 with
-#: `hypothetical_v02_a3` (§22.2); that is wp/M04's, so the surrogate is left out here.
+#: The nine C1 ids of Amendment 3: Amendment 2's eight and `c1.reactor_surrogate`. This build
+#: carries the surrogate, so J3-J6 compare with `hypothetical_v02_a3` (§22.2).
 C1_MODEL_IDS = sorted(
-    m
-    for m in registration.load()["units"]["model_functions"]
-    if m.startswith("c1.") and m != "c1.reactor_surrogate"
+    m for m in registration.load()["units"]["model_functions"] if m.startswith("c1.")
 )
 
 
@@ -663,32 +669,35 @@ def test_bases_v1_is_chosen_by_the_tables_whatever_the_version() -> None:
 
 
 def test_bases_v1_reads_the_hypothetical_v02_routes() -> None:
-    """§21.8 J3's expectation: with the recommended MODEL_BASES the reading gives the routes of
-    `dry_illustration.json#/snapshots/hypothetical_v02/snapshot`, route for route."""
+    """§21.8 J3's expectation, as §22.2 restates it: with the recommended MODEL_BASES the reading
+    gives the routes of `dry_illustration.json#/amendment_3/snapshot`, route for route."""
     routes = snapshot._routes_bases_v1(constructed_binder(), TODAY_MODEL_IDS + C1_MODEL_IDS)
-    assert routes == HYPOTHETICAL["routes"]
+    assert routes == HYPOTHETICAL_A3["routes"]
     assert routes[0] == TODAY["routes"][0]  # SYN-001's route is 0.1.1's
 
 
 def test_bases_v1_with_syn001_models_on_both_bases() -> None:
-    """J3's other expectation (F-A2-1 answered "SYN-001's models bind on both")."""
+    """J3's other expectation (F-A2-1 answered "SYN-001's models bind on both"): §22.2's
+    `binder_2587f14` C1 route plus the surrogate."""
     model_bases = {m: frozenset({"syn001", "pr-c1-v1"}) for m in TODAY_MODEL_IDS}
     model_bases |= {m: frozenset({"pr-c1-v1"}) for m in C1_MODEL_IDS}
     routes = snapshot._routes_bases_v1(
         constructed_binder(model_bases), TODAY_MODEL_IDS + C1_MODEL_IDS
     )
-    assert routes[0] == HYPOTHETICAL["routes"][0]
-    assert routes[1]["model_ids"] == AMENDMENT_2["binder_2587f14"]["c1_route_model_ids"]
-    assert routes[1]["components"] == HYPOTHETICAL["routes"][1]["components"]
+    assert routes[0] == HYPOTHETICAL_A3["routes"][0]
+    assert routes[1]["model_ids"] == sorted(
+        [*AMENDMENT_2["binder_2587f14"]["c1_route_model_ids"], SURROGATE]
+    )
+    assert routes[1]["components"] == HYPOTHETICAL_A3["routes"][1]["components"]
 
 
 def test_bases_v1_build_snapshot_on_a_constructed_binder() -> None:
-    """Through `build_snapshot`: `list_models` is this build's (since M02's join, the 21 ids), so
-    a binder whose tables hold the C1 ids reads, as the hypothetical v0.2's routes, and one whose
-    tables hold 0.1.1's 13 ids only refuses."""
+    """Through `build_snapshot`: `list_models` is this build's (since the surrogate's registration,
+    the 22 ids), so a binder whose tables hold the C1 ids reads, as `hypothetical_v02_a3`'s routes,
+    and one whose tables hold 0.1.1's 13 ids only refuses."""
     live = snapshot.build_snapshot(binding=constructed_binder())
     assert live["routes_per_revision"] == 1
-    assert live["routes"] == HYPOTHETICAL["routes"]
+    assert live["routes"] == HYPOTHETICAL_A3["routes"]
     coverage.check_snapshot(live, FACTS)
     today_only = constructed_binder({m: frozenset({"syn001"}) for m in TODAY_MODEL_IDS})
     with pytest.raises(snapshot.SnapshotUnsupportedError, match="list_models-only"):

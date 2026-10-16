@@ -208,6 +208,24 @@ def test_the_handshake_reports_the_scrubbed_environment(
     assert fingerprint["runner_sha256"] == RUNNER
 
 
+def test_e32_a_relative_attempt_directory_is_the_absolute_ones_fingerprint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """M04 E32: the launcher resolves the attempt directory, so a relative one (the child's cwd
+    is that directory) and a symlinked one hand the child the `HOME`/`TMPDIR` it substitutes."""
+    program = _program(tmp_path)
+    (tmp_path / "link").symlink_to(tmp_path, target_is_directory=True)
+    monkeypatch.chdir(tmp_path)
+    fingerprints = []
+    for attempt in (tmp_path / "abs", Path("rel"), tmp_path / "link" / "sym"):
+        result = launch(program, _request(), attempt, Limits(timeout_s=30.0), handshake=True)
+        assert result.status == "completed" and result.document is not None
+        fingerprints.append(result.document["fingerprint"])
+    assert fingerprints[0]["env_allowlist"]["HOME"] == "${ATTEMPT_DIR}"
+    assert fingerprints[0]["env_allowlist"]["TMPDIR"] == "${ATTEMPT_DIR}"
+    assert fingerprints[1] == fingerprints[0] and fingerprints[2] == fingerprints[0]
+
+
 def test_every_other_exit_maps_as_registered(tmp_path: Path) -> None:
     program = _program(tmp_path)
     limits = Limits(timeout_s=30.0)
