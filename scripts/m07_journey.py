@@ -87,6 +87,8 @@ UNITS: Final = {"preheater": "preheater", "flash": "flash", "reactor": "reactor"
 COMPONENTS: Final = ("H2", "N2", "NH3", "Ar", "CH4")
 #: R1's first-evaluation estimate of cold reactor experiments: M02 G12's 4 per loop (spec §3 F3).
 R1_FIRST_ESTIMATE: Final = int(JOURNEY["g12_facts"]["experiments_per_loop"])
+#: A grid point the budget stopped before it was evaluated (§4.5).
+NOT_EVALUATED_BUDGET: Final = "NOT_EVALUATED(budget)"
 FORBIDDEN: Final = re.compile(
     r"\b(?:" + "|".join(re.escape(w) for w in REPORT["forbidden_tokens"]) + r")\b", re.IGNORECASE
 )
@@ -304,7 +306,7 @@ class RungBudget:
 
     An evaluation would exceed the budget when the spent total plus the estimate of the next
     evaluation passes the cap; the estimate is the largest cost seen so far in the rung, and before
-    the first evaluation `first_estimate` cold experiments and 0 s (build decision J4). Only
+    the first evaluation `first_estimate` cold experiments and 0 s (Amendment 1 A1.2, R-421). Only
     out-of-process unit executions are cold reactor experiments (Amendment 1 A1.4, R-423)."""
 
     cold_cap: int
@@ -554,10 +556,12 @@ def run_grid(
     evaluate: Evaluator,
     budget: RungBudget,
     extras: ParentExtras | None = None,
+    clock: Callable[[], float] = time.monotonic,
 ) -> tuple[list[dict[str, Any]], bool]:
-    """The nine grid evaluations of a rung, the budget checked before each (§4.5). A point not
-    evaluated because the budget would be exceeded is recorded as `NOT_EVALUATED(budget)`.
-    Returns the entries and whether the budget ran out."""
+    """The nine grid evaluations of a rung in grid order, the budget checked before each (§4.5,
+    A1.2). A point not evaluated because the budget would be exceeded is recorded as
+    `NOT_EVALUATED(budget)`. A point's `wall_s` is everything spent on it: the loop solve and its
+    parent extras. Returns the entries and whether the budget ran out."""
     entries: list[dict[str, Any]] = []
     exhausted = False
     for literal in GRID_LITERALS:
@@ -565,13 +569,15 @@ def run_grid(
         if exhausted or budget.would_exceed():
             exhausted = True
             entry = empty_entry(t, literal)
-            entry["outcome"] = "NOT_EVALUATED(budget)"
+            entry["outcome"] = NOT_EVALUATED_BUDGET
             entries.append(entry)
             continue
         entry = evaluate(t, literal)
-        budget.charge(int(entry["experiments"]["cold"]), float(entry["wall_s"]))
         if extras is not None and entry["verified"]:
+            started = clock()
             entry["e"], entry["constraints"] = extras(t, entry)
+            entry["wall_s"] = float(entry["wall_s"]) + (clock() - started)
+        budget.charge(int(entry["experiments"]["cold"]), float(entry["wall_s"]))
         entries.append(entry)
         if budget.overrun:
             exhausted = True
@@ -1354,15 +1360,10 @@ def _check_grid_rung(name: str, rung: Mapping[str, Any]) -> list[str]:
             problems.append(f"{name} {entry['T_literal']}: verified without a run sha256")
     if problems:
         return problems
+    problems.extend(_check_stop(name, rung))
     decided = rung_decision(grid)
     expected = decided["outcome"]
-    if outcome == "BUDGET_EXHAUSTED":
-        if not any(str(e["outcome"]).startswith("NOT_EVALUATED") for e in grid) and not (
-            rung["budget"]["spent"]["cold"] > rung["budget"]["cold"]
-            or rung["budget"]["spent"]["wall_s"] > rung["budget"]["wall_s"]
-        ):
-            problems.append(f"{name} is BUDGET_EXHAUSTED with nothing unevaluated and no overrun")
-    elif outcome != expected:
+    if outcome != "BUDGET_EXHAUSTED" and outcome != expected:
         problems.append(f"{name} outcome {outcome} is not the rule's {expected}")
     if rung["decision"] != decided["decision"]:
         problems.append(
@@ -1370,6 +1371,42 @@ def _check_grid_rung(name: str, rung: Mapping[str, Any]) -> list[str]:
         )
     if rung["bound_activity"] != bound_activity(rung["decision"]):
         problems.append(f"{name} bound activity is not the rule's")
+    return problems
+
+
+def _check_stop(name: str, rung: Mapping[str, Any]) -> list[str]:
+    """A1.2's re-derivation of where the budget stopped a grid rung, from the recorded costs in
+    grid order: each point is unevaluated iff the rung had stopped or spent + estimate would pass
+    a cap; the spent totals are the points' left-to-right sums exactly; the rung is
+    `BUDGET_EXHAUSTED` iff it stopped."""
+    problems: list[str] = []
+    budget = rung["budget"]
+    cap_c, cap_w = budget["cold"], budget["wall_s"]
+    est_c, est_w = budget_for(name).first_estimate, 0.0
+    spent_c, spent_w = 0, 0.0
+    stopped = False
+    for entry in rung["grid"]:
+        unevaluated = entry["outcome"] == NOT_EVALUATED_BUDGET
+        if stopped or spent_c + est_c > cap_c or spent_w + est_w > cap_w:
+            if not unevaluated:
+                problems.append(f"{name} {entry['T_literal']} was evaluated after the budget stop")
+            stopped = True
+            continue
+        if unevaluated:
+            problems.append(
+                f"{name} {entry['T_literal']} is NOT_EVALUATED(budget) with budget left"
+            )
+            continue
+        cold, wall = int(entry["experiments"]["cold"]), float(entry["wall_s"])
+        spent_c += cold
+        spent_w += wall
+        est_c, est_w = max(est_c, cold), max(est_w, wall)
+        if spent_c > cap_c or spent_w > cap_w:
+            stopped = True
+    if budget["spent"] != {"cold": spent_c, "wall_s": spent_w}:
+        problems.append(f"{name} budget.spent is not the re-derived {spent_c} / {spent_w!r}")
+    if (rung["outcome"] == "BUDGET_EXHAUSTED") != stopped:
+        problems.append(f"{name} BUDGET_EXHAUSTED disagrees with the re-derived budget stop")
     return problems
 
 
@@ -1530,7 +1567,9 @@ def run_r1(
         extras = m05_parent_extras(document, runner)
     budget = budget_for("R1")
     evaluate = LoopEvaluator(document, runner, artifacts, "R1", clock)
-    entries, exhausted = run_grid("R1", evaluate, budget, extras if callable(extras) else None)
+    entries, exhausted = run_grid(
+        "R1", evaluate, budget, extras if callable(extras) else None, clock
+    )
     return grid_rung(entries, exhausted, budget)
 
 

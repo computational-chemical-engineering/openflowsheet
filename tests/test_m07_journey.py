@@ -497,6 +497,40 @@ def test_a13_a_rung_stops_before_the_call_that_would_exceed(
     assert m07._check_grid_rung("R1", rung) == []
 
 
+def test_a13_check_rederives_where_the_budget_stopped(dry: Mapping[str, Any]) -> None:
+    """A1.2 (R-421): `check` re-derives the stop from the recorded costs in grid order and
+    rejects a point relabelled NOT_EVALUATED(budget) while budget remains, and a point evaluated
+    after the stop."""
+    relabelled = copy.deepcopy(dict(dry))
+    last = relabelled["rungs"]["R1"]["grid"][8]
+    relabelled["rungs"]["R1"]["grid"][8] = {
+        **m07.empty_entry(last["T"], last["T_literal"]),
+        "outcome": m07.NOT_EVALUATED_BUDGET,
+    }
+    problems = m07.check(relabelled, None)
+    assert "R1 693.15 is NOT_EVALUATED(budget) with budget left" in problems
+
+    budget = m07.RungBudget(10, 1e9, first_estimate=4)
+    evaluate = CountingEvaluator(4, 1.0)
+    entries, exhausted = m07.run_grid("R1", evaluate, budget)
+    rung = m07.grid_rung(entries, exhausted, budget)
+    assert m07._check_stop("R1", rung) == []
+    late = copy.deepcopy(rung)
+    late["grid"][2] = evaluate(late["grid"][2]["T"], late["grid"][2]["T_literal"])
+    assert "R1 663.15 was evaluated after the budget stop" in m07._check_stop("R1", late)
+
+
+def test_a13_a_points_wall_includes_its_parent_extras() -> None:
+    """A1.2 item 2: the extras run inside the point's timing."""
+    ticks = iter(float(k) for k in range(100))
+    budget = m07.RungBudget(60, 1e9, first_estimate=4)
+    entries, _ = m07.run_grid(
+        "R1", CountingEvaluator(0, 0.5), budget, synthetic_extras, lambda: next(ticks)
+    )
+    assert [e["wall_s"] for e in entries] == [1.5] * 9
+    assert budget.wall_s == 13.5
+
+
 def test_a13_r1_starts_from_g12s_four_experiments_per_loop() -> None:
     assert (
         m07.budget_for("R1").first_estimate == REG["journey"]["g12_facts"]["experiments_per_loop"]
