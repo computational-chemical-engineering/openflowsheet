@@ -2788,6 +2788,30 @@ harvest:
   to:
   - L44
   note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled (R-343, class E)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[0]
+  sha256: 6f416725a7145a7c3e25042a368e6520de953e97be9239c13c2da592b32122e9
+  class: P
+  to: []
+  note: follow-up outside the requirements pattern; extends M02 (D10)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[1]
+  sha256: ddd5c9b486877e4f10ecfb18fbe09e9ba45eb54afad0951bf805cb00e20ab448
+  class: P
+  to: []
+  note: hashes inherited from the M02 manifest (no new case or environment)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[2]
+  sha256: e567419bc3932c58bdec2ff051aa393cdde05835abed77954e2ef19836513e8f
+  class: P
+  to: []
+  note: gate summary-line hash; process note
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[3]
+  sha256: 50208afc494e1e9455f4178014cb0aeb34f1cd9079ef859fd1471a3d76925556
+  class: P
+  to: []
+  note: tested, not reviewed (merge verdict only)
 - manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
   item: limitations[0]
   sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
