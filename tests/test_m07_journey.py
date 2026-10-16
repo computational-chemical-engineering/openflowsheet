@@ -294,7 +294,49 @@ def test_a08_r0_spends_no_reactor_experiment_within_its_wall_budget(r0: Mapping[
     # experiment; its own executions are `in_process`.
     assert all(p["experiments"]["cold"] == 0 for p in r0["grid"])
     assert all(p["experiments"]["in_process"] > 0 for p in r0["grid"])
-    assert all(p["X_pass"] == pytest.approx(0.25, rel=1e-12) for p in r0["grid"])
+
+
+def test_a08_r0s_reported_quantities_meet_their_closed_forms(r0: Mapping[str, Any]) -> None:
+    """A1.5 (R-424), at each of the nine points: X_pass = 0.25 (the stand-in's xi = 0.25 n_N2,in);
+    recycle and purge flows T-independent (F2); the preheater heats and the flash cools, both
+    duties strictly monotone in T (c_p > 0 at fixed flows and S2 state)."""
+    grid = r0["grid"]
+    for point in grid:
+        assert abs(point["X_pass"] - R0_FACTS["X_pass"]) <= R0_FACTS["X_pass_tol_abs"]
+    tol = REG["journey"]["rung_flatness_tol_rel"]
+    for key in ("n_recycle_mol_s", "n_purge_NH3_mol_s"):
+        values = [p[key] for p in grid]
+        assert max(values) - min(values) <= tol * max(abs(v) for v in values), key
+    q_heat = [p["Q_preheater_W"] for p in grid]
+    q_flash = [p["Q_flash_W"] for p in grid]
+    assert all(q > 0 for q in q_heat) and all(
+        b > a for a, b in zip(q_heat[:-1], q_heat[1:], strict=True)
+    )
+    assert all(q < 0 for q in q_flash) and all(
+        b < a for a, b in zip(q_flash[:-1], q_flash[1:], strict=True)
+    )
+    assert all(p["extrapolated"] == 0 for p in grid)  # the final iterate is within the domain
+
+
+def _coupling(*statuses: str) -> dict[str, Any]:
+    return {
+        "frozen": {"reactor": {"fingerprint": {"kind": "in_process"}}},
+        "iterations": [
+            {"units": {"reactor": {"attempts": [{}], "result": {"envelope": {"domain_status": s}}}}}
+            for s in statuses
+        ],
+    }
+
+
+def test_a08_extrapolated_counts_only_the_last_coupling_iteration() -> None:
+    """A1.5: iterations before the last are the solve's path, not its result."""
+    experiments, extrapolated = m07.coupling_attribution(
+        _coupling("extrapolated", "within_data_domain")
+    )
+    assert extrapolated == 0
+    assert experiments == {"cold": 0, "store_hit": 0, "in_process": 2}
+    assert m07.coupling_attribution(_coupling("within_data_domain", "extrapolated"))[1] == 1
+    assert m07.coupling_attribution(None) == ({"cold": 0, "store_hit": 0, "in_process": 0}, 0)
 
 
 # -- A10, A11: check and render on the dry-run record ---------------------------------------------

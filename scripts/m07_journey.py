@@ -380,13 +380,18 @@ def coupling_attribution(record: Mapping[str, Any] | None) -> tuple[dict[str, in
     charged to M07-budget-v1 — and `in_process` those of in-process units' entries (a unit whose
     `frozen.<unit>.fingerprint.kind` is `in_process`), so `cold + in_process` is the record's
     executions; `store_hit` counts entries with `cache_hit` true. `extrapolated` counts the
-    experiments flagged `extrapolated` (R-169)."""
+    entries of the **last** iteration whose envelope `domain_status` is `extrapolated` (R-169;
+    A1.5, R-424): those are the experiments whose outputs the certified state uses — the writer
+    returns `CONVERGED` right after appending the accepted iterate (`orchestrator.coupling.couple`)
+    and certifies against `iterations[-1]` (`coupling_evidence`); earlier iterations are the
+    solve's path, not its result."""
     cold = hits = in_process = extrapolated = 0
     kinds = {
         unit: ((frozen.get("fingerprint") or {}).get("kind"))
         for unit, frozen in ((record or {}).get("frozen") or {}).items()
     }
-    for iteration in (record or {}).get("iterations", ()):
+    iterations = list((record or {}).get("iterations") or ())
+    for iteration in iterations:
         for unit, entry in (iteration.get("units") or {}).items():
             attempts = len(entry.get("attempts") or ())
             hits += bool(entry.get("cache_hit"))
@@ -394,8 +399,9 @@ def coupling_attribution(record: Mapping[str, Any] | None) -> tuple[dict[str, in
                 in_process += attempts
             else:
                 cold += attempts
-            envelope = (entry.get("result") or {}).get("envelope") or {}
-            extrapolated += envelope.get("domain_status") == "extrapolated"
+    for entry in (iterations[-1].get("units") or {}).values() if iterations else ():
+        envelope = (entry.get("result") or {}).get("envelope") or {}
+        extrapolated += envelope.get("domain_status") == "extrapolated"
     return {"cold": cold, "store_hit": hits, "in_process": in_process}, extrapolated
 
 
