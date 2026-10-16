@@ -1,27 +1,27 @@
 # M05 WO-8 handoff (2026-10-16, wp/M05)
 
-Done (commits on wp/M05 after 4c83d15):
-- §19.2 fd_check float rules + `decision_stable_with_an_fd_check` GENERATED record (t08 --check 0, v2 unchanged).
-- §19.1 `C1Parent(coupling_sink=)`; `tests/support/m05_replay.py` (G10 shape rule, integrity, content) + tests.
-- `C1Parent(truth_class=)` (S46); `scripts/m05_wo8_runs.py` (cases TR-E2, TR-E2-FD, LOOP-R; `--replay`).
-- Records committed: `benchmarks/m05/records/trust-region-study-{tr-e2-fd,loop-r}.*`.
-- Build log S45-S52 with the measured numbers (docs/design/M05-build-decisions.md, "WO-8").
+Done on wp/M05 after a9d05d3 (§20's build items; build log S53-S58 in docs/design/M05-build-decisions.md):
+- 4c9a083 WO-8a (R-401): `TRF_EXIT_UNVERIFIED(final_step_rejected | radius_limited)`, `final_step_ratio`,
+  `final_step_at_box_bound` (schema additive). F-15's k = 27/28 fixture → radius_limited; TR-E1 ratio 1.16e-3.
+  F-23: no `TRF_CONVERGED` assertion flipped.
+- 55674aa WO-8c (R-405, R-406): store hits refund their charge; the FD check runs inside the first stage-C run
+  (`TrfStage(gradient_check=)`), stage `fdcheck`, study cap only. Ledger entries gain `stage` (S55).
+- d56b42d WO-8d (R-400): `M05-basis-v2` (`basis.m05_basis_v2`, `C1Parent.decision_path`,
+  `TrfStage(path_for=)`); the script defaults to v2 (`run_case(..., basis_policy="M05-basis-v1")` for v1).
 
-Gate results: G5 FAIL (TR-E2 TRF_MAX_ITERATIONS, theta 4.01e-4; F-15 reproduced), G6 FAIL (TRF_MAX_ITERATIONS;
-fd_check passes), G9 FAIL (|T*-653.15| 1.067e-6 K > 1e-6), G10 PASS (3 replays, 0 differences),
-G7 partial (request identity holds; store bijection not evaluated), G8 NOT RUN (S52).
+Measured in memory (no record written), v2: TR-E2 `TRF_EXIT_WITHOUT_STEP`, θ 2.998e-6, T* 673.6507818736262 K
+(0.00734 K from T_ref); TR-E2-FD `TRF_CONVERGED` k = 1, T* 673.6294405283825 K; LOOP-R `TRF_CONVERGED` k = 2,
+T* 653.1500010581631 K. All record checkers clean. v1-basis runs bit-identical to a9d05d3.
 
-Open, for the design lane (one ruling round):
-1. F-15/G5/G6: TRF's theta sawtooth on C1 (S-log "Measured"). No limit raised.
-2. G9's 1e-6 K vs Ipopt's interior distance (5.3e-8 scaled).
-3. S51: store-hit budget charge vs `cold_used = trf_cold + parent_executions`; TR-E2 record parked in
-   evidence/M05/wo8/artifacts/ (ignored) until ruled; then rerun `scripts/m05_wo8_runs.py TR-E2` (remove the old
-   files first: the script refuses to overwrite) and commit.
-4. S50: the FD check's requests are in no run and no budget.
-5. S47, S49: assumption-block mapping; G9 "constant basis" read as R-277's affine basis.
+Known: the committed v1 records (TR-E2-FD, LOOP-R, 6a9d29d) do not replay even at a9d05d3 (≈1e-15 drift from
+iteration 0, environment) — WO-8e replaces them; judge G10 in one environment.
 
-Next executable action: LOOP-S work order (S52): SurrogateTruth (§6.4), surrogate link basis (§6.6, J1-J3
-1e-14 check), stage-A runner + P2 reference (§7.3), M04 it1-prefix manifest on m04-synthetic-smooth-v1; then
-`LOOP-S` case in the script and G8. Run: /tmp-free command
-`PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools
-.venv-nlp/bin/python scripts/m05_wo8_runs.py <CASE> [--replay]` (3-4 s each).
+Next executable actions (separate work orders):
+1. WO-8e: remove v1's TR-E2-FD and LOOP-R records in one commit; run
+   `PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools
+   .venv-nlp/bin/python scripts/m05_wo8_runs.py <CASE>` for TR-E2, TR-E2-FAR (new case: start 663.15 K, test-only),
+   TR-E2-FD, LOOP-R; then `--replay` each (G10); gates G5, G5b, G6, G7 (store bijection), G9, G10.
+   After WO-8e drop S54's `M05-basis-v2` condition in `request_identity_violations` if no v1 record remains.
+2. WO-8b: `SurrogateTruth` (§6.4), promoted link basis stages A and C, P2_A, LOOP-S (G8; F-22).
+Open for the design lane (review batch): S53 (bound flag for n_d > 1), S56 (`basis` block shape), S57 (refusal
+outcome without `start:`), S58 (`noise_ratio` units: c_k vs c_k/s_k).
