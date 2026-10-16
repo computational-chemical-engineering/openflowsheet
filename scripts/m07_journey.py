@@ -806,7 +806,10 @@ def r1_after(r1: Mapping[str, Any]) -> tuple[float | None, float | None, float |
 def journey_decision(
     r1: Mapping[str, Any], r3: Mapping[str, Any], check: Mapping[str, Any]
 ) -> dict[str, Any]:
-    """§4.4.7. Never from R0 or R2."""
+    """§4.4.7. Never from R0 or R2. The grid-only decision is R1's rung decision (§4.4.1), a
+    verified grid point whenever it exists; `INSUFFICIENT_EVIDENCE` iff it is null. The fallback's
+    reason: R3's candidate status when it is not `PARENT_LOCAL_EVIDENCE`, TC-1's outcome when it
+    is, R3's rung outcome when R3 has no candidate (Amendment 1 A1.8, R-427)."""
     candidate = r3.get("candidate")
     if (
         candidate
@@ -815,8 +818,8 @@ def journey_decision(
     ):
         t = candidate["T"]
         return {"label": "refined", "T": t, "reason": None, "bound_activity": bound_activity(t)}
-    best = best_point(r1.get("grid") or [])
-    if best is None:
+    t = r1.get("decision")
+    if t is None:
         return {
             "label": "INSUFFICIENT_EVIDENCE",
             "T": None,
@@ -829,7 +832,6 @@ def journey_decision(
         reason = candidate["status"]
     else:
         reason = r3["outcome"]
-    t = best["T"]
     return {"label": "grid_only", "T": t, "reason": reason, "bound_activity": bound_activity(t)}
 
 

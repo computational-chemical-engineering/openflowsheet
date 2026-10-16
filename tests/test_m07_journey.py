@@ -452,6 +452,29 @@ def test_a12_the_same_record_without_its_statement_is_rejected(
     assert "limitations differs from its re-derivation" in problems
 
 
+def test_a12_the_grid_only_decision_is_r1s_rung_decision(dry: Mapping[str, Any]) -> None:
+    """A1.8 (R-427): with nine equal J, R1 is INDIFFERENT and decides 673.15 K; the journey's
+    grid-only decision is that, not the best grid point (653.15 K, BOUND_LOWER, by the tie rule)."""
+
+    def flat(rungs: dict[str, Any]) -> None:
+        j = rungs["R1"]["grid"][0]["J"]
+        for point in rungs["R1"]["grid"]:
+            point["J"] = j
+        rungs["R3"] = m07.unsupported_rung("R3", m07.M05_UNAVAILABLE)
+        rungs["R1"].update(outcome="INDIFFERENT", decision=673.15, bound_activity="INTERIOR")
+
+    record = rederived(dry, flat)
+    assert record["rungs"]["R1"]["outcome"] == "INDIFFERENT"
+    assert m07.best_point(record["rungs"]["R1"]["grid"])["T"] == 653.15
+    assert record["decision"] == {
+        "label": "grid_only",
+        "T": 673.15,
+        "reason": m07.unsupported(m07.M05_UNAVAILABLE),
+        "bound_activity": "INTERIOR",
+    }
+    assert accepted(record) == []
+
+
 # -- A13: the budget is checked before each evaluation ---------------------------------------------
 
 
