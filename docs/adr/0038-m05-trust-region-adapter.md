@@ -191,6 +191,16 @@ None. No identity, schema or registered value changes.
 - **D8.** Exits are classified with θ re-checked from the returned model. `TRF_CONVERGED` needs at least one accepted
   TRSP step. The new outcomes are `TRF_EXIT_WITHOUT_STEP` and `TRF_STALLED_INCONSISTENT` (R-279; probe P14).
 
+## Amendment 2 (2026-10-16): rulings after WO-8 (design note §20)
+
+- **D7.** The reactor EF without a promoted surrogate gets `M05-basis-v2`: the affine Taylor model at w₀ plus
+  ½ c_k p(w)², the truth's curvature along the decision path. It is measured by a central second difference at the
+  decision tolerance, on two inlets from M02's pinned inner solve (R-400; F-15). Stage A uses the promoted quadratic,
+  not a constant (R-408; probe P14 b). The basis is frozen for the run, not the study (blueprint L427).
+- **D8.** An `Optimal` exit whose final logged step was rejected or radius-limited (s_K ≥ 0.99 Δ_K, unless the
+  decision is at a box bound) is `TRF_EXIT_UNVERIFIED(<reason>)`. It is not a convergence claim, returns a model, and
+  takes precedence over `TRF_CONVERGED` (R-401). `M05-trf-config-v1` is unchanged (R-402).
+
 ## Acceptance evidence
 
 Design note gates G1 (audit), G2 (pin), G3 (TR-E1), G4 (equivalence), G7 (accounting mechanics), G12 (default gate)

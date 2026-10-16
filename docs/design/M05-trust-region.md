@@ -358,7 +358,8 @@ never the original model's.
   - with a **promoted** M04 surrogate for the bound parent: its quadratic, compiled from the manifest's coefficients
     through `PyomoAlgebra` on the clone's inlet arguments (M04 `basis(z)` over Pyomo expressions, z from the inlet as
     in M04 spec §3.1). It must agree with `QuadraticSurrogate.predict` at M04's J1–J3 within 1e-14 relative (WO-4);
-  - otherwise **the affine Taylor model at w₀** (amended by §16.5, R-277; it was the constant d(w₀)). With a constant
+  - otherwise **the affine Taylor model at w₀** (amended by §16.5, R-277; it was the constant d(w₀)). **Superseded by
+    `M05-basis-v2` (§20.1, R-400):** the affine model plus the truth's curvature along the decision path. With a constant
     basis, C1's PMP freezes X̂ and ΔT̂, its objective no longer depends on T_in, Ipopt stays at the start, θ_PMP = 0,
     and TRF exits 'Optimal' with no subproblem step (probe P14 b). The gradient at w₀ comes from the truth adapter;
     for an FD truth, the study's first run reuses the gradient check's G(η) at the same w₀, and later runs pay n_in
@@ -366,9 +367,11 @@ never the original model's.
 - **A basis is mandatory** (R-277). `run_trf` refuses a missing or incomplete basis rule
   (`TRF_CONFIGURATION_REFUSED(basis_missing:<ef>)`). TRF's default b ≡ 0 is used only by TR-E1, through an explicit,
   test-only `zero_basis` that reproduces Pyomo's native example and is flagged in the record.
-- **Stage A (surrogate as truth):** a constant basis; the truth is already exact and cheap.
+- **Stage A (surrogate as truth):** the promoted quadratic (§20.5, R-408). It was a constant basis, which exits at the
+  start with no step (P14 b).
 
-The basis is frozen for the whole TRF run and the whole study: blueprint L427, and L437 (retraining voids the theory).
+The basis is frozen for the whole TRF run: blueprint L427, and L437 (retraining voids the theory). Each run builds it at
+its own start (§20.1, R-400; this sentence said "and the whole study").
 
 ### 6.7 The TRF runner (`studies/trust_region/trf.py`)
 
@@ -437,6 +440,7 @@ TR-E1 uses Pyomo's defaults except `solver`, to reproduce the native example.
 | --- | --- |
 | `TRF_CONVERGED` | "EXIT: Optimal solution found." with ≥ 1 accepted TRSP step, ‖s_k‖ ≤ σ, and θ re-checked from the returned model ≤ 1e-5 (§16.5, R-279) |
 | `TRF_EXIT_WITHOUT_STEP` | "EXIT: Optimal solution found." with no accepted TRSP step (probe P14 b). It is not a convergence claim; the study treats the returned point as a candidate for stage B |
+| `TRF_EXIT_UNVERIFIED(<reason>)` | (§20.1, R-401) "EXIT: Optimal solution found." with ≥ 1 accepted step and θ re-checked ≤ 1e-5, whose final logged step was rejected or radius-limited (s_K ≥ 0.99 Δ_K, unless the decision is at a box bound). Not a convergence claim; returns a model; its candidate goes to stage B. It takes precedence over `TRF_CONVERGED` |
 | `TRF_FEASIBLE_STALLED` | "EXIT: Feasible solution found." **and** θ re-checked ≤ 1e-5 (probe P14 c) |
 | `TRF_STALLED_INCONSISTENT` | "EXIT: Feasible solution found." or (§17.4, R-299) "EXIT: Optimal solution found." with θ re-checked > 1e-5, which takes precedence over the rows below; `exit_claim` recorded. No candidate; the study treats it as an abort (retry once) |
 | `TRF_MAX_ITERATIONS` | the maximum-iterations warning. A candidate whatever θ_recheck; its P2 is judged only if θ_recheck ≤ `feasibility_termination` (§18.2, R-327) |
@@ -444,7 +448,7 @@ TR-E1 uses Pyomo's defaults except `solver`, to reproduce the native example.
 | `TRF_TRUTH_REFUSED(<status>:<reason>)` | `TruthRefused` |
 | `TRF_ERROR(<exception class>)` | anything else, including the `ValueError` of TRF's DOF check |
 
-Only `TRF_CONVERGED`, `TRF_FEASIBLE_STALLED` and `TRF_MAX_ITERATIONS` return a model: TRF returns its clone. The final
+Only `TRF_CONVERGED`, `TRF_FEASIBLE_STALLED` and `TRF_MAX_ITERATIONS` (and, by R-279 and R-401, `TRF_EXIT_WITHOUT_STEP` and `TRF_EXIT_UNVERIFIED`) return a model: TRF returns its clone. The final
 decision values are read from that clone through the source map. On abort the record keeps the iteration log and the
 ledger, and **no candidate**.
 
@@ -664,6 +668,8 @@ which embeds every request and attempt.
   - `trf_trial_value` = K, the number of logged iterations ≥ 1;
   - `basis_fd_point` = n_in for a reactor EF with an FD truth and no promoted surrogate (§6.6). These are store or
     memo hits when the gradient check already ran at the same w₀;
+  - `basis_curvature_point` = 2 for a reactor EF under `M05-basis-v2`, and `fdcheck_point` = 1 + the check's points
+    for the run that carries the study's FD check (§20.7, R-400, R-406);
   - `trf_fd_point` = n_in · (1 + A − [the final logged iteration was accepted]), with A the number of accepted steps
     and n_in = 7.
 
@@ -836,11 +842,11 @@ counts, `coupled_runs`) and WO-7b (the schema rulings).
 | G2 | Pin: the run proceeds with 6.10.1 and the recorded hashes; with a patched version string or one changed module byte, readiness is `UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNPINNED)` (two tests) | nlp |
 | G3 | TR-E1 against native: same iteration count (5) and step-type sequence; final values within 1e-10 absolute (bitwise equality reported); the original holder's ledger sees 6 distinct cold points and 4 gradient points; the options test finds every `M05-trsp-ipopt-v1` option echoed | nlp |
 | G4 | Projection equivalence at the registered states: SYN-001's K05 states; C1 at S0's certified state and at that state with every variable perturbed by a seeded relative 1e-3; TR-E1 at its start. (a) The source map is a bijection with DOF = n_d. (b) max \|r_pyomo − r_casadi\| / row_scale ≤ 1e-12 · max(1, \|r\|/row_scale). (c) x-Jacobian entries agree within 1e-10 · (\|J\| + J_scale), with J_scale = row_scale/column_scale. (d) Decision columns agree with central FD of the CasADi residual (test oracle, h = 1e-6 scaled) within 1e-7 relative. (e) No nonsmooth node. (f) Exact-zero flows are eliminated with certified pins (§17.1, R-296); (a) is over the projected variables and rows; C1's R-278 matching is 68 × 68 | nlp |
-| G5 | TR-E2: `TRF_CONVERGED` in ≤ 30 iterations; θ_final ≤ 1e-5; \|T*_TRF − T_ref\| ≤ 0.5 K; candidate `PARENT_LOCAL_EVIDENCE`; study `DECISION_STABLE`; the assumptions block equals §5.2's TR-E2 column | nlp |
-| G6 | TR-E2-FD: `TRF_CONVERGED`; \|T*_FD − T*_exact\| ≤ 0.1 K; `fd_check` (`M05-fd-v2`, §17.2) passes at η = 2⁻¹⁴, class `clean` or `truncation_dominated`, no escalation; §8.3's request identity holds exactly for every run | nlp |
+| G5 (restated in §20.7) | TR-E2: `TRF_CONVERGED` in ≤ 30 iterations; θ_final ≤ 1e-5; \|T*_TRF − T_ref\| ≤ 0.5 K; candidate `PARENT_LOCAL_EVIDENCE`; study `DECISION_STABLE`; the assumptions block equals §5.2's TR-E2 column | nlp |
+| G6 (restated in §20.7) | TR-E2-FD: `TRF_CONVERGED`; \|T*_FD − T*_exact\| ≤ 0.1 K; `fd_check` (`M05-fd-v2`, §17.2) passes at η = 2⁻¹⁴, class `clean` or `truncation_dominated`, no escalation; §8.3's request identity holds exactly for every run | nlp |
 | G7 | Accounting, every run: the store bijection holds; cold + store_hit + memo_hit equals requests; 0 non-finite outputs returned to TRF; cold requests ≤ cap (the budget test drives a run into the cap and finds exactly cap cold requests and `TRF_TRUTH_REFUSED(budget:budget_exhausted)`) | nlp, pymrm |
-| G8 | LOOP-S: stage A executed with the PROMOTABLE prefix-plan manifest; study `DECISION_STABLE`; \|T* − 653.15 K\| ≤ 1e-6 K (lower bound active: X decreases in T for M04's synthetic, a_T < 0) | nlp |
-| G9 | LOOP-R: stage A skipped with `surrogate_not_promoted`; stage C with the constant basis; `DECISION_STABLE`; \|T* − 653.15 K\| ≤ 1e-6 K | nlp |
+| G8 (restated in §20.7) | LOOP-S: stage A executed with the PROMOTABLE prefix-plan manifest; study `DECISION_STABLE`; \|T* − 653.15 K\| ≤ 1e-6 K (lower bound active: X decreases in T for M04's synthetic, a_T < 0) | nlp |
+| G9 (restated in §20.7) | LOOP-R: stage A skipped with `surrogate_not_promoted`; stage C with the constant basis; `DECISION_STABLE`; \|T* − 653.15 K\| ≤ 1e-6 K | nlp |
 | G10 | Replay: TR-E2 re-evaluated and REAL from its record give bitwise-identical iteration logs, ledger sequences and candidates on the same machine; the cross-architecture comparison passes under `T08-numerical-policy-v2` with §9.3's pre-pass | nlp, pymrm, CI |
 | G11 | REAL mechanics (opt-in): `fd_check` is recorded with its class, τ̂, ν̂ and selected η (§17.2); stage C makes ≥ 1 accepted iteration and ends with a typed outcome within `M05-budget-v1`; G7 holds on the run; every candidate has a status; the limitations include `extrapolated` (with its count) and `fd_gradient`. The optimality outcome is reported, not gated (W25) | pymrm |
 | G12 | `./scripts/check.sh` passes with no Pyomo or Ipopt import; the committed records validate and pass §8.3's arithmetic; readiness without the `nlp` environment is `UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNAVAILABLE)` | default |
@@ -1718,5 +1724,241 @@ operation", and the script composes M05's study entry point.
 | F-18 | Do WO-8's recorded runs start from an empty experiment store? The content check's `cache_hit` and `attempts` depend on it. | Fact: WO-8 | Record runs and G10 replays both start from an empty store. If a run cannot, escalate before relaxing the content check |
 | F-19 | How large are the persisted coupling records? | Fact: WO-8 | Commit them. Above 5 MB per study, write them under `evidence/M05/<commit>/artifacts/` (ignored), reference them by hash in the manifest, and log the choice |
 | F-20 | REAL (WO-9) replay serves the truth from the record, so `cache_hit`/`attempts` differ by design | Fact: WO-9 | WO-9's content check is M02's `reproduce`/`record_differences`, not §19.1's same-machine equality |
+
+None of these needs Frank.
+
+## 20. Rulings after WO-8: F-15, G9, S47–S52 (2026-10-16)
+
+These rule on F-15 (`docs/design/M05-F15-diagnosis.md`, at `04454d7`) and on the build log's S47–S52
+(`docs/design/M05-build-decisions.md`, at `6a9d29d`). Register R-400 to R-409. The scratch runs in §20.1 used
+`scripts/m05_wo8_runs.py` with an uncommitted driver that replaced the link basis. They inform the design and are not
+records.
+
+### 20.1 F-15: the model has no curvature in the decision; neither the budget nor the θ band is the cause (R-400 to R-402)
+
+**What F-15 establishes.** With the affine link basis (R-277), r_k is the truth's first-order Taylor model, so the TRSP is
+linear in the decision. Every subproblem solution sits on the trust-region bound, ‖s_k‖ = Δ_{k−1}, and θ = C·Δ².
+Pyomo 6.10.1 has no criticality step and no ratio test on f-type steps, and its radius rules hold θ near
+`minimum_feasibility`. Its exit test, θ ≤ 1e-5 and ‖s‖ ≤ σ, then tests Δ alone. It fires wherever a radius trough
+falls: at k = 28 it missed by 2.6 %, 0.66 K from T_ref. The PMP is linear as well, so it throws every interior optimum
+to a box vertex. That gives two defects with two fixes:
+1. the model has no curvature in the decision (R-400);
+2. an `Optimal` exit is a stationarity claim only when the final step is not radius-limited (R-401).
+
+The cause is structural and not specific to TR-E2. Every stage-C run without a promoted surrogate has an affine model,
+and the registered objective was chosen for its interior optimum (§7.1, ADR 0022 D6). REAL's no-surrogate branch would
+spend every run's budget travelling from a vertex.
+
+**R-400 — `M05-basis-v2`: the link basis carries the truth's curvature along the decision path.** It applies to the
+link EF of every stage-C run without a promoted surrogate (TR-E2, TR-E2-FD, LOOP-R, and REAL when not promoted).
+Property EFs keep v1's affine Taylor basis. A promoted surrogate keeps its quadratic (§6.6). Stage A follows R-408. The
+basis is built once per TRF run at that run's start x₀ and is frozen for the run.
+1. *Value and gradient.* d_k(w₀) and g_k = ∇d_k(w₀) are computed exactly as in v1 (`affine_link_basis`).
+2. *Decision step.* The rule requires n_d = 1; otherwise `TRF_CONFIGURATION_REFUSED(basis_curvature_nd:<n_d>)`. Set
+   t = δ/h in binary64, with δ the decision tolerance and h the box half-width (0.5/20 = 0.025). d₀ is the run's start
+   decision, scaled.
+3. *Stencil.* If d₀ − t ≥ −1 and d₀ + t ≤ 1, use the central stencil: d₁ = d₀ + t, d₂ = d₀ − t, (α₁, α₂) = (1, 1).
+   Otherwise use the one-sided stencil towards the interior. With σ = +1 if d₀ − t < −1 and σ = −1 otherwise:
+   d₁ = d₀ + σt, d₂ = d₀ + 2σt, (α₁, α₂) = (−2, 1).
+4. *Path points.* For i = 1, 2, run M02's inner solve with the reactor pinned at the run's start coupling (X̂₀, ΔT̂₀), at
+   the heater specification T = centre + h·d_i. This is the accessor the noise floor uses
+   (`application.trust_region_parent.pinned_at`, R-309); the composition root hands it to the basis builder. w_i is
+   the solution's link inputs (`input_variable_ids`, physical units). The solve makes no reactor call and writes no
+   ledger entry; its outcome is recorded.
+5. *Truth at the path points.* d(w_i) is requested through the link holder with purpose `basis_curvature_point`
+   (stage C, this run), charged like any of the run's requests.
+6. *Curvature.* With R_k(w) = d_k(w) − d_k(w₀) − Σ_j g_kj (w_j − w₀_j), set c_k = (α₁ R_k(w₁) + α₂ R_k(w₂)) / t².
+   c_k approximates vᵀ∇²d_k v per unit scaled decision squared. The remainder form removes the path's own curvature
+   to second order, and on a straight path the gradient (and its FD error) cancels.
+7. *Direction and coordinate.* For the central stencil v = (w₁ − w₂)/(2t); for the one-sided one
+   v = σ(4w₁ − 3w₀ − w₂)/(2t). With S_j the input column scales of §16.2 and m_j = 1/S_j²,
+   p(w) = Σ_j m_j v_j (w_j − w₀_j) / Σ_j m_j v_j². As in v1, an eliminated zero-flow argument (a float, R-296) takes no
+   term; a non-zero v_j for one is a `ValueError`.
+8. *Basis.* b_k(w) = (d_k(w₀) + Σ_j g_kj (w_j − w₀_j) + ½ c_k p(w)²) / s_k. At w₀ every added term is an exact zero, so
+   b_k(w₀) = d_k(w₀)/s_k and ∇b_k(w₀) = g_k/s_k bitwise, as in v1.
+9. *Failure.* Any of the following sets c_k = 0 for every output of the holder (v1's affine basis), records
+   `status: "failed"` with the reason, and gives the candidate the limitation `basis_without_curvature`:
+   Σ_j m_j v_j² = 0, a failed inner solve, a refusal at w_i other than a budget refusal, or a non-finite c_k. A budget
+   refusal propagates as in v1 (`TRF_TRUTH_REFUSED(budget:budget_exhausted)`).
+10. *Record.* The run's `basis` block holds `policy: "M05-basis-v2"` and, per link: `stencil`
+    (`central`/`forward`/`backward`), `t`, `d_points`, `w_points`, `v`, `c` (per output), `status` and `reason`. It
+    also holds `noise_ratio` = 4ν̂/(t²|c_k|) when the run has an `fd_check` (null otherwise), which is reported and not
+    judged. Float classes follow R-386's rules: `t` is `exact`, everything else `r1_r2_existing_floors`.
+
+*Cost.* Two truth requests and two inner solves per run. §18.3 S7's per-run bound becomes 1 + 30 + 7 + 210 + 2 = 250,
+which equals the run cap, so the cap stays a backstop (R-406 keeps the FD check outside it).
+
+*Freezing, corrected.* §6.6's "and the whole study" and ADR 0038 D7's "for the run and the study" now read "for the
+run". Blueprint L427 freezes the surrogate "during a solve/optimization subproblem", and v1 already rebuilds the basis
+at each run's start (§6.6: later runs pay n_in cold experiments).
+
+*Why rank one along the decision path.* With n_d = 1 the TRSP moves the link inputs along one path. v is that path's
+open-loop direction, with the link outputs pinned. For C1 it is exactly 20 K·e_T, because the flows do not depend on
+T_in when X̂ and ΔT̂ are pinned. The closed-loop direction differs by the recycle's response, but that difference
+shapes only the curvature model: r_k's value and gradient stay exact (fully linear), so it affects efficiency, never
+convergence or the labels. Curvature in other directions is out of the decision's reach, so a full FD Hessian (28–56
+cold experiments per run, with its own noise policy) buys nothing.
+
+*Why t = δ/h.* The poll judges the decision at δ, so the curvature over ±δ is the curvature the decision resolves. The
+truncation is O(t²): on TR-E2, c_X at t is −9.5883e-4 against −9.5913e-4 at t/10, a relative difference of 3.1e-4.
+
+*Why central.* It is gradient-free on a straight path. The one-point forward stencil puts the FD gradient's error
+2ε_g/t into c; in the scratch runs the forward variant changed TR-E2-FD's PMP outcome.
+
+**R-401 — `TRF_EXIT_UNVERIFIED(<reason>)`: an `Optimal` exit whose final step does not show a stationary model.** The
+rule applies after "EXIT: Optimal solution found." with ≥ 1 accepted TRSP step and θ_recheck ≤ 1e-5; otherwise R-279
+and R-299 apply unchanged. Let K ≥ 1 be the final logged iteration.
+- `final_step_rejected`: iteration K is a rejected step.
+- `radius_limited`: s_K ≥ (1 − ρ_s)·Δ_K with ρ_s = 10⁻². The exception is n_d = 1 with the returned decision within
+  1e-6 (scaled) of a box bound (§7.4's at-bound rule).
+  - s_K is K's logged `stepNorm`, TRF's ∞-norm in scaled decisions.
+  - Δ_K is the radius in force for TRSP K: `trust_radius` when K = 1; K − 1's logged, updated radius when K − 1 was
+    accepted (§6.7); and when K − 1 was rejected, max(`minimum_radius`, γ_c·s_{K−1}) evaluated in binary64, which is
+    TRF.py's rejection rule.
+- If either holds, the outcome is `TRF_EXIT_UNVERIFIED(<reason>)`; if neither holds, `TRF_CONVERGED`.
+
+Precedence: `TRF_STALLED_INCONSISTENT` > `TRF_EXIT_WITHOUT_STEP` > `TRF_EXIT_UNVERIFIED` > `TRF_CONVERGED`.
+
+The new outcome returns a model and joins `RETURNS_MODEL`. Its candidate carries the limitation `trf_exit_unverified`,
+and P2 is judged because θ_recheck ≤ 1e-5. The study sends it to stage B exactly as it does `TRF_CONVERGED`. It is not
+an abort and is never retried. Every run with ≥ 1 logged TRSP records `final_step_ratio` = s_K/Δ_K and
+`final_step_at_box_bound`.
+
+*Why ρ_s = 10⁻².*
+- (a) Ipopt places a solution at μ/z from an active bound. Over every radius-limited trial logged (F-15's 30 and the
+  scratch runs below) that offset is ≤ 1.3e-3·Δ; the interior final steps logged are ≤ 0.2·Δ.
+- (b) A misclassification at the 1 % margin is benign either way. An interior step read as radius-limited only
+  withholds the label, and stage B still decides. A radius-limited step read as interior has a near-zero TR multiplier,
+  so the model optimum lies within (1 + O(ρ_s))·Δ and the claim errs by O(ρ_s·Δ).
+
+*Why the label and not only stage B.* Stage B decides the study and is unchanged. The run's label, however, is a
+recorded claim, and it must not say "converged" when TRF's own step shows the model was not stationary. θ alone
+cannot carry that test, because θ = C·s² tests the same thing as the step. Applied to F-15's k = 28, the rule gives
+`TRF_EXIT_UNVERIFIED(radius_limited)` even if θ had been below 1e-5, and the candidate goes to P5 at δ = 0.5 K. In
+G5b's C1, below, that is what happens.
+
+**R-402 — `M05-trf-config-v1` is unchanged:** 30 iterations, `minimum_feasibility` 1e-4, `feasibility_termination` 1e-5,
+σ = 0.0125, and the radius parameters. Under R-400 the TRSP steps near the optimum are interior and shrink with
+stationarity, so the exit no longer depends on where the radius sawtooth falls. Under R-401, any exit that still does is
+not called convergence. No value has an independent reason to move. Rejected:
+- *A larger budget.* With 150 iterations TR-E2 reached θ 9.72e-6 at k = 35. The exit stays a lottery: troughs at
+  679.35 K and 674.30 K were 33 % and 2.6 % from exiting. REAL's 250-cold run cap allows about 30 iterations.
+- *Moving `minimum_feasibility` or `feasibility_termination`.* With a linear model, termination needs
+  Δ ≤ √(ε_θ/C) wherever the iterate is. A looser ε_θ exits at the first trough (k = 6, 10 K off); a tighter θ_min
+  slows the transit as √θ_min.
+- *A different x₀.* The PMP ignores x₀'s neighbourhood and, with an affine basis, lands on a vertex from any start.
+- *Relabelling only, relying on stage B.* Honest, but it leaves every no-surrogate run towards an interior optimum in
+  transit.
+- *A full FD Hessian; the forward stencil.* See R-400.
+- *Patching TRF with a criticality step.* The pin forbids it (R-260).
+
+**Scratch evidence** (uncommitted driver: the inlet-T coordinate with h = 0.5 K, which for C1 is R-400's path;
+T_ref = 673.6434 K):
+
+| Run | Basis | Outcome(s) as Pyomo + R-279 label them | final s/Δ | θ_recheck | T* (K) | \|T* − T_ref\| (K) |
+| --- | --- | --- | --- | --- | --- | --- |
+| TR-E2, 673.15 K (WO-8) | v1 | `TRF_MAX_ITERATIONS` | 1.0 | 4.01e-4 | 673.6673 | 0.024 |
+| TR-E2, 673.15 K | v2 | `TRF_EXIT_WITHOUT_STEP` | — | 3.0e-6 | 673.6508 | 0.0074 |
+| TR-E2-FD, 673.15 K | v2 | `TRF_CONVERGED` (k = 1) | 1.6e-4 | 6.3e-8 | 673.6294 | 0.014 |
+| TR-E2, 663.15 K | v2 | C1 `TRF_CONVERGED`\* (k = 7), P5 fails; C2 `TRF_CONVERGED` (k = 1) | 0.99997; 0.0167 | 7.5e-6; 8.3e-7 | 673.6542 | 0.011 |
+| TR-E2, 683.15 K | v2 | `TRF_CONVERGED`\* (k = 6) | 0.99876 | 9.7e-6 | 673.6333 | 0.010 |
+| TR-E2-FD, 663.15 K | v2 | `TRF_CONVERGED` (k = 14) | 0.196 | 1.5e-6 | 673.6191 | 0.024 |
+| TR-E2-FD, 683.15 K | v2 | `TRF_CONVERGED`\* (k = 6) | 0.99873 | 2.5e-6 | 673.6127 | 0.031 |
+| LOOP-R, 673.15 K | v2 | `TRF_CONVERGED` (k = 2) | 6.9e-3, at the box bound | 2.0e-7 | 653.150001058 | 1.06e-6 from 653.15 |
+| TR-E1 (G3) | `zero_basis` | `TRF_CONVERGED` (k = 4) | 1.16e-3 | 5.5e-11 | — | — |
+
+\* Under R-401 this exit is `TRF_EXIT_UNVERIFIED(radius_limited)`. Every study above ends `DECISION_STABLE`.
+
+### 20.2 G5 and G6 restated, G5b added (R-403)
+
+Under R-400, TR-E2's PMP is already consistent (θ_PMP = 3.0e-6). Pyomo's first exit test, with its initial step norm of
+0, stops before any TRSP, which R-279 correctly labels `TRF_EXIT_WITHOUT_STEP` and not convergence. G5 therefore accepts
+that outcome, and its evidence comes from P2 (judged) and stage B. The registered start is 0.49 K from T_ref, inside δ,
+so it cannot exercise travel. TRF's own convergence through TRSP steps is therefore gated by G5b, from a start a
+quarter of the box away. The gate rows are in §20.7.
+
+### 20.3 G8 and G9: "at the bound" means within 1e-6 scaled (R-404)
+
+The 1e-6 K tolerance (5e-8 scaled) lies below the scale of an interior-point solution's offset from an active bound,
+μ_final/z, with `tol` 1e-8. LOOP-R's 5.3e-8 scaled is Ipopt's offset, not an error. The study's own definition (§7.4)
+treats a decision within 1e-6 (scaled) of a bound as at the bound and polls only inward. G8 and G9 now use that
+definition: |d* − d_lb| ≤ 1e-6 scaled (|T* − 653.15 K| ≤ 2e-5 K), and P5 polled the inward point only. The independent
+reason is consistency with §7.4; the measured value happens to sit 19× inside the new tolerance.
+
+### 20.4 Accounting: S51 (R-405) and S50 (R-406)
+
+**R-405 — a store hit is never charged.** `_admit` keeps charging every budget atomically at admission. Once the runner
+has answered, a request whose ledger entry is `served: store_hit` refunds every budget it charged, atomically under
+`_BUDGET_LOCK`. A charge therefore stands if and only if `served` is `cold`, the identity
+`budgets.cold_used = trf_cold + parent_executions` holds by construction, and the checker is not restated. Memo hits
+already return before admission.
+
+At the cap, a request is refused before the runner is asked, even if it would have been a store hit. This is
+conservative and never exceeds the cap. Rejected: restating the checker, which would let G7's "cold ≤ cap" count
+values that cost nothing; and settling the charge only after the answer, which lets concurrent FD requests overshoot
+the cap.
+
+**R-406 — the FD check belongs to the study and to the run it serves, but not to the run cap.**
+- The check's requests carry stage `fdcheck`, `trf_run` set to the stage-C run whose w₀ they are at, and purpose
+  `fdcheck_point`.
+- They are charged to the study budget and counted in the study's cold totals and in that run's `by_purpose`.
+- They are not charged to the run cap: the check runs once per study, and its η serves every FD run. With R-400, a
+  30-iteration run reaches the cap of 250 exactly (§20.1), so charging 21 more would make the cap binding.
+- `trf_cold` in the checker means every holder request served cold, of every purpose and stage C or `fdcheck`.
+
+### 20.5 S52: a missing work order, not a re-scope (R-407); stage A's basis (R-408)
+
+**R-407.** `SurrogateTruth` was a WO-4 deliverable (§12) and was never built. The promoted link basis (§6.6) and stage
+A's P2_A reference (§7.3) depend on it. G8 is the only gate that exercises the promoted branch of §7.3, which REAL
+takes if M04's real surrogate is promoted, so it is not re-scoped. WO-8b (§20.7) builds the missing pieces.
+
+**R-408 — stage A's basis is the promoted quadratic, not a constant.** By probe P14 b, a constant link basis freezes X̂
+and ΔT̂ in the PMP, makes the objective independent of T_in, and exits at the start with no step, so stage A as written
+in §6.6 would always return u₀. Stage A uses the same compiled quadratic as a promoted stage C. Since that quadratic is
+the truth itself, θ_PMP ≈ 1e-14 and TRF exits at the PMP, labelled `TRF_EXIT_WITHOUT_STEP`. The PMP point is Ipopt's
+optimum of the surrogate-backed problem, which is what stage A is for. P2_A and stage B then judge it.
+
+### 20.6 S47 and S49 confirmed (R-409)
+
+- **S47:** confirmed as built. `m04-synthetic-rough-v1` is exp-linear with amplitude 4 and is C^∞, so A2 holds by
+  construction for LOOP-R. Its failure region (z_T + z_F > 1.6) is a domain limit, not a smoothness defect.
+- **S49:** confirmed. G9's "constant basis" predates R-277 and means the no-surrogate basis, which is now
+  `M05-basis-v2` (R-400). §13's G9 text is restated in §20.7.
+
+### 20.7 Work orders and gates changed
+
+| WO | Lane | Deliverable | Acceptance |
+| --- | --- | --- | --- |
+| WO-8a | Opus | R-401 in `trf.py` and the study; `final_step_ratio`, `final_step_at_box_bound`; schema (additive) | (i) Fixture logs: F-15's k = 27/28 numbers with an `Optimal` exit and θ 9.9e-6 give `TRF_EXIT_UNVERIFIED(radius_limited)`; a rejected final step gives `(final_step_rejected)`; s_K = Δ_K with the returned decision at a box bound gives `TRF_CONVERGED`; Δ_K after a rejected K − 1 matches the rejection rule bitwise. (ii) G3 unchanged: TR-E1 is `TRF_CONVERGED` with ratio 1.16e-3. (iii) Every existing test that asserts `TRF_CONVERGED` passes; a flip is reported with its ratio, never fixed by moving ρ_s. (iv) On fakes, the new outcome goes to stage B with P2 judged, records its limitation, and is not retried |
+| WO-8c | Opus | R-405 and R-406 in `holders.py`, the stage and the checker | (i) A store hit leaves `cold_used` unchanged; with cap 2, the serial sequence (store, cold, cold, cold) serves three and refuses the fourth. (ii) Check entries carry stage `fdcheck`, the run id and `fdcheck_point`, and count against the study budget and not the run cap. (iii) `accounting_violations` passes on the re-run TR-E2 and TR-E2-FD records |
+| WO-8d | Opus | R-400: `M05-basis-v2`, `basis_curvature_point`, the run's `basis` block | (i) C1 at S0: v_T = 20 K within 1e-8 relative, and \|v_j\|/S_j ≤ 1e-8 for every other input. (ii) b(w₀) and ∇b(w₀) are bitwise equal to v1's. (iii) TR-E2: \|c_k − c_ref,k\| ≤ 1e-3·\|c_ref,k\| with c_ref,k = vᵀ[∇d_k(w₀ + τv) − ∇d_k(w₀ − τv)]/(2τ), τ = 1e-4, from the analytic gradient (a test oracle; the measured stencil error is 3.1e-4). (iv) The stencil is one-sided at d₀ = −1 and at d₀ = 1 − t/2. (v) A failing inner solve gives c = 0, `status: failed` and the limitation; a budget refusal propagates. (vi) n_d = 2 is refused. (vii) The ledger shows `basis_curvature_point` = 2 per run |
+| WO-8e | Opus | After 8a, 8c, 8d: TR-E2, TR-E2-FAR (new), TR-E2-FD and LOOP-R records with v2. One commit removes v1's TR-E2-FD and LOOP-R records from the tree (they stay at `6a9d29d` as F-15 evidence) and writes the v2 records at the same stems | G5, G5b, G6, G7 (with the store bijection), G9, G10 |
+| WO-8b | Opus | R-407 and R-408: `SurrogateTruth` (§6.4, with WO-4's acceptance: `predict` at J1–J3 within 1e-14 relative and the `meta` contract), the promoted link basis for stages A and C, P2_A, the LOOP-S record | G8 |
+
+Order: 8a, 8c and 8d are independent of one another. 8e follows all three; 8b follows 8a and 8c. WO-9 uses
+`M05-basis-v2` and R-401 and is otherwise unchanged.
+
+| Gate | Criterion (replaces §13's row) | Config |
+| --- | --- | --- |
+| G5 | TR-E2 (u₀ = 673.15 K, `M05-basis-v2`): (a) run C1 ends `TRF_CONVERGED` or `TRF_EXIT_WITHOUT_STEP` in ≤ 30 iterations, with `basis.status` ok, a central stencil and c_X < 0; (b) θ_recheck ≤ 1e-5, and P2 judged and passed; (c) cand-C1 is `PARENT_LOCAL_EVIDENCE` and the study `DECISION_STABLE` after one stage-C run; (d) \|T* − T_ref\| ≤ 0.5 K; (e) the assumptions block equals §5.2's TR-E2 column. Scratch: `TRF_EXIT_WITHOUT_STEP`, θ 3.0e-6, T* 673.6508 K | nlp |
+| G5b (new) | TR-E2-FAR, which is TR-E2 from the test-only start 663.15 K (d₀ = −0.5): (a) `DECISION_STABLE` within K_max = 3; (b) \|T* − T_ref\| ≤ 0.5 K; (c) at least one run ends `TRF_CONVERGED`, and each such run has `final_step_ratio` < 0.99 and a `PARENT_LOCAL_EVIDENCE` candidate; (d) no run ends `TRF_MAX_ITERATIONS` or aborts. Scratch: C1 radius-limited at k = 7 (ratio 0.99997, `TRF_EXIT_UNVERIFIED` under R-401), P5 fails; C2 `TRF_CONVERGED` at k = 1 (ratio 0.0167), T* 673.6542 K | nlp |
+| G6 | TR-E2-FD (u₀ = 673.15 K): (a) C1 ends `TRF_CONVERGED` or `TRF_EXIT_WITHOUT_STEP`; (b) θ_recheck ≤ 1e-5, and P2 judged and passed; (c) `PARENT_LOCAL_EVIDENCE` and `DECISION_STABLE`; (d) \|T*_FD − T*_E2\| ≤ 0.1 K against G5's record; (e) `fd_check` (`M05-fd-v2`) passes at η = 2⁻¹⁴ with class `clean` or `truncation_dominated` and no escalation; (f) §8.3's identity holds exactly for every run, with `basis_curvature_point` = 2 and R-406's `fdcheck_point`. Scratch: `TRF_CONVERGED` at k = 1, θ 6.3e-8, T* 673.6294 K, a difference of 0.021 K | nlp |
+| G7 | As §13. The store bijection is evaluated on every WO-8 record, and the budget test drives the cap with serial value requests (R-405) | nlp, pymrm |
+| G8 | LOOP-S: stage A executed with the PROMOTABLE prefix-plan manifest; its run ends `TRF_EXIT_WITHOUT_STEP` or `TRF_CONVERGED` with P2_A judged and passed (R-408, S6); `DECISION_STABLE`; \|d* − d_lb\| ≤ 1e-6 scaled (≤ 2e-5 K), and P5 polled inward only | nlp |
+| G9 | LOOP-R: stage A skipped with `surrogate_not_promoted`; stage C with `M05-basis-v2`; `DECISION_STABLE`; \|d* − d_lb\| ≤ 1e-6 scaled, and P5 polled inward only. Measured with v1: 5.3e-8 scaled | nlp |
+| G10 | Unchanged criterion; the WO-8 replay set is TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R, and LOOP-S once built | nlp |
+| G12 | Also: the schema accepts `TRF_EXIT_UNVERIFIED(<reason>)`, `final_step_ratio`, `final_step_at_box_bound` and the v2 `basis` block, and every new float is classified | default |
+
+§8.3 gains, per run with a link EF under v2, `basis_curvature_point` = 2 (cold, store or memo as served). For the run
+that carries the study's FD check it also gains `fdcheck_point` = 1 + the check's points (R-406).
+
+### 20.8 Open questions, each with a default
+
+| # | Question | Kind | Default |
+| --- | --- | --- | --- |
+| F-21 | Does REAL's pinned inner solve converge at d₀ ± t at every stage-C start? | Fact: WO-9 | R-400's failure path: the affine basis with the limitation `basis_without_curvature`, reported |
+| F-22 | Is M04's PROMOTABLE smooth-synthetic prefix-plan manifest reachable from `wp/M05`? | Fact: WO-8b | Use M04's committed manifest from `main` after a rebase. If it is absent, G8 stays BLOCKED with that reason; no stand-in manifest |
+| F-23 | Does any existing `TRF_CONVERGED` assertion flip under R-401? | Fact: WO-8a | Report it with its ratio and do not move ρ_s. Escalate if the test's final step is interior by construction |
+| F-24 | At a cap, can concurrent FD requests be refused while a store-hit charge is still outstanding (R-405)? | Fact: WO-8c | The cap is never exceeded, so the refusal is correct, but which point is refused may depend on timing. Gates drive caps with serial requests; report it if a replay differs only there |
 
 None of these needs Frank.

@@ -7793,3 +7793,210 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 **Rejected alternatives, and why.** `importlib` or an entry-point string to evade the AST test: it hides a dependency the test exists to show. Moving the wiring into `studies`: it breaks M04's rule.
 
 **Watch for.** —
+
+---
+
+## R-400 — `M05-basis-v2`: the no-surrogate link basis carries the truth's curvature along the decision path
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.1; §6.6 (amended); ADR 0038 Amendment 2 (D7) |
+| Evidence | F-15 diagnosis (`docs/design/M05-F15-diagnosis.md`); §20.1's scratch table (TR-E2 v2: `TRF_EXIT_WITHOUT_STEP`, θ 3.0e-6, 0.0074 K from T_ref) |
+| Affected packages | M05 (WO-8d, WO-9) |
+
+**Decision.** b_k = (d_k(w₀) + g_kᵀ(w − w₀) + ½ c_k p(w)²)/s_k. c_k comes from a central second difference of the
+Taylor remainder at t = δ/h on two inlets from M02's pinned inner solve at d₀ ± t, one-sided inward at the box bounds.
+p is the scaled coordinate along the open-loop direction v. It requires n_d = 1. On failure it falls back to c = 0 with
+the limitation `basis_without_curvature`. It costs two truth requests per run, and the basis is frozen per run.
+
+**Rejected alternatives, and why.** Keeping the affine basis: the TRSP is linear in the decision, the PMP lands on a
+vertex, and every step equals the radius. A full FD Hessian: 28–56 cold experiments for curvature the decision cannot
+reach. The forward stencil: it carries the FD gradient's error into c.
+
+**Watch for.** A stage-C start where the inner solve fails (F-21). n_d > 1 needs a new ruling.
+
+---
+
+## R-401 — An `Optimal` exit with a rejected or radius-limited final step is `TRF_EXIT_UNVERIFIED`, not convergence
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.1; §6.7's outcome table; ADR 0038 Amendment 2 (D8) |
+| Evidence | F-15: s_k = Δ_{k−1} at every trial, and k = 28 missed exiting by 2.6 % at 0.66 K off; scratch G5b C1: ratio 0.99997, P5 fails |
+| Affected packages | M05 (WO-8a) |
+
+**Decision.** Radius-limited means s_K ≥ (1 − 10⁻²)·Δ_K, unless n_d = 1 and the returned decision is within 1e-6
+(scaled) of a box bound. Δ_K is the radius in force for TRSP K. Precedence: STALLED_INCONSISTENT > EXIT_WITHOUT_STEP >
+EXIT_UNVERIFIED > CONVERGED. The outcome returns a model, its candidate goes to stage B with P2 judged, and it is never
+retried. `final_step_ratio` is recorded for every run.
+
+**Rejected alternatives, and why.** θ alone: θ = C·s² tests the same thing as the step. Stage B alone: the run label is
+a recorded claim and must not say "converged" when TRF's own step contradicts it.
+
+**Watch for.** Existing tests that assert `TRF_CONVERGED` and flip (F-23). Never fix such a flip by moving ρ_s.
+
+---
+
+## R-402 — `M05-trf-config-v1` is unchanged after F-15
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.1 |
+| Evidence | F-15 §2: the exit tests Δ alone under a linear model; the 150-iteration scratch run ended at k = 35 on the TR bound |
+| Affected packages | M05 |
+
+**Decision.** 30 iterations, `minimum_feasibility` 1e-4, `feasibility_termination` 1e-5 and σ = 0.0125 stay as they are.
+R-400 removes the cause and R-401 guards the claim.
+
+**Rejected alternatives, and why.** A larger budget: the exit remains a lottery, and REAL's cap allows about 30
+iterations. Moving the θ band or the termination value: it trades false exits for slowness. A different x₀: the PMP
+ignores it. Patching TRF: the pin forbids it (R-260).
+
+**Watch for.** A request to retune these values on an outcome alone.
+
+---
+
+## R-403 — G5 accepts `TRF_EXIT_WITHOUT_STEP`; G5b (TR-E2 from 663.15 K) gates TRF's own convergence; G6 restated
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.2, §20.7 |
+| Evidence | Scratch with v2: TR-E2 exits at the PMP (θ 3.0e-6); TR-E2-FD `TRF_CONVERGED` at k = 1; from 663.15 K, C2 `TRF_CONVERGED` with ratio 0.0167 |
+| Affected packages | M05 (WO-8e) |
+
+**Decision.** G5 at u₀ = 673.15 K requires `TRF_CONVERGED` or `TRF_EXIT_WITHOUT_STEP`, P2 judged and passed,
+`DECISION_STABLE` after one run, and |T* − T_ref| ≤ 0.5 K. G5b requires at least one `TRF_CONVERGED` run with an
+interior final step and a `PARENT_LOCAL_EVIDENCE` candidate, and no max-iterations exit or abort. G6 takes the same
+outcome set, plus |T*_FD − T*_E2| ≤ 0.1 K and the extended identity.
+
+**Rejected alternatives, and why.** Keeping "`TRF_CONVERGED`" for the near start: with a consistent PMP, Pyomo's
+initial step norm of 0 exits before any TRSP, so the gate would require a mislabel. Changing the registered start: it
+is 0.49 K from T_ref by registration.
+
+**Watch for.** —
+
+---
+
+## R-404 — G8 and G9 judge "at the lower bound" as within 1e-6 scaled (§7.4's definition)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.3, §20.7 |
+| Evidence | LOOP-R: \|T* − 653.15\| = 1.067e-6 K = 5.3e-8 scaled, Ipopt's interior offset |
+| Affected packages | M05 |
+
+**Decision.** |d* − d_lb| ≤ 1e-6 scaled (2e-5 K), and P5 polled the inward point only.
+
+**Rejected alternatives, and why.** 1e-6 K: it is below an interior-point method's offset from an active bound, and it
+contradicts the study's own at-bound rule.
+
+**Watch for.** —
+
+---
+
+## R-405 — A holder refunds its budget charge when the request is served as a store hit (S51)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.4 |
+| Evidence | S51: TR-E2 `cold_used` 48 = 31 + 16 + 1 store hit |
+| Affected packages | M05 (WO-8c) |
+
+**Decision.** Charge atomically at admission, as now, and refund atomically once the entry is `served: store_hit`. The
+identity `cold_used = trf_cold + parent_executions` stands. At the cap, a would-be store hit is still refused.
+
+**Rejected alternatives, and why.** Restating the checker: "cold ≤ cap" would then count free values. Charging only
+after the answer: concurrent FD requests could overshoot the cap.
+
+**Watch for.** F-24, timing-dependent refusals at a cap under concurrency.
+
+---
+
+## R-406 — The FD check is charged to the study budget and attributed to its run, outside the run cap (S50)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.4; §8.3 (amended) |
+| Evidence | S50: 21 cold check evaluations in no budget; S7's bound with R-400 is 250, equal to the cap |
+| Affected packages | M05 (WO-8c, WO-9) |
+
+**Decision.** The check's entries carry stage `fdcheck`, `trf_run` = the run they serve and purpose `fdcheck_point`.
+They are in that run's `by_purpose` and in the study's cold totals and budget, but not under the run cap.
+
+**Rejected alternatives, and why.** Leaving them unbudgeted: REAL would spend 21 uncounted reactor runs. Charging them
+to the run cap: the cap would bind on a 30-iteration run.
+
+**Watch for.** —
+
+---
+
+## R-407 — S52: LOOP-S needs a missing work order (WO-8b); G8 is not re-scoped
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.5, §20.7 |
+| Evidence | S52; §12 WO-4 lists `SurrogateTruth`, which was never built |
+| Affected packages | M05 (WO-8b) |
+
+**Decision.** WO-8b builds `SurrogateTruth` (with WO-4's acceptance), the promoted link basis, stage A with that basis,
+and P2_A, then runs LOOP-S for G8.
+
+**Rejected alternatives, and why.** Re-scoping G8: it is the only gate on §7.3's promoted branch, which REAL takes if
+its surrogate is promoted.
+
+**Watch for.** F-22, the availability of the PROMOTABLE manifest.
+
+---
+
+## R-408 — Stage A's basis is the promoted quadratic, not a constant
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.5; §6.6 (amended); ADR 0038 Amendment 2 (D7) |
+| Evidence | Probe P14 b: a constant link basis exits at the start with no step |
+| Affected packages | M05 (WO-8b) |
+
+**Decision.** Stage A uses the compiled M04 quadratic (b = the truth). TRF exits at the PMP as `TRF_EXIT_WITHOUT_STEP`
+at the surrogate-backed optimum, and P2_A and stage B judge that point.
+
+**Rejected alternatives, and why.** The constant basis: stage A would always return u₀. `M05-basis-v2` on the surrogate:
+it is strictly worse than the exact quadratic that is already available.
+
+**Watch for.** —
+
+---
+
+## R-409 — S47 (assumption blocks) and S49 (G9's "constant basis" means the no-surrogate basis) confirmed
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.6 |
+| Evidence | Build log S47, S49; `m04-synthetic-rough-v1` is exp-linear (amplitude 4), C^∞ |
+| Affected packages | M05 |
+
+**Decision.** TR-E2: A1/A2/A3/A5 hold by construction and A4/A6/A7 are limitations. The FD truths have A3
+`qualified(fd_gradient)`. G9 runs with `M05-basis-v2`.
+
+**Rejected alternatives, and why.** —
+
+**Watch for.** —
