@@ -452,3 +452,25 @@ def test_requests_outside_a_run_carry_no_run_and_no_purpose() -> None:
 def test_scales_must_match_the_outputs() -> None:
     with pytest.raises(ValueError, match="2 outputs"):
         EFHolder("box", CountingBox(), (1.0,), kind="truth")
+
+
+class RaisesOnce(CountingBox):
+    """A box whose first evaluation raises a RuntimeError (not a refusal)."""
+
+    def values(self, inputs: tuple[float, ...]) -> BoxValues:
+        if self.value_calls == 0:
+            self.value_calls += 1
+            raise RuntimeError("box failed")
+        return super().values(inputs)
+
+
+def test_n2_a_box_exception_propagates_and_does_not_leave_the_key_in_flight() -> None:
+    box = RaisesOnce()
+    h = holder(box)
+    with pytest.raises(RuntimeError, match="box failed"):
+        h.request_values((2.0, 3.0))
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        second = pool.submit(h.request_values, (2.0, 3.0))
+        outcome = second.result(timeout=10.0)
+    assert outcome == (6.0, -1.0)
+    assert box.value_calls == 2

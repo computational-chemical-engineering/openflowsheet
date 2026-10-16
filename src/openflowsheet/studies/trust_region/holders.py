@@ -657,14 +657,23 @@ class EFHolder:
             raise refusal
 
         outcome: BoxValues | TruthRefused
+        raised = True
         try:
             outcome = self.box.values(inputs)
             if not all(math.isfinite(value) for value in outcome.values):
                 outcome = TruthRefused(
                     "non_finite_output", self.name, "values", getattr(outcome, "meta", None)
                 )
+            raised = False
         except TruthRefused as refusal:
             outcome = refusal
+            raised = False
+        finally:
+            # Any other exception propagates unchanged, but its key must not stay in flight (N2).
+            if raised:
+                with self._lock:
+                    del self._values[key]
+                flight.done.set()
 
         with self._lock:
             self._values[key] = outcome

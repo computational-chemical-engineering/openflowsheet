@@ -735,3 +735,11 @@ S73 R-433: the `extrapolated` limitation wording is `EXTRAPOLATED_LIMITATION` in
    per-solve `limitations` and decisions. The note to M07 (§21.4) is `docs/briefs/M05-note-to-M07.md`, to be copied
    to wp/M07. Handoff `docs/briefs/M05-wo8-handoff.md` updated for WO-10b. Gate 9289 passed,
    31 skipped; nlp 186 passed, 1 skipped.
+S74 Review note N2: a box exception other than `TruthRefused` no longer leaves its key in flight
+   (`holders.py`, `EFHolder._values_request`). A `try/finally` drops the in-flight entry and sets `flight.done` when
+   the box raised; the exception propagates unchanged, and the success and `TruthRefused` paths are unchanged. A
+   `except BaseException: ...; raise` was tried first and rejected by `test_no_broad_except` (§8.1's lint allows a
+   re-raising broad handler only under `application/`), hence `finally` with a `raised` flag. The charge stands, as the
+   review says. Test `test_n2_a_box_exception_propagates_and_does_not_leave_the_key_in_flight`: a box that raises
+   `RuntimeError` once; the second request for the key (10 s timeout) is evaluated afresh. Gate 9290 passed,
+   31 skipped; nlp 186 passed, 1 skipped (the nlp tier includes G10's five replays; the new test is default tier).
