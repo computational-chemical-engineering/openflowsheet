@@ -70,17 +70,22 @@ def accepted(record: Mapping[str, Any]) -> list[str]:
 
 
 def r3_study(status: str, candidate: dict[str, Any] | None) -> dict[str, Any]:
-    """An R3 rung as `r3_rung` writes it, for a synthetic M05 record."""
-    budget = m07.budget_for("R3")
+    """An R3 rung as `r3_rung` writes it for a carried synthetic M05 record (A1.6: M05's cold
+    copied, no spent wall recorded)."""
+    budget = m07.budget_for("R3").as_document()
+    budget["spent"] = {"cold": 63, "wall_s": None}
+    budget["wall_source"] = None
     decision = None if candidate is None else candidate["T"]
     return {
         "outcome": status,
         "study_status": status,
-        "m05_record": {"path": "fixture", "sha256": "3" * 64, "carried_from": "rerun"},
+        "m05_record": {"path": "fixture", "sha256": "3" * 64, "carried_from": "c" * 40},
         "candidate": candidate,
         "decision": decision,
         "bound_activity": m07.bound_activity(decision),
-        "budget": budget.as_document(),
+        "budget": budget,
+        "store_hits": 0,
+        "limitations": ["R3:m05_wall_unrecorded"],
     }
 
 
@@ -612,6 +617,153 @@ def test_a14_without_the_reactor_r1_and_r3_refuse_and_the_record_is_written(
     assert "The journey reports no decision" in report
     assert "The journey's decision" not in report
     assert m07.main(["check", str(out)]) == 0
+
+
+# -- A21 (WO-2 part): R3's input conditions, carry anchor and accounting (Amendment 1 A1.6) --------
+
+T_STAR = 653.1500010581631  # M05's LOOP-R best decision (wp/M05 5961915), a non-grid binary64
+C_M = "d" * 40
+
+
+def m05_study(**edits: Any) -> dict[str, Any]:
+    """A synthetic M05 study record with what A1.6 reads: its targeted check solved the journey's
+    case document at T*."""
+    from openflowsheet.canonical import document_sha256
+
+    revision = document_sha256(m07.document_at(m07.load_loop("real"), T_STAR))
+    record: dict[str, Any] = {
+        "schema_version": "trust-region-study-v1",
+        "study_id": "c1-trf-study-v1",
+        "status": "DECISION_STABLE",
+        "environment": {},
+        "best": {"check_id": "cand-1-P1", "decisions": {"preheater.T_spec": T_STAR}},
+        "candidates": [
+            {
+                "candidate_id": "cand-1",
+                "decisions": {"preheater.T_spec": T_STAR},
+                "status": m07.PARENT_LOCAL_EVIDENCE,
+                "noise_floor": {"e_star": 1.25e-6},
+                "indifference_halfwidth": {"preheater.T_spec": None},
+                "checks": {"P3": {"pass": True, "values": {"n": 4}}},
+                "solves": [
+                    {
+                        "check_id": "cand-1-P1",
+                        "revision_sha256": revision,
+                        "outcome": "CONVERGED",
+                        "certificate": "VERIFIED",
+                        "objective": 0.4940269880217402,
+                        "coupling_record_sha256": "7" * 64,
+                    }
+                ],
+            }
+        ],
+        "accounting": {
+            "totals": {"store_hits": 5, "trf_cold": 40, "parent_executions": 23},
+            "budgets": {
+                "budget_id": "M05-budget-v1",
+                "configuration": "REAL",
+                "study_wall_s": 3600.0,
+                "cold_used": 63,
+            },
+        },
+    }
+    for path, value in edits.items():
+        *parents, leaf = path.split(".")
+        node = record
+        for key in parents:
+            node = node[key]
+        if value is None:
+            node.pop(leaf)
+        else:
+            node[leaf] = value
+    return record
+
+
+@pytest.fixture
+def m05_inputs(tmp_path: Path) -> tuple[Path, Path]:
+    """A schema demanding `study_id`, and an evidence directory for the manifest anchor."""
+    schema = tmp_path / "schema.json"
+    schema.write_text(json.dumps({"type": "object", "required": ["study_id"]}), encoding="utf-8")
+    return schema, tmp_path / "evidence" / "M05"
+
+
+def carried(
+    tmp_path: Path, inputs: tuple[Path, Path], record: dict[str, Any], *, anchor: bool = True
+) -> dict[str, Any]:
+    schema, evidence = inputs
+    path = tmp_path / "study.json"
+    path.write_text(json.dumps(record), encoding="utf-8")
+    if anchor:
+        (evidence / C_M).mkdir(parents=True, exist_ok=True)
+        manifest = {"status": "tested", "artifacts": [{"sha256": m07.sha256_file(path)}]}
+        (evidence / C_M / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    return m07.r3_rung(path, schema_path=schema, evidence=evidence, tracked=lambda p: True)
+
+
+@pytest.mark.parametrize(
+    ("condition", "edits"),
+    [
+        (1, {"study_id": None}),
+        (2, {"study_id": "c1-trf-study-v0"}),
+        (3, {"accounting.budgets.configuration": "in_process"}),
+        (4, {}),  # the targeted check solved another document (its revision is replaced below)
+        (5, {}),
+    ],
+)
+def test_a21_r3_rejects_a_record_failing_an_input_condition(
+    tmp_path: Path, m05_inputs: tuple[Path, Path], condition: int, edits: dict[str, Any]
+) -> None:
+    record = m05_study(**edits)
+    if condition == 4:
+        record["candidates"][0]["solves"][0]["revision_sha256"] = "a8de3fc5" + "0" * 56
+    path = tmp_path / "study.json"
+    path.write_text(json.dumps(record), encoding="utf-8")
+    schema, evidence = m05_inputs
+    r3 = m07.r3_rung(path, schema_path=schema, evidence=evidence, tracked=lambda p: condition != 5)
+    assert r3["outcome"] == m07.unsupported(m07.M05_UNAVAILABLE)
+    assert r3["limitations"] == [f"R3:record_rejected:{condition}"]
+    assert r3["decision"] is None and "candidate" not in r3
+
+
+def test_a21_r3_is_carried_through_the_manifest_anchor_without_a_wall(
+    tmp_path: Path, m05_inputs: tuple[Path, Path], dry: Mapping[str, Any]
+) -> None:
+    r3 = carried(tmp_path, m05_inputs, m05_study())
+    assert r3["outcome"] == "DECISION_STABLE"
+    assert r3["m05_record"]["carried_from"] == C_M != m07.RERUN
+    assert (r3["decision"], r3["candidate"]["J"], r3["candidate"]["e"]) == (
+        T_STAR,
+        0.4940269880217402,
+        1.25e-6,
+    )
+    assert r3["budget"]["spent"] == {"cold": 63, "wall_s": None}  # cold_used, never trf + parent
+    assert r3["budget"]["wall_source"] is None and r3["store_hits"] == 5
+    assert r3["limitations"] == ["R3:m05_wall_unrecorded"]
+
+    def edit(rungs: dict[str, Any]) -> None:
+        rungs["R3"] = r3
+
+    record = rederived(dry, edit)
+    assert accepted(record) == []
+    assert "R3:m05_wall_unrecorded" in [item["code"] for item in record["limitations"]]
+    assert record["accounting"]["journey"]["wall_s"] is None
+    defaulted = rederived(record, lambda rungs: rungs["R3"]["m05_record"].update(carried_from="x"))
+    assert any("carried_from" in p for p in accepted(defaulted))
+    zero_wall = copy.deepcopy(record)
+    zero_wall["rungs"]["R3"]["budget"]["spent"]["wall_s"] = 0.0
+    assert any("m05_wall_unrecorded" in p for p in m07.check(zero_wall, None))
+
+
+def test_a21_r3_without_an_anchor_or_a_cold_count_says_so(
+    tmp_path: Path, m05_inputs: tuple[Path, Path]
+) -> None:
+    unanchored = carried(tmp_path, m05_inputs, m05_study(), anchor=False)
+    assert unanchored["outcome"] == m07.unsupported(m07.M05_UNAVAILABLE)
+    assert unanchored["limitations"] == ["R3:carry_anchor_missing"]
+    uncounted = carried(tmp_path, m05_inputs, m05_study(**{"accounting.budgets.cold_used": None}))
+    assert uncounted["budget"]["spent"]["cold"] is None
+    assert uncounted["limitations"] == ["R3:m05_cold_unrecorded", "R3:m05_wall_unrecorded"]
+    assert m07._check_r3(uncounted) == []
 
 
 def test_replay_refuses_until_wo4(tmp_path: Path) -> None:

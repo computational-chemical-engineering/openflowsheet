@@ -710,32 +710,135 @@ def surrogate_discrepancy(
 # == R3: M05's study record (spec §4.2, §4.6) =====================================================
 
 
-def r3_rung(record_path: Path | None) -> dict[str, Any]:
-    """R3 from M05's REAL study record (`trust-region-study-v1`), carried by identity. Without
-    M05's study package or schema in this tree, or without a record, `UNSUPPORTED(m05_study_
-    unavailable)`; re-running the study at J is WO-4's (build decision J8)."""
-    schema_path = ROOT / "schemas" / "trust-region-study.schema.json"
+#: M05's study schema at J (Amendment 1 A1.6 condition 1).
+M05_SCHEMA: Final = ROOT / "schemas" / "trust-region-study.schema.json"
+#: M05's evidence manifests, the carry anchor's second source (A1.6 item 2.2).
+M05_EVIDENCE: Final = ROOT / "evidence" / "M05"
+#: A1.6 conditions 2 and 3: the study, its budget and the REAL configuration.
+M05_STUDY_ID: Final = str(JOURNEY["study"])
+M05_BUDGET_ID: Final = "M05-budget-v1"
+M05_CONFIGURATION: Final = "REAL"
+RERUN: Final = "rerun"
+
+
+def tracked_unmodified(path: Path) -> bool:
+    """A1.6 condition 5: `path` is tracked in this tree and unmodified at J."""
     try:
-        import openflowsheet.studies.trust_region  # noqa: F401
-    except ImportError:
-        return unsupported_rung("R3", M05_UNAVAILABLE)
-    if record_path is None or not record_path.is_file() or not schema_path.is_file():
-        return unsupported_rung("R3", M05_UNAVAILABLE)
+        relative = str(path.resolve().relative_to(ROOT))
+    except ValueError:
+        return False
+    listed = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", relative],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    return listed.returncode == 0 and _git("status", "--porcelain", "--", relative) == ""
+
+
+def m05_run_commit(record: Mapping[str, Any]) -> str | None:
+    """The run commit M05's record states (A1.6 item 2.1). M05 records none yet (spec §17 FD-3);
+    the field is named here when it does, never guessed."""
+    return None
+
+
+def m05_spent_wall(record: Mapping[str, Any]) -> float | None:
+    """The study's spent wall as M05's record states it (A1.6 item 4). M05 records none yet
+    (FD-3); never the cap `study_wall_s`, never 0."""
+    return None
+
+
+def manifest_anchor(record_sha256: str, evidence: Path) -> str | None:
+    """A1.6 item 2.2: the commit C_M of an `evidence/M05/<C_M>/manifest.json` with status
+    `tested` whose artifacts list the record's sha256 (the first such C_M in sorted order)."""
+    for path in sorted(evidence.glob("*/manifest.json")):
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        artifacts = manifest.get("artifacts") or []
+        if manifest.get("status") == "tested" and any(
+            isinstance(item, Mapping) and item.get("sha256") == record_sha256 for item in artifacts
+        ):
+            return path.parent.name
+    return None
+
+
+def _r3_refused(*codes: str) -> dict[str, Any]:
+    summary = unsupported_rung("R3", M05_UNAVAILABLE)
+    summary["limitations"] = list(codes)
+    return summary
+
+
+def _r3_condition(
+    record_path: Path,
+    schema_path: Path,
+    tracked: Callable[[Path], bool],
+) -> tuple[int | None, dict[str, Any] | None, dict[str, Any] | None]:
+    """A1.6's input conditions 1–5 in order: (the first that fails or None, the record, the
+    best candidate)."""
     import jsonschema
 
-    record = json.loads(record_path.read_text(encoding="utf-8"))
-    schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    errors = sorted(e.message for e in jsonschema.Draft202012Validator(schema).iter_errors(record))
-    if errors:
-        raise ValueError(f"{record_path} does not validate as trust-region-study-v1: {errors[:3]}")
+    try:
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return 1, None, None
+    if not isinstance(record, dict) or any(
+        True for _ in jsonschema.Draft202012Validator(schema).iter_errors(record)
+    ):
+        return 1, None, None
+    if record.get("study_id") != M05_STUDY_ID:
+        return 2, record, None
+    budgets = (record.get("accounting") or {}).get("budgets") or {}
+    if budgets.get("budget_id") != M05_BUDGET_ID or budgets.get("configuration") != (
+        M05_CONFIGURATION
+    ):
+        return 3, record, None
+    chosen: dict[str, Any] | None = None
     best = record.get("best")
-    candidate: dict[str, Any] | None = None
     if best is not None:
-        (chosen,) = [
+        from openflowsheet.canonical import document_sha256
+
+        matches = [
             c
-            for c in record["candidates"]
-            if c["solves"] and c["solves"][0]["check_id"] == best["check_id"]
+            for c in record.get("candidates") or []
+            if c.get("solves") and c["solves"][0].get("check_id") == best.get("check_id")
         ]
+        if len(matches) != 1 or len(matches[0].get("decisions") or {}) != 1:
+            return 4, record, None
+        chosen = matches[0]
+        (t,) = chosen["decisions"].values()
+        expected = document_sha256(document_at(load_loop("real"), float(t)))
+        if chosen["solves"][0].get("revision_sha256") != expected:
+            return 4, record, None
+    if not tracked(record_path):
+        return 5, record, chosen
+    return None, record, chosen
+
+
+def r3_rung(
+    record_path: Path | None,
+    *,
+    schema_path: Path = M05_SCHEMA,
+    evidence: Path = M05_EVIDENCE,
+    tracked: Callable[[Path], bool] = tracked_unmodified,
+) -> dict[str, Any]:
+    """R3 from M05's REAL study record passed as `--m05-record`, carried by identity (Amendment 1
+    A1.6, R-425). The record is accepted iff conditions 1–5 hold; otherwise R3 is
+    `UNSUPPORTED(m05_study_unavailable)` with `R3:record_rejected:<n>`, never an exception. The
+    carry anchor is M05's stated run commit, else a tested M05 manifest listing the record's
+    sha256; without one, `R3:carry_anchor_missing` (re-running the study at J is WO-4's). The
+    accounting is copied from M05's record, never reconstructed or defaulted. Without a record,
+    `UNSUPPORTED(m05_study_unavailable)`."""
+    if record_path is None:
+        return unsupported_rung("R3", M05_UNAVAILABLE)
+    failed, record, chosen = _r3_condition(record_path, schema_path, tracked)
+    if failed is not None or record is None:
+        return _r3_refused(f"R3:record_rejected:{failed}")
+    record_sha256 = sha256_file(record_path)
+    anchor = m05_run_commit(record) or manifest_anchor(record_sha256, evidence)
+    if anchor is None:
+        return _r3_refused("R3:carry_anchor_missing")
+    candidate: dict[str, Any] | None = None
+    if chosen is not None:
         (t,) = chosen["decisions"].values()
         floor = chosen.get("noise_floor")
         halfwidth = chosen.get("indifference_halfwidth")
@@ -752,24 +855,32 @@ def r3_rung(record_path: Path | None) -> dict[str, Any]:
             "coupling_record_sha256": targeted.get("coupling_record_sha256"),
             "constraints": (chosen.get("checks") or {}).get("P3"),
         }
-    budget = budget_for("R3")  # M05 enforces M05-budget-v1; this copies what it spent (J8)
     accounting = record.get("accounting") or {}
-    totals = accounting.get("totals") or {}
-    budget.cold = int(totals.get("trf_cold", 0)) + int(totals.get("parent_executions", 0))
-    budget.wall_s = float((accounting.get("budgets") or {}).get("wall_s", 0.0))
+    cold = (accounting.get("budgets") or {}).get("cold_used")
+    wall = m05_spent_wall(record)
+    limitations = []
+    if cold is None:
+        limitations.append("R3:m05_cold_unrecorded")
+    if wall is None:
+        limitations.append("R3:m05_wall_unrecorded")
+    budget = budget_for("R3").as_document()  # M05 enforces M05-budget-v1; R3 copies its spend
+    budget["spent"] = {"cold": cold, "wall_s": wall}
+    budget["wall_source"] = None if wall is None else "m05_record"
+    try:
+        relative = str(record_path.resolve().relative_to(ROOT))
+    except ValueError:
+        relative = str(record_path)
     decision = None if candidate is None else candidate["T"]
     return {
         "outcome": record["status"],
         "study_status": record["status"],
-        "m05_record": {
-            "path": str(record_path),
-            "sha256": sha256_file(record_path),
-            "carried_from": record.get("environment", {}).get("commit", "rerun"),
-        },
+        "m05_record": {"path": relative, "sha256": record_sha256, "carried_from": anchor},
         "candidate": candidate,
         "decision": decision,
         "bound_activity": bound_activity(decision),
-        "budget": budget.as_document(),
+        "budget": budget,
+        "store_hits": (accounting.get("totals") or {}).get("store_hits"),
+        "limitations": limitations,
     }
 
 
@@ -906,20 +1017,25 @@ def accounting(rungs: Mapping[str, Any]) -> dict[str, Any]:
         rung = rungs[name]
         grid = rung.get("grid") or []
         spent = rung["budget"]["spent"]
+        experiments = {
+            "cold": sum(int(e["experiments"]["cold"]) for e in grid),
+            "store_hit": sum(int(e["experiments"]["store_hit"]) for e in grid),
+            "in_process": sum(int(e["experiments"]["in_process"]) for e in grid),
+        }
+        if name == "R3" and "store_hits" in rung:  # M05's own counts, copied (A1.6 item 4)
+            experiments = {"cold": spent["cold"], "store_hit": rung["store_hits"], "in_process": 0}
         per[name] = {
-            "experiments": {
-                "cold": sum(int(e["experiments"]["cold"]) for e in grid),
-                "store_hit": sum(int(e["experiments"]["store_hit"]) for e in grid),
-                "in_process": sum(int(e["experiments"]["in_process"]) for e in grid),
-            },
+            "experiments": experiments,
             "reactor_cold": spent["cold"],
             "wall_s": spent["wall_s"],
             "budget": {"cold": rung["budget"]["cold"], "wall_s": rung["budget"]["wall_s"]},
             "exhausted": rung["outcome"] == "BUDGET_EXHAUSTED",
         }
-    per["journey"] = {
-        "reactor_cold": sum(per[n]["reactor_cold"] for n in RUNGS),
-        "wall_s": math.fsum(per[n]["wall_s"] for n in RUNGS),
+    colds = [per[n]["reactor_cold"] for n in RUNGS]
+    walls = [per[n]["wall_s"] for n in RUNGS]
+    per["journey"] = {  # null when a rung's spend is unrecorded (A1.6 item 4)
+        "reactor_cold": None if None in colds else sum(colds),
+        "wall_s": None if None in walls else math.fsum(walls),
         "budget": {
             "cold": sum(int(JOURNEY["budget"][n]["cold_experiments"]) for n in RUNGS),
             "wall_s": math.fsum(float(JOURNEY["budget"][n]["wall_s"]) for n in RUNGS),
@@ -945,6 +1061,13 @@ LIMITATION_TEXT: Final = {
     "noise_floor_unavailable": "R1 noise floor unavailable at {points} verified grid point(s); "
     "e_k is null there.",
     "bound": "{who}: {phrase}",
+    "R3:record_rejected": "R3's M05 record is rejected: input condition {detail} of the M07 spec "
+    "Amendment 1 A1.6 does not hold.",
+    "R3:carry_anchor_missing": "R3's M05 record has no carry anchor: M05 states no run commit and "
+    "no tested M05 manifest lists the record.",
+    "R3:m05_cold_unrecorded": "M05's record states no cold count; R3's cold is null.",
+    "R3:m05_wall_unrecorded": "M05's record states no spent wall; R3's wall is null and W25 (g) "
+    "is not met.",
 }
 
 
@@ -981,6 +1104,10 @@ def limitations(record: Mapping[str, Any]) -> list[dict[str, str]]:
             f"R3:study:{r3['study_status']}",
             LIMITATION_TEXT["study"].format(status=r3["study_status"]),
         )
+    for code in r3.get("limitations") or ():
+        detail = code.partition(":record_rejected:")[2]
+        key = "R3:record_rejected" if detail else code
+        add(code, LIMITATION_TEXT[key].format(detail=detail))
     candidate = r3.get("candidate")
     if candidate and candidate["status"] != PARENT_LOCAL_EVIDENCE:
         add(
@@ -1261,14 +1388,15 @@ def render(record: Mapping[str, Any]) -> str:
     for name in RUNGS:
         a = acct[name]
         cost.append(
-            f"| {name} | {a['reactor_cold']} | {a['budget']['cold']} | {_n(a['wall_s'])} "
-            f"| {_n(a['budget']['wall_s'])} | {a['experiments']['cold']} / "
-            f"{a['experiments']['in_process']} / {a['experiments']['store_hit']} "
+            f"| {name} | {_n(a['reactor_cold'])} | {a['budget']['cold']} | {_n(a['wall_s'])} "
+            f"| {_n(a['budget']['wall_s'])} | {_n(a['experiments']['cold'])} / "
+            f"{_n(a['experiments']['in_process'])} / {_n(a['experiments']['store_hit'])} "
             f"| {_n(a['exhausted'])} |"
         )
     total = acct["journey"]
     cost.append(
-        f"| journey | {total['reactor_cold']} | {total['budget']['cold']} | {_n(total['wall_s'])} "
+        f"| journey | {_n(total['reactor_cold'])} | {total['budget']['cold']} "
+        f"| {_n(total['wall_s'])} "
         f"| {_n(total['budget']['wall_s'])} | | |"
     )
 
@@ -1470,11 +1598,40 @@ def _check_r3(r3: Mapping[str, Any]) -> list[str]:
             problems.append(f"R3 is {outcome} but carries a candidate or a decision")
     elif r3.get("study_status") != outcome:
         problems.append("R3's outcome is not M05's study status")
+    else:
+        problems.extend(_check_r3_carry(r3))
     candidate = r3.get("candidate")
     if r3.get("decision") != (None if not candidate else candidate["T"]):
         problems.append("R3's decision is not its candidate's T")
     if r3.get("bound_activity") != bound_activity(r3.get("decision")):
         problems.append("R3 bound activity is not the rule's")
+    return problems
+
+
+def _check_r3_carry(r3: Mapping[str, Any]) -> list[str]:
+    """A1.6 items 2 and 4 on a carried or re-run R3: an anchor that is a commit or `rerun`; a
+    null spend exactly when its limitation is stated; a wall source exactly when a wall is."""
+    problems: list[str] = []
+    carried = str(r3["m05_record"]["carried_from"])
+    if carried != RERUN and not re.fullmatch(r"[0-9a-f]{40}", carried):
+        problems.append(f"R3 carried_from {carried!r} is neither a commit nor {RERUN!r}")
+    stated = set(r3.get("limitations") or ())
+    spent = r3["budget"]["spent"]
+    if (spent["cold"] is None) != ("R3:m05_cold_unrecorded" in stated):
+        problems.append("R3's cold is null iff R3:m05_cold_unrecorded is stated: it is not")
+    if (spent["wall_s"] is None) != ("R3:m05_wall_unrecorded" in stated):
+        problems.append("R3's wall is null iff R3:m05_wall_unrecorded is stated: it is not")
+    source = r3["budget"].get("wall_source")
+    if (source is None) != (spent["wall_s"] is None) or source not in (
+        None,
+        "m05_record",
+        "journey_measured",
+    ):
+        problems.append(f"R3 wall_source {source!r} does not match its wall")
+    if (source == "m05_record" and carried == RERUN) or (
+        source == "journey_measured" and carried != RERUN
+    ):
+        problems.append("R3's wall source does not match how the record was obtained")
     return problems
 
 
@@ -1490,7 +1647,10 @@ def _check_budget(name: str, rung: Mapping[str, Any]) -> list[str]:
         problems.append(
             f"{name} spent cold {budget['spent']['cold']} is not its points' sum {cold}"
         )
-    over = budget["spent"]["cold"] > budget["cold"] or budget["spent"]["wall_s"] > budget["wall_s"]
+    spent_c, spent_w = budget["spent"]["cold"], budget["spent"]["wall_s"]
+    over = (spent_c is not None and spent_c > budget["cold"]) or (
+        spent_w is not None and spent_w > budget["wall_s"]
+    )
     if over and rung["outcome"] != "BUDGET_EXHAUSTED":
         problems.append(f"{name} overran its budget without stating BUDGET_EXHAUSTED")
     return problems
