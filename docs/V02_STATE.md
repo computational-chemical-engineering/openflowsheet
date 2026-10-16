@@ -21,7 +21,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M04 | Design | M02 | W23 | **tested, reviewed by the design lane (`docs/reviews/M04-review.md`, §20 Am. 3), merged into main `78685cc`** (manifest `evidence/M04/8df0ea7…`, 60/61, A33 n/a; main gate 8670). Real b2-it1 on v3 NOT_PROMOTABLE (26/632 certificate refusals; finding to the reactor's owner); M05 uses the parent model (N6). MF1/MF2 fixed (A48, A24 mutations), BLAS pin A49 (`d65bb022…` at 1 and 48 threads). Later design read: E36 in-tree OpenBLAS pin vs threadpoolctl (lock hash), E37 backlog id B10, E38 A48–A50 W23 placement; Q-A2.1 open |
 | M05 | Design | M03, M04 | W24 | WO-1…7, 2b, 2c, 3b, 4a, 5c, 6b done; rulings §18 merged (`75cdc3b`); S3 parent adapter; gate 8790, nlp tier 164/1 (`dec989e`). WO-2c `M05-zero-flow-v2`: P1/P2/B2 one certified 4×4 block each (rcond 7.66e-3/1.42e-2/5.20e-6), 15 xfails now pass, other cases' dumps byte-identical. Running: WO-7b + S33 (holders' run before basis, for per-run basis_fd_point = n_in) + S36 + main merge. Then WO-8 runs → `reviewer` (batch Z2, W2, S1–S36: S22, S24, S27, S33, S36…). REAL box [653.15, 693.15] K; F-15 watch (G5). NLP-1 inventory stale (3 objects) |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
-| M07 | Design | M05, M06 | W25, W21–W27 | spec not started: branch `wp/M07` (`.claude/worktrees/m07`) holds `docs/briefs/M07-recon-digest.md` + `docs/briefs/M07-specification.md` (`e35b16d`); a `specifier` was launched and stopped at Frank's pause request (left an uncommitted `docs/derivations/scripts/m07_reference.py`, unreviewed) — relaunch fresh with the same brief |
+| M07 | Design | M05, M06 | W25, W21–W27 | **spec running**: fresh `specifier` on `docs/briefs/M07-specification.md` (+ updates: merge main, M04 NOT_PROMOTABLE → parent model, M05 in progress); register R-331…339, R-350…359, R-390+; ADR from 0041 |
 
 ## Milestone 0 (housekeeping)
 
@@ -110,7 +110,7 @@ M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
 Stopped at Frank's pace request, work saved on branches (pushed): `wp/test-hardening` `1d90625` (t07_w5b pins the
 single-threaded env itself — gate + merge pending); `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
 (spec still to write). Done in the burst: M02 closeout merged (`2497ec2`); M05 rulings §18 on `wp/M05-rulings2` (`4cc5956`).
-Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 from R-331 (continue R-350); M02 closeout R-340…344; alpha Am. 2 R-345…349; M04 review R-360…369; alpha Am. 3 R-370…379.
+Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 R-331…339, R-350…359, R-390+; M02 closeout R-340…344; alpha Am. 2 R-345…349; M04 review R-360…369; alpha Am. 3 R-370…379, B6/B5 R-380…382.
 Queued M02 follow-up (after the alpha RC): C1 inert-floor exact compare (`boundary.py:390`, few-ulp slack), R-341 R0
 guard, R-343 L-rows.
 After these: Frank's 4 answers → re-judge V13/V17/W21 → gate table pasted, A52 → M07a manifest `tested` → step 13 → WO-11 → Frank publishes `0.2.0a1`; 
