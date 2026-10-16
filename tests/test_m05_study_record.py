@@ -50,9 +50,15 @@ SCHEMA_PATH = REPO_ROOT / "schemas" / "trust-region-study.schema.json"
 VALIDATOR = Draft202012Validator(json.loads(SCHEMA_PATH.read_text(encoding="utf-8")))
 
 #: WO-8's committed study records join here (G12: "the committed records validate and pass §8.3's
-#: arithmetic"); every record found is run through `test_a_record_validates_and_adds_up`.
+#: arithmetic"); every record found is run through `test_a_record_validates_and_adds_up`. They
+#: live under `benchmarks/m05/records/` (§9.5), beside their `.ledger.json` and `.coupling/`.
 COMMITTED_RECORDS = sorted(
-    (REPO_ROOT / "evidence" / "M05").glob("*/records/trust-region-study-*.json")
+    path
+    for path in [
+        *(REPO_ROOT / "evidence" / "M05").glob("*/records/trust-region-study-*.json"),
+        *(REPO_ROOT / "benchmarks" / "m05" / "records").glob("trust-region-study-*.json"),
+    ]
+    if path.suffixes == [".json"]
 )
 
 SPEC = {
