@@ -184,7 +184,9 @@ class C1Parent:
     `document` is the C1 revision (its reactor bound to a variant: the stand-in, a synthetic
     variant or the real reactor, v3 for REAL); `runner` is the study's one `ExperimentRunner`;
     `box` the decision box (`study.REAL_BOX`, `study.TR_E2_BOX`); `services` the application's
-    operations (S44)."""
+    operations (S44). `coupling_sink`, when given, receives `(solve_id, record)` once for every
+    solve that has an M02 coupling record, where its digest is computed, so that the caller can
+    keep the document the digest certifies (§19.1 item 3, R-385); `None` changes nothing."""
 
     def __init__(
         self,
@@ -196,8 +198,10 @@ class C1Parent:
         policy: SolvePolicy | None = None,
         check_policy: CheckPolicy | None = None,
         clock: Callable[[], float] = time.monotonic,
+        coupling_sink: Callable[[str, Mapping[str, Any]], None] | None = None,
     ) -> None:
         self.services = services
+        self.coupling_sink = coupling_sink
         self.document: dict[str, Any] = copy.deepcopy(dict(document))
         binding = services.bind(self.document)
         self.binding = binding
@@ -283,6 +287,8 @@ class C1Parent:
         if isinstance(result, str):
             return failed(f"unsupported({result})")
         record = result.coupling
+        if record is not None and self.coupling_sink is not None:
+            self.coupling_sink(solve_id, record)
         executions, hits = coupling_counts(record)
         certificate = result.certificate
         common: dict[str, Any] = {

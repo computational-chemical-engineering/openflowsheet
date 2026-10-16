@@ -282,6 +282,33 @@ def test_the_loop_runs_on_the_adapter(tmp_path: Path) -> None:
     assert budget.cold.used == executed
 
 
+def test_the_coupling_sink_receives_each_digested_record(tmp_path: Path) -> None:
+    """§19.1 item 3 (R-385): the sink gets `(solve_id, record)` once per solve with a coupling
+    record, and the record is the document the solve's digest certifies; a solve served from the
+    store is digested and sunk again. Without a sink (the default) the solve is the same."""
+    sunk: list[tuple[str, Any]] = []
+    built = C1Parent(
+        loop(),
+        runner_in(tmp_path / "sink"),
+        TR_E2_BOX,
+        services=C1_PARENT_SERVICES,
+        coupling_sink=lambda solve_id, record: sunk.append((solve_id, record)),
+    )
+    first = built.solve({DECISION: NOMINAL}, solve_id="S0", purpose="start")
+    again = built.solve({DECISION: NOMINAL}, solve_id="S0-again", purpose="start")
+    assert [solve_id for solve_id, _ in sunk] == ["S0", "S0-again"]
+    assert [document_sha256(record) for _, record in sunk] == [
+        first.coupling_record_sha256,
+        again.coupling_record_sha256,
+    ]
+    plain = standin(tmp_path / "plain").solve({DECISION: NOMINAL}, solve_id="S0", purpose="start")
+    assert (plain.state, plain.coupling, plain.objective) == (
+        first.state,
+        first.coupling,
+        first.objective,
+    )
+
+
 # == refusals are outcomes =========================================================================
 
 
