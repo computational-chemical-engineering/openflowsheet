@@ -947,3 +947,9 @@ Grep, don't read whole. Newest at the bottom.
   [A10] audit lists. M03 closeout launched (`opus-engineer`): register R-450, main merged into wp/M03, the stale inventory check
   explained (stop if anything outside the audited set appears), CI on both runners at the final commit, manifest → tested. Then the
   session merges M03, then M05, into main. The four 0.2.0a1 questions remain open.
+- **M05 WO-10b** (2026-10-17, `sonnet-implementer`, cfecb15/b5099a3/1032ed0; gate 9296/31, nlp 186/1): review N2 fixed (try/finally,
+  test); manifest `evidence/M05/cfecb15…/manifest.json` **tested**, 14 checks (G1–G13 + G5b) all pass, review pending; 10 limitations
+  harvested (all class P), matrix --check 0 problems; ADR 0039 box note; progress.md; `docs/briefs/M05-W24-table.md`. S75 interpretations
+  for the next design touch: G10 cross-architecture `not_run` (limitation), E-row candidates (`extrapolated`, bound-active REAL optimum,
+  `fd_gradient`), case_hash = sha256 of c1-loop-real.json. Open: review N1 (stage-C restart eligibility). cfecb15 carries a Sonnet
+  trailer (accurate; not rewritten). M05 ready to merge after M03.
