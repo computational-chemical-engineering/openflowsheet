@@ -860,3 +860,6 @@ Grep, don't read whole. Newest at the bottom.
 - **M07 spec** (2026-10-16, `specifier`, `wp/M07` `48d4112`): ADR 0041/0042 Proposed, R-331…R-339, 40 assertions, journey R0–R3,
   W25 8 clauses (honest reporting), 0.2.0 gate `v0.2-gate-v1` + RC steps 13–18. Needs Frank (0.2.0, defaults) listed in state.
   Engineer launched on WO-1/WO-2 with a build-lane coverage read.
+- **M07 WO-1/WO-2** (2026-10-16, `opus-engineer`, `53ba75f`/`94819ea`, gate 8731): journey script + 61 tests; R0 ≈ 3 s in default
+  gate; R1/R3 UNSUPPORTED without reactor env / M05; `replay` exits 2 until WO-4. Spec issues J3, J4, J5, J6, J8, J9 batched for
+  the M07 ruling round (none numerics). Merging `wp/test-hardening` (1-line test pin) into main with a full gate.
