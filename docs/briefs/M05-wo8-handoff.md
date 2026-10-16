@@ -39,16 +39,36 @@ WO-8 records not re-taken); `scripts/m05_wo9_real.py` (20e398e) with the store s
 (`tests/test_m05_wo9_gates.py`), G10 REAL `--replay` 0 differences. F-13 no cap hit; F-21 both inner solves
 converged. AQ2: `c1-loop-real.json` is never edited.
 
-Next executable actions:
-1. Design lane: rule on G8's at-bound miss (S64): LOOP-S's interior-point offset 1.0965e-6 scaled vs R-404's 1e-6
-   (LOOP-R 5.29e-8; REAL 1.76e-6, reported only). The engineer did not move the criterion. When ruled, flip or keep
-   the strict xfail.
-2. WO-10 (bounded): support-matrix and limitation lines, `docs/progress.md`, `evidence/M05/<commit>/manifest.json`,
-   the W24 gate table for `verdict` (not started).
-Open for the design lane (review batch): S53 (bound flag for n_d > 1), S56 (`basis` block shape), S57 (refusal
-outcome without `start:`), S58 (`noise_ratio` units: c_k vs c_k/s_k), S59 (thread pin + environment
-sidecar), S60 (`.store.json` sidecar), S61 (gates judged in the default tier), S62 (`SurrogateTruth` signature
-and refusals), S63 (promoted basis without M04's `basis(z)`; `configs.basis` stays v2; P2_A via
-`ParentServices.solve_eo`, a failed reference fails P2), S64 (G8), S65 (`provenance` block), S66 (REAL's
-assumptions, `qualified(A2,A3)`), S67 (store sidecar), S68 (REAL replay comparator), S69 (the `extrapolated` count
-read from the ledger, no record field; H2/N2 at the data edge flips the final-iterate rule).
+Review and rulings (f0693d8): `docs/reviews/M05-review.md`, design note §21 (R-430..R-435). S64 handled by R-430,
+S58 reversed by R-432, the rest of the review batch confirmed (R-434).
+
+WO-10a done (build log S70-S73; commits cdacc32, cdefb1a, 1a8dc60, 0168343 and the R-433 commit):
+- R-432 `noise_ratio = 4σ̂_k/(t²|c_k|)`, σ̂_k = ν̂·η_sel·s_k/√2 (`study._basis_block`). Re-takes at cdacc32 (clean
+  tree, `OMP_NUM_THREADS=1`): LOOP-R (6.09e-6, 2.10e-6), TR-E2-FD (7.04e-7, 1.55e-4), REAL (0.0388, 0.0299).
+  `scripts/m05_retake_diff.py` against f0693d8: 0 differences each with noise_ratio and provenance masked, plus
+  wall-clock timings and the digests over them (S70; the timing mask is a build choice for the design lane).
+- G8/G9 restated per §21.6 (`tests/test_m05_wo8_gates.py::_at_the_bound`); strict xfail removed; G8 passes.
+- G10's five in-process replays in the nlp tier (`tests/test_m05_g10_replay.py`, 5 passed in 16 s).
+- R-433: `EXTRAPOLATED_LIMITATION` in `tests/test_m05_wo9_gates.py` (pinned to the ledger count and the
+  recorded flip); the note to M07 is `docs/briefs/M05-note-to-M07.md` (copy to wp/M07).
+
+Commands actually run (worktree root):
+- gate: `PYTHONPATH=$PWD/src PATH=<repo>/.venv/bin:$PATH ./scripts/gate.sh`, with `evidence/M06/W27/artifacts`
+  linked to the m06-w27h worktree's for the run, then removed. Last: 9289 passed, 31 skipped (S73).
+- nlp: `OMP_NUM_THREADS=1 PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1
+  PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools .venv-nlp/bin/python -m pytest -q -p no:cacheprovider
+  -m nlp`. Last: 186 passed, 1 skipped (includes G10).
+- pymrm: the same environment, `-m pymrm tests/test_m05_parent.py`: 1 passed (126 s).
+- REAL replay: `OMP_NUM_THREADS=1 ... .venv-nlp/bin/python scripts/m05_wo9_real.py --replay`: `REPLAY PASS REAL
+  differences=0` on the re-taken record.
+
+Limitation strings for WO-10b (manifest, support matrix, W24 text):
+- `extrapolated` (R-433, verbatim from `EXTRAPOLATED_LIMITATION`): "extrapolated: 12 of 61 reactor requests,
+  reported, not a distance from the data. At C1's loop state the reactor-inlet H2/N2 sits on the kinetics' data
+  edge, so the per-evaluation flag is decided at solver resolution: it flips between solves 3.5e-5 K apart
+  (cand-C1's P1 solve extrapolated, its minus poll at 653.15 K not)."
+- `fd_gradient` and `qualified(A2,A3)` for REAL as recorded; noise_ratio is reported, not judged (§21.3).
+
+Next executable action: WO-10b — `evidence/M05/<commit>/manifest.json`, support-matrix and limitation lines,
+`docs/progress.md`, ADR 0039 note, the W24 gate table for `verdict`. Open for the design lane: S70's timing mask;
+review notes N1 (stage-C restart eligibility) and N2 (in-flight key on a non-refusal box exception), not touched.

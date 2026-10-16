@@ -31,6 +31,14 @@ STUDY_COLD, STUDY_WALL_S, RUN_COLD, RUN_ITERATIONS = 400, 4 * 3600.0, 250, 30
 #: The measured count (build log S69): of the reactor link's 61 requests, 12 were served by an
 #: experiment outside the kinetics' data domain (10 of its 32 cold experiments).
 EXTRAPOLATED, TRUTH_REQUESTS = 12, 61
+#: R-433 (§21.4): the `extrapolated` limitation as M05's manifest and W24 text state it — the
+#: ledger count, and the data-edge flip at C1's loop state. WO-10b copies it verbatim.
+EXTRAPOLATED_LIMITATION = (
+    "extrapolated: 12 of 61 reactor requests, reported, not a distance from the data. At C1's "
+    "loop state the reactor-inlet H2/N2 sits on the kinetics' data edge, so the per-evaluation "
+    "flag is decided at solver resolution: it flips between solves 3.5e-5 K apart (cand-C1's P1 "
+    "solve extrapolated, its minus poll at 653.15 K not)."
+)
 #: A typed TRF outcome (§6.7, R-401): a name, with a reason in parentheses for the refused,
 #: errored and unverified outcomes.
 TYPED_OUTCOME = re.compile(r"TRF_[A-Z_]+(\([^()]+\))?")
@@ -159,3 +167,20 @@ def test_g11_the_limitations_include_extrapolated_with_its_count_and_fd_gradient
     extrapolated = [e for e in truth if e["extrapolated"]]
     assert (len(extrapolated), len(truth)) == (EXTRAPOLATED, TRUTH_REQUESTS)
     assert all("extrapolated" in c["limitations"] for c in document["candidates"])
+
+
+def test_r433_the_extrapolated_wording_is_the_ledger_count_and_the_recorded_flip() -> None:
+    """R-433 (§21.4): the wording's count is the ledger's (the test above ties `EXTRAPOLATED` and
+    `TRUTH_REQUESTS` to the ledger artifact), and the flip it states is the record's: cand-C1's P1
+    solve carries `extrapolated`, its minus poll 3.5e-5 K below at exactly 653.15 K does not."""
+    count = f"{EXTRAPOLATED} of {TRUTH_REQUESTS} reactor requests, reported, not a distance"
+    assert EXTRAPOLATED_LIMITATION.startswith(f"extrapolated: {count} from the data.")
+    document = record()
+    (candidate,) = [c for c in document["candidates"] if c["candidate_id"] == "cand-C1"]
+    solves = {solve["check_id"]: solve for solve in candidate["solves"]}
+    p1 = solves["cand-C1-P1"]
+    minus = solves["cand-C1-poll-preheater.T_spec-minus"]
+    assert (p1["limitations"], minus["limitations"]) == (["extrapolated"], [])
+    (t_p1,) = p1["decisions"].values()
+    assert minus["decisions"] == {"preheater.T_spec": 653.15}
+    assert f"{t_p1 - 653.15:.1e}" == "3.5e-05" and "3.5e-5 K apart" in EXTRAPOLATED_LIMITATION

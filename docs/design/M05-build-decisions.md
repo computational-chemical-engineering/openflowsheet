@@ -728,3 +728,10 @@ S72 SF1 / R-435: G10's in-process replays in the `nlp` tier, `tests/test_m05_g10
    environment `conda_builds` edited → fails naming `environment conda_builds: '41-mutated' recorded, 41 now`.
    REAL's replay stays the script (`scripts/m05_wo9_real.py --replay`, ≈ 25 min, the reactor environment).
    Gate 9288 passed, 31 skipped; nlp 186 passed, 1 skipped (56 s).
+S73 R-433: the `extrapolated` limitation wording is `EXTRAPOLATED_LIMITATION` in `tests/test_m05_wo9_gates.py`, for
+   M05's manifest and W24 text (WO-10b copies it verbatim): the ledger count "12 of 61 reactor requests, reported,
+   not a distance from the data" and the data-edge flip (3.5e-5 K, cand-C1's P1 solve extrapolated, its minus poll at
+   653.15 K not). `test_r433_...` ties the count to the constants the ledger test pins and the flip to the record's
+   per-solve `limitations` and decisions. The note to M07 (§21.4) is `docs/briefs/M05-note-to-M07.md`, to be copied
+   to wp/M07. Handoff `docs/briefs/M05-wo8-handoff.md` updated for WO-10b. Gate 9289 passed,
+   31 skipped; nlp 186 passed, 1 skipped.
