@@ -6590,3 +6590,62 @@ one. The real-reactor evidence is `judged: false`, R3, from one machine. The man
 for one.
 
 **Watch for.** `main` still reads Proposed for the three ADRs until this branch merges.
+
+---
+
+## R-410 — ADR 0036 (with Amendments 1 and 2) is Accepted; its condition is met by M04's `tested` manifest and the design-lane review whose must-fix items are closed
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), ADR acceptance round (`wp/adr-acceptance`) |
+| Normative text | ADR 0036's Status line |
+| Evidence | `evidence/M04/8df0ea7c…/manifest.json`: `tested`, 60/61, M04.A01–A24 and A34 `pass` (A33 `not_applicable`, outside the condition). Review: `docs/reviews/M04-review.md`, one pass over `37ae0adc..3f99eee` (WO-1–WO-20, so WO-2, WO-3 and WO-5); must-fix MF1 closed by `6363c24` (R-360, A48), MF2 by `8ad0ec7` (R-361, A24's three added mutations). Both are ancestors of `8df0ea7`, which `main` carries as `78685cc` (checked with `git merge-base --is-ancestor`) |
+| Affected packages | M04 (closed); M05, M07 (inherit the claim and its qualifications) |
+
+**Decision.** ADR 0036 moves from Proposed to Accepted. Its own condition, in its Status line, is met: the gates
+A01–A24 and A34 pass in a `tested` manifest, and the design-lane review's two must-fix items are fixed by the
+corrections Amendment 3 (§A3.1, §A3.2) prescribed, each with an assertion in that manifest. The acceptance-evidence
+section's further items also hold: the generator's `--check` is A34, and A31–A32 are recorded for the real variant.
+
+**The real verdict.** No part of the condition needs a promotable real surrogate. A01–A24 rest on closed forms and the
+synthetic parents; A31–A32 record the real iteration whatever its verdict. The real verdict is NOT_PROMOTABLE
+(`band_not_finite`, R-364), and N6 counts M04 as `tested` regardless.
+
+**What it does not establish.** That split-conformal coverage holds for the real reactor: its band is not finite, so the
+real surrogate claims nothing beyond its verdict. Coverage is marginal over each study's own P_ref and nothing else (D1′).
+The manifest's `review.numerical` and `review.process_model` are `pending`. Human sign-off is separate.
+
+**Rejected alternatives, and why.** Waiting for a PROMOTABLE real iteration: the condition does not ask for one, and the
+ADR fixes semantics that the synthetic closed forms verify. A second reviewer pass over the fixes: the condition asks
+that the must-fix items be closed, and each closure is an assertion in a `tested` manifest.
+
+**Watch for.** —
+
+## R-411 — ADR 0037 (with Amendment 1) is Accepted; its condition is met by M04's `tested` manifest, the recorded review of WO-7 and WO-8, and ADR 0035's acceptance
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), ADR acceptance round (`wp/adr-acceptance`) |
+| Normative text | ADR 0037's Status line |
+| Evidence | `evidence/M04/8df0ea7c…/manifest.json`: `tested`, M04.A12–A15, A25–A30 and A35 `pass`. Review: `docs/reviews/M04-review.md` over `37ae0adc..3f99eee`, which includes WO-7 and WO-8; MF1 (the promotion bypass in `replacement.py`) closed by `6363c24` (R-360, A48). ADR 0035 Accepted by R-381 |
+| Affected packages | M04 (closed); M02 (its replacement check and schema gained members); M05, M07 (consume the unit) |
+
+**Decision.** ADR 0037 moves from Proposed to Accepted. Its three conditions are met: the gates pass in a `tested`
+manifest, the review of WO-7 and WO-8 is recorded, and ADR 0035, which it amends, is Accepted.
+
+**The real verdict.** No part of the condition needs a promotable real surrogate. A25–A30 commit, reject and roll back
+surrogates of the synthetic parent (A17, A18, A19, and the stand-in for A28). A33, the real surrogate in
+`C1-LOOP-M02-v1`, is conditional on a PROMOTABLE real verdict. It is `not_applicable` because the verdict is
+NOT_PROMOTABLE (R-364), and neither the Status line nor the acceptance-evidence section requires it.
+
+**What it does not establish.** Promotion, rollback and a surrogate-backed solve are shown on the synthetic parent
+only, never with `c1.reactor`. Q-A2.1 stays open (R-366). ADR 0037 says "pointer paragraphs are added at merge", but
+ADRs 0019 and 0035 carry no pointer to 0037 on `main`. That migration step is not part of the condition and is still
+outstanding. ADR 0035 is left untouched here so that it stays byte-identical to the alpha branch.
+
+**Rejected alternatives, and why.** Leaving 0037 Proposed until A33 runs: A33 is conditional, and the condition does not
+name it.
+
+**Watch for.** The pointer paragraphs in ADRs 0019 and 0035, which should be added after the alpha merge.
