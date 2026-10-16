@@ -857,3 +857,6 @@ Grep, don't read whole. Newest at the bottom.
 - **Alpha B6/B5** (2026-10-16, `specifier`, `758a902`, R-380…R-382): ADR status flips legitimate (gate reads ADRs at the decision
   commit; `docs/adr/` outside D2.4 trees). 0027 copied from main; 0033/0034/0035 Accepted (M02 `ba90619` tested, G1–G12 pass;
   thin spot: D28/D29 never ruled individually). §20 Am. 4 contingent on Frank declining M02 N1. Dry run: only ADR 0028 + Frank.
+- **M07 spec** (2026-10-16, `specifier`, `wp/M07` `48d4112`): ADR 0041/0042 Proposed, R-331…R-339, 40 assertions, journey R0–R3,
+  W25 8 clauses (honest reporting), 0.2.0 gate `v0.2-gate-v1` + RC steps 13–18. Needs Frank (0.2.0, defaults) listed in state.
+  Engineer launched on WO-1/WO-2 with a build-lane coverage read.

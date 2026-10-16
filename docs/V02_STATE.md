@@ -21,7 +21,7 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | M04 | Design | M02 | W23 | **tested, reviewed by the design lane (`docs/reviews/M04-review.md`, §20 Am. 3), merged into main `78685cc`** (manifest `evidence/M04/8df0ea7…`, 60/61, A33 n/a; main gate 8670). Real b2-it1 on v3 NOT_PROMOTABLE (26/632 certificate refusals; finding to the reactor's owner); M05 uses the parent model (N6). MF1/MF2 fixed (A48, A24 mutations), BLAS pin A49 (`d65bb022…` at 1 and 48 threads). Later design read: E36 in-tree OpenBLAS pin vs threadpoolctl (lock hash), E37 backlog id B10, E38 A48–A50 W23 placement; Q-A2.1 open |
 | M05 | Design | M03, M04 | W24 | WO-1…7, 2b, 2c, 3b, 4a, 5c, 6b done; rulings §18 merged (`75cdc3b`); S3 parent adapter; gate 8790, nlp tier 164/1 (`dec989e`). WO-2c `M05-zero-flow-v2`: P1/P2/B2 one certified 4×4 block each (rcond 7.66e-3/1.42e-2/5.20e-6), 15 xfails now pass, other cases' dumps byte-identical. Running: WO-7b + S33 (holders' run before basis, for per-run basis_fd_point = n_in) + S36 + main merge. Then WO-8 runs → `reviewer` (batch Z2, W2, S1–S36: S22, S24, S27, S33, S36…). REAL box [653.15, 693.15] K; F-15 watch (G5). NLP-1 inventory stale (3 objects) |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
-| M07 | Design | M05, M06 | W25, W21–W27 | **spec running**: fresh `specifier` on `docs/briefs/M07-specification.md` (+ updates: merge main, M04 NOT_PROMOTABLE → parent model, M05 in progress); register R-331…339, R-350…359, R-390+; ADR from 0041 |
+| M07 | Design | M05, M06 | W25, W21–W27 | **spec written** (`wp/M07` `48d4112`, `docs/derivations/M07-spec.md`; ADR 0041 journey/W25, ADR 0042 0.2.0 policy, Proposed; R-331…339; 40 assertions; journey = inlet T on C1-LOOP-M02-v1 at R0 stand-in grid / R1 PyMRM v3 grid / R2 surrogate not promotable / R3 M05 on parent; budget 460 cold runs/6 h). Running: WO-1 + WO-2. Then WO-3 (gate entry, after alpha merge), WO-4 real journey, WO-5 = M06 WO-17 (paid), WO-6…8. Finding: ADRs 0036/0037 Proposed on main (0.2.0 gate needs Accepted); 0033–0035 Accepted only on alpha branch |
 
 ## Milestone 0 (housekeeping)
 
@@ -41,6 +41,7 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
+- **For 0.2.0 later (M07 spec, defaults set, not urgent):** claim all 17 gates (yes); the optional `nlp` extra's licences = M03 N1 (accept; until then the optimization gate W24 is BLOCKED and 0.2.0 can't be tagged); add an equilibrium-reactor fidelity level (no); re-accept the PTC failure, the agent-evidence carry and "not a sandbox" for 0.2.0 (yes); if the agent-facing surface changes after the paid W27 run, stop and ask.
 - **Blocking `0.2.0a1`** (ADR 0028 `pending`; verdicts `fffb0e4`; asked in plain words 2026-10-15):
   1. What the pre-release claims (N3): default = v0.1's ten gates re-checked + PyMRM reactor adapter + Peng–Robinson route;
      not surrogate, optimization, end-to-end refinement, web shell, agent benchmark. Alts: add web shell; adapter + PR only; no pre-release.
