@@ -127,8 +127,9 @@ these temperatures apart".
 **4.4.3 Before/after pairs.** Two pairs are compared: **P01** = (R0 decision → R1 decision) and **P13** = (R1 decision →
 R3 candidate T*). For each, j_before and j_after are **parent** values at t_before and t_after with their noise floors:
 for P01 both are R1 grid points (673.15 K is on the grid); for P13 j_after = J* and e* from M05's P1 targeted check and
-noise floor at T*. A pair whose t_after does not exist (R1 has no verified point; R3 has no candidate) has
-t_after = null.
+noise floor at T*. A pair whose t_after does not exist (R1 has no verified point; R3 has no candidate), or whose
+parent value at t_before or t_after is not verified (M05 P1 failed, or the grid point failed), has t_after = null and
+is `FE_NOT_DETERMINED`; the record states which value is missing.
 
 **4.4.4 Fidelity-effect class**, with ε = e_before + e_after and Δj = j_after − j_before, in this precedence:
 1. `FE_NOT_DETERMINED` if t_after is null;
