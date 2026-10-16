@@ -718,3 +718,13 @@ S71 SF2 / R-430, R-435: G8's and G9's at-bound rows restated per §21.6 in `test
    bound, no minus point at an interior reading. The inward-only unit test stays
    (`test_m05_study_loop.py::test_the_poll_polls_only_inward_at_a_bound_and_clips_at_the_box`). Gate 9288 passed,
    31 skipped (the xfail gone); nlp 181 passed, 1 skipped.
+S72 SF1 / R-435: G10's in-process replays in the `nlp` tier, `tests/test_m05_g10_replay.py` (parametrized over TR-E2,
+   TR-E2-FAR, TR-E2-FD, LOOP-R, LOOP-S): `m05_wo8_runs.run_case` from a fresh store into `tmp_path`, then the
+   script's own `compare` (environment fingerprint exactly, record by `replay_differences`, ledger and store index
+   bytewise, coupling records by integrity and content) and G7's bijection; the message lists the differences.
+   Without `OMP_NUM_THREADS=1` it fails ("G10 refuses"), never skips. Measured: 5 passed in 16.3 s at 1 thread;
+   at `OMP_NUM_THREADS=2` it fails with the refusal. Mutations (then restored by `git checkout`): LOOP-S's T* moved
+   one ulp → fails naming `.best.decisions.preheater.T_spec: 653.1500219304061 vs 653.150021930406`; TR-E2's
+   environment `conda_builds` edited → fails naming `environment conda_builds: '41-mutated' recorded, 41 now`.
+   REAL's replay stays the script (`scripts/m05_wo9_real.py --replay`, ≈ 25 min, the reactor environment).
+   Gate 9288 passed, 31 skipped; nlp 186 passed, 1 skipped (56 s).
