@@ -863,3 +863,8 @@ Grep, don't read whole. Newest at the bottom.
 - **M07 WO-1/WO-2** (2026-10-16, `opus-engineer`, `53ba75f`/`94819ea`, gate 8731): journey script + 61 tests; R0 ≈ 3 s in default
   gate; R1/R3 UNSUPPORTED without reactor env / M05; `replay` exits 2 until WO-4. Spec issues J3, J4, J5, J6, J8, J9 batched for
   the M07 ruling round (none numerics). Merging `wp/test-hardening` (1-line test pin) into main with a full gate.
+- **wp/test-hardening merged** (2026-10-16, `26b13db`, main gate PASS 8670 passed, 31 skipped).
+- **M05 S33/S36/WO-7b + main merge** (2026-10-16, `opus-engineer`, `899cc2b`/`ce86c03`/`733cf8a`/`d65a9a4`/`e4a8f4b`; gates 8790/8889;
+  merged tree 9186 passed 1 failed (S43); nlp 167/1). S33 bitwise on FD link toy; value_cold 8→16 (accounting).
+  DECISION: S43 → (a) invert dependency (adapter into `application`, injected), alt. (b) exemption / (c) narrow rule;
+  reversible by reverting S44. S40 + `fd_check` float rule → design ruling before WO-8.
