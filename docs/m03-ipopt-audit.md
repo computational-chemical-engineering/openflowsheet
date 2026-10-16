@@ -36,7 +36,7 @@ answered: Frank accepted the licences of §7 on 2026-10-16 (R-450).
 
 | Item | Outcome | Evidence (details in §6) |
 | --- | --- | --- |
-| G1 | **PASS** | 178 mapped ELF objects (287 574 499 bytes, 178 distinct SHA-256), each with path, size, SHA-256, SONAME, `DT_NEEDED`, owner and licence; no object of unknown origin; both import orders map the same set; every conda-owned object equals its package's recorded bytes (five after conda's prefix relocation, verified by re-applying it) |
+| G1 | **PASS** | 180 mapped ELF objects (289 435 275 bytes, 180 distinct SHA-256; 178 before the re-take of §5), each with path, size, SHA-256, SONAME, `DT_NEEDED`, owner and licence; no object of unknown origin; both import orders map the same set; every conda-owned object equals its package's recorded bytes (five after conda's prefix relocation, verified by re-applying it) |
 | G2 | **PASS** | Mapped from the CasADi package: `_casadi.so` and `libcasadi.so.3.7` only; neither is in the CasADi wheel's METIS closure (55 objects, derived from the wheel's own `DT_NEEDED` graph); no mapped CasADi path names `ipopt`/`mumps`/`metis`; `casadi.nlpsol` raised-if-called and was called 0 times in both orders |
 | G3 | **PASS** | One `METIS_` exporter is mapped: conda-forge `metis-5.1.0` `libmetis.so` (`970cd095…`); it defines `METIS_SetDefaultOptions` and `METIS_Free` and none of `METIS_EstimateMemory`, `METIS_mCPartGraphKway`, `METIS_EdgeND`: METIS 5 by ADR 0006 D2.1's binary test |
 | G4 | **PASS** | No mapped object defines or imports an `ma27`/`ma57`/`ma77`/`ma86`/`ma97` routine or is named `*hsl*`; Ipopt's own banner: `This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2.`; `linear_solver = mumps` set and recorded |
@@ -167,13 +167,13 @@ left unresolved for its own GitHub-fetched ASL build.
 
 | Origin | Objects | Bytes |
 | --- | ---: | ---: |
-| conda-forge packages | 60 | 144 570 819 |
+| conda-forge packages | 62 | 146 431 595 |
 | PyPI wheels (numpy 15, scipy 91, casadi 2, PyYAML 1, rpds-py 1) | 110 | 139 703 952 |
 | built here (`libpynumero_ASL.so`) | 1 | 43 952 |
 | platform (`libc6`) | 7 | 3 255 776 |
-| **total** | **178** | **287 574 499** |
+| **total** | **180** | **289 435 275** |
 
-The conda-forge interpreter (`python-3.13.5-hec9711d_102_cp313`: `python3.13` and 30 `lib-dynload`
+The conda-forge interpreter (`python-3.13.5-hec9711d_102_cp313`: `python3.13` and 31 `lib-dynload`
 modules, Python-2.0, notice read) aside, every compiled object the NLP stack adds:
 
 | Object | Package | Bytes | SHA-256 | Declared | Read from notice | Category |
@@ -202,10 +202,21 @@ modules, Python-2.0, notice read) aside, every compiled object the NLP stack add
 | `libpynumero_ASL.so` | built here (§4.3) | 43952 | `6646bbdd51332c3a…` | BSD-3-Clause (Pyomo) | BSD-3-Clause | identified |
 
 Interpreter-closure objects from conda-forge (loaded by CPython's standard library, not by the NLP
-stack): `libcrypto.so.3` (openssl, Apache-2.0), `libsqlite3.so.3.53.4` (blessing, §6.5, loaded by
+stack): `libcrypto.so.3` and `libssl.so.3` (openssl, Apache-2.0), `libsqlite3.so.3.53.4` (blessing, §6.5, loaded by
 `openflowsheet.application.store`), `libuuid.so.1.3.0` (BSD-3-Clause, §6.5), `libffi`, `libbz2`,
 `liblzma`, `libmpdec`, `libz` — all `identified`. The full rows, with every notice path and hash,
 are in the JSON.
+
+**Re-take, 2026-10-17 (merge of `main` into `wp/M03`).** The NLP-1 workload imports every project
+module; M02's `openflowsheet.adapters.pymrm.env` imports `urllib.request`, which imports `ssl`, so
+two more objects are mapped: `libssl.so.3` (openssl-3.6.5-h781a0a9_0, 1 228 008 bytes, Apache-2.0,
+the package's notice, `identified`) and `lib-dynload/_ssl.cpython-313-x86_64-linux-gnu.so`
+(python-3.13.5-hec9711d_102_cp313, 632 768 bytes, Python-2.0, `identified`). Both packages were
+already loaded and audited (`libcrypto.so.3`; the interpreter), the 41 conda packages and the pip
+wheels are unchanged with their hashes, no licence is added, and G1-G6 stay PASS. An environment
+rebuilt from the locks reproduces the earlier 178-object record at `086bf2b` (before the merge) and
+this one after it, both under `OMP_NUM_THREADS=1`. The inventory was re-taken with
+`scripts/m03_ipopt_inventory.py --env .venv-nlp`; `--check` reproduces it.
 
 "Read" identifiers are pattern hits on the notice text (P03's patterns plus a few added in the
 script). P03's 2-clause pattern matches every BSD text, so a BSD-2 hit beside a BSD-3 declaration
@@ -311,7 +322,7 @@ T08.A30's and unchanged here):
 | EPL-2.0 | Ipopt 3.14.20 (`libipopt`; conda-forge's metadata says EPL-1.0, the shipped text is EPL-2.0), cyipopt 1.7.0 (`ipopt_wrapper`) |
 | CeCILL-C | MUMPS 5.8.2 (`libdmumps_seq`, `libmumps_common_seq`, `libmpiseq_seq`), Scotch 7.0.11 (`libscotch`, `libscotcherr`, `libesmumps`) |
 | Public domain | PORD (`libpord_seq`, MUMPS's bundled ordering), SQLite 3.53.4 (blessing) |
-| Apache-2.0 | METIS 5.1.0 (`libmetis`), OpenSSL 3.6.5 (`libcrypto`) |
+| Apache-2.0 | METIS 5.1.0 (`libmetis`), OpenSSL 3.6.5 (`libcrypto`, `libssl`) |
 | Apache-2.0 WITH LLVM-exception | LLVM OpenMP 23.1.3 (`libomp`) |
 | BSD-3-Clause | OpenBLAS 0.3.34 (with LAPACK's BSD notice), SPRAL 2025.09.18, hwloc 2.13.0, libuuid 2.42.4, Pyomo 6.10.1 (`libpynumero_ASL`, compiled here) |
 | BSD-3-Clause and the f2c/AT&T permissive notice (conda-forge: `SMLNJ`) | AMPL Solver Library, ampl-asl 1.0.0 (`libasl`) |
