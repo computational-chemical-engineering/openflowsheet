@@ -29,6 +29,7 @@ the bound variant's boundary block and the admissibility definitions, never auth
 
 from __future__ import annotations
 
+import functools
 import math
 import time
 from collections.abc import Callable, Mapping, Sequence
@@ -468,6 +469,9 @@ class StageRun:
     point: TrfPoint | None
     cold: int
     document: Mapping[str, Any]
+    #: Limitations the run's candidate carries beyond the outcome's (R-400:
+    #: `basis_without_curvature`).
+    limitations: tuple[str, ...] = ()
 
 
 class StageRunner(Protocol):
@@ -752,7 +756,11 @@ def run_study(
             p2_reference=reference,
             # R-327: a max-iterations exit keeps its candidate, and says so; so does an
             # unverified "Optimal" exit (R-401).
-            limitations=[*limitations, *_outcome_limitations(staged.outcome)],
+            limitations=[
+                *limitations,
+                *_outcome_limitations(staged.outcome),
+                *staged.limitations,
+            ],
         )
         result.candidates.append(checked)
         return checked
@@ -826,22 +834,31 @@ class TrfStage:
     `gradient_check`, when given, is handed to every run (`run_trf`'s): it runs the study's
     `M05-fd-v2` check, once per study, inside the run whose w₀ it is at (R-406), so its requests
     are that run's (stage `fdcheck`, its `by_purpose` and its cold count) and are charged to the
-    study's cap, never to the run cap. The callable keeps the once-per-study rule itself."""
+    study's cap, never to the run cap. The callable keeps the once-per-study rule itself, and
+    returns the check (its `as_document()`) when it ran, `None` when it did not.
+
+    `path_for`, when given, makes the basis `M05-basis-v2`'s (R-400): `basis_for` is called as
+    `basis_for(projection, path=path_for(start))`, with the run's start's decision path (the
+    composition root's `C1Parent.decision_path`). The run's `basis` block is then the builder's
+    record (`basis.BasisSet.record`) with the EF kinds, and `noise_ratio` = 4ν̂/(t²|c_k|) on the
+    run that carries the FD check (reported, not judged)."""
 
     def __init__(
         self,
         project_at: Callable[[ParentSolve], Projection],
-        basis_for: Callable[[Projection], Mapping[str, EFBasis]],
+        basis_for: Callable[..., Mapping[str, EFBasis]],
         config: Mapping[str, Any],
         assumptions: Sequence[Mapping[str, Any]] = (),
         *,
         gradient_check: Callable[[Projection], Any] | None = None,
+        path_for: Callable[[ParentSolve], Any] | None = None,
     ) -> None:
         self.project_at = project_at
         self.basis_for = basis_for
         self.config = dict(config)
         self.assumptions = tuple(dict(item) for item in assumptions)
         self.gradient_check = gradient_check
+        self.path_for = path_for
 
     def __call__(
         self, start: ParentSolve, *, run_id: str, radius_factor: float, budget: StudyBudget
@@ -853,13 +870,24 @@ class TrfStage:
         run_cap = budget.run_cap(run_id)
         caps = [budget.cold] + ([run_cap] if run_cap is not None else [])
         parents = [h for h in projection.holders if getattr(h.box, "parent", False)]
+        basis_for = self.basis_for
+        if self.path_for is not None:
+            basis_for = functools.partial(self.basis_for, path=self.path_for(start))
+        fd_checks: list[Any] = []
+
+        def gradient_check(projection: Projection) -> None:
+            assert self.gradient_check is not None
+            found = self.gradient_check(projection)
+            if found is not None:
+                fd_checks.append(found)
+
         trf_run = run_trf(
             projection,
             config,
-            basis=self.basis_for,
+            basis=basis_for,
             budgets={holder.name: caps for holder in parents},
             run_id=run_id,
-            gradient_check=self.gradient_check,
+            gradient_check=None if self.gradient_check is None else gradient_check,
             check_budgets={holder.name: [budget.cold] for holder in parents},
         )
         cold_parent = 0
@@ -903,7 +931,7 @@ class TrfStage:
                 for holder in projection.holders
                 if isinstance(holder.box, TruthBox)
             ],
-            "basis": dict(trf_run.basis),
+            "basis": _basis_block(trf_run.basis, trf_run.basis_record, fd_checks),
             "projection": {
                 "source_map_sha256": trf_run.source_map_sha256(projection),
                 "n_vars": len(projection.variable_indices),
@@ -934,7 +962,30 @@ class TrfStage:
             point=point,
             cold=cold_parent + cold_in_process,
             document=document,
+            limitations=trf_run.basis_limitations,
         )
+
+
+def _basis_block(
+    kinds: Mapping[str, str], record: Mapping[str, Any] | None, checks: Sequence[Any]
+) -> dict[str, Any]:
+    """The run's `basis`: the EF kinds (v1), or R-400's block — `policy`, the kinds and each
+    link's curvature record, with `noise_ratio` = 4ν̂/(t²|c_k|) per output when this run carried
+    the FD check (ν̂ the selected η's noise estimate; null for c_k = 0)."""
+    if record is None:
+        return dict(kinds)
+    links = {name: dict(link) for name, link in record["links"].items()}
+    if checks:
+        check = checks[0].as_document()
+        (noise,) = [
+            item["noise"] for item in check["candidates"] if item["eta"] == check["selected_eta"]
+        ]
+        for link in links.values():
+            t = link["t"]
+            link["noise_ratio"] = [
+                4.0 * noise / (t * t * abs(c)) if c != 0.0 else None for c in link["c"]
+            ]
+    return {"policy": record["policy"], "kinds": dict(kinds), "links": links}
 
 
 # == readiness (§6.8, §16.4) =======================================================================

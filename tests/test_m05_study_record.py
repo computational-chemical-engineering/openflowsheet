@@ -297,6 +297,49 @@ def _iteration_limit() -> dict[str, Any]:
     return _document(study(FakeParent(), FullStage(script)))
 
 
+def _stable_with_basis_v2() -> dict[str, Any]:
+    """`decision_stable_with_an_fd_check` under `M05-basis-v2` (R-400) and R-406's accounting:
+    the first stage-C run carries the curvature block, its two path points and the check's
+    1 + 4·7 points (charged to its cold count and the study's budget)."""
+    record = copy.deepcopy(_stable_with_an_fd_check())  # the spec is a shared constant
+    record["spec"]["configs"]["basis"] = "M05-basis-v2"
+    first = next(run for run in record["runs"] if run["stage"] == "C")
+    summary = first["ledger"]["summary"]["reactor"]
+    summary["by_purpose"].update(basis_curvature_point=2, fdcheck_point=29)
+    summary["value_cold"] += 30
+    summary["requests"] += 31
+    summary["value_store_hit"] += 1
+    first["cold"] += 30
+    first["basis"] = {
+        "policy": "M05-basis-v2",
+        "kinds": first["basis"],
+        "links": {
+            "link:reactor": {
+                "stencil": "central",
+                "t": 0.025,
+                "d_points": [0.025, -0.025],
+                "solves": ["CONVERGED", "CONVERGED"],
+                "w_points": [[0.5, 673.65], [0.5, 672.65]],
+                "v": [0.0, 20.0],
+                "c": [-0.3835, 0.8914],
+                "status": "ok",
+                "reason": None,
+                "noise_ratio": [0.065, 0.028],
+            }
+        },
+    }
+    accounting = record["accounting"]
+    for table, key in (("by_stage", "C"), ("by_iteration", str(first["study_iteration"]))):
+        accounting[table][key]["trf_cold"] += 30
+    accounting["totals"]["trf_cold"] += 30
+    accounting["budgets"]["cold_used"] += 30
+    for candidate in record["candidates"]:
+        row = accounting["by_candidate"][candidate["candidate_id"]]
+        if candidate["run_id"] == first["run_id"]:
+            row["produce_trf_cold"] += 30
+    return record
+
+
 GENERATED: dict[str, Callable[[], dict[str, Any]]] = {
     "decision_stable_with_a_retry": _stable,
     "candidate_failure": _failed_candidate,
@@ -305,6 +348,7 @@ GENERATED: dict[str, Callable[[], dict[str, Any]]] = {
     "unsupported": _unsupported,
     "iteration_limit": _iteration_limit,
     "decision_stable_with_an_fd_check": _stable_with_an_fd_check,
+    "decision_stable_with_basis_v2": _stable_with_basis_v2,
 }
 
 
@@ -430,6 +474,7 @@ def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
     lists by holder in the same order but keyed differently, so an FD truth is attributed only
     when it is the run's one truth (build log S41).
 
+    R-400: a run with an `M05-basis-v2` block has `basis_curvature_point` = 2 per link.
     R-406 (§20.4): in a record under `R406_BASIS_POLICY`, the study's FD check is inside the first
     stage-C run, whose `fdcheck_point` = 1 + n_in·|η evaluated| (each candidate η used G(η/4),
     G(η), G(4η)), and every other run's is 0. Records written before R-406 (the v1 TR-E2-FD and
@@ -472,8 +517,13 @@ def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
             "trf_trial_value": sum(1 for it in iterations if it["k"] >= 1),
             "trf_fd_point": N_IN * (1 + accepted - int(final_accepted)),
         }
-        if "surrogate" not in run["basis"].values():
+        basis = run["basis"]
+        kinds = basis["kinds"] if "policy" in basis else basis
+        if "surrogate" not in kinds.values():
             expected["basis_fd_point"] = N_IN
+        if basis.get("policy") == R406_BASIS_POLICY:
+            # R-400: two path points per link (§8.3 as amended by §20.7).
+            expected["basis_curvature_point"] = 2 * len(basis["links"])
         if record.get("spec", {}).get("configs", {}).get("basis") == R406_BASIS_POLICY:
             expected["fdcheck_point"] = check_points if name == check_run else 0
         for purpose, value in expected.items():
@@ -519,6 +569,7 @@ def test_the_generated_records_cover_the_statuses() -> None:
         "unsupported": "UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNPINNED)",
         "iteration_limit": "ITERATION_LIMIT",
         "decision_stable_with_an_fd_check": "DECISION_STABLE",
+        "decision_stable_with_basis_v2": "DECISION_STABLE",
     }
 
 
@@ -893,7 +944,7 @@ def test_r406_the_check_s_points_belong_to_the_first_stage_c_run() -> None:
     """R-406: under `M05-basis-v2` the first stage-C run carries 1 + n_in·|η| check points (the
     escalated check evaluated η/4, η, 4η and 16η: 1 + 4·7 = 29), every other run none; a v1
     record is not held to it."""
-    record = _stable_with_an_fd_check()
+    record = copy.deepcopy(_stable_with_an_fd_check())  # the spec is a shared constant
     first_c = next(i for i, run in enumerate(record["runs"]) if run["stage"] == "C")
     name = record["runs"][first_c]["run_id"]
     purposes = ("runs", first_c, "ledger", "summary", "reactor", "by_purpose", "fdcheck_point")
@@ -904,6 +955,31 @@ def test_r406_the_check_s_points_belong_to_the_first_stage_c_run() -> None:
     assert request_identity_violations(record) == []
     _set(record, ("fd_check",), None)
     assert request_identity_violations(record) == [f"{name}: fdcheck_point = 29, §8.3 gives 0"]
+
+
+def test_r400_a_v2_basis_block_has_two_curvature_points_per_link() -> None:
+    record = _stable()
+    run = record["runs"][2]
+    link = {
+        "stencil": "central",
+        "t": 0.025,
+        "d_points": [0.025, -0.025],
+        "solves": ["CONVERGED", "CONVERGED"],
+        "w_points": [[1.0], [1.0]],
+        "v": [20.0],
+        "c": [-0.38, 0.89],
+        "status": "ok",
+        "reason": None,
+        "noise_ratio": None,
+    }
+    run["basis"] = {"policy": "M05-basis-v2", "kinds": run["basis"], "links": {"link:R": link}}
+    assert sorted(VALIDATOR.iter_errors(record), key=str) == []
+    name = run["run_id"]
+    assert request_identity_violations(record) == [
+        f"{name}: basis_curvature_point = 0, §8.3 gives 2"
+    ]
+    run["ledger"]["summary"]["reactor"]["by_purpose"]["basis_curvature_point"] = 2
+    assert request_identity_violations(record) == []
 
 
 def test_the_request_identity_applies_to_fd_truths_only() -> None:

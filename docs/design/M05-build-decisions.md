@@ -493,3 +493,36 @@ S55 WO-8c: the ledger entry gains §8.1's `stage`, `fdcheck` for the check's req
    31 + 16 (was 48: S51 resolved), accounting, identity and schema clean; TR-E2-FD C1 cold 262 = 241 + 21 cold
    check points (`fdcheck_point` 22, its base a store hit), `cold_used` 278 = 262 + 16, all checkers clean.
    T* unchanged to the bit (673.6673361700024 K; FD 673.6673250702911 K): WO-8c moves no numerics.
+S56 WO-8d: `M05-basis-v2` reaches the run through `TrfStage(path_for=parent.decision_path)`: the stage calls
+   `basis_for(projection, path=path_for(start))` (`m05_basis_v2`), and the builder returns a `BasisSet` (a dict
+   of `EFBasis` with `record` and `limitations`). Under v2 the run's `basis` is the block `{policy, kinds, links}`
+   (schema: `anyOf` with v1's kind map, so v1 records stay valid); a link EF with curvature has the kind
+   `affine_curvature`, a fallen-back one keeps `affine_taylor`. The candidate gains `basis_without_curvature`
+   through `StageRun.limitations`. Each link record also holds `solves` (the two inner solves' outcomes, R-400
+   step 4's "its outcome is recorded"). Alternative: a separate `basis_curvature` run key. Reversible: the stage.
+S57 WO-8d: a `TruthRefused` the check or the basis builder does not handle (a budget refusal, R-400 step 9) is the
+   run's outcome `TRF_TRUTH_REFUSED(<code>)` without the `start:` prefix (v1 let it escape `run_trf` as an
+   exception); R-276's backstop now counts refusals from after the basis phase, so a non-budget refusal at a path
+   point that the builder turned into the affine fallback is in the basis block, not in the run's outcome.
+S58 WO-8d (for the review batch): `noise_ratio` = 4ν̂/(t²|c_k|) is computed literally as R-400 step 10 writes it,
+   with ν̂ the check's selected-η noise (scaled-gradient units) and c_k as recorded (output units per unit scaled
+   decision squared, unscaled by s_k); reported, never judged. If the design lane meant c_k/s_k, it is one line in
+   `study._basis_block`.
+   Units: c is per unit *scaled* decision squared; §20.1's c_X = −9.5883e-4 is per K² (c/h², h = 20 K):
+   measured c_X = −0.38353333565997494, /400 = −9.5883e-4.
+   Measured (in memory, `run_case`, v2, fresh store; §20.1's scratch in brackets): TR-E2 C1
+   `TRF_EXIT_WITHOUT_STEP` [same], θ_recheck 2.9978e-6 [3.0e-6], T* 673.6507818736262 K [673.6508],
+   |T* − T_ref| 0.00734 K [0.0074]; central stencil, t 0.025, c = (−0.38353, 0.89137), v = 20 K e_T exactly,
+   both inner solves CONVERGED, `basis_curvature_point` 2, `cold_used` 19. TR-E2-FD C1 `TRF_CONVERGED` k = 1
+   [same], ratio 1.580e-4 [1.6e-4], θ 6.263e-8 [6.3e-8], T* 673.6294405283825 K [673.6294], noise_ratio
+   (0.0653, 0.0281), `cold_used` 48. LOOP-R C1 `TRF_CONVERGED` k = 2 [same], ratio 6.93e-3 at the box bound
+   [6.9e-3], θ 1.987e-7 [2.0e-7], T* 653.1500010581631 K [653.150001058]. Every checker (schema, accounting,
+   identity) clean on all three; each `DECISION_STABLE`.
+   Bit-identity (cases off the v2 basis): `run_case(..., basis_policy="M05-basis-v1")` for TR-E2, TR-E2-FD and
+   LOOP-R at the WO-8d tree against a9d05d3 (the base, same machine, same session): runs' iterations, filter,
+   final, θ_recheck/θ_logged, exit lines, outcomes, candidates (checks, poll, decisions), best, status, stage A
+   and fd_check — 0 differences, `float.hex` compared. TR-E1 (G3) stays bitwise native (nlp tier).
+   Found: the committed v1 records (6a9d29d) no longer replay even at a9d05d3 — `--replay` TR-E2-FD gives 100
+   differences at ~1e-15 relative from iteration 0 (θ 0.5226121890068809 recorded, 0.5226121890068817 now),
+   with only documents changed in between: environment drift in `.venv-nlp` or its libraries since WO-8, not a
+   code change. WO-8e re-records; G10 for the new records must be judged in one environment.

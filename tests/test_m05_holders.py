@@ -410,6 +410,7 @@ def test_the_first_request_at_each_key_gets_its_call_order_purpose() -> None:
         "trf_fd_point": 1,
         "fdcheck_point": 0,
         "basis_fd_point": 0,
+        "basis_curvature_point": 0,
     }
     assert summary["pmp_point_equals_start"] is False
 

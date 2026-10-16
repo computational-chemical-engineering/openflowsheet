@@ -238,8 +238,9 @@ def trf_config_v1(sigma: float) -> dict[str, Any]:
 # -- the basis (D7; R-277) ------------------------------------------------------------------------
 
 #: What an `EFBasis` is, for the record (design note §6.6): `zero` is TRF's default b ≡ 0, TR-E1's
-#: only; `constant`, `affine_taylor` and `surrogate` are M05-basis-v1's.
-BasisKind = Literal["zero", "constant", "affine_taylor", "surrogate"]
+#: only; `constant`, `affine_taylor` and `surrogate` are M05-basis-v1's; `affine_curvature` is
+#: M05-basis-v2's link basis (R-400).
+BasisKind = Literal["zero", "constant", "affine_taylor", "affine_curvature", "surrogate"]
 TRF_CONFIGURATION_REFUSED: Final = "TRF_CONFIGURATION_REFUSED"
 #: The projection's `shape_check` status of TR-E1, the one projection a zero basis is allowed on.
 SHAPE_CHECK_EXEMPT_ORACLE: Final = "exempt_oracle"
@@ -264,6 +265,16 @@ def zero_basis(ef_names: Collection[str]) -> dict[str, EFBasis]:
     the integer 0 that TRF's own default `lambda comp, ef: 0` returns, so TR-E1 run with it is the
     native example. `run_trf` refuses it on any projection other than TR-E1's exempt oracle."""
     return {name: EFBasis("zero", _zero) for name in ef_names}
+
+
+class TrfConfigurationRefusedError(ValueError):
+    """The run's configuration is refused (`TRF_CONFIGURATION_REFUSED(<reason>)`, R-277, R-400);
+    nothing was run and no holder was asked for anything. Here, Pyomo-free, so that a basis
+    builder can refuse (`basis.m05_basis_v2`); `trf` re-exports it."""
+
+    def __init__(self, codes: Sequence[str]) -> None:
+        super().__init__("; ".join(codes))
+        self.codes = tuple(codes)
 
 
 def basis_refusals(

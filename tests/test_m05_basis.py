@@ -274,3 +274,218 @@ def test_the_live_run_document_validates_and_holds_the_request_identity(
     assert sorted(runs.iter_errors(run), key=str) == []
     assert run["truth"][0]["gradient"] == "finite_difference"
     assert request_identity_violations({"runs": [run]}) == []
+
+
+# -- R-400: M05-basis-v2, the truth's curvature along the decision path (§20.1, WO-8d) -----------
+
+#: The toy's path: T_in = 680 z with z = 1 + 0.1 d, so dT_in/dd = 68 K per unit scaled decision.
+TOY_DT_DD = 68.0
+#: The quadratic toy's X = 0.2 + 1e-4 (T − 680) + A (T − 680)²: c_X = 2 A · 68², c_ΔT = 350 c_X.
+QUADRATIC = 1e-6
+
+
+class QuadraticToy(LinkToyTruth):
+    """The link toy with curvature in T_in (exact second derivative 2·`QUADRATIC`)."""
+
+    def __init__(self, parent: bool = False) -> None:
+        self.parent = parent
+
+    def describe(self) -> Mapping[str, Any]:
+        kind = "parent_experiment" if self.parent else "test"
+        return {"kind": kind, "id": "link-toy-quadratic", "sha256": None, "gradient": "analytic"}
+
+    def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]:
+        from openflowsheet.studies.trust_region.truths import in_process_meta
+
+        x = 0.2 + 1e-4 * (inlet[5] - 680.0) + QUADRATIC * (inlet[5] - 680.0) ** 2
+        return x, 350.0 * x, in_process_meta()
+
+    def gradient(self, inlet: Sequence[float]) -> Sequence[Sequence[float]]:
+        slope = 1e-4 + 2 * QUADRATIC * (inlet[5] - 680.0)
+        row = [0.0, 0.0, 0.0, 0.0, 0.0, slope, 0.0]
+        return [row, [350.0 * value for value in row]]
+
+
+class ToyPath:
+    """`basis.DecisionPath` on the link toy: the inlet with T_in = 680 z (the heater row), the
+    flows and pressure at the projection's start; `fail` makes every solve fail."""
+
+    def __init__(self, projection: Any, tolerance: float = 0.001, fail: bool = False) -> None:
+        self.start = projection.state_of()
+        self.tolerance = tolerance
+        self.fail = fail
+        self.asked: list[float] = []
+
+    def state_at(self, decisions: Mapping[str, float]) -> tuple[dict[str, float] | None, str]:
+        self.asked.append(decisions["z"])
+        if self.fail:
+            return None, "NOT_CONVERGED"
+        return {**self.start, "T_in": 680.0 * decisions["z"]}, "CONVERGED"
+
+
+def _v2(truth: Any = None, **path: Any) -> tuple[Any, Any, Any]:
+    from openflowsheet.studies.trust_region.basis import m05_basis_v2
+
+    projection = link_toy_projection("forward", truth or QuadraticToy())
+    toy = ToyPath(projection, **path)
+    return projection, toy, m05_basis_v2(projection, path=toy)
+
+
+def test_r400_the_curvature_is_the_truths_along_the_path() -> None:
+    """Central stencil at d₀ = 0, t = δ/h = 0.001/0.1: c_X = 2·1e-6·68² and c_ΔT = 350 c_X to
+    rounding, v = 68 K e_T, the two path points `basis_curvature_point` requests."""
+    projection, toy, basis = _v2()
+    (holder,) = projection.holders
+    (link,) = basis.record["links"].values()
+    assert basis.record["policy"] == "M05-basis-v2" and basis.limitations == ()
+    assert (link["stencil"], link["t"], link["status"], link["reason"]) == (
+        "central",
+        0.001 / projection.half_widths[0],
+        "ok",
+        None,
+    )
+    expected = 2 * QUADRATIC * TOY_DT_DD**2
+    assert link["c"][0] == pytest.approx(expected, rel=1e-6)
+    assert link["c"][1] == pytest.approx(350.0 * expected, rel=1e-6)
+    assert link["v"] == pytest.approx([0.0] * 5 + [TOY_DT_DD, 0.0], rel=1e-12, abs=1e-12)
+    assert toy.asked == [projection.parameter_value(0, d) for d in link["d_points"]]
+    assert link["solves"] == ["CONVERGED", "CONVERGED"]
+    assert [e.purpose for e in holder.ledger].count("basis_curvature_point") == 2
+    kinds = {basis[name].kind for name in projection.ef_names.values() if name.startswith("ef_ext")}
+    assert kinds == {"affine_curvature"}
+
+
+def test_r400_the_basis_value_and_gradient_at_the_start_are_v1s_bitwise() -> None:
+    """§20.7 WO-8d (ii): at w₀ the added ½ c p² and its gradient are exact zeros."""
+    import pyomo.environ as pyo
+    from pyomo.core.expr.calculus.derivatives import Modes, differentiate
+
+    from openflowsheet.studies.trust_region.basis import m05_basis
+
+    projection, _, v2 = _v2()
+    v1 = m05_basis(link_toy_projection("forward", QuadraticToy()))
+    w0 = projection.state_of()
+    names = [name for name in projection.ef_names.values() if name.startswith("ef_ext")]
+    model = pyo.ConcreteModel()
+    ids = projection.source_map["external_links"][0]["input_variable_ids"]
+    model.w = pyo.Var(range(7), initialize=dict(enumerate(w0[i] for i in ids)))
+    args = [model.w[j] for j in range(7)]
+    for name in names:
+        new, old = v2[name].build(args), v1[name].build(args)
+        assert pyo.value(new) == pyo.value(old)
+        mode = Modes.reverse_numeric
+        assert differentiate(new, wrt_list=args, mode=mode) == differentiate(
+            old, wrt_list=args, mode=mode
+        )
+
+
+def test_r400_the_stencil_is_one_sided_at_the_box() -> None:
+    """§20.7 WO-8d (iv): one-sided towards the interior at d₀ = −1 and at d₀ = 1 − t/2."""
+    from openflowsheet.studies.trust_region.basis import _stencil
+
+    t = 0.025
+    assert _stencil(0.0, t) == ("central", t, -t, 1.0, 1.0, 0)
+    assert _stencil(-1.0, t) == ("forward", -1.0 + t, -1.0 + 2 * t, -2.0, 1.0, 1)
+    d0 = 1.0 - t / 2
+    assert _stencil(d0, t) == ("backward", d0 - t, d0 - 2 * t, -2.0, 1.0, -1)
+
+
+def test_r400_the_one_sided_curvature_and_direction_are_exact_on_a_quadratic() -> None:
+    """At d₀ = −1 the forward stencil's c = (−2R(t) + R(2t))/t² and
+    v = (4w₁ − 3w₀ − w₂)/(2t) are exact for a path and a truth quadratic in d."""
+    from openflowsheet.studies.trust_region.basis import m05_basis_v2
+
+    projection = link_toy_projection("forward", QuadraticToy())
+    projection.model.d[0].value = -1.0
+    toy = ToyPath(projection)
+    # w₀ is the projection's x (T_in 680 K): shift the path so that w₀ lies on it at d₀ = −1,
+    # T(d) = 680 + 68 (d + 1).
+    toy.state_at = lambda decisions: (  # type: ignore[method-assign]
+        {**projection.state_of(), "T_in": 680.0 + 680.0 * (decisions["z"] - 0.9)},
+        "CONVERGED",
+    )
+    (link,) = m05_basis_v2(projection, path=toy).record["links"].values()
+    assert link["stencil"] == "forward"
+    assert link["c"][0] == pytest.approx(2 * QUADRATIC * TOY_DT_DD**2, rel=1e-6)
+    assert link["v"][5] == pytest.approx(TOY_DT_DD, rel=1e-9)
+
+
+def test_r400_a_failed_inner_solve_falls_back_to_the_affine_basis() -> None:
+    """§20.7 WO-8d (v): c = 0, `status: failed` with the reason, the limitation, v1's kinds."""
+    projection, _, basis = _v2(fail=True)
+    (link,) = basis.record["links"].values()
+    assert (link["status"], link["reason"], link["c"], link["v"]) == (
+        "failed",
+        "inner_solve:NOT_CONVERGED",
+        [0.0, 0.0],
+        None,
+    )
+    assert basis.limitations == ("basis_without_curvature",)
+    assert {basis[n].kind for n in projection.ef_names.values()} == {"affine_taylor"}
+
+
+def test_r400_a_budget_refusal_propagates_and_another_refusal_falls_back() -> None:
+    """§20.7 WO-8d (v): at a path point a budget refusal raises (the run's outcome is then
+    `TRF_TRUTH_REFUSED(budget:budget_exhausted)`); any other refusal is a fallback."""
+    from openflowsheet.studies.trust_region.basis import m05_basis_v2
+    from openflowsheet.studies.trust_region.holders import ColdBudget, RunState, TruthRefused
+
+    projection = link_toy_projection("forward", QuadraticToy(parent=True))
+    (holder,) = projection.holders
+    holder.begin_run(RunState("C1"), (ColdBudget("C1", 2),))
+    with pytest.raises(TruthRefused) as refused:
+        m05_basis_v2(projection, path=ToyPath(projection))
+    assert refused.value.code == "budget:budget_exhausted"
+
+    class Refusing(QuadraticToy):
+        def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]:
+            if inlet[5] != 680.0:
+                return 0.0, 0.0, {"status": "out_of_domain"}
+            return super().evaluate(inlet)
+
+    projection, _, basis = _v2(Refusing())
+    (link,) = basis.record["links"].values()
+    assert (link["status"], link["reason"]) == (
+        "failed",
+        "refused:out_of_domain:link-toy-quadratic",
+    )
+
+
+def test_r400_more_than_one_decision_is_refused_before_any_request() -> None:
+    """§20.7 WO-8d (vi)."""
+    from types import SimpleNamespace
+
+    from openflowsheet.studies.trust_region.basis import curvature_link_basis
+    from openflowsheet.studies.trust_region.trf_state import TrfConfigurationRefusedError
+
+    stub: Any = SimpleNamespace(decisions=("a", "b"))
+    with pytest.raises(TrfConfigurationRefusedError) as refused:
+        curvature_link_basis(stub, ToyPath.__new__(ToyPath))
+    assert refused.value.codes == ("TRF_CONFIGURATION_REFUSED(basis_curvature_nd:2)",)
+
+
+def test_r400_the_stage_records_the_basis_block_and_two_curvature_points() -> None:
+    """§20.7 WO-8d (vii): through `TrfStage(path_for=)` the run's ledger shows
+    `basis_curvature_point` = 2 and its `basis` block is R-400's, a valid `runs[]` entry."""
+    from test_m05_study_record import VALIDATOR
+
+    from openflowsheet.studies.trust_region.basis import m05_basis_v2
+    from openflowsheet.studies.trust_region.study import IN_PROCESS_BUDGET, StudyBudget, TrfStage
+    from openflowsheet.studies.trust_region.trf_state import TRSP_SOLVER_ALIAS
+
+    projection = link_toy_projection("forward", QuadraticToy())
+    config = {"solver": TRSP_SOLVER_ALIAS, "trust_radius": 1.0}
+    stage = TrfStage(
+        lambda s: projection, m05_basis_v2, config, path_for=lambda s: ToyPath(projection)
+    )
+    staged = stage(None, run_id="C1", radius_factor=1.0, budget=StudyBudget(IN_PROCESS_BUDGET))
+    (holder,) = projection.holders
+    summary = staged.document["ledger"]["summary"][holder.name]
+    assert summary["by_purpose"]["basis_curvature_point"] == 2
+    block = staged.document["basis"]
+    assert block["policy"] == "M05-basis-v2"
+    assert block["links"][holder.name]["noise_ratio"] is None  # no FD check in this run
+    schema: Any = VALIDATOR.schema
+    basis_schema = {**schema["properties"]["runs"]["items"]["properties"]["basis"]}
+    basis_validator = VALIDATOR.evolve(schema={**basis_schema, "$defs": schema["$defs"]})
+    assert sorted(basis_validator.iter_errors(block), key=str) == []

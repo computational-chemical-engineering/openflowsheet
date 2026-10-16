@@ -40,6 +40,12 @@ numerical_policy_external:
     - {path: '\.runs\[\d+\]\.filter\[\d+\]\.(f|theta)', class: r1_r2_existing_floors}
     - {path: '\.runs\[\d+\]\.final\.(decisions\..+|objective|theta)', class: r1_r2_existing_floors}
     - {path: '\.runs\[\d+\]\.(theta_recheck|theta_logged|final_step_ratio)', class: r1_r2_existing_floors}
+    # §20.1 (R-400 step 10): `M05-basis-v2`'s block. t = δ/h is a registered ratio (exact); the path
+    # points, their inlets, the direction, the curvature and the noise ratio derive from M02's inner
+    # solves and the truth's outputs.
+    - {path: '\.runs\[\d+\]\.basis\.links\.[^.]+\.t', class: exact}
+    - {path: '\.runs\[\d+\]\.basis\.links\.[^.]+\.(d_points|v|c|noise_ratio)\[\d+\]', class: r1_r2_existing_floors}
+    - {path: '\.runs\[\d+\]\.basis\.links\.[^.]+\.w_points\[\d+\]\[\d+\]', class: r1_r2_existing_floors}
     - {path: '\.candidates\[\d+\]\.noise_floor\.(h_X|h_T)', class: exact}
     - {path: '\.candidates\[\d+\]\.noise_floor\.(dJ_dX|dJ_dT|e_star|inner\[\d+\]\.(w\[\d+\]|J))', class: r1_r2_existing_floors}
     - {path: '\.candidates\[\d+\]\.(decisions\..+|checks\.P[1-5]\.values\..*)', class: r1_r2_existing_floors}

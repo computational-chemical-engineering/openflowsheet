@@ -336,16 +336,36 @@
             }
           },
           "basis": {
-            "type": "object",
-            "additionalProperties": {
-              "enum": [
-                "zero",
-                "constant",
-                "affine_taylor",
-                "surrogate"
-              ]
-            },
-            "description": "Each EF's basis kind (`EFBasis.kind`) by EF name."
+            "anyOf": [
+              {
+                "$ref": "#/$defs/basis_kinds"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "policy",
+                  "kinds",
+                  "links"
+                ],
+                "properties": {
+                  "policy": {
+                    "const": "M05-basis-v2"
+                  },
+                  "kinds": {
+                    "$ref": "#/$defs/basis_kinds"
+                  },
+                  "links": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/$defs/basis_curvature_link"
+                    }
+                  }
+                },
+                "description": "R-400's block: the policy, each EF's kind and each link holder's curvature record."
+              }
+            ],
+            "description": "Each EF's basis kind (`EFBasis.kind`) by EF name (M05-basis-v1), or R-400's `M05-basis-v2` block."
           },
           "projection": {
             "type": "object",
@@ -1574,6 +1594,115 @@
     }
   },
   "$defs": {
+    "basis_kinds": {
+      "type": "object",
+      "additionalProperties": {
+        "enum": [
+          "zero",
+          "constant",
+          "affine_taylor",
+          "affine_curvature",
+          "surrogate"
+        ]
+      }
+    },
+    "basis_curvature_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stencil",
+        "t",
+        "d_points",
+        "solves",
+        "w_points",
+        "v",
+        "c",
+        "status",
+        "reason",
+        "noise_ratio"
+      ],
+      "properties": {
+        "stencil": {
+          "enum": [
+            "central",
+            "forward",
+            "backward"
+          ]
+        },
+        "t": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "d_points": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "solves": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 2
+        },
+        "w_points": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "maxItems": 2
+        },
+        "v": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "c": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "failed"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "noise_ratio": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "R-400 step 10, one link holder: the stencil, t = δ/h, the path points d_i (scaled) and their inner solves' outcomes and link inputs w_i, the direction v, the curvature c per output (all 0 on failure), status and reason, and noise_ratio 4ν̂/(t²|c_k|) on the run carrying the FD check (reported, not judged)."
+    },
     "sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
@@ -1706,6 +1835,11 @@
             "basis_fd_point": {
               "type": "integer",
               "minimum": 0
+            },
+            "basis_curvature_point": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "R-400: M05-basis-v2's truth requests at the decision-path points (2 per link). Additive: absent from records written before WO-8d."
             }
           }
         },

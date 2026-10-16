@@ -100,6 +100,7 @@ from openflowsheet.studies.trust_region.trf_state import (
     EFBasis,
     IterationRecord,
     ReadinessReason,
+    TrfConfigurationRefusedError,
     TrfLogError,
     TrfLogHandler,
     basis_refusals,
@@ -130,15 +131,6 @@ class TrspIpopt(IPOPT):  # type: ignore[misc]
         super().__init__(**kwds)
         self.set_executable(str(trsp_executable()), validate=True)
         self.options.update(TRSP_OPTIONS)
-
-
-class TrfConfigurationRefusedError(ValueError):
-    """The run's configuration is refused (`TRF_CONFIGURATION_REFUSED(<reason>)`, R-277); nothing
-    was run and no holder was asked for anything."""
-
-    def __init__(self, codes: Sequence[str]) -> None:
-        super().__init__("; ".join(codes))
-        self.codes = tuple(codes)
 
 
 class TrustRegionUnsupportedError(RuntimeError):
@@ -206,6 +198,10 @@ class TrfRun:
     #: (`None` when TRF returned no model).
     final_step_ratio: float | None = None
     final_step_at_box_bound: bool | None = None
+    #: R-400: the run's `basis` block when its basis carries one (`M05-basis-v2`), and the
+    #: candidate limitations the basis adds (`basis_without_curvature`).
+    basis_record: Mapping[str, Any] | None = None
+    basis_limitations: tuple[str, ...] = ()
 
     def source_map(self, projection: Projection) -> dict[str, Any]:
         """The projection's source map with this run's `trf` part filled."""
@@ -280,39 +276,52 @@ def _run(
     logger = logging.getLogger(TRF_PACKAGE)
     saved = (logger.level, logger.propagate)
     captured = io.StringIO()
-    refused_before = {holder.name: len(holder.refusals) for holder in projection.holders}
     checked = check_budgets or {}
     for holder in projection.holders:
         holder.begin_run(run, budgets.get(holder.name, ()), checked.get(holder.name, ()))
     preflight_start = time.perf_counter()
     refused: TruthRefused | None = None
+    refused_phase = "start:"
+    built: Mapping[str, EFBasis] | None = None if callable(basis) else basis
     preflown = False
     try:
-        if gradient_check is not None:
-            run.checking_gradient = True
-            try:
-                gradient_check(projection)
-            finally:
-                run.checking_gradient = False
-        if callable(basis):
-            run.forming_basis = True
-            try:
-                basis = basis(projection)
-            finally:
-                run.forming_basis = False
-            _refuse_basis(projection, basis)
-        refused = _preflight(projection)
+        try:
+            if gradient_check is not None:
+                run.checking_gradient = True
+                try:
+                    gradient_check(projection)
+                finally:
+                    run.checking_gradient = False
+            if callable(basis):
+                run.forming_basis = True
+                try:
+                    built = basis(projection)
+                finally:
+                    run.forming_basis = False
+        except TruthRefused as unhandled:
+            # R-400 step 9: a refusal the check or the basis did not handle (a budget refusal)
+            # is the run's outcome, `TRF_TRUTH_REFUSED(<code>)`; nothing more is asked.
+            refused, refused_phase = unhandled, ""
+        else:
+            assert built is not None
+            _refuse_basis(projection, built)
+            refused = _preflight(projection)
         preflown = True
     finally:
         if not preflown or refused is not None:
             for holder in projection.holders:
                 holder.end_run()
-    kinds = {name: basis[name].kind for name in sorted(basis)}
+    # The backstop (R-276) counts the refusals from here on: one the basis handled itself (R-400
+    # step 9: the curvature's fallback) is recorded in its basis block, not the run's outcome.
+    refused_before = {holder.name: len(holder.refusals) for holder in projection.holders}
+    basis_record = getattr(built, "record", None)
+    basis_limitations = tuple(getattr(built, "limitations", ()))
+    kinds = {} if built is None else {name: built[name].kind for name in sorted(built)}
     if refused is not None:
         return TrfRun(
             feasibility_termination=float(effective.feasibility_termination),
             run_id=run_id,
-            outcome=truth_refused(f"start:{refused.code}"),
+            outcome=truth_refused(f"{refused_phase}{refused.code}"),
             iterations=(),
             filter=(),
             exit_lines=(),
@@ -326,8 +335,11 @@ def _run(
             error=None,
             wall_s=time.perf_counter() - preflight_start,
             basis=kinds,
+            basis_record=basis_record,
+            basis_limitations=basis_limitations,
             theta_recheck=None,
         )
+    assert built is not None  # no refusal: the basis was built
     logger.setLevel(logging.INFO)
     logger.propagate = False
     logger.addHandler(handler)
@@ -342,7 +354,7 @@ def _run(
             returned = solver.solve(
                 projection.model,
                 projection.decision_variables,
-                _surrogate_map_rule(projection, basis),
+                _surrogate_map_rule(projection, built),
                 **dict(config),
             )
     except Exception as error:  # noqa: BLE001 - every exception is mapped to a typed outcome
@@ -467,6 +479,8 @@ def _run(
         error=error_text,
         wall_s=wall,
         basis=kinds,
+        basis_record=basis_record,
+        basis_limitations=basis_limitations,
         theta_recheck=theta_recheck,
         omitted_rows_final=omitted_rows_final,
         zero_pins_final=zero_pins_final,

@@ -370,6 +370,14 @@ class C1Parent:
             return math.nan
         return float(run.state[flow_id(self.formulation.liquid_stream, "NH3")])
 
+    def decision_path(self, start: ParentSolve) -> C1DecisionPath:
+        """R-400 step 4's accessor for the run starting at `start`: M02's inner solve with the
+        reactor pinned at the start's coupling (X̂₀, ΔT̂₀), at any decision (`TrfStage(path_for=)`,
+        handed to `basis.m05_basis_v2`)."""
+        if start.state is None or start.coupling is None:
+            raise ValueError(f"{start.solve_id}: no certified coupled state to pin a path at")
+        return C1DecisionPath(self, start)
+
     # -- stage C's projection -------------------------------------------------------------------
 
     def project_at(self, start: ParentSolve) -> Projection:
@@ -382,3 +390,38 @@ class C1Parent:
             self.binding_at(start.decisions), self.reactor.unit_id, start.coupling
         )
         return project_c1(pinned, start.state, self.formulation)
+
+
+class C1DecisionPath:
+    """`basis.DecisionPath` on the C1 parent (R-400 step 4): the revision at a decision, its
+    reactor pinned at the start's coupling (`services.pinned_at`, R-309), planned and solved as
+    M02's inner solve from the start's certified state — as the noise floor's inner objective
+    (`C1Parent.inner_objective`), with no reactor call and no ledger entry. `tolerance` is the
+    decision's δ (K)."""
+
+    def __init__(self, parent: C1Parent, start: ParentSolve) -> None:
+        assert start.coupling is not None and start.state is not None
+        self.parent = parent
+        self.start = start
+        (decision,) = parent.decisions
+        self.tolerance = float(decision.tolerance)
+
+    def state_at(self, decisions: Mapping[str, float]) -> tuple[dict[str, float] | None, str]:
+        parent, start = self.parent, self.start
+        assert start.coupling is not None
+        pinned = parent.services.pinned_at(
+            parent.binding_at(decisions), parent.reactor.unit_id, start.coupling
+        )
+        plan, _ = plan_revision(pinned, parent.policy)
+        if isinstance(plan, PlanRefusal):
+            return None, "PLAN_REFUSED"
+        run = execute_plan(
+            plan=plan,
+            flowsheet=pinned.flowsheet,
+            spec=pinned.spec,
+            policy=parent.policy,
+            user_start=start.state,
+        )
+        if run.outcome != "CONVERGED" or run.state is None:
+            return None, str(run.outcome)
+        return {name: float(value) for name, value in run.state.items()}, str(run.outcome)

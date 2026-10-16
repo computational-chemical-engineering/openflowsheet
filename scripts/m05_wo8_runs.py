@@ -11,9 +11,13 @@ in-process variant (registered for this process only, as M02's and M04's tests d
 - `TR-E2-FD`: the same variant through `ParentExperimentTruth`, FD gradients and the once-per-study
   `M05-fd-v2` check at the start inlet (§5.3, §17.2);
 - `LOOP-R`: M04's `m04-synthetic-rough-v1` (not promotable): stage A skipped, stage C with FD
-  gradients and `M05-basis-v1` without a surrogate (the affine Taylor basis, R-277).
+  gradients and the no-surrogate basis.
 
-Every case: start 673.15 K, `IN_PROCESS_BUDGET`, `M05-trf-config-v1` with σ = 0.0125, `m05_basis`.
+Every case: start 673.15 K, `IN_PROCESS_BUDGET`, `M05-trf-config-v1` with σ = 0.0125, and the
+no-surrogate basis `M05-basis-v2` (`m05_basis_v2`, R-400: v1's affine Taylor basis plus the truth's
+curvature along the decision path, from M02's pinned inner solve at d₀ ± t); `run_case` takes
+`basis_policy="M05-basis-v1"` for the v1 runs of 6a9d29d (F-15's evidence). The FD truths'
+`M05-fd-v2` check runs inside the first stage-C run (R-406).
 `LOOP-S` needs stage A on M04's promoted surrogate (`SurrogateTruth`, §6.4), which this branch does
 not carry; it is not a case here (WO-8 build log).
 
@@ -54,7 +58,11 @@ from openflowsheet.adapters.experiments.store import ExperimentStore  # noqa: E4
 from openflowsheet.application.trust_region_parent import C1_PARENT_SERVICES  # noqa: E402
 from openflowsheet.canonical import canonical_json, document_sha256  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
-from openflowsheet.studies.trust_region.basis import m05_basis  # noqa: E402
+from openflowsheet.studies.trust_region.basis import (  # noqa: E402
+    BASIS_POLICY_V2,
+    m05_basis,
+    m05_basis_v2,
+)
 from openflowsheet.studies.trust_region.parent import DECISION_TOLERANCE_K, C1Parent  # noqa: E402
 from openflowsheet.studies.trust_region.study import (  # noqa: E402
     IN_PROCESS_BUDGET,
@@ -194,7 +202,10 @@ class Run:
     check: GradientCheck | None
 
 
-def run_case(case: Case, root: Path) -> Run:
+def c1_parent(
+    case: Case, root: Path, sink: Callable[[str, Mapping[str, Any]], None] | None = None
+) -> tuple[C1Parent, dict[str, Any]]:
+    """The case's C1 parent on a fresh experiment store under `root`, and its revision."""
     variant = case.variant()
     register(variant)
     document = pinned(json.loads(LOOP_PATH.read_text(encoding="utf-8")), variant)
@@ -204,13 +215,6 @@ def run_case(case: Case, root: Path) -> Run:
         EvaluationContext(model_version="m05-wo8", constants_sha256="0" * 64),
         backend_for=case.backend_for,
     )
-    couplings: dict[str, bytes] = {}
-
-    def sink(solve_id: str, record: Mapping[str, Any]) -> None:
-        if solve_id in couplings:
-            raise ValueError(f"duplicate solve id {solve_id!r}")
-        couplings[solve_id] = canonical_json(record)
-
     parent = C1Parent(
         document,
         runner,
@@ -219,6 +223,18 @@ def run_case(case: Case, root: Path) -> Run:
         coupling_sink=sink,
         truth_class=case.truth_class,
     )
+    return parent, document
+
+
+def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run:
+    couplings: dict[str, bytes] = {}
+
+    def sink(solve_id: str, record: Mapping[str, Any]) -> None:
+        if solve_id in couplings:
+            raise ValueError(f"duplicate solve id {solve_id!r}")
+        couplings[solve_id] = canonical_json(record)
+
+    parent, document = c1_parent(case, root, sink)
     projections: list[Any] = []
     checks: list[GradientCheck] = []
 
@@ -227,21 +243,25 @@ def run_case(case: Case, root: Path) -> Run:
         projections.append(projection)
         return projection
 
-    def check_once(projection: Any) -> None:
+    def check_once(projection: Any) -> GradientCheck | None:
         """R-406: the study's `M05-fd-v2` check, inside the first stage-C run (its w₀)."""
-        if not checks:
-            holder, w0 = link_start(projection)
-            checks.append(gradient_check(holder, w0))
+        if checks:
+            return None
+        holder, w0 = link_start(projection)
+        checks.append(gradient_check(holder, w0))
+        return checks[0]
 
     (decision,) = parent.decisions
     sigma = step_size_termination((decision.tolerance,), (0.5 * (decision.upper - decision.lower),))
     assumptions = FD_ASSUMPTIONS if case.finite_difference else TR_E2_ASSUMPTIONS
+    v2 = basis_policy == BASIS_POLICY_V2
     stage = TrfStage(
         project_at,
-        m05_basis,
+        m05_basis_v2 if v2 else m05_basis,
         trf_config_v1(sigma),
         assumptions,
         gradient_check=check_once if case.finite_difference else None,
+        path_for=parent.decision_path if v2 else None,
     )
     limitations = ("fd_gradient",) if case.finite_difference else ()
     result = run_study(
@@ -280,7 +300,7 @@ def run_case(case: Case, root: Path) -> Run:
             "trf": TRF_CONFIG_ID,
             "trsp": TRSP_OPTIONS_ID,
             "fd": FD_POLICY_ID,
-            "basis": "M05-basis-v1",
+            "basis": basis_policy,
             "checks": "M05-checks-v1",
         },
         "truth": {key: truth[key] for key in ("kind", "id", "sha256", "synthetic", "gradient")},

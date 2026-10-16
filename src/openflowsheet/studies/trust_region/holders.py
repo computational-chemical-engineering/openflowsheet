@@ -58,11 +58,13 @@ TRF_TRIAL_VALUE: Final = "trf_trial_value"
 #: affine basis's gradient at w₀ (§6.6), and the once-per-study gradient-quality check (§6.5).
 TRF_FD_POINT: Final = "trf_fd_point"
 BASIS_FD_POINT: Final = "basis_fd_point"
+#: R-400: `M05-basis-v2`'s two truth requests at the decision-path points d₀ ± t (§20.1).
+BASIS_CURVATURE_POINT: Final = "basis_curvature_point"
 FDCHECK_POINT: Final = "fdcheck_point"
 #: R-406: the ledger stage of the gradient-quality check's requests (§8.1); a TRF run's own
 #: requests carry none (the run record holds its stage).
 FDCHECK_STAGE: Final = "fdcheck"
-#: S16: the purposes a run's summary counts (§8.1's five, and the affine basis's).
+#: S16: the purposes a run's summary counts (§8.1's five, the affine basis's, R-400's).
 SUMMARY_PURPOSES: Final = (
     TRF_START_VALUE,
     TRF_PMP_VALUE,
@@ -70,6 +72,7 @@ SUMMARY_PURPOSES: Final = (
     TRF_FD_POINT,
     FDCHECK_POINT,
     BASIS_FD_POINT,
+    BASIS_CURVATURE_POINT,
 )
 
 #: §6.1 step 3 / ADR 0038 D3: an external unit's coupling coordinates and their admissible ranges
