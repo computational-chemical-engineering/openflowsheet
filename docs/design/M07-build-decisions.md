@@ -69,3 +69,49 @@ report equal to its rendering, §11 verbatim, no forbidden word, every honest ou
 
 J13 [coverage] Q1 settled: R0's nine stand-in loop solves take ≈ 3 s wall in total (this machine), far under 60 s, so
 A08 runs in the default gate.
+
+## WO-2b — spec Amendment 1 applied (R-420…R-427), 2026-10-16
+
+J14 [coverage] Applied, one commit per ruling: G1–G4 + registration (`4139f59`; `test_a06` counts 9 in the same
+commit); R-420 null floor never 0, `tc1.missing` (`927881c`); R-422 registered refusal (`677dd93`); R-423 experiments
+{cold, store_hit, in_process} (`5bf64d2`); R-424 last-iteration `extrapolated`, R0 closed forms (`140e262`); R-421 stop
+re-derivation, extras inside the point's wall (`cfceaf3`); R-427 grid-only = R1's rung decision (`224f3e1`); R-426
+margins (`7efe220`); R-425 R3 input conditions, anchor, copied accounting (`4f1c255`). The G4 comment is rewrapped to
+the 100-column limit, text unchanged. The T* re-solve, `t_star_resolve`, `omp_num_threads` and replay's refusal (A1.7)
+are WO-4's.
+
+J15 [design] A1.4's first identity (`cold + in_process` = the point's coupling-record executions) is not checkable by
+`check`: the record holds neither the executions nor the coupling record (only its sha256 under `artifacts`). Built: it
+holds by construction in `coupling_attribution` (every attempt goes to exactly one of the two); `check` enforces the
+second identity (Σₖ cold = `budget.spent.cold`). `replay` (WO-4) can verify the first against the bundle. Alternative:
+an `experiments.executions` member, which changes A1.4's three-member record. Reversible: one line in
+`coupling_attribution` plus a check.
+
+J16 [coverage] AQ1 (A1.11) answered from the code: yes. `orchestrator.coupling.couple` appends the accepted iterate and
+returns `CONVERGED` immediately after it (the item's `step.kind` is `converged`), and `coupling_evidence` certifies
+against `coupling.iterations[-1]`; `final_constants` reads the same item. A non-converged run's last item is a failed
+trial, but such a point is never verified. No other marker exists, so the default stands.
+
+J17 [coverage] A1.6 choices: (a) anchor 1 (M05's run commit) and M05's spent wall read nothing until M05 names the
+fields (FD-3): `m05_run_commit`/`m05_spent_wall` return `None`, never a guessed key. (b) A manifest "lists" the record
+when an `artifacts[*].sha256` equals it; several matches take the first C_M in sorted order. (c) Unreadable JSON is
+condition 1; a best candidate that is not exactly one candidate with one decision is condition 4. (d) Without
+`--m05-record` R3 is plain `UNSUPPORTED(m05_study_unavailable)` (no limitation code); M05's package is no longer
+required to carry a record. (e) R3 stores M05's `store_hits` at rung level; its accounting row is {cold = spent cold,
+store_hit, in_process 0}; journey totals are null when a rung's spend is null. (f) `check` requires `carried_from` to be
+a 40-hex commit or `rerun`, a null cold/wall iff its limitation is stated, and `wall_source` consistent with the wall
+and with how the record was obtained.
+
+J18 [coverage] A1.2: the stop re-derivation runs on R0 and R1; R2's grid (PROMOTABLE with a loop, dormant) is not
+stop-checked. A point's `wall_s` now includes its parent extras, but the extras' own experiments are not charged:
+they are not in the grid solve's coupling record (J1: store hits only). If M05's noise floor ever runs a cold reactor
+experiment it would go unbudgeted — flag for WO-4's real R1.
+
+J19 [coverage] R0 re-taken at `4f1c255` (`OMP_NUM_THREADS=1`, 2.6 s): VERIFIED ×9, INDIFFERENT at 673.15, J in
+{0.46705958492513017, 0.4670595849251301} (one ulp, the registered spread), X_pass − 0.25 = −2⁻⁵⁴, recycle
+3.11643882923465 and purge 0.0022800377163792337 (spread 0.0), Q_preheater 49278.69 → 54414.24 W (min step 640.40),
+Q_flash −57530.13 → −62480.42 W (min step 616.47): unchanged. Moved, as ruled: `experiments` 2 executions per point
+from {cold 2, store_hit 0} to {cold 0, store_hit 0, in_process 2} (A1.4); `extrapolated` 1 → 0 at all nine (A1.5).
+
+J20 [coverage] Each commit was gated by the full `scripts/gate.sh` in its own detached worktree (in parallel) before
+the push, rather than serially before each local commit; a red gate would have meant a local fixup before pushing.
