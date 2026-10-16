@@ -158,3 +158,11 @@ None.
 
 Design note gates G5 (TR-E2), G6 (TR-E2-FD and the request identity), G7 (accounting), G8 and G9 (the loop and the
 N6 branch), G10 (replay), G11 (REAL mechanics, opt-in) and G12 (default gate on the committed records).
+
+## Amendment note (M05 WO-10): the REAL box
+
+D1's box [643.15, 733.15] K is read as [653.15, 693.15] K for every configuration, v3's hard-domain T_in span (D2's
+box lines already say so). R-313 made that box unconditional for M05's REAL study (643.15 K fails v3's S1), R-315 kept
+the span for every rung V4–V6, and R-330 restated the design note in place (σ = 0.5 · δ_T / h_T = 0.0125; N-F6
+closed; the inert floor `hard_domain.inert_min` generated from the variant). This note records the box only: no
+other decision in this ADR changes, and its status is unchanged.
