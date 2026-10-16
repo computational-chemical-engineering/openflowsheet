@@ -851,3 +851,6 @@ Grep, don't read whole. Newest at the bottom.
 - **Alpha re-cut C_α²** (2026-10-16, `opus-engineer`): C_α² = `cc73219` (6fec822 + 6505315, 162e13b, e892790, 967a622, 7af0ee3;
   gate 8600). CI 38813135468/38813136015 green (8533/100 x86, 8505/98 arm); local 2, 6–12 PASS; step 10 0/77; G12 cert bound.
   Manifest `tested` 38/0/6. B-AM3-6…9 (fresh envs, `tools/fetch_ci.sh`, O5 corrected). `verdict` at C_α² launched.
+- **Alpha verdicts at C_α²** (2026-10-16, `verdict`, committed by session `f14f02e`): identical words to C_α¹; W21 carries L44–L46,
+  L48, W22 L47; 61/61 hashes, 30 RC records' provenance hold. Gate dry run: 16 expected refusals. Findings B1–B6; B6 (ADRs
+  Proposed) and B5 (declined N1 needs amendment) → `specifier` launched. Frank asked for the four answers in plain words.
