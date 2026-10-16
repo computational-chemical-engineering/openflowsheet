@@ -919,3 +919,9 @@ Grep, don't read whole. Newest at the bottom.
   stage A TRF_CONVERGED k=1, P2_A passed, DECISION_STABLE, but |d*−d_lb| 1.0965e-6 scaled vs 1e-6 (LOOP-R 5.29e-8), so P5 polled both
   sides; held as strict xfail. Premise off: R-408 expected TRF_EXIT_WITHOUT_STEP θ≈1e-14; measured θ 6.55e-3 (affine property EFs not
   exact). For the M05 design ruling/review batch.
+- **M05 WO-9 REAL** (2026-10-16, `opus-engineer`, c912f92/20e398e/c3ff66b/7350684; gate 9287 + 1 xfail, nlp 180, pymrm 1): G11 PASS,
+  G10-REAL PASS. fd_check clean at 2⁻¹⁴ (τ̂ 3.1e-3, ν̂ 6.9e-4); C1 converged k=1, θ_recheck 2.33e-6, P2 passed; 48/400 cold, 1454 s;
+  no cap hit (F-13); F-21 yes. Not interior: T* 653.1500352 K, 1.76e-6 scaled above the bound (same at-bound question as G8).
+  `extrapolated` 12/61 from the ledger (no record field); H2/N2 at the kinetics' data edge flips the flag. M07 needs: FD-3 done
+  (`provenance {run_commit, tree_clean, wall_s}`), AQ2 no. M05 `reviewer` launched (brief `docs/briefs/M05-review-brief.md`,
+  R-430…449), then WO-10.
