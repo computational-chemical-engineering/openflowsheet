@@ -16,12 +16,19 @@ T* 653.1500010581631 K. All record checkers clean. v1-basis runs bit-identical t
 Known: the committed v1 records (TR-E2-FD, LOOP-R, 6a9d29d) do not replay even at a9d05d3 (≈1e-15 drift from
 iteration 0, environment) — WO-8e replaces them; judge G10 in one environment.
 
+WO-8e done (build log S59-S61): v2 records TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R under `benchmarks/m05/records/`
+with `<stem>.store.json` (G7's store bijection) and `<stem>.environment.json`; G5, G5b, G6, G7, G9 pass
+(`tests/test_m05_wo8_gates.py`, default tier), G10 `--replay` 0 differences each in one environment. The runs
+need `OMP_NUM_THREADS=1`: `.venv-nlp`'s OpenMP OpenBLAS changes digits with the thread count — that was the v1
+records' "environment drift" (S59). S54's condition dropped.
+
 Next executable actions (separate work orders):
-1. WO-8e: remove v1's TR-E2-FD and LOOP-R records in one commit; run
+1. (done, see above) WO-8e: remove v1's TR-E2-FD and LOOP-R records in one commit; run
    `PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools
    .venv-nlp/bin/python scripts/m05_wo8_runs.py <CASE>` for TR-E2, TR-E2-FAR (new case: start 663.15 K, test-only),
    TR-E2-FD, LOOP-R; then `--replay` each (G10); gates G5, G5b, G6, G7 (store bijection), G9, G10.
    After WO-8e drop S54's `M05-basis-v2` condition in `request_identity_violations` if no v1 record remains.
 2. WO-8b: `SurrogateTruth` (§6.4), promoted link basis stages A and C, P2_A, LOOP-S (G8; F-22).
 Open for the design lane (review batch): S53 (bound flag for n_d > 1), S56 (`basis` block shape), S57 (refusal
-outcome without `start:`), S58 (`noise_ratio` units: c_k vs c_k/s_k).
+outcome without `start:`), S58 (`noise_ratio` units: c_k vs c_k/s_k), S59 (thread pin + environment
+sidecar), S60 (`.store.json` sidecar), S61 (gates judged in the default tier).

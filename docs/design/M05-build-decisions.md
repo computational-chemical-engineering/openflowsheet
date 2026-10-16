@@ -526,3 +526,49 @@ S58 WO-8d (for the review batch): `noise_ratio` = 4ν̂/(t²|c_k|) is computed l
    differences at ~1e-15 relative from iteration 0 (θ 0.5226121890068809 recorded, 0.5226121890068817 now),
    with only documents changed in between: environment drift in `.venv-nlp` or its libraries since WO-8, not a
    code change. WO-8e re-records; G10 for the new records must be judged in one environment.
+
+## WO-8e — the v2 records, G5-G10 (§20.7)
+
+S59 The runs need `OMP_NUM_THREADS=1` (`scripts/m05_wo8_runs.py` refuses otherwise, as
+   `scripts/m03_nlp_measurements.py` does). Found: `.venv-nlp`'s OpenBLAS is its OpenMP build
+   (`libopenblas-0.3.34-openmp`), whose results depend on the thread count — TR-E2-FD (v1 basis) iteration 0's θ is
+   0.5226121890068809 at 1 thread, 0.5226121890068804 at 2 and 0.5226121890068817 at 48 (the default, `nproc`);
+   `OPENBLAS_NUM_THREADS` has no effect. The committed v1 records (6a9d29d) were made at 1 thread: that, not a
+   rebuilt environment, is S58's "≈1e-15 from iteration 0" (nothing under `.venv-nlp` or `.reference-downloads`
+   changed after 2026-10-15 15:33, before 6a9d29d). Each record gets `<stem>.environment.json`
+   (`environment_fingerprint`: the thread count, Python, digests of the distributions on `sys.path` and of the
+   conda builds, machine, CPU), and `--replay` compares it exactly before the record, so G10 is judged in one
+   environment. Alternative: set the thread count inside the script. Reversible: the script.
+S60 The store bijection (§8.3, G7) is evaluated by `m05_replay.store_bijection_violations` at the end of each run,
+   before its temporary store is removed, against `<stem>.store.json` (every `attempts/<n>.json` of the store,
+   `{experiment_key, attempt}`, sorted), which is committed beside the ledger so the default gate re-evaluates it.
+   A coupling record names its attempts by (key, attempt); a ledger entry names its key and `executions`, not
+   the attempt numbers, so a key's attempts that no coupling names must equal the ledger's executions at that key.
+   Alternative: evaluate only in the script and print. Reversible: the sidecar and one test.
+S61 The gates are judged in the default tier on the committed files (`tests/test_m05_wo8_gates.py`: G5, G5b, G6,
+   G7 per record, G9, and the v2 set's shape), §20.7's criteria read literally; T_ref is the golden-section
+   reference of `test_m05_c1_reference.py`. S54's `M05-basis-v2` condition is dropped from
+   `request_identity_violations` (no v1 record remains): every record with an `fd_check` is held to R-406, and
+   the generated `decision_stable_with_an_fd_check` fake now carries the check's 29 points in its first stage-C
+   run (`_charge_first_stage_c`). Reversible: one test file; the condition is one `if`.
+   Measured (`OMP_NUM_THREADS=1 ... scripts/m05_wo8_runs.py <CASE>`, `.venv-nlp`, fresh store each; records at the
+   v1 stems replace 6a9d29d's, which stay there as F-15 evidence):
+   G5 TR-E2: C1 `TRF_EXIT_WITHOUT_STEP` (k 0), central stencil, c = (−0.38353, 0.89137), θ_recheck 2.998e-6,
+     P2 judged/pass, cand-C1 `PARENT_LOCAL_EVIDENCE`, `DECISION_STABLE`, T* 673.6507818736261 K, |T* − T_ref|
+     0.00734 K; assumptions = S47's column. PASS.
+   G5b TR-E2-FAR (663.15 K): C1 `TRF_EXIT_UNVERIFIED(radius_limited)` k 7, ratio 0.99997, θ 7.47e-6, cand-C1
+     `NOT_STATIONARY_AT_DELTA` (P5 fails); C2 `TRF_CONVERGED` k 1, ratio 0.01666, θ 8.26e-7, cand-C2
+     `PARENT_LOCAL_EVIDENCE`; `DECISION_STABLE` at study iteration 2 ≤ 3; T* 673.6541821432122 K, |ΔT| 0.01074 K.
+     PASS (§20.7's scratch reproduced).
+   G6 TR-E2-FD: C1 `TRF_CONVERGED` k 1, ratio 1.580e-4, θ 6.263e-8, P2 judged/pass, `DECISION_STABLE`,
+     T* 673.6294405283818 K, |T*_FD − T*_E2| 0.02134 K; fd_check `truncation_dominated` at 2⁻¹⁴, pass, one
+     candidate; `basis_curvature_point` 2, `fdcheck_point` 22; identity clean. PASS.
+   G7: store bijection 0 violations on all four (store attempts 19 / 42 / 48 / 63), cold + store + memo =
+     requests for every holder, refused 0, every ledger entry `ok`, `cold_used` 19 / 42 / 48 / 63 ≤ 2000. PASS.
+   G9 LOOP-R: stage A skipped `surrogate_not_promoted`, C1 `TRF_CONVERGED` k 2 at the box bound (ratio 6.93e-3),
+     `DECISION_STABLE`, T* 653.1500010581631 K, |d* − d_lb| 5.29e-8 scaled ≤ 1e-6, P5 polled `plus` only. PASS.
+   G10 (same machine, one environment: `<stem>.environment.json`, 1 thread): `--replay` 0 differences on each of
+     TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R (environment, record bitwise, ledger and store bytes, coupling integrity and
+     content). A replay with a different thread count is reported as an `environment` difference. PASS.
+   v2 at 1 thread against S58's in-memory v2 (48 threads): TR-E2 T* 673.6507818736261 vs …262 (1 ulp), TR-E2-FD
+     673.6294405283818 vs …825; the thread count, not the code (S59).

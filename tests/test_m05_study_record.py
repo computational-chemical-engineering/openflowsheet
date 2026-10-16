@@ -287,9 +287,35 @@ def _escalated_fd_check() -> dict[str, Any]:
     ).as_document()
 
 
+def _charge_first_stage_c(
+    record: dict[str, Any], cold: int, store_hits: int, **purposes: int
+) -> dict[str, Any]:
+    """`record` with `cold` more cold and `store_hits` more store-hit value requests of the given
+    purposes in its first stage-C run, charged to that run, its candidate and the study."""
+    first = next(run for run in record["runs"] if run["stage"] == "C")
+    summary = first["ledger"]["summary"]["reactor"]
+    summary["by_purpose"].update(purposes)
+    summary["value_cold"] += cold
+    summary["value_store_hit"] += store_hits
+    summary["requests"] += cold + store_hits
+    first["cold"] += cold
+    accounting = record["accounting"]
+    for table, key in (("by_stage", "C"), ("by_iteration", str(first["study_iteration"]))):
+        accounting[table][key]["trf_cold"] += cold
+    accounting["totals"]["trf_cold"] += cold
+    accounting["budgets"]["cold_used"] += cold
+    for candidate in record["candidates"]:
+        if candidate["run_id"] == first["run_id"]:
+            accounting["by_candidate"][candidate["candidate_id"]]["produce_trf_cold"] += cold
+    return record
+
+
 def _stable_with_an_fd_check() -> dict[str, Any]:
+    """R-406: the study's check is inside the first stage-C run, 1 + 4·7 points (the escalated
+    check evaluated η/4, η, 4η and 16η), its base a store hit, charged to the run and the study."""
     stage = FullStage([(TRF_CONVERGED, 673.0)])
-    return _document(study(FakeParent(), stage), fd_check=_escalated_fd_check())
+    record = _document(study(FakeParent(), stage), fd_check=_escalated_fd_check())
+    return _charge_first_stage_c(record, 28, 1, fdcheck_point=29)
 
 
 def _iteration_limit() -> dict[str, Any]:
@@ -298,18 +324,13 @@ def _iteration_limit() -> dict[str, Any]:
 
 
 def _stable_with_basis_v2() -> dict[str, Any]:
-    """`decision_stable_with_an_fd_check` under `M05-basis-v2` (R-400) and R-406's accounting:
-    the first stage-C run carries the curvature block, its two path points and the check's
-    1 + 4·7 points (charged to its cold count and the study's budget)."""
+    """`decision_stable_with_an_fd_check` under `M05-basis-v2` (R-400): the first stage-C run also
+    carries the curvature block and its two path points (charged to its cold count and the
+    study's budget)."""
     record = copy.deepcopy(_stable_with_an_fd_check())  # the spec is a shared constant
     record["spec"]["configs"]["basis"] = "M05-basis-v2"
+    _charge_first_stage_c(record, 2, 0, basis_curvature_point=2)
     first = next(run for run in record["runs"] if run["stage"] == "C")
-    summary = first["ledger"]["summary"]["reactor"]
-    summary["by_purpose"].update(basis_curvature_point=2, fdcheck_point=29)
-    summary["value_cold"] += 30
-    summary["requests"] += 31
-    summary["value_store_hit"] += 1
-    first["cold"] += 30
     first["basis"] = {
         "policy": "M05-basis-v2",
         "kinds": first["basis"],
@@ -328,15 +349,6 @@ def _stable_with_basis_v2() -> dict[str, Any]:
             }
         },
     }
-    accounting = record["accounting"]
-    for table, key in (("by_stage", "C"), ("by_iteration", str(first["study_iteration"]))):
-        accounting[table][key]["trf_cold"] += 30
-    accounting["totals"]["trf_cold"] += 30
-    accounting["budgets"]["cold_used"] += 30
-    for candidate in record["candidates"]:
-        row = accounting["by_candidate"][candidate["candidate_id"]]
-        if candidate["run_id"] == first["run_id"]:
-            row["produce_trf_cold"] += 30
     return record
 
 
@@ -459,9 +471,8 @@ def status_violations(record: Mapping[str, Any]) -> list[str]:
     return found
 
 
-#: S54: the basis policy from which records carry R-406's check accounting (WO-8c lands before
-#: WO-8d's `M05-basis-v2`; no record is written between them).
-R406_BASIS_POLICY = "M05-basis-v2"
+#: R-400's basis policy, whose runs carry a curvature block.
+BASIS_V2 = "M05-basis-v2"
 
 
 def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
@@ -475,26 +486,24 @@ def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
     when it is the run's one truth (build log S41).
 
     R-400: a run with an `M05-basis-v2` block has `basis_curvature_point` = 2 per link.
-    R-406 (§20.4): in a record under `R406_BASIS_POLICY`, the study's FD check is inside the first
-    stage-C run, whose `fdcheck_point` = 1 + n_in·|η evaluated| (each candidate η used G(η/4),
-    G(η), G(4η)), and every other run's is 0. Records written before R-406 (the v1 TR-E2-FD and
-    LOOP-R at 6a9d29d, which WO-8e removes) ran the check outside every run (build log S54)."""
+    R-406 (§20.4): the study's FD check is inside the first stage-C run, whose `fdcheck_point` =
+    1 + n_in·|η evaluated| (each candidate η used G(η/4), G(η), G(4η)), and every other run's is
+    0 (build log S54: since WO-8e no record predates R-406, so no record is exempt)."""
     found: list[str] = []
     accepting = ("f", "theta")
     check_run = None
     check_points = 0
-    if record.get("spec", {}).get("configs", {}).get("basis") == R406_BASIS_POLICY:
-        stage_c = [run["run_id"] for run in record["runs"] if run["stage"] == "C"]
-        check = record.get("fd_check")
-        if check is not None and stage_c:
-            check_run = stage_c[0]
-            etas = {
-                eta * factor
-                for candidate in check["candidates"]
-                for eta in (candidate["eta"],)
-                for factor in (0.25, 1.0, 4.0)
-            }
-            check_points = 1 + N_IN * len(etas)
+    stage_c = [run["run_id"] for run in record["runs"] if run["stage"] == "C"]
+    check = record.get("fd_check")
+    if check is not None and stage_c:
+        check_run = stage_c[0]
+        etas = {
+            eta * factor
+            for candidate in check["candidates"]
+            for eta in (candidate["eta"],)
+            for factor in (0.25, 1.0, 4.0)
+        }
+        check_points = 1 + N_IN * len(etas)
     for run in record["runs"]:
         name = run["run_id"]
         if not any(truth["gradient"] == "finite_difference" for truth in run["truth"]):
@@ -521,11 +530,10 @@ def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
         kinds = basis["kinds"] if "policy" in basis else basis
         if "surrogate" not in kinds.values():
             expected["basis_fd_point"] = N_IN
-        if basis.get("policy") == R406_BASIS_POLICY:
+        if basis.get("policy") == BASIS_V2:
             # R-400: two path points per link (§8.3 as amended by §20.7).
             expected["basis_curvature_point"] = 2 * len(basis["links"])
-        if record.get("spec", {}).get("configs", {}).get("basis") == R406_BASIS_POLICY:
-            expected["fdcheck_point"] = check_points if name == check_run else 0
+        expected["fdcheck_point"] = check_points if name == check_run else 0
         for purpose, value in expected.items():
             if counts[purpose] != value:
                 found.append(f"{name}: {purpose} = {counts[purpose]}, §8.3 gives {value}")
@@ -941,18 +949,18 @@ def test_the_request_identity_follows_the_logged_iterations() -> None:
 
 
 def test_r406_the_check_s_points_belong_to_the_first_stage_c_run() -> None:
-    """R-406: under `M05-basis-v2` the first stage-C run carries 1 + n_in·|η| check points (the
-    escalated check evaluated η/4, η, 4η and 16η: 1 + 4·7 = 29), every other run none; a v1
-    record is not held to it."""
+    """R-406: the first stage-C run carries 1 + n_in·|η| check points (the escalated check
+    evaluated η/4, η, 4η and 16η: 1 + 4·7 = 29), every other run none, whatever the basis policy
+    (build log S54, dropped in WO-8e)."""
     record = copy.deepcopy(_stable_with_an_fd_check())  # the spec is a shared constant
     first_c = next(i for i, run in enumerate(record["runs"]) if run["stage"] == "C")
     name = record["runs"][first_c]["run_id"]
     purposes = ("runs", first_c, "ledger", "summary", "reactor", "by_purpose", "fdcheck_point")
+    assert record["spec"]["configs"]["basis"] == "M05-basis-v1"
     assert request_identity_violations(record) == []
-    _set(record, ("spec", "configs", "basis"), R406_BASIS_POLICY)
+    _set(record, purposes, 0)
     assert request_identity_violations(record) == [f"{name}: fdcheck_point = 0, §8.3 gives 29"]
     _set(record, purposes, 29)
-    assert request_identity_violations(record) == []
     _set(record, ("fd_check",), None)
     assert request_identity_violations(record) == [f"{name}: fdcheck_point = 29, §8.3 gives 0"]
 
