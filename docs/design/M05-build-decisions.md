@@ -648,3 +648,34 @@ S68 REAL's replay content check (G10 REAL part, F-20), `scripts/m05_wo9_real.py 
    the unit entries' `attempts`/`cache_hit`, every replayed answer a store hit. Alternatives: M02's
    `RecordedExperiments` per coupled solve (needs a per-solve experiments hook in `C1Parent`; the holder truths
    would still need the store). For the review batch.
+S69 REAL (WO-9), `scripts/m05_wo9_real.py` at 20e398e (clean tree; `.venv-nlp`, `OMP_NUM_THREADS=1`, reactor env
+   `pymrm-6089593-032a050c6cf3`, fresh store): study `DECISION_STABLE` in 1454 s (of 14 400 s), 48 cold
+   experiments (of 400): S0 4, TRF run C1 32 (of 250), P1 4, two polls 4 each. Stage A skipped
+   (`surrogate_not_promoted`). C1 `TRF_CONVERGED` at k = 1 (one θ-type step; θ_k0 5.94e-3, θ_recheck 2.33e-6,
+   final_step_ratio 1.92e-6, `EXIT: Optimal solution found.`); P2 judged and passed (objective error 1.20e-6 against
+   bound 4.52e-4, worst state 3.87e-5 at `S5.N`); cand-C1 `PARENT_LOCAL_EVIDENCE`.
+   F-9: `fd_check` class `clean` at η = 2⁻¹⁴, τ̂ 3.115e-3, ν̂ 6.87e-4, allowance 4.05e-3 (‖G‖∞ 4.05), `pass`, no
+   escalation (22 `fdcheck_point` requests: 21 cold, the base a store hit of S0's experiment).
+   F-13: the cap is not reached (C1 32 cold of 250; study 48 of 400).
+   F-21: yes at the one stage-C start: both pinned inner solves at d₀ ± t (672.65 K, 673.65 K) `CONVERGED`, central
+   stencil, `basis.status` ok, c = (−1.22e-3, 0.812), noise_ratio (3592, 5.42).
+   Interior optimum: **no**. T* = 653.1500351610193 K, the lower bound (3.52e-5 K, 1.76e-6 scaled above it); J rises
+   from 0.44933 at 673.15 K to 0.45250 at the bound; P5 polled both sides (not "at the bound" by §7.4's 1e-6
+   scaled): minus (clipped to 653.15 K) improvement 8.17e-9 ≤ allowance 3.71e-6, plus −7.14e-5. Same structure as
+   LOOP-R/LOOP-S (and the same 1e-6-scaled question as G8's S64, not gated here: REAL's optimality is reported).
+   `extrapolated`: the record states it (cand-C1's P1 solve: its final experiment is outside the kinetics' data
+   domain on `H2/N2`); count 12 of the reactor link's 61 truth requests (10 of its 32 cold experiments), read from
+   the ledger artifact (the record has no count field; `tests/test_m05_wo9_gates.py` pins 12/61). Finding: the
+   loop's reactor-inlet H2/N2 sits on the data edge, so the final-iterate rule flips between solves 3.5e-5 K
+   apart (P1 extrapolated, the minus poll at 653.15 K not; S0 not).
+   G11: PASS (`tests/test_m05_wo9_gates.py`, default tier on the committed files). G7 on the run: store bijection 0
+   violations, 4 coupling records persisted, 0 refusals.
+   G10 REAL part (F-20): `--replay` from the record **0 differences** (record compared bitwise apart from the
+   store-served counts; ledger with recorded cold experiments as store hits; store unchanged; coupling records by
+   M02's `iterate_differences`/`record_differences` under T08 v2, then content). The comparator's first version
+   mapped every `cold` ledger entry to a store hit and compared `artifacts.ledger` exactly: 37 by-design lines
+   (property blocks and FD-assembled Jacobians are computed again and stay `cold`; the ledger file differs), fixed
+   in the comparator (S68's rule, keyed on the experiment key), not in the record.
+   AQ2: no. The REAL check reads `benchmarks/m02/c1-loop-real.json` and never writes it (`C1Parent` deep-copies the
+   document; the script asserts the file's bytes equal before and after the run, and `git status` shows it
+   unchanged). `experiments.json` is 480 kB, so it is committed (below F-19's 5 MB).

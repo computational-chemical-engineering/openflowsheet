@@ -78,7 +78,8 @@ def test_the_records_are_the_v2_set() -> None:
     """WO-8e and WO-8b: exactly the five cases, each under `M05-basis-v2` with its sidecars, in
     one environment at one OpenMP thread (S59)."""
     stems = {path.name.split(".")[0] for path in RECORDS.iterdir()}
-    assert stems == {_stem(case) for case in CASES}
+    # WO-9's REAL record (`tests/test_m05_wo9_gates.py`) shares the directory, not this set.
+    assert stems == {_stem(case) for case in CASES} | {"trust-region-study-real"}
     environments = []
     for case in CASES:
         document = record(case)
