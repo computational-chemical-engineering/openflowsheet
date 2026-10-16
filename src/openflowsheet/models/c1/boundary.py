@@ -76,10 +76,14 @@ HARD_PRESSURE_PA: Final = (5.0e6, 1.5e7)
 HARD_H2_N2: Final = (1.0, 4.0)
 HARD_INERT_FRACTION: Final = 0.2
 #: The inert floor's relative slack, 4 ulp of 1 (4 · 2⁻⁵², ≈ 8.9e-16; build log D134, M02 close-out
-#: C1). `n_Ar + n_CH4 >= inert_min · n_tot` evaluated in binary64 is off the exact comparison by
-#: at most ≈ 7 · 2⁻⁵³ relative (the two-term sum, the five-term n_tot, the product, and inert_min's
-#: own representation, one half-ulp each), so a composition exactly on the floor (v3's design
-#: composition, y_Ar + y_CH4 = 0.035) is accepted at every flow scaling instead of by rounding.
+#: C1), applied to every `inert_min > 0` (only v3 declares a floor today). `n_Ar + n_CH4 >=
+#: inert_min · n_tot` evaluated in binary64 is off the exact comparison by at most 8 half-ulps
+#: (u = 2⁻⁵³) relative: the two-term sum, n_tot (four roundings for `np.float64` elements; about
+#: one for Python floats, whose `sum` is compensated), the product, the slack product
+#: `(inert_min · n_tot) · (1 − s)`, and inert_min's own representation (< u). The slack is 8 u, so
+#: an exact ratio >= the floor is accepted, one below floor · (1 − 8 · 2⁻⁵²) is refused, and in
+#: between rounding decides. v3's design composition (y_Ar + y_CH4 = 0.035, on the floor) was
+#: accepted at every tested flow scaling.
 #: The floor only; refusals move only within that knife-edge.
 INERT_FLOOR_SLACK_REL: Final = 4.0 * 2.0**-52
 #: The kinetics' data domain (spec §8.12): inside the hard domain but outside it, `ok` and
