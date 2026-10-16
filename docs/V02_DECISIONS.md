@@ -854,3 +854,6 @@ Grep, don't read whole. Newest at the bottom.
 - **Alpha verdicts at C_α²** (2026-10-16, `verdict`, committed by session `f14f02e`): identical words to C_α¹; W21 carries L44–L46,
   L48, W22 L47; 61/61 hashes, 30 RC records' provenance hold. Gate dry run: 16 expected refusals. Findings B1–B6; B6 (ADRs
   Proposed) and B5 (declined N1 needs amendment) → `specifier` launched. Frank asked for the four answers in plain words.
+- **Alpha B6/B5** (2026-10-16, `specifier`, `758a902`, R-380…R-382): ADR status flips legitimate (gate reads ADRs at the decision
+  commit; `docs/adr/` outside D2.4 trees). 0027 copied from main; 0033/0034/0035 Accepted (M02 `ba90619` tested, G1–G12 pass;
+  thin spot: D28/D29 never ruled individually). §20 Am. 4 contingent on Frank declining M02 N1. Dry run: only ADR 0028 + Frank.
