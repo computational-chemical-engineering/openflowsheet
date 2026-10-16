@@ -868,3 +868,7 @@ Grep, don't read whole. Newest at the bottom.
   merged tree 9186 passed 1 failed (S43); nlp 167/1). S33 bitwise on FD link toy; value_cold 8→16 (accounting).
   DECISION: S43 → (a) invert dependency (adapter into `application`, injected), alt. (b) exemption / (c) narrow rule;
   reversible by reverting S44. S40 + `fd_check` float rule → design ruling before WO-8.
+- **M05 S44** (2026-10-16, `opus-engineer`, `a5927b4`, gate 9187 passed, nlp 167/1): `ParentServices` injected
+  (`application/trust_region_parent.py`); moving `parent.py` would break R-003's isolation test. Bitwise dumps identical (6393 +
+  3668 lines; coupling-record sha masked — wall times, S40). Found: R-003 means no application job can run the study.
+  `architect` pre-WO-8 ruling launched (S40, fd_check floats, R-003 vs jobs; R-383…R-389).
