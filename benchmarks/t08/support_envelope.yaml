@@ -829,6 +829,44 @@ limitations:
     evidence:
       - doc:docs/web-shell.md
       - doc:docs/design/M06-web-shell.md §12
+  # L44–L46, L48: R-343 (M02 close-out), M02's user-facing limitations as E. Ids and texts are
+  # V02 alpha release spec §19.1's (R-370), so that the two branches converge; L47 is the alpha's.
+  - id: L44
+    text: >-
+      The C1 reactor (`c1.reactor`) is measured on Linux x86-64 only, on one machine
+      (`ref-x86-64`). Its runs are opt-in: they need the separately built, pinned reactor
+      environment, which no CI job builds (M02 N2). They are reproducibility class R3 (ADR 0034
+      D6). A run on aarch64 is not measured, nor is the reproduction of a coupled run across
+      architectures. macOS is best effort, and Windows is refused before spawn (ADR 0033 D2).
+    evidence:
+      - doc:docs/design/M02-pymrm-adapter.md §2.4
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/adr/0034-external-models-in-a-flowsheet-solve.md §D6
+  - id: L45
+    text: >-
+      `external-subprocess-v1` runs the group's pinned code with the user's privileges and is not
+      a sandbox: there is no filesystem confinement, network isolation, memory or CPU quota, or
+      syscall filtering, and trust rests on provenance (ADR 0033 D2; M02 N1).
+    evidence:
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/design/M02-pymrm-adapter.md §12
+  - id: L46
+    text: >-
+      No reactor result has been compared with experimental data by this project. The group's
+      published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the
+      group's evidence. Every real-reactor number is the group's model at the pin, a regression,
+      and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13).
+    evidence:
+      - doc:docs/design/M02-pymrm-adapter.md §13
+  - id: L48
+    text: >-
+      The C1 loop's convergence is evidenced at the corners and the centre of its registered hard
+      domain only (M02 G11). The inert-fraction floor y_inert ≥ 0.035 sits just above a measured
+      stage-1 failure (0.03 at 653.15 K, 11 MPa, H₂/N₂ 2.5). A failure inside the domain ends in a
+      typed refusal and then `COUPLING_NOT_CONVERGED`, never in a false success.
+    evidence:
+      - check:M02.G11
+      - doc:docs/design/M02-pymrm-adapter.md §13
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -2712,21 +2750,24 @@ harvest:
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[1]
   sha256: dfd8ca7840569a3f97f92f6b90b8036a97ad876adb24439d3c0c24bfcd8bdb6b
-  class: P
-  to: []
-  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run
+  class: E
+  to:
+  - L44
+  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run (R-343, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[2]
   sha256: 28b3606f19c531f178ddbaf9a38af13559d1cec586dbe744c30d50a4c4e670e7
-  class: P
-  to: []
-  note: isolation profile not a sandbox (stated in the envelope's external_execution axis)
+  class: E
+  to:
+  - L45
+  note: isolation profile not a sandbox (stated in the envelope's external_execution axis) (R-343, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[3]
   sha256: 5266e33ca1cc2b8fdffd15c7726369a905a1559b897d91f8cd3a8d6a166dba4c
-  class: P
-  to: []
-  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10)
+  class: E
+  to:
+  - L48
+  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10) (R-343, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[4]
   sha256: 314efcaecdb681cc1bcbc3b78d4908bb0057435bcf0815128701ea2edcdd7e9f
@@ -2736,15 +2777,17 @@ harvest:
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[5]
   sha256: d5b5618ed4f463dbd9b8b1b981b3de6414227e7be25eb69400f82d27a78699a7
-  class: P
-  to: []
-  note: self-generated records are regression fixtures (review F10)
+  class: E
+  to:
+  - L46
+  note: self-generated records are regression fixtures (review F10) (R-343, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[6]
   sha256: 326d3a4be0be30a8f73651217aaf41b9b8cbcef12ab1517c1019ae7fdf100476
-  class: P
-  to: []
-  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled
+  class: E
+  to:
+  - L44
+  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled (R-343, class E)
 - manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
   item: limitations[0]
   sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
