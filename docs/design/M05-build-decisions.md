@@ -383,7 +383,7 @@ Measured (WO-7b head): `tests/test_m05_study_record.py tests/test_m05_study_loop
 
 ## Merge of origin/main (M04) — d65a9a4
 
-S43 OPEN (design lane; blocks a green gate on wp/M05). M04's `tests/test_m04_study.py::
+S43 RESOLVED by S44, option (a) (was OPEN: design lane; blocked a green gate on wp/M05). M04's `tests/test_m04_study.py::
    test_studies_never_import_the_application_layer` holds "no module of `studies` imports `openflowsheet.application`,
    lazily or not" (R-237's `adapters` rule extended to `studies` by M04's test; no register entry of its own). M05's
    `studies/trust_region/parent.py` (S3, the real C1 parent adapter: `coupled_run`, `revision_binding`,
@@ -394,3 +394,32 @@ S43 OPEN (design lane; blocks a green gate on wp/M05). M04's `tests/test_m04_stu
    receives them as injected callables; (b) a registered exemption for `trust_region` with its reason; (c) narrow the
    rule to `studies/surrogate`. Build-lane default if asked to proceed: (a), as a structure-only change proved by the
    S33/WO-2c-style byte-identical dumps.
+
+## S43 resolved — the C1 parent's application operations injected (S44)
+
+S44 S43 → option (a), the session's decision (2026-10-16): M04's `test_studies_never_import_the_application_layer`
+   stays as it is. Structure only, no numerics. `studies/trust_region/parent.py` imports nothing of `application`:
+   `C1Parent(document, runner, box, *, services, ...)` takes a `ParentServices` (protocol in `parent.py`) and calls
+   `services.bind` / `coupled_route` / `solve_coupled` / `live_experiments` / `inlet_of` / `unit_variant` /
+   `pinned_at` / `policy` where it called `bind_revision_flowsheet`, `select_route` + the `revision_coupled` test,
+   `solve_route` (its `RunUnsupportedError` returned as the `code` string), `LiveExperiments`, `inlet_of`,
+   `unit_variant`, `study.pinned_at`, `T06_REVISION_V2`. The one implementation is
+   `application/trust_region_parent.py` (`C1ParentServices`, `C1_PARENT_SERVICES`, and `pinned_at`, moved from
+   `study.py`: still the one `at_coupling` call site), as M04 injects its resolver (E5/E8). `study.py` reads the
+   binding as `CaseBinding` (a protocol: `flowsheet`, `spec`, `graph`); bindings are opaque (`Any`) in `parent.py`.
+   The adapter stays in `studies`: moving it to `application` (tried first) breaks M05's own R-003 test
+   `test_no_route_or_compile_path_reaches_the_projection` (nothing outside `studies/trust_region/` imports it), and the
+   application module imports nothing of `studies.trust_region`. One failure-path difference: a binding refusal in
+   `binding_at` (an `assert` before) now raises the constructor's `ValueError`.
+   Alternatives: (b) a registered exemption for `trust_region`; (c) narrowing the rule to `studies/surrogate`.
+   Reversible by: revert the commit.
+   Measured: scratch dump (base tree `git archive e4a8f4b` vs the change, `.venv-nlp`) of the FD link toy `TrfStage`
+   run document, full ledger and outcome at radius factors 1 and ¼; the stand-in C1 parent `run_study` (S0 + stage
+   B candidates, stage C returning its start) record, every document the parent hashed, and the experiment store's
+   JSON; and (nlp) S0's solve document plus `project_at(S0)` (rows, expressions, centres, half-widths, source map,
+   scaling, holders, every variable's bounds and value, every active constraint's body, bounds and value). Floats as
+   `float.hex`. `cmp` byte-identical (default 6393 lines, nlp 3668) after masking the lines that also differ between
+   two runs of the base tree: 6 + 1 `sha256` values of coupling records, which carry wall times (S40's question;
+   the records' other fields are in the dump and identical).
+   Open for WO-8: R-003's test forbids any module outside `studies/trust_region/` importing it, so an `application`
+   job that runs the trust-region study (as `surrogate_study` runs M04's) cannot exist under that test as written.

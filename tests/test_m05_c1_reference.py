@@ -1,4 +1,4 @@
-"""M05 WO-5: M02's inner solve at pinned w (`study.pinned_at`, which calls M02's
+"""M05 WO-5: M02's inner solve at pinned w (`trust_region_parent.pinned_at`, which calls M02's
 `coupled_run.at_coupling` since WO-5c, R-309) and TR-E2's independent reference T_ref (design note
 §5.2, §12 WO-5; ADR 0039 D2).
 
@@ -24,10 +24,10 @@ from openflowsheet.application.revision_binding import (
     RevisionBinding,
     bind_revision_flowsheet,
 )
+from openflowsheet.application.trust_region_parent import pinned_at
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.studies.trust_region.study import pinned_at
 
 sys.path.insert(0, str(REPO_ROOT / "tests" / "support"))
 import m05_reference as reference  # noqa: E402

@@ -6,8 +6,9 @@ the bound variant's boundary block and the admissibility definitions, never auth
 
 - **Case.** A revision binding of the C1 loop `C1-LOOP-M02-v1` (M02 design note §8.1), at the
   coupled route's inner problem: the embedded reactor pinned at w₀ (`coupled_run.at_coupling`,
-  M02's accessor, R-309), its coupling parameters promoted to the link variables (X̂, ΔT̂)
-  (ADR 0038 D3).
+  M02's accessor, R-309; the application pins it, `application.trust_region_parent.pinned_at`),
+  its coupling parameters promoted to the link variables (X̂, ΔT̂) (ADR 0038 D3). `studies`
+  never imports `application` (S44): the formulation reads the binding as a `CaseBinding`.
 - **Decision.** The outlet-temperature specification of the `c1.tp_heater` that feeds the
   reactor (its `T_spec`, a pinned input, ADR 0031 D1), in a registered box: [653.15, 693.15] K for
   the REAL study (R-313: v3's T_in span, superseding ADR 0039 D1's [643.15, 733.15] K) and for
@@ -35,8 +36,6 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Final, Literal, Protocol
 
 from openflowsheet.adapters.variants import Variant, hard_domain
-from openflowsheet.application.coupled_run import at_coupling
-from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.compile.reference import FloatAlgebra
 from openflowsheet.compile.spec import Expr
 from openflowsheet.models import flow_id, pressure_id, temperature_id
@@ -77,6 +76,9 @@ from openflowsheet.studies.trust_region.trf_state import (
 from openflowsheet.thermo.pr_c1 import COMPONENTS
 
 if TYPE_CHECKING:
+    from openflowsheet.compile.spec import ProblemSpec
+    from openflowsheet.graph.process import ProcessGraph
+    from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
     from openflowsheet.studies.trust_region.projection import Projection
     from openflowsheet.studies.trust_region.trf_state import EFBasis
 
@@ -92,6 +94,7 @@ __all__ = [
     "TR_E2_BOX",
     "Budgets",
     "C1Formulation",
+    "CaseBinding",
     "StageRun",
     "StageRunner",
     "StudyBudget",
@@ -100,7 +103,6 @@ __all__ = [
     "TrfStage",
     "c1_constraint_values",
     "c1_formulation",
-    "pinned_at",
     "project_c1",
     "run_study",
     "trust_region_readiness",
@@ -118,6 +120,23 @@ MARGIN_REL: Final = 1e-6
 #: §7.1: the objective's scale, mol/s.
 OBJECTIVE_SCALE: Final = 1.0
 _PROVIDER_KINDS: Final = {"T": "temperature", "P": "pressure"}
+
+
+class CaseBinding(Protocol):
+    """What the formulation reads of a revision binding (`application.revision_binding.
+    RevisionBinding` satisfies it): the built flowsheet, its spec and its process graph. A
+    protocol, so that `studies` never imports `application` (S44): the application binds the
+    revision and pins the reactor (`application.trust_region_parent.pinned_at`) and hands the
+    binding in."""
+
+    @property
+    def flowsheet(self) -> RevisionFlowsheet: ...
+
+    @property
+    def spec(self) -> ProblemSpec: ...
+
+    @property
+    def graph(self) -> ProcessGraph: ...
 
 
 @dataclass(frozen=True)
@@ -157,7 +176,7 @@ def _linear(terms: Sequence[tuple[float, str]]) -> Any:
 
 
 def c1_formulation(
-    binding: RevisionBinding,
+    binding: CaseBinding,
     variant: Variant,
     truth: TruthModel,
     box: tuple[float, float],
@@ -264,7 +283,7 @@ def c1_formulation(
 
 
 def project_c1(
-    binding: RevisionBinding, x0: Mapping[str, float], formulation: C1Formulation
+    binding: CaseBinding, x0: Mapping[str, float], formulation: C1Formulation
 ) -> Projection:
     """The C1 formulation projected at the state `x0` of `binding`'s inner problem (§6.1): the
     omitted rows are the certified alias elimination's (R-274), and the shape check is required
@@ -281,17 +300,6 @@ def project_c1(
         inequalities=formulation.inequalities,
         variable_bounds=formulation.variable_bounds,
     )
-
-
-def pinned_at(
-    binding: RevisionBinding, unit_id: str, coupling: tuple[float, float]
-) -> RevisionBinding:
-    """`binding`'s inner problem with the embedded reactor `unit_id` pinned at w = (X̂, ΔT̂).
-
-    The one call site of M02's coupling accessor in M05's library: `coupled_run.at_coupling`
-    (R-309: it refuses a `unit_id` that is not a C1 reactor of the binding). The floats are
-    passed as Python floats, bit for bit (WO-5c)."""
-    return at_coupling(binding, {unit_id: (float(coupling[0]), float(coupling[1]))})
 
 
 def c1_constraint_values(

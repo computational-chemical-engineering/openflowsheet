@@ -1,5 +1,11 @@
-"""The C1 parent adapter (M05 design note §7.4, §7.2, §6.4; build decision S3): the `Parent` the
-parent checks and the study loop solve, and the parent truth stage C's projection links.
+"""The C1 parent adapter (M05 design note §7.4, §7.2, §6.4; build decisions S3, S44): the `Parent`
+the parent checks and the study loop solve, and the parent truth stage C's projection links.
+
+**The application's operations are injected** (S44): binding, routing and solving a revision,
+the live experiments, the reactor inlet and variant, and pinning the reactor at w are
+`application`'s, and `studies` never imports `application` (M04's rule). The adapter calls them
+through its `services` (`ParentServices`; `application.trust_region_parent.C1_PARENT_SERVICES`
+is the implementation) and holds the bindings they return as opaque values.
 
 **A solve** (§7.4) edits the C1 revision document in memory: the specification that pins the
 decision — the outlet temperature of the `c1.tp_heater` feeding the reactor (ADR 0031 D1), found
@@ -29,7 +35,7 @@ P1 judges it.
   outside the variant's data domain).
 
 **The inner objective** (§7.4's noise floor): the solve's revision with the reactor pinned at w
-(`study.pinned_at`), planned and solved as M02's inner solve from the solve's certified state
+(`services.pinned_at`), planned and solved as M02's inner solve from the solve's certified state
 (`user_start`, as M02's inner solves after k = 0 start from the base iterate), no reactor call; NaN
 when that solve fails, so the noise floor is NaN and P5 cannot pass (the safe failure is an extra
 refinement, never a false stability).
@@ -48,20 +54,14 @@ import copy
 import math
 import time
 from collections.abc import Callable, Mapping
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, Protocol
 
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
-from openflowsheet.application.coupled_run import LiveExperiments, inlet_of, unit_variant
-from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
-from openflowsheet.application.revision_run import (
-    Route,
-    RunUnsupportedError,
-    select_route,
-    solve_route,
-)
+from openflowsheet.adapters.variants import Variant
 from openflowsheet.canonical import document_sha256
 from openflowsheet.models import flow_id, temperature_id
 from openflowsheet.models.c1.reactor import C1Reactor
+from openflowsheet.orchestrator.coupling import UnitInlet
 from openflowsheet.orchestrator.execution import PlanRefusal
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
@@ -69,9 +69,9 @@ from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.studies.trust_region.checks import Decision, ParentSolve, Sense
 from openflowsheet.studies.trust_region.study import (
     C1Formulation,
+    CaseBinding,
     c1_constraint_values,
     c1_formulation,
-    pinned_at,
     project_c1,
 )
 from openflowsheet.studies.trust_region.truths import ParentExperimentTruth
@@ -84,12 +84,61 @@ if TYPE_CHECKING:
 __all__ = [
     "DECISION_TOLERANCE_K",
     "C1Parent",
+    "ParentServices",
     "coupling_counts",
     "unit_regimes",
 ]
 
 #: §7.1 (N-F2): the decision tolerance δ_T on the heater outlet temperature, K.
 DECISION_TOLERANCE_K: Final = 0.5
+
+
+class ParentServices(Protocol):
+    """The application operations a `C1Parent` runs (S44; `application.trust_region_parent`).
+    Bindings are `application`'s `RevisionBinding`s, opaque here (`Any`): the adapter reads them
+    as `CaseBinding`s and hands them back to `services` and to the orchestrator."""
+
+    @property
+    def policy(self) -> SolvePolicy:
+        """The default solve policy."""
+        ...
+
+    def bind(self, document: Mapping[str, Any]) -> Any:
+        """The revision's binding; a refusal raises `ValueError`."""
+        ...
+
+    def coupled_route(self, document: Mapping[str, Any]) -> Any:
+        """The route `document` selects when it is `revision_coupled`, else `None`."""
+        ...
+
+    def solve_coupled(
+        self,
+        route: Any,
+        document: Mapping[str, Any],
+        *,
+        policy: SolvePolicy,
+        check_policy: CheckPolicy,
+        experiments: Any,
+    ) -> Any:
+        """`route`'s run of `document`, or the `unsupported(<code>)` code (a `str`) of a run that
+        has no mapping. A `VerifierError` propagates."""
+        ...
+
+    def live_experiments(self, runner: ExperimentRunner) -> Any:
+        """The study's experiments on its one runner (§6.4)."""
+        ...
+
+    def inlet_of(self, binding: Any, unit: C1Reactor, state: Mapping[str, float]) -> UnitInlet:
+        """`unit`'s inlet, read exactly from `state`."""
+        ...
+
+    def unit_variant(self, unit: C1Reactor) -> Variant:
+        """The variant the binder resolved for `unit`."""
+        ...
+
+    def pinned_at(self, binding: Any, unit_id: str, coupling: tuple[float, float]) -> Any:
+        """`binding`'s inner problem with the reactor `unit_id` pinned at w = (X̂, ΔT̂)."""
+        ...
 
 
 def coupling_counts(record: Mapping[str, Any] | None) -> tuple[int, int]:
@@ -103,7 +152,7 @@ def coupling_counts(record: Mapping[str, Any] | None) -> tuple[int, int]:
     return executions, hits
 
 
-def unit_regimes(binding: RevisionBinding, state: Mapping[str, float]) -> dict[str, str]:
+def unit_regimes(binding: CaseBinding, state: Mapping[str, float]) -> dict[str, str]:
     """P4's labels: each non-external unit's `phase_signature` from its own causal `evaluate` on
     its inlets read from `state` (`"none"` for a unit that reports none, `"status:<s>"` for an
     evaluation that is not `ok`). The external reactor's regime is its experiment's, not the
@@ -134,7 +183,8 @@ class C1Parent:
 
     `document` is the C1 revision (its reactor bound to a variant: the stand-in, a synthetic
     variant or the real reactor, v3 for REAL); `runner` is the study's one `ExperimentRunner`;
-    `box` the decision box (`study.REAL_BOX`, `study.TR_E2_BOX`)."""
+    `box` the decision box (`study.REAL_BOX`, `study.TR_E2_BOX`); `services` the application's
+    operations (S44)."""
 
     def __init__(
         self,
@@ -142,27 +192,25 @@ class C1Parent:
         runner: ExperimentRunner,
         box: tuple[float, float],
         *,
+        services: ParentServices,
         policy: SolvePolicy | None = None,
         check_policy: CheckPolicy | None = None,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
-        from openflowsheet.application.policies import T06_REVISION_V2
-
+        self.services = services
         self.document: dict[str, Any] = copy.deepcopy(dict(document))
-        binding = bind_revision_flowsheet(self.document)
-        if not isinstance(binding, RevisionBinding):
-            raise ValueError(f"the C1 revision does not bind: {binding!r}")
+        binding = services.bind(self.document)
         self.binding = binding
         self.runner = runner
-        self.policy = T06_REVISION_V2 if policy is None else policy
+        self.policy = services.policy if policy is None else policy
         self.check_policy = CheckPolicy() if check_policy is None else check_policy
-        self.experiments = LiveExperiments(runner)
+        self.experiments = services.live_experiments(runner)
         self._clock = clock
         reactors = [unit for unit in binding.flowsheet.instances if isinstance(unit, C1Reactor)]
         if len(reactors) != 1:
             raise ValueError(f"a C1 parent needs exactly one C1 reactor; it has {len(reactors)}")
         self.reactor: C1Reactor = reactors[0]
-        self.variant = unit_variant(self.reactor)
+        self.variant = services.unit_variant(self.reactor)
         self.truth = ParentExperimentTruth(runner, self.variant, self.reactor.n_tubes)
         self.formulation: C1Formulation = c1_formulation(binding, self.variant, self.truth, box)
         pins = binding.specification_pins[self.formulation.heater]
@@ -174,7 +222,7 @@ class C1Parent:
         self.decisions: tuple[Decision, ...] = (
             Decision(decision.parameter_id, box_low, box_high, DECISION_TOLERANCE_K),
         )
-        self._bindings: dict[tuple[tuple[str, float], ...], RevisionBinding] = {}
+        self._bindings: dict[tuple[tuple[str, float], ...], Any] = {}
 
     @property
     def sense(self) -> Sense:
@@ -194,12 +242,10 @@ class C1Parent:
             by_id[specification]["value"] = float(decisions[parameter])
         return edited
 
-    def binding_at(self, decisions: Mapping[str, float]) -> RevisionBinding:
+    def binding_at(self, decisions: Mapping[str, float]) -> Any:
         key = tuple(sorted((name, float(value)) for name, value in decisions.items()))
         if key not in self._bindings:
-            binding = bind_revision_flowsheet(self.document_at(decisions))
-            assert isinstance(binding, RevisionBinding), binding
-            self._bindings[key] = binding
+            self._bindings[key] = self.services.bind(self.document_at(decisions))
         return self._bindings[key]
 
     # -- the Parent protocol --------------------------------------------------------------------
@@ -221,21 +267,21 @@ class C1Parent:
                 wall_s=self._clock() - started,
             )
 
-        route = select_route(document)
-        if not isinstance(route, Route) or route.solve_path != "revision_coupled":
+        route = self.services.coupled_route(document)
+        if route is None:
             return failed("unsupported(not_revision_coupled)")
         try:
-            result = solve_route(
+            result = self.services.solve_coupled(
                 route,
                 document,
                 policy=self.policy,
                 check_policy=self.check_policy,
                 experiments=self.experiments,
             )
-        except RunUnsupportedError as error:
-            return failed(f"unsupported({error.code})")
         except VerifierError as error:
             return failed(f"verifier_refused({error})")
+        if isinstance(result, str):
+            return failed(f"unsupported({result})")
         record = result.coupling
         executions, hits = coupling_counts(record)
         certificate = result.certificate
@@ -261,7 +307,7 @@ class C1Parent:
         checks = {check.id: check for check in certificate.checks}
         xi = checks[f"EXT-COUPLING:{reactor.unit_id}:xi"]
         rise = checks[f"EXT-COUPLING:{reactor.unit_id}:T"]
-        inlet = inlet_of(binding, reactor, state)
+        inlet = self.services.inlet_of(binding, reactor, state)
         assert xi.value is not None and rise.value is not None
         residuals = (xi.value * inlet.n_tot / inlet.n_key, rise.value)
         return ParentSolve(
@@ -297,7 +343,9 @@ class C1Parent:
         return tuple(sorted(stated))
 
     def inner_objective(self, solve: ParentSolve, coupling: tuple[float, float]) -> float:
-        pinned = pinned_at(self.binding_at(solve.decisions), self.reactor.unit_id, coupling)
+        pinned = self.services.pinned_at(
+            self.binding_at(solve.decisions), self.reactor.unit_id, coupling
+        )
         plan, _ = plan_revision(pinned, self.policy)
         if isinstance(plan, PlanRefusal):
             return math.nan
@@ -320,5 +368,7 @@ class C1Parent:
         Needs the `nlp` environment."""
         if start.state is None or start.coupling is None:
             raise ValueError(f"{start.solve_id}: no certified coupled state to project at")
-        pinned = pinned_at(self.binding_at(start.decisions), self.reactor.unit_id, start.coupling)
+        pinned = self.services.pinned_at(
+            self.binding_at(start.decisions), self.reactor.unit_id, start.coupling
+        )
         return project_c1(pinned, start.state, self.formulation)

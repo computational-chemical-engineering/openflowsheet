@@ -1,5 +1,6 @@
-"""M05 build decision S3: the C1 parent adapter `studies/trust_region/parent.py` (design note §7.4,
-§7.2, §6.4) on the stand-in loop `C1-LOOP-M02-v1`.
+"""M05 build decisions S3, S44: the C1 parent adapter `studies/trust_region/parent.py` (design note
+§7.4, §7.2, §6.4) on the stand-in loop `C1-LOOP-M02-v1`, on the application's operations
+(`application.trust_region_parent`, injected: `studies` never imports `application`).
 
 - A solve is the revision with the heater's outlet-temperature specification at the decision,
   solved through `revision_coupled` on the study's runner: `CONVERGED`, `VERIFIED`, J the flash's
@@ -30,10 +31,11 @@ from conftest import REPO_ROOT
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application import revision_run
+from openflowsheet.application import trust_region_parent as services_module
 from openflowsheet.application.revision_run import RunUnsupportedError
+from openflowsheet.application.trust_region_parent import C1_PARENT_SERVICES
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.studies.trust_region import parent as parent_module
 from openflowsheet.studies.trust_region.checks import (
     NOT_STATIONARY_AT_DELTA,
     PARENT_LOCAL_EVIDENCE,
@@ -79,7 +81,7 @@ def runner_in(root: Path) -> ExperimentRunner:
 
 
 def standin(root: Path) -> C1Parent:
-    return C1Parent(loop(), runner_in(root), TR_E2_BOX)
+    return C1Parent(loop(), runner_in(root), TR_E2_BOX, services=C1_PARENT_SERVICES)
 
 
 @cache
@@ -171,7 +173,9 @@ def test_a_decision_edits_the_heater_specification_only(tmp_path: Path) -> None:
 
 
 def test_the_parent_decision_and_its_box() -> None:
-    built = C1Parent(loop(), runner_in(Path("/nonexistent-never-run")), REAL_BOX)
+    built = C1Parent(
+        loop(), runner_in(Path("/nonexistent-never-run")), REAL_BOX, services=C1_PARENT_SERVICES
+    )
     (decision,) = built.decisions
     assert (decision.name, decision.lower, decision.upper, decision.tolerance) == (
         DECISION,
@@ -297,7 +301,7 @@ def test_a_refused_solve_is_an_outcome(
     def refuse(*args: Any, **kwargs: Any) -> Any:
         raise error
 
-    monkeypatch.setattr(parent_module, "solve_route", refuse)
+    monkeypatch.setattr(services_module, "solve_route", refuse)
     refused = standin(tmp_path).solve({DECISION: NOMINAL}, solve_id="x", purpose="start")
     assert (refused.outcome, refused.certificate, refused.state) == (outcome, None, None)
     assert not refused.certified and refused.executions == 0
@@ -319,7 +323,9 @@ def test_project_at_s0_links_the_parent_truth(s0: tuple[C1Parent, ParentSolve]) 
 
 @pytest.mark.pymrm
 def test_the_real_reactor_v3_parent_solves_at_the_nominal_decision(tmp_path: Path) -> None:
-    built = C1Parent(loop(REAL_LOOP_PATH), runner_in(tmp_path), REAL_BOX)
+    built = C1Parent(
+        loop(REAL_LOOP_PATH), runner_in(tmp_path), REAL_BOX, services=C1_PARENT_SERVICES
+    )
     assert built.variant.variant_id == "pymrm-6089593-g2-nz800-s123-v3"
     solved = built.solve({DECISION: NOMINAL}, solve_id="S0", purpose="start")
     assert (solved.outcome, solved.certificate) == ("CONVERGED", "VERIFIED"), solved
