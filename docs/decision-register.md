@@ -7062,3 +7062,30 @@ outstanding. ADR 0035 is left untouched here so that it stays byte-identical to 
 name it.
 
 **Watch for.** The pointer paragraphs in ADRs 0019 and 0035, which should be added after the alpha merge.
+
+---
+
+## R-450 — M03 N1: Frank accepts the licences of the optional, non-default `nlp` extra as the [A10] audit lists them
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | Frank Peters, 2026-10-16, verbatim: "I accept the licenses." Recorded by the build lane |
+| Normative text | M03 specification §14 N1 (`docs/derivations/M03-studies-spec.md`); ADR 0032 D5 and its acceptance evidence; this entry |
+| Evidence | `docs/m03-ipopt-audit.md` (G-A10 `PASS`), §7 the licence list, §5 the loaded objects; `benchmarks/m03/ipopt-inventory-x86_64.json` |
+| Affected packages | M03 (A35–A40 rest on it); T08-style release gates (the extra's notices) |
+
+**Decision.** N1 is answered with its default: the licences of the `nlp` extra's stack, as the audit's §7 lists them
+(EPL-2.0, CeCILL-C, public domain, Apache-2.0, Apache-2.0 WITH LLVM-exception, BSD-3-Clause, the AMPL Solver Library's
+BSD-3-Clause and f2c notice, MIT, LGPL-2.1-only for `libiconv`, the GCC Runtime Library Exception 3.1 for conda-forge's
+GCC runtime, PSF-2.0 and CPython's standard-library closure), are accepted for an **optional, non-default extra** that
+ships their notices. The provisional state the M03 build carried since the review (`NLP_LICENCES_ACCEPTED = True`,
+`2b6e350`; the extra declared in `91537b0`) becomes final: neither commit is reverted.
+
+**What it does not cover.** The acceptance is of the audited list. A change to the audited environment that adds a
+package or a licence outside it needs a re-audit and a new answer; the extra never enters the default install (R-190).
+
+**Rejected alternatives, and why.** Declining (not shipping the extra; A35–A40 recorded unsupported): Frank chose to
+accept.
+
+**Watch for.** An `nlp` lock change that is not re-audited; the extra's notices missing from a release that ships it.

@@ -31,7 +31,8 @@ knowledge.
 **Verdict: PASS** — for linux x86-64, CPython 3.13.5, on the route of §3.1 (a user-space conda-forge
 environment built by `scripts/build-m03-ipopt-env.sh`). Q-F5 is answered: an auditable Ipopt + ASL
 distribution exists for this platform. WO-8 declared the `nlp` extra on branch `wp/M03` in a commit
-of its own, which is not merged before Frank answers N1 and reverts alone if he declines.
+of its own, which is not merged before Frank answers N1 and reverts alone if he declines. N1 is
+answered: Frank accepted the licences of §7 on 2026-10-16 (R-450).
 
 | Item | Outcome | Evidence (details in §6) |
 | --- | --- | --- |
@@ -299,6 +300,9 @@ equals its package's recorded hash. A build takes about 25 s with a warm package
 
 ## 7. N1 — the licences Frank is asked to accept for the optional `nlp` extra
 
+**Answered 2026-10-16 (R-450):** Frank, verbatim, "I accept the licenses." — this list, for an
+optional, non-default extra.
+
 Exactly as found on the objects the NLP path loads (beyond the default install, whose objects are
 T08.A30's and unchanged here):
 
@@ -335,7 +339,7 @@ interactive prompt (§9.3).
 - In the build script: micromamba 2.9.0 and the three recipe-named upstream sources, by SHA-256.
 
 The `nlp` extra was **not** added by WO-6 (N1 pending). Drafted for WO-8, which declared it verbatim
-in a commit of its own on `wp/M03` (still pending N1):
+in a commit of its own on `wp/M03` (then pending N1; accepted 2026-10-16, R-450):
 
 ```toml
 # M03 ADR 0032 D5: the optional general-NLP bridge. Installable only into the audited environment
