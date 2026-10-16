@@ -925,3 +925,10 @@ Grep, don't read whole. Newest at the bottom.
   `extrapolated` 12/61 from the ledger (no record field); H2/N2 at the kinetics' data edge flips the flag. M07 needs: FD-3 done
   (`provenance {run_commit, tree_clean, wall_s}`), AQ2 no. M05 `reviewer` launched (brief `docs/briefs/M05-review-brief.md`,
   R-430…449), then WO-10.
+- **M05 review** (2026-10-16, `reviewer`, `f0693d8` on wp/M05; `docs/reviews/M05-review.md`, design note §21, R-430…R-435): verdict
+  fix first. Core sound (R-401 exits, basis v2, R-405/R-406 accounting, P2/P2_A/P5). MF1: `noise_ratio` misses η·s_k/√2 (REAL
+  (3591.6, 5.42) → (0.0388, 0.0299)); re-take LOOP-R, TR-E2-FD, REAL, bitwise with noise_ratio/provenance masked. SF1: in-process
+  replays as an nlp test. SF2/R-430: §7.4's 1e-6 classification kept; R-404's offset rationale wrong (slopes within 15 %, offsets span
+  33×), so G8/G9 stop gating Ipopt's offset: |T*−653.15| ≤ δ_T 0.5 K and P5's evidence contains the bound (G8 then passes on the
+  committed LOOP-S). R-431: TRF_CONVERGED expected for stage A. R-433: ledger count suffices; data-edge flip = limitation + note to M07.
+  R-434: build choices confirmed (S58 reversed, S54 superseded, S64 settled). WO-10a (fixes) launched; WO-10b (manifest) after.
