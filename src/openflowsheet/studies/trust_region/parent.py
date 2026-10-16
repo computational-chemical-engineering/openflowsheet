@@ -186,7 +186,10 @@ class C1Parent:
     `box` the decision box (`study.REAL_BOX`, `study.TR_E2_BOX`); `services` the application's
     operations (S44). `coupling_sink`, when given, receives `(solve_id, record)` once for every
     solve that has an M02 coupling record, where its digest is computed, so that the caller can
-    keep the document the digest certifies (§19.1 item 3, R-385); `None` changes nothing."""
+    keep the document the digest certifies (§19.1 item 3, R-385); `None` changes nothing.
+    `truth_class` builds the reactor EF's truth on the study's runner (`ParentExperimentTruth`, FD
+    gradients, by default; a subclass with the same constructor, such as TR-E2's analytic
+    `SyntheticTruth`, §6.4, when the caller has an exact gradient)."""
 
     def __init__(
         self,
@@ -199,6 +202,7 @@ class C1Parent:
         check_policy: CheckPolicy | None = None,
         clock: Callable[[], float] = time.monotonic,
         coupling_sink: Callable[[str, Mapping[str, Any]], None] | None = None,
+        truth_class: type[ParentExperimentTruth] = ParentExperimentTruth,
     ) -> None:
         self.services = services
         self.coupling_sink = coupling_sink
@@ -215,7 +219,7 @@ class C1Parent:
             raise ValueError(f"a C1 parent needs exactly one C1 reactor; it has {len(reactors)}")
         self.reactor: C1Reactor = reactors[0]
         self.variant = services.unit_variant(self.reactor)
-        self.truth = ParentExperimentTruth(runner, self.variant, self.reactor.n_tubes)
+        self.truth = truth_class(runner, self.variant, self.reactor.n_tubes)
         self.formulation: C1Formulation = c1_formulation(binding, self.variant, self.truth, box)
         pins = binding.specification_pins[self.formulation.heater]
         (decision,) = self.formulation.decisions
