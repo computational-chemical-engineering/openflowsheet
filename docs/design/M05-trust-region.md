@@ -1962,3 +1962,99 @@ that carries the study's FD check it also gains `fdcheck_point` = 1 + the check'
 | F-24 | At a cap, can concurrent FD requests be refused while a store-hit charge is still outstanding (R-405)? | Fact: WO-8c | The cap is never exceeded, so the refusal is correct, but which point is refused may depend on timing. Gates drive caps with serial requests; report it if a replay differs only there |
 
 None of these needs Frank.
+
+## 21. Rulings at the review (2026-10-16)
+
+These rule on the review brief's four items (`docs/briefs/M05-review-brief.md`, at `c8bcc53`) and record the review's
+gate changes (`docs/reviews/M05-review.md`). Register R-430 to R-435.
+
+### 21.1 "At the bound": §7.4 keeps 1e-6, and G8 and G9 stop gating Ipopt's offset (R-430)
+
+**R-404's rationale is corrected.** A solution at an active bound sits μ_k/z_L inside the bound. Here μ_k is the barrier
+parameter at whatever iterate passes Ipopt's termination test (`M05-trsp-ipopt-v1`: `tol` 1e-8, `compl_inf_tol` 1e-8,
+monotone μ ≥ tol/10), not a fixed μ_final.
+- The three bound-active records have parent slopes within 15 % of one another: 3.4e-3, 3.4e-3 and 2.9e-3 per scaled
+  unit (plus poll / δ). Their offsets still span 33×:
+  - LOOP-R 5.3e-8;
+  - LOOP-S 1.10e-6;
+  - REAL 1.76e-6.
+- The offset is therefore not a property of the problem that the study can bound in advance. On a flat objective, no
+  fixed distance separates a bound-active point from an interior one.
+
+**§7.4's 1e-6 stays as the classification, unchanged in code.** It is used by P5's inward-only rule and by R-401's
+exemption, and its misclassification is conservative:
+- A bound-active point read as interior has its outward poll clipped onto the bound. P5 then also judges J at the bound
+  itself, at the cost of one coupled solve.
+- R-401's exemption is withheld, so the label becomes `TRF_EXIT_UNVERIFIED` and stage B is unchanged.
+- An interior point read as at the bound loses only the outward poll of a move below δ/10⁴.
+
+**Rejected:**
+- *The solver's bound multiplier.* TRF's internal Ipopt duals are not exposed, and TRF is pinned (R-260).
+- *An offset bound from μ_final and z_L.* z_L is not known before the poll.
+- *Snapping the candidate to the bound.* It moves the candidate off TRF's returned point, which P2 compares.
+- *Moving the 1e-6.* No independent reason supports it.
+
+**Watch for.** With a zero noise allowance (e* + e_j = 0), the clipped sub-resolution poll shows an improvement of slope ×
+offset > 0 and fails P5 at every restart. C1's coupled parents clear this by more than 10³: allowances 1.28e-5 and 3.71e-6
+against improvements 3.7e-9 and 8.2e-9. Rule again if a zero-noise parent is registered.
+
+### 21.2 R-408's premise (R-431)
+
+θ_PMP = 6.55e-3 in LOOP-S is the property EFs' affine-Taylor error over the PMP's 20 K move: R-400 keeps those EFs
+affine. Only the link EFs are exact under the promoted quadratic. R-408's sentence "θ_PMP ≈ 1e-14 and TRF exits at the
+PMP, labelled `TRF_EXIT_WITHOUT_STEP`" now reads: "θ_PMP is the property EFs' affine error over the PMP's move. TRF
+corrects it with θ-steps and ends `TRF_CONVERGED` or `TRF_EXIT_WITHOUT_STEP`."
+- G8's first rows already accept both labels.
+- P2_A agrees to 5.95e-14, so stage A returns the surrogate-backed optimum as R-408 intends.
+- The promoted basis is unchanged, and there is no re-take.
+
+### 21.3 `noise_ratio` (R-432; S58 reversed)
+
+R-400 step 10's 4ν̂/(t²|c_k|) divides a scaled-gradient noise by a value curvature. ν̂ estimates sd(G(η)) ≈ √2σ/(η·s_k)
+(§17.2), with G_kj = g_kj·m_j/s_k. The step now reads:
+
+  noise_ratio_k = 4σ̂_k/(t²|c_k|), with σ̂_k = ν̂·η_sel·s_k/√2,
+
+where s_k is the link output's scale (`projection.output_scale`) and η_sel is the check's selected η. It is still
+reported and not judged, and its float class is unchanged.
+- REAL's recorded (3591.6, 5.42) become (0.0388, 0.0299).
+- LOOP-R, TR-E2-FD and REAL are re-taken.
+- Each re-take must equal its committed record bitwise with `noise_ratio` and `provenance` masked.
+
+### 21.4 `extrapolated` (R-433)
+
+No record field is added. The count stays derived from the ledger artifact:
+- The artifact is anchored by `artifacts.ledger`, which the default tier checks, and REAL's replay compares it entry by
+  entry.
+- §7.1's "counted per evaluation" is met there.
+- M07 R-424 counts the final coupling iteration per certified state, which the record carries per solve.
+
+At C1's loop state the reactor-inlet H2/N2 sits on the kinetics' data edge, so the per-evaluation flag is decided at
+solver resolution (S69: it flips between solves 3.5e-5 K apart). M05's manifest and W24 text state this with the count:
+"12 of 61 reactor requests, reported, not a distance from the data". M07 gets a note: R-424's count at C1's state
+inherits the flip. This is not a finding against the reactor, which flags correctly.
+
+### 21.5 Build choices (R-434)
+
+**Confirmed as built:**
+- S33/S37, S36/S38, S39 (a)–(d), S41;
+- S45, S46, S48;
+- S53, S55, S56, S57;
+- S59, S60, S61, S62, S63;
+- S65, S66, S67, S68, S69.
+
+**Superseded:** S54 (by S61). **Reversed:** S58 (by R-432). **S64:** handled by R-430.
+
+### 21.6 Gates and work orders changed (R-435)
+
+| Gate | Criterion (replaces §20.7's row) | Config |
+| --- | --- | --- |
+| G8 | LOOP-S, as §20.7's first rows, then: \|T* − 653.15 K\| ≤ δ_T (0.5 K); and P5's evidence contains the bound: no minus point (§7.4 at the bound), or the minus point clipped to exactly 653.15 K, feasible and passed. \|d* − d_lb\| and §7.4's reading are reported | nlp (judged on the committed record) |
+| G9 | LOOP-R, as §20.7's first rows, then the two rows of G8 | nlp |
+| G10 | As §20.7. The in-process replays (TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R, LOOP-S) run as an `nlp`-tier test at `OMP_NUM_THREADS=1`; a fingerprint mismatch fails and names the mismatch. REAL's stays the script | nlp |
+
+**WO-10 gains:**
+- R-432's formula and the three re-takes;
+- G8 and G9's tests restated, with the strict `xfail` removed;
+- R-435's replay test;
+- R-433's limitation wording.

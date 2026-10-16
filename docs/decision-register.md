@@ -8000,3 +8000,132 @@ it is strictly worse than the exact quadratic that is already available.
 **Rejected alternatives, and why.** —
 
 **Watch for.** —
+
+---
+
+## R-430 — §7.4's at-bound distance stays 1e-6 as a classification; G8 and G9 stop gating Ipopt's offset
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review |
+| Normative text | design note §21.1, §21.6 |
+| Evidence | Plus-poll slopes 3.4e-3 / 3.4e-3 / 2.9e-3 per scaled unit; offsets LOOP-R 5.3e-8, LOOP-S 1.10e-6, REAL 1.76e-6 (33×); `docs/reviews/M05-review.md` ruling 1 |
+| Affected packages | M05 (supersedes R-404's rationale and G8/G9 rows) |
+
+**Decision.** `AT_BOUND_SCALED` = 1e-6 is unchanged for P5's inward-only rule and for R-401's exemption: its
+misclassification only adds a clipped poll at the bound or withholds a label. G8 and G9 judge
+|T* − 653.15 K| ≤ δ_T, and that P5's evidence contains the bound (inward-only, or the minus point clipped to 653.15 K
+and passed). |d* − d_lb| is reported. G8 passes on the committed LOOP-S record, with no re-take.
+
+**Rejected alternatives, and why.**
+- *Bound multipliers.* TRF's Ipopt duals are internal, and TRF is pinned (R-260).
+- *A μ/z offset bound.* z_L is not known before the poll.
+- *Snapping to the bound.* It moves the candidate off TRF's point.
+- *A larger fixed distance.* No independent reason supports it, and R-404's μ_final/z premise does not hold: the
+  offsets span 33× at equal slope.
+
+**Watch for.** A zero-noise parent: the clipped sub-resolution poll would fail P5 at every restart.
+
+---
+
+## R-431 — R-408 corrected: stage A's θ_PMP is the property EFs' affine error; `TRF_CONVERGED` is expected
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review |
+| Normative text | design note §21.2 |
+| Evidence | LOOP-S (S64): θ_k0 6.55e-3, k = 1 θ-step, ratio 3.28e-6, θ_recheck 8.88e-9, P2_A error 5.95e-14 |
+| Affected packages | M05 |
+
+**Decision.** The prediction θ_PMP ≈ 1e-14 is withdrawn, because the property EFs stay affine (R-400). G8's rows, the
+promoted basis and the LOOP-S record are unchanged.
+
+**Rejected alternatives, and why.** Exact property EFs in stage A: P2_A already agrees to 6e-14, so nothing is gained.
+
+**Watch for.** —
+
+---
+
+## R-432 — `noise_ratio` = 4σ̂_k/(t²|c_k|) with σ̂_k = ν̂·η·s_k/√2 (S58 reversed)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review (MF1) |
+| Normative text | design note §21.3 (amends R-400 step 10) |
+| Evidence | REAL: recorded (3591.6, 5.42), corrected (0.0388, 0.0299); ν̂ is sd of the scaled gradient G(η) (§17.2) |
+| Affected packages | M05 |
+
+**Decision.** The formula is corrected. LOOP-R, TR-E2-FD and REAL are re-taken, and each must be bitwise equal to its
+committed record with `noise_ratio` and `provenance` masked.
+
+**Rejected alternatives, and why.**
+- *c_k/s_k (S58's guess).* It leaves the 1/η error.
+- *Keeping the records and correcting only the manifest.* A committed record would then carry a known-wrong number.
+
+**Watch for.** —
+
+---
+
+## R-433 — `extrapolated`: the ledger count suffices; the data-edge flip is limitation wording plus a note to M07
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review |
+| Normative text | design note §21.4 |
+| Evidence | S69: 12 of 61 reactor requests; the flag flips between solves 3.5e-5 K apart; M07 R-424 counts the final coupling iteration |
+| Affected packages | M05, M07 (note) |
+
+**Decision.** No record count field is added. The digest-anchored, replay-compared ledger carries the count. W24 and the
+manifest state that C1's inlet H2/N2 sits on the data edge.
+
+**Rejected alternatives, and why.**
+- *A record field.* It duplicates an anchored artifact.
+- *A finding against the reactor.* It flags correctly, and a binary edge flag at an on-edge state flips at solver
+  resolution.
+
+**Watch for.** M07's per-state count at C1 inherits the flip.
+
+---
+
+## R-434 — M05 build choices S33–S69 ruled at the review
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review |
+| Normative text | design note §21.5; build log `docs/design/M05-build-decisions.md` |
+| Evidence | `docs/reviews/M05-review.md` |
+| Affected packages | M05 |
+
+**Decision.**
+- *Confirmed:* S33/S37, S36/S38, S39, S41, S45, S46, S48, S53, S55–S57, S59–S63, S65–S69.
+- *Superseded:* S54.
+- *Reversed:* S58 (R-432).
+- *S64:* by R-430.
+
+**Rejected alternatives, and why.** —
+
+**Watch for.** —
+
+---
+
+## R-435 — G10's in-process replays run in the `nlp` test tier
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review (SF1) |
+| Normative text | design note §21.6 |
+| Evidence | At `7350684`, G10 is only `scripts/m05_wo8_runs.py --replay` run by hand; G5–G9 read committed files |
+| Affected packages | M05 |
+
+**Decision.** An `nlp`-tier test replays TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R and LOOP-S at `OMP_NUM_THREADS=1`. A
+fingerprint mismatch fails and names the mismatch. REAL's replay stays a script.
+
+**Rejected alternatives, and why.** The script alone: a later commit could move numerics with every gate green.
+
+**Watch for.** —
