@@ -743,3 +743,14 @@ S74 Review note N2: a box exception other than `TruthRefused` no longer leaves i
    review says. Test `test_n2_a_box_exception_propagates_and_does_not_leave_the_key_in_flight`: a box that raises
    `RuntimeError` once; the second request for the key (10 s timeout) is evaluated afresh. Gate 9290 passed,
    31 skipped; nlp 186 passed, 1 skipped (the nlp tier includes G10's five replays; the new test is default tier).
+S75 WO-10b: the manifest, the harvest and the docs. `evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json`
+   (`tested`; review pending): 14 checks (G1–G13 with G5b), all pass; each carries the test counts and the measured
+   values from the junit run of `tests/test_m05_*.py` and the records. Choices for the design lane: (a) G10 is `pass`
+   for the same-machine criterion (the five in-process replays and REAL's `--replay`, 0 differences) and records
+   `cross_architecture: not_run`, with a limitation, rather than a non-pass check (a non-pass check would need a
+   backlog id in the harvest); (b) all ten limitations are harvest class P (they stay in the manifest), none E, because
+   an E item needs a new envelope row and the TRF route is not yet a served surface; `extrapolated`, REAL's bound-active
+   optimum and `fd_gradient` are the candidates to promote at M07's envelope; (c) `case_hash` is the sha256 of
+   `benchmarks/m02/c1-loop-real.json`. G8's `section_7_4_at_the_bound: false` is carried in the check with R-430's note.
+   Support matrix re-emitted (`--check`: 0 problems). ADR 0039 gains the amendment note on the box (R-313, R-315,
+   R-330), status unchanged; `docs/briefs/M05-W24-table.md` for `verdict`; `docs/progress.md` M05 row.

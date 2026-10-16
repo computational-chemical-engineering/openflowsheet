@@ -1,0 +1,497 @@
+{
+  "work_package": "M05",
+  "commit": "cfecb15abcb2d632149e37749a107fa0b3991cc0",
+  "requirements": [
+    "A06",
+    "D13"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "M05 gates G1-G13: TR-E1, TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-S, LOOP-R (committed records) and REAL (C1-LOOP-M02-v1 real reactor v3, opt-in committed record; case_hash is benchmarks/m02/c1-loop-real.json)",
+    "case_hash": "cb907173780e988aad12a44e6cf85a37a10641b8e0aa73769d3e1c8505695174",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=$PWD/src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "54583f5693d10b55ea345aee4d7648c72688499969be390d04979419c1bdc80b"
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools .venv-nlp/bin/python -m pytest -q -p no:cacheprovider -m nlp",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "6189e7aa9e35baeee2e7d8a6f3324590182314c133047474c1b137505d216377"
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools .venv-nlp/bin/python -m pytest -q -p no:cacheprovider -m \"nlp or not nlp\" --junitxml=ARTIFACTS/m05-tests.junit.xml tests/test_m05_*.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "41388f445a436c934d9bcf16ba7bda9a741393d6aea243cf0679a1d170ddd2f7"
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools .venv-nlp/bin/python scripts/m05_wo9_real.py --replay",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "a29d81b43d687481bb36dd836ee930d72cf332ce19483f87821baf220d632d96"
+    },
+    {
+      "cmd": "PYTHONPATH=$PWD/src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_m05_study_loop.py tests/test_m05_study_record.py -k default_install",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "21f2b32d2f79928ef245d1dfc8c53bd2530dc13d181bd8bced921f67f59290c3"
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools .venv-nlp/bin/python -m pytest -q -p no:cacheprovider -m \"nlp or not nlp\" --junitxml=ARTIFACTS/m03-trsp.junit.xml tests/test_m03_nlp_isolation.py -k trsp",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "f49871bc5872de196c99ca251cf87f3e4721e5fdcaed3ac397e6a20d67251ce0"
+    }
+  ],
+  "checks": [
+    {
+      "id": "M05.G1",
+      "description": "M05 G1: the TRSP workload inventory passes M03 G1-G6 (no object of unknown origin; no GPL without the runtime exception; no CasADi METIS-closure object; METIS 5 or later; MUMPS and no HSL; default install unchanged); sha256 of bin/ipopt and the five TRF modules recorded",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m03_nlp_isolation.py"
+          ],
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0
+        },
+        "inventory": "benchmarks/m05/trsp-inventory-x86_64.json",
+        "pass_g1_to_g6": true,
+        "g1_objects": 31,
+        "g1_distinct_sha256": 31,
+        "g1_unknown_origin": [],
+        "trsp_executable_sha256": "2d7bcf8835ac26437a81a6bf840e9c6c5a87c36540bc467d6fe7ddec63924a63"
+      }
+    },
+    {
+      "id": "M05.G2",
+      "description": "M05 G2: the pin; with a patched version string or one changed module byte, readiness is UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNPINNED)",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_trf.py"
+          ],
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0
+        },
+        "pyomo_version": "6.10.1"
+      }
+    },
+    {
+      "id": "M05.G3",
+      "description": "M05 G3: TR-E1 against native: same iteration count and step-type sequence; final values within 1e-10 absolute (bitwise equality reported); ledger counts; every M05-trsp-ipopt-v1 option echoed",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_trf.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        },
+        "max_abs_difference": 4.440892098500626e-16,
+        "max_logged_difference": 2.220446049250313e-15,
+        "bitwise": false,
+        "final_step_ratio": 0.0011621978866973636
+      }
+    },
+    {
+      "id": "M05.G4",
+      "description": "M05 G4: projection equivalence at SYN-001 K05 states (all six), C1 at S0 and at S0 perturbed by a seeded relative 1e-3, and TR-E1 at its start: bijective source map with DOF = n_d, residual, Jacobian and decision-column agreement with CasADi, no nonsmooth node, certified exact-zero pins",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_c1_projection.py",
+            "tests/test_m05_projection.py"
+          ],
+          "passed": 9,
+          "failed": 0,
+          "skipped": 0
+        },
+        "states": [
+          "c1.perturbed",
+          "c1.s0",
+          "syn001.B1",
+          "syn001.B2",
+          "syn001.B3",
+          "syn001.P1",
+          "syn001.P2",
+          "syn001.P3",
+          "tr-e1"
+        ],
+        "worst_ratio_to_threshold_over_states": {
+          "pin": 0.0,
+          "joint": 0.0,
+          "residual": 0.0005921189464667501,
+          "jacobian": 7.105427357601117e-07,
+          "decision": 0.004207928821973415
+        },
+        "ratio_note": "each ratio is the measured error divided by the registered threshold; the test asserts every ratio is at most 1"
+      }
+    },
+    {
+      "id": "M05.G5",
+      "description": "M05 G5 (restated, section 20.7): TR-E2 on M05-basis-v2 ends TRF_CONVERGED or TRF_EXIT_WITHOUT_STEP within 30 iterations, theta_recheck at most 1e-5 with P2 judged and passed, cand-C1 PARENT_LOCAL_EVIDENCE, study DECISION_STABLE, |T* - T_ref| at most 0.5 K, assumptions block equals the TR-E2 column",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_wo8_gates.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        "record": "benchmarks/m05/records/trust-region-study-tr-e2.json",
+        "outcome": "TRF_EXIT_WITHOUT_STEP",
+        "theta_recheck": 2.997754589562085e-06,
+        "status": "DECISION_STABLE",
+        "T_star_K": 673.6507818736261
+      }
+    },
+    {
+      "id": "M05.G5b",
+      "description": "M05 G5b: TR-E2-FAR (start 663.15 K): DECISION_STABLE within K_max 3, |T* - T_ref| at most 0.5 K, each TRF_CONVERGED run has final_step_ratio below 0.99 and a PARENT_LOCAL_EVIDENCE candidate, no run ends TRF_MAX_ITERATIONS or aborts",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_wo8_gates.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        "record": "benchmarks/m05/records/trust-region-study-tr-e2-far.json",
+        "runs": [
+          {
+            "run_id": "C1",
+            "outcome": "TRF_EXIT_UNVERIFIED(radius_limited)",
+            "final_step_ratio": 0.9999663923096775
+          },
+          {
+            "run_id": "C2",
+            "outcome": "TRF_CONVERGED",
+            "final_step_ratio": 0.016659224619983676
+          }
+        ],
+        "status": "DECISION_STABLE",
+        "T_star_K": 673.6541821432122
+      }
+    },
+    {
+      "id": "M05.G6",
+      "description": "M05 G6 (restated, section 20.2): TR-E2-FD: TRF_CONVERGED or TRF_EXIT_WITHOUT_STEP, theta_recheck at most 1e-5, DECISION_STABLE, |T*_FD - T*_E2| at most 0.1 K, fd_check passes at eta 2^-14 with class clean or truncation_dominated and no escalation, the request identity holds exactly",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_wo8_gates.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        "record": "benchmarks/m05/records/trust-region-study-tr-e2-fd.json",
+        "outcome": "TRF_CONVERGED",
+        "theta_recheck": 6.263001095518916e-08,
+        "T_star_K": 673.6294405283818,
+        "difference_to_TR_E2_K": 0.021341345244309196,
+        "fd_check": {
+          "selected_eta": 6.103515625e-05,
+          "class": "truncation_dominated",
+          "result": "pass",
+          "stopped": "passed"
+        }
+      }
+    },
+    {
+      "id": "M05.G7",
+      "description": "M05 G7: accounting on every run: the store bijection holds; cold + store_hit + memo_hit equals requests; no non-finite output returned to TRF; cold requests within the cap, and the budget test drives a run into the cap and finds exactly cap cold requests and TRF_TRUTH_REFUSED(budget:budget_exhausted)",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_trf.py",
+            "tests/test_m05_truths.py",
+            "tests/test_m05_wo8_gates.py"
+          ],
+          "passed": 7,
+          "failed": 0,
+          "skipped": 0
+        },
+        "records": {
+          "tr-e2": {
+            "cold_used": 19,
+            "trf_cold": 3,
+            "exhausted": false
+          },
+          "tr-e2-far": {
+            "cold_used": 42,
+            "trf_cold": 14,
+            "exhausted": false
+          },
+          "tr-e2-fd": {
+            "cold_used": 48,
+            "trf_cold": 32,
+            "exhausted": false
+          },
+          "loop-r": {
+            "cold_used": 63,
+            "trf_cold": 40,
+            "exhausted": false
+          },
+          "loop-s": {
+            "cold_used": 19,
+            "trf_cold": 3,
+            "exhausted": false
+          },
+          "real": {
+            "cold_used": 48,
+            "trf_cold": 32,
+            "exhausted": false
+          }
+        }
+      }
+    },
+    {
+      "id": "M05.G8",
+      "description": "M05 G8 (restated, section 21.6): LOOP-S: stage A executed with the PROMOTABLE prefix-plan manifest, run ends TRF_CONVERGED or TRF_EXIT_WITHOUT_STEP with P2_A judged and passed, DECISION_STABLE, |T* - 653.15 K| at most 0.5 K, and P5 evidence contains the bound; |d* - d_lb| and the section 7.4 reading are reported",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_wo8_gates.py"
+          ],
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        },
+        "record": "benchmarks/m05/records/trust-region-study-loop-s.json",
+        "stage_a_outcome": "TRF_CONVERGED",
+        "T_star_K": 653.150021930406,
+        "d_star_minus_d_lb_scaled": 1.0965202989154933e-06,
+        "section_7_4_at_the_bound": false,
+        "note": "reported, not gated (R-430): the offset exceeds 1e-6 scaled, so section 7.4 reads not at the bound and P5 polled both sides; the G8 row on P5 and the 0.5 K row hold"
+      }
+    },
+    {
+      "id": "M05.G9",
+      "description": "M05 G9 (restated, section 21.6): LOOP-R: stage A skipped with surrogate_not_promoted; stage C with M05-basis-v2; DECISION_STABLE; then the two rows of G8",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_wo8_gates.py"
+          ],
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        "record": "benchmarks/m05/records/trust-region-study-loop-r.json",
+        "stage_a": {
+          "executed": false,
+          "reason": "surrogate_not_promoted"
+        },
+        "outcome": "TRF_CONVERGED",
+        "T_star_K": 653.1500010581631,
+        "d_star_minus_d_lb_scaled": 5.290815465741616e-08,
+        "section_7_4_at_the_bound": true
+      }
+    },
+    {
+      "id": "M05.G10",
+      "description": "M05 G10 (same machine, section 19.4 and 20.7): the five WO-8 records replay in process bitwise (every float not excluded; coupling digests by shape; coupling files pass integrity); REAL replays from its record with 0 differences. The cross-architecture comparison is not run",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_g10_replay.py"
+          ],
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0
+        },
+        "in_process_replays": [
+          "TR-E2",
+          "TR-E2-FAR",
+          "TR-E2-FD",
+          "LOOP-R",
+          "LOOP-S"
+        ],
+        "real_replay": "REPLAY PASS REAL differences=0",
+        "omp_num_threads": 1,
+        "cross_architecture": "not_run"
+      }
+    },
+    {
+      "id": "M05.G11",
+      "description": "M05 G11 (REAL mechanics, opt-in record, committed): fd_check recorded with class, tau-hat, nu-hat and selected eta; stage C makes at least one accepted iteration and ends typed within M05-budget-v1; G7 holds; every candidate has a status; the limitations include extrapolated with its count and fd_gradient. The optimality outcome is reported, not gated (W25)",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_wo9_gates.py"
+          ],
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0
+        },
+        "record": "benchmarks/m05/records/trust-region-study-real.json",
+        "status": "DECISION_STABLE",
+        "outcome": "TRF_CONVERGED",
+        "fd_check": {
+          "selected_eta": 6.103515625e-05,
+          "class": "clean",
+          "result": "pass",
+          "stopped": "passed"
+        },
+        "T_star_K": 653.1500351610193,
+        "cold_in_run_ledger": 32,
+        "cold_in_run_ledger_includes_fd_check_points": 21,
+        "cap_use_per_R406": 11,
+        "run_cold_cap": 250,
+        "study_cold_used": 48,
+        "study_cold_cap": 400,
+        "wall_s_study": 14400.0,
+        "extrapolated": "12 of 61 reactor requests",
+        "review_note_N4": "runs[].cold (32) includes the FD check's 21 cold points, which R-406 keeps outside the run cap; the cap use was 11, so G11's run[\"cold\"] at most 250 is conservative and nothing is wrong"
+      }
+    },
+    {
+      "id": "M05.G12",
+      "description": "M05 G12 (default gate): the schema and the committed records validate and pass section 8.3 arithmetic and the request identity; every fd_check float is classified; readiness without the nlp environment is UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNAVAILABLE); check.sh passes with no Pyomo or Ipopt import",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_study_record.py"
+          ],
+          "passed": 210,
+          "failed": 0,
+          "skipped": 1
+        },
+        "readiness_tests": {
+          "modules": [
+            "tests/test_m05_readiness.py",
+            "tests/test_m05_study_loop.py"
+          ],
+          "passed": 22,
+          "failed": 0,
+          "skipped": 0
+        },
+        "default_install_readiness": {
+          "tests": "test_the_default_install_answers_unavailable and test_the_default_install_study_is_unsupported_without_running_the_parent",
+          "default_environment": "2 passed",
+          "nlp_environment": "both skipped (Pyomo is installed there; the 1 skipped above)"
+        },
+        "gate_sh": "GATE PASS 748f8cf: 9290 passed, 31 skipped (cfecb15 tree)"
+      }
+    },
+    {
+      "id": "M05.G13",
+      "description": "M05 G13: no second model and no backend: projection.py imports nothing from openflowsheet.models; pyomo is imported only under studies/nlp/ and studies/trust_region/; no route or compile_problem path reaches PyomoAlgebra",
+      "result": "pass",
+      "value": {
+        "tests": {
+          "modules": [
+            "tests/test_m05_isolation.py"
+          ],
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0
+        }
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/design/M05-trust-region.md",
+      "sha256": "4337e510d39e6975ab447cdb943abe201ccfa1b7719f11f92087a474558df2e7",
+      "description": "The design note (gates section 13 as replaced by sections 16-21; rulings R-261 to R-435)."
+    },
+    {
+      "path": "docs/reviews/M05-review.md",
+      "sha256": "fc03febbfa67e6f5e5f0e09f0383b591eb13c39346d6c720f1eef7f71ff9f510",
+      "description": "The design-lane review (fix-first items, notes N1-N5; rulings R-430 to R-435)."
+    },
+    {
+      "path": "docs/design/M05-build-decisions.md",
+      "sha256": "f97e5450b62650b6f844a6799870cf36a75fea3b6ff3183c5394b9c0b07a4bd6",
+      "description": "The build log (S-entries with the measured values)."
+    },
+    {
+      "path": "docs/briefs/M05-wo8-handoff.md",
+      "sha256": "ce32ba37eb065a1a2ad4586e00b565f1a36e271dcef2c7ba282dca873ba027b2",
+      "description": "The WO-8 to WO-10a handoff: commands run, gate counts, limitation strings."
+    },
+    {
+      "path": "benchmarks/m05/trsp-inventory-x86_64.json",
+      "sha256": "4b7c54d640f0cb7c189b8675b494f6b51bba7f32a31cdcb410230ee35271f49f",
+      "description": "G1: the TRSP workload inventory."
+    },
+    {
+      "path": "benchmarks/m05/numerical_policy_external.yaml",
+      "sha256": "34b8760296e8e85df4791085ef155d484ef3a403c7fc84333d770e127f2358d3",
+      "description": "M05 numerical-policy addendum."
+    },
+    {
+      "path": "benchmarks/m05/records/trust-region-study-tr-e2.json",
+      "sha256": "846338fcc0755a876a0647cdadfc90c99177d4b884520ae716707597838d960c",
+      "description": "The TR-E2 study record (replayed in G10)."
+    },
+    {
+      "path": "benchmarks/m05/records/trust-region-study-tr-e2-far.json",
+      "sha256": "a00b96c8319d1da6655db774a499c4537a9d806a096cf459d5d5635d612e9e81",
+      "description": "The TR-E2-FAR study record (replayed in G10)."
+    },
+    {
+      "path": "benchmarks/m05/records/trust-region-study-tr-e2-fd.json",
+      "sha256": "f2eaa96c4546c3b0da22218df03abfda65f663c23a86a8fb858d314a17994f98",
+      "description": "The TR-E2-FD study record (replayed in G10)."
+    },
+    {
+      "path": "benchmarks/m05/records/trust-region-study-loop-r.json",
+      "sha256": "a8b34b986f66ffa2f821594be5a01d08ffcdc8eb5675b7a6df30e70d2cf62464",
+      "description": "The LOOP-R study record (replayed in G10)."
+    },
+    {
+      "path": "benchmarks/m05/records/trust-region-study-loop-s.json",
+      "sha256": "03e78a5af0d070b4b1f68f5d12eed846a496870429d27ea1d82c66e3bf14e9bd",
+      "description": "The LOOP-S study record (replayed in G10)."
+    },
+    {
+      "path": "benchmarks/m05/records/trust-region-study-real.json",
+      "sha256": "09cf5366a756e6c9e1bd1773ad255614d320bc3cca34f1a4b88abd322a98cb27",
+      "description": "The REAL study record (replayed in G10)."
+    }
+  ],
+  "limitations": [
+    "extrapolated: 12 of 61 reactor requests, reported, not a distance from the data. At C1's loop state the reactor-inlet H2/N2 sits on the kinetics' data edge, so the per-evaluation flag is decided at solver resolution: it flips between solves 3.5e-5 K apart (cand-C1's P1 solve extrapolated, its minus poll at 653.15 K not).",
+    "The real-reactor record (REAL) is opt-in: the pinned reactor environment, Linux x86_64, one machine, 1454 s, replayed from the committed record on that machine only (OMP_NUM_THREADS=1; the in-process replays and REAL's replay are same-machine bitwise). The cross-architecture comparison under T08-numerical-policy-v2 (G10's second half) was not run, and M05 does not establish cross-architecture bitwise identity.",
+    "REAL's optimum is bound-active, not interior: T* = 653.1500351610193 K sits 1.76e-6 scaled from the lower bound 653.15 K, and the poll evidence reads both sides (P5). That is a measured outcome on the bound, reported as such (W25); M05 claims no real-reactor optimum, no TRF convergence guarantee for the reactor (assumption A2 assumed, A3 by finite differences, Pyomo 6.10.1 has no restoration phase), and every reactor result is extrapolated beyond the kinetics' data domain (R-169).",
+    "The derivative is a forward finite-difference gradient (fd_gradient): M05-fd-v2's check passed at eta = 2^-14 with class clean on REAL (tau-hat 3.1e-3, nu-hat 6.9e-4) and truncation_dominated on TR-E2-FD. noise_ratio is reported, not judged (section 21.3): REAL (0.0388, 0.0299), LOOP-R (6.09e-6, 2.10e-6), TR-E2-FD (7.04e-7, 1.55e-4).",
+    "No promotable surrogate of the real C1 reactor exists (M04 L43, R-364), so REAL runs stage C on the parent with stage A skipped as surrogate_not_promoted. LOOP-S's stage A uses M04's synthetic PROMOTABLE manifest (F-22), and TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R and LOOP-S are synthetic truths: nothing is claimed about them beyond the composition.",
+    "Self-generated records (the six committed study records, their stores and ledgers) are regression fixtures. The correctness rows rest on independent expectations: TR-E1 against Pyomo's own example (G3: max absolute difference 4.4e-16, not bitwise), SYN-001's K05 states and the CasADi residual and Jacobian (G4), and the closed-form synthetic optimum T_ref.",
+    "TR-E1 is not bitwise equal to Pyomo's native run: the final values differ by at most 4.4e-16 and the logged values by at most 2.2e-15, inside G3's 1e-10 criterion; equality is reported, not required.",
+    "REAL's replay compares the coupling records under T08 v2's floors, not bitwise (design-lane review N3); the study record, which carries every decision-relevant float, is compared bitwise.",
+    "Design-lane review notes still open at this commit: N1 (stage-C restart eligibility), and S70's timing mask in scripts/m05_retake_diff.py (a build choice awaiting a ruling). N2 is fixed in this commit's ancestry (S74). Numerical and process-model sign-off are pending and not claimed.",
+    "G1's TRSP inventory is the audited x86_64 environment's; the optional nlp extra's licences wait on Frank's N1 answer (M03), so the TRF route is not distributed (design note section 11)."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
