@@ -932,3 +932,14 @@ Grep, don't read whole. Newest at the bottom.
   33×), so G8/G9 stop gating Ipopt's offset: |T*−653.15| ≤ δ_T 0.5 K and P5's evidence contains the bound (G8 then passes on the
   committed LOOP-S). R-431: TRF_CONVERGED expected for stage A. R-433: ledger count suffices; data-edge flip = limitation + note to M07.
   R-434: build choices confirmed (S58 reversed, S54 superseded, S64 settled). WO-10a (fixes) launched; WO-10b (manifest) after.
+- **M05 WO-10a** (2026-10-16, `opus-engineer`, cdacc32…748f8cf; gate 9289/31, nlp 186/1): MF1 fixed (R-432); LOOP-R, TR-E2-FD, REAL
+  re-taken, new/old noise_ratio exactly η·s_k/√2, REAL → (0.0388, 0.0299); 0 other differences (`scripts/m05_retake_diff.py`); G8/G9
+  restated (G8 PASS, xfail gone); `tests/test_m05_g10_replay.py` (nlp, mutation-checked); `EXTRAPOLATED_LIMITATION`; note to M07
+  `docs/briefs/M05-note-to-M07.md`. S70: the re-take diff also masks wall-clock timings and digests over them (M02 attempt timings,
+  reactor diagnostics wall_s, REAL experiments archive digest; request/result files byte-equal).
+  DECISION: accept S70's timing mask without another design pass → yes (timings are not reproducible by nature; every non-timing byte
+  equal). Alternative: a ruling round. Reversible by: re-running the diff script with a narrower mask.
+  Review notes: N2 (in-flight key on a non-TruthRefused exception) fixed in WO-10b; N1 (stage C restart ignores regime match) open,
+  default at next touch: apply stage A's eligibility; N3/N4 noted in the manifest.
+  DECISION: M05 merges into main only after M03 (M05 contains M03's nlp code; M03 merges when Frank answers its licence question N1).
+  Alternative: merge M05 with M03 now. Reversible by: merging once Frank answers. M07 WO-4 may build on wp/M05 meanwhile.
