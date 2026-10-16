@@ -8,6 +8,7 @@ committed records (`COMMITTED_RECORDS`) pass through the very same checks as the
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
 import re
 import sys
@@ -26,6 +27,8 @@ from test_m05_study_loop import (
     study,
 )
 
+from openflowsheet.studies.trust_region.checks import ParentSolve
+from openflowsheet.studies.trust_region.holders import PARENT_EXPERIMENT, SUMMARY_PURPOSES
 from openflowsheet.studies.trust_region.study import run_study
 from openflowsheet.studies.trust_region.trf_state import (
     TRF_CONFIG_V1,
@@ -34,6 +37,7 @@ from openflowsheet.studies.trust_region.trf_state import (
     FrameworkReadiness,
     ReadinessReason,
 )
+from openflowsheet.studies.trust_region.truths import GradientCheck, candidate_statistics
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import t08_numerical_policy  # noqa: E402
@@ -77,13 +81,64 @@ ENVIRONMENT = {
 }
 
 
+#: S12: `artifacts.ledger`, the study ledger file's sha256 (the caller's, as the ledger file is).
+LEDGER_SHA256 = "5" * 64
+
+#: §8.3: n_in, the reactor EF's inlet coordinates (an FD gradient costs n_in points).
+N_IN = 7
+
+#: `FullStage`'s truth: a parent experiment whose gradient the holder takes by `M05-fd-v2`.
+FD_TRUTH = {
+    "kind": PARENT_EXPERIMENT,
+    "id": "fake-fd",
+    "sha256": "4" * 64,
+    "synthetic": True,
+    "gradient": "finite_difference",
+}
+
+
+def fd_summary(iterations: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """An `EFHolder.summary` that satisfies §8.3's identity for `iterations` (S16): the start a
+    store hit, one PMP value, K trial values, n_in basis FD points, and n_in FD points per TRF
+    gradient (the PMP point's, and each accepted iterate's but the last)."""
+    logged = sum(1 for it in iterations if it["k"] >= 1)
+    accepted = sum(1 for it in iterations if it["type"] in ("f", "theta"))
+    gradients = 1 + accepted - int(iterations[-1]["type"] in ("f", "theta"))
+    by_purpose = dict.fromkeys(SUMMARY_PURPOSES, 0)
+    by_purpose.update(
+        trf_start_value=1,
+        trf_pmp_value=1,
+        trf_trial_value=logged,
+        trf_fd_point=N_IN * gradients,
+        basis_fd_point=N_IN,
+    )
+    value_cold = 1 + logged + N_IN * (1 + gradients)
+    return {
+        "value_cold": value_cold,
+        "value_store_hit": 1,
+        "value_memo_hit": 0,
+        "jacobian_cold": gradients,
+        "jacobian_store_hit": 0,
+        "jacobian_memo_hit": 0,
+        "requests": value_cold + 1 + gradients,
+        "refused": 0,
+        "by_purpose": by_purpose,
+        "pmp_point_equals_start": False,
+    }
+
+
 class FullStage(FakeStage):
     """`FakeStage` with a complete §9.1 `runs[]` entry: every key `TrfStage` writes, on dummy
-    numbers (iteration 0 is the PMP, with no step type)."""
+    numbers (iteration 0 is the PMP, with no step type), with an FD truth whose holder summary
+    satisfies §8.3's identity."""
 
     def __call__(self, start: Any, *, run_id: str, radius_factor: float, budget: Any) -> Any:
         staged = super().__call__(start, run_id=run_id, radius_factor=radius_factor, budget=budget)
         decisions = staged.decisions
+        config: dict[str, Any] = {
+            **TRF_CONFIG_V1,
+            "trust_radius": TRF_CONFIG_V1["trust_radius"] * radius_factor,
+        }
         iterations = [
             {
                 "k": k,
@@ -97,8 +152,8 @@ class FullStage(FakeStage):
             for k in range(3)
         ]
         document = {
-            "truth": [],
-            "basis": {},
+            "truth": [dict(FD_TRUTH)],
+            "basis": {"reactor": "affine_taylor"},
             "projection": {
                 "source_map_sha256": "1" * 64,
                 "n_vars": 9,
@@ -107,10 +162,7 @@ class FullStage(FakeStage):
                 "n_link_efs": 1,
                 "n_ineq": 0,
             },
-            "config": {
-                **TRF_CONFIG_V1,
-                "trust_radius": TRF_CONFIG_V1["trust_radius"] * radius_factor,
-            },
+            "config": config,
             "iterations": iterations,
             "filter": [{"f": 0.0, "theta": 0.0}],
             "exit_lines": [],
@@ -122,7 +174,7 @@ class FullStage(FakeStage):
             "theta_logged": None if decisions is None else 0.0,
             "final_state_is_last_truth_point": None if decisions is None else True,
             "error": None,
-            "ledger": {"summary": {}, "cold_parent": 0},
+            "ledger": {"summary": {"reactor": fd_summary(iterations)}, "cold_parent": 0},
             "assumptions": [{"id": f"A{i}", "status": "assumed"} for i in range(1, 8)],
         }
         return type(staged)(
@@ -141,6 +193,7 @@ def _document(found: Any) -> dict[str, Any]:
         environment=ENVIRONMENT,
         trf_theory="assumptions_hold",
         limitations=("synthetic",),
+        artifacts={"ledger": LEDGER_SHA256},
     )
     return document
 
@@ -249,10 +302,12 @@ def accounting_violations(record: Mapping[str, Any]) -> list[str]:
         found.append("budgets.cold_used is not trf_cold + parent_executions")
     if accounting["exhausted"] != (record["status"] == "BUDGET_EXHAUSTED"):
         found.append("exhausted disagrees with the status")
+    # S18: only the solves that have a coupling record are listed.
+    recorded = [s for s in solves if s["coupling_record_sha256"] is not None]
     coupled = [item["check_id"] for item in record["artifacts"]["coupled_runs"]]
-    if coupled != [s["check_id"] for s in solves]:
-        found.append("artifacts.coupled_runs is not the solves in order")
-    for solve, item in zip(solves, record["artifacts"]["coupled_runs"], strict=False):
+    if coupled != [s["check_id"] for s in recorded]:
+        found.append("artifacts.coupled_runs is not the recorded solves in order")
+    for solve, item in zip(recorded, record["artifacts"]["coupled_runs"], strict=False):
         if item["sha256"] != solve["coupling_record_sha256"]:
             found.append(f"coupled run {item['check_id']} hash differs from its summary")
     return found
@@ -290,12 +345,59 @@ def status_violations(record: Mapping[str, Any]) -> list[str]:
             found.append(f"{candidate['candidate_id']}: PARENT_CHECK_FAILED with P1 passing")
         if candidate["status"] == "PARENT_LOCAL_EVIDENCE" and failed:
             found.append(f"{candidate['candidate_id']}: local evidence with {failed} failed")
+        # S15: the half-width is null iff P5 did not run, else keyed by exactly the decision ids.
+        halfwidth = candidate["indifference_halfwidth"]
+        if (halfwidth is None) != ("P5" not in candidate["checks"]):
+            found.append(f"{candidate['candidate_id']}: indifference_halfwidth null iff no P5")
+        elif halfwidth is not None and set(halfwidth) != set(candidate["decisions"]):
+            found.append(f"{candidate['candidate_id']}: indifference_halfwidth's keys differ")
     if status.startswith("FAILED(") and candidates:
         stopped = candidates[-1]["status"]
         if status not in (f"FAILED({stopped})",) and not status.startswith("FAILED(trf_aborted"):
             found.append("FAILED status is not the last candidate's")
     if record["claims"]["global_optimality"] is not False:
         found.append("global optimality claimed")
+    return found
+
+
+def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
+    """§8.3's TRF request identity (S16, G12) as integer equalities, for every run with an FD
+    truth (a `truth` entry with `gradient: finite_difference`), on its holder's `by_purpose`:
+    `trf_start_value` = 1; `trf_pmp_value` = 1, or 0 when `pmp_point_equals_start`;
+    `trf_trial_value` = K, the logged iterations k ≥ 1; `basis_fd_point` = n_in (no surrogate
+    basis, §6.6); `trf_fd_point` = n_in·(1 + A − [the final logged iteration was accepted]), with
+    A the accepted steps (`trf_state.accepted_steps`). The run's truths and holder summaries are
+    lists by holder in the same order but keyed differently, so an FD truth is attributed only
+    when it is the run's one truth (build log S41)."""
+    found: list[str] = []
+    accepting = ("f", "theta")
+    for run in record["runs"]:
+        name = run["run_id"]
+        if not any(truth["gradient"] == "finite_difference" for truth in run["truth"]):
+            continue
+        summaries = run["ledger"]["summary"]
+        if len(run["truth"]) != 1 or len(summaries) != 1:
+            found.append(
+                f"{name}: an FD truth among {len(run['truth'])} truths and {len(summaries)} "
+                "holder summaries is not attributable to one summary"
+            )
+            continue
+        (summary,) = summaries.values()
+        counts = summary["by_purpose"]
+        iterations = run["iterations"]
+        accepted = sum(1 for it in iterations if it["type"] in accepting)
+        final_accepted = bool(iterations) and iterations[-1]["type"] in accepting
+        expected = {
+            "trf_start_value": 1,
+            "trf_pmp_value": 0 if summary["pmp_point_equals_start"] else 1,
+            "trf_trial_value": sum(1 for it in iterations if it["k"] >= 1),
+            "trf_fd_point": N_IN * (1 + accepted - int(final_accepted)),
+        }
+        if "surrogate" not in run["basis"].values():
+            expected["basis_fd_point"] = N_IN
+        for purpose, value in expected.items():
+            if counts[purpose] != value:
+                found.append(f"{name}: {purpose} = {counts[purpose]}, §8.3 gives {value}")
     return found
 
 
@@ -315,6 +417,7 @@ def test_a_record_validates_and_adds_up(make: Callable[[], dict[str, Any]]) -> N
     assert sorted(VALIDATOR.iter_errors(record), key=str) == []
     assert accounting_violations(record) == []
     assert status_violations(record) == []
+    assert request_identity_violations(record) == []
 
 
 def test_the_schema_is_registered_and_is_itself_a_valid_schema() -> None:
@@ -350,8 +453,7 @@ def test_the_stable_record_has_the_retry_and_both_candidates() -> None:
 # -- the schema rejects what §9.1 forbids ----------------------------------------------------------
 
 
-def _mutated(path: Sequence[Any], value: Any, base: Callable[[], dict[str, Any]] = _stable) -> Any:
-    record = copy.deepcopy(base())
+def _set(record: Any, path: Sequence[Any], value: Any) -> None:
     node: Any = record
     for key in path[:-1]:
         node = node[key]
@@ -359,7 +461,29 @@ def _mutated(path: Sequence[Any], value: Any, base: Callable[[], dict[str, Any]]
         del node[path[-1]]
     else:
         node[path[-1]] = value
+
+
+def _mutated(path: Sequence[Any], value: Any, base: Callable[[], dict[str, Any]] = _stable) -> Any:
+    record = copy.deepcopy(base())
+    _set(record, path, value)
     return record
+
+
+def _fd_check_document() -> dict[str, Any]:
+    """§17.2's `fd_check` as `GradientCheck.as_document` writes it, on dummy numbers."""
+    g = ((1.0,) * N_IN, (0.5,) * N_IN)
+    eta = 2.0**-14
+    return GradientCheck(
+        w0=(1.0,) * N_IN,
+        candidates=(candidate_statistics(g, g, g, eta),),
+        eta=eta,
+        status="pass",
+        gradient=g,
+        sides=(1,) * N_IN,
+        selected_class="clean",
+        stopped="passed",
+        half_steps={"T": 1e-5},
+    ).as_document()
 
 
 _DELETE = object()
@@ -397,6 +521,21 @@ _DELETE = object()
         (("spec", "configs", "trf"), 3),
         (("unknown_field",), 1),
         (("candidates", 1, "indifference_halfwidth", T), -1e-12),
+        # S12: no per-run ledger digest; the study ledger's is `artifacts.ledger`.
+        (("runs", 0, "ledger", "sha256"), "5" * 64),
+        (("artifacts", "ledger"), "5" * 63),
+        (("artifacts", "ledger"), None),
+        # S18: a listed coupled run has a coupling record.
+        (("artifacts", "coupled_runs", 0, "sha256"), None),
+        # S13: object or null.
+        (("start",), []),
+        (("stage_a",), "skipped"),
+        # S14, S16: the holder summary and the truth identity are typed.
+        (("runs", 0, "ledger", "summary", "reactor", "by_purpose", "trf_start_value"), -1),
+        (("runs", 0, "ledger", "summary", "reactor", "pmp_point_equals_start"), None),
+        (("runs", 0, "truth", 0, "gradient"), "numeric"),
+        (("runs", 0, "basis", "reactor"), "taylor"),
+        (("runs", 0, "exit_claim"), "converged"),
     ],
 )
 def test_the_schema_rejects(path: Sequence[Any], value: Any) -> None:
@@ -412,12 +551,17 @@ def test_the_schema_rejects(path: Sequence[Any], value: Any) -> None:
         (("claims", "trf_theory"), "qualified(A2,A3)"),
         (("candidates", 0, "indifference_halfwidth"), None),
         (("candidates", 1, "indifference_halfwidth", T), 0.0),
+        (("start",), None),
+        (("stage_a",), None),
+        (("best",), None),
+        (("fd_check",), _fd_check_document()),
+        (("runs", 0, "ledger", "summary", "reactor", "by_purpose", "trf_pmp_value"), 0),
     ],
 )
 def test_the_schema_accepts(path: Sequence[Any], value: Any) -> None:
     """What the producer writes beyond the fakes: P2 not applicable (`checks.py`), §9.1's
-    parametrised assumption statuses, the qualified claim (§6.9), and a zero half-width (a parent
-    with no noise, build log S36)."""
+    parametrised assumption statuses, the qualified claim (§6.9), a zero half-width (a parent
+    with no noise, build log S36), S13's nulls and §17.2's `fd_check` document."""
     assert sorted(VALIDATOR.iter_errors(_mutated(path, value)), key=str) == []
 
 
@@ -441,10 +585,124 @@ def test_the_schema_accepts(path: Sequence[Any], value: Any) -> None:
         ("candidates", 0, "indifference_halfwidth"),
         ("candidates", 0, "limitations"),
         ("accounting", "by_candidate"),
+        # S12, S13, S14
+        ("artifacts", "ledger"),
+        ("readiness",),
+        ("start",),
+        ("stage_a",),
+        ("best",),
+        ("fd_check",),
+        ("runs", 0, "ledger", "summary"),
+        ("runs", 0, "ledger", "cold_parent"),
+        ("runs", 0, "exit_claim"),
+        ("runs", 0, "theta_logged"),
+        ("runs", 0, "theta_recheck"),
+        ("runs", 0, "final_state_is_last_truth_point"),
+        ("runs", 0, "ledger", "summary", "reactor", "by_purpose", "basis_fd_point"),
+        ("runs", 0, "ledger", "summary", "reactor", "pmp_point_equals_start"),
+        ("candidates", 0, "checks", "P2", "judged"),
     ],
 )
 def test_the_schema_requires(path: Sequence[Any]) -> None:
     assert list(VALIDATOR.iter_errors(_mutated(path, _DELETE)))
+
+
+_P4_CHANGED = ("candidates", 0, "checks", "P4", "values", "changed", "flash")
+_BASES: dict[str, Callable[[], dict[str, Any]]] = {"stable": _stable, "unsupported": _unsupported}
+
+
+#: S14: every closed object, as (base record, what to set first, the object's path). The base
+#: record with the set-up must validate; one undeclared field in the object must then fail.
+CLOSED_OBJECTS: list[tuple[str, tuple[tuple[tuple[Any, ...], Any], ...], tuple[Any, ...]]] = [
+    ("stable", (), ()),
+    ("stable", (), ("spec",)),
+    ("stable", (), ("spec", "configs")),
+    ("stable", (), ("spec", "truth")),
+    (
+        "stable",
+        ((("spec", "surrogate"), {"manifest_sha256": "6" * 64, "verdict": "x"}),),
+        ("spec", "surrogate"),
+    ),
+    ("stable", (), ("environment",)),
+    ("unsupported", (), ("readiness",)),
+    ("unsupported", (), ("readiness", "reasons", 0)),
+    ("stable", (), ("start",)),
+    ("stable", (), ("start", "experiments")),
+    ("stable", (), ("stage_a",)),
+    ("stable", (), ("runs", 0)),
+    ("stable", (), ("runs", 0, "truth", 0)),
+    ("stable", (), ("runs", 0, "projection")),
+    ("stable", (), ("runs", 0, "iterations", 0)),
+    ("stable", (), ("runs", 0, "filter", 0)),
+    ("stable", (), ("runs", 2, "final")),
+    ("stable", (), ("runs", 0, "ledger")),
+    ("stable", (), ("runs", 0, "ledger", "summary", "reactor")),
+    ("stable", (), ("runs", 0, "ledger", "summary", "reactor", "by_purpose")),
+    ("stable", (), ("runs", 0, "assumptions", 0)),
+    ("stable", (), ("candidates", 0)),
+    ("stable", (), ("candidates", 0, "checks")),
+    ("stable", (), ("candidates", 0, "checks", "P1")),
+    ("stable", (), ("candidates", 0, "checks", "P1", "values")),
+    ("stable", (), ("candidates", 0, "checks", "P2")),
+    ("stable", (), ("candidates", 0, "checks", "P2", "values")),
+    (
+        "stable",
+        (
+            (
+                ("candidates", 0, "checks", "P2"),
+                {
+                    "pass": None,
+                    "judged": False,
+                    "reason": "no_trf_point",
+                    "values": {"applicable": False},
+                },
+            ),
+        ),
+        ("candidates", 0, "checks", "P2", "values"),
+    ),
+    ("stable", (), ("candidates", 0, "checks", "P3")),
+    ("stable", (), ("candidates", 0, "checks", "P3", "values")),
+    ("stable", (), ("candidates", 0, "checks", "P4")),
+    ("stable", (), ("candidates", 0, "checks", "P4", "values")),
+    ("stable", ((_P4_CHANGED, {"reference": "two_phase", "found": "liquid"}),), _P4_CHANGED),
+    ("stable", (), ("candidates", 0, "checks", "P5")),
+    ("stable", (), ("candidates", 0, "checks", "P5", "values")),
+    ("stable", (), ("candidates", 0, "checks", "P5", "values", "points", 0)),
+    ("stable", (), ("candidates", 0, "poll", 0)),
+    ("stable", (), ("candidates", 0, "noise_floor")),
+    ("stable", (), ("candidates", 0, "noise_floor", "inner", 0)),
+    ("stable", (), ("candidates", 0, "solves", 0)),
+    ("stable", (), ("candidates", 0, "solves", 0, "experiments")),
+    ("stable", (), ("best",)),
+    ("stable", (), ("accounting",)),
+    ("stable", (), ("accounting", "totals")),
+    ("stable", (), ("accounting", "by_stage", "C")),
+    ("stable", (), ("accounting", "by_iteration", "1")),
+    ("stable", (), ("accounting", "by_candidate", "cand-C1")),
+    ("stable", (), ("accounting", "budgets")),
+    ("stable", (), ("claims",)),
+    ("stable", ((("fd_check",), _fd_check_document()),), ("fd_check",)),
+    ("stable", ((("fd_check",), _fd_check_document()),), ("fd_check", "candidates", 0)),
+    ("stable", (), ("artifacts",)),
+    ("stable", (), ("artifacts", "coupled_runs", 0)),
+]
+
+
+@pytest.mark.parametrize(
+    "base, setup, path",
+    CLOSED_OBJECTS,
+    ids=[".".join(map(str, path)) or "<top>" for _, _, path in CLOSED_OBJECTS],
+)
+def test_the_schema_rejects_an_undeclared_field(
+    base: str, setup: tuple[tuple[tuple[Any, ...], Any], ...], path: tuple[Any, ...]
+) -> None:
+    """S14: an undeclared field at any level fails, one case per closed object."""
+    record = copy.deepcopy(_BASES[base]())
+    for where, value in setup:
+        _set(record, where, value)
+    assert sorted(VALIDATOR.iter_errors(record), key=str) == []
+    _set(record, (*path, "surprise"), 1)
+    assert list(VALIDATOR.iter_errors(record))
 
 
 # -- the identities catch a tampered record --------------------------------------------------------
@@ -476,11 +734,110 @@ def test_accounting_violations_catch_a_tampered_record(path: Sequence[Any], valu
         (("candidates", 1, "status"), "NOT_STATIONARY_AT_DELTA"),
         (("claims", "stationarity"), "not_claimed"),
         (("candidates", 0, "status"), "PARENT_LOCAL_EVIDENCE"),
+        # S15: null iff P5 did not run, else keyed by exactly the decision ids.
+        (("candidates", 0, "indifference_halfwidth"), {}),
+        (("candidates", 0, "indifference_halfwidth"), None),
+        (("candidates", 0, "indifference_halfwidth"), {T: 0.02, "other": 0.1}),
+        (("candidates", 0, "checks", "P5"), _DELETE),
     ],
 )
 def test_status_violations_catch_a_tampered_record(path: Sequence[Any], value: Any) -> None:
     assert status_violations(_stable()) == []
     assert status_violations(_mutated(path, value))
+
+
+# -- §8.3's TRF request identity (S16, G12) --------------------------------------------------------
+
+_C2_PURPOSES = ("runs", 2, "ledger", "summary", "reactor", "by_purpose")
+
+
+@pytest.mark.parametrize(
+    "purpose, value, expected",
+    [
+        ("trf_start_value", 2, 1),
+        ("trf_pmp_value", 0, 1),
+        ("trf_trial_value", 3, 2),
+        ("basis_fd_point", 0, N_IN),
+        ("trf_fd_point", 3 * N_IN, 2 * N_IN),
+    ],
+)
+def test_the_request_identity_catches_each_broken_equality(
+    purpose: str, value: int, expected: int
+) -> None:
+    """One synthetic record holds the identity on every run; breaking one equality on one run
+    is caught, and nothing else is."""
+    assert request_identity_violations(_stable()) == []
+    record = _mutated((*_C2_PURPOSES, purpose), value)
+    assert request_identity_violations(record) == [
+        f"C2: {purpose} = {value}, §8.3 gives {expected}"
+    ]
+
+
+def test_the_request_identity_reads_pmp_point_equals_start() -> None:
+    """`trf_pmp_value` = 0 holds with the flag, and 1 then breaks it (the PMP point adds no key)."""
+    record = _mutated((*_C2_PURPOSES, "trf_pmp_value"), 0)
+    _set(record, ("runs", 2, "ledger", "summary", "reactor", "pmp_point_equals_start"), True)
+    assert request_identity_violations(record) == []
+    _set(record, (*_C2_PURPOSES, "trf_pmp_value"), 1)
+    assert request_identity_violations(record) == ["C2: trf_pmp_value = 1, §8.3 gives 0"]
+
+
+def test_the_request_identity_follows_the_logged_iterations() -> None:
+    """K and A come from the run's iterations: a first step rejected moves `trf_fd_point`'s
+    expectation to n_in·(1 + 1 − 1); one more accepted iteration moves K and the FD points."""
+    record = _mutated(("runs", 2, "iterations", 1, "type"), "rejected")
+    assert request_identity_violations(record) == [
+        f"C2: trf_fd_point = {2 * N_IN}, §8.3 gives {N_IN}"
+    ]
+    record = _stable()
+    record["runs"][2]["iterations"].append({**record["runs"][2]["iterations"][-1], "k": 3})
+    assert request_identity_violations(record) == [
+        "C2: trf_trial_value = 2, §8.3 gives 3",
+        f"C2: trf_fd_point = {2 * N_IN}, §8.3 gives {3 * N_IN}",
+    ]
+
+
+def test_the_request_identity_applies_to_fd_truths_only() -> None:
+    """An analytic truth is outside §8.3's identity; a surrogate basis is outside its basis term
+    (§6.6); an FD truth that is one of several truths cannot be attributed and is reported."""
+    record = _mutated(("runs", 2, "truth", 0, "gradient"), "analytic")
+    _set(record, (*_C2_PURPOSES, "trf_start_value"), 5)
+    assert request_identity_violations(record) == []
+    record = _mutated(("runs", 2, "basis", "reactor"), "surrogate")
+    _set(record, (*_C2_PURPOSES, "basis_fd_point"), 0)
+    assert request_identity_violations(record) == []
+    record = _mutated(("runs", 2, "truth"), [dict(FD_TRUTH), {**FD_TRUTH, "id": "second"}])
+    assert VALIDATOR.is_valid(record)
+    assert request_identity_violations(record) == [
+        "C2: an FD truth among 2 truths and 1 holder summaries is not attributable to one summary"
+    ]
+
+
+# -- S18: only solves with a coupling record are listed -------------------------------------------
+
+
+@dataclasses.dataclass
+class UncoupledParent(FakeParent):
+    """`FakeParent` without an external unit: no coupling, no residuals, no coupling record."""
+
+    def solve(self, decisions: Mapping[str, float], *, solve_id: str, purpose: str) -> ParentSolve:
+        solved = super().solve(decisions, solve_id=solve_id, purpose=purpose)
+        return dataclasses.replace(
+            solved, coupling=None, coupling_residuals=None, coupling_record_sha256=None
+        )
+
+
+def test_a_parent_without_an_external_unit_lists_no_coupled_run() -> None:
+    """S18; and, with no noise floor (e* = e_j = 0), S36's exact zero half-width validates."""
+    record = _document(study(UncoupledParent(), FullStage([(TRF_CONVERGED, 673.0)])))
+    assert record["start"]["coupling_record_sha256"] is None
+    assert record["candidates"][0]["indifference_halfwidth"] == {T: 0.0}
+    assert record["candidates"] and record["candidates"][0]["solves"]
+    assert record["artifacts"]["coupled_runs"] == []
+    assert sorted(VALIDATOR.iter_errors(record), key=str) == []
+    assert accounting_violations(record) == []
+    assert status_violations(record) == []
+    assert request_identity_violations(record) == []
 
 
 def test_an_unsupported_record_states_its_reasons_and_runs_nothing() -> None:
@@ -537,7 +894,8 @@ def test_the_m05_addendum_is_audited_after_m02s_and_its_partition_holds() -> Non
 
 
 def test_the_m05_partition_refuses_an_unclassified_and_a_reclassified_name() -> None:
-    missing = {**EXTERNAL_M05, "exact_sha256": EXTERNAL_M05["exact_sha256"][1:]}
+    kept = [name for name in EXTERNAL_M05["exact_sha256"] if name != "revision_sha256"]
+    missing = {**EXTERNAL_M05, "exact_sha256": kept}
     (problem,) = t08_numerical_policy.external_audit(POLICY_V2, missing, [EXTERNAL_M02])
     assert problem == "(m05) unclassified sha256 names: ['revision_sha256']"
     doubled = {**EXTERNAL_M05, "exact_sha256": [*EXTERNAL_M05["exact_sha256"], "variant_sha256"]}

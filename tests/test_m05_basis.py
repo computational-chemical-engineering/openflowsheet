@@ -235,3 +235,42 @@ def test_the_stage_forms_the_basis_inside_the_holders_run() -> None:
         ]
 
     assert trf_phase(holder.ledger) == trf_phase(direct_holder.ledger)
+
+
+@pytest.mark.parametrize("radius_factor", [1.0, 0.25])
+def test_the_live_run_document_validates_and_holds_the_request_identity(
+    radius_factor: float,
+) -> None:
+    """WO-7b (S14, S16; §8.3): a live `TrfStage` run document with the loop's keys is a valid
+    closed `runs[]` entry of `trust-region-study-v1`, and its FD truth's holder summary satisfies
+    G12's request identity (`request_identity_violations`)."""
+    from test_m05_study_record import VALIDATOR, request_identity_violations
+
+    from openflowsheet.studies.trust_region.basis import m05_basis
+    from openflowsheet.studies.trust_region.study import IN_PROCESS_BUDGET, StudyBudget, TrfStage
+    from openflowsheet.studies.trust_region.trf_state import TRSP_SOLVER_ALIAS
+
+    config = {"solver": TRSP_SOLVER_ALIAS, "trust_radius": 1.0}
+    projection = link_toy_projection("forward", FiniteDifferenceToy())
+    stage = TrfStage(lambda s: projection, m05_basis, config)
+    budget = StudyBudget(IN_PROCESS_BUDGET)
+    start: Any = None  # the toy's projection ignores the start solve
+    staged = stage(start, run_id="C1", radius_factor=radius_factor, budget=budget)
+    run = {
+        **dict(staged.document),
+        "run_id": "C1",
+        "stage": "C",
+        "study_iteration": 1,
+        "retry": 0 if radius_factor == 1.0 else 1,
+        "start_check_id": "S0",
+        "radius_factor": radius_factor,
+        "outcome": staged.outcome,
+        "cold": staged.cold,
+    }
+    schema: Any = VALIDATOR.schema
+    runs = VALIDATOR.evolve(
+        schema={**schema["properties"]["runs"]["items"], "$defs": schema["$defs"]}
+    )
+    assert sorted(runs.iter_errors(run), key=str) == []
+    assert run["truth"][0]["gradient"] == "finite_difference"
+    assert request_identity_violations({"runs": [run]}) == []

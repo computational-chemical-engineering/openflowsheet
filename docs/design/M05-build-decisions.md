@@ -330,3 +330,53 @@ S38 S36's default, as its own commit (schema only, for the review batch): `indif
    noise (e* = e_j = 0: the stand-in loop, the fakes). The producer is unchanged. Alternative: `exclusiveMinimum: 0`
    with a zero-noise parent writing null (a producer change). Reversible: revert the commit. Tests: a value −1e-12
    fails, 0.0 validates (`test_the_schema_rejects` / `_accepts`); targeted 138 passed.
+S39 S14's closure, the conventions (schema only). A closed object requires every field its producer always writes
+   (beyond §9.1's), so a dropped field fails as an undeclared one does; 51 closed objects, each with an
+   undeclared-field case (`CLOSED_OBJECTS`). Id-keyed maps constrain only their values: decisions, holder
+   summaries, EF basis kinds (`EFBasis.kind`'s four), TRF `config` (option → scalar), regimes, P4's `changed`
+   (unit → {reference, found}), `half_steps`, the accounting tables, `trf_module_sha256`. Choices a review may
+   reverse: (a) `spec`'s inner contents (`decisions[]`, `objective`, `inequalities[]`, `decision_tolerances`,
+   `budgets`) stay as typed, because no producer writes a spec at this head (the caller's, WO-8); `spec`,
+   `configs`, `truth`, `surrogate` and `environment` are closed at §9.1's fields. (b) A truth identity
+   (`runs[].truth[]`, `$defs/truth_identity`) requires `kind`, `id`, `sha256` (or null) and `gradient`
+   (`analytic` | `finite_difference`, the holder's FD switch, needed by G12); `synthetic` is optional (the parent
+   writes it, the test truths do not); `spec.truth` gains `gradient` as optional. (c) `stage_a` is the closed
+   object, null, or `{}`: the producer's default when the study stops before stage A (UNSUPPORTED, start not
+   certified, exhausted at S0) — the ruling's "object or null" with the producer unchanged. (d)
+   `artifacts.source_map` is declared but untyped (no producer). `fd_check` is closed at
+   `GradientCheck.as_document`'s keys. Alternative to (a): close them on the fixture's shapes now. Reversible:
+   the schema's `spec` block, one `anyOf` branch for (c).
+S40 Declaring `start`/`solves[]` (`ParentSolve.as_document`) adds the sha256 name `coupling_record_sha256`, which
+   ADR 0025 D2.3's partition then reports unclassified (`t08_numerical_policy.py --check`; neither v2 nor M02's
+   addendum classifies it). The M05 addendum classifies it `exact_sha256`, as S11 did the other four (a digest of
+   an M02 coupling record, not of a float). v2's regenerated sha256 is unchanged (6b449911…707c); `--check` exits
+   0. The partition test drops `revision_sha256` by name, not as the list's first entry. Interlocked with the
+   schema (the audit also refuses a classified name the schema does not declare), so it is in the same commit.
+   Alternative: leave `start` untyped (contradicts S14). For the review batch (classification, replay identity).
+S41 G12's checker `request_identity_violations` (test file): a run has an FD truth iff a `truth` entry has
+   `gradient: finite_difference`. `truth` (a list) and `ledger.summary` (by holder name) come from the same holder
+   loop but share no key, so the FD truth is attributed to the summary only when it is the run's one truth and one
+   summary; otherwise the checker reports the run as unattributable (fails, never skips). Alternative: pair by
+   position (relies on JSON key order) or the producer adds the holder name to each truth entry (a producer
+   change, for the review batch). The five equalities as §8.3: `trf_pmp_value` is checked as
+   `0 if pmp_point_equals_start else 1` (the stricter reading: with the flag the PMP point adds no key);
+   `basis_fd_point` = n_in is not asserted for a run whose basis has a `surrogate` kind (§8.3/§6.6 state it only
+   without a promoted surrogate); runs that raised are included (the brief: every run with an FD truth). K counts
+   logged k ≥ 1, A the `f`/`theta` steps (`accepted_steps`). `FullStage` now writes an FD truth whose summary
+   satisfies the identity, so every generated record goes through G12 (and `COMMITTED_RECORDS`, none yet).
+   Live check (nlp, `test_the_live_run_document_validates_and_holds_the_request_identity`): `TrfStage` on the FD
+   link toy at radius factors 1 and ¼ gives a valid closed `runs[]` entry and holds the identity (the toy stops
+   at the PMP: K = 0, A = 0, so `trf_fd_point` = 7, `basis_fd_point` = 7).
+S42 S12/S13/S18 on the test side: `_document` passes `artifacts={"ledger": <64 hex>}` (`as_document` already
+   passes `artifacts` through); `accounting_violations` compares `coupled_runs` with the solves that have a coupling
+   record (S18; before, with every solve); S15's two record rules (null iff P5 did not run; keyed by exactly the
+   candidate's decision ids) are in `status_violations`. A fake parent without an external unit gives no coupled
+   run, validates, and writes S36's exact 0.0 half-width. Open for WO-8: no rule of the float addendum covers
+   `fd_check`'s floats (`w0`, `selected_eta`, `candidates[].*`, `half_steps`); no generated record carries one,
+   so a committed record with an `fd_check` will fail `test_every_float_of_every_record_is_classified` until the
+   design lane classifies them (S17's table). Not added here.
+Measured (WO-7b head): `tests/test_m05_study_record.py tests/test_m05_study_loop.py` 235 passed (default venv;
+   138 at the S36 commit); `scripts/m03_nlp_check.sh … -- tests/test_m05_basis.py` 8 passed; the schema-wide and
+   holder/truth suites (`test_adr_0002_canonicalization`, `test_k0{3,4,5}_schemas`, `test_m0{2,3}_schemas`,
+   `test_requirements_ledger`, `test_t02_executor`, `test_m05_truths`, `test_m05_holders`) 247 passed;
+   `t08_numerical_policy.py --check` exit 0.

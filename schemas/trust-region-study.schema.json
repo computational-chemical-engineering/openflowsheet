@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/trust-region-study.schema.json",
   "title": "TrustRegionStudy",
-  "description": "M05 design note §9.1, ADRs 0038 and 0039: the record of one trust-region study (`trust-region-study-v1`). Built from `studies.trust_region.study.StudyResult.as_document`. The top level is closed; the nested run, candidate and spec objects require §9.1's fields and tolerate the loop's additional detail (the configuration, the exit lines, a candidate's solves). `readiness`, `start`, `stage_a` and `best` are the record's own additions to §9.1's list. A study that ends before a run (UNSUPPORTED, start not certified, budget exhausted) has empty `runs` and `candidates`.",
+  "description": "M05 design note §9.1 as amended by §18.4 (R-329), ADRs 0038 and 0039: the record of one trust-region study (`trust-region-study-v1`). Built from `studies.trust_region.study.StudyResult.as_document`. Every fixed-field object is closed and declares every field the producer writes (S14); id-keyed maps (decision ids, holder names, module names, EF names, units, stages, iterations, candidates) constrain only their values. `readiness`, `start`, `stage_a` and `best` are required, each an object or null (S13). The contents of `spec.decisions`, `spec.objective`, `spec.inequalities`, `spec.decision_tolerances` and `spec.budgets` are the caller's (build log S39). A study that ends before a run (UNSUPPORTED, start not certified, budget exhausted) has empty `runs` and `candidates`.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -10,8 +10,12 @@
     "study_id",
     "spec",
     "environment",
+    "readiness",
+    "start",
+    "stage_a",
     "runs",
     "candidates",
+    "best",
     "accounting",
     "status",
     "claims",
@@ -28,7 +32,7 @@
     },
     "spec": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": [
         "case",
         "revision_sha256",
@@ -63,7 +67,7 @@
         },
         "configs": {
           "type": "object",
-          "additionalProperties": true,
+          "additionalProperties": false,
           "required": [
             "trf",
             "trsp",
@@ -91,7 +95,7 @@
         },
         "truth": {
           "type": "object",
-          "additionalProperties": true,
+          "additionalProperties": false,
           "required": [
             "kind",
             "id",
@@ -117,6 +121,12 @@
             },
             "synthetic": {
               "type": "boolean"
+            },
+            "gradient": {
+              "enum": [
+                "analytic",
+                "finite_difference"
+              ]
             }
           }
         },
@@ -124,7 +134,7 @@
           "anyOf": [
             {
               "type": "object",
-              "additionalProperties": true,
+              "additionalProperties": false,
               "required": [
                 "manifest_sha256",
                 "verdict"
@@ -147,7 +157,7 @@
     },
     "environment": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": [
         "pyomo_version",
         "trf_module_sha256",
@@ -225,7 +235,7 @@
     "start": {
       "anyOf": [
         {
-          "type": "object"
+          "$ref": "#/$defs/parent_solve"
         },
         {
           "type": "null"
@@ -233,13 +243,47 @@
       ]
     },
     "stage_a": {
-      "type": "object"
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executed"
+          ],
+          "properties": {
+            "executed": {
+              "type": "boolean"
+            },
+            "reason": {
+              "const": "surrogate_not_promoted"
+            },
+            "runs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "description": "Stage A (§7.3): skipped with its reason, or executed with its run ids and, after a second abort, the stopping status."
+        },
+        {
+          "type": "object",
+          "maxProperties": 0,
+          "description": "The study stopped before stage A (UNSUPPORTED, start not certified, budget exhausted at S0)."
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "runs": {
       "type": "array",
       "items": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
           "run_id",
           "stage",
@@ -254,7 +298,16 @@
           "final",
           "ledger",
           "assumptions",
-          "cold"
+          "cold",
+          "start_check_id",
+          "radius_factor",
+          "config",
+          "exit_lines",
+          "theta_recheck",
+          "exit_claim",
+          "theta_logged",
+          "final_state_is_last_truth_point",
+          "error"
         ],
         "properties": {
           "run_id": {
@@ -277,14 +330,26 @@
             ]
           },
           "truth": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/truth_identity"
+            }
           },
           "basis": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": {
+              "enum": [
+                "zero",
+                "constant",
+                "affine_taylor",
+                "surrogate"
+              ]
+            },
+            "description": "Each EF's basis kind (`EFBasis.kind`) by EF name."
           },
           "projection": {
             "type": "object",
-            "additionalProperties": true,
+            "additionalProperties": false,
             "required": [
               "source_map_sha256",
               "n_vars",
@@ -323,12 +388,13 @@
             "type": "array",
             "items": {
               "type": "object",
-              "additionalProperties": true,
+              "additionalProperties": false,
               "required": [
                 "k",
                 "theta",
                 "objective",
                 "radius",
+                "radius_logged",
                 "step_norm",
                 "type"
               ],
@@ -345,6 +411,12 @@
                 },
                 "radius": {
                   "type": "number"
+                },
+                "radius_logged": {
+                  "enum": [
+                    "used",
+                    "updated"
+                  ]
                 },
                 "step_norm": {
                   "type": "number"
@@ -412,7 +484,7 @@
             "anyOf": [
               {
                 "type": "object",
-                "additionalProperties": true,
+                "additionalProperties": false,
                 "required": [
                   "decisions",
                   "objective",
@@ -420,7 +492,7 @@
                 ],
                 "properties": {
                   "decisions": {
-                    "type": "object"
+                    "$ref": "#/$defs/decisions"
                   },
                   "objective": {
                     "type": "number"
@@ -437,29 +509,30 @@
           },
           "ledger": {
             "type": "object",
-            "additionalProperties": true,
+            "additionalProperties": false,
             "required": [
-              "summary"
+              "summary",
+              "cold_parent"
             ],
             "properties": {
-              "sha256": {
-                "$ref": "#/$defs/sha256"
-              },
               "summary": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/$defs/holder_summary"
+                }
               },
               "cold_parent": {
                 "type": "integer",
                 "minimum": 0
               }
             },
-            "description": "§9.1 lists {sha256, summary}; the producer writes {summary, cold_parent}. `sha256` is therefore not required (open point reported by WO-7)."
+            "description": "S12: each truth holder's summary over the run, by holder name, and the run's cold parent requests. The ledger itself is `artifacts.ledger`."
           },
           "assumptions": {
             "type": "array",
             "items": {
               "type": "object",
-              "additionalProperties": true,
+              "additionalProperties": false,
               "required": [
                 "id",
                 "status"
@@ -479,15 +552,71 @@
           "cold": {
             "type": "integer",
             "minimum": 0
+          },
+          "start_check_id": {
+            "type": "string"
+          },
+          "radius_factor": {
+            "type": "number"
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            },
+            "description": "TRF's effective configuration, by option name."
+          },
+          "exit_lines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "theta_recheck": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "exit_claim": {
+            "enum": [
+              "optimal",
+              "feasible",
+              null
+            ]
+          },
+          "theta_logged": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "final_state_is_last_truth_point": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
-        }
+        },
+        "description": "One TRF run: `TrfStageRunner`'s document and the loop's keys. `exit_claim`, `theta_logged`, `theta_recheck` and `final_state_is_last_truth_point` are null when TRF raised (W4)."
       }
     },
     "candidates": {
       "type": "array",
       "items": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
           "candidate_id",
           "run_id",
@@ -500,7 +629,10 @@
           "curvature",
           "indifference_halfwidth",
           "status",
-          "limitations"
+          "limitations",
+          "stage",
+          "stopped_by",
+          "solves"
         ],
         "properties": {
           "candidate_id": {
@@ -523,7 +655,7 @@
             ]
           },
           "decisions": {
-            "type": "object"
+            "$ref": "#/$defs/decisions"
           },
           "label": {
             "const": "targeted_check"
@@ -557,7 +689,27 @@
                     ]
                   },
                   "values": {
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "check_id",
+                      "outcome",
+                      "certificate"
+                    ],
+                    "properties": {
+                      "check_id": {
+                        "type": "string"
+                      },
+                      "outcome": {
+                        "type": "string"
+                      },
+                      "certificate": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    }
                   }
                 }
               },
@@ -588,7 +740,80 @@
                     ]
                   },
                   "values": {
-                    "type": "object"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "applicable"
+                        ],
+                        "properties": {
+                          "applicable": {
+                            "const": false
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "reference",
+                          "objective_trf",
+                          "objective_reference",
+                          "objective_error",
+                          "objective_bound",
+                          "n_mapped",
+                          "worst_state",
+                          "worst_state_variable",
+                          "final_state_checks_failed",
+                          "theta_recheck",
+                          "feasibility_termination"
+                        ],
+                        "properties": {
+                          "reference": {
+                            "type": "string"
+                          },
+                          "objective_trf": {
+                            "type": "number"
+                          },
+                          "objective_reference": {
+                            "type": "number"
+                          },
+                          "objective_error": {
+                            "type": "number"
+                          },
+                          "objective_bound": {
+                            "type": "number"
+                          },
+                          "n_mapped": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "worst_state": {
+                            "type": "number"
+                          },
+                          "worst_state_variable": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "final_state_checks_failed": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "theta_recheck": {
+                            "type": "number"
+                          },
+                          "feasibility_termination": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    ],
+                    "description": "P2 without a TRF point (`applicable: false`), else `gross_agreement`'s values."
                   }
                 }
               },
@@ -607,7 +832,28 @@
                     ]
                   },
                   "values": {
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "n",
+                      "violated",
+                      "worst_scaled_violation"
+                    ],
+                    "properties": {
+                      "n": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "violated": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "worst_scaled_violation": {
+                        "type": "number"
+                      }
+                    }
                   }
                 }
               },
@@ -626,7 +872,39 @@
                     ]
                   },
                   "values": {
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "changed"
+                    ],
+                    "properties": {
+                      "changed": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "reference",
+                            "found"
+                          ],
+                          "properties": {
+                            "reference": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "found": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        },
+                        "description": "By unit: the reference (S0's) and the found regime label."
+                      }
+                    }
                   }
                 }
               },
@@ -645,7 +923,45 @@
                     ]
                   },
                   "values": {
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "points",
+                      "n_feasible"
+                    ],
+                    "properties": {
+                      "points": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "check_id",
+                            "improvement",
+                            "allowance",
+                            "pass"
+                          ],
+                          "properties": {
+                            "check_id": {
+                              "type": "string"
+                            },
+                            "improvement": {
+                              "type": "number"
+                            },
+                            "allowance": {
+                              "type": "number"
+                            },
+                            "pass": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      },
+                      "n_feasible": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
                   }
                 }
               }
@@ -655,38 +971,53 @@
             "type": "array",
             "items": {
               "type": "object",
-              "additionalProperties": true,
+              "additionalProperties": false,
               "required": [
+                "decision",
+                "direction",
                 "decisions",
+                "clipped",
+                "check_id",
                 "J",
                 "e",
-                "feasible"
+                "feasible",
+                "regimes_match"
               ],
               "properties": {
+                "decision": {
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    -1,
+                    1
+                  ]
+                },
                 "decisions": {
-                  "type": "object"
+                  "$ref": "#/$defs/decisions"
+                },
+                "clipped": {
+                  "type": "boolean"
+                },
+                "check_id": {
+                  "type": "string"
                 },
                 "J": {
-                  "anyOf": [
-                    {
-                      "type": "number"
-                    },
-                    {
-                      "type": "null"
-                    }
+                  "type": [
+                    "number",
+                    "null"
                   ]
                 },
                 "e": {
-                  "anyOf": [
-                    {
-                      "type": "number"
-                    },
-                    {
-                      "type": "null"
-                    }
+                  "type": [
+                    "number",
+                    "null"
                   ]
                 },
                 "feasible": {
+                  "type": "boolean"
+                },
+                "regimes_match": {
                   "type": "boolean"
                 }
               }
@@ -696,11 +1027,14 @@
             "anyOf": [
               {
                 "type": "object",
-                "additionalProperties": true,
+                "additionalProperties": false,
                 "required": [
                   "dJ_dX",
                   "dJ_dT",
-                  "e_star"
+                  "e_star",
+                  "h_X",
+                  "h_T",
+                  "inner"
                 ],
                 "properties": {
                   "dJ_dX": {
@@ -711,6 +1045,34 @@
                   },
                   "e_star": {
                     "type": "number"
+                  },
+                  "h_X": {
+                    "type": "number"
+                  },
+                  "h_T": {
+                    "type": "number"
+                  },
+                  "inner": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "w",
+                        "J"
+                      ],
+                      "properties": {
+                        "w": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        },
+                        "J": {
+                          "type": "number"
+                        }
+                      }
+                    }
                   }
                 }
               },
@@ -770,7 +1132,10 @@
             ]
           },
           "solves": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/parent_solve"
+            }
           }
         }
       }
@@ -791,7 +1156,7 @@
               "type": "string"
             },
             "decisions": {
-              "type": "object"
+              "$ref": "#/$defs/decisions"
             },
             "objective": {
               "anyOf": [
@@ -933,10 +1298,16 @@
         },
         "budgets": {
           "type": "object",
-          "additionalProperties": true,
+          "additionalProperties": false,
           "required": [
             "budget_id",
+            "configuration",
             "study_cold",
+            "study_wall_s",
+            "run_cold",
+            "run_iterations",
+            "unit",
+            "k_max",
             "cold_used",
             "exhausted"
           ],
@@ -944,7 +1315,45 @@
             "budget_id": {
               "type": "string"
             },
+            "configuration": {
+              "type": "string"
+            },
             "study_cold": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "study_wall_s": {
+              "type": "number"
+            },
+            "run_cold": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "run_iterations": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "unit": {
+              "enum": [
+                "cold_parent_experiments",
+                "evaluations"
+              ]
+            },
+            "k_max": {
               "type": "integer",
               "minimum": 0
             },
@@ -959,7 +1368,8 @@
                 null
               ]
             }
-          }
+          },
+          "description": "`StudyBudget.as_document` (`M05-budget-v1`, §7.5)."
         },
         "exhausted": {
           "type": "boolean"
@@ -1001,20 +1411,130 @@
       }
     },
     "fd_check": {
-      "type": [
-        "object",
-        "null"
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policy",
+            "w0",
+            "sides",
+            "candidates",
+            "selected_eta",
+            "class",
+            "result",
+            "stopped",
+            "half_steps"
+          ],
+          "properties": {
+            "policy": {
+              "const": "M05-fd-v2"
+            },
+            "w0": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "sides": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  -1,
+                  1
+                ]
+              }
+            },
+            "candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "eta",
+                  "g_inf",
+                  "truncation",
+                  "noise",
+                  "allowance",
+                  "class"
+                ],
+                "properties": {
+                  "eta": {
+                    "type": "number"
+                  },
+                  "g_inf": {
+                    "type": "number"
+                  },
+                  "truncation": {
+                    "type": "number"
+                  },
+                  "noise": {
+                    "type": "number"
+                  },
+                  "allowance": {
+                    "type": "number"
+                  },
+                  "class": {
+                    "enum": [
+                      "clean",
+                      "truncation_dominated",
+                      "noise_dominated"
+                    ]
+                  }
+                }
+              }
+            },
+            "selected_eta": {
+              "type": "number"
+            },
+            "class": {
+              "enum": [
+                "clean",
+                "truncation_dominated",
+                "noise_dominated"
+              ]
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fd_unstable"
+              ]
+            },
+            "stopped": {
+              "enum": [
+                "passed",
+                "noise_not_falling",
+                "side_limit",
+                "exhausted"
+              ]
+            },
+            "half_steps": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          },
+          "description": "§17.2's `fd_check` document (`truths.GradientCheck.as_document`), null without an FD truth."
+        },
+        {
+          "type": "null"
+        }
       ]
     },
     "artifacts": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": [
+        "ledger",
         "coupled_runs"
       ],
       "properties": {
         "source_map": {},
-        "ledger": {},
+        "ledger": {
+          "$ref": "#/$defs/sha256",
+          "description": "S12: the study ledger file's sha256; a run's sequence is this ledger filtered by its run id."
+        },
         "coupled_runs": {
           "type": "array",
           "items": {
@@ -1032,7 +1552,8 @@
                 "$ref": "#/$defs/sha256"
               }
             }
-          }
+          },
+          "description": "S18: the solves (S0, then every candidate's in order) that have a coupling record; a parent without an external unit gives no entry."
         }
       }
     }
@@ -1041,6 +1562,262 @@
     "sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
+    },
+    "decisions": {
+      "description": "Decision values by decision id (an id-keyed map).",
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "truth_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id",
+        "sha256",
+        "gradient"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "gradient": {
+          "enum": [
+            "analytic",
+            "finite_difference"
+          ]
+        }
+      },
+      "description": "A truth's `describe()` (`holders.TruthModel`): `gradient` says whether the holder applies `M05-fd-v2` (finite_difference); `synthetic` is written by the parent experiment."
+    },
+    "holder_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value_cold",
+        "value_store_hit",
+        "value_memo_hit",
+        "jacobian_cold",
+        "jacobian_store_hit",
+        "jacobian_memo_hit",
+        "requests",
+        "refused",
+        "by_purpose",
+        "pmp_point_equals_start"
+      ],
+      "properties": {
+        "value_cold": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value_store_hit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value_memo_hit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jacobian_cold": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jacobian_store_hit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jacobian_memo_hit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "refused": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "by_purpose": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "trf_start_value",
+            "trf_pmp_value",
+            "trf_trial_value",
+            "trf_fd_point",
+            "fdcheck_point",
+            "basis_fd_point"
+          ],
+          "properties": {
+            "trf_start_value": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trf_pmp_value": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trf_trial_value": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trf_fd_point": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "fdcheck_point": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "basis_fd_point": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "pmp_point_equals_start": {
+          "type": "boolean"
+        }
+      },
+      "description": "`EFHolder.summary(run_id)` (§8.1, S16): counts by call and service, the requests carrying each of §8.1's five purposes and `basis_fd_point`, and `pmp_point_equals_start` (S32)."
+    },
+    "parent_solve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "purpose",
+        "decisions",
+        "revision_sha256",
+        "outcome",
+        "certificate",
+        "objective",
+        "coupling",
+        "coupling_residuals",
+        "regimes",
+        "coupling_record_sha256",
+        "experiments",
+        "limitations",
+        "wall_s"
+      ],
+      "properties": {
+        "check_id": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "decisions": {
+          "$ref": "#/$defs/decisions"
+        },
+        "revision_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "certificate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "objective": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "coupling": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coupling_residuals": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "regimes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "coupling_record_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "experiments": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executions",
+            "store_hits"
+          ],
+          "properties": {
+            "executions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "store_hits": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "wall_s": {
+          "type": "number"
+        }
+      },
+      "description": "`ParentSolve.as_document` (§8.2's coupled-check summary). `coupling`, `coupling_residuals` and `coupling_record_sha256` are null for a parent without an external unit."
     }
   }
 }

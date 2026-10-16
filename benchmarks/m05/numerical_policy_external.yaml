@@ -48,10 +48,12 @@ numerical_policy_external:
     - {path: '\.best\.(decisions\..+|objective)', class: r1_r2_existing_floors}
     - {path: '\.accounting\.budgets\.study_wall_s', class: exact}
   # The `sha256`-bearing property names M05's schema adds, all exact digests (none is a float
-  # digest, ADR 0007 D1 row 3): the bound revision, the projection's source map, the pinned TRF
-  # modules (an object of digests by file) and the audited TRSP executable. The names it reuses
-  # (`sha256`, `manifest_sha256`) keep their T08 classes.
+  # digest, ADR 0007 D1 row 3): a parent solve's M02 coupling record (§8.2, declared with the
+  # closed `start`/`solves[]` of WO-7b, build log S40), the bound revision, the projection's source
+  # map, the pinned TRF modules (an object of digests by file) and the audited TRSP executable. The
+  # names it reuses (`sha256`, `manifest_sha256`) keep their T08 classes.
   exact_sha256:
+  - coupling_record_sha256
   - revision_sha256
   - source_map_sha256
   - trf_module_sha256
