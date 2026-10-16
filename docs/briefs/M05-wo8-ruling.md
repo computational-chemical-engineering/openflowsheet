@@ -29,8 +29,7 @@ Scratch 150-iteration run: TR-E2 exits k = 35, θ 9.72e-6, T 673.596 K; TR-E2-FD
    none implemented. Is that a missing work order (state it), or is G8 re-scoped?
 5. **S47, S49:** confirm or reverse (assumption blocks; G9's "constant basis" read as R-277's affine basis).
 
-Write **§20** of the design note with the new WO items and restated gate criteria; register **R-391 is M07's — use
-R-392…R-399** (check `docs/decision-register.md` and origin/main for collisions). No production code. Commit on wp/M05,
+Write **§20** of the design note with the new WO items and restated gate criteria; register entries **R-400…R-409** (check `docs/decision-register.md` and origin/main for collisions). No production code. Commit on wp/M05,
 named paths, trailer `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` /
 `Claude-Session: https://claude.ai/code/session_014hjTc57iVNbNxYG2kezzvv`, push. Report ≤ 300 words: one line per ruling,
 the build work orders, anything that needs Frank (in plain words).
