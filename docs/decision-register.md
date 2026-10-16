@@ -6557,3 +6557,37 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 **Rejected alternatives, and why.** Keeping the default: a forgotten argument fits silently in v1's z.
 
 **Watch for.** —
+
+---
+
+## R-390 — v3's inert floor is decided with a relative slack of 4·2⁻⁵² (confirms build log D134; M02 close-out C1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M02 follow-up (`docs/reviews/M02-followup-review.md`) |
+| Normative text | Build log D134; `models/c1/boundary.py` `INERT_FLOOR_SLACK_REL`, `hard_domain_violations`; design note §14.6 E3; ADR 0027 Amendments 3/4 (the floor's value is unchanged) |
+| Evidence | D134's measurements. Exact comparison: 46.2 % of 2×10⁵ design-composition scalings refused; largest shortfall 1.59·2⁻⁵². The review's adversarial check: 10⁵ minimal admissible states over four floors, 0 refused with `float` or `np.float64` sums. |
+| Affected packages | M02; every variant that declares `inert_min > 0` (only v3 today); M04 box v2 (0.036) is unaffected |
+
+**Decision.** Confirmed. The floor refuses iff `n_Ar + n_CH4 < inert_min · n_tot · (1 − 4·2⁻⁵²)`, the floor only.
+
+What the comparison guarantees in binary64, for positive normal inputs, with naive or compensated summation:
+- an exact ratio ≥ inert_min is accepted;
+- an exact ratio < inert_min·(1 − 8·2⁻⁵²) is refused;
+- in between, rounding decides.
+
+The worst-case budget is 8 roundings, against an 8 u slack; it holds because inert_min's representation error is < u.
+A decimal composition built as `y·n_tot` is accepted at every scaling tested, which is a measurement, not a proof.
+
+**Rejected alternatives, and why.**
+- An exact comparison with a sentence in v3's document saying rounding decides the face. That would refuse ADR 0027's own
+  design composition at about half of all flow scalings.
+- 8·2⁻⁵². That would also cover the construction rounding of decimal compositions, which the domain should not absorb.
+  The observed margin at 4·2⁻⁵² is 2.2×.
+
+**Watch for.**
+- A second face check without the slack: `benchmarks/m02/g11_coverage_v3.py` `below_floor` is one, and it is stricter,
+  which is harmless as long as it is not used as an oracle.
+- A change of evaluation order or of the summation, which moves the budget. `StreamState.total_flow` is compensated for
+  `float` elements and naive for `np.float64`.

@@ -30,6 +30,7 @@ from openflowsheet.canonical import file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.models.c1.boundary import (
+    INERT_FLOOR_SLACK_REL,
     Boundary,
     HardDomain,
     ReactorResult,
@@ -235,3 +236,41 @@ def test_g11v3_6_the_floor_face_is_the_floor() -> None:
         y = (inlet.n[3] + inlet.n[4]) / inlet.total_flow
         assert (y >= 0.035) == above
         assert math.isclose(y, 0.035, rel_tol=2e-9)
+
+
+# -- the floor at the design composition (M02 close-out C1, build log D134) ----------------------
+
+#: ADR 0027's design composition: y_Ar + y_CH4 = 0.035, exactly v3's floor.
+DESIGN_Y = (0.7, 0.235, 0.03, 0.015, 0.02)
+#: n_tot over eight decades, with the review's failing 100 mol/s and the probe's 1.
+SCALINGS = [*(10.0 ** (-3.0 + 8.0 * i / 4000) for i in range(4001)), 1.0, 100.0]
+
+
+def _floor_found(y: tuple[float, ...], n_tot: float) -> list[str]:
+    inlet = StreamState(tuple(yi * n_tot for yi in y), CENTRE[0], CENTRE[1])
+    found = hard_domain_violations(inlet, variants.hard_domain(V3), n_tot / F_NOM)
+    return [item for item in found if item.startswith("inert fraction below ")]
+
+
+def test_c1_the_slack_is_four_ulp_of_one() -> None:
+    assert INERT_FLOOR_SLACK_REL == 4.0 * 2.0**-52
+
+
+def test_c1_the_design_composition_on_the_floor_is_accepted_at_every_flow_scaling() -> None:
+    """Without the slack the exact binary64 comparison refuses this composition at a large share
+    of the scalings (the case is on the knife-edge: counted here); with it, at none."""
+    exact_refusals = sum(
+        not (yi := [y * t for y in DESIGN_Y])[3] + yi[4] >= 0.035 * sum(yi) for t in SCALINGS
+    )
+    assert exact_refusals > len(SCALINGS) // 4
+    assert [t for t in SCALINGS if _floor_found(DESIGN_Y, t)] == []
+    result = _evaluate(StreamState(tuple(y * F_NOM for y in DESIGN_Y), CENTRE[0], CENTRE[1]))
+    assert result.status == "ok", result.message
+
+
+def test_c1_a_composition_1e_12_below_the_floor_is_still_refused() -> None:
+    """y_Ar + y_CH4 = 0.035 (1 - 1e-12), the deficit moved to H2: refused at every scaling,
+    naming the floor (1e-12 is ~10^3 times the slack)."""
+    s = 1.0 - 1e-12
+    y = (0.7 + 0.035 * 1e-12, 0.235, 0.03, 0.015 * s, 0.02 * s)
+    assert [t for t in SCALINGS if not _floor_found(y, t)] == []

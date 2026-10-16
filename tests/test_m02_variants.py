@@ -286,16 +286,23 @@ def test_qf5_m01s_boundary_has_no_flow_bound() -> None:
 # -- §14.6 E3: the inert floor -------------------------------------------------------------------
 
 
-def test_e3_the_floor_is_inclusive_and_one_ulp_below_it_is_refused() -> None:
-    """y_Ar + y_CH4 >= inert_min, judged as n_Ar + n_CH4 >= inert_min n_tot (exact floats here:
-    0.0625 + 0.1875 = 0.25 × 1.0; one ulp less CH4 leaves n_tot at 1.0)."""
+def test_e3_the_floor_is_inclusive_within_its_slack_and_refuses_below_it() -> None:
+    """y_Ar + y_CH4 >= inert_min, judged as n_Ar + n_CH4 >= inert_min n_tot (1 - 4 · 2⁻⁵²)
+    (build log D134, M02 close-out C1; exact floats here: 0.0625 + 0.1875 = 0.25 × 1.0). One ulp
+    less CH4 (2⁻⁵⁵, 0.5 · 2⁻⁵² of the floor) is inside the slack and accepted; 16 ulps less
+    (2⁻⁵¹: n_tot 1 - 2⁻⁵¹, the shortfall 6 · 2⁻⁵² of the floor) is refused."""
     domain = HardDomain(inert_fraction=0.5, inert_min=0.25)
     on = StreamState(n=(0.5, 0.25, 0.0, 0.0625, 0.1875), temperature=673.15, pressure=1.0e7)
-    below = StreamState(
+    ulp = StreamState(
         n=(0.5, 0.25, 0.0, 0.0625, math.nextafter(0.1875, 0.0)), temperature=673.15, pressure=1.0e7
     )
-    assert on.total_flow == below.total_flow == 1.0
+    below = StreamState(
+        n=(0.5, 0.25, 0.0, 0.0625, 0.1875 - 2.0**-51), temperature=673.15, pressure=1.0e7
+    )
+    assert on.total_flow == ulp.total_flow == 1.0
+    assert below.total_flow == 1.0 - 2.0**-51
     assert hard_domain_violations(on, domain) == []
+    assert hard_domain_violations(ulp, domain) == []
     assert hard_domain_violations(below, domain) == ["inert fraction below 0.25"]
 
 

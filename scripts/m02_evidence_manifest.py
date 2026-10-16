@@ -509,6 +509,12 @@ def status(checks_: Sequence[Mapping[str, Any]], commands: Sequence[Mapping[str,
 # ----------------------------------------------------------------------------- harvest
 
 
+#: The design lane's read of the harvest (R-343, M02 close-out; the same rows as V02 alpha release
+#: spec §19.1, R-370, plus `limitations[5]`): these `limitations[i]` are user-reachable, so class
+#: E, pointing at their envelope rows; `[0]` and `[4]` are P.
+HARVEST_E: dict[int, list[str]] = {1: ["L44"], 2: ["L45"], 3: ["L48"], 5: ["L46"], 6: ["L44"]}
+
+
 def harvest_entries(path: str, manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
     from t08_support_matrix import text_sha256
 
@@ -518,9 +524,9 @@ def harvest_entries(path: str, manifest: Mapping[str, Any]) -> list[dict[str, An
             "manifest": path,
             "item": f"limitations[{index}]",
             "sha256": text_sha256(text),
-            "class": "P",
-            "to": [],
-            "note": table[text],
+            "class": "E" if index in HARVEST_E else "P",
+            "to": HARVEST_E.get(index, []),
+            "note": table[text] + (" (R-343, class E)" if index in HARVEST_E else ""),
         }
         for index, text in enumerate(manifest["limitations"])
     ]
@@ -532,7 +538,11 @@ def harvest_entries(path: str, manifest: Mapping[str, Any]) -> list[dict[str, An
 
 def _yaml_entry(entry: Mapping[str, Any]) -> str:
     lines = [f"- manifest: {entry['manifest']}", f"  item: {entry['item']}"]
-    lines += [f"  sha256: {entry['sha256']}", f"  class: {entry['class']}", "  to: []"]
+    lines += [f"  sha256: {entry['sha256']}", f"  class: {entry['class']}"]
+    if entry["to"]:
+        lines += ["  to:", *(f"  - {pointer}" for pointer in entry["to"])]
+    else:
+        lines.append("  to: []")
     lines.append(f"  note: {entry['note']}")
     return "\n".join(lines) + "\n"
 
