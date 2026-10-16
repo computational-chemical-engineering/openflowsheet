@@ -47,7 +47,10 @@ from openflowsheet.application.admission import (
     admit_experiment,
     admit_reproduce,
     admit_solve,
+    admit_surrogate_study,
     resolve_policies,
+    stored_surrogate_manifests,
+    surrogate_resolver,
 )
 from openflowsheet.application.authz import (
     LOCAL_OWNER,
@@ -68,12 +71,17 @@ from openflowsheet.application.projection import (
     check_view_arguments,
     project,
 )
-from openflowsheet.application.replacement import ReplacementReport, check_replacements
+from openflowsheet.application.replacement import (
+    ReplacementReport,
+    check_replacements,
+    unpromoted_surrogates,
+)
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     MODEL_SIGNATURES,
     ModelSignature,
     PinColumn,
+    SurrogateResolver,
     pin_encodings,
 )
 from openflowsheet.application.revision_run import Route, route_structure, select_route
@@ -122,6 +130,7 @@ from openflowsheet.application.types import (
     ServerInfo,
     SolveBody,
     SubmitResult,
+    SurrogateStudyBody,
     TransactionResult,
     _replay_report_build,
     validate_document,
@@ -305,6 +314,15 @@ class LocalApplication:
             self._scratch = tempfile.TemporaryDirectory(prefix="openflowsheet-")
         return Path(self._scratch.name)
 
+    def _surrogates(self) -> SurrogateResolver:
+        """The binder's SurrogateManifest resolver over this project's artifacts (M04 spec §8.2).
+        Lazy: the store and `files_root` are read only when a revision binds a surrogate."""
+
+        def resolve(sha256: str) -> Mapping[str, Any] | None:
+            return surrogate_resolver(self._store, self.files_root)(sha256)
+
+        return resolve
+
     def _context(self) -> RunContext:
         return RunContext(
             store=self._store, root=self.files_root, owner_instance=self.owner_instance
@@ -402,7 +420,7 @@ class LocalApplication:
             self._refuse(
                 "not_found", "no such revision", operation="validate", revision_id=revision_id
             )
-        return validation.validate(revision.as_document(), task)
+        return validation.validate(revision.as_document(), task, surrogates=self._surrogates())
 
     def commit_change(
         self, change: Change, expected_revision: str | None, idempotency_key: str
@@ -739,6 +757,7 @@ class LocalApplication:
                 budgets=request.budgets,
                 limits=caller.limits,
                 active_jobs=active,
+                surrogates=self._surrogates(),
             )
             if isinstance(admission, ApiError):
                 self._refuse_error(admission, operation, request_sha256)
@@ -754,6 +773,18 @@ class LocalApplication:
                 self._refuse_error(admitted, operation, request_sha256)
             # R-233: an experiment's property calls are its own, never a solve's budget.
             return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
+        if isinstance(body, SurrogateStudyBody):
+            study = admit_surrogate_study(
+                body,
+                budgets=request.budgets,
+                limits=caller.limits,
+                active_jobs=active,
+                manifests=lambda: stored_surrogate_manifests(store, self.files_root),
+            )
+            if isinstance(study, ApiError):
+                self._refuse_error(study, operation, request_sha256)
+            # R-233 again: a study's experiments are experiments; their calls are their own.
+            return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
         archive = store.artifact(body.bundle_artifact_id)
         wall_time_s = admit_reproduce(
             archive.kind if archive is not None else None,
@@ -819,6 +850,16 @@ class LocalApplication:
                 error=job.error,
                 experiment=self._experiment_answer(job),
             )
+        if job.operation == "surrogate_study":
+            worker = self._store.worker_result(job.job_id)
+            study = worker.get("study") if isinstance(worker, Mapping) else None
+            return JobResult(
+                operation="surrogate_study",
+                run_result=None,
+                replay_report=None,
+                error=job.error,
+                surrogate_study=study,
+            )
         report = None
         for output in job.outputs:
             if output.kind == "replay_report":
@@ -872,7 +913,7 @@ class LocalApplication:
     def _resolution(self, revision: Revision, body: SolveBody) -> dict[str, Any]:
         from openflowsheet.run.manifest import policy_sha256
 
-        route = select_route(revision.as_document())
+        route = select_route(revision.as_document(), surrogates=self._surrogates())
         resolved = resolve_policies(route, body) if isinstance(route, Route) else None
         if not isinstance(route, Route) or not isinstance(resolved, tuple):
             raise api_error(
@@ -1128,7 +1169,7 @@ class LocalApplication:
         self._authorize(operation)
         self._check_view(operation, pointer, depth, cursor, limit)
         revision = self._revision(revision_id, operation)
-        document = route_structure(revision.as_document())
+        document = route_structure(revision.as_document(), surrogates=self._surrogates())
         return self._project(
             operation,
             document,
@@ -1441,10 +1482,11 @@ class LocalApplication:
         # What is validated is exactly what is stored: the canonical document, read back.
         document = json.loads(canonical_json(built))
         # ADR 0035 D2–D3 (M02 design note §6.2): a change of a variant-backed model reference is a
-        # promotion, checked before anything is validated; any failed facet rejects it with the
+        # promotion (M04 spec §8.3: or a surrogate-backed one, judged with the project's
+        # resolver), checked before anything is validated; any failed facet rejects it with the
         # report. A compatible one writes each report's SHA-256 into the provenance (outside the
         # content hash), so the preview and the commit name the same document.
-        reports = check_replacements(expected, document)
+        reports = check_replacements(expected, document, surrogates=self._surrogates())
         incompatible = [report for report in reports if not report.compatible]
         if incompatible:
             report = incompatible[0]
@@ -1455,6 +1497,21 @@ class LocalApplication:
                 f"model_replacement_incompatible({report.instance_id}: {', '.join(report.failed)})",
                 report=report.as_document(),
             )
+        # M04 spec §20 A3.1 (R-360): a surrogate that no replacement judged — added, renamed, in
+        # the first revision — enters only with a PROMOTABLE re-derived verdict.
+        unpromoted = unpromoted_surrogates(expected, document, surrogates=self._surrogates())
+        if unpromoted:
+            instance_id, why = unpromoted[0]
+            reason = f"surrogate_not_promoted({instance_id})"
+            return self._rejected(
+                operation,
+                idempotency_key,
+                "model_replacement_incompatible",
+                f"model_replacement_incompatible({reason}: {why})",
+                reason=reason,
+                instance_id=instance_id,
+                cause=why,
+            )
         if reports:
             document = json.loads(canonical_json(_with_report_hashes(document, reports)))
         revision = Revision(
@@ -1462,7 +1519,9 @@ class LocalApplication:
         )
         return _Prepared(
             revision=revision,
-            report=validation.validate(revision.as_document(), change.task),
+            report=validation.validate(
+                revision.as_document(), change.task, surrogates=self._surrogates()
+            ),
             diff=semantic_diff(expected, document),
             replacements=reports,
         )

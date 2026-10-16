@@ -650,6 +650,7 @@ def verify_revision(
         parse_revision,
     )
     from openflowsheet.orchestrator.splits import lifted_splits
+    from openflowsheet.verify.surrogate import surrogate_items
     from openflowsheet.verify.table import revision_checks, revision_phase_branch
     from openflowsheet.verify.zero_flow import dormant_outlets, zero_flow_splits
 
@@ -735,7 +736,7 @@ def verify_revision(
         policy=resolved,
         components=view.components,
     )
-    checks += _judged_at(
+    table = _judged_at(
         lambda judged_at: revision_checks(
             view,
             splits,
@@ -748,6 +749,15 @@ def verify_revision(
         final_state,
         projection,
     )
+    # M04 spec §8.6 (ADR 0037 D5): each surrogate's `SURROGATE-DOMAIN:<unit>`, judged at the
+    # converged state, placed after the table's last `bounds_and_domain` row (category-major
+    # order), and its limitations; nothing when the revision binds no surrogate.
+    surrogate_checks, surrogate_limitations = surrogate_items(
+        view, final_state, getattr(binding, "surrogate_manifests", {})
+    )
+    bounds = [k for k, check in enumerate(table) if check.category == "bounds_and_domain"]
+    at = bounds[-1] + 1 if bounds else len(table)
+    checks += [*table[:at], *surrogate_checks, *table[at:]]
     return _issue(
         target,
         result,
@@ -774,6 +784,7 @@ def verify_revision(
         )
         if basis == "pr-c1-v1"
         else frozenset(),
+        appended=surrogate_limitations,
         external=external,
     )
 
@@ -1193,6 +1204,7 @@ def _issue(
     projection: Projection,
     provider: PropertyProvider | None = None,
     unstenciled: frozenset[str] = frozenset(),
+    appended: Sequence[Limitation] = (),
     external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
@@ -1246,6 +1258,8 @@ def _issue(
         )
     if external is not None:
         limitations += external.limitations
+    # The caller's own limitations after the grade's (M04 spec §8.6: a surrogate's).
+    limitations.extend(appended)
     # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
     # qualifications and the statements name; SYN-001's unless given.
     if provider is None:

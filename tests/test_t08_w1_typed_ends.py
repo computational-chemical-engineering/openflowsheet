@@ -42,12 +42,13 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Iterator
+from functools import partial
 from pathlib import Path
 from typing import Any
 
 import pytest
 import t08_cstr_support as cstr
-from m02_c1_corpus import C1_CORPUS
+from m02_c1_corpus import C1_CORPUS, surrogates
 from t07_corpus import CORPUS
 from t07_jobs_support import commit
 
@@ -89,7 +90,10 @@ def test_a14_i_every_pressure_only_row_is_a_copy_or_a_specification() -> None:
     declarations = rows = 0
     offending: list[tuple[str, str, Any]] = []
     for name, document in documents.items():
-        for binder in (bind_revision_flowsheet, bind_revision_or_reason):
+        for binder in (
+            partial(bind_revision_flowsheet, surrogates=surrogates),
+            bind_revision_or_reason,
+        ):
             binding = binder(copy.deepcopy(document))
             if not isinstance(binding, RevisionBinding | Binding):
                 continue

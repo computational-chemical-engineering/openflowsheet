@@ -704,13 +704,66 @@ class ExperimentBody:
         )
 
 
-JobBody = SolveBody | ReproduceBody | ExperimentBody
+@dataclass(frozen=True)
+class SurrogateStudyParent:
+    """`surrogate-manifest.schema.json#/$defs/surrogate_study_body/parent`: a registered variant by
+    id and SHA-256."""
+
+    model_id: str
+    variant_id: str
+    variant_sha256: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "model_id": self.model_id,
+            "variant_id": self.variant_id,
+            "variant_sha256": self.variant_sha256,
+        }
+
+
+@dataclass(frozen=True)
+class SurrogateStudyBody:
+    """`surrogate-manifest.schema.json#/$defs/surrogate_study_body` (ADR 0037 D6; M04 spec §10.3):
+    one registered plan of one parent, within a budget of cold experiments."""
+
+    parent: SurrogateStudyParent
+    plan_id: str
+    max_cold_experiments: int
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "parent": self.parent.as_document(),
+            "plan_id": self.plan_id,
+            "budget": {"max_cold_experiments": self.max_cold_experiments},
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        parent = document["parent"]
+        return cls(
+            parent=SurrogateStudyParent(
+                model_id=parent["model_id"],
+                variant_id=parent["variant_id"],
+                variant_sha256=parent["variant_sha256"],
+            ),
+            plan_id=document["plan_id"],
+            max_cold_experiments=document["budget"]["max_cold_experiments"],
+        )
+
+
+JobBody = SolveBody | ReproduceBody | ExperimentBody | SurrogateStudyBody
 
 #: J3: one body type per operation, as one `oneOf` branch per enum value in the schema.
-_BODY_TYPES: Final[Mapping[str, type[SolveBody] | type[ReproduceBody] | type[ExperimentBody]]] = {
+_BODY_TYPES: Final[
+    Mapping[
+        str,
+        type[SolveBody] | type[ReproduceBody] | type[ExperimentBody] | type[SurrogateStudyBody],
+    ]
+] = {
     "solve": SolveBody,
     "reproduce": ReproduceBody,
     "experiment": ExperimentBody,
+    "surrogate_study": SurrogateStudyBody,
 }
 
 
@@ -1167,7 +1220,8 @@ class JobResult:
     too); `replay_report` only for a `reproduce` whose report was produced; `error` is the job's.
     `experiment` (ADR 0033 D9) is an `experiment` job's answer and only its: the deterministic
     `result`, or the last `attempt` of a transient outcome, or `None` for a job that ended before
-    any attempt was recorded (cancelled while queued).
+    any attempt was recorded (cancelled while queued). `surrogate_study` (ADR 0037 D6) is a
+    `surrogate_study` job's answer and only its, `None` when the job ended before its study did.
     """
 
     operation: JobOperation
@@ -1175,6 +1229,7 @@ class JobResult:
     replay_report: ReplayReport | None
     error: ApiError | None
     experiment: Mapping[str, Any] | None = None
+    surrogate_study: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if (self.run_result is not None) != (self.operation == "solve"):
@@ -1183,6 +1238,8 @@ class JobResult:
             raise ValueError("only a 'reproduce' job result carries a replay report")
         if self.experiment is not None and self.operation != "experiment":
             raise ValueError("only an 'experiment' job result carries an experiment record")
+        if self.surrogate_study is not None and self.operation != "surrogate_study":
+            raise ValueError("only a 'surrogate_study' job result carries a study answer")
 
     def as_document(self) -> dict[str, Any]:
         document: dict[str, Any] = {
@@ -1196,6 +1253,12 @@ class JobResult:
         if self.operation == "experiment":
             document["experiment"] = (
                 copy.deepcopy(dict(self.experiment)) if self.experiment is not None else None
+            )
+        if self.operation == "surrogate_study":
+            document["surrogate_study"] = (
+                copy.deepcopy(dict(self.surrogate_study))
+                if self.surrogate_study is not None
+                else None
             )
         return document
 
@@ -1219,6 +1282,7 @@ class JobResult:
                 ),
                 error=_error_build(d["error"]),
                 experiment=d.get("experiment"),
+                surrogate_study=d.get("surrogate_study"),
             ),
             document,
         )

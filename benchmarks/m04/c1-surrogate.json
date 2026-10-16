@@ -1,0 +1,250 @@
+{
+  "component_set": {
+    "components": [
+      "H2",
+      "N2",
+      "NH3",
+      "Ar",
+      "CH4"
+    ],
+    "record_source": "benchmarks/m01/components.yaml"
+  },
+  "connections": [
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "F",
+        "port": "outlet"
+      },
+      "id": "S1",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "R",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "R",
+        "port": "outlet"
+      },
+      "id": "S2",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "K",
+        "port": "inlet"
+      }
+    }
+  ],
+  "description": "W27 Amendment 3 §22.4: c1.reactor_surrogate (the A19 fixture manifest, one tube, the inlet at the centre of its input box) between a feed and a sink",
+  "instances": [
+    {
+      "id": "F",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.feed_source",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "feed"
+    },
+    {
+      "id": "R",
+      "model": {
+        "artifact_ref": "19c176cf7ed4a6aa94f73c78185b44adfb32fddfd7bce9071df0d964576d3361",
+        "id": "c1.reactor_surrogate",
+        "version": "m04q7-m04-synthetic-smooth-v1-it1-prefix"
+      },
+      "parameters": {
+        "n_tubes": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "test",
+          "role": "fixed",
+          "unit": "1",
+          "value": 1.0
+        }
+      },
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "reactor"
+    },
+    {
+      "id": "K",
+      "model": {
+        "artifact_ref": null,
+        "id": "c1.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "product_sink"
+    }
+  ],
+  "parent_revision": null,
+  "provenance": {
+    "actor": "M04 (build lane)",
+    "notes": "registered C1 corpus revision (R-302); equals tests/test_m04_wo7_surrogate_unit.py corpus_revision() with this id, title, description and provenance; binds through m02_c1_corpus.surrogates",
+    "operation": "create",
+    "source_references": [
+      "docs/derivations/M06-W27-registration.md §22.4"
+    ],
+    "timestamp": "2026-10-09T00:00:00Z"
+  },
+  "revision_id": "C1-SURROGATE-M04-v1",
+  "schema_version": 1,
+  "specifications": [
+    {
+      "id": "SPEC-S1-n-H2",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "H2",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.004850083333333333
+    },
+    {
+      "id": "SPEC-S1-n-N2",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "N2",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.0017636666666666666
+    },
+    {
+      "id": "SPEC-S1-n-NH3",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "NH3",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.00021449999999999998
+    },
+    {
+      "id": "SPEC-S1-n-Ar",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "Ar",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.000143
+    },
+    {
+      "id": "SPEC-S1-n-CH4",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "CH4",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.00017875
+    },
+    {
+      "id": "SPEC-S1-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 673.15
+    },
+    {
+      "id": "SPEC-S1-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 9500000.0
+    }
+  ],
+  "title": "C1-SURROGATE-M04-v1"
+}

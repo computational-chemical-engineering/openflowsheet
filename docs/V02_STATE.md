@@ -16,12 +16,12 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 | ID | Lead | Depends | Gate | Status |
 | --- | --- | --- | --- | --- |
 | M01 | Design | T08 | W22, W21 (part) | **tested, reviewed by the design lane (closure `9098f14`), merged into main `997c7da`**; ADR 0026 Accepted; ADR 0027 Proposed until M02's adapter halves |
-| M02 | Build | M01 | W21 | all WOs except WO-13 done; review fixes F1–F5 + RP-2 done (`ef03f97`, gate 8358, no xfail, G2 unchanged); WO-13 running (D124 failure-bundle compare rules, ADR 0034 Am. 1, R-310, manifest `tested`, pointers, support matrix); then merge into main, alpha gate WO-5…11 |
+| M02 | Build | M01 | W21 | **tested, reviewed by the design lane (`docs/reviews/M02-review.md`), merged into main `9f6a9be`** (manifest `evidence/M02/ba90619…/manifest.json`; main gate 8371 passed). Reactor v3 on V5. Unruled build choices D130–D132 for a later design read; G12 cross-architecture reproduce not run (stated limitation) |
 | M03 | Design | T08 | W24 (part) | complete; main merged in (`086bf2b`); CI green on both runners (`2ed3f22`); manifest → `tested` and merge when Frank answers N1 |
-| M04 | Design | M02 | W23 | WO-1…7, 10, 13…17 + W27 part done (`4cd23ad`, gate 8444): surrogate registered, J3′–J6′ + G14 pass, 0/450 class changes, `list_models` → `f070fbe0…`; open for M04 review batch: envelope wording (22 models, not marked synthetic), corpus revision settings (E10), strip pattern (E12); WO-8 after M02 merges to main; WO-9, WO-11 real run, WO-12 manifest, `reviewer` |
-| M05 | Design | M03, M04 | W24 | WO-1…7, 2b, 3b, 4a done (`71804a6`, gate 8606; M05 numerical-policy addendum S11, floats classified); REAL box [653.15, 693.15] K; next after M02/M04 merge: real parent adapter (S3), WO-5c (`at_coupling`), WO-8 runs; review batch: Z2, W2, S1–S18 |
+| M04 | Design | M02 | W23 | **tested, reviewed by the design lane (`docs/reviews/M04-review.md`, §20 Am. 3), merged into main `78685cc`** (manifest `evidence/M04/8df0ea7…`, 60/61, A33 n/a; main gate 8670). Real b2-it1 on v3 NOT_PROMOTABLE (26/632 certificate refusals; finding to the reactor's owner); M05 uses the parent model (N6). MF1/MF2 fixed (A48, A24 mutations), BLAS pin A49 (`d65bb022…` at 1 and 48 threads). Later design read: E36 in-tree OpenBLAS pin vs threadpoolctl (lock hash), E37 backlog id B10, E38 A48–A50 W23 placement; Q-A2.1 open |
+| M05 | Design | M03, M04 | W24 | WO-1…7, 2b, 2c, 3b, 4a, 5c, 6b done; rulings §18 merged (`75cdc3b`); S3 parent adapter; gate 8790, nlp tier 164/1 (`dec989e`). WO-2c `M05-zero-flow-v2`: P1/P2/B2 one certified 4×4 block each (rcond 7.66e-3/1.42e-2/5.20e-6), 15 xfails now pass, other cases' dumps byte-identical. Running: WO-7b + S33 (holders' run before basis, for per-run basis_fd_point = n_in) + S36 + main merge. Then WO-8 runs → `reviewer` (batch Z2, W2, S1–S36: S22, S24, S27, S33, S36…). REAL box [653.15, 693.15] K; F-15 watch (G5). NLP-1 inventory stale (3 objects) |
 | M06 | Build | T08 | W26, W27 | **tested, reviewed by the design lane, merged into main `7473f35`**; ADR 0030 + ADR 0019 Amendment 3 Accepted; WO-17 (3 canaries + 45-run campaign) at M07 — needs v0.2 binder reading in `snapshot.READINGS`, M01/M02 id rows, U14 rewrite for campaign records, `specifier` read of registration §20 |
-| M07 | Design | M05, M06 | W25, W21–W27 | not started |
+| M07 | Design | M05, M06 | W25, W21–W27 | **spec running**: fresh `specifier` on `docs/briefs/M07-specification.md` (+ updates: merge main, M04 NOT_PROMOTABLE → parent model, M05 in progress); register R-331…339, R-350…359, R-390+; ADR from 0041 |
 
 ## Milestone 0 (housekeeping)
 
@@ -41,6 +41,14 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
+- **Blocking `0.2.0a1`** (ADR 0028 `pending`; verdicts `fffb0e4`; asked in plain words 2026-10-15):
+  1. What the pre-release claims (N3): default = v0.1's ten gates re-checked + PyMRM reactor adapter + Peng–Robinson route;
+     not surrogate, optimization, end-to-end refinement, web shell, agent benchmark. Alts: add web shell; adapter + PR only; no pre-release.
+  2. Carry v0.1's paid agent-interface evidence across two additive interface fields (V17 carry): default carry; alt. re-run
+     (≈ USD 10, 1 h). Unblocks the agent gate and one solver-structure clause.
+  3. Ship the reactor child process, unconfined with user privileges, labelled "not a sandbox" (M02 N1): default accept;
+     no → reactor-adapter gate not claimable.
+  4. Release again with v0.1's known failure "one PTC solver variant qualified" (V14 (b)): default accept, PTC stays experimental.
 - **M03 N1:** accept the licences of an optional, non-default `nlp` extra; the [A10] audit (PASS, `docs/m03-ipopt-audit.md`
   on `wp/M03-audit`) found exactly: EPL-2.0 (Ipopt, cyipopt), CeCILL-C (MUMPS, Scotch), public domain (PORD, SQLite),
   Apache-2.0 (METIS 5, OpenSSL), Apache-2.0 WITH LLVM-exception (libomp), BSD-3 (OpenBLAS, SPRAL, hwloc, libuuid,
@@ -93,14 +101,21 @@ F5 education mode deferred.
 
 ## Next action
 
-Resumed 2026-10-08. From 2026-10-09: at most 2 agents, and the agent budget rules in `CLAUDE.md` apply. The three below were started before the change and finish as they are.
+**2026-10-15: burst over; back to ≤ 2 agents (Frank).** Alpha WO-10 done (`wp/V02-alpha-gate` `4d591c7`, gate 8580): RC steps 1–9, 11, 12 PASS at `C_α`; step 10 FAIL (F1: 5 coupled-route
+certificates qualify 4 extra ids — EXT-COUPLING:T/xi, derivative_witness on/off → V18 (b) FAIL by Q5 default); M07a manifest `implemented`
+(A39, A43 fail; A43 = 13 t08_rc records lack machine_class). Amendment 2 ruled (`ab80ca5`, R-345…349): F1 = certificate defect (EXT-COUPLING/witness write `None`), failure is V18 (c) not (b);
+A43 needs a registered `machine_class`; wrapper output accepted. **`e0e198e` superseded → re-cut C_α¹ and re-run steps 1–13** (R-349;
+alt. Frank accepts V18 (c) FAIL, Q-A2-1, not recommended). §18.5 actions 1–2 done (`2e778d3`, gate 8591; Am2.5 inert: G2 dump byte-identical, K05 identity PASS, solution states identical). **C_α¹ = `6fec822`** (branch `wp/V02-alpha-rc1`; e0e198e + Am. 2 fixes). RC steps 1–12 PASS (CI 38772065394/38772054427; step 10: 77 certificates, 0 violations; step 12 cert bound `faa8e4da…`). M07a manifest `implemented` 37/0/6 (A52 + A60–A64 wait on verdicts by design). C_α⁰ record → `docs/v02-alpha-rc-record-e0e198e.md`. **Verdicts `fffb0e4`: 8 PASS (V11, V12, V15, V16, V18, V19, V20, W22); V14 FAIL (b); BLOCKED V13 (e), V17 (a), W21 (c) — on Frank's ADR 0028 answers.** Amendment 3 `6505315` (R-370…379): **re-cut C_α² needed** (A1: frozen envelope claims aarch64 for the reactor); date rule: re-judgement line, Frank's answers must fall between first verdict and re-judgement (Q-A3-1 strict: answers before C_α²'s verdict don't count). §19.8 actions 1–4 + status rule done (`958af67`, gate 8629). **C_α² = `cc73219`** (`wp/V02-alpha-rc2`): RC steps 1–12 PASS (CI 38813135468/38813136015; step 10 0/77), **M07a manifest `tested`** (38/0/6). C_α¹ record/verdicts moved to `*-6fec822.md`. **Verdicts at C_α² `f14f02e`: same as C_α¹ — 8 PASS, V14 FAIL (b), BLOCKED V13 (e)/V17 (a) (V17 carry), W21 (c) (M02 N1).** Frank asked (2026-10-16) for the 4 answers. B6 done (`758a902`, R-380…382): ADRs 0027 (= main), 0033, 0034, 0035 Accepted; gate dry run now refuses only on ADR 0028 + Frank's answers. B5: §20 Amendment 4 applies only if Frank declines M02 N1 (claim set without W21, re-cut C_α³). and M05 WO-7b + main merge; then design read of the diff, re-cut, re-run.;
+M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
+Stopped at Frank's pace request, work saved on branches (pushed): `wp/test-hardening` `1d90625` (t07_w5b pins the
+single-threaded env itself — gate + merge pending); `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
+(spec still to write). Done in the burst: M02 closeout merged (`2497ec2`); M05 rulings §18 on `wp/M05-rulings2` (`4cc5956`).
+Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 R-331…339, R-350…359, R-390+; M02 closeout R-340…344; alpha Am. 2 R-345…349; M04 review R-360…369; alpha Am. 3 R-370…379, B6/B5 R-380…382.
+Queued M02 follow-up (after the alpha RC): C1 inert-floor exact compare (`boundary.py:390`, few-ulp slack), R-341 R0
+guard, R-343 L-rows.
+After these: Frank's 4 answers → re-judge V13/V17/W21 → gate table pasted, A52 → M07a manifest `tested` → step 13 → WO-11 → Frank publishes `0.2.0a1`; 
+M05 WO-8 + `reviewer`; M07 build.
 
-| Agent | Package / WO | Branch (worktree under `.claude/worktrees/`) |
-| --- | --- | --- |
-| `opus-engineer` | M02 WO-13 (+ D124) | `wp/M02` (`m02`) |
-| `recon` | M07 recon digest (`docs/briefs/M07-recon-digest.md`) for the M07 specification | main |
-
-Done today: M06 WO-1…6, WO-14…16 (all merged into `wp/M06-build`; R-192…R-194; W27 Tier 1 approval recorded), the M01 and M03 specifications, M03 WO-0…3 and WO-6 (Ipopt audit PASS, merged into `wp/M03`).
-Next free slot: `reviewer` M01 after Amendment 1, then M01 WO-7 manifest → merge → M02 design; then M03 spec amendment round (batched);
-M03 WO-8 after N1; M06 WO-11…13. In worktrees run the gate with `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/check.sh`.
-Push `main` at milestones (authorised). W27 archive for tests: symlink the directory `.claude/worktrees/m06-w27h/evidence/M06/W27/artifacts` to `evidence/M06/W27/artifacts` (not just the tarball), remove after.
+In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the
+directory `.claude/worktrees/m06-w27h/evidence/M06/W27/artifacts` to `evidence/M06/W27/artifacts`, remove after.
+Push `main` at milestones (authorised).

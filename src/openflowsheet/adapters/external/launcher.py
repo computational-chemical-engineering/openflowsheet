@@ -216,6 +216,10 @@ def launch(
         check = INTERRUPT_CHECK.get()
     progress = progress if progress is not None else LaunchProgress()
     attempt_dir.mkdir(parents=True, exist_ok=True)
+    # The child runs in `attempt_dir` and reads it back as `os.getcwd()`, the physical path; its
+    # `HOME`/`TMPDIR` must name the same directory, or a relative path would point below itself
+    # and stay literal in the fingerprint's `env_allowlist` (E31/E32: every experiment key moved).
+    attempt_dir = attempt_dir.resolve()
     command = [str(program.python), "-I", str(program.script)]
     if handshake:
         command.append(HANDSHAKE_ARGUMENT)
