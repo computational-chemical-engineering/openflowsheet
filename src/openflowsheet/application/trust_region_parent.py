@@ -16,6 +16,9 @@ made directly before S44, unchanged:
   its outcome;
 - `live_experiments`, `inlet_of`, `unit_variant`: `coupled_run`'s;
 - `pinned_at`: M02's coupling accessor `coupled_run.at_coupling` at w = (X̂, ΔT̂);
+- `solve_eo` (WO-8b, P2_A's re-solve): `revision_run.select_route` with the given surrogate
+  resolver, which must select `revision_eo` (else the code `not_revision_eo`), then
+  `revision_run.solve_route`; a `RunUnsupportedError` comes back as its `code`;
 - `policy`: the default solve policy `policies.T06_REVISION_V2`.
 
 Imports nothing of `studies.trust_region` (R-003: no route reaches the projection).
@@ -23,7 +26,7 @@ Imports nothing of `studies.trust_region` (R-003: no route reaches the projectio
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any, Final
 
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
@@ -114,6 +117,22 @@ class C1ParentServices:
         self, binding: RevisionBinding, unit_id: str, coupling: tuple[float, float]
     ) -> RevisionBinding:
         return pinned_at(binding, unit_id, coupling)
+
+    def solve_eo(
+        self,
+        document: Mapping[str, Any],
+        *,
+        surrogates: Callable[[str], Mapping[str, Any] | None],
+        policy: SolvePolicy,
+        check_policy: CheckPolicy,
+    ) -> RouteRun | str:
+        route = select_route(document, surrogates=surrogates)
+        if not isinstance(route, Route) or route.solve_path != "revision_eo":
+            return "not_revision_eo"
+        try:
+            return solve_route(route, document, policy=policy, check_policy=check_policy)
+        except RunUnsupportedError as error:
+            return error.code
 
 
 #: The services every C1 parent of this application runs on.

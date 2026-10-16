@@ -18,6 +18,14 @@ request; nothing here keeps a ledger of its own.
   `in_process_meta()`: `ok`, no cache hit, no key, no execution, not extrapolated. It is never an
   experiment, so it never counts against a parent budget (`holders.TruthBox.parent`).
 
+**`SurrogateTruth`** (§6.4, R-407): stage A's truth, M04's promoted quadratic of the bound parent.
+Its values are M04's `QuadraticSurrogate.predict(z(s))` and its gradient M04's `inlet_sensitivity`,
+both on the manifest's own scaling (`reactor.surrogate_of`), never re-derived here. Its refusals are
+the M04 unit's, in the unit's order, each `out_of_domain` with the unit's code: no defined input
+(`surrogate_input_undefined`), outside the parent's hard domain (`surrogate_outside_hard_domain`),
+a prediction outside A(s) (`surrogate_output_inadmissible`) — so stage A's truth answers where the
+surrogate-backed re-solve of P2_A (§7.3) can.
+
 **(X, ΔT) from an experiment.** M02's boundary projects the raw outlet onto the reaction
 (`models.c1.boundary.project`, the least-squares extent): X = ξ_E / n_N₂,in and
 ΔT = T_E − T_in, ADR 0034 D1's coupling coordinates, read from the envelope as it stands. Nothing
@@ -51,7 +59,11 @@ from typing import Any, Final
 
 from openflowsheet.adapters.experiments.runner import ExperimentOutcome, ExperimentRunner
 from openflowsheet.adapters.variants import Variant, hard_domain
+from openflowsheet.canonical import document_sha256
 from openflowsheet.models.c1.boundary import hard_domain_violations, state_space_violation
+from openflowsheet.studies.surrogate.plan import coordinates
+from openflowsheet.studies.surrogate.quadratic import inadmissible_outputs, inlet_sensitivity
+from openflowsheet.studies.surrogate.reactor import hard_domain_bounds, surrogate_of
 from openflowsheet.studies.trust_region.holders import (
     FDCHECK_POINT,
     PARENT_EXPERIMENT,
@@ -67,7 +79,10 @@ __all__ = [
     "PARENT_EXPERIMENT",
     "ForwardDifference",
     "GradientCheck",
+    "PROMOTABLE",
+    "SURROGATE",
     "ParentExperimentTruth",
+    "SurrogateTruth",
     "fd_workers",
     "gradient_check",
     "in_process_meta",
@@ -97,6 +112,11 @@ TEMPERATURE_FLOOR_K: Final = 1.0
 PRESSURE_FLOOR_PA: Final = 1e5
 #: §6.5: at most seven FD workers (one per coordinate).
 MAX_FD_WORKERS: Final = 7
+#: `describe()["kind"]` of `SurrogateTruth` (§6.4): in-process, never a parent experiment.
+SURROGATE: Final = "surrogate"
+#: M04's promotion verdict that admits a surrogate to stages A and C (M04 spec §9.2, ADR 0037).
+PROMOTABLE: Final = "PROMOTABLE"
+
 #: The inlet's length and order: (n_H₂, n_N₂, n_NH₃, n_Ar, n_CH₄, T, P) (§6.1, ADR 0038 D3).
 INLET_SIZE: Final = len(COMPONENTS) + 2
 COORDINATES: Final = (*(f"n_{name}" for name in COMPONENTS), "T", "P")
@@ -292,6 +312,87 @@ class ParentExperimentTruth:
             f"{self.variant.variant_id}: a parent experiment has no gradient of its own; the "
             f"holder forms it by {FD_POLICY_ID}"
         )
+
+
+class SurrogateTruth:
+    """M04's promoted quadratic of the bound parent as a truth (§6.4, R-407; module docstring).
+
+    `manifest` is the SurrogateManifest; `variant` the parent the study binds, which the manifest
+    must name (`parent.variant_id` and `parent.variant_sha256`) with the verdict `PROMOTABLE`,
+    else `ValueError`: §7.3 runs stage A only on a promoted surrogate of the bound parent.
+    `n_tubes` is the parent reactor's, which M04's input map divides the total flow by."""
+
+    #: An analytic gradient: the holder asks `gradient`, never forms a finite difference.
+    finite_difference: None = None
+
+    def __init__(
+        self,
+        manifest: Mapping[str, Any],
+        variant: Variant,
+        n_tubes: float,
+        components: Sequence[str] = COMPONENTS,
+    ) -> None:
+        if tuple(components) != COMPONENTS:
+            raise ValueError(f"a C1 truth takes {list(COMPONENTS)}, got {list(components)}")
+        parent = manifest["parent"]
+        if (parent["variant_id"], parent["variant_sha256"]) != (variant.variant_id, variant.sha256):
+            raise ValueError(
+                f"surrogate {manifest['surrogate_id']!r} is of {parent['variant_id']!r}, not of "
+                f"the bound parent {variant.variant_id!r}"
+            )
+        verdict = manifest["promotion"]["verdict"]
+        if verdict != PROMOTABLE:
+            raise ValueError(f"surrogate {manifest['surrogate_id']!r} is {verdict}, not promoted")
+        self.manifest: Mapping[str, Any] = manifest
+        self.sha256 = document_sha256(manifest)
+        self.surrogate = surrogate_of(manifest)
+        self.hard_domain: Mapping[str, Any] = manifest["domain"]["hard"]
+        self.n_tubes = float(n_tubes)
+        self.components = tuple(components)
+
+    def describe(self) -> Mapping[str, Any]:
+        return {
+            "kind": SURROGATE,
+            "id": str(self.manifest["surrogate_id"]),
+            "sha256": self.sha256,
+            "synthetic": bool(self.manifest["synthetic"]),
+            "gradient": "analytic",
+        }
+
+    def stream(self, inlet: Sequence[float]) -> StreamState:
+        n = len(self.components)
+        return StreamState(
+            n=tuple(float(value) for value in inlet[:n]),
+            temperature=float(inlet[n]),
+            pressure=float(inlet[n + 1]),
+        )
+
+    def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]:
+        """(X̃, ΔT̃) = `predict(z(s))` with `in_process_meta()`; NaN for both and status
+        `out_of_domain` with the M04 unit's code where the unit refuses (module docstring)."""
+        state = self.stream(inlet)
+        u = coordinates(state, self.n_tubes)
+        if u is None:
+            return self._refused("surrogate_input_undefined")
+        if hard_domain_bounds(state, self.hard_domain, self.n_tubes):
+            return self._refused("surrogate_outside_hard_domain")
+        found = inlet_sensitivity(self.surrogate, state, self.n_tubes)
+        assert found is not None  # u(s) is defined
+        if inadmissible_outputs(found.x, found.dt, u[2]):
+            return self._refused("surrogate_output_inadmissible")
+        return found.x, found.dt, in_process_meta()
+
+    def gradient(self, inlet: Sequence[float]) -> Sequence[Sequence[float]]:
+        """M04's `inlet_sensitivity`: (∂X̃/∂s, ∂ΔT̃/∂s), s = (n₁…n₅, T, P). `ValueError` where
+        u(s) is undefined (the holder asks only after a value at the same inlet)."""
+        found = inlet_sensitivity(self.surrogate, self.stream(inlet), self.n_tubes)
+        if found is None:
+            raise ValueError("surrogate_input_undefined")
+        return (found.dx_ds, found.ddt_ds)
+
+    @staticmethod
+    def _refused(code: str) -> tuple[float, float, dict[str, Any]]:
+        return math.nan, math.nan, {**in_process_meta(), "status": "out_of_domain", "code": code}
 
 
 def outcome_meta(outcome: ExperimentOutcome) -> dict[str, Any]:

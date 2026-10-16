@@ -15,8 +15,16 @@ the note registers for M05's own runs:
   them); after the study's gradient-quality check at the same w₀ they are memo or store hits.
   For a truth with an analytic gradient it is that gradient. These are ledgered requests: a
   link's truth is the expensive model, and the study accounts for every call to it.
-- `constant_link_basis`: b = d(w₀)/s, stage A's basis (§6.6: the surrogate as truth is already
-  exact and cheap).
+- `constant_link_basis`: b = d(w₀)/s. It was stage A's basis; R-408 replaced it there by the
+  promoted quadratic (a constant link basis freezes X̂ and ΔT̂ in the PMP, probe P14 b).
+- **External links with a promoted M04 surrogate of the bound parent: its quadratic**
+  (`surrogate_link_basis`, `promoted_basis`; §6.6, R-408), for stage A and for a promoted stage C.
+  b_k(w) = β_kᵀφ(z(w)) / s_k, compiled from the manifest's coefficients on the clone's inlet
+  arguments: u(s) = (T, P, n_H₂/n_N₂, y_NH₃, y_Ar, y_CH₄, n_tot/N_tubes) with n_tot summed left to
+  right, z = (u − c)/h on the manifest's scaling, φ M04's 36 terms in M04's order (M04 spec §3.1,
+  §3.4). The expression is M04's `predict` with the arithmetic of the arguments in place of
+  `math.fsum`; WO-4's acceptance holds it to `predict` within 1e-14 relative at M04's J1–J3. It
+  asks the truth nothing, so it adds no ledger entry.
 
 **`M05-basis-v2`** (R-400, design note §20.1) is v1 with the truth's curvature along the decision
 path added to every link EF: `m05_basis_v2`, for every stage-C run without a promoted surrogate.
@@ -41,6 +49,8 @@ import math
 from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Final, Protocol
 
+from openflowsheet.studies.surrogate.plan import DIMENSION
+from openflowsheet.studies.surrogate.quadratic import PAIRS, QuadraticSurrogate
 from openflowsheet.studies.trust_region.holders import (
     BASIS_CURVATURE_POINT,
     BASIS_FD_POINT,
@@ -70,6 +80,9 @@ __all__ = [
     "curvature_link_basis",
     "m05_basis",
     "m05_basis_v2",
+    "promoted_basis",
+    "surrogate_expression",
+    "surrogate_link_basis",
 ]
 
 BASIS_POLICY_ID: Final = "M05-basis-v1"
@@ -174,6 +187,70 @@ def constant_link_basis(projection: Projection) -> dict[str, EFBasis]:
         for coordinate, entry in enumerate(entries):
             basis[entry["ef"]] = constant(values[coordinate], entry["output_scale"])
     return basis
+
+
+def surrogate_expression(
+    coefficients: Sequence[float],
+    surrogate: QuadraticSurrogate,
+    n_tubes: float,
+    args: Sequence[Any],
+) -> Any:
+    """β·φ(z(w)) on the inlet arguments w = (n₁…n₅, T, P) (module docstring), in the arithmetic of
+    the arguments: Pyomo expressions on the clone's variables, or floats. A float flow argument is
+    an eliminated zero flow (R-296) and enters as the constant it is."""
+    n, temperature, pressure = args[:5], args[5], args[6]
+    total = (((n[0] + n[1]) + n[2]) + n[3]) + n[4]
+    u = (
+        temperature,
+        pressure,
+        n[0] / n[1],
+        n[2] / total,
+        n[3] / total,
+        n[4] / total,
+        total / n_tubes,
+    )
+    scaling = surrogate.scaling
+    z = [(u[k] - scaling.centre[k]) / scaling.half_width[k] for k in range(DIMENSION)]
+    phi = [1.0, *z, *(z[i] * z[j] for i, j in PAIRS)]
+    return sum(float(b) * f for b, f in zip(coefficients, phi, strict=True))
+
+
+def surrogate_link_basis(
+    projection: Projection, surrogate: QuadraticSurrogate, n_tubes: float
+) -> dict[str, EFBasis]:
+    """Every external link EF's promoted quadratic, b_k = β_kᵀφ(z(w)) / s_k (R-408, module
+    docstring): X from `coefficients_x`, ΔT from `coefficients_dt`, in the source map's order."""
+    frozen_tubes = float(n_tubes)
+    basis: dict[str, EFBasis] = {}
+    for _, _, entries in _links(projection).values():
+        if [entry["coordinate"] for entry in entries] != ["X", "dT"]:
+            raise ValueError(f"a link's outputs are (X, dT), got {entries!r}")
+        for entry, coefficients in zip(
+            entries, (surrogate.coefficients_x, surrogate.coefficients_dt), strict=True
+        ):
+            basis[entry["ef"]] = _surrogate_basis(
+                coefficients, surrogate, frozen_tubes, float(entry["output_scale"])
+            )
+    return basis
+
+
+def _surrogate_basis(
+    coefficients: Sequence[float], surrogate: QuadraticSurrogate, n_tubes: float, scale: float
+) -> EFBasis:
+    def build(args: Sequence[Any]) -> Any:
+        return surrogate_expression(coefficients, surrogate, n_tubes, args) / scale
+
+    return EFBasis("surrogate", build)
+
+
+def promoted_basis(
+    projection: Projection, *, surrogate: QuadraticSurrogate, n_tubes: float
+) -> dict[str, EFBasis]:
+    """§6.6 with a promoted surrogate (stage A, and stage C when the bound parent's surrogate is
+    promoted): the affine Taylor basis for every property EF, the promoted quadratic for every
+    link EF (R-408)."""
+    links = surrogate_link_basis(projection, surrogate, n_tubes)
+    return {**affine_block_basis(projection), **links}
 
 
 def m05_basis(projection: Projection) -> dict[str, EFBasis]:

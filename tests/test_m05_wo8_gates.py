@@ -1,5 +1,5 @@
-"""M05 WO-8e: gates G5, G5b, G6, G7 and G9 judged on the committed `M05-basis-v2` records
-(design note §20.7 as restated by R-403 and R-404; §13 for G7; build log S59-S61).
+"""M05 WO-8e and WO-8b: gates G5, G5b, G6, G7, G8 and G9 judged on the committed `M05-basis-v2`
+records (design note §20.7 as restated by R-403 and R-404; §13 for G7; build log S59-S63).
 
 Each record under `benchmarks/m05/records/` was written by `scripts/m05_wo8_runs.py <CASE>` at
 `OMP_NUM_THREADS=1` in the environment its `<stem>.environment.json` names; G10 is that script's
@@ -24,7 +24,7 @@ sys.path.insert(0, str(REPO_ROOT / "tests" / "support"))
 import m05_replay as replay  # noqa: E402
 
 RECORDS = REPO_ROOT / "benchmarks" / "m05" / "records"
-CASES = ("TR-E2", "TR-E2-FAR", "TR-E2-FD", "LOOP-R")
+CASES = ("TR-E2", "TR-E2-FAR", "TR-E2-FD", "LOOP-R", "LOOP-S")
 T = "preheater.T_spec"
 LINK = "link:reactor"
 #: The golden-section reference optimum of TR-E2's loop, independent of TRF
@@ -75,8 +75,8 @@ def stage_c(document: Mapping[str, Any]) -> list[dict[str, Any]]:
 
 
 def test_the_records_are_the_v2_set() -> None:
-    """WO-8e: exactly the four cases, each under `M05-basis-v2` with its sidecars, in one
-    environment at one OpenMP thread (S59)."""
+    """WO-8e and WO-8b: exactly the five cases, each under `M05-basis-v2` with its sidecars, in
+    one environment at one OpenMP thread (S59)."""
     stems = {path.name.split(".")[0] for path in RECORDS.iterdir()}
     assert stems == {_stem(case) for case in CASES}
     environments = []
@@ -220,3 +220,57 @@ def test_g9_loop_r() -> None:
     assert [point["check_id"] for point in candidate["checks"]["P5"]["values"]["points"]] == [
         f"{candidate['candidate_id']}-poll-{T}-plus"
     ]
+
+
+# -- G8: LOOP-S --------------------------------------------------------------------------------
+
+#: F-22: M04.A19's PROMOTABLE smooth-synthetic prefix-plan manifest, as M04 committed it.
+A19 = REPO_ROOT / "tests" / "fixtures" / "schemas" / "surrogate_manifest" / "valid"
+A19_MANIFEST = A19 / "a19_smooth_prefix.json"
+
+
+def _stage_a(document: Mapping[str, Any]) -> list[dict[str, Any]]:
+    return [run for run in document["runs"] if run["stage"] == "A"]
+
+
+def test_g8_loop_s_stage_a_and_p2_a() -> None:
+    """G8 (§20.7; R-407, R-408), first rows: stage A executed with the PROMOTABLE prefix-plan
+    manifest; its run ends `TRF_EXIT_WITHOUT_STEP` or `TRF_CONVERGED` with P2_A judged and passed
+    against the surrogate-backed `revision_eo` re-solve; `DECISION_STABLE`."""
+    from openflowsheet.canonical import document_sha256
+
+    document = record("LOOP-S")
+    manifest = json.loads(A19_MANIFEST.read_text(encoding="utf-8"))
+    assert manifest["promotion"]["verdict"] == "PROMOTABLE" and manifest["plan_id"] == "it1-prefix"
+    assert document["spec"]["surrogate"] == {
+        "manifest_sha256": document_sha256(manifest),
+        "verdict": "PROMOTABLE",
+    }
+    assert document["stage_a"]["executed"] is True
+    (run,) = _stage_a(document)
+    assert run["outcome"] in ENDS
+    assert [truth["kind"] for truth in run["truth"]] == ["surrogate"]
+    assert set(run["basis"].values()) == {"affine_taylor", "surrogate"}
+    assert [run["basis"][name] for name in ("ef_ext_0", "ef_ext_1")] == ["surrogate"] * 2
+    assert run["assumptions"] == TR_E2_ASSUMPTIONS  # §5.2: the surrogate as truth is eligible
+    candidate = candidate_of(document, run["run_id"])
+    p2 = candidate["checks"]["P2"]
+    assert p2["judged"] is True and p2["pass"] is True
+    assert p2["values"]["reference"] == "surrogate_revision_eo"
+    assert document["status"] == "DECISION_STABLE"
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="G8 fails as measured (build log S63): T* 653.150021930406 K is 1.0965e-6 scaled "
+    "(2.193e-5 K) from d_lb, above R-404's 1e-6 (2e-5 K), so P5 polled both sides; for the "
+    "design lane, the criterion is not moved here",
+)
+def test_g8_loop_s_at_the_bound_and_polled_inward() -> None:
+    """G8 (§20.7, R-404), last rows: |d* − d_lb| ≤ 1e-6 scaled, and P5 polled the inward point
+    only."""
+    document = record("LOOP-S")
+    distance = abs(t_star(document) - T_LB) / H
+    assert math.isfinite(distance) and distance <= AT_BOUND_SCALED
+    candidate = candidate_of(document, document["runs"][-1]["run_id"])
+    assert [point["direction"] for point in candidate["poll"]] == [1]

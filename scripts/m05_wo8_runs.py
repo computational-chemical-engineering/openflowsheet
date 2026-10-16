@@ -13,14 +13,19 @@ in-process variant (registered for this process only, as M02's and M04's tests d
   `M05-fd-v2` check at the start inlet (§5.3, §17.2);
 - `LOOP-R`: M04's `m04-synthetic-rough-v1` (not promotable): stage A skipped, stage C with FD
   gradients and the no-surrogate basis.
+- `LOOP-S` (WO-8b, G8): M04's `m04-synthetic-smooth-v1` with its PROMOTABLE prefix-plan manifest,
+  M04.A19's committed `tests/fixtures/schemas/surrogate_manifest/valid/a19_smooth_prefix.json`
+  (F-22): stage A on `SurrogateTruth` (§6.4, R-407) with the promoted basis (`promoted_basis`:
+  affine property EFs, the manifest's quadratic on the link, R-408) and §5.2's eligible column,
+  checked with P2_A's surrogate-backed `revision_eo` reference (`C1Parent.surrogate_reference`);
+  stage C, if reached, with FD gradients and the same promoted basis.
 
 Every case but TR-E2-FAR: start 673.15 K. Every case: `IN_PROCESS_BUDGET`, `M05-trf-config-v1`
-with σ = 0.0125, and the no-surrogate basis `M05-basis-v2` (`m05_basis_v2`, R-400: v1's affine
-Taylor basis plus the truth's curvature along the decision path, from M02's pinned inner solve at
-d₀ ± t); `run_case` takes `basis_policy="M05-basis-v1"` for the v1 runs of 6a9d29d (F-15's
-evidence). The FD truths' `M05-fd-v2` check runs inside the first stage-C run (R-406).
-`LOOP-S` needs stage A on M04's promoted surrogate (`SurrogateTruth`, §6.4), which this branch does
-not carry; it is not a case here (WO-8 build log).
+with σ = 0.0125, and the basis policy `M05-basis-v2`: without a promoted surrogate `m05_basis_v2`
+(R-400: v1's affine Taylor basis plus the truth's curvature along the decision path, from M02's
+pinned inner solve at d₀ ± t), with one the promoted quadratic, which R-400 left as it was;
+`run_case` takes `basis_policy="M05-basis-v1"` for the v1 runs of 6a9d29d (F-15's evidence). The FD
+truths' `M05-fd-v2` check runs inside the first stage-C run (R-406).
 
 Writes, beside `<record>.json`: `<record>.coupling/<solve_id>.json`, the canonical bytes of every
 M02 coupling record a solve digested (R-385), and `<record>.ledger.json`, every holder request in
@@ -45,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import functools
 import hashlib
 import importlib.metadata
 import json
@@ -74,6 +80,7 @@ from openflowsheet.studies.trust_region.basis import (  # noqa: E402
     BASIS_POLICY_V2,
     m05_basis,
     m05_basis_v2,
+    promoted_basis,
 )
 from openflowsheet.studies.trust_region.parent import DECISION_TOLERANCE_K, C1Parent  # noqa: E402
 from openflowsheet.studies.trust_region.study import (  # noqa: E402
@@ -98,6 +105,7 @@ from openflowsheet.studies.trust_region.truths import (  # noqa: E402
     FD_POLICY_ID,
     GradientCheck,
     ParentExperimentTruth,
+    SurrogateTruth,
     gradient_check,
 )
 from openflowsheet.thermo.pr_c1 import PrC1Provider  # noqa: E402
@@ -105,6 +113,9 @@ from openflowsheet.thermo.pr_c1 import PrC1Provider  # noqa: E402
 LOOP_PATH: Final = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"
 INVENTORY_PATH: Final = REPO_ROOT / "benchmarks" / "m05" / "trsp-inventory-x86_64.json"
 RECORDS: Final = REPO_ROOT / "benchmarks" / "m05" / "records"
+#: F-22: M04's PROMOTABLE smooth-synthetic prefix-plan manifest (M04.A19), as committed by M04.
+SCHEMA_FIXTURES: Final = REPO_ROOT / "tests" / "fixtures" / "schemas"
+A19_MANIFEST: Final = SCHEMA_FIXTURES / "surrogate_manifest" / "valid" / "a19_smooth_prefix.json"
 #: §7.2: S0's nominal decision, K.
 START_K: Final = 673.15
 #: §20.2 (R-403): G5b's test-only start, a quarter of the box below S0 (d₀ = −0.5), K.
@@ -135,6 +146,8 @@ class Case:
     backend_for: Callable[[variants.Variant], Any]
     truth_class: type[ParentExperimentTruth]
     start_k: float = START_K
+    #: The promoted surrogate of the bound parent (stage A, §7.3), or `None` (stage A skipped).
+    manifest: Path | None = None
 
     @property
     def finite_difference(self) -> bool:
@@ -162,6 +175,13 @@ CASES: Final = {
             lambda: m04_parents.synthetic_variant(m04_parents.ROUGH_ID),
             m04_parents.backend_for(),
             ParentExperimentTruth,
+        ),
+        Case(
+            "LOOP-S",
+            lambda: m04_parents.synthetic_variant(m04_parents.SMOOTH_ID),
+            m04_parents.backend_for(),
+            ParentExperimentTruth,
+            manifest=A19_MANIFEST,
         ),
     )
 }
@@ -307,8 +327,8 @@ def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run
     projections: list[Any] = []
     checks: list[GradientCheck] = []
 
-    def project_at(start: Any) -> Any:
-        projection = parent.project_at(start)
+    def project_at(start: Any, truth: Any = None) -> Any:
+        projection = parent.project_at(start, truth=truth)
         projections.append(projection)
         return projection
 
@@ -324,13 +344,37 @@ def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run
     sigma = step_size_termination((decision.tolerance,), (0.5 * (decision.upper - decision.lower),))
     assumptions = FD_ASSUMPTIONS if case.finite_difference else TR_E2_ASSUMPTIONS
     v2 = basis_policy == BASIS_POLICY_V2
+    stage_a = None
+    stage_a_reference = None
+    surrogate_spec = None
+    if case.manifest is None:
+        basis_for: Any = m05_basis_v2 if v2 else m05_basis
+        path_for = parent.decision_path if v2 else None
+    else:
+        manifest = json.loads(case.manifest.read_text(encoding="utf-8"))
+        surrogate = SurrogateTruth(manifest, parent.variant, parent.reactor.n_tubes)
+        basis_for = functools.partial(
+            promoted_basis, surrogate=surrogate.surrogate, n_tubes=surrogate.n_tubes
+        )
+        path_for = None
+        stage_a = TrfStage(
+            functools.partial(project_at, truth=surrogate),
+            basis_for,
+            trf_config_v1(sigma),
+            TR_E2_ASSUMPTIONS,  # §5.2: the surrogate as truth is eligible
+        )
+        stage_a_reference = parent.surrogate_reference(manifest)
+        surrogate_spec = {
+            "manifest_sha256": surrogate.sha256,
+            "verdict": manifest["promotion"]["verdict"],
+        }
     stage = TrfStage(
         project_at,
-        m05_basis_v2 if v2 else m05_basis,
+        basis_for,
         trf_config_v1(sigma),
         assumptions,
         gradient_check=check_once if case.finite_difference else None,
-        path_for=parent.decision_path if v2 else None,
+        path_for=path_for,
     )
     limitations = ("fd_gradient",) if case.finite_difference else ()
     result = run_study(
@@ -339,6 +383,8 @@ def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run
         start={decision.name: case.start_k},
         stage_c=stage,
         budget=StudyBudget(IN_PROCESS_BUDGET),
+        stage_a=stage_a,
+        stage_a_reference=stage_a_reference,
         projection_check=parent.project_at,
         limitations=limitations,
     )
@@ -373,7 +419,7 @@ def run_case(case: Case, root: Path, basis_policy: str = BASIS_POLICY_V2) -> Run
             "checks": "M05-checks-v1",
         },
         "truth": {key: truth[key] for key in ("kind", "id", "sha256", "synthetic", "gradient")},
-        "surrogate": None,
+        "surrogate": surrogate_spec,
     }
     check = checks[0] if checks else None
     record = result.as_document(

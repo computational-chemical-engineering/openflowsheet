@@ -572,3 +572,51 @@ S61 The gates are judged in the default tier on the committed files (`tests/test
      content). A replay with a different thread count is reported as an `environment` difference. PASS.
    v2 at 1 thread against S58's in-memory v2 (48 threads): TR-E2 T* 673.6507818736261 vs …262 (1 ulp), TR-E2-FD
      673.6294405283818 vs …825; the thread count, not the code (S59).
+
+## WO-8b — `SurrogateTruth`, the promoted basis, P2_A, LOOP-S, G8 (§20.5, §20.7)
+
+F-22 (fact): M04's PROMOTABLE smooth-synthetic prefix-plan manifest is on `wp/M05` (M04's merge `78685cc` is an
+ancestor): M04.A19's `tests/fixtures/schemas/surrogate_manifest/valid/a19_smooth_prefix.json`, written by M04's
+`run_study(runner, m04-synthetic-smooth-v1, "it1-prefix", 1000)` (`scripts/m04_schema_fixtures.py`), verdict
+`PROMOTABLE`, `parent.variant_sha256` equal to the registered smooth variant's. LOOP-S uses that file; no merge,
+no stand-in.
+S62 `SurrogateTruth(manifest, variant, n_tubes)` (§6.4 wrote `SurrogateTruth(manifest)`): the bound parent and
+   its N_tubes are needed — the manifest must name `variant` and be `PROMOTABLE` (else `ValueError`, §7.3's
+   "promoted surrogate of the bound parent"), and M04's input map divides n_tot by N_tubes. Values and gradient are
+   M04's `predict(z(s))` and `inlet_sensitivity` on the manifest's scaling (`reactor.surrogate_of`). Refusals are
+   the M04 unit's, in its order, `out_of_domain` with its code (`surrogate_input_undefined`,
+   `surrogate_outside_hard_domain`, `surrogate_output_inadmissible`), so stage A's truth answers where P2_A's
+   surrogate-backed re-solve can; `meta` is `in_process_meta()` otherwise (§16.4). Alternative: no refusals (a
+   polynomial evaluates anywhere). Reversible: one method.
+S63 The promoted basis (`basis.promoted_basis`, `surrogate_link_basis`, `surrogate_expression`; R-408): affine
+   property EFs, and on each link EF b_k = β_kᵀφ(z(w))/s_k built on the clone's arguments, u(s) with M04's
+   operation order and M04's `PAIRS`. M04's `basis(z)` itself is not reused: it applies `float()` to z, which a
+   Pyomo expression refuses, and M04 is not changed. It asks no holder anything, so a promoted run has no
+   `basis_fd_point` (as `request_identity_violations` already expects) and its `basis` block is the EF kinds
+   (`surrogate` on the links), no v2 curvature block. The record's `configs.basis` stays `M05-basis-v2`: R-400
+   replaced only §6.6's no-surrogate branch. WO-4's acceptance at M04's J1-J3 (A19 coefficients, each state's
+   N_tubes): floats 0 relative error, Pyomo variables ≤ 1.9e-16 relative (≤ 1e-14 required); the symbolic gradient
+   matches `inlet_sensitivity` within 1e-12 of its largest entry.
+   P2_A (§7.3): `C1Parent.surrogate_reference(manifest)` re-solves the candidate's revision with the reactor model
+   replaced by `c1.reactor_surrogate` (version `surrogate_id`, artifact the manifest's canonical SHA-256,
+   parameters unchanged) on `revision_eo`, through a new, additive `ParentServices.solve_eo` (S44's pattern:
+   `studies` does not import `application`). A re-solve with no state is a reference with NaN objective and no
+   state, so P2 fails (the safe failure); source `surrogate_revision_eo[:<why>]`. Stage A projects with
+   `C1Parent.project_at(start, truth=surrogate)`; its surrogate evaluations are charged to the in-process study
+   budget after the run, as `TrfStage` already does for an in-process truth (§7.5 counts evaluations).
+   Alternatives: P2_A's reference built in the composition root; `PROJECTION_DISAGREES` reserved for a real defect
+   by a separate status for a failed reference. Reversible: one method each.
+S64 LOOP-S (`scripts/m05_wo8_runs.py LOOP-S`, `OMP_NUM_THREADS=1`, `.venv-nlp`, fresh store): stage A A0
+   `TRF_CONVERGED` at k = 1 (θ_k0 6.55e-3, θ_recheck 8.88e-9, step 8.19e-7, final_step_ratio 3.28e-6; R-408
+   expected `TRF_EXIT_WITHOUT_STEP` with θ_PMP ≈ 1e-14, but the property EFs' affine basis is not exact, so θ_PMP =
+   6.55e-3); P2_A judged and passed (objective error 5.95e-14 against bound 4.59e-4, worst state 1.57e-8 at
+   `S2.T`, 62 mapped variables); cand-A0 `PARENT_LOCAL_EVIDENCE` (P5: minus clipped to 653.15 K improvement
+   3.71e-9 ≤ allowance 1.28e-5; plus −8.46e-5); `DECISION_STABLE`; no stage C. T* 653.150021930406 K, |d* − d_lb|
+   = 1.0965e-6 scaled (2.193e-5 K). 3 surrogate evaluations, 16 parent executions, 4 couplings, store bijection 0.
+   **G8: FAIL** on its last rows — |d* − d_lb| ≤ 1e-6 scaled (≤ 2e-5 K) misses by a factor 1.0965, and because the
+   decision is not "at the bound" (§7.4), P5 polled both sides, not the inward point only. Every other G8 row
+   passes. Not moved: `test_g8_loop_s_stage_a_and_p2_a` passes; `test_g8_loop_s_at_the_bound_and_polled_inward`
+   holds §20.7's criterion literally and is a strict `xfail` with these numbers, for the design lane. For
+   comparison, LOOP-R's interior-point offset is 5.29e-8 scaled, at about the same objective slope (its plus poll
+   −8.37e-5).
+   G10: `--replay` 0 differences on TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R (after this change) and LOOP-S.

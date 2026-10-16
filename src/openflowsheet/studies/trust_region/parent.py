@@ -43,7 +43,16 @@ refinement, never a false stability).
 **The parent truth** (§6.4): `ParentExperimentTruth` on the same runner, the external link of the
 formulation `project_at` projects at a parent-checked start: the inner problem pinned at the
 start's converged w, at its certified state, so TRF's first truth evaluation at w₀ is a store hit
-(§7.2).
+(§7.2). `project_at(start, truth=)` links another truth instead — stage A's `SurrogateTruth`
+(R-407, R-408) — and changes nothing else of the projection.
+
+**P2_A's reference** (§7.3, R-407): `surrogate_reference(manifest)` gives stage A's P2 reference,
+the revision at the candidate with its reactor model replaced by the surrogate
+(`c1.reactor_surrogate`, version the manifest's `surrogate_id`, artifact the manifest's canonical
+SHA-256; the parameters unchanged), bound with the manifest as its one SurrogateManifest and
+solved on `revision_eo` (`services.solve_eo`). It makes no reactor call. A re-solve that gives no
+state is a reference with no state and a NaN objective, so P2 has no variable in common and fails:
+the safe failure.
 
 Pyomo-free at import (M03 G6): only `project_at` imports the projection.
 """
@@ -51,6 +60,7 @@ Pyomo-free at import (M03 G6): only `project_at` imports the projection.
 from __future__ import annotations
 
 import copy
+import dataclasses
 import math
 import time
 from collections.abc import Callable, Mapping
@@ -66,7 +76,9 @@ from openflowsheet.orchestrator.execution import PlanRefusal
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy
-from openflowsheet.studies.trust_region.checks import Decision, ParentSolve, Sense
+from openflowsheet.studies.surrogate.study import MODEL_ID as SURROGATE_MODEL_ID
+from openflowsheet.studies.trust_region.checks import Decision, P2Reference, ParentSolve, Sense
+from openflowsheet.studies.trust_region.holders import TruthModel
 from openflowsheet.studies.trust_region.study import (
     C1Formulation,
     CaseBinding,
@@ -83,6 +95,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "DECISION_TOLERANCE_K",
+    "P2_A_SOURCE",
     "C1Parent",
     "ParentServices",
     "coupling_counts",
@@ -91,6 +104,8 @@ __all__ = [
 
 #: §7.1 (N-F2): the decision tolerance δ_T on the heater outlet temperature, K.
 DECISION_TOLERANCE_K: Final = 0.5
+#: P2's `reference` for stage A (§7.3): the surrogate-backed `revision_eo` re-solve.
+P2_A_SOURCE: Final = "surrogate_revision_eo"
 
 
 class ParentServices(Protocol):
@@ -138,6 +153,19 @@ class ParentServices(Protocol):
 
     def pinned_at(self, binding: Any, unit_id: str, coupling: tuple[float, float]) -> Any:
         """`binding`'s inner problem with the reactor `unit_id` pinned at w = (X̂, ΔT̂)."""
+        ...
+
+    def solve_eo(
+        self,
+        document: Mapping[str, Any],
+        *,
+        surrogates: Callable[[str], Mapping[str, Any] | None],
+        policy: SolvePolicy,
+        check_policy: CheckPolicy,
+    ) -> Any:
+        """`document`'s `revision_eo` run, its SurrogateManifests resolved by `surrogates` (P2_A's
+        re-solve, §7.3), or the code (a `str`) of a document that selects no `revision_eo` route
+        or whose run has no mapping. A `VerifierError` propagates."""
         ...
 
 
@@ -380,16 +408,69 @@ class C1Parent:
 
     # -- stage C's projection -------------------------------------------------------------------
 
-    def project_at(self, start: ParentSolve) -> Projection:
+    def project_at(self, start: ParentSolve, *, truth: TruthModel | None = None) -> Projection:
         """The formulation projected at a parent-checked start (`TrfStage`'s `project_at`): the
         inner problem of the start's revision pinned at its converged w, at its certified state.
-        Needs the `nlp` environment."""
+        `truth`, when given, is the reactor link's truth in place of the parent's (stage A's
+        `SurrogateTruth`). Needs the `nlp` environment."""
         if start.state is None or start.coupling is None:
             raise ValueError(f"{start.solve_id}: no certified coupled state to project at")
         pinned = self.services.pinned_at(
             self.binding_at(start.decisions), self.reactor.unit_id, start.coupling
         )
-        return project_c1(pinned, start.state, self.formulation)
+        formulation = self.formulation
+        if truth is not None:
+            formulation = dataclasses.replace(
+                formulation,
+                external_links=tuple(
+                    dataclasses.replace(link, truth=truth) for link in formulation.external_links
+                ),
+            )
+        return project_c1(pinned, start.state, formulation)
+
+    # -- stage A's P2 reference (§7.3) ----------------------------------------------------------
+
+    def surrogate_document_at(
+        self, decisions: Mapping[str, float], manifest: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """The revision at `decisions` with its reactor's model the surrogate `manifest`
+        (module docstring); every other member, the reactor's parameters included, unchanged."""
+        edited = self.document_at(decisions)
+        (reactor,) = (item for item in edited["instances"] if item["id"] == self.reactor.unit_id)
+        reactor["model"] = {
+            "id": SURROGATE_MODEL_ID,
+            "version": str(manifest["surrogate_id"]),
+            "artifact_ref": document_sha256(manifest),
+        }
+        return edited
+
+    def surrogate_reference(
+        self, manifest: Mapping[str, Any]
+    ) -> Callable[[ParentSolve], P2Reference]:
+        """Stage A's P2 reference (`run_study(stage_a_reference=)`): the surrogate-backed
+        `revision_eo` re-solve at the candidate's decisions (module docstring)."""
+        resolver = {document_sha256(manifest): manifest}.get
+        liquid = flow_id(self.formulation.liquid_stream, "NH3")
+
+        def reference(targeted: ParentSolve) -> P2Reference:
+            document = self.surrogate_document_at(targeted.decisions, manifest)
+            try:
+                result = self.services.solve_eo(
+                    document,
+                    surrogates=resolver,
+                    policy=self.policy,
+                    check_policy=self.check_policy,
+                )
+            except VerifierError:
+                return P2Reference(f"{P2_A_SOURCE}:verifier_refused", math.nan, {})
+            if isinstance(result, str):
+                return P2Reference(f"{P2_A_SOURCE}:unsupported({result})", math.nan, {})
+            if result.state is None:
+                return P2Reference(f"{P2_A_SOURCE}:{result.outcome}", math.nan, {})
+            state = dict(result.state)
+            return P2Reference(P2_A_SOURCE, float(state[liquid]), state)
+
+        return reference
 
 
 class C1DecisionPath:

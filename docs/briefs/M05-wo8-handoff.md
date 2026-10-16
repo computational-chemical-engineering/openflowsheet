@@ -22,13 +22,20 @@ with `<stem>.store.json` (G7's store bijection) and `<stem>.environment.json`; G
 need `OMP_NUM_THREADS=1`: `.venv-nlp`'s OpenMP OpenBLAS changes digits with the thread count — that was the v1
 records' "environment drift" (S59). S54's condition dropped.
 
-Next executable actions (separate work orders):
-1. (done, see above) WO-8e: remove v1's TR-E2-FD and LOOP-R records in one commit; run
-   `PYOMO_CONFIG_DIR=.venv-nlp/share/pyomo PYTHONNOUSERSITE=1 PYTHONPATH=src:.reference-downloads/m03-ipopt/nlp-test-tools
-   .venv-nlp/bin/python scripts/m05_wo8_runs.py <CASE>` for TR-E2, TR-E2-FAR (new case: start 663.15 K, test-only),
-   TR-E2-FD, LOOP-R; then `--replay` each (G10); gates G5, G5b, G6, G7 (store bijection), G9, G10.
-   After WO-8e drop S54's `M05-basis-v2` condition in `request_identity_violations` if no v1 record remains.
-2. WO-8b: `SurrogateTruth` (§6.4), promoted link basis stages A and C, P2_A, LOOP-S (G8; F-22).
+WO-8b done (build log S62-S64): `SurrogateTruth(manifest, variant, n_tubes)` (truths.py), the promoted basis
+(`basis.promoted_basis`, link EFs `surrogate`), P2_A (`C1Parent.surrogate_reference`, additive
+`ParentServices.solve_eo`), stage A via `C1Parent.project_at(start, truth=)`; LOOP-S record under
+`benchmarks/m05/records/` (F-22: M04.A19's committed PROMOTABLE manifest, on wp/M05). G10 `--replay` 0 differences
+on all five records. **G8 FAILS** on its at-bound rows: stage A `TRF_CONVERGED` k = 1, P2_A judged/passed,
+`DECISION_STABLE`, but T* 653.150021930406 K is 1.0965e-6 scaled from d_lb (> 1e-6), so P5 polled both sides.
+`test_g8_loop_s_at_the_bound_and_polled_inward` is a strict xfail holding the criterion literally.
+
+Next executable actions:
+1. Design lane: rule on G8's at-bound miss (S64): LOOP-S's interior-point offset 1.0965e-6 scaled vs R-404's 1e-6
+   (LOOP-R 5.29e-8). The engineer did not move the criterion. When ruled, flip or keep the strict xfail.
+2. WO-9 (REAL) and WO-10 as the design note orders them (not started).
 Open for the design lane (review batch): S53 (bound flag for n_d > 1), S56 (`basis` block shape), S57 (refusal
 outcome without `start:`), S58 (`noise_ratio` units: c_k vs c_k/s_k), S59 (thread pin + environment
-sidecar), S60 (`.store.json` sidecar), S61 (gates judged in the default tier).
+sidecar), S60 (`.store.json` sidecar), S61 (gates judged in the default tier), S62 (`SurrogateTruth` signature
+and refusals), S63 (promoted basis without M04's `basis(z)`; `configs.basis` stays v2; P2_A via
+`ParentServices.solve_eo`, a failed reference fails P2), S64 (G8).
