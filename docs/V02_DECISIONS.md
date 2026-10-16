@@ -882,3 +882,7 @@ Grep, don't read whole. Newest at the bottom.
 - **M02 follow-up review** (2026-10-16, `reviewer`, `54b7baa`, R-390): merge; D134 4·2⁻⁵² confirmed (correct worst case just under
   8 rounding units vs slack 8; adversarial 10⁵ states refused 0, exact 11.1 %); should-fix S1/S2 wording only. R-390 taken →
   M07 continues at R-391. Sonnet on S1/S2 + manifest `evidence/M02-followup/…`.
+- **M05 WO-8 (partial)** (2026-10-16, `opus-engineer`, 313115d…6a9d29d, gate 9212, nlp pytest 167/1; `m03_nlp_check.sh` exits 1 on the stale
+  M03 inventory): §19 items done. G10 PASS; G5 FAIL (F-15, θ min 1.03e-5 vs 1e-5, θ_recheck 4.01e-4); G6 FAIL (TRF_CONVERGED clause);
+  G9 FAIL (1.067e-6 K vs 1e-6 K); G7 partial; G8 not run (S52). No limit raised. Open S47, S49, S50, S51, S52. Diagnosis engineer
+  launched (doc only) before an architect ruling.
