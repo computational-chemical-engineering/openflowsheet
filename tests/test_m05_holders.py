@@ -17,6 +17,7 @@ import pytest
 
 from openflowsheet.compile.spec import DomainError
 from openflowsheet.studies.trust_region.holders import (
+    FDCHECK_POINT,
     TRF_PMP_VALUE,
     TRF_START_VALUE,
     TRF_TRIAL_VALUE,
@@ -262,6 +263,87 @@ def test_a_cap_is_never_exceeded_and_its_refusal_is_not_a_request() -> None:
     with pytest.raises(TruthRefused):  # the key was not remembered as refused: still no room
         h.request_values((3.0, 1.0))
     assert box.value_calls == 2
+
+
+class StoreThenColdTruth(FakeTruth):
+    """A parent experiment whose store holds exactly the inlets in `stored` (R-405's test)."""
+
+    def __init__(self, stored: Sequence[tuple[float, ...]]) -> None:
+        super().__init__({"status": "ok"})
+        self.stored = {tuple(point) for point in stored}
+        self.evaluated: list[tuple[float, ...]] = []
+
+    def describe(self) -> Mapping[str, Any]:
+        return {"kind": "parent_experiment", "id": "fake-parent", "sha256": "0" * 64}
+
+    def evaluate(self, inlet: Sequence[float]) -> tuple[float, float, Mapping[str, Any]]:
+        point = tuple(inlet)
+        self.evaluated.append(point)
+        return 0.1, 80.0, {"status": "ok", "cache_hit": point in self.stored, "executions": 1}
+
+
+def test_r405_a_store_hit_is_never_charged() -> None:
+    """§20.7 WO-8c (i): with cap 2, the serial sequence (store, cold, cold, cold) serves three
+    and refuses the fourth; the store hit leaves `used` unchanged."""
+    points = [(float(i),) * 7 for i in range(4)]
+    truth = StoreThenColdTruth(points[:1])
+    h = EFHolder("link:R", TruthBox(truth), (1.0, 128.0), kind="truth")
+    run_cap, study_cap = ColdBudget("run", 2), ColdBudget("study", 10)
+    h.begin_run(RunState("C1"), (run_cap, study_cap))
+    h.request_values(points[0])
+    assert (run_cap.used, study_cap.used) == (0, 0)
+    h.request_values(points[1])
+    h.request_values(points[2])
+    with pytest.raises(TruthRefused) as refused:
+        h.request_values(points[3])
+    assert refused.value.code == "budget:budget_exhausted"
+    assert [entry.served for entry in h.ledger] == ["store_hit", "cold", "cold"]
+    assert (run_cap.used, study_cap.used) == (2, 2)
+    assert truth.evaluated == points[:3]
+
+
+def test_r405_at_the_cap_a_would_be_store_hit_is_refused_before_the_runner() -> None:
+    """R-405: admission precedes the runner, so at the cap even a stored point is refused."""
+    points = [(float(i),) * 7 for i in range(2)]
+    truth = StoreThenColdTruth(points[1:])
+    h = EFHolder("link:R", TruthBox(truth), (1.0, 128.0), kind="truth")
+    cap = ColdBudget("run", 1)
+    h.begin_run(RunState("C1"), (cap,))
+    h.request_values(points[0])
+    with pytest.raises(TruthRefused):
+        h.request_values(points[1])
+    assert (cap.used, truth.evaluated) == (1, points[:1])
+
+
+def test_r406_the_check_s_requests_are_the_run_s_and_skip_the_run_cap() -> None:
+    """§20.7 WO-8c (ii): during the gradient check the requests carry the run id, stage
+    `fdcheck` and their purpose, no `trf_iteration`, and are admitted against the check budgets
+    (the study's) only; they leave the run's first key to TRF (`trf_start_value`)."""
+    points = [(float(i),) * 7 for i in range(3)]
+    truth = StoreThenColdTruth(points[:1])
+    h = EFHolder("link:R", TruthBox(truth), (1.0, 128.0), kind="truth")
+    run_cap, study_cap = ColdBudget("C1", 1), ColdBudget("study", 10)
+    run = RunState("C1")
+    h.begin_run(run, (run_cap, study_cap), (study_cap,))
+    run.checking_gradient = True
+    h.request_values(points[0], purpose=FDCHECK_POINT)
+    h.request_batch(points[1:], purpose=FDCHECK_POINT, workers=2)
+    run.checking_gradient = False
+    assert (run_cap.used, study_cap.used) == (0, 2)
+    h.request_values(points[0])  # TRF's start: a memo hit, still the run's first key
+    entries = h.ledger
+    assert [(e.run_id, e.stage, e.purpose, e.trf_iteration) for e in entries[:3]] == [
+        ("C1", "fdcheck", FDCHECK_POINT, None)
+    ] * 3
+    assert [e.served for e in entries[:3]] == ["store_hit", "cold", "cold"]
+    assert (entries[3].stage, entries[3].purpose, entries[3].served) == (
+        None,
+        "trf_start_value",
+        "memo_hit",
+    )
+    assert entries[0].as_document()["stage"] == "fdcheck"
+    summary = h.summary("C1")
+    assert (summary["value_cold"], summary["by_purpose"]["fdcheck_point"]) == (2, 3)
 
 
 def test_one_budget_is_shared_by_every_holder_given_it() -> None:

@@ -480,3 +480,16 @@ S53 WO-8a: `final_step_at_box_bound` records whether *any* bounded decision of t
    only for n_d = 1. Reversible: `trf._at_box_bound`.
    F-23 (does a `TRF_CONVERGED` assertion flip under R-401?): none — the nlp tier passes unchanged
    (167 passed, 1 skipped); TR-E1 (G3) ratio 1.16e-3.
+S54 WO-8c: `request_identity_violations` holds a record to R-406's `fdcheck_point` identity (first stage-C run
+   1 + n_in·|η evaluated|, every other run 0) only when its `spec.configs.basis` is `M05-basis-v2`: the v1 TR-E2-FD
+   and LOOP-R records (6a9d29d) ran the check outside every run and stay committed until WO-8e removes them; no
+   record is written between WO-8c and WO-8d. The accounting checker itself is unchanged (R-405). Reversible: drop
+   the condition once WO-8e has landed.
+S55 WO-8c: the ledger entry gains §8.1's `stage`, `fdcheck` for the check's requests and null for every other
+   (a TRF run's own stage is its run record's). It changes every ledger file's bytes, so the v1 records' G10
+   `--replay` differs on that key until WO-8e re-records them. The check runs through `TrfStage(gradient_check=)`
+   inside the first stage-C run, before its basis, so its G is the basis gradient's memo (as before).
+   Measured (in memory, `scripts/m05_wo8_runs.py`'s `run_case`, no record written): TR-E2 `cold_used` 47 =
+   31 + 16 (was 48: S51 resolved), accounting, identity and schema clean; TR-E2-FD C1 cold 262 = 241 + 21 cold
+   check points (`fdcheck_point` 22, its base a store hit), `cold_used` 278 = 262 + 16, all checkers clean.
+   T* unchanged to the bit (673.6673361700024 K; FD 673.6673250702911 K): WO-8c moves no numerics.

@@ -821,7 +821,12 @@ class TrfStage:
     Budgets: the parent holders get the study's cold cap and the run's (`Budgets.run_cold`) and
     are charged live; an in-process truth's cold value requests are charged after the run (§7.5:
     its cap counts evaluations, and its holder takes no parent budget, R-300 E4). `assumptions`
-    is the run's A1-A7 block (§5.2), recorded as given."""
+    is the run's A1-A7 block (§5.2), recorded as given.
+
+    `gradient_check`, when given, is handed to every run (`run_trf`'s): it runs the study's
+    `M05-fd-v2` check, once per study, inside the run whose w₀ it is at (R-406), so its requests
+    are that run's (stage `fdcheck`, its `by_purpose` and its cold count) and are charged to the
+    study's cap, never to the run cap. The callable keeps the once-per-study rule itself."""
 
     def __init__(
         self,
@@ -829,11 +834,14 @@ class TrfStage:
         basis_for: Callable[[Projection], Mapping[str, EFBasis]],
         config: Mapping[str, Any],
         assumptions: Sequence[Mapping[str, Any]] = (),
+        *,
+        gradient_check: Callable[[Projection], Any] | None = None,
     ) -> None:
         self.project_at = project_at
         self.basis_for = basis_for
         self.config = dict(config)
         self.assumptions = tuple(dict(item) for item in assumptions)
+        self.gradient_check = gradient_check
 
     def __call__(
         self, start: ParentSolve, *, run_id: str, radius_factor: float, budget: StudyBudget
@@ -851,6 +859,8 @@ class TrfStage:
             basis=self.basis_for,
             budgets={holder.name: caps for holder in parents},
             run_id=run_id,
+            gradient_check=self.gradient_check,
+            check_budgets={holder.name: [budget.cold] for holder in parents},
         )
         cold_parent = 0
         cold_in_process = 0

@@ -415,6 +415,11 @@ def status_violations(record: Mapping[str, Any]) -> list[str]:
     return found
 
 
+#: S54: the basis policy from which records carry R-406's check accounting (WO-8c lands before
+#: WO-8d's `M05-basis-v2`; no record is written between them).
+R406_BASIS_POLICY = "M05-basis-v2"
+
+
 def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
     """§8.3's TRF request identity (S16, G12) as integer equalities, for every run with an FD
     truth (a `truth` entry with `gradient: finite_difference`), on its holder's `by_purpose`:
@@ -423,9 +428,28 @@ def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
     basis, §6.6); `trf_fd_point` = n_in·(1 + A − [the final logged iteration was accepted]), with
     A the accepted steps (`trf_state.accepted_steps`). The run's truths and holder summaries are
     lists by holder in the same order but keyed differently, so an FD truth is attributed only
-    when it is the run's one truth (build log S41)."""
+    when it is the run's one truth (build log S41).
+
+    R-406 (§20.4): in a record under `R406_BASIS_POLICY`, the study's FD check is inside the first
+    stage-C run, whose `fdcheck_point` = 1 + n_in·|η evaluated| (each candidate η used G(η/4),
+    G(η), G(4η)), and every other run's is 0. Records written before R-406 (the v1 TR-E2-FD and
+    LOOP-R at 6a9d29d, which WO-8e removes) ran the check outside every run (build log S54)."""
     found: list[str] = []
     accepting = ("f", "theta")
+    check_run = None
+    check_points = 0
+    if record.get("spec", {}).get("configs", {}).get("basis") == R406_BASIS_POLICY:
+        stage_c = [run["run_id"] for run in record["runs"] if run["stage"] == "C"]
+        check = record.get("fd_check")
+        if check is not None and stage_c:
+            check_run = stage_c[0]
+            etas = {
+                eta * factor
+                for candidate in check["candidates"]
+                for eta in (candidate["eta"],)
+                for factor in (0.25, 1.0, 4.0)
+            }
+            check_points = 1 + N_IN * len(etas)
     for run in record["runs"]:
         name = run["run_id"]
         if not any(truth["gradient"] == "finite_difference" for truth in run["truth"]):
@@ -450,6 +474,8 @@ def request_identity_violations(record: Mapping[str, Any]) -> list[str]:
         }
         if "surrogate" not in run["basis"].values():
             expected["basis_fd_point"] = N_IN
+        if record.get("spec", {}).get("configs", {}).get("basis") == R406_BASIS_POLICY:
+            expected["fdcheck_point"] = check_points if name == check_run else 0
         for purpose, value in expected.items():
             if counts[purpose] != value:
                 found.append(f"{name}: {purpose} = {counts[purpose]}, §8.3 gives {value}")
@@ -861,6 +887,23 @@ def test_the_request_identity_follows_the_logged_iterations() -> None:
         "C2: trf_trial_value = 2, §8.3 gives 3",
         f"C2: trf_fd_point = {2 * N_IN}, §8.3 gives {3 * N_IN}",
     ]
+
+
+def test_r406_the_check_s_points_belong_to_the_first_stage_c_run() -> None:
+    """R-406: under `M05-basis-v2` the first stage-C run carries 1 + n_in·|η| check points (the
+    escalated check evaluated η/4, η, 4η and 16η: 1 + 4·7 = 29), every other run none; a v1
+    record is not held to it."""
+    record = _stable_with_an_fd_check()
+    first_c = next(i for i, run in enumerate(record["runs"]) if run["stage"] == "C")
+    name = record["runs"][first_c]["run_id"]
+    purposes = ("runs", first_c, "ledger", "summary", "reactor", "by_purpose", "fdcheck_point")
+    assert request_identity_violations(record) == []
+    _set(record, ("spec", "configs", "basis"), R406_BASIS_POLICY)
+    assert request_identity_violations(record) == [f"{name}: fdcheck_point = 0, §8.3 gives 29"]
+    _set(record, purposes, 29)
+    assert request_identity_violations(record) == []
+    _set(record, ("fd_check",), None)
+    assert request_identity_violations(record) == [f"{name}: fdcheck_point = 29, §8.3 gives 0"]
 
 
 def test_the_request_identity_applies_to_fd_truths_only() -> None:

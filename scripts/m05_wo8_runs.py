@@ -224,16 +224,25 @@ def run_case(case: Case, root: Path) -> Run:
 
     def project_at(start: Any) -> Any:
         projection = parent.project_at(start)
-        if case.finite_difference and not checks:
-            holder, w0 = link_start(projection)
-            checks.append(gradient_check(holder, w0))
         projections.append(projection)
         return projection
+
+    def check_once(projection: Any) -> None:
+        """R-406: the study's `M05-fd-v2` check, inside the first stage-C run (its w₀)."""
+        if not checks:
+            holder, w0 = link_start(projection)
+            checks.append(gradient_check(holder, w0))
 
     (decision,) = parent.decisions
     sigma = step_size_termination((decision.tolerance,), (0.5 * (decision.upper - decision.lower),))
     assumptions = FD_ASSUMPTIONS if case.finite_difference else TR_E2_ASSUMPTIONS
-    stage = TrfStage(project_at, m05_basis, trf_config_v1(sigma), assumptions)
+    stage = TrfStage(
+        project_at,
+        m05_basis,
+        trf_config_v1(sigma),
+        assumptions,
+        gradient_check=check_once if case.finite_difference else None,
+    )
     limitations = ("fd_gradient",) if case.finite_difference else ()
     result = run_study(
         parent,

@@ -222,6 +222,8 @@ def run_trf(
     basis: Mapping[str, EFBasis] | BasisFor | None = None,
     budgets: Mapping[str, Sequence[ColdBudget]] | None = None,
     run_id: str = "trf-1",
+    gradient_check: Callable[[Projection], Any] | None = None,
+    check_budgets: Mapping[str, Sequence[ColdBudget]] | None = None,
 ) -> TrfRun:
     """Run TRF once on `projection` with `config` (passed to `solve()`) and `basis` (one
     `EFBasis` per `ExternalFunction`, by EF name), and read back its state.
@@ -230,6 +232,10 @@ def run_trf(
     before TRF starts (S33): its requests are the run's (§8.3's `basis_fd_point`) and are admitted
     against the run's budgets, but carry no call-order purpose (`RunState.forming_basis`).
     `budgets` maps a holder's name to the caps its cold value requests are admitted against.
+    `gradient_check`, when given, is called on `projection` inside the run before the basis
+    (R-406: the study's gradient-quality check belongs to the run whose w₀ it is at): its requests
+    carry the run id and stage `fdcheck`, and are admitted against `check_budgets` (the study's
+    cap, never the run's) instead of `budgets`.
     Raises `TrustRegionUnsupportedError` before any run if the pin does not hold, and
     `TrfConfigurationRefusedError` if the basis is missing, incomplete or a zero basis off TR-E1
     (a built basis is judged when built, before TRF starts)."""
@@ -242,7 +248,9 @@ def run_trf(
     if not _RUN_LOCK.acquire(blocking=False):
         raise RuntimeError("one TRF run per process: stdout capture is process-global (§6.7)")
     try:
-        return _run(projection, config, basis, budgets or {}, run_id)
+        return _run(
+            projection, config, basis, budgets or {}, run_id, gradient_check, check_budgets or {}
+        )
     finally:
         _RUN_LOCK.release()
 
@@ -262,6 +270,8 @@ def _run(
     basis: Mapping[str, EFBasis] | BasisFor,
     budgets: Mapping[str, Sequence[ColdBudget]],
     run_id: str,
+    gradient_check: Callable[[Projection], Any] | None = None,
+    check_budgets: Mapping[str, Sequence[ColdBudget]] | None = None,
 ) -> TrfRun:
     solver = SolverFactory("trustregion")
     effective = solver.config(dict(config))
@@ -271,12 +281,19 @@ def _run(
     saved = (logger.level, logger.propagate)
     captured = io.StringIO()
     refused_before = {holder.name: len(holder.refusals) for holder in projection.holders}
+    checked = check_budgets or {}
     for holder in projection.holders:
-        holder.begin_run(run, budgets.get(holder.name, ()))
+        holder.begin_run(run, budgets.get(holder.name, ()), checked.get(holder.name, ()))
     preflight_start = time.perf_counter()
     refused: TruthRefused | None = None
     preflown = False
     try:
+        if gradient_check is not None:
+            run.checking_gradient = True
+            try:
+                gradient_check(projection)
+            finally:
+                run.checking_gradient = False
         if callable(basis):
             run.forming_basis = True
             try:

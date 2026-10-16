@@ -59,6 +59,9 @@ TRF_TRIAL_VALUE: Final = "trf_trial_value"
 TRF_FD_POINT: Final = "trf_fd_point"
 BASIS_FD_POINT: Final = "basis_fd_point"
 FDCHECK_POINT: Final = "fdcheck_point"
+#: R-406: the ledger stage of the gradient-quality check's requests (§8.1); a TRF run's own
+#: requests carry none (the run record holds its stage).
+FDCHECK_STAGE: Final = "fdcheck"
 #: S16: the purposes a run's summary counts (§8.1's five, and the affine basis's).
 SUMMARY_PURPOSES: Final = (
     TRF_START_VALUE,
@@ -136,6 +139,14 @@ def _admit(budgets: Sequence[ColdBudget]) -> ColdBudget | None:
         return None
 
 
+def _refund(budgets: Sequence[ColdBudget]) -> None:
+    """R-405: return the charge `_admit` made on every budget, atomically — a request the runner
+    answered from its store cost nothing. A charge therefore stands iff the request was cold."""
+    with _BUDGET_LOCK:
+        for budget in budgets:
+            budget.used -= 1
+
+
 class RunState:
     """What a holder needs to know about the TRF run it is serving.
 
@@ -147,12 +158,23 @@ class RunState:
     `forming_basis` is true while the run's affine basis is formed, before TRF starts (S33): those
     requests belong to the run (and its budgets) but are not TRF's, so they carry no call-order
     purpose and no `trf_iteration`, and they do not make a key the run's first (§8.3's
-    `trf_start_value` stays TRF's start)."""
+    `trf_start_value` stays TRF's start).
+
+    `checking_gradient` is true while the study's gradient-quality check runs inside this run,
+    before the basis (R-406): its requests are attributed to the run with stage `fdcheck`, are
+    admitted against the holder's check budgets (the study's, never the run cap), and likewise
+    carry no call-order purpose and no `trf_iteration` and mark no key as the run's."""
 
     def __init__(self, run_id: str) -> None:
         self.run_id = run_id
         self.last_logged_iteration: int | None = None
         self.forming_basis = False
+        self.checking_gradient = False
+
+    @property
+    def outside_trf(self) -> bool:
+        """Whether a request made now is the run's but not TRF's (the basis or the check)."""
+        return self.forming_basis or self.checking_gradient
 
     @property
     def current_iteration(self) -> int:
@@ -186,11 +208,15 @@ class HolderRequest:
     experiment_key: str | None = None
     executions: int = 0
     extrapolated: bool = False
+    #: §8.1's stage when it is not the run's own: `fdcheck` for the gradient-quality check
+    #: (R-406), `None` for every other request.
+    stage: str | None = None
 
     def as_document(self) -> dict[str, Any]:
         return {
             "seq": self.seq,
             "run_id": self.run_id,
+            "stage": self.stage,
             "call": self.call,
             "inputs_sha256": self.inputs_sha256,
             "served": self.served,
@@ -435,6 +461,7 @@ class EFHolder:
         self._refusals: list[TruthRefused] = []
         self._run: RunState | None = None
         self._budgets: tuple[ColdBudget, ...] = ()
+        self._check_budgets: tuple[ColdBudget, ...] = ()
         self._run_value_keys: set[bytes] = set()
 
     # -- identity under TRF's clone (probe P2′) -------------------------------------------------
@@ -447,12 +474,18 @@ class EFHolder:
 
     # -- the run --------------------------------------------------------------------------------
 
-    def begin_run(self, run: RunState, budgets: Sequence[ColdBudget] = ()) -> None:
-        """Serve one TRF run: attribute requests to it and admit cold ones against `budgets`.
+    def begin_run(
+        self,
+        run: RunState,
+        budgets: Sequence[ColdBudget] = (),
+        check_budgets: Sequence[ColdBudget] = (),
+    ) -> None:
+        """Serve one TRF run: attribute requests to it and admit cold ones against `budgets`, or
+        against `check_budgets` while the run's gradient-quality check runs (R-406).
 
         A truth that is not a parent experiment never counts against a parent budget (§16.4):
         budgets given to its holder are a configuration error."""
-        if budgets and not self._charges_budgets:
+        if (budgets or check_budgets) and not self._charges_budgets:
             raise ValueError(
                 f"holder {self.name!r}: truth {self.truth_identity.get('id')!r} is not a parent "
                 "experiment and never counts against a parent budget (design note §16.4)"
@@ -462,12 +495,14 @@ class EFHolder:
                 raise RuntimeError(f"holder {self.name!r} already serves run {self._run.run_id!r}")
             self._run = run
             self._budgets = tuple(budgets)
+            self._check_budgets = tuple(check_budgets)
             self._run_value_keys = set()
 
     def end_run(self) -> None:
         with self._lock:
             self._run = None
             self._budgets = ()
+            self._check_budgets = ()
             self._run_value_keys = set()
 
     # -- what Pyomo calls -----------------------------------------------------------------------
@@ -589,7 +624,7 @@ class EFHolder:
                 held = self._values.get(key)
                 first_in_run = key not in self._run_value_keys
                 if held is None:
-                    budgets = self._budgets if self._charges_budgets else ()
+                    budgets = self._admitting_budgets()
                     chosen = purpose
                     if chosen is None and first_in_run:
                         chosen = self._call_order_purpose(self._run)
@@ -636,8 +671,19 @@ class EFHolder:
                 "store_hit" if isinstance(outcome, BoxValues) and outcome.store_hit else "cold"
             )
             entry = self._entry("value", key, served, chosen, outcome, start)
+        if served == "store_hit":
+            _refund(budgets)
         flight.done.set()
         return outcome, entry
+
+    def _admitting_budgets(self) -> tuple[ColdBudget, ...]:
+        """The caps a cold value request is admitted against now: none for a truth that is not a
+        parent experiment; the check budgets during the gradient-quality check (R-406); else the
+        run's budgets."""
+        if not self._charges_budgets:
+            return ()
+        run = self._run
+        return self._check_budgets if run is not None and run.checking_gradient else self._budgets
 
     @property
     def _charges_budgets(self) -> bool:
@@ -708,15 +754,16 @@ class EFHolder:
         return inputs, encode_doubles(inputs)
 
     def _mark_in_run(self, key: bytes) -> None:
-        """Record `key` as requested in the run, unless the run's basis is being formed (S33)."""
-        if self._run is None or not self._run.forming_basis:
+        """Record `key` as requested in the run, unless the run's basis is being formed (S33) or
+        its gradient check runs (R-406)."""
+        if self._run is None or not self._run.outside_trf:
             self._run_value_keys.add(key)
 
     def _call_order_purpose(self, run: RunState | None) -> str | None:
         """Design note §8.3: before iteration 0 is logged the first key of a run is the start
         value (`EFReplacement`) and any later one the PMP point; after it, a trial point. The
-        basis's requests (S33) are not TRF's and get none."""
-        if run is None or run.forming_basis:
+        basis's requests (S33) and the check's (R-406) are not TRF's and get none."""
+        if run is None or run.outside_trf:
             return None
         if run.last_logged_iteration is None:
             return TRF_START_VALUE if not self._run_value_keys else TRF_PMP_VALUE
@@ -741,7 +788,7 @@ class EFHolder:
             inputs_sha256=hashlib.sha256(key).hexdigest(),
             served=served,
             trf_iteration=(
-                run.current_iteration if run is not None and not run.forming_basis else None
+                run.current_iteration if run is not None and not run.outside_trf else None
             ),
             purpose=purpose,
             status=outcome.code if isinstance(outcome, TruthRefused) else "ok",
@@ -749,6 +796,7 @@ class EFHolder:
             experiment_key=meta.get("experiment_key"),
             executions=0 if served == "memo_hit" else int(meta.get("executions", 0)),
             extrapolated=bool(meta.get("extrapolated", False)),
+            stage=FDCHECK_STAGE if run is not None and run.checking_gradient else None,
         )
 
     def _append(
