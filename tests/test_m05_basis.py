@@ -489,3 +489,50 @@ def test_r400_the_stage_records_the_basis_block_and_two_curvature_points() -> No
     basis_schema = {**schema["properties"]["runs"]["items"]["properties"]["basis"]}
     basis_validator = VALIDATOR.evolve(schema={**basis_schema, "$defs": schema["$defs"]})
     assert sorted(basis_validator.iter_errors(block), key=str) == []
+
+
+def test_r432_noise_ratio_is_the_value_noise_over_the_curvature_step() -> None:
+    """R-432 (§21.3): noise_ratio_k = 4σ̂_k/(t²|c_k|), σ̂_k = ν̂·η_sel·s_k/√2, on REAL's committed
+    numbers (`runs[C1].basis.links["link:reactor"]`, `fd_check`): c = (−1.2248e-3, 0.81206),
+    t = 0.025, ν̂ = 6.8735e-4 at η = 2⁻¹⁴, s = (0.25, 128). By hand: ν̂η = 4.1953e-8, so
+    σ̂ = (7.4162e-9, 3.7971e-6) and the ratios are 2.9665e-8/7.6551e-7 = 0.038752 and
+    1.5188e-5/5.0754e-4 = 0.029926 — the review's (0.0388, 0.0299), not R-400's (3591.6, 5.42)."""
+    from types import SimpleNamespace
+
+    from openflowsheet.studies.trust_region.study import _basis_block
+
+    eta = 2.0**-14
+    check = SimpleNamespace(
+        as_document=lambda: {
+            "selected_eta": eta,
+            "candidates": [
+                {"eta": 2.0**-12, "noise": 1.0},
+                {"eta": eta, "noise": 6.873546997784466e-4},
+            ],
+        }
+    )
+    record = {
+        "policy": "M05-basis-v2",
+        "links": {
+            "link:reactor": {
+                "t": 0.025,
+                "c": [-0.0012248110072319606, 0.8120615673748331],
+                "noise_ratio": None,
+            },
+            "link:other": {"t": 0.5, "c": [0.0, 2.0], "noise_ratio": None},
+        },
+    }
+    scales = {"link:reactor": [0.25, 128.0], "link:other": [1.0, 4.0]}
+    block = _basis_block({"ef": "curvature"}, record, [check], scales)
+    ratio = block["links"]["link:reactor"]["noise_ratio"]
+    assert ratio == pytest.approx([0.038752, 0.029926], rel=2e-5)
+    # The committed (3591.6, 5.42) were R-400's 4ν̂/(t²|c_k|): the factor dropped is η·s_k/√2.
+    old = [3591.6317314324565, 5.417163248844561]
+    assert ratio == pytest.approx(
+        [o * eta * s / 2.0**0.5 for o, s in zip(old, [0.25, 128.0], strict=True)]
+    )
+    # c_k = 0 stays null; σ̂ = 6.8735e-4·2⁻¹⁴·4/√2 = 1.1866e-7, 4σ̂/(0.25·2) = 9.4925e-7.
+    assert block["links"]["link:other"]["noise_ratio"] == [None, pytest.approx(9.4925e-7, rel=1e-4)]
+    # The builder's record is untouched.
+    assert record["links"]["link:reactor"]["noise_ratio"] is None
+    assert _basis_block({"ef": "curvature"}, record, [], scales)["links"] == record["links"]

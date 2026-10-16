@@ -840,8 +840,8 @@ class TrfStage:
     `path_for`, when given, makes the basis `M05-basis-v2`'s (R-400): `basis_for` is called as
     `basis_for(projection, path=path_for(start))`, with the run's start's decision path (the
     composition root's `C1Parent.decision_path`). The run's `basis` block is then the builder's
-    record (`basis.BasisSet.record`) with the EF kinds, and `noise_ratio` = 4ν̂/(t²|c_k|) on the
-    run that carries the FD check (reported, not judged)."""
+    record (`basis.BasisSet.record`) with the EF kinds, and `noise_ratio` = 4σ̂_k/(t²|c_k|)
+    (R-432) on the run that carries the FD check (reported, not judged)."""
 
     def __init__(
         self,
@@ -931,7 +931,9 @@ class TrfStage:
                 for holder in projection.holders
                 if isinstance(holder.box, TruthBox)
             ],
-            "basis": _basis_block(trf_run.basis, trf_run.basis_record, fd_checks),
+            "basis": _basis_block(
+                trf_run.basis, trf_run.basis_record, fd_checks, _link_output_scales(projection)
+            ),
             "projection": {
                 "source_map_sha256": trf_run.source_map_sha256(projection),
                 "n_vars": len(projection.variable_indices),
@@ -967,25 +969,39 @@ class TrfStage:
 
 
 def _basis_block(
-    kinds: Mapping[str, str], record: Mapping[str, Any] | None, checks: Sequence[Any]
+    kinds: Mapping[str, str],
+    record: Mapping[str, Any] | None,
+    checks: Sequence[Any],
+    output_scales: Mapping[str, Sequence[float]],
 ) -> dict[str, Any]:
     """The run's `basis`: the EF kinds (v1), or R-400's block — `policy`, the kinds and each
-    link's curvature record, with `noise_ratio` = 4ν̂/(t²|c_k|) per output when this run carried
-    the FD check (ν̂ the selected η's noise estimate; null for c_k = 0)."""
+    link's curvature record, with `noise_ratio` = 4σ̂_k/(t²|c_k|) per output when this run carried
+    the FD check (R-432): σ̂_k = ν̂·η·s_k/√2 is the value noise in output units, ν̂ the selected
+    η's noise estimate of the scaled gradient, η that selected η and s_k the link output's scale
+    (`output_scales`, `projection.output_scale`); null for c_k = 0."""
     if record is None:
         return dict(kinds)
     links = {name: dict(link) for name, link in record["links"].items()}
     if checks:
         check = checks[0].as_document()
-        (noise,) = [
-            item["noise"] for item in check["candidates"] if item["eta"] == check["selected_eta"]
-        ]
-        for link in links.values():
+        eta = check["selected_eta"]
+        (noise,) = [item["noise"] for item in check["candidates"] if item["eta"] == eta]
+        for name, link in links.items():
             t = link["t"]
             link["noise_ratio"] = [
-                4.0 * noise / (t * t * abs(c)) if c != 0.0 else None for c in link["c"]
+                4.0 * (noise * eta * s / math.sqrt(2.0)) / (t * t * abs(c)) if c != 0.0 else None
+                for c, s in zip(link["c"], output_scales[name], strict=True)
             ]
     return {"policy": record["policy"], "kinds": dict(kinds), "links": links}
+
+
+def _link_output_scales(projection: Projection) -> dict[str, list[float]]:
+    """Each link holder's output scales s_k, in its source-map order (X, then ΔT) — the order of
+    its basis record's `c`."""
+    scales: dict[str, list[float]] = {}
+    for entry in projection.source_map["external_links"]:
+        scales.setdefault(f"link:{entry['unit_id']}", []).append(float(entry["output_scale"]))
+    return scales
 
 
 # == readiness (§6.8, §16.4) =======================================================================
