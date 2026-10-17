@@ -1,0 +1,375 @@
+{
+ "format": "m07a-rc-records-v1",
+ "commit": "6fec82232e1c47308a5e1d67338058f352992800",
+ "rc_record": "docs/v02-alpha-rc-record.md",
+ "description": "Every record docs/v02-alpha-rc-record.md's per-step table cites by sha256 (V02 alpha release spec \u00a78.3). A committed file is under this directory at its path; a file over 1 MB (committed false) is committed gzip-compressed beside its path (<path>.gz; sha256 and bytes are the uncompressed record's) and stays under evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/artifacts/rc/ at the same path, git-ignored.",
+ "size_limit_bytes": 1000000,
+ "files": [
+  {
+   "path": "ci/job-logs/check-ubuntu-latest.log",
+   "sha256": "12444b90e10c5d8d5aa9018d2b3f24e8d2c36c72c3855e9cb6aa85a0888fd17b",
+   "bytes": 194501,
+   "committed": true
+  },
+  {
+   "path": "ci/job-logs/check-ubuntu-24.04-arm.log",
+   "sha256": "bed930ace3dd90880f287b9f7cfe5705e3fdd1a014d494a1e6c8b0f50ea21ed6",
+   "bytes": 199241,
+   "committed": true
+  },
+  {
+   "path": "identity/rc-identity.json",
+   "sha256": "4fad54488323390ed6196f1b442989a47dcddf3b3ee42cf298f0a5bf03269599",
+   "bytes": 1586,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-latest/identity/rc-identity.json",
+   "sha256": "4e8e6a79a3ea988ed550de317a48c6e305982a55cd9c4333f1918b8df8c50231",
+   "bytes": 1585,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-24.04-arm/identity/rc-identity.json",
+   "sha256": "77f2042d362f6eda8627e178f5d86d73a525280642f3588248160bbee6f8af44",
+   "bytes": 1587,
+   "committed": true
+  },
+  {
+   "path": "ci/job-logs/identity.log",
+   "sha256": "ba1e3ce197ab5d28aba88a41007b052aeb1f3e9e959b6cabe645b1c65a42f7cc",
+   "bytes": 41767,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-dist/t08-a43-dist.json",
+   "sha256": "36a296527cb9306bd5c4a9e55afd2fe5bff42557d503166c4b5a78fdd818a9b8",
+   "bytes": 74304,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-install-ubuntu-latest/install-ubuntu-latest.json",
+   "sha256": "1eed06c3cfe2b73a9ca6b4f6bae90587a9e8d87aeccc6881a2110bee16b4b0be",
+   "bytes": 2104,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-install-ubuntu-24.04-arm/install-ubuntu-24.04-arm.json",
+   "sha256": "403c0634304ee6b43a8bfb29da46abb3f9f1b5a461df4a153a9268a9cd10dc64",
+   "bytes": 2000,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-install-ubuntu-latest/lock-installed-ubuntu-latest.json",
+   "sha256": "3d9be989669390b933cdd07adaf6c1e5b07be37a9237761ca85ae7661a8a485c",
+   "bytes": 1341,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-install-ubuntu-latest/lock-checkout-ubuntu-latest.json",
+   "sha256": "9db65ec6d32364a515e5cecbd6185a9f16053b57485198f8906db19dd5ab45f3",
+   "bytes": 1403,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-install-ubuntu-24.04-arm/lock-installed-ubuntu-24.04-arm.json",
+   "sha256": "22f9126237df736ccbdf5a737d0566d2d1c8eac5ec262ecab896d16738fa6c6b",
+   "bytes": 1343,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-install-ubuntu-24.04-arm/lock-checkout-ubuntu-24.04-arm.json",
+   "sha256": "c1b2a935ff5532dee0cbad687b1d741ffb22d9cd4a2ca7aa306ea5a21647654d",
+   "bytes": 1405,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-bundles/index.json",
+   "sha256": "e8af24206ff7fd80595f1df8c5e04413ef322e9344fdc29f853b41d00a2504ca",
+   "bytes": 9969,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-replay-ubuntu-latest/replay-ubuntu-latest.json",
+   "sha256": "250ea36983189859565f917340c2f642e7297be7eeffb3991089781d123a59c0",
+   "bytes": 17477,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-replay-ubuntu-24.04-arm/replay-ubuntu-24.04-arm.json",
+   "sha256": "b7b2872b3f92a63c325a7d5376469e8549eed340f615c10ae742cb4b264d5ff5",
+   "bytes": 26106,
+   "committed": true
+  },
+  {
+   "path": "ensemble/rc-ensemble-ref-x86-64.json",
+   "sha256": "8390f57ad7ab9fd472928880f7013f3a604891d92867b45b2e316d1687343e53",
+   "bytes": 1798,
+   "committed": true
+  },
+  {
+   "path": "ensemble/rc-ref-x86-64.json",
+   "sha256": "868077361ba5ae87f8a5ed3fbe783163e8009977c7c619c01eddcc34500ce716",
+   "bytes": 2365963,
+   "committed": false
+  },
+  {
+   "path": "ensemble/rc-ref-x86-64.report.txt",
+   "sha256": "d33027d3f89529711bec8bdd3100a8ec05da03673492da1766e88f52ec0509d0",
+   "bytes": 11197,
+   "committed": true
+  },
+  {
+   "path": "ensemble/rc-ref-x86-64.replay.txt",
+   "sha256": "feac65ffec3360cabebb77fa9bef040b1ed16ed9cd1b36f6e9839db51186bad2",
+   "bytes": 21887,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-ensemble-ubuntu-24.04-arm/rc-ensemble-ci-aarch64.json",
+   "sha256": "ed68c0b9370b7dd8fe0659591bc68574aba2277e43aa8a55ffe99aa70f54b1e8",
+   "bytes": 1592,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.json",
+   "sha256": "e0c1008ccff5f343ba4dae3f9cb561b6fda9427ae00051a0c8ba9de2648eb14d",
+   "bytes": 2365571,
+   "committed": false
+  },
+  {
+   "path": "ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.report.txt",
+   "sha256": "b59665ada614c0029702e5924b3e1fce8d2922a634eebb093c0419f4945c9261",
+   "bytes": 11180,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.replay.txt",
+   "sha256": "1a7b927c26d6a1e40628c063f364de9a46225b6420eb8f787cc462e98d9e7348",
+   "bytes": 24792,
+   "committed": true
+  },
+  {
+   "path": "corpus-ref-x86-64.json",
+   "sha256": "b711b25b58d0f9af0fcdfcd074473b27eb02ed1678b289891230492084c8bd77",
+   "bytes": 2438,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-latest/corpus-ubuntu-latest.json",
+   "sha256": "2c10067cc303baeab40621242e1ea2a573dcc42b3e3b976ca2eb433444fe80b9",
+   "bytes": 2437,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-24.04-arm/corpus-ubuntu-24.04-arm.json",
+   "sha256": "ffa966b5f6602309375d439b2dca4cd31b9f6735a9f406b7b4a4cdaf3bbd5437",
+   "bytes": 2439,
+   "committed": true
+  },
+  {
+   "path": "surface/rc-alpha-surface.json",
+   "sha256": "db1f7a1388069adb067c22d9ebb2904575aab1b13ffd3de7d22140bd89e78f3e",
+   "bytes": 6556,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-latest/surface/rc-alpha-surface.json",
+   "sha256": "b880c4c27c7dbad766175409e109a957190131a52c64ea352e69036cfc34f7ac",
+   "bytes": 6555,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-24.04-arm/surface/rc-alpha-surface.json",
+   "sha256": "f5ec57ebe9ecc7ff93a14c278e0b887f3c13eebd2e87a54190f02edcabcd2991",
+   "bytes": 6557,
+   "committed": true
+  },
+  {
+   "path": "a30/a30-inventory-x86_64.json",
+   "sha256": "733dba5ba4cfd0646bc9264a749dd1798c89705881b0281985368e933808ff38",
+   "bytes": 318340,
+   "committed": true
+  },
+  {
+   "path": "a30/t08-a30-x86_64.json",
+   "sha256": "b9ff3ddabc0843a901768eec982369adabc8c922fb4e025aa622183e7c38b337",
+   "bytes": 83521,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-latest/a30/a30-inventory-x86_64.json",
+   "sha256": "ba0192107a5aaf3980b84be604bb25ea26e84580268f223a941b92f075aada50",
+   "bytes": 318338,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-latest/a30/t08-a30-x86_64.json",
+   "sha256": "dab1651191b07ec1749c88b2369cac4ad5c64b941e2f61528ea0e76d3e796310",
+   "bytes": 83519,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-24.04-arm/a30/a30-inventory-aarch64.json",
+   "sha256": "5fbfe91ea1f7ebb0b8f75b72639d62be66950df6dea4a2697a2f0c88e8d6e1ed",
+   "bytes": 253323,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-24.04-arm/a30/t08-a30-aarch64.json",
+   "sha256": "b1aa32d66a0c9469d976575d8167c721f6734b5109d252a0f3d828a1c49186d6",
+   "bytes": 79936,
+   "committed": true
+  },
+  {
+   "path": "certificates-ref-x86-64.json",
+   "sha256": "564588ce3ec0f005a728f31522b8188d55abb75ec747019f0c84197e0d625ca9",
+   "bytes": 1265,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-latest/certificates-ubuntu-latest.json",
+   "sha256": "ffd23e6f4ea1183e1bebb82a2e6690de8fb175e7bc7672fcb795559032728c3e",
+   "bytes": 723,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-steps-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json",
+   "sha256": "d6cabbf8d128e9a23bcc94ecb186edbc3ff9ec85b19106309fdd64fc13df15dd",
+   "bytes": 725,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-install-ubuntu-latest/certificates-ubuntu-latest.json",
+   "sha256": "cb1ca32e3a5dd67fb18d9e416a9d96a95676410b7106cd77da248eaf1271b940",
+   "bytes": 737,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-install-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json",
+   "sha256": "a9789e1d1bc3f7e0e21f4f1b4621666e3cc28ada55e50515ab929e0e26802230",
+   "bytes": 739,
+   "committed": true
+  },
+  {
+   "path": "ci/rc-bundle-set-certificates/rc-certificates.json",
+   "sha256": "177a02d228305d0e16eed541b6c039c297ab15a02fbdc91f830368165f0d95ba",
+   "bytes": 731,
+   "committed": true
+  },
+  {
+   "path": "step11/rc-step11.json",
+   "sha256": "7c40028002bf799bceeffe22a25a4cd395792c4b07a208f662b7f296a3806e43",
+   "bytes": 1291,
+   "committed": true
+  },
+  {
+   "path": "step11/external-crosscheck-check.stdout.txt",
+   "sha256": "2f92bf5c59207de7c1f4f59e58c59087f73908eea14c14943edeb4499ae88bdc",
+   "bytes": 33,
+   "committed": true
+  },
+  {
+   "path": "step11/venv-xcheck.freeze.txt",
+   "sha256": "94dfb7fb94245f4aaa8e23724e52f3642db91eb579f6ba904c65eaf0092d1539",
+   "bytes": 218,
+   "committed": true
+  },
+  {
+   "path": "step11/idaes-conformance.json",
+   "sha256": "7e1d41dd0da62c1685c2ea422e7891bb216c2e01bebb2e7ece7de22d4360adb4",
+   "bytes": 9929,
+   "committed": true
+  },
+  {
+   "path": "step11/venv-idaes.freeze.txt",
+   "sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "bytes": 483,
+   "committed": true
+  },
+  {
+   "path": "step12/rc-step12.json",
+   "sha256": "4868a2d6ab9791763f2efa7e7f0631741d9d4c817547d48cd96deefb69495119",
+   "bytes": 6595,
+   "committed": true
+  },
+  {
+   "path": "step12/g10-adapter-halves-v3.json",
+   "sha256": "477fdc0b779b468262938fe56df999e2666c76ae2b7308ac0bb87187ad42f9a1",
+   "bytes": 15379,
+   "committed": true
+  },
+  {
+   "path": "step12/g11-coverage-v3.json",
+   "sha256": "3c50d1636d9fa85b5818310e360a3848a72588f371ee07cbb6c2d8a2008c9f92",
+   "bytes": 376756,
+   "committed": true
+  },
+  {
+   "path": "step12/g11-coverage-v3.runs.json",
+   "sha256": "ba60c06613c676992a4931cb456fa83b1fd4601b3b19f87ca3bc0de368da1efd",
+   "bytes": 385658,
+   "committed": true
+  },
+  {
+   "path": "step12/g12-real-loop-v3.json",
+   "sha256": "2d40da37b563faf676ff28c84c0fd65e13f5bd35607afe6be1d155854b05d3f1",
+   "bytes": 9985,
+   "committed": true
+  },
+  {
+   "path": "step12/g12-real-loop-v3-edges.json",
+   "sha256": "52707917fbebcb917723da563d122eb57a6590b362a0da360722f514b40ac480",
+   "bytes": 8810,
+   "committed": true
+  },
+  {
+   "path": "step12/m02-tests.junit.xml",
+   "sha256": "29cfb6d607361f6109d62c2e988fc86ed86508d30ea4e8adae08e6108f810eaa",
+   "bytes": 75958,
+   "committed": true
+  },
+  {
+   "path": "step12/env-manifest.json",
+   "sha256": "ae29698d590ba3fc258a6730af7e74454ee4bd1b7a754d48b85cf73a07fdc280",
+   "bytes": 2761,
+   "committed": true
+  },
+  {
+   "path": "step12/host.txt",
+   "sha256": "48d65e6b31e68bc8927adf40527d6fc367b4f046ec205c4d3783ede7d7a1ad4f",
+   "bytes": 3690,
+   "committed": true
+  },
+  {
+   "path": "step12/certificates/g12-bundles/m02-g12-0/bundle/solution-certificate.json",
+   "sha256": "faa8e4daa92b582e7392b3ff8f58daca7f2d48e8e6faaf4945a616791fdf8974",
+   "bytes": 73313,
+   "committed": true
+  },
+  {
+   "path": "step12/certificates/g12-bundles/m02-g12-0/live/solution-certificate.json",
+   "sha256": "faa8e4daa92b582e7392b3ff8f58daca7f2d48e8e6faaf4945a616791fdf8974",
+   "bytes": 73313,
+   "committed": true
+  },
+  {
+   "path": "step12/certificates/g12-bundles/m02-g12-0/replay/solution-certificate.json",
+   "sha256": "faa8e4daa92b582e7392b3ff8f58daca7f2d48e8e6faaf4945a616791fdf8974",
+   "bytes": 73313,
+   "committed": true
+  },
+  {
+   "path": "step12/certificates/g12-edges-bundles/m02-g12v3-2-0/bundle/solution-certificate.json",
+   "sha256": "cc36ff13913c5687d221e6a63de9702a62ec17b717d122bc6e1fca67ea3abc31",
+   "bytes": 73383,
+   "committed": true
+  },
+  {
+   "path": "step12/certificates/g12-edges-bundles/m02-g12v3-2-1/bundle/solution-certificate.json",
+   "sha256": "960079a01f580ab91060f04fd99456ec8e8eff7cdfafec84bd0672e4bb272bb3",
+   "bytes": 73304,
+   "committed": true
+  }
+ ]
+}

@@ -877,9 +877,10 @@ def derivative_witness(
     (`<S>.n.<c>`) that are exactly `0.0` at `state`, where no two-sided derivative exists (the
     backward point is a negative flow, the forward one light gas in the pure-NH3 liquid or B17's
     dormancy convention). Every other column, totals and duties among them, keeps the stencil.
-    When a column is skipped, both checks say how many in their `independence_qualification`;
-    the certificate lists them in a `derivative_witness_partial` limitation. Empty for every
-    other revision, which runs the stencil as before and writes neither.
+    When a column is skipped, the certificate lists them in a `derivative_witness_partial`
+    limitation; the checks' `independence_qualification` stays `None`, because that field
+    carries [A09] text only (R-345, spec §18.1). Empty for every other revision, which runs the
+    stencil as before and writes no limitation.
     """
     from openflowsheet.compile.reference import state_vector
 
@@ -930,13 +931,6 @@ def derivative_witness(
                 scaled_exact = entry * scaling.column[name] / scaling.row[row_id]
                 worst_on = max(worst_on, abs(scaled_exact - scaled))
 
-    skipped = witness_skipped_columns(jacobian.col_ids, unstenciled)
-    note = (
-        f"not differenced: {len(skipped)} exactly-zero pr-c1-v1 stream-flow columns "
-        "(design note §14.3 C2)"
-        if skipped
-        else None
-    )
     return [
         evaluated(
             id="derivative_witness.on_pattern",
@@ -945,7 +939,6 @@ def derivative_witness(
             value=worst_on,
             tolerance=DERIVATIVE_TOLERANCE,
             reference=1.0,
-            independence_qualification=note,
         ),
         evaluated(
             id="derivative_witness.off_pattern",
@@ -954,12 +947,11 @@ def derivative_witness(
             value=worst_off,
             tolerance=DERIVATIVE_TOLERANCE,
             reference=1.0,
-            independence_qualification=note,
         ),
     ]
 
 
 def witness_skipped_columns(columns: Sequence[str], unstenciled: frozenset[str]) -> list[str]:
     """The columns of `columns` the witness does not difference, sorted (design note §14.3 C2):
-    what the checks' qualification counts and the `derivative_witness_partial` limitation lists."""
+    what the `derivative_witness_partial` limitation lists."""
     return sorted(name for name in columns if name in unstenciled)

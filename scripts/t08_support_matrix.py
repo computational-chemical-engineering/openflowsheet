@@ -58,8 +58,10 @@ CI: Final = ROOT / ".github" / "workflows" / "ci.yml"
 
 #: Spec §5.1: the envelope's top-level keys, in order.
 TOP_LEVEL: Final = ("envelope_id", "release", "axes", "unsupported", "limitations", "harvest")
-#: R-193: v0.2's working envelope; v0.1's (`v0.1-envelope-1`) is the one at tag v0.1.1.
-ENVELOPE_ID: Final = "v0.2-envelope-dev"
+#: The envelope's id. R-193: v0.2's working envelope is `v0.2-envelope-dev`; v0.1's
+#: (`v0.1-envelope-1`) is the one at tag v0.1.1. Pinned at the alpha's candidate `C_α` (V02 alpha
+#: release spec MR-3); the first D2.4 change after the tag returns it to `v0.2-envelope-dev`.
+ENVELOPE_ID: Final = "v0.2-alpha-envelope-1"
 #: The CI runners and the architecture each is (`.github/workflows/ci.yml`'s matrix).
 RUNNER_ARCHITECTURE: Final[Mapping[str, str]] = {
     "ubuntu-latest": "x86-64",
@@ -471,12 +473,12 @@ def text_sha256(item: str | Mapping[str, Any]) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-#: Manifests the harvest does not read: T08's own (written at T08 close, after `C`). Its
-#: limitations are drawn from this envelope's L-rows and the verdicts, so harvesting it into the
-#: envelope would be circular, and its classification could only be written into `benchmarks/`
-#: after `C`, which ADR 0021 D2.4 forbids. The harvest is P00–T07's, as spec §5.7 counts it
-#: ("today 18 manifests") and `t08_reference.py`'s `HARVEST_PACKAGES` reads it.
-HARVEST_EXCLUDED = ("evidence/T08/",)
+#: Manifests the harvest does not read. T08's own was excluded through v0.1 (written at T08 close,
+#: after `C`, so harvesting it into v0.1's envelope would have been circular); the alpha harvests
+#: it (V02 alpha release spec MR-3, T08 Amendment R8 4, FD-α7). M07a's own manifest is written
+#: after `C_α` and belongs to the next harvest (R-320, T08 Amendment R8 2's precedent): the
+#: exclusion excludes no manifest at `C_α`, and M07 removes it and harvests M07a's manifest.
+HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/M07a/",)
 
 
 def harvest_items(

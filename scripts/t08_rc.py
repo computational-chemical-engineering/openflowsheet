@@ -427,7 +427,15 @@ def step_install_check(arguments: argparse.Namespace) -> int:
                 import shutil  # noqa: PLC0415
 
                 shutil.copytree(bundle, arguments.keep / "SYN-001-nominal", dirs_exist_ok=True)
-    return finish(arguments.out, "install-check", checks, machine=machine)
+    # V02 alpha spec §18.3 (R-347): the record names its machine class, computed here at write
+    # time, after every check, so the checkout's harness is imported only once they have run.
+    return finish(
+        arguments.out,
+        "install-check",
+        checks,
+        provenance={**provenance(), "machine_class": machine_class()},
+        machine=machine,
+    )
 
 
 # -- step 4: the lock lookup (T08.A19) ---------------------------------------------------------
@@ -520,7 +528,14 @@ def step_lock_check(arguments: argparse.Namespace) -> int:
         )
     except Exception as failure:  # noqa: BLE001 - T08.A19 (c): "no exception" is the assertion
         check(checks, f"a19.c_replay_by_{state}", False, exception=repr(failure))
-    return finish(arguments.out, "lock-check", checks, state=state, bundle=str(bundle))
+    return finish(
+        arguments.out,
+        "lock-check",
+        checks,
+        provenance={**provenance(), "machine_class": machine_class()},  # R-347
+        state=state,
+        bundle=str(bundle),
+    )
 
 
 # -- step 5: the RC bundle set (T08.A45) -------------------------------------------------------
@@ -1280,7 +1295,13 @@ def step_certificates(arguments: argparse.Namespace) -> int:
         violations=len(violations),
         first=dict(list(violations.items())[:10]),
     )
-    return finish(arguments.out, "certificates", checks, inputs=[str(p) for p in arguments.inputs])
+    return finish(
+        arguments.out,
+        "certificates",
+        checks,
+        provenance={**provenance(), "machine_class": machine_class()},  # R-347
+        inputs=[str(p) for p in arguments.inputs],
+    )
 
 
 # -- the command line -------------------------------------------------------------------------

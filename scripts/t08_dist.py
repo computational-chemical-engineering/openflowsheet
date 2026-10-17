@@ -86,6 +86,20 @@ def git(*arguments: str, cwd: Path = ROOT) -> str:
     ).stdout
 
 
+def machine_class() -> str:
+    """M07a.A43's machine class (V02 alpha spec §18.3, R-347): `scripts/t08_rc.py`'s
+    `machine_class()`, which wraps T06 §7.5 (A5)'s `benchmarks.t06.ensemble.machine_class()`,
+    computed at write time and never written as a literal. It imports the checkout's harness, so
+    the interpreter running this script needs the lock's packages (the CI jobs install them);
+    the two builds are unaffected, because they run in their own environment."""
+    for entry in (ROOT / "scripts", ROOT / "src"):
+        if str(entry) not in sys.path:
+            sys.path.append(str(entry))
+    import t08_rc  # noqa: PLC0415
+
+    return t08_rc.machine_class()
+
+
 # -- what the commit says the artifacts must contain ------------------------------------------
 
 
@@ -436,6 +450,7 @@ def main() -> int:
         "environment_lock_sha256": sha256(lock.read_bytes()),
         "source_date_epoch": int(epoch),
         "machine": platform.machine(),
+        "machine_class": machine_class(),
         "python": platform.python_version(),
         "setuptools": setuptools,
         "builds": archives,

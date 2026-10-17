@@ -12,11 +12,11 @@ everything else is automated and refuses to run unless the release gate says YES
 
 | Job | Runs on a dry run | What it does |
 | --- | --- | --- |
-| `gate` | yes | The version is `pyproject.toml`'s and of the form `X.Y.Z`; a tag `vX.Y.Z`, if it exists, is on this commit; `CHANGELOG.md` has a `## vX.Y.Z` section (the release notes); the gate of the version's minor line, `scripts/v<major>_<minor>_gate.py --rc <rc>`, exits 0 **and** prints `vX.Y.Z tag may be proposed: YES`. Uploads `release-record` (`gate.txt`, `notes.md`). |
+| `gate` | yes | The version is `pyproject.toml`'s and of the form `X.Y.Z`, or a pre-release `X.Y.Z{a\|b\|rc}N` (N ≥ 1; see [Pre-releases](#pre-releases)); a tag `vX.Y.Z`, if it exists, is on this commit; `CHANGELOG.md` has a `## vX.Y.Z` section (the release notes); the gate of the version's minor line, `scripts/v<major>_<minor>_gate.py --rc <rc>`, exits 0 **and** prints `vX.Y.Z tag may be proposed: YES`. Uploads `release-record` (`gate.txt`, `notes.md`). |
 | `tag` | no | Tags the gated commit `vX.Y.Z` (annotated, by `github-actions[bot]`) and pushes the tag with the workflow's `GITHUB_TOKEN`. An existing tag on the same commit is accepted; on another commit, refused. |
 | `build` | yes | The sdist and the wheel from the gated commit, built twice and inspected (`scripts/t08_dist.py`, T08.A43). Uploads `dist` and `build-record`. |
 | `pypi` | no | Waits for approval in the GitHub environment `pypi`, then uploads `dist` to PyPI by trusted publishing (no token). |
-| `github-release` | no | Creates the GitHub release `vX.Y.Z` with the `CHANGELOG.md` section as its notes and the sdist and wheel attached. |
+| `github-release` | no | Creates the GitHub release `vX.Y.Z` with the `CHANGELOG.md` section as its notes and the sdist and wheel attached; a version with an `a`, `b` or `rc` segment is marked a pre-release (`--prerelease`). |
 
 Every job runs only in `computational-chemical-engineering/openflowsheet` (a fork skips them all).
 The gate judges the release candidate `C` given as `rc` (default
@@ -103,6 +103,53 @@ makes it read-only on GitHub; that is Frank's call.
 5. **Verify.** In a fresh environment `pip install openflowsheet==X.Y.Z`, and look at the release
    page and https://pypi.org/project/openflowsheet/.
 
+## Pre-releases
+
+V02 alpha release spec §9 (ADR 0028 D4–D6). A pre-release has a canonical PEP 440 version,
+`X.Y.ZaN`, `X.Y.ZbN` or `X.Y.ZrcN` with N ≥ 1 (`0.2.0a1`, never `0.2.0a0`, `0.2.0a01`,
+`0.2.0-a1` or `0.2.0alpha1`), so that setuptools writes it unchanged into the metadata and the file
+names. `release.yml` and `scripts/changelog_section.py` accept exactly those forms (the spec's
+Tables T2 and T3); the gate is still resolved by major and minor version, and the GitHub release is
+created marked **pre-release**, which `pip` installs only with `--pre` or the exact version.
+
+**The gate.** `scripts/v0_2_gate.py` holds a registry of gate sets. Its only one today,
+`v0.2-alpha-gate-v1`, covers `0.2.0aN` and nothing else: it claims V11–V20 (re-judged at the
+alpha's own release candidate `C_α`), W21 and W22, prints W23–W27 as not claimed, and reads every
+input at the tag candidate (`git show`), not from the working tree. It also requires Frank's three
+answers and his D3 acceptances in ADR 0028's two tables (never ADR 0021's), each starting
+`accepted, YYYY-MM-DD` with the date right after the word and on or after the verdict's `Judged`
+date, so that an answer given for one pre-release is not read for the next (spec Tables T4 and T6,
+Amendment 1); the RC record
+`docs/v02-alpha-rc-record.md` with steps 1–12 passed, M07a's manifest at `C_α`, M01's and M02's
+`tested` manifests at ancestors of `C_α`, the envelope pinned to `v0.2-alpha-envelope-1` with
+`release` equal to the version, and the required ADRs Accepted. Every other `0.2` version is
+refused as not covered until M07 registers the 0.2.0 gate set.
+
+**Preparation of `0.2.0a1`** (spec §9.2):
+
+1. `C_α` declares the version itself: `0.2.0a1` in `pyproject.toml`, `src/openflowsheet/__init__.py`
+   and the version-carrying test fixtures, and the envelope pinned (MR-3). There is no bump at the
+   tag: the gate requires `C_α`'s version to equal the candidate's (ADR 0028 D4).
+2. **The freeze.** From `C_α` until the dispatch, `main` takes no change to a D2.4 path (`src/`,
+   `schemas/`, `benchmarks/`, `requirements.lock`, `pyproject.toml`, `MANIFEST.in`, `README.md`,
+   `LICENSE`, `NOTICE`); work continues on branches. The alternative (spec Q7) is that Frank pushes
+   `v0.2.0a1` on the candidate and dispatches from the tag.
+3. The RC job runs at `C_α`; its records, the RC record, the M07a manifest, the verdicts, the
+   ledger and the `## v0.2.0a1` section of `CHANGELOG.md` are committed after `C_α`, outside the
+   D2.4 paths; `release/rc-trees/<C_α>.json` is written with
+   `scripts/v0_2_gate.py --rc <C_α> --write-tree-record`. `C_α` is merged into `main` with a merge
+   commit, never squashed, so that it stays reachable.
+4. Check the gate locally on `main`:
+
+   ```sh
+   PYTHONPATH=src .venv/bin/python scripts/v0_2_gate.py --rc <C_α>
+   ```
+
+   It must end with `v0.2.0a1 tag may be proposed: YES`.
+5. **Dispatch** as in [Per release](#per-release) steps 2–5, with `version` `0.2.0a1` and **`rc` =
+   `C_α`**. The `rc` input's default is the v0.1 candidate `67c66d9`; a dispatch that forgets to
+   change it is refused, because that candidate's version `0.1.0rc1` is not the candidate's.
+
 ## What the workflow refuses
 
 | Refusal | Enforced by |
@@ -110,7 +157,7 @@ makes it read-only on GitHub; that is Frank's call.
 | Running outside `computational-chemical-engineering/openflowsheet` | every job's `if: github.repository == '…'` |
 | Tagging, uploading or publishing on a dry run | `tag`, `pypi`, `github-release`: `if: … && !inputs.dry_run` |
 | An upload without approval | `pypi` runs in the environment `pypi` (required reviewer Frank) |
-| A version not of the form `X.Y.Z`, or not `pyproject.toml`'s | `gate`, first step |
+| A version not of the form `X.Y.Z` or `X.Y.Z{a\|b\|rc}N` (N ≥ 1), or not `pyproject.toml`'s | `gate`, first step |
 | A tag `vX.Y.Z` on another commit | `gate` (before anything is built) and `tag` |
 | A release without its `CHANGELOG.md` section | `scripts/changelog_section.py` in `gate` |
 | A gate that is not YES for this version | `gate`: the minor line's gate script must exist, exit 0 **and** print `vX.Y.Z tag may be proposed: YES` |
@@ -133,6 +180,8 @@ makes it read-only on GitHub; that is Frank's call.
 
 - **The gate is per minor line.** `scripts/v0_1_gate.py` covers `0.1.z` and refuses any other
   version; a `0.2.x` release needs a `scripts/v0_2_gate.py` and its own release candidate.
+  `scripts/v0_2_gate.py` covers only the versions of its registered gate sets (today `0.2.0aN`);
+  M07 adds the set for `0.2.0`.
 - **A tag pushed with `GITHUB_TOKEN` starts no other workflow.** Nothing here is tag-triggered;
   `ci.yml` runs on branch pushes and pull requests.
 - **v0.1.0** is on GitHub (tag `v0.1.0`, the root commit) but was not published to PyPI; `0.1.1`

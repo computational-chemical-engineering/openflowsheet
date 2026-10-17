@@ -1,0 +1,285 @@
+identity	UNKNOWN STEP	﻿2026-10-15T02:23:12.3291602Z Current runner version: '2.337.0'
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3329617Z ##[group]Runner Image Provisioner
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3331407Z Hosted Compute Agent
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3332530Z Version: 20261002.596
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3333844Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3335571Z Build Date: 2026-10-02T22:28:27Z
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3336823Z Worker ID: {cc934419-f042-4023-ab23-a9403fb20d11}
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3338229Z Region: canadaeast
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3339041Z Cloud: Azure
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3339681Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3341243Z ##[group]Operating System
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3341899Z Ubuntu
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3342540Z 24.04.5
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3343091Z LTS
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3343628Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3344201Z ##[group]Runner Image
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3345190Z Image: ubuntu-24.04
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3345859Z Version: 20261004.327.1
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3347174Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3348804Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3349780Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3352919Z ##[group]GITHUB_TOKEN Permissions
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3355796Z Actions: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3356538Z ArtifactMetadata: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3357155Z Attestations: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3358106Z Checks: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3358741Z CodeQuality: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3359298Z Contents: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3359899Z CopilotRequests: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3360545Z Deployments: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3361085Z Discussions: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3361715Z Drives: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3362284Z Issues: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3362966Z Metadata: read
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3363511Z Models: read
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3364025Z Packages: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3364651Z Pages: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3365550Z PullRequests: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3366201Z RepositoryProjects: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3366839Z SecurityEvents: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3367414Z Statuses: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3368088Z VulnerabilityAlerts: read
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3368679Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3370913Z Secret source: Actions
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3371851Z Cache mode: write
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3372892Z Prepare workflow directory
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3803737Z Prepare all required actions
+identity	UNKNOWN STEP	2026-10-15T02:23:12.3876163Z Getting action download info
+identity	UNKNOWN STEP	2026-10-15T02:23:12.6421887Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+identity	UNKNOWN STEP	2026-10-15T02:23:12.7672216Z Download action repository 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c' (SHA:3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c)
+identity	UNKNOWN STEP	2026-10-15T02:23:13.2050964Z Download action repository 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+identity	UNKNOWN STEP	2026-10-15T02:23:13.3899908Z Complete job name: identity
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4711170Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4712354Z with:
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4712997Z   repository: computational-chemical-engineering/openflowsheet
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4717772Z   token: ***
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4718262Z   ssh-strict: true
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4718734Z   ssh-user: git
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4719203Z   persist-credentials: true
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4719725Z   clean: true
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4720199Z   sparse-checkout-cone-mode: true
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4720758Z   fetch-depth: 1
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4721222Z   fetch-tags: false
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4721691Z   show-progress: true
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4722172Z   lfs: false
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4722617Z   submodules: false
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4723087Z   set-safe-directory: true
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4723620Z   allow-unsafe-pr-checkout: false
+identity	UNKNOWN STEP	2026-10-15T02:23:13.4724476Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5791558Z Syncing repository: computational-chemical-engineering/openflowsheet
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5794340Z ##[group]Getting Git version info
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5795624Z Working directory is '/home/runner/work/openflowsheet/openflowsheet'
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5797036Z [command]/usr/bin/git version
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5847407Z git version 2.55.0
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5869284Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5879131Z Temporarily overriding HOME='/home/runner/work/_temp/4027892a-525a-4608-b262-68a900cc1e86' before making global git config changes
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5881812Z Adding repository directory to the temporary git global config as a safe directory
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5884598Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5933749Z Deleting the contents of '/home/runner/work/openflowsheet/openflowsheet'
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5938756Z ##[group]Determining repository object format
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5940426Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5941743Z ##[group]Initializing the repository
+identity	UNKNOWN STEP	2026-10-15T02:23:13.5944473Z [command]/usr/bin/git init /home/runner/work/openflowsheet/openflowsheet
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6052007Z hint: Using 'master' as the name for the initial branch. This default branch name
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6053659Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6055247Z hint: to use in all of your new repositories, which will suppress this warning,
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6056539Z hint: call:
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6057001Z hint:
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6057587Z hint: 	git config --global init.defaultBranch <name>
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6058253Z hint:
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6058881Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6060088Z hint: 'development'. The just-created branch can be renamed via this command:
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6061321Z hint:
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6061807Z hint: 	git branch -m <name>
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6062319Z hint:
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6063032Z hint: Disable this message with "git config set advice.defaultBranchName false"
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6064192Z Initialized empty Git repository in /home/runner/work/openflowsheet/openflowsheet/.git/
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6067709Z [command]/usr/bin/git remote add origin https://github.com/computational-chemical-engineering/openflowsheet
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6122980Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6124521Z ##[group]Disabling automatic garbage collection
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6126848Z [command]/usr/bin/git config --local gc.auto 0
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6157536Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6159116Z ##[group]Setting up auth
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6160187Z Removing SSH command configuration
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6165282Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6197739Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6547135Z Removing HTTP extra header
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6552187Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6582352Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6792706Z Removing includeIf entries pointing to credentials config files
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6797711Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+identity	UNKNOWN STEP	2026-10-15T02:23:13.6829045Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+identity	UNKNOWN STEP	2026-10-15T02:23:13.7055688Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+identity	UNKNOWN STEP	2026-10-15T02:23:13.7092206Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path /home/runner/work/_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config
+identity	UNKNOWN STEP	2026-10-15T02:23:13.7123034Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config
+identity	UNKNOWN STEP	2026-10-15T02:23:13.7157420Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config
+identity	UNKNOWN STEP	2026-10-15T02:23:13.7196399Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config
+identity	UNKNOWN STEP	2026-10-15T02:23:13.7222563Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:13.7223423Z ##[group]Fetching the repository
+identity	UNKNOWN STEP	2026-10-15T02:23:13.7230011Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +e0e198e4632224612671db5b07445639d272d6da:refs/remotes/origin/wp/V02-alpha-gate
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0385801Z From https://github.com/computational-chemical-engineering/openflowsheet
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0389786Z  * [new ref]         e0e198e4632224612671db5b07445639d272d6da -> origin/wp/V02-alpha-gate
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0396936Z [command]/usr/bin/git branch --list --remote origin/wp/V02-alpha-gate
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0420001Z   origin/wp/V02-alpha-gate
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0430963Z [command]/usr/bin/git rev-parse refs/remotes/origin/wp/V02-alpha-gate
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0452980Z e0e198e4632224612671db5b07445639d272d6da
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0464375Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0466093Z ##[group]Determining the checkout info
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0467802Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0470175Z [command]/usr/bin/git sparse-checkout disable
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0528224Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0560687Z ##[group]Checking out the ref
+identity	UNKNOWN STEP	2026-10-15T02:23:15.0565092Z [command]/usr/bin/git checkout --progress --force -B wp/V02-alpha-gate refs/remotes/origin/wp/V02-alpha-gate
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3514138Z Switched to a new branch 'wp/V02-alpha-gate'
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3519201Z branch 'wp/V02-alpha-gate' set up to track 'origin/wp/V02-alpha-gate'.
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3545204Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3591746Z [command]/usr/bin/git log -1 --format=%H
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3618720Z e0e198e4632224612671db5b07445639d272d6da
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3877863Z ##[group]Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3878329Z with:
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3878617Z   pattern: structural-identity-*
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3878886Z   path: identities
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3879120Z   merge-multiple: false
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3942490Z   repository: computational-chemical-engineering/openflowsheet
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3942982Z   run-id: 38667458248
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3943241Z   skip-decompress: false
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3943548Z   digest-mismatch: error
+identity	UNKNOWN STEP	2026-10-15T02:23:15.3943804Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:15.6863442Z Found 12 artifact(s)
+identity	UNKNOWN STEP	2026-10-15T02:23:15.6864358Z Filtering artifacts by pattern 'structural-identity-*'
+identity	UNKNOWN STEP	2026-10-15T02:23:15.6885873Z Preparing to download the following artifacts:
+identity	UNKNOWN STEP	2026-10-15T02:23:15.6887250Z - structural-identity-ubuntu-24.04-arm (ID: 11944120432, Size: 190001, Expected Digest: sha256:1d0bd97cb64197fe25e87f4d056853a193ab0140f45c4caedf2d78ed19372edd)
+identity	UNKNOWN STEP	2026-10-15T02:23:15.6889430Z - structural-identity-ubuntu-latest (ID: 11943667081, Size: 190006, Expected Digest: sha256:e418fe58f7f643e7a97c5f13c3b79cae5925cb9fe8e5e22d3115e6e445a472f5)
+identity	UNKNOWN STEP	2026-10-15T02:23:15.9641061Z Redirecting to blob download url: https://productionresultssa13.blob.core.windows.net/actions-results/cf546e7b-a621-4f05-b4c4-b6c3e141726f/workflow-job-run-20551ea0-c323-5d87-a7f0-79e11f0ce6da/artifacts/a8bd061afccd26c2a08b238dd0ca769d1ac2934954d09356bc80933e11ce2d67.zip
+identity	UNKNOWN STEP	2026-10-15T02:23:15.9643769Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-ubuntu-24.04-arm
+identity	UNKNOWN STEP	2026-10-15T02:23:15.9670917Z Redirecting to blob download url: https://productionresultssa13.blob.core.windows.net/actions-results/cf546e7b-a621-4f05-b4c4-b6c3e141726f/workflow-job-run-5ded9306-5626-59ef-93ca-2bef9322a3ef/artifacts/311b1d67c140c151d759f3e44d31a0a3b12b964419759907445c032ecb5d3121.zip
+identity	UNKNOWN STEP	2026-10-15T02:23:15.9673100Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-ubuntu-latest
+identity	UNKNOWN STEP	2026-10-15T02:23:16.0821384Z (node:2297) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+identity	UNKNOWN STEP	2026-10-15T02:23:16.0822856Z (Use `node --trace-deprecation ...` to show where the warning was created)
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1715983Z SHA256 digest of downloaded artifact is e418fe58f7f643e7a97c5f13c3b79cae5925cb9fe8e5e22d3115e6e445a472f5
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1717074Z Artifact download completed successfully.
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1725767Z SHA256 digest of downloaded artifact is 1d0bd97cb64197fe25e87f4d056853a193ab0140f45c4caedf2d78ed19372edd
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1726644Z Artifact download completed successfully.
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1727337Z Total of 2 artifact(s) downloaded
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1732174Z Download artifact has finished successfully
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1940863Z ##[group]Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1941312Z with:
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1941526Z   python-version: 3.13
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1941771Z   check-latest: false
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1944296Z   token: ***
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1944533Z   update-environment: true
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1944987Z   allow-prereleases: false
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1945234Z   freethreaded: false
+identity	UNKNOWN STEP	2026-10-15T02:23:16.1945465Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3127886Z ##[group]Installed versions
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3210647Z Successfully set up CPython (3.13.16)
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3211492Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3331920Z ##[group]Run python -m pip install -c requirements.lock pyyaml numpy
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3332518Z ^[[36;1mpython -m pip install -c requirements.lock pyyaml numpy^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3712139Z shell: /usr/bin/bash -e {0}
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3712498Z env:
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3712818Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3713380Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3713902Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3714363Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3715012Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3715478Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+identity	UNKNOWN STEP	2026-10-15T02:23:16.3715859Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:19.3507171Z Collecting pyyaml
+identity	UNKNOWN STEP	2026-10-15T02:23:19.4850916Z   Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+identity	UNKNOWN STEP	2026-10-15T02:23:19.7727742Z Collecting numpy
+identity	UNKNOWN STEP	2026-10-15T02:23:19.8053523Z   Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+identity	UNKNOWN STEP	2026-10-15T02:23:19.8880233Z Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (759 kB)
+identity	UNKNOWN STEP	2026-10-15T02:23:20.0158679Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 759.5/759.5 kB 8.1 MB/s  0:00:00
+identity	UNKNOWN STEP	2026-10-15T02:23:20.0485052Z Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.1 MB)
+identity	UNKNOWN STEP	2026-10-15T02:23:20.3120332Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.1/16.1 MB 62.1 MB/s  0:00:00
+identity	UNKNOWN STEP	2026-10-15T02:23:20.4805770Z Installing collected packages: pyyaml, numpy
+identity	UNKNOWN STEP	2026-10-15T02:23:22.4962298Z 
+identity	UNKNOWN STEP	2026-10-15T02:23:22.4973522Z Successfully installed numpy-2.2.4 pyyaml-6.0.2
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5524586Z ##[group]Run python - <<'PY'
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5525237Z ^[[36;1mpython - <<'PY'^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5525500Z ^[[36;1mimport json, pathlib, sys^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5526109Z ^[[36;1mfound = sorted(pathlib.Path("identities").rglob("identity.json"))^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5526527Z ^[[36;1mif len(found) < 2:^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5526871Z ^[[36;1m    sys.exit(f"G05 needs two platforms; found {len(found)}")^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5527404Z ^[[36;1mdocuments = {path.parent.name: json.loads(path.read_text()) for path in found}^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5527865Z ^[[36;1mnames = sorted(documents)^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5528146Z ^[[36;1mfirst = documents[names[0]]^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5528422Z ^[[36;1mfailures = []^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5528666Z ^[[36;1msys.path.insert(0, "src")^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5529005Z ^[[36;1mfrom openflowsheet.run.compare import differences^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5529353Z ^[[36;1mfloats = {^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5529671Z ^[[36;1m    path.parent.name: json.loads(path.read_text())^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5530116Z ^[[36;1m    for path in pathlib.Path("identities").rglob("t02-floats.json")^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5530496Z ^[[36;1m}^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5530710Z ^[[36;1mif sorted(floats) != names:^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5531151Z ^[[36;1m    failures.append(f"t02-floats.json from {sorted(floats)}, identities from {names}")^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5531616Z ^[[36;1mfor name in names[1:]:^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5531878Z ^[[36;1m    other = documents[name]^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5532192Z ^[[36;1m    for key in sorted(set(first) | set(other)):^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5532539Z ^[[36;1m        if first.get(key) != other.get(key):^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5532899Z ^[[36;1m            failures.append(f"{key}: {names[0]} != {name}")^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5533280Z ^[[36;1m    if name in floats and names[0] in floats:^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5533582Z ^[[36;1m        failures += [^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5533862Z ^[[36;1m            f"{found} ({names[0]} vs {name})"^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5534178Z ^[[36;1m            for found in differences(^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5534475Z ^[[36;1m                floats[name],^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5534899Z ^[[36;1m                floats[names[0]],^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5535178Z ^[[36;1m                "t02_floats",^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5535526Z ^[[36;1m                # ADR 0025 W5: registered comparisons keep v1 (RC F4).^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5535934Z ^[[36;1m                policy_id="K04-numerical-policy-v1",^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5536246Z ^[[36;1m            )^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5536466Z ^[[36;1m        ]^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5536683Z ^[[36;1mfor name in names:^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5537010Z ^[[36;1m    print(f"{name}: {documents[name]['structural_sha256']}")^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5537359Z ^[[36;1mif failures:^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5537765Z ^[[36;1m    sys.exit("R0 structural artifacts differ across platforms:\n  " + "\n  ".join(failures))^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5538367Z ^[[36;1mprint(f"G05: R0 structural identity equal across {len(names)} platforms")^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5538761Z ^[[36;1mPY^[[0m
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5599630Z shell: /usr/bin/bash -e {0}
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5599891Z env:
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5600230Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5600713Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5601173Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5601603Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5602030Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5602448Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+identity	UNKNOWN STEP	2026-10-15T02:23:22.5602785Z ##[endgroup]
+identity	UNKNOWN STEP	2026-10-15T02:23:22.8120438Z structural-identity-ubuntu-24.04-arm: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+identity	UNKNOWN STEP	2026-10-15T02:23:22.8121853Z structural-identity-ubuntu-latest: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+identity	UNKNOWN STEP	2026-10-15T02:23:22.8123292Z G05: R0 structural identity equal across 2 platforms
+identity	UNKNOWN STEP	2026-10-15T02:23:22.8449597Z Post job cleanup.
+identity	UNKNOWN STEP	2026-10-15T02:23:22.9767472Z Post job cleanup.
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0609099Z [command]/usr/bin/git version
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0647583Z git version 2.55.0
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0691585Z Temporarily overriding HOME='/home/runner/work/_temp/b4f6f1f2-c3fc-42ba-b0d6-84d6415d1d7f' before making global git config changes
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0693035Z Adding repository directory to the temporary git global config as a safe directory
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0698415Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0727695Z Removing SSH command configuration
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0733771Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0768728Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+identity	UNKNOWN STEP	2026-10-15T02:23:23.0996100Z Removing HTTP extra header
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1000585Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1033324Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1252038Z Removing includeIf entries pointing to credentials config files
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1257911Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1284975Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1286294Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1287429Z includeif.gitdir:/github/workspace/.git.path
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1288351Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1295287Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1317266Z /home/runner/work/_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1327350Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-cf391667\-17ff\-4ad0\-8cdf\-f68cc40e0ef8\.config
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1362105Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1383965Z /home/runner/work/_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1392824Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-cf391667\-17ff\-4ad0\-8cdf\-f68cc40e0ef8\.config
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1430294Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1450658Z /github/runner_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1458169Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-cf391667\-17ff\-4ad0\-8cdf\-f68cc40e0ef8\.config
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1490101Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1512555Z /github/runner_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1520640Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-cf391667\-17ff\-4ad0\-8cdf\-f68cc40e0ef8\.config
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1552238Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1770554Z Removing credentials config '/home/runner/work/_temp/git-credentials-cf391667-17ff-4ad0-8cdf-f68cc40e0ef8.config'
+identity	UNKNOWN STEP	2026-10-15T02:23:23.1911739Z Cleaning up orphan processes

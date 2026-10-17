@@ -1,0 +1,191 @@
+"""WO-10: the `t08-rc-v1` records of the alpha RC job's steps 11 and 12 (V02 alpha release spec §8.2,
+M07a.A40, A41, A43; build decision B-WO10-8).
+
+Steps 11 and 12 run M01's and M02's own scripts, whose records carry no `commit` or `tree_clean`.
+This script, run from outside the tree against the RC worktree at `C_α`, reads those records and
+the exit codes of the commands that wrote them (`run_local.sh`'s summary), judges them by the
+rules the M01 and M02 manifests already use (M01: `scripts/m01_evidence_manifest.py`'s `_idaes`
+comparison; M02: `scripts/m02_evidence_manifest.py`'s `g10`, `g11`, `g12`, imported, not
+restated), and writes one `t08-rc-v1` record per step through `t08_rc.finish`, so each carries
+`commit`, `tree_clean`, the lock's SHA-256 and the machine class.
+
+    <rc venv>/bin/python m07a_rc_external.py <step11|step12> --rc <rc worktree> --summary <summary.txt>
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import sys
+import xml.etree.ElementTree as ElementTree
+from pathlib import Path
+from typing import Any
+
+C_ALPHA = "cc73219a77f6a54579c8acb151ed6fae228c8a4c"
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def exit_codes(summary: Path) -> dict[str, int]:
+    """The last exit code of each label in `run_local.sh`'s summary."""
+    codes: dict[str, int] = {}
+    for line in summary.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"^(\S+) exit (\d+) :: ", line)
+        if match:
+            codes[match[1]] = int(match[2])
+    return codes
+
+
+def differences(a: Any, b: Any, path: str = "") -> list[str]:
+    """`m01_evidence_manifest._differences`, as a list."""
+    import m01_evidence_manifest  # noqa: PLC0415
+
+    return sorted(m01_evidence_manifest._differences(a, b, path))
+
+
+def step11(rc: Path, out_dir: Path, codes: dict[str, int], t08_rc: Any) -> int:
+    checks: list[dict[str, Any]] = []
+    stdout = (out_dir / "external-crosscheck-check.stdout.txt").read_text(encoding="utf-8")
+    t08_rc.check(
+        checks,
+        "a40.crosscheck_exit",
+        codes.get("step11-xcheck") == 0,
+        exit_code=codes.get("step11-xcheck"),
+        last_line=stdout.strip().splitlines()[-1] if stdout.strip() else "",
+        record_sha256=sha256(rc / "benchmarks/m01/external-crosscheck.json"),
+        freeze_sha256=sha256(out_dir / "venv-xcheck.freeze.txt"),
+    )
+    committed_path = rc / "benchmarks/m01/idaes-conformance.json"
+    rerun_path = out_dir / "idaes-conformance.json"
+    ran = codes.get("step11-idaes") == 0 and rerun_path.exists()
+    t08_rc.check(checks, "a40.idaes_exit", ran, exit_code=codes.get("step11-idaes"))
+    differing = (
+        differences(
+            json.loads(committed_path.read_text(encoding="utf-8")),
+            json.loads(rerun_path.read_text(encoding="utf-8")),
+        )
+        if ran
+        else None
+    )
+    inputs_only = differing is not None and all(
+        re.fullmatch(r"inputs\.[A-Za-z0-9_]+_sha256", member) for member in differing
+    )
+    t08_rc.check(
+        checks,
+        "a40.idaes_numbers_identical",
+        inputs_only,
+        differing_members=differing,
+        committed_sha256=sha256(committed_path),
+        rerun_sha256=sha256(rerun_path) if rerun_path.exists() else None,
+        freeze_sha256=sha256(out_dir / "venv-idaes.freeze.txt"),
+    )
+    return int(
+        t08_rc.finish(
+            out_dir / "rc-step11.json",
+            "external-records",
+            checks,
+            provenance={**t08_rc.provenance(), "machine_class": t08_rc.machine_class()},
+        )
+    )
+
+
+def _junit(path: Path) -> dict[str, int]:
+    totals = {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+    for suite in ElementTree.parse(path).getroot().iter("testsuite"):
+        for key in totals:
+            totals[key] += int(suite.get(key, "0"))
+    return totals
+
+
+def step12(rc: Path, out_dir: Path, codes: dict[str, int], t08_rc: Any) -> int:
+    import m02_evidence_manifest as m02  # noqa: PLC0415
+
+    m02.M02 = out_dir  # the records this step wrote, judged by M02's own functions
+    checks: list[dict[str, Any]] = []
+    lock = rc / "src/openflowsheet/adapters/pymrm/reactor-env.lock"
+    manifest = json.loads((out_dir / "env-manifest.json").read_text(encoding="utf-8"))
+    t08_rc.check(
+        checks,
+        "a41.environment_from_c_alpha_lock",
+        codes.get("reactor-build") == 0
+        and codes.get("reactor-verify") == 0
+        and manifest.get("lock_sha256") == sha256(lock),
+        build_exit=codes.get("reactor-build"),
+        verify_exit=codes.get("reactor-verify"),
+        lock_sha256=sha256(lock),
+        env_manifest={k: manifest.get(k) for k in sorted(manifest) if k != "packages"},
+    )
+    for gate, labels, judge in (
+        ("g10", ("step12-g10",), m02.g10),
+        ("g11", ("step12-g11",), m02.g11),
+        ("g12", ("step12-g12", "step12-g12-edges"), m02.g12),
+    ):
+        exits = {label: codes.get(label) for label in labels}
+        try:
+            value, ok = judge()
+        except (OSError, KeyError, ValueError, TypeError) as error:
+            value, ok = {"error": f"{type(error).__name__}: {error}"}, False
+        t08_rc.check(
+            checks,
+            f"a41.{gate}",
+            all(code == 0 for code in exits.values()) and ok,
+            exits=exits,
+            judged_by=f"scripts/m02_evidence_manifest.py:{gate}",
+            value=value,
+        )
+    g10 = json.loads((out_dir / "g10-adapter-halves-v3.json").read_text(encoding="utf-8"))
+    environment = g10.get("environment", {})
+    t08_rc.check(
+        checks,
+        "a41.one_thread_environment_recorded",
+        environment.get("threads") == "OMP/OPENBLAS/MKL_NUM_THREADS=1"
+        and all(environment.get(key) for key in ("python", "platform", "packages", "cpu_model")),
+        environment=environment,
+    )
+    junit = out_dir / "m02-tests.junit.xml"
+    totals = _junit(junit) if junit.exists() else None
+    t08_rc.check(
+        checks,
+        "a41.m02_tests_with_reactor",
+        codes.get("step12-m02-tests") == 0
+        and totals is not None
+        and totals["failures"] == totals["errors"] == 0,
+        exit_code=codes.get("step12-m02-tests"),
+        junit=totals,
+        command="pytest -q -p no:cacheprovider -m 'pymrm or not pymrm' tests/test_m02_*.py",
+    )
+    return int(
+        t08_rc.finish(
+            out_dir / "rc-step12.json",
+            "reactor-evidence",
+            checks,
+            provenance={**t08_rc.provenance(), "machine_class": t08_rc.machine_class()},
+        )
+    )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("step", choices=("step11", "step12"))
+    parser.add_argument("--rc", type=Path, required=True)
+    parser.add_argument("--summary", type=Path, required=True)
+    arguments = parser.parse_args()
+    rc = arguments.rc.resolve()
+    sys.path.insert(0, str(rc / "scripts"))
+    import t08_rc  # noqa: PLC0415
+
+    if t08_rc.git("rev-parse", "HEAD").strip() != C_ALPHA:
+        print(f"refused: {rc} is not at C_α", file=sys.stderr)
+        return 2
+    out_dir = rc / "evidence/M07a" / C_ALPHA / "artifacts/rc" / arguments.step
+    codes = exit_codes(arguments.summary)
+    run = step11 if arguments.step == "step11" else step12
+    return run(rc, out_dir, codes, t08_rc)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

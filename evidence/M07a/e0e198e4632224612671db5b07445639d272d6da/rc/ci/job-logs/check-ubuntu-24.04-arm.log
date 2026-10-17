@@ -1,0 +1,1511 @@
+check (ubuntu-24.04-arm)	UNKNOWN STEP	﻿2026-10-15T01:46:37.1188012Z Current runner version: '2.337.0'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1220808Z ##[group]Runner Image Provisioner
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1221832Z Hosted Compute Agent
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1222631Z Version: 20261012.601
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1223789Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1224553Z Build Date: 2026-10-12T17:48:21Z
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1225379Z Worker ID: {ba4e3be0-1c24-4669-bf7b-59a986bb023f}
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1226087Z Region: westus2
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1226650Z Cloud: Azure
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1227309Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1230216Z ##[group]Operating System
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1231090Z Ubuntu
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1231615Z 24.04.5
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1232108Z LTS
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1232767Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1233678Z ##[group]Runner Image
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1234390Z Image: ubuntu-24.04-arm
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1235017Z Version: 20261012.149.1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1236919Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24-arm64/20261012.149/images/ubuntu/Ubuntu2404-Arm64-Readme.md
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1238554Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24-arm64%2F20261012.149
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1239624Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1242656Z ##[group]GITHUB_TOKEN Permissions
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1246668Z Actions: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1247359Z ArtifactMetadata: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1248078Z Attestations: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1248643Z Checks: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1249229Z CodeQuality: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1249841Z Contents: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1250398Z CopilotRequests: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1250982Z Deployments: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1251645Z Discussions: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1252242Z Drives: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1252810Z Issues: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1253998Z Metadata: read
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1254547Z Models: read
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1255304Z Packages: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1255909Z Pages: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1256587Z PullRequests: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1257188Z RepositoryProjects: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1257779Z SecurityEvents: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1258414Z Statuses: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1259038Z VulnerabilityAlerts: read
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1259721Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1263440Z Secret source: Actions
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1264425Z Cache mode: write
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1265721Z Prepare workflow directory
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1747799Z Prepare all required actions
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.1803312Z Getting action download info
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.5183834Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.6645585Z Download action repository 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.7956265Z Download action repository 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:37.9754154Z Download action repository 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a' (SHA:043fb46d1a93c77aae656e7c1c64a875d1fc6a0a)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.1415863Z Complete job name: check (ubuntu-24.04-arm)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2252290Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2254174Z with:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2254832Z   fetch-depth: 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2255678Z   repository: computational-chemical-engineering/openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2259945Z   token: ***
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2260500Z   ssh-strict: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2261107Z   ssh-user: git
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2261671Z   persist-credentials: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2262335Z   clean: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2263080Z   sparse-checkout-cone-mode: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2263796Z   fetch-tags: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2264437Z   show-progress: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2264990Z   lfs: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2265512Z   submodules: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2266139Z   set-safe-directory: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2267201Z   allow-unsafe-pr-checkout: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2268419Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2268973Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2269567Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2270309Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.2270857Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3094956Z Syncing repository: computational-chemical-engineering/openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3097448Z ##[group]Getting Git version info
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3098452Z Working directory is '/home/runner/work/openflowsheet/openflowsheet'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3099929Z [command]/usr/bin/git version
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3118293Z git version 2.55.0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3135283Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3145260Z Temporarily overriding HOME='/home/runner/work/_temp/c8499422-f42b-4e95-8733-209e54ca79d1' before making global git config changes
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3146880Z Adding repository directory to the temporary git global config as a safe directory
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3149477Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3179528Z Deleting the contents of '/home/runner/work/openflowsheet/openflowsheet'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3184016Z ##[group]Determining repository object format
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3185378Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3186307Z ##[group]Initializing the repository
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3189669Z [command]/usr/bin/git init /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3251945Z hint: Using 'master' as the name for the initial branch. This default branch name
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3253393Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3254511Z hint: to use in all of your new repositories, which will suppress this warning,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3255355Z hint: call:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3255993Z hint:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3256646Z hint: 	git config --global init.defaultBranch <name>
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3257409Z hint:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3258211Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3259271Z hint: 'development'. The just-created branch can be renamed via this command:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3260242Z hint:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3260786Z hint: 	git branch -m <name>
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3261436Z hint:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3262242Z hint: Disable this message with "git config set advice.defaultBranchName false"
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3263600Z Initialized empty Git repository in /home/runner/work/openflowsheet/openflowsheet/.git/
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3265862Z [command]/usr/bin/git remote add origin https://github.com/computational-chemical-engineering/openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3295680Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3296914Z ##[group]Disabling automatic garbage collection
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3298151Z [command]/usr/bin/git config --local gc.auto 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3325749Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3326768Z ##[group]Setting up auth
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3327448Z Removing SSH command configuration
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3330963Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3358777Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3621184Z Removing HTTP extra header
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3627077Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3655928Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3840629Z Removing includeIf entries pointing to credentials config files
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3841998Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.3868758Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.4054053Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.4087695Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path /home/runner/work/_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.4115370Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.4143240Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.4170580Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.4195524Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.4196595Z ##[group]Fetching the repository
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:38.4201667Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5077925Z From https://github.com/computational-chemical-engineering/openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5079643Z  * [new branch]      main              -> origin/main
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5081202Z  * [new branch]      wp/M02            -> origin/wp/M02
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5082562Z  * [new branch]      wp/M02-wo14       -> origin/wp/M02-wo14
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5084165Z  * [new branch]      wp/M03            -> origin/wp/M03
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5085447Z  * [new branch]      wp/M04            -> origin/wp/M04
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5086682Z  * [new branch]      wp/M05            -> origin/wp/M05
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5088161Z  * [new branch]      wp/M06-build      -> origin/wp/M06-build
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5089446Z  * [new branch]      wp/M07            -> origin/wp/M07
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5090834Z  * [new branch]      wp/V02-alpha-gate -> origin/wp/V02-alpha-gate
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5092311Z  * [new tag]         v0.1.0            -> v0.1.0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5093694Z  * [new tag]         v0.1.1            -> v0.1.1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5096804Z [command]/usr/bin/git branch --list --remote origin/wp/V02-alpha-gate
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5109584Z   origin/wp/V02-alpha-gate
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5117189Z [command]/usr/bin/git rev-parse refs/remotes/origin/wp/V02-alpha-gate
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5137204Z e0e198e4632224612671db5b07445639d272d6da
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5140661Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5142185Z ##[group]Determining the checkout info
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5144252Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5145234Z [command]/usr/bin/git sparse-checkout disable
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5182244Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5209462Z ##[group]Checking out the ref
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.5211653Z [command]/usr/bin/git checkout --progress --force -B wp/V02-alpha-gate refs/remotes/origin/wp/V02-alpha-gate
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7233362Z Switched to a new branch 'wp/V02-alpha-gate'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7235215Z branch 'wp/V02-alpha-gate' set up to track 'origin/wp/V02-alpha-gate'.
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7256535Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7294246Z [command]/usr/bin/git log -1 --format=%H
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7316251Z e0e198e4632224612671db5b07445639d272d6da
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7666147Z ##[group]Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7667622Z with:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7668533Z   python-version: 3.13
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7669391Z   check-latest: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7676997Z   token: ***
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7677892Z   update-environment: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7678867Z   allow-prereleases: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7680229Z   freethreaded: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7681001Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7681687Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7682626Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7683646Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.7684469Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:39.8629534Z ##[group]Installed versions
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.0343426Z Successfully set up CPython (3.13.16)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.0345144Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.0475759Z ##[group]Run python -m pip install --upgrade pip
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.0477055Z ^[[36;1mpython -m pip install --upgrade pip^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.0478083Z ^[[36;1mpython -m pip install -r requirements.lock^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1139219Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1140467Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1141178Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1142003Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1142729Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1144068Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1145507Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1146740Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1147958Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1149086Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1150400Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:40.1151406Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:45.0381079Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (26.2.1)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.2130789Z Collecting annotated-types==0.8.0 (from -r requirements.lock (line 5))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.2835912Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.3102481Z Collecting anyio==4.15.1 (from -r requirements.lock (line 6))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.3177558Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.3348928Z Collecting attrs==26.1.0 (from -r requirements.lock (line 7))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.3463398Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.3949383Z Collecting casadi==3.8.0 (from -r requirements.lock (line 8))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.4067685Z   Downloading casadi-3.8.0-cp311-abi3-manylinux_2_28_aarch64.whl.metadata (2.2 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.4266363Z Collecting certifi==2026.7.22 (from -r requirements.lock (line 9))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.4352400Z   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.5200537Z Collecting cffi==2.1.1 (from -r requirements.lock (line 10))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.5363541Z   Downloading cffi-2.1.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (2.5 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.5528518Z Collecting click==8.5.0 (from -r requirements.lock (line 11))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.5599480Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.6840691Z Collecting cryptography==50.0.1 (from -r requirements.lock (line 12))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.6927808Z   Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_aarch64.whl.metadata (4.3 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.7076314Z Collecting h11==0.16.0 (from -r requirements.lock (line 13))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.7150253Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.7316735Z Collecting httpcore==1.0.9 (from -r requirements.lock (line 14))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.7388762Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.7613859Z Collecting httpx==0.28.1 (from -r requirements.lock (line 15))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.7696149Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.7846310Z Collecting httpx-sse==0.4.3 (from -r requirements.lock (line 16))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.7918175Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.8084030Z Collecting idna==3.20 (from -r requirements.lock (line 17))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.8154429Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.8300044Z Collecting iniconfig==2.3.0 (from -r requirements.lock (line 18))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.8370943Z   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.8567904Z Collecting jsonschema==4.26.0 (from -r requirements.lock (line 19))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.8640964Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.8803328Z Collecting jsonschema-specifications==2025.9.1 (from -r requirements.lock (line 20))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.8879118Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.9061733Z Collecting mcp==1.30.0 (from -r requirements.lock (line 21))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.9137309Z   Downloading mcp-1.30.0-py3-none-any.whl.metadata (9.3 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.9312385Z Collecting mpmath==1.3.0 (from -r requirements.lock (line 22))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:46.9388179Z   Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.0186405Z Collecting mypy==1.15.0 (from -r requirements.lock (line 23))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.0278714Z   Downloading mypy-1.15.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_28_aarch64.whl.metadata (2.1 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.0419313Z Collecting mypy_extensions==1.1.0 (from -r requirements.lock (line 24))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.0490562Z   Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.1918301Z Collecting numpy==2.2.4 (from -r requirements.lock (line 25))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.2008859Z   Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (63 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.2329363Z Collecting packaging==26.3 (from -r requirements.lock (line 26))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.2407153Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.2566759Z Collecting pluggy==1.6.0 (from -r requirements.lock (line 27))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.2692030Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.2833607Z Collecting pycparser==3.0 (from -r requirements.lock (line 28))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.2911297Z   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.3627593Z Collecting pydantic==2.13.5 (from -r requirements.lock (line 29))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.3714473Z   Downloading pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.3952775Z Collecting pydantic-settings==2.15.0 (from -r requirements.lock (line 30))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.4033636Z   Downloading pydantic_settings-2.15.0-py3-none-any.whl.metadata (3.9 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.8788714Z Collecting pydantic_core==2.46.5 (from -r requirements.lock (line 31))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.8946867Z   Downloading pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (6.6 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.9149017Z Collecting PyJWT==2.15.0 (from -r requirements.lock (line 32))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.9225993Z   Downloading pyjwt-2.15.0-py3-none-any.whl.metadata (3.5 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.9463808Z Collecting pytest==8.3.5 (from -r requirements.lock (line 33))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.9538333Z   Downloading pytest-8.3.5-py3-none-any.whl.metadata (7.6 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.9720219Z Collecting python-dotenv==1.2.3 (from -r requirements.lock (line 34))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.9798671Z   Downloading python_dotenv-1.2.3-py3-none-any.whl.metadata (29 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:47.9988872Z Collecting python-multipart==0.0.32 (from -r requirements.lock (line 35))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.0066430Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.0369427Z Collecting PyYAML==6.0.2 (from -r requirements.lock (line 36))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.0468662Z   Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (2.1 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.0663857Z Collecting referencing==0.37.0 (from -r requirements.lock (line 37))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.0736791Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.2570247Z Collecting rpds-py==2026.6.3 (from -r requirements.lock (line 38))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.2667132Z   Downloading rpds_py-2026.6.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (4.1 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.4941348Z Collecting ruff==0.12.11 (from -r requirements.lock (line 39))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.5049088Z   Downloading ruff-0.12.11-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (25 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.6003560Z Collecting scipy==1.15.3 (from -r requirements.lock (line 40))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.6122444Z   Downloading scipy-1.15.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (61 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.6409543Z Collecting sse-starlette==3.4.11 (from -r requirements.lock (line 41))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.6480211Z   Downloading sse_starlette-3.4.11-py3-none-any.whl.metadata (15 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.6719115Z Collecting starlette==1.7.0 (from -r requirements.lock (line 42))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.6794652Z   Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.7028074Z Collecting types-jsonschema==4.26.0.20260518 (from -r requirements.lock (line 43))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.7105829Z   Downloading types_jsonschema-4.26.0.20260518-py3-none-any.whl.metadata (1.8 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.7285879Z Collecting types-PyYAML==6.0.12.20260906 (from -r requirements.lock (line 44))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.7360376Z   Downloading types_pyyaml-6.0.12.20260906-py3-none-any.whl.metadata (1.8 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.7557931Z Collecting typing-inspection==0.4.4 (from -r requirements.lock (line 45))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.7634717Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.7802537Z Collecting typing_extensions==4.16.0 (from -r requirements.lock (line 46))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.7877024Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.8100749Z Collecting uvicorn==0.54.0 (from -r requirements.lock (line 47))
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.8176096Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.8730273Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.8827247Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.8926345Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:48.9052706Z Downloading casadi-3.8.0-cp311-abi3-manylinux_2_28_aarch64.whl (55.6 MB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:49.9689821Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 55.6/55.6 MB 52.4 MB/s  0:00:01
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:49.9764012Z Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:49.9871491Z Downloading cffi-2.1.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (222 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:49.9977514Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.0082676Z Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_aarch64.whl (4.7 MB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.0405706Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 150.1 MB/s  0:00:00
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.0487183Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.0584254Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.0680955Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.0780148Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.0881120Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.0984875Z Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.1078396Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.1183502Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.1292864Z Downloading mcp-1.30.0-py3-none-any.whl (234 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.1398626Z Downloading pydantic-2.13.5-py3-none-any.whl (472 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.1510202Z Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.1564652Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 81.5 MB/s  0:00:00
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.1687084Z Downloading mypy-1.15.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_28_aarch64.whl (11.4 MB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.2931871Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.4/11.4 MB 92.5 MB/s  0:00:00
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.3008414Z Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.3131565Z Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (14.1 MB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.5263764Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.1/14.1 MB 66.5 MB/s  0:00:00
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.5347350Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.5458899Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.5551598Z Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.5643708Z Downloading pydantic_settings-2.15.0-py3-none-any.whl (69 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.5738630Z Downloading pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (2.0 MB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.5888637Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 132.4 MB/s  0:00:00
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.5965035Z Downloading pyjwt-2.15.0-py3-none-any.whl (33 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.6062786Z Downloading pytest-8.3.5-py3-none-any.whl (343 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.6173680Z Downloading python_dotenv-1.2.3-py3-none-any.whl (22 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.6270750Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.6369209Z Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (733 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.6438302Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 733.4/733.4 kB 100.6 MB/s  0:00:00
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.6517492Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.6667873Z Downloading rpds_py-2026.6.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (367 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.6789148Z Downloading ruff-0.12.11-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (12.2 MB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.8512149Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.2/12.2 MB 70.1 MB/s  0:00:00
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:50.8604022Z Downloading scipy-1.15.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (35.2 MB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.1787280Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.2/35.2 MB 110.5 MB/s  0:00:00
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.1865399Z Downloading sse_starlette-3.4.11-py3-none-any.whl (17 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.1976634Z Downloading starlette-1.7.0-py3-none-any.whl (78 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.2072837Z Downloading types_jsonschema-4.26.0.20260518-py3-none-any.whl (16 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.2166835Z Downloading types_pyyaml-6.0.12.20260906-py3-none-any.whl (21 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.2258798Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.2358686Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.2459064Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:46:51.5549999Z Installing collected packages: mpmath, typing_extensions, types-PyYAML, ruff, rpds-py, PyYAML, python-multipart, python-dotenv, PyJWT, pycparser, pluggy, packaging, numpy, mypy_extensions, iniconfig, idna, httpx-sse, h11, click, certifi, attrs, annotated-types, uvicorn, typing-inspection, scipy, referencing, pytest, pydantic_core, mypy, httpcore, cffi, casadi, anyio, types-jsonschema, starlette, pydantic, jsonschema-specifications, httpx, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.1446757Z 
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.1486492Z Successfully installed PyJWT-2.15.0 PyYAML-6.0.2 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 casadi-3.8.0 certifi-2026.7.22 cffi-2.1.1 click-8.5.0 cryptography-50.0.1 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 iniconfig-2.3.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 mcp-1.30.0 mpmath-1.3.0 mypy-1.15.0 mypy_extensions-1.1.0 numpy-2.2.4 packaging-26.3 pluggy-1.6.0 pycparser-3.0 pydantic-2.13.5 pydantic-settings-2.15.0 pydantic_core-2.46.5 pytest-8.3.5 python-dotenv-1.2.3 python-multipart-0.0.32 referencing-0.37.0 rpds-py-2026.6.3 ruff-0.12.11 scipy-1.15.3 sse-starlette-3.4.11 starlette-1.7.0 types-PyYAML-6.0.12.20260906 types-jsonschema-4.26.0.20260518 typing-inspection-0.4.4 typing_extensions-4.16.0 uvicorn-0.54.0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2759970Z ##[group]Run python -m pip install -e .
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2760440Z ^[[36;1mpython -m pip install -e .^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2811781Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2812079Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2812464Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2812716Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2813195Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2813584Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2814033Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2814889Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2815328Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2815764Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2816228Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:00.2816573Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:01.0515025Z Obtaining file:///home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:01.0532696Z   Installing build dependencies: started
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:02.2699457Z   Installing build dependencies: finished with status 'done'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:02.2705124Z   Checking if build backend supports build_editable: started
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:02.7260705Z   Checking if build backend supports build_editable: finished with status 'done'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:02.7266713Z   Getting requirements to build editable: started
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.0505136Z   Getting requirements to build editable: finished with status 'done'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.0513189Z   Preparing editable metadata (pyproject.toml): started
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2294112Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2354096Z Requirement already satisfied: numpy==2.2.4 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from openflowsheet==0.2.0a1) (2.2.4)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2358197Z Requirement already satisfied: scipy==1.15.3 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from openflowsheet==0.2.0a1) (1.15.3)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2361520Z Requirement already satisfied: pyyaml==6.0.2 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from openflowsheet==0.2.0a1) (6.0.2)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2365005Z Requirement already satisfied: jsonschema==4.26.0 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from openflowsheet==0.2.0a1) (4.26.0)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2368036Z Requirement already satisfied: casadi==3.8.0 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from openflowsheet==0.2.0a1) (3.8.0)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2383993Z Requirement already satisfied: attrs>=22.2.0 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.2.0a1) (26.1.0)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2388320Z Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.2.0a1) (2025.9.1)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2391134Z Requirement already satisfied: referencing>=0.28.4 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.2.0a1) (0.37.0)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2394596Z Requirement already satisfied: rpds-py>=0.25.0 in /opt/hostedtoolcache/Python/3.13.16/arm64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.2.0a1) (2026.6.3)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2491897Z Building wheels for collected packages: openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.2498630Z   Building editable for openflowsheet (pyproject.toml): started
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.4642833Z   Building editable for openflowsheet (pyproject.toml): finished with status 'done'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.4648673Z   Created wheel for openflowsheet: filename=openflowsheet-0.2.0a1-0.editable-py3-none-any.whl size=9501 sha256=5edb60c16bc69d2b758e1cef3f39619167bacfd92bf8169277a776b1fc142952
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.4650516Z   Stored in directory: /tmp/pip-ephem-wheel-cache-l6xonam5/wheels/a7/db/0c/5f8b449f4c702dd78421b0a446805b4c04aac2a354d996fc33
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.4671820Z Successfully built openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5020711Z Installing collected packages: openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5122970Z Successfully installed openflowsheet-0.2.0a1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5711714Z ##[group]Run python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5712445Z ^[[36;1mpython -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5713222Z ^[[36;1mpython scripts/t07_licence_inventory.py^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5748996Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5749454Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5749670Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5750009Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5750263Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5750552Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5751043Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5751487Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5751922Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5752426Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5753234Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:03.5753677Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1148335Z annotated-types 0.8.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1148892Z anyio 4.15.1: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1149908Z attrs 26.1.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1150173Z certifi 2026.7.22: MPL-2.0 (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1150526Z cffi 2.1.1: MIT-0 (compiled) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1150839Z click 8.5.0: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1151241Z cryptography 50.0.1: Apache-2.0 OR BSD-3-Clause (compiled) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1151662Z h11 0.16.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1151929Z httpcore 1.0.9: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1152253Z httpx 0.28.1: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1152550Z httpx-sse 0.4.3: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1152840Z idna 3.20: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1153460Z jsonschema 4.26.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1153792Z jsonschema-specifications 2025.9.1: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1154110Z mcp 1.30.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1154416Z pycparser 3.0: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1154755Z pydantic 2.13.5: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1155061Z pydantic-core 2.46.5: MIT (compiled) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1155361Z pydantic-settings 2.15.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1155646Z pyjwt 2.15.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1155982Z python-dotenv 1.2.3: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1156330Z python-multipart 0.0.32: Apache-2.0 (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1156672Z referencing 0.37.0: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1156955Z rpds-py 2026.6.3: MIT (compiled) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1157257Z sse-starlette 3.4.11: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1157647Z starlette 1.7.0: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1157955Z typing-extensions 4.16.0: PSF-2.0 (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1158290Z typing-inspection 0.4.4: MIT (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1158599Z uvicorn 0.54.0: BSD-3-Clause (pure) ok
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1158963Z G19: 29 distributions, no GPL-family, unresolved or unlisted licence
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1390779Z ##[group]Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1391286Z with:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1391823Z   node-version: 22
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1392074Z   check-latest: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1395118Z   token: ***
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1395673Z   package-manager-cache: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1395940Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1396206Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1396453Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1396727Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1397063Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1397513Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1397996Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1398400Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1398799Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1399339Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.1399703Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.4005521Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:05.4006265Z ##[group]Environment details
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1023115Z node: v22.23.3
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1023833Z npm: 10.9.9
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1024077Z yarn: 1.22.22
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1024719Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1145732Z ##[group]Run if [ "ubuntu-24.04-arm" = "ubuntu-latest" ]; then
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1146302Z ^[[36;1mif [ "ubuntu-24.04-arm" = "ubuntu-latest" ]; then^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1146759Z ^[[36;1m  export OPENFLOWSHEET_REQUIRE_BROWSER=1^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1147265Z ^[[36;1m  OPENFLOWSHEET_BROWSER="$(command -v google-chrome || command -v chromium || true)"^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1147771Z ^[[36;1m  export OPENFLOWSHEET_BROWSER^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1148058Z ^[[36;1mfi^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1148297Z ^[[36;1m./scripts/check.sh^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1258655Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1259088Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1259357Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1259608Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1259884Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1260208Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1260708Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1261262Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1261690Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1262112Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1262523Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1263230Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.1353570Z === ruff check: ruff check . ===
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.2899091Z All checks passed!
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.2927620Z --- ruff check: exit 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.2928275Z === ruff format: ruff format --check . ===
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.4897467Z 627 files already formatted
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.4927362Z --- ruff format: exit 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:09.4927729Z === mypy: mypy ===
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:32.7287600Z Success: no issues found in 201 source files
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:32.7459127Z --- mypy: exit 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:47:32.7459528Z === pytest: pytest -q ===
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:05.9767249Z ........................................................................ [  0%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:06.0616247Z ........................................................................ [  1%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:07.3963838Z ........................................................................ [  2%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:07.5049027Z ........................................................................ [  3%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:07.6754065Z ...........ssssss....sssssssssssss...........................s.......... [  4%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:07.9094354Z ........................................................................ [  5%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:08.2639684Z ........................................................................ [  5%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:08.4407656Z ........................................................................ [  6%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:08.5990911Z ........................................................................ [  7%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:08.6979888Z ........................................................................ [  8%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:08.9803827Z ........................................................................ [  9%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:11.3930689Z ........................................................................ [ 10%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:11.7125562Z ........................................................................ [ 10%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:48:15.9944469Z ........................................................................ [ 11%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:49:20.3311146Z ........................................................................ [ 12%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:49:22.1723829Z ........................................................................ [ 13%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:50:10.6124218Z .......................................................................s [ 14%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:50:13.9336565Z ........................................................................ [ 15%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:50:14.6838766Z ........................................................................ [ 15%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:50:14.7279326Z ........................................................................ [ 16%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:50:33.4727598Z ........................................................................ [ 17%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:02.0520166Z ........................................................................ [ 18%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:02.3771342Z ........................................................................ [ 19%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:15.0778175Z ........................................................................ [ 20%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:35.8626275Z ........................................................................ [ 21%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:39.3345832Z ........................................................................ [ 21%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:42.6483484Z ........................................................................ [ 22%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:43.4940622Z ........................................................................ [ 23%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:46.4099737Z ........................................................................ [ 24%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:46.4888710Z ........................................................................ [ 25%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:54.9301384Z ........................................................................ [ 26%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:51:56.0471129Z ........................................................................ [ 26%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:07.1903631Z ....ss.......sss..s..s.........................ssssssssssssssss......... [ 27%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:18.3113567Z ........................................................................ [ 28%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:18.3859522Z ........................................................................ [ 29%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:24.0582464Z ........................................................................ [ 30%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:33.2667806Z .............................................ss......................... [ 31%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:33.7147900Z ........................................................................ [ 31%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:36.7782579Z ........................................................................ [ 32%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:40.2075691Z ........................................................................ [ 33%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:40.9448152Z ........................................................................ [ 34%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:45.2425445Z ........................................................................ [ 35%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:45.2858276Z ........................................................................ [ 36%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:45.3271771Z ........................................................................ [ 36%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:45.4062691Z ........................................................................ [ 37%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:49.3677393Z ........................................................................ [ 38%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:52:55.5233442Z ........................................................................ [ 39%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:00.3448015Z ........................................................................ [ 40%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:17.5055249Z ........................................................................ [ 41%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:30.7821654Z ........................................................................ [ 42%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:39.7698721Z ........................................................................ [ 42%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:45.8383552Z ........................................................................ [ 43%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:54.9623505Z ........................................................................ [ 44%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:55.9119854Z ........................................................................ [ 45%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:57.5921957Z ........................................................................ [ 46%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:57.7447088Z ........................................................................ [ 47%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:57.9506696Z ........................................................................ [ 47%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:53:58.0871450Z ........................................................................ [ 48%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:00.7271475Z ........................................................................ [ 49%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:04.3546858Z ........................................................................ [ 50%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:06.2060863Z ........................................................................ [ 51%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:08.2676975Z ........................................................................ [ 52%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:34.8778389Z ........................................................................ [ 52%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:39.5187299Z ........................................................................ [ 53%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:47.0691158Z ........................................................................ [ 54%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:55.2567674Z ........................................................................ [ 55%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:54:59.9382552Z ........................................................................ [ 56%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:06.5132221Z ........................................................................ [ 57%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:30.0532073Z ........................................................................ [ 57%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:31.4391528Z ........................................................................ [ 58%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:31.5579454Z ........................................................................ [ 59%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:37.4048821Z ...........................................................ss........... [ 60%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:42.6627529Z ........................................................................ [ 61%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:50.5139426Z ........................................................................ [ 62%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:55.2483739Z ............................................................s........... [ 63%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:55:57.8909861Z ........................................................................ [ 63%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:56:03.0917763Z ...........................................s.............s.............. [ 64%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:56:13.5865145Z ........................................................................ [ 65%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:56:17.8212481Z ........................................................................ [ 66%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:56:23.7425667Z ........................................................................ [ 67%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:56:29.5710256Z ........................................................................ [ 68%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:56:31.1455629Z ........................................................................ [ 68%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:56:33.8142719Z ........................................................................ [ 69%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:57:14.1016305Z ........................................................................ [ 70%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T01:57:44.2546675Z ...........................sssssssssssssssss..sssssssssss............... [ 71%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:00:17.9290492Z ........................................................................ [ 72%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:01:12.1174155Z ........................................................................ [ 73%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:01:33.8725265Z ........................................................................ [ 73%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:06:24.4271570Z ........................................................................ [ 74%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:07:22.5715216Z ........................................................................ [ 75%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:07:22.6990554Z ........................................................................ [ 76%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:08:50.6380143Z ........................................................................ [ 77%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:08:50.6783199Z ........................................................................ [ 78%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:08:52.7434609Z ........................................................................ [ 79%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:09:02.5430414Z ........................................................................ [ 79%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:09:18.6819107Z ........................................................................ [ 80%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:09:44.1418528Z ........................................................................ [ 81%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:09:51.9663885Z ........................................................................ [ 82%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:10:05.8873425Z ........................................................................ [ 83%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:10:28.1680128Z ........................................................................ [ 84%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:10:50.0068677Z ........................................................................ [ 84%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:11:03.5178497Z ........................................................................ [ 85%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:11:27.2396310Z ........................................................................ [ 86%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:12:03.2958865Z ........................................................................ [ 87%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:13:53.3537363Z ........................................................................ [ 88%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:03.2512470Z ........................................................................ [ 89%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:05.2843094Z ........................................................................ [ 89%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:21.8284607Z ........................................................................ [ 90%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:21.8969953Z ........................................................................ [ 91%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:25.7449170Z ........................................................................ [ 92%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:27.7882586Z ........................................................................ [ 93%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:31.0878047Z ........................................................................ [ 94%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:32.9525426Z ...........sssssssssssss................................................ [ 94%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:14:35.9809746Z .........................................s.s............................ [ 95%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:16:43.3040179Z .......................................................s................ [ 96%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:16.4247744Z ........................................................................ [ 97%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:30.5964538Z ........................................................................ [ 98%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:30.7955862Z ........................................................................ [ 99%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:42.9925942Z ........................................ss.............................  [100%]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:42.9926493Z =============================== warnings summary ===============================
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:42.9926864Z tests/test_m06_wo4_serving.py:38
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:42.9927752Z   /home/runner/work/openflowsheet/openflowsheet/tests/test_m06_wo4_serving.py:38: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:42.9929044Z     from starlette.testclient import TestClient
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:42.9929275Z 
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:42.9929541Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:42.9930161Z 8470 passed, 98 skipped, 2 deselected, 1 warning in 1809.17s (0:30:09)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.6246342Z --- pytest: exit 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.6246661Z === node --test: web_tests ===
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8219913Z TAP version 13
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8738703Z # Subtest: a GET carries path parameters encoded and the other members as query text
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8743988Z ok 1 - a GET carries path parameters encoded and the other members as query text
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8763851Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8767819Z   duration_ms: 7.197829
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8768677Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8768878Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8769257Z # Subtest: a POST carries the other members as a JSON body, never in the URL
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8770295Z ok 2 - a POST carries the other members as a JSON body, never in the URL
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8770645Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8770823Z   duration_ms: 1.013612
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8771019Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8771189Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8771519Z # Subtest: buildRequest refuses what the route table does not allow
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8771989Z ok 3 - buildRequest refuses what the route table does not allow
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8772293Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8772471Z   duration_ms: 0.517833
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8772666Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8772834Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8773482Z # Subtest: a 2xx document is returned; a non-2xx answer is the server's ApiError
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8774034Z ok 4 - a 2xx document is returned; a non-2xx answer is the server's ApiError
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8774364Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8774538Z   duration_ms: 1.851874
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8774734Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8774915Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8775227Z # Subtest: a 401 clears the stored token; no token means no request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8775676Z ok 5 - a 401 clears the stored token; no token means no request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8775965Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8776136Z   duration_ms: 0.525913
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8776328Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8776497Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8776855Z # Subtest: a non-2xx answer without an error document becomes internal_error
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8777372Z ok 6 - a non-2xx answer without an error document becomes internal_error
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8777696Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8777869Z   duration_ms: 0.285295
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8778064Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8778236Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8778609Z # Subtest: the cache holds the listed operations and nothing else, never an error
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8779166Z ok 7 - the cache holds the listed operations and nothing else, never an error
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8779509Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8779686Z   duration_ms: 0.99051
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8779877Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.8780044Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9372005Z # Subtest: raw: exact bytes, checked against the registered SHA-256
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9404064Z ok 8 - raw: exact bytes, checked against the registered SHA-256
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9413781Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9414160Z   duration_ms: 13.85905
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9414509Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9414800Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9415340Z # Subtest: raw: without crypto.subtle (an insecure context) the digest is unchecked
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9416036Z ok 9 - raw: without crypto.subtle (an insecure context) the digest is unchecked
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9416517Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9416807Z   duration_ms: 0.679791
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9417117Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9417400Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9430292Z # Subtest: readWhole reassembles the document from the server's own views
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9431009Z ok 10 - readWhole reassembles the document from the server's own views
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9431936Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9432261Z   duration_ms: 15.442884
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9432595Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9433854Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9434431Z # Subtest: readWhole refuses a document whose hash changes between views
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9435069Z ok 11 - readWhole refuses a document whose hash changes between views
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9435516Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9435811Z   duration_ms: 10.690222
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9436131Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9436416Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9436789Z # Subtest: readWhole stops at its request budget
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9437260Z ok 12 - readWhole stops at its request budget
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9437628Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9437909Z   duration_ms: 32.67875
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9438225Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9438508Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9439014Z # Subtest: isMarker recognises exactly the projection's marker of its own pointer
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9439721Z ok 13 - isMarker recognises exactly the projection's marker of its own pointer
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9440601Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9440937Z   duration_ms: 0.177477
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9441250Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9441532Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9442038Z # Subtest: followJob waits until the job has ended, advancing after_sequence
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9443681Z ok 14 - followJob waits until the job has ended, advancing after_sequence
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9444152Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9444560Z   duration_ms: 0.421663
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9444926Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9445194Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9549367Z # Subtest: the token lives in sessionStorage, and in localStorage only when remembered
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9550239Z ok 15 - the token lives in sessionStorage, and in localStorage only when remembered
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9550752Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9551052Z   duration_ms: 1.596537
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9551369Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9551685Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9552200Z # Subtest: storage that refuses or is missing leaves the token in memory for the page
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9553248Z ok 16 - storage that refuses or is missing leaves the token in memory for the page
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9553765Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9554050Z   duration_ms: 0.324916
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9554356Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9554627Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9555046Z # Subtest: the boot token is stored and removed from the address
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9555590Z ok 17 - the boot token is stored and removed from the address
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9555984Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9556258Z   duration_ms: 1.384486
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9556554Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9556828Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9557364Z # Subtest: the sign-in view: a password field without autocomplete, remember opt-in, the message
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9558130Z ok 18 - the sign-in view: a password field without autocomplete, remember opt-in, the message
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9558628Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9558906Z   duration_ms: 1.891552
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9559202Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9559472Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9559928Z # Subtest: a request api.js builds decodes back to its operation and members
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9560552Z ok 19 - a request api.js builds decodes back to its operation and members
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9560976Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9561240Z   duration_ms: 2.955009
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9561536Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9561801Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9562321Z # Subtest: every revision, structure and bundle listing reads whole from the recorded views
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9563280Z ok 20 - every revision, structure and bundle listing reads whole from the recorded views
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9563801Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9564085Z   duration_ms: 90.035563
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9564398Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9564669Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9565208Z # Subtest: the hostile revision's text arrives as text, its U+202E replaced by the server
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9566261Z ok 21 - the hostile revision's text arrives as text, its U+202E replaced by the server
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9566746Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9567028Z   duration_ms: 0.836767
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9567338Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9567625Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9567997Z # Subtest: an unrecorded request fails, naming it
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9568467Z ok 22 - an unrecorded request fails, naming it
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9568880Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9569311Z   duration_ms: 0.540288
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9569623Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9569905Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9570410Z # Subtest: a refusal is recorded per principal and arrives as the server's ApiError
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9571105Z ok 23 - a refusal is recorded per principal and arrives as the server's ApiError
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9571572Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9571856Z   duration_ms: 0.342443
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9572174Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9572459Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9625483Z # Subtest: the header names project, principal, rights and server version
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9644113Z ok 24 - the header names project, principal, rights and server version
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9648636Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9648843Z   duration_ms: 2.89074
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9649051Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9649263Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9649782Z # Subtest: the theme cycles system, light, dark
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9650257Z ok 25 - the theme cycles system, light, dark
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9650603Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9650865Z   duration_ms: 0.242402
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9651155Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9651405Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9651817Z # Subtest: the error panel shows the server's ApiError as it came
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9652388Z ok 26 - the error panel shows the server's ApiError as it came
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9652775Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9653933Z   duration_ms: 0.453645
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9654191Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9654395Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9654782Z # Subtest: an unknown route says so; fatal text names the error
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9655319Z ok 27 - an unknown route says so; fatal text names the error
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9655712Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9655904Z   duration_ms: 0.390929
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9656203Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9656405Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9894222Z # Subtest: h returns a plain tree; strings stay strings, numbers become text, nulls vanish
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9895124Z ok 28 - h returns a plain tree; strings stay strings, numbers become text, nulls vanish
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9895638Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9895928Z   duration_ms: 1.572706
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9896240Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9896525Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9897044Z # Subtest: h refuses elements, attributes and links outside the whitelists
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9898492Z ok 29 - h refuses elements, attributes and links outside the whitelists
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9898938Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9899232Z   duration_ms: 0.961663
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9899532Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9899810Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9905737Z # Subtest: event handlers only on interactive elements and only the five events
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9908179Z ok 30 - event handlers only on interactive elements and only the five events
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9908602Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9908887Z   duration_ms: 0.370162
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9909196Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9909481Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9914766Z # Subtest: SVG elements take the SVG attribute list and nothing from HTML's event rules
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9925961Z ok 31 - SVG elements take the SVG attribute list and nothing from HTML's event rules
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9926477Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9926764Z   duration_ms: 0.222955
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9927074Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9927345Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9927845Z # Subtest: mount creates elements, sanitized text nodes and sanitized attributes
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9928934Z ok 32 - mount creates elements, sanitized text nodes and sanitized attributes
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9929414Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9929718Z   duration_ms: 1.872761
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9930040Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9930320Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9930784Z # Subtest: SVG trees are created in the SVG namespace, children included
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9931418Z ok 33 - SVG trees are created in the SVG namespace, children included
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9931848Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9932125Z   duration_ms: 0.24133
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9932423Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9932700Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9933253Z # Subtest: replace empties the parent first
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9933700Z ok 34 - replace empties the parent first
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9934050Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9934330Z   duration_ms: 0.29451
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9934632Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9934909Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9935414Z # Subtest: only trees h made are trees: a parsed or forged {t, p, c} is refused
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9939979Z ok 35 - only trees h made are trees: a parsed or forged {t, p, c} is refused
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9941204Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9941600Z   duration_ms: 0.57123
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9941946Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:44.9942251Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0630491Z # Subtest: G7: the NET-02 run has 27 trace events and two attempts with their counter deltas
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0669356Z ok 36 - G7: the NET-02 run has 27 trace events and two attempts with their counter deltas
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0675294Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0703982Z   duration_ms: 2.495924
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0733562Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0753673Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0776853Z # Subtest: the attempt model reproduces the server's attempt tree, correctors excluded
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0824629Z ok 37 - the attempt model reproduces the server's attempt tree, correctors excluded
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0838789Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0839120Z   duration_ms: 1.965148
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0839461Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0839717Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0840284Z # Subtest: an attempt opened and never closed is listed with no outcome; counters subtract by name
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0841048Z ok 38 - an attempt opened and never closed is listed with no outcome; counters subtract by name
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0841518Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0841762Z   duration_ms: 0.258241
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0842035Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0842282Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0842787Z # Subtest: trace rows read the recorded members; absent members stay absent; filters and pages
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0844010Z ok 39 - trace rows read the recorded members; absent members stay absent; filters and pages
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0844475Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0844727Z   duration_ms: 1.967107
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0844999Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0845244Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0845775Z # Subtest: G7: the NET-02 certificate is VERIFIED with 144 checks and 3 near-threshold limitations
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0846555Z ok 40 - G7: the NET-02 certificate is VERIFIED with 144 checks and 3 near-threshold limitations
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0847030Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0847277Z   duration_ms: 1.02214
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0847540Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0847779Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0848243Z # Subtest: rule 2: the scaled residual is value / reference of a residual check only
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0848920Z ok 41 - rule 2: the scaled residual is value / reference of a residual check only
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0849342Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0849585Z   duration_ms: 1.790942
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0849855Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0850096Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0850609Z # Subtest: rule 3: a phase split's vapour fraction is vapor_total / (vapor_total + liquid_total)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0851343Z ok 42 - rule 3: a phase split's vapour fraction is vapor_total / (vapor_total + liquid_total)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0851800Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0852044Z   duration_ms: 1.25955
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0852844Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0853260Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0853786Z # Subtest: the structure index joins rows, columns, matching, blocks and certificates
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0854567Z ok 43 - the structure index joins rows, columns, matching, blocks and certificates
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0855002Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0855248Z   duration_ms: 20.042043
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0855520Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0855760Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0856195Z # Subtest: an unroutable revision carries the validation's structural report
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0856796Z ok 44 - an unroutable revision carries the validation's structural report
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0857202Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0857441Z   duration_ms: 6.63691
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0857703Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0857941Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0858452Z # Subtest: G7: the stream and unit tables join the revision, the column index and the run's state
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0859187Z ok 45 - G7: the stream and unit tables join the revision, the column index and the run's state
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0859655Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0860122Z   duration_ms: 13.54374
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0860417Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0860661Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0861180Z # Subtest: without a solution state every value is undefined; a binder-only connection is kept
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0861911Z ok 46 - without a solution state every value is undefined; a binder-only connection is kept
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0862368Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0862605Z   duration_ms: 0.336236
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0862993Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0863239Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0863743Z # Subtest: a unit panel lists the model's ports, pins, required and zero; empty is not applicable
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0864478Z ok 47 - a unit panel lists the model's ports, pins, required and zero; empty is not applicable
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0864924Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0865159Z   duration_ms: 0.191757
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0865433Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0865668Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0866133Z # Subtest: G5: the revision comparison reads before/after values of each changed path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0866793Z ok 48 - G5: the revision comparison reads before/after values of each changed path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0867220Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0867460Z   duration_ms: 1.708307
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0867721Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0867961Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0868744Z # Subtest: rule 4: Δ = b − a and |Δ| / max(|a|, |b|), 0 when both are 0, sorted descending
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0869471Z ok 49 - rule 4: Δ = b − a and |Δ| / max(|a|, |b|), 0 when both are 0, sorted descending
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0869881Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0870118Z   duration_ms: 1.319761
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0870384Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0870625Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0871151Z # Subtest: the run identity rows compare strings for equality and say what a version mismatch means
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0871916Z ok 50 - the run identity rows compare strings for equality and say what a version mismatch means
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0872394Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0872630Z   duration_ms: 0.483995
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0873145Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0873413Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0873907Z # Subtest: history rows link revision, job and cancel effects and read the rest as text
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0874597Z ok 51 - history rows link revision, job and cancel effects and read the rest as text
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0875035Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0875278Z   duration_ms: 0.357747
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0875548Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0875788Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0876306Z # Subtest: rule 6: a revision's expected revision is its parent; its jobs are filtered by request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0877048Z ok 52 - rule 6: a revision's expected revision is its parent; its jobs are filtered by request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0877512Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0877780Z   duration_ms: 0.748044
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0878046Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0878610Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0879702Z # Subtest: G7: the NET-02 layout has §6.1's layers and the recycle S6 as its one back edge
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0880673Z ok 53 - G7: the NET-02 layout has §6.1's layers and the recycle S6 as its one back edge
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0881124Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0881369Z   duration_ms: 1.480296
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0881636Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0881877Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0882284Z # Subtest: layout: a cycle without a source and a dangling connection
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0882832Z ok 54 - layout: a cycle without a source and a dangling connection
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0883389Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0883625Z   duration_ms: 0.20594
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0883892Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0884127Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0884493Z # Subtest: parseHash splits the route path from its query
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0884971Z ok 55 - parseHash splits the route path from its query
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0885319Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0885577Z   duration_ms: 0.753387
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0885840Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0886076Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0886690Z # Subtest: matchRoute matches whole patterns and decodes values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0887289Z ok 56 - matchRoute matches whole patterns and decodes values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0887650Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0887886Z   duration_ms: 0.887284
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0888147Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0888395Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0888833Z # Subtest: link encodes values and query; withoutToken strips the boot token
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0889439Z ok 57 - link encodes values and query; withoutToken strips the boot token
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0889834Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0890069Z   duration_ms: 1.429691
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0890331Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.0890563Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1296810Z # Subtest: project: every revision and the first page of jobs, hostile text as text
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1307159Z ok 58 - project: every revision and the first page of jobs, hostile text as text
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1307633Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1307827Z   duration_ms: 10.675495
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1308033Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1308210Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1308614Z # Subtest: revision overview: header, validation, runs, flowsheet, tables as written
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1309215Z ok 59 - revision overview: header, validation, runs, flowsheet, tables as written
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1309575Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1309746Z   duration_ms: 12.064309
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1309948Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1310118Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1310464Z # Subtest: revision overview: Solve is greyed without the execute right
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1310962Z ok 60 - revision overview: Solve is greyed without the execute right
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1311284Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1311453Z   duration_ms: 9.958106
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1311650Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1311816Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1312205Z # Subtest: the hostile revision's title renders as text with U+FFFD, never as markup
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1312808Z ok 61 - the hostile revision's title renders as text with U+FFFD, never as markup
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1313419Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1313600Z   duration_ms: 6.684443
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1313796Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1313964Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1314703Z # Subtest: Solve sends §6.1's body under one key, reused on retry, fresh when the dialog reopens
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1315426Z ok 62 - Solve sends §6.1's body under one key, reused on retry, fresh when the dialog reopens
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1315806Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1315974Z   duration_ms: 1.154411
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1316170Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1316340Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1316773Z # Subtest: validation: an unroutable revision shows the validation's report under its reason
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1317425Z ok 63 - validation: an unroutable revision shows the validation's report under its reason
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1318219Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1318390Z   duration_ms: 11.535892
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1318587Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1318766Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1319213Z # Subtest: validation: a routed revision links its certified redundant rows to the equation view
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1319888Z ok 64 - validation: a routed revision links its certified redundant rows to the equation view
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1320280Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1320446Z   duration_ms: 10.357146
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1320642Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1320814Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1744693Z # Subtest: G7: the certificate shows VERIFIED, 144 checks by category and 3 near-threshold flags
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1759304Z ok 65 - G7: the certificate shows VERIFIED, 144 checks by category and 3 near-threshold flags
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1759911Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1760221Z   duration_ms: 50.855607
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1760548Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1760842Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1976375Z # Subtest: a run without a certificate says so
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1979540Z ok 66 - a run without a certificate says so
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1980422Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1980822Z   duration_ms: 27.984356
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1981163Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.1981457Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2035871Z # Subtest: G7: the A02-352 failure bundle — outcome, replay identity, counters, a labelled hypothesis
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2050612Z ok 67 - G7: the A02-352 failure bundle — outcome, replay identity, counters, a labelled hypothesis
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2051238Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2051549Z   duration_ms: 5.916233
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2051868Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2052161Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2052581Z # Subtest: a converged run has no failure bundle and says so
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2053393Z ok 68 - a converged run has no failure bundle and says so
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2053792Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2054108Z   duration_ms: 0.747116
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2054421Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2054729Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2183382Z # Subtest: G7: streams and units show U-HEAT.Q short and full, with its rows link
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2192663Z ok 69 - G7: streams and units show U-HEAT.Q short and full, with its rows link
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2193460Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2193787Z   duration_ms: 14.561377
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2194124Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2194428Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2290027Z # Subtest: a run without a solution state says so and shows the best checkpoint's identity
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2290963Z ok 70 - a run without a solution state says so and shows the best checkpoint's identity
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2291458Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2291749Z   duration_ms: 11.239158
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2292057Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2292332Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2471395Z # Subtest: G7: the NET-02 run — summary, 2 attempts with deltas and totals, 27 trace rows, files
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2472248Z ok 71 - G7: the NET-02 run — summary, 2 attempts with deltas and totals, 27 trace rows, files
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2472670Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2472848Z   duration_ms: 56.800359
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2473249Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2473427Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2473797Z # Subtest: the trace filters by kind and attempt and pages the filtered rows
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2474334Z ok 72 - the trace filters by kind and attempt and pages the filtered rows
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2474679Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2474852Z   duration_ms: 27.071427
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2475053Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2475226Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2475645Z # Subtest: a live run follows wait_job from its last event, draws each answer, then reloads
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2476268Z ok 73 - a live run follows wait_job from its last event, draws each answer, then reloads
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2476640Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2476811Z   duration_ms: 4.4506
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2477010Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2477181Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2477464Z # Subtest: Cancel is greyed without the execute right
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2478369Z ok 74 - Cancel is greyed without the execute right
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2478644Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2478814Z   duration_ms: 0.582261
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2479010Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2479180Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2479572Z # Subtest: the equation view of a revision row: incidence, matched column, block, DOF
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2480165Z ok 75 - the equation view of a revision row: incidence, matched column, block, DOF
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2480518Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2480688Z   duration_ms: 10.630578
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2480890Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2481065Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2481430Z # Subtest: ?column= lists the rows incident on a column, the matched row first
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2481968Z ok 76 - ?column= lists the rows incident on a column, the matched row first
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2482299Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2482469Z   duration_ms: 13.001853
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2482668Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2482848Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2483733Z # Subtest: G7: the equation view at a run shows the run's values and the check on its row
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2484379Z ok 77 - G7: the equation view at a run shows the run's values and the check on its row
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2484738Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2484908Z   duration_ms: 34.315253
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2485113Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2485281Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2485709Z # Subtest: the consistency guard: a different equation structure disables the equation index
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2486354Z ok 78 - the consistency guard: a different equation structure disables the equation index
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2486741Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2486909Z   duration_ms: 0.305774
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2487108Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2487300Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2487727Z # Subtest: G5: the revision comparison shows the server's diff and the before/after values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2488348Z ok 79 - G5: the revision comparison shows the server's diff and the before/after values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2488725Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2488896Z   duration_ms: 3.991043
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2489097Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2489269Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2489601Z # Subtest: a coarse change without elements reads 'order changed only'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2490084Z ok 80 - a coarse change without elements reads 'order changed only'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2490391Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2490559Z   duration_ms: 0.721021
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2490756Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2490926Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2491297Z # Subtest: the scenario view displays differences and never judges them (R-174)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2491857Z ok 81 - the scenario view displays differences and never judges them (R-174)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2492199Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2492374Z   duration_ms: 11.375781
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2492577Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2492751Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2493974Z # Subtest: a scenario with a failed run says it has no state and that the structures differ
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2499018Z ok 82 - a scenario with a failed run says it has no state and that the structures differ
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2499400Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2499569Z   duration_ms: 5.22989
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2499762Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2499930Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2500374Z # Subtest: G6: the history shows the caller's own rows; other principals are greyed without policy
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2501043Z ok 83 - G6: the history shows the caller's own rows; other principals are greyed without policy
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2501439Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2501609Z   duration_ms: 1.683036
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2501807Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2501977Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2502312Z # Subtest: G6: all principals with policy; refused rows show their code
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2502797Z ok 84 - G6: all principals with policy; refused rows show their code
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2503611Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2504094Z   duration_ms: 1.429691
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2504295Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2504467Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2504850Z # Subtest: G6: without policy, all principals is refused and the refusal is shown
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2505410Z ok 85 - G6: without policy, all principals is refused and the refusal is shown
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2505780Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2505948Z   duration_ms: 0.411088
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2506145Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2506312Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2506717Z # Subtest: history detail: a commit's expected revision, element diff and validation now
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2507338Z ok 86 - history detail: a commit's expected revision, element diff and validation now
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2507704Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2507870Z   duration_ms: 2.802521
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2508064Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2508233Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2508596Z # Subtest: history detail: a solve's request, status, outcome and verification
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2509151Z ok 87 - history detail: a solve's request, status, outcome and verification
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2509485Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2509834Z   duration_ms: 1.132861
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2510050Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2510219Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2510504Z # Subtest: a bundle member as a JSON tree, digest-checked
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2510902Z ok 88 - a bundle member as a JSON tree, digest-checked
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2511171Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2511336Z   duration_ms: 6.606304
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2511528Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2511696Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2544651Z # Subtest: sanitize replaces each forbidden code point one for one and keeps the rest
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2545312Z ok 89 - sanitize replaces each forbidden code point one for one and keeps the rest
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2545687Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2545861Z   duration_ms: 1.766591
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2546061Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2546235Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2546688Z # Subtest: fmt: null is a dash, integers exact, short is 6 significant digits, full round-trips
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2547361Z ok 90 - fmt: null is a dash, integers exact, short is 6 significant digits, full round-trips
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2547745Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2547915Z   duration_ms: 0.421791
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2548117Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2548287Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2548661Z # Subtest: status: every listed label has its tone; unlisted labels are failures
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2549220Z ok 91 - status: every listed label has its tone; unlisted labels are failures
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2549564Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2549734Z   duration_ms: 1.827867
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2549934Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2550103Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2550411Z # Subtest: a pill carries glyph, word and tone, never hue alone
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2550849Z ok 92 - a pill carries glyph, word and tone, never hue alone
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2551140Z   ---
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2551308Z   duration_ms: 3.00091
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2551642Z   type: 'test'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2551816Z   ...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2551985Z 1..92
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2552148Z # tests 92
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2552311Z # suites 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2552478Z # pass 92
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2552645Z # fail 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2552808Z # cancelled 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2553307Z # skipped 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2553485Z # todo 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2553672Z # duration_ms 478.698752
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2587827Z --- node --test: exit 0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2588122Z === check.sh: PASSED ===
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2624902Z ##[group]Run PYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2625523Z ^[[36;1mPYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2660064Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2660285Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2660571Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2660871Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2661198Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2661458Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2661862Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2662267Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2662625Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2663335Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2663797Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:45.2664102Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8778449Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8783483Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8784112Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8785203Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8785857Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8786413Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8787002Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8787514Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8787744Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8787990Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8788179Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8788386Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8788895Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8789509Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8790150Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 52.11447523132472 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8790684Z Function H_S3_vapor (0xaac7aba6e290)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8791038Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 52.1145, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8791380Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8793568Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8794211Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8794539Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8795151Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8795702Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8796372Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8796901Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8797180Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8797421Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8797612Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8797814Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8798320Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8798930Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8799573Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 231.05723761566236 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8800109Z Function H_S3_vapor (0xaac7aba6e290)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8800979Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 231.057, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8857675Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8861516Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8862148Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8862466Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8863143Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8863985Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8864573Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8865082Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8865311Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8865551Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8865741Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8865931Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8866445Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8867054Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8867676Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 52.11447523132472 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8868205Z Function H_S3_vapor (0xaac7aba6e290)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8868544Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 52.1145, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8869133Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8874103Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8883815Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8884150Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8884743Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8885360Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8885959Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8886470Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8886704Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8886944Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8887129Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8887315Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8887831Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8888440Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8889166Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 219.87331496664126 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8889700Z Function H_S3_vapor (0xaac7aba6e290)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:47.8890042Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 219.873, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7199264Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7201425Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7202031Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7202356Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7204820Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7205444Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7206065Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7206582Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7206919Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7207159Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7207345Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7207532Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7208491Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7209141Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7209765Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132858 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7210295Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7210633Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7212551Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7217923Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7218577Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7218898Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7219498Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7220047Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7220649Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7221163Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7221393Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7221638Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7221824Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7222013Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7222521Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7223322Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7223948Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132858 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7224478Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7224822Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7227221Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7231152Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7231751Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7232088Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7232672Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7233370Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7233977Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7234488Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7234715Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7234960Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7235144Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7235330Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7235842Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7236452Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7237143Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132858 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7237671Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7238009Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7241669Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7245624Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7246236Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7246552Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7247135Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7247683Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7248564Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7249098Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7249327Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7249563Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7249752Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7249938Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7250442Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7251224Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7251850Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132847 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7252374Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7252713Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7256303Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7260001Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7260617Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7260935Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7261519Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7262065Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7262658Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7263334Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7263572Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7263812Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7263999Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7264183Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7264692Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7265307Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7265931Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132847 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7266458Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7266798Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7270644Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7274655Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7275282Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7275598Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7276185Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7276728Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7277321Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7277832Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7278058Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7278295Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7278480Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7278671Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7279170Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7279781Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7280397Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.0791140413283 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7280926Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7281263Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7285377Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7289052Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7289891Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7290271Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7290862Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7291408Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7291998Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7292652Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7293062Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7293339Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7293525Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7293713Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7294220Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7294828Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7295455Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132807 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7295979Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7296323Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7299877Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7303514Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7304142Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7304459Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7305039Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7305581Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7306170Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7306687Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7306915Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7307153Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7307338Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7307525Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7308032Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7308638Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7309265Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132767 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7309788Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7310155Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7314377Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7318033Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7318654Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7318971Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7319560Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7320107Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7320688Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7321209Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7321434Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7321675Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7321858Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7322044Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7322549Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7323384Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7324240Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132665 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7324828Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7325170Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7328718Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7332518Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7333419Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7333740Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7334334Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7334882Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7335466Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7335982Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7336213Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7336452Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7336635Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7336819Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7337318Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7337927Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7338549Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132477 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7339079Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7339417Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7343143Z Traceback (most recent call last):
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7346952Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 225, in eval
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7347555Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7347881Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7348473Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7349013Z     result = self._request(state, ())
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7349593Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7350101Z     return _unwrap(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7350339Z         self._provider.evaluate_phase(
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7350578Z     ...<8 lines>...
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7350761Z         self._block_id,
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7350947Z     )
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7351449Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7352062Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7352689Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132102 K outside [280.0, 440.0] K
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7353467Z Function H_S3_vapor (0xaac7abb1e990)
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:17:49.7353811Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.0888079Z structural_sha256 = ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.0888578Z events = 8, checks = 136
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2178595Z ##[group]Run PYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2179206Z ^[[36;1mPYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json^[[0m
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2213747Z shell: /usr/bin/bash -e {0}
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2213969Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2214140Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2214346Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2214531Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2214784Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2215192Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2215598Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2215959Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2216321Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2216767Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:28.2217073Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3003843Z ##[group]Run actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3004455Z with:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3004659Z   name: structural-identity-ubuntu-24.04-arm
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3004940Z   path: identity.json
+check (ubuntu-24.04-arm)	UNKNOWN STEP	t02-floats.json
+check (ubuntu-24.04-arm)	UNKNOWN STEP	
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3005189Z   if-no-files-found: error
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3005399Z   compression-level: 6
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3005592Z   overwrite: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3005784Z   include-hidden-files: false
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3005995Z   archive: true
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3006162Z env:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3006324Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3006523Z   OMP_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3006705Z   MKL_NUM_THREADS: 1
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3006957Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3007357Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib/pkgconfig
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3007763Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3008165Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3008543Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/arm64
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3008911Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/arm64/lib
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.3009213Z ##[endgroup]
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.4149177Z Multiple search paths detected. Calculating the least common ancestor of all paths
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.4151225Z The least common ancestor is /home/runner/work/openflowsheet/openflowsheet. This will be the root directory of the artifact
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.4152140Z With the provided path, there will be 2 files uploaded
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.4154595Z Artifact name is valid!
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.4155338Z Root directory input is valid!
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.7736905Z Uploading artifact: structural-identity-ubuntu-24.04-arm.zip
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:29.7769283Z Beginning upload of artifact content to blob storage
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.2643626Z Uploaded bytes 190001
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.3358102Z Finished uploading artifact content to blob storage!
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.3359076Z SHA256 digest of uploaded artifact is 1d0bd97cb64197fe25e87f4d056853a193ab0140f45c4caedf2d78ed19372edd
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.3359712Z Finalizing artifact upload
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.7493394Z Artifact structural-identity-ubuntu-24.04-arm successfully finalized. Artifact ID 11944120432
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.7494385Z Artifact structural-identity-ubuntu-24.04-arm has been successfully uploaded! Final size is 190001 bytes. Artifact ID is 11944120432
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.7497751Z Artifact download URL: https://github.com/computational-chemical-engineering/openflowsheet/actions/runs/38667458248/artifacts/11944120432
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.7644355Z Post job cleanup.
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.8608989Z Post job cleanup.
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:30.9615403Z Post job cleanup.
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0269555Z [command]/usr/bin/git version
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0311669Z git version 2.55.0
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0341938Z Temporarily overriding HOME='/home/runner/work/_temp/ab1418d1-fe03-4871-a295-7a871129663a' before making global git config changes
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0342780Z Adding repository directory to the temporary git global config as a safe directory
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0347015Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0374688Z Removing SSH command configuration
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0380794Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0410405Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0590245Z Removing HTTP extra header
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0594986Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0633667Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0811411Z Removing includeIf entries pointing to credentials config files
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0816976Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0843885Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0852396Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0853085Z includeif.gitdir:/github/workspace/.git.path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0853510Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0854601Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0879436Z /home/runner/work/_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0881405Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-d19e70bf\-89c7\-4502\-8e21\-cb8693891ee2\.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0909491Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0922068Z /home/runner/work/_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0939230Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-d19e70bf\-89c7\-4502\-8e21\-cb8693891ee2\.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0968126Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0988389Z /github/runner_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.0994913Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-d19e70bf\-89c7\-4502\-8e21\-cb8693891ee2\.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.1022521Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.1041836Z /github/runner_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.1048664Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-d19e70bf\-89c7\-4502\-8e21\-cb8693891ee2\.config
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.1080257Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.1251837Z Removing credentials config '/home/runner/work/_temp/git-credentials-d19e70bf-89c7-4502-8e21-cb8693891ee2.config'
+check (ubuntu-24.04-arm)	UNKNOWN STEP	2026-10-15T02:18:31.1375547Z Cleaning up orphan processes
