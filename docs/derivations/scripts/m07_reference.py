@@ -41,7 +41,7 @@ GRID: Final = tuple(str(Decimal(BOX[0]) + 5 * k) for k in range(9))  # decimal l
 T_NOMINAL: Final = "673.15"  # SPEC-S3-T of C1-LOOP-M02-v1 (M02 §8.1); M05's u0
 DELTA_T: Final = 0.5  # K; M05 N-F2 decision tolerance
 HALF_WIDTH: Final = 20.0  # K; (hi - lo) / 2, M04/M05 scaling of T_in
-BOUND_TOL_SCALED: Final = 1e-6  # M05 §7.4: within 1e-6 (scaled) of a bound is at the bound
+BOUND_TOL_SCALED: Final = DELTA_T / HALF_WIDTH  # R-452: within δ_T of a bound is at the bound
 R0_TOL: Final = 1e-12  # relative flatness tolerance of a rung's J over the grid (spec §4.4.1)
 # Amendment 1 A1.5: X_pass = 0.25 exactly for the stand-in (xi = 0.25 n_N2,in); measured on
 # wp/M07 94819ea, all nine points: X_pass - 0.25 = -2**-54 (one ulp of 0.25).
@@ -283,12 +283,13 @@ _IS_FIXTURES: Final = (
 )
 _BOUND_FIXTURES: Final = (
     ("b-01", BOX[0], 0.0, "BOUND_LOWER"),
-    ("b-02", BOX[0], 1.9e-5, "BOUND_LOWER"),
-    ("b-03", BOX[0], 2.1e-5, "INTERIOR"),
+    ("b-02", BOX[0], 0.475, "BOUND_LOWER"),
+    ("b-03", BOX[0], 0.525, "INTERIOR"),
     ("b-04", BOX[1], 0.0, "BOUND_UPPER"),
-    ("b-05", BOX[1], -1.9e-5, "BOUND_UPPER"),
-    ("b-06", BOX[1], -2.1e-5, "INTERIOR"),
+    ("b-05", BOX[1], -0.475, "BOUND_UPPER"),
+    ("b-06", BOX[1], -0.525, "INTERIOR"),
     ("b-07", T_NOMINAL, 0.0, "INTERIOR"),
+    ("b-08", BOX[0], 3.5e-5, "BOUND_LOWER"),
 )
 
 

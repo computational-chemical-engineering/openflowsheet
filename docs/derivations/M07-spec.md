@@ -350,7 +350,7 @@ Tolerances: "exact" means equality of binary64 values or bytes; the fixtures are
 | M07.A04 | indifference set on `fixtures.indifference` | registered sets (4 fixtures, boundary inclusive) | exact (dyadic) | D |
 | M07.A05 | FE class on `fixtures.fe` | 10 fixtures, all five classes, four on boundaries; plus the two pair-construction cases of [A1.1] | exact (dyadic) | D |
 | M07.A06 | TC-1 on `fixtures.tc1` | 9 fixtures (tc1-08, tc1-09 added by [A1.1]), all four outcomes, tie to lowest T | exact (dyadic) | D |
-| M07.A07 | bound activity on `fixtures.bound` | 7 fixtures, ±1.9e-5 K at, ±2.1e-5 K not | 2e-5 K = 1e-6 scaled (M05) | D |
+| M07.A07 | bound activity on `fixtures.bound` | 8 fixtures, ±0.475 K at, ±0.525 K not, +3.5e-5 K at | δ_T = 0.5 K (R-452) | D |
 | M07.A08 | R0 live: stand-in loop at the nine grid points | all verified; spread ≤ 1e-12 rel; outcome `INDIFFERENT`, decision 673.15; every J within 1e-12 rel of 0.46705958492513017; 0.40 < J ≤ 0.4975; plus the closed forms of [A1.5] and `experiments` of [A1.4] | 1e-12: 8e3 above the measured 1.19e-16 floor, far below any T effect a real reactor has; the guard rejects an accidental zero | D |
 | M07.A10 | `check` on the synthetic dry-run record (R1 played by the stand-in) accepts it; mutations (drop a section, change a J, delete §11's 7th sentence, add "optimal") are each rejected | accept / 4 rejections | exact | D |
 | M07.A11 | `render` twice gives identical bytes; twelve headings in order; §11 verbatim; bound phrase iff a decision is bound-active | as stated | bytes | D |

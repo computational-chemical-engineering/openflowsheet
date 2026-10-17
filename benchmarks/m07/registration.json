@@ -64,12 +64,12 @@
         "id": "b-01"
       },
       {
-        "T": 653.1500189999999,
+        "T": 653.625,
         "expected": "BOUND_LOWER",
         "id": "b-02"
       },
       {
-        "T": 653.1500209999999,
+        "T": 653.675,
         "expected": "INTERIOR",
         "id": "b-03"
       },
@@ -79,12 +79,12 @@
         "id": "b-04"
       },
       {
-        "T": 693.149981,
+        "T": 692.675,
         "expected": "BOUND_UPPER",
         "id": "b-05"
       },
       {
-        "T": 693.149979,
+        "T": 692.625,
         "expected": "INTERIOR",
         "id": "b-06"
       },
@@ -92,6 +92,11 @@
         "T": 673.15,
         "expected": "INTERIOR",
         "id": "b-07"
+      },
+      {
+        "T": 653.150035,
+        "expected": "BOUND_LOWER",
+        "id": "b-08"
       }
     ],
     "fe": [
@@ -1192,7 +1197,7 @@
     },
     "case": "C1-LOOP-M02-v1",
     "decision": {
-      "bound_tol_scaled": 1e-06,
+      "bound_tol_scaled": 0.025,
       "box_K": [
         653.15,
         693.15
