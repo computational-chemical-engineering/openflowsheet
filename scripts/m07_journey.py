@@ -896,8 +896,9 @@ def r3_rung(
     record's path and the journey's monotonic-clock wall of the study call; without `rerun`, R3
     refuses with `R3:carry_anchor_missing` or `R3:carry_identity_differs`. A re-run record meets
     conditions 1–4 at J; condition 5 holds once it is committed with the journey record (build
-    log J22). The accounting is copied from M05's record, never reconstructed or defaulted.
-    Without a record, `UNSUPPORTED(m05_study_unavailable)`."""
+    log J22, A2.3), and `m05_record.offered` names the offered record, its anchor and why it was
+    not carried (R-454). The accounting is copied from M05's record, never reconstructed or
+    defaulted. Without a record, `UNSUPPORTED(m05_study_unavailable)`."""
     if record_path is None:
         return unsupported_rung("R3", M05_UNAVAILABLE)
     failed, record, chosen = _r3_condition(record_path, schema_path, tracked)
@@ -905,16 +906,31 @@ def r3_rung(
         return _r3_refused(f"R3:record_rejected:{failed}")
     anchor = m05_run_commit(record) or manifest_anchor(sha256_file(record_path), evidence)
     if anchor is not None and identical(anchor):
-        return _r3_document(record_path, record, chosen, anchor, m05_spent_wall(record))
-    if rerun is None:
-        return _r3_refused(
-            "R3:carry_anchor_missing" if anchor is None else "R3:carry_identity_differs"
+        return _r3_document(
+            record_path, record, chosen, anchor, m05_spent_wall(record), offered=None
         )
+    reason = "carry_anchor_missing" if anchor is None else "carry_identity_differs"
+    if rerun is None:
+        return _r3_refused(f"R3:{reason}")
+    offered = {
+        "path": _relative(record_path),
+        "sha256": sha256_file(record_path),
+        "anchor": anchor,
+        "reason": reason,
+    }
     rerun_path, wall = rerun()
     failed, record, chosen = _r3_condition(rerun_path, schema_path, lambda path: True)
     if failed is not None or record is None:
         return _r3_refused(f"R3:record_rejected:{failed}")
-    return _r3_document(rerun_path, record, chosen, RERUN, wall)
+    return _r3_document(rerun_path, record, chosen, RERUN, wall, offered=offered)
+
+
+def _relative(path: Path) -> str:
+    """`path` relative to the repository root, or as given when it lies outside."""
+    try:
+        return str(path.resolve().relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def _r3_document(
@@ -923,10 +939,13 @@ def _r3_document(
     chosen: Mapping[str, Any] | None,
     carried_from: str,
     wall: float | None,
+    *,
+    offered: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
     """R3's rung from an accepted M05 record: its best candidate, M05's statuses verbatim, and
     M05's spend copied (A1.6 item 4); `wall` is M05's stated wall for a carried record and the
-    journey's measurement for a re-run (`wall_source`)."""
+    journey's measurement for a re-run (`wall_source`); `offered` is the M05 record a re-run
+    replaced (A2.3, R-454), None for a carried record."""
     candidate: dict[str, Any] | None = None
     if chosen is not None:
         (t,) = chosen["decisions"].values()
@@ -957,18 +976,15 @@ def _r3_document(
     budget["wall_source"] = (
         None if wall is None else "journey_measured" if carried_from == RERUN else "m05_record"
     )
-    try:
-        relative = str(record_path.resolve().relative_to(ROOT))
-    except ValueError:
-        relative = str(record_path)
     decision = None if candidate is None else candidate["T"]
     return {
         "outcome": record["status"],
         "study_status": record["status"],
         "m05_record": {
-            "path": relative,
+            "path": _relative(record_path),
             "sha256": sha256_file(record_path),
             "carried_from": carried_from,
+            "offered": None if offered is None else dict(offered),
         },
         "candidate": candidate,
         "decision": decision,
@@ -1658,6 +1674,12 @@ def render(record: Mapping[str, Any]) -> str:
             f"- M05 record `{r3['m05_record']['path']}`, sha256 `{r3['m05_record']['sha256']}`, "
             f"carried from `{r3['m05_record']['carried_from']}`"
         )
+        offered = r3["m05_record"].get("offered")
+        if offered:
+            prov.append(
+                f"- Offered M05 record `{offered['path']}`, sha256 `{offered['sha256']}`, anchor "
+                f"`{_n(offered['anchor'])}`: not carried (`{offered['reason']}`), re-run at J"
+            )
     prov.append(f"- Synthetic dry run: {_n(record['synthetic_dry_run'])}")
     prov.append("- Replay: `python scripts/m07_journey.py replay <dir>`; check: `… check <dir>`.")
 
@@ -1878,6 +1900,38 @@ def _check_t_star_resolve(r3: Mapping[str, Any]) -> list[str]:
     return problems
 
 
+#: A2.3 (R-454): why a re-run replaced the offered M05 record.
+OFFERED_REASONS: Final = ("carry_identity_differs", "carry_anchor_missing")
+
+
+def _check_r3_offered(m05: Mapping[str, Any], carried: str) -> list[str]:
+    """A2.3: `offered` iff the record is a re-run; its reason agrees with its anchor
+    (`carry_anchor_missing` iff the anchor is null)."""
+    if "offered" not in m05:
+        return ["R3 m05_record states no offered member"]
+    offered = m05["offered"]
+    if (offered is None) != (carried != RERUN):
+        return [
+            f"R3 m05_record.offered is {'absent' if offered is None else 'stated'} "
+            f"for a record carried from {carried!r}"
+        ]
+    if offered is None:
+        return []
+    problems: list[str] = []
+    if not isinstance(offered, Mapping) or set(offered) != {"path", "sha256", "anchor", "reason"}:
+        return ["R3 m05_record.offered is not {path, sha256, anchor, reason}"]
+    anchor, reason = offered["anchor"], offered["reason"]
+    if not isinstance(offered["path"], str) or not re.fullmatch(
+        r"[0-9a-f]{64}", str(offered["sha256"])
+    ):
+        problems.append("R3 m05_record.offered names no path and sha256")
+    if anchor is not None and not re.fullmatch(r"[0-9a-f]{40}", str(anchor)):
+        problems.append(f"R3 m05_record.offered anchor {anchor!r} is neither a commit nor null")
+    if reason not in OFFERED_REASONS or (reason == "carry_anchor_missing") != (anchor is None):
+        problems.append(f"R3 m05_record.offered reason {reason!r} does not match its anchor")
+    return problems
+
+
 def _check_r3_carry(r3: Mapping[str, Any]) -> list[str]:
     """A1.6 items 2 and 4 on a carried or re-run R3: an anchor that is a commit or `rerun`; a
     null spend exactly when its limitation is stated; a wall source exactly when a wall is."""
@@ -1885,6 +1939,7 @@ def _check_r3_carry(r3: Mapping[str, Any]) -> list[str]:
     carried = str(r3["m05_record"]["carried_from"])
     if carried != RERUN and not re.fullmatch(r"[0-9a-f]{40}", carried):
         problems.append(f"R3 carried_from {carried!r} is neither a commit nor {RERUN!r}")
+    problems += _check_r3_offered(r3["m05_record"], carried)
     stated = set(r3.get("limitations") or ())
     spent = r3["budget"]["spent"]
     if (spent["cold"] is None) != ("R3:m05_cold_unrecorded" in stated):
@@ -2143,9 +2198,10 @@ def _replay_grid(
 def _replay_r3(recorded: Mapping[str, Any], found: list[str]) -> dict[str, Any]:
     """R3 from the M05 record the journey record names, whose sha256 must match, through A1.6's
     conditions 1–5 (a re-run record is committed with the journey, so condition 5 applies) and
-    `_r3_document`; the carry is the record's (re-judged at C by RC step 15, not by the replay),
-    and so is a re-run's wall, which the journey measured. A refused R3 names no M05 record:
-    its refusal codes are the record's, with nothing to re-derive them from."""
+    `_r3_document`; the carry and `offered` are the record's (re-judged at C by RC step 15, not
+    by the replay), and so is a re-run's wall, which the journey measured (A2.4, R-455). A
+    refused R3 names no M05 record: its refusal codes are the record's, with nothing to
+    re-derive them from."""
     m05 = recorded.get("m05_record")
     if m05 is None:
         refused = unsupported_rung("R3", M05_UNAVAILABLE)
@@ -2164,7 +2220,7 @@ def _replay_r3(recorded: Mapping[str, Any], found: list[str]) -> dict[str, Any]:
     wall = (
         recorded["budget"]["spent"]["wall_s"] if carried_from == RERUN else m05_spent_wall(record)
     )
-    return _r3_document(path, record, chosen, carried_from, wall)
+    return _r3_document(path, record, chosen, carried_from, wall, offered=m05.get("offered"))
 
 
 def replay_journey(

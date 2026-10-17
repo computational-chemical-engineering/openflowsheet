@@ -80,7 +80,12 @@ def r3_study(status: str, candidate: dict[str, Any] | None) -> dict[str, Any]:
     return {
         "outcome": status,
         "study_status": status,
-        "m05_record": {"path": "fixture", "sha256": "3" * 64, "carried_from": "c" * 40},
+        "m05_record": {
+            "path": "fixture",
+            "sha256": "3" * 64,
+            "carried_from": "c" * 40,
+            "offered": None,
+        },
         "candidate": candidate,
         "decision": decision,
         "bound_activity": m07.bound_activity(decision),
@@ -902,11 +907,56 @@ def test_a21_a_record_that_does_not_carry_is_re_run_at_j(
     assert rerun_r3["m05_record"]["sha256"] == m07.sha256_file(rerun_path)
     assert rerun_r3["budget"]["spent"] == {"cold": 51, "wall_s": 1500.25}
     assert rerun_r3["budget"]["wall_source"] == "journey_measured"
+    assert rerun_r3["m05_record"]["offered"] == {
+        "path": str(path),
+        "sha256": m07.sha256_file(path),
+        "anchor": "c" * 40,
+        "reason": "carry_identity_differs",
+    }
     assert m07._check_r3(rerun_r3) == []
-    assert r3(identical=lambda a: True, rerun=rerun)["m05_record"]["carried_from"] == "c" * 40
+    carried_r3 = r3(identical=lambda a: True, rerun=rerun)
+    assert carried_r3["m05_record"]["carried_from"] == "c" * 40
+    assert carried_r3["m05_record"]["offered"] is None
     assert calls == [1]  # a carried record is not re-run
     path.write_text(json.dumps(m05_study()), encoding="utf-8")  # no anchor at all
-    assert r3(rerun=rerun)["m05_record"]["carried_from"] == m07.RERUN and calls == [1, 1]
+    unanchored = r3(rerun=rerun)
+    assert unanchored["m05_record"]["carried_from"] == m07.RERUN and calls == [1, 1]
+    assert unanchored["m05_record"]["offered"] == {
+        "path": str(path),
+        "sha256": m07.sha256_file(path),
+        "anchor": None,
+        "reason": "carry_anchor_missing",
+    }
+    assert m07._check_r3(unanchored) == []
+
+
+@pytest.mark.parametrize(
+    ("carried_from", "offered", "found"),
+    [
+        ("c" * 40, None, None),
+        ("c" * 40, {"anchor": "c" * 40, "reason": "carry_identity_differs"}, "stated"),
+        (m07.RERUN, None, "absent"),
+        (m07.RERUN, {"anchor": None, "reason": "carry_anchor_missing"}, None),
+        (m07.RERUN, {"anchor": "c" * 40, "reason": "carry_identity_differs"}, None),
+        (m07.RERUN, {"anchor": None, "reason": "carry_identity_differs"}, "reason"),
+        (m07.RERUN, {"anchor": "c" * 40, "reason": "carry_anchor_missing"}, "reason"),
+        (m07.RERUN, {"anchor": "abc", "reason": "carry_identity_differs"}, "anchor"),
+        (m07.RERUN, {"anchor": None}, "{path, sha256, anchor, reason}"),
+    ],
+)
+def test_a21_check_requires_offered_iff_re_run_with_a_reason_that_matches_its_anchor(
+    carried_from: str, offered: dict[str, Any] | None, found: str | None
+) -> None:
+    """A2.3 (R-454): `check` requires `m05_record.offered` iff `carried_from` is `rerun`, and
+    `carry_anchor_missing` iff its anchor is null."""
+    m05 = {"carried_from": carried_from}
+    if offered is not None:
+        offered = {"path": "benchmarks/m05/records/x.json", "sha256": "a" * 64, **offered}
+    problems = m07._check_r3_offered({**m05, "offered": offered}, carried_from)
+    assert (problems == []) is (found is None), problems
+    if found is not None:
+        assert found in problems[0]
+    assert m07._check_r3_offered(m05, carried_from) == ["R3 m05_record states no offered member"]
 
 
 # -- A23, A25 (WO-4 part): the T* re-solve (Amendment 1 A1.7) --------------------------------------
