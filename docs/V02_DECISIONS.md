@@ -1022,3 +1022,10 @@ Grep, don't read whole. Newest at the bottom.
 - Open for M07's ruling round / reviewer (defaults: as implemented): J22 limitation `R3:carry_identity_differs`; J25
   `env.verify` vs R-259 `variant_id`; T* 3.5e-5 K inside the bound reads INTERIOR (tolerance 2e-5 K) while R1 says
   BOUND_LOWER. WO-4b (replay, committed record, A20–A26 tests) launched.
+- WO-4b done `d8ae8c1`: record at J=`1623633` (bitwise = `8f85aa2` run), replay bitwise 13.4 s, refuses at 2 threads;
+  A20–A26 tested; each commit gated (9413 → 9435/31); nlp 186/1.
+- M07 review `0ad726a`, fix first (spec §19 Am. 2, R-452…455, ADR 0041 D2/D5): MF1 at-bound tolerance δ_T = 0.5 K
+  (T* 1.76e-6 scaled from the bound is the interior-point offset, as M05 R-430); MF2 carry list missing M05 REAL config,
+  schema and journey script → split lists + GC-CARRY-1; SF1 replay the re-run M05 record; SF2 `m05_record.offered`; SF3
+  A21 default-gate test. J22 stands; J25 is M02's (`env.py:347` contradicts R-259) — backlog; J27 meets "every number".
+  WO-4c launched.
