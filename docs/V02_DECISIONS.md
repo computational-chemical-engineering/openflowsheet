@@ -997,3 +997,9 @@ Grep, don't read whole. Newest at the bottom.
   Batched for M05's next design touch.
 - DECISION: merge M05 into main now, although the freeze question to Frank is open → yes. Default (release from the alpha
   branch) is unaffected; a re-cut would then include M05 too. Reversible by: reverting the merge commit on main.
+
+## 2026-10-17 — Frank: release 0.2.0a1 from the alpha branch
+- Frank, verbatim: "Perform the release as recommended". Release ref = the alpha branch `wp/V02-alpha-gate` (D2.4 paths =
+  C_α² `cc73219` exactly), not main; ADR 0028's named alternative. Frank asks the session to perform the dispatch.
+- Mechanics: the `pypi` environment admits only `main` or `v*` tags. Plan: dry run from the branch at the head that prints
+  YES; then the real run from a `v0.2.0a1` tag on that same commit (rc = `cc73219…`).
