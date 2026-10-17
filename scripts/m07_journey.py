@@ -2217,10 +2217,34 @@ def _replay_r3(recorded: Mapping[str, Any], found: list[str]) -> dict[str, Any]:
         found.append(f"R3: {m05['path']} fails A1.6 input condition {failed}")
         return copy.deepcopy(dict(recorded))
     carried_from = m05["carried_from"]
+    if carried_from == RERUN:
+        found.extend(replay_m05_rerun(path))
     wall = (
         recorded["budget"]["spent"]["wall_s"] if carried_from == RERUN else m05_spent_wall(record)
     )
     return _r3_document(path, record, chosen, carried_from, wall, offered=m05.get("offered"))
+
+
+def replay_m05_rerun(record_path: Path) -> list[str]:
+    """A2.4 (R-455): a journey-produced M05 re-run record replayed with M05's REAL replay
+    (`run_real` on its `.experiments.json`, the record-only backend) and compared with M05's
+    `compare` against the files at its stem; every difference, prefixed. A carried record's
+    replay is M05's own G10, so `_replay_r3` calls this for a re-run only."""
+    real = m05_wo9_real()
+    if real is None:
+        return ["R3 M05 re-run replay: scripts/m05_wo9_real.py cannot be imported"]
+    stem = record_path.with_suffix("")
+    archive = stem.with_suffix(".experiments.json")
+    if not archive.is_file():
+        return [f"R3 M05 re-run replay: {_relative(archive)} is missing"]
+    import tempfile
+
+    with tempfile.TemporaryDirectory(prefix="m07-r3-replay-") as root:
+        try:
+            result = real.run_real(Path(root), archive=archive.read_bytes())
+        except real.ReplayDivergedError as exc:
+            return [f"R3 M05 re-run replay: {exc}"]
+    return [f"R3 M05 re-run replay: {line}" for line in real.compare(result, stem=stem)]
 
 
 def replay_journey(

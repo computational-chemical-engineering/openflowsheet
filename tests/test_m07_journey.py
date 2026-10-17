@@ -1205,3 +1205,41 @@ def test_a15_a_promotable_verdict_without_a_loop_is_a_registered_refusal(
     ] == ["R2"]
     assert accepted(record) == []
     assert "R2 is UNSUPPORTED(surrogate_loop_unavailable)" in m07.render(record)
+
+
+# -- A24 (Amendment 2 A2.4): a re-run M05 record is replayed with M05's REAL replay ----------------
+
+
+def _m05_real_copy(tmp_path: Path) -> Path:
+    """M05's committed REAL record and its sidecars under `tmp_path`, as a journey's `m05/`."""
+    import shutil
+
+    source = REPO_ROOT / "benchmarks" / "m05" / "records"
+    for path in source.glob("trust-region-study-real.*"):
+        target = tmp_path / path.name
+        if path.is_dir():
+            shutil.copytree(path, target)
+        else:
+            shutil.copyfile(path, target)
+    return tmp_path / "trust-region-study-real.json"
+
+
+@pytest.mark.pymrm
+def test_a24_a_re_run_m05_record_replays_clean_and_a_missing_result_is_a_difference(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A2.4 (R-455): `replay_m05_rerun` replays an M05 REAL record at any stem with M05's own
+    replay and `compare(stem=…)`: the committed record replays without a difference; the same
+    record whose `.experiments.json` lacks one result does not."""
+    monkeypatch.setenv("OMP_NUM_THREADS", "1")
+    clean = _m05_real_copy(tmp_path / "clean")
+    assert m07.replay_m05_rerun(clean) == []
+    damaged = _m05_real_copy(tmp_path / "damaged")
+    archive = damaged.with_suffix("").with_suffix(".experiments.json")
+    kept = json.loads(archive.read_bytes())
+    (dropped,) = [k for k in sorted(kept) if k.endswith("/result.json")][:1]
+    del kept[dropped]
+    archive.write_text(json.dumps(kept, sort_keys=True), encoding="utf-8")
+    found = m07.replay_m05_rerun(damaged)
+    assert found and all(line.startswith("R3 M05 re-run replay: ") for line in found)
+    assert any("replay diverged" in line for line in found), found
