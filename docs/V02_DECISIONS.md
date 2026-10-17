@@ -962,3 +962,9 @@ Grep, don't read whole. Newest at the bottom.
   Alternative: ask Frank again. Reversible by: reverting b074d57 on wp/M03. Re-take cherry-picked as `b074d57`, m03_nlp_check.sh exit 0.
   **Blocker:** main's CI red since 2026-10-16 (M04 tests on 2-core runners: prewarm a40 max_workers 4; a49 negative control; a35
   a19 fixture differs on arm). `wp/M04-ci` engineer launched; M03's CI-on-both-runners check waits for it.
+- **Main CI fix** (2026-10-17, `opus-engineer`, wp/M04-ci 2a07b66/df818a1/422c53a/09c6fed/54778d2; CI run 38998365118 green on both
+  runners): A40 script-path test skips below 4 physical cores (refusal tests at min(4, cores)); A49 asserts both pinned claims
+  everywhere, skips only the negative control where it cannot show a difference; A35 floats compared only on the recorded CPU class
+  `x86_64/Haswell` (spec §18 A1.3 makes no cross-machine bitwise claim), non-float members everywhere; CI prints skip reasons (E39–E42).
+  Manifest `evidence/M04/09c6fed…` tested. Open for M04's design lane: off-Haswell floats against A1.3's R1/R2 floors (default no).
+  Merged into main `f79864d`, **main gate PASS 8687/31**.
