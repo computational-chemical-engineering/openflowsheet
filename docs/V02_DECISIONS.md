@@ -1050,3 +1050,10 @@ Grep, don't read whole. Newest at the bottom.
   version-derived hashes only (551 diffs). Not merged into main.
 - A37 finding matters for 0.2.0 (agent surface moved after C_α²; V17 carry for 0.2.0).
 - Design-lane rulings pass launched (`specifier`, brief `docs/briefs/V02-alpha-main-rulings-brief.md` `6a760c1`).
+- Rulings `d85e7b4` (`docs/design/V02-alpha-main-rulings.md`, E1–E8): R-456 alpha ledger/changelog tests read the
+  released commit `423ae9c` (R-217 pattern); R-457 surface chain gets a third link (the move is M04's `surrogate_study` job
+  kind, not M03/M05; 17 tools, no description changed); R-458 G10 records re-taken digest-only now and at the 0.2.0 cut,
+  fingerprint unchanged (version = cache-safety guard, ADR 0036 D8), proof by a new `m05_retake_diff.py --digest-only`
+  (the S77 proof was manual); R-459 L49 confirmed; R-460 main's version `0.2.0a2.dev0` + test that main never carries a
+  released version on a different tree. For Frank later: the 0.2.0 "carry the agent evidence" question must name M04's
+  new job kind. Engineer applying E1–E8 launched.
