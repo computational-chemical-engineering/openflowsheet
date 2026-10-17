@@ -8975,7 +8975,7 @@ the move precedes C_W.
 | --- | --- |
 | Date | 2026-10-17 |
 | Decided by | design lane (`specifier`), V02 alpha-into-main rulings, item B (brief item 6) |
-| Normative text | `docs/design/V02-alpha-main-rulings.md` §2 R-458, §3 E5–E6 (AM-20 – AM-23); R-435; ADR 0036 D8 |
+| Normative text | `docs/design/V02-alpha-main-rulings.md` §2 R-458 (with Amendment A1), §3 E5, E5a, E6 (AM-20 – AM-23); R-435; ADR 0036 D8 |
 | Evidence | The in-process fingerprint is `{kind, boundary_sha256, module, module_sha256, openflowsheet_version}` (`adapters/experiments/backends.py:166–176`), and it is part of every experiment key. In `adapters/` only the in-process backend uses the version. G10 fails with 551 differences, all version-derived digests. `scripts/m05_retake_diff.py` compares sidecars bytewise and digests by shape, and checks no digest map, so S77's proof was a walk outside the repository |
 | Affected packages | M05 (records, build log), M07 (RC cut, step 14) |
 
@@ -8999,6 +8999,22 @@ The tool must give PASS on S77's own pair. Committed M05 manifests are not rewri
 - Comparing G10 modulo digest relabelling: a change to key derivation would pass unseen.
 
 **Watch for.** REAL's replay at the new version (expected unaffected; run once).
+
+**Amendment A1 (2026-10-17, design lane, after E6 stopped at `3969e57`).** The first bullet of the proof could
+never pass a version re-take: each coupling record stores the fingerprint in clear, so
+`frozen.reactor.fingerprint.openflowsheet_version` moves (`0.1.1` → `0.2.0a2.dev0`, 22 leaves, one per
+coupling record, measured at `2345b54`). The proof now admits exactly that leaf, as a class `version`
+(`docs/design/V02-alpha-main-rulings.md` §2 R-458 A1, §3 E5a):
+
+- at that exact path only;
+- with the committed side equal to `--old-version` and the re-take side equal to the running `__version__`;
+- with `fingerprint_sha256 == document_sha256(fingerprint)` on both sides of every coupling record, so the
+  clear leaf cannot move unless the key's fingerprint digest moves with it.
+
+E6 then runs with `--old-version 0.1.1`, and the 0.2.0 cut with `--old-version 0.2.0a2.dev0`. *Rejected:*
+the pattern `*.fingerprint.openflowsheet_version` without the binding. It admits leaves under unruled paths,
+and it passes a re-take whose version moved while its key digest did not. *Also rejected:* ignoring the leaf,
+treating it as a digest, or dropping the clear fingerprint from `external-coupling-v1`.
 
 ---
 

@@ -7,6 +7,8 @@ the envelope on `main` are between releases. They are consistent with ADR 0028 (
 (`docs/derivations/V02-alpha-release-spec.md` §5.3, MR-3), R-193, R-217, R-234, R-295, R-435 and ADR 0036 D8.
 They amend no ADR, no frozen interface and no released record. The build lane applies §3 in the order of §4.
 Register entries: R-456 (items 1 and 5), R-457 (items 2–4), R-458 (item 6), R-459 (item 7), R-460 (item 8).
+Amended once, 2026-10-17, by R-458 A1 (§2 R-458, §3 E5a and E6, §5 O5, §7), on the evidence of E6's stop at
+`3969e57`.
 
 **Already decided, not reopened.** 0.2.0a1 was released from `423ae9c`. Nothing in its record is rewritten:
 the CHANGELOG section `## v0.2.0a1`, the ledger at `C_α²`, the verdicts, and the M07a manifest and its RC
@@ -84,6 +86,33 @@ The ruling has four parts:
   cuts the 0.2.0 candidate, so that RC step 14 replays 0 differences at C.
 - **Records:** M05's committed manifests are not rewritten. Their record sha256s describe the records they
   were taken at, as S77.
+
+**Amendment A1 (2026-10-17, after E6 stopped at `3969e57`).** The proof as first written could never pass
+the re-take it orders. The coupling record stores the in-process fingerprint in clear, so a version change
+moves one non-digest leaf per coupling record: `frozen.reactor.fingerprint.openflowsheet_version`, `0.1.1` →
+`0.2.0a2.dev0`. Measured at `2345b54`: 4/7/4/3/4 such leaves (one per coupling record, 22 in all), nothing
+else non-digest, environment files byte-equal, map a function and injective. That is a defect in this note,
+amended here, not bent in the tool.
+
+Rule (a) admits that one leaf, as a class `version`, on three terms (E5a):
+
+- **exact path,** not a pattern;
+- **pinned values:** the committed side is `--old-version`, the re-take side is the running
+  `openflowsheet.__version__`;
+- **bound to its digest:** on both sides, `frozen.<u>.fingerprint_sha256` is `document_sha256` of
+  `frozen.<u>.fingerprint`. That is how `backends.py:166–176` makes it, and the request's
+  `environment_fingerprint_sha256` carries it into the experiment key. The clear leaf therefore cannot move
+  unless the key's fingerprint digest moves with it, and that digest is then held to (b) and (c).
+  Measured: the binding holds for all 22 coupling records on both sides of S77's pair (`56fb2fa^`,
+  `56fb2fa`) and in the committed records at `3969e57`.
+
+*Rejected:* the engineer's form, `*.fingerprint.openflowsheet_version` with pinned values but no binding.
+The pattern would admit a leaf under any future frozen unit or nesting without a ruling. Without the
+binding, a re-take whose clear version moved while `fingerprint_sha256` did not would pass, because an
+unchanged digest is a valid map entry. That is a key derivation that dropped the version: the change R-458
+exists to catch. *Also rejected:* ignoring the leaf like a timing (it would admit a record taken at a third
+version); treating it as a digest (it is not one); taking the clear fingerprint out of `external-coupling-v1`
+(a record-format change for test convenience, which also costs the record its auditability).
 
 ### R-459: item 7. L49 confirmed; R-365 keeps its text and gains an amendment line
 
@@ -213,7 +242,7 @@ equal ones included.
 
 It exits 0 iff all of the following hold:
 
-- (a) other = 0;
+- (a) other = 0 (a leaf admitted by E5a's `version` class is not other; A1);
 - (b) the map is a function;
 - (c) the map is injective;
 - (d) the environment files are byte-equal, **or** they differ only in `distributions_sha256`. In that case,
@@ -237,11 +266,52 @@ Acceptance:
   - one old digest mapped to two new digests → FAIL (not a function);
   - an environment difference outside `distributions_sha256` → FAIL.
 
+**E5a. The `version` class and the fingerprint binding (R-458 A1).** Added to `--digest-only`, everything
+else in E5 unchanged:
+
+- **Path.** Only the coupling-record leaf at exactly `frozen.reactor.fingerprint.openflowsheet_version`.
+  The same text at any other path stays other: in the record, the ledger, the store index, the environment
+  file, or elsewhere in a coupling record. A new frozen unit or nesting fails closed and comes back to the
+  design lane.
+- **Values.** The rule is checked on every coupling pair, whether the leaf differs or not.
+  - With `--old-version <v>`: the committed side equals `<v>`, and the re-take side equals the running
+    `openflowsheet.__version__`. The CLI has no option for the re-take side.
+  - Without `--old-version`: the two sides are equal, which is rule (a) as before.
+  - A pair that lacks the leaf on either side is other.
+- **Binding.** For every unit `u` in `frozen` of every coupling record, on both sides:
+  `frozen.u.fingerprint_sha256 == openflowsheet.canonical.document_sha256(frozen.u.fingerprint)`. A
+  mismatch is other and names the file and side. This check always runs, with or without `--old-version`.
+- **One argument.** `--old-version` keeps one meaning, the committed side's version, and serves both (d) and
+  this class.
+- **Report.** The summary line gains `version=<n>`: the number of differing leaves admitted as `version`.
+
+Acceptance:
+
+- **AM-20** is unchanged: S77's pair passes without `--old-version`, with `version=0`. Its 44 coupling sides
+  satisfy the binding.
+- **AM-22** gains these cases (synthetic coupling records in `tmp_path`; the test may set the running
+  version by monkeypatching `openflowsheet.__version__`):
+  - the leaf goes `v0` → `v1`, the run is at `v1` with `--old-version v0`, and `fingerprint_sha256` is
+    recomputed on both sides and moved consistently wherever it occurs → PASS, `version=1`;
+  - the same, without `--old-version` → FAIL, naming the leaf;
+  - `--old-version` differs from the committed side → FAIL;
+  - the re-take side differs from the running version → FAIL;
+  - the leaf moves but the re-take side keeps the old `fingerprint_sha256` → FAIL (binding). This case would
+    PASS without the binding;
+  - the same version string moves at another path (for example `frozen.reactor.openflowsheet_version`, or a
+    leaf in the record) → FAIL as other.
+
 **E6. Re-take (R-458), after E7.**
 
 1. From a clean tree at the version-changed commit, in `.venv-nlp` with `OMP_NUM_THREADS=1`, run `run_case`
    and `write_files` into a scratch directory for TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R and LOOP-S.
-2. Run `--digest-only` and get PASS for each case.
+2. Run `--digest-only --old-version 0.1.1` and get PASS for each case (A1). The expected counts are the ones
+   measured at `2345b54`:
+   - `version=` 4/7/4/3/4;
+   - changed-digests 41/79/70/91/37. These are S77's counts less one, because `boundary_sha256` does not
+     move here.
+
+   A different count goes to the build log with both numbers and stops E6. It is not accepted silently.
 3. Copy the files over the committed ones.
 4. Acceptance:
    - **AM-23:** `OMP_NUM_THREADS=1 pytest -m nlp tests/test_m05_g10_replay.py` gives 5 passed.
@@ -304,7 +374,8 @@ The whole is accepted when:
   - B-WO10-4's version set;
   - the pinned envelope (`v0.2-envelope-1`, `0.2.0`);
   - W27's coverage at C (M07 §9);
-  - the G10 re-take with its digest-only proof (R-458).
+  - the G10 re-take with its digest-only proof (R-458), run with `--old-version 0.2.0a2.dev0`, the
+    version of the records E6 committed (A1).
 
   AM-41's else-branch then holds at C.
 
@@ -331,7 +402,10 @@ The whole is accepted when:
   Frank's.
 - **That D_3 is the digest at M04's merge.** D_3 is measured on the merge tree only.
 - **That the re-taken G10 records are numerically correct.** A re-take is a regression fixture; it proves only
-  that nothing but digests moved. G10 is numerical verification, not validation (R-435).
+  that nothing moved but digests and the pinned version leaf bound to its digest (A1). G10 is numerical
+  verification, not validation (R-435).
+- **That A1 covers any other non-digest move.** It admits one path. Any other difference stays other, and
+  a ruling is needed for it.
 - **That `.dev` heads are safe to reuse a store across.** The version guard is release-granular. Commits
   between releases share one version, as before.
 
