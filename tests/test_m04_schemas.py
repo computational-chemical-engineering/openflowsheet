@@ -58,9 +58,20 @@ def test_a35_every_document_has_a_valid_and_an_invalid_fixture(directory: str) -
 
 
 def test_a35_the_fixtures_are_what_the_code_emits_today() -> None:
+    # Floats rounded to 10 digits on the class the fixtures were recorded on; elsewhere the members
+    # spec §18 A1.3 promises R0, and the floats are not compared (build decision E41).
+    machine = m04_schema_fixtures.machine_class()
+    floats = machine == m04_schema_fixtures.RECORDED_ON
     for name, document in m04_schema_fixtures.documents().items():
         stored = load_json(FIXTURES / name)
-        assert m04_schema_fixtures.stable(stored) == m04_schema_fixtures.stable(document), name
+        assert m04_schema_fixtures.stable(stored, floats) == m04_schema_fixtures.stable(
+            document, floats
+        ), (name, machine, m04_schema_fixtures.differences(stored, document, floats))
+    if not floats:
+        pytest.skip(
+            f"the R0 members agree; floats compared on {m04_schema_fixtures.RECORDED_ON} only "
+            f"(R1/R2 across platforms, spec §18 A1.3), this is {machine} (E41)"
+        )
 
 
 def test_a35_the_manifest_fixture_is_a19s_and_passes_the_checker() -> None:

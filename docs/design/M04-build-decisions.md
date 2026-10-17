@@ -402,3 +402,20 @@ the spec's claim; no tolerance moved and no case was removed.
   then skips with the reason instead of passing. Alternative: search a size per host that splits
   (spec: "if no synthetic size reproduces the difference, the opt-in real record is used").
   Reversible by: reverting the E40 commit.
+- **E41. A35's rounded float comparison is scoped to the machine class the fixtures were recorded
+  on.** `stable` rounds floats to 10 significant digits; rounding is not a tolerance, and a score
+  that is a small difference of two predictions keeps fewer digits than binary64 carries.
+  Reproduced locally with `OPENBLAS_CORETYPE=Sandybridge|Nehalem|Prescott`: one leaf differs,
+  `evaluation.scores[7]` 4.3685482476500205e-05 (fixture) against 4.36854824575524e-05, 1.9e-14
+  apart, where A1.3's R1/R2 floor is 1e-10 score units. Spec §18 A1.3 promises R1/R2 for these
+  floats across platforms and R0 (conditional; A19 is not near threshold, A37) for every
+  non-float member; it claims no cross-platform 10-digit agreement. DECISION:
+  `m04_schema_fixtures.RECORDED_ON = "x86_64/Haswell"` (`machine_class()`: `platform.machine()`
+  and the OpenBLAS kernel name of NumPy's and SciPy's libraries); on that class the comparison is
+  unchanged; on another the non-float members are compared exactly and the test then skips the
+  floats with the reason; the failure message lists each differing leaf with both raw values.
+  `--write` writes nothing off the recorded class. The committed fixture is unchanged (M05's
+  LOOP-S record cites it). Alternative: compare floats off-class under A1.3's per-rule R1/R2
+  floors from `benchmarks/m04/numerical_policy_surrogate.yaml` (needs the floor units, e.g. w_o,
+  resolved per rule; R-253 says no comparator reads that table yet — a design-lane call).
+  Reversible by: reverting the E41 commit.

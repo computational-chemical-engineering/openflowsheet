@@ -20,6 +20,15 @@ hashes), so they are masked; every other number is compared rounded to 10 signif
 because the fit is a LAPACK QR whose last bits are the platform's (spec §3.4; A10's tolerance is
 10⁻¹⁰ × ‖β‖∞).
 
+The rounded comparison holds on the machine class the fixtures were recorded on (`RECORDED_ON`:
+the CPU architecture and the OpenBLAS kernel the fit runs, build decision E41). Rounding is not a
+tolerance: a score that is a small difference of two predictions keeps fewer significant digits
+than binary64 carries, and on another kernel its 10th digit can move (an observed case: test score
+7, 4.36854824765e-05 against 4.36854824576e-05, 1.9e-14 apart where A1.3's floor is 1e-10). Spec
+§18 A1.3 classifies every such float R1/R2 and promises no more across platforms; on another class
+only the members it promises R0 (every non-float member; A19 has no near-threshold decision,
+M04.A37) are compared, by `stable(..., floats=False)`.
+
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/m04_schema_fixtures.py          # check
     PYTHONPATH=src .venv/bin/python scripts/m04_schema_fixtures.py --write  # missing or differing
@@ -28,7 +37,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import ctypes
 import json
+import platform
 import sys
 from collections.abc import Mapping
 from pathlib import Path
@@ -60,19 +71,71 @@ VOLATILE: Final = frozenset(
     }
 )
 SIGNIFICANT: Final = 10
+#: The machine class the fixtures were recorded on, as `machine_class()` names it (E41).
+RECORDED_ON: Final = "x86_64/Haswell"
+#: The OpenBLAS accessor of the kernel's name, per library build (`studies.surrogate.blas`).
+_CORENAME: Final = (
+    "scipy_openblas_get_corename64_",
+    "scipy_openblas_get_corename",
+    "openblas_get_corename",
+)
 
 
-def stable(document: Any) -> Any:
-    """`document` with its volatile members masked and its floats rounded (module docstring)."""
+def machine_class() -> str:
+    """`<machine>/<kernel>`: the CPU architecture and the OpenBLAS kernel(s) NumPy's and SciPy's
+    libraries run (the fit's QR, SVD and triangular solve), or `unknown` where none is found."""
+    import numpy  # noqa: F401  (loads NumPy's OpenBLAS)
+    import scipy.linalg  # noqa: F401  (loads SciPy's)
+
+    from openflowsheet.studies.surrogate.blas import controlled
+
+    kernels = set()
+    for library in controlled():
+        mode = getattr(ctypes, "RTLD_NOLOAD", 0) | ctypes.RTLD_LOCAL
+        handle = ctypes.CDLL(library.path, mode=mode)
+        for symbol in _CORENAME:
+            corename = getattr(handle, symbol, None)
+            if corename is not None:
+                corename.restype = ctypes.c_char_p
+                kernels.add(corename().decode().strip())
+                break
+    return f"{platform.machine()}/{'+'.join(sorted(kernels)) or 'unknown'}"
+
+
+def stable(document: Any, floats: bool = True) -> Any:
+    """`document` with its volatile members masked and its floats rounded, or masked when
+    `floats` is false (module docstring)."""
     if isinstance(document, dict):
         return {
-            key: "MASKED" if key in VOLATILE else stable(value) for key, value in document.items()
+            key: "MASKED" if key in VOLATILE else stable(value, floats)
+            for key, value in document.items()
         }
     if isinstance(document, list):
-        return [stable(item) for item in document]
+        return [stable(item, floats) for item in document]
     if isinstance(document, float):
-        return float(f"{document:.{SIGNIFICANT}g}")
+        return float(f"{document:.{SIGNIFICANT}g}") if floats else "FLOAT"
     return document
+
+
+def differences(stored: Any, emitted: Any, floats: bool = True, path: str = "") -> list[str]:
+    """The paths where `stable(stored, floats)` and `stable(emitted, floats)` differ, each with
+    both raw values: what a failed comparison reports."""
+    if isinstance(stored, dict) and isinstance(emitted, dict):
+        return [
+            row
+            for key in sorted(set(stored) | set(emitted))
+            if key not in VOLATILE
+            for row in differences(stored.get(key), emitted.get(key), floats, f"{path}.{key}")
+        ]
+    if isinstance(stored, list) and isinstance(emitted, list) and len(stored) == len(emitted):
+        return [
+            row
+            for index, pair in enumerate(zip(stored, emitted, strict=True))
+            for row in differences(*pair, floats, f"{path}[{index}]")
+        ]
+    if stable(stored, floats) == stable(emitted, floats):
+        return []
+    return [f"{path}: stored {stored!r}, emitted {emitted!r}"]
 
 
 def _required(reference: str) -> list[str]:
@@ -176,14 +239,19 @@ def main() -> int:
     parser.add_argument("--write", action="store_true")
     arguments = parser.parse_args()
     status = 0
+    # Off the recorded class only the R0 members are compared, and nothing is written: a fixture
+    # is recorded on one class (E41).
+    floats = machine_class() == RECORDED_ON
+    if not floats:
+        print(f"{machine_class()} is not {RECORDED_ON}: floats not compared, nothing written")
     for name, document in documents().items():
         path = FIXTURE_DIR / name
-        same = path.is_file() and stable(json.loads(path.read_text(encoding="utf-8"))) == stable(
-            document
-        )
+        same = path.is_file() and stable(
+            json.loads(path.read_text(encoding="utf-8")), floats
+        ) == stable(document, floats)
         if same:
             print(f"same {name}")
-        elif arguments.write:
+        elif arguments.write and floats:
             # Only a missing or differing fixture is (re)written: a passed one is never
             # regenerated.
             path.parent.mkdir(parents=True, exist_ok=True)
