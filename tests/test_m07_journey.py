@@ -754,6 +754,21 @@ def test_a21_r3_is_carried_through_the_manifest_anchor_without_a_wall(
     assert any("m05_wall_unrecorded" in p for p in m07.check(zero_wall, None))
 
 
+def test_a21_r3_reads_m05s_stated_run_commit_and_wall(
+    tmp_path: Path, m05_inputs: tuple[Path, Path]
+) -> None:
+    """A1.6 items 2.1 and 4: M05's REAL record states `provenance` {run_commit, tree_clean,
+    wall_s} (M05 build log S65); that commit is the anchor and that wall R3's, from `m05_record`."""
+    stated = {"run_commit": "c" * 40, "tree_clean": True, "wall_s": 1454.5}
+    r3 = carried(tmp_path, m05_inputs, m05_study(provenance=stated), anchor=False)
+    assert r3["m05_record"]["carried_from"] == "c" * 40
+    assert r3["budget"]["spent"] == {"cold": 63, "wall_s": 1454.5}
+    assert (r3["budget"]["wall_source"], r3["limitations"]) == ("m05_record", [])
+    assert m07._check_r3(r3) == []
+    dirty = carried(tmp_path, m05_inputs, m05_study(provenance={**stated, "tree_clean": False}))
+    assert dirty["m05_record"]["carried_from"] == C_M  # a dirty run states no commit
+
+
 def test_a21_r3_without_an_anchor_or_a_cold_count_says_so(
     tmp_path: Path, m05_inputs: tuple[Path, Path]
 ) -> None:

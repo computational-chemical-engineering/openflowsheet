@@ -538,17 +538,18 @@ def with_margin(constraint: Mapping[str, Any]) -> dict[str, Any]:
 
 def m05_parent_extras(document: Mapping[str, Any], runner: Any) -> ParentExtras | None:
     """M05's noise floor (§7.4 there: `checks.noise_floor`) and P3's constraint values at a parent
-    grid point, by M05's own `C1Parent.solve` at the same decision (store hits only; it must give
-    the same J bit for bit, or the point's e is refused). `None` when M05's study package is not in
-    this tree (it is on `wp/M05`, not yet on main): R1's e_k are then null with the limitation
-    `noise_floor_unavailable` (spec §14 Q2's default)."""
+    grid point, by M05's own `C1Parent.solve` at the same decision on the application's
+    `C1_PARENT_SERVICES` (store hits only; it must give the same J bit for bit, or the point's e is
+    refused). `None` when M05's study package is not in this tree: R1's e_k are then null with the
+    limitation `noise_floor_unavailable` (spec §14 Q2's default)."""
     try:
+        from openflowsheet.application.trust_region_parent import C1_PARENT_SERVICES
         from openflowsheet.studies.trust_region.checks import noise_floor
         from openflowsheet.studies.trust_region.parent import C1Parent
     except ImportError:
         return None
     box = (float(BOX_LITERALS[0]), float(BOX_LITERALS[1]))
-    parent = C1Parent(document, runner, box)
+    parent = C1Parent(document, runner, box, services=C1_PARENT_SERVICES)
     (decision,) = parent.decisions
 
     def extras(t: float, entry: Mapping[str, Any]) -> tuple[float | None, Any]:
@@ -737,15 +738,21 @@ def tracked_unmodified(path: Path) -> bool:
 
 
 def m05_run_commit(record: Mapping[str, Any]) -> str | None:
-    """The run commit M05's record states (A1.6 item 2.1). M05 records none yet (spec §17 FD-3);
-    the field is named here when it does, never guessed."""
-    return None
+    """The run commit M05's record states (A1.6 item 2.1): `provenance.run_commit`, which M05's
+    REAL script writes at the start of a run from a clean tree (M05 build log S65, M07's FD-3).
+    A record without it (or with a dirty tree) states none."""
+    provenance = record.get("provenance") or {}
+    commit = provenance.get("run_commit")
+    if provenance.get("tree_clean") is not True or not isinstance(commit, str):
+        return None
+    return commit if re.fullmatch(r"[0-9a-f]{40}", commit) else None
 
 
 def m05_spent_wall(record: Mapping[str, Any]) -> float | None:
-    """The study's spent wall as M05's record states it (A1.6 item 4). M05 records none yet
-    (FD-3); never the cap `study_wall_s`, never 0."""
-    return None
+    """The study's spent wall as M05's record states it (A1.6 item 4): `provenance.wall_s`, the
+    study budget's monotonic-clock wall (S65). Never the cap `study_wall_s`, never a default."""
+    wall = (record.get("provenance") or {}).get("wall_s")
+    return float(wall) if isinstance(wall, int | float) and not isinstance(wall, bool) else None
 
 
 def manifest_anchor(record_sha256: str, evidence: Path) -> str | None:
