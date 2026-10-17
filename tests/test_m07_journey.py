@@ -919,6 +919,26 @@ def test_a23_a_real_record_needs_the_t_star_re_solve(
     assert "R3's verified candidate has no T* re-solve (A1.7)" in m07.check(record, None)
 
 
+def test_the_environment_is_taken_before_any_rung_runs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R3's re-run writes under `--out`; a tree read after it is dirty (build log J26)."""
+    order: list[str] = []
+    monkeypatch.setattr(
+        m07, "environment_block", lambda: order.append("environment") or ENVIRONMENT
+    )
+    run_r0 = m07.run_r0
+
+    def recorded_r0(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        order.append("R0")
+        return run_r0(*args, **kwargs)
+
+    monkeypatch.setattr(m07, "run_r0", recorded_r0)
+    record = m07.run_journey(tmp_path, dry_run=True, extras=synthetic_extras, commit=COMMIT)
+    assert order == ["environment", "R0"]
+    assert record["environment"] == ENVIRONMENT
+
+
 def test_replay_refuses_until_wo4(tmp_path: Path) -> None:
     assert m07.main(["replay", str(tmp_path)]) == 2
 

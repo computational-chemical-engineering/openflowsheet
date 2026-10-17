@@ -2008,7 +2008,10 @@ def run_journey(
     t_star: TStarResolve | None | str = M05_EXTRAS,
 ) -> dict[str, Any]:
     """R0, R1, R2, R3 in that order, then the T* re-solve (A1.7) on the journey's store. A real
-    run (not `dry_run`) re-runs M05's study under `out` when its record does not carry (A1.6)."""
+    run (not `dry_run`) re-runs M05's study under `out` when its record does not carry (A1.6).
+    The environment block is taken before any rung runs: R3's re-run writes under `out`, which
+    would otherwise read as a dirty tree (build log J26)."""
+    environment = environment if environment is not None else environment_block()
     runner = runner if runner is not None else standin_runner(artifacts / "store")
     reactor = dry_run or reactor_available(env_base)
     r0 = run_r0(artifacts, runner, clock)
