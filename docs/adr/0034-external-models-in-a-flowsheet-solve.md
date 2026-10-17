@@ -1,7 +1,11 @@
 # ADR 0034 — External models in a flowsheet solve: an extent-fixed embedding with an outer coupling, frozen identities per attempt, R3 runs replayed from the record
 
-**Status:** Proposed, 2026-10-08. Accepted when M02's evidence manifest is `tested` (design note gates G2, G6–G9, G12)
-and the design-lane review of WO-7–WO-10 is recorded.
+**Status:** **Accepted, 2026-10-16**, with Amendment 1 (design lane, V02 alpha verdicts finding B6; register R-381).
+Proposed 2026-10-08. The condition it was accepted on: M02's evidence manifest is `tested` (design note gates G2, G6–G9,
+G12) and the design-lane review of WO-7–WO-10 is recorded. Met by `evidence/M02/ba90619…/manifest.json` (`tested`;
+M02.G2, G6–G9, G12 `pass`) and by the design lane's rounds on the note: WO-7 §14.2 B18 (D27 confirmed as built), WO-8
+§14.3, WO-9 §14.4, WO-10 §14.5 and `docs/reviews/M02-review.md` §1–§3, whose must-fix F1–F3 are closed by `080d197`,
+`88b3ab4` and `908d9a3` (M02 close-out §3, on `main`).
 **Author:** design lane (`architect`), M02.
 **Normative text:** `docs/design/M02-pymrm-adapter.md` §4, §6.1, §7, §8 (binding), §8.1. Register R-225–R-227,
 R-230–R-232.

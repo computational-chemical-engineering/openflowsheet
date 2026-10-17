@@ -300,7 +300,7 @@
   {
    "build": "h781a0a9_0",
    "declared_licence": "Apache-2.0",
-   "loaded_objects": 1,
+   "loaded_objects": 2,
    "md5": "5a51a2ea653f120240b1a9bf76e0aae9",
    "name": "openssl",
    "sha256": "9c1533f1cf784f0e250919c0c9762d0b0e6bc727a79290ffb7cea1ceca1d038c",
@@ -318,7 +318,7 @@
   {
    "build": "hec9711d_102_cp313",
    "declared_licence": "Python-2.0",
-   "loaded_objects": 31,
+   "loaded_objects": 32,
    "md5": "89e07d92cf50743886f41638d58c4328",
    "name": "python",
    "sha256": "c2cdcc98ea3cbf78240624e4077e164dc9d5588eefb044b4097c3df54d24d504",
@@ -373,11 +373,11 @@
  "format": "m03-ipopt-inventory-v1",
  "gates": {
   "G1": {
-   "bytes": 287574499,
+   "bytes": 289435275,
    "conda_objects_not_matching_their_package": [],
-   "distinct_sha256": 178,
+   "distinct_sha256": 180,
    "import_orders_map_the_same_objects": true,
-   "objects": 178,
+   "objects": 180,
    "pass": true,
    "unknown_origin": []
   },
@@ -1538,6 +1538,45 @@
    "soname": "libsqlite3.so.0"
   },
   {
+   "bytes": 1228008,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "Apache-2.0",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "Apache-2.0"
+      ],
+      "path": "$PKGS/openssl-3.6.5-h781a0a9_0/info/licenses/LICENSE.txt",
+      "restrictive_clauses": [],
+      "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "nlp-first",
+    "project-first"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libcrypto.so.3",
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: openssl-3.6.5-h781a0a9_0",
+   "path": "$ENV/lib/libssl.so.3",
+   "python_extension": false,
+   "sha256": "9f9fc1f5ab856181716b7dff697daf16aa5b0f47f7add572c491ac31a10ef8f4",
+   "soname": "libssl.so.3"
+  },
+  {
    "bytes": 23874544,
    "hsl_exports": [],
    "hsl_imports": [],
@@ -2460,6 +2499,48 @@
    "path": "$ENV/lib/python3.13/lib-dynload/_sqlite3.cpython-313-x86_64-linux-gnu.so",
    "python_extension": true,
    "sha256": "63eaa31f404a9fb609521d0b2697b5e4b13fa7fc1248ec012e44e5816cee44d9",
+   "soname": null
+  },
+  {
+   "bytes": 632768,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "Python-2.0",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "ISC-style",
+       "PSF-2.0",
+       "SMLNJ-style"
+      ],
+      "path": "$PKGS/python-3.13.5-hec9711d_102_cp313/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "nlp-first",
+    "project-first"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libssl.so.3",
+    "libcrypto.so.3",
+    "libpthread.so.0",
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: python-3.13.5-hec9711d_102_cp313",
+   "path": "$ENV/lib/python3.13/lib-dynload/_ssl.cpython-313-x86_64-linux-gnu.so",
+   "python_extension": true,
+   "sha256": "e29c1adc66bee9198347145e8e714668b8a7943b04f1f057f2c764cdc91d8dbd",
    "soname": null
   },
   {

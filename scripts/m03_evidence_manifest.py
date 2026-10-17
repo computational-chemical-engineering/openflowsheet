@@ -21,10 +21,12 @@ check is decided from what this script ran at `C`:
 5. **The gate**: the stdout of `scripts/check.sh` at `C`, which must end `check.sh: PASSED`.
 
 Two release conditions are recorded as checks of their own, because a check is what the status
-rule reads. **M03.N1** is Frank's licence answer, which A35-A40 rest on (`NLP_LICENCES_ACCEPTED`
-is provisionally True; review F4). **M03.ci_both_runners** is the default gate green on both
+rule reads. **M03.N1** is Frank's licence answer, which A35-A40 rest on (`NLP_LICENCES_ACCEPTED`;
+review F4; accepted 2026-10-16, R-450). **M03.ci_both_runners** is the default gate green on both
 registered CI runners (review F1's acceptance). Each is `pass` only when stated on the command
-line (`--n1 accepted`, `--ci-both-runners green`), and is otherwise `unsupported`, with the reason.
+line (`--n1 accepted`, `--ci-both-runners green --ci-run ID`, the `ci` workflow run at `C`), and is
+otherwise `unsupported`, with the reason. The limitations that say a condition is open are written
+only while it is.
 `--n1 declined` marks A35-A40 `unsupported` (the review's "record A35-A40 as BLOCKED"; a check's
 vocabulary has no BLOCKED).
 
@@ -34,7 +36,8 @@ The status is `tested` only if every check is `pass` and every command exited 0.
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/m03_evidence_manifest.py --commit C \\
         --gate-log GATE_STDOUT --nlp-env PREFIX --nlp-cache CACHE \\
-        [--n1 pending|accepted|declined] [--ci-both-runners unconfirmed|green] [--out PATH]
+        [--n1 pending|accepted|declined] [--ci-both-runners unconfirmed|green] [--ci-run ID]
+        [--out PATH]
 """
 
 from __future__ import annotations
@@ -51,7 +54,7 @@ import xml.etree.ElementTree as ElementTree
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 ROOT = Path(__file__).resolve().parent.parent
 SPEC = ROOT / "docs" / "derivations" / "M03-studies-spec.md"
@@ -337,16 +340,26 @@ def check(aid: str, inputs: Inputs) -> dict[str, Any]:
     return entry
 
 
-def release_checks(n1: str, ci: str) -> list[dict[str, Any]]:
+#: Frank's answer to N1, as recorded in R-450.
+N1_ANSWER: Final = 'Frank Peters, 2026-10-16: "I accept the licenses." (R-450)'
+
+
+def release_checks(n1: str, ci: str, ci_run: str | None) -> list[dict[str, Any]]:
+    n1_value: dict[str, Any] = {"n1": n1}
+    if n1 == "accepted":
+        n1_value["answer"] = N1_ANSWER
+    ci_value: dict[str, Any] = {"ci_both_runners": ci}
+    if ci_run is not None:
+        ci_value["ci_run"] = ci_run
     return [
         {
             "id": "M03.N1",
             "description": "Frank's answer N1 on the licences of the `nlp` extra's stack (audit "
             "§7-§8; ADR 0032 D5's acceptance evidence). A35-A40 rest on it: "
-            "`NLP_LICENCES_ACCEPTED` is provisionally True (commit 2b6e350), and declining is "
-            "the revert of 2b6e350 and 91537b0 plus a re-taken inventory (M03 review F4).",
+            "`NLP_LICENCES_ACCEPTED` is True (commit 2b6e350), and declining is the revert of "
+            "2b6e350 and 91537b0 plus a re-taken inventory (M03 review F4).",
             "result": "pass" if n1 == "accepted" else "unsupported",
-            "value": {"n1": n1},
+            "value": n1_value,
         },
         {
             "id": "M03.ci_both_runners",
@@ -355,7 +368,7 @@ def release_checks(n1: str, ci: str) -> list[dict[str, Any]]:
             "manifest says `tested`. This script runs the gate on one machine; the runners' "
             "verdict is stated on its command line.",
             "result": "pass" if ci == "green" else "unsupported",
-            "value": {"ci_both_runners": ci},
+            "value": ci_value,
         },
     ]
 
@@ -403,6 +416,7 @@ def build(
     checks: list[dict[str, Any]],
     commands: list[dict[str, Any]],
     verdict: str,
+    limitations: list[str],
 ) -> dict[str, Any]:
     return {
         "work_package": "M03",
@@ -445,20 +459,42 @@ def build(
             _artifact("schemas/study.schema.json", "The study schema (spec §10)."),
             _artifact("schemas/optimization-report.schema.json", "The optimization-report schema."),
         ],
-        "limitations": LIMITATIONS,
+        "limitations": limitations,
         "review": {"numerical": "pending", "process_model": "pending"},
     }
 
 
-LIMITATIONS = [
+#: Written while N1 is unanswered (`--n1 pending`).
+N1_PENDING = (
     "N1 is pending. The `nlp` extra (91537b0) and the licence acceptance NLP_LICENCES_ACCEPTED "
     "(2b6e350) are provisional, and A35-A40 rest on them; the M03.N1 check says so. Declining "
     "is the revert of both commits and a re-taken inventory, after which A35-A40 are recorded "
-    "unsupported (the review's BLOCKED) and optimize() reports UNSUPPORTED everywhere.",
+    "unsupported (the review's BLOCKED) and optimize() reports UNSUPPORTED everywhere."
+)
+#: Written once N1 is accepted (`--n1 accepted`): what the acceptance covers.
+N1_ACCEPTED = (
+    "Frank's licence acceptance (N1, R-450) covers the licences as docs/m03-ipopt-audit.md §7 "
+    "lists them, for an optional, non-default extra. An `nlp` environment that adds a package "
+    "or a licence outside that list needs a re-audit and a new answer."
+)
+#: Written while both CI runners are not confirmed (`--ci-both-runners unconfirmed`).
+CI_UNCONFIRMED = (
     "The default gate was run on one x86-64 machine. M03 review F1's acceptance, both registered "
     "CI runners green, is not established here; the M03.ci_both_runners check says so. The "
     "fixture comparison was shown to tolerate cross-platform noise by regenerating every "
-    "fixture with each linear back-solve perturbed by 1-64 ulps, not on aarch64.",
+    "fixture with each linear back-solve perturbed by 1-64 ulps, not on aarch64."
+)
+
+
+def limitations(n1: str, ci: str) -> list[str]:
+    """The release conditions' limitations as stated on the command line, then the standing ones."""
+    first = [N1_ACCEPTED if n1 == "accepted" else N1_PENDING]
+    if ci != "green":
+        first.append(CI_UNCONFIRMED)
+    return first + LIMITATIONS
+
+
+LIMITATIONS = [
     "The NLP evidence (A35-A41) is valid only in the audited environment on its host and under "
     "OMP_NUM_THREADS=1 (review ruling Q2): each report records its thread configuration and the "
     "loaded ASL (review F2), and the adapter enforces nothing. Whether single-threading is a "
@@ -492,8 +528,11 @@ def main() -> int:
     parser.add_argument(
         "--ci-both-runners", choices=("unconfirmed", "green"), default="unconfirmed"
     )
+    parser.add_argument("--ci-run", default=None, help="the `ci` workflow run id at C")
     parser.add_argument("--out", type=Path, default=None)
     arguments = parser.parse_args()
+    if (arguments.ci_both_runners == "green") != (arguments.ci_run is not None):
+        parser.error("--ci-both-runners green and --ci-run go together")
 
     commit = arguments.commit
     if _git("rev-parse", "HEAD").strip() != commit or _git(
@@ -568,7 +607,7 @@ def main() -> int:
             "value": {"gate": nlp["gate"], "environment": nlp["fingerprint"]},
         }
     )
-    checks += release_checks(arguments.n1, arguments.ci_both_runners)
+    checks += release_checks(arguments.n1, arguments.ci_both_runners, arguments.ci_run)
     commands = [
         {
             "cmd": "PYTHONPATH=src PATH=.venv/bin:$PATH ./scripts/check.sh",
@@ -582,7 +621,9 @@ def main() -> int:
     ]
     every = all(entry["result"] == "pass" for entry in checks)
     verdict = "tested" if every and all(c["exit_code"] == 0 for c in commands) else "implemented"
-    manifest = build(commit, checks, commands, verdict)
+    manifest = build(
+        commit, checks, commands, verdict, limitations(arguments.n1, arguments.ci_both_runners)
+    )
     destination.write_text(
         json.dumps(manifest, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
     )

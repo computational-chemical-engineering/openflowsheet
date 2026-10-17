@@ -104,7 +104,11 @@ jobs:
       # M06 WO-11 (design note §8 A6, Layer C): on the x86-64 leg the browser smoke test must
       # run — Chrome is on the GitHub Ubuntu image — so a missing browser fails it rather than
       # skipping it. The aarch64 image has no browser; there it is skipped with its reason.
+      # A test whose machine precondition fails here skips with its reason (M04 E39-E41); -rs
+      # prints every reason in the log, so what the hosted runners did not check is on record.
       - name: Run checks
+        env:
+          PYTEST_ADDOPTS: -rs
         run: |
           if [ "${{ matrix.runner }}" = "ubuntu-latest" ]; then
             export OPENFLOWSHEET_REQUIRE_BROWSER=1
@@ -167,7 +171,7 @@ jobs:
           PY
 
       - name: Run the tests without the extra
-        run: python -m pytest -q
+        run: python -m pytest -q -rs
 
   identity:
     # G05: the comparison itself, which no single runner can perform. It compares every

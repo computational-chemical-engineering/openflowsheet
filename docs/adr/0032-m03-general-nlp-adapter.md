@@ -54,7 +54,7 @@ None. The extra and the schema are new.
 
 ## Acceptance evidence
 
-Specification assertions A31–A34, A41 and A47 `tested` in the default environment; A35–A40 `tested` in the audited environment (or `BLOCKED` with the audit as evidence); the design-lane review of WO-7 and WO-8; Frank's answer to N1 recorded before the extra is declared.
+Specification assertions A31–A34, A41 and A47 `tested` in the default environment; A35–A40 `tested` in the audited environment (or `BLOCKED` with the audit as evidence); the design-lane review of WO-7 and WO-8; Frank's answer to N1 recorded before the extra is declared. N1 answered 2026-10-16: Frank accepts the licences as the audit lists them (R-450).
 
 ## Amendment 1 (design lane, 2026-10-08)
 

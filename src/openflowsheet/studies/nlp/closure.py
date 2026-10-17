@@ -61,10 +61,11 @@ AUDIT_VERDICT: Final = "PASS"
 AUDITED_PYNUMERO_ASL_SHA256: Final = (
     "6646bbdd51332c3a5b306604fe0f6bd572d7cec352af994c76bfe1cdf550161c"
 )
-#: N1, Frank's answer on the licences of the `nlp` extra's stack (audit §8; ADR 0032 D5), is
-#: pending. The capability needs both this acceptance and the extra (`pyproject.toml`): declining
-#: N1 reverts the commit that sets this to True and the one that declares the extra, and re-takes
-#: the inventory (`scripts/m03_ipopt_inventory.py --env <env>`). Without the acceptance,
+#: N1, Frank's answer on the licences of the `nlp` extra's stack (audit §7; ADR 0032 D5): accepted
+#: on 2026-10-16 (R-450). The capability needs both this acceptance and the extra
+#: (`pyproject.toml`): withdrawing it reverts the commit that sets this to True and the one that
+#: declares the extra, and re-takes the inventory (`scripts/m03_ipopt_inventory.py --env <env>`).
+#: Without the acceptance,
 #: `audited_solver()` is unavailable, so `optimize()` reports `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)`
 #: and solves nothing, even in the audited environment (M03 review F4).
 NLP_LICENCES_ACCEPTED: Final = True

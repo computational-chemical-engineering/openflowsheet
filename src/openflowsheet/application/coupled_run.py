@@ -301,19 +301,44 @@ _DIGEST: Final = re.compile(r"[0-9a-f]{64}")
 
 
 def compact_differences(
-    fresh: Mapping[str, Any], recorded: Mapping[str, Any], block: Mapping[str, Any], policy_id: str
+    fresh: Mapping[str, Any],
+    recorded: Mapping[str, Any],
+    block: Mapping[str, Any],
+    policy_id: str,
+    *,
+    fresh_record_sha256: str | None,
+    recorded_record_sha256: str,
 ) -> tuple[dict[str, Any], list[str]]:
     """Build log D130 (D124): a rerun's compact copy of the record (a failure bundle's
     `observations.external_coupling`) against the archive's. Its floats sit at the record's own
     paths, so `rules.coupling` classifies them as `record_differences` does (R-317 (b)), against
     the archived record's `coupling_block`; `record_sha256` digests the record's floats and is
     compared for shape (R-318's reason): a well-formed digest on both sides is replaced by the
-    archive's, anything else is left for `replay`, so a malformed one is a difference."""
+    archive's, anything else is left for `replay`, so a malformed one is a difference.
+
+    R-341's R0 guard: each side's `record_sha256` must be `document_sha256` of its own record
+    (`fresh_record_sha256`, the rerun's `external-coupling.json`, `None` when the rerun wrote
+    none; `recorded_record_sha256`, the archive's). A copy that does not digest its record is a
+    difference, and its digest is not replaced."""
     found: list[str] = []
     shaped = _classified(fresh, recorded, "", _RULES["coupling"], block, policy_id, found)
     mine, theirs = shaped.get("record_sha256"), recorded.get("record_sha256")
+    guarded = True
+    if theirs != recorded_record_sha256:
+        guarded = False
+        found.append(
+            f"<root>.record_sha256: the archived copy's {theirs!r} is not the archived "
+            f"{COUPLING_NAME}'s digest {recorded_record_sha256}"
+        )
+    if mine != fresh_record_sha256:
+        guarded = False
+        found.append(
+            f"<root>.record_sha256: the rerun copy's {mine!r} is not the rerun "
+            f"{COUPLING_NAME}'s digest {fresh_record_sha256}"
+        )
     if (
-        isinstance(mine, str)
+        guarded
+        and isinstance(mine, str)
         and isinstance(theirs, str)
         and _DIGEST.fullmatch(mine)
         and _DIGEST.fullmatch(theirs)

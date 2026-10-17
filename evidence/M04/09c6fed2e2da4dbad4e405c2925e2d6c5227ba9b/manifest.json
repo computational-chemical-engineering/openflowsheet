@@ -1,0 +1,122 @@
+{
+  "work_package": "M04",
+  "commit": "09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "M04 CI follow-up (wp/M04-ci): the hosted runners' machine preconditions, E39-E42",
+    "case_hash": "8025ba5b53c6e1af4fd6d31826904fcec627cccc82376efcb2d9abe0eadc4962",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=$PWD/src PATH=.venv/bin:$PATH ./scripts/gate.sh",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "421339d211fb8e99826c700d9aed6300781de8dce5783061bedb1492b19abdaf"
+    },
+    {
+      "cmd": "gh run watch 38998365118 --exit-status",
+      "cwd": ".",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run watch 38992908629 --exit-status",
+      "cwd": ".",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "M04-ci.E39",
+      "description": "A40's script path skips, with its reason, below four physical cores (R-250 caps max_workers; A40 names 4); the two refusal tests run at min(4, physical cores). A40's A19-bitwise half (four spawned processes) runs everywhere.",
+      "result": "pass",
+      "value": {
+        "commit": "2a07b66",
+        "tests": [
+          "tests/test_m04_prewarm.py::test_a40_the_prewarm_script_under_the_process_executor_changes_no_bit",
+          "tests/test_m04_prewarm.py::test_a40_the_prewarm_refuses_a_budget_below_the_misses_before_submitting",
+          "tests/test_m04_prewarm.py::test_a40_the_prewarm_refuses_what_the_study_would"
+        ],
+        "local": "4 passed (48 threads)",
+        "ci": "run 38998365118: skipped on check (ubuntu-latest) and default-install (2 physical cores), passed on check (ubuntu-24.04-arm)"
+      }
+    },
+    {
+      "id": "M04-ci.E40",
+      "description": "A49 asserts pinned_1 == pinned_8 and pinned_8 == unpinned_1 everywhere, then skips with its reason where the negative control (unpinned 1 vs 8 threads) cannot split.",
+      "result": "pass",
+      "value": {
+        "commit": "df818a1",
+        "tests": [
+          "tests/test_m04_quadratic.py::test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threads"
+        ],
+        "local": "passed, control split",
+        "ci": "run 38998365118: passed on check (ubuntu-latest, x86_64/Haswell); pinned claims held and control vacuous (skipped) on default-install (x86_64/SkylakeX) and check (ubuntu-24.04-arm)"
+      }
+    },
+    {
+      "id": "M04-ci.E41",
+      "description": "A35's 10-digit float comparison runs on the recorded machine class x86_64/Haswell; on another class the non-float members (R0, spec §18 A1.3) are compared exactly and the floats skip with the reason. The committed fixture is unchanged.",
+      "result": "pass",
+      "value": {
+        "commit": "422c53a",
+        "tests": [
+          "tests/test_m04_schemas.py::test_a35_the_fixtures_are_what_the_code_emits_today"
+        ],
+        "local": "passed on x86_64/Haswell; under OPENBLAS_CORETYPE=Sandybridge the R0 members agree and the floats skip (evaluation.scores[7] differs by 1.9e-14 at the 10th digit)",
+        "ci": "run 38998365118: floats compared and passed on check (ubuntu-latest, x86_64/Haswell); R0 members agreed and floats skipped on default-install (x86_64/SkylakeX) and check (ubuntu-24.04-arm, aarch64/neoversen2)"
+      }
+    },
+    {
+      "id": "M04-ci.E42",
+      "description": "CI's pytest steps print skip reasons (PYTEST_ADDOPTS=-rs on check, -rs on default-install).",
+      "result": "pass",
+      "value": {
+        "commit": "09c6fed",
+        "ci": "run 38998365118: SKIPPED lines with E39-E41 reasons in the logs of all three test jobs"
+      }
+    },
+    {
+      "id": "M04-ci.CI",
+      "description": "ci is green on both runners at this commit.",
+      "result": "pass",
+      "value": {
+        "run": 38998365118,
+        "head_sha": "09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b",
+        "jobs": {
+          "check (ubuntu-latest)": "success, 8613 passed, 99 skipped",
+          "check (ubuntu-24.04-arm)": "success, 8584 passed, 98 skipped",
+          "default-install": "success, 8356 passed, 326 skipped",
+          "identity": "success"
+        },
+        "earlier": "run 38992908629 at 422c53a (E39-E41) also green on every job; main's run 38975380701 had failed (5, 2 and 3 tests)"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/design/M04-build-decisions.md",
+      "sha256": "44563a26edf5939581dc8c78618b241ad1b65e838aa53bbc64c64ddf986fa707",
+      "description": "The build log (E39-E42 and the follow-up's evidence)."
+    },
+    {
+      "path": "docs/derivations/M04-spec.md",
+      "sha256": "8c177cace8cae83790a132c7ef59c4cc9ba3697d75c1563928f3c6ecdd6ee278",
+      "description": "The specification (A35, A40, A49; §18 A1.3's classes), unchanged."
+    }
+  ],
+  "limitations": [
+    "This follow-up changes tests and CI only and maps to no D/A requirement of its own; it extends M04, whose manifest (8df0ea7c) carries A07 and D12, so requirements is empty.",
+    "Case hash and environment lock hash are those of the M04 manifest (8df0ea7c): this follow-up adds no case and no environment.",
+    "The gate command's stdout_sha256 is the SHA-256 of its one summary line as printed, newline included ('GATE PASS 422c53a: 8681 passed, 31 skipped, 2 deselected, 1 warning in 1524.90s (0:25:24) (log ...)'); gate.sh names HEAD (422c53a) while the tree held 09c6fed's content (E42 uncommitted). The gate before this manifest's commit ran on the tree with the manifest and the harvest.",
+    "A40's script path (prewarm under the process executor at max_workers = 4) is not exercised on the hosted x86 runners (2 physical cores); it is checked locally and on ubuntu-24.04-arm (E39).",
+    "A49's negative control is vacuous on ubuntu-24.04-arm (aarch64/neoversen2) and on x86_64/SkylakeX hosts: there the pin's claims hold but are not shown to differ from no pin; the split is shown locally and on x86_64/Haswell hosts (E40).",
+    "A35's 10-significant-digit float comparison runs on x86_64/Haswell only; elsewhere only the R0 members are compared (spec §18 A1.3 promises R1/R2 for these floats across platforms; no off-class R1/R2 comparator exists, R-253) (E41).",
+    "Tested, not reviewed: no design-lane review of E39-E42 yet; not a numerical or process-model sign-off."
+  ],
+  "review": {
+    "numerical": "pending (design lane: E39-E42 in docs/design/M04-build-decisions.md)",
+    "process_model": "pending"
+  }
+}

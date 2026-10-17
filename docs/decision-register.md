@@ -7670,6 +7670,39 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 
 ---
 
+## R-381 — ADRs 0033, 0034 (with Amendment 1) and 0035 are Accepted; their conditions are met by M02's `tested` manifest and the design lane's recorded reviews
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), V02 alpha verdicts finding B6 |
+| Normative text | each ADR's Status line |
+| Evidence | `evidence/M02/ba90619c…/manifest.json`: `tested`, M02.G1–G12 `pass`. Reviews: 0033 WO-3/WO-4, note §14 (as built, `02403d1`); 0034 WO-7 §14.2 B18, WO-8 §14.3, WO-9 §14.4, WO-10 §14.5 and `docs/reviews/M02-review.md`, with F1–F3 closed by `080d197`, `88b3ab4` and `908d9a3`; 0035 WO-11 §14.5 D6, §14.6 (WO-11a) and the review. Every cited commit is an ancestor of `C_α²` = `cc73219` (checked with `git merge-base --is-ancestor`) |
+| Affected packages | M02 (closed); M07a (§7.3 item 12) |
+
+**Decision.** Each ADR moves from Proposed to Accepted. Its own condition, in its Status line, is met:
+
+| ADR | Gates in its condition | Review in its condition |
+| --- | --- | --- |
+| 0033 | G1–G6, G10, G11 `pass` | WO-3/WO-4 |
+| 0034 | G2, G6–G9, G12 `pass` | WO-7–WO-10 |
+| 0035 | G6, G9 `pass` | WO-11 |
+
+Flipping the lines after the cut is legitimate. `scripts/v0_2_gate.py` reads the ADRs at the candidate, not at `C`
+(§7.2 item 7; `files_at`). `docs/adr/` is not a D2.4 path, and R-151's tree record covers only those paths. §8.1
+item 2 held in substance at `C_α²`: every piece of acceptance evidence is an ancestor of it. Only the record lagged.
+
+**What it does not establish.** WO-7's record is B18, which confirms D27 (G6 (a)). D28 and D29 were not ruled one by
+one. The real-reactor evidence is `judged: false`, R3, from one machine. The manifest's `review.numerical` and
+`review.process_model` are `pending`. Human sign-off is separate.
+
+**Rejected alternatives, and why.** Leaving the three Proposed until a fresh review: none of the three conditions asks
+for one.
+
+**Watch for.** `main` still reads Proposed for the three ADRs until this branch merges.
+
+---
+
 ## R-383 — `coupling_record_sha256` is `exact_sha256` in ADR 0025 D2.3's partition; no third class (S40)
 
 | | |
@@ -7796,6 +7829,37 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 
 ---
 
+## R-390 — v3's inert floor is decided with a relative slack of 4·2⁻⁵² (confirms build log D134; M02 close-out C1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M02 follow-up (`docs/reviews/M02-followup-review.md`) |
+| Normative text | Build log D134; `models/c1/boundary.py` `INERT_FLOOR_SLACK_REL`, `hard_domain_violations`; design note §14.6 E3; ADR 0027 Amendments 3/4 (the floor's value is unchanged) |
+| Evidence | D134's measurements. Exact comparison: 46.2 % of 2×10⁵ design-composition scalings refused; largest shortfall 1.59·2⁻⁵². The review's adversarial check: 10⁵ minimal admissible states over four floors, 0 refused with `float` or `np.float64` sums. |
+| Affected packages | M02; every variant that declares `inert_min > 0` (only v3 today); M04 box v2 (0.036) is unaffected |
+
+**Decision.** Confirmed. The floor refuses iff `n_Ar + n_CH4 < inert_min · n_tot · (1 − 4·2⁻⁵²)`, the floor only.
+
+What the comparison guarantees in binary64, for positive normal inputs, with naive or compensated summation:
+- an exact ratio ≥ inert_min is accepted;
+- an exact ratio < inert_min·(1 − 8·2⁻⁵²) is refused;
+- in between, rounding decides.
+
+The worst-case budget is 8 roundings, against an 8 u slack; it holds because inert_min's representation error is < u.
+A decimal composition built as `y·n_tot` is accepted at every scaling tested, which is a measurement, not a proof.
+
+**Rejected alternatives, and why.**
+- An exact comparison with a sentence in v3's document saying rounding decides the face. That would refuse ADR 0027's own
+  design composition at about half of all flow scalings.
+- 8·2⁻⁵². That would also cover the construction rounding of decimal compositions, which the domain should not absorb.
+  The observed margin at 4·2⁻⁵² is 2.2×.
+
+**Watch for.**
+- A second face check without the slack: `benchmarks/m02/g11_coverage_v3.py` `below_floor` is one, and it is stricter,
+  which is harmless as long as it is not used as an oracle.
+- A change of evaluation order or of the summation, which moves the budget. `StreamState.total_flow` is compensated for
+  `float` elements and naive for `np.float64`.
 ## R-400 — `M05-basis-v2`: the no-surrogate link basis carries the truth's curvature along the decision path
 
 | | |
@@ -8003,6 +8067,65 @@ it is strictly worse than the exact quadratic that is already available.
 
 ---
 
+## R-410 — ADR 0036 (with Amendments 1 and 2) is Accepted; its condition is met by M04's `tested` manifest and the design-lane review whose must-fix items are closed
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), ADR acceptance round (`wp/adr-acceptance`) |
+| Normative text | ADR 0036's Status line |
+| Evidence | `evidence/M04/8df0ea7c…/manifest.json`: `tested`, 60/61, M04.A01–A24 and A34 `pass` (A33 `not_applicable`, outside the condition). Review: `docs/reviews/M04-review.md`, one pass over `37ae0adc..3f99eee` (WO-1–WO-20, so WO-2, WO-3 and WO-5); must-fix MF1 closed by `6363c24` (R-360, A48), MF2 by `8ad0ec7` (R-361, A24's three added mutations). Both are ancestors of `8df0ea7`, which `main` carries as `78685cc` (checked with `git merge-base --is-ancestor`) |
+| Affected packages | M04 (closed); M05, M07 (inherit the claim and its qualifications) |
+
+**Decision.** ADR 0036 moves from Proposed to Accepted. Its own condition, in its Status line, is met: the gates
+A01–A24 and A34 pass in a `tested` manifest, and the design-lane review's two must-fix items are fixed by the
+corrections Amendment 3 (§A3.1, §A3.2) prescribed, each with an assertion in that manifest. The acceptance-evidence
+section's further items also hold: the generator's `--check` is A34, and A31–A32 are recorded for the real variant.
+
+**The real verdict.** No part of the condition needs a promotable real surrogate. A01–A24 rest on closed forms and the
+synthetic parents; A31–A32 record the real iteration whatever its verdict. The real verdict is NOT_PROMOTABLE
+(`band_not_finite`, R-364), and N6 counts M04 as `tested` regardless.
+
+**What it does not establish.** That split-conformal coverage holds for the real reactor: its band is not finite, so the
+real surrogate claims nothing beyond its verdict. Coverage is marginal over each study's own P_ref and nothing else (D1′).
+The manifest's `review.numerical` and `review.process_model` are `pending`. Human sign-off is separate.
+
+**Rejected alternatives, and why.** Waiting for a PROMOTABLE real iteration: the condition does not ask for one, and the
+ADR fixes semantics that the synthetic closed forms verify. A second reviewer pass over the fixes: the condition asks
+that the must-fix items be closed, and each closure is an assertion in a `tested` manifest.
+
+**Watch for.** —
+
+## R-411 — ADR 0037 (with Amendment 1) is Accepted; its condition is met by M04's `tested` manifest, the recorded review of WO-7 and WO-8, and ADR 0035's acceptance
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), ADR acceptance round (`wp/adr-acceptance`) |
+| Normative text | ADR 0037's Status line |
+| Evidence | `evidence/M04/8df0ea7c…/manifest.json`: `tested`, M04.A12–A15, A25–A30 and A35 `pass`. Review: `docs/reviews/M04-review.md` over `37ae0adc..3f99eee`, which includes WO-7 and WO-8; MF1 (the promotion bypass in `replacement.py`) closed by `6363c24` (R-360, A48). ADR 0035 Accepted by R-381 |
+| Affected packages | M04 (closed); M02 (its replacement check and schema gained members); M05, M07 (consume the unit) |
+
+**Decision.** ADR 0037 moves from Proposed to Accepted. Its three conditions are met: the gates pass in a `tested`
+manifest, the review of WO-7 and WO-8 is recorded, and ADR 0035, which it amends, is Accepted.
+
+**The real verdict.** No part of the condition needs a promotable real surrogate. A25–A30 commit, reject and roll back
+surrogates of the synthetic parent (A17, A18, A19, and the stand-in for A28). A33, the real surrogate in
+`C1-LOOP-M02-v1`, is conditional on a PROMOTABLE real verdict. It is `not_applicable` because the verdict is
+NOT_PROMOTABLE (R-364), and neither the Status line nor the acceptance-evidence section requires it.
+
+**What it does not establish.** Promotion, rollback and a surrogate-backed solve are shown on the synthetic parent
+only, never with `c1.reactor`. Q-A2.1 stays open (R-366). ADR 0037 says "pointer paragraphs are added at merge", but
+ADRs 0019 and 0035 carry no pointer to 0037 on `main`. That migration step is not part of the condition and is still
+outstanding. ADR 0035 is left untouched here so that it stays byte-identical to the alpha branch.
+
+**Rejected alternatives, and why.** Leaving 0037 Proposed until A33 runs: A33 is conditional, and the condition does not
+name it.
+
+**Watch for.** The pointer paragraphs in ADRs 0019 and 0035, which should be added after the alpha merge.
+
+---
+
 ## R-430 — §7.4's at-bound distance stays 1e-6 as a classification; G8 and G9 stop gating Ipopt's offset
 
 | | |
@@ -8129,3 +8252,30 @@ fingerprint mismatch fails and names the mismatch. REAL's replay stays a script.
 **Rejected alternatives, and why.** The script alone: a later commit could move numerics with every gate green.
 
 **Watch for.** —
+
+---
+
+## R-450 — M03 N1: Frank accepts the licences of the optional, non-default `nlp` extra as the [A10] audit lists them
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | Frank Peters, 2026-10-16, verbatim: "I accept the licenses." Recorded by the build lane |
+| Normative text | M03 specification §14 N1 (`docs/derivations/M03-studies-spec.md`); ADR 0032 D5 and its acceptance evidence; this entry |
+| Evidence | `docs/m03-ipopt-audit.md` (G-A10 `PASS`), §7 the licence list, §5 the loaded objects; `benchmarks/m03/ipopt-inventory-x86_64.json` |
+| Affected packages | M03 (A35–A40 rest on it); T08-style release gates (the extra's notices) |
+
+**Decision.** N1 is answered with its default: the licences of the `nlp` extra's stack, as the audit's §7 lists them
+(EPL-2.0, CeCILL-C, public domain, Apache-2.0, Apache-2.0 WITH LLVM-exception, BSD-3-Clause, the AMPL Solver Library's
+BSD-3-Clause and f2c notice, MIT, LGPL-2.1-only for `libiconv`, the GCC Runtime Library Exception 3.1 for conda-forge's
+GCC runtime, PSF-2.0 and CPython's standard-library closure), are accepted for an **optional, non-default extra** that
+ships their notices. The provisional state the M03 build carried since the review (`NLP_LICENCES_ACCEPTED = True`,
+`2b6e350`; the extra declared in `91537b0`) becomes final: neither commit is reverted.
+
+**What it does not cover.** The acceptance is of the audited list. A change to the audited environment that adds a
+package or a licence outside it needs a re-audit and a new answer; the extra never enters the default install (R-190).
+
+**Rejected alternatives, and why.** Declining (not shipping the extra; A35–A40 recorded unsupported): Frank chose to
+accept.
+
+**Watch for.** An `nlp` lock change that is not re-audited; the extra's notices missing from a release that ships it.
