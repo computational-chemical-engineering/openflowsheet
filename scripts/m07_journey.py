@@ -625,12 +625,16 @@ def unsupported_rung(rung: str, reason: str) -> dict[str, Any]:
 
 
 def reactor_available(env_base: Path | None) -> bool:
-    """The parent's reactor environment verifies against its pins (M02's `env.verify`)."""
+    """The parent's reactor environment verifies against its pins (M02's `env.verify`). The
+    manifest's `variant_id` is provenance, not a verification key (R-259: one environment serves
+    every variant with its `env_id`); `env.verify` still lists it, so that line is not a
+    difference here (build log J25)."""
     from openflowsheet.adapters import variants
     from openflowsheet.adapters.pymrm import env
 
     variant = variants.registered_variant(JOURNEY["variants"]["real"]["variant_id"])
-    return env.verify(variant, base=env_base) == []
+    found = env.verify(variant, base=env_base)
+    return [line for line in found if not line.startswith("variant_id:")] == []
 
 
 # == R2: M04's verdict (spec §4.2, A15) ===========================================================
