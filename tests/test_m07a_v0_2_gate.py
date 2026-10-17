@@ -650,16 +650,13 @@ def test_a05_an_answer_on_a_non_calendar_date_is_refused(item: str) -> None:
     ]
 
 
-def test_a05_the_real_adr_0028_is_pending_on_all_three() -> None:
+def test_a05_the_real_adr_0028_accepts_all_three() -> None:
+    """Frank accepted the defaults on 2026-10-17 (after the verdict's Judged date 2026-10-16): the
+    real ADR's three answers raise no refusal of their own. Before that they were `pending`."""
     real = (REPO_ROOT / ADR_0028).read_text(encoding="utf-8")
     result = report(files(adr_0028=real))
     frank = [reason for reason in result["reasons"] if reason.startswith("Frank's answer to")]
-    assert frank == [
-        f"Frank's answer to {item} is not an acceptance of the default; "
-        "amend the alpha specification for it"
-        for item in ("N3", "V17 carry", "M02 N1")
-    ]
-    assert not result["tag_may_be_proposed"]
+    assert frank == []
 
 
 # -- M07a.A14: the re-judgement (§19.2, R-371; Tables T7 and T8) -------------------------------
