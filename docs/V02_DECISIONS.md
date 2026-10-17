@@ -1044,3 +1044,15 @@ Grep, don't read whole. Newest at the bottom.
     DECISION: store-index pairing in the leaf walk → by relabelled key, not position (the index is sorted by key, so
     positional pairing fails (b)/(c) on S77's pair: 17 and 14 digests). Alternative: positional (AM-20 cannot pass).
     Reversible by: reverting the E5 commit. M05 build log S78.
+  - E6 STOPPED (not applied; for the design lane). The re-take at `2345b54` (clean tree, `.venv-nlp`, OMP 1) is
+    not digest-only: `--digest-only` FAILs every case with other = one leaf per coupling record,
+    `frozen.reactor.fingerprint.openflowsheet_version` `'0.1.1'` → `'0.2.0a2.dev0'` (4/7/4/3/4 leaves; the committed
+    records were taken at 0.1.1). Everything else is digest-only: changed digests 41/79/70/91/37, timing 20/35/20/26/20,
+    environment files equal, map a function and injective. The coupling record carries the fingerprint in clear, so a
+    version change always moves one non-digest leaf; S77's boundary change moved a digest leaf there instead (hence
+    its +1 counts). Passing would need E5 to admit that leaf (e.g. a `version` class: committed side = `--old-version`,
+    re-take side = the running `__version__`, only at `*.fingerprint.openflowsheet_version`) — a change to rule (a),
+    not made here. Committed records untouched; G10 stays red until a ruling.
+  - Q1 settled at `2345b54` (0.2.0a2.dev0): `m05_wo9_real.py --replay` REPLAY PASS REAL, 0 differences (REAL's
+    fingerprint carries no version, F4). nlp tier: 181 passed, 1 skipped, 5 failed (G10 ×5 only; 107/185/107/147/…
+    differences); `m03_nlp_check.sh` fails on that pytest step only (inventory checks exit 0).
