@@ -348,12 +348,24 @@ requirements:
     #
     # Status `implemented`, not `tested`: M03 owns the optimization closure, which is a
     # different requirement from simulation closure (D16 says so).
+    #
+    # M03's half (spec §8.7; ADR 0032 D6): `optimization_readiness` returns
+    # READY_FOR_OPTIMIZATION or `unsupported` with every failing reason, one test per reason, and
+    # `optimize()` returns a typed UNSUPPORTED report instead of raising (A33, A34). The closure is
+    # study-level: `Application.validate(..., task="optimization")` stays R-129's typed
+    # `unsupported`, because a ProcessRevision has no place to declare decisions. The M03
+    # manifest is `implemented` until N1 and both CI runners are settled; it is not `tested` yet.
     tests:
       - "tests/test_k06_application.py::test_d16_an_incomplete_draft_is_committable"
       - "tests/test_k06_application.py::test_a_status_is_computed_and_there_is_no_way_to_set_one"
       - "tests/test_k06_application.py::test_validation_computes_the_structural_counts"
+      - "tests/test_m03_nlp_formulation.py::test_a33_nlp_1_is_ready_only_when_the_audited_extra_is_present"
+      - "tests/test_m03_nlp_formulation.py::test_a33_simulation_not_ready"
+      - "tests/test_m03_nlp_formulation.py::test_a33_validate_for_optimization_is_still_r129s_unsupported"
+      - "tests/test_m03_nlp_formulation.py::test_a34_optimize_without_the_extra_is_a_typed_unsupported_report"
     evidence:
       - evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+      - evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
     status: implemented
 
   - id: D17
@@ -504,9 +516,20 @@ requirements:
     blueprint_ref: "§10 [A06]"
     packages: [M03, M05]
     minimum_evidence: "Gray-box NLP and trust-region compositions tested separately"
-    tests: []
-    evidence: []
-    status: planned
+    # M03's half is the gray-box NLP composition: the full-space formulation over the parametric
+    # twin (A31), solved by the audited cyipopt and verified on the re-solved simulation (A35-A37),
+    # with the status function in default-gate code (A47). M05 supplies the trust-region half, so
+    # the requirement is `implemented`, not `tested`. The M03 manifest is itself `implemented`
+    # until Frank's N1 licence answer and both CI runners are recorded.
+    tests:
+      - "tests/test_m03_nlp_formulation.py::test_a31_the_equality_rows_and_their_jacobian_are_the_twins_bitwise"
+      - "tests/test_m03_nlp_greybox.py::test_a35_every_start_reaches_the_reference_optimum_verified"
+      - "tests/test_m03_nlp_greybox.py::test_a36_the_candidate_is_verified_on_the_resolved_simulation"
+      - "tests/test_m03_nlp_greybox.py::test_a37_an_infeasible_problem_is_never_a_verified_point"
+      - "tests/test_m03_nlp_status.py::test_a47_each_start_is_classified_and_the_status_is_the_highest"
+    evidence:
+      - evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+    status: implemented
 
   - id: A07
     title: Default uncertainty reporting (split-conformal)
@@ -739,8 +762,12 @@ gates:
   - id: W24
     required_evidence: "Fixed-topology optimization, eligible trust-region example and parent-model checks"
     owner_packages: [M03, M05]
+    # M03's part: fixed-topology optimization (NLP-1 verified, NLP-INF never verified) and the
+    # parent-model checks V1-V6 on the re-solved simulation. M05 supplies the trust-region example.
+    # The verdict is the verdict lane's.
     verdict: null
-    evidence: []
+    evidence:
+      - evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
 
   - id: W25
     required_evidence: "End-to-end real reactor refinement with honest evidence limits"

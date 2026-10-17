@@ -1,0 +1,1151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/optimization-report.schema.json",
+  "title": "OptimizationReport",
+  "description": "M03 spec §8.6, ADR 0032 D3-D6 (Amendment 1): the result of `optimize()` — the formulation, the model and solver, the Hessian policy, every start with its classification, the verified candidate, the status and its reasons, the claims and the limits. The status is the highest start classification under `KKT_POINT_VERIFIED` > `NOT_VERIFIED` > `INFEASIBLE_REPORTED` > `SOLVER_FAILED`, or `UNSUPPORTED` when refused before any solve. Local stationarity is not global optimality. The rule a JSON Schema cannot express — `KKT_POINT_VERIFIED` requires V1-V5 recorded as passed, and every start's classification follows from its record — is checked by `tests/test_m03_schemas.py`. Round-trip fixtures are emitted by real runs (`scripts/m03_schema_fixtures.py`).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "formulation",
+    "model",
+    "solver",
+    "hessian_policy",
+    "starts",
+    "candidate",
+    "distinct_local_solutions",
+    "status",
+    "reasons",
+    "claims",
+    "limits"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "optimization-report-v1"
+    },
+    "formulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "problem_id",
+        "kind",
+        "decisions",
+        "objective",
+        "constraints",
+        "starts",
+        "hessian",
+        "declared_regimes"
+      ],
+      "properties": {
+        "problem_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "const": "full_space"
+        },
+        "decisions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "lower",
+              "upper",
+              "scale"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lower": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "upper": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "scale": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        },
+        "objective": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sense",
+            "text",
+            "constant",
+            "linear",
+            "quadratic"
+          ],
+          "properties": {
+            "sense": {
+              "const": "minimize"
+            },
+            "text": {
+              "type": "string"
+            },
+            "constant": {
+              "type": "number"
+            },
+            "linear": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "quadratic": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "variables",
+                  "coefficient"
+                ],
+                "properties": {
+                  "variables": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "coefficient": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "expression",
+              "lower",
+              "upper"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expression": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "text",
+                  "constant",
+                  "linear",
+                  "quadratic"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "constant": {
+                    "type": "number"
+                  },
+                  "linear": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "number"
+                    }
+                  },
+                  "quadratic": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "variables",
+                        "coefficient"
+                      ],
+                      "properties": {
+                        "variables": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        "coefficient": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "lower": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "upper": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "starts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "hessian": {
+          "type": "string",
+          "minLength": 1
+        },
+        "declared_regimes": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "enum": [
+              "LIQUID",
+              "VAPOR",
+              "TWO_PHASE",
+              "ZERO_FLOW"
+            ]
+          }
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The base problem's identity; null where the flowsheet does not compile.",
+      "required": [
+        "model_version",
+        "constants_sha256"
+      ],
+      "properties": {
+        "model_version": {
+          "oneOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/properties/model_version"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "constants_sha256": {
+          "oneOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "solver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ipopt",
+        "cyipopt",
+        "pyomo",
+        "linear_solver",
+        "options",
+        "audit",
+        "available",
+        "detail",
+        "environment"
+      ],
+      "properties": {
+        "ipopt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cyipopt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pyomo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "linear_solver": {
+          "const": "mumps"
+        },
+        "options": {
+          "type": "object",
+          "description": "Spec §8.4's pinned Ipopt options, verbatim."
+        },
+        "audit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "document",
+            "gate",
+            "verdict"
+          ],
+          "properties": {
+            "document": {
+              "type": "string",
+              "minLength": 1
+            },
+            "gate": {
+              "type": "string",
+              "minLength": 1
+            },
+            "verdict": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "environment": {
+          "description": "M03 review F2 (ADR 0007 D6): what the solves ran under; null when no solve ran. Recorded, not enforced.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "thread_variables",
+                "openmp",
+                "pynumero_asl"
+              ],
+              "properties": {
+                "thread_variables": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "OMP_NUM_THREADS",
+                    "OPENBLAS_NUM_THREADS",
+                    "MKL_NUM_THREADS"
+                  ],
+                  "properties": {
+                    "OMP_NUM_THREADS": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "OPENBLAS_NUM_THREADS": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "MKL_NUM_THREADS": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "openmp": {
+                  "type": "array",
+                  "description": "Each mapped OpenMP runtime and its effective omp_get_max_threads().",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "library",
+                      "max_threads"
+                    ],
+                    "properties": {
+                      "library": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "max_threads": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 1
+                      }
+                    }
+                  }
+                },
+                "pynumero_asl": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "sha256": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "hessian_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §8.3: the exact Hessian is absent; Ipopt's limited-memory approximation.",
+      "required": [
+        "capability",
+        "approximation",
+        "history"
+      ],
+      "properties": {
+        "capability": {
+          "const": "absent"
+        },
+        "approximation": {
+          "const": "ipopt-limited-memory"
+        },
+        "history": {
+          "const": 6
+        }
+      }
+    },
+    "starts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/start"
+      }
+    },
+    "candidate": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/candidate"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "distinct_local_solutions": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "enum": [
+        "KKT_POINT_VERIFIED",
+        "NOT_VERIFIED",
+        "INFEASIBLE_REPORTED",
+        "SOLVER_FAILED",
+        "UNSUPPORTED"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reason"
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "global_optimality",
+        "local_stationarity",
+        "second_order"
+      ],
+      "properties": {
+        "global_optimality": {
+          "const": false
+        },
+        "local_stationarity": {
+          "type": "boolean"
+        },
+        "second_order": {
+          "enum": [
+            "not_assessed",
+            "vacuous_at_vertex"
+          ]
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_iter",
+        "max_wall_time",
+        "regime_restriction",
+        "hessian"
+      ],
+      "properties": {
+        "max_iter": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_wall_time": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "regime_restriction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hessian": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "KKT_POINT_VERIFIED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "candidate": {
+            "type": "object"
+          },
+          "claims": {
+            "properties": {
+              "local_stationarity": {
+                "const": true
+              }
+            }
+          },
+          "starts": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "candidate": {
+            "type": "null"
+          },
+          "claims": {
+            "properties": {
+              "local_stationarity": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "UNSUPPORTED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "starts": {
+            "maxItems": 0
+          },
+          "distinct_local_solutions": {
+            "const": 0
+          },
+          "reasons": {
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "code": {
+                  "enum": [
+                    "UNKNOWN_DECISION",
+                    "BOUNDS_UNDECLARED",
+                    "START_OUTSIDE_BOUNDS",
+                    "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
+                    "UNKNOWN_VARIABLE",
+                    "HESSIAN_UNAVAILABLE",
+                    "SIMULATION_NOT_READY",
+                    "NLP_SOLVER_UNAVAILABLE"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "starts": {
+            "minItems": 1
+          },
+          "reasons": {
+            "items": {
+              "properties": {
+                "code": {
+                  "enum": [
+                    "KKT_POINT_VERIFIED",
+                    "NOT_VERIFIED",
+                    "INFEASIBLE_REPORTED",
+                    "SOLVER_FAILED"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A readiness reason (§8.7) when the status is `UNSUPPORTED`; otherwise one start not classified `KKT_POINT_VERIFIED` (§8.5), its classification the code, `start <i>` the subject.",
+      "required": [
+        "code",
+        "detail",
+        "subject"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "UNKNOWN_DECISION",
+            "BOUNDS_UNDECLARED",
+            "START_OUTSIDE_BOUNDS",
+            "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
+            "UNKNOWN_VARIABLE",
+            "HESSIAN_UNAVAILABLE",
+            "SIMULATION_NOT_READY",
+            "NLP_SOLVER_UNAVAILABLE",
+            "KKT_POINT_VERIFIED",
+            "NOT_VERIFIED",
+            "INFEASIBLE_REPORTED",
+            "SOLVER_FAILED"
+          ]
+        },
+        "detail": {
+          "type": "string"
+        },
+        "subject": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "description": "One of spec §8.5's checks on the re-solved simulation; members beyond `check` and `outcome` are what it measured.",
+      "required": [
+        "check",
+        "outcome"
+      ],
+      "properties": {
+        "check": {
+          "enum": [
+            "V1",
+            "V2",
+            "V3",
+            "V4",
+            "V5",
+            "V6"
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "pass",
+            "fail",
+            "not_evaluated"
+          ]
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §8.5-§8.6, ADR 0032 D3: a decision vector verified on the flowsheet re-solved at it (V1-V6), with its constraint values and slacks, active set, multipliers, stationarity, LICQ and second-order claim.",
+      "required": [
+        "decisions",
+        "checks",
+        "objective",
+        "constraint_values",
+        "slacks",
+        "active_set",
+        "kkt",
+        "certificate_id",
+        "state_sha256"
+      ],
+      "properties": {
+        "decisions": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "checks": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/check",
+              "properties": {
+                "check": {
+                  "const": "V1"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/check",
+              "properties": {
+                "check": {
+                  "const": "V2"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/check",
+              "properties": {
+                "check": {
+                  "const": "V3"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/check",
+              "properties": {
+                "check": {
+                  "const": "V4"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/check",
+              "properties": {
+                "check": {
+                  "const": "V5"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/check",
+              "properties": {
+                "check": {
+                  "const": "V6"
+                }
+              }
+            }
+          ],
+          "minItems": 6,
+          "items": false
+        },
+        "objective": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "constraint_values": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "slacks": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "lower": {
+                "type": "number"
+              },
+              "upper": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "active_set": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "kind",
+              "target",
+              "side",
+              "slack"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "constraint",
+                  "bound"
+                ]
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1
+              },
+              "side": {
+                "enum": [
+                  "lower",
+                  "upper"
+                ]
+              },
+              "slack": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "kkt": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "V5's reduced KKT evidence from M03's adjoint sensitivities, independent of the optimizer.",
+              "required": [
+                "objective_gradient_scaled",
+                "constraint_gradients_scaled",
+                "multipliers",
+                "stationarity_residual_inf",
+                "tau_kkt",
+                "multipliers_nonnegative",
+                "licq",
+                "licq_singular_values",
+                "second_order"
+              ],
+              "properties": {
+                "objective_gradient_scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "constraint_gradients_scaled": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "multipliers": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                },
+                "stationarity_residual_inf": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "tau_kkt": {
+                  "const": 1e-06
+                },
+                "multipliers_nonnegative": {
+                  "type": "boolean"
+                },
+                "licq": {
+                  "type": "boolean"
+                },
+                "licq_singular_values": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "second_order": {
+                  "enum": [
+                    "not_assessed",
+                    "vacuous_at_vertex"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "certificate_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state_sha256": {
+          "oneOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "start": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §8.6: one start of the multistart, as the gray-box adapter (WO-8) records it, with its classification by spec §8.5's rule (Amendment 1).",
+      "required": [
+        "start",
+        "ipopt_status",
+        "ipopt_message",
+        "iterations",
+        "evaluations",
+        "wall_time_s",
+        "final_decisions",
+        "ipopt_final",
+        "checks",
+        "classification"
+      ],
+      "properties": {
+        "start": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "ipopt_status": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Ipopt's `ApplicationReturnStatus` as cyipopt reports it; null when the run ended without one."
+        },
+        "ipopt_message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "iterations": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "evaluations": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Spec §8.6's counters since the start's twin was built: full-space residuals and Jacobians, property-block callbacks (value and Jacobian), and (WO-8) the twin evaluations that failed and were reported to Ipopt as evaluation errors (spec §8.2, §14 Q-F4), so that a start whose trial points were rejected is told apart from one that never met a domain error.",
+          "required": [
+            "residual_calls",
+            "jacobian_calls",
+            "property_calls",
+            "evaluation_errors"
+          ],
+          "properties": {
+            "residual_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jacobian_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "property_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "evaluation_errors": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "wall_time_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "final_decisions": {
+          "oneOf": [
+            {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ipopt_final": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "primal_infeasibility",
+                "dual_infeasibility",
+                "complementarity"
+              ],
+              "properties": {
+                "primal_infeasibility": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "dual_infeasibility": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "complementarity": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "checks": {
+          "description": "V1-V6 on the decisions the start returned, whatever Ipopt's status; empty when it returned none.",
+          "oneOf": [
+            {
+              "type": "array",
+              "maxItems": 0
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/$defs/check",
+                  "properties": {
+                    "check": {
+                      "const": "V1"
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/check",
+                  "properties": {
+                    "check": {
+                      "const": "V2"
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/check",
+                  "properties": {
+                    "check": {
+                      "const": "V3"
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/check",
+                  "properties": {
+                    "check": {
+                      "const": "V4"
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/check",
+                  "properties": {
+                    "check": {
+                      "const": "V5"
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/check",
+                  "properties": {
+                    "check": {
+                      "const": "V6"
+                    }
+                  }
+                }
+              ],
+              "minItems": 6,
+              "items": false
+            }
+          ]
+        },
+        "classification": {
+          "enum": [
+            "KKT_POINT_VERIFIED",
+            "NOT_VERIFIED",
+            "INFEASIBLE_REPORTED",
+            "SOLVER_FAILED"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -168,6 +168,21 @@ class KeptFactorization:
             raise ValueError(f"right-hand side {b.shape} does not match matrix {shape}")
         return _solved(self._matrix, self._factorization, b)
 
+    def solve_transposed(
+        self, rhs: Sequence[float] | npt.NDArray[np.float64]
+    ) -> tuple[npt.NDArray[np.float64], LinearSolveRecord]:
+        """`Aᵀ y = b` on the same factorization: SuperLU's `solve(b, trans="T")`.
+
+        M03 spec §3.6, ADR 0031 D4: the adjoint sensitivity `Ĵᵀ Λ̂ = −Ĉᵀ` shares the forward
+        solve's factorization, so the number of factorizations does not depend on the number of
+        outputs. Judged and recorded exactly as ADR 0004 D3 judges a forward solve, against the
+        matrix actually solved — `Aᵀ`, never `A` — with the same threshold and the same record."""
+        b = np.asarray(rhs, dtype=np.float64)
+        shape = self._matrix.shape
+        if b.ndim not in (1, 2) or b.shape[0] != shape[1]:
+            raise ValueError(f"right-hand side {b.shape} does not match transposed matrix {shape}")
+        return _solved(self._matrix, self._factorization, b, transposed=True)
+
 
 def solve_linear_kept(
     matrix: sp.spmatrix | npt.NDArray[np.float64],
@@ -196,10 +211,22 @@ def solve_linear_kept(
 
 
 def _solved(
-    csc: sp.csc_matrix, factorization: Any, b: npt.NDArray[np.float64]
+    csc: sp.csc_matrix,
+    factorization: Any,
+    b: npt.NDArray[np.float64],
+    *,
+    transposed: bool = False,
 ) -> tuple[npt.NDArray[np.float64], LinearSolveRecord]:
-    """One back-solve against `factorization` of `csc`, with ADR 0004 D3's record and test."""
-    solution = np.asarray(factorization.solve(b), dtype=np.float64)
+    """One back-solve against `factorization` of `csc`, with ADR 0004 D3's record and test.
+
+    With `transposed`, the system solved — and so the one the residual is judged against — is
+    `cscᵀ`; the pivot record is the factorization's own either way."""
+    if transposed:
+        solution = np.asarray(factorization.solve(b, trans="T"), dtype=np.float64)
+        judged = sp.csc_matrix(csc.T)
+    else:
+        solution = np.asarray(factorization.solve(b), dtype=np.float64)
+        judged = csc
     # `np.min(values, initial=0.0)` would take the minimum *with* 0.0 and so report 0.0 for any
     # positive diagonal, which silently turns the pivot screen into a constant. The empty case is
     # handled explicitly instead.
@@ -207,10 +234,10 @@ def _solved(
     smallest = float(np.min(diagonal)) if diagonal.size else 0.0
     largest = float(np.max(diagonal)) if diagonal.size else 0.0
     if b.ndim == 1:
-        residual = normalized_residual(csc, solution, b)
+        residual = normalized_residual(judged, solution, b)
     else:
         residual = max(
-            (normalized_residual(csc, solution[:, k], b[:, k]) for k in range(b.shape[1])),
+            (normalized_residual(judged, solution[:, k], b[:, k]) for k in range(b.shape[1])),
             default=0.0,
         )
 
@@ -227,7 +254,8 @@ def _solved(
         raise LinearSolveFailedError(
             "residual",
             f"normalized linear residual {residual:.3e} exceeds the registered "
-            f"{RESIDUAL_THRESHOLD:g} (ADR 0004 D3.2) on a {csc.shape[0]}x{csc.shape[0]} system; "
+            f"{RESIDUAL_THRESHOLD:g} (ADR 0004 D3.2) on a {csc.shape[0]}x{csc.shape[0]} "
+            f"{'transposed ' if transposed else ''}system; "
             "the factorization is not a factorization of this matrix",
         )
     return solution, record

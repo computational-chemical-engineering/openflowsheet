@@ -1,0 +1,572 @@
+{
+ "adjoint": {
+  "scaled": [
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ]
+  ],
+  "unscaled": [
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ]
+  ]
+ },
+ "consistency": null,
+ "derivative_provenance": "implicit-exact",
+ "forward": {
+  "scaled": [
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ]
+  ],
+  "unscaled": [
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   [
+    null,
+    null,
+    null,
+    null,
+    null
+   ]
+  ]
+ },
+ "identity": {
+  "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+  "phase_signature": null,
+  "state_sha256": "63d07f31e17f52c35fbefa6456a04aa53fa3a48cb159afb10a9b039b38e31122"
+ },
+ "linear_solves": [],
+ "mode": "both",
+ "outputs": [
+  {
+   "coefficients": {
+    "S4.N": 1.0
+   },
+   "output_id": "S4.N",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S5.N": 1.0
+   },
+   "output_id": "S5.N",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S6.n.A": 1.0
+   },
+   "output_id": "S6.n.A",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S6.n.B": 1.0
+   },
+   "output_id": "S6.n.B",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S6.n.C": 1.0
+   },
+   "output_id": "S6.n.C",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S7.n.A": 1.0
+   },
+   "output_id": "S7.n.A",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S4.n.A": 1.0
+   },
+   "output_id": "S4.n.A",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S2.T": 1.0
+   },
+   "output_id": "S2.T",
+   "scale": 100.0
+  },
+  {
+   "coefficients": {
+    "U-HEAT.Q": 1.0
+   },
+   "output_id": "U-HEAT.Q",
+   "scale": 100000.0
+  },
+  {
+   "coefficients": {
+    "U-FLASH.Q": 1.0
+   },
+   "output_id": "U-FLASH.Q",
+   "scale": 100000.0
+  },
+  {
+   "coefficients": {
+    "S3.V": 1.0
+   },
+   "output_id": "S3.V",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "U-FLASH.Q": 1.0,
+    "U-HEAT.Q": 1.0
+   },
+   "output_id": "Q_total",
+   "scale": 100000.0
+  }
+ ],
+ "parameters": [
+  {
+   "alias_residual": null,
+   "domain": [
+    0.0,
+    0.999
+   ],
+   "parameter_id": "U-SPLIT.split_fraction",
+   "scale": 1.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": null,
+   "domain": [
+    280.0,
+    440.0
+   ],
+   "parameter_id": "U-FLASH.T_spec",
+   "scale": 100.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": null,
+   "domain": [
+    280.0,
+    440.0
+   ],
+   "parameter_id": "U-HEAT.T_spec",
+   "scale": 100.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": null,
+   "domain": [
+    280.0,
+    440.0
+   ],
+   "parameter_id": "U-FEED.T_spec",
+   "scale": 100.0,
+   "status": "REFUSED"
+  },
+  {
+   "alias_residual": null,
+   "domain": [
+    1e-06,
+    10.0
+   ],
+   "parameter_id": "U-FEED.n_spec.A",
+   "scale": 3.0,
+   "status": "REFUSED"
+  }
+ ],
+ "policy_id": "M03-sensitivity-v1",
+ "qualification": {
+  "alias_residuals": {
+   "U-FEED.T_spec": null,
+   "U-FEED.n_spec.A": null,
+   "U-FLASH.T_spec": null,
+   "U-HEAT.T_spec": null,
+   "U-SPLIT.split_fraction": null
+  },
+  "outcomes": [
+   {
+    "outcome": "pass",
+    "qualification": "Q0"
+   },
+   {
+    "outcome": "not_evaluated",
+    "qualification": "Q0'",
+    "reason": "base evaluation invalid_trial_state/invalid_trial_state"
+   },
+   {
+    "outcome": "pass",
+    "qualification": "Q0''"
+   },
+   {
+    "outcome": "fail",
+    "qualification": "Q1",
+    "residual_status": "invalid_trial_state"
+   },
+   {
+    "outcome": "not_applicable",
+    "qualification": "Q1'",
+    "reason": "no study-level certificate required"
+   },
+   {
+    "outcome": "not_evaluated",
+    "qualification": "Q2",
+    "reason": "root_not_converged"
+   },
+   {
+    "outcome": "not_evaluated",
+    "qualification": "Q2'",
+    "reason": "no_qualified_target"
+   },
+   {
+    "outcome": "not_evaluated",
+    "qualification": "Q3",
+    "reason": "no_qualified_target"
+   },
+   {
+    "outcome": "not_applicable",
+    "qualification": "Q4",
+    "reason": "no TP-type lifted split"
+   },
+   {
+    "outcome": "not_applicable",
+    "qualification": "Q4'",
+    "reason": "no lifted split"
+   }
+  ],
+  "regularity": null,
+  "scaled_residual_inf": null,
+  "splits": []
+ },
+ "refusals": [
+  {
+   "code": "ROOT_NOT_CONVERGED",
+   "detail": "the residual could not be evaluated: invalid_trial_state: H_S2_liquid: H_S2_liquid: temperature 500.0 K outside [280.0, 440.0] K",
+   "parameter_id": null,
+   "qualification": "Q1",
+   "scope": "request"
+  }
+ ],
+ "status": "REFUSED"
+}

@@ -1,0 +1,8 @@
+# M03 WO-8: the test runner of scripts/m03_nlp_check.sh, outside the audited NLP environment. Pure-
+# Python PyPI wheels at requirements.lock's versions, installed --no-deps --require-hashes into a
+# separate --target directory and put on PYTHONPATH by the check script only, so that the audited
+# environment (nlp-conda-explicit.txt, nlp-pip.lock) stays exactly its locks. pytest's other
+# dependency, packaging, is in nlp-pip.lock.
+iniconfig==2.3.0 --hash=sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12
+pluggy==1.6.0 --hash=sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746
+pytest==8.3.5 --hash=sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820

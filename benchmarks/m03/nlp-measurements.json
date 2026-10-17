@@ -1,0 +1,384 @@
+{
+ "environment": {
+  "ipopt": "3.14.20",
+  "omp_num_threads": "1",
+  "options": {
+   "acceptable_iter": 15,
+   "acceptable_tol": 1e-08,
+   "bound_relax_factor": 0,
+   "compl_inf_tol": 1e-08,
+   "constr_viol_tol": 1e-08,
+   "dual_inf_tol": 1e-06,
+   "hessian_approximation": "limited-memory",
+   "honor_original_bounds": "yes",
+   "limited_memory_max_history": 6,
+   "linear_solver": "mumps",
+   "max_iter": 500,
+   "max_wall_time": 120,
+   "mu_strategy": "monotone",
+   "nlp_scaling_method": "user-scaling",
+   "print_level": 0,
+   "tol": 1e-10
+  }
+ },
+ "format": "m03-nlp-measurements-v1",
+ "q_f2": {
+  "closest": {
+   "quantity": "ipopt_primal_infeasibility",
+   "ratio": 105.72227190153846,
+   "start": 1
+  },
+  "margin_factor": 10.0,
+  "problem": "NLP-1",
+  "starts": [
+   {
+    "evaluations": {
+     "evaluation_errors": 0,
+     "jacobian_calls": 24,
+     "property_calls": 630,
+     "residual_calls": 22
+    },
+    "final_decisions": [
+     0.897786613014196,
+     361.49964918667564
+    ],
+    "ipopt_status": 0,
+    "ipopt_status_name": "Solve_Succeeded",
+    "iterations": 21,
+    "measured": {
+     "constraint_abs": {
+      "ratio": 373061.5993514327,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.680522470654978e-12
+     },
+     "constraint_violation": {
+      "ratio": null,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 0.0
+     },
+     "decision_error_scaled": {
+      "ratio": 374301.8307322553,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.6716406864579767e-12
+     },
+     "ipopt_complementarity": {
+      "ratio": 1099.988021061087,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 9.091008091482351e-12
+     },
+     "ipopt_dual_infeasibility": {
+      "ratio": 5039205.685494384,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 1.9844397359658331e-13
+     },
+     "ipopt_primal_infeasibility": {
+      "ratio": 274.877906944,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 3.637978807091713e-11
+     },
+     "multiplier_relative_error": {
+      "ratio": 1098583.9235540258,
+      "sense": "upper",
+      "tolerance": 0.0001,
+      "value": 9.102627287361923e-11
+     },
+     "objective_error": {
+      "ratio": 1100156.2505790738,
+      "sense": "upper",
+      "tolerance": 1e-05,
+      "value": 9.089617947211082e-12
+     },
+     "regime_margin_min": {
+      "ratio": 816.0527266757932,
+      "sense": "lower",
+      "tolerance": 0.0001,
+      "value": 0.08160527266757933
+     },
+     "stationarity_residual": {
+      "ratio": 698.4655246061787,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 1.431709890855154e-09
+     },
+     "v2_scaled_difference": {
+      "ratio": 39275578.145672925,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.5461114698070258e-14
+     }
+    },
+    "start": [
+     0.6,
+     360.0
+    ]
+   },
+   {
+    "evaluations": {
+     "evaluation_errors": 0,
+     "jacobian_calls": 19,
+     "property_calls": 495,
+     "residual_calls": 17
+    },
+    "final_decisions": [
+     0.8977866130139803,
+     361.49964918667564
+    ],
+    "ipopt_status": 0,
+    "ipopt_status_name": "Solve_Succeeded",
+    "iterations": 16,
+    "measured": {
+     "constraint_abs": {
+      "ratio": 373123.4156893534,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.680078381445128e-12
+     },
+     "constraint_violation": {
+      "ratio": null,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 0.0
+     },
+     "decision_error_scaled": {
+      "ratio": 374301.8307322553,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.6716406864579767e-12
+     },
+     "ipopt_complementarity": {
+      "ratio": 1099.9999999999943,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 9.090909090909137e-12
+     },
+     "ipopt_dual_infeasibility": {
+      "ratio": 2920808.330603842,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 3.42370976391067e-13
+     },
+     "ipopt_primal_infeasibility": {
+      "ratio": 105.72227190153846,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 9.458744898438454e-11
+     },
+     "multiplier_relative_error": {
+      "ratio": 1168717.570464468,
+      "sense": "upper",
+      "tolerance": 0.0001,
+      "value": 8.556387148373094e-11
+     },
+     "objective_error": {
+      "ratio": 1100210.0032663548,
+      "sense": "upper",
+      "tolerance": 1e-05,
+      "value": 9.089173858001232e-12
+     },
+     "regime_margin_min": {
+      "ratio": 816.0527266773564,
+      "sense": "lower",
+      "tolerance": 0.0001,
+      "value": 0.08160527266773565
+     },
+     "stationarity_residual": {
+      "ratio": 759.8710084077262,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 1.3160128349882077e-09
+     },
+     "v2_scaled_difference": {
+      "ratio": 404232216.0941176,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.473825588822365e-15
+     }
+    },
+    "start": [
+     0.85,
+     357.0
+    ]
+   },
+   {
+    "evaluations": {
+     "evaluation_errors": 0,
+     "jacobian_calls": 20,
+     "property_calls": 522,
+     "residual_calls": 18
+    },
+    "final_decisions": [
+     0.8977866130130546,
+     361.49964918667564
+    ],
+    "ipopt_status": 0,
+    "ipopt_status_name": "Solve_Succeeded",
+    "iterations": 17,
+    "measured": {
+     "constraint_abs": {
+      "ratio": 373046.14846721856,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.6806334929574405e-12
+     },
+     "constraint_violation": {
+      "ratio": null,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 0.0
+     },
+     "decision_error_scaled": {
+      "ratio": 374301.8307322553,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.6716406864579767e-12
+     },
+     "ipopt_complementarity": {
+      "ratio": 1099.9424682212893,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 9.091384585023745e-12
+     },
+     "ipopt_dual_infeasibility": {
+      "ratio": 399452.1791217932,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 2.5034285761027214e-12
+     },
+     "ipopt_primal_infeasibility": {
+      "ratio": 229.06492245333334,
+      "sense": "upper",
+      "tolerance": 1e-08,
+      "value": 4.3655745685100555e-11
+     },
+     "multiplier_relative_error": {
+      "ratio": 1607059.8324433682,
+      "sense": "upper",
+      "tolerance": 0.0001,
+      "value": 6.22254367766509e-11
+     },
+     "objective_error": {
+      "ratio": 1100129.3762050215,
+      "sense": "upper",
+      "tolerance": 1e-05,
+      "value": 9.089839991816007e-12
+     },
+     "regime_margin_min": {
+      "ratio": 816.0527266840489,
+      "sense": "lower",
+      "tolerance": 0.0001,
+      "value": 0.0816052726684049
+     },
+     "stationarity_residual": {
+      "ratio": 1217.020278657866,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 8.216789954418864e-10
+     },
+     "v2_scaled_difference": {
+      "ratio": 93824992.23688532,
+      "sense": "upper",
+      "tolerance": 1e-06,
+      "value": 1.0658141036401503e-14
+     }
+    },
+    "start": [
+     0.55,
+     365.0
+    ]
+   }
+  ],
+  "within_margin_factor": []
+ },
+ "q_f4": {
+  "jacobian_at_an_accepted_point": {
+   "checks": {
+    "V1": "pass",
+    "V2": "fail",
+    "V3": "pass",
+    "V4": "pass",
+    "V5": "fail",
+    "V6": "pass"
+   },
+   "classification": "SOLVER_FAILED",
+   "detail": "1 twin evaluation error(s) reported to Ipopt; first: jacobian: lnK_S4: injected: T = 364.61796274050437 K > 362.9 K",
+   "evaluations": {
+    "evaluation_errors": 1,
+    "jacobian_calls": 4,
+    "property_calls": 74,
+    "residual_calls": 2
+   },
+   "final_decisions": [
+    0.7333239573202176,
+    364.61796274050437
+   ],
+   "injected": {
+    "jacobian_above": 362.9
+   },
+   "ipopt_status": -13,
+   "ipopt_status_name": "Invalid_Number_Detected",
+   "iterations": 0
+  },
+  "residual_at_a_trial_point": {
+   "checks": {
+    "V1": "pass",
+    "V2": "pass",
+    "V3": "pass",
+    "V4": "pass",
+    "V5": "pass",
+    "V6": "pass"
+   },
+   "classification": "KKT_POINT_VERIFIED",
+   "detail": "2 twin evaluation error(s) reported to Ipopt; first: residual: lnK_S4: injected: T = 365.602245537061 K > 365.0 K",
+   "evaluations": {
+    "evaluation_errors": 2,
+    "jacobian_calls": 25,
+    "property_calls": 680,
+    "residual_calls": 26
+   },
+   "final_decisions": [
+    0.8977866130140192,
+    361.4996491866757
+   ],
+   "injected": {
+    "values_above": 365.0
+   },
+   "ipopt_status": 0,
+   "ipopt_status_name": "Solve_Succeeded",
+   "iterations": 22
+  },
+  "residual_at_the_start": {
+   "checks": {
+    "V1": "pass",
+    "V2": "pass",
+    "V3": "fail",
+    "V4": "pass",
+    "V5": "fail",
+    "V6": "pass"
+   },
+   "classification": "SOLVER_FAILED",
+   "detail": "1 twin evaluation error(s) reported to Ipopt; first: residual: lnK_S4: injected: T = 360.0 K > 355.0 K",
+   "evaluations": {
+    "evaluation_errors": 1,
+    "jacobian_calls": 2,
+    "property_calls": 43,
+    "residual_calls": 1
+   },
+   "final_decisions": [
+    0.6,
+    360.0
+   ],
+   "injected": {
+    "values_above": 355.0
+   },
+   "ipopt_status": -13,
+   "ipopt_status_name": "Invalid_Number_Detected",
+   "iterations": 0
+  }
+ }
+}

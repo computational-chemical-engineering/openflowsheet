@@ -1,0 +1,5 @@
+{
+ "code": "NLP_SOLVER_UNAVAILABLE",
+ "detail": "the optional `nlp` extra is not installed (pyomo, cyipopt absent) \u2014 see docs/m03-ipopt-audit.md (G-A10: PASS)",
+ "subject": "docs/m03-ipopt-audit.md"
+}
