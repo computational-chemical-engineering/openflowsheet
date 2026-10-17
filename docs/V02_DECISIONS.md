@@ -985,3 +985,15 @@ Grep, don't read whole. Newest at the bottom.
   M03 and the M04 CI fix (52 files under D2.4 differ), so main's head can no longer be the candidate. The alpha branch's D2.4 paths
   still equal C_α² exactly. Asked Frank: release from the alpha branch/tag (ADR 0028's named alternative; recommended) or re-cut the
   candidate from main and redo the RC job and verdicts.
+
+## 2026-10-17 — M05 main-merge
+- `wp/M05` @ `56fb2fa`: origin/main merged (`eb17f79`; register numeric union, no clash), NLP inventory re-taken (181 objects,
+  `_queue` added, same packages/licences; S76, as M03's `b074d57`), five in-process G10 records re-taken (`56fb2fa`, S77): main's
+  D134 change to `models/c1/boundary.py` changed the environment fingerprint, so 105–185 digest differences per record; all
+  non-digest fields equal except timings, old→new digest map one-to-one, REAL unaffected. Gate 9319/31 skipped, nlp 186/1,
+  m03_nlp_check exit 0, REAL replay 0 diffs, CI 39018247132 green on both runners.
+- DECISION: S77 re-take vs narrowing the fingerprint → keep the re-take (engineer's choice; fingerprint working as designed).
+  Alternative: exclude unrelated model files from the in-process fingerprint (design-lane). Reversible by: revert `56fb2fa`.
+  Batched for M05's next design touch.
+- DECISION: merge M05 into main now, although the freeze question to Frank is open → yes. Default (release from the alpha
+  branch) is unaffected; a re-cut would then include M05 too. Reversible by: reverting the merge commit on main.
